@@ -955,9 +955,10 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Search bar — top: full-width on mobile, centered max-width on desktop */}
+      {/* Search bar — top row, centered, with side padding so it never overlaps
+          the Filters / Heatmap buttons on the row below. */}
       <div
-        className="absolute top-4 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-full md:max-w-md z-20"
+        className="absolute top-4 left-1/2 -translate-x-1/2 w-[min(calc(100%-32px),28rem)] z-20"
       >
         <MapSearchBar
           initialValue={locationLabel ?? ''}
@@ -994,8 +995,8 @@ export function MapSearchView() {
         />
       )}
 
-      {/* Heatmap toggle (top-right; drops below search bar on mobile) */}
-      <div className="absolute top-20 right-4 md:top-4 z-10">
+      {/* Heatmap toggle (second row, right — below the search bar on all sizes) */}
+      <div className="absolute top-20 right-4 z-10">
         <button
           onClick={() => setHeatmapActive((p) => !p)}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-colors"
@@ -1071,9 +1072,10 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Listing count badge — hidden when filter panel is open to avoid overlap */}
+      {/* Listing count badge — third row, left, below the Filters button.
+          Hidden when filter panel is open to avoid overlap. */}
       {totalCount > 0 && !isLoading && !filtersOpen && (
-        <div className="absolute top-32 left-4 md:top-16 md:left-3 z-10">
+        <div className="absolute top-32 left-4 z-10">
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold shadow-lg"
             style={{

@@ -68,7 +68,7 @@ interface NewPlace {
 /**
  * MapSearchBar
  *
- * Custom search overlay built on Google's modern `AutocompleteSuggestion`
+ * Address search overlay built on Google's modern `AutocompleteSuggestion`
  * (Places API New) with a fallback to the legacy `AutocompleteService`. This
  * gives us:
  *   - support for both old + new Google Cloud accounts (the legacy widget +
@@ -76,7 +76,9 @@ interface NewPlace {
  *   - full control over the dropdown UI (theming, accessibility, click handling)
  *   - clean event flow with no race against Google's internal listeners
  *
- * Supports addresses, cities, states, and zip codes (US-restricted).
+ * Restricted to US street addresses. (City/state/zip support depends on
+ * Google API access tier and was unreliable in production, so we restrict to
+ * full addresses for predictable behavior.)
  */
 export function MapSearchBar({ initialValue = '', onSelect, onClear }: MapSearchBarProps) {
   const [value, setValue] = useState(initialValue)
@@ -136,7 +138,7 @@ export function MapSearchBar({ initialValue = '', onSelect, onClear }: MapSearch
           const { suggestions } = await newApi.fetchAutocompleteSuggestions({
             input: trimmed,
             includedRegionCodes: ['us'],
-            includedPrimaryTypes: ['geocode'],
+            includedPrimaryTypes: ['street_address'],
             sessionToken: sessionTokenRef.current ?? undefined,
           })
           if (myRequestId !== requestIdRef.current) return
@@ -187,7 +189,7 @@ export function MapSearchBar({ initialValue = '', onSelect, onClear }: MapSearch
         {
           input: trimmed,
           componentRestrictions: { country: 'us' },
-          types: ['geocode'],
+          types: ['address'],
           sessionToken: sessionTokenRef.current as google.maps.places.AutocompleteSessionToken | undefined,
         },
         (results, status) => {
@@ -381,8 +383,8 @@ export function MapSearchBar({ initialValue = '', onSelect, onClear }: MapSearch
             if (predictions.length > 0) setIsOpen(true)
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Address, city, or zip"
-          aria-label="Search the map by address, city, state, or zip code"
+          placeholder="Address Search"
+          aria-label="Search the map by street address"
           aria-autocomplete="list"
           aria-expanded={isOpen}
           aria-controls="map-search-listbox"
