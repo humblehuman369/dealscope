@@ -137,6 +137,103 @@ def add_radial_cyan_glow(
     return canvas
 
 
+def build_phone_with_screenshot(
+    screenshot_path: Path,
+    crop_box: tuple | None = None,
+    phone_width: int = 880,
+    bezel_px: int = 14,
+    bezel_color: tuple = (18, 18, 22, 255),
+    corner_radius_pct: float = 0.10,
+    add_dynamic_island: bool = True,
+    add_glow: bool = True,
+    glow_pad: int = 90,
+    glow_intensity: int = 110,
+) -> Image.Image:
+    """Build a flat phone-mockup PNG with a real app screenshot inside the screen.
+
+    Produces an RGBA image sized to (phone_width + 2*glow_pad) wide. The phone is
+    a rounded-rectangle bezel in dark titanium-gray, with a small dynamic island
+    pill at the top center, and the cropped screenshot pasted edge-to-edge inside
+    the screen area (no perspective transform — flat composition for clean App
+    Store legibility at small sizes).
+
+    Returns: RGBA Image ready to alpha_composite onto the canvas.
+    """
+    screenshot = Image.open(screenshot_path).convert("RGB")
+    if crop_box is not None:
+        screenshot = screenshot.crop(crop_box)
+
+    sw, sh = screenshot.size
+    aspect = sh / sw
+
+    screen_w = phone_width - 2 * bezel_px
+    screen_h = int(screen_w * aspect)
+    screenshot = screenshot.resize((screen_w, screen_h), Image.LANCZOS)
+
+    phone_height = screen_h + 2 * bezel_px
+    corner_r = int(min(phone_width, phone_height) * corner_radius_pct)
+
+    pad = glow_pad if add_glow else 0
+    canvas_w = phone_width + 2 * pad
+    canvas_h = phone_height + 2 * pad
+    out = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+
+    if add_glow:
+        glow = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+        ImageDraw.Draw(glow).rounded_rectangle(
+            (pad - 12, pad - 12, pad + phone_width + 12, pad + phone_height + 12),
+            radius=corner_r + 12,
+            fill=(*CYAN_GLOW, glow_intensity),
+        )
+        glow = glow.filter(ImageFilter.GaussianBlur(radius=70))
+        out.alpha_composite(glow)
+
+    body = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    ImageDraw.Draw(body).rounded_rectangle(
+        (pad, pad, pad + phone_width, pad + phone_height),
+        radius=corner_r,
+        fill=bezel_color,
+    )
+    out.alpha_composite(body)
+
+    screen_mask = Image.new("L", (screen_w, screen_h), 0)
+    ImageDraw.Draw(screen_mask).rounded_rectangle(
+        (0, 0, screen_w, screen_h),
+        radius=max(0, corner_r - bezel_px),
+        fill=255,
+    )
+    screenshot_rgba = screenshot.convert("RGBA")
+    screenshot_rgba.putalpha(screen_mask)
+    out.alpha_composite(screenshot_rgba, (pad + bezel_px, pad + bezel_px))
+
+    if add_dynamic_island:
+        di_w = int(phone_width * 0.30)
+        di_h = int(phone_height * 0.022)
+        di_x = pad + (phone_width - di_w) // 2
+        di_y = pad + bezel_px + int(phone_height * 0.018)
+        ImageDraw.Draw(out).rounded_rectangle(
+            (di_x, di_y, di_x + di_w, di_y + di_h),
+            radius=di_h // 2,
+            fill=(0, 0, 0, 255),
+        )
+
+    return out
+
+
+def composite_phone_mockup(
+    canvas: Image.Image,
+    phone_image: Image.Image,
+    target_y: int,
+) -> int:
+    """Center a pre-built phone mockup horizontally on the canvas at target_y.
+
+    Returns the y-coordinate just below the placed phone (excludes glow padding).
+    """
+    paste_x = (TARGET_W - phone_image.width) // 2
+    canvas.alpha_composite(phone_image, (paste_x, target_y))
+    return target_y + phone_image.height
+
+
 def composite_visual(
     canvas: Image.Image,
     ai_path: Path,
@@ -368,16 +465,63 @@ def build_screenshot(
     print(f"Wrote: {output_path.name}  ({TARGET_W}x{TARGET_H})")
 
 
+HERO_SCREENSHOT_PATH = THIS_DIR / "assets" / "hero-screenshot-strategy-tab.png"
+
+
+def build_hero_with_real_screenshot() -> None:
+    """Hero screenshot using the real app screen captured on device.
+
+    Uses a custom layout (different from the generic template) because the
+    coverage line is now embedded in the second subhead instead of the
+    off-MLS badge below the wordmark — this gives the wordmark more breathing
+    room and a cleaner bottom edge.
+    """
+    canvas = build_navy_canvas()
+    add_radial_cyan_glow(canvas, TARGET_W // 2, 1500, 950, intensity=0.22)
+
+    end_y = add_headline(
+        canvas,
+        ["Discover Deals", "Like an Investor"],
+        top_y=180,
+        font_size=130,
+        line_gap=12,
+    )
+
+    end_y = add_subhead(
+        canvas,
+        "Every US Listing Analyzed for Profit",
+        end_y + 38,
+        font_size=46,
+    )
+    end_y = add_subhead(
+        canvas,
+        "MLS  \u00b7  Foreclosures  \u00b7  Auctions  \u00b7  Pre-Foreclosures",
+        end_y + 14,
+        font_size=42,
+    )
+
+    phone = build_phone_with_screenshot(
+        screenshot_path=HERO_SCREENSHOT_PATH,
+        crop_box=(0, 0, 472, 855),
+        phone_width=900,
+        bezel_px=14,
+        bezel_color=(20, 22, 28, 255),
+        corner_radius_pct=0.10,
+        add_dynamic_island=True,
+        add_glow=True,
+        glow_pad=110,
+        glow_intensity=130,
+    )
+    composite_phone_mockup(canvas, phone, target_y=end_y + 60)
+
+    add_wordmark(canvas, target_y=TARGET_H - 240, target_w=600)
+
+    output_path = SCREENSHOTS_DIR / "01-hero-investors-lens.png"
+    canvas.convert("RGB").save(output_path, "PNG", optimize=True)
+    print(f"Wrote: {output_path.name}  ({TARGET_W}x{TARGET_H})  [real screenshot]")
+
+
 SCREENSHOT_CONFIGS = [
-    {
-        "output_name": "01-hero-investors-lens.png",
-        "raw_image_name": "screenshot-01-hero-raw.png",
-        "crop_box": (510, 170, 860, 680),
-        "headline_lines": ["Hunt deals through", "an investor's lens."],
-        "subhead": "Every US listing, pre-scored for profit.",
-        "headline_size": 120,
-        "headline_top_y": 200,
-    },
     {
         "output_name": "02-search-color-coded.png",
         "raw_image_name": "screenshot-02-search-raw.png",
@@ -446,6 +590,7 @@ SCREENSHOT_CONFIGS = [
 
 def main() -> None:
     SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
+    build_hero_with_real_screenshot()
     for cfg in SCREENSHOT_CONFIGS:
         build_screenshot(**cfg)
 
