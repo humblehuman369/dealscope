@@ -24,8 +24,9 @@ import { NeighborhoodCard } from './NeighborhoodCard'
 import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
 import { api, type NeighborhoodOverview } from '@/lib/api'
 import { classifyPlaceTypes, type PlaceCategory } from '@/utils/addressIdentity'
-import type { AddressComponents } from '@/components/AddressAutocomplete'
 import { trackEvent } from '@/lib/eventTracking'
+
+type SearchComponents = NonNullable<MapSearchSelection['components']>
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -268,17 +269,32 @@ function MapContent({
   useEffect(() => {
     if (!map) return
     panToRef.current = (lat: number, lng: number, zoom?: number) => {
-      // Use setOptions for an atomic center+zoom change. This is more reliable
-      // than calling setCenter + setZoom separately (which can race the camera)
-      // and consistently triggers `idle` so the listings hook refetches.
       if (zoom != null) {
-        map.setOptions({ center: { lat, lng }, zoom })
+        map.setCenter({ lat, lng })
+        map.setZoom(zoom)
       } else {
         map.panTo({ lat, lng })
       }
+      // Belt-and-suspenders: explicitly trigger a bounds refresh after the camera
+      // settles. setCenter/setZoom usually fire `idle` (which the listener below
+      // uses to refetch), but for "no-op" or near-no-op changes the event can
+      // be skipped. This guarantees the listings hook always re-queries for the
+      // new viewport after a programmatic pan/zoom.
+      setTimeout(() => {
+        const bounds = map.getBounds()
+        if (!bounds) return
+        const ne = bounds.getNorthEast()
+        const sw = bounds.getSouthWest()
+        onBoundsChanged({
+          north: ne.lat(),
+          south: sw.lat(),
+          east: ne.lng(),
+          west: sw.lng(),
+        })
+      }, 150)
     }
     return () => { panToRef.current = null }
-  }, [map, panToRef])
+  }, [map, panToRef, onBoundsChanged])
 
   useEffect(() => {
     if (!map || !selectedListing) return
@@ -295,11 +311,6 @@ function MapContent({
       if (!bounds) return
       const ne = bounds.getNorthEast()
       const sw = bounds.getSouthWest()
-      // eslint-disable-next-line no-console
-      console.log('[MapContent] idle fired → triggering bounds-based refetch', {
-        center: { lat: map.getCenter()?.lat(), lng: map.getCenter()?.lng() },
-        zoom: map.getZoom(),
-      })
       onBoundsChanged({
         north: ne.lat(),
         south: sw.lat(),
@@ -768,22 +779,9 @@ export function MapSearchView() {
       lng: number,
       zoom: number,
       category: PlaceCategory,
-      components?: AddressComponents,
+      components?: SearchComponents,
     ) => {
-      // eslint-disable-next-line no-console
-      console.log('[MapSearch] applySearchTarget', {
-        address,
-        lat,
-        lng,
-        zoom,
-        category,
-        panToRefReady: !!panToRef.current,
-      })
-      if (panToRef.current) {
-        panToRef.current(lat, lng, zoom)
-      } else {
-        console.warn('[MapSearch] panToRef.current is null — map may not be ready yet')
-      }
+      panToRef.current?.(lat, lng, zoom)
       currentZoomRef.current = zoom
       setIsZoomedIn(zoom >= MIN_ZOOM_FOR_GEOCODE)
       setSelectedListing(null)
@@ -808,63 +806,16 @@ export function MapSearchView() {
   )
 
   const handleSearchSelect = useCallback(
-    async ({ address, components, meta }: MapSearchSelection) => {
-      const { category, zoom } = classifyPlaceTypes(meta?.placeTypes ?? [])
-      // eslint-disable-next-line no-console
-      console.log('[MapSearch] handleSearchSelect', {
-        address,
-        category,
-        zoom,
-        placeTypes: meta?.placeTypes,
-        hasLocation: !!meta?.location,
-        location: meta?.location,
-        panToRefReady: !!panToRef.current,
-      })
-
-      if (meta?.location) {
-        applySearchTarget(address, meta.location.lat, meta.location.lng, zoom, category, components)
-        trackEvent('map_search_bar_used', {
-          category,
-          has_components: !!components,
-          source: 'place_select',
-        })
+    ({ address, components, meta }: MapSearchSelection) => {
+      if (!meta?.location) {
+        console.warn('[MapSearch] selection missing location, ignoring:', address)
         return
       }
-
-      // Fallback: Places didn't return geometry — forward-geocode the formatted address.
-      // This guards against rare cases where `place.geometry` is missing for some
-      // suggestion types (cities, postal codes, etc.) in some regions.
-      if (!apiKey) {
-        console.warn('[MapSearch] Place selected without location and no API key for fallback geocode')
-        return
-      }
-      const result = await forwardGeocode(address, apiKey)
-      if (!result) {
-        console.warn('[MapSearch] Could not resolve coordinates for selection:', address)
-        return
-      }
-      applySearchTarget(address, result.lat, result.lng, result.zoom, category, components)
-      trackEvent('map_search_bar_used', {
-        category,
-        has_components: !!components,
-        source: 'fallback_geocode',
-      })
+      const { category, zoom } = classifyPlaceTypes(meta.placeTypes ?? [])
+      applySearchTarget(address, meta.location.lat, meta.location.lng, zoom, category, components)
+      trackEvent('map_search_bar_used', { category, has_components: !!components })
     },
-    [apiKey, applySearchTarget],
-  )
-
-  const handleSearchManualSubmit = useCallback(
-    async (text: string) => {
-      if (!apiKey) return
-      const result = await forwardGeocode(text, apiKey)
-      if (!result) {
-        console.warn('[MapSearch] Manual text could not be geocoded:', text)
-        return
-      }
-      applySearchTarget(text, result.lat, result.lng, result.zoom, 'unknown')
-      trackEvent('map_search_bar_used', { category: 'manual_text', source: 'manual_submit' })
-    },
-    [apiKey, applySearchTarget],
+    [applySearchTarget],
   )
 
   const handleSearchClear = useCallback(() => {
@@ -1011,7 +962,6 @@ export function MapSearchView() {
         <MapSearchBar
           initialValue={locationLabel ?? ''}
           onSelect={handleSearchSelect}
-          onManualSubmit={handleSearchManualSubmit}
           onClear={handleSearchClear}
         />
       </div>
