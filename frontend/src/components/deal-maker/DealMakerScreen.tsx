@@ -1157,21 +1157,37 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           </button>
         )}
 
-        {/* Strategy Selector - responsive grid, expands with worksheet width */}
+        {/* Strategy Selector - per-strategy color coded, responsive grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 pb-3 w-full">
-          {['Long-term', 'Short-term', 'BRRRR', 'Fix & Flip', 'House Hack', 'Wholesale'].map((strategy) => (
-            <button
-              key={strategy}
-              onClick={() => handleStrategyChange(strategy)}
-              className={`w-full min-w-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                currentStrategy === strategy
-                  ? 'bg-[var(--accent-sky)] text-[var(--text-inverse)] shadow-[var(--shadow-card)]'
-                  : 'bg-transparent text-[var(--accent-sky)] border-[0.5px] border-[var(--accent-sky)] hover:text-[var(--accent-sky-light)] hover:border-[var(--accent-sky-light)]'
-              }`}
-            >
-              {strategy}
-            </button>
-          ))}
+          {[
+            { label: 'Long-term', color: '#0465f2' },
+            { label: 'Short-term', color: '#8b5cf6' },
+            { label: 'BRRRR', color: '#f97316' },
+            { label: 'Fix & Flip', color: '#ec4899' },
+            { label: 'House Hack', color: '#0EA5E9' },
+            { label: 'Wholesale', color: '#84cc16' },
+          ].map((s) => {
+            const isActive = currentStrategy === s.label
+            return (
+              <button
+                key={s.label}
+                onClick={() => handleStrategyChange(s.label)}
+                className="w-full min-w-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all hover:opacity-90"
+                style={isActive ? {
+                  background: s.color,
+                  color: '#fff',
+                  border: `0.5px solid ${s.color}`,
+                  boxShadow: `0 0 12px ${s.color}55, 0 1px 4px ${s.color}30`,
+                } : {
+                  background: 'transparent',
+                  color: s.color,
+                  border: `0.5px solid ${s.color}`,
+                }}
+              >
+                {s.label}
+              </button>
+            )
+          })}
         </div>
       </div>
 

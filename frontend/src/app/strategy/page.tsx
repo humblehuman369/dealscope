@@ -1444,15 +1444,15 @@ function StrategyContent() {
         <AuthGate feature="view the full strategy breakdown" mode="section">
         <section className="px-[1px] sm:px-5 pt-2 pb-6">
 
-          {/* Strategy Tabs — matches DealMaker page styling */}
+          {/* Strategy Tabs — matches DealMaker page styling, per-strategy color coded */}
           {sortedStrategies.length > 1 && (() => {
             const STRATEGY_DISPLAY = [
-              { id: 'long-term-rental', label: 'Long-term' },
-              { id: 'short-term-rental', label: 'Short-term' },
-              { id: 'brrrr', label: 'BRRRR' },
-              { id: 'fix-and-flip', label: 'Fix & Flip' },
-              { id: 'house-hack', label: 'House Hack' },
-              { id: 'wholesale', label: 'Wholesale' },
+              { id: 'long-term-rental', label: 'Long-term', color: '#0465f2' },
+              { id: 'short-term-rental', label: 'Short-term', color: '#8b5cf6' },
+              { id: 'brrrr', label: 'BRRRR', color: '#f97316' },
+              { id: 'fix-and-flip', label: 'Fix & Flip', color: '#ec4899' },
+              { id: 'house-hack', label: 'House Hack', color: '#0EA5E9' },
+              { id: 'wholesale', label: 'Wholesale', color: '#84cc16' },
             ]
             const available = STRATEGY_DISPLAY.filter(s => sortedStrategies.some(ss => ss.id === s.id))
             return (
@@ -1464,11 +1464,17 @@ function StrategyContent() {
                       key={s.id}
                       type="button"
                       onClick={() => handleStrategyChange(s.id)}
-                      className={`w-full min-w-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                        isActive
-                          ? 'bg-[var(--accent-sky)] text-[var(--text-inverse)] shadow-[var(--shadow-card)]'
-                          : 'bg-transparent text-[var(--accent-sky)] border-[0.5px] border-[var(--accent-sky)] hover:text-[var(--accent-sky-light)] hover:border-[var(--accent-sky-light)]'
-                      }`}
+                      className="w-full min-w-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all hover:opacity-90"
+                      style={isActive ? {
+                        background: s.color,
+                        color: '#fff',
+                        border: `0.5px solid ${s.color}`,
+                        boxShadow: `0 0 12px ${s.color}55, 0 1px 4px ${s.color}30`,
+                      } : {
+                        background: 'transparent',
+                        color: s.color,
+                        border: `0.5px solid ${s.color}`,
+                      }}
                     >
                       {s.label}
                     </button>
