@@ -53,8 +53,11 @@ connect/
 ├── apply_screenshot_brand.py                  ← Python script that builds the 8 screenshots from raw AI visuals
 ├── icon-1024x1024-v2-fullbleed.png            ← App icon (upload to App Store Connect)
 │
+├── assets/
+│   └── hero-screenshot-strategy-tab.png       ← Real app screen used inside the hero phone (re-render with this)
+│
 ├── screenshots/
-│   ├── 01-hero-investors-lens.png             ← THE most important screenshot — first impression
+│   ├── 01-hero-investors-lens.png             ← THE most important screenshot — first impression (uses REAL app screenshot)
 │   ├── 02-search-color-coded.png              ← Color-coded map markers
 │   ├── 03-verdict-three-cards.png             ← Target Buy / Income Value / Market Price
 │   ├── 04-pills-deal-maybe-pass.png           ← DEAL / MAYBE / PASS verdict pills
@@ -81,7 +84,7 @@ Apple displays screenshots in the order you upload them. Users typically only se
 
 | # | Filename | Purpose | What stops the scroll |
 |---|---|---|---|
-| 1 | `01-hero-investors-lens.png` | **The pitch.** Establishes the brand metaphor and value prop in one image. | Bold headline + lens visual |
+| 1 | `01-hero-investors-lens.png` | **The pitch.** Real screenshot inside the phone — actual property data, real DEAL GAP -29.1%. Authenticity that AI mockups cannot match. | Bold headline + real product screenshot |
 | 2 | `02-search-color-coded.png` | **The Aha.** Shows that every property is pre-graded — answers "what does this app actually do?" | Dense color-coded map pins |
 | 3 | `03-verdict-three-cards.png` | **The depth.** Proves there's real financial analysis, not just a sticker. | Three-card verdict + Deal Gap bar |
 | 4 | `04-pills-deal-maybe-pass.png` | **The mechanic.** Names the verdict framework users will live in. | DEAL / MAYBE / PASS pills |
@@ -205,6 +208,7 @@ Reused from `../play-store/README.md` for consistency:
 - **App Preview video is not produced** — only the brief is. Producing the video requires recording from the running app (Xcode simulator or device) which is not in scope for this asset pack. See `copy/app-preview-video-brief.md` for the production options.
 - **iPad screenshots are not produced.** If the iOS app supports iPad, Apple will display the iPhone screenshots with a small "iPhone screenshots shown" notice. Acceptable for launch; consider native iPad screenshots once the app has revenue to justify the design effort.
 - **The verdict screen mockup (#3)** says "Verdict" on the green pill rather than a property-specific verdict like "DEAL". This was an AI rendering choice and reads cleanly in context — no fix needed unless you specifically want "DEAL" to appear.
+- **Hero (#1) uses a real app screenshot inside a programmatically-built phone mockup**, while screenshots #2-#8 use AI-generated phone visuals. To upgrade the rest with real screenshots, capture each on device (use the Brave/Safari mobile view at consistent dimensions ~472×1024 or natively from a simulator), drop the file into `assets/`, and add a builder function patterned on `build_hero_with_real_screenshot()`.
 
 ---
 
