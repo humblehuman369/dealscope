@@ -1155,21 +1155,21 @@ function StrategyContent() {
           return (
           <section className="px-[1px] sm:px-5 pt-6 pb-2">
             {/* Three price metric cards */}
-            <div className="flex flex-col sm:flex-row gap-2.5 items-stretch mb-6">
+            <div className="flex flex-row gap-1.5 sm:gap-2.5 items-stretch mb-6">
               {[
                 { label: 'Target Buy', value: targetPrice, sub: 'Positive Cashflow', color: 'var(--accent-sky)', dominant: true },
                 { label: 'Income Value', value: incomeVal, sub: 'Breakeven', color: 'var(--status-warning)', dominant: false },
                 { label: 'Market Price', value: listPrice, sub: 'Market Value or List Price', color: 'var(--status-negative)', dominant: false },
               ].map((card, i) => (
-                <div key={i} className={`rounded-xl py-3 px-3 sm:px-2 text-center ${card.dominant ? 'sm:flex-[1.2]' : 'sm:flex-1'}`} style={{
+                <div key={i} className={`rounded-xl py-3 px-1.5 sm:px-2 text-center min-w-0 ${card.dominant ? 'flex-[1.2]' : 'flex-1'}`} style={{
                   background: 'var(--surface-card)',
                   border: `1px solid ${card.color}`,
                   boxShadow: `0 0 30px ${card.color}70, 0 0 60px ${card.color}35, inset 0 0 20px ${card.color}15`,
                   transition: 'all 0.3s ease',
                 }}>
-                  <p className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--text-body)' }}>{card.label}</p>
-                  <p className="tabular-nums mb-0.5 font-bold text-[18px] sm:text-[20px]" style={{ color: card.color }}>{formatCurrency(card.value)}</p>
-                  <p className="text-[10px] sm:text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>{card.sub}</p>
+                  <p className="text-[10px] sm:text-[12px] font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--text-body)' }}>{card.label}</p>
+                  <p className="tabular-nums mb-0.5 font-bold text-[15px] sm:text-[20px]" style={{ color: card.color }}>{formatCurrency(card.value)}</p>
+                  <p className="text-[9px] sm:text-[12px] font-medium leading-snug" style={{ color: 'var(--text-secondary)' }}>{card.sub}</p>
                 </div>
               ))}
             </div>
