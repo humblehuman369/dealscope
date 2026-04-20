@@ -89,6 +89,34 @@ async function forwardGeocode(
   query: string,
   apiKey: string,
 ): Promise<{ lat: number; lng: number; zoom: number } | null> {
+  // Prefer the in-browser Geocoder (same auth as Maps JS API). Falls back to the
+  // REST Geocoding API only if the in-browser geocoder isn't available — many
+  // production keys restrict the REST endpoint while allowing the JS Geocoder.
+  const w = typeof window !== 'undefined' ? (window as Window & { google?: typeof google }) : undefined
+  const Geocoder = w?.google?.maps?.Geocoder
+  if (Geocoder) {
+    try {
+      const geocoder = new Geocoder()
+      const { results } = await geocoder.geocode({
+        address: query,
+        componentRestrictions: { country: 'us' },
+      })
+      if (!results?.length) return null
+      const r = results[0]
+      const loc = r.geometry?.location
+      if (!loc) return null
+      const types: string[] = r.types || []
+      let zoom = 12
+      if (types.includes('postal_code')) zoom = 13
+      else if (types.includes('locality') || types.includes('sublocality')) zoom = 12
+      else if (types.includes('administrative_area_level_2')) zoom = 10
+      else if (types.includes('administrative_area_level_1')) zoom = 7
+      return { lat: loc.lat(), lng: loc.lng(), zoom }
+    } catch (err) {
+      console.warn('[MapSearch] In-browser geocoder failed, trying REST API:', err)
+    }
+  }
+
   try {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&components=country:US&key=${apiKey}`
     const res = await fetch(url)
@@ -240,12 +268,11 @@ function MapContent({
   useEffect(() => {
     if (!map) return
     panToRef.current = (lat: number, lng: number, zoom?: number) => {
-      // setCenter + setZoom (instant, atomic) is more reliable than panTo + setZoom
-      // for big jumps (e.g., default US center → a city) and consistently triggers
-      // the `idle` event so the listings hook refetches for the new bounds.
+      // Use setOptions for an atomic center+zoom change. This is more reliable
+      // than calling setCenter + setZoom separately (which can race the camera)
+      // and consistently triggers `idle` so the listings hook refetches.
       if (zoom != null) {
-        map.setCenter({ lat, lng })
-        map.setZoom(zoom)
+        map.setOptions({ center: { lat, lng }, zoom })
       } else {
         map.panTo({ lat, lng })
       }
@@ -268,6 +295,11 @@ function MapContent({
       if (!bounds) return
       const ne = bounds.getNorthEast()
       const sw = bounds.getSouthWest()
+      // eslint-disable-next-line no-console
+      console.log('[MapContent] idle fired → triggering bounds-based refetch', {
+        center: { lat: map.getCenter()?.lat(), lng: map.getCenter()?.lng() },
+        zoom: map.getZoom(),
+      })
       onBoundsChanged({
         north: ne.lat(),
         south: sw.lat(),
@@ -738,7 +770,20 @@ export function MapSearchView() {
       category: PlaceCategory,
       components?: AddressComponents,
     ) => {
-      panToRef.current?.(lat, lng, zoom)
+      // eslint-disable-next-line no-console
+      console.log('[MapSearch] applySearchTarget', {
+        address,
+        lat,
+        lng,
+        zoom,
+        category,
+        panToRefReady: !!panToRef.current,
+      })
+      if (panToRef.current) {
+        panToRef.current(lat, lng, zoom)
+      } else {
+        console.warn('[MapSearch] panToRef.current is null — map may not be ready yet')
+      }
       currentZoomRef.current = zoom
       setIsZoomedIn(zoom >= MIN_ZOOM_FOR_GEOCODE)
       setSelectedListing(null)
@@ -765,6 +810,16 @@ export function MapSearchView() {
   const handleSearchSelect = useCallback(
     async ({ address, components, meta }: MapSearchSelection) => {
       const { category, zoom } = classifyPlaceTypes(meta?.placeTypes ?? [])
+      // eslint-disable-next-line no-console
+      console.log('[MapSearch] handleSearchSelect', {
+        address,
+        category,
+        zoom,
+        placeTypes: meta?.placeTypes,
+        hasLocation: !!meta?.location,
+        location: meta?.location,
+        panToRefReady: !!panToRef.current,
+      })
 
       if (meta?.location) {
         applySearchTarget(address, meta.location.lat, meta.location.lng, zoom, category, components)
