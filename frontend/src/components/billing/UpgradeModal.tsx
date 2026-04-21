@@ -272,7 +272,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
               disabled={rcLoading}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-60 transition-opacity"
               style={{
-                background: 'linear-gradient(135deg, var(--accent-sky), #0284c7)',
+                background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
               }}
             >
               {rcLoading ? (
@@ -291,7 +291,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
               disabled={loading || rc.isPurchasing || (IS_CAPACITOR ? !rcPkg : !proPlan)}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-50 transition-opacity"
               style={{
-                background: 'linear-gradient(135deg, var(--accent-sky), #0284c7)',
+                background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
               }}
             >
               {loading || rc.isPurchasing ? (

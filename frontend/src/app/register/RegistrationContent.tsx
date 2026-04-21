@@ -588,7 +588,7 @@ function RegistrationInner() {
           marginTop: "8px",
           transition: "all 0.3s",
           background: isFormValid
-            ? "linear-gradient(135deg, var(--accent-sky), #0284C7)"
+            ? "linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))"
             : "rgba(148,163,184,0.08)",
           color: isFormValid ? "#fff" : "#475569",
           opacity: loading ? 0.8 : 1,
@@ -738,7 +738,7 @@ function RegistrationInner() {
                 alignItems: "center",
                 gap: "8px",
                 fontFamily: "inherit",
-                background: "linear-gradient(135deg, var(--accent-sky), #0284C7)",
+                background: "linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))",
                 color: "#fff",
                 textDecoration: "none",
               }}
@@ -847,7 +847,7 @@ function RegistrationInner() {
             alignItems: "center",
             gap: "8px",
             fontFamily: "inherit",
-            background: "linear-gradient(135deg, var(--accent-sky), #0284C7)",
+            background: "linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))",
             color: "#fff",
           }}
         >
