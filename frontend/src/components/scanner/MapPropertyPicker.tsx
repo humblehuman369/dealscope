@@ -168,7 +168,7 @@ export function MapPropertyPicker({
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center shadow-lg"
                   style={{
-                    background: 'var(--accent-sky, #0FA4E9)',
+                    background: 'var(--accent-sky)',
                     border: '2.5px solid #fff',
                   }}
                 >
@@ -189,7 +189,7 @@ export function MapPropertyPicker({
           }}
           aria-label="Re-center on my location"
         >
-          <LocateFixed className="w-5 h-5" style={{ color: 'var(--accent-sky, #0FA4E9)' }} />
+          <LocateFixed className="w-5 h-5" style={{ color: 'var(--accent-sky)' }} />
         </button>
 
         {/* Instruction hint (shown when nothing tapped yet) */}
@@ -203,7 +203,7 @@ export function MapPropertyPicker({
                 border: '1px solid rgba(255, 255, 255, 0.15)',
               }}
             >
-              <MapPin className="w-4 h-4" style={{ color: 'var(--accent-sky, #0FA4E9)' }} />
+              <MapPin className="w-4 h-4" style={{ color: 'var(--accent-sky)' }} />
               Select any property on the map
             </div>
           </div>
@@ -223,7 +223,7 @@ export function MapPropertyPicker({
             <div className="flex items-center justify-center gap-2 py-4">
               <Loader2
                 className="w-5 h-5 animate-spin"
-                style={{ color: 'var(--accent-sky, #0FA4E9)' }}
+                style={{ color: 'var(--accent-sky)' }}
               />
               <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 Looking up address...
@@ -238,7 +238,7 @@ export function MapPropertyPicker({
                 <div className="flex items-start gap-3">
                   <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: 'var(--accent-sky, #0FA4E9)' }}
+                    style={{ background: 'var(--accent-sky)' }}
                   >
                     <Home className="w-5 h-5 text-white" />
                   </div>
@@ -275,7 +275,7 @@ export function MapPropertyPicker({
                 <button
                   onClick={handleConfirm}
                   className="flex-1 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 text-white"
-                  style={{ background: 'var(--accent-sky, #0FA4E9)' }}
+                  style={{ background: 'var(--accent-sky)' }}
                 >
                   Analyze Property
                   <ArrowRight className="w-4 h-4" />

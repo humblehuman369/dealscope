@@ -18,7 +18,7 @@ interface IQBrainIconProps {
  * 
  * Colors:
  * - Light mode: #1976d2 (blue)
- * - Dark mode: #0FA4E9 (electric cyan)
+ * - Dark mode: var(--accent-sky) (electric cyan)
  */
 export function IQBrainIcon({ 
   size = 20, 

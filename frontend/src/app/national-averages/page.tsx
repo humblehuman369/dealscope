@@ -474,7 +474,7 @@ export default function NationalAveragesPage() {
             {/* Conservative */}
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-[#0FA4E9]" />
+                <div className="w-3 h-3 rounded-full bg-[var(--accent-sky)]" />
                 <span className="text-sm font-semibold text-[#0A1628]">Conservative Investors</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs text-[#64748B]">

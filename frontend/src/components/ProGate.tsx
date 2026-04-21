@@ -142,7 +142,7 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
             onClick={openUpgrade}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
             style={{
-              background: 'linear-gradient(135deg, #0FA4E9, #0284C7)',
+              background: 'linear-gradient(135deg, var(--accent-sky), #0284C7)',
               color: '#fff',
             }}
           >

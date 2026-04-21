@@ -90,7 +90,7 @@ export function PropertyStatusPills({
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           <span className={`text-sm font-semibold ${
-            isActiveListing ? 'text-[#0FA4E9]' : 'text-slate-600'
+            isActiveListing ? 'text-[var(--accent-sky)]' : 'text-slate-600'
           }`}>
             {getStatusDisplay()}
           </span>

@@ -6,7 +6,7 @@
  * - Card: white bg, border-radius 12px, border 1px solid #F1F5F9
  * - Active card: box-shadow 0 0 0 2px rgba(15, 164, 233, 0.2)
  * - Header: padding 14px 16px, gap 12px
- * - Icon: 24x24, color #0FA4E9
+ * - Icon: 24x24, color var(--accent-sky)
  * - Title: 15px, font-weight 600, color #0A1628
  * - Chevron: 20x20, color #94A3B8, rotates 180deg when active
  * - NO numbered indicators

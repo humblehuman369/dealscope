@@ -240,7 +240,7 @@ export function PropertyDetailsPage({
         <div className="bg-white px-4 py-2.5 flex items-center justify-between border-b border-slate-200">
           <div className="text-lg font-extrabold">
             <span className="text-[#0A1628]">DealGap</span>
-            <span className="text-[#0FA4E9]">IQ</span>
+            <span className="text-[var(--accent-sky)]">IQ</span>
           </div>
           <div className="flex items-center gap-3">
             <button className="p-1 text-slate-400 hover:text-slate-600">
@@ -253,7 +253,7 @@ export function PropertyDetailsPage({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
               </svg>
             </button>
-            <div className="w-7 h-7 bg-[#0FA4E9] rounded-full flex items-center justify-center text-white font-semibold text-xs">
+            <div className="w-7 h-7 bg-[var(--accent-sky)] rounded-full flex items-center justify-center text-white font-semibold text-xs">
               H
             </div>
           </div>
@@ -358,13 +358,13 @@ export function PropertyDetailsPage({
                 <button
                   key={strategy.short}
                   className={`flex items-center justify-between w-full px-3.5 py-2.5 text-[13px] font-medium hover:bg-slate-50 transition-colors ${
-                    strategy.short === currentStrategy ? 'text-[#0FA4E9] font-semibold' : 'text-[#0A1628]'
+                    strategy.short === currentStrategy ? 'text-[var(--accent-sky)] font-semibold' : 'text-[#0A1628]'
                   }`}
                   onClick={() => handleStrategySelect(strategy.short)}
                 >
                   {strategy.full}
                   {strategy.short === currentStrategy && (
-                    <svg className="w-4 h-4 text-[#0FA4E9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-[var(--accent-sky)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
                     </svg>
                   )}
@@ -380,7 +380,7 @@ export function PropertyDetailsPage({
             <button
               key={item.id}
               className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
-                activeNav === item.id ? 'bg-[#0FA4E9]/10' : 'hover:bg-slate-100'
+                activeNav === item.id ? 'bg-[var(--accent-sky)]/10' : 'hover:bg-slate-100'
               }`}
               onClick={() => handleNavClick(item.id)}
               title={item.label}
@@ -438,7 +438,7 @@ export function PropertyDetailsPage({
                 <img
                   key={idx}
                   className={`w-12 h-9 rounded-md object-cover cursor-pointer flex-shrink-0 border-2 transition-all ${
-                    idx === currentImageIndex ? 'opacity-100 border-[#0FA4E9]' : 'opacity-60 border-transparent hover:opacity-90'
+                    idx === currentImageIndex ? 'opacity-100 border-[var(--accent-sky)]' : 'opacity-60 border-transparent hover:opacity-90'
                   }`}
                   src={img}
                   alt={`Thumbnail ${idx + 1}`}
@@ -455,7 +455,7 @@ export function PropertyDetailsPage({
             className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-slate-50 transition-colors"
             onClick={() => toggleSection('facts')}
           >
-            <svg className="w-6 h-6 text-[#0FA4E9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-[var(--accent-sky)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
             </svg>
             <span className="flex-1 text-sm font-semibold text-[#0A1628] uppercase tracking-wide">Property Facts</span>
@@ -501,7 +501,7 @@ export function PropertyDetailsPage({
                       <span className="text-[13px] font-medium text-slate-500">{fact.label}</span>
                     </div>
                     <div className="flex flex-col items-end gap-0.5">
-                      <span className={`text-sm font-semibold tabular-nums ${fact.highlight ? 'text-[#0FA4E9]' : 'text-[#0A1628]'}`}>
+                      <span className={`text-sm font-semibold tabular-nums ${fact.highlight ? 'text-[var(--accent-sky)]' : 'text-[#0A1628]'}`}>
                         {fact.value}
                       </span>
                       {fact.subValue && (
@@ -521,7 +521,7 @@ export function PropertyDetailsPage({
             className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-slate-50 transition-colors"
             onClick={() => toggleSection('features')}
           >
-            <svg className="w-6 h-6 text-[#0FA4E9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-[var(--accent-sky)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
             </svg>
             <span className="flex-1 text-sm font-semibold text-[#0A1628] uppercase tracking-wide">Features & Amenities</span>
@@ -540,7 +540,7 @@ export function PropertyDetailsPage({
                     key={tab}
                     className={`px-3.5 py-2 rounded-full text-[13px] font-medium transition-colors capitalize ${
                       activeFeatureTab === tab 
-                        ? 'bg-[#0FA4E9] text-white' 
+                        ? 'bg-[var(--accent-sky)] text-white' 
                         : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                     }`}
                     onClick={() => setActiveFeatureTab(tab)}
@@ -562,7 +562,7 @@ export function PropertyDetailsPage({
             className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-slate-50 transition-colors"
             onClick={() => toggleSection('location')}
           >
-            <svg className="w-6 h-6 text-[#0FA4E9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-[var(--accent-sky)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
             </svg>
@@ -588,20 +588,20 @@ export function PropertyDetailsPage({
 
       {/* Bottom Action Bar */}
       <div className="absolute bottom-0 left-0 right-0 bg-white px-4 py-3 flex items-center justify-between gap-2 border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-        <button className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-slate-500 hover:text-[#0FA4E9] transition-colors" onClick={onBack}>
+        <button className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-slate-500 hover:text-[var(--accent-sky)] transition-colors" onClick={onBack}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
           </svg>
           <span className="text-[10px] font-medium">Search</span>
         </button>
-        <button className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-slate-500 hover:text-[#0FA4E9] transition-colors" onClick={onSave}>
+        <button className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-slate-500 hover:text-[var(--accent-sky)] transition-colors" onClick={onSave}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
           </svg>
           <span className="text-[10px] font-medium">Save</span>
         </button>
         <button 
-          className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-[#0FA4E9] hover:bg-[#0E7490] text-white rounded-xl font-semibold text-sm transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-[var(--accent-sky)] hover:bg-[#0E7490] text-white rounded-xl font-semibold text-sm transition-colors"
           onClick={onAnalyze}
         >
           <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -609,7 +609,7 @@ export function PropertyDetailsPage({
           </svg>
           Analyze Property
         </button>
-        <button className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-slate-500 hover:text-[#0FA4E9] transition-colors" onClick={onShare}>
+        <button className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-slate-500 hover:text-[var(--accent-sky)] transition-colors" onClick={onShare}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/>
           </svg>

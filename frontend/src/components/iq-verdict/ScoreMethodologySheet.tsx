@@ -32,7 +32,7 @@ const T = {
   secondary: '#F1F5F9',   // Match primary text
   label: '#F1F5F9',       // Match primary text
 
-  // Semantic accent colors — CURSOR-UNIFY-COLOR-SYSTEM primary #0FA4E9
+  // Semantic accent colors — CURSOR-UNIFY-COLOR-SYSTEM primary var(--accent-sky)
   blue: 'var(--accent-sky)',       // Primary accent (unified)
   teal: 'var(--accent-sky)',       // Alias for primary
   amber: '#fbbf24',       // Caution, scores

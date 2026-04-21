@@ -6,11 +6,11 @@
  * - Header bg: #0A1628
  * - Address: 11px, color #94A3B8, letter-spacing 0.02em
  * - Title: 22px, font-weight 800, letter-spacing 0.05em
- *   - DEAL: white, MAKER: #0FA4E9, PRO: white
+ *   - DEAL: white, MAKER: var(--accent-sky), PRO: white
  * - Metrics grid: 2 columns, gap 6px 24px
  * - Metric label: 12px, color #94A3B8
  * - Metric value: 13px, font-weight 600, white
- *   - Deal Gap: #0FA4E9, Annual Profit: #0FA4E9
+ *   - Deal Gap: var(--accent-sky), Annual Profit: var(--accent-sky)
  * - NO score badges
  */
 
