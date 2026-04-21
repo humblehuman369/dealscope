@@ -464,22 +464,14 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
       {/* FOOTER */}
       <footer className="dgiq-footer">
         <Link href="/" style={{ textDecoration: 'none', display: 'inline-block' }} aria-label="DealGapIQ home">
-          {mounted && theme === 'dark' ? (
-            <Image
-              src="/DealGapIQ_Logo_Dark.png"
-              alt="DealGapIQ"
-              width={1024}
-              height={333}
-              className="footer-logo-img"
-              draggable={false}
-            />
-          ) : (
-            <div className="footer-logo">
-              <span className="logo-deal">Deal</span>
-              <span className="logo-gap">Gap</span>
-              <span className="logo-iq">IQ</span>
-            </div>
-          )}
+          <Image
+            src={mounted && theme === 'light' ? '/DealGapIQ_Logo_Light.png' : '/DealGapIQ_Logo_Dark.png'}
+            alt="DealGapIQ"
+            width={1024}
+            height={333}
+            className="footer-logo-img"
+            draggable={false}
+          />
         </Link>
         <p>© 2026 DealGapIQ. All rights reserved.</p>
         <div className="footer-links">
