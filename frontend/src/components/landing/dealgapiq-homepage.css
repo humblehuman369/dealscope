@@ -1558,6 +1558,16 @@
 }
 .footer-logo .logo-deal, .footer-logo .logo-gap { color: #fff; }
 .footer-logo .logo-iq { color: var(--accent-sky); }
+.footer-logo-img {
+  display: block;
+  height: 36px;
+  width: auto;
+  margin: 0 auto 0.75rem;
+  user-select: none;
+}
+@media (min-width: 640px) {
+  .footer-logo-img { height: 44px; }
+}
 .dgiq-footer p { font-size: 0.8rem; color: var(--text-label); }
 .footer-links { margin-top: 0.5rem; display: flex; gap: 1.5rem; justify-content: center; }
 .footer-links a { font-size: 0.8rem; color: var(--text-label); text-decoration: none; transition: color 0.2s; }

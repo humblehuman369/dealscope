@@ -537,7 +537,7 @@ export function AppHeader({
                 width={1024}
                 height={333}
                 priority
-                className="h-7 sm:h-9 w-auto select-none"
+                className="h-[31px] sm:h-[40px] w-auto select-none"
                 draggable={false}
               />
             ) : (
