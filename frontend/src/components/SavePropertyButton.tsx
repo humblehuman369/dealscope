@@ -8,7 +8,7 @@ import { useSession } from '@/hooks/useSession'
 import { useSaveProperty, type PropertySnapshot } from '@/hooks/useSaveProperty'
 
 const colors = {
-  brand: { tealBright: '#0EA5E9' },
+  brand: { tealBright: '#0FA4E9' },
   text: { tertiary: '#64748B' },
 }
 

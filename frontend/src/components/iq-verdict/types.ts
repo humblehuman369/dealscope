@@ -406,8 +406,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
 
 export const IQ_COLORS = {
   deepNavy: '#000000',
-  electricCyan: '#0EA5E9',
-  pacificTeal: '#0EA5E9',
+  electricCyan: '#0FA4E9',
+  pacificTeal: '#0FA4E9',
   success: '#10B981',
   warning: '#F59E0B',
   danger: '#EF4444',

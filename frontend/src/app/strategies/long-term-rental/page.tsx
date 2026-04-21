@@ -65,7 +65,7 @@ export default function LongTermRentalPage() {
         </div>
       </Callout>
 
-      <Callout accentColor="#0EA5E9">
+      <Callout accentColor="#0FA4E9">
         <p style={{ fontStyle: 'italic', margin: 0 }}>
           It&apos;s the perfect{' '}
           <strong style={{ fontWeight: 600, color: '#F1F5F9' }}>

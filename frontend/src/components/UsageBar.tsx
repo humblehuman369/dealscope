@@ -41,8 +41,8 @@ const STATE_STYLES: Record<BarState, {
     border: 'var(--border-subtle)',
     glow: 'var(--shadow-card)',
     fill: 'var(--accent-sky)',
-    ctaBg: 'rgba(14,165,233,0.1)',
-    ctaBorder: 'rgba(14,165,233,0.25)',
+    ctaBg: 'rgba(15,164,233,0.1)',
+    ctaBorder: 'rgba(15,164,233,0.25)',
     ctaColor: 'var(--accent-sky)',
   },
   warning: {

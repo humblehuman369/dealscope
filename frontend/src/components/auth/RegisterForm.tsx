@@ -230,7 +230,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
         type="submit"
         disabled={registerMutation.isPending}
         className="w-full py-3 px-4 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
-        style={{ backgroundColor: '#0EA5E9' }}
+        style={{ backgroundColor: '#0FA4E9' }}
       >
         {registerMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
         Create Account
@@ -238,16 +238,16 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       <p className="text-xs text-center" style={{ color: '#64748B' }}>
         By creating an account, you agree to our{' '}
-        <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors" style={{ color: '#0EA5E9' }}>Terms of Service</a>
+        <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors" style={{ color: '#0FA4E9' }}>Terms of Service</a>
         {' '}and{' '}
-        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors" style={{ color: '#0EA5E9' }}>Privacy Policy</a>.
+        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors" style={{ color: '#0FA4E9' }}>Privacy Policy</a>.
       </p>
 
       {/* Switch to login */}
       {onSwitchToLogin && (
         <p className="text-center text-sm" style={{ color: '#94A3B8' }}>
           Already have an account?{' '}
-          <button type="button" onClick={onSwitchToLogin} className="font-medium" style={{ color: '#0EA5E9' }}>
+          <button type="button" onClick={onSwitchToLogin} className="font-medium" style={{ color: '#0FA4E9' }}>
             Sign in
           </button>
         </p>

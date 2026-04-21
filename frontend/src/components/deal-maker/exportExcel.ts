@@ -26,7 +26,7 @@ import type {
 
 // ── Style tokens ────────────────────────────────────────────────────────────
 
-const BRAND = '0EA5E9'
+const BRAND = '0FA4E9'
 const HEADER_BG = '1F4E79'
 const SECTION_BG = 'D6DCE4'
 const SUMMARY_BG = 'E2EFDA'

@@ -18,7 +18,7 @@ const barTokens = {
   accent: 'var(--accent-sky)',
   negative: 'var(--status-negative)',
   dot: 'var(--border-strong)',
-  hoverAccent: 'rgba(14,165,233,0.08)',
+  hoverAccent: 'rgba(15,164,233,0.08)',
 } as const
 
 interface PropertyAddressBarProps {
@@ -250,8 +250,8 @@ export function PropertyAddressBar({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all hover:brightness-125"
             style={{
               color: 'var(--accent-sky)',
-              background: 'rgba(14,165,233,0.08)',
-              border: '1px solid rgba(14,165,233,0.2)',
+              background: 'rgba(15,164,233,0.08)',
+              border: '1px solid rgba(15,164,233,0.2)',
               whiteSpace: 'nowrap',
             }}
           >

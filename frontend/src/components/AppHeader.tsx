@@ -708,7 +708,7 @@ export function AppHeader({
                           <span
                             className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] sm:text-[14px] font-semibold uppercase tracking-wide"
                             style={{
-                              background: isPro ? 'rgba(14,165,233,0.15)' : 'rgba(148,163,184,0.15)',
+                              background: isPro ? 'rgba(15,164,233,0.15)' : 'rgba(148,163,184,0.15)',
                               color: isPro ? 'var(--accent-sky)' : 'var(--text-label)',
                             }}
                           >
