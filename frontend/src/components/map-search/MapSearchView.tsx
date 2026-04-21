@@ -21,12 +21,7 @@ import { PropertyCardList } from './PropertyCardList'
 import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
 import { HeatmapLegend } from './HeatmapLegend'
 import { NeighborhoodCard } from './NeighborhoodCard'
-import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
 import { api, type NeighborhoodOverview } from '@/lib/api'
-import { classifyPlaceTypes, type PlaceCategory } from '@/utils/addressIdentity'
-import { trackEvent } from '@/lib/eventTracking'
-
-type SearchComponents = NonNullable<MapSearchSelection['components']>
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -607,7 +602,7 @@ export function MapSearchView() {
   const [selectedListing, setSelectedListing] = useState<MapListing | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
-  const [activeLabel, setActiveLabel] = useState<string | null>(locationLabel)
+  const [activeLabel] = useState<string | null>(locationLabel)
   const [showLabel, setShowLabel] = useState(!!locationLabel)
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
   const [mobileView, setMobileView] = useState<'map' | 'list'>('map')
@@ -770,58 +765,6 @@ export function MapSearchView() {
     setSelectedListing(listing)
   }, [clearGeocode])
 
-  const applySearchTarget = useCallback(
-    (
-      address: string,
-      lat: number,
-      lng: number,
-      zoom: number,
-      category: PlaceCategory,
-      components?: SearchComponents,
-    ) => {
-      panToRef.current?.(lat, lng, zoom)
-      currentZoomRef.current = zoom
-      setIsZoomedIn(zoom >= MIN_ZOOM_FOR_GEOCODE)
-      setSelectedListing(null)
-      setZoomHint(false)
-      setActiveLabel(address)
-      setShowLabel(true)
-
-      if (category === 'address') {
-        setDropPin({ lat, lng })
-        setIsGeocoding(false)
-        setGeocodeResult({
-          formatted_address: address,
-          city: components?.city,
-          state: components?.state,
-          zip_code: components?.zipCode,
-        })
-      } else {
-        clearGeocode()
-      }
-    },
-    [clearGeocode],
-  )
-
-  const handleSearchSelect = useCallback(
-    ({ address, components, meta }: MapSearchSelection) => {
-      if (!meta?.location) {
-        console.warn('[MapSearch] selection missing location, ignoring:', address)
-        return
-      }
-      const { category, zoom } = classifyPlaceTypes(meta.placeTypes ?? [])
-      applySearchTarget(address, meta.location.lat, meta.location.lng, zoom, category, components)
-      trackEvent('map_search_bar_used', { category, has_components: !!components })
-    },
-    [applySearchTarget],
-  )
-
-  const handleSearchClear = useCallback(() => {
-    clearGeocode()
-    setActiveLabel(null)
-    setShowLabel(false)
-  }, [clearGeocode])
-
   if (!apiKey) {
     return (
       <div
@@ -952,19 +895,6 @@ export function MapSearchView() {
           </div>
         </div>
       )}
-
-      {/* Search bar — top row, positioned to the right of Google's Map/Satellite
-          control (which sits at top-left, ~10px in, ~85px wide). On narrow
-          screens it shrinks to fit the available space. */}
-      <div
-        className="absolute top-4 left-28 w-[min(calc(100%-128px),20rem)] z-20"
-      >
-        <MapSearchBar
-          initialValue={locationLabel ?? ''}
-          onSelect={handleSearchSelect}
-          onClear={handleSearchClear}
-        />
-      </div>
 
       {/* Filter Panel */}
       <FilterPanel
