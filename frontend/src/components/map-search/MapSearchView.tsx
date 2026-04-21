@@ -962,7 +962,7 @@ export function MapSearchView() {
           {/* Fit the camera to a 5-mile radius around the user's location.
               Runs once after the map mounts so the framing adapts to the actual
               container size (mobile vs. desktop split). */}
-          {userLocation && !paramZoom && (
+          {userLocation && paramZoom === null && (
             <FitToRadius
               center={userLocation}
               radiusMiles={GEOLOCATION_RADIUS_MILES}
