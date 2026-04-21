@@ -113,9 +113,9 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
           onClick={openUpgrade}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
           style={{
-            background: 'rgba(14,165,233,0.08)',
-            border: '1px solid rgba(14,165,233,0.2)',
-            color: '#0EA5E9',
+            background: 'rgba(15,164,233,0.08)',
+            border: '1px solid rgba(15,164,233,0.2)',
+            color: '#0FA4E9',
           }}
         >
           <Lock size={12} />
@@ -142,7 +142,7 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
             onClick={openUpgrade}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
             style={{
-              background: 'linear-gradient(135deg, #0EA5E9, #0284C7)',
+              background: 'linear-gradient(135deg, #0FA4E9, #0284C7)',
               color: '#fff',
             }}
           >

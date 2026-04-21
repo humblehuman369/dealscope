@@ -200,8 +200,8 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                   }`}
                 style={searchAddress.trim() ? {
                   background: isDark 
-                    ? 'linear-gradient(135deg, #0097a7 0%, #0EA5E9 100%)'
-                    : 'linear-gradient(135deg, #0EA5E9 0%, #0097a7 100%)',
+                    ? 'linear-gradient(135deg, #0097a7 0%, #0FA4E9 100%)'
+                    : 'linear-gradient(135deg, #0FA4E9 0%, #0097a7 100%)',
                   boxShadow: '0 4px 20px rgba(0, 151, 167, 0.4)'
                 } : undefined}
               >
@@ -285,8 +285,8 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             className="w-full py-4 rounded-xl font-bold text-base text-white"
             style={{
               background: isDark 
-                ? 'linear-gradient(135deg, #0097a7 0%, #0EA5E9 100%)'
-                : 'linear-gradient(135deg, #0EA5E9 0%, #0097a7 100%)',
+                ? 'linear-gradient(135deg, #0097a7 0%, #0FA4E9 100%)'
+                : 'linear-gradient(135deg, #0FA4E9 0%, #0097a7 100%)',
               boxShadow: '0 8px 32px rgba(0, 151, 167, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
             }}
           >

@@ -4,9 +4,9 @@
  * 
  * Design specs:
  * - Card: white bg, border-radius 12px, border 1px solid #F1F5F9
- * - Active card: box-shadow 0 0 0 2px rgba(14, 165, 233, 0.2)
+ * - Active card: box-shadow 0 0 0 2px rgba(15, 164, 233, 0.2)
  * - Header: padding 14px 16px, gap 12px
- * - Icon: 24x24, color #0EA5E9
+ * - Icon: 24x24, color #0FA4E9
  * - Title: 15px, font-weight 600, color #0A1628
  * - Chevron: 20x20, color #94A3B8, rotates 180deg when active
  * - NO numbered indicators
@@ -64,7 +64,7 @@ export function WorksheetTab({
       className="bg-white rounded-xl mx-4 mb-[10px] overflow-hidden"
       style={{
         boxShadow: isExpanded 
-          ? '0 0 0 2px rgba(14, 165, 233, 0.2)' 
+          ? '0 0 0 2px rgba(15, 164, 233, 0.2)' 
           : '0 1px 3px rgba(0, 0, 0, 0.05)',
         border: isExpanded ? 'none' : '1px solid #F1F5F9',
       }}
@@ -76,7 +76,7 @@ export function WorksheetTab({
         onClick={onToggle}
       >
         {/* Step Icon */}
-        <span style={{ color: '#0EA5E9', width: 24, height: 24, flexShrink: 0 }}>
+        <span style={{ color: '#0FA4E9', width: 24, height: 24, flexShrink: 0 }}>
           {lineIcon}
         </span>
         
@@ -141,7 +141,7 @@ export function WorksheetTab({
           <button
             className="w-full flex items-center justify-center text-white"
             style={{
-              background: '#0EA5E9',
+              background: '#0FA4E9',
               borderRadius: '12px',
               padding: '16px',
               fontSize: '16px',

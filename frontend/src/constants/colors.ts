@@ -5,13 +5,13 @@
  * Brand Colors:
  * - Navy/Black-Blue: #07172e
  * - Medium Blue (Primary): #0465f2
- * - Soft Cyan (Accent Dark Mode): #0EA5E9 (updated from #00e5ff for premium feel)
- * - Pacific Teal (Accent Light Mode): #0EA5E9
+ * - Soft Cyan (Accent Dark Mode): #0FA4E9 (updated from #00e5ff for premium feel)
+ * - Pacific Teal (Accent Light Mode): #0FA4E9
  * - Icy Silver: #e1e8ed
  * - Cool Gray: #aab2bd
  * 
  * UPDATED:
- * - Softened dark mode accent from #00e5ff → #0EA5E9 (less harsh, more premium)
+ * - Softened dark mode accent from #00e5ff → #0FA4E9 (less harsh, more premium)
  * - Strategy colors shifted to avoid conflicts with profit/loss/warning status colors
  */
 
@@ -34,14 +34,14 @@ export const colors = {
   },
 
   // Accent - Cyan/Teal (Theme-aware)
-  // Dark Mode: #0EA5E9 (Soft Cyan) | Light Mode: #0EA5E9 (Pacific Teal)
+  // Dark Mode: #0FA4E9 (Soft Cyan) | Light Mode: #0FA4E9 (Pacific Teal)
   accent: {
     50: '#f0f9ff',
     100: '#e0f2fe',
     200: '#bae6fd',
     300: '#7dd3fc',  // Sky blue highlight
     400: '#38bdf8',
-    500: '#0EA5E9',  // Dark mode accent — unified sky blue
+    500: '#0FA4E9',  // Dark mode accent — unified sky blue
     light: '#0284C7', // Light mode accent — deeper sky for WCAG contrast
     600: '#0284c7',
     700: '#0369a1',
@@ -202,7 +202,7 @@ export const colors = {
 
 export const gradients = {
   /** CTA buttons, hero elements - dark mode */
-  brandDark: 'linear-gradient(135deg, #0465f2 0%, #0EA5E9 100%)',
+  brandDark: 'linear-gradient(135deg, #0465f2 0%, #0FA4E9 100%)',
   /** CTA buttons, hero elements - light mode */
   brandLight: 'linear-gradient(135deg, #0455d1 0%, #0284C7 100%)',
   /** Dark mode backgrounds */

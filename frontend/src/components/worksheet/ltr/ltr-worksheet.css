@@ -154,7 +154,7 @@ html.dark .ltr-quick-btn:hover {
 .ltr-segment.active {
   background: var(--accent-sky-light);
   color: var(--text-inverse);
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+  box-shadow: 0 2px 8px rgba(15, 164, 233, 0.3);
 }
 
 /* Metric Row Indicator */

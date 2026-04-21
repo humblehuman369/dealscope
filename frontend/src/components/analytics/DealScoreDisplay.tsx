@@ -133,7 +133,7 @@ function ScoreRing({ score, grade, size = 140 }: ScoreRingProps) {
   const getColors = () => {
     // Keep glow colors as RGBA so drop-shadow preserves intended translucency.
     if (score >= 80) return { stroke: 'var(--status-positive)', text: 'text-[var(--status-positive)]', glow: 'rgba(34, 211, 153, 0.3)' }
-    if (score >= 60) return { stroke: 'var(--status-info)', text: 'text-[var(--status-info)]', glow: 'rgba(14, 165, 233, 0.3)' }
+    if (score >= 60) return { stroke: 'var(--status-info)', text: 'text-[var(--status-info)]', glow: 'rgba(15, 164, 233, 0.3)' }
     if (score >= 40) return { stroke: 'var(--status-warning)', text: 'text-[var(--status-warning)]', glow: 'rgba(251, 191, 36, 0.3)' }
     return { stroke: 'var(--status-negative)', text: 'text-[var(--status-negative)]', glow: 'rgba(248, 113, 113, 0.3)' }
   }

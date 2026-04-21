@@ -100,7 +100,7 @@ export default function CheckoutSuccessPage() {
             <Link
               href={effectiveRedirect}
               className="inline-block px-5 py-2.5 rounded-lg font-semibold text-white"
-              style={{ background: 'linear-gradient(135deg, #0EA5E9, #0284C7)' }}
+              style={{ background: 'linear-gradient(135deg, #0FA4E9, #0284C7)' }}
             >
               Continue
             </Link>

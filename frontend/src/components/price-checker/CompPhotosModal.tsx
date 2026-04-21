@@ -69,9 +69,9 @@ export function CompPhotosModal({ comp, open, onClose }: CompPhotosModalProps) {
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal panel */}
-      <div className="relative z-10 w-full max-w-lg mx-4 rounded-xl bg-[#0a0a0a] border border-[rgba(14,165,233,0.3)] shadow-[0_0_60px_rgba(14,165,233,0.12)] overflow-hidden">
+      <div className="relative z-10 w-full max-w-lg mx-4 rounded-xl bg-[#0a0a0a] border border-[rgba(15,164,233,0.3)] shadow-[0_0_60px_rgba(15,164,233,0.12)] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(14,165,233,0.2)]">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(15,164,233,0.2)]">
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-[#F1F5F9] truncate">{comp.address}</h3>
           </div>

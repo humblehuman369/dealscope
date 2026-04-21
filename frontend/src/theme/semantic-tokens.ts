@@ -22,14 +22,14 @@ export const semanticTokens = {
     label: { dark: '#7C8CA0', light: '#475569' },
     muted: { dark: '#64748B', light: '#64748B' },
     inverse: { dark: '#000000', light: '#FFFFFF' },
-    link: { dark: '#0EA5E9', light: '#0284C7' },
+    link: { dark: '#0FA4E9', light: '#0284C7' },
   },
   accent: {
     brandBlue: { dark: '#0465f2', light: '#0052CC' },
-    sky: { dark: '#0EA5E9', light: '#0284C7' },
-    skyLight: { dark: '#38bdf8', light: '#0EA5E9' },
+    sky: { dark: '#0FA4E9', light: '#0284C7' },
+    skyLight: { dark: '#38bdf8', light: '#0FA4E9' },
     brandGradientFrom: { dark: '#0465f2', light: '#0052CC' },
-    brandGradientTo: { dark: '#0EA5E9', light: '#0284C7' },
+    brandGradientTo: { dark: '#0FA4E9', light: '#0284C7' },
   },
   status: {
     positive: { dark: '#34d399', light: '#059669' },
@@ -47,14 +47,14 @@ export const semanticTokens = {
     wholesale: { dark: '#84cc16', light: '#4D7C0F' },
   },
   border: {
-    subtle: { dark: 'rgba(14,165,233,0.25)', light: '#D5DBE4' },
+    subtle: { dark: 'rgba(15,164,233,0.25)', light: '#D5DBE4' },
     default: { dark: '#334155', light: '#B8C4CE' },
     strong: { dark: '#475569', light: '#8896A6' },
-    focus: { dark: '#0EA5E9', light: '#0284C7' },
+    focus: { dark: '#0FA4E9', light: '#0284C7' },
   },
   shadow: {
-    card: { dark: '0 0 20px rgba(14,165,233,0.15)', light: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' },
-    cardHover: { dark: '0 0 30px rgba(14,165,233,0.25)', light: '0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)' },
+    card: { dark: '0 0 20px rgba(15,164,233,0.15)', light: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' },
+    cardHover: { dark: '0 0 30px rgba(15,164,233,0.25)', light: '0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)' },
     dropdown: { dark: '0 4px 12px rgba(0,0,0,0.5)', light: '0 10px 25px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.06)' },
   },
   chart: {

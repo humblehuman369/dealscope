@@ -9,7 +9,7 @@ import { authApi } from "@/lib/api-client";
 import { PriceCents } from "@/components/ui/PriceCents";
 
 // ─── Icons ───
-const CheckIcon: React.FC<{ color?: string }> = ({ color = "#0EA5E9" }) => (
+const CheckIcon: React.FC<{ color?: string }> = ({ color = "#0FA4E9" }) => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <circle cx="8" cy="8" r="8" fill={color} fillOpacity="0.12" />
     <path d="M5 8.5L7 10.5L11 6.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -98,14 +98,14 @@ const InputField: React.FC<{
             padding: "12px 14px",
             paddingRight: rightElement ? "42px" : "14px",
             background: "#0B1120",
-            border: `1px solid ${focused ? "rgba(14,165,233,0.4)" : "rgba(148,163,184,0.1)"}`,
+            border: `1px solid ${focused ? "rgba(15,164,233,0.4)" : "rgba(148,163,184,0.1)"}`,
             borderRadius: "8px",
             color: "#E2E8F0",
             fontSize: "14px",
             fontFamily: "inherit",
             outline: "none",
             transition: "border-color 0.2s, box-shadow 0.2s",
-            boxShadow: focused ? "0 0 0 3px rgba(14,165,233,0.08)" : "none",
+            boxShadow: focused ? "0 0 0 3px rgba(15,164,233,0.08)" : "none",
             boxSizing: "border-box",
           }}
         />
@@ -176,8 +176,8 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
           display: "inline-flex",
           alignItems: "center",
           gap: "6px",
-          background: isPro ? "rgba(14,165,233,0.08)" : "rgba(148,163,184,0.06)",
-          border: `1px solid ${isPro ? "rgba(14,165,233,0.15)" : "rgba(148,163,184,0.08)"}`,
+          background: isPro ? "rgba(15,164,233,0.08)" : "rgba(148,163,184,0.06)",
+          border: `1px solid ${isPro ? "rgba(15,164,233,0.15)" : "rgba(148,163,184,0.08)"}`,
           borderRadius: "6px",
           padding: "4px 12px",
           marginBottom: "16px",
@@ -187,7 +187,7 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
           style={{
             fontSize: "11px",
             fontWeight: 700,
-            color: isPro ? "#0EA5E9" : "#94A3B8",
+            color: isPro ? "#0FA4E9" : "#94A3B8",
             letterSpacing: "0.08em",
             textTransform: "uppercase" as const,
           }}
@@ -227,14 +227,14 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
       {isPro && (
         <div
           style={{
-            background: "rgba(14,165,233,0.04)",
-            border: "1px solid rgba(14,165,233,0.1)",
+            background: "rgba(15,164,233,0.04)",
+            border: "1px solid rgba(15,164,233,0.1)",
             borderRadius: "8px",
             padding: "12px",
             marginBottom: "18px",
           }}
         >
-          <div style={{ fontSize: "13px", fontWeight: 600, color: "#0EA5E9", marginBottom: "4px" }}>
+          <div style={{ fontSize: "13px", fontWeight: 600, color: "#0FA4E9", marginBottom: "4px" }}>
             7-day free trial
           </div>
           <div style={{ fontSize: "12px", color: "#94A3B8", lineHeight: 1.5 }}>
@@ -393,7 +393,7 @@ function RegistrationInner() {
   const renderForm = () => (
     <div
       style={{
-        background: "linear-gradient(168deg, rgba(14,165,233,0.02) 0%, #0D1424 100%)",
+        background: "linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)",
         border: "1px solid rgba(148,163,184,0.06)",
         borderRadius: "12px",
         padding: "36px",
@@ -588,7 +588,7 @@ function RegistrationInner() {
           marginTop: "8px",
           transition: "all 0.3s",
           background: isFormValid
-            ? "linear-gradient(135deg, #0EA5E9, #0284C7)"
+            ? "linear-gradient(135deg, #0FA4E9, #0284C7)"
             : "rgba(148,163,184,0.08)",
           color: isFormValid ? "#fff" : "#475569",
           opacity: loading ? 0.8 : 1,
@@ -634,7 +634,7 @@ function RegistrationInner() {
         }}
       >
         Already have an account?{" "}
-        <Link href="/login" style={{ color: "#0EA5E9", textDecoration: "none", fontWeight: 600 }}>
+        <Link href="/login" style={{ color: "#0FA4E9", textDecoration: "none", fontWeight: 600 }}>
           Log in
         </Link>
       </p>
@@ -646,8 +646,8 @@ function RegistrationInner() {
       return (
         <div
           style={{
-            background: "linear-gradient(168deg, rgba(14,165,233,0.02) 0%, #0D1424 100%)",
-            border: "1px solid rgba(14,165,233,0.15)",
+            background: "linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)",
+            border: "1px solid rgba(15,164,233,0.15)",
             borderRadius: "12px",
             padding: "48px 36px",
             width: "100%",
@@ -660,8 +660,8 @@ function RegistrationInner() {
               width: "64px",
               height: "64px",
               borderRadius: "50%",
-              background: "rgba(14,165,233,0.1)",
-              border: "2px solid rgba(14,165,233,0.3)",
+              background: "rgba(15,164,233,0.1)",
+              border: "2px solid rgba(15,164,233,0.3)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -669,8 +669,8 @@ function RegistrationInner() {
             }}
           >
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect x="4" y="7" width="20" height="14" rx="2" stroke="#0EA5E9" strokeWidth="2" fill="none" />
-              <path d="M4 9l10 7 10-7" stroke="#0EA5E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <rect x="4" y="7" width="20" height="14" rx="2" stroke="#0FA4E9" strokeWidth="2" fill="none" />
+              <path d="M4 9l10 7 10-7" stroke="#0FA4E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
 
@@ -738,7 +738,7 @@ function RegistrationInner() {
                 alignItems: "center",
                 gap: "8px",
                 fontFamily: "inherit",
-                background: "linear-gradient(135deg, #0EA5E9, #0284C7)",
+                background: "linear-gradient(135deg, #0FA4E9, #0284C7)",
                 color: "#fff",
                 textDecoration: "none",
               }}
@@ -753,7 +753,7 @@ function RegistrationInner() {
                 background: "none",
                 border: "none",
                 fontSize: "13px",
-                color: resendStatus === "sent" ? "#22C55E" : "#0EA5E9",
+                color: resendStatus === "sent" ? "#22C55E" : "#0FA4E9",
                 cursor: resendStatus === "idle" ? "pointer" : "default",
                 fontFamily: "inherit",
                 fontWeight: 500,
@@ -772,8 +772,8 @@ function RegistrationInner() {
     return (
       <div
         style={{
-          background: "linear-gradient(168deg, rgba(14,165,233,0.02) 0%, #0D1424 100%)",
-          border: "1px solid rgba(14,165,233,0.15)",
+          background: "linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)",
+          border: "1px solid rgba(15,164,233,0.15)",
           borderRadius: "12px",
           padding: "48px 36px",
           width: "100%",
@@ -786,8 +786,8 @@ function RegistrationInner() {
             width: "64px",
             height: "64px",
             borderRadius: "50%",
-            background: "rgba(14,165,233,0.1)",
-            border: "2px solid rgba(14,165,233,0.3)",
+            background: "rgba(15,164,233,0.1)",
+            border: "2px solid rgba(15,164,233,0.3)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -795,7 +795,7 @@ function RegistrationInner() {
           }}
         >
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <path d="M8 15l4 4 8-8" stroke="#0EA5E9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M8 15l4 4 8-8" stroke="#0FA4E9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
 
@@ -847,7 +847,7 @@ function RegistrationInner() {
             alignItems: "center",
             gap: "8px",
             fontFamily: "inherit",
-            background: "linear-gradient(135deg, #0EA5E9, #0284C7)",
+            background: "linear-gradient(135deg, #0FA4E9, #0284C7)",
             color: "#fff",
           }}
         >
@@ -915,7 +915,7 @@ function RegistrationInner() {
               textDecoration: "none",
             }}
           >
-            DealGap<span style={{ color: "#0EA5E9" }}>IQ</span>
+            DealGap<span style={{ color: "#0FA4E9" }}>IQ</span>
           </Link>
 
           <Link
@@ -965,7 +965,7 @@ function RegistrationInner() {
                   cursor: "pointer",
                   transition: "all 0.2s ease",
                   fontFamily: "inherit",
-                  background: !isAnnual ? "#0EA5E9" : "transparent",
+                  background: !isAnnual ? "#0FA4E9" : "transparent",
                   color: !isAnnual ? "#fff" : "#64748B",
                 }}
               >
@@ -982,7 +982,7 @@ function RegistrationInner() {
                   cursor: "pointer",
                   transition: "all 0.2s ease",
                   fontFamily: "inherit",
-                  background: isAnnual ? "#0EA5E9" : "transparent",
+                  background: isAnnual ? "#0FA4E9" : "transparent",
                   color: isAnnual ? "#fff" : "#64748B",
                   display: "flex",
                   alignItems: "center",
@@ -994,8 +994,8 @@ function RegistrationInner() {
                   style={{
                     fontSize: "10px",
                     fontWeight: 700,
-                    background: isAnnual ? "rgba(255,255,255,0.22)" : "rgba(14,165,233,0.15)",
-                    color: isAnnual ? "#fff" : "#0EA5E9",
+                    background: isAnnual ? "rgba(255,255,255,0.22)" : "rgba(15,164,233,0.15)",
+                    color: isAnnual ? "#fff" : "#0FA4E9",
                     padding: "2px 6px",
                     borderRadius: "6px",
                   }}
@@ -1014,9 +1014,9 @@ function RegistrationInner() {
                   style={{
                     padding: "8px 20px",
                     borderRadius: "6px",
-                    border: `1px solid ${plan === p ? "rgba(14,165,233,0.25)" : "rgba(148,163,184,0.08)"}`,
-                    background: plan === p ? "rgba(14,165,233,0.06)" : "transparent",
-                    color: plan === p ? "#0EA5E9" : "#64748B",
+                    border: `1px solid ${plan === p ? "rgba(15,164,233,0.25)" : "rgba(148,163,184,0.08)"}`,
+                    background: plan === p ? "rgba(15,164,233,0.06)" : "transparent",
+                    color: plan === p ? "#0FA4E9" : "#64748B",
                     fontSize: "12px",
                     fontWeight: 700,
                     cursor: "pointer",

@@ -4,9 +4,9 @@
  * 
  * Design specs:
  * - Input label: 14px, font-weight 600, color #0A1628
- * - Input value: 16px, font-weight 700, color #0EA5E9 (clickable to edit)
+ * - Input value: 16px, font-weight 700, color #0FA4E9 (clickable to edit)
  * - Slider track: #E2E8F0
- * - Slider fill: #0EA5E9
+ * - Slider fill: #0FA4E9
  * - Range text: 11px, color #94A3B8
  */
 
@@ -199,7 +199,7 @@ export function DealMakerSlider({
               backgroundColor: 'var(--surface-elevated)',
               borderRadius: '6px',
               padding: '4px 8px',
-              border: '1px solid #0EA5E9',
+              border: '1px solid #0FA4E9',
             }}
           >
             {(config.format === 'currency' || config.format === 'currencyPerMonth' || config.format === 'currencyPerYear') && (
@@ -264,7 +264,7 @@ export function DealMakerSlider({
           style={{ 
             height: '6px', 
             width: `${fillPercent}%`,
-            background: 'var(--dealmaker-accent, #0EA5E9)',
+            background: 'var(--dealmaker-accent, #0FA4E9)',
           }}
         />
         
@@ -275,7 +275,7 @@ export function DealMakerSlider({
             left: `calc(${fillPercent}% - 8px)`,
             width: '16px',
             height: '16px',
-            background: 'var(--dealmaker-accent, #0EA5E9)',
+            background: 'var(--dealmaker-accent, #0FA4E9)',
             border: '2px solid white',
             boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
             pointerEvents: 'none',

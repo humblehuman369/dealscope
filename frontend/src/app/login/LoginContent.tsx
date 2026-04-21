@@ -71,14 +71,14 @@ function LoginInner() {
               textDecoration: 'none',
             }}
           >
-            DealGap<span style={{ color: '#0EA5E9' }}>IQ</span>
+            DealGap<span style={{ color: '#0FA4E9' }}>IQ</span>
           </Link>
 
           <Link
             href="/register"
             style={{
               fontSize: '12px',
-              color: '#0EA5E9',
+              color: '#0FA4E9',
               textDecoration: 'none',
               fontWeight: 600,
             }}
@@ -100,7 +100,7 @@ function LoginInner() {
         >
           <div
             style={{
-              background: 'linear-gradient(168deg, rgba(14,165,233,0.02) 0%, #0D1424 100%)',
+              background: 'linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)',
               border: '1px solid rgba(148,163,184,0.06)',
               borderRadius: '12px',
               padding: '36px',

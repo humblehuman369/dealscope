@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 const t = {
   bgPrimary: '#000000',
-  teal: '#0EA5E9',
+  teal: '#0FA4E9',
   coral: '#F97066',
   green: '#34D399',
   amber: '#FBBF24',
@@ -14,15 +14,15 @@ const t = {
   textMuted: '#71717A',
   border: 'rgba(255, 255, 255, 0.1)',
   borderSubtle: 'rgba(255, 255, 255, 0.06)',
-  borderAccent: 'rgba(14, 165, 233, 0.4)',
+  borderAccent: 'rgba(15, 164, 233, 0.4)',
   fontBody: "'DM Sans', system-ui, sans-serif",
   fontMono: "'Space Mono', monospace",
 } as const
 
 const glow = {
-  sm: '0 0 15px rgba(14,165,233,0.05), 0 0 30px rgba(14,165,233,0.02)',
-  md: '0 0 20px rgba(14,165,233,0.06), 0 0 40px rgba(14,165,233,0.03)',
-  lg: '0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04)',
+  sm: '0 0 15px rgba(15,164,233,0.05), 0 0 30px rgba(15,164,233,0.02)',
+  md: '0 0 20px rgba(15,164,233,0.06), 0 0 40px rgba(15,164,233,0.03)',
+  lg: '0 0 30px rgba(15,164,233,0.08), 0 0 60px rgba(15,164,233,0.04)',
 } as const
 
 const blackCard = (size: 'sm' | 'md' | 'lg' = 'md', radius = 14): React.CSSProperties => ({
@@ -70,7 +70,7 @@ const DividerB = () => (
     <div style={{
       height: 1,
       background: `linear-gradient(90deg, transparent, ${t.teal} 20%, ${t.teal} 80%, transparent)`,
-      boxShadow: '0 0 8px rgba(14,165,233,0.5), 0 0 20px rgba(14,165,233,0.25), 0 0 50px rgba(14,165,233,0.08)',
+      boxShadow: '0 0 8px rgba(15,164,233,0.5), 0 0 20px rgba(15,164,233,0.25), 0 0 50px rgba(15,164,233,0.08)',
     }} />
   </div>
 )
@@ -80,7 +80,7 @@ const DividerC = () => (
     <div style={{
       height: 2,
       background: `linear-gradient(90deg, ${t.teal} 0%, ${t.teal} 40%, transparent 100%)`,
-      boxShadow: '0 0 10px rgba(14,165,233,0.5), 0 0 30px rgba(14,165,233,0.2)',
+      boxShadow: '0 0 10px rgba(15,164,233,0.5), 0 0 30px rgba(15,164,233,0.2)',
     }} />
   </div>
 )
@@ -90,7 +90,7 @@ const DividerE = () => (
     <div style={{
       height: 1,
       background: `linear-gradient(90deg, transparent, ${t.teal} 15%, ${t.green} 50%, ${t.coral} 85%, transparent)`,
-      boxShadow: '0 0 8px rgba(14,165,233,0.4), 0 0 20px rgba(14,165,233,0.15)',
+      boxShadow: '0 0 8px rgba(15,164,233,0.4), 0 0 20px rgba(15,164,233,0.15)',
     }} />
   </div>
 )
@@ -144,7 +144,7 @@ const DemoCard = () => {
       </div>
 
       <div className="wii-demo-deal-grid" style={{ padding: '1.75rem 2rem', display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', borderBottom: `1px solid ${t.borderSubtle}` }}>
-        <div style={{ background: 'rgba(14,165,233,0.06)', border: '1px solid rgba(14,165,233,0.15)', borderRadius: 12, padding: '1.25rem 1.5rem' }}>
+        <div style={{ background: 'rgba(15,164,233,0.06)', border: '1px solid rgba(15,164,233,0.15)', borderRadius: 12, padding: '1.25rem 1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
             <span style={{ ...mono(0.65, { fontWeight: 700, color: t.teal }) }}>DEAL GAP</span>
             <span style={{ ...mono(0.55, { color: t.amber }), background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', padding: '0.15rem 0.5rem', borderRadius: 4 }}>ONLY ON DEALGAPIQ</span>
@@ -203,7 +203,7 @@ const DemoCard = () => {
 
 const numberCards = [
   { icon: 'IV', title: 'Income Value', desc: 'The maximum price the property can support before cash flow turns negative. Above this line, you lose money. This is the breakeven boundary no other platform calculates.', bg: 'rgba(52,211,153,0.1)', bd: 'rgba(52,211,153,0.15)', color: t.green },
-  { icon: 'TB', title: 'Target Buy', desc: 'The price that delivers your desired return. Change your return target, loan terms, or expenses — it recalculates instantly. This is your number.', bg: 'rgba(14,165,233,0.1)', bd: 'rgba(14,165,233,0.15)', color: t.teal },
+  { icon: 'TB', title: 'Target Buy', desc: 'The price that delivers your desired return. Change your return target, loan terms, or expenses — it recalculates instantly. This is your number.', bg: 'rgba(15,164,233,0.1)', bd: 'rgba(15,164,233,0.15)', color: t.teal },
   { icon: 'DG', title: 'Deal Gap', desc: 'The distance between the asking price and your Target Buy. The built-in profit opportunity and your negotiation distance. The bigger the gap, the better the deal.', bg: 'rgba(249,112,102,0.1)', bd: 'rgba(249,112,102,0.15)', color: t.coral },
 ]
 
@@ -242,7 +242,7 @@ const WorkflowStep = ({ num, label, title, desc }: typeof workflowSteps[0]) => (
 const CredItem = ({ text, highlight = false }: { text: string; highlight?: boolean }) => (
   <div style={{
     display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.7rem 1rem',
-    background: 'rgba(255,255,255,0.03)', border: `1px solid ${highlight ? 'rgba(14,165,233,0.25)' : 'rgba(255,255,255,0.08)'}`,
+    background: 'rgba(255,255,255,0.03)', border: `1px solid ${highlight ? 'rgba(15,164,233,0.25)' : 'rgba(255,255,255,0.08)'}`,
     borderRadius: 10, fontSize: '0.85rem', color: highlight ? t.teal : t.textSecondary, fontWeight: 500,
   }}>
     <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: highlight ? t.teal : 'rgba(255,255,255,0.15)' }} />
@@ -381,7 +381,7 @@ export default function WhatIsDealGapIQ() {
         <div style={{ marginTop: '3rem', ...blackCard('lg', 24), overflow: 'hidden' }}>
           <div style={{ height: 3, background: `linear-gradient(90deg, ${t.teal}, ${t.teal} 60%, transparent)` }} />
           <div className="wii-founder-header" style={{ display: 'flex', alignItems: 'center', gap: '1.75rem', padding: '2.5rem 3rem 0' }}>
-            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(14,165,233,0.1)', border: `2px solid ${t.teal}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.5rem', color: t.teal, flexShrink: 0 }}>BG</div>
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(15,164,233,0.1)', border: `2px solid ${t.teal}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.5rem', color: t.teal, flexShrink: 0 }}>BG</div>
             <div>
               <div style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.02em', color: '#FFFFFF' }}>Brad Geisen</div>
               <div style={{ fontSize: '0.85rem', color: t.textMuted, marginTop: '0.15rem' }}>Founder &amp; CEO, DealGapIQ</div>

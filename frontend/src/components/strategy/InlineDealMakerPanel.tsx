@@ -113,8 +113,8 @@ const SLIDER_GROUPS: SliderGroup[] = [
     id: 'purchase',
     label: 'PURCHASE TERMS',
     sliders: [...PURCHASE_SLIDERS, ...FINANCING_SLIDERS],
-    accent: '#0EA5E9',
-    border: 'rgba(14, 165, 233, 0.7)',
+    accent: '#0FA4E9',
+    border: 'rgba(15, 164, 233, 0.7)',
   },
   {
     id: 'income',
@@ -253,8 +253,8 @@ export function InlineDealMakerPanel({ values, onChange, listPrice, initialSecti
         50% { box-shadow: inset 0 0 0 2px var(--pulse-color, rgba(255,255,255,0.25)), 0 0 16px 2px var(--pulse-color, rgba(255,255,255,0.15)); }
       }
       @keyframes tour-spotlight-pulse {
-        0%, 100% { box-shadow: 0 0 0 2px var(--accent-sky), 0 0 12px 2px rgba(14, 165, 233, 0.25); }
-        50% { box-shadow: 0 0 0 3px var(--accent-sky), 0 0 20px 4px rgba(14, 165, 233, 0.35); }
+        0%, 100% { box-shadow: 0 0 0 2px var(--accent-sky), 0 0 12px 2px rgba(15, 164, 233, 0.25); }
+        50% { box-shadow: 0 0 0 3px var(--accent-sky), 0 0 20px 4px rgba(15, 164, 233, 0.35); }
       }
       @keyframes tour-card-enter {
         from { opacity: 0; transform: translateY(-6px); }

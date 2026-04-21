@@ -147,7 +147,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
         className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden"
         style={{
           backgroundColor: 'var(--surface-card)',
-          border: '1px solid rgba(14,165,233,0.2)',
+          border: '1px solid rgba(15,164,233,0.2)',
         }}
       >
         <div className="flex items-center justify-between px-6 pt-6 pb-2">
@@ -183,7 +183,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
             className="relative w-12 h-6 rounded-full border border-slate-500/20 transition-colors"
             style={{
               background: annual
-                ? 'linear-gradient(135deg, #0ea5e9, #0EA5E9)'
+                ? 'linear-gradient(135deg, #0FA4E9, #0FA4E9)'
                 : '#1e293b',
             }}
           >
@@ -202,7 +202,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
             <span
               className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
               style={{
-                background: 'linear-gradient(135deg, #0ea5e9, #0EA5E9)',
+                background: 'linear-gradient(135deg, #0FA4E9, #0FA4E9)',
                 color: '#fff',
               }}
             >
@@ -215,8 +215,8 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
         <div
           className="mx-6 mb-4 rounded-lg px-4 py-3"
           style={{
-            background: 'rgba(14,165,233,0.06)',
-            border: '1px solid rgba(14,165,233,0.15)',
+            background: 'rgba(15,164,233,0.06)',
+            border: '1px solid rgba(15,164,233,0.15)',
           }}
         >
           <div className="flex items-baseline gap-2">
@@ -272,7 +272,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
               disabled={rcLoading}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-60 transition-opacity"
               style={{
-                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                background: 'linear-gradient(135deg, #0FA4E9, #0284c7)',
               }}
             >
               {rcLoading ? (
@@ -291,7 +291,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
               disabled={loading || rc.isPurchasing || (IS_CAPACITOR ? !rcPkg : !proPlan)}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-50 transition-opacity"
               style={{
-                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                background: 'linear-gradient(135deg, #0FA4E9, #0284c7)',
               }}
             >
               {loading || rc.isPurchasing ? (

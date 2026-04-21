@@ -39,19 +39,19 @@ module.exports = {
         // ---- Five semantic accent colors ----
         sky: {
           DEFAULT: '#38bdf8',     // Primary actions & key data
-          deep: '#0EA5E9',
+          deep: '#0FA4E9',
           dim: 'rgba(56,189,248,0.10)',
         },
         teal: {
-          DEFAULT: '#0EA5E9',     // Unified accent — sky blue
-          deep: '#0EA5E9',
-          dim: 'rgba(14,165,233,0.10)',
+          DEFAULT: '#0FA4E9',     // Unified accent — sky blue
+          deep: '#0FA4E9',
+          dim: 'rgba(15,164,233,0.10)',
           50: '#f0f9ff',
           100: '#e0f2fe',
           200: '#bae6fd',
           300: '#7dd3fc',
           400: '#38bdf8',
-          500: '#0EA5E9',
+          500: '#0FA4E9',
           600: '#0284c7',
           700: '#0369a1',
           800: '#075985',
@@ -141,12 +141,12 @@ module.exports = {
           200: '#bae6fd',
           300: '#7dd3fc',
           400: '#38bdf8',
-          500: '#0EA5E9',
+          500: '#0FA4E9',
           600: '#0284c7',
           700: '#0369a1',
           800: '#075985',
           900: '#0c4a6e',
-          light: '#0EA5E9',
+          light: '#0FA4E9',
         },
         forest: {
           50: '#ecfdf5',
@@ -228,8 +228,8 @@ module.exports = {
         'card-dark': '0 32px 64px -16px rgba(0, 0, 0, 0.5)',
         'glow-sky': '0 0 24px rgba(56, 189, 248, 0.2)',
         'glow-sky-lg': '0 0 36px rgba(56, 189, 248, 0.35)',
-        'glow-teal': '0 0 20px rgba(14, 165, 233, 0.3)',
-        'glow-cyan': '0 0 20px rgba(14, 165, 233, 0.5)',
+        'glow-teal': '0 0 20px rgba(15, 164, 233, 0.3)',
+        'glow-cyan': '0 0 20px rgba(15, 164, 233, 0.5)',
         'glow-blue': '0 0 20px rgba(4, 101, 242, 0.5)',
       },
 
@@ -318,8 +318,8 @@ module.exports = {
         'gradient-brand-vertical': 'linear-gradient(180deg, #0465f2 0%, #38bdf8 100%)',
         'gradient-hero': 'radial-gradient(ellipse 80% 60% at 50% 30%, rgba(12,18,32,0.6) 0%, #000 100%)',
         'gradient-dark': 'linear-gradient(135deg, #07172e 0%, #1f2937 100%)',
-        'gradient-teal': 'linear-gradient(135deg, #0EA5E9 0%, #0284c7 100%)',
-        'gradient-sky': 'linear-gradient(135deg, #38bdf8 0%, #0EA5E9 100%)',
+        'gradient-teal': 'linear-gradient(135deg, #0FA4E9 0%, #0284c7 100%)',
+        'gradient-sky': 'linear-gradient(135deg, #38bdf8 0%, #0FA4E9 100%)',
       },
     },
   },

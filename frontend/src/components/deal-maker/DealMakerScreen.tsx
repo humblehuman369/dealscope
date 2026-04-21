@@ -1135,9 +1135,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         .deal-maker-theme .border-\\[rgba\\(14\\,165\\,233\\,0\\.25\\)\\] { border-color: var(--border-default) !important; }
         .deal-maker-theme .border-\\[rgba\\(14\\,165\\,233\\,0\\.55\\)\\] { border-color: var(--border-focus) !important; }
         .deal-maker-theme .bg-\\[rgba\\(14\\,165\\,233\\,0\\.05\\)\\] { background-color: var(--surface-elevated) !important; }
-        .deal-maker-theme .bg-\\[\\#0EA5E9\\] { background-color: var(--accent-sky) !important; }
+        .deal-maker-theme .bg-\\[\\#0FA4E9\\] { background-color: var(--accent-sky) !important; }
         .deal-maker-theme .shadow-\\[0_0_12px_rgba\\(14\\,165\\,233\\,0\\.4\\)\\] { box-shadow: var(--shadow-card) !important; }
-        .deal-maker-theme .bg-\\[\\#0EA5E9\\].text-white { color: var(--text-inverse) !important; }
+        .deal-maker-theme .bg-\\[\\#0FA4E9\\].text-white { color: var(--text-inverse) !important; }
         .deal-maker-theme [style*="#ffffff"] { color: var(--text-heading) !important; }
         .deal-maker-theme [style*="background: #000000"],
         .deal-maker-theme [style*="background:#000000"] { background: var(--surface-base) !important; }

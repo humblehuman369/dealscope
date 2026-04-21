@@ -13,13 +13,13 @@ import React, { useEffect, useState } from 'react'
 import { colors } from './verdict-design-tokens'
 import { IQProperty } from './types'
 
-// Use design system primary blue (#0EA5E9) per CURSOR-UNIFY-COLOR-SYSTEM
+// Use design system primary blue (#0FA4E9) per CURSOR-UNIFY-COLOR-SYSTEM
 const ACCENT = colors.brand.teal
-const ACCENT_BG = 'rgba(14,165,233,0.08)'
-const ACCENT_BORDER = 'rgba(14,165,233,0.2)'
-// Glow around logo — rgba(14, 165, 233, [opacity]) per color system (base for pulse)
-const LOGO_GLOW_BASE = '0 0 24px rgba(14,165,233,0.35), 0 0 48px rgba(14,165,233,0.15)'
-const LOGO_GLOW_PULSE = '0 0 32px rgba(14,165,233,0.5), 0 0 64px rgba(14,165,233,0.22)'
+const ACCENT_BG = 'rgba(15,164,233,0.08)'
+const ACCENT_BORDER = 'rgba(15,164,233,0.2)'
+// Glow around logo — rgba(15, 164, 233, [opacity]) per color system (base for pulse)
+const LOGO_GLOW_BASE = '0 0 24px rgba(15,164,233,0.35), 0 0 48px rgba(15,164,233,0.15)'
+const LOGO_GLOW_PULSE = '0 0 32px rgba(15,164,233,0.5), 0 0 64px rgba(15,164,233,0.22)'
 
 // Rotating micro-tips — real, credibility-building content
 const MICRO_TIPS = [
@@ -133,7 +133,7 @@ export function IQAnalyzingScreen({
               strokeWidth={strokeWidth}
             />
           </svg>
-          {/* Progress ring — design system blue #0EA5E9 */}
+          {/* Progress ring — design system blue #0FA4E9 */}
           <svg width={size} height={size} className="absolute inset-0 -rotate-90">
             <circle
               cx={size / 2}

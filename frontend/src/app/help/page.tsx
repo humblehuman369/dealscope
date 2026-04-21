@@ -181,7 +181,7 @@ export default function HelpCenterPage() {
         </div>
 
         {/* Contact Section */}
-        <div className="mt-12 rounded-xl p-6 text-center" style={{ background: 'rgba(14,165,233,0.06)', border: '1px solid rgba(14,165,233,0.12)' }}>
+        <div className="mt-12 rounded-xl p-6 text-center" style={{ background: 'rgba(15,164,233,0.06)', border: '1px solid rgba(15,164,233,0.12)' }}>
           <h2 className="text-lg font-bold text-white mb-2">Still need help?</h2>
           <p className="text-sm text-slate-400 mb-4">
             Our team typically responds within 24 hours during business days.

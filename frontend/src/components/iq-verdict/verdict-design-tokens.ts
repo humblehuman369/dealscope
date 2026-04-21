@@ -131,17 +131,17 @@ export const typography = {
 export const colors = {
   // Brand
   brand: {
-    /** #0EA5E9 - DealGapIQ cyan — primary accent */
-    blue: '#0EA5E9',
+    /** #0FA4E9 - DealGapIQ cyan — primary accent */
+    blue: '#0FA4E9',
     /** #00acc1 - Deep cyan — CTA buttons */
     blueDeep: '#00acc1',
-    /** #0EA5E9 - Teal — positive / interactive */
-    teal: '#0EA5E9',
+    /** #0FA4E9 - Teal — positive / interactive */
+    teal: '#0FA4E9',
     /** #fbbf24 - Gold — caution / moderate */
     gold: '#fbbf24',
     // Legacy aliases
-    tealBright: '#0EA5E9',
-    cyan: '#0EA5E9',
+    tealBright: '#0FA4E9',
+    cyan: '#0FA4E9',
   },
 
   // Text — Four-tier Slate hierarchy
@@ -193,7 +193,7 @@ export const colors = {
   // Accent backgrounds (10% opacity)
   accentBg: {
     blue: 'rgba(56,189,248,0.10)',
-    teal: 'rgba(14,165,233,0.10)',
+    teal: 'rgba(15,164,233,0.10)',
     gold: 'rgba(251,191,36,0.10)',
     red: 'rgba(248,113,113,0.10)',
     green: 'rgba(52,211,153,0.10)',
@@ -223,13 +223,13 @@ export const colors = {
   // Gradients & Shadows
   gradient: {
     heroGlow: 'radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.05) 0%, transparent 70%)',
-    ctaGlow: 'radial-gradient(ellipse at 50% 100%, rgba(14,165,233,0.05) 0%, transparent 70%)',
+    ctaGlow: 'radial-gradient(ellipse at 50% 100%, rgba(15,164,233,0.05) 0%, transparent 70%)',
   },
   shadow: {
     card: '0 2px 8px rgba(0,0,0,0.4)',
     glow: '0 0 20px rgba(56,189,248,0.15)',
-    ctaBtn: '0 4px 24px rgba(14,165,233,0.3)',
-    ctaBtnHover: '0 8px 32px rgba(14,165,233,0.45)',
+    ctaBtn: '0 4px 24px rgba(15,164,233,0.3)',
+    ctaBtnHover: '0 8px 32px rgba(15,164,233,0.45)',
   },
 } as const
 
@@ -240,25 +240,25 @@ export const colors = {
 export const cardGlow = {
   sm: {
     background: '#000000',
-    border: '1px solid rgba(14,165,233,0.25)',
-    boxShadow: '0 0 30px rgba(14,165,233,0.08), 0 0 60px rgba(14,165,233,0.04)',
+    border: '1px solid rgba(15,164,233,0.25)',
+    boxShadow: '0 0 30px rgba(15,164,233,0.08), 0 0 60px rgba(15,164,233,0.04)',
     transition: 'border-color .3s, box-shadow .3s',
-    hoverBorder: '1px solid rgba(14,165,233,0.55)',
-    hoverBoxShadow: '0 0 50px rgba(14,165,233,0.15), 0 0 100px rgba(14,165,233,0.07)',
+    hoverBorder: '1px solid rgba(15,164,233,0.55)',
+    hoverBoxShadow: '0 0 50px rgba(15,164,233,0.15), 0 0 100px rgba(15,164,233,0.07)',
   },
   lg: {
     background: '#000000',
-    border: '1px solid rgba(14,165,233,0.3)',
-    boxShadow: '0 0 40px rgba(14,165,233,0.1), 0 0 80px rgba(14,165,233,0.05)',
+    border: '1px solid rgba(15,164,233,0.3)',
+    boxShadow: '0 0 40px rgba(15,164,233,0.1), 0 0 80px rgba(15,164,233,0.05)',
     transition: 'border-color .3s, box-shadow .3s',
-    hoverBorder: '1px solid rgba(14,165,233,0.55)',
-    hoverBoxShadow: '0 0 50px rgba(14,165,233,0.15), 0 0 100px rgba(14,165,233,0.07)',
+    hoverBorder: '1px solid rgba(15,164,233,0.55)',
+    hoverBoxShadow: '0 0 50px rgba(15,164,233,0.15), 0 0 100px rgba(15,164,233,0.07)',
   },
   /** Active/dominant card — brighter glow for selected state (e.g. Target Buy) */
   active: {
     background: '#000000',
-    border: '2px solid rgba(14,165,233,0.5)',
-    boxShadow: '0 0 40px rgba(14,165,233,0.18), 0 0 80px rgba(14,165,233,0.08)',
+    border: '2px solid rgba(15,164,233,0.5)',
+    boxShadow: '0 0 40px rgba(15,164,233,0.18), 0 0 80px rgba(15,164,233,0.08)',
     transition: 'border-color .3s, box-shadow .3s',
   },
 } as const
@@ -427,7 +427,7 @@ export const tw = {
   investmentCard: 'bg-[var(--surface-base)] rounded-[14px] border border-[var(--border-subtle)] p-5',
   metricCard: 'bg-[var(--surface-base)] rounded-xl border border-[var(--border-subtle)] p-4 text-center',
   pillBadge: 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-[0.03em]',
-  glowRing: 'drop-shadow-[0_0_12px_rgba(14,165,233,0.25)]',
+  glowRing: 'drop-shadow-[0_0_12px_rgba(15,164,233,0.25)]',
 
   // Layout
   pageContainer: 'min-h-screen w-full bg-[var(--surface-base)]',

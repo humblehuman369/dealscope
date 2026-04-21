@@ -32,9 +32,9 @@ const T = {
   secondary: '#F1F5F9',   // Match primary text
   label: '#F1F5F9',       // Match primary text
 
-  // Semantic accent colors — CURSOR-UNIFY-COLOR-SYSTEM primary #0EA5E9
-  blue: '#0EA5E9',       // Primary accent (unified)
-  teal: '#0EA5E9',       // Alias for primary
+  // Semantic accent colors — CURSOR-UNIFY-COLOR-SYSTEM primary #0FA4E9
+  blue: '#0FA4E9',       // Primary accent (unified)
+  teal: '#0FA4E9',       // Alias for primary
   amber: '#fbbf24',       // Caution, scores
   red: '#f87171',         // Negatives, losses
   green: '#34d399',       // Income, success
@@ -188,8 +188,8 @@ export function ScoreMethodologySheet({
             <div
               className="p-5 rounded-xl"
               style={{
-                background: `radial-gradient(ellipse at 50% 0%, rgba(14,165,233,0.06) 0%, transparent 70%), ${T.card}`,
-                border: `1px solid rgba(14,165,233,0.15)`,
+                background: `radial-gradient(ellipse at 50% 0%, rgba(15,164,233,0.06) 0%, transparent 70%), ${T.card}`,
+                border: `1px solid rgba(15,164,233,0.15)`,
               }}
             >
               <p className="text-sm font-normal text-center" style={{ color: T.body }}>
@@ -289,7 +289,7 @@ export function ScoreMethodologySheet({
                     <div key={idx} className="flex items-start gap-3">
                       <span
                         className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold"
-                        style={{ backgroundColor: 'rgba(14,165,233,0.1)', color: T.blue }}
+                        style={{ backgroundColor: 'rgba(15,164,233,0.1)', color: T.blue }}
                       >
                         {idx + 1}
                       </span>
@@ -298,7 +298,7 @@ export function ScoreMethodologySheet({
                   ))}
                 </div>
 
-                <div className="p-3.5 rounded-lg" style={{ backgroundColor: 'rgba(14,165,233,0.05)', border: `1px solid rgba(14,165,233,0.12)` }}>
+                <div className="p-3.5 rounded-lg" style={{ backgroundColor: 'rgba(15,164,233,0.05)', border: `1px solid rgba(15,164,233,0.12)` }}>
                   <p className="text-xs leading-relaxed" style={{ color: T.body }}>
                     <span className="font-semibold" style={{ color: T.teal }}>Example: </span>
                     {SCORE_FORMULA.example}

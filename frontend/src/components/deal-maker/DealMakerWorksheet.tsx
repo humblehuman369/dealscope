@@ -220,7 +220,7 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
               left: `calc(${Math.min(100, Math.max(0, fill))}% - 6px)`,
               background: 'var(--surface-card)',
               border: '2px solid var(--accent-sky)',
-              boxShadow: '0 0 5px rgba(14,165,233,0.3)',
+              boxShadow: '0 0 5px rgba(15,164,233,0.3)',
             }}
           />
         </div>
@@ -266,11 +266,11 @@ function ToggleRow({ label, options, value, onChange }: {
             key={opt.id}
             className={`flex-1 py-1 px-2 rounded-md text-xs font-semibold transition-colors ${
               value === opt.id
-                ? 'text-white shadow-[0_0_8px_rgba(14,165,233,0.4)]'
+                ? 'text-white shadow-[0_0_8px_rgba(15,164,233,0.4)]'
                 : 'text-white/60 hover:text-white'
             }`}
             style={{
-              background: value === opt.id ? '#0EA5E9' : 'rgba(255,255,255,0.06)',
+              background: value === opt.id ? '#0FA4E9' : 'rgba(255,255,255,0.06)',
               border: value === opt.id ? 'none' : '1px solid rgba(255,255,255,0.1)',
             }}
             onClick={() => onChange(opt.id)}
@@ -998,7 +998,7 @@ export function DealMakerWorksheet({
             style={{
               background: exportDone ? '#10B981' : 'var(--accent-sky)',
               color: '#fff',
-              boxShadow: exportDone ? '0 0 12px rgba(16,185,129,0.4)' : '0 0 12px rgba(14,165,233,0.3)',
+              boxShadow: exportDone ? '0 0 12px rgba(16,185,129,0.4)' : '0 0 12px rgba(15,164,233,0.3)',
             }}
           >
             {exporting ? (
