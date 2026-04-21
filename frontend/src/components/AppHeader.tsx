@@ -531,12 +531,12 @@ export function AppHeader({
             aria-label="DealGapIQ home"
           >
             <Image
-              src={mounted && theme === 'light' ? '/DealGapIQ_Logo_Light.png' : '/DealGapIQ_Logo_Dark.png'}
+              src={mounted && theme === 'light' ? '/DealGapIQ_Logo_Light.png' : '/DealGapIQ_Logo_Dark_Header.png'}
               alt="DealGapIQ"
               width={1024}
               height={333}
               priority
-              className="h-[31px] sm:h-[40px] w-auto select-none"
+              className="h-[39px] sm:h-[50px] w-auto select-none"
               draggable={false}
             />
           </button>
