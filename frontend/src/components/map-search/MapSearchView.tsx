@@ -19,9 +19,8 @@ import { FilterPanel } from './FilterPanel'
 import { PropertyPreviewCard } from './PropertyPreviewCard'
 import { PropertyCardList } from './PropertyCardList'
 import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
-import { HeatmapLegend } from './HeatmapLegend'
 import { NeighborhoodCard } from './NeighborhoodCard'
-import { api, type NeighborhoodOverview } from '@/lib/api'
+import type { NeighborhoodOverview } from '@/lib/api'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -282,33 +281,6 @@ const clusterRenderer: Renderer = {
 // Inner map content — must be a child of <Map>
 // ──────────────────────────────────────────────
 
-async function resolveStateFromCoords(lat: number, lng: number, apiKey: string | undefined): Promise<string | null> {
-  if (!apiKey) return null
-  try {
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat.toFixed(4)},${lng.toFixed(4)}&result_type=administrative_area_level_1&key=${apiKey}`
-    const resp = await fetch(url)
-    const data = await resp.json()
-    if (data.status === 'OK' && data.results?.[0]) {
-      const stateComp = data.results[0].address_components?.find(
-        (c: { types: string[] }) => c.types.includes('administrative_area_level_1')
-      )
-      return stateComp?.short_name || null
-    }
-  } catch {
-    // Geocode failed — fall through
-  }
-  return null
-}
-
-function parseWktPolygon(wkt: string): { lat: number; lng: number }[] {
-  const match = wkt.match(/POLYGON\(\((.*)\)\)/)
-  if (!match) return []
-  return match[1].split(',').map((pair) => {
-    const [lng, lat] = pair.trim().split(/\s+/).map(Number)
-    return { lat, lng }
-  })
-}
-
 interface MapContentProps {
   listings: MapListing[]
   dealSignals: Map<string, DealSignalResult>
@@ -320,8 +292,6 @@ interface MapContentProps {
   drawingPolygon: google.maps.Polygon | null
   setDrawingPolygon: (p: google.maps.Polygon | null) => void
   panToRef: React.MutableRefObject<((lat: number, lng: number, zoom?: number) => void) | null>
-  heatmapActive: boolean
-  heatmapMetric: string
 }
 
 function MapContent({
@@ -335,13 +305,9 @@ function MapContent({
   drawingPolygon,
   setDrawingPolygon,
   panToRef,
-  heatmapActive,
-  heatmapMetric,
 }: MapContentProps) {
   const map = useMap()
   const clustererRef = useRef<MarkerClusterer | null>(null)
-  const heatmapPolygonsRef = useRef<google.maps.Polygon[]>([])
-  const heatmapBoundsRef = useRef<string>('')
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new (globalThis.Map)())
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null)
 
@@ -399,86 +365,6 @@ function MapContent({
     })
     return () => google.maps.event.removeListener(listener)
   }, [map, onBoundsChanged])
-
-  // Heatmap polygon rendering
-  const apiKeyForGeocode = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY : undefined
-
-  useEffect(() => {
-    if (!map) return
-
-    // Clear existing polygons when heatmap is turned off
-    if (!heatmapActive) {
-      heatmapPolygonsRef.current.forEach((p) => p.setMap(null))
-      heatmapPolygonsRef.current = []
-      heatmapBoundsRef.current = ''
-      return
-    }
-
-    let cancelled = false
-
-    const fetchAndRender = async () => {
-      const bounds = map.getBounds()
-      if (!bounds) return
-      const ne = bounds.getNorthEast()
-      const sw = bounds.getSouthWest()
-
-      const boundsKey = `${sw.lat().toFixed(2)}:${sw.lng().toFixed(2)}:${ne.lat().toFixed(2)}:${ne.lng().toFixed(2)}:${heatmapMetric}`
-      if (boundsKey === heatmapBoundsRef.current) return
-      heatmapBoundsRef.current = boundsKey
-
-      const centerLat = (ne.lat() + sw.lat()) / 2
-      const centerLng = (ne.lng() + sw.lng()) / 2
-      const state = await resolveStateFromCoords(centerLat, centerLng, apiKeyForGeocode)
-      if (!state || cancelled) return
-
-      try {
-        const resp = await api.mapSearch.heatmap({
-          state,
-          sw_lat: sw.lat(),
-          sw_lng: sw.lng(),
-          ne_lat: ne.lat(),
-          ne_lng: ne.lng(),
-          metric_type: heatmapMetric,
-        })
-
-        if (cancelled) return
-
-        // Clear old polygons
-        heatmapPolygonsRef.current.forEach((p) => p.setMap(null))
-        heatmapPolygonsRef.current = []
-
-        for (const poly of resp.polygons) {
-          if (!poly.boundary) continue
-          const path = parseWktPolygon(poly.boundary)
-          if (path.length < 3) continue
-
-          const fillColor = poly.color ? `#${poly.color}` : '#F06B50'
-          const strokeColor = poly.border_color ? `#${poly.border_color}` : fillColor
-
-          const gPoly = new google.maps.Polygon({
-            paths: path,
-            fillColor,
-            fillOpacity: 0.35,
-            strokeColor,
-            strokeOpacity: 0.6,
-            strokeWeight: 1,
-            clickable: false,
-            map,
-          })
-          heatmapPolygonsRef.current.push(gPoly)
-        }
-      } catch (err) {
-        console.warn('Heatmap fetch failed:', err)
-      }
-    }
-
-    fetchAndRender()
-    const listener = map.addListener('idle', fetchAndRender)
-    return () => {
-      cancelled = true
-      google.maps.event.removeListener(listener)
-    }
-  }, [map, heatmapActive, heatmapMetric, apiKeyForGeocode])
 
   useEffect(() => {
     if (!map) return
@@ -721,9 +607,6 @@ export function MapSearchView() {
   const [showClickHint, setShowClickHint] = useState(false)
   const hintShownRef = useRef(false)
 
-  // Heatmap and neighborhood intelligence (Mashvisor)
-  const [heatmapActive, setHeatmapActive] = useState(false)
-  const [heatmapMetric, setHeatmapMetric] = useState('AirbnbCoc')
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<NeighborhoodOverview | null>(null)
   const [isLoadingNeighborhood, setIsLoadingNeighborhood] = useState(false)
 
@@ -920,8 +803,6 @@ export function MapSearchView() {
             isDrawing={isDrawing}
             onPolygonComplete={onPolygonComplete}
             drawingPolygon={drawingPolygon}
-            heatmapActive={heatmapActive}
-            heatmapMetric={heatmapMetric}
             setDrawingPolygon={setDrawingPolygon}
             panToRef={panToRef}
           />
@@ -1021,7 +902,6 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Filter Panel (includes Investment Heatmap controls) */}
       <FilterPanel
         filters={filters}
         onChange={updateFilters}
@@ -1029,15 +909,7 @@ export function MapSearchView() {
         isLoading={isLoading}
         isOpen={filtersOpen}
         onToggle={() => setFiltersOpen((p) => !p)}
-        heatmapActive={heatmapActive}
-        heatmapMetric={heatmapMetric}
-        onHeatmapToggle={() => setHeatmapActive((p) => !p)}
-        onHeatmapMetricChange={setHeatmapMetric}
       />
-
-      {/* Investment Heatmap color-scale legend (interpretation only;
-          controls live in the Filters panel) */}
-      <HeatmapLegend isActive={heatmapActive} metricType={heatmapMetric} />
 
       {/* Neighborhood Intelligence Card */}
       {selectedNeighborhood && (

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
-import { Map as MapIcon, SlidersHorizontal, X } from 'lucide-react'
+import { SlidersHorizontal, X } from 'lucide-react'
 import type { MapSearchFilters } from '@/hooks/useMapSearch'
 import type { SortOption } from '@/lib/dealSignal'
 
@@ -12,20 +12,7 @@ interface FilterPanelProps {
   isLoading: boolean
   isOpen: boolean
   onToggle: () => void
-  heatmapActive: boolean
-  heatmapMetric: string
-  onHeatmapToggle: () => void
-  onHeatmapMetricChange: (metric: string) => void
 }
-
-const HEATMAP_METRIC_OPTIONS = [
-  { value: 'AirbnbCoc', label: 'Airbnb CoC Return' },
-  { value: 'TraditionalCoc', label: 'Traditional CoC' },
-  { value: 'OccupancyRate', label: 'Occupancy Rate' },
-  { value: 'AirbnbRental', label: 'Airbnb Rental Income' },
-  { value: 'TraditionalRental', label: 'Traditional Rental' },
-  { value: 'listingPrice', label: 'Listing Price' },
-]
 
 const LISTING_TYPES: { value: MapSearchFilters['listing_type']; label: string }[] = [
   { value: 'sale', label: 'For Sale' },
@@ -103,10 +90,6 @@ export function FilterPanel({
   isLoading,
   isOpen,
   onToggle,
-  heatmapActive,
-  heatmapMetric,
-  onHeatmapToggle,
-  onHeatmapMetricChange,
 }: FilterPanelProps) {
   const handlePriceChange = useCallback(
     (field: 'min_price' | 'max_price', raw: string) => {
@@ -385,46 +368,6 @@ export function FilterPanel({
             <span className={`w-3 h-3 rounded-full ${filters.include_str_listings ? 'bg-rose-400' : 'bg-gray-400'}`} />
             {filters.include_str_listings ? 'Showing Airbnb Listings' : 'Show Airbnb Listings'}
           </button>
-        </div>
-
-        {/* Investment Heatmap */}
-        <div
-          className="pt-3"
-          style={{ borderTop: '1px solid var(--border-subtle)' }}
-        >
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
-            Investment Heatmap
-          </label>
-          <button
-            onClick={onHeatmapToggle}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium w-full transition-colors"
-            style={{
-              backgroundColor: heatmapActive ? 'var(--accent-sky)' : 'var(--surface-elevated)',
-              color: heatmapActive ? '#fff' : 'var(--text-body)',
-              border: `1px solid ${heatmapActive ? 'var(--accent-sky)' : 'var(--border-subtle)'}`,
-            }}
-          >
-            <MapIcon size={14} />
-            {heatmapActive ? 'Heatmap On' : 'Show Heatmap'}
-          </button>
-          {heatmapActive && (
-            <select
-              value={heatmapMetric}
-              onChange={(e) => onHeatmapMetricChange(e.target.value)}
-              className="w-full mt-2 px-3 py-2 rounded-lg text-sm"
-              style={{
-                backgroundColor: 'var(--surface-elevated)',
-                color: 'var(--text-body)',
-                border: '1px solid var(--border-subtle)',
-              }}
-            >
-              {HEATMAP_METRIC_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          )}
         </div>
       </div>
     </div>
