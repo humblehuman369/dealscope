@@ -524,38 +524,21 @@ export function AppHeader({
           className="flex items-center justify-between gap-3 px-4 py-3 pt-safe-header"
           style={{ backgroundColor: 'var(--surface-base)' }}
         >
-          {/* Left: Logo — image variant in dark mode, text in light mode */}
+          {/* Left: Logo — themed image (dark/light variants) */}
           <button
             onClick={handleLogoClick}
             className="flex items-center cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity p-0"
             aria-label="DealGapIQ home"
           >
-            {mounted && theme === 'dark' ? (
-              <Image
-                src="/DealGapIQ_Logo_Dark.png"
-                alt="DealGapIQ"
-                width={1024}
-                height={333}
-                priority
-                className="h-[31px] sm:h-[40px] w-auto select-none"
-                draggable={false}
-              />
-            ) : (
-              <span className="flex items-baseline">
-                <span
-                  className="text-[21px] sm:text-[25px] font-bold tracking-tight"
-                  style={{ color: colors.text.white }}
-                >
-                  DealGap
-                </span>
-                <span
-                  className="text-[21px] sm:text-[25px] font-bold tracking-tight"
-                  style={{ color: colors.brand.teal }}
-                >
-                  IQ
-                </span>
-              </span>
-            )}
+            <Image
+              src={mounted && theme === 'light' ? '/DealGapIQ_Logo_Light.png' : '/DealGapIQ_Logo_Dark.png'}
+              alt="DealGapIQ"
+              width={1024}
+              height={333}
+              priority
+              className="h-[31px] sm:h-[40px] w-auto select-none"
+              draggable={false}
+            />
           </button>
 
           {/* Right: About, Pricing, Search, Profile/Login */}
