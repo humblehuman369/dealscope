@@ -26,10 +26,10 @@ import { api, type NeighborhoodOverview } from '@/lib/api'
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
 // Initial zoom used while the map is mounting before `fitBounds` runs.
-// 13 ≈ a 5-mile-wide span on a typical desktop viewport, so first paint
+// ~15 ≈ a ~4-mile-wide span on a typical desktop viewport (2 mi radius), so first paint
 // is already close to the final framing instead of zooming out and snapping in.
-const GEOLOCATION_INITIAL_ZOOM = 13
-const GEOLOCATION_RADIUS_MILES = 5
+const GEOLOCATION_INITIAL_ZOOM = 15
+const GEOLOCATION_RADIUS_MILES = 2
 const MAP_ID = 'DEMO_MAP_ID'
 const MIN_ZOOM_FOR_GEOCODE = 13
 const HINT_DISMISSED_KEY = 'dealscope:map-click-hint-dismissed'
@@ -959,7 +959,7 @@ export function MapSearchView() {
             </AdvancedMarker>
           )}
 
-          {/* Fit the camera to a 5-mile radius around the user's location.
+          {/* Fit the camera to a 2-mile radius around the user's location.
               Runs once after the map mounts so the framing adapts to the actual
               container size (mobile vs. desktop split). */}
           {userLocation && paramZoom === null && (
