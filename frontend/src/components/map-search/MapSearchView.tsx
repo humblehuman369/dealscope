@@ -1108,10 +1108,12 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Listing count badge — third row, left, below the Filters button.
-          Hidden when filter panel is open to avoid overlap. */}
-      {totalCount > 0 && !isLoading && !filtersOpen && (
-        <div className="absolute top-32 left-4 z-10">
+      {/* Listing count badge — top-center. Hidden when the filter panel is
+          open (the right-anchored panel can overlap center on narrow screens)
+          and when transient toasts (loading / error / zoom hint) own the slot.
+          The `!isLoading` gate also prevents collision with the loading toast. */}
+      {totalCount > 0 && !isLoading && !filtersOpen && !error && !zoomHint && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10 max-w-[90vw]">
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold shadow-lg"
             style={{
