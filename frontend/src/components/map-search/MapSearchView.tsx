@@ -1049,7 +1049,7 @@ export function MapSearchView() {
 
       {/* Loading spinner */}
       {isLoading && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10">
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
           <div
             className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-lg"
             style={{
@@ -1066,7 +1066,7 @@ export function MapSearchView() {
 
       {/* Error */}
       {error && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10">
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
           <div
             className="px-3 py-1.5 rounded-full text-xs font-medium shadow-lg"
             style={{ backgroundColor: '#EF4444', color: '#fff' }}
@@ -1078,7 +1078,7 @@ export function MapSearchView() {
 
       {/* Zoom hint */}
       {zoomHint && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10 transition-opacity">
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 transition-opacity">
           <div
             className="px-4 py-2 rounded-lg text-sm font-medium shadow-lg"
             style={{
@@ -1108,20 +1108,20 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Listing count badge — top-center. Hidden when the filter panel is
-          open (the right-anchored panel can overlap center on narrow screens)
-          and when transient toasts (loading / error / zoom hint) own the slot.
-          The `!isLoading` gate also prevents collision with the loading toast. */}
-      {totalCount > 0 && !isLoading && !filtersOpen && !error && !zoomHint && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10 max-w-[90vw]">
+      {/* Listing count badge — stacked below Filters (top-right). Hidden when
+          the filter panel is open or while loading (counter returns after fetch). */}
+      {totalCount > 0 && !isLoading && !filtersOpen && (
+        <div className="absolute top-14 right-3 z-10 max-w-[min(90vw,18rem)]">
           <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold shadow-lg"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded shadow-lg"
             style={{
-              backgroundColor: 'rgba(30, 30, 30, 0.85)',
-              color: '#fff',
+              backgroundColor: 'rgba(30, 30, 30, 0.7)',
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontSize: '11px',
+              fontWeight: 500,
             }}
           >
-            <Home size={13} />
+            <Home size={12} />
             {estimatedTotal
               ? `${totalCount.toLocaleString()} of ~${formatCount(estimatedTotal)} homes`
               : `${totalCount.toLocaleString()} homes`}
