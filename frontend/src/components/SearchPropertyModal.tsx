@@ -104,8 +104,17 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
     const raw = address.trim();
     if (!raw) return;
 
-    if (classifySearchInput(raw) === 'zip') {
-      trackEvent('property_searched', { source: 'search_modal', type: 'zip' });
+    // Anything that isn't a deliverable street address (zip, city, state,
+    // "Miami, FL", "Florida", "Boca Raton") should open Map Search and let
+    // the LabelGeocoder resolve it. Google's Address Validation API only
+    // accepts postal addresses and would reject these inputs, blocking the
+    // user with a misleading "Could not validate address" error.
+    const classification = classifySearchInput(raw);
+    if (classification !== 'address' && !isLikelyFullAddress(raw)) {
+      trackEvent('property_searched', {
+        source: 'search_modal',
+        type: classification === 'zip' ? 'zip' : 'location',
+      });
       handleClose();
       router.push(`/map-search?label=${encodeURIComponent(raw)}`);
       return;
