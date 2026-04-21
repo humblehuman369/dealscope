@@ -242,17 +242,20 @@ class MapSearchService:
         # Fetch from all sources at all grid points in parallel
         tasks: list[asyncio.Task] = []
 
-        # Dispatch shape: at most one vanilla forSale + one distressed-only
-        # query per grid point, so cost is bounded and the circuit breaker
-        # can't get hammered by per-flag queries. Distressed listings use
-        # `search-by-url` (see _fetch_zillow_distressed) because AXESSO's
-        # typed `search-by-coordinates` endpoint silently ignores listing-
-        # type filter params — verified against prod payloads where both
-        # `isForeclosure=true` and `listing_type=foreclosures,...` returned
-        # identical inventory to the unfiltered query.
-        wants_distressed = bool(
-            requested_statuses & {"auction", "foreclosure", "pre-foreclosure"}
-        )
+        # Dispatch shape, per grid point:
+        # - 1 vanilla forSale query when active/owner-listed is requested.
+        # - 1 typed Auction query (isAuction=true) when auction is requested.
+        # - 1 typed Foreclosure query (isForSaleForeclosure=true) when
+        #   foreclosure is requested.
+        # - 1 URL-based query for pre-foreclosure (AXESSO has no typed
+        #   isPreForeclosure param; the only way to filter pre-foreclosure
+        #   exclusively is via Zillow's searchQueryState.filterState.pre).
+        #
+        # Each distressed query is dispatched with `tag_status` so results
+        # carry the requested canonical status regardless of what the
+        # search response's homeStatus says — search responses don't include
+        # enough listingSubType/foreclosureTypes detail to re-derive status
+        # client-side (those fields are only in the property-v2 endpoint).
 
         for pt_lat, pt_lng in query_points:
             if req.listing_type in ("sale", "both"):
@@ -278,16 +281,31 @@ class MapSearchService:
                                 ),
                             )
                         )
-                    # Distressed query routed through `search-by-url` so
-                    # Zillow's `searchQueryState.filterState` toggles
-                    # (auc/fore/pre + disabling fsba/fsbo/nc/cmsn defaults)
-                    # are guaranteed to be honored.
-                    if wants_distressed:
+                    if "auction" in requested_statuses:
                         tasks.append(
                             asyncio.create_task(
-                                self._fetch_zillow_distressed(
+                                self._fetch_zillow(
+                                    pt_lat, pt_lng, sub_radius, "forSale", req,
+                                    {"isAuction": True},
+                                    tag_status="Auction",
+                                ),
+                            )
+                        )
+                    if "foreclosure" in requested_statuses:
+                        tasks.append(
+                            asyncio.create_task(
+                                self._fetch_zillow(
+                                    pt_lat, pt_lng, sub_radius, "forSale", req,
+                                    {"isForSaleForeclosure": True},
+                                    tag_status="Foreclosure",
+                                ),
+                            )
+                        )
+                    if "pre-foreclosure" in requested_statuses:
+                        tasks.append(
+                            asyncio.create_task(
+                                self._fetch_zillow_preforeclosure(
                                     pt_lat, pt_lng, sub_radius,
-                                    requested_statuses,
                                 ),
                             )
                         )
@@ -441,27 +459,25 @@ class MapSearchService:
     ) -> str | None:
         """Build a Zillow ``searchQueryState`` URL for distressed-only inventory.
 
-        Zillow's web client drives its GraphQL ``mapResults`` query from a
-        URL-encoded JSON blob in ``searchQueryState``. We reproduce that
-        exact shape here:
+        Used for pre-foreclosure searches because AXESSO's
+        ``/zil/search-by-coordinates`` endpoint exposes typed booleans for
+        Auction (``isAuction``) and Foreclosure-for-sale
+        (``isForSaleForeclosure``) but **not** for pre-foreclosure. The
+        only way to filter pre-foreclosure exclusively is via Zillow's
+        native ``searchQueryState.filterState.pre`` toggle, routed through
+        AXESSO's ``search-by-url`` endpoint (which scrapes the resulting
+        Zillow page).
 
-        - ``mapBounds`` defines the viewport (replaces lat/lng/radius).
-        - ``filterState`` toggles which listing-type buckets are returned:
-          ``auc`` (auctions), ``fore`` (REO/bank-owned), ``pre``
-          (pre-foreclosure). The ``fsba``/``fsbo``/``nc``/``cmsn`` defaults
-          are explicitly turned off so the response is distressed-only —
-          without that, Zillow keeps the default for-sale buckets enabled
-          and the response is dominated by active listings (the bug we're
-          fixing).
+        Kept generic for ``auction``/``foreclosure``/``pre-foreclosure``
+        so it can serve as a fallback if the typed-param queries ever
+        regress.
 
-        Why URL-based instead of typed params: AXESSO's
-        ``search-by-coordinates`` endpoint silently ignores listing-type
-        filter parameters. Two prior attempts (camelCase boolean flags
-        like ``isForeclosure=true``, and ``listing_type=foreclosures,...``
-        from a different vendor's docs) both returned identical inventory
-        to the unfiltered query. Routing through ``search-by-url`` makes
-        AXESSO scrape the actual Zillow results page, so the
-        ``filterState`` toggles are guaranteed to be honored.
+        ``filterState`` mechanics:
+        - ``auc``/``fore``/``pre`` toggle the distressed buckets on.
+        - ``fsba``/``fsbo``/``nc``/``cmsn`` defaults are turned off so the
+          response is distressed-only — without that, Zillow keeps the
+          default for-sale buckets enabled and the response is dominated
+          by active listings.
 
         Returns None when no distressed status is requested.
         """
@@ -500,81 +516,6 @@ class MapSearchService:
         }
         encoded = urllib.parse.quote(json.dumps(state, separators=(",", ":")))
         return f"https://www.zillow.com/homes/for_sale/?searchQueryState={encoded}"
-
-    async def _fetch_zillow_distressed(
-        self,
-        center_lat: float,
-        center_lng: float,
-        radius_miles: float,
-        requested_statuses: set[str],
-    ) -> list[MapListing]:
-        """Fetch distressed listings via AXESSO's ``search-by-url`` endpoint.
-
-        Mirrors ``_fetch_zillow``'s response handling and normalization so
-        downstream merge / dedupe / canonical-status filter behavior is
-        identical to the typed-coordinate path.
-        """
-        if not self.zillow:
-            return []
-
-        north, south, east, west = self._radius_to_bbox(
-            center_lat, center_lng, max(radius_miles, 0.5)
-        )
-        url = self._zillow_distressed_url(north, south, east, west, requested_statuses)
-        if not url:
-            return []
-
-        label = "distressed[" + ",".join(
-            sorted(
-                s
-                for s in ("auction", "foreclosure", "pre-foreclosure")
-                if s in requested_statuses
-            )
-        ) + "]"
-
-        try:
-            resp = await self.zillow.search_by_url(url)
-
-            if not resp.success or not resp.data:
-                logger.info("Zillow %s returned no data", label)
-                return []
-
-            raw_props = (
-                resp.data.get("props")
-                or resp.data.get("searchResults")
-                or resp.data.get("results")
-                or []
-            )
-            if isinstance(resp.data, dict) and not raw_props:
-                for val in resp.data.values():
-                    if isinstance(val, list) and len(val) > 0:
-                        raw_props = val
-                        break
-
-            # Diagnostic: log distress-bearing fields on the first result so
-            # we can verify in prod that AXESSO honored the filterState.
-            # If `listingSubType.isForAuction` / `isForeclosure` come back
-            # all false, the filter isn't taking effect.
-            if raw_props:
-                first = raw_props[0] if isinstance(raw_props[0], dict) else {}
-                logger.info(
-                    "Zillow %s sample fields: homeStatus=%r listingSubType=%r foreclosureTypes=%r",
-                    label,
-                    first.get("homeStatus"),
-                    first.get("listingSubType"),
-                    first.get("foreclosureTypes"),
-                )
-
-            results = [
-                self._normalize_zillow_listing(item)
-                for item in raw_props
-                if self._zillow_has_coords(item)
-            ]
-            logger.info("Zillow %s: %d listings", label, len(results))
-            return results
-        except Exception:
-            logger.exception("Zillow %s listing fetch failed", label)
-            return []
 
     # ─── RentCast ───────────────────────────────────
 
@@ -634,7 +575,27 @@ class MapSearchService:
         status: str,
         req: MapSearchRequest,
         extra_params: dict[str, Any] | None = None,
+        tag_status: str | None = None,
     ) -> list[MapListing]:
+        """Fetch Zillow listings via AXESSO's typed `search-by-coordinates`.
+
+        ``extra_params`` should use AXESSO's documented parameter names from
+        ``/zil/search-by-coordinates`` (e.g., ``isAuction``, ``isForSaleForeclosure``,
+        ``isForSaleByOwner``). Earlier attempts that used ``isForeclosure``
+        (wrong name — AXESSO documents ``isForSaleForeclosure``) or
+        ``listing_type=foreclosures,...`` (a different vendor's contract)
+        were silently ignored, which is why distressed pills returned zero
+        results.
+
+        ``tag_status`` overrides the derived listing_status on every
+        returned listing. Use this when the dispatcher knows the request
+        filtered to a specific bucket (e.g., ``isAuction=true``) but the
+        search-endpoint response shape is too thin to re-derive that status
+        client-side. AXESSO's search responses only include
+        ``listing_sub_type.is_FSBA`` plus a single ``isPreforeclosureAuction``
+        boolean — the full ``listingSubType``/``foreclosureTypes`` objects
+        we need for derivation only exist on the ``property-v2`` endpoint.
+        """
         if not self.zillow:
             return []
         try:
@@ -672,28 +633,42 @@ class MapSearchService:
                 logger.info("Zillow %s returned no data", label)
                 return []
 
-            raw_props = resp.data.get("props") or resp.data.get("searchResults") or resp.data.get("results") or []
+            raw_props = (
+                resp.data.get("results")
+                or resp.data.get("props")
+                or resp.data.get("searchResults")
+                or []
+            )
             if isinstance(resp.data, dict) and not raw_props:
                 for val in resp.data.values():
                     if isinstance(val, list) and len(val) > 0:
                         raw_props = val
                         break
 
-            # Diagnostic: when we fired a distressed query, log the
-            # distress-bearing fields from the first listing so we can
-            # verify in prod logs whether AXESSO actually honored the
-            # filter. Trims response to a few keys to keep log size sane.
+            # Diagnostic: log distress-bearing fields on the first listing so
+            # we can verify in prod whether AXESSO honored the filter. Search
+            # responses only carry `is_FSBA` + `isPreforeclosureAuction`, so
+            # the absence of richer fields here is expected; the value of
+            # this log line is mostly for tag_status correctness checking.
             if extra_params and raw_props:
                 first = raw_props[0] if isinstance(raw_props[0], dict) else {}
                 logger.info(
-                    "Zillow %s sample fields: homeStatus=%r listingSubType=%r foreclosureTypes=%r",
+                    "Zillow %s sample fields: homeStatus=%r listing_sub_type=%r isPreforeclosureAuction=%r",
                     label,
                     first.get("homeStatus"),
-                    first.get("listingSubType"),
-                    first.get("foreclosureTypes"),
+                    first.get("listing_sub_type") or first.get("listingSubType"),
+                    first.get("isPreforeclosureAuction"),
                 )
 
-            results = [self._normalize_zillow_listing(item) for item in raw_props if self._zillow_has_coords(item)]
+            results: list[MapListing] = []
+            for item in raw_props:
+                if not self._zillow_has_coords(item):
+                    continue
+                listing = self._normalize_zillow_listing(item)
+                if tag_status:
+                    listing.listing_status = tag_status
+                results.append(listing)
+
             logger.info("Zillow %s: %d listings", label, len(results))
             return results
         except Exception:
@@ -701,6 +676,71 @@ class MapSearchService:
                 "Zillow %s listing fetch failed",
                 f"{status}+{extra_params}" if extra_params else status,
             )
+            return []
+
+    async def _fetch_zillow_preforeclosure(
+        self,
+        center_lat: float,
+        center_lng: float,
+        radius_miles: float,
+    ) -> list[MapListing]:
+        """Fetch pre-foreclosure listings via AXESSO's `search-by-url`.
+
+        AXESSO's `/zil/search-by-coordinates` exposes typed booleans for
+        Auction (``isAuction``) and Foreclosure-for-sale
+        (``isForSaleForeclosure``) but NOT for pre-foreclosure
+        specifically. Pre-foreclosure inventory can only be filtered via
+        Zillow's native ``searchQueryState.filterState.pre`` toggle, so we
+        construct that URL and route it through ``search-by-url`` (which
+        scrapes the resulting Zillow page).
+
+        Returns listings tagged as ``"Pre-Foreclosure"`` so the canonical
+        status filter retains them — the response shape from search
+        endpoints lacks ``foreclosureTypes`` so we can't re-derive the
+        status from the data itself.
+        """
+        if not self.zillow:
+            return []
+
+        north, south, east, west = self._radius_to_bbox(
+            center_lat, center_lng, max(radius_miles, 0.5)
+        )
+        url = self._zillow_distressed_url(
+            north, south, east, west, {"pre-foreclosure"}
+        )
+        if not url:
+            return []
+
+        try:
+            resp = await self.zillow.search_by_url(url)
+            if not resp.success or not resp.data:
+                logger.info("Zillow pre-foreclosure returned no data")
+                return []
+
+            raw_props = (
+                resp.data.get("results")
+                or resp.data.get("props")
+                or resp.data.get("searchResults")
+                or []
+            )
+            if isinstance(resp.data, dict) and not raw_props:
+                for val in resp.data.values():
+                    if isinstance(val, list) and len(val) > 0:
+                        raw_props = val
+                        break
+
+            results: list[MapListing] = []
+            for item in raw_props:
+                if not self._zillow_has_coords(item):
+                    continue
+                listing = self._normalize_zillow_listing(item)
+                listing.listing_status = "Pre-Foreclosure"
+                results.append(listing)
+
+            logger.info("Zillow pre-foreclosure: %d listings", len(results))
+            return results
+        except Exception:
+            logger.exception("Zillow pre-foreclosure listing fetch failed")
             return []
 
     # ─── Normalization helpers ─────────────────────
