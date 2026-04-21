@@ -237,9 +237,9 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         <div className="text-center max-w-md">
           {/* Animated location pulse effect */}
           <div className="relative w-24 h-24 mx-auto mb-6">
-            <div className="absolute inset-0 rounded-full bg-[#0FA4E9]/20 animate-ping"></div>
-            <div className="absolute inset-2 rounded-full bg-[#0FA4E9]/30 animate-pulse"></div>
-            <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-[#0FA4E9] to-[#0FA4E9] flex items-center justify-center shadow-lg shadow-[#0FA4E9]/30">
+            <div className="absolute inset-0 rounded-full bg-[var(--accent-sky)]/20 animate-ping"></div>
+            <div className="absolute inset-2 rounded-full bg-[var(--accent-sky)]/30 animate-pulse"></div>
+            <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-[var(--accent-sky)] to-[var(--accent-sky)] flex items-center justify-center shadow-lg shadow-[var(--accent-sky)]/30">
               <MapPin className="w-10 h-10 text-white" />
             </div>
           </div>
@@ -258,7 +258,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
             <button
               onClick={handleUseCurrentLocation}
               disabled={isGettingLocation}
-              className="w-full py-4 px-6 bg-gradient-to-r from-[#0FA4E9] to-gray-900 text-white rounded-xl font-bold text-lg hover:from-[#5dd8e8] hover:to-gray-800 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+              className="w-full py-4 px-6 bg-gradient-to-r from-[var(--accent-sky)] to-gray-900 text-white rounded-xl font-bold text-lg hover:from-[#5dd8e8] hover:to-gray-800 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
             >
               {isGettingLocation ? (
                 <>
@@ -291,13 +291,13 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
                       onPlaceSelect={handlePlaceSelect}
                       placeholder="Enter property address..."
                       autoFocus
-                      className="w-full py-3 pl-10 pr-4 bg-gray-800 text-white rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-[#0FA4E9] placeholder-gray-500"
+                      className="w-full py-3 pl-10 pr-4 bg-gray-800 text-white rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent-sky)] placeholder-gray-500"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={!hasValidSearchAddress || isSearching}
-                    className="px-6 py-3 bg-[#0FA4E9] text-white rounded-xl font-bold hover:bg-[#3dc0d1] transition-colors disabled:opacity-50"
+                    className="px-6 py-3 bg-[var(--accent-sky)] text-white rounded-xl font-bold hover:bg-[#3dc0d1] transition-colors disabled:opacity-50"
                   >
                     {isSearching ? (
                       <Loader2 className="w-5 h-5 animate-spin" />

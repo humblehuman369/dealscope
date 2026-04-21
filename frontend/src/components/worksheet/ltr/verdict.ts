@@ -14,7 +14,7 @@ export interface VerdictConfig {
   darkBgClass: string
 }
 
-// DealGapIQ uses Teal (#0FA4E9) for positive values, not green
+// DealGapIQ uses Teal (var(--accent-sky)) for positive values, not green
 const VERDICT_CONFIGS: VerdictConfig[] = [
   {
     label: 'STRONG',

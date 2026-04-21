@@ -91,7 +91,7 @@ export function MetricsAccordion({
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#0FA4E9]/15' : 'bg-[#0FA4E9]/10'}`}>
+          <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-[var(--accent-sky)]/15' : 'bg-[var(--accent-sky)]/10'}`}>
             {icon}
           </div>
           <div className="text-left">

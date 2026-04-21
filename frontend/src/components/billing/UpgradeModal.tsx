@@ -183,7 +183,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
             className="relative w-12 h-6 rounded-full border border-slate-500/20 transition-colors"
             style={{
               background: annual
-                ? 'linear-gradient(135deg, #0FA4E9, #0FA4E9)'
+                ? 'linear-gradient(135deg, var(--accent-sky), var(--accent-sky))'
                 : '#1e293b',
             }}
           >
@@ -202,7 +202,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
             <span
               className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
               style={{
-                background: 'linear-gradient(135deg, #0FA4E9, #0FA4E9)',
+                background: 'linear-gradient(135deg, var(--accent-sky), var(--accent-sky))',
                 color: '#fff',
               }}
             >
@@ -272,7 +272,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
               disabled={rcLoading}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-60 transition-opacity"
               style={{
-                background: 'linear-gradient(135deg, #0FA4E9, #0284c7)',
+                background: 'linear-gradient(135deg, var(--accent-sky), #0284c7)',
               }}
             >
               {rcLoading ? (
@@ -291,7 +291,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
               disabled={loading || rc.isPurchasing || (IS_CAPACITOR ? !rcPkg : !proPlan)}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-50 transition-opacity"
               style={{
-                background: 'linear-gradient(135deg, #0FA4E9, #0284c7)',
+                background: 'linear-gradient(135deg, var(--accent-sky), #0284c7)',
               }}
             >
               {loading || rc.isPurchasing ? (
