@@ -22,6 +22,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X, MoreVertical, Info, DollarSign } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
@@ -523,23 +524,38 @@ export function AppHeader({
           className="flex items-center justify-between gap-3 px-4 py-3 pt-safe-header"
           style={{ backgroundColor: 'var(--surface-base)' }}
         >
-          {/* Left: Logo */}
-          <button 
+          {/* Left: Logo — image variant in dark mode, text in light mode */}
+          <button
             onClick={handleLogoClick}
-            className="flex items-baseline cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
+            className="flex items-center cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity p-0"
+            aria-label="DealGapIQ home"
           >
-            <span 
-              className="text-[21px] sm:text-[25px] font-bold tracking-tight"
-              style={{ color: colors.text.white }}
-            >
-              DealGap
-            </span>
-            <span 
-              className="text-[21px] sm:text-[25px] font-bold tracking-tight"
-              style={{ color: colors.brand.teal }}
-            >
-              IQ
-            </span>
+            {mounted && theme === 'dark' ? (
+              <Image
+                src="/DealGapIQ_Logo_Dark.png"
+                alt="DealGapIQ"
+                width={1024}
+                height={333}
+                priority
+                className="h-7 sm:h-9 w-auto select-none"
+                draggable={false}
+              />
+            ) : (
+              <span className="flex items-baseline">
+                <span
+                  className="text-[21px] sm:text-[25px] font-bold tracking-tight"
+                  style={{ color: colors.text.white }}
+                >
+                  DealGap
+                </span>
+                <span
+                  className="text-[21px] sm:text-[25px] font-bold tracking-tight"
+                  style={{ color: colors.brand.teal }}
+                >
+                  IQ
+                </span>
+              </span>
+            )}
           </button>
 
           {/* Right: About, Pricing, Search, Profile/Login */}
