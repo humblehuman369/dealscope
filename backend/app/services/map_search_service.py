@@ -265,12 +265,12 @@ class MapSearchService:
                     )
                 )
                 if self.zillow:
-                    # Vanilla forSale query — covers Active and any
-                    # owner-listed/distressed listings AXESSO surfaces by
-                    # default. Always issued (when "active" requested) so
-                    # the user sees something even when the distressed
-                    # query fails.
-                    if "active" in requested_statuses:
+                    # Vanilla forSale query — covers Active and the
+                    # owner-listed (FSBO) bucket Zillow's defaults already
+                    # include. Issued whenever any non-distressed status is
+                    # requested so the user sees something even when the
+                    # distressed query fails.
+                    if requested_statuses & {"active", "owner_listed"}:
                         tasks.append(
                             asyncio.create_task(
                                 self._fetch_zillow(
