@@ -527,8 +527,8 @@
   text-align: center;
   margin-bottom: 1rem;
 }
-/* Homepage-only: eyebrow tinted to match the wordmark blue (#007AF2). */
-.dgiq-homepage .section-label { color: #007AF2; }
+/* Homepage-only: eyebrow tinted to match the wordmark blue. */
+.dgiq-homepage .section-label { color: #0465F2; }
 .how h2 {
   text-align: center;
   font-family: var(--font-dm, 'DM Sans', sans-serif);

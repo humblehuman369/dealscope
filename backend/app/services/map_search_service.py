@@ -31,7 +31,7 @@ MAP_CACHE_TTL = 600  # 10 minutes
 
 CANONICAL_STATUSES: set[str] = {
     "active",
-    "pending",
+    "owner_listed",
     "foreclosure",
     "pre-foreclosure",
     "auction",
@@ -41,7 +41,6 @@ _STATUS_MAP: dict[str, str] = {
     # Zillow homeStatus values
     "for_sale": "active",
     "for_rent": "active",
-    "pending": "pending",
     "pre_foreclosure": "pre-foreclosure",
     "pre-foreclosure": "pre-foreclosure",
     "preforeclosure": "pre-foreclosure",
@@ -58,10 +57,17 @@ _STATUS_MAP: dict[str, str] = {
     "short sale": "pre-foreclosure",
     "short_sale": "pre-foreclosure",
     "shortsale": "pre-foreclosure",
-    # Motivation indicators
-    "contingent": "pending",
-    "under contract": "pending",
-    "under_contract": "pending",
+    # Owner-listed (FSBO). Raw provider strings are uncommon since Zillow
+    # surfaces FSBO via listingSubType.isFSBO (handled in
+    # _derive_zillow_status, which emits "Owner Listed"); these defensive
+    # mappings cover any provider that uses a string value.
+    "owner listed": "owner_listed",
+    "owner_listed": "owner_listed",
+    "for sale by owner": "owner_listed",
+    "for_sale_by_owner": "owner_listed",
+    "fsbo": "owner_listed",
+    "by owner": "owner_listed",
+    "by_owner": "owner_listed",
 }
 
 
@@ -253,11 +259,12 @@ class MapSearchService:
                     )
                 )
                 if self.zillow:
-                    # Vanilla forSale query — covers Active, Pending (via
-                    # homeStatus), and any distressed listings AXESSO
-                    # surfaces by default. Always issued so the user always
-                    # sees something even when the distressed query fails.
-                    if self._wants_active_or_pending(requested_statuses):
+                    # Vanilla forSale query — covers Active and any
+                    # owner-listed/distressed listings AXESSO surfaces by
+                    # default. Always issued (when "active" requested) so
+                    # the user sees something even when the special-status
+                    # query fails.
+                    if "active" in requested_statuses:
                         tasks.append(
                             asyncio.create_task(
                                 self._fetch_zillow(
@@ -265,10 +272,10 @@ class MapSearchService:
                                 ),
                             )
                         )
-                    # One consolidated distressed query (if any distressed
-                    # statuses requested). Uses Zillow's documented
-                    # `listing_type` and `property_status` params per
-                    # propertydata.dev's Zillow API reference.
+                    # One consolidated query for special listing_type
+                    # values (distressed and/or owner-listed). Uses
+                    # Zillow's documented `listing_type` filter (comma-
+                    # separated, OR'd) per propertydata.dev's reference.
                     if zillow_distressed_extras:
                         tasks.append(
                             asyncio.create_task(
