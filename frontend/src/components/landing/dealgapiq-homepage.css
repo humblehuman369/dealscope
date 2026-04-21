@@ -527,10 +527,7 @@
   text-align: center;
   margin-bottom: 1rem;
 }
-/* Homepage-only: brand-blue accents tinted to match the wordmark (#0465F2). */
-.dgiq-homepage .section-label,
-.dgiq-homepage .hero-pre,
-.dgiq-homepage .hero h1 .accent,
+/* Homepage-only: tint the inline "IQ" in the hero subtitle to the wordmark blue. */
 .dgiq-homepage .hero-sub .accent-inline { color: #0465F2; }
 .how h2 {
   text-align: center;
