@@ -25,7 +25,11 @@ import { api, type NeighborhoodOverview } from '@/lib/api'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
-const GEOLOCATION_ZOOM = 9
+// Initial zoom used while the map is mounting before `fitBounds` runs.
+// 13 ≈ a 5-mile-wide span on a typical desktop viewport, so first paint
+// is already close to the final framing instead of zooming out and snapping in.
+const GEOLOCATION_INITIAL_ZOOM = 13
+const GEOLOCATION_RADIUS_MILES = 5
 const MAP_ID = 'DEMO_MAP_ID'
 const MIN_ZOOM_FOR_GEOCODE = 13
 const HINT_DISMISSED_KEY = 'dealscope:map-click-hint-dismissed'
@@ -173,6 +177,60 @@ function LabelGeocoder({
       }, 200)
     })
   }, [map, label, apiKey])
+
+  return null
+}
+
+/**
+ * Fits the map viewport to a circular radius (in miles) around `center` once
+ * on mount. Using `fitBounds` (instead of a fixed zoom) keeps the framing
+ * consistent across desktop, mobile, and the desktop 60% split panel where
+ * the rendered map width varies considerably.
+ */
+function FitToRadius({
+  center,
+  radiusMiles,
+  onFitted,
+}: {
+  center: { lat: number; lng: number }
+  radiusMiles: number
+  onFitted?: (bounds: { north: number; south: number; east: number; west: number }) => void
+}) {
+  const map = useMap()
+  const fittedRef = useRef(false)
+  const onFittedRef = useRef(onFitted)
+  onFittedRef.current = onFitted
+
+  useEffect(() => {
+    if (!map || fittedRef.current) return
+    fittedRef.current = true
+
+    // 1° latitude ≈ 69 miles; longitude scales by cos(latitude).
+    const latDelta = radiusMiles / 69
+    const lngDelta = radiusMiles / (69 * Math.cos((center.lat * Math.PI) / 180))
+    const bounds = {
+      north: center.lat + latDelta,
+      south: center.lat - latDelta,
+      east: center.lng + lngDelta,
+      west: center.lng - lngDelta,
+    }
+    map.fitBounds(bounds)
+
+    // Push the resolved bounds to the listings hook in case `idle` doesn't fire
+    // (mirrors LabelGeocoder's belt-and-suspenders pattern).
+    setTimeout(() => {
+      const b = map.getBounds()
+      if (!b || !onFittedRef.current) return
+      const ne = b.getNorthEast()
+      const sw = b.getSouthWest()
+      onFittedRef.current({
+        north: ne.lat(),
+        south: sw.lat(),
+        east: ne.lng(),
+        west: sw.lng(),
+      })
+    }, 200)
+  }, [map, center.lat, center.lng, radiusMiles])
 
   return null
 }
@@ -608,7 +666,13 @@ export function MapSearchView() {
   }, [hasExplicitLocation])
 
   const initialCenter = paramCenter ?? geoCenter ?? DEFAULT_CENTER
-  const initialZoom = paramZoom ?? (geoCenter ? GEOLOCATION_ZOOM : DEFAULT_ZOOM)
+  const initialZoom = paramZoom ?? (geoCenter ? GEOLOCATION_INITIAL_ZOOM : DEFAULT_ZOOM)
+
+  // Only fit-to-radius and show the "you are here" pin when the location came
+  // from the user's geolocation/IP fallback — never for URL params (which the
+  // caller has already framed) or the US-center default.
+  const shouldUseUserLocation = !paramCenter && !needsGeocode && !!geoCenter
+  const userLocation = shouldUseUserLocation ? geoCenter : null
 
   const {
     listings,
@@ -873,6 +937,37 @@ export function MapSearchView() {
                 <div className="w-2 h-2 rounded-full bg-white" />
               </div>
             </AdvancedMarker>
+          )}
+
+          {/* "You are here" marker — Google-Maps-style blue dot with a soft halo. */}
+          {userLocation && (
+            <AdvancedMarker position={userLocation} zIndex={500}>
+              <div className="relative flex items-center justify-center">
+                <div
+                  className="absolute w-9 h-9 rounded-full"
+                  style={{ backgroundColor: 'rgba(66, 133, 244, 0.18)' }}
+                />
+                <div
+                  className="w-4 h-4 rounded-full"
+                  style={{
+                    backgroundColor: '#4285F4',
+                    border: '2.5px solid #fff',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.35)',
+                  }}
+                />
+              </div>
+            </AdvancedMarker>
+          )}
+
+          {/* Fit the camera to a 5-mile radius around the user's location.
+              Runs once after the map mounts so the framing adapts to the actual
+              container size (mobile vs. desktop split). */}
+          {userLocation && !paramZoom && (
+            <FitToRadius
+              center={userLocation}
+              radiusMiles={GEOLOCATION_RADIUS_MILES}
+              onFitted={onBoundsChanged}
+            />
           )}
 
           {needsGeocode && apiKey && (
