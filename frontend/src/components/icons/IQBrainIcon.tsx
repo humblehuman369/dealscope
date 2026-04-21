@@ -26,7 +26,7 @@ export function IQBrainIcon({
   mode = 'dark',
   usePng = true
 }: IQBrainIconProps) {
-  const strokeColor = mode === 'dark' ? '#0FA4E9' : '#1976d2';
+  const strokeColor = mode === 'dark' ? 'var(--accent-sky)' : '#1976d2';
 
   if (usePng) {
     return (

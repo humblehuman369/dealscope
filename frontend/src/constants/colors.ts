@@ -6,7 +6,7 @@
  * - Navy/Black-Blue: #07172e
  * - Medium Blue (Primary): #0465f2
  * - Soft Cyan (Accent Dark Mode): #0FA4E9 (updated from #00e5ff for premium feel)
- * - Pacific Teal (Accent Light Mode): #0FA4E9
+ * - Brand Blue (Accent Light Mode): #0465F2
  * - Icy Silver: #e1e8ed
  * - Cool Gray: #aab2bd
  * 
@@ -33,16 +33,16 @@ export const colors = {
     900: '#01216e',
   },
 
-  // Accent - Cyan/Teal (Theme-aware)
-  // Dark Mode: #0FA4E9 (Soft Cyan) | Light Mode: #0FA4E9 (Pacific Teal)
+  // Accent — Theme-aware brand
+  // Dark Mode: #0FA4E9 (Soft Cyan) | Light Mode: #0465F2 (Brand Blue)
   accent: {
     50: '#f0f9ff',
     100: '#e0f2fe',
     200: '#bae6fd',
     300: '#7dd3fc',  // Sky blue highlight
     400: '#38bdf8',
-    500: '#0FA4E9',  // Dark mode accent — unified sky blue
-    light: '#0284C7', // Light mode accent — deeper sky for WCAG contrast
+    500: '#0FA4E9',  // Dark mode accent — soft cyan
+    light: '#0465F2', // Light mode accent — brand blue
     600: '#0284c7',
     700: '#0369a1',
     800: '#075985',
@@ -204,7 +204,7 @@ export const gradients = {
   /** CTA buttons, hero elements - dark mode */
   brandDark: 'linear-gradient(135deg, #0465f2 0%, #0FA4E9 100%)',
   /** CTA buttons, hero elements - light mode */
-  brandLight: 'linear-gradient(135deg, #0455d1 0%, #0284C7 100%)',
+  brandLight: 'linear-gradient(135deg, #0465F2 0%, #0465F2 100%)',
   /** Dark mode backgrounds */
   backgroundDark: 'linear-gradient(135deg, #07172e 0%, #1f2937 100%)',
   /** Light mode backgrounds */

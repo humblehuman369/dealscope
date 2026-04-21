@@ -33,8 +33,8 @@ const T = {
   label: '#F1F5F9',       // Match primary text
 
   // Semantic accent colors — CURSOR-UNIFY-COLOR-SYSTEM primary #0FA4E9
-  blue: '#0FA4E9',       // Primary accent (unified)
-  teal: '#0FA4E9',       // Alias for primary
+  blue: 'var(--accent-sky)',       // Primary accent (unified)
+  teal: 'var(--accent-sky)',       // Alias for primary
   amber: '#fbbf24',       // Caution, scores
   red: '#f87171',         // Negatives, losses
   green: '#34d399',       // Income, success

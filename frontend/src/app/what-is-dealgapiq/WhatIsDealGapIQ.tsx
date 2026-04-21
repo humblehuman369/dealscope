@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 const t = {
   bgPrimary: '#000000',
-  teal: '#0FA4E9',
+  teal: 'var(--accent-sky)',
   coral: '#F97066',
   green: '#34D399',
   amber: '#FBBF24',

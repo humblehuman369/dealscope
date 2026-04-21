@@ -233,21 +233,21 @@
   --text-label: #475569;
   --text-muted: #64748B;
   --text-inverse: #FFFFFF;
-  --text-link: #0284C7;
+  --text-link: #0465F2;
 
-  --accent-brand-blue: #0052CC;
-  --accent-sky: #0284C7;
+  --accent-brand-blue: #0465F2;
+  --accent-sky: #0465F2;
   --accent-sky-light: #0FA4E9;
-  --accent-gradient-from: #0052CC;
-  --accent-gradient-to: #0284C7;
+  --accent-gradient-from: #0465F2;
+  --accent-gradient-to: #0465F2;
 
   --status-positive: #059669;
   --status-warning: #D97706;
   --status-negative: #DC2626;
-  --status-info: #0284C7;
+  --status-info: #0465F2;
   --status-income-value: #A16207;
 
-  --strategy-ltr: #0344A6;
+  --strategy-ltr: #0465F2;
   --strategy-str: #6D28D9;
   --strategy-brrrr: #C2410C;
   --strategy-flip: #BE185D;
@@ -257,12 +257,12 @@
   --border-subtle: #D5DBE4;
   --border-default: #B8C4CE;
   --border-strong: #8896A6;
-  --border-focus: #0284C7;
+  --border-focus: #0465F2;
 
   --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
   --shadow-dropdown: 0 10px 25px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.06);
-  --glow-sky-inset: rgba(3,105,161,0.16);
+  --glow-sky-inset: rgba(4,101,242,0.16);
   --hover-overlay: rgba(0,0,0,0.05);
 
   --chart-grid: #D5DBE4;
@@ -270,14 +270,14 @@
   --chart-tooltip: #FFFFFF;
   --chart-tooltip-text: #07172e;
 
-  --color-sky-dim: rgba(3,105,161,0.10);
-  --color-teal-dim: rgba(3,105,161,0.12);
+  --color-sky-dim: rgba(4,101,242,0.10);
+  --color-teal-dim: rgba(4,101,242,0.12);
   --color-gold-dim: rgba(180,83,9,0.14);
   --color-red-dim: rgba(185,28,28,0.12);
   --color-green-dim: rgba(4,120,87,0.12);
   --color-border: var(--border-default);
   --color-border-light: var(--border-subtle);
-  --dg-bg-selected: rgba(3,105,161,0.10);
+  --dg-bg-selected: rgba(4,101,242,0.10);
   --dg-border-medium: var(--border-default);
   --dg-border-light: var(--border-subtle);
 }

@@ -113,7 +113,7 @@ const SLIDER_GROUPS: SliderGroup[] = [
     id: 'purchase',
     label: 'PURCHASE TERMS',
     sliders: [...PURCHASE_SLIDERS, ...FINANCING_SLIDERS],
-    accent: '#0FA4E9',
+    accent: 'var(--accent-sky)',
     border: 'rgba(15, 164, 233, 0.7)',
   },
   {

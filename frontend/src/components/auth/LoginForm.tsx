@@ -104,7 +104,7 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
           onClick={onMfaSubmit}
           disabled={isLoading || mfaCode.length !== 6}
           className="w-full py-3 px-4 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
-          style={{ backgroundColor: '#0FA4E9' }}
+          style={{ backgroundColor: 'var(--accent-sky)' }}
         >
           {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
           Verify
@@ -203,7 +203,7 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
             type="button"
             onClick={onForgotPassword}
             className="text-sm font-medium"
-            style={{ color: '#0FA4E9' }}
+            style={{ color: 'var(--accent-sky)' }}
           >
             Forgot password?
           </button>
@@ -215,7 +215,7 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
         type="submit"
         disabled={isLoading}
         className="w-full py-3 px-4 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
-        style={{ backgroundColor: '#0FA4E9' }}
+        style={{ backgroundColor: 'var(--accent-sky)' }}
       >
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         Sign In
@@ -225,7 +225,7 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
       {onSwitchToRegister && (
         <p className="text-center text-sm" style={{ color: '#94A3B8' }}>
           Don&apos;t have an account?{' '}
-          <button type="button" onClick={onSwitchToRegister} className="font-medium" style={{ color: '#0FA4E9' }}>
+          <button type="button" onClick={onSwitchToRegister} className="font-medium" style={{ color: 'var(--accent-sky)' }}>
             Sign up
           </button>
         </p>

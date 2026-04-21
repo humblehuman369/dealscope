@@ -513,7 +513,7 @@ function MapMarkers({
 
   if (!map) return null
 
-  const compColor = activeView === 'sale' ? '#0FA4E9' : '#38bdf8'
+  const compColor = activeView === 'sale' ? 'var(--accent-sky)' : '#38bdf8'
 
   return (
     <>
@@ -588,7 +588,7 @@ function FullscreenMapModal({
     () => comps.filter(c => isFiniteCoord(c.latitude, c.longitude)),
     [comps],
   )
-  const compColor = activeView === 'sale' ? '#0FA4E9' : '#38bdf8'
+  const compColor = activeView === 'sale' ? 'var(--accent-sky)' : '#38bdf8'
 
   const [showNearby, setShowNearby] = useState(false)
   const [showSchools, setShowSchools] = useState(false)
@@ -830,7 +830,7 @@ export function CompsProximityMap({ subject, comps, activeView, hideHeader = fal
             <span className="flex items-center gap-1">
               <span
                 className="w-2.5 h-2.5 rounded-full inline-block"
-                style={{ backgroundColor: activeView === 'sale' ? '#0FA4E9' : '#38bdf8' }}
+                style={{ backgroundColor: activeView === 'sale' ? 'var(--accent-sky)' : '#38bdf8' }}
               />
               <span className="text-[#F1F5F9]">
                 {activeView === 'sale' ? 'Sale' : 'Rent'} Comps ({validComps.length})

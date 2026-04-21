@@ -115,7 +115,7 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
           style={{
             background: 'rgba(15,164,233,0.08)',
             border: '1px solid rgba(15,164,233,0.2)',
-            color: '#0FA4E9',
+            color: 'var(--accent-sky)',
           }}
         >
           <Lock size={12} />

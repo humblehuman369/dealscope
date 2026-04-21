@@ -527,8 +527,8 @@
   text-align: center;
   margin-bottom: 1rem;
 }
-/* Homepage-only: lock the inline "IQ" in the hero subtitle to brand cyan in both themes. */
-.dgiq-homepage .hero-sub .accent-inline { color: #0FA4E9; }
+/* Homepage-only: brand accent on inline "IQ" — auto theme-shifts via --accent-sky token. */
+.dgiq-homepage .hero-sub .accent-inline { color: var(--accent-sky); }
 .how h2 {
   text-align: center;
   font-family: var(--font-dm, 'DM Sans', sans-serif);

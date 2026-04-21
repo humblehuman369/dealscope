@@ -109,7 +109,7 @@ const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: num
         className="h-full rounded-full transition-all duration-500"
         style={{
           width: `${value}%`,
-          backgroundColor: value >= 90 ? '#0FA4E9' : value >= 75 ? '#0E7490' : '#F59E0B'
+          backgroundColor: value >= 90 ? 'var(--accent-sky)' : value >= 75 ? '#0E7490' : '#F59E0B'
         }}
       />
     </div>
@@ -168,7 +168,7 @@ const DualValuationPanel = ({
         <div className="flex items-center gap-2">
           <div className="text-center px-3 py-1 rounded-lg bg-white/60">
             <div className="text-lg font-bold tabular-nums" style={{ 
-              color: appraisalResult.confidence >= 85 ? '#0FA4E9' : appraisalResult.confidence >= 70 ? '#F59E0B' : '#EF4444' 
+              color: appraisalResult.confidence >= 85 ? 'var(--accent-sky)' : appraisalResult.confidence >= 70 ? '#F59E0B' : '#EF4444' 
             }}>
               {loading ? '...' : appraisalResult.confidence}%
             </div>
@@ -491,7 +491,7 @@ const CompCard = ({
         {/* Match Score */}
         <div className="w-16 flex flex-col items-center justify-center bg-slate-50 border-l border-slate-100">
           <div className="text-xl font-bold tabular-nums" style={{ 
-            color: similarity.overall >= 95 ? '#0FA4E9' : similarity.overall >= 90 ? '#0E7490' : '#F59E0B' 
+            color: similarity.overall >= 95 ? 'var(--accent-sky)' : similarity.overall >= 90 ? '#0E7490' : '#F59E0B' 
           }}>
             {similarity.overall}
           </div>
