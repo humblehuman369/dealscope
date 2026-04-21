@@ -896,7 +896,7 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Filter Panel */}
+      {/* Filter Panel (includes Investment Heatmap controls) */}
       <FilterPanel
         filters={filters}
         onChange={updateFilters}
@@ -904,17 +904,15 @@ export function MapSearchView() {
         isLoading={isLoading}
         isOpen={filtersOpen}
         onToggle={() => setFiltersOpen((p) => !p)}
+        heatmapActive={heatmapActive}
+        heatmapMetric={heatmapMetric}
+        onHeatmapToggle={() => setHeatmapActive((p) => !p)}
+        onHeatmapMetricChange={setHeatmapMetric}
       />
 
-      {/* Investment Heatmap Legend (metric selector + color scale) */}
-      {heatmapActive && (
-        <HeatmapLegend
-          isActive={heatmapActive}
-          metricType={heatmapMetric}
-          onToggle={() => setHeatmapActive(false)}
-          onMetricChange={setHeatmapMetric}
-        />
-      )}
+      {/* Investment Heatmap color-scale legend (interpretation only;
+          controls live in the Filters panel) */}
+      <HeatmapLegend isActive={heatmapActive} metricType={heatmapMetric} />
 
       {/* Neighborhood Intelligence Card */}
       {selectedNeighborhood && (
@@ -923,22 +921,6 @@ export function MapSearchView() {
           onClose={() => setSelectedNeighborhood(null)}
         />
       )}
-
-      {/* Heatmap toggle (second row, right — below the search bar on all sizes) */}
-      <div className="absolute top-20 right-4 z-10">
-        <button
-          onClick={() => setHeatmapActive((p) => !p)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-colors"
-          style={{
-            backgroundColor: heatmapActive ? 'var(--accent-sky)' : 'var(--surface-card)',
-            color: heatmapActive ? '#fff' : 'var(--text-body)',
-            border: `1px solid ${heatmapActive ? 'var(--accent-sky)' : 'var(--border-default)'}`,
-          }}
-        >
-          <MapIcon size={16} />
-          Heatmap
-        </button>
-      </div>
 
       {/* Loading spinner */}
       {isLoading && (
