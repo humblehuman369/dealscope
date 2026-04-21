@@ -60,7 +60,7 @@ function domColor(dom: number): string {
 function statusColor(raw: string | null): string {
   const canonical = normalizeListingStatus(raw)
   if (canonical === 'active') return 'var(--status-positive)'
-  if (canonical === 'pending') return 'var(--status-warning)'
+  if (canonical === 'owner_listed') return 'var(--accent-sky)'
   if (canonical === 'foreclosure' || canonical === 'pre-foreclosure' || canonical === 'auction') {
     return 'var(--status-negative)'
   }

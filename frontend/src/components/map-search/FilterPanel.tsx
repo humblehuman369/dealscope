@@ -51,7 +51,7 @@ const BEDROOM_OPTIONS = [
 
 const LISTING_STATUS_OPTIONS = [
   { value: 'active', label: 'Active' },
-  { value: 'pending', label: 'Pending' },
+  { value: 'owner_listed', label: 'Owner Listed' },
   { value: 'foreclosure', label: 'Foreclosure' },
   { value: 'auction', label: 'Auction' },
   { value: 'pre-foreclosure', label: 'Pre-Foreclosure' },

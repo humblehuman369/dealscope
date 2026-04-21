@@ -18,7 +18,7 @@ export type SortOption = 'deal_signal' | 'price_asc' | 'price_desc' | 'dom_desc'
  */
 export type CanonicalStatus =
   | 'active'
-  | 'pending'
+  | 'owner_listed'
   | 'foreclosure'
   | 'pre-foreclosure'
   | 'auction'
@@ -30,7 +30,6 @@ const STATUS_MAP: Record<string, CanonicalStatus> = {
   // Zillow homeStatus values
   'for_sale': 'active',
   'for_rent': 'active',
-  'pending': 'pending',
   'pre_foreclosure': 'pre-foreclosure',
   'pre-foreclosure': 'pre-foreclosure',
   'preforeclosure': 'pre-foreclosure',
@@ -55,10 +54,18 @@ const STATUS_MAP: Record<string, CanonicalStatus> = {
   'short_sale': 'pre-foreclosure',
   'shortsale': 'pre-foreclosure',
 
-  // Motivation indicators
-  'contingent': 'pending',
-  'under contract': 'pending',
-  'under_contract': 'pending',
+  // Owner-listed (FSBO). Backend emits "Owner Listed" when
+  // listingSubType.isFSBO is true; the others are defensive coverage for
+  // any provider that uses raw string values.
+  'owner listed': 'owner_listed',
+  'owner_listed': 'owner_listed',
+  'for sale by owner': 'owner_listed',
+  'for_sale_by_owner': 'owner_listed',
+  'fsbo': 'owner_listed',
+  'by owner': 'owner_listed',
+  'by_owner': 'owner_listed',
+
+  // Misc
   'price reduced': 'active',
   'price_reduced': 'active',
 }
@@ -72,7 +79,7 @@ export function normalizeListingStatus(raw: string | null): CanonicalStatus {
 export function displayListingStatus(raw: string | null): string {
   switch (normalizeListingStatus(raw)) {
     case 'active': return 'Active'
-    case 'pending': return 'Pending'
+    case 'owner_listed': return 'Owner Listed'
     case 'foreclosure': return 'Foreclosure'
     case 'pre-foreclosure': return 'Pre-Foreclosure'
     case 'auction': return 'Auction'
@@ -88,8 +95,11 @@ const DISTRESSED_CATEGORIES: Set<CanonicalStatus> = new Set([
   'auction',
 ])
 
+// FSBO sellers tend to be more motivated than agent-listed (no commission
+// to absorb, often selling for life-event reasons). Treat as a positive
+// motivation signal for the deal score.
 const HIGH_MOTIVATION_CATEGORIES: Set<CanonicalStatus> = new Set([
-  'pending',
+  'owner_listed',
 ])
 
 function isDistressed(status: string | null): boolean {
