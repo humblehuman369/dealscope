@@ -405,57 +405,46 @@ class MapSearchService:
         return response
 
     @staticmethod
-    def _wants_active_or_pending(requested_statuses: set[str]) -> bool:
-        """True when the vanilla forSale Zillow query should fire.
-
-        The vanilla query covers Active and surfaces Pending listings via
-        Zillow's ``homeStatus="PENDING"`` field. If neither is requested,
-        skip it to save quota.
-        """
-        return "active" in requested_statuses or "pending" in requested_statuses
-
-    @staticmethod
     def _zillow_distressed_extras(requested_statuses: set[str]) -> dict[str, Any] | None:
-        """Build the params dict for one consolidated distressed query.
+        """Build the params dict for one consolidated special-status query.
 
         Uses Zillow's documented filter conventions per propertydata.dev's
         Zillow API reference (which mirrors the Zillow web UI's filter
-        codes):
+        codes). The ``listing_type`` param accepts comma-separated values
+        that are OR'd together:
 
-        - ``listing_type`` accepts comma-separated values: ``foreclosures``
-          (REO/bank-owned), ``foreclosed`` (lender-owned, not yet listed),
-          ``pre_foreclosures``, ``auctions``.
-        - ``property_status`` accepts ``pending_and_under_contract`` for
-          pending inventory.
+        - ``foreclosures`` — currently listed REO / bank-owned
+        - ``foreclosed``   — lender-owned, may soon be listed
+        - ``pre_foreclosures``
+        - ``auctions``
+        - ``by_owner``     — For Sale By Owner (FSBO)
 
-        The previous implementation passed ``isForeclosure=true``, etc.,
-        which AXESSO silently ignored — confirmed via prod logs showing
-        identical 41-listing payloads with and without the flag. These
-        snake_case plural names align with Zillow's underlying URL filter
-        codes and the param name (``listing_type``) used by the existing
-        ``ZillowClient.search_properties()`` method.
+        The previous ``isForeclosure=true``-style flags were silently
+        ignored by AXESSO (confirmed via prod logs). The snake_case plural
+        names below align with Zillow's underlying URL filter codes.
 
-        Returns None when no distressed statuses are requested (so caller
+        Defense in depth: even if AXESSO ignores ``listing_type=by_owner``,
+        ``_derive_zillow_status`` re-classifies any listing with
+        ``listingSubType.isFSBO=true`` as "Owner Listed", so the
+        authoritative status filter at the end of ``search()`` will retain
+        only true FSBO listings.
+
+        Returns None when no special statuses are requested (so caller
         can skip dispatching entirely).
         """
         listing_types: list[str] = []
         if "foreclosure" in requested_statuses:
-            # `foreclosures` = currently listed REO / bank-owned
-            # `foreclosed` = lender-owned, may soon be listed
             listing_types.extend(["foreclosures", "foreclosed"])
         if "pre-foreclosure" in requested_statuses:
             listing_types.append("pre_foreclosures")
         if "auction" in requested_statuses:
             listing_types.append("auctions")
+        if "owner_listed" in requested_statuses:
+            listing_types.append("by_owner")
 
         extras: dict[str, Any] = {}
         if listing_types:
             extras["listing_type"] = ",".join(listing_types)
-        # Pending isn't strictly distressed, but Zillow exposes it via the
-        # property_status filter. Including it here folds it into the same
-        # query as distressed when both are requested.
-        if "pending" in requested_statuses:
-            extras["property_status"] = "pending_and_under_contract"
 
         return extras or None
 
@@ -837,10 +826,11 @@ class MapSearchService:
     def _derive_zillow_status(item: dict) -> str | None:
         """Pick the most informative status label from a Zillow record.
 
-        Distress flags win over generic homeStatus. Order matters:
-        pre-foreclosure beats foreclosure beats auction beats bank-owned
-        beats whatever homeStatus says — because the more specific signal
-        is the one investors actually filter on.
+        Distress flags win over owner-listed which wins over generic
+        homeStatus. Order matters: pre-foreclosure beats foreclosure beats
+        auction beats bank-owned beats FSBO beats whatever homeStatus says
+        — because the more specific signal is the one investors actually
+        filter on.
         """
         sub = item.get("listingSubType") or {}
         fore_types = item.get("foreclosureTypes") or {}
@@ -857,6 +847,8 @@ class MapSearchService:
             return "Auction"
         if sub.get("isBankOwned") or fore_types.get("isBankOwned"):
             return "Foreclosure"
+        if sub.get("isFSBO"):
+            return "Owner Listed"
 
         return item.get("homeStatus") or item.get("listingStatus")
 
