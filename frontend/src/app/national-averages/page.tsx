@@ -29,8 +29,8 @@ import {
 // DealGapIQ Design System Colors
 const COLORS = {
   navy: '#0A1628',
-  teal: '#0FA4E9',
-  tealLight: '#0FA4E9',
+  teal: 'var(--accent-sky)',
+  tealLight: 'var(--accent-sky)',
   electricCyan: '#00D4FF',
   danger: '#EF4444',
   warning: '#F59E0B',

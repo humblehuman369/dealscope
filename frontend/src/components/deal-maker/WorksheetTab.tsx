@@ -76,7 +76,7 @@ export function WorksheetTab({
         onClick={onToggle}
       >
         {/* Step Icon */}
-        <span style={{ color: '#0FA4E9', width: 24, height: 24, flexShrink: 0 }}>
+        <span style={{ color: 'var(--accent-sky)', width: 24, height: 24, flexShrink: 0 }}>
           {lineIcon}
         </span>
         
@@ -141,7 +141,7 @@ export function WorksheetTab({
           <button
             className="w-full flex items-center justify-center text-white"
             style={{
-              background: '#0FA4E9',
+              background: 'var(--accent-sky)',
               borderRadius: '12px',
               padding: '16px',
               fontSize: '16px',

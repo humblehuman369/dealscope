@@ -270,7 +270,7 @@ function ToggleRow({ label, options, value, onChange }: {
                 : 'text-white/60 hover:text-white'
             }`}
             style={{
-              background: value === opt.id ? '#0FA4E9' : 'rgba(255,255,255,0.06)',
+              background: value === opt.id ? 'var(--accent-sky)' : 'rgba(255,255,255,0.06)',
               border: value === opt.id ? 'none' : '1px solid rgba(255,255,255,0.1)',
             }}
             onClick={() => onChange(opt.id)}

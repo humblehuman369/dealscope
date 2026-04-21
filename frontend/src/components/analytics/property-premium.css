@@ -87,7 +87,7 @@ html:not(.dark) .premium-logo {
 }
 
 html:not(.dark) .premium-logo span {
-  color: #0FA4E9;
+  color: var(--accent-sky);
 }
 
 .premium-spacer {
@@ -123,7 +123,7 @@ html:not(.dark) .premium-logo span {
 }
 
 html:not(.dark) .premium-try-btn {
-  background: #0FA4E9;
+  background: var(--accent-sky);
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(8, 145, 178, 0.3);
 }
@@ -289,7 +289,7 @@ html:not(.dark) .premium-photo-counter {
 }
 
 .premium-thumb.active {
-  border-color: #0FA4E9;
+  border-color: var(--accent-sky);
   opacity: 1;
 }
 
@@ -400,7 +400,7 @@ html.dark .premium-info-specs {
 .premium-info-price {
   font-size: 24px;
   font-weight: 700;
-  color: #0FA4E9;
+  color: var(--accent-sky);
   line-height: 1.1;
 }
 
@@ -506,7 +506,7 @@ html:not(.dark) .premium-property-price {
 }
 
 html:not(.dark) .premium-status-dot {
-  background: #0FA4E9;
+  background: var(--accent-sky);
   box-shadow: 0 0 12px rgba(8, 145, 178, 0.5);
 }
 
@@ -517,7 +517,7 @@ html:not(.dark) .premium-status-dot {
 }
 
 html:not(.dark) .premium-status-text {
-  color: #0FA4E9;
+  color: var(--accent-sky);
 }
 
 /* Section Header */
@@ -881,7 +881,7 @@ html:not(.dark) .premium-action-btn-saved svg {
 }
 
 html:not(.dark) .premium-primary-btn {
-  background: #0FA4E9;
+  background: var(--accent-sky);
   box-shadow: 0 4px 24px rgba(8, 145, 178, 0.35);
 }
 

@@ -9,7 +9,7 @@ import { authApi } from "@/lib/api-client";
 import { PriceCents } from "@/components/ui/PriceCents";
 
 // ─── Icons ───
-const CheckIcon: React.FC<{ color?: string }> = ({ color = "#0FA4E9" }) => (
+const CheckIcon: React.FC<{ color?: string }> = ({ color = "var(--accent-sky)" }) => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <circle cx="8" cy="8" r="8" fill={color} fillOpacity="0.12" />
     <path d="M5 8.5L7 10.5L11 6.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -187,7 +187,7 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
           style={{
             fontSize: "11px",
             fontWeight: 700,
-            color: isPro ? "#0FA4E9" : "#94A3B8",
+            color: isPro ? "var(--accent-sky)" : "#94A3B8",
             letterSpacing: "0.08em",
             textTransform: "uppercase" as const,
           }}
@@ -234,7 +234,7 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
             marginBottom: "18px",
           }}
         >
-          <div style={{ fontSize: "13px", fontWeight: 600, color: "#0FA4E9", marginBottom: "4px" }}>
+          <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--accent-sky)", marginBottom: "4px" }}>
             7-day free trial
           </div>
           <div style={{ fontSize: "12px", color: "#94A3B8", lineHeight: 1.5 }}>
@@ -634,7 +634,7 @@ function RegistrationInner() {
         }}
       >
         Already have an account?{" "}
-        <Link href="/login" style={{ color: "#0FA4E9", textDecoration: "none", fontWeight: 600 }}>
+        <Link href="/login" style={{ color: "var(--accent-sky)", textDecoration: "none", fontWeight: 600 }}>
           Log in
         </Link>
       </p>
@@ -669,8 +669,8 @@ function RegistrationInner() {
             }}
           >
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect x="4" y="7" width="20" height="14" rx="2" stroke="#0FA4E9" strokeWidth="2" fill="none" />
-              <path d="M4 9l10 7 10-7" stroke="#0FA4E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <rect x="4" y="7" width="20" height="14" rx="2" stroke="var(--accent-sky)" strokeWidth="2" fill="none" />
+              <path d="M4 9l10 7 10-7" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
 
@@ -753,7 +753,7 @@ function RegistrationInner() {
                 background: "none",
                 border: "none",
                 fontSize: "13px",
-                color: resendStatus === "sent" ? "#22C55E" : "#0FA4E9",
+                color: resendStatus === "sent" ? "#22C55E" : "var(--accent-sky)",
                 cursor: resendStatus === "idle" ? "pointer" : "default",
                 fontFamily: "inherit",
                 fontWeight: 500,
@@ -795,7 +795,7 @@ function RegistrationInner() {
           }}
         >
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <path d="M8 15l4 4 8-8" stroke="#0FA4E9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M8 15l4 4 8-8" stroke="var(--accent-sky)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
 
@@ -915,7 +915,7 @@ function RegistrationInner() {
               textDecoration: "none",
             }}
           >
-            DealGap<span style={{ color: "#0FA4E9" }}>IQ</span>
+            DealGap<span style={{ color: "var(--accent-sky)" }}>IQ</span>
           </Link>
 
           <Link
@@ -965,7 +965,7 @@ function RegistrationInner() {
                   cursor: "pointer",
                   transition: "all 0.2s ease",
                   fontFamily: "inherit",
-                  background: !isAnnual ? "#0FA4E9" : "transparent",
+                  background: !isAnnual ? "var(--accent-sky)" : "transparent",
                   color: !isAnnual ? "#fff" : "#64748B",
                 }}
               >
@@ -982,7 +982,7 @@ function RegistrationInner() {
                   cursor: "pointer",
                   transition: "all 0.2s ease",
                   fontFamily: "inherit",
-                  background: isAnnual ? "#0FA4E9" : "transparent",
+                  background: isAnnual ? "var(--accent-sky)" : "transparent",
                   color: isAnnual ? "#fff" : "#64748B",
                   display: "flex",
                   alignItems: "center",
@@ -995,7 +995,7 @@ function RegistrationInner() {
                     fontSize: "10px",
                     fontWeight: 700,
                     background: isAnnual ? "rgba(255,255,255,0.22)" : "rgba(15,164,233,0.15)",
-                    color: isAnnual ? "#fff" : "#0FA4E9",
+                    color: isAnnual ? "#fff" : "var(--accent-sky)",
                     padding: "2px 6px",
                     borderRadius: "6px",
                   }}
@@ -1016,7 +1016,7 @@ function RegistrationInner() {
                     borderRadius: "6px",
                     border: `1px solid ${plan === p ? "rgba(15,164,233,0.25)" : "rgba(148,163,184,0.08)"}`,
                     background: plan === p ? "rgba(15,164,233,0.06)" : "transparent",
-                    color: plan === p ? "#0FA4E9" : "#64748B",
+                    color: plan === p ? "var(--accent-sky)" : "#64748B",
                     fontSize: "12px",
                     fontWeight: 700,
                     cursor: "pointer",

@@ -158,7 +158,7 @@ function ModeButton({
   const cfg = MODE_CONFIG[mode]
   const modeColors: Record<UnderwritingMode, string> = {
     conservative: '#F59E0B',
-    balanced: '#0FA4E9',
+    balanced: 'var(--accent-sky)',
     upside: '#10B981',
   }
 

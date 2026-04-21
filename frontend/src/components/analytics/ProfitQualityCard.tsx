@@ -56,7 +56,7 @@ function CircularProgress({
   // Score color based on value
   const getScoreColor = () => {
     if (score >= 80) return '#22c55e'; // green
-    if (score >= 60) return '#0FA4E9'; // teal
+    if (score >= 60) return 'var(--accent-sky)'; // teal
     if (score >= 40) return '#f59e0b'; // amber
     return '#ef4444'; // red
   };

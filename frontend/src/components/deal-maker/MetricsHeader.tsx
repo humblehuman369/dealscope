@@ -56,7 +56,7 @@ export function MetricsHeader({
         {/* DEAL MAKER IQ Title */}
         <div style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '0.05em' }}>
           <span className="text-white">DEAL </span>
-          <span style={{ color: '#0FA4E9' }}>MAKER </span>
+          <span style={{ color: 'var(--accent-sky)' }}>MAKER </span>
           <span className="text-white">IQ</span>
         </div>
       </div>
@@ -88,7 +88,7 @@ export function MetricsHeader({
             style={{ 
               fontSize: '13px', 
               fontWeight: 600, 
-              color: metrics.dealGap < 0 ? '#E11D48' : '#0FA4E9' 
+              color: metrics.dealGap < 0 ? '#E11D48' : 'var(--accent-sky)' 
             }}
           >
             {formatPercent(-metrics.dealGap * 100, { decimals: 0, showSign: true })}
@@ -101,7 +101,7 @@ export function MetricsHeader({
             style={{ 
               fontSize: '13px', 
               fontWeight: 600, 
-              color: metrics.annualProfit < 0 ? '#E11D48' : '#0FA4E9' 
+              color: metrics.annualProfit < 0 ? '#E11D48' : 'var(--accent-sky)' 
             }}
           >
             {formatCurrency(metrics.annualProfit)}

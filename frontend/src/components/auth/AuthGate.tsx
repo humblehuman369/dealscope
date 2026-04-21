@@ -86,7 +86,7 @@ export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthG
           href={signInUrl}
           className="flex items-center gap-2.5 px-6 py-3 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:scale-[1.03]"
           style={{
-            background: '#0FA4E9',
+            background: 'var(--accent-sky)',
             color: '#fff',
             boxShadow: '0 4px 24px rgba(8,145,178,0.4)',
           }}
