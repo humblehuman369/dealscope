@@ -133,9 +133,19 @@ async function forwardGeocode(
   }
 }
 
-function LabelGeocoder({ label, apiKey }: { label: string; apiKey: string }) {
+function LabelGeocoder({
+  label,
+  apiKey,
+  onResolved,
+}: {
+  label: string
+  apiKey: string
+  onResolved?: (bounds: { north: number; south: number; east: number; west: number }) => void
+}) {
   const map = useMap()
   const geocodedRef = useRef(false)
+  const onResolvedRef = useRef(onResolved)
+  onResolvedRef.current = onResolved
 
   useEffect(() => {
     if (!map || !label || geocodedRef.current) return
@@ -143,8 +153,24 @@ function LabelGeocoder({ label, apiKey }: { label: string; apiKey: string }) {
 
     forwardGeocode(label, apiKey).then((result) => {
       if (!result || !map) return
-      map.panTo({ lat: result.lat, lng: result.lng })
+      // setCenter + setZoom (instead of panTo, which animates) avoids racing
+      // the `idle` listener that drives the listings fetch. Then we proactively
+      // push the resolved bounds in case `idle` doesn't fire (e.g. when the
+      // tile cache is warm and the camera change is treated as a no-op).
+      map.setCenter({ lat: result.lat, lng: result.lng })
       map.setZoom(result.zoom)
+      setTimeout(() => {
+        const bounds = map.getBounds()
+        if (!bounds || !onResolvedRef.current) return
+        const ne = bounds.getNorthEast()
+        const sw = bounds.getSouthWest()
+        onResolvedRef.current({
+          north: ne.lat(),
+          south: sw.lat(),
+          east: ne.lng(),
+          west: sw.lng(),
+        })
+      }, 200)
     })
   }, [map, label, apiKey])
 
@@ -850,7 +876,11 @@ export function MapSearchView() {
           )}
 
           {needsGeocode && apiKey && (
-            <LabelGeocoder label={locationLabel!} apiKey={apiKey} />
+            <LabelGeocoder
+              label={locationLabel!}
+              apiKey={apiKey}
+              onResolved={onBoundsChanged}
+            />
           )}
         </Map>
       </APIProvider>

@@ -11,6 +11,39 @@ import type { AddressValidationResult } from '@/types/address';
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env';
 import { canonicalizeAddressForIdentity, isLikelyFullAddress, classifyPlaceTypes, classifySearchInput } from '@/utils/addressIdentity';
 
+// Best-effort client-side geocode using the Google Maps JS Geocoder that the
+// AddressAutocomplete already loads. Returning lat/lng/zoom lets the Map
+// Search page open at the correct viewport on first render instead of
+// initializing over Kansas and racing a post-mount pan, which leaves users
+// staring at unrendered tiles and an empty listings panel.
+async function geocodeLocationQuery(
+  query: string,
+): Promise<{ lat: number; lng: number; zoom: number } | null> {
+  if (typeof window === 'undefined') return null;
+  const Geocoder = (window as Window & { google?: typeof google }).google?.maps?.Geocoder;
+  if (!Geocoder) return null;
+  try {
+    const geocoder = new Geocoder();
+    const { results } = await geocoder.geocode({
+      address: query,
+      componentRestrictions: { country: 'us' },
+    });
+    if (!results?.length) return null;
+    const r = results[0];
+    const loc = r.geometry?.location;
+    if (!loc) return null;
+    const types: string[] = r.types || [];
+    let zoom = 12;
+    if (types.includes('postal_code')) zoom = 13;
+    else if (types.includes('locality') || types.includes('sublocality')) zoom = 12;
+    else if (types.includes('administrative_area_level_2')) zoom = 10;
+    else if (types.includes('administrative_area_level_1')) zoom = 7;
+    return { lat: loc.lat(), lng: loc.lng(), zoom };
+  } catch {
+    return null;
+  }
+}
+
 type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable';
 
 interface SearchPropertyModalProps {
@@ -105,18 +138,34 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
     if (!raw) return;
 
     // Anything that isn't a deliverable street address (zip, city, state,
-    // "Miami, FL", "Florida", "Boca Raton") should open Map Search and let
-    // the LabelGeocoder resolve it. Google's Address Validation API only
-    // accepts postal addresses and would reject these inputs, blocking the
-    // user with a misleading "Could not validate address" error.
+    // "Miami, FL", "Florida", "Boca Raton") should open Map Search. Google's
+    // Address Validation API only accepts postal addresses and would reject
+    // these inputs, blocking the user with a misleading "Could not validate
+    // address" error.
     const classification = classifySearchInput(raw);
     if (classification !== 'address' && !isLikelyFullAddress(raw)) {
       trackEvent('property_searched', {
         source: 'search_modal',
         type: classification === 'zip' ? 'zip' : 'location',
       });
+
+      // Pre-geocode so the Map Search page opens at the correct viewport on
+      // first render. Without this, the map initializes over Kansas at zoom 5,
+      // then the in-page LabelGeocoder pans after mount — a race that can
+      // leave tiles unrendered and the listings query running against the
+      // wrong bounds. We briefly show the validating spinner so the user gets
+      // immediate feedback that something is happening.
+      setValidationStatus('validating');
+      const geocoded = await geocodeLocationQuery(raw);
       handleClose();
-      router.push(`/map-search?label=${encodeURIComponent(raw)}`);
+
+      const params = new URLSearchParams({ label: raw });
+      if (geocoded) {
+        params.set('lat', String(geocoded.lat));
+        params.set('lng', String(geocoded.lng));
+        params.set('zoom', String(geocoded.zoom));
+      }
+      router.push(`/map-search?${params.toString()}`);
       return;
     }
 
