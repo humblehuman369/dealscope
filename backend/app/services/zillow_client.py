@@ -521,6 +521,27 @@ class ZillowClient(BaseAPIClient["ZillowAPIResponse"]):
 
         return await self._make_zillow_request(ZillowEndpoint.SEARCH_BY_COORDINATES, params)
 
+    async def search_by_url(self, url: str, **kwargs) -> ZillowAPIResponse:
+        """
+        Fetch Zillow search results for an arbitrary Zillow URL.
+
+        Use this when the search filters aren't exposed as typed parameters
+        on ``search-by-coordinates`` — most notably the distressed-only
+        listing buckets (``auc``/``fore``/``pre``), which AXESSO's typed
+        coordinate endpoint silently ignores. Passing a Zillow URL with
+        ``searchQueryState`` set causes AXESSO to scrape the actual Zillow
+        results page, so any ``filterState`` toggles are guaranteed to be
+        honored. Response shape matches the other search endpoints
+        (``props``/``searchResults`` arrays of listing dicts).
+
+        Args:
+            url: A fully-qualified public Zillow URL.
+            **kwargs: Additional pass-through query params (e.g., ``page``).
+        """
+        params: dict[str, Any] = {"url": url}
+        params.update(kwargs)
+        return await self._make_zillow_request(ZillowEndpoint.SEARCH_BY_URL, params)
+
     # =========================================================================
     # COMPREHENSIVE DATA FETCH
     # =========================================================================
