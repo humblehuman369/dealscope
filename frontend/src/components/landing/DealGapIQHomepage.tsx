@@ -88,7 +88,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
   };
 
   return (
-    <div style={{ background: 'var(--surface-base)', color: 'var(--text-body)', lineHeight: 1.6, overflowX: 'hidden' }}>
+    <div className="dgiq-homepage" style={{ background: 'var(--surface-base)', color: 'var(--text-body)', lineHeight: 1.6, overflowX: 'hidden' }}>
 
       <Suspense fallback={null}>
         <AuthParamHandler />
