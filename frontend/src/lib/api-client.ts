@@ -562,6 +562,8 @@ export interface CreateCheckoutParams {
   lookup_key?: string
   success_url?: string
   cancel_url?: string
+  /** Server → Stripe metadata; used in Pro welcome email CTA to deep-link back to pre-paywall page. */
+  return_to?: string | null
 }
 
 export interface CheckoutSessionResponse {
@@ -581,6 +583,7 @@ export const billingApi = {
         lookup_key: params.lookup_key ?? undefined,
         success_url: params.success_url ?? undefined,
         cancel_url: params.cancel_url ?? undefined,
+        return_to: params.return_to ?? undefined,
       },
     }),
 

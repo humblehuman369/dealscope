@@ -14,7 +14,7 @@
  *   </ProGate>
  */
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -37,6 +37,12 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
+
+  /** Full path + query for Stripe metadata → post-purchase email deep-link back here. */
+  const upgradeReturnPath = useMemo(() => {
+    const q = searchParams.toString()
+    return q ? `${pathname}?${q}` : pathname
+  }, [pathname, searchParams])
 
   if (isPro) return <>{children}</>
 
@@ -124,7 +130,7 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
         <UpgradeModal
           isOpen={upgradeModalOpen}
           onClose={() => setUpgradeModalOpen(false)}
-          returnTo={pathname}
+          returnTo={upgradeReturnPath}
         />
       </>
     )
@@ -154,7 +160,7 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
       <UpgradeModal
         isOpen={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
-        returnTo={pathname}
+        returnTo={upgradeReturnPath}
       />
     </>
   )

@@ -147,6 +147,10 @@ class CreateCheckoutRequest(BaseModel):
     lookup_key: str | None = Field(None, description="Stripe price lookup key (alternative to price_id)")
     success_url: str | None = Field(None, description="URL to redirect after success")
     cancel_url: str | None = Field(None, description="URL to redirect after cancel")
+    return_to: str | None = Field(
+        None,
+        description="App path to return to after Pro (e.g. /verdict?address=...). Stored in Stripe metadata for the welcome email CTA.",
+    )
 
 
 class CheckoutSessionResponse(BaseModel):
