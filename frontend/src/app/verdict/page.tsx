@@ -1169,7 +1169,7 @@ function VerdictContent() {
                   style={{ width: 100, aspectRatio: '16/9', background: 'var(--surface-card)', border: '1px solid var(--border-subtle)' }}
                 >
                   <video
-                    src="/videos/what-is-dealgapiq-v2.mp4"
+                    src="/videos/what-is-dealgapiq-v3.mp4"
                     preload="metadata"
                     muted
                     playsInline
@@ -1704,7 +1704,7 @@ function VerdictContent() {
               <VideoModal
                 open={showDealGapVideo}
                 onClose={() => setShowDealGapVideo(false)}
-                src="/videos/what-is-dealgapiq-v2.mp4"
+                src="/videos/what-is-dealgapiq-v3.mp4"
                 title="What is DealGapIQ?"
               />
             </div>

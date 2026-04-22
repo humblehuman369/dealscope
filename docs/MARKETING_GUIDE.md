@@ -1202,7 +1202,7 @@ and feature marketing:
 
 | Asset | Description | Location |
 |-------|-------------|----------|
-| **"What is DealGapIQ"** | Product explainer video | /videos/what-is-dealgapiq-v2.mp4 (hosted on production site) |
+| **"What is DealGapIQ"** | Product explainer video | /videos/what-is-dealgapiq-v3.mp4 (hosted on production site) |
 | **"Investor Lens Masterclass"** | 90-second product demo showing the investor lens concept | /videos/investor-lens-masterclass.mp4 (hosted on production site) |
 
 ### 11.5 Key Product URLs (for Linking/Landing)

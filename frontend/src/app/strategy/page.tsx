@@ -1674,7 +1674,7 @@ function StrategyContent() {
       <VideoModal
         open={showDealGapVideo}
         onClose={() => setShowDealGapVideo(false)}
-        src="/videos/what-is-dealgapiq-v2.mp4"
+        src="/videos/what-is-dealgapiq-v3.mp4"
         title="What is Deal Gap?"
       />
     </div>
