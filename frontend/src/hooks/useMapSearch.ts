@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { api } from '@/lib/api'
 import type { MapListing, MapSearchRequest, MapSearchResponse } from '@/lib/api'
 import {
-  scoreDealSignals,
+  classifyListings,
   sortListings,
   filterByListingStatus,
   filterByMinDom,
@@ -159,7 +159,7 @@ export function useMapSearch() {
     [fetchListings],
   )
 
-  const dealSignals = useMemo(() => scoreDealSignals(rawListings), [rawListings])
+  const dealSignals = useMemo(() => classifyListings(rawListings), [rawListings])
 
   const filteredAndSortedListings = useMemo(() => {
     let result = rawListings

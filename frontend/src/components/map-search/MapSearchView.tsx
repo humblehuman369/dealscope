@@ -14,7 +14,7 @@ import { Loader2, Home, MousePointerClick, List, MapIcon } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import type { MapListing } from '@/lib/api'
-import { markerColorFromGrade, type DealSignalResult } from '@/lib/dealSignal'
+import { markerColorForCategory, type DealSignalResult } from '@/lib/dealSignal'
 import { FilterPanel } from './FilterPanel'
 import { PropertyPreviewCard } from './PropertyPreviewCard'
 import { PropertyCardList } from './PropertyCardList'
@@ -38,6 +38,96 @@ const US_BOUNDS = {
   south: 17,
   east: -65,
   west: -165,
+}
+
+const MAP_MARKER_LEGEND: { color: string; label: string }[] = [
+  { color: '#16A34A', label: 'Active' },
+  { color: '#22C55E', label: 'Owner listed' },
+  { color: '#EAB308', label: '30+ days on market' },
+  { color: '#F97316', label: '60+ days on market' },
+  { color: '#EF4444', label: 'Auction / foreclosure' },
+  { color: '#9CA3AF', label: 'Status or DOM unknown' },
+]
+
+function MapMarkerLegend() {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <div
+        className="hidden md:block absolute bottom-4 left-3 z-10 max-w-[min(92vw,16rem)] pointer-events-auto"
+        role="region"
+        aria-label="Map marker color legend"
+      >
+        <div
+          className="rounded-lg px-3 py-2 shadow-lg"
+          style={{
+            backgroundColor: 'rgba(30, 30, 30, 0.88)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+          }}
+        >
+          <p
+            className="text-[10px] font-semibold uppercase tracking-wide mb-1.5"
+            style={{ color: 'rgba(255, 255, 255, 0.75)' }}
+          >
+            Marker colors
+          </p>
+          <ul className="space-y-1">
+            {MAP_MARKER_LEGEND.map((row) => (
+              <li
+                key={row.label}
+                className="flex items-center gap-2 text-[11px]"
+                style={{ color: 'rgba(255, 255, 255, 0.95)' }}
+              >
+                <span
+                  className="h-2.5 w-2.5 rounded-sm flex-shrink-0"
+                  style={{ backgroundColor: row.color }}
+                  aria-hidden
+                />
+                {row.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className="md:hidden absolute bottom-4 left-3 z-10 pointer-events-auto">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-lg"
+          style={{
+            backgroundColor: 'rgba(30, 30, 30, 0.9)',
+            color: '#fff',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+          }}
+          aria-expanded={open}
+        >
+          Legend
+        </button>
+        {open && (
+          <div
+            className="mt-2 rounded-lg px-3 py-2 shadow-lg max-w-[min(92vw,16rem)]"
+            style={{
+              backgroundColor: 'rgba(30, 30, 30, 0.92)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+            }}
+          >
+            <ul className="space-y-1.5">
+              {MAP_MARKER_LEGEND.map((row) => (
+                <li key={row.label} className="flex items-center gap-2 text-[11px] text-white">
+                  <span
+                    className="h-2.5 w-2.5 rounded-sm flex-shrink-0"
+                    style={{ backgroundColor: row.color }}
+                    aria-hidden
+                  />
+                  {row.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </>
+  )
 }
 
 interface GeocodeResult {
@@ -465,7 +555,7 @@ function MapContent({
           markerBorder = isSelected ? 'var(--accent-sky)' : 'rgba(255,255,255,0.7)'
           displayLabel = listing.night_price != null ? `$${listing.night_price}/n` : 'Airbnb'
         } else {
-          markerBg = signal ? markerColorFromGrade(signal.grade) : 'var(--surface-card)'
+          markerBg = signal ? markerColorForCategory(signal.category) : 'var(--surface-card)'
           markerText = signal ? '#fff' : 'var(--text-heading)'
           markerBorder = isSelected
             ? 'var(--accent-sky)'
@@ -861,6 +951,8 @@ export function MapSearchView() {
         </Map>
       </APIProvider>
 
+      <MapMarkerLegend />
+
       {/* Selected listing popup */}
       {selectedListing && (
         <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
@@ -1036,6 +1128,7 @@ export function MapSearchView() {
         isLoading={isLoading}
         activeStatuses={filters.listing_statuses}
         onResetStatuses={() => updateFilters({ listing_statuses: [] })}
+        sortBy={filters.sort_by}
       />
     </div>
   )

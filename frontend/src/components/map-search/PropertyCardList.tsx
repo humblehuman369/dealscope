@@ -2,16 +2,24 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bed, Bath, Ruler, Calendar, Clock, ArrowRight, TrendingUp } from 'lucide-react'
+import { Bed, Bath, Ruler, Calendar, Clock, ArrowRight, Layers } from 'lucide-react'
 import type { MapListing } from '@/lib/api'
-import type { DealSignalResult } from '@/lib/dealSignal'
-import { normalizeListingStatus, displayListingStatus } from '@/lib/dealSignal'
+import type { DealSignalResult, SortOption } from '@/lib/dealSignal'
+import { displayListingStatus } from '@/lib/dealSignal'
 
 function getPhotoSrc(listing: MapListing): string | null {
   if (listing.photo_url) return listing.photo_url
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   if (!apiKey) return null
   return `https://maps.googleapis.com/maps/api/streetview?size=400x300&location=${listing.latitude},${listing.longitude}&key=${apiKey}`
+}
+
+const SORT_LABELS: Record<SortOption, string> = {
+  deal_signal: 'Opportunity',
+  price_asc: 'Price (low → high)',
+  price_desc: 'Price (high → low)',
+  dom_desc: 'Days on market',
+  newest: 'Newest listed',
 }
 
 interface PropertyCardListProps {
@@ -22,6 +30,7 @@ interface PropertyCardListProps {
   isLoading: boolean
   activeStatuses?: string[]
   onResetStatuses?: () => void
+  sortBy?: SortOption
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -55,16 +64,6 @@ function domColor(dom: number): string {
   if (dom < 30) return 'var(--status-positive)'
   if (dom < 90) return 'var(--status-warning)'
   return 'var(--status-negative)'
-}
-
-function statusColor(raw: string | null): string {
-  const canonical = normalizeListingStatus(raw)
-  if (canonical === 'active') return 'var(--status-positive)'
-  if (canonical === 'owner_listed') return 'var(--accent-sky)'
-  if (canonical === 'foreclosure' || canonical === 'pre-foreclosure' || canonical === 'auction') {
-    return 'var(--status-negative)'
-  }
-  return 'var(--text-secondary)'
 }
 
 function PropertyCard({
@@ -108,7 +107,7 @@ function PropertyCard({
         boxShadow: isSelected ? '0 0 0 1px var(--accent-sky)' : 'var(--shadow-card)',
       }}
     >
-      {/* Photo row with deal signal badge */}
+        {/* Photo row with opportunity / category badge */}
       <div className="relative h-28 overflow-hidden" style={{ backgroundColor: 'var(--surface-elevated)' }}>
         {photoSrc ? (
           <img
@@ -125,17 +124,21 @@ function PropertyCard({
           </div>
         )}
 
-        {/* Deal Signal badge */}
+        {/* Opportunity / marker category */}
         {signal && (
           <div
-            className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold"
+            className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-bold leading-tight max-w-[calc(100%-1rem)]"
             style={{
               backgroundColor: 'rgba(0,0,0,0.75)',
               color: signal.color,
             }}
           >
-            <TrendingUp size={11} />
-            {signal.score}
+            <span
+              className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: signal.color }}
+              aria-hidden
+            />
+            <span className="truncate">{signal.label}</span>
           </div>
         )}
 
@@ -203,7 +206,7 @@ function PropertyCard({
                 className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
                 style={{
                   backgroundColor: 'var(--surface-elevated)',
-                  color: statusColor(listing.listing_status),
+                  color: signal?.color ?? 'var(--text-secondary)',
                 }}
               >
                 {displayListingStatus(listing.listing_status)}
@@ -212,7 +215,9 @@ function PropertyCard({
             {listing.days_on_market != null && (
               <span
                 className="flex items-center gap-1 text-[10px] font-medium"
-                style={{ color: domColor(listing.days_on_market) }}
+                style={{
+                  color: signal?.color ?? domColor(listing.days_on_market),
+                }}
               >
                 <Clock size={10} />
                 {listing.days_on_market}d
@@ -240,6 +245,7 @@ export function PropertyCardList({
   isLoading,
   activeStatuses,
   onResetStatuses,
+  sortBy = 'deal_signal',
 }: PropertyCardListProps) {
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new globalThis.Map())
 
@@ -333,10 +339,14 @@ export function PropertyCardList({
         <span
           className="flex items-center gap-1 text-[10px]"
           style={{ color: 'var(--text-secondary)' }}
-          title="Estimated deal potential based on price, market time, and listing status. Run full analysis for detailed DealGap."
+          title={
+            sortBy === 'deal_signal'
+              ? 'Marker colors rank motivation (distressed, time on market, FSBO). Same priority when Opportunity sort is selected.'
+              : undefined
+          }
         >
-          <TrendingUp size={10} />
-          Sorted by Deal Signal
+          <Layers size={10} />
+          Sorted by {SORT_LABELS[sortBy]}
         </span>
       </div>
 
