@@ -21,6 +21,20 @@ interface PhotosApiResponse {
   error?: string
 }
 
+/**
+ * Detect Google Maps placeholder URLs that AXESSO/Zillow returns when a listing
+ * has no real photos (e.g. off-market homes in gated communities). These are
+ * NOT property photos and must be filtered so the gallery shows its proper
+ * Street View fallback instead of a static satellite tile.
+ */
+function isMapPlaceholderUrl(url: string): boolean {
+  const u = url.toLowerCase()
+  return (
+    u.includes('maps.googleapis.com/maps/api/staticmap') ||
+    u.includes('maps.googleapis.com/maps/api/streetview')
+  )
+}
+
 function logPhotoFetch(
   zpid: string,
   result: PhotoResult,
@@ -81,6 +95,7 @@ export async function fetchPropertyPhotos(
         const urls = data.photos
           .map((p) => p?.url)
           .filter((u): u is string => typeof u === 'string' && u.length > 0)
+          .filter((u) => !isMapPlaceholderUrl(u))
         const result: PhotoResult = { status: 'success', photos: urls }
         logPhotoFetch(zpid, result, durationMs, attempt)
         return result

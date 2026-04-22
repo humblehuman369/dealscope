@@ -1705,6 +1705,23 @@ class PropertyService:
 
         return results
 
+    @staticmethod
+    def _is_map_placeholder_url(url: str | None) -> bool:
+        """
+        Detect Google Maps placeholder URLs that AXESSO/Zillow returns when a
+        listing has no real photos (e.g. off-market homes in gated communities).
+
+        These satellite/street-view URLs are NOT property photos and should be
+        filtered out so the frontend can show its proper Street View fallback.
+        """
+        if not isinstance(url, str) or not url:
+            return False
+        u = url.lower()
+        return (
+            "maps.googleapis.com/maps/api/staticmap" in u
+            or "maps.googleapis.com/maps/api/streetview" in u
+        )
+
     def _normalize_photo(self, photo: dict[str, Any]) -> dict[str, Any] | None:
         """
         Normalize a photo object from AXESSO format to frontend expected format.
@@ -1715,15 +1732,22 @@ class PropertyService:
         - sources array with width/url
 
         Frontend expects { url: string, caption?: string, width?: number, height?: number }.
+
+        Returns None for Google Maps placeholder URLs (satellite/street-view stand-ins
+        that AXESSO returns for off-market listings without real photos).
         """
         if not isinstance(photo, dict):
             # Sometimes it's just a URL string
             if isinstance(photo, str) and photo.startswith("http"):
+                if self._is_map_placeholder_url(photo):
+                    return None
                 return {"url": photo, "caption": ""}
             return None
 
         # If already in simple format with direct url
         if "url" in photo and isinstance(photo["url"], str):
+            if self._is_map_placeholder_url(photo["url"]):
+                return None
             return {
                 "url": photo["url"],
                 "caption": photo.get("caption", ""),
@@ -1746,6 +1770,8 @@ class PropertyService:
                 best_source = sorted_sources[0] if sorted_sources else None
 
                 if best_source and "url" in best_source:
+                    if self._is_map_placeholder_url(best_source["url"]):
+                        return None
                     return {
                         "url": best_source["url"],
                         "caption": caption,
@@ -1764,6 +1790,8 @@ class PropertyService:
                 best_source = sorted_sources[0] if sorted_sources else None
 
                 if best_source and "url" in best_source:
+                    if self._is_map_placeholder_url(best_source["url"]):
+                        return None
                     return {
                         "url": best_source["url"],
                         "caption": caption,
@@ -1779,6 +1807,8 @@ class PropertyService:
                 sorted_subs = sorted(sub_photos, key=lambda x: x.get("width", 0), reverse=True)
                 best = sorted_subs[0] if sorted_subs else None
                 if best and "url" in best:
+                    if self._is_map_placeholder_url(best["url"]):
+                        return None
                     return {
                         "url": best["url"],
                         "caption": photo.get("caption", ""),
@@ -1864,14 +1894,22 @@ class PropertyService:
                 elif isinstance(result.data, list):
                     raw_photos = result.data
 
-                # Normalize each photo to frontend expected format
+                # Normalize each photo to frontend expected format.
+                # _normalize_photo drops Google Maps placeholder URLs (satellite/street-view
+                # stand-ins that AXESSO returns for off-market listings without real photos).
                 normalized_photos = []
+                filtered_placeholders = 0
                 for photo in raw_photos:
                     normalized = self._normalize_photo(photo)
                     if normalized:
                         normalized_photos.append(normalized)
+                    else:
+                        filtered_placeholders += 1
 
-                logger.info(f"Normalized {len(normalized_photos)} photos from {len(raw_photos)} raw photos")
+                logger.info(
+                    f"Normalized {len(normalized_photos)} photos from {len(raw_photos)} raw "
+                    f"(filtered {filtered_placeholders} placeholder/invalid)"
+                )
 
                 return {
                     "success": True,
