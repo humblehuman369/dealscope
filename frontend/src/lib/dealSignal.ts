@@ -217,9 +217,51 @@ export function classifyListing(listing: MapListing): DealSignalResult {
   }
 }
 
+/**
+ * When upstream merges RentCast + Zillow (and tagged distressed queries),
+ * the same logical listing can appear twice with the same `id`. Pick one row
+ * per id so markers, cards, and sort keys stay consistent — prefer the row
+ * whose normalized status carries stronger investor signal (distress > FSBO > active).
+ */
+function listingMergePriority(canonical: CanonicalStatus): number {
+  switch (canonical) {
+    case 'foreclosure':
+    case 'pre-foreclosure':
+    case 'auction':
+      return 100
+    case 'owner_listed':
+      return 80
+    case 'active':
+      return 40
+    case 'other':
+      return 25
+    case 'sold':
+    case 'off-market':
+      return 10
+    default:
+      return 20
+  }
+}
+
+export function mergeMapListingsByIdPreferStrongerStatus(listings: MapListing[]): MapListing[] {
+  const byId = new Map<string, MapListing>()
+  for (const l of listings) {
+    const prev = byId.get(l.id)
+    if (!prev) {
+      byId.set(l.id, l)
+      continue
+    }
+    const pa = listingMergePriority(normalizeListingStatus(prev.listing_status))
+    const pb = listingMergePriority(normalizeListingStatus(l.listing_status))
+    if (pb > pa) byId.set(l.id, l)
+  }
+  return [...byId.values()]
+}
+
 export function classifyListings(listings: MapListing[]): Map<string, DealSignalResult> {
   const results = new Map<string, DealSignalResult>()
   for (const listing of listings) {
+    if (results.has(listing.id)) continue
     results.set(listing.id, classifyListing(listing))
   }
   return results
