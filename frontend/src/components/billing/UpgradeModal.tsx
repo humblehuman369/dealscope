@@ -119,6 +119,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
         price_id: priceId,
         success_url: successUrl,
         cancel_url: cancelUrl,
+        return_to: returnTo ?? undefined,
       })
       trackEvent('checkout_started', { source: 'upgrade_modal', plan: annual ? 'yearly' : 'monthly' })
       window.location.href = checkout_url

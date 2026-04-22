@@ -298,6 +298,20 @@ class EmailService:
         text = re.sub(r" {2,}", " ", text)
         return text.strip()
 
+    _CTA_RETURN_MAX = 400
+
+    @staticmethod
+    def _resolve_cta_path(return_to: str | None, *, default: str = "/search") -> str:
+        """Validate a post-checkout deep-link path for email CTAs (no open redirects)."""
+        if not return_to or not isinstance(return_to, str):
+            return default
+        s = return_to.strip()
+        if len(s) > EmailService._CTA_RETURN_MAX or not s.startswith("/") or s.startswith("//"):
+            return default
+        if any(c in s for c in ("\n", "\r", "\x00")):
+            return default
+        return s
+
     def _generate_unsubscribe_token(self, email: str, category: str) -> str:
         """Create an HMAC token for one-click email unsubscribe."""
         key = (settings.SECRET_KEY or "dev-key").encode()
@@ -430,7 +444,7 @@ class EmailService:
         user_name: str,
     ) -> dict[str, Any]:
         """Send welcome email after verification."""
-        dashboard_url = f"{self.frontend_url}/dashboard"
+        search_url = f"{self.frontend_url}/search"
         strategies_url = f"{self.frontend_url}/strategies"
 
         content = f'''
@@ -471,7 +485,7 @@ class EmailService:
     </tr>
 </table>
 
-{self._button("Go to Dashboard", dashboard_url)}
+{self._button("Start analyzing", search_url)}
 
 <p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
     Have questions? Reply to this email or visit our <a href="{strategies_url}" style="color: {self.BRAND_LINK};">Strategy Guides</a>.
@@ -536,10 +550,11 @@ class EmailService:
         to: str,
         user_name: str,
         trial_end_date: str | None = None,
+        return_to: str | None = None,
     ) -> dict[str, Any]:
         """Send welcome email when user starts a Pro subscription (trial or paid)."""
         billing_url = f"{self.frontend_url}/billing"
-        dashboard_url = f"{self.frontend_url}/dashboard"
+        cta_url = f"{self.frontend_url}{self._resolve_cta_path(return_to)}"
 
         trial_note = ""
         if trial_end_date:
@@ -597,7 +612,7 @@ class EmailService:
     </tr>
 </table>
 
-{self._button("Start Analyzing Deals", dashboard_url)}
+{self._button("Start Analyzing Deals", cta_url)}
 
 <p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
     Manage your subscription anytime from your <a href="{billing_url}" style="color: {self.BRAND_LINK};">billing page</a>.
@@ -620,7 +635,7 @@ class EmailService:
     ) -> dict[str, Any]:
         """Send reminder 3 days before trial ends."""
         billing_url = f"{self.frontend_url}/billing"
-        dashboard_url = f"{self.frontend_url}/dashboard"
+        search_url = f"{self.frontend_url}/search"
 
         content = f'''
 <h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
@@ -653,7 +668,7 @@ class EmailService:
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
     <tr>
         <td align="center">
-            {self._button("Continue Analyzing Deals", dashboard_url)}
+            {self._button("Continue Analyzing Deals", search_url)}
         </td>
     </tr>
     <tr>
@@ -918,7 +933,7 @@ class EmailService:
         plan_name: str = "Pro Investor",
     ) -> dict[str, Any]:
         """Send confirmation when a user upgrades from free to paid."""
-        dashboard_url = f"{self.frontend_url}/dashboard"
+        search_url = f"{self.frontend_url}/search"
         billing_url = f"{self.frontend_url}/billing"
 
         content = f'''
@@ -932,7 +947,7 @@ class EmailService:
     Your DealGapIQ account has been upgraded to <strong style="color: {self.TXT_HEADING};">{plan_name}</strong>. All Pro features are now active — unlimited analyses, editable inputs, proformas, PDF reports, and more.
 </p>
 
-{self._button("Start Analyzing Deals", dashboard_url)}
+{self._button("Start Analyzing Deals", search_url)}
 
 <p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
     Manage your subscription anytime from your <a href="{billing_url}" style="color: {self.BRAND_LINK};">billing page</a>.

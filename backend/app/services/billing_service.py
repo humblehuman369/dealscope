@@ -31,6 +31,22 @@ from app.services.email_service import email_service
 
 logger = logging.getLogger(__name__)
 
+# Max length for return_to in Stripe metadata (Stripe max 500 per value; keep headroom)
+_MAX_RETURN_TO_LEN = 400
+
+
+def _safe_return_to(raw: str | None) -> str | None:
+    """Validate a post-checkout return path for Stripe metadata. Reject open-redirects and oversize values."""
+    if not raw or not isinstance(raw, str):
+        return None
+    s = raw.strip()
+    if len(s) > _MAX_RETURN_TO_LEN or not s.startswith("/") or s.startswith("//"):
+        return None
+    if any(c in s for c in ("\n", "\r", "\x00")):
+        return None
+    return s
+
+
 # Try to import stripe
 try:
     import stripe
@@ -472,6 +488,7 @@ class BillingService:
         lookup_key: str | None = None,
         success_url: str | None = None,
         cancel_url: str | None = None,
+        return_to: str | None = None,
     ) -> CheckoutSessionResponse:
         """Create Stripe checkout session with 7-day trial.
 
@@ -512,6 +529,13 @@ class BillingService:
         )
 
         sep = "&" if "?" in success_url else "?"
+        safe_rt = _safe_return_to(return_to)
+        session_metadata: dict[str, str] = {"user_id": str(user.id)}
+        sub_metadata: dict[str, str] = {"user_id": str(user.id)}
+        if safe_rt:
+            session_metadata["return_to"] = safe_rt
+            sub_metadata["return_to"] = safe_rt
+
         session = stripe.checkout.Session.create(
             customer=customer_id,
             mode="subscription",
@@ -519,14 +543,10 @@ class BillingService:
             line_items=[{"price": resolved_price_id, "quantity": 1}],
             success_url=success_url + sep + "session_id={CHECKOUT_SESSION_ID}",
             cancel_url=cancel_url,
-            metadata={
-                "user_id": str(user.id),
-            },
+            metadata=session_metadata,
             subscription_data={
                 "trial_period_days": 7,
-                "metadata": {
-                    "user_id": str(user.id),
-                },
+                "metadata": sub_metadata,
             },
             allow_promotion_codes=True,
         )
@@ -805,10 +825,13 @@ class BillingService:
                 if data.get("trial_end"):
                     trial_end_dt = datetime.fromtimestamp(data["trial_end"], tz=UTC)
                     trial_end_str = trial_end_dt.strftime("%B %d, %Y")
+                rt = data.get("metadata", {}).get("return_to")
+                safe_rt = _safe_return_to(rt) if rt else None
                 await email_service.send_pro_welcome_email(
                     to=user.email,
                     user_name=user.full_name or "",
                     trial_end_date=trial_end_str,
+                    return_to=safe_rt,
                 )
 
     async def _handle_subscription_updated(self, db: AsyncSession, data: dict[str, Any]):
