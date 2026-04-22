@@ -530,6 +530,8 @@ export interface MFAChallengeResponse {
 export interface RegisterResponse {
   message: string
   requires_verification?: boolean
+  /** True when the verification email was accepted by the provider, false when delivery failed. Null/undefined when verification isn't required. */
+  verification_email_sent?: boolean | null
   user?: UserResponse
   access_token?: string
   refresh_token?: string

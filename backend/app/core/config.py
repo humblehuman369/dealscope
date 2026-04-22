@@ -350,6 +350,19 @@ def validate_settings(settings: Settings) -> None:
             if not key_value:
                 warnings.warn(f"{key_name} not set — {feature} will be unavailable", stacklevel=2)
 
+        # Hard-fail when email verification is required but no provider
+        # is configured — that combination is never a valid production
+        # state.  Without this guard, registrations succeed but users
+        # never receive their verification email (the exact failure that
+        # made this guard necessary).
+        if settings.FEATURE_EMAIL_VERIFICATION_REQUIRED and not settings.RESEND_API_KEY:
+            errors.append(
+                "RESEND_API_KEY must be set in production when "
+                "FEATURE_EMAIL_VERIFICATION_REQUIRED is true. "
+                "Set the env var on the dealscope service or "
+                "set FEATURE_EMAIL_VERIFICATION_REQUIRED=false."
+            )
+
         if not settings.STRIPE_WEBHOOK_SECRET:
             # Warning only - Stripe webhooks will fail but app will start
             warnings.warn("STRIPE_WEBHOOK_SECRET not set - Stripe webhooks will not work", stacklevel=2)

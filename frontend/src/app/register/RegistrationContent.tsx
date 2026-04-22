@@ -309,7 +309,8 @@ function RegistrationInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [requiresVerification, setRequiresVerification] = useState(false);
-  const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent">("idle");
+  const [verificationEmailSent, setVerificationEmailSent] = useState(true);
+  const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [form, setForm] = useState<FormState>({
     email: "",
     password: "",
@@ -349,6 +350,7 @@ function RegistrationInner() {
 
       if (result.requires_verification) {
         setRequiresVerification(true);
+        setVerificationEmailSent(result.verification_email_sent !== false);
         setStep("success");
         return;
       }
@@ -378,8 +380,9 @@ function RegistrationInner() {
     try {
       await authApi.resendVerification(form.email);
       setResendStatus("sent");
+      setVerificationEmailSent(true);
     } catch {
-      setResendStatus("idle");
+      setResendStatus("error");
     }
   };
 
@@ -643,11 +646,18 @@ function RegistrationInner() {
 
   const renderSuccess = () => {
     if (requiresVerification) {
+      const failed = !verificationEmailSent;
+      const accentColor = failed ? "#F87171" : "var(--accent-sky)";
+      const accentBg = failed ? "rgba(239,68,68,0.10)" : "rgba(15,164,233,0.1)";
+      const accentBorder = failed ? "rgba(239,68,68,0.30)" : "rgba(15,164,233,0.3)";
+      const cardBorder = failed ? "rgba(239,68,68,0.20)" : "rgba(15,164,233,0.15)";
       return (
         <div
           style={{
-            background: "linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)",
-            border: "1px solid rgba(15,164,233,0.15)",
+            background: failed
+              ? "linear-gradient(168deg, rgba(239,68,68,0.04) 0%, #0D1424 100%)"
+              : "linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)",
+            border: `1px solid ${cardBorder}`,
             borderRadius: "12px",
             padding: "48px 36px",
             width: "100%",
@@ -660,18 +670,26 @@ function RegistrationInner() {
               width: "64px",
               height: "64px",
               borderRadius: "50%",
-              background: "rgba(15,164,233,0.1)",
-              border: "2px solid rgba(15,164,233,0.3)",
+              background: accentBg,
+              border: `2px solid ${accentBorder}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               margin: "0 auto 24px",
             }}
           >
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect x="4" y="7" width="20" height="14" rx="2" stroke="var(--accent-sky)" strokeWidth="2" fill="none" />
-              <path d="M4 9l10 7 10-7" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            {failed ? (
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <path d="M14 8v6" stroke={accentColor} strokeWidth="2.5" strokeLinecap="round" />
+                <circle cx="14" cy="19" r="1.4" fill={accentColor} />
+                <circle cx="14" cy="14" r="11" stroke={accentColor} strokeWidth="2" fill="none" />
+              </svg>
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <rect x="4" y="7" width="20" height="14" rx="2" stroke={accentColor} strokeWidth="2" fill="none" />
+                <path d="M4 9l10 7 10-7" stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
           </div>
 
           <h2
@@ -683,7 +701,7 @@ function RegistrationInner() {
               margin: "0 0 8px",
             }}
           >
-            Check your email
+            {failed ? "We couldn\u2019t send your email" : "Check your email"}
           </h2>
 
           <p
@@ -697,7 +715,7 @@ function RegistrationInner() {
               marginRight: "auto",
             }}
           >
-            We sent a verification link to
+            {failed ? "Your account was created, but the verification email to" : "We sent a verification link to"}
           </p>
           <p
             style={{
@@ -716,54 +734,92 @@ function RegistrationInner() {
               color: "#64748B",
               lineHeight: 1.6,
               margin: "0 0 32px",
-              maxWidth: "300px",
+              maxWidth: "320px",
               marginLeft: "auto",
               marginRight: "auto",
             }}
           >
-            Click the link in the email to verify your account and start analyzing deals. The link expires in 48 hours.
+            {failed
+              ? "didn\u2019t go through. Tap Resend below to try again. If that fails, double-check your email address or contact support."
+              : "Click the link in the email to verify your account and start analyzing deals. The link expires in 48 hours."}
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-            <Link
-              href="/?auth=login"
-              style={{
-                minHeight: "48px",
-                padding: "14px 32px",
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "15px",
-                fontWeight: 700,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                fontFamily: "inherit",
-                background: "linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))",
-                color: "#fff",
-                textDecoration: "none",
-              }}
-            >
-              Go to Sign In <ArrowIcon />
-            </Link>
+            {failed ? (
+              <button
+                onClick={handleResendVerification}
+                disabled={resendStatus === "sending"}
+                style={{
+                  minHeight: "48px",
+                  padding: "14px 32px",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  fontFamily: "inherit",
+                  background: "linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))",
+                  color: "#fff",
+                  cursor: resendStatus === "sending" ? "default" : "pointer",
+                  opacity: resendStatus === "sending" ? 0.7 : 1,
+                }}
+              >
+                {resendStatus === "sending" ? "Sending\u2026" : "Resend Verification Email"}
+                {resendStatus !== "sending" && <ArrowIcon />}
+              </button>
+            ) : (
+              <Link
+                href="/?auth=login"
+                style={{
+                  minHeight: "48px",
+                  padding: "14px 32px",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  fontFamily: "inherit",
+                  background: "linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))",
+                  color: "#fff",
+                  textDecoration: "none",
+                }}
+              >
+                Go to Sign In <ArrowIcon />
+              </Link>
+            )}
 
-            <button
-              onClick={handleResendVerification}
-              disabled={resendStatus !== "idle"}
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: "13px",
-                color: resendStatus === "sent" ? "#22C55E" : "var(--accent-sky)",
-                cursor: resendStatus === "idle" ? "pointer" : "default",
-                fontFamily: "inherit",
-                fontWeight: 500,
-                opacity: resendStatus === "sending" ? 0.6 : 1,
-              }}
-            >
-              {resendStatus === "idle" && "Didn\u2019t get the email? Resend"}
-              {resendStatus === "sending" && "Sending\u2026"}
-              {resendStatus === "sent" && "Verification email resent"}
-            </button>
+            {!failed && (
+              <button
+                onClick={handleResendVerification}
+                disabled={resendStatus !== "idle"}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "13px",
+                  color: resendStatus === "sent" ? "#22C55E" : resendStatus === "error" ? "#F87171" : "var(--accent-sky)",
+                  cursor: resendStatus === "idle" ? "pointer" : "default",
+                  fontFamily: "inherit",
+                  fontWeight: 500,
+                  opacity: resendStatus === "sending" ? 0.6 : 1,
+                }}
+              >
+                {resendStatus === "idle" && "Didn\u2019t get the email? Resend"}
+                {resendStatus === "sending" && "Sending\u2026"}
+                {resendStatus === "sent" && "Verification email resent"}
+                {resendStatus === "error" && "Couldn\u2019t resend \u2014 try again"}
+              </button>
+            )}
+
+            {failed && resendStatus === "sent" && (
+              <p style={{ fontSize: "13px", color: "#22C55E", margin: 0 }}>Verification email resent. Check your inbox.</p>
+            )}
+            {failed && resendStatus === "error" && (
+              <p style={{ fontSize: "13px", color: "#F87171", margin: 0 }}>{"Still couldn\u2019t send. Please contact support."}</p>
+            )}
           </div>
         </div>
       );

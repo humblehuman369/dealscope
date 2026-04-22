@@ -232,6 +232,12 @@ class RegisterResponse(BaseModel):
 
     message: str
     requires_verification: bool
+    # When verification is required, surfaces whether the verification
+    # email was actually delivered to the queue (Resend accepted the
+    # send).  ``None`` when verification isn't required.  Lets the UI
+    # show a "Couldn't send the email — resend" affordance instead of
+    # the misleading "Check your email" state when delivery fails.
+    verification_email_sent: bool | None = None
     user: Optional["UserResponse"] = None
     access_token: str | None = None
     refresh_token: str | None = None
