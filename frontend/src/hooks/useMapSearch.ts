@@ -5,6 +5,7 @@ import { api } from '@/lib/api'
 import type { MapListing, MapSearchRequest, MapSearchResponse } from '@/lib/api'
 import {
   classifyListings,
+  mergeMapListingsByIdPreferStrongerStatus,
   sortListings,
   filterByListingStatus,
   filterByMinDom,
@@ -159,19 +160,24 @@ export function useMapSearch() {
     [fetchListings],
   )
 
-  const dealSignals = useMemo(() => classifyListings(rawListings), [rawListings])
+  const mergedListings = useMemo(
+    () => mergeMapListingsByIdPreferStrongerStatus(rawListings),
+    [rawListings],
+  )
+
+  const dealSignals = useMemo(() => classifyListings(mergedListings), [mergedListings])
 
   const filteredAndSortedListings = useMemo(() => {
-    let result = rawListings
+    let result = mergedListings
     result = filterByListingStatus(result, filters.listing_statuses)
     result = filterByMinDom(result, filters.min_dom)
     result = sortListings(result, dealSignals, filters.sort_by)
     return result
-  }, [rawListings, filters.listing_statuses, filters.min_dom, filters.sort_by, dealSignals])
+  }, [mergedListings, filters.listing_statuses, filters.min_dom, filters.sort_by, dealSignals])
 
   return {
     listings: filteredAndSortedListings,
-    rawListings,
+    rawListings: mergedListings,
     isLoading,
     error,
     totalCount,
