@@ -200,21 +200,40 @@ async def register(body: UserRegister, request: Request, response: Response, db:
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
-    # Send verification email (non-blocking)
+    # Send verification email and propagate the result to the client so
+    # the UI can show a "Couldn't send — resend" affordance when delivery
+    # fails (silent failures are how the original Resend misconfig went
+    # unnoticed for so long).
     if verification_token:
+        verification_email_sent = False
         try:
-            await email_service.send_verification_email(
+            send_result = await email_service.send_verification_email(
                 to=user.email,
                 user_name=user.full_name or user.email,
                 verification_token=verification_token,
             )
+            verification_email_sent = bool(send_result.get("success"))
+            if not verification_email_sent:
+                logger.error(
+                    "Verification email rejected by provider for %s: %s",
+                    user.email,
+                    send_result.get("error", "unknown error"),
+                )
         except Exception as exc:
-            logger.warning("Verification email failed: %s", exc)
+            logger.error("Verification email crashed for %s: %s", user.email, exc, exc_info=True)
 
-    if verification_token:
+        message = (
+            "Registration successful. Please check your email to verify your account."
+            if verification_email_sent
+            else (
+                "Registration successful, but we couldn't send the verification email. "
+                "Use the Resend button to try again."
+            )
+        )
         return RegisterResponse(
-            message="Registration successful. Please check your email to verify your account.",
+            message=message,
             requires_verification=True,
+            verification_email_sent=verification_email_sent,
         )
 
     # Verification disabled: create session and return user + tokens for auto-login
@@ -810,13 +829,19 @@ async def resend_verification(body: ResendVerificationRequest, db: DbSession):
         await db.commit()
         raw_token, user = result
         try:
-            await email_service.send_verification_email(
+            send_result = await email_service.send_verification_email(
                 to=user.email,
                 user_name=user.full_name or user.email,
                 verification_token=raw_token,
             )
+            if not send_result.get("success"):
+                logger.error(
+                    "Resend verification email rejected for %s: %s",
+                    user.email,
+                    send_result.get("error", "unknown error"),
+                )
         except Exception as exc:
-            logger.warning("Resend verification email failed: %s", exc)
+            logger.error("Resend verification email crashed for %s: %s", user.email, exc, exc_info=True)
     return AuthMessage(message="If an account exists with that email and is unverified, a verification link has been sent.")
 
 

@@ -1,5 +1,10 @@
 """
 Email Service for sending transactional emails via Resend.
+
+Visual design follows the DealGapIQ dark theme — palette mirrors
+``frontend/src/app/globals.css``.  All templates use a single dark
+``color-scheme`` with explicit colors and meta tags so Apple Mail,
+Gmail, and Outlook do not auto-invert cards into muddy hues.
 """
 
 import hashlib
@@ -14,7 +19,6 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Try to import resend, fall back gracefully if not available
 try:
     import resend
 
@@ -25,12 +29,71 @@ except ImportError:
 
 
 class EmailService:
-    """
-    Service for sending transactional emails.
+    """Send transactional emails via Resend with the DealGapIQ dark theme.
 
-    Uses Resend for email delivery with beautiful HTML templates.
-    Falls back to logging emails in development mode.
+    All ``send_*`` methods return ``{"success": bool, "id"|"error": str}``
+    so callers can surface failures to users instead of silently dropping
+    them.  Falls back to logging in development when no API key is set.
     """
+
+    # =================================================================
+    # Brand palette (mirror of frontend/src/app/globals.css :root)
+    # =================================================================
+    # Page chrome
+    PAGE_BG = "#0B1120"
+    CARD_BG = "#0D1424"
+    NESTED_BG = "#0F172A"
+    BORDER = "rgba(148, 163, 184, 0.12)"
+    DIVIDER = "#1E293B"
+
+    # Brand
+    BRAND_FROM = "#0465F2"
+    BRAND_TO = "#0FA4E9"
+    BRAND_GRADIENT = "linear-gradient(135deg, #0465F2 0%, #0FA4E9 100%)"
+    BRAND_LINK = "#38BDF8"
+
+    # Text
+    TXT_HEADING = "#F1F5F9"
+    TXT_BODY = "#CBD5E1"
+    TXT_SECONDARY = "#94A3B8"
+    TXT_MUTED = "#64748B"
+    TXT_DIM = "#475569"
+
+    # Semantic — info (blue/sky)
+    INFO_BG = "#0A1929"
+    INFO_BORDER = "#0FA4E9"
+    INFO_HEADING = "#BAE6FD"
+    INFO_BODY = "#CBD5E1"
+
+    # Semantic — success (green)
+    SUCCESS_BG = "#0A1F0F"
+    SUCCESS_BORDER = "#22C55E"
+    SUCCESS_HEADING = "#BBF7D0"
+    SUCCESS_BODY = "#86EFAC"
+
+    # Semantic — warning (amber)
+    WARN_BG = "#1A1408"
+    WARN_BORDER = "#F59E0B"
+    WARN_HEADING = "#FCD34D"
+    WARN_BODY = "#FDE68A"
+    WARN_LINK = "#FBBF24"
+
+    # Semantic — danger (red)
+    DANGER_BG = "#1F0A0A"
+    DANGER_BORDER = "#EF4444"
+    DANGER_HEADING = "#FCA5A5"
+    DANGER_BODY = "#FECACA"
+    DANGER_LINK = "#F87171"
+    DANGER_BUTTON_FROM = "#EF4444"
+    DANGER_BUTTON_TO = "#DC2626"
+
+    # Feature card variants (welcome series)
+    FEAT_BLUE_BG = "#0A1929"
+    FEAT_BLUE_BORDER = "#0FA4E9"
+    FEAT_PURPLE_BG = "#170E29"
+    FEAT_PURPLE_BORDER = "#A78BFA"
+    FEAT_ORANGE_BG = "#1F1308"
+    FEAT_ORANGE_BORDER = "#FB923C"
 
     def __init__(self):
         self.api_key = settings.RESEND_API_KEY or None
@@ -57,8 +120,9 @@ class EmailService:
     ) -> dict[str, Any]:
         """Send an email via Resend.
 
-        Auto-generates a plain-text fallback from the HTML when ``text``
-        is not provided, improving deliverability and accessibility.
+        Returns ``{"success": bool, "id"|"error": str}``.  Plain-text
+        fallback is auto-generated from the HTML when ``text`` is not
+        provided, improving deliverability and accessibility.
         """
         if text is None:
             text = self._html_to_text(html)
@@ -83,11 +147,19 @@ class EmailService:
                 params["headers"] = headers
 
             response = resend.Emails.send(params)
-            logger.info(f"Email sent to {to}: {response.get('id', 'unknown')}")
-            return {"id": response.get("id"), "success": True}
+            message_id = response.get("id") if isinstance(response, dict) else None
+            logger.info(f"Email sent to {to}: {message_id or 'unknown'}")
+            return {"id": message_id, "success": True}
 
         except Exception as e:
-            logger.error(f"Failed to send email to {to}: {e}")
+            # Loud error so outages surface in Railway logs / Sentry alerts
+            logger.error(
+                "Failed to send email to %s (subject=%r): %s",
+                to,
+                subject,
+                e,
+                exc_info=True,
+            )
             return {"error": str(e), "success": False}
 
     # ===========================================
@@ -95,38 +167,55 @@ class EmailService:
     # ===========================================
 
     def _base_template(self, content: str, preview_text: str = "") -> str:
-        """Wrap content in the base email template."""
+        """Wrap content in the dark base email template.
+
+        The ``color-scheme`` and ``supported-color-schemes`` meta tags
+        plus a ``meta name="color-scheme"`` declaration tell Apple
+        Mail, Outlook, and modern Gmail clients to render in dark mode
+        only — preventing auto-inversion that mangles dark cards.
+        """
         return f"""
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="supported-color-schemes" content="dark">
     <title>DealGapIQ</title>
+    <style type="text/css">
+        :root {{ color-scheme: dark; supported-color-schemes: dark; }}
+        body, table, td, p, a, h1, h2, h3 {{ -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }}
+        a {{ color: {self.BRAND_LINK}; }}
+        @media (prefers-color-scheme: light) {{
+            /* Force dark even when user prefers light — brand consistency */
+            body, .page {{ background-color: {self.PAGE_BG} !important; }}
+            .card {{ background-color: {self.CARD_BG} !important; }}
+        }}
+    </style>
     <!--[if mso]>
     <style type="text/css">
         table {{ border-collapse: collapse; }}
-        .button {{ padding: 12px 24px !important; }}
+        .button {{ padding: 14px 28px !important; }}
     </style>
     <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-    <!-- Preview text -->
-    <div style="display: none; max-height: 0; overflow: hidden;">
+<body class="page" style="margin: 0; padding: 0; background-color: {self.PAGE_BG}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: {self.TXT_BODY};">
+    <div style="display: none; max-height: 0; overflow: hidden; color: transparent;">
         {preview_text}
     </div>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: {self.PAGE_BG};">
         <tr>
             <td align="center" style="padding: 40px 20px;">
                 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%;">
-                    <!-- Header -->
+                    <!-- Header / Logo -->
                     <tr>
-                        <td align="center" style="padding-bottom: 30px;">
+                        <td align="center" style="padding-bottom: 28px;">
                             <table role="presentation" cellpadding="0" cellspacing="0">
                                 <tr>
-                                    <td style="background: linear-gradient(135deg, #0891b2 0%, #00e5ff 100%); border-radius: 12px; padding: 12px 20px;">
-                                        <span style="font-size: 24px; font-weight: bold; color: white; letter-spacing: -0.5px;">DealGapIQ</span>
+                                    <td style="background: {self.BRAND_GRADIENT}; border-radius: 12px; padding: 12px 22px;">
+                                        <span style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">DealGap<span style="color: #E0F2FE;">IQ</span></span>
                                     </td>
                                 </tr>
                             </table>
@@ -136,7 +225,7 @@ class EmailService:
                     <!-- Content Card -->
                     <tr>
                         <td>
-                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+                            <table role="presentation" class="card" width="100%" cellpadding="0" cellspacing="0" style="background-color: {self.CARD_BG}; border: 1px solid {self.BORDER}; border-radius: 16px;">
                                 <tr>
                                     <td style="padding: 40px;">
                                         {content}
@@ -148,12 +237,12 @@ class EmailService:
 
                     <!-- Footer -->
                     <tr>
-                        <td align="center" style="padding-top: 30px;">
-                            <p style="font-size: 13px; color: #71717a; margin: 0 0 8px 0;">
+                        <td align="center" style="padding-top: 28px;">
+                            <p style="font-size: 13px; color: {self.TXT_MUTED}; margin: 0 0 6px 0;">
                                 © {datetime.now().year} DealGapIQ. All rights reserved.
                             </p>
-                            <p style="font-size: 12px; color: #a1a1aa; margin: 0;">
-                                You're receiving this email because you have an DealGapIQ account.
+                            <p style="font-size: 12px; color: {self.TXT_DIM}; margin: 0;">
+                                You're receiving this email because you have a DealGapIQ account.
                             </p>
                         </td>
                     </tr>
@@ -165,13 +254,24 @@ class EmailService:
 </html>
 """
 
-    def _button(self, text: str, url: str, color: str = "#0891b2") -> str:
-        """Generate a styled button."""
+    def _button(self, text: str, url: str, variant: str = "brand") -> str:
+        """Render a styled CTA button.
+
+        ``variant`` selects the gradient: ``"brand"`` (blue) or
+        ``"danger"`` (red).  Uses bulletproof VML for Outlook fallback.
+        """
+        if variant == "danger":
+            gradient = f"linear-gradient(135deg, {self.DANGER_BUTTON_FROM} 0%, {self.DANGER_BUTTON_TO} 100%)"
+            solid_fallback = self.DANGER_BUTTON_TO
+        else:
+            gradient = self.BRAND_GRADIENT
+            solid_fallback = self.BRAND_FROM
+
         return f'''
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 24px 0;">
     <tr>
-        <td align="center" style="background-color: {color}; border-radius: 8px;">
-            <a href="{url}" target="_blank" style="display: inline-block; padding: 14px 28px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
+        <td align="center" style="background: {solid_fallback}; background-image: {gradient}; border-radius: 10px;">
+            <a href="{url}" target="_blank" class="button" style="display: inline-block; padding: 14px 30px; font-size: 15px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 10px; letter-spacing: 0.01em;">
                 {text}
             </a>
         </td>
@@ -222,11 +322,11 @@ class EmailService:
         unsub_url = self._unsubscribe_url(email, category)
         prefs_url = f"{self.frontend_url}/profile"
         return f'''
-<hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;">
-<p style="font-size: 12px; color: #a1a1aa; margin: 0; text-align: center;">
-    <a href="{unsub_url}" style="color: #a1a1aa; text-decoration: underline;">Unsubscribe</a>
+<hr style="border: none; border-top: 1px solid {self.DIVIDER}; margin: 24px 0;">
+<p style="font-size: 12px; color: {self.TXT_DIM}; margin: 0; text-align: center;">
+    <a href="{unsub_url}" style="color: {self.TXT_MUTED}; text-decoration: underline;">Unsubscribe</a>
     &nbsp;&middot;&nbsp;
-    <a href="{prefs_url}" style="color: #a1a1aa; text-decoration: underline;">Manage preferences</a>
+    <a href="{prefs_url}" style="color: {self.TXT_MUTED}; text-decoration: underline;">Manage preferences</a>
 </p>
 '''
 
@@ -244,30 +344,30 @@ class EmailService:
         verification_url = f"{self.frontend_url}/verify-email?token={verification_token}"
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Verify your email address
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Thanks for signing up for DealGapIQ! Please verify your email address by clicking the button below.
 </p>
 
 {self._button("Verify Email Address", verification_url)}
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0;">
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0;">
     If you didn't create an account with DealGapIQ, you can safely ignore this email.
 </p>
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 8px 0 0 0;">
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 8px 0 0 0;">
     This link will expire in {settings.EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS} hours.
 </p>
 
-<hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;">
+<hr style="border: none; border-top: 1px solid {self.DIVIDER}; margin: 24px 0;">
 
-<p style="font-size: 12px; color: #a1a1aa; margin: 0;">
+<p style="font-size: 12px; color: {self.TXT_MUTED}; margin: 0;">
     Or copy and paste this URL into your browser:<br>
-    <a href="{verification_url}" style="color: #0891b2; word-break: break-all;">{verification_url}</a>
+    <a href="{verification_url}" style="color: {self.BRAND_LINK}; word-break: break-all;">{verification_url}</a>
 </p>
 '''
 
@@ -289,30 +389,30 @@ class EmailService:
         reset_url = f"{self.frontend_url}/reset-password?token={reset_token}"
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Reset your password
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     We received a request to reset the password for your DealGapIQ account. Click the button below to create a new password.
 </p>
 
-{self._button("Reset Password", reset_url, "#dc2626")}
+{self._button("Reset Password", reset_url, variant="danger")}
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0;">
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0;">
     If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
 </p>
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 8px 0 0 0;">
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 8px 0 0 0;">
     This link will expire in {settings.PASSWORD_RESET_TOKEN_EXPIRE_HOURS} hour(s) for security reasons.
 </p>
 
-<hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;">
+<hr style="border: none; border-top: 1px solid {self.DIVIDER}; margin: 24px 0;">
 
-<p style="font-size: 12px; color: #a1a1aa; margin: 0;">
+<p style="font-size: 12px; color: {self.TXT_MUTED}; margin: 0;">
     Or copy and paste this URL into your browser:<br>
-    <a href="{reset_url}" style="color: #0891b2; word-break: break-all;">{reset_url}</a>
+    <a href="{reset_url}" style="color: {self.BRAND_LINK}; word-break: break-all;">{reset_url}</a>
 </p>
 '''
 
@@ -334,74 +434,47 @@ class EmailService:
         strategies_url = f"{self.frontend_url}/strategies"
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
-    Welcome to DealGapIQ! 🎉
+<h1 style="font-size: 26px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
+    Welcome to DealGapIQ
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 16px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 16px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
-    Your account is now verified and you're ready to start analyzing real estate deals like a pro. Here's what you can do:
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
+    Your account is verified and you're ready to start analyzing real estate deals like a pro. Here's what you can do:
 </p>
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
     <tr>
-        <td style="padding: 16px; background-color: #f0fdfa; border-radius: 12px; border-left: 4px solid #0891b2;">
-            <table role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td style="padding-right: 12px; vertical-align: top;">
-                        <span style="font-size: 20px;">🔍</span>
-                    </td>
-                    <td>
-                        <p style="font-weight: 600; color: #18181b; margin: 0 0 4px 0;">Search Properties</p>
-                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">Enter any US address to get instant valuations, rent estimates, and investment analysis.</p>
-                    </td>
-                </tr>
-            </table>
+        <td style="padding: 16px; background-color: {self.FEAT_BLUE_BG}; border-radius: 12px; border-left: 4px solid {self.FEAT_BLUE_BORDER};">
+            <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0 0 4px 0;">Search Properties</p>
+            <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 0;">Enter any US address to get instant valuations, rent estimates, and investment analysis.</p>
+        </td>
+    </tr>
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
+    <tr>
+        <td style="padding: 16px; background-color: {self.FEAT_PURPLE_BG}; border-radius: 12px; border-left: 4px solid {self.FEAT_PURPLE_BORDER};">
+            <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0 0 4px 0;">Analyze 6 Strategies</p>
+            <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 0;">Compare Long-Term Rental, Short-Term Rental, BRRRR, Fix &amp; Flip, House Hack, and Wholesale.</p>
         </td>
     </tr>
 </table>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #faf5ff; border-radius: 12px; border-left: 4px solid #8b5cf6;">
-            <table role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td style="padding-right: 12px; vertical-align: top;">
-                        <span style="font-size: 20px;">📊</span>
-                    </td>
-                    <td>
-                        <p style="font-weight: 600; color: #18181b; margin: 0 0 4px 0;">Analyze 6 Strategies</p>
-                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">Compare Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale.</p>
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
-    <tr>
-        <td style="padding: 16px; background-color: #fff7ed; border-radius: 12px; border-left: 4px solid #f97316;">
-            <table role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td style="padding-right: 12px; vertical-align: top;">
-                        <span style="font-size: 20px;">💾</span>
-                    </td>
-                    <td>
-                        <p style="font-weight: 600; color: #18181b; margin: 0 0 4px 0;">Save & Track Deals</p>
-                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">Save properties to your dashboard, add notes, and track your deal pipeline.</p>
-                    </td>
-                </tr>
-            </table>
+        <td style="padding: 16px; background-color: {self.FEAT_ORANGE_BG}; border-radius: 12px; border-left: 4px solid {self.FEAT_ORANGE_BORDER};">
+            <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0 0 4px 0;">Save &amp; Track Deals</p>
+            <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 0;">Save properties to your dashboard, add notes, and track your deal pipeline.</p>
         </td>
     </tr>
 </table>
 
 {self._button("Go to Dashboard", dashboard_url)}
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
-    Have questions? Reply to this email or visit our <a href="{strategies_url}" style="color: #0891b2;">Strategy Guides</a>.
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+    Have questions? Reply to this email or visit our <a href="{strategies_url}" style="color: {self.BRAND_LINK};">Strategy Guides</a>.
 </p>
 '''
 
@@ -409,7 +482,7 @@ class EmailService:
 
         return await self.send_email(
             to=to,
-            subject="Welcome to DealGapIQ! 🎉",
+            subject="Welcome to DealGapIQ",
             html=html,
         )
 
@@ -420,28 +493,28 @@ class EmailService:
     ) -> dict[str, Any]:
         """Send notification that password was changed."""
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Password changed
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Your DealGapIQ password was successfully changed. If you made this change, you can safely ignore this email.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
     <tr>
-        <td style="padding: 16px; background-color: #fef2f2; border-radius: 12px; border-left: 4px solid #dc2626;">
-            <p style="font-weight: 600; color: #991b1b; margin: 0 0 4px 0;">⚠️ Didn't make this change?</p>
-            <p style="font-size: 14px; color: #7f1d1d; margin: 0;">
-                If you didn't change your password, your account may be compromised. Please <a href="{self.frontend_url}/forgot-password" style="color: #dc2626; font-weight: 600;">reset your password immediately</a> and contact support.
+        <td style="padding: 16px; background-color: {self.DANGER_BG}; border-radius: 12px; border-left: 4px solid {self.DANGER_BORDER};">
+            <p style="font-weight: 700; color: {self.DANGER_HEADING}; margin: 0 0 4px 0;">Didn't make this change?</p>
+            <p style="font-size: 14px; color: {self.DANGER_BODY}; margin: 0;">
+                If you didn't change your password, your account may be compromised. Please <a href="{self.frontend_url}/forgot-password" style="color: {self.DANGER_LINK}; font-weight: 600;">reset your password immediately</a> and contact support.
             </p>
         </td>
     </tr>
 </table>
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0;">
+<p style="font-size: 14px; color: {self.TXT_MUTED}; line-height: 1.6; margin: 24px 0 0 0;">
     Changed: {datetime.now().strftime("%B %d, %Y at %I:%M %p")} UTC
 </p>
 '''
@@ -473,11 +546,11 @@ class EmailService:
             trial_note = f'''
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #fffbeb; border-radius: 12px; border-left: 4px solid #f59e0b;">
-            <p style="font-weight: 600; color: #92400e; margin: 0 0 4px 0;">Your 7-day free trial is active</p>
-            <p style="font-size: 14px; color: #78350f; margin: 0;">
-                You won't be charged until <strong>{trial_end_date}</strong>. Cancel anytime from your
-                <a href="{billing_url}" style="color: #d97706; font-weight: 600;">billing page</a>.
+        <td style="padding: 16px; background-color: {self.WARN_BG}; border-radius: 12px; border-left: 4px solid {self.WARN_BORDER};">
+            <p style="font-weight: 700; color: {self.WARN_HEADING}; margin: 0 0 4px 0;">Your 7-day free trial is active</p>
+            <p style="font-size: 14px; color: {self.WARN_BODY}; margin: 0;">
+                You won't be charged until <strong style="color: {self.WARN_HEADING};">{trial_end_date}</strong>. Cancel anytime from your
+                <a href="{billing_url}" style="color: {self.WARN_LINK}; font-weight: 600;">billing page</a>.
             </p>
         </td>
     </tr>
@@ -485,70 +558,49 @@ class EmailService:
 '''
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 26px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     You're now a Pro Investor
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Welcome to DealGapIQ Pro. You now have full access to every tool serious investors use to find, analyze, and close deals faster.
 </p>
 
 {trial_note}
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 12px;">
     <tr>
-        <td style="padding: 16px; background-color: #f0fdfa; border-radius: 12px; border-left: 4px solid #0891b2;">
-            <table role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td style="padding-right: 12px; vertical-align: top; font-size: 20px;">&#x267b;</td>
-                    <td>
-                        <p style="font-weight: 600; color: #18181b; margin: 0 0 4px 0;">Unlimited Property Analyses</p>
-                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">No caps. Analyze every deal that hits your radar.</p>
-                    </td>
-                </tr>
-            </table>
+        <td style="padding: 16px; background-color: {self.FEAT_BLUE_BG}; border-radius: 12px; border-left: 4px solid {self.FEAT_BLUE_BORDER};">
+            <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0 0 4px 0;">Unlimited Property Analyses</p>
+            <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 0;">No caps. Analyze every deal that hits your radar.</p>
         </td>
     </tr>
 </table>
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 12px;">
     <tr>
-        <td style="padding: 16px; background-color: #faf5ff; border-radius: 12px; border-left: 4px solid #8b5cf6;">
-            <table role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td style="padding-right: 12px; vertical-align: top; font-size: 20px;">&#x1f4ca;</td>
-                    <td>
-                        <p style="font-weight: 600; color: #18181b; margin: 0 0 4px 0;">Full Calculation Breakdowns & Stress Testing</p>
-                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">Edit inputs, test scenarios, and verify every assumption.</p>
-                    </td>
-                </tr>
-            </table>
+        <td style="padding: 16px; background-color: {self.FEAT_PURPLE_BG}; border-radius: 12px; border-left: 4px solid {self.FEAT_PURPLE_BORDER};">
+            <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0 0 4px 0;">Full Calculation Breakdowns &amp; Stress Testing</p>
+            <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 0;">Edit inputs, test scenarios, and verify every assumption.</p>
         </td>
     </tr>
 </table>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #fff7ed; border-radius: 12px; border-left: 4px solid #f97316;">
-            <table role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td style="padding-right: 12px; vertical-align: top; font-size: 20px;">&#x1f4c4;</td>
-                    <td>
-                        <p style="font-weight: 600; color: #18181b; margin: 0 0 4px 0;">Excel Proformas & Lender-Ready PDFs</p>
-                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">Download, share, and close with confidence.</p>
-                    </td>
-                </tr>
-            </table>
+        <td style="padding: 16px; background-color: {self.FEAT_ORANGE_BG}; border-radius: 12px; border-left: 4px solid {self.FEAT_ORANGE_BORDER};">
+            <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0 0 4px 0;">Excel Proformas &amp; Lender-Ready PDFs</p>
+            <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 0;">Download, share, and close with confidence.</p>
         </td>
     </tr>
 </table>
 
 {self._button("Start Analyzing Deals", dashboard_url)}
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
-    Manage your subscription anytime from your <a href="{billing_url}" style="color: #0891b2;">billing page</a>.
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+    Manage your subscription anytime from your <a href="{billing_url}" style="color: {self.BRAND_LINK};">billing page</a>.
 </p>
 '''
 
@@ -571,21 +623,21 @@ class EmailService:
         dashboard_url = f"{self.frontend_url}/dashboard"
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Your free trial ends on {trial_end_date}
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
-    Your DealGapIQ Pro trial ends in 3 days. After <strong>{trial_end_date}</strong>, your subscription will convert to a paid plan automatically.
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
+    Your DealGapIQ Pro trial ends in 3 days. After <strong style="color: {self.TXT_HEADING};">{trial_end_date}</strong>, your subscription will convert to a paid plan automatically.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #f0fdfa; border-radius: 12px; border-left: 4px solid #0891b2;">
-            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">What happens next?</p>
-            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
+        <td style="padding: 16px; background-color: {self.INFO_BG}; border-radius: 12px; border-left: 4px solid {self.INFO_BORDER};">
+            <p style="font-weight: 700; color: {self.INFO_HEADING}; margin: 0 0 8px 0;">What happens next?</p>
+            <ul style="font-size: 14px; color: {self.TXT_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
                 <li>Your card on file will be charged at your selected billing cycle</li>
                 <li>All Pro features remain available with no interruption</li>
                 <li>You can cancel or change plans anytime from your billing page</li>
@@ -594,7 +646,7 @@ class EmailService:
     </tr>
 </table>
 
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Want to keep going? No action needed — your Pro access continues seamlessly.
 </p>
 
@@ -606,7 +658,7 @@ class EmailService:
     </tr>
     <tr>
         <td align="center" style="padding-top: 8px;">
-            <a href="{billing_url}" style="font-size: 14px; color: #71717a; text-decoration: underline;">Manage subscription</a>
+            <a href="{billing_url}" style="font-size: 14px; color: {self.TXT_SECONDARY}; text-decoration: underline;">Manage subscription</a>
         </td>
     </tr>
 </table>
@@ -638,39 +690,39 @@ class EmailService:
 
         receipt_link = ""
         if receipt_url:
-            receipt_link = f'<a href="{receipt_url}" style="color: #0891b2; font-weight: 600;">View receipt</a>'
+            receipt_link = f'<a href="{receipt_url}" style="color: {self.BRAND_LINK}; font-weight: 600;">View receipt</a>'
         if invoice_pdf_url:
             separator = " &middot; " if receipt_link else ""
-            receipt_link += f'{separator}<a href="{invoice_pdf_url}" style="color: #0891b2; font-weight: 600;">Download invoice (PDF)</a>'
+            receipt_link += f'{separator}<a href="{invoice_pdf_url}" style="color: {self.BRAND_LINK}; font-weight: 600;">Download invoice (PDF)</a>'
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Payment received
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Hi {user_name or "there"}, we received your payment. Here are the details:
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 20px; background-color: #f4f4f5; border-radius: 12px;">
+        <td style="padding: 20px; background-color: {self.NESTED_BG}; border: 1px solid {self.BORDER}; border-radius: 12px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                    <td style="padding-bottom: 12px; border-bottom: 1px solid #e4e4e7;">
-                        <p style="font-size: 13px; color: #71717a; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Amount</p>
-                        <p style="font-size: 28px; font-weight: 700; color: #18181b; margin: 0;">{amount_display}</p>
+                    <td style="padding-bottom: 12px; border-bottom: 1px solid {self.DIVIDER};">
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.08em;">Amount</p>
+                        <p style="font-size: 28px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0;">{amount_display}</p>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding-top: 12px;">
-                        <p style="font-size: 13px; color: #71717a; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Description</p>
-                        <p style="font-size: 16px; color: #3f3f46; margin: 0;">{description}</p>
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.08em;">Description</p>
+                        <p style="font-size: 16px; color: {self.TXT_BODY}; margin: 0;">{description}</p>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding-top: 12px;">
-                        <p style="font-size: 13px; color: #71717a; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Date</p>
-                        <p style="font-size: 16px; color: #3f3f46; margin: 0;">{datetime.now().strftime("%B %d, %Y")}</p>
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.08em;">Date</p>
+                        <p style="font-size: 16px; color: {self.TXT_BODY}; margin: 0;">{datetime.now().strftime("%B %d, %Y")}</p>
                     </td>
                 </tr>
             </table>
@@ -678,11 +730,11 @@ class EmailService:
     </tr>
 </table>
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 0 0 8px 0; text-align: center;">
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 0 0 8px 0; text-align: center;">
     {receipt_link}
 </p>
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 0; text-align: center;">
-    Manage billing at your <a href="{billing_url}" style="color: #0891b2;">billing page</a>.
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 0; text-align: center;">
+    Manage billing at your <a href="{billing_url}" style="color: {self.BRAND_LINK};">billing page</a>.
 </p>
 '''
 
@@ -704,8 +756,7 @@ class EmailService:
         """Send notification when a payment fails.
 
         ``amount_cents`` is optional — when ``None`` or ``0`` the email
-        omits the specific dollar figure (e.g. for RevenueCat events
-        where the exact charge amount isn't available).
+        omits the specific dollar figure.
         """
         billing_url = f"{self.frontend_url}/billing"
 
@@ -713,28 +764,28 @@ class EmailService:
             amount_display = (
                 f"${amount_cents / 100:,.2f}" if currency == "usd" else f"{amount_cents / 100:,.2f} {currency.upper()}"
             )
-            amount_sentence = f"your payment of <strong>{amount_display}</strong> for"
+            amount_sentence = f"your payment of <strong style=\"color: {self.TXT_HEADING};\">{amount_display}</strong> for"
             preview_text = f"Action required: payment of {amount_display} failed"
         else:
             amount_sentence = "your payment for"
             preview_text = "Action required: payment failed for your DealGapIQ Pro subscription"
 
         content = f"""
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Payment failed
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     We were unable to process {amount_sentence} your DealGapIQ Pro subscription.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #fef2f2; border-radius: 12px; border-left: 4px solid #dc2626;">
-            <p style="font-weight: 600; color: #991b1b; margin: 0 0 8px 0;">What happens now?</p>
-            <ul style="font-size: 14px; color: #7f1d1d; margin: 0; padding-left: 20px; line-height: 1.8;">
+        <td style="padding: 16px; background-color: {self.DANGER_BG}; border-radius: 12px; border-left: 4px solid {self.DANGER_BORDER};">
+            <p style="font-weight: 700; color: {self.DANGER_HEADING}; margin: 0 0 8px 0;">What happens now?</p>
+            <ul style="font-size: 14px; color: {self.DANGER_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
                 <li>We'll retry the payment automatically over the next few days</li>
                 <li>Your Pro features remain active during this time</li>
                 <li>If retries fail, your account will be downgraded to Starter</li>
@@ -743,13 +794,13 @@ class EmailService:
     </tr>
 </table>
 
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Please update your payment method to avoid losing access to Pro features.
 </p>
 
-{self._button("Update Payment Method", billing_url, "#dc2626")}
+{self._button("Update Payment Method", billing_url, variant="danger")}
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
     If you believe this is an error, please check with your bank or reply to this email.
 </p>
 """
@@ -771,21 +822,21 @@ class EmailService:
         pricing_url = f"{self.frontend_url}/pricing"
 
         content = f"""
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Your Pro subscription has ended
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Your DealGapIQ Pro subscription has been canceled. Your account has been moved to the Starter plan.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #f4f4f5; border-radius: 12px;">
-            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">Your Starter plan includes:</p>
-            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
+        <td style="padding: 16px; background-color: {self.NESTED_BG}; border: 1px solid {self.BORDER}; border-radius: 12px;">
+            <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0 0 8px 0;">Your Starter plan includes:</p>
+            <ul style="font-size: 14px; color: {self.TXT_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
                 <li>3 property analyses per month</li>
                 <li>Deal Gap, Income Value, and Target Buy metrics</li>
                 <li>IQ Verdict Score</li>
@@ -795,7 +846,7 @@ class EmailService:
     </tr>
 </table>
 
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     You can re-subscribe anytime to regain full access to unlimited analyses, editable inputs, proformas, and lender-ready reports.
 </p>
 
@@ -820,22 +871,22 @@ class EmailService:
         pricing_url = f"{self.frontend_url}/billing"
 
         content = f"""
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     You've used all {limit} free analyses this month
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     You've reached your monthly limit of {limit} property analyses on your Starter plan. Upgrade to Pro for unlimited analyses and full access to every DealGapIQ tool.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #f0fdfa; border-radius: 12px; border-left: 4px solid #0891b2;">
-            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">Pro Investor includes:</p>
-            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
-                <li><strong>Unlimited</strong> property analyses</li>
+        <td style="padding: 16px; background-color: {self.INFO_BG}; border-radius: 12px; border-left: 4px solid {self.INFO_BORDER};">
+            <p style="font-weight: 700; color: {self.INFO_HEADING}; margin: 0 0 8px 0;">Pro Investor includes:</p>
+            <ul style="font-size: 14px; color: {self.TXT_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li><strong style="color: {self.TXT_HEADING};">Unlimited</strong> property analyses</li>
                 <li>Full calculation breakdowns &amp; stress testing</li>
                 <li>Downloadable Excel proformas</li>
                 <li>Lender-ready PDF reports</li>
@@ -847,7 +898,7 @@ class EmailService:
 
 {self._button("Upgrade to Pro", pricing_url)}
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
     Your usage resets in approximately 30 days from your last reset date.
 </p>
 """
@@ -871,20 +922,20 @@ class EmailService:
         billing_url = f"{self.frontend_url}/billing"
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Upgrade confirmed
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
-    Your DealGapIQ account has been upgraded to <strong>{plan_name}</strong>. All Pro features are now active — unlimited analyses, editable inputs, proformas, PDF reports, and more.
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
+    Your DealGapIQ account has been upgraded to <strong style="color: {self.TXT_HEADING};">{plan_name}</strong>. All Pro features are now active — unlimited analyses, editable inputs, proformas, PDF reports, and more.
 </p>
 
 {self._button("Start Analyzing Deals", dashboard_url)}
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
-    Manage your subscription anytime from your <a href="{billing_url}" style="color: #0891b2;">billing page</a>.
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+    Manage your subscription anytime from your <a href="{billing_url}" style="color: {self.BRAND_LINK};">billing page</a>.
 </p>
 '''
 
@@ -906,23 +957,23 @@ class EmailService:
         billing_url = f"{self.frontend_url}/billing"
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Your cancellation is scheduled
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
-    Your DealGapIQ Pro subscription has been set to cancel. You'll continue to have full Pro access until <strong>{period_end_date}</strong>, after which your account will move to the Starter plan.
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
+    Your DealGapIQ Pro subscription has been set to cancel. You'll continue to have full Pro access until <strong style="color: {self.TXT_HEADING};">{period_end_date}</strong>, after which your account will move to the Starter plan.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #fffbeb; border-radius: 12px; border-left: 4px solid #f59e0b;">
-            <p style="font-weight: 600; color: #92400e; margin: 0 0 4px 0;">Changed your mind?</p>
-            <p style="font-size: 14px; color: #78350f; margin: 0;">
-                You can reactivate your subscription anytime before <strong>{period_end_date}</strong> from your
-                <a href="{billing_url}" style="color: #d97706; font-weight: 600;">billing page</a> — no interruption in service.
+        <td style="padding: 16px; background-color: {self.WARN_BG}; border-radius: 12px; border-left: 4px solid {self.WARN_BORDER};">
+            <p style="font-weight: 700; color: {self.WARN_HEADING}; margin: 0 0 4px 0;">Changed your mind?</p>
+            <p style="font-size: 14px; color: {self.WARN_BODY}; margin: 0;">
+                You can reactivate your subscription anytime before <strong style="color: {self.WARN_HEADING};">{period_end_date}</strong> from your
+                <a href="{billing_url}" style="color: {self.WARN_LINK}; font-weight: 600;">billing page</a> — no interruption in service.
             </p>
         </td>
     </tr>
@@ -957,36 +1008,36 @@ class EmailService:
         time_display = login_time or datetime.now().strftime("%B %d, %Y at %I:%M %p UTC")
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     New sign-in to your account
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     We detected a sign-in to your DealGapIQ account from a device we don't recognise.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #f4f4f5; border-radius: 12px;">
+        <td style="padding: 16px; background-color: {self.NESTED_BG}; border: 1px solid {self.BORDER}; border-radius: 12px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                     <td style="padding-bottom: 8px;">
-                        <p style="font-size: 13px; color: #71717a; margin: 0;">Device</p>
-                        <p style="font-size: 15px; color: #18181b; margin: 4px 0 0 0;">{device_info}</p>
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">Device</p>
+                        <p style="font-size: 15px; color: {self.TXT_HEADING}; margin: 4px 0 0 0;">{device_info}</p>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding-bottom: 8px;">
-                        <p style="font-size: 13px; color: #71717a; margin: 0;">IP Address</p>
-                        <p style="font-size: 15px; color: #18181b; margin: 4px 0 0 0;">{ip_address or "Unknown"}</p>
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">IP Address</p>
+                        <p style="font-size: 15px; color: {self.TXT_HEADING}; margin: 4px 0 0 0;">{ip_address or "Unknown"}</p>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <p style="font-size: 13px; color: #71717a; margin: 0;">Time</p>
-                        <p style="font-size: 15px; color: #18181b; margin: 4px 0 0 0;">{time_display}</p>
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">Time</p>
+                        <p style="font-size: 15px; color: {self.TXT_HEADING}; margin: 4px 0 0 0;">{time_display}</p>
                     </td>
                 </tr>
             </table>
@@ -994,17 +1045,17 @@ class EmailService:
     </tr>
 </table>
 
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     If this was you, no action is needed. If you don't recognise this activity, secure your account immediately.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #fef2f2; border-radius: 12px; border-left: 4px solid #dc2626;">
-            <p style="font-weight: 600; color: #991b1b; margin: 0 0 8px 0;">This wasn't me</p>
-            <ul style="font-size: 14px; color: #7f1d1d; margin: 0; padding-left: 20px; line-height: 1.8;">
-                <li><a href="{reset_url}" style="color: #dc2626; font-weight: 600;">Reset your password</a> immediately</li>
-                <li><a href="{sessions_url}" style="color: #dc2626; font-weight: 600;">Review active sessions</a> and revoke any you don't recognise</li>
+        <td style="padding: 16px; background-color: {self.DANGER_BG}; border-radius: 12px; border-left: 4px solid {self.DANGER_BORDER};">
+            <p style="font-weight: 700; color: {self.DANGER_HEADING}; margin: 0 0 8px 0;">This wasn't me</p>
+            <ul style="font-size: 14px; color: {self.DANGER_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li><a href="{reset_url}" style="color: {self.DANGER_LINK}; font-weight: 600;">Reset your password</a> immediately</li>
+                <li><a href="{sessions_url}" style="color: {self.DANGER_LINK}; font-weight: 600;">Review active sessions</a> and revoke any you don't recognise</li>
                 <li>Enable two-factor authentication if you haven't already</li>
             </ul>
         </td>
@@ -1027,36 +1078,36 @@ class EmailService:
     ) -> dict[str, Any]:
         """Confirm that two-factor authentication was enabled."""
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Two-factor authentication enabled
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Two-factor authentication (2FA) has been successfully enabled on your DealGapIQ account. You'll now need your authenticator app each time you sign in.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #f0fdf4; border-radius: 12px; border-left: 4px solid #22c55e;">
-            <p style="font-weight: 600; color: #166534; margin: 0 0 4px 0;">Your account is now more secure</p>
-            <p style="font-size: 14px; color: #15803d; margin: 0;">
+        <td style="padding: 16px; background-color: {self.SUCCESS_BG}; border-radius: 12px; border-left: 4px solid {self.SUCCESS_BORDER};">
+            <p style="font-weight: 700; color: {self.SUCCESS_HEADING}; margin: 0 0 4px 0;">Your account is now more secure</p>
+            <p style="font-size: 14px; color: {self.SUCCESS_BODY}; margin: 0;">
                 Keep your authenticator app and backup codes in a safe place. If you lose access, contact support.
             </p>
         </td>
     </tr>
 </table>
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0;">
+<p style="font-size: 14px; color: {self.TXT_MUTED}; line-height: 1.6; margin: 24px 0 0 0;">
     Changed: {datetime.now().strftime("%B %d, %Y at %I:%M %p")} UTC
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px;">
     <tr>
-        <td style="padding: 16px; background-color: #fef2f2; border-radius: 12px; border-left: 4px solid #dc2626;">
-            <p style="font-size: 14px; color: #991b1b; margin: 0;">
-                If you did not make this change, <a href="{self.frontend_url}/forgot-password" style="color: #dc2626; font-weight: 600;">reset your password immediately</a> and contact support.
+        <td style="padding: 16px; background-color: {self.DANGER_BG}; border-radius: 12px; border-left: 4px solid {self.DANGER_BORDER};">
+            <p style="font-size: 14px; color: {self.DANGER_BODY}; margin: 0;">
+                If you did not make this change, <a href="{self.frontend_url}/forgot-password" style="color: {self.DANGER_LINK}; font-weight: 600;">reset your password immediately</a> and contact support.
             </p>
         </td>
     </tr>
@@ -1078,37 +1129,37 @@ class EmailService:
     ) -> dict[str, Any]:
         """Warn user that two-factor authentication was disabled."""
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Two-factor authentication disabled
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Two-factor authentication (2FA) has been removed from your DealGapIQ account. Your account is now protected by your password only.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #fffbeb; border-radius: 12px; border-left: 4px solid #f59e0b;">
-            <p style="font-weight: 600; color: #92400e; margin: 0 0 4px 0;">Your account security has been reduced</p>
-            <p style="font-size: 14px; color: #78350f; margin: 0;">
+        <td style="padding: 16px; background-color: {self.WARN_BG}; border-radius: 12px; border-left: 4px solid {self.WARN_BORDER};">
+            <p style="font-weight: 700; color: {self.WARN_HEADING}; margin: 0 0 4px 0;">Your account security has been reduced</p>
+            <p style="font-size: 14px; color: {self.WARN_BODY}; margin: 0;">
                 We recommend keeping 2FA enabled. You can re-enable it anytime from your
-                <a href="{self.frontend_url}/profile" style="color: #d97706; font-weight: 600;">profile settings</a>.
+                <a href="{self.frontend_url}/profile" style="color: {self.WARN_LINK}; font-weight: 600;">profile settings</a>.
             </p>
         </td>
     </tr>
 </table>
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0;">
+<p style="font-size: 14px; color: {self.TXT_MUTED}; line-height: 1.6; margin: 24px 0 0 0;">
     Changed: {datetime.now().strftime("%B %d, %Y at %I:%M %p")} UTC
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px;">
     <tr>
-        <td style="padding: 16px; background-color: #fef2f2; border-radius: 12px; border-left: 4px solid #dc2626;">
-            <p style="font-size: 14px; color: #991b1b; margin: 0;">
-                If you did not make this change, your account may be compromised. <a href="{self.frontend_url}/forgot-password" style="color: #dc2626; font-weight: 600;">Reset your password immediately</a>.
+        <td style="padding: 16px; background-color: {self.DANGER_BG}; border-radius: 12px; border-left: 4px solid {self.DANGER_BORDER};">
+            <p style="font-size: 14px; color: {self.DANGER_BODY}; margin: 0;">
+                If you did not make this change, your account may be compromised. <a href="{self.frontend_url}/forgot-password" style="color: {self.DANGER_LINK}; font-weight: 600;">Reset your password immediately</a>.
             </p>
         </td>
     </tr>
@@ -1132,24 +1183,24 @@ class EmailService:
         """Confirm account deletion or scheduled deletion."""
         date_note = ""
         if deletion_date:
-            date_note = f" Your data will be permanently deleted on <strong>{deletion_date}</strong>."
+            date_note = f" Your data will be permanently deleted on <strong style=\"color: {self.TXT_HEADING};\">{deletion_date}</strong>."
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Account deletion confirmed
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Your DealGapIQ account has been scheduled for deletion.{date_note}
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #f4f4f5; border-radius: 12px;">
-            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">What will be removed:</p>
-            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
+        <td style="padding: 16px; background-color: {self.NESTED_BG}; border: 1px solid {self.BORDER}; border-radius: 12px;">
+            <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0 0 8px 0;">What will be removed:</p>
+            <ul style="font-size: 14px; color: {self.TXT_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
                 <li>Your account credentials and profile</li>
                 <li>Saved properties and analysis history</li>
                 <li>Subscription and payment records</li>
@@ -1159,11 +1210,11 @@ class EmailService:
     </tr>
 </table>
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 0;">
-    If you did not request this, contact <a href="mailto:support@dealgapiq.com" style="color: #0891b2;">support@dealgapiq.com</a> immediately to cancel the deletion.
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 0;">
+    If you did not request this, contact <a href="mailto:support@dealgapiq.com" style="color: {self.BRAND_LINK};">support@dealgapiq.com</a> immediately to cancel the deletion.
 </p>
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 8px 0 0 0;">
-    You can sign up again anytime at <a href="{self.frontend_url}" style="color: #0891b2;">dealgapiq.com</a>.
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 8px 0 0 0;">
+    You can sign up again anytime at <a href="{self.frontend_url}" style="color: {self.BRAND_LINK};">dealgapiq.com</a>.
 </p>
 '''
 
@@ -1190,21 +1241,21 @@ class EmailService:
         total_steps = 5
 
         content = f"""
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     You're {total_steps - steps_remaining} of {total_steps} steps in
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     You're almost ready to start analyzing deals. Finish setting up your investor profile so DealGapIQ can tailor results to your strategy, budget, and target markets.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #f0fdfa; border-radius: 12px; border-left: 4px solid #0891b2;">
-            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">What you'll unlock:</p>
-            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
+        <td style="padding: 16px; background-color: {self.INFO_BG}; border-radius: 12px; border-left: 4px solid {self.INFO_BORDER};">
+            <p style="font-weight: 700; color: {self.INFO_HEADING}; margin: 0 0 8px 0;">What you'll unlock:</p>
+            <ul style="font-size: 14px; color: {self.TXT_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
                 <li>Personalised deal analysis tuned to your goals</li>
                 <li>IQ Verdict Score calibrated to your risk tolerance</li>
                 <li>Strategy recommendations for your experience level</li>
@@ -1213,7 +1264,7 @@ class EmailService:
     </tr>
 </table>
 
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     It only takes about 2 minutes to finish.
 </p>
 
@@ -1242,21 +1293,21 @@ class EmailService:
         pricing_url = f"{self.frontend_url}/pricing"
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Your first deal analysis is in the books
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
-    You just analyzed <strong>{property_address}</strong> — that's the hardest part done. Every serious investor starts by running the numbers, and now you have a data-backed verdict on your first deal.
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
+    You just analyzed <strong style="color: {self.TXT_HEADING};">{property_address}</strong> — that's the hardest part done. Every serious investor starts by running the numbers, and now you have a data-backed verdict on your first deal.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #faf5ff; border-radius: 12px; border-left: 4px solid #8b5cf6;">
-            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">Want to go deeper? Pro Investor unlocks:</p>
-            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
+        <td style="padding: 16px; background-color: {self.FEAT_PURPLE_BG}; border-radius: 12px; border-left: 4px solid {self.FEAT_PURPLE_BORDER};">
+            <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0 0 8px 0;">Want to go deeper? Pro Investor unlocks:</p>
+            <ul style="font-size: 14px; color: {self.TXT_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
                 <li>Unlimited analyses (no monthly cap)</li>
                 <li>Editable inputs &amp; stress testing</li>
                 <li>Downloadable Excel proformas</li>
@@ -1268,8 +1319,8 @@ class EmailService:
 
 {self._button("Analyze Another Property", search_url)}
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
-    Ready for unlimited access? <a href="{pricing_url}" style="color: #0891b2; font-weight: 600;">View Pro plans</a>
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+    Ready for unlimited access? <a href="{pricing_url}" style="color: {self.BRAND_LINK}; font-weight: 600;">View Pro plans</a>
 </p>
 
 {self._marketing_footer(to, "product_updates")}
@@ -1294,21 +1345,21 @@ class EmailService:
         search_url = f"{self.frontend_url}/search"
 
         content = f"""
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Deals don't wait — neither should you
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     It's been {days_inactive} days since your last visit. The market keeps moving — new listings, price drops, and opportunities are popping up every day.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #f0fdfa; border-radius: 12px; border-left: 4px solid #0891b2;">
-            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">Pick up where you left off</p>
-            <ul style="font-size: 14px; color: #3f3f46; margin: 0; padding-left: 20px; line-height: 1.8;">
+        <td style="padding: 16px; background-color: {self.INFO_BG}; border-radius: 12px; border-left: 4px solid {self.INFO_BORDER};">
+            <p style="font-weight: 700; color: {self.INFO_HEADING}; margin: 0 0 8px 0;">Pick up where you left off</p>
+            <ul style="font-size: 14px; color: {self.TXT_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
                 <li>Search any US address for instant analysis</li>
                 <li>Compare 6 investment strategies side by side</li>
                 <li>Save deals to your pipeline</li>
@@ -1340,45 +1391,45 @@ class EmailService:
         pricing_url = f"{self.frontend_url}/pricing"
 
         content = f"""
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Your Pro tools are still here
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     We noticed you recently canceled your DealGapIQ Pro subscription. If you're still actively investing, here's what you're missing:
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
     <tr>
-        <td style="padding: 16px; background-color: #f4f4f5; border-radius: 12px;">
+        <td style="padding: 16px; background-color: {self.NESTED_BG}; border: 1px solid {self.BORDER}; border-radius: 12px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                    <td style="padding-bottom: 12px; border-bottom: 1px solid #e4e4e7;">
-                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">
-                            <strong>Unlimited analyses</strong> — your Starter plan limits you to 3 per month
+                    <td style="padding-bottom: 12px; border-bottom: 1px solid {self.DIVIDER};">
+                        <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 0;">
+                            <strong style="color: {self.TXT_HEADING};">Unlimited analyses</strong> — your Starter plan limits you to 3 per month
                         </p>
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #e4e4e7;">
-                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">
-                            <strong>Editable inputs &amp; stress testing</strong> — change any variable, recalculate instantly
+                    <td style="padding: 12px 0; border-bottom: 1px solid {self.DIVIDER};">
+                        <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 0;">
+                            <strong style="color: {self.TXT_HEADING};">Editable inputs &amp; stress testing</strong> — change any variable, recalculate instantly
                         </p>
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #e4e4e7;">
-                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">
-                            <strong>Excel proformas &amp; PDF reports</strong> — download and share with lenders
+                    <td style="padding: 12px 0; border-bottom: 1px solid {self.DIVIDER};">
+                        <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 0;">
+                            <strong style="color: {self.TXT_HEADING};">Excel proformas &amp; PDF reports</strong> — download and share with lenders
                         </p>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding-top: 12px;">
-                        <p style="font-size: 14px; color: #3f3f46; margin: 0;">
-                            <strong>Side-by-side comparison</strong> — evaluate multiple deals at once
+                        <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 0;">
+                            <strong style="color: {self.TXT_HEADING};">Side-by-side comparison</strong> — evaluate multiple deals at once
                         </p>
                     </td>
                 </tr>
@@ -1387,7 +1438,7 @@ class EmailService:
     </tr>
 </table>
 
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Re-subscribe anytime — your saved properties and analysis history are still here.
 </p>
 
@@ -1420,30 +1471,30 @@ class EmailService:
         billing_url = f"{self.frontend_url}/billing"
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Your annual subscription renews soon
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
-    Your DealGapIQ Pro annual subscription will automatically renew on <strong>{renewal_date}</strong>.
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
+    Your DealGapIQ Pro annual subscription will automatically renew on <strong style="color: {self.TXT_HEADING};">{renewal_date}</strong>.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 20px; background-color: #f4f4f5; border-radius: 12px;">
+        <td style="padding: 20px; background-color: {self.NESTED_BG}; border: 1px solid {self.BORDER}; border-radius: 12px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                    <td style="padding-bottom: 12px; border-bottom: 1px solid #e4e4e7;">
-                        <p style="font-size: 13px; color: #71717a; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Renewal amount</p>
-                        <p style="font-size: 28px; font-weight: 700; color: #18181b; margin: 4px 0 0 0;">{amount_display}</p>
+                    <td style="padding-bottom: 12px; border-bottom: 1px solid {self.DIVIDER};">
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">Renewal amount</p>
+                        <p style="font-size: 28px; font-weight: 800; color: {self.TXT_HEADING}; margin: 4px 0 0 0;">{amount_display}</p>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding-top: 12px;">
-                        <p style="font-size: 13px; color: #71717a; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Renewal date</p>
-                        <p style="font-size: 16px; color: #3f3f46; margin: 4px 0 0 0;">{renewal_date}</p>
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">Renewal date</p>
+                        <p style="font-size: 16px; color: {self.TXT_BODY}; margin: 4px 0 0 0;">{renewal_date}</p>
                     </td>
                 </tr>
             </table>
@@ -1451,14 +1502,14 @@ class EmailService:
     </tr>
 </table>
 
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     No action needed if you'd like to continue. Your Pro access will renew automatically.
 </p>
 
 {self._button("Manage Subscription", billing_url)}
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
-    To cancel or change plans, visit your <a href="{billing_url}" style="color: #0891b2;">billing page</a> before {renewal_date}.
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+    To cancel or change plans, visit your <a href="{billing_url}" style="color: {self.BRAND_LINK};">billing page</a> before {renewal_date}.
 </p>
 '''
 
@@ -1489,33 +1540,33 @@ class EmailService:
         rows = ""
         if analyses_count:
             rows += f"""
-<tr><td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7;">
-    <span style="color: #71717a;">Properties analysed</span></td>
-    <td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7; text-align: right; font-weight: 600; color: #18181b;">{analyses_count}</td></tr>"""
+<tr><td style="padding: 8px 0; border-bottom: 1px solid {self.DIVIDER};">
+    <span style="color: {self.TXT_SECONDARY};">Properties analysed</span></td>
+    <td style="padding: 8px 0; border-bottom: 1px solid {self.DIVIDER}; text-align: right; font-weight: 700; color: {self.TXT_HEADING};">{analyses_count}</td></tr>"""
         if saved_count:
             rows += f"""
-<tr><td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7;">
-    <span style="color: #71717a;">Properties saved</span></td>
-    <td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7; text-align: right; font-weight: 600; color: #18181b;">{saved_count}</td></tr>"""
+<tr><td style="padding: 8px 0; border-bottom: 1px solid {self.DIVIDER};">
+    <span style="color: {self.TXT_SECONDARY};">Properties saved</span></td>
+    <td style="padding: 8px 0; border-bottom: 1px solid {self.DIVIDER}; text-align: right; font-weight: 700; color: {self.TXT_HEADING};">{saved_count}</td></tr>"""
         if price_drops:
             rows += f"""
 <tr><td style="padding: 8px 0;">
-    <span style="color: #71717a;">Saved properties with price drops</span></td>
-    <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #22c55e;">{price_drops}</td></tr>"""
+    <span style="color: {self.TXT_SECONDARY};">Saved properties with price drops</span></td>
+    <td style="padding: 8px 0; text-align: right; font-weight: 700; color: {self.SUCCESS_HEADING};">{price_drops}</td></tr>"""
 
         content = f'''
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Your {period} digest
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     Hi {user_name or "there"}, here's a snapshot of your DealGapIQ activity.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 20px; background-color: #f4f4f5; border-radius: 12px;">
+        <td style="padding: 20px; background-color: {self.NESTED_BG}; border: 1px solid {self.BORDER}; border-radius: 12px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                {rows or '<tr><td style="padding: 8px 0; color: #71717a;">No activity this period — search a property to get started.</td></tr>'}
+                {rows or f'<tr><td style="padding: 8px 0; color: {self.TXT_SECONDARY};">No activity this period — search a property to get started.</td></tr>'}
             </table>
         </td>
     </tr>
@@ -1523,8 +1574,8 @@ class EmailService:
 
 {self._button("Search a Property", search_url)}
 
-<p style="font-size: 14px; color: #71717a; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
-    <a href="{saved_url}" style="color: #0891b2;">View saved properties</a>
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+    <a href="{saved_url}" style="color: {self.BRAND_LINK};">View saved properties</a>
 </p>
 
 {self._marketing_footer(to, "digest")}
@@ -1552,13 +1603,13 @@ class EmailService:
         url = cta_url or self.frontend_url
 
         content = f"""
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     New: {feature_name}
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 24px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
     {feature_description}
 </p>
 
@@ -1592,21 +1643,21 @@ class EmailService:
         property_url = f"{self.frontend_url}/property?address={property_address}"
 
         content = f"""
-<h1 style="font-size: 24px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     Property Alert: {alert_type}
 </h1>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 8px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
     Hi {user_name or "there"},
 </p>
-<p style="font-size: 16px; color: #3f3f46; line-height: 1.6; margin: 0 0 16px 0;">
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 16px 0;">
     There's an update for one of your saved properties:
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
     <tr>
-        <td style="padding: 16px; background-color: #f4f4f5; border-radius: 12px;">
-            <p style="font-weight: 600; color: #18181b; margin: 0 0 8px 0;">📍 {property_address}</p>
-            <p style="font-size: 14px; color: #3f3f46; margin: 0;">{details}</p>
+        <td style="padding: 16px; background-color: {self.INFO_BG}; border-radius: 12px; border-left: 4px solid {self.INFO_BORDER};">
+            <p style="font-weight: 700; color: {self.INFO_HEADING}; margin: 0 0 8px 0;">{property_address}</p>
+            <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 0;">{details}</p>
         </td>
     </tr>
 </table>
