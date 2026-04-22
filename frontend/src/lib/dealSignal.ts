@@ -1,10 +1,18 @@
 import type { MapListing } from '@/lib/api'
 
-export type DealSignalGrade = 'A' | 'B' | 'C' | 'D' | 'F'
+/** Map marker / list classification — rule-based, not viewport-relative. */
+export type DealCategory =
+  | 'distressed' // Red — auction, foreclosure, pre-foreclosure
+  | 'stale_60' // Orange — 60+ days on market
+  | 'stale_30' // Yellow — 30+ days on market
+  | 'owner_listed' // Green — FSBO / owner-listed when DOM under 30 (or DOM unknown)
+  | 'active' // Dark green — MLS active with DOM known and under 30 days
+  | 'unknown' // Grey — e.g. active but DOM missing
 
 export interface DealSignalResult {
-  score: number
-  grade: DealSignalGrade
+  category: DealCategory
+  /** Higher = sort first when sort_by is deal_signal (Red=5 … Active=1, Unknown=0). */
+  rank: number
   label: string
   color: string
 }
@@ -95,120 +103,130 @@ const DISTRESSED_CATEGORIES: Set<CanonicalStatus> = new Set([
   'auction',
 ])
 
-// FSBO sellers tend to be more motivated than agent-listed (no commission
-// to absorb, often selling for life-event reasons). Treat as a positive
-// motivation signal for the deal score.
-const HIGH_MOTIVATION_CATEGORIES: Set<CanonicalStatus> = new Set([
-  'owner_listed',
-])
-
-function isDistressed(status: string | null): boolean {
-  return DISTRESSED_CATEGORIES.has(normalizeListingStatus(status))
+const CATEGORY_RANK: Record<DealCategory, number> = {
+  distressed: 5,
+  stale_60: 4,
+  stale_30: 3,
+  owner_listed: 2,
+  active: 1,
+  unknown: 0,
 }
 
-function isHighMotivation(status: string | null): boolean {
-  return HIGH_MOTIVATION_CATEGORIES.has(normalizeListingStatus(status))
+/** Marker / badge fill colors (solid hex for map pins). */
+const CATEGORY_MARKER_HEX: Record<DealCategory, string> = {
+  distressed: '#EF4444',
+  stale_60: '#F97316',
+  stale_30: '#EAB308',
+  owner_listed: '#22C55E',
+  active: '#16A34A',
+  unknown: '#9CA3AF',
 }
 
-function percentileRank(value: number, sorted: number[]): number {
-  if (sorted.length === 0) return 50
-  let count = 0
-  for (const v of sorted) {
-    if (v < value) count++
-    else break
+function distressLabel(canonical: CanonicalStatus): string {
+  switch (canonical) {
+    case 'foreclosure':
+      return 'Foreclosure'
+    case 'pre-foreclosure':
+      return 'Pre-Foreclosure'
+    case 'auction':
+      return 'Auction'
+    default:
+      return 'Distressed'
   }
-  return (count / sorted.length) * 100
 }
 
-function computeMedian(values: number[]): number {
-  if (values.length === 0) return 0
-  const sorted = [...values].sort((a, b) => a - b)
-  const mid = Math.floor(sorted.length / 2)
-  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
+function staleLabel(days: number, canonical: CanonicalStatus): string {
+  const fsbo = canonical === 'owner_listed'
+  if (days >= 60) {
+    return fsbo ? '60+ DOM (FSBO)' : '60+ DOM'
+  }
+  return fsbo ? '30+ DOM (FSBO)' : '30+ DOM'
 }
 
 /**
- * Score a set of listings relative to each other within a viewport.
- * Lower price/sqft vs peers + higher DOM + distressed status = higher score.
+ * Classify one listing for map color and list sorting.
+ * Precedence: distress > DOM buckets > owner-listed > active.
+ * Active + missing DOM → `unknown` (grey) so we never guess time on market.
  */
-export function scoreDealSignals(listings: MapListing[]): Map<string, DealSignalResult> {
+export function classifyListing(listing: MapListing): DealSignalResult {
+  const canonical = normalizeListingStatus(listing.listing_status)
+
+  if (DISTRESSED_CATEGORIES.has(canonical)) {
+    return {
+      category: 'distressed',
+      rank: CATEGORY_RANK.distressed,
+      label: distressLabel(canonical),
+      color: CATEGORY_MARKER_HEX.distressed,
+    }
+  }
+
+  const dom = listing.days_on_market
+
+  if (dom != null) {
+    if (dom >= 60) {
+      return {
+        category: 'stale_60',
+        rank: CATEGORY_RANK.stale_60,
+        label: staleLabel(dom, canonical),
+        color: CATEGORY_MARKER_HEX.stale_60,
+      }
+    }
+    if (dom >= 30) {
+      return {
+        category: 'stale_30',
+        rank: CATEGORY_RANK.stale_30,
+        label: staleLabel(dom, canonical),
+        color: CATEGORY_MARKER_HEX.stale_30,
+      }
+    }
+  }
+
+  if (canonical === 'owner_listed') {
+    return {
+      category: 'owner_listed',
+      rank: CATEGORY_RANK.owner_listed,
+      label: 'Owner Listed',
+      color: CATEGORY_MARKER_HEX.owner_listed,
+    }
+  }
+
+  if (canonical === 'active') {
+    // Intentional: we do not guess time-on-market. If the feed omits DOM, bucket
+    // as unknown (grey) instead of defaulting to "fresh" Active (dark green).
+    if (dom === null) {
+      return {
+        category: 'unknown',
+        rank: CATEGORY_RANK.unknown,
+        label: 'DOM unknown',
+        color: CATEGORY_MARKER_HEX.unknown,
+      }
+    }
+    return {
+      category: 'active',
+      rank: CATEGORY_RANK.active,
+      label: 'Active',
+      color: CATEGORY_MARKER_HEX.active,
+    }
+  }
+
+  return {
+    category: 'unknown',
+    rank: CATEGORY_RANK.unknown,
+    label: displayListingStatus(listing.listing_status),
+    color: CATEGORY_MARKER_HEX.unknown,
+  }
+}
+
+export function classifyListings(listings: MapListing[]): Map<string, DealSignalResult> {
   const results = new Map<string, DealSignalResult>()
-  if (listings.length === 0) return results
-
-  const ppsqftValues: number[] = []
-  const domValues: number[] = []
-
-  for (const l of listings) {
-    if (l.price != null && l.sqft != null && l.sqft > 0) {
-      ppsqftValues.push(l.price / l.sqft)
-    }
-    if (l.days_on_market != null) {
-      domValues.push(l.days_on_market)
-    }
-  }
-
-  const sortedPpsqft = [...ppsqftValues].sort((a, b) => a - b)
-  const sortedDom = [...domValues].sort((a, b) => a - b)
-  const medianPpsqft = computeMedian(ppsqftValues)
-
   for (const listing of listings) {
-    let ppsqftScore = 50
-    if (listing.price != null && listing.sqft != null && listing.sqft > 0 && medianPpsqft > 0) {
-      const ppsqft = listing.price / listing.sqft
-      const pctile = percentileRank(ppsqft, sortedPpsqft)
-      ppsqftScore = 100 - pctile
-    }
-
-    let domScore = 30
-    if (listing.days_on_market != null && domValues.length > 0) {
-      const pctile = percentileRank(listing.days_on_market, sortedDom)
-      domScore = pctile
-    }
-
-    let statusScore = 0
-    if (isDistressed(listing.listing_status)) {
-      statusScore = 100
-    } else if (isHighMotivation(listing.listing_status)) {
-      statusScore = 50
-    }
-
-    let ageScore = 30
-    if (listing.year_built != null) {
-      const age = new Date().getFullYear() - listing.year_built
-      ageScore = Math.min(100, Math.max(0, age * 1.5))
-    }
-
-    const raw =
-      ppsqftScore * 0.4 +
-      domScore * 0.3 +
-      statusScore * 0.2 +
-      ageScore * 0.1
-
-    const score = Math.round(Math.max(0, Math.min(100, raw)))
-    const { grade, label, color } = gradeFromScore(score)
-
-    results.set(listing.id, { score, grade, label, color })
+    results.set(listing.id, classifyListing(listing))
   }
-
   return results
 }
 
-function gradeFromScore(score: number): { grade: DealSignalGrade; label: string; color: string } {
-  if (score >= 80) return { grade: 'A', label: 'Strong', color: 'var(--status-positive)' }
-  if (score >= 60) return { grade: 'B', label: 'Good', color: '#22C55E' }
-  if (score >= 40) return { grade: 'C', label: 'Fair', color: 'var(--status-warning)' }
-  if (score >= 20) return { grade: 'D', label: 'Weak', color: '#F97316' }
-  return { grade: 'F', label: 'Low', color: 'var(--status-negative)' }
-}
-
-export function markerColorFromGrade(grade: DealSignalGrade): string {
-  switch (grade) {
-    case 'A': return '#16A34A'
-    case 'B': return '#22C55E'
-    case 'C': return '#EAB308'
-    case 'D': return '#F97316'
-    case 'F': return '#EF4444'
-  }
+export function markerColorForCategory(category: DealCategory): string {
+  return CATEGORY_MARKER_HEX[category]
 }
 
 export function sortListings(
@@ -220,9 +238,12 @@ export function sortListings(
   switch (sortBy) {
     case 'deal_signal':
       sorted.sort((a, b) => {
-        const sa = signals.get(a.id)?.score ?? 0
-        const sb = signals.get(b.id)?.score ?? 0
-        return sb - sa
+        const ra = signals.get(a.id)?.rank ?? 0
+        const rb = signals.get(b.id)?.rank ?? 0
+        if (rb !== ra) return rb - ra
+        const da = a.days_on_market ?? 0
+        const db = b.days_on_market ?? 0
+        return db - da
       })
       break
     case 'price_asc':

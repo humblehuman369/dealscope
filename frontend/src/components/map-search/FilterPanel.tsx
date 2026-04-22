@@ -53,7 +53,7 @@ const DOM_OPTIONS: { value: number | undefined; label: string }[] = [
 ]
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: 'deal_signal', label: 'Deal Signal' },
+  { value: 'deal_signal', label: 'Opportunity' },
   { value: 'price_asc', label: 'Price: Low → High' },
   { value: 'price_desc', label: 'Price: High → Low' },
   { value: 'dom_desc', label: 'Days on Market' },
