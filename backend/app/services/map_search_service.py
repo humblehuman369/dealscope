@@ -38,6 +38,23 @@ CANONICAL_STATUSES: set[str] = {
     "auction",
 }
 
+# Foreclosure / auction / pre-FC map inventory: Zillow (AXESSO) only when the user
+# asks exclusively for these buckets—RentCast labels and staleness are skipped.
+DISTRESSED_ONLY_STATUSES: frozenset[str] = frozenset(
+    {"foreclosure", "pre-foreclosure", "auction"},
+)
+
+
+def _skip_rentcast_sale_use_zillow_only_distressed(
+    requested_statuses: set[str],
+    zillow_available: bool,
+) -> bool:
+    """Omit RentCast sale merge when filters are distressed-only and Zillow is configured."""
+    if not zillow_available:
+        return False
+    return bool(requested_statuses) and requested_statuses <= DISTRESSED_ONLY_STATUSES
+
+
 _STATUS_MAP: dict[str, str] = {
     # Zillow homeStatus values
     "for_sale": "active",
@@ -47,6 +64,7 @@ _STATUS_MAP: dict[str, str] = {
     "preforeclosure": "pre-foreclosure",
     # RentCast status values
     "active": "active",
+    "inactive": "off-market",
     # Distressed / special
     "foreclosure": "foreclosure",
     "foreclosed": "foreclosure",
@@ -242,6 +260,11 @@ class MapSearchService:
         # Fetch from all sources at all grid points in parallel
         tasks: list[asyncio.Task] = []
 
+        if _skip_rentcast_sale_use_zillow_only_distressed(requested_statuses, bool(self.zillow)):
+            logger.info(
+                "Map search sale: RentCast skipped (filters are foreclosure / pre-foreclosure / auction only; using Zillow)",
+            )
+
         # Dispatch shape, per grid point:
         # - 1 vanilla forSale query when active/owner-listed is requested.
         # - 1 typed Auction query (isAuction=true) when auction is requested.
@@ -251,22 +274,23 @@ class MapSearchService:
         #   isPreForeclosure param; the only way to filter pre-foreclosure
         #   exclusively is via Zillow's searchQueryState.filterState.pre).
         #
-        # Each distressed query is dispatched with `tag_status` so results
-        # carry the requested canonical status regardless of what the
-        # search response's homeStatus says — search responses don't include
-        # enough listingSubType/foreclosureTypes detail to re-derive status
-        # client-side (those fields are only in the property-v2 endpoint).
+        # Zillow's "Foreclosures" search can return both REO and
+        # pre-foreclosure inventory; their UI splits **Foreclosed** vs
+        # **Pre-foreclosures**. We classify each row with
+        # `_derive_zillow_status` (listingSubType / foreclosureTypes)—no blanket
+        # foreclosure tag—so filters match that split.
 
         for pt_lat, pt_lng in query_points:
             if req.listing_type in ("sale", "both"):
-                # Always run RentCast for sale: its per-listing `listingType`
-                # field surfaces "Foreclosure" / "Short Sale" which the
-                # normalizer folds into the canonical status. Cheap insurance.
-                tasks.append(
-                    asyncio.create_task(
-                        self._fetch_rentcast(req, "sale", pt_lat, pt_lng, sub_radius),
+                if not _skip_rentcast_sale_use_zillow_only_distressed(
+                    requested_statuses,
+                    bool(self.zillow),
+                ):
+                    tasks.append(
+                        asyncio.create_task(
+                            self._fetch_rentcast(req, "sale", pt_lat, pt_lng, sub_radius),
+                        )
                     )
-                )
                 if self.zillow:
                     # Vanilla forSale query — covers Active and the
                     # owner-listed (FSBO) bucket Zillow's defaults already
@@ -287,7 +311,6 @@ class MapSearchService:
                                 self._fetch_zillow(
                                     pt_lat, pt_lng, sub_radius, "forSale", req,
                                     {"isAuction": True},
-                                    tag_status="Auction",
                                 ),
                             )
                         )
@@ -297,7 +320,6 @@ class MapSearchService:
                                 self._fetch_zillow(
                                     pt_lat, pt_lng, sub_radius, "forSale", req,
                                     {"isForSaleForeclosure": True},
-                                    tag_status="Foreclosure",
                                 ),
                             )
                         )
@@ -587,14 +609,10 @@ class MapSearchService:
         were silently ignored, which is why distressed pills returned zero
         results.
 
-        ``tag_status`` overrides the derived listing_status on every
-        returned listing. Use this when the dispatcher knows the request
-        filtered to a specific bucket (e.g., ``isAuction=true``) but the
-        search-endpoint response shape is too thin to re-derive that status
-        client-side. AXESSO's search responses only include
-        ``listing_sub_type.is_FSBA`` plus a single ``isPreforeclosureAuction``
-        boolean — the full ``listingSubType``/``foreclosureTypes`` objects
-        we need for derivation only exist on the ``property-v2`` endpoint.
+        ``tag_status``, if passed, overrides ``listing_status`` after
+        normalization (rare). Auction and foreclosure-scoped searches omit it so
+        ``_derive_zillow_status`` can classify **Foreclosed** (REO / bank-owned)
+        vs **Pre-foreclosure** separately, consistent with Zillow's split filters.
         """
         if not self.zillow:
             return []
@@ -878,6 +896,63 @@ class MapSearchService:
         return lat is not None and lng is not None
 
     @staticmethod
+    def _rentcast_listing_subtype(item: dict) -> dict[str, Any]:
+        """Normalize listingSubType flags from nested objects or flat RentCast-style keys."""
+        sub = item.get("listingSubType") or item.get("listing_sub_type")
+        if isinstance(sub, dict):
+            return sub
+        out: dict[str, Any] = {}
+        for key in ("isBankOwned", "isForeclosure", "isFSBO", "isFSBA", "isForAuction"):
+            for prefix in ("listingSubType_", "listing_sub_type_"):
+                flat = f"{prefix}{key}"
+                if flat in item and item[flat] is not None:
+                    out[key] = item[flat]
+                    break
+        return out
+
+    @staticmethod
+    def _derive_rentcast_listing_status(item: dict) -> str | None:
+        """Derive listing_status from RentCast subtype flags and listingType enum.
+
+        Aligns MLS-style labels with institutional convention: **bank-owned (REO)
+        is post-foreclosure resale**; **pending / in-process collateral is pre-foreclosure**,
+        not “Foreclosure” in the REO sense. RentCast's ``listingType`` enum value
+        ``Foreclosure`` is treated as pre-foreclosure inventory when no REO flag is set.
+
+        Mapping when ``listingSubType`` (or flat equivalents) is present:
+        - isBankOwned → Foreclosure (REO)
+        - isForAuction → Auction
+        - isForeclosure → Pre-Foreclosure
+        - isFSBO → Owner Listed
+        - isFSBA → Active (MLS agent-listed)
+        """
+        sub = MapSearchService._rentcast_listing_subtype(item)
+
+        def _truthy(name: str) -> bool:
+            v = sub.get(name)
+            return bool(v) if v is not None else False
+
+        if _truthy("isBankOwned"):
+            return "Foreclosure"
+        if _truthy("isForAuction"):
+            return "Auction"
+        if _truthy("isForeclosure"):
+            return "Pre-Foreclosure"
+        if _truthy("isFSBO"):
+            return "Owner Listed"
+        if _truthy("isFSBA"):
+            return "Active"
+
+        listing_type = (item.get("listingType") or "").strip()
+        lt_lower = listing_type.lower()
+        if lt_lower == "short sale":
+            return "Short Sale"
+        if lt_lower == "foreclosure":
+            return "Pre-Foreclosure"
+
+        return item.get("status")
+
+    @staticmethod
     def _normalize_rentcast_listing(item: dict) -> MapListing:
         street = item.get("addressLine1") or ""
         city = item.get("city") or ""
@@ -895,14 +970,7 @@ class MapSearchService:
                 parts.append(f"{state} {zipcode}".strip())
             address = ", ".join(p for p in parts if p)
 
-        # Prefer RentCast's listingType when it surfaces distress
-        # ("Foreclosure" / "Short Sale") so the canonical status filter
-        # routes the listing correctly. Otherwise fall back to status
-        # ("Active" / "Inactive").
-        listing_type = (item.get("listingType") or "").strip()
-        raw_status = item.get("status")
-        if listing_type and listing_type.lower() in {"foreclosure", "short sale"}:
-            raw_status = listing_type
+        raw_status = MapSearchService._derive_rentcast_listing_status(item)
 
         return MapListing(
             id=item.get("id") or f"rc-{item.get('latitude')}-{item.get('longitude')}",
@@ -994,22 +1062,21 @@ class MapSearchService:
     def _derive_zillow_status(item: dict) -> str | None:
         """Pick the most informative status label from a Zillow record.
 
-        Distress flags win over owner-listed which wins over generic
-        homeStatus. Order matters: pre-foreclosure beats foreclosure beats
-        auction beats bank-owned beats FSBO beats whatever homeStatus says
-        — because the more specific signal is the one investors actually
-        filter on.
+        ``isForeclosure`` on listingSubType indicates **pending** collateral / lis-pendens
+        style inventory (pre-foreclosure). **REO / bank-owned** is post-foreclosure resale
+        and maps to Foreclosure for filters. Order: explicit pre-FC flags → pending
+        isForeclosure → other foreclosure signals → auction → REO → FSBO → homeStatus.
         """
-        sub = item.get("listingSubType") or {}
+        sub = item.get("listingSubType") or item.get("listing_sub_type") or {}
+        if not isinstance(sub, dict):
+            sub = {}
         fore_types = item.get("foreclosureTypes") or {}
 
         if fore_types.get("isPreforeclosure") or fore_types.get("isPreForeclosure"):
             return "Pre-Foreclosure"
-        if (
-            fore_types.get("isAnyForeclosure")
-            or fore_types.get("wasForeclosed")
-            or sub.get("isForeclosure")
-        ):
+        if sub.get("isForeclosure"):
+            return "Pre-Foreclosure"
+        if fore_types.get("isAnyForeclosure") or fore_types.get("wasForeclosed"):
             return "Foreclosure"
         if sub.get("isForAuction") or fore_types.get("wasNonRetailAuction"):
             return "Auction"
