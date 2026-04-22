@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
   APIProvider,
+  ControlPosition,
   Map,
   useMap,
   AdvancedMarker,
@@ -868,6 +869,7 @@ export function MapSearchView() {
           streetViewControl={false}
           fullscreenControl={false}
           zoomControl={true}
+          zoomControlOptions={{ position: ControlPosition.RIGHT_CENTER }}
           minZoom={3}
           restriction={{
             latLngBounds: US_BOUNDS,
