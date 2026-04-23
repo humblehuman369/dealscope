@@ -7,6 +7,7 @@ Every endpoint delegates to the service layer.  No business logic here.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from urllib.parse import urlencode, urlparse
 
@@ -46,6 +47,7 @@ from app.schemas.auth import (
 from app.services.auth_service import AuthError, MFARequired, auth_service
 from app.services.email_service import email_service
 from app.services.session_service import session_service
+from app.services.signup_notification_service import signup_notification_service
 
 logger = logging.getLogger(__name__)
 
@@ -199,6 +201,17 @@ async def register(body: UserRegister, request: Request, response: Response, db:
         await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+    # Notify admins of the new signup (fire-and-forget; never blocks signup)
+    asyncio.create_task(
+        signup_notification_service.notify(
+            user_id=user.id,
+            email=user.email,
+            full_name=user.full_name,
+            source="email",
+            ip_address=_client_ip(request),
+        )
+    )
 
     # Send verification email and propagate the result to the client so
     # the UI can show a "Couldn't send — resend" affordance when delivery
@@ -446,6 +459,18 @@ async def google_callback(request: Request, response: Response, db: DbSession):
     )
     await db.commit()
 
+    # Notify admins on first-time Google signup only (skip returning users)
+    if _created:
+        asyncio.create_task(
+            signup_notification_service.notify(
+                user_id=user.id,
+                email=user.email,
+                full_name=user.full_name,
+                source="google",
+                ip_address=_client_ip(request),
+            )
+        )
+
     if mobile_redirect:
         token_params = urlencode(
             {
@@ -642,6 +667,18 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
         remember_me=False,
     )
     await db.commit()
+
+    # Notify admins on first-time Apple signup only (skip returning users)
+    if _created:
+        asyncio.create_task(
+            signup_notification_service.notify(
+                user_id=user.id,
+                email=user.email,
+                full_name=user.full_name,
+                source="apple",
+                ip_address=_client_ip(request),
+            )
+        )
 
     if mobile_redirect:
         token_params = urlencode(
