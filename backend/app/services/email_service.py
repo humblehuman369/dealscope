@@ -1086,6 +1086,98 @@ class EmailService:
             html=html,
         )
 
+    async def send_signup_notification_email(
+        self,
+        to: str,
+        new_user_email: str,
+        new_user_name: str | None,
+        source: str,
+        signup_time: str | None = None,
+        location: str | None = None,
+        total_users: int | None = None,
+    ) -> dict[str, Any]:
+        """Notify an admin that a new user signed up.
+
+        Internal-only operational email. Reuses the standard dark-theme
+        template so it visually matches every other DealGapIQ email.
+        """
+        time_display = signup_time or datetime.now().strftime("%B %d, %Y at %I:%M %p UTC")
+        safe_name = html_lib.escape(new_user_name or "—")
+        safe_email = html_lib.escape(new_user_email)
+        safe_source = html_lib.escape(source)
+        safe_location = html_lib.escape(location) if location else "Unknown"
+
+        total_row = ""
+        if total_users is not None:
+            total_row = f'''
+                <tr>
+                    <td style="padding-top: 8px;">
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">Total users</p>
+                        <p style="font-size: 15px; color: {self.TXT_HEADING}; margin: 4px 0 0 0; font-weight: 700;">{total_users:,}</p>
+                    </td>
+                </tr>'''
+
+        content = f'''
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
+    🎉 New DealGapIQ signup
+</h1>
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
+    A new user just created an account.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 20px; background-color: {self.NESTED_BG}; border: 1px solid {self.BORDER}; border-radius: 12px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="padding-bottom: 8px;">
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">Name</p>
+                        <p style="font-size: 15px; color: {self.TXT_HEADING}; margin: 4px 0 0 0;">{safe_name}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding-bottom: 8px;">
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">Email</p>
+                        <p style="font-size: 15px; color: {self.TXT_HEADING}; margin: 4px 0 0 0;">{safe_email}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding-bottom: 8px;">
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">Source</p>
+                        <p style="font-size: 15px; color: {self.TXT_HEADING}; margin: 4px 0 0 0;">{safe_source}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding-bottom: 8px;">
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">Location</p>
+                        <p style="font-size: 15px; color: {self.TXT_HEADING}; margin: 4px 0 0 0;">{safe_location}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">Time</p>
+                        <p style="font-size: 15px; color: {self.TXT_HEADING}; margin: 4px 0 0 0;">{time_display}</p>
+                    </td>
+                </tr>{total_row}
+            </table>
+        </td>
+    </tr>
+</table>
+
+<p style="font-size: 12px; color: {self.TXT_DIM}; line-height: 1.6; margin: 16px 0 0 0;">
+    This is an internal operational notification. Manage recipients via the
+    <code style="color: {self.TXT_SECONDARY};">ADMIN_NOTIFICATION_EMAILS</code> environment variable.
+</p>
+'''
+
+        html = self._base_template(content, f"New signup: {new_user_email}")
+
+        return await self.send_email(
+            to=to,
+            subject=f"[DealGapIQ Signup] {new_user_name or new_user_email}",
+            html=html,
+        )
+
     async def send_mfa_enabled_email(
         self,
         to: str,

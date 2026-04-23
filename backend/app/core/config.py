@@ -176,6 +176,16 @@ class Settings(BaseSettings):
     EMAIL_FROM: str = "noreply@dealgapiq.com"
     EMAIL_FROM_NAME: str = "DealGapIQ"
 
+    # Comma-separated list of admin emails to notify on every new signup.
+    # Empty string disables admin signup notifications (silent no-op).
+    # Example: "brad@dealgapiq.com" or "brad@dealgapiq.com,cofounder@dealgapiq.com"
+    ADMIN_NOTIFICATION_EMAILS: str = ""
+
+    @property
+    def admin_notification_emails_list(self) -> list[str]:
+        """Parse ADMIN_NOTIFICATION_EMAILS into a clean list of recipients."""
+        return [e.strip() for e in self.ADMIN_NOTIFICATION_EMAILS.split(",") if e.strip()]
+
     # Email templates base URL (for links in emails and post-login redirects)
     FRONTEND_URL: str = "http://localhost:3000"
 
