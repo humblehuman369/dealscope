@@ -161,30 +161,65 @@ async def sync_iap(current_user: CurrentUser, db: DbSession):
                 )
             if resp.status_code == 200:
                 data = resp.json()
-                entitlements = data.get("subscriber", {}).get("entitlements", {})
+                subscriber = data.get("subscriber", {})
+                entitlements = subscriber.get("entitlements", {})
                 ent = entitlements.get(entitlement_id, {})
 
                 from datetime import UTC, datetime
 
                 expires_str = ent.get("expires_date")
                 is_active = False
+                expires_dt = None
                 if expires_str:
                     expires_dt = datetime.fromisoformat(expires_str.replace("Z", "+00:00"))
                     is_active = expires_dt > datetime.now(UTC)
 
-                if is_active and subscription.tier != SubscriptionTier.PRO:
+                # Determine trial status by looking up the linked subscription record.
+                # RevenueCat exposes period_type on subscriber.subscriptions[product_id],
+                # NOT on entitlements. Values: "trial", "intro", "normal", "promotional".
+                product_id = ent.get("product_identifier")
+                sub_detail = subscriber.get("subscriptions", {}).get(product_id, {}) if product_id else {}
+                period_type = (sub_detail.get("period_type") or "").lower()
+                is_trial_period = period_type in ("trial", "intro")
+                desired_status = (
+                    SubscriptionStatus.TRIALING if is_trial_period else SubscriptionStatus.ACTIVE
+                )
+
+                # Sync if entitlement is active AND either tier or status differs from truth.
+                # (Status check matters so a TRIAL→ACTIVE transition gets picked up.)
+                needs_sync = is_active and (
+                    subscription.tier != SubscriptionTier.PRO
+                    or subscription.status != desired_status
+                )
+
+                if needs_sync:
                     pro_limits = TIER_LIMITS[SubscriptionTier.PRO]
                     subscription.tier = SubscriptionTier.PRO
-                    subscription.status = SubscriptionStatus.ACTIVE
+                    subscription.status = desired_status
                     subscription.properties_limit = pro_limits["properties_limit"]
                     subscription.searches_per_month = pro_limits["searches_per_month"]
                     subscription.api_calls_per_month = pro_limits["api_calls_per_month"]
                     subscription.cancel_at_period_end = False
                     subscription.current_period_end = expires_dt
+
+                    # Populate trial dates whenever we're in a trial period so the
+                    # frontend can show countdowns and ProGate can honor isTrialing.
+                    if is_trial_period:
+                        purchase_str = sub_detail.get("purchase_date") or ent.get("purchase_date")
+                        if purchase_str:
+                            subscription.trial_start = datetime.fromisoformat(
+                                purchase_str.replace("Z", "+00:00")
+                            )
+                        subscription.trial_end = expires_dt
+
                     subscription.updated_at = datetime.now(UTC)
                     await db.commit()
                     await db.refresh(subscription)
-                    logger.info(f"sync-iap: upgraded user {current_user.id} to Pro via API check")
+                    logger.info(
+                        "sync-iap: synced user %s to Pro (%s) via API check",
+                        current_user.id,
+                        "TRIALING" if is_trial_period else "ACTIVE",
+                    )
 
         except Exception as e:
             logger.warning(f"sync-iap: RevenueCat API check failed for {current_user.id}: {e}")
@@ -560,8 +595,16 @@ async def revenuecat_webhook(
     from datetime import UTC, datetime
 
     if event_type in ("INITIAL_PURCHASE", "RENEWAL", "PRODUCT_CHANGE", "UNCANCELLATION"):
+        # RevenueCat sends period_type on every entitlement-changing event.
+        # Values: TRIAL, NORMAL, INTRO, PROMOTIONAL, PREPAID. Only TRIAL/INTRO
+        # should put us in TRIALING status — everything else is a paying user.
+        period_type = (event.get("period_type") or "").upper()
+        is_trial_period = period_type in ("TRIAL", "INTRO")
+
         subscription.tier = SubscriptionTier.PRO
-        subscription.status = SubscriptionStatus.ACTIVE
+        subscription.status = (
+            SubscriptionStatus.TRIALING if is_trial_period else SubscriptionStatus.ACTIVE
+        )
         subscription.properties_limit = pro_limits["properties_limit"]
         subscription.searches_per_month = pro_limits["searches_per_month"]
         subscription.api_calls_per_month = pro_limits["api_calls_per_month"]
@@ -572,7 +615,24 @@ async def revenuecat_webhook(
         if expiration:
             subscription.current_period_end = datetime.fromtimestamp(expiration / 1000, tz=UTC)
 
-        logger.info(f"RevenueCat: upgraded user {user_id} to Pro ({event_type})")
+        # Populate trial dates so frontend countdowns and ProGate's isTrialing
+        # check work the same way they do for Stripe-billed web users.
+        if is_trial_period:
+            purchased = event.get("purchased_at_ms")
+            if purchased:
+                subscription.trial_start = datetime.fromtimestamp(purchased / 1000, tz=UTC)
+            elif event_type == "INITIAL_PURCHASE":
+                # Fallback: if RevenueCat ever omits purchased_at_ms, anchor at now
+                subscription.trial_start = datetime.now(UTC)
+            if expiration:
+                subscription.trial_end = datetime.fromtimestamp(expiration / 1000, tz=UTC)
+
+        logger.info(
+            "RevenueCat: upgraded user %s to Pro (%s, period_type=%s)",
+            user_id,
+            "TRIALING" if is_trial_period else "ACTIVE",
+            period_type or "unknown",
+        )
 
         if user and event_type == "INITIAL_PURCHASE":
             try:
