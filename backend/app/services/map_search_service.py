@@ -895,6 +895,74 @@ class MapSearchService:
         lng = item.get("longitude") or item.get("lng") or item.get("long")
         return lat is not None and lng is not None
 
+    # ── Photo URL extraction ────────────────────────────────────────────────
+    # AXESSO/Zillow returns photos under several different shapes depending on
+    # the endpoint and the listing's lifecycle (active vs off-market vs FC).
+    # We try the cheap top-level keys first, then walk the richer nested
+    # arrays (responsivePhotos / carouselPhotos / hugePhotos / photos /
+    # originalPhotos), then any dict with mixedSources.{jpeg,webp}. This
+    # mirrors the frontend rent-comps `pickPhotoUrl` so a listing that shows
+    # a photo on the property detail page also shows one on the map.
+
+    @staticmethod
+    def _pick_photo_url(value: Any) -> str | None:
+        """Recursively search a value for a usable photo URL string."""
+        if value is None:
+            return None
+        if isinstance(value, str):
+            s = value.strip()
+            return s or None
+        if isinstance(value, list):
+            for item in value:
+                url = MapSearchService._pick_photo_url(item)
+                if url:
+                    return url
+            return None
+        if isinstance(value, dict):
+            for key in ("url", "href", "src", "imageUrl", "imgSrc", "thumbnailUrl"):
+                v = value.get(key)
+                if isinstance(v, str) and v.strip():
+                    return v.strip()
+            for key in ("jpeg", "webp", "png", "mixedSources", "subPhotos", "photo", "image"):
+                if key in value:
+                    nested = MapSearchService._pick_photo_url(value[key])
+                    if nested:
+                        return nested
+        return None
+
+    @staticmethod
+    def _extract_photo_url(item: dict, *, primary_keys: tuple[str, ...] = ()) -> str | None:
+        """Find the best available photo URL on a raw provider listing item.
+
+        ``primary_keys`` lets each provider list its preferred top-level fields
+        (e.g. ``("photoUrl", "imgSrc")`` for RentCast or ``("imgSrc",)`` for
+        Zillow). We then fall through to common nested-array fields used by
+        AXESSO Zillow responses.
+        """
+        for key in primary_keys:
+            v = item.get(key)
+            if isinstance(v, str) and v.strip():
+                return v.strip()
+        for key in (
+            "miniCardPhotos",
+            "compsCarouselPropertyPhotos",
+            "carouselPhotos",
+            "responsivePhotos",
+            "photos",
+            "listingPhotos",
+            "hugePhotos",
+            "originalPhotos",
+            "primaryPhoto",
+            "primary_photo",
+            "image",
+            "thumbnailUrl",
+        ):
+            if key in item:
+                url = MapSearchService._pick_photo_url(item[key])
+                if url:
+                    return url
+        return None
+
     @staticmethod
     def _rentcast_listing_subtype(item: dict) -> dict[str, Any]:
         """Normalize listingSubType flags from nested objects or flat RentCast-style keys."""
@@ -986,7 +1054,9 @@ class MapSearchService:
             sqft=item.get("squareFootage"),
             property_type=item.get("propertyType"),
             listing_status=raw_status,
-            photo_url=item.get("photoUrl") or item.get("imgSrc"),
+            photo_url=MapSearchService._extract_photo_url(
+                item, primary_keys=("photoUrl", "imgSrc")
+            ),
             source="rentcast",
             days_on_market=item.get("daysOnMarket"),
             year_built=item.get("yearBuilt"),
@@ -1027,9 +1097,11 @@ class MapSearchService:
         lat = item.get("latitude") or item.get("lat")
         lng = item.get("longitude") or item.get("lng") or item.get("long")
 
-        photo_url = item.get("imgSrc")
-        if not photo_url and isinstance(item.get("miniCardPhotos"), list) and item["miniCardPhotos"]:
-            photo_url = item["miniCardPhotos"][0].get("url")
+        # AXESSO Zillow puts the thumbnail in different fields depending on
+        # listing type (active vs distressed) and endpoint. Prefer imgSrc /
+        # miniCardPhotos and fall through to the richer nested arrays so the
+        # map matches what the property detail view shows.
+        photo_url = MapSearchService._extract_photo_url(item, primary_keys=("imgSrc",))
 
         # Derive an effective status that includes distress signals.
         # Zillow returns homeStatus="FOR_SALE" even for foreclosure /
