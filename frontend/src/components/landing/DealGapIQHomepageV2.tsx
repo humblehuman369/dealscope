@@ -127,6 +127,7 @@ export function DealGapIQHomepageV2({ onPointAndScan }: Props) {
         <DataSourcesBlock />
         <PricingSection onAnalyze={handleAnalyzeClick} />
         <FounderDeepSection />
+        <TestimonialsSection />
         <FinalCTASection onAnalyze={handleAnalyzeClick} />
       </main>
 
@@ -859,6 +860,99 @@ function FounderDeepSection() {
         </div>
       </div>
     </section>
+  );
+}
+
+/* ---------- TESTIMONIALS ---------- */
+
+interface Testimonial {
+  quote: string;
+  initials: string;
+  name: string;
+  role: string;
+}
+
+const TESTIMONIALS: Testimonial[] = [
+  {
+    quote: 'I used to spend 45 minutes per property on a spreadsheet. DealGapIQ gives me a better answer in under a minute. The Deal Gap concept alone changed how I evaluate deals.',
+    initials: 'MR',
+    name: 'Michael R.',
+    role: 'Portfolio investor · 12 properties',
+  },
+  {
+    quote: 'The Income Value calculation is something I\u2019ve never seen anywhere else. Knowing exactly where breakeven sits — before I even tour a property — saves me from chasing bad deals.',
+    initials: 'TL',
+    name: 'Tamara L.',
+    role: 'BRRRR investor · Denver, CO',
+  },
+  {
+    quote: 'I was skeptical of another calculator tool. But seeing the actual assumptions behind the numbers — and being able to change them — that\u2019s what convinced me to pay for Pro.',
+    initials: 'JK',
+    name: 'James K.',
+    role: 'CPA & buy-and-hold investor',
+  },
+];
+
+function TestimonialsSection() {
+  return (
+    <section className="px-6 md:px-12 lg:px-20 py-24 md:py-28">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-14">
+          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
+            What Early Users Are Saying
+          </div>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
+            Investors Use DealGap<span className="text-sky-400">IQ</span>{' '}
+            <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+              Before They Make an Offer.
+            </span>
+          </h2>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-5">
+          {TESTIMONIALS.map((t, i) => (
+            <TestimonialCard key={i} testimonial={t} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }) {
+  return (
+    <div className="bg-black border border-[#14181F] rounded-2xl p-7 flex flex-col gap-6 hover:border-sky-500/30 transition">
+      {/* Quote */}
+      <p className="text-slate-300 italic leading-relaxed flex-1 text-[15px]">
+        &ldquo;{renderQuoteWithBrand(t.quote)}&rdquo;
+      </p>
+
+      {/* Attribution */}
+      <div className="flex items-center gap-3 pt-4 border-t border-[#14181F]">
+        <div className="w-10 h-10 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center shrink-0">
+          <span className="text-xs font-bold text-sky-300">{t.initials}</span>
+        </div>
+        <div>
+          <p className="text-sm font-bold text-white">{t.name}</p>
+          <p className="text-xs text-slate-500">{t.role}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Highlight DealGapIQ brand mark within testimonial quotes. */
+function renderQuoteWithBrand(quote: string): React.ReactNode {
+  if (!quote.includes('DealGapIQ')) return quote;
+  const parts = quote.split('DealGapIQ');
+  return (
+    <>
+      {parts[0]}
+      <strong className="not-italic font-semibold text-white">
+        DealGap<span className="text-sky-400">IQ</span>
+      </strong>
+      {parts[1]}
+    </>
   );
 }
 
