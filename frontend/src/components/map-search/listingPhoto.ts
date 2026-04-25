@@ -55,12 +55,38 @@ export function useListingPhoto(
     () => buildCandidates(listing, streetViewSize),
     [listing, streetViewSize],
   )
+
+  // The same hook instance can be re-used for a different listing
+  // (PropertyPreviewCard receives a new `listing` prop when the user clicks
+  // a different map marker; PropertyCard's listing object identity changes
+  // when the merge step refreshes its photo_url). Without this reset, a
+  // previous listing's failure state would leak into the new render and we'd
+  // skip straight to the Street View fallback for an image we never tried.
+  //
+  // We track the primary candidate (rather than listing.id) because that
+  // also catches the case where the same id gets a refreshed URL after a
+  // backend merge. Setting state during render is the React-recommended way
+  // to reset state on prop change without an effect round-trip.
+  // See https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const primary = candidates[0] ?? null
+  const [prevPrimary, setPrevPrimary] = useState<string | null>(primary)
   const [index, setIndex] = useState(0)
+
+  const primaryChanged = prevPrimary !== primary
+  if (primaryChanged) {
+    setPrevPrimary(primary)
+    setIndex(0)
+  }
 
   const handleError = useCallback(() => {
     setIndex((prev) => prev + 1)
   }, [])
 
-  const src = index < candidates.length ? candidates[index] : null
+  // Use the post-reset index when the primary just changed so this render
+  // shows the new listing's primary candidate (React will then discard and
+  // re-render in a single commit, but computing src honestly here keeps
+  // logic straightforward).
+  const effectiveIndex = primaryChanged ? 0 : index
+  const src = effectiveIndex < candidates.length ? candidates[effectiveIndex] : null
   return { src, handleError }
 }
