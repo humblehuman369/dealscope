@@ -1286,8 +1286,23 @@ function VerdictContent() {
               </div>
             </div>
 
+            {/* "What is the Deal Gap?" video link — visible to all users, sits above the bar chart */}
+            <div className="mt-5 mb-1 flex items-center justify-start">
+              <button
+                type="button"
+                onClick={() => setShowDealGapVideo(true)}
+                className="flex items-center gap-1.5 text-[12px] sm:text-[13px] font-semibold transition-colors hover:underline"
+                style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+                </svg>
+                Watch: What is the Deal Gap?
+              </button>
+            </div>
+
             {/* Price scale bar (Deal Gap / Price Gap) */}
-            <div className="mt-5 relative" style={{ paddingTop: 0 }}>
+            <div className="relative" style={{ paddingTop: 0 }}>
               {(() => {
                 const markers = [
                   { label: 'TARGET', price: purchasePrice, dotColor: 'var(--accent-sky)' },

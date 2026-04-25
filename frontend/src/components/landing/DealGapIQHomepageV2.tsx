@@ -45,6 +45,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useAuthModal } from '@/hooks/useAuthModal';
+import { VideoModal } from '@/components/ui/VideoModal';
 import { DealGapBar } from './DealGapBar';
 
 /* ============================================================
@@ -77,6 +78,7 @@ interface Props {
 
 export function DealGapIQHomepageV2({ onPointAndScan }: Props) {
   const router = useRouter();
+  const [showDealGapVideo, setShowDealGapVideo] = React.useState(false);
 
   const handleAnalyzeClick = () => router.push('/search');
   const scrollTo = (id: string) => {
@@ -117,7 +119,7 @@ export function DealGapIQHomepageV2({ onPointAndScan }: Props) {
       {/* Top app nav is provided by the global app layout — this component intentionally omits its own header to avoid the duplicate-nav double-stack. */}
 
       <main className="relative z-10">
-        <HeroSection onAnalyze={handleAnalyzeClick} onScrollHow={() => scrollTo('workbench')} onPointAndScan={onPointAndScan} />
+        <HeroSection onAnalyze={handleAnalyzeClick} onWatchDealGapVideo={() => setShowDealGapVideo(true)} onPointAndScan={onPointAndScan} />
         <CredibilityBand />
         <ComparisonSection />
         <WorkbenchSection />
@@ -132,6 +134,13 @@ export function DealGapIQHomepageV2({ onPointAndScan }: Props) {
       </main>
 
       <SiteFooter />
+
+      <VideoModal
+        open={showDealGapVideo}
+        onClose={() => setShowDealGapVideo(false)}
+        src="/videos/what-is-dealgapiq-v3.mp4"
+        title="What is the Deal Gap?"
+      />
     </div>
   );
 }
@@ -144,11 +153,11 @@ export function DealGapIQHomepageV2({ onPointAndScan }: Props) {
 
 function HeroSection({
   onAnalyze,
-  onScrollHow,
+  onWatchDealGapVideo,
   onPointAndScan,
 }: {
   onAnalyze: () => void;
-  onScrollHow: () => void;
+  onWatchDealGapVideo: () => void;
   onPointAndScan?: () => void;
 }) {
   return (
@@ -174,7 +183,12 @@ function HeroSection({
             <PrimaryButton onClick={onAnalyze}>
               Analyze Any Property <span>→</span>
             </PrimaryButton>
-            <SecondaryButton onClick={onScrollHow}>What is DealGapIQ?</SecondaryButton>
+            <SecondaryButton onClick={onWatchDealGapVideo}>
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-sky-500/15 border border-sky-500/40">
+                <Play className="w-3 h-3 text-sky-400 fill-sky-400 ml-0.5" />
+              </span>
+              <span>Watch: What is the Deal Gap?</span>
+            </SecondaryButton>
           </div>
 
           <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-400 mb-6">
