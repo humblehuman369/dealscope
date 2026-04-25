@@ -7,6 +7,7 @@ Visual design follows the DealGapIQ dark theme — palette mirrors
 Gmail, and Outlook do not auto-invert cards into muddy hues.
 """
 
+import asyncio
 import hashlib
 import hmac
 import html as html_lib
@@ -146,7 +147,12 @@ class EmailService:
             if headers:
                 params["headers"] = headers
 
-            response = resend.Emails.send(params)
+            # The Resend Python SDK is synchronous (blocking HTTP). Wrap in
+            # asyncio.to_thread so it runs in the default thread pool instead
+            # of blocking the event loop. Important when the API call takes
+            # >100ms — without this, every concurrent request to the backend
+            # stalls until Resend responds.
+            response = await asyncio.to_thread(resend.Emails.send, params)
             message_id = response.get("id") if isinstance(response, dict) else None
             logger.info(f"Email sent to {to}: {message_id or 'unknown'}")
             return {"id": message_id, "success": True}
