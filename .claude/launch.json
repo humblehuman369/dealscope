@@ -6,7 +6,7 @@
       "runtimeExecutable": "sh",
       "runtimeArgs": [
         "-c",
-        "cd /Users/bradgeisen/IQ-Data/dealscope/frontend && npm run dev"
+        "cd '/Users/bradgeisen/Claude Cowork/dealscope/sad-yonath/frontend' && npm run dev"
       ],
       "port": 3000
     },
