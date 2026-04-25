@@ -43,6 +43,7 @@ import {
   TrendingUp,
   Clock,
   Zap,
+  Map as MapIcon,
 } from 'lucide-react';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { VideoModal } from '@/components/ui/VideoModal';
@@ -81,6 +82,7 @@ export function DealGapIQHomepageV2({ onPointAndScan }: Props) {
   const [showDealGapVideo, setShowDealGapVideo] = React.useState(false);
 
   const handleAnalyzeClick = () => router.push('/search');
+  const handleMapSearchClick = () => router.push('/map-search');
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -119,7 +121,7 @@ export function DealGapIQHomepageV2({ onPointAndScan }: Props) {
       {/* Top app nav is provided by the global app layout — this component intentionally omits its own header to avoid the duplicate-nav double-stack. */}
 
       <main className="relative z-10">
-        <HeroSection onAnalyze={handleAnalyzeClick} onWatchDealGapVideo={() => setShowDealGapVideo(true)} onPointAndScan={onPointAndScan} />
+        <HeroSection onAnalyze={handleAnalyzeClick} onMapSearch={handleMapSearchClick} onWatchDealGapVideo={() => setShowDealGapVideo(true)} onPointAndScan={onPointAndScan} />
         <CredibilityBand />
         <ComparisonSection />
         <WorkbenchSection />
@@ -153,10 +155,12 @@ export function DealGapIQHomepageV2({ onPointAndScan }: Props) {
 
 function HeroSection({
   onAnalyze,
+  onMapSearch,
   onWatchDealGapVideo,
   onPointAndScan,
 }: {
   onAnalyze: () => void;
+  onMapSearch: () => void;
   onWatchDealGapVideo: () => void;
   onPointAndScan?: () => void;
 }) {
@@ -176,19 +180,29 @@ function HeroSection({
             <span className="text-white font-semibold">DealGapIQ answers the only question that matters to an investor: is this a good deal?</span>
           </p>
           <p className="text-base text-slate-400 mb-8">
-            Listed or off-market. Anywhere in the U.S. Decision in 15 seconds.
+            Listed or off-market. <span className="text-slate-200">One address or an entire ZIP.</span> Decision in 15 seconds.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-4">
             <PrimaryButton onClick={onAnalyze}>
               Analyze Any Property <span>→</span>
             </PrimaryButton>
-            <SecondaryButton onClick={onWatchDealGapVideo}>
-              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-sky-500/15 border border-sky-500/40">
-                <Play className="w-3 h-3 text-sky-400 fill-sky-400 ml-0.5" />
-              </span>
-              <span>Watch: What is the Deal Gap?</span>
+            <SecondaryButton onClick={onMapSearch}>
+              <MapIcon className="w-4 h-4 text-sky-400" strokeWidth={2.25} />
+              <span>Browse the Map</span>
+              <span className="text-sky-400">→</span>
             </SecondaryButton>
+          </div>
+          <div className="mb-8">
+            <button
+              onClick={onWatchDealGapVideo}
+              className="inline-flex items-center gap-2 text-sm text-sky-400 font-semibold hover:underline"
+            >
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-sky-500/15 border border-sky-500/40">
+                <Play className="w-2.5 h-2.5 text-sky-400 fill-sky-400 ml-0.5" />
+              </span>
+              Watch: What is the Deal Gap?
+            </button>
           </div>
 
           <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-400 mb-6">
@@ -305,6 +319,8 @@ function ComparisonSection() {
                 'No rental income data',
                 'No cash flow analysis',
                 'No investment strategy tools',
+                'No foreclosure / pre-foreclosure / auction filters',
+                'No pre-graded deal pins on the map',
                 'Shows you what a property looks like',
               ].map((item) => (
                 <li key={item} className="flex gap-3 text-slate-400">
@@ -336,6 +352,8 @@ function ComparisonSection() {
                 'Rental income analysis included',
                 'Full cash flow & DSCR breakdown',
                 <><span className="font-semibold">6 investment strategies</span> analyzed</>,
+                <>Map Search with <span className="text-sky-300 font-semibold">foreclosure, pre-foreclosure & auction</span> filters</>,
+                <><span className="text-white font-semibold">Pre-graded Verdict pins</span> — green / yellow / red on every parcel</>,
                 <>Shows you <span className="text-white font-semibold">what a property is worth</span></>,
               ].map((item, i) => (
                 <li key={i} className="flex gap-3 text-slate-200">
@@ -362,13 +380,35 @@ function WorkbenchSection() {
           <span className="text-[11px] font-bold tracking-[0.2em] text-sky-300 uppercase">The Workbench</span>
         </div>
         <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight leading-[1.05]">
-          One Scan. <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">Five Tools.</span>
+          One Scan. <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">Six Tools.</span>
         </h2>
         <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-          Every scan opens a full investor workbench. No spreadsheets. No Zillow-hopping.
-          No calling three contractors for a rehab estimate.
+          Hunt deals across an entire ZIP, then open a full investor workbench on any property.
+          No spreadsheets. No PropStream. No calling three contractors for a rehab estimate.
         </p>
       </div>
+
+      {/* MODULE 0: Map Search */}
+      <ModuleRow
+        accent="emerald"
+        pill="Map Search"
+        headline="Hunt deals across an entire market."
+        body={
+          <>
+            Map &amp; Satellite views of any ZIP — every parcel pre-graded with a{' '}
+            <span className="text-emerald-300 font-semibold">green / yellow / red Verdict pin</span>.{' '}
+            Filter by foreclosure, pre-foreclosure, auction, or 30/60/90-day stale listings.
+            Click any lot for owner data and a full analysis in one tap.
+          </>
+        }
+        bullets={[
+          <>Foreclosure, <span className="font-semibold">pre-foreclosure</span>, and auction filters built in</>,
+          'Stale listings (30/60/90 days on market) — the motivated-seller signal',
+          <>Replaces <span className="font-semibold text-white">PropStream + Foreclosure.com</span> for most use cases</>,
+        ]}
+        imagePosition="left"
+        mockup={<MapSearchMockup />}
+      />
 
       {/* MODULE 1: Verdict */}
       <ModuleRow
@@ -739,7 +779,7 @@ function PricingSection({ onAnalyze }: { onAnalyze: () => void }) {
             Start Free. Upgrade <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">When You're Ready.</span>
           </h2>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-            Every plan includes the full workbench — Verdict, Strategy, Appraiser, DealMaker, Estimator.
+            Every plan includes the full workbench — Map Search, Verdict, Strategy, Appraiser, DealMaker, Estimator.
           </p>
         </div>
 
@@ -759,7 +799,9 @@ function PricingSection({ onAnalyze }: { onAnalyze: () => void }) {
               <PricingRow text="Verdict page (Target Buy + Income + Market)" />
               <PricingRow text="All 5 data sources visible" />
               <PricingRow text="Search History dashboard" />
+              <PricingRow text="Map Search (preview only)" />
               <PricingRow text="Strategy / Appraiser / DealMaker / Estimator" included={false} />
+              <PricingRow text="Foreclosure / pre-foreclosure / auction filters" included={false} />
             </ul>
             <button onClick={onAnalyze} className="w-full text-center py-3 rounded-xl text-sm font-semibold bg-black border border-[#1E2530] hover:border-sky-500 transition">
               Get Started Free
@@ -783,6 +825,9 @@ function PricingSection({ onAnalyze }: { onAnalyze: () => void }) {
             <ul className="space-y-3 text-sm flex-1 mb-6">
               <PricingRow text={<span className="font-bold">Unlimited scans</span>} />
               <PricingRow text={<>Full <span className="font-semibold text-white">Verdict + Strategy + Appraiser + DealMaker + Estimator</span></>} />
+              <PricingRow text={<><span className="font-semibold text-white">Unlimited Map Search</span> across all 50 states</>} />
+              <PricingRow text={<><span className="text-sky-300 font-semibold">Foreclosure, pre-foreclosure & auction</span> filters</>} />
+              <PricingRow text="Stale listings (30 / 60 / 90 days on market)" />
               <PricingRow text="All 6 investment strategies" />
               <PricingRow text="Excel proforma + URAR PDF exports" />
               <PricingRow text="Saved Properties + status tracking" />
@@ -1167,13 +1212,14 @@ function ValueCard({ label, sub, value, color }: ValueCardProps) {
  * Workbench module support
  * ============================================================ */
 
-type AccentColor = 'sky' | 'purple' | 'teal' | 'orange';
+type AccentColor = 'sky' | 'purple' | 'teal' | 'orange' | 'emerald';
 
 const accentMap: Record<AccentColor, { pillBorder: string; pillText: string; dot: string; check: string; glow: string }> = {
   sky: { pillBorder: 'border-sky-500/40', pillText: 'text-sky-300', dot: 'bg-sky-400', check: 'text-sky-400', glow: '0 0 100px -30px rgba(15,164,233,0.4)' },
   purple: { pillBorder: 'border-purple-500/40', pillText: 'text-purple-300', dot: 'bg-purple-400', check: 'text-purple-400', glow: '0 0 100px -30px rgba(167,139,250,0.3)' },
   teal: { pillBorder: 'border-teal-500/40', pillText: 'text-teal-300', dot: 'bg-teal-400', check: 'text-teal-400', glow: '0 0 100px -30px rgba(45,212,191,0.3)' },
   orange: { pillBorder: 'border-orange-500/40', pillText: 'text-orange-300', dot: 'bg-orange-400', check: 'text-orange-400', glow: '0 0 100px -30px rgba(251,146,60,0.3)' },
+  emerald: { pillBorder: 'border-emerald-500/40', pillText: 'text-emerald-300', dot: 'bg-emerald-400', check: 'text-emerald-400', glow: '0 0 100px -30px rgba(52,211,153,0.35)' },
 };
 
 interface ModuleRowProps {
@@ -1367,6 +1413,101 @@ function DealMakerMockup() {
         <span className="font-bold">Numbers update as you edit</span>
       </div>
     </>
+  );
+}
+
+function MapSearchMockup() {
+  // Pre-graded Verdict pins — left to right roughly mimics a map cluster
+  const pins: Array<{ x: number; y: number; tier: 'deal' | 'check' | 'pass' | 'distress'; label: string }> = [
+    { x: 12, y: 22, tier: 'deal', label: '$285K' },
+    { x: 28, y: 60, tier: 'check', label: '$420K' },
+    { x: 38, y: 28, tier: 'deal', label: '$315K' },
+    { x: 50, y: 50, tier: 'distress', label: 'PRE-FC' },
+    { x: 62, y: 18, tier: 'pass', label: '$680K' },
+    { x: 70, y: 68, tier: 'deal', label: '$340K' },
+    { x: 82, y: 38, tier: 'check', label: '$510K' },
+    { x: 88, y: 72, tier: 'distress', label: 'AUCTION' },
+  ];
+  const tierStyle = (t: typeof pins[number]['tier']) =>
+    t === 'deal'
+      ? 'bg-emerald-500 border-emerald-300 text-white'
+      : t === 'check'
+        ? 'bg-amber-500 border-amber-300 text-black'
+        : t === 'distress'
+          ? 'bg-rose-500 border-rose-300 text-white'
+          : 'bg-rose-900 border-rose-700 text-rose-200';
+
+  return (
+    <>
+      {/* View toggle + filter chip row */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="inline-flex rounded-lg border border-[#1E2530] overflow-hidden text-[10px] font-bold">
+          <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-300">Map</span>
+          <span className="px-2.5 py-1 text-slate-400">Satellite</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase bg-rose-500/15 text-rose-300 border border-rose-500/40">Pre-Foreclosure</span>
+          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase bg-amber-500/15 text-amber-300 border border-amber-500/40">90-day stale</span>
+        </div>
+      </div>
+
+      {/* Map canvas with pins */}
+      <div
+        className="relative rounded-lg overflow-hidden mb-4 border border-[#1E2530]"
+        style={{
+          height: 220,
+          background:
+            'linear-gradient(135deg, #0a1f1a 0%, #0a2030 50%, #0a182a 100%)',
+          backgroundImage:
+            'linear-gradient(0deg, transparent 24%, rgba(52,211,153,0.06) 25%, rgba(52,211,153,0.06) 26%, transparent 27%, transparent 74%, rgba(52,211,153,0.06) 75%, rgba(52,211,153,0.06) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(52,211,153,0.06) 25%, rgba(52,211,153,0.06) 26%, transparent 27%, transparent 74%, rgba(52,211,153,0.06) 75%, rgba(52,211,153,0.06) 76%, transparent 77%, transparent)',
+          backgroundSize: '40px 40px',
+        }}
+      >
+        {/* Subtle road overlay */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              'linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.04) 31%, rgba(255,255,255,0.04) 33%, transparent 34%), linear-gradient(180deg, transparent 60%, rgba(255,255,255,0.05) 61%, rgba(255,255,255,0.05) 62%, transparent 63%)',
+          }}
+        />
+        {pins.map((p, i) => (
+          <div
+            key={i}
+            className={`absolute rounded-md border px-1.5 py-0.5 text-[9px] font-bold tabular-nums shadow-lg ${tierStyle(p.tier)}`}
+            style={{ left: `${p.x}%`, top: `${p.y}%`, transform: 'translate(-50%, -50%)' }}
+          >
+            {p.label}
+          </div>
+        ))}
+      </div>
+
+      {/* Filter row */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <FilterChip label="Foreclosure" count="142" />
+        <FilterChip label="Pre-FC" count="89" active />
+        <FilterChip label="Auction" count="34" />
+      </div>
+
+      {/* Result row */}
+      <div className="rounded-lg bg-black border border-emerald-500/25 p-3 flex justify-between items-center">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-300 font-bold">DEALS IN VIEW</div>
+          <div className="text-[10px] text-slate-500">8 properties pre-graded</div>
+        </div>
+        <div className="text-3xl font-bold text-emerald-400 tabular-nums">3</div>
+      </div>
+    </>
+  );
+}
+
+function FilterChip({ label, count, active }: { label: string; count: string; active?: boolean }) {
+  return (
+    <div className={`rounded-lg px-2 py-2 bg-black border text-center ${active ? 'border-emerald-500' : 'border-[#1E2530]'}`}>
+      <div className={`text-[10px] font-bold uppercase tracking-wider ${active ? 'text-emerald-300' : 'text-slate-400'}`}>{label}</div>
+      <div className="text-sm font-bold text-white mt-0.5 tabular-nums">{count}</div>
+    </div>
   );
 }
 
