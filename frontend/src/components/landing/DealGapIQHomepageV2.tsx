@@ -760,7 +760,7 @@ function PricingSection({ onAnalyze }: { onAnalyze: () => void }) {
             <div className="mb-5 pb-5 border-b border-[#1E2530]">
               <div className="text-xs uppercase tracking-widest text-sky-400 font-bold mb-2">Pro · Monthly</div>
               <div className="flex items-baseline gap-1.5 mb-1">
-                <span className="text-5xl font-bold text-white tabular-nums">$39</span>
+                <span className="text-5xl font-bold text-white tabular-nums">$39.99</span>
                 <span className="text-sm text-slate-400">/month</span>
               </div>
               <div className="text-sm text-sky-300 font-semibold">7-day free trial</div>
@@ -790,14 +790,14 @@ function PricingSection({ onAnalyze }: { onAnalyze: () => void }) {
             <div className="mb-5 pb-5 border-b border-[#14181F]">
               <div className="text-xs uppercase tracking-widest text-amber-400 font-bold mb-2">Pro · Annual</div>
               <div className="flex items-baseline gap-1.5 mb-1">
-                <span className="text-5xl font-bold text-white tabular-nums">$29</span>
+                <span className="text-5xl font-bold text-white tabular-nums">$29.17</span>
                 <span className="text-sm text-slate-400">/month</span>
               </div>
-              <div className="text-sm text-amber-300 font-semibold">$349/yr · save $119</div>
+              <div className="text-sm text-amber-300 font-semibold">$349.99/yr · save $130</div>
             </div>
             <ul className="space-y-3 text-sm flex-1 mb-6">
               <PricingRow text={<span className="font-bold">Everything in Pro Monthly</span>} accent="amber" />
-              <PricingRow text={<><span className="text-amber-300 font-bold">25% off</span> the monthly price</>} accent="amber" />
+              <PricingRow text={<><span className="text-amber-300 font-bold">27% off</span> the monthly price</>} accent="amber" />
               <PricingRow text="Locked-in price for the year" accent="amber" />
               <PricingRow text="Priority support" accent="amber" />
               <PricingRow text="Early access to new features" accent="amber" />
