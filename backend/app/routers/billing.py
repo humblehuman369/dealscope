@@ -4,10 +4,10 @@ Billing router for subscription management and Stripe integration.
 
 import logging
 
-from fastapi import APIRouter, Header, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 
 from app.core.config import settings
-from app.core.deps import CurrentUser, DbSession
+from app.core.deps import CurrentUser, DbSession, require_permission
 from app.schemas.billing import (
     CancelSubscriptionRequest,
     CancelSubscriptionResponse,
@@ -762,3 +762,32 @@ async def stripe_webhook(
         event_type=event.get("type"),
         message="Webhook processed" if success else "Webhook processing failed",
     )
+
+
+# ===========================================
+# Admin
+# ===========================================
+
+
+@router.post(
+    "/admin/sweep-expired-subscriptions",
+    summary="Manually trigger the expired-subscription sweeper (admin only)",
+    dependencies=[Depends(require_permission("admin:manage"))],
+)
+async def admin_sweep_expired_subscriptions():
+    """Force-run the periodic sweeper that downgrades subscriptions whose
+    trial or paid period clearly ended without a webhook transition.
+
+    Normally runs hourly via APScheduler (see app/tasks/scheduler.py).
+    This endpoint is for manual triggering during incident response or
+    integration with external cron services (e.g. Vercel Scheduler,
+    GitHub Actions, Railway cron) if a scheduler-less deployment is
+    preferred.
+
+    Returns:
+        ``{"trials_swept": N, "paid_swept": N, "errors": N}``
+    """
+    from app.tasks.billing_sweeper import sweep_expired_subscriptions
+
+    counts = await sweep_expired_subscriptions()
+    return counts

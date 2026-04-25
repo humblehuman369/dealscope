@@ -97,6 +97,7 @@ def _start_scheduler() -> None:
     """Create and start the APScheduler instance with all periodic jobs."""
     global _scheduler
 
+    from app.tasks.billing_sweeper import sweep_expired_subscriptions
     from app.tasks.cleanup import (
         archive_old_audit_logs,
         cleanup_expired_sessions,
@@ -144,6 +145,17 @@ def _start_scheduler() -> None:
         encrypt_plaintext_mfa_secrets,
         CronTrigger(hour=4, minute=0),
         id="encrypt_mfa_secrets",
+        replace_existing=True,
+    )
+
+    # -- Billing safety net --
+    # Runs hourly at :15 to catch subscriptions whose trial_end or
+    # current_period_end has passed without a webhook transitioning them
+    # out of TRIALING/ACTIVE. See Risk #3 in trial-enforcement audit.
+    _scheduler.add_job(
+        sweep_expired_subscriptions,
+        CronTrigger(minute=15),
+        id="sweep_expired_subscriptions",
         replace_existing=True,
     )
 
