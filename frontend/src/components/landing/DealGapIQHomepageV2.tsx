@@ -981,17 +981,32 @@ function CheckRow({ label }: { label: string }) {
   );
 }
 
+const APP_STORE_URL = 'https://apps.apple.com/us/app/dealgapiq/id6759636866';
+const GOOGLE_PLAY_URL = 'https://play.google.com/store/apps/details?id=com.dealgapiq.mobile&listing=dealgapiq';
+
 function AppStoreBadges() {
   return (
     <div className="flex flex-wrap gap-3">
-      <a href="#" className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-black border border-[#1E2530] hover:border-sky-500 transition">
+      <a
+        href={APP_STORE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Download DealGapIQ on the App Store"
+        className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-black border border-[#1E2530] hover:border-sky-500 transition"
+      >
         <Apple className="w-7 h-7" />
         <div className="text-left">
           <div className="text-[9px] uppercase tracking-wide text-slate-400 leading-none">Download on the</div>
           <div className="text-sm font-semibold leading-tight mt-0.5">App Store</div>
         </div>
       </a>
-      <a href="#" className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-black border border-[#1E2530] hover:border-sky-500 transition">
+      <a
+        href={GOOGLE_PLAY_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Get DealGapIQ on Google Play"
+        className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-black border border-[#1E2530] hover:border-sky-500 transition"
+      >
         <Play className="w-7 h-7" />
         <div className="text-left">
           <div className="text-[9px] uppercase tracking-wide text-slate-400 leading-none">Get it on</div>
