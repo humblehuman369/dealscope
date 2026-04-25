@@ -1,10 +1,18 @@
 /**
  * Shared photo-source resolution for map-search cards.
  *
- * Strategy: try a tiered list of candidates (server `photo_url` first, then
- * Google Street View). When an `<img>` fails to load (expired Zillow CDN URL,
- * 403, hotlink-blocked, mixed-content, etc.), advance to the next candidate
- * instead of going straight to "No Photo".
+ * Strategy: try a tiered list of candidates and advance on `<img onError>`:
+ *   1. Server-provided `photo_url` (real listing photo)
+ *   2. Google Street View — with `return_error_code=true` so locations
+ *      without panorama coverage return 404 instead of the "Sorry, we have
+ *      no imagery here" placeholder image (which would otherwise load as a
+ *      successful 200 and never trigger our error handler). See
+ *      https://developers.google.com/maps/documentation/streetview/request-streetview#no-imagery
+ *   3. Google Static Maps satellite tile — exists for every lat/lng on
+ *      Earth, so this guarantees a useful image. Often more useful than
+ *      Street View for rural / interior-lot / new-build addresses anyway
+ *      (lot shape, surrounding land, roof condition).
+ *   4. null → caller renders its "No Photo" placeholder.
  *
  * This is the only place that knows the candidate order, so PropertyCardList
  * and PropertyPreviewCard stay in sync.
@@ -14,7 +22,7 @@ import { useCallback, useMemo, useState } from 'react'
 import type { MapListing } from '@/lib/api'
 
 interface PhotoSourceOptions {
-  /** Pixel size for the Street View fallback (e.g. "400x300"). */
+  /** Pixel size for the Google fallback images (e.g. "400x300"). */
   streetViewSize?: string
 }
 
@@ -25,7 +33,7 @@ interface ListingPhoto {
   handleError: () => void
 }
 
-function buildCandidates(listing: MapListing, streetViewSize: string): string[] {
+function buildCandidates(listing: MapListing, size: string): string[] {
   const candidates: string[] = []
   const raw = listing.photo_url?.trim()
   if (raw) {
@@ -34,9 +42,23 @@ function buildCandidates(listing: MapListing, streetViewSize: string): string[] 
     candidates.push(raw.startsWith('http://') ? raw.replace(/^http:\/\//, 'https://') : raw)
   }
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-  if (apiKey && Number.isFinite(listing.latitude) && Number.isFinite(listing.longitude)) {
+  const hasCoords = Number.isFinite(listing.latitude) && Number.isFinite(listing.longitude)
+  if (apiKey && hasCoords) {
+    const loc = `${listing.latitude},${listing.longitude}`
+    // return_error_code=true forces a 404 when no panorama exists at this
+    // location — without it Google returns a gray "no imagery" placeholder
+    // as a 200 OK, which our <img onError> would never see and we'd be
+    // stuck displaying the placeholder. source=outdoor avoids interior
+    // PhotoSpheres which can produce confusing results for residential
+    // addresses.
     candidates.push(
-      `https://maps.googleapis.com/maps/api/streetview?size=${streetViewSize}&location=${listing.latitude},${listing.longitude}&key=${apiKey}`,
+      `https://maps.googleapis.com/maps/api/streetview?size=${size}&location=${loc}&source=outdoor&return_error_code=true&key=${apiKey}`,
+    )
+    // Satellite tile — always exists. zoom=19 frames a single parcel; on
+    // urban lots this shows the house, on rural lots it shows the property
+    // in context. We keep size in sync with the Street View tier.
+    candidates.push(
+      `https://maps.googleapis.com/maps/api/staticmap?center=${loc}&zoom=19&size=${size}&maptype=satellite&key=${apiKey}`,
     )
   }
   return candidates
