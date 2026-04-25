@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, Bed, Bath, Ruler, Calendar, ArrowRight } from 'lucide-react'
 import type { MapListing } from '@/lib/api'
+import { useListingPhoto } from './listingPhoto'
 
 interface PropertyPreviewCardProps {
   listing: MapListing
@@ -24,17 +24,11 @@ function formatSqft(sqft: number | null): string {
   return new Intl.NumberFormat('en-US').format(sqft)
 }
 
-function getPhotoSrc(listing: MapListing): string | null {
-  if (listing.photo_url) return listing.photo_url
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-  if (!apiKey) return null
-  return `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${listing.latitude},${listing.longitude}&key=${apiKey}`
-}
-
 export function PropertyPreviewCard({ listing, onClose }: PropertyPreviewCardProps) {
   const router = useRouter()
-  const [imgFailed, setImgFailed] = useState(false)
-  const photoSrc = imgFailed ? null : getPhotoSrc(listing)
+  const { src: photoSrc, handleError: handlePhotoError } = useListingPhoto(listing, {
+    streetViewSize: '600x400',
+  })
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -62,7 +56,7 @@ export function PropertyPreviewCard({ listing, onClose }: PropertyPreviewCardPro
             alt={listing.address}
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
-            onError={() => setImgFailed(true)}
+            onError={handlePhotoError}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

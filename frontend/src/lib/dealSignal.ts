@@ -253,9 +253,38 @@ export function mergeMapListingsByIdPreferStrongerStatus(listings: MapListing[])
     }
     const pa = listingMergePriority(normalizeListingStatus(prev.listing_status))
     const pb = listingMergePriority(normalizeListingStatus(l.listing_status))
-    if (pb > pa) byId.set(l.id, l)
+    const winner = pb > pa ? l : prev
+    const loser = pb > pa ? prev : l
+    byId.set(l.id, fillMissingFromLoser(winner, loser))
   }
   return [...byId.values()]
+}
+
+// Status priority decides the winner, but we don't want to lose a photo or
+// other useful surface fields just because the duplicate row with the
+// stronger status happens to be sparser. Fill nulls from the loser.
+const PRESERVE_FROM_LOSER: ReadonlyArray<keyof MapListing> = [
+  'photo_url',
+  'price',
+  'bedrooms',
+  'bathrooms',
+  'sqft',
+  'year_built',
+  'days_on_market',
+  'property_type',
+]
+
+function fillMissingFromLoser(winner: MapListing, loser: MapListing): MapListing {
+  let merged: MapListing | null = null
+  for (const key of PRESERVE_FROM_LOSER) {
+    if (winner[key] == null && loser[key] != null) {
+      if (!merged) merged = { ...winner }
+      // Each preserved key shares the same nullable type on both sides, but
+      // TS can't narrow that across the loop, so we widen via unknown.
+      ;(merged as unknown as Record<string, unknown>)[key] = loser[key]
+    }
+  }
+  return merged ?? winner
 }
 
 export function classifyListings(listings: MapListing[]): Map<string, DealSignalResult> {
