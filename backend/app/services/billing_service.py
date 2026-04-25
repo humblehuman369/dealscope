@@ -672,24 +672,72 @@ class BillingService:
         cancel_immediately: bool = False,
         reason: str | None = None,
     ) -> tuple[bool, str]:
-        """Cancel user's subscription."""
+        """Cancel user's subscription.
+
+        Policy: trial cancellation always ends access immediately. The
+        ``cancel_immediately`` parameter is FORCED to True for any user
+        whose status is TRIALING, regardless of what the caller passed.
+        Rationale: the trial is a sample of paid value — once the user
+        signals they don't want to pay, the value should stop. This
+        prevents "use the full 7 days then cancel" abuse.
+
+        Paid subscriptions (status=ACTIVE) keep access until the end of
+        the billing period unless ``cancel_immediately=True`` is passed
+        explicitly — they paid for the period.
+        """
         subscription = await self.get_subscription(db, user_id)
 
         if not subscription or not subscription.stripe_subscription_id:
             return False, "No active subscription found"
 
+        # Trial cancel = immediate access loss (per policy).
+        is_trial_cancel = subscription.status == SubscriptionStatus.TRIALING
+        if is_trial_cancel:
+            cancel_immediately = True
+            logger.info(
+                "Trial cancellation for user %s — forcing immediate cancel "
+                "(access ends now, no extension to trial_end)",
+                user_id,
+            )
+
         if not self.is_configured:
-            # Dev mode
-            subscription.cancel_at_period_end = True
+            # Dev mode (no Stripe keys configured) — apply same policy locally.
+            if cancel_immediately:
+                free_limits = TIER_LIMITS[SubscriptionTier.FREE]
+                subscription.tier = SubscriptionTier.FREE
+                subscription.status = SubscriptionStatus.CANCELED
+                subscription.properties_limit = free_limits["properties_limit"]
+                subscription.searches_per_month = free_limits["searches_per_month"]
+                subscription.api_calls_per_month = free_limits["api_calls_per_month"]
+                subscription.cancel_at_period_end = False
+            else:
+                subscription.cancel_at_period_end = True
             subscription.canceled_at = datetime.now(UTC)
             await db.commit()
-            return True, "Subscription will be canceled at period end (dev mode)"
+            return True, (
+                "Trial canceled — access ended (dev mode)"
+                if is_trial_cancel
+                else "Subscription will be canceled at period end (dev mode)"
+            )
 
         try:
             if cancel_immediately:
                 stripe.Subscription.delete(subscription.stripe_subscription_id)
                 subscription.status = SubscriptionStatus.CANCELED
                 subscription.canceled_at = datetime.now(UTC)
+
+                # For trial cancels, downgrade tier locally so the UI updates
+                # immediately without waiting for the customer.subscription.deleted
+                # webhook round-trip. The webhook will idempotently confirm via
+                # _handle_subscription_deleted (which also clears Stripe IDs and
+                # sends the cancellation email).
+                if is_trial_cancel:
+                    free_limits = TIER_LIMITS[SubscriptionTier.FREE]
+                    subscription.tier = SubscriptionTier.FREE
+                    subscription.properties_limit = free_limits["properties_limit"]
+                    subscription.searches_per_month = free_limits["searches_per_month"]
+                    subscription.api_calls_per_month = free_limits["api_calls_per_month"]
+                    subscription.cancel_at_period_end = False
             else:
                 stripe.Subscription.modify(
                     subscription.stripe_subscription_id,
@@ -700,11 +748,12 @@ class BillingService:
 
             await db.commit()
 
-            message = (
-                "Subscription canceled immediately"
-                if cancel_immediately
-                else "Subscription will be canceled at period end"
-            )
+            if is_trial_cancel:
+                message = "Trial canceled — access ended"
+            elif cancel_immediately:
+                message = "Subscription canceled immediately"
+            else:
+                message = "Subscription will be canceled at period end"
             logger.info(f"Canceled subscription for user {user_id}: {message}")
             return True, message
 
