@@ -4,9 +4,10 @@
  * ProGate — wraps Pro-only features.
  *
  * Cascaded gating:
- *   Anonymous → sign-in prompt (delegates to AuthGate)
- *   Free      → upgrade prompt (UpgradeModal / Stripe checkout)
- *   Pro       → children rendered as-is
+ *   Anonymous   → sign-in prompt (delegates to AuthGate)
+ *   Free        → upgrade prompt (UpgradeModal / Stripe checkout)
+ *   Pro         → children rendered as-is
+ *   Trialing    → children rendered as-is (full Pro access during 7-day trial)
  *
  * Usage:
  *   <ProGate feature="Excel Proforma">
@@ -32,7 +33,7 @@ interface ProGateProps {
 }
 
 export function ProGate({ children, feature, mode = 'inline', fallback }: ProGateProps) {
-  const { isPro, isLoading: subLoading } = useSubscription()
+  const { isPro, isTrialing, isLoading: subLoading } = useSubscription()
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -44,7 +45,8 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
     return q ? `${pathname}?${q}` : pathname
   }, [pathname, searchParams])
 
-  if (isPro) return <>{children}</>
+  // Trialing users get full Pro access during their 7-day trial
+  if (isPro || isTrialing) return <>{children}</>
 
   const isLoading = sessionLoading || subLoading
 
