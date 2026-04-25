@@ -337,36 +337,6 @@ function formatCount(n: number): string {
   return String(n)
 }
 
-const clusterRenderer: Renderer = {
-  render({ count, position }) {
-    const size = count >= 100 ? 48 : count >= 10 ? 40 : 34
-    const el = document.createElement('div')
-    Object.assign(el.style, {
-      width: `${size}px`,
-      height: `${size}px`,
-      borderRadius: '50%',
-      background: '#7B1818',
-      border: '2.5px solid rgba(255,255,255,0.75)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: 'white',
-      fontSize: `${count >= 1000 ? 10 : 12}px`,
-      fontWeight: '700',
-      fontFamily: 'system-ui, sans-serif',
-      cursor: 'pointer',
-      boxShadow: '0 2px 6px rgba(0,0,0,0.35)',
-    })
-    el.textContent = formatCount(count)
-
-    return new google.maps.marker.AdvancedMarkerElement({
-      position,
-      content: el,
-      zIndex: 1000 + count,
-    })
-  },
-}
-
 // ──────────────────────────────────────────────
 // Inner map content — must be a child of <Map>
 // ──────────────────────────────────────────────
@@ -397,8 +367,10 @@ function MapContent({
   panToRef,
 }: MapContentProps) {
   const map = useMap()
-  const clustererRef = useRef<MarkerClusterer | null>(null)
-  const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new (globalThis.Map)())
+  // Markers are intentionally NOT clustered — each listing renders as its
+  // own price pill at all zoom levels. The <AdvancedMarker> components
+  // below attach themselves to the map via @vis.gl/react-google-maps
+  // context, so no manual marker management is needed here.
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null)
 
   useEffect(() => {
@@ -457,28 +429,6 @@ function MapContent({
   }, [map, onBoundsChanged])
 
   useEffect(() => {
-    if (!map) return
-    if (!clustererRef.current) {
-      clustererRef.current = new MarkerClusterer({
-        map,
-        markers: [],
-        renderer: clusterRenderer,
-      })
-    }
-    return () => {
-      clustererRef.current?.clearMarkers()
-      clustererRef.current = null
-    }
-  }, [map])
-
-  useEffect(() => {
-    if (!clustererRef.current) return
-    const allMarkers = Array.from(markersRef.current.values())
-    clustererRef.current.clearMarkers()
-    clustererRef.current.addMarkers(allMarkers)
-  }, [listings])
-
-  useEffect(() => {
     if (!map || !isDrawing) {
       if (drawingManagerRef.current) {
         drawingManagerRef.current.setMap(null)
@@ -526,17 +476,6 @@ function MapContent({
     }
   }, [map, isDrawing, onPolygonComplete, drawingPolygon, setDrawingPolygon])
 
-  const setMarkerRef = useCallback(
-    (marker: google.maps.marker.AdvancedMarkerElement | null, id: string) => {
-      if (marker) {
-        markersRef.current.set(id, marker)
-      } else {
-        markersRef.current.delete(id)
-      }
-    },
-    [],
-  )
-
   return (
     <>
       {listings.map((listing) => {
@@ -568,7 +507,6 @@ function MapContent({
             key={listing.id}
             position={{ lat: listing.latitude, lng: listing.longitude }}
             onClick={() => onSelectListing(listing)}
-            ref={(marker) => setMarkerRef(marker, listing.id)}
           >
             <div
               className="px-1.5 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap cursor-pointer shadow-md transition-transform hover:scale-110"
