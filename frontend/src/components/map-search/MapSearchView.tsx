@@ -10,7 +10,6 @@ import {
   AdvancedMarker,
   type MapMouseEvent,
 } from '@vis.gl/react-google-maps'
-import { MarkerClusterer, type Renderer } from '@googlemaps/markerclusterer'
 import { Loader2, Home, MousePointerClick, List, MapIcon } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
