@@ -37,7 +37,7 @@ describe('useListingPhoto', () => {
     }
   })
 
-  it('returns photo_url first, then Street View on error, then null', () => {
+  it('cycles through photo_url → Street View → satellite → null on errors', () => {
     const listing = makeListing({ photo_url: 'https://a/p.jpg' })
     const { result } = renderHook(() => useListingPhoto(listing))
     expect(result.current.src).toBe('https://a/p.jpg')
@@ -45,6 +45,15 @@ describe('useListingPhoto', () => {
     act(() => result.current.handleError())
     expect(result.current.src).toMatch(/^https:\/\/maps\.googleapis\.com\/maps\/api\/streetview/)
     expect(result.current.src).toContain('location=40,-75')
+    // Without return_error_code=true Google returns a gray "no imagery"
+    // placeholder as a 200 OK and our error handler never fires — see the
+    // "Sorry, we have no imagery here" cards on the map search page.
+    expect(result.current.src).toContain('return_error_code=true')
+
+    act(() => result.current.handleError())
+    expect(result.current.src).toMatch(/^https:\/\/maps\.googleapis\.com\/maps\/api\/staticmap/)
+    expect(result.current.src).toContain('maptype=satellite')
+    expect(result.current.src).toContain('center=40,-75')
 
     act(() => result.current.handleError())
     expect(result.current.src).toBeNull()
@@ -60,6 +69,17 @@ describe('useListingPhoto', () => {
     const listing = makeListing({ photo_url: null })
     const { result } = renderHook(() => useListingPhoto(listing))
     expect(result.current.src).toMatch(/streetview/)
+  })
+
+  // Regression: the bug from the screenshot — Street View returned the
+  // "Sorry, we have no imagery here" placeholder image (200 OK), the <img>
+  // never errored, and the card was stuck displaying the placeholder.
+  // return_error_code=true makes Google 404 those cases so onError fires
+  // and we advance to the satellite tier.
+  it('Street View URL requests an error code instead of the placeholder image', () => {
+    const listing = makeListing({ photo_url: null })
+    const { result } = renderHook(() => useListingPhoto(listing))
+    expect(result.current.src).toContain('return_error_code=true')
   })
 
   // Regression: a previous listing's failure state must not leak into a new
