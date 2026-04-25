@@ -33,7 +33,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   Search,
-  Menu,
   Check,
   X as XIcon,
   Home,
@@ -115,28 +114,7 @@ export function DealGapIQHomepageV2({ onPointAndScan }: Props) {
         </div>
       </div>
 
-      {/* ====== STICKY NAV ====== */}
-      <nav className="sticky top-0 z-50 border-b border-[#14181F] bg-black/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold tracking-tight">
-              DealGap<span className="text-sky-400">IQ</span>
-            </span>
-            <span className="ml-1 text-sky-400 text-2xl font-bold leading-none">_</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <button onClick={() => scrollTo('pricing')} className="hidden md:inline text-sm font-medium text-slate-300 hover:text-white px-3 py-2 transition">
-              Pricing
-            </button>
-            <button onClick={handleAnalyzeClick} className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-[#0A0F18] border border-[#1E2530] hover:border-sky-500 px-4 py-2 rounded-lg transition">
-              <Search className="w-4 h-4" /> Property Search
-            </button>
-            <button className="p-2 text-slate-300 hover:text-white">
-              <Menu className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
-      </nav>
+      {/* Top app nav is provided by the global app layout — this component intentionally omits its own header to avoid the duplicate-nav double-stack. */}
 
       <main className="relative z-10">
         <HeroSection onAnalyze={handleAnalyzeClick} onScrollHow={() => scrollTo('workbench')} onPointAndScan={onPointAndScan} />
