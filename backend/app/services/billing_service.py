@@ -1156,11 +1156,30 @@ class BillingService:
         if stripe_sub.get("canceled_at"):
             subscription.canceled_at = datetime.fromtimestamp(stripe_sub["canceled_at"], tz=UTC)
 
-        # Trial
+        # Trial — refresh from Stripe payload, with a fallback to current_period
+        # dates when Stripe omits the trial fields. The fallback handles a real
+        # bug seen in production: when a returning user starts a fresh trial
+        # after a previous (canceled/expired) subscription, Stripe sometimes
+        # omits trial_start/trial_end from the new subscription's webhook,
+        # which used to leave the previous subscription's stale trial dates
+        # in place. We now anchor to current_period when in trialing state.
         if stripe_sub.get("trial_start"):
             subscription.trial_start = datetime.fromtimestamp(stripe_sub["trial_start"], tz=UTC)
+        elif (
+            subscription.status == SubscriptionStatus.TRIALING
+            and subscription.current_period_start is not None
+        ):
+            # Trialing without explicit trial_start → trial began at period start
+            subscription.trial_start = subscription.current_period_start
+
         if stripe_sub.get("trial_end"):
             subscription.trial_end = datetime.fromtimestamp(stripe_sub["trial_end"], tz=UTC)
+        elif (
+            subscription.status == SubscriptionStatus.TRIALING
+            and subscription.current_period_end is not None
+        ):
+            # Trialing without explicit trial_end → trial ends at period end
+            subscription.trial_end = subscription.current_period_end
 
         # Determine tier from price
         items = stripe_sub.get("items", {}).get("data", [])
