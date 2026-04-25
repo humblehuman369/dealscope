@@ -23,7 +23,7 @@ import { CompassDisplay } from '@/components/scanner/CompassDisplay';
 import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
 import { MapPropertyPicker } from '@/components/scanner/MapPropertyPicker';
 import { getCardinalDirection } from '@/lib/geoCalculations';
-import { DealGapIQHomepage } from '@/components/landing';
+import { DealGapIQHomepageV2 } from '@/components/landing';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
 import type { GeocodedProperty } from '@/lib/reverseGeocode';
@@ -44,8 +44,8 @@ export default function HomePage() {
     return <MobileScannerView onSwitchMode={() => setMode('landing')} />;
   }
 
-  // Use the new DealGapIQ homepage
-  return <DealGapIQHomepage onPointAndScan={() => setMode('camera')} />;
+  // Use the new DealGapIQ homepage (V2 — full redesign)
+  return <DealGapIQHomepageV2 onPointAndScan={() => setMode('camera')} />;
 }
 
 /**
