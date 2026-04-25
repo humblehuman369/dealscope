@@ -906,8 +906,49 @@ class BillingService:
 
         now_cancel_at_period_end = data.get("cancel_at_period_end", False)
 
-        # Cancel-at-period-end: user scheduled cancellation (not yet fully canceled)
+        # Cancel-at-period-end transition just detected
         if now_cancel_at_period_end and not was_cancel_at_period_end:
+            # Per policy: trial cancellations end access immediately. If this
+            # cancel transition came in via cancel_at_period_end=True (which is
+            # what Stripe Customer Portal uses, and what some external tooling
+            # might use), AND the subscription is currently in trial, we
+            # force-delete the Stripe subscription right now. The resulting
+            # customer.subscription.deleted webhook will then run
+            # _handle_subscription_deleted → user downgraded to FREE.
+            #
+            # Note: cancellations initiated from our own /api/v1/billing/cancel
+            # endpoint already call stripe.Subscription.delete() directly for
+            # trial users (see cancel_subscription), so this path only fires
+            # for cancels from external sources (Stripe Portal, Stripe Dashboard
+            # admin actions, third-party integrations).
+            is_currently_trialing = data.get("status") == "trialing"
+            if is_currently_trialing and self.is_configured:
+                try:
+                    stripe.Subscription.delete(stripe_sub_id)
+                    logger.info(
+                        "Trial cancellation detected on sub %s via "
+                        "cancel_at_period_end transition — forcing immediate "
+                        "deletion (per immediate-trial-cancel policy). Source "
+                        "is likely Stripe Customer Portal.",
+                        stripe_sub_id,
+                    )
+                    # Skip the cancel-at-period-end email; the user will get
+                    # the regular cancellation email when subscription.deleted
+                    # webhook fires next.
+                    return
+                except stripe.error.StripeError as e:
+                    logger.error(
+                        "Failed to force-delete trial subscription %s on "
+                        "cancel_at_period_end transition: %s. Falling back to "
+                        "cancel-at-period-end behavior (user keeps access "
+                        "until trial_end).",
+                        stripe_sub_id,
+                        e,
+                    )
+                    # Fall through to the standard cancel-at-period-end email
+
+            # Standard (paid subscription) cancel-at-period-end behavior:
+            # email confirms the user keeps access until period end.
             period_end_str = "your next billing date"
             if data.get("current_period_end"):
                 period_end_dt = datetime.fromtimestamp(data["current_period_end"], tz=UTC)
