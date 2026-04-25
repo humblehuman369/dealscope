@@ -30,6 +30,7 @@
 import React, { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Search,
   Menu,
@@ -253,8 +254,15 @@ function CredibilityBand() {
   return (
     <section className="px-6 md:px-12 lg:px-20 pb-20">
       <div className="max-w-4xl mx-auto bg-black border border-[#14181F] rounded-2xl p-5 md:p-6 flex flex-col md:flex-row items-center gap-5">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-sky-500/30 to-blue-500/20 border border-sky-500/30 flex items-center justify-center shrink-0">
-          <span className="text-xl font-bold text-sky-300">BG</span>
+        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-sky-500/40 shrink-0 ring-2 ring-sky-500/10">
+          <Image
+            src="/images/brad-geisen.jpg"
+            alt="Brad Geisen, Founder of DealGapIQ"
+            width={128}
+            height={128}
+            className="w-full h-full object-cover object-top"
+            priority
+          />
         </div>
         <div className="text-center md:text-left flex-1">
           <div className="text-xs uppercase tracking-widest text-sky-400 font-bold mb-1">Built by Brad Geisen</div>
@@ -388,7 +396,6 @@ function WorkbenchSection() {
         ]}
         imagePosition="right"
         mockup={<VerdictMockup />}
-        screenshotSlot="/images/homepage/verdict.png"
       />
 
       {/* MODULE 2: Strategy */}
@@ -404,7 +411,6 @@ function WorkbenchSection() {
         ]}
         imagePosition="left"
         mockup={<StrategyMockup />}
-        screenshotSlot="/images/homepage/strategy.png"
       />
 
       {/* MODULE 3: Appraiser */}
@@ -420,7 +426,6 @@ function WorkbenchSection() {
         ]}
         imagePosition="right"
         mockup={<AppraiserMockup />}
-        screenshotSlot="/images/homepage/appraiser.png"
       />
 
       {/* MODULE 4: DealMaker */}
@@ -436,7 +441,6 @@ function WorkbenchSection() {
         ]}
         imagePosition="left"
         mockup={<DealMakerMockup />}
-        screenshotSlot="/images/homepage/dealmaker.png"
       />
 
       {/* MODULE 5: Estimator */}
@@ -452,7 +456,6 @@ function WorkbenchSection() {
         ]}
         imagePosition="right"
         mockup={<EstimatorMockup />}
-        screenshotSlot="/images/homepage/estimator.png"
       />
     </section>
   );
@@ -844,9 +847,15 @@ function FounderDeepSection() {
       <div className="max-w-5xl mx-auto bg-black border border-[#1E2530] rounded-2xl p-10 md:p-14" style={{ boxShadow: '0 0 100px -30px rgba(15,164,233,0.4)' }}>
         <div className="grid md:grid-cols-12 gap-10 items-center">
           <div className="md:col-span-4 flex justify-center md:justify-start">
-            <div className="w-44 h-44 rounded-2xl bg-gradient-to-br from-sky-500/20 to-blue-500/10 border border-sky-500/30 flex items-center justify-center relative overflow-hidden">
-              <span className="text-5xl font-bold text-sky-300">BG</span>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="w-44 h-44 rounded-2xl border-2 border-sky-500/40 relative overflow-hidden ring-4 ring-sky-500/10">
+              <Image
+                src="/images/brad-geisen.jpg"
+                alt="Brad Geisen, Founder of DealGapIQ"
+                width={352}
+                height={352}
+                className="w-full h-full object-cover object-top"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none" />
               <div className="absolute bottom-3 left-3 right-3 text-center">
                 <div className="text-[10px] uppercase tracking-widest text-sky-300 font-bold">Founder</div>
               </div>
@@ -1074,17 +1083,12 @@ interface ModuleRowProps {
   bullets: React.ReactNode[];
   imagePosition: 'left' | 'right';
   mockup: React.ReactNode;
-  /** When provided, this image path overrides the CSS mockup. Drop a real screenshot here later. */
-  screenshotSlot?: string;
 }
 
-function ModuleRow({ accent, pill, headline, body, bullets, imagePosition, mockup, screenshotSlot: _screenshotSlot }: ModuleRowProps) {
+function ModuleRow({ accent, pill, headline, body, bullets, imagePosition, mockup }: ModuleRowProps) {
   const a = accentMap[accent];
   const copyOrder = imagePosition === 'right' ? 'order-2 lg:order-1' : '';
   const mockupOrder = imagePosition === 'right' ? 'order-1 lg:order-2' : '';
-
-  // NOTE: when ready to use real screenshots, wrap the mockup in a conditional:
-  // {screenshotSlot ? <Image src={screenshotSlot} ... /> : mockup}
 
   return (
     <div className="max-w-7xl mx-auto mb-32 transition-transform duration-200 hover:[&_.mockup-frame]:translate-y-[-4px]">
