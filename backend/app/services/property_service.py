@@ -559,6 +559,15 @@ class PropertyService:
             mashvisor_data=mashvisor_data,
         )
 
+        # Expose address fields to _estimate_insurance (not in DataNormalizer FIELD_MAPPING)
+        if rentcast_data:
+            if rentcast_data.get("county"):
+                normalized["county"] = rentcast_data["county"]
+            if rentcast_data.get("state"):
+                normalized["state"] = rentcast_data["state"]
+            if rentcast_data.get("zipCode"):
+                normalized["zip_code"] = rentcast_data["zipCode"]
+
         # Calculate data quality
         data_quality = self.normalizer.calculate_data_quality(normalized, provenance)
 
@@ -1110,12 +1119,13 @@ class PropertyService:
         return 4500  # Default fallback
 
     def _estimate_insurance(self, data: dict) -> float:
-        """Estimate annual insurance as a percentage of market price.
+        """Estimate annual insurance.
 
-        Uses ZIP-based regional insurance rates (e.g. 1.5% in FL for
-        hurricane risk, 0.8% in CA) with a 1% national default.
+        Primary: county-level landlord ratio (ACS) × state market calibration.
+        Fallback: state insurance_rate from :func:`get_market_adjustments` (ZIP).
         """
         from app.services.assumptions_service import get_market_adjustments
+        from app.services import insurance_lookup
 
         market_price = (
             data.get("value_iq_estimate")
@@ -1125,6 +1135,14 @@ class PropertyService:
         )
         if not market_price:
             return 1500  # safe fallback when no price data available
+
+        county_annual = insurance_lookup.estimate_landlord_insurance_annual(
+            float(market_price),
+            data.get("state"),
+            data.get("county"),
+        )
+        if county_annual is not None:
+            return float(county_annual)
 
         zip_code = data.get("zip_code", "")
         adjustments = get_market_adjustments(zip_code)
