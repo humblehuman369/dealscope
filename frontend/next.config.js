@@ -8,6 +8,17 @@ const nextConfig = {
 }
 
 if (!isCapacitor) {
+  // React's dev build calls eval() to reconstruct cross-environment callstacks
+  // (and Turbopack/HMR also need it), so dev mode requires 'unsafe-eval' in the
+  // CSP script-src. Production builds never use eval, so we keep it out of the
+  // prod CSP to maintain the stricter policy.
+  const isDev = process.env.NODE_ENV !== 'production'
+  const scriptSrc = [
+    "script-src 'self' 'unsafe-inline'",
+    isDev && "'unsafe-eval'",
+    'https://*.sentry.io https://*.sentry-cdn.com https://*.vercel-scripts.com https://*.vercel-insights.com https://vercel.live https://maps.googleapis.com https://*.google.com https://*.gstatic.com https://js.stripe.com',
+  ].filter(Boolean).join(' ')
+
   nextConfig.headers = async () => [
     {
       source: '/:path*',
@@ -21,7 +32,7 @@ if (!isCapacitor) {
           key: 'Content-Security-Policy',
           value: [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' https://*.sentry.io https://*.sentry-cdn.com https://*.vercel-scripts.com https://*.vercel-insights.com https://vercel.live https://maps.googleapis.com https://*.google.com https://*.gstatic.com https://js.stripe.com",
+            scriptSrc,
             "style-src 'self' 'unsafe-inline'",
             "connect-src 'self' https: wss: http://localhost:* ws://localhost:* http://127.0.0.1:* https://*.sentry.io https://*.vercel-insights.com https://maps.googleapis.com https://*.google.com https://api.stripe.com",
             "img-src * data: blob:",
