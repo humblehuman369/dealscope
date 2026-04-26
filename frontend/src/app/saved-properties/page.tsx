@@ -19,79 +19,21 @@ import {
   ChevronRight, BarChart3, ChevronLeft,
 } from 'lucide-react'
 import type { PropertyStatus, SavedPropertySummary } from '@/types/savedProperty'
+import {
+  STATUS_CONFIG,
+  STRATEGY_LABELS,
+  formatCurrency,
+  formatPercent,
+  formatRelativeDate as formatDate,
+} from '@/lib/savedPropertyStatus'
 
 // ===========================================
 // Saved Properties Page — Semantic Theme
 // ===========================================
-// Typography: Inter 700 headlines, 400 body, 600 financial data
-// Text hierarchy: slate-100 > slate-300 > slate-400 > slate-500
-// Accents: sky-400 (primary), teal-400 (positive), amber-400 (caution),
-//          red-400 (negative), emerald-400 (success/income)
-// Theme: semantic surface/text tokens for dark + light modes
-// ===========================================
-
-// Semantic status colors — color carries meaning, not decoration
-const STATUS_CONFIG: Record<PropertyStatus, { label: string; color: string; bg: string }> = {
-  watching:        { label: 'Watching',        color: 'text-[var(--accent-sky)]',      bg: 'bg-[var(--color-sky-dim)]' },
-  analyzing:       { label: 'Analyzing',       color: 'text-[var(--status-info)]',      bg: 'bg-[var(--surface-elevated)]' },
-  contacted:       { label: 'Contacted',       color: 'text-[var(--status-warning)]',   bg: 'bg-[rgba(251,191,36,0.10)]' },
-  under_contract:  { label: 'Under Contract',  color: 'text-[var(--status-warning)]',   bg: 'bg-[rgba(251,191,36,0.10)]' },
-  owned:           { label: 'Owned',           color: 'text-[var(--status-positive)]',  bg: 'bg-[rgba(52,211,153,0.10)]' },
-  passed:          { label: 'Passed',          color: 'text-[var(--text-secondary)]',   bg: 'bg-[var(--surface-elevated)]' },
-  archived:        { label: 'Archived',        color: 'text-[var(--text-label)]',       bg: 'bg-[var(--surface-elevated)]' },
-}
-
-const STRATEGY_LABELS: Record<string, string> = {
-  ltr: 'Long-Term Rental',
-  str: 'Short-Term Rental',
-  flip: 'Fix & Flip',
-  brrrr: 'BRRRR',
-  wholesale: 'Wholesale',
-  subject_to: 'Subject-To',
-}
+// Status config, strategy labels, and formatting helpers are shared
+// with the Dashboard pipeline kanban via @/lib/savedPropertyStatus.
 
 const PAGE_SIZE = 20
-
-// ===========================================
-// Helpers
-// ===========================================
-
-function formatDate(dateString: string) {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
-
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-  })
-}
-
-function formatCurrency(value?: number) {
-  if (value === undefined || value === null) return '—'
-  if (Math.abs(value) >= 1000) {
-    return `$${(value / 1000).toFixed(1)}K`
-  }
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
-function formatPercent(value?: number) {
-  if (value === undefined || value === null) return '—'
-  return `${(value * 100).toFixed(1)}%`
-}
 
 // ===========================================
 // Inner content (wrapped by AuthGuard)

@@ -1,0 +1,70 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { AuthGuard } from '@/components/auth/AuthGuard'
+import { SearchPropertyModal } from '@/components/SearchPropertyModal'
+import { markDashboardVisited } from '@/lib/dashboardLanding'
+import type { PropertyStatus } from '@/types/savedProperty'
+
+import { DashboardHeader } from './_components/DashboardHeader'
+import { PipelineStats } from './_components/PipelineStats'
+import { PipelineKanban } from './_components/PipelineKanban'
+import { RecentSearches } from './_components/RecentSearches'
+import { AccountSnapshot } from './_components/AccountSnapshot'
+
+function DashboardContent() {
+  const [showSearchModal, setShowSearchModal] = useState(false)
+  const [highlightStage, setHighlightStage] = useState<PropertyStatus | null>(null)
+
+  // Stamp today's visit so the once-per-day landing redirect won't fire again.
+  useEffect(() => {
+    markDashboardVisited()
+  }, [])
+
+  return (
+    <div
+      className="min-h-screen bg-[var(--surface-base)] py-8 px-4 sm:px-6 lg:px-8"
+      style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
+    >
+      <div className="max-w-6xl mx-auto">
+        <DashboardHeader onSearchClick={() => setShowSearchModal(true)} />
+
+        {/* Pipeline stats — clickable filters that highlight the kanban column */}
+        <PipelineStats
+          activeStage={highlightStage}
+          onSelectStage={setHighlightStage}
+        />
+
+        {/* The centerpiece — Saved Properties Kanban */}
+        <section className="mb-8">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--text-heading)] mb-3">
+            Deal Pipeline
+          </h2>
+          <PipelineKanban
+            highlightStage={highlightStage}
+            onEmptyAction={() => setShowSearchModal(true)}
+          />
+        </section>
+
+        {/* Two-column lower section: Recent Searches + Account */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RecentSearches />
+          <AccountSnapshot />
+        </div>
+      </div>
+
+      <SearchPropertyModal
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+      />
+    </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <AuthGuard>
+      <DashboardContent />
+    </AuthGuard>
+  )
+}

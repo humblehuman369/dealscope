@@ -18,6 +18,7 @@
 import React, { Suspense } from 'react'
 import { AppHeader } from './AppHeader'
 import { UsageBar } from './UsageBar'
+import { DashboardLandingGate } from './DashboardLandingGate'
 
 interface LayoutWrapperProps {
   children: React.ReactNode
@@ -40,6 +41,11 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
       */}
       <Suspense fallback={null}>
         <AppHeader />
+      </Suspense>
+
+      {/* Routes returning users to /dashboard on their first visit per day. */}
+      <Suspense fallback={null}>
+        <DashboardLandingGate />
       </Suspense>
 
       {/* 

@@ -21,6 +21,7 @@ import { api } from '@/lib/api-client'
 import type {
   SavedPropertySummary,
   SavedPropertyStats,
+  PropertyStatus,
 } from '@/types/savedProperty'
 
 // Re-export types for consumer convenience
@@ -133,6 +134,58 @@ export function useDeleteSavedProperty() {
 
     onSettled: () => {
       // Refetch list + stats to guarantee server consistency
+      queryClient.invalidateQueries({
+        queryKey: SAVED_PROPERTIES_KEYS.all,
+      })
+    },
+  })
+}
+
+/**
+ * Update a saved property's pipeline status (Watching → Analyzing → ...).
+ *
+ * Optimistically moves the card across kanban columns by patching every
+ * cached list query. If the PATCH fails, rolls back to the snapshot and
+ * a background refetch corrects the UI.
+ */
+export function useUpdateSavedPropertyStatus() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: PropertyStatus }) =>
+      api.patch(`/api/v1/properties/saved/${id}`, { status }),
+
+    onMutate: async ({ id, status }: { id: string; status: PropertyStatus }) => {
+      await queryClient.cancelQueries({
+        queryKey: SAVED_PROPERTIES_KEYS.lists(),
+      })
+
+      const previousLists = queryClient.getQueriesData<SavedPropertySummary[]>({
+        queryKey: SAVED_PROPERTIES_KEYS.lists(),
+      })
+
+      queryClient.setQueriesData<SavedPropertySummary[]>(
+        { queryKey: SAVED_PROPERTIES_KEYS.lists() },
+        (old: SavedPropertySummary[] | undefined) =>
+          old?.map((p: SavedPropertySummary) =>
+            p.id === id ? { ...p, status, updated_at: new Date().toISOString() } : p,
+          ),
+      )
+
+      return { previousLists }
+    },
+
+    onError: (
+      _err: unknown,
+      _vars: { id: string; status: PropertyStatus },
+      context: { previousLists: Array<[QueryKey, SavedPropertySummary[] | undefined]> } | undefined,
+    ) => {
+      context?.previousLists?.forEach(([key, data]: [QueryKey, SavedPropertySummary[] | undefined]) => {
+        queryClient.setQueryData(key, data)
+      })
+    },
+
+    onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: SAVED_PROPERTIES_KEYS.all,
       })
