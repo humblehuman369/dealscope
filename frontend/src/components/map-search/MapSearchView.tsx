@@ -13,7 +13,7 @@ import {
   AdvancedMarkerAnchorPoint,
   type MapMouseEvent,
 } from '@vis.gl/react-google-maps'
-import { Loader2, Home, MousePointerClick, List, MapIcon, Bookmark, Check } from 'lucide-react'
+import { Loader2, Home, MousePointerClick, List, MapIcon, Check } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import type { MapListing } from '@/lib/api'
@@ -943,6 +943,12 @@ export function MapSearchView() {
           gestureHandling="greedy"
           disableDefaultUI={false}
           mapTypeControl={true}
+          // Bottom-center keeps the Map/Satellite toggle clear of the
+          // top-left search bar and the top-right Filters chip.
+          mapTypeControlOptions={{
+            position: ControlPosition.BOTTOM_CENTER,
+            style: 1, // HORIZONTAL_BAR — compact 2-button toggle
+          }}
           streetViewControl={false}
           fullscreenControl={false}
           zoomControl={true}
@@ -1090,7 +1096,7 @@ export function MapSearchView() {
           (searchMode='location'): accepts addresses, cities, states, and ZIPs.
           Hidden while the filters panel is open so its close button (top-right)
           stays reachable on narrow viewports where the two would otherwise
-          overlap. The container also yields ~18rem on the right so the
+          overlap. The container also yields ~14rem on the right so the
           collapsed Filters button is never covered. */}
       {!filtersOpen && (
         <div
@@ -1100,36 +1106,14 @@ export function MapSearchView() {
           style={{ maxWidth: 'calc(100vw - 14rem)', width: 'min(92vw, 28rem)' }}
         >
           <MapSearchBar onSelect={handleSearchSelect} />
-          {/* Save-default-location — only authenticated users see this. Saves the
-              current map center's ZIP to the user's account so subsequent visits
-              land on the same view. */}
-          {user && (
-            <button
-              type="button"
-              onClick={handleSaveDefaultLocation}
-              disabled={savingDefault}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold shadow-md transition-opacity hover:opacity-90 disabled:opacity-50"
-              style={{
-                backgroundColor: 'var(--surface-card)',
-                color: 'var(--text-heading)',
-                border: '1px solid var(--border-default)',
-              }}
-              aria-label="Save current map view as my default location"
-            >
-              {savingDefault ? (
-                <Loader2 size={11} className="animate-spin" />
-              ) : (
-                <Bookmark size={11} />
-              )}
-              Save view as default
-            </button>
-          )}
         </div>
       )}
 
-      {/* Save-default-location confirmation toast */}
+      {/* Save-default-location confirmation toast — top-center keeps it clear
+          of the search bar (top-left), Filters chip (top-right), and the new
+          bottom-center map type toggle. */}
       {savedDefaultToast && (
-        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 max-w-[90vw]">
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 max-w-[90vw]">
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shadow-lg"
             style={{
@@ -1151,6 +1135,9 @@ export function MapSearchView() {
         isLoading={isLoading}
         isOpen={filtersOpen}
         onToggle={() => setFiltersOpen((p) => !p)}
+        canSaveDefaultView={!!user}
+        onSaveDefaultView={handleSaveDefaultLocation}
+        savingDefaultView={savingDefault}
       />
 
       {/* Neighborhood Intelligence Card */}
@@ -1208,7 +1195,7 @@ export function MapSearchView() {
 
       {/* Location label confirmation toast (URL navigation OR search-bar selection) */}
       {showLabel && activeLabel && (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 max-w-[90vw]">
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 max-w-[90vw]">
           <div
             className="px-4 py-2 rounded-lg text-sm font-medium shadow-lg truncate"
             style={{
@@ -1243,9 +1230,9 @@ export function MapSearchView() {
         </div>
       )}
 
-      {/* Click-any-home hint */}
+      {/* Click-any-home hint — sits above the bottom-center map type toggle. */}
       {showClickHint && !selectedListing && !dropPin && !isGeocoding && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
+        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-10">
           <div
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium shadow-xl"
             style={{
