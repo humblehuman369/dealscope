@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useMemo } from 'react'
-import { AlertTriangle, Gavel, Hammer, SlidersHorizontal, X } from 'lucide-react'
+import { AlertTriangle, Bookmark, Gavel, Hammer, Loader2, SlidersHorizontal, X } from 'lucide-react'
 import type { MapSearchFilters } from '@/hooks/useMapSearch'
 import type { SortOption } from '@/lib/dealSignal'
 
@@ -12,6 +12,12 @@ interface FilterPanelProps {
   isLoading: boolean
   isOpen: boolean
   onToggle: () => void
+  /** When true, render the "Save view as default" action inside the panel. */
+  canSaveDefaultView?: boolean
+  /** Persist the current map center's ZIP as the user's default location. */
+  onSaveDefaultView?: () => void | Promise<void>
+  /** Disables the Save-default action while the request is in flight. */
+  savingDefaultView?: boolean
 }
 
 const LISTING_TYPES: { value: MapSearchFilters['listing_type']; label: string }[] = [
@@ -122,6 +128,9 @@ export function FilterPanel({
   isLoading,
   isOpen,
   onToggle,
+  canSaveDefaultView = false,
+  onSaveDefaultView,
+  savingDefaultView = false,
 }: FilterPanelProps) {
   const handlePriceChange = useCallback(
     (field: 'min_price' | 'max_price', raw: string) => {
@@ -234,6 +243,43 @@ export function FilterPanel({
       </div>
 
       <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+        {/* Save current map view as the user's default landing location.
+            Only shown to authenticated users (parent gates via canSaveDefaultView). */}
+        {canSaveDefaultView && onSaveDefaultView && (
+          <div>
+            <label
+              className="block text-xs font-semibold uppercase tracking-wider mb-2"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              Default View
+            </label>
+            <button
+              type="button"
+              onClick={() => { void onSaveDefaultView() }}
+              disabled={savingDefaultView}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium w-full transition-opacity hover:opacity-90 disabled:opacity-50"
+              style={{
+                backgroundColor: 'var(--surface-elevated)',
+                color: 'var(--text-body)',
+                border: '1px solid var(--border-subtle)',
+              }}
+              aria-label="Save current map view as my default location"
+            >
+              {savingDefaultView ? (
+                <Loader2 size={14} className="animate-spin flex-shrink-0" />
+              ) : (
+                <Bookmark size={14} className="flex-shrink-0" style={{ color: 'var(--accent-sky)' }} />
+              )}
+              <span className="text-left leading-tight">
+                {savingDefaultView ? 'Saving...' : 'Save view as default'}
+              </span>
+            </button>
+            <p className="text-[10px] mt-1.5 leading-snug" style={{ color: 'var(--text-secondary)' }}>
+              Your next visit will open here.
+            </p>
+          </div>
+        )}
+
         {/* Sort By */}
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
