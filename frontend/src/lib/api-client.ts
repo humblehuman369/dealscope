@@ -512,6 +512,8 @@ export interface UserResponse {
   permissions: string[]
   subscription_tier: 'free' | 'pro'
   subscription_status: string
+  /** User's saved business ZIP — used as the map-search default location. */
+  business_address_zip?: string | null
 }
 
 export interface LoginResponse {
