@@ -1093,7 +1093,12 @@ export function MapSearchView() {
           overlap. The container also yields ~18rem on the right so the
           collapsed Filters button is never covered. */}
       {!filtersOpen && (
-        <div className="absolute top-3 left-3 z-10 pointer-events-auto flex flex-col gap-2 items-start">
+        <div
+          className="absolute top-3 left-3 z-10 pointer-events-auto flex flex-col gap-2 items-stretch"
+          // Leave ~14rem on the right so the collapsed Filters chip
+          // (up to 12rem + right-3 offset) never overlaps the search bar.
+          style={{ maxWidth: 'calc(100vw - 14rem)', width: 'min(92vw, 28rem)' }}
+        >
           <MapSearchBar onSelect={handleSearchSelect} />
           {/* Save-default-location — only authenticated users see this. Saves the
               current map center's ZIP to the user's account so subsequent visits

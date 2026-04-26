@@ -64,7 +64,7 @@ export function MapSearchBar({ onSelect, onClear }: MapSearchBarProps) {
 
   return (
     <div
-      className="flex items-center gap-2 rounded-lg shadow-lg w-[min(92vw,28rem)]"
+      className="flex items-center gap-2 rounded-lg shadow-lg w-full"
       style={{
         backgroundColor: 'var(--surface-card)',
         border: '1px solid var(--border-default)',
