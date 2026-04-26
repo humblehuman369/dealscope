@@ -53,6 +53,9 @@ interface PersistedSession {
   permissions: string[]
   is_superuser: boolean
   onboarding_completed: boolean
+  /** Map-search default location — needed on first paint so the map can
+      open at the saved ZIP without waiting for /me to resolve. */
+  business_address_zip?: string | null
   ts: number
 }
 
@@ -68,6 +71,7 @@ function persistSession(user: UserResponse): void {
       permissions: user.permissions ?? [],
       is_superuser: user.is_superuser,
       onboarding_completed: user.onboarding_completed,
+      business_address_zip: user.business_address_zip ?? null,
       ts: Date.now(),
     }
     localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data))
@@ -102,6 +106,7 @@ function readPersistedSession(): UserResponse | null {
       permissions: data.permissions,
       subscription_tier: data.subscription_tier,
       subscription_status: data.subscription_status,
+      business_address_zip: data.business_address_zip ?? null,
     } satisfies UserResponse
   } catch {
     return null

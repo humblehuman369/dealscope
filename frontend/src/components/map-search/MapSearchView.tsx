@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
-import { api as apiClient } from '@/lib/api-client'
+import { SESSION_QUERY_KEY, setLastKnownUser } from '@/hooks/useSession'
+import { api as apiClient, type UserResponse } from '@/lib/api-client'
 import {
   APIProvider,
   ControlPosition,
@@ -848,6 +850,8 @@ export function MapSearchView() {
     setSelectedListing(listing)
   }, [clearGeocode])
 
+  const queryClient = useQueryClient()
+
   const handleSaveDefaultLocation = useCallback(async () => {
     const map = mapInstanceRef.current
     if (!map || !apiKey || savingDefault) return
@@ -863,6 +867,23 @@ export function MapSearchView() {
       }
       await apiClient.patch('/api/v1/users/me', { business_address_zip: zip })
       writeZipCache(zip, { lat: center.lat(), lng: center.lng() })
+
+      // Propagate the new ZIP to every layer that drives the next-visit
+      // landing center, so the saved default actually applies on the next
+      // mount of /map-search:
+      //   1. React Query cache → client-side navigations see fresh `user`
+      //   2. In-memory + localStorage session → survives hard reloads
+      const previousUser =
+        queryClient.getQueryData<UserResponse | null>(SESSION_QUERY_KEY)
+      if (previousUser) {
+        const updatedUser: UserResponse = {
+          ...previousUser,
+          business_address_zip: zip,
+        }
+        queryClient.setQueryData(SESSION_QUERY_KEY, updatedUser)
+        setLastKnownUser(updatedUser)
+      }
+
       setSavedDefaultToast(`Saved ${zip} as your default`)
     } catch {
       setSavedDefaultToast('Could not save default location')
@@ -870,7 +891,7 @@ export function MapSearchView() {
       setSavingDefault(false)
       setTimeout(() => setSavedDefaultToast(null), 3500)
     }
-  }, [apiKey, savingDefault])
+  }, [apiKey, savingDefault, queryClient])
 
   const handleSearchSelect = useCallback((selection: MapSearchSelection) => {
     if (!selection.location) return
