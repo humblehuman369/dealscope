@@ -24,7 +24,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X, MoreVertical, Info, DollarSign } from 'lucide-react'
+import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X, MoreVertical, Info, DollarSign, LayoutDashboard } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
@@ -569,6 +569,20 @@ export function AppHeader({
                 </Link>
               </>
             )}
+            {/* Dashboard — visible primary nav for signed-in users (testers were missing the dropdown). */}
+            {isAuthenticated && (
+              <Link
+                href="/dashboard"
+                className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                style={{
+                  color: 'var(--text-heading)',
+                  borderBottom: pathname === '/dashboard' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
+                  paddingBottom: 2,
+                }}
+              >
+                Dashboard
+              </Link>
+            )}
             {/* Property search button opens modal */}
             <button
               onClick={() => setSearchModalOpen(true)}
@@ -718,6 +732,12 @@ export function AppHeader({
                         <p className="text-[12px] sm:text-[16px] text-slate-400 truncate">{user.email}</p>
                       </div>
                     )}
+                    <button
+                      onClick={() => { setShowProfileMenu(false); router.push('/dashboard') }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                    >
+                      <LayoutDashboard className="w-4 h-4" /> Dashboard
+                    </button>
                     <button
                       onClick={() => { setShowProfileMenu(false); router.push('/profile') }}
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"

@@ -8,6 +8,7 @@ import RegisterForm from './RegisterForm'
 import ForgotPasswordForm from './ForgotPasswordForm'
 import { useSession } from '@/hooks/useSession'
 import { IS_CAPACITOR } from '@/lib/env'
+import { shouldLandOnDashboard } from '@/lib/dashboardLanding'
 
 type View = 'login' | 'register' | 'forgot-password'
 
@@ -75,7 +76,13 @@ export default function AuthModal() {
       params.delete('auth')
       params.delete('redirect')
       const qs = params.toString()
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+      // First sign-in of the day → land on the dashboard so users
+      // see their pipeline. Otherwise stay on the current page.
+      if (shouldLandOnDashboard()) {
+        router.replace('/dashboard')
+      } else {
+        router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+      }
     }
   }, [searchParams, router, pathname])
 
