@@ -1087,34 +1087,40 @@ export function MapSearchView() {
       <MapMarkerLegend />
 
       {/* Search bar — top-left of map. Mirrors the homepage AddressAutocomplete
-          (searchMode='location'): accepts addresses, cities, states, and ZIPs. */}
-      <div className="absolute top-3 left-3 z-20 pointer-events-auto flex flex-col gap-2 items-start">
-        <MapSearchBar onSelect={handleSearchSelect} />
-        {/* Save-default-location — only authenticated users see this. Saves the
-            current map center's ZIP to the user's account so subsequent visits
-            land on the same view. */}
-        {user && (
-          <button
-            type="button"
-            onClick={handleSaveDefaultLocation}
-            disabled={savingDefault}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold shadow-md transition-opacity hover:opacity-90 disabled:opacity-50"
-            style={{
-              backgroundColor: 'var(--surface-card)',
-              color: 'var(--text-heading)',
-              border: '1px solid var(--border-default)',
-            }}
-            aria-label="Save current map view as my default location"
-          >
-            {savingDefault ? (
-              <Loader2 size={11} className="animate-spin" />
-            ) : (
-              <Bookmark size={11} />
-            )}
-            Save view as default
-          </button>
-        )}
-      </div>
+          (searchMode='location'): accepts addresses, cities, states, and ZIPs.
+          Hidden while the filters panel is open so its close button (top-right)
+          stays reachable on narrow viewports where the two would otherwise
+          overlap. The container also yields ~18rem on the right so the
+          collapsed Filters button is never covered. */}
+      {!filtersOpen && (
+        <div className="absolute top-3 left-3 z-10 pointer-events-auto flex flex-col gap-2 items-start">
+          <MapSearchBar onSelect={handleSearchSelect} />
+          {/* Save-default-location — only authenticated users see this. Saves the
+              current map center's ZIP to the user's account so subsequent visits
+              land on the same view. */}
+          {user && (
+            <button
+              type="button"
+              onClick={handleSaveDefaultLocation}
+              disabled={savingDefault}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold shadow-md transition-opacity hover:opacity-90 disabled:opacity-50"
+              style={{
+                backgroundColor: 'var(--surface-card)',
+                color: 'var(--text-heading)',
+                border: '1px solid var(--border-default)',
+              }}
+              aria-label="Save current map view as my default location"
+            >
+              {savingDefault ? (
+                <Loader2 size={11} className="animate-spin" />
+              ) : (
+                <Bookmark size={11} />
+              )}
+              Save view as default
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Save-default-location confirmation toast */}
       {savedDefaultToast && (
