@@ -178,6 +178,7 @@ async def _build_user_response(db: AsyncSession, user) -> UserResponse:
         permissions=sorted(perms),
         subscription_tier=tier,
         subscription_status=sub_status,
+        business_address_zip=user.business_address_zip,
     )
 
 

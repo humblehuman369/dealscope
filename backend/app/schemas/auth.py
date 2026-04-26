@@ -211,6 +211,9 @@ class UserResponse(BaseModel):
     # Subscription tier (free or pro) — used for frontend feature gating
     subscription_tier: str = "free"
     subscription_status: str = "active"
+    # Map-search default location (uses business_address_zip). Surfaced here so
+    # the map page can center on the user's saved ZIP without a second request.
+    business_address_zip: str | None = None
 
     class Config:
         from_attributes = True
