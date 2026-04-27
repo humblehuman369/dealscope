@@ -342,10 +342,32 @@ export function filterByListingStatus(
   return listings.filter((l) => allowed.has(normalizeListingStatus(l.listing_status)))
 }
 
+/**
+ * Filter by minimum days on market. Uses numeric `days_on_market` when present.
+ * When the feed omits DOM but the listing was bucketed into stale 30/60/distressed
+ * markers, those rows still respect 30+ / 60+ filters so behavior matches map colors.
+ * Thresholds 90+ and 120+ require numeric DOM — classification does not guarantee 90d+.
+ */
 export function filterByMinDom(
   listings: MapListing[],
   minDom: number | undefined,
+  dealSignals?: Map<string, DealSignalResult>,
 ): MapListing[] {
   if (minDom == null || minDom <= 0) return listings
-  return listings.filter((l) => l.days_on_market != null && l.days_on_market >= minDom)
+
+  return listings.filter((l) => {
+    if (l.days_on_market != null && l.days_on_market >= minDom) return true
+    if (l.days_on_market != null) return false
+
+    const sig = dealSignals?.get(l.id)
+    if (!sig) return false
+
+    if (minDom <= 30) {
+      return sig.category === 'stale_30' || sig.category === 'stale_60' || sig.category === 'distressed'
+    }
+    if (minDom <= 60) {
+      return sig.category === 'stale_60' || sig.category === 'distressed'
+    }
+    return false
+  })
 }

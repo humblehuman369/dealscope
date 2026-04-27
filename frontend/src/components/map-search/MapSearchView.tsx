@@ -1112,7 +1112,7 @@ export function MapSearchView() {
           }}
         >
           <MapContent
-            listings={rawListings}
+            listings={listings}
             dealSignals={dealSignals}
             selectedListing={selectedListing}
             onSelectListing={handleMarkerSelect}
