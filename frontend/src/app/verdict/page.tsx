@@ -57,6 +57,7 @@ import { buildVerdictAnalysisPayload, type VerdictPayloadBase } from '@/utils/ve
 import { MarketAnchorNote } from '@/components/iq-verdict/MarketAnchorNote'
 import { VerdictGapGuidance, VerdictPositiveGuidance } from '@/components/iq-verdict/VerdictGapGuidance'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
+import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
 
 // Backend analysis response type — canonical shape from @dealscope/shared.
 // The backend serializes both snake_case and camelCase via Pydantic alias_generator,
@@ -810,6 +811,22 @@ function VerdictContent() {
     router.back()
   }, [router])
 
+  // Contextual "Back to map" breadcrumb. Shown only when a meaningful
+  // map-search session exists in sessionStorage (set by `useMapSearch` and
+  // `MapSearchView` whenever the user pans, filters, or draws). Hydrated in
+  // a useEffect to avoid SSR/client divergence — the server never has access
+  // to sessionStorage, so the initial paint must match (false). Clicking
+  // navigates with `router.push` rather than `router.back` so the map opens
+  // even from longer history chains (verdict A -> verdict B -> back).
+  const [hasMapSession, setHasMapSession] = useState(false)
+  useEffect(() => {
+    setHasMapSession(hasRestorableMapSnapshot())
+  }, [])
+
+  const handleBackToMap = useCallback(() => {
+    router.push('/map-search')
+  }, [router])
+
   // Navigate to Deal Maker page with property data
   const handleNavigateToDealMaker = useCallback(() => {
     if (!property) return
@@ -1140,6 +1157,41 @@ function VerdictContent() {
 
         {/* Centered single-column container */}
         <div className="w-full px-0 sm:px-8 lg:px-12 xl:px-16 mx-auto">
+          {/* "Back to map" breadcrumb — only renders when the user arrived from
+              a meaningful map-search session (snapshot present). Low-emphasis
+              by design so it's a contextual nudge, not a primary CTA. */}
+          {hasMapSession && (
+            <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-0">
+              <button
+                type="button"
+                onClick={handleBackToMap}
+                className="inline-flex items-center gap-1 text-sm font-medium transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text-heading)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-secondary)'
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back to map
+              </button>
+            </div>
+          )}
+
           {/* Full-width photo gallery */}
           <section className="mx-0 sm:mx-5 mt-6">
             {property.zpid ? (

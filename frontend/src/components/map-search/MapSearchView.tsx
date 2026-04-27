@@ -28,6 +28,11 @@ import { PropertyCardList } from './PropertyCardList'
 import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
 import { NeighborhoodCard } from './NeighborhoodCard'
 import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
+import {
+  readMapSnapshot,
+  writeMapSnapshot,
+  clearMapSnapshot,
+} from './mapSearchSnapshot'
 import type { NeighborhoodOverview } from '@/lib/api'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
@@ -403,6 +408,9 @@ interface MapContentProps {
   setDrawingPolygon: (p: google.maps.Polygon | null) => void
   panToRef: React.MutableRefObject<((lat: number, lng: number, zoom?: number) => void) | null>
   mapInstanceRef?: React.MutableRefObject<google.maps.Map | null>
+  // Polygon vertices owned by `useMapSearch`. Used to re-render a saved
+  // polygon onto the map when restored from the session snapshot.
+  polygon: number[][] | null
 }
 
 function MapContent({
@@ -417,6 +425,7 @@ function MapContent({
   setDrawingPolygon,
   panToRef,
   mapInstanceRef,
+  polygon,
 }: MapContentProps) {
   const map = useMap()
 
@@ -473,18 +482,52 @@ function MapContent({
     if (!map) return
     const listener = map.addListener('idle', () => {
       const bounds = map.getBounds()
-      if (!bounds) return
-      const ne = bounds.getNorthEast()
-      const sw = bounds.getSouthWest()
-      onBoundsChanged({
-        north: ne.lat(),
-        south: sw.lat(),
-        east: ne.lng(),
-        west: sw.lng(),
-      })
+      if (bounds) {
+        const ne = bounds.getNorthEast()
+        const sw = bounds.getSouthWest()
+        onBoundsChanged({
+          north: ne.lat(),
+          south: sw.lat(),
+          east: ne.lng(),
+          west: sw.lng(),
+        })
+      }
+      // Persist the resting viewport to the session snapshot so the user
+      // returns to the exact center/zoom after navigating away (verdict, etc.).
+      // `idle` only fires after the camera settles, so this naturally
+      // throttles writes to a few per pan/zoom interaction.
+      const center = map.getCenter()
+      const zoom = map.getZoom()
+      if (center && typeof zoom === 'number') {
+        writeMapSnapshot({
+          viewport: { lat: center.lat(), lng: center.lng(), zoom },
+        })
+      }
     })
     return () => google.maps.event.removeListener(listener)
   }, [map, onBoundsChanged])
+
+  // Hydrate a saved polygon onto the map when one exists in state but no
+  // google.maps.Polygon instance has been created yet (typical case: returning
+  // to the page after a navigation, with the polygon vertices restored from
+  // the session snapshot inside `useMapSearch`). Once a polygon is on the map
+  // (either drawn fresh or hydrated here), `drawingPolygon` is non-null and
+  // this effect short-circuits, so it never double-renders.
+  useEffect(() => {
+    if (!map) return
+    if (!polygon || polygon.length < 3) return
+    if (drawingPolygon) return
+    const poly = new google.maps.Polygon({
+      paths: polygon.map(([lat, lng]) => ({ lat, lng })),
+      fillColor: '#3B82F6',
+      fillOpacity: 0.15,
+      strokeColor: '#3B82F6',
+      strokeWeight: 2,
+      editable: false,
+      map,
+    })
+    setDrawingPolygon(poly)
+  }, [map, polygon, drawingPolygon, setDrawingPolygon])
 
   useEffect(() => {
     if (!map || !isDrawing) {
@@ -633,7 +676,26 @@ export function MapSearchView() {
 
   const locationLabel = searchParams.get('label') ?? null
   const needsGeocode = !!locationLabel && !paramCenter
-  const hasExplicitLocation = !!paramCenter || needsGeocode
+
+  // Tab-session map snapshot — read once on mount. URL params take precedence:
+  // arriving via a deep link with explicit lat/lng or `label` is treated as a
+  // fresh entry, and we clear the snapshot so stale filters/polygon don't hide
+  // listings near the new location. SSR returns null (no sessionStorage); the
+  // consumed state (initialCenter / initialZoom / mobileView) only paints after
+  // the loading spinner exits, so the server-vs-client divergence is invisible
+  // to React's hydration check.
+  const initialSnapshot = useMemo(() => {
+    if (typeof window === 'undefined') return null
+    if (paramCenter || locationLabel) {
+      clearMapSnapshot()
+      return null
+    }
+    return readMapSnapshot()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const snapshotViewport = initialSnapshot?.viewport ?? null
+
+  const hasExplicitLocation = !!paramCenter || needsGeocode || !!snapshotViewport
 
   // Authenticated user — used to prefer the saved business_address_zip as the
   // initial map center, ahead of navigator.geolocation.
@@ -701,16 +763,22 @@ export function MapSearchView() {
     )
   }, [hasExplicitLocation, authLoading, accountZip])
 
-  const initialCenter = paramCenter ?? accountZipCenter ?? geoCenter ?? DEFAULT_CENTER
+  const initialCenter = paramCenter
+    ?? (snapshotViewport ? { lat: snapshotViewport.lat, lng: snapshotViewport.lng } : null)
+    ?? accountZipCenter
+    ?? geoCenter
+    ?? DEFAULT_CENTER
   const initialZoom = paramZoom
+    ?? snapshotViewport?.zoom
     ?? (accountZipCenter
       ? ACCOUNT_ZIP_INITIAL_ZOOM
       : geoCenter ? GEOLOCATION_INITIAL_ZOOM : DEFAULT_ZOOM)
 
   // Only fit-to-radius and show the "you are here" pin when the location came
-  // from the user's actual GPS — never for URL params, account-ZIP centering,
-  // or the US-center default.
-  const shouldUseUserLocation = !paramCenter && !needsGeocode && !accountZipCenter && !!geoCenter
+  // from the user's actual GPS — never for URL params, snapshot-restored
+  // viewports, account-ZIP centering, or the US-center default.
+  const shouldUseUserLocation =
+    !paramCenter && !needsGeocode && !snapshotViewport && !accountZipCenter && !!geoCenter
   const userLocation = shouldUseUserLocation ? geoCenter : null
 
   const {
@@ -721,6 +789,7 @@ export function MapSearchView() {
     totalCount,
     estimatedTotal,
     filters,
+    polygon,
     dealSignals,
     onBoundsChanged,
     onPolygonComplete,
@@ -734,7 +803,19 @@ export function MapSearchView() {
   const [activeLabel] = useState<string | null>(locationLabel)
   const [showLabel, setShowLabel] = useState(!!locationLabel)
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
-  const [mobileView, setMobileView] = useState<'map' | 'list'>('map')
+  // Mobile view tab — restored from the tab-session snapshot when present so
+  // the user lands back on whichever view they were last using.
+  const [mobileView, setMobileView] = useState<'map' | 'list'>(
+    initialSnapshot?.mobileView ?? 'map',
+  )
+
+  // Persist mobile view changes to the snapshot. Fires on mount with the
+  // current value (no-op write when the snapshot already matches) and on
+  // every subsequent toggle, including the implicit `setMobileView('map')`
+  // calls from card / search selection handlers.
+  useEffect(() => {
+    writeMapSnapshot({ mobileView })
+  }, [mobileView])
 
   const panToRef = useRef<((lat: number, lng: number, zoom?: number) => void) | null>(null)
   const mapInstanceRef = useRef<google.maps.Map | null>(null)
@@ -1053,6 +1134,7 @@ export function MapSearchView() {
             setDrawingPolygon={setDrawingPolygon}
             panToRef={panToRef}
             mapInstanceRef={mapInstanceRef}
+            polygon={polygon}
           />
           {dropPin && (
             <AdvancedMarker position={dropPin}>
