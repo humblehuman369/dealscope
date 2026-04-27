@@ -4,7 +4,11 @@ import { useCallback, useMemo } from 'react'
 import { AlertTriangle, Bookmark, Gavel, Hammer, Loader2, SlidersHorizontal, X } from 'lucide-react'
 import type { MapSearchFilters } from '@/hooks/useMapSearch'
 import type { SortOption } from '@/lib/dealSignal'
-import type { MapOverlayChrome } from '@/components/map-search/mapOverlayChrome'
+import {
+  type MapOverlayChrome,
+  MAP_FILTER_LIGHT_CONTROLS,
+  MAP_FILTER_DISTRESSED_LIGHT,
+} from '@/components/map-search/mapOverlayChrome'
 
 interface FilterPanelProps {
   filters: MapSearchFilters
@@ -28,6 +32,11 @@ interface FilterPanelProps {
    * (flex row with the search bar). When false, it uses absolute top-right.
    */
   dockCollapsedInline?: boolean
+  /**
+   * When true, pills/selects/inputs use light surfaces so they match a light
+   * map panel even if the global app theme is dark.
+   */
+  mapLightChrome?: boolean
 }
 
 const LISTING_TYPES: { value: MapSearchFilters['listing_type']; label: string }[] = [
@@ -101,6 +110,7 @@ function PillButton({
   onClick,
   children,
   leading,
+  mapLightChrome,
   'aria-pressed': ariaPressed,
   'aria-label': ariaLabel,
   className,
@@ -109,6 +119,7 @@ function PillButton({
   onClick: () => void
   children: React.ReactNode
   leading?: React.ReactNode
+  mapLightChrome?: boolean
   'aria-pressed'?: boolean
   'aria-label'?: string
   className?: string
@@ -121,8 +132,15 @@ function PillButton({
       aria-label={ariaLabel}
       className={`inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${className ?? ''}`}
       style={{
-        backgroundColor: active ? 'var(--accent-sky)' : 'var(--surface-elevated)',
-        color: active ? '#fff' : 'var(--text-body)',
+        backgroundColor:
+          active
+            ? 'var(--accent-sky)'
+            : mapLightChrome
+              ? MAP_FILTER_LIGHT_CONTROLS.idleBg
+              : 'var(--surface-elevated)',
+        color:
+          active ? '#fff' : mapLightChrome ? MAP_FILTER_LIGHT_CONTROLS.idleText : 'var(--text-body)',
+        border: !active && mapLightChrome ? MAP_FILTER_LIGHT_CONTROLS.idleBorder : undefined,
       }}
     >
       {leading}
@@ -143,6 +161,7 @@ export function FilterPanel({
   savingDefaultView = false,
   overlayChrome = null,
   dockCollapsedInline = false,
+  mapLightChrome = false,
 }: FilterPanelProps) {
   const handlePriceChange = useCallback(
     (field: 'min_price' | 'max_price', raw: string) => {
@@ -181,6 +200,19 @@ export function FilterPanel({
   const showCollapsedDistressedHint = !hasDistressedStatusFilter
 
   const chrome = overlayChrome ?? null
+
+  const labelColor = mapLightChrome ? MAP_FILTER_LIGHT_CONTROLS.sectionLabel : undefined
+  const controlIdle = mapLightChrome
+    ? {
+        backgroundColor: MAP_FILTER_LIGHT_CONTROLS.idleBg,
+        color: MAP_FILTER_LIGHT_CONTROLS.idleText,
+        border: MAP_FILTER_LIGHT_CONTROLS.idleBorder,
+      }
+    : {
+        backgroundColor: 'var(--surface-elevated)',
+        color: 'var(--text-body)',
+        border: '1px solid var(--border-subtle)',
+      }
 
   if (!isOpen) {
     return (
@@ -275,7 +307,7 @@ export function FilterPanel({
           <div>
             <label
               className="block text-xs font-semibold uppercase tracking-wider mb-2"
-              style={{ color: 'var(--text-secondary)' }}
+              style={{ color: labelColor ?? 'var(--text-secondary)' }}
             >
               Default View
             </label>
@@ -284,11 +316,7 @@ export function FilterPanel({
               onClick={() => { void onSaveDefaultView() }}
               disabled={savingDefaultView}
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium w-full transition-opacity hover:opacity-90 disabled:opacity-50"
-              style={{
-                backgroundColor: 'var(--surface-elevated)',
-                color: 'var(--text-body)',
-                border: '1px solid var(--border-subtle)',
-              }}
+              style={controlIdle}
               aria-label="Save current map view as my default location"
             >
               {savingDefaultView ? (
@@ -300,7 +328,10 @@ export function FilterPanel({
                 {savingDefaultView ? 'Saving...' : 'Save view as default'}
               </span>
             </button>
-            <p className="text-[10px] mt-1.5 leading-snug" style={{ color: 'var(--text-secondary)' }}>
+            <p
+              className="text-[10px] mt-1.5 leading-snug"
+              style={{ color: mapLightChrome ? MAP_FILTER_LIGHT_CONTROLS.placeholder : 'var(--text-secondary)' }}
+            >
               Your next visit will open here.
             </p>
           </div>
@@ -308,18 +339,17 @@ export function FilterPanel({
 
         {/* Sort By */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-2"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
             Sort By
           </label>
           <select
             value={filters.sort_by}
             onChange={(e) => onChange({ sort_by: e.target.value as SortOption })}
             className="w-full px-3 py-2 rounded-lg text-sm"
-            style={{
-              backgroundColor: 'var(--surface-elevated)',
-              color: 'var(--text-body)',
-              border: '1px solid var(--border-subtle)',
-            }}
+            style={controlIdle}
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -331,13 +361,17 @@ export function FilterPanel({
 
         {/* Listing Type */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-2"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
             Listing Type
           </label>
           <div className="flex gap-1 flex-wrap">
             {LISTING_TYPES.map((opt) => (
               <PillButton
                 key={opt.value}
+                mapLightChrome={mapLightChrome}
                 active={filters.listing_type === opt.value}
                 onClick={() => onChange({ listing_type: opt.value })}
                 aria-label={opt.label}
@@ -350,16 +384,23 @@ export function FilterPanel({
 
         {/* Listing Status — MLS & FSBO */}
         <div>
-          <span className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-secondary)' }}>
+          <span
+            className="block text-xs font-semibold uppercase tracking-wider mb-1"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
             Listing status
           </span>
-          <p className="text-[10px] mb-2 leading-snug" style={{ color: 'var(--text-secondary)' }}>
+          <p
+            className="text-[10px] mb-2 leading-snug"
+            style={{ color: mapLightChrome ? MAP_FILTER_LIGHT_CONTROLS.placeholder : 'var(--text-secondary)' }}
+          >
             MLS &amp; FSBO
           </p>
           <div className="flex flex-wrap gap-1">
             {CORE_LISTING_STATUS_OPTIONS.map((opt) => (
               <PillButton
                 key={opt.value}
+                mapLightChrome={mapLightChrome}
                 active={filters.listing_statuses.includes(opt.value)}
                 onClick={() => toggleListingStatus(opt.value)}
                 aria-label={`${opt.label} listings. Toggle on or off.`}
@@ -375,20 +416,30 @@ export function FilterPanel({
           className="rounded-lg p-3 space-y-2"
           role="group"
           aria-labelledby="distressed-deals-heading"
-          style={{
-            backgroundColor: 'rgba(239, 68, 68, 0.09)',
-            border: '1px solid rgba(239, 68, 68, 0.35)',
-          }}
+          style={
+            mapLightChrome
+              ? {
+                  backgroundColor: MAP_FILTER_DISTRESSED_LIGHT.boxBg,
+                  border: MAP_FILTER_DISTRESSED_LIGHT.boxBorder,
+                }
+              : {
+                  backgroundColor: 'rgba(239, 68, 68, 0.09)',
+                  border: '1px solid rgba(239, 68, 68, 0.35)',
+                }
+          }
         >
           <div>
             <h3
               id="distressed-deals-heading"
               className="text-xs font-semibold uppercase tracking-wider"
-              style={{ color: 'var(--text-heading)' }}
+              style={{ color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.heading : 'var(--text-heading)' }}
             >
               Distressed deals
             </h3>
-            <p className="text-[10px] mt-1 leading-snug" style={{ color: 'var(--text-secondary)' }}>
+            <p
+              className="text-[10px] mt-1 leading-snug"
+              style={{ color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.body : 'var(--text-secondary)' }}
+            >
               Foreclosure, auction &amp; pre-foreclosure — same red pins as the map legend.
             </p>
           </div>
@@ -396,6 +447,7 @@ export function FilterPanel({
             {DISTRESSED_LISTING_STATUS_OPTIONS.map(({ value, label, dotColor, Icon }) => (
               <PillButton
                 key={value}
+                mapLightChrome={mapLightChrome}
                 active={filters.listing_statuses.includes(value)}
                 onClick={() => toggleListingStatus(value)}
                 aria-label={`${label} listings. Matches red distressed map markers. Toggle on or off.`}
@@ -418,13 +470,17 @@ export function FilterPanel({
 
         {/* Days on Market */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-2"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
             Days on Market
           </label>
           <div className="flex gap-1 flex-wrap">
             {DOM_OPTIONS.map((opt) => (
               <PillButton
                 key={opt.label}
+                mapLightChrome={mapLightChrome}
                 active={filters.min_dom === opt.value}
                 onClick={() => onChange({ min_dom: opt.value })}
                 aria-label={`Minimum days on market: ${opt.label}`}
@@ -437,18 +493,17 @@ export function FilterPanel({
 
         {/* Property Type */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-2"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
             Property Type
           </label>
           <select
             value={filters.property_type || ''}
             onChange={(e) => onChange({ property_type: e.target.value || undefined })}
             className="w-full px-3 py-2 rounded-lg text-sm"
-            style={{
-              backgroundColor: 'var(--surface-elevated)',
-              color: 'var(--text-body)',
-              border: '1px solid var(--border-subtle)',
-            }}
+            style={controlIdle}
           >
             {PROPERTY_TYPES.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -460,7 +515,10 @@ export function FilterPanel({
 
         {/* Price Range */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-2"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
             Price Range
           </label>
           <div className="flex items-center gap-2">
@@ -469,38 +527,39 @@ export function FilterPanel({
               placeholder="Min"
               value={filters.min_price ?? ''}
               onChange={(e) => handlePriceChange('min_price', e.target.value)}
-              className="flex-1 px-3 py-2 rounded-lg text-sm min-w-0"
-              style={{
-                backgroundColor: 'var(--surface-elevated)',
-                color: 'var(--text-body)',
-                border: '1px solid var(--border-subtle)',
-              }}
+              className={`flex-1 px-3 py-2 rounded-lg text-sm min-w-0 ${mapLightChrome ? 'placeholder:text-slate-400' : ''}`}
+              style={controlIdle}
             />
-            <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>to</span>
+            <span
+              className="text-xs flex-shrink-0"
+              style={{ color: mapLightChrome ? MAP_FILTER_LIGHT_CONTROLS.placeholder : 'var(--text-secondary)' }}
+            >
+              to
+            </span>
             <input
               type="number"
               placeholder="Max"
               value={filters.max_price ?? ''}
               onChange={(e) => handlePriceChange('max_price', e.target.value)}
-              className="flex-1 px-3 py-2 rounded-lg text-sm min-w-0"
-              style={{
-                backgroundColor: 'var(--surface-elevated)',
-                color: 'var(--text-body)',
-                border: '1px solid var(--border-subtle)',
-              }}
+              className={`flex-1 px-3 py-2 rounded-lg text-sm min-w-0 ${mapLightChrome ? 'placeholder:text-slate-400' : ''}`}
+              style={controlIdle}
             />
           </div>
         </div>
 
         {/* Bedrooms */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-2"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
             Bedrooms
           </label>
           <div className="flex gap-1 flex-wrap">
             {BEDROOM_OPTIONS.map((opt) => (
               <PillButton
                 key={opt.label}
+                mapLightChrome={mapLightChrome}
                 active={filters.bedrooms === opt.value}
                 onClick={() => onChange({ bedrooms: opt.value })}
                 aria-label={`Bedrooms: ${opt.label}`}
@@ -513,7 +572,10 @@ export function FilterPanel({
 
         {/* Bathrooms */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-2"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
             Bathrooms
           </label>
           <div className="flex gap-1 flex-wrap">
@@ -525,6 +587,7 @@ export function FilterPanel({
             ].map((opt) => (
               <PillButton
                 key={opt.label}
+                mapLightChrome={mapLightChrome}
                 active={filters.bathrooms === opt.value}
                 onClick={() => onChange({ bathrooms: opt.value })}
                 aria-label={`Bathrooms: ${opt.label}`}
@@ -538,9 +601,14 @@ export function FilterPanel({
         {/* Airbnb / STR Listings */}
         <div
           className="pt-3"
-          style={{ borderTop: '1px solid var(--border-subtle)' }}
+          style={{
+            borderTop: mapLightChrome ? '1px solid rgba(15, 23, 42, 0.1)' : '1px solid var(--border-subtle)',
+          }}
         >
-          <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-2"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
             Airbnb Listings
           </label>
           <button
@@ -548,9 +616,21 @@ export function FilterPanel({
             onClick={() => onChange({ include_str_listings: !filters.include_str_listings })}
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium w-full transition-colors"
             style={{
-              backgroundColor: filters.include_str_listings ? 'rgba(251, 113, 133, 0.15)' : 'var(--surface-elevated)',
-              color: filters.include_str_listings ? '#FB7185' : 'var(--text-body)',
-              border: `1px solid ${filters.include_str_listings ? '#FB7185' : 'var(--border-subtle)'}`,
+              backgroundColor: filters.include_str_listings
+                ? 'rgba(251, 113, 133, 0.15)'
+                : mapLightChrome
+                  ? MAP_FILTER_LIGHT_CONTROLS.idleBg
+                  : 'var(--surface-elevated)',
+              color: filters.include_str_listings
+                ? '#FB7185'
+                : mapLightChrome
+                  ? MAP_FILTER_LIGHT_CONTROLS.idleText
+                  : 'var(--text-body)',
+              border: filters.include_str_listings
+                ? '1px solid #FB7185'
+                : mapLightChrome
+                  ? MAP_FILTER_LIGHT_CONTROLS.idleBorder
+                  : '1px solid var(--border-subtle)',
             }}
             aria-pressed={filters.include_str_listings}
             aria-label="Toggle Airbnb short-term rental listings on the map"
