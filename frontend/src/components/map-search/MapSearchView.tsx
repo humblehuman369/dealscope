@@ -17,7 +17,7 @@ import {
   AdvancedMarkerAnchorPoint,
   type MapMouseEvent,
 } from '@vis.gl/react-google-maps'
-import { Loader2, Home, MousePointerClick, List, MapIcon, Check } from 'lucide-react'
+import { Loader2, Home, MousePointerClick, List, MapIcon, Check, Sun, Moon } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import type { MapListing } from '@/lib/api'
@@ -41,6 +41,9 @@ const MAP_ID = 'DEMO_MAP_ID'
 const MIN_ZOOM_FOR_GEOCODE = 13
 const HINT_DISMISSED_KEY = 'dealscope:map-click-hint-dismissed'
 const ZIP_CACHE_PREFIX = 'dealscope:zip-cache:'
+// Per-map theme override (independent of the global app theme).
+// Stored as 'light' | 'dark'; absence means "follow the global app theme".
+const MAP_THEME_OVERRIDE_KEY = 'dealscope:map-theme-override'
 // Zoom used when centering on the user's saved ZIP (ZIP-level framing).
 const ACCOUNT_ZIP_INITIAL_ZOOM = 13
 
@@ -91,10 +94,9 @@ function getMapOverlaySurface(isDark: boolean) {
   }
 }
 
-function MapMarkerLegend() {
+function MapMarkerLegend({ isDark }: { isDark: boolean }) {
   const [open, setOpen] = useState(false)
-  const { theme } = useTheme()
-  const surface = getMapOverlaySurface(theme === 'dark')
+  const surface = getMapOverlaySurface(isDark)
   return (
     <>
       <div
@@ -594,8 +596,28 @@ export function MapSearchView() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const searchParams = useSearchParams()
   const { theme } = useTheme()
-  const isDarkTheme = theme === 'dark'
-  const overlaySurface = getMapOverlaySurface(isDarkTheme)
+
+  // Per-map theme override. When set, beats the global app theme for the
+  // map's color scheme, canvas filter, and floating overlay tinting. Read
+  // from localStorage on mount so the user's prior choice persists across
+  // sessions.
+  const [mapThemeOverride, setMapThemeOverride] = useState<'light' | 'dark' | null>(null)
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(MAP_THEME_OVERRIDE_KEY)
+      if (saved === 'light' || saved === 'dark') setMapThemeOverride(saved)
+    } catch { /* private browsing */ }
+  }, [])
+
+  const isDarkMap = (mapThemeOverride ?? theme) === 'dark'
+  const overlaySurface = getMapOverlaySurface(isDarkMap)
+
+  const toggleMapTheme = useCallback(() => {
+    const next: 'light' | 'dark' = isDarkMap ? 'light' : 'dark'
+    setMapThemeOverride(next)
+    try { localStorage.setItem(MAP_THEME_OVERRIDE_KEY, next) } catch { /* private browsing */ }
+  }, [isDarkMap])
 
   const paramCenter = useMemo(() => {
     const lat = parseFloat(searchParams.get('lat') ?? '')
@@ -978,17 +1000,18 @@ export function MapSearchView() {
   }
 
   const mapSection = (
-    <div className={`relative w-full h-full${isDarkTheme ? ' map-search-crisp-dark' : ''}`}>
+    <div className={`relative w-full h-full${isDarkMap ? ' map-search-crisp-dark' : ''}`}>
       <APIProvider apiKey={apiKey} libraries={['places', 'drawing', 'marker']}>
         <Map
           defaultCenter={initialCenter}
           defaultZoom={initialZoom}
           mapId={MAP_ID}
-          // Tie Google Maps' built-in dark/light tile rendering to the app
-          // theme. The Maps JS API recreates the underlying map instance when
-          // this prop changes; the cost is acceptable given how rarely users
-          // toggle themes mid-session.
-          colorScheme={isDarkTheme ? ColorScheme.DARK : ColorScheme.LIGHT}
+          // Tie Google Maps' built-in dark/light tile rendering to the
+          // resolved map theme (per-map override falls back to the global
+          // app theme). The Maps JS API recreates the underlying map
+          // instance when this prop changes; the cost is acceptable given
+          // how rarely users toggle themes mid-session.
+          colorScheme={isDarkMap ? ColorScheme.DARK : ColorScheme.LIGHT}
           gestureHandling="greedy"
           disableDefaultUI={false}
           mapTypeControl={true}
@@ -1141,7 +1164,29 @@ export function MapSearchView() {
         </Map>
       </APIProvider>
 
-      <MapMarkerLegend />
+      <MapMarkerLegend isDark={isDarkMap} />
+
+      {/* Per-map theme toggle — bottom-right corner. Independent of the
+          global app theme so users can flip the map alone (e.g. switch to
+          a light map while the rest of the app stays dark for a property
+          scouting session). Choice persists via localStorage. The button
+          sits at bottom-right where no other control lives: the legend is
+          bottom-left, the Map/Satellite toggle is bottom-center, and the
+          mobile View Map/List pill sits at bottom-6 left-1/2. */}
+      <button
+        type="button"
+        onClick={toggleMapTheme}
+        aria-label={isDarkMap ? 'Switch map to light mode' : 'Switch map to dark mode'}
+        title={isDarkMap ? 'Switch map to light mode' : 'Switch map to dark mode'}
+        className="absolute bottom-4 right-3 z-10 w-9 h-9 rounded-lg shadow-lg flex items-center justify-center transition-colors"
+        style={{
+          backgroundColor: overlaySurface.backgroundColor,
+          color: overlaySurface.primaryText,
+          border: `1px solid ${overlaySurface.borderColor}`,
+        }}
+      >
+        {isDarkMap ? <Sun size={16} /> : <Moon size={16} />}
+      </button>
 
       {/* Search bar — top-left of map. Mirrors the homepage AddressAutocomplete
           (searchMode='location'): accepts addresses, cities, states, and ZIPs.
@@ -1267,7 +1312,7 @@ export function MapSearchView() {
           <div
             className="flex items-center gap-1.5 px-2.5 py-1 rounded shadow-lg"
             style={{
-              backgroundColor: isDarkTheme
+              backgroundColor: isDarkMap
                 ? 'rgba(12, 18, 32, 0.78)'
                 : 'rgba(255, 255, 255, 0.9)',
               color: overlaySurface.primaryText,
