@@ -10,6 +10,8 @@ import pytest
 from app.schemas.analytics import IQVerdictInput, DealScoreInput
 from app.services.calculators import calculate_monthly_mortgage
 from app.services.iq_verdict_service import (
+    REGIONAL_COHORT_PERCENTAGES,
+    _get_cumulative_investor_pct,
     compute_iq_verdict,
     compute_deal_score,
     _score_to_grade_label,
@@ -433,3 +435,62 @@ class TestVerdictGoldenRegression:
         assert "wholesale" in strategy_ids
         # Income value should be in a plausible range for rent 33.6k/yr
         assert 200_000 < resp.income_value < 2_000_000
+
+
+# =====================================================================
+# Investor discount probability (cumulative + regional cohorts)
+# =====================================================================
+
+
+class TestInvestorDiscountProbability:
+    def test_regional_cohorts_sum_to_100(self):
+        for _k, tup in REGIONAL_COHORT_PERCENTAGES.items():
+            assert abs(sum(tup) - 100.0) < 0.01
+
+    def test_cumulative_at_or_below_list(self):
+        for key in REGIONAL_COHORT_PERCENTAGES:
+            assert _get_cumulative_investor_pct(0, key) == 100
+            assert _get_cumulative_investor_pct(-5, key) == 100
+
+    def test_cumulative_at_8pct_snapshot(self):
+        assert _get_cumulative_investor_pct(8, "national") == 35
+        assert _get_cumulative_investor_pct(8, "sun_belt") == 45
+        assert _get_cumulative_investor_pct(8, "midwest_affordability") == 31
+        assert _get_cumulative_investor_pct(8, "coastal_northeast") == 20
+
+    def test_deep_gap_small_tail(self):
+        assert _get_cumulative_investor_pct(100, "national") <= 5
+
+    def test_monotonic_by_gap(self):
+        prev = 999
+        for gap in [1.0, 3.0, 8.0, 15.0, 25.0, 45.0]:
+            cur = _get_cumulative_investor_pct(gap, "national")
+            assert cur <= prev
+            prev = cur
+
+    def test_all_states_partition_disjoint_and_cover_50(self):
+        from app.core.regions import COASTAL_NORTHEAST_STATES, MIDWEST_AFFORDABILITY_STATES, SUN_BELT_STATES
+
+        assert not (SUN_BELT_STATES & MIDWEST_AFFORDABILITY_STATES)
+        assert not (SUN_BELT_STATES & COASTAL_NORTHEAST_STATES)
+        assert not (MIDWEST_AFFORDABILITY_STATES & COASTAL_NORTHEAST_STATES)
+        assert len(SUN_BELT_STATES | MIDWEST_AFFORDABILITY_STATES | COASTAL_NORTHEAST_STATES) == 50
+
+    def test_compute_verdict_includes_cumulative_fields(self):
+        inp = IQVerdictInput(list_price=300_000, monthly_rent=2500, state="FL")
+        resp = compute_iq_verdict(inp)
+        assert resp.cumulative_investor_pct == resp.deal_probability_score
+        assert resp.investor_probability_region_label == "Sun Belt"
+
+    def test_fl_vs_ma_probability_differs(self):
+        base = IQVerdictInput(
+            list_price=400_000,
+            monthly_rent=3000,
+            property_taxes=4000,
+            insurance=1500,
+            purchase_price=320_000,
+        )
+        fl = compute_iq_verdict(base.model_copy(update={"state": "FL"}))
+        ma = compute_iq_verdict(base.model_copy(update={"state": "MA"}))
+        assert fl.deal_gap_percent > 5
+        assert fl.cumulative_investor_pct != ma.cumulative_investor_pct

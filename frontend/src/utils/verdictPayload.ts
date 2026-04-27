@@ -27,6 +27,8 @@ export interface VerdictPayloadBase {
   isBankOwned?: boolean
   isFsbo?: boolean
   marketTemperature?: string | null
+  /** Two-letter state code for regional investor discount probability */
+  state?: string | null
 }
 
 export function buildVerdictAnalysisPayload(
@@ -71,6 +73,7 @@ export function buildVerdictAnalysisPayload(
     is_bank_owned: base.isBankOwned ?? false,
     is_fsbo: base.isFsbo ?? false,
     market_temperature: base.marketTemperature ?? undefined,
+    state: base.state ?? undefined,
   }
 
   if (overrides) {
@@ -150,5 +153,6 @@ export function buildVerdictBaseFromPropertyResponse(
     isBankOwned: data?.listing?.is_bank_owned || false,
     isFsbo: data?.listing?.is_fsbo || false,
     marketTemperature: data?.market?.market_stats?.market_temperature || undefined,
+    state: data?.state ?? data?.details?.state ?? undefined,
   }
 }
