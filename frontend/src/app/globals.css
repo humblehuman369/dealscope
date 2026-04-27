@@ -2601,6 +2601,6 @@ input[type="range"]::-moz-range-thumb {
    only applies to the dark map-search view, never to other embedded
    maps (LocationMap, CompsProximityMap, etc.). */
 .map-search-crisp-dark .gm-style canvas {
-  filter: contrast(1.08) saturate(0.55) brightness(0.92);
+  filter: contrast(1.15) saturate(0.45) brightness(0.92);
 }
 
