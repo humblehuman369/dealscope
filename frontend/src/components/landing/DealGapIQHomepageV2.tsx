@@ -170,29 +170,39 @@ function HeroSection({
         {/* Copy column */}
         <div className="lg:col-span-7">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05] mb-6">
-            See Every Property Through<br />
+            Stop Scrolling Listings.<br />
             <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
-              an Investor's Lens
+              Start Hunting Real Deals.
             </span>
           </h1>
           <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-xl mb-3">
-            Every listing is designed to sell you.{' '}
-            <span className="text-white font-semibold">DealGapIQ answers the only question that matters to an investor: is this a good deal?</span>
+            One address. <span className="text-white font-semibold">15 seconds.</span> A{' '}
+            <span className="text-emerald-400 font-semibold">green</span>{' '}/{' '}
+            <span className="text-amber-400 font-semibold">yellow</span>{' '}/{' '}
+            <span className="text-rose-400 font-semibold">red</span> verdict on whether it&rsquo;s a deal — backed by{' '}
+            <span className="text-white font-semibold">5 data sources</span> and explained in plain English.
           </p>
           <p className="text-base text-slate-400 mb-8">
-            Listed or off-market. <span className="text-slate-200">One address or an entire ZIP.</span> Decision in 15 seconds.
+            Listed, off-market, or <span className="text-slate-200">a house you drove past last weekend.</span> One property or an entire ZIP.
           </p>
 
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-4">
             <PrimaryButton onClick={onAnalyze}>
-              Analyze Any Property <span>→</span>
+              Run a Free Verdict <span>→</span>
             </PrimaryButton>
             <SecondaryButton onClick={onMapSearch}>
               <MapIcon className="w-4 h-4 text-sky-400" strokeWidth={2.25} />
-              <span>Browse the Map</span>
+              <span>Hunt the Map</span>
               <span className="text-sky-400">→</span>
             </SecondaryButton>
           </div>
+
+          <div className="mb-6 text-sm text-slate-400">
+            From the founder of{' '}
+            <span className="text-slate-200 font-semibold">Foreclosure.com</span>.{' '}
+            <span className="text-slate-500">Built for first-time investors. Trusted by experienced buyers.</span>
+          </div>
+
           <div className="mb-8">
             <button
               onClick={onWatchDealGapVideo}
