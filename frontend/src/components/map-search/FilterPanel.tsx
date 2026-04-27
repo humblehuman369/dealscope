@@ -4,6 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { AlertTriangle, Bookmark, Gavel, Hammer, Loader2, SlidersHorizontal, X } from 'lucide-react'
 import type { MapSearchFilters } from '@/hooks/useMapSearch'
 import type { SortOption } from '@/lib/dealSignal'
+import type { MapOverlayChrome } from '@/components/map-search/mapOverlayChrome'
 
 interface FilterPanelProps {
   filters: MapSearchFilters
@@ -18,6 +19,15 @@ interface FilterPanelProps {
   onSaveDefaultView?: () => void | Promise<void>
   /** Disables the Save-default action while the request is in flight. */
   savingDefaultView?: boolean
+  /**
+   * When set, panel surfaces follow map tile light/dark instead of global theme.
+   */
+  overlayChrome?: MapOverlayChrome | null
+  /**
+   * When true, the collapsed Filters chip is laid out by the parent toolbar
+   * (flex row with the search bar). When false, it uses absolute top-right.
+   */
+  dockCollapsedInline?: boolean
 }
 
 const LISTING_TYPES: { value: MapSearchFilters['listing_type']; label: string }[] = [
@@ -131,6 +141,8 @@ export function FilterPanel({
   canSaveDefaultView = false,
   onSaveDefaultView,
   savingDefaultView = false,
+  overlayChrome = null,
+  dockCollapsedInline = false,
 }: FilterPanelProps) {
   const handlePriceChange = useCallback(
     (field: 'min_price' | 'max_price', raw: string) => {
@@ -168,6 +180,8 @@ export function FilterPanel({
 
   const showCollapsedDistressedHint = !hasDistressedStatusFilter
 
+  const chrome = overlayChrome ?? null
+
   if (!isOpen) {
     return (
       <button
@@ -175,11 +189,13 @@ export function FilterPanel({
         onClick={onToggle}
         aria-expanded={false}
         aria-haspopup="dialog"
-        className="absolute top-3 right-3 z-10 flex flex-col items-start gap-0.5 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-colors max-w-[min(12rem,42vw)]"
+        className={`z-10 flex flex-col items-start gap-0.5 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-colors max-w-[min(12rem,min(42vw,calc(100vw-13rem)))] shrink-0 ${
+          dockCollapsedInline ? 'relative' : 'absolute top-3 right-3'
+        }`}
         style={{
-          backgroundColor: 'var(--surface-card)',
-          color: 'var(--text-body)',
-          border: '1px solid var(--border-default)',
+          backgroundColor: chrome?.backgroundColor ?? 'var(--surface-card)',
+          color: chrome?.primaryText ?? 'var(--text-body)',
+          border: `1px solid ${chrome?.borderColor ?? 'var(--border-default)'}`,
         }}
       >
         <span className="flex items-center gap-2 w-full">
@@ -198,7 +214,7 @@ export function FilterPanel({
         {showCollapsedDistressedHint && (
           <span
             className="text-[10px] leading-snug pl-[1.375rem] w-full text-left"
-            style={{ color: 'var(--text-secondary)' }}
+            style={{ color: chrome?.secondaryText ?? 'var(--text-secondary)' }}
           >
             Foreclosure, auction &amp; pre-foreclosure
           </span>
@@ -212,23 +228,33 @@ export function FilterPanel({
       id="map-search-filters-panel"
       role="dialog"
       aria-label="Map search filters"
-      className="absolute top-3 right-3 z-10 w-72 rounded-xl shadow-xl overflow-hidden"
+      className="absolute top-3 right-3 z-10 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl shadow-xl overflow-hidden"
       style={{
-        backgroundColor: 'var(--surface-card)',
-        border: '1px solid var(--border-default)',
+        backgroundColor: chrome?.backgroundColor ?? 'var(--surface-card)',
+        border: `1px solid ${chrome?.borderColor ?? 'var(--border-default)'}`,
       }}
     >
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3"
-        style={{ borderBottom: '1px solid var(--border-subtle)' }}
+        style={{ borderBottom: `1px solid ${chrome?.borderColor ?? 'var(--border-subtle)'}` }}
       >
         <div className="flex items-center gap-2 min-w-0">
-          <SlidersHorizontal size={16} style={{ color: 'var(--accent-sky)' }} className="flex-shrink-0" />
-          <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-heading)' }}>
+          <SlidersHorizontal
+            size={16}
+            style={{ color: chrome ? chrome.primaryText : 'var(--accent-sky)' }}
+            className="flex-shrink-0"
+          />
+          <span
+            className="text-sm font-semibold truncate"
+            style={{ color: chrome?.primaryText ?? 'var(--text-heading)' }}
+          >
             Filters
           </span>
-          <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>
+          <span
+            className="text-xs flex-shrink-0"
+            style={{ color: chrome?.secondaryText ?? 'var(--text-secondary)' }}
+          >
             {isLoading ? 'Searching...' : `${totalCount} results`}
           </span>
         </div>
@@ -238,7 +264,7 @@ export function FilterPanel({
           className="p-1 rounded hover:opacity-70 transition-opacity flex-shrink-0"
           aria-label="Close filters"
         >
-          <X size={16} style={{ color: 'var(--text-secondary)' }} />
+          <X size={16} style={{ color: chrome?.secondaryText ?? 'var(--text-secondary)' }} />
         </button>
       </div>
 
