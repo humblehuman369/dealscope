@@ -196,7 +196,7 @@ export function useMapSearch() {
   const filteredAndSortedListings = useMemo(() => {
     let result = mergedListings
     result = filterByListingStatus(result, filters.listing_statuses)
-    result = filterByMinDom(result, filters.min_dom)
+    result = filterByMinDom(result, filters.min_dom, dealSignals)
     result = sortListings(result, dealSignals, filters.sort_by)
     return result
   }, [mergedListings, filters.listing_statuses, filters.min_dom, filters.sort_by, dealSignals])
