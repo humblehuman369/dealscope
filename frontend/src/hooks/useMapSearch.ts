@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '@/lib/api'
 import type { MapListing, MapSearchRequest, MapSearchResponse } from '@/lib/api'
 import {
@@ -12,6 +12,7 @@ import {
   type DealSignalResult,
   type SortOption,
 } from '@/lib/dealSignal'
+import { readMapSnapshot, writeMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
 
 export interface MapSearchFilters {
   listing_type: 'sale' | 'rental' | 'both'
@@ -53,6 +54,30 @@ export function useMapSearch() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastBoundsRef = useRef<MapBounds | null>(null)
   const filtersRef = useRef<MapSearchFilters>(DEFAULT_FILTERS)
+  const polygonRef = useRef<number[][] | null>(null)
+
+  // Hydrate filters + polygon from the tab's session snapshot exactly once on
+  // first client mount. Done in an effect (not a useState initializer) so SSR
+  // and the first client paint stay aligned with DEFAULT_FILTERS — the tiny
+  // re-render that follows is masked by the map's own mount/load. Refs are
+  // updated alongside state so the first bounds-driven fetch picks up the
+  // hydrated values.
+  const hydratedRef = useRef(false)
+  useEffect(() => {
+    if (hydratedRef.current) return
+    hydratedRef.current = true
+    const snap = readMapSnapshot()
+    if (!snap) return
+    if (snap.filters) {
+      const merged = { ...DEFAULT_FILTERS, ...snap.filters }
+      setFilters(merged)
+      filtersRef.current = merged
+    }
+    if (snap.polygon) {
+      setPolygon(snap.polygon)
+      polygonRef.current = snap.polygon
+    }
+  }, [])
 
   const fetchListings = useCallback(
     async (bounds: MapBounds, activePolygon?: number[][] | null, filterOverride?: MapSearchFilters) => {
@@ -101,8 +126,6 @@ export function useMapSearch() {
     [],
   )
 
-  const polygonRef = useRef<number[][] | null>(null)
-
   const onBoundsChanged = useCallback(
     (bounds: MapBounds) => {
       lastBoundsRef.current = bounds
@@ -120,6 +143,7 @@ export function useMapSearch() {
     (vertices: number[][]) => {
       setPolygon(vertices)
       polygonRef.current = vertices
+      writeMapSnapshot({ polygon: vertices })
       if (lastBoundsRef.current) {
         fetchListings(lastBoundsRef.current, vertices)
       }
@@ -130,6 +154,7 @@ export function useMapSearch() {
   const clearPolygon = useCallback(() => {
     setPolygon(null)
     polygonRef.current = null
+    writeMapSnapshot({ polygon: null })
     if (lastBoundsRef.current) {
       fetchListings(lastBoundsRef.current, null)
     }
@@ -151,6 +176,7 @@ export function useMapSearch() {
       setFilters((prev) => {
         const merged = { ...prev, ...next }
         filtersRef.current = merged
+        writeMapSnapshot({ filters: merged })
         if (needsRefetch && lastBoundsRef.current) {
           fetchListings(lastBoundsRef.current, polygonRef.current, merged)
         }
