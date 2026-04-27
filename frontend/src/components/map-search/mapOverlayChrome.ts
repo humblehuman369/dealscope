@@ -19,3 +19,24 @@ export function getMapOverlaySurface(isDark: boolean): MapOverlayChrome {
     secondaryText: isDark ? 'rgba(255, 255, 255, 0.75)' : 'rgba(15, 23, 42, 0.7)',
   }
 }
+
+/**
+ * Inner filter panel controls when the **map** is in light tile mode. Uses
+ * explicit light surfaces so pills/inputs match the white panel even when
+ * the global app theme is still dark (`--surface-elevated` would stay black).
+ */
+export const MAP_FILTER_LIGHT_CONTROLS = {
+  idleBg: '#f1f5f9',
+  idleBorder: '1px solid rgba(15, 23, 42, 0.12)',
+  idleText: 'rgba(15, 23, 42, 0.92)',
+  sectionLabel: 'rgba(71, 85, 105, 1)',
+  placeholder: 'rgba(100, 116, 139, 0.85)',
+} as const
+
+/** Distressed-deals callout — readable text on soft red (light map mode). */
+export const MAP_FILTER_DISTRESSED_LIGHT = {
+  boxBg: 'rgba(254, 226, 226, 0.65)',
+  boxBorder: '1px solid rgba(239, 68, 68, 0.38)',
+  heading: '#9f1239',
+  body: '#991b1b',
+} as const

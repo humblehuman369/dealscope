@@ -1274,6 +1274,7 @@ export function MapSearchView() {
           savingDefaultView={savingDefault}
           overlayChrome={overlaySurface}
           dockCollapsedInline={!filtersOpen}
+          mapLightChrome={!isDarkMap}
         />
       </div>
 
