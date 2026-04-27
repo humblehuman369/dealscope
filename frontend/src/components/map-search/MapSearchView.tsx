@@ -4,10 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
+import { useTheme } from '@/context/ThemeContext'
 import { SESSION_QUERY_KEY, setLastKnownUser } from '@/hooks/useSession'
 import { api as apiClient, type UserResponse } from '@/lib/api-client'
 import {
   APIProvider,
+  ColorScheme,
   ControlPosition,
   Map,
   useMap,
@@ -77,8 +79,22 @@ const MAP_MARKER_LEGEND: { color: string; label: string }[] = [
   { color: '#9CA3AF', label: 'Status or DOM unknown' },
 ]
 
+// Translucent surface for floating map overlays. Tokens cycle automatically
+// when the user toggles the app theme, keeping legibility consistent over
+// both light and dark map tiles.
+function getMapOverlaySurface(isDark: boolean) {
+  return {
+    backgroundColor: isDark ? 'rgba(12, 18, 32, 0.92)' : 'rgba(255, 255, 255, 0.95)',
+    borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(15, 23, 42, 0.12)',
+    primaryText: isDark ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.95)',
+    secondaryText: isDark ? 'rgba(255, 255, 255, 0.75)' : 'rgba(15, 23, 42, 0.7)',
+  }
+}
+
 function MapMarkerLegend() {
   const [open, setOpen] = useState(false)
+  const { theme } = useTheme()
+  const surface = getMapOverlaySurface(theme === 'dark')
   return (
     <>
       <div
@@ -89,13 +105,13 @@ function MapMarkerLegend() {
         <div
           className="rounded-lg px-3 py-2 shadow-lg"
           style={{
-            backgroundColor: 'rgba(30, 30, 30, 0.88)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
+            backgroundColor: surface.backgroundColor,
+            border: `1px solid ${surface.borderColor}`,
           }}
         >
           <p
             className="text-[10px] font-semibold uppercase tracking-wide mb-1.5"
-            style={{ color: 'rgba(255, 255, 255, 0.75)' }}
+            style={{ color: surface.secondaryText }}
           >
             Marker colors
           </p>
@@ -104,7 +120,7 @@ function MapMarkerLegend() {
               <li
                 key={row.label}
                 className="flex items-center gap-2 text-[11px]"
-                style={{ color: 'rgba(255, 255, 255, 0.95)' }}
+                style={{ color: surface.primaryText }}
               >
                 <span
                   className="h-2.5 w-2.5 rounded-sm flex-shrink-0"
@@ -123,9 +139,9 @@ function MapMarkerLegend() {
           onClick={() => setOpen((o) => !o)}
           className="px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-lg"
           style={{
-            backgroundColor: 'rgba(30, 30, 30, 0.9)',
-            color: '#fff',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
+            backgroundColor: surface.backgroundColor,
+            color: surface.primaryText,
+            border: `1px solid ${surface.borderColor}`,
           }}
           aria-expanded={open}
         >
@@ -135,13 +151,17 @@ function MapMarkerLegend() {
           <div
             className="mt-2 rounded-lg px-3 py-2 shadow-lg max-w-[min(92vw,16rem)]"
             style={{
-              backgroundColor: 'rgba(30, 30, 30, 0.92)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
+              backgroundColor: surface.backgroundColor,
+              border: `1px solid ${surface.borderColor}`,
             }}
           >
             <ul className="space-y-1.5">
               {MAP_MARKER_LEGEND.map((row) => (
-                <li key={row.label} className="flex items-center gap-2 text-[11px] text-white">
+                <li
+                  key={row.label}
+                  className="flex items-center gap-2 text-[11px]"
+                  style={{ color: surface.primaryText }}
+                >
                   <span
                     className="h-2.5 w-2.5 rounded-sm flex-shrink-0"
                     style={{ backgroundColor: row.color }}
@@ -573,6 +593,9 @@ function MapContent({
 export function MapSearchView() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const searchParams = useSearchParams()
+  const { theme } = useTheme()
+  const isDarkTheme = theme === 'dark'
+  const overlaySurface = getMapOverlaySurface(isDarkTheme)
 
   const paramCenter = useMemo(() => {
     const lat = parseFloat(searchParams.get('lat') ?? '')
@@ -961,6 +984,11 @@ export function MapSearchView() {
           defaultCenter={initialCenter}
           defaultZoom={initialZoom}
           mapId={MAP_ID}
+          // Tie Google Maps' built-in dark/light tile rendering to the app
+          // theme. The Maps JS API recreates the underlying map instance when
+          // this prop changes; the cost is acceptable given how rarely users
+          // toggle themes mid-session.
+          colorScheme={isDarkTheme ? ColorScheme.DARK : ColorScheme.LIGHT}
           gestureHandling="greedy"
           disableDefaultUI={false}
           mapTypeControl={true}
@@ -1237,8 +1265,11 @@ export function MapSearchView() {
           <div
             className="flex items-center gap-1.5 px-2.5 py-1 rounded shadow-lg"
             style={{
-              backgroundColor: 'rgba(30, 30, 30, 0.7)',
-              color: 'rgba(255, 255, 255, 0.9)',
+              backgroundColor: isDarkTheme
+                ? 'rgba(12, 18, 32, 0.78)'
+                : 'rgba(255, 255, 255, 0.9)',
+              color: overlaySurface.primaryText,
+              border: `1px solid ${overlaySurface.borderColor}`,
               fontSize: '11px',
               fontWeight: 500,
             }}
@@ -1257,9 +1288,9 @@ export function MapSearchView() {
           <div
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium shadow-xl"
             style={{
-              backgroundColor: 'rgba(30, 30, 30, 0.9)',
-              color: '#fff',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              backgroundColor: overlaySurface.backgroundColor,
+              color: overlaySurface.primaryText,
+              border: `1px solid ${overlaySurface.borderColor}`,
             }}
           >
             <MousePointerClick size={16} style={{ color: 'var(--accent-sky)' }} />
