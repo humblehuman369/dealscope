@@ -2600,11 +2600,28 @@ input[type="range"]::-moz-range-thumb {
    left untouched. Scoped to the .map-search-crisp-dark wrapper so it
    only applies to the dark map-search view, never to other embedded
    maps (LocationMap, CompsProximityMap, etc.). */
-.map-search-crisp-dark .gm-style canvas {
-  /* DIAGNOSTIC — temporarily exaggerated values to verify the CSS path
-     reaches the map's tile canvas. If the map looks dramatically washed-out
-     and pink-shifted, the selector works and we can dial in real values.
-     If you see no change, the rule isn't matching (cache or selector). */
-  filter: contrast(1.5) saturate(0) brightness(0.7) hue-rotate(180deg);
+/* DIAGNOSTIC LAYER 1 — confirms the .map-search-crisp-dark class is
+   actually being applied to the map wrapper. If you see a translucent
+   RED tint over the map, the wrapper + theme detection are working
+   and the issue is purely the canvas selector below. If you see NO
+   red tint, the class isn't on the wrapper (theme not detected, or
+   stale build). */
+.map-search-crisp-dark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* DIAGNOSTIC LAYER 2 — broadest possible canvas selector. If the
+   wrapper class is applied but the dramatic filter still doesn't show,
+   Google's vector renderer is putting the tile content somewhere our
+   selector can't reach (Shadow DOM, different element type, etc.). */
+.map-search-crisp-dark canvas,
+.map-search-crisp-dark .gm-style canvas,
+.map-search-crisp-dark img[draggable="false"] {
+  filter: contrast(1.5) saturate(0) brightness(0.7) hue-rotate(180deg) !important;
 }
 
