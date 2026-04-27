@@ -2606,6 +2606,6 @@ input[type="range"]::-moz-range-thumb {
    guarantees we only filter THIS map (not LocationMap, scanner, etc.). */
 .map-search-crisp-dark canvas,
 .map-search-crisp-dark img[draggable="false"] {
-  filter: contrast(1.4) saturate(0.4) brightness(0.85);
+  filter: contrast(1.4) saturate(0.55) brightness(0.85);
 }
 
