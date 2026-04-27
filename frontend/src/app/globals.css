@@ -2609,3 +2609,8 @@ input[type="range"]::-moz-range-thumb {
   filter: contrast(1.4) saturate(0.55) brightness(0.85);
 }
 
+/* Map-search address bar — placeholder follows dynamic map-overlay chrome set on the parent */
+.map-search-chrome-input::placeholder {
+  color: var(--map-search-placeholder, var(--text-secondary));
+}
+

@@ -33,6 +33,7 @@ import {
   writeMapSnapshot,
   clearMapSnapshot,
 } from './mapSearchSnapshot'
+import { getMapOverlaySurface } from './mapOverlayChrome'
 import type { NeighborhoodOverview } from '@/lib/api'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
@@ -86,18 +87,6 @@ const MAP_MARKER_LEGEND: { color: string; label: string }[] = [
   { color: '#EF4444', label: 'Auction / foreclosure' },
   { color: '#9CA3AF', label: 'Status or DOM unknown' },
 ]
-
-// Translucent surface for floating map overlays. Tokens cycle automatically
-// when the user toggles the app theme, keeping legibility consistent over
-// both light and dark map tiles.
-function getMapOverlaySurface(isDark: boolean) {
-  return {
-    backgroundColor: isDark ? 'rgba(12, 18, 32, 0.92)' : 'rgba(255, 255, 255, 0.95)',
-    borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(15, 23, 42, 0.12)',
-    primaryText: isDark ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.95)',
-    secondaryText: isDark ? 'rgba(255, 255, 255, 0.75)' : 'rgba(15, 23, 42, 0.7)',
-  }
-}
 
 function MapMarkerLegend({ isDark }: { isDark: boolean }) {
   const [open, setOpen] = useState(false)
@@ -1248,19 +1237,13 @@ export function MapSearchView() {
 
       <MapMarkerLegend isDark={isDarkMap} />
 
-      {/* Per-map theme toggle — bottom-right corner. Independent of the
-          global app theme so users can flip the map alone (e.g. switch to
-          a light map while the rest of the app stays dark for a property
-          scouting session). Choice persists via localStorage. The button
-          sits at bottom-right where no other control lives: the legend is
-          bottom-left, the Map/Satellite toggle is bottom-center, and the
-          mobile View Map/List pill sits at bottom-6 left-1/2. */}
+      {/* Per-map theme toggle — inset from corner so it clears Google zoom peg. */}
       <button
         type="button"
         onClick={toggleMapTheme}
         aria-label={isDarkMap ? 'Switch map to light mode' : 'Switch map to dark mode'}
         title={isDarkMap ? 'Switch map to light mode' : 'Switch map to dark mode'}
-        className="absolute bottom-4 right-3 z-10 w-9 h-9 rounded-lg shadow-lg flex items-center justify-center transition-colors"
+        className="absolute z-[60] w-9 h-9 rounded-lg shadow-lg flex items-center justify-center transition-colors bottom-[max(6.5rem,env(safe-area-inset-bottom,0px)+5rem)] right-4 max-sm:bottom-28 sm:bottom-24 sm:right-12 md:bottom-20 md:right-14 lg:bottom-6 lg:right-12"
         style={{
           backgroundColor: overlaySurface.backgroundColor,
           color: overlaySurface.primaryText,
@@ -1270,22 +1253,28 @@ export function MapSearchView() {
         {isDarkMap ? <Sun size={16} /> : <Moon size={16} />}
       </button>
 
-      {/* Search bar — top-left of map. Mirrors the homepage AddressAutocomplete
-          (searchMode='location'): accepts addresses, cities, states, and ZIPs.
-          Hidden while the filters panel is open so its close button (top-right)
-          stays reachable on narrow viewports where the two would otherwise
-          overlap. The container also yields ~14rem on the right so the
-          collapsed Filters button is never covered. */}
-      {!filtersOpen && (
-        <div
-          className="absolute top-3 left-3 z-10 pointer-events-auto flex flex-col gap-2 items-stretch"
-          // Leave ~14rem on the right so the collapsed Filters chip
-          // (up to 12rem + right-3 offset) never overlaps the search bar.
-          style={{ maxWidth: 'calc(100vw - 14rem)', width: 'min(92vw, 28rem)' }}
-        >
-          <MapSearchBar onSelect={handleSearchSelect} />
-        </div>
-      )}
+      {/* Toolbar: search + Filters in one flex row — stable gap vs Filters chip.
+          Chrome follows map light/dark (overlaySurface), not global app theme. */}
+      <div className="absolute top-3 left-3 right-3 z-10 flex flex-row items-start gap-3 sm:gap-4 pointer-events-none">
+        {!filtersOpen && (
+          <div className="pointer-events-auto flex-1 min-w-0">
+            <MapSearchBar onSelect={handleSearchSelect} overlayChrome={overlaySurface} />
+          </div>
+        )}
+        <FilterPanel
+          filters={filters}
+          onChange={updateFilters}
+          totalCount={totalCount}
+          isLoading={isLoading}
+          isOpen={filtersOpen}
+          onToggle={() => setFiltersOpen((p) => !p)}
+          canSaveDefaultView={!!user}
+          onSaveDefaultView={handleSaveDefaultLocation}
+          savingDefaultView={savingDefault}
+          overlayChrome={overlaySurface}
+          dockCollapsedInline={!filtersOpen}
+        />
+      </div>
 
       {/* Save-default-location confirmation toast — top-center keeps it clear
           of the search bar (top-left), Filters chip (top-right), and the new
@@ -1305,18 +1294,6 @@ export function MapSearchView() {
           </div>
         </div>
       )}
-
-      <FilterPanel
-        filters={filters}
-        onChange={updateFilters}
-        totalCount={totalCount}
-        isLoading={isLoading}
-        isOpen={filtersOpen}
-        onToggle={() => setFiltersOpen((p) => !p)}
-        canSaveDefaultView={!!user}
-        onSaveDefaultView={handleSaveDefaultLocation}
-        savingDefaultView={savingDefault}
-      />
 
       {/* Neighborhood Intelligence Card */}
       {selectedNeighborhood && (
