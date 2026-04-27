@@ -2600,7 +2600,12 @@ input[type="range"]::-moz-range-thumb {
    left untouched. Scoped to the .map-search-crisp-dark wrapper so it
    only applies to the dark map-search view, never to other embedded
    maps (LocationMap, CompsProximityMap, etc.). */
-.map-search-crisp-dark .gm-style canvas {
+/* Broader selector intentional — Google's vector renderer with
+   colorScheme + mapId places the WebGL <canvas> at a path where
+   `.gm-style` isn't a reliable ancestor. The wrapper class scope
+   guarantees we only filter THIS map (not LocationMap, scanner, etc.). */
+.map-search-crisp-dark canvas,
+.map-search-crisp-dark img[draggable="false"] {
   filter: contrast(1.4) saturate(0.2) brightness(0.85);
 }
 
