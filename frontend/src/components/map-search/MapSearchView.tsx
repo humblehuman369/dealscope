@@ -978,7 +978,7 @@ export function MapSearchView() {
   }
 
   const mapSection = (
-    <div className="relative w-full h-full">
+    <div className={`relative w-full h-full${isDarkTheme ? ' map-search-crisp-dark' : ''}`}>
       <APIProvider apiKey={apiKey} libraries={['places', 'drawing', 'marker']}>
         <Map
           defaultCenter={initialCenter}

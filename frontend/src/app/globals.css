@@ -2588,3 +2588,19 @@ input[type="range"]::-moz-range-thumb {
 .pac-logo::after {
   display: none !important;
 }
+
+/* ==========================================
+   Map Search — Crisp Dark Tile Filter
+   ==========================================
+   Google's built-in ColorScheme.DARK has a slight teal cast and reduced
+   contrast that reads as "milky" against our pure-black surface shell.
+   This filter targets ONLY the vector tile <canvas> inside .gm-style,
+   so AdvancedMarkers (DOM divs), the zoom controls, the Map/Satellite
+   toggle, our floating overlays, and Google's attribution logo are all
+   left untouched. Scoped to the .map-search-crisp-dark wrapper so it
+   only applies to the dark map-search view, never to other embedded
+   maps (LocationMap, CompsProximityMap, etc.). */
+.map-search-crisp-dark .gm-style canvas {
+  filter: contrast(1.08) saturate(0.55) brightness(0.92);
+}
+
