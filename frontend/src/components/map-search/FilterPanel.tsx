@@ -189,7 +189,7 @@ export function FilterPanel({
         onClick={onToggle}
         aria-expanded={false}
         aria-haspopup="dialog"
-        className={`z-10 flex flex-col items-start gap-0.5 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-colors max-w-[min(12rem,min(42vw,calc(100vw-13rem)))] shrink-0 ${
+        className={`pointer-events-auto z-10 flex flex-col items-start gap-0.5 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-colors max-w-[min(12rem,min(42vw,calc(100vw-13rem)))] shrink-0 ${
           dockCollapsedInline ? 'relative' : 'absolute top-3 right-3'
         }`}
         style={{
@@ -228,7 +228,7 @@ export function FilterPanel({
       id="map-search-filters-panel"
       role="dialog"
       aria-label="Map search filters"
-      className="absolute top-3 right-3 z-10 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl shadow-xl overflow-hidden"
+      className="pointer-events-auto absolute top-3 right-3 z-10 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl shadow-xl overflow-hidden"
       style={{
         backgroundColor: chrome?.backgroundColor ?? 'var(--surface-card)',
         border: `1px solid ${chrome?.borderColor ?? 'var(--border-default)'}`,

@@ -1237,13 +1237,14 @@ export function MapSearchView() {
 
       <MapMarkerLegend isDark={isDarkMap} />
 
-      {/* Per-map theme toggle — inset from corner so it clears Google zoom peg. */}
+      {/* Per-map theme toggle — bottom edge aligns with Google’s fullscreen control;
+          sits immediately to its left on the same row (clear of top-right zoom stack). */}
       <button
         type="button"
         onClick={toggleMapTheme}
         aria-label={isDarkMap ? 'Switch map to light mode' : 'Switch map to dark mode'}
         title={isDarkMap ? 'Switch map to light mode' : 'Switch map to dark mode'}
-        className="absolute z-[60] w-9 h-9 rounded-lg shadow-lg flex items-center justify-center transition-colors bottom-[max(6.5rem,env(safe-area-inset-bottom,0px)+5rem)] right-4 max-sm:bottom-28 sm:bottom-24 sm:right-12 md:bottom-20 md:right-14 lg:bottom-6 lg:right-12"
+        className="absolute z-[60] w-9 h-9 rounded-lg shadow-lg flex items-center justify-center pointer-events-auto bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))] right-11"
         style={{
           backgroundColor: overlaySurface.backgroundColor,
           color: overlaySurface.primaryText,
