@@ -1045,8 +1045,10 @@ export function MapSearchView() {
             </AdvancedMarker>
           )}
 
-          {/* Mobile-only popup hanging below the selected listing marker.
-              Desktop relies on the right-column list-card highlight instead. */}
+          {/* Selected-listing popup hanging below the marker. Renders on
+              both mobile and desktop so users get an immediate inline
+              preview of the clicked property; the right-column card
+              highlight remains as a secondary anchor on desktop. */}
           {selectedListing && (
             <AdvancedMarker
               position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
@@ -1054,7 +1056,7 @@ export function MapSearchView() {
               zIndex={1100}
             >
               <div
-                className="md:hidden mt-7"
+                className="mt-7"
                 onClick={(e) => e.stopPropagation()}
                 onPointerDown={(e) => e.stopPropagation()}
                 onTouchStart={(e) => e.stopPropagation()}
