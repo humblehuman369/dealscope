@@ -87,6 +87,11 @@ export interface IQVerdictResponse {
   deal_factors: IQVerdictDealFactor[];
   discount_bracket_label: string;
   deal_narrative: string | null;
+  /** Cumulative regional probability: share of investors closing at this Deal Gap depth or deeper */
+  cumulative_investor_pct?: number;
+  investor_probability_region_label?: string;
+  /** Mirrors cumulative investor probability for legacy clients */
+  deal_probability_score?: number;
 }
 
 /**

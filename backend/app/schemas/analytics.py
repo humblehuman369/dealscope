@@ -101,6 +101,24 @@ class IQVerdictInput(BaseModel):
     buy_discount_pct: float | None = Field(
         None, ge=0, le=0.50, description="Target buy discount below Income Value (e.g. 0.05 = 5%%)"
     )
+    state: str | None = Field(
+        None,
+        min_length=2,
+        max_length=2,
+        description="Two-letter U.S. state code for regional investor discount probability cohort",
+    )
+
+    @field_validator("state", mode="before")
+    @classmethod
+    def normalize_state_code(cls, v: object) -> str | None:
+        if v is None or v == "":
+            return None
+        if not isinstance(v, str):
+            return None
+        s = v.strip().upper()
+        if len(s) == 2 and s.isalpha():
+            return s
+        return None
 
 
 class StrategyResult(BaseModel):
@@ -204,6 +222,17 @@ class IQVerdictResponse(BaseModel):
     return_quality_score: int = 0
     market_alignment_score: int = 0
     deal_probability_score: int = 0
+    cumulative_investor_pct: int = Field(
+        0,
+        description=(
+            "Estimated share of investors who historically close at this Deal Gap depth or deeper "
+            "(same methodology as deal_probability_score; cumulative within region cohort)"
+        ),
+    )
+    investor_probability_region_label: str = Field(
+        "",
+        description="Human-readable region label for cumulative investor cohort (e.g. Sun Belt, Midwest)",
+    )
     # Wholesale MAO - so clients do not compute it (MAO = ARV x 0.70 - rehab - fee)
     wholesale_mao: float | None = Field(None, description="Wholesale max allowable offer for price ladder")
     # Deal factors: plain-language narratives explaining deal achievability
@@ -241,6 +270,24 @@ class DealScoreInput(BaseModel):
     price_reductions: int | None = Field(0, ge=0)
     days_on_market: int | None = Field(None, ge=0, le=10_000)
     market_temperature: str | None = None
+    state: str | None = Field(
+        None,
+        min_length=2,
+        max_length=2,
+        description="Two-letter U.S. state code for regional investor discount probability cohort",
+    )
+
+    @field_validator("state", mode="before")
+    @classmethod
+    def normalize_state_code(cls, v: object) -> str | None:
+        if v is None or v == "":
+            return None
+        if not isinstance(v, str):
+            return None
+        s = v.strip().upper()
+        if len(s) == 2 and s.isalpha():
+            return s
+        return None
 
     @field_validator("days_on_market", mode="before")
     @classmethod

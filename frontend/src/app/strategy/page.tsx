@@ -320,6 +320,7 @@ function StrategyContent() {
       isBankOwned: propInfo?.listing?.is_bank_owned || false,
       isFsbo: propInfo?.listing?.is_fsbo || false,
       marketTemperature: propInfo?.market?.market_stats?.market_temperature || undefined,
+      state: propInfo?.state ?? undefined,
     }
   }, [])
 

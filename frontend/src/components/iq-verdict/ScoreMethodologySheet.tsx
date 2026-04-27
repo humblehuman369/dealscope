@@ -10,16 +10,16 @@
  * Inter typography, four-tier Slate text hierarchy, semantic accent colors.
  */
 
-import React from 'react'
+import React, { useState } from 'react'
 import { X, TrendingUp, Target, BarChart3, Home, Database, Clock, DollarSign } from 'lucide-react'
 
 // =============================================================================
 // DESIGN TOKENS — Dark Fintech System
 // =============================================================================
 const T = {
-  // Backgrounds
-  base: '#000000',        // True black
-  card: '#0C1220',        // Deep navy cards
+  // Backgrounds — prefer CSS tokens (theme); legacy hex retained only where modal shell still references T.base
+  base: 'var(--surface-base)',
+  card: 'var(--surface-card)',
   cardElevated: '#111827', // Slightly lifted card
 
   // Borders — 7% white opacity
@@ -44,16 +44,58 @@ const T = {
 // IQ VERDICT METHODOLOGY
 // =============================================================================
 
-// DealGapIQ Score Chart — matches backend INVESTOR_DISCOUNT_BRACKETS
-const DISCOUNT_BRACKETS = [
-  { bracket: 'At or above list', investorPct: '~15%', scoreRange: '88–95', color: '#22c55e' },
-  { bracket: '0–5% below list', investorPct: '~38%', scoreRange: '88–95', color: '#22c55e' },
-  { bracket: '6–10% below list', investorPct: '~37%', scoreRange: '75–88', color: '#84cc16' },
-  { bracket: '11–20% below list', investorPct: '~18%', scoreRange: '60–75', color: '#84cc16' },
-  { bracket: '21–30% below list', investorPct: '~10%', scoreRange: '40–60', color: '#f97316' },
-  { bracket: '31–40% below list', investorPct: '~4%', scoreRange: '22–40', color: '#f97316' },
-  { bracket: '41%+ below list', investorPct: '<2.5%', scoreRange: '5–22', color: '#ef4444' },
-] as const
+// DealGapIQ cohort tables — match backend REGIONAL_COHORT_PERCENTAGES + INVESTOR_DISCOUNT_BRACKETS (score ranges).
+// Mutually exclusive cohorts; each region sums to 100%. Verdict headline uses cumulative P(depth ≥ Deal Gap) within the cohort for the property state.
+type CohortKey = 'national' | 'sun_belt' | 'midwest_affordability' | 'coastal_northeast'
+
+const COHORT_TABS: { id: CohortKey; label: string }[] = [
+  { id: 'national', label: 'U.S. (national)' },
+  { id: 'sun_belt', label: 'Sun Belt' },
+  { id: 'midwest_affordability', label: 'Midwest' },
+  { id: 'coastal_northeast', label: 'Coastal / NE' },
+]
+
+const BRACKET_ROWS_BY_COHORT: Record<
+  CohortKey,
+  readonly { bracket: string; investorPct: string; scoreRange: string; color: string }[]
+> = {
+  national: [
+    { bracket: 'At or above list', investorPct: '~19%', scoreRange: '88–95', color: '#22c55e' },
+    { bracket: '0–5% below list', investorPct: '~32%', scoreRange: '88–95', color: '#22c55e' },
+    { bracket: '6–10% below list', investorPct: '~24%', scoreRange: '75–88', color: '#84cc16' },
+    { bracket: '11–20% below list', investorPct: '~16%', scoreRange: '60–75', color: '#84cc16' },
+    { bracket: '21–30% below list', investorPct: '~6%', scoreRange: '40–60', color: '#f97316' },
+    { bracket: '31–40% below list', investorPct: '~3%', scoreRange: '22–40', color: '#f97316' },
+    { bracket: '41%+ below list', investorPct: '~1%', scoreRange: '5–22', color: '#ef4444' },
+  ],
+  sun_belt: [
+    { bracket: 'At or above list', investorPct: '~15%', scoreRange: '88–95', color: '#22c55e' },
+    { bracket: '0–5% below list', investorPct: '~25%', scoreRange: '88–95', color: '#22c55e' },
+    { bracket: '6–10% below list', investorPct: '~25%', scoreRange: '75–88', color: '#84cc16' },
+    { bracket: '11–20% below list', investorPct: '~22%', scoreRange: '60–75', color: '#84cc16' },
+    { bracket: '21–30% below list', investorPct: '~8%', scoreRange: '40–60', color: '#f97316' },
+    { bracket: '31–40% below list', investorPct: '~3%', scoreRange: '22–40', color: '#f97316' },
+    { bracket: '41%+ below list', investorPct: '~2%', scoreRange: '5–22', color: '#ef4444' },
+  ],
+  midwest_affordability: [
+    { bracket: 'At or above list', investorPct: '~25%', scoreRange: '88–95', color: '#22c55e' },
+    { bracket: '0–5% below list', investorPct: '~30%', scoreRange: '88–95', color: '#22c55e' },
+    { bracket: '6–10% below list', investorPct: '~23%', scoreRange: '75–88', color: '#84cc16' },
+    { bracket: '11–20% below list', investorPct: '~14%', scoreRange: '60–75', color: '#84cc16' },
+    { bracket: '21–30% below list', investorPct: '~5%', scoreRange: '40–60', color: '#f97316' },
+    { bracket: '31–40% below list', investorPct: '~2%', scoreRange: '22–40', color: '#f97316' },
+    { bracket: '41%+ below list', investorPct: '~1%', scoreRange: '5–22', color: '#ef4444' },
+  ],
+  coastal_northeast: [
+    { bracket: 'At or above list', investorPct: '~35%', scoreRange: '88–95', color: '#22c55e' },
+    { bracket: '0–5% below list', investorPct: '~35%', scoreRange: '88–95', color: '#22c55e' },
+    { bracket: '6–10% below list', investorPct: '~16%', scoreRange: '75–88', color: '#84cc16' },
+    { bracket: '11–20% below list', investorPct: '~9%', scoreRange: '60–75', color: '#84cc16' },
+    { bracket: '21–30% below list', investorPct: '~3%', scoreRange: '40–60', color: '#f97316' },
+    { bracket: '31–40% below list', investorPct: '~2%', scoreRange: '22–40', color: '#f97316' },
+    { bracket: '41%+ below list', investorPct: '~1%', scoreRange: '5–22', color: '#ef4444' },
+  ],
+}
 
 const SCORE_FORMULA = {
   steps: [
@@ -73,7 +115,7 @@ const GRADE_TIERS = [
   { grade: 'B',  range: '60–74',  label: 'Challenging',            color: '#84cc16', meaning: 'Meaningful negotiation required' },
   { grade: 'C',  range: '40–59',  label: 'More Challenging',       color: '#f97316', meaning: 'Significant discount needed' },
   { grade: 'D',  range: '22–39',  label: 'Very Challenging',      color: '#f97316', meaning: 'Few investor deals achieve this discount' },
-  { grade: 'F',  range: '5–21',   label: 'Extremely Challenging',  color: '#ef4444', meaning: 'Rare — less than 2.5% of investor deals' },
+  { grade: 'F',  range: '5–21',   label: 'Extremely Challenging',  color: '#ef4444', meaning: 'Rare — tail of investor deals (~1% nationally)' },
 ]
 
 // =============================================================================
@@ -109,6 +151,8 @@ export function ScoreMethodologySheet({
   scoreType = 'profit',
   lastUpdated,
 }: ScoreMethodologySheetProps) {
+  const [cohortTab, setCohortTab] = useState<CohortKey>('national')
+
   if (!isOpen) return null
 
   const getTitle = () => {
@@ -247,7 +291,10 @@ export function ScoreMethodologySheet({
               <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
                 1. Investor Discount Brackets
               </h3>
-              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
+              <div
+                className="p-4 rounded-xl"
+                style={{ background: 'var(--surface-card)', border: `1px solid ${T.border}` }}
+              >
                 <div className="flex items-start gap-3 mb-4">
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -256,12 +303,33 @@ export function ScoreMethodologySheet({
                     <BarChart3 className="w-4 h-4" style={{ color: T.blue }} />
                   </div>
                   <p className="text-sm font-semibold leading-relaxed" style={{ color: T.heading }}>
-                    Your Deal Gap is scored against real U.S. investor transaction data.
+                    Your Deal Gap is scored against real U.S. investor transaction data. The headline probability uses your
+                    property&apos;s state to pick a regional cohort when available; cumulative share = investors who close at
+                    this discount depth or deeper.
                   </p>
                 </div>
 
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {COHORT_TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setCohortTab(tab.id)}
+                      className="text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors"
+                      style={{
+                        background:
+                          cohortTab === tab.id ? 'rgba(15,164,233,0.2)' : 'rgba(255,255,255,0.06)',
+                        color: cohortTab === tab.id ? T.blue : T.secondary,
+                        border: `1px solid ${cohortTab === tab.id ? 'rgba(15,164,233,0.35)' : T.borderSubtle}`,
+                      }}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="space-y-2">
-                  {DISCOUNT_BRACKETS.map((b, idx) => (
+                  {BRACKET_ROWS_BY_COHORT[cohortTab].map((b, idx) => (
                     <div key={idx} className="flex items-center justify-between">
                       <span className="text-xs" style={{ color: T.secondary }}>{b.bracket}</span>
                       <div className="flex items-center gap-3">
@@ -273,7 +341,8 @@ export function ScoreMethodologySheet({
                 </div>
 
                 <p className="text-[11px] mt-4 leading-relaxed" style={{ color: T.label }}>
-                  Source: U.S. residential sales data (2025). Investor-initiated transactions across single-family homes, townhomes, and condos.
+                  Sources: Redfin 2025 MLS sale-to-list, Cotality Q4 2025 Home Investor Report, Realtor.com Q1 2026 Market
+                  Clock (methodology in docs/INVESTOR_DISCOUNT_DATA.md).
                 </p>
               </div>
             </section>

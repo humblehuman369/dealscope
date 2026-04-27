@@ -570,6 +570,7 @@ function VerdictContent() {
           isBankOwned: data.listing?.is_bank_owned || false,
           isFsbo: data.listing?.is_fsbo || false,
           marketTemperature: data.market?.market_stats?.market_temperature || undefined,
+          state: propertyData.state || undefined,
         }
         const analysisBody = buildVerdictAnalysisPayload(
           payloadBase,
@@ -762,6 +763,14 @@ function VerdictContent() {
       })),
       discountBracketLabel: (analysisData.discount_bracket_label ?? analysisData.discountBracketLabel ?? '') as string,
       dealNarrative: (analysisData.deal_narrative ?? analysisData.dealNarrative ?? null) as string | null,
+      dealProbabilityScore:
+        analysisData.deal_probability_score ?? analysisData.dealProbabilityScore ?? undefined,
+      cumulativeInvestorPct:
+        analysisData.cumulative_investor_pct ?? analysisData.cumulativeInvestorPct ?? undefined,
+      investorProbabilityRegionLabel:
+        analysisData.investor_probability_region_label ??
+        analysisData.investorProbabilityRegionLabel ??
+        undefined,
     }),
     [property?.id],
   )
@@ -1080,14 +1089,17 @@ function VerdictContent() {
   const effectiveDisplayPct = -dealGapPct
   const dealGapDisplay = `${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
-  // Probability of achieving discount derived from Deal Gap %
-  // Based on investor discount bracket distribution: 0% gap → ~95%, 30%+ → ~5%
-  const probability = Math.max(5, Math.min(95, Math.round(95 - dealGapPct * 3)))
-  const probabilityTail = probability > 50
-    ? 'This is well within reach.'
-    : probability >= 20
-      ? 'Achievable with the right approach.'
-      : "You'll need leverage, timing, or a motivated seller."
+  // Cumulative investor probability from backend (regional cohort); fallback for stale clients.
+  const fallbackProbability = Math.max(5, Math.min(95, Math.round(95 - dealGapPct * 3)))
+  const cumulativeInvestorPct =
+    analysis.cumulativeInvestorPct ?? analysis.dealProbabilityScore ?? fallbackProbability
+  const investorRegionLabel = analysis.investorProbabilityRegionLabel
+  const probabilityTail =
+    cumulativeInvestorPct > 50
+      ? 'This is well within reach.'
+      : cumulativeInvestorPct >= 20
+        ? 'Achievable with the right approach.'
+        : "You'll need leverage, timing, or a motivated seller."
   const isOffMarket = !isListed
   const tier = getDealGapTier(-effectiveDisplayPct, isListed)
   const sourceKeys: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
@@ -1777,7 +1789,17 @@ function VerdictContent() {
                     delay={160}
                     title={
                       <span>
-                        <strong style={{ color: 'var(--accent-sky)' }}>{probability}%</strong> of investors land this discount
+                        About{' '}
+                        <strong style={{ color: 'var(--accent-sky)' }}>{cumulativeInvestorPct}%</strong> of investors
+                        close at this discount or deeper
+                        {investorRegionLabel && investorRegionLabel !== 'U.S.' ? (
+                          <>
+                            {' '}
+                            in <strong style={{ color: 'var(--accent-sky)' }}>{investorRegionLabel}</strong> markets
+                          </>
+                        ) : (
+                          <> (U.S. baseline)</>
+                        )}
                       </span>
                     }
                     detail={probabilityTail}

@@ -10,6 +10,7 @@ No runtime reads from ``app.core.defaults`` singletons are allowed.
 import logging
 
 from app.core.formulas import calculate_buy_price, estimate_income_value
+from app.core.regions import resolve_investor_probability_region
 from app.schemas.analytics import (
     DealFactor,
     DealScoreFactors,
@@ -489,18 +490,63 @@ def _calculate_wholesale_strategy(price: float, arv: float, rehab_cost: float) -
 # ===========================================
 # Bracket-based verdict scoring (DealGapIQ Score Chart — U.S. investor discount data)
 # ===========================================
+# Score interpolation uses the national cohort only (stable grades).
+# Cumulative probability uses REGIONAL_COHORT_PERCENTAGES + resolve_investor_probability_region(state).
 
 INVESTOR_DISCOUNT_BRACKETS: list[tuple[float, int, int, str]] = [
     # (max_gap_pct, score_at_bracket_start, score_at_bracket_end, investor_pct_label)
-    (5, 95, 88, "about 38% of investors achieve these discounts"),
-    (10, 88, 75, "about 37% of investors achieve these discounts"),
-    (20, 75, 60, "about 18% of investors achieve these discounts"),
-    (30, 60, 40, "about 10% of investors achieve these discounts"),
-    (40, 40, 22, "about 4% of investors achieve these discounts"),
-    (100, 22, 5, "Less than 2.5% of investors achieve these discounts"),
+    # Label copy reflects national baseline cohort (see docs/INVESTOR_DISCOUNT_DATA.md).
+    (5, 95, 88, "about 32% of investors achieve these discounts"),
+    (10, 88, 75, "about 24% of investors achieve these discounts"),
+    (20, 75, 60, "about 16% of investors achieve these discounts"),
+    (30, 60, 40, "about 6% of investors achieve these discounts"),
+    (40, 40, 22, "about 3% of investors achieve these discounts"),
+    (100, 22, 5, "about 1% of investors achieve these discounts"),
 ]
 
-AT_OR_ABOVE_LABEL = "about 15% of investors close at or above asking price"
+AT_OR_ABOVE_LABEL = "about 19% of investors close at or above asking price"
+
+# Mutually exclusive cohort shares (at-or-above, then discount depth bins). Sum = 100%.
+# Sources: Redfin 2025 MLS, Cotality Q4 2025, Realtor.com Q1 2026 — see docs/INVESTOR_DISCOUNT_DATA.md.
+REGIONAL_COHORT_PERCENTAGES: dict[str, tuple[float, ...]] = {
+    "national": (19.0, 32.0, 24.0, 16.0, 5.5, 2.5, 1.0),
+    "sun_belt": (15.0, 25.0, 25.0, 22.0, 8.0, 3.0, 2.0),
+    "midwest_affordability": (25.0, 30.0, 23.0, 14.0, 5.0, 2.0, 1.0),
+    "coastal_northeast": (35.0, 35.0, 16.0, 9.0, 3.0, 1.5, 0.5),
+}
+
+# Discount-depth intervals (open on left) matching score brackets: (0,5], (5,10], …
+_COHORT_BRACKET_INTERVALS: list[tuple[float, float]] = [
+    (0.0, 5.0),
+    (5.0, 10.0),
+    (10.0, 20.0),
+    (20.0, 30.0),
+    (30.0, 40.0),
+    (40.0, 100.0),
+]
+
+
+def _get_cumulative_investor_pct(deal_gap_pct: float, region_key: str) -> int:
+    """Estimated share of investors who close at this discount depth or deeper (same region cohort).
+
+    Uses uniform-within-bin interpolation. For deal_gap_pct <= 0, negotiation at/above list — all cohorts qualify.
+    """
+    if deal_gap_pct <= 0:
+        return 100
+    cohort = REGIONAL_COHORT_PERCENTAGES.get(region_key) or REGIONAL_COHORT_PERCENTAGES["national"]
+    total = 0.0
+    for i, (lo, hi) in enumerate(_COHORT_BRACKET_INTERVALS):
+        pct = cohort[i + 1]
+        if deal_gap_pct > hi:
+            continue
+        if deal_gap_pct <= lo:
+            total += pct
+        elif hi > lo:
+            total += pct * (hi - deal_gap_pct) / (hi - lo)
+        else:
+            total += pct
+    rounded = int(round(total))
+    return max(1, min(99, rounded))
 
 
 def _interpolate_bracket_score(deal_gap_pct: float) -> int:
@@ -528,25 +574,25 @@ def _get_bracket_label(deal_gap_pct: float) -> str:
     return INVESTOR_DISCOUNT_BRACKETS[-1][3]
 
 
-# Numeric "percent of investors" per bracket for Verdict UI (bullet #3)
+# Numeric "percent of investors" per bracket (national) for legacy UI fields.
 INVESTOR_PCT_BY_BRACKET: list[tuple[float, int]] = [
-    (5, 38),
-    (10, 37),
-    (20, 18),
-    (30, 10),
-    (40, 4),
-    (100, 2),
+    (5, 32),
+    (10, 24),
+    (20, 16),
+    (30, 6),
+    (40, 3),
+    (100, 1),
 ]
 
 
 def _get_bracket_investor_pct(deal_gap_pct: float) -> int:
-    """Return the numeric percent of investors who land discounts in this deal's bracket (for Verdict UI)."""
+    """Return the numeric percent of investors in this deal's national discount bracket (non-cumulative)."""
     if deal_gap_pct <= 0:
-        return 15  # AT_OR_ABOVE_LABEL: "about 15% of investors close at or above asking price"
+        return 19
     for max_gap, pct in INVESTOR_PCT_BY_BRACKET:
         if deal_gap_pct <= max_gap:
             return pct
-    return 2
+    return 1
 
 
 def _motivation_modifier(motivation_score: int) -> int:
@@ -1013,10 +1059,15 @@ def compute_iq_verdict(
 
     defaults_dict = a.model_dump(by_alias=True)
 
+    region_key, investor_probability_region_label = resolve_investor_probability_region(input_data.state)
+    cumulative_investor_pct = _get_cumulative_investor_pct(deal_gap_pct, region_key)
+
     return IQVerdictResponse(
         deal_score=deal_score,
         deal_verdict=deal_verdict,
-        deal_probability_score=_get_bracket_investor_pct(deal_gap_pct),
+        deal_probability_score=cumulative_investor_pct,
+        cumulative_investor_pct=cumulative_investor_pct,
+        investor_probability_region_label=investor_probability_region_label,
         verdict_description=_get_verdict_description(
             deal_score,
             top_strategy,
