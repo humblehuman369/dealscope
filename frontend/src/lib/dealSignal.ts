@@ -123,19 +123,13 @@ const CATEGORY_MARKER_HEX: Record<DealCategory, string> = {
 }
 
 /**
- * Dark-map variant of marker fills. Stale/active categories shift one Tailwind
- * tier deeper (500 → 600/700) so pins read clearly on the dark map canvas
- * without the fluorescent saturation the bright variants produce against black.
- *
- * `distressed` is intentionally NOT toned down — it keeps the bright red-500
- * because its job on the map is to signal, not blend. Foreclosure / auction /
- * pre-foreclosure pins are the deal-hunter's eye-magnet, and muting them next
- * to amber stale-30 markers makes them disappear into the warm-orange crowd.
- * The fluorescence concern that motivated the dark palette was the bright
- * yellow stale-30 (EAB308 → D97706); distressed never had that problem.
+ * Dark-map variant of marker fills. Each color shifts one Tailwind tier deeper
+ * (500 → 600/700) so pins read clearly on the dark map canvas without the
+ * fluorescent saturation that the bright variants produce against black.
+ * The yellow → amber shift (EAB308 → D97706) is the most visible change.
  */
 const CATEGORY_MARKER_HEX_DARK: Record<DealCategory, string> = {
-  distressed: '#EF4444',
+  distressed: '#DC2626',
   stale_60: '#EA580C',
   stale_30: '#D97706',
   owner_listed: '#16A34A',
