@@ -5,7 +5,8 @@ import pytest
 from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.services.deal_structures import compute_deal_structures
 from app.services.deal_structures.context import StructureContext
-from app.services.deal_structures.selector import select_three_paths
+from app.schemas.deal_structures import DealStructure
+from app.services.deal_structures.selector import _apply_regional_calibration, select_three_paths
 from app.services.deal_structures.templates import ALL_TEMPLATES
 
 
@@ -35,6 +36,7 @@ def _base_ctx(**kwargs) -> StructureContext:
         is_bank_owned=False,
         market_temperature="cold",
         template_flags={},
+        state=None,
     )
     defaults.update(kwargs)
     return StructureContext(**defaults)
@@ -83,3 +85,36 @@ def test_sub2_fires_with_sale_year_and_price():
 def test_template_ids_registered():
     for t in ALL_TEMPLATES:
         assert getattr(t, "ID", None)
+
+
+def _minimal_structure(structure_id: str, family: str = "financing") -> DealStructure:
+    return DealStructure(
+        id=structure_id,
+        family=family,  # type: ignore[arg-type]
+        family_label="t",
+        realism_label="t",
+        headline="h",
+        summary="s",
+        levers=[],
+        monthly_savings=100,
+        cash_required=1000,
+        ranking_score=70,
+    )
+
+
+def test_regional_calibration_tx_fl_boosts_sub2():
+    sub = _minimal_structure("sub2")
+    ctx_tx = _base_ctx(state="TX")
+    ctx_az = _base_ctx(state="AZ")
+    assert _apply_regional_calibration(ctx_tx, sub, 70) == 75
+    assert _apply_regional_calibration(ctx_az, sub, 70) == 70
+
+
+def test_regional_calibration_ca_ny_assumable_and_midwest_financing():
+    assumable = _minimal_structure("assumable")
+    ctx_ny = _base_ctx(state="NY")
+    assert _apply_regional_calibration(ctx_ny, assumable, 80) == 93  # coastal financing +5, CA/NY assumable +8
+
+    sub = _minimal_structure("sub2")
+    ctx_oh = _base_ctx(state="OH")
+    assert _apply_regional_calibration(ctx_oh, sub, 70) == 75  # midwest financing +5

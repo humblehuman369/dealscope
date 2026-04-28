@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 import { trackEvent } from '@/lib/eventTracking'
@@ -44,6 +45,8 @@ export interface DealStructuresPayload {
 
 interface ThreePathsPanelProps {
   payload: DealStructuresPayload
+  /** Two-letter state for analytics context (T14). */
+  propertyState?: string | null
   onOpenInStrategy?: (structure: DealStructure, index: number) => void
   onShowPitch?: (structure: DealStructure) => void
 }
@@ -59,14 +62,17 @@ const FAMILY_ACCENT: Record<StructureFamily, string> = {
 function PathCard({
   structure,
   index,
+  propertyState,
   onOpenInStrategy,
   onShowPitch,
 }: {
   structure: DealStructure
   index: number
+  propertyState?: string | null
   onOpenInStrategy?: (s: DealStructure, i: number) => void
   onShowPitch?: (s: DealStructure) => void
 }) {
+  const caveatOpenedRef = useRef(false)
   const accent = FAMILY_ACCENT[structure.family] || 'var(--accent-sky)'
   return (
     <div
@@ -182,17 +188,41 @@ function PathCard({
       </p>
 
       {structure.caveat && (
-        <p
-          style={{
-            margin: 0,
-            fontSize: 13,
-            lineHeight: 1.45,
-            color: 'var(--text-secondary)',
-            fontStyle: 'italic',
+        <details
+          style={{ margin: 0 }}
+          onToggle={(e) => {
+            const open = (e.target as HTMLDetailsElement).open
+            if (open && !caveatOpenedRef.current) {
+              caveatOpenedRef.current = true
+              trackEvent('path_card_caveat_viewed', {
+                structure_id: structure.id,
+                state: propertyState ?? undefined,
+              })
+            }
           }}
         >
-          {structure.caveat}
-        </p>
+          <summary
+            className="cursor-pointer select-none [&::-webkit-details-marker]:hidden"
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: 'var(--accent-sky)',
+            }}
+          >
+            Important caveat ▾
+          </summary>
+          <p
+            style={{
+              margin: '8px 0 0',
+              fontSize: 13,
+              lineHeight: 1.45,
+              color: 'var(--text-secondary)',
+              fontStyle: 'italic',
+            }}
+          >
+            {structure.caveat}
+          </p>
+        </details>
       )}
 
       {(structure.family === 'financing' || structure.family === 'strategy_switch') && (
@@ -205,6 +235,7 @@ function PathCard({
             onClick={() =>
               trackEvent('path_attorney_link_clicked', {
                 structure_id: structure.id,
+                state: propertyState ?? undefined,
               })
             }
           >
@@ -249,9 +280,27 @@ function PathCard({
 
 export function ThreePathsPanel({
   payload,
+  propertyState,
   onOpenInStrategy,
   onShowPitch,
 }: ThreePathsPanelProps): ReactNode {
+  const lastAssumableSigRef = useRef('')
+
+  const pathsSig = payload.paths.map((p) => p.id).join('|')
+
+  useEffect(() => {
+    if (!payload.hasPaths || payload.paths.length === 0) return
+    const hasAssumable = payload.paths.some((p) => p.id === 'assumable')
+    if (!hasAssumable) return
+    const dedupe = `${pathsSig}|${propertyState ?? ''}`
+    if (lastAssumableSigRef.current === dedupe) return
+    lastAssumableSigRef.current = dedupe
+    trackEvent('assumable_pv_displayed', {
+      path_count: payload.paths.length,
+      state: propertyState ?? undefined,
+    })
+  }, [payload.hasPaths, pathsSig, propertyState])
+
   if (!payload.hasPaths || payload.paths.length === 0) {
     return null
   }
@@ -289,6 +338,7 @@ export function ThreePathsPanel({
             key={path.id}
             structure={path}
             index={idx}
+            propertyState={propertyState}
             onOpenInStrategy={onOpenInStrategy}
             onShowPitch={onShowPitch}
           />

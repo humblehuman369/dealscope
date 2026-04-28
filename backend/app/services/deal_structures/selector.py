@@ -1,9 +1,41 @@
 """Selector — picks up to three structures with diversity across families."""
 
+from app.core.regions import resolve_investor_probability_region
 from app.schemas.deal_structures import DealStructure
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.templates import ALL_TEMPLATES
 from app.services.deal_structures.templates import morby_method as morby_template
+
+# T15 — hand-tuned regional boosts (CALIBRATION PLACEHOLDER — refine with data / T14 telemetry).
+_TX_FL_SUB2_BONUS = 5.0
+_COHORT_FINANCING_BONUS = 5.0  # coastal_northeast + midwest_affordability
+_CA_NY_ASSUMABLE_BONUS = 8.0
+
+
+def _apply_regional_calibration(ctx: StructureContext, structure: DealStructure, score: float) -> float:
+    """Adjust realism score by U.S. state cohort (reuses ``resolve_investor_probability_region``)."""
+    st = ctx.state
+    if not st or not str(st).strip():
+        return score
+    code = str(st).strip().upper()
+    if len(code) != 2:
+        return score
+
+    region_key, _ = resolve_investor_probability_region(code)
+
+    # TX / FL — creative finance / Sub2 cultural fit (wrap template not shipped).
+    if code in ("TX", "FL") and structure.id in ("sub2", "morby-method"):
+        score += _TX_FL_SUB2_BONUS
+
+    # "Cold-market" proxy: coastal_northeast + midwest cohorts — seller financing family lift.
+    if region_key in ("coastal_northeast", "midwest_affordability") and structure.family == "financing":
+        score += _COHORT_FINANCING_BONUS
+
+    # CA / NY — assumable PV story resonates where rate-lock disparity is largest.
+    if code in ("CA", "NY") and structure.id == "assumable":
+        score += _CA_NY_ASSUMABLE_BONUS
+
+    return min(100.0, max(0.0, score))
 
 
 def _apply_listing_signals(ctx: StructureContext, structure: DealStructure) -> float:
@@ -87,6 +119,7 @@ def select_three_paths(
         result = template.solve(ctx)
         if result is not None and result.monthly_savings > 0:
             adjusted = _apply_listing_signals(ctx, result)
+            adjusted = _apply_regional_calibration(ctx, result, adjusted)
             candidates.append(result.model_copy(update={"ranking_score": adjusted}))
 
     if not candidates:
