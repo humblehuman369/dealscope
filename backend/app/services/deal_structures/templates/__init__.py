@@ -1,11 +1,22 @@
-"""Deal-structure templates. Each module exposes a single ``solve(ctx)`` function."""
+"""Deal-structure templates. Each module exposes ``solve(ctx)`` and ``ID``."""
 
-from app.services.deal_structures.templates import price_negotiation, rent_uplift, seller_second_zero_balloon
+from . import larger_down, price_negotiation, rate_buydown, rent_uplift, seller_second_zero_balloon, sub2
 
 ALL_TEMPLATES = [
     price_negotiation,
     seller_second_zero_balloon,
     rent_uplift,
+    sub2,
+    rate_buydown,
+    larger_down,
 ]
 
-__all__ = ["ALL_TEMPLATES", "price_negotiation", "rent_uplift", "seller_second_zero_balloon"]
+__all__ = [
+    "ALL_TEMPLATES",
+    "larger_down",
+    "price_negotiation",
+    "rate_buydown",
+    "rent_uplift",
+    "seller_second_zero_balloon",
+    "sub2",
+]

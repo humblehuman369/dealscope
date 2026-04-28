@@ -13,7 +13,18 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Import centralized defaults - SINGLE SOURCE OF TRUTH
-from app.core.defaults import BRRRR, FINANCING, FLIP, GROWTH, HOUSE_HACK, OPERATING, REHAB, STR, WHOLESALE
+from app.core.defaults import (
+    BRRRR,
+    FINANCING,
+    FLIP,
+    GROWTH,
+    HOUSE_HACK,
+    OPERATING,
+    REHAB,
+    STR,
+    STRUCTURE_TEMPLATE_FLAGS,
+    WHOLESALE,
+)
 
 # ============================================
 # ENUMS
@@ -612,6 +623,9 @@ class AllAssumptions(BaseModel):
     appreciation_rate: float = Field(default_factory=lambda: GROWTH.appreciation_rate)
     rent_growth_rate: float = Field(default_factory=lambda: GROWTH.rent_growth_rate)
     expense_growth_rate: float = Field(default_factory=lambda: GROWTH.expense_growth_rate)
+
+    # Three Paths — disable individual templates without redeploy (merged over STRUCTURE_TEMPLATE_FLAGS).
+    structure_template_flags: dict[str, bool] = Field(default_factory=lambda: dict(STRUCTURE_TEMPLATE_FLAGS))
 
     model_config = {"populate_by_name": True}
 

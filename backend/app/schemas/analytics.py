@@ -111,6 +111,23 @@ class IQVerdictInput(BaseModel):
         max_length=2,
         description="Two-letter U.S. state code for regional investor discount probability cohort",
     )
+    estimated_purchase_year: int | None = Field(
+        None,
+        ge=1900,
+        le=2100,
+        description="Year of last sale — drives Sub2 heuristic when mortgage records unavailable",
+    )
+    estimated_purchase_price: float | None = Field(
+        None,
+        ge=0,
+        description="Last sold price — paired with purchase year for Sub2 loan balance estimate",
+    )
+    year_built: int | None = Field(
+        None,
+        ge=1800,
+        le=2100,
+        description="Used for new-construction heuristic on rate-buydown template",
+    )
 
     @field_validator("state", mode="before")
     @classmethod

@@ -1,6 +1,8 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { useEffect } from 'react'
+import { trackEvent } from '@/lib/eventTracking'
 import type { DealGapTier } from '@/components/iq-verdict/types'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
 import { ThreePathsPanel, type DealStructure, type DealStructuresPayload } from '@/components/iq-verdict/ThreePathsPanel'
@@ -18,8 +20,10 @@ export interface VerdictGapGuidanceProps {
   onDealMaker: () => void
   onSignIn: () => void
   dealStructures?: DealStructuresPayload | null
-  onOpenStructureInStrategy?: (structure: DealStructure) => void
+  onOpenStructureInStrategy?: (structure: DealStructure, index: number) => void
   onShowPitch?: (structure: DealStructure) => void
+  /** For analytics (Three Paths) */
+  propertyState?: string | null
 }
 
 function LeverButton({
@@ -63,6 +67,7 @@ export function VerdictGapGuidance({
   dealStructures,
   onOpenStructureInStrategy,
   onShowPitch,
+  propertyState,
 }: VerdictGapGuidanceProps) {
   if (effectiveDisplayPct > 0 || dealGapPct <= 0) {
     return null
@@ -71,6 +76,19 @@ export function VerdictGapGuidance({
   const anchorWord = isListed ? 'asking price' : 'estimated market value'
   const showFullLevers = dealGapPct > 5
   const hasStructures = !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
+  const pathsSig = dealStructures?.paths.map((p) => p.id).join('|') ?? ''
+
+  useEffect(() => {
+    if (!hasStructures || !dealStructures || !pathsSig) return
+    const families = dealStructures.paths.map((p) => p.family)
+    trackEvent('three_paths_rendered', {
+      path_count: dealStructures.paths.length,
+      families: families.join(','),
+      top_family: families[0] ?? '',
+      deal_gap_pct: dealGapPct,
+      state: propertyState ?? '',
+    })
+  }, [hasStructures, dealStructures, pathsSig, dealGapPct, propertyState])
 
   return (
     <div style={{ marginTop: 12, maxWidth: 720 }}>

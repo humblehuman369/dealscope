@@ -106,6 +106,15 @@ For a property in Miami (ZIP 33139):
 | `landscaping_annual` | float | 0 | Annual landscaping cost |
 | `pest_control_annual` | float | 200 | Annual pest control cost |
 
+### Three Paths — structure template flags
+
+Verdict “Three Paths” runs a small set of deal-structure templates (price negotiation, seller second, rent uplift, subject-to heuristic, rate buydown, larger down, etc.). Which templates are eligible is controlled by booleans merged from:
+
+1. **System defaults** — `STRUCTURE_TEMPLATE_FLAGS` in `backend/app/core/defaults.py` (keys match each template’s `ID`, e.g. `price-negotiation`, `rent-verification`, `sub2`, `rate-buydown-2-1`, `larger-down`).
+2. **Resolved assumptions** — `structure_template_flags` on `AllAssumptions` (from `/api/v1/defaults` / resolved assumptions). Per-flag values override the system map when present.
+
+The deal-structure engine merges defaults with user flags and drops disabled templates before ranking and selection.
+
 ### Short-Term Rental (STR) Defaults
 
 | Field | Type | Default | Description |

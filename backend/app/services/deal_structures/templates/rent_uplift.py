@@ -51,6 +51,10 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         f"This is a verification step, not a negotiation step."
     )
 
+    sel_reason = "Shown because a modest rent increase may be enough to clear the gap at the asking price"
+    if bump_pct > 12:
+        sel_reason = "Shown because the gap needs a larger rent lift — verify comps before leaning on this path"
+
     return DealStructure(
         id=ID,
         family=FAMILY,
@@ -77,4 +81,6 @@ def solve(ctx: StructureContext) -> DealStructure | None:
             "Always verify rent with local comps before committing. "
             "If a rehab is required to get there, model the rehab cost in Strategy."
         ),
+        selection_reason=sel_reason,
+        pre_loaded_record={"custom_rent_estimate": new_rent},
     )

@@ -3,7 +3,7 @@
 Templates are pure functions of this context; no I/O, no DB.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from app.services.calculators import calculate_monthly_mortgage
 
@@ -44,6 +44,16 @@ class StructureContext:
     is_foreclosure: bool
     is_bank_owned: bool
     market_temperature: str | None
+
+    # Three Paths — merged over STRUCTURE_TEMPLATE_FLAGS from defaults
+    template_flags: dict[str, bool] = field(default_factory=dict)
+
+    # Sub2 heuristic inputs (optional)
+    estimated_purchase_year: int | None = None
+    estimated_purchase_price: float | None = None
+
+    # Rate-buydown heuristic
+    year_built: int | None = None
 
     @property
     def deal_gap_amount(self) -> float:

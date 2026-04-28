@@ -29,6 +29,8 @@ export interface DealStructure {
   rankingScore: number
   pitchScript?: string | null
   caveat?: string | null
+  selectionReason?: string | null
+  preLoadedRecord?: Record<string, unknown> | null
 }
 
 export interface DealStructuresPayload {
@@ -39,7 +41,7 @@ export interface DealStructuresPayload {
 
 interface ThreePathsPanelProps {
   payload: DealStructuresPayload
-  onOpenInStrategy?: (structure: DealStructure) => void
+  onOpenInStrategy?: (structure: DealStructure, index: number) => void
   onShowPitch?: (structure: DealStructure) => void
 }
 
@@ -59,7 +61,7 @@ function PathCard({
 }: {
   structure: DealStructure
   index: number
-  onOpenInStrategy?: (s: DealStructure) => void
+  onOpenInStrategy?: (s: DealStructure, i: number) => void
   onShowPitch?: (s: DealStructure) => void
 }) {
   const accent = FAMILY_ACCENT[structure.family] || 'var(--accent-sky)'
@@ -125,6 +127,12 @@ function PathCard({
         {structure.headline}
       </h4>
 
+      {structure.selectionReason && (
+        <p style={{ margin: 0, fontSize: 11.5, lineHeight: 1.45, color: 'var(--text-secondary)' }}>
+          {structure.selectionReason}
+        </p>
+      )}
+
       {structure.levers.length > 0 && (
         <div
           style={{
@@ -188,7 +196,7 @@ function PathCard({
         {onOpenInStrategy && (
           <button
             type="button"
-            onClick={() => onOpenInStrategy(structure)}
+            onClick={() => onOpenInStrategy(structure, index)}
             className="rounded-md px-3 py-1.5 text-[12px] font-semibold transition-colors"
             style={{
               background: 'var(--accent-sky)',

@@ -98,6 +98,11 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         f"plan to refinance or sell by then."
     )
 
+    dom = ctx.days_on_market or 0
+    sel_reason = "Shown because seller financing can bridge the cash-flow gap without cutting list price"
+    if dom > 60:
+        sel_reason = f"Shown because the property has been listed {dom} days — sellers are more open to creative terms"
+
     return DealStructure(
         id=ID,
         family=FAMILY,
@@ -133,4 +138,12 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         ranking_score=min(100.0, max(0.0, ranking)),
         pitch_script=pitch,
         caveat=caveat,
+        selection_reason=sel_reason,
+        pre_loaded_record={
+            "pending_extras": {
+                "seller_carry_amount": chosen_second,
+                "seller_carry_rate": 0.0,
+                "seller_carry_term_years": DEFAULT_BALLOON_YEARS,
+            }
+        },
     )

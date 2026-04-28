@@ -31,6 +31,7 @@ from app.services.calculators.common import (
     calculate_cash_on_cash,
     calculate_dscr,
 )
+from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.services.deal_structures import compute_deal_structures
 from app.services.deal_structures.context import StructureContext
 
@@ -1062,7 +1063,8 @@ def compute_iq_verdict(
         is_fsbo=input_data.is_fsbo or False,
     )
 
-    # Three Paths — alternative deal structures, only computed when gap is negative.
+    # Three Paths — alternative deal structures when Target Buy is below list (positive deal gap %).
+    structure_template_flags = {**STRUCTURE_TEMPLATE_FLAGS, **a.structure_template_flags}
     structure_ctx = StructureContext(
         list_price=list_price,
         target_buy_price=buy_price,
@@ -1087,6 +1089,10 @@ def compute_iq_verdict(
         is_foreclosure=bool(input_data.is_foreclosure),
         is_bank_owned=bool(input_data.is_bank_owned),
         market_temperature=input_data.market_temperature,
+        template_flags=structure_template_flags,
+        estimated_purchase_year=input_data.estimated_purchase_year,
+        estimated_purchase_price=input_data.estimated_purchase_price,
+        year_built=input_data.year_built,
     )
     deal_structures_payload = compute_deal_structures(structure_ctx)
 

@@ -56,7 +56,10 @@ import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { buildVerdictAnalysisPayload, type VerdictPayloadBase } from '@/utils/verdictPayload'
 import { MarketAnchorNote } from '@/components/iq-verdict/MarketAnchorNote'
 import { VerdictGapGuidance, VerdictPositiveGuidance } from '@/components/iq-verdict/VerdictGapGuidance'
+import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
+import type { DealStructure } from '@/components/iq-verdict/ThreePathsPanel'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
+import { buildStrategyUrlWithScenario } from '@/lib/dealStructures/loadScenario'
 import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
 
 // Backend analysis response type — canonical shape from @dealscope/shared.
@@ -236,6 +239,7 @@ function VerdictContent() {
   const [showMethodologySheet, setShowMethodologySheet] = useState(false)
   const [methodologyScoreType, setMethodologyScoreType] = useState<'verdict' | 'profit'>('verdict')
   const [isExporting, setIsExporting] = useState<string | null>(null)
+  const [pitchModalStructure, setPitchModalStructure] = useState<DealStructure | null>(null)
 
   // IQ Estimate 3-value sources (populated from API response)
   const [iqSources, setIqSources] = useState<IQEstimateSources>({
@@ -785,6 +789,8 @@ function VerdictContent() {
           rankingScore: (p.ranking_score ?? p.rankingScore ?? 0) as number,
           pitchScript: (p.pitch_script ?? p.pitchScript ?? null) as string | null,
           caveat: (p.caveat ?? null) as string | null,
+          selectionReason: (p.selection_reason ?? p.selectionReason ?? null) as string | null,
+          preLoadedRecord: (p.pre_loaded_record ?? p.preLoadedRecord ?? null) as Record<string, unknown> | null,
         }))
         return {
           paths,
@@ -1044,6 +1050,28 @@ function VerdictContent() {
       if (section) params.set('section', section)
 
       router.push(`/strategy?${params.toString()}`)
+    },
+    [property, conditionParam, locationParam, router],
+  )
+
+  const openThreePathInStrategy = useCallback(
+    (structure: DealStructure, index: number) => {
+      if (!property) return
+      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+      const parts = [property.address, property.city, stateZip].filter(Boolean)
+      let fullAddress = parts.map((p) => String(p).trim().replace(/\s+/g, ' ')).join(', ')
+      if (!isLikelyFullAddress(fullAddress) && backendFullAddressRef.current) {
+        fullAddress = backendFullAddressRef.current
+      }
+      trackEvent('path_opened_in_strategy', { structure_id: structure.id, family: structure.family })
+      const url = buildStrategyUrlWithScenario({
+        address: fullAddress,
+        structure,
+        pathIndex: index,
+        condition: conditionParam,
+        location: locationParam,
+      })
+      router.push(url)
     },
     [property, conditionParam, locationParam, router],
   )
@@ -1769,12 +1797,9 @@ function VerdictContent() {
                   onDealMaker={handleNavigateToDealMaker}
                   onSignIn={() => openAuthModal('login')}
                   dealStructures={analysis.dealStructures}
-                  onOpenStructureInStrategy={() => navigateToStrategy()}
-                  onShowPitch={(s) => {
-                    if (s.pitchScript) {
-                      window.alert(s.pitchScript)
-                    }
-                  }}
+                  propertyState={property?.state ?? null}
+                  onOpenStructureInStrategy={openThreePathInStrategy}
+                  onShowPitch={(s) => setPitchModalStructure(s)}
                 />
               ) : (
                 <VerdictPositiveGuidance
@@ -2093,6 +2118,8 @@ function VerdictContent() {
         currentGrade={`${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}% Deal Gap — ${tier.label}`}
         scoreType={methodologyScoreType}
       />
+
+      <PitchScriptModal structure={pitchModalStructure} onClose={() => setPitchModalStructure(null)} />
 
     </>
   )
