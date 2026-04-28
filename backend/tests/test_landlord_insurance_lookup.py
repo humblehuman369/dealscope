@@ -68,8 +68,12 @@ def test_property_service_estimate_uses_county_path() -> None:
         "county": "Palm Beach",
         "zip_code": "33414",
     }
-    out = svc._estimate_insurance(data)  # noqa: SLF001
-    assert 8_440 <= out <= 8_450
+    baseline, risk_adjusted = svc._estimate_insurance(data)  # noqa: SLF001
+    # Baseline is always the 1% market rule-of-thumb that feeds Deal Gap.
+    assert baseline == round(500_000 * 0.01, 2)
+    # Risk-adjusted uses the county ACS + state calibration methodology.
+    assert risk_adjusted is not None
+    assert 8_440 <= risk_adjusted <= 8_450
 
 
 def test_property_service_falls_back_without_county() -> None:
@@ -79,5 +83,24 @@ def test_property_service_falls_back_without_county() -> None:
         "value_iq_estimate": 500_000,
         "zip_code": "33414",
     }
-    out = svc._estimate_insurance(data)  # noqa: SLF001
-    assert out == round(500_000 * 0.018, 2)
+    baseline, risk_adjusted = svc._estimate_insurance(data)  # noqa: SLF001
+    assert baseline == round(500_000 * 0.01, 2)
+    assert risk_adjusted == round(500_000 * 0.018, 2)
+
+
+def test_property_service_no_price_returns_default_baseline_and_none_risk() -> None:
+    svc = PropertyService()
+    baseline, risk_adjusted = svc._estimate_insurance({})  # noqa: SLF001
+    assert baseline == 1500.0
+    assert risk_adjusted is None
+
+
+def test_property_service_no_county_no_zip_falls_back_to_default_region() -> None:
+    """Without county or ZIP, get_market_adjustments returns the DEFAULT region
+    (insurance_rate 0.010) — risk_adjusted equals baseline. UI is expected
+    to suppress the transparency layer when the two values match."""
+    svc = PropertyService()
+    data = {"value_iq_estimate": 500_000}  # no county, no zip_code
+    baseline, risk_adjusted = svc._estimate_insurance(data)  # noqa: SLF001
+    assert baseline == round(500_000 * 0.01, 2)
+    assert risk_adjusted == round(500_000 * 0.010, 2)

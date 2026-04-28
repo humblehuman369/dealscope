@@ -350,7 +350,8 @@ class MarketData(BaseModel):
     market_health_score: int | None = None
     market_strength: str | None = None
     property_taxes_annual: float | None = None
-    insurance_annual: float | None = None
+    insurance_annual: float | None = None  # Market baseline (1% rule-of-thumb) — feeds Deal Gap
+    insurance_annual_risk_adjusted: float | None = None  # County ACS + state calibration; UI transparency layer
     hoa_fees_monthly: float | None = None
     # Mortgage rate data for frontend calculations
     mortgage_rate_arm5: float | None = None
@@ -511,6 +512,7 @@ class OperatingAssumptions(BaseModel):
     capex_pct: float = Field(default_factory=lambda: OPERATING.capex_pct)
     insurance_pct: float = Field(default_factory=lambda: OPERATING.insurance_pct)
     insurance_annual: float | None = None  # Calculated from insurance_pct if not provided
+    insurance_annual_risk_adjusted: float | None = None  # County+state methodology; UI transparency layer
     utilities_monthly: float = Field(default_factory=lambda: OPERATING.utilities_monthly)
     landscaping_annual: float = Field(default_factory=lambda: OPERATING.landscaping_annual)
     pest_control_annual: float = Field(default_factory=lambda: OPERATING.pest_control_annual)
@@ -530,6 +532,7 @@ class STRAssumptions(BaseModel):
     furniture_setup_cost: float = Field(default_factory=lambda: STR.furniture_setup_cost)
     str_insurance_pct: float = Field(default_factory=lambda: STR.str_insurance_pct)
     str_insurance_annual: float | None = None  # Calculated from str_insurance_pct if not provided
+    str_insurance_annual_risk_adjusted: float | None = None  # County+state methodology; UI transparency layer
     buy_discount_pct: float = Field(default_factory=lambda: BRRRR.buy_discount_pct)
 
 

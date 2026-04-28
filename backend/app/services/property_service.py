@@ -596,6 +596,10 @@ class PropertyService:
         if address_obj.longitude is None:
             address_obj.longitude = normalized.get("longitude")
 
+        # Insurance: baseline (1% rule-of-thumb) feeds the headline Deal Gap;
+        # risk_adjusted (county+state methodology) is surfaced as a transparency layer.
+        insurance_baseline, insurance_risk_adjusted = self._estimate_insurance(normalized)
+
         # Build response
         response = PropertyResponse(
             property_id=property_id,
@@ -706,7 +710,8 @@ class PropertyService:
             ),
             market=MarketData(
                 property_taxes_annual=normalized.get("property_taxes_annual") or self._estimate_taxes(normalized),
-                insurance_annual=self._estimate_insurance(normalized),
+                insurance_annual=insurance_baseline,
+                insurance_annual_risk_adjusted=insurance_risk_adjusted,
                 hoa_fees_monthly=normalized.get("hoa_fees_monthly", 0),
                 # Mortgage rates for frontend
                 mortgage_rate_arm5=normalized.get("mortgage_rate_arm5"),
@@ -1133,11 +1138,18 @@ class PropertyService:
             return avm * 0.012
         return 4500  # Default fallback
 
-    def _estimate_insurance(self, data: dict) -> float:
-        """Estimate annual insurance.
+    def _estimate_insurance(self, data: dict) -> tuple[float, float | None]:
+        """Estimate annual insurance — returns (baseline, risk_adjusted).
 
-        Primary: county-level landlord ratio (ACS) x state market calibration.
-        Fallback: state insurance_rate from :func:`get_market_adjustments` (ZIP).
+        baseline: 1% of market price (industry rule-of-thumb used by
+            BiggerPockets, Mashvisor, Zillow-style calculators). This is the
+            value fed into operating expenses for the headline Deal Gap, so
+            our presentation matches market convention. Falls back to $1,500
+            when no price data is available.
+        risk_adjusted: county-level ACS landlord ratio × state calibration
+            multiplier (preferred), or state ZIP-based rate (fallback).
+            Surfaced in the UI as a transparency layer next to the baseline.
+            Returns None when neither county nor ZIP data resolves.
         """
         from app.services import insurance_lookup
         from app.services.assumptions_service import get_market_adjustments
@@ -1149,7 +1161,9 @@ class PropertyService:
             or data.get("list_price")
         )
         if not market_price:
-            return 1500  # safe fallback when no price data available
+            return 1500.0, None
+
+        baseline = round(float(market_price) * 0.01, 2)
 
         county_annual = insurance_lookup.estimate_landlord_insurance_annual(
             float(market_price),
@@ -1157,12 +1171,15 @@ class PropertyService:
             data.get("county"),
         )
         if county_annual is not None:
-            return float(county_annual)
+            return baseline, float(county_annual)
 
         zip_code = data.get("zip_code", "")
         adjustments = get_market_adjustments(zip_code)
-        insurance_rate = adjustments.get("insurance_rate", 0.01)
-        return round(market_price * insurance_rate, 2)
+        insurance_rate = adjustments.get("insurance_rate")
+        if insurance_rate is not None:
+            return baseline, round(float(market_price) * float(insurance_rate), 2)
+
+        return baseline, None
 
     async def _resolve_zpid_from_address(self, address: str) -> str | None:
         """Resolve a Zillow zpid from a full address."""
