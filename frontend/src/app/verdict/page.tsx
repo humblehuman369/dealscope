@@ -764,6 +764,34 @@ function VerdictContent() {
       })),
       discountBracketLabel: (analysisData.discount_bracket_label ?? analysisData.discountBracketLabel ?? '') as string,
       dealNarrative: (analysisData.deal_narrative ?? analysisData.dealNarrative ?? null) as string | null,
+      dealStructures: (() => {
+        const raw = analysisData.deal_structures ?? analysisData.dealStructures
+        if (!raw) return null
+        const paths = (raw.paths ?? []).map((p: any) => ({
+          id: p.id,
+          family: p.family,
+          familyLabel: p.family_label ?? p.familyLabel ?? '',
+          realismLabel: p.realism_label ?? p.realismLabel ?? '',
+          headline: p.headline,
+          summary: p.summary,
+          levers: (p.levers ?? []).map((lv: any) => ({
+            label: lv.label,
+            beforeLabel: lv.before_label ?? lv.beforeLabel ?? '',
+            afterLabel: lv.after_label ?? lv.afterLabel ?? '',
+            deltaLabel: lv.delta_label ?? lv.deltaLabel ?? null,
+          })),
+          monthlySavings: (p.monthly_savings ?? p.monthlySavings ?? 0) as number,
+          cashRequired: (p.cash_required ?? p.cashRequired ?? 0) as number,
+          rankingScore: (p.ranking_score ?? p.rankingScore ?? 0) as number,
+          pitchScript: (p.pitch_script ?? p.pitchScript ?? null) as string | null,
+          caveat: (p.caveat ?? null) as string | null,
+        }))
+        return {
+          paths,
+          narrativeParagraphs: (raw.narrative_paragraphs ?? raw.narrativeParagraphs ?? []) as string[],
+          hasPaths: (raw.has_paths ?? raw.hasPaths ?? paths.length > 0) as boolean,
+        }
+      })(),
       dealProbabilityScore:
         analysisData.deal_probability_score ?? analysisData.dealProbabilityScore ?? undefined,
       cumulativeInvestorPct:
@@ -1656,7 +1684,34 @@ function VerdictContent() {
                 border: '1px solid var(--border-default)',
               }}
             >
-              {/* Headline metric + tier badge */}
+              {/* Motivating headline — every property gets a deal label */}
+              <div style={{ marginBottom: 10 }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif",
+                    fontSize: 'clamp(20px, 2.4vw, 28px)',
+                    fontWeight: 700,
+                    color: 'var(--text-heading)',
+                    letterSpacing: '-0.01em',
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {tier.motivatingLabel}
+                </span>
+                <span
+                  style={{
+                    marginLeft: 10,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: 'var(--text-secondary)',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  {tier.motivatingSubtitle}
+                </span>
+              </div>
+
+              {/* Headline metric + tier badge — precision/credibility line */}
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-baseline gap-2">
                   <span style={{ fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif", fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 600, lineHeight: 1 }}>
@@ -1713,6 +1768,13 @@ function VerdictContent() {
                   onNavigateStrategy={navigateToStrategy}
                   onDealMaker={handleNavigateToDealMaker}
                   onSignIn={() => openAuthModal('login')}
+                  dealStructures={analysis.dealStructures}
+                  onOpenStructureInStrategy={() => navigateToStrategy()}
+                  onShowPitch={(s) => {
+                    if (s.pitchScript) {
+                      window.alert(s.pitchScript)
+                    }
+                  }}
                 />
               ) : (
                 <VerdictPositiveGuidance

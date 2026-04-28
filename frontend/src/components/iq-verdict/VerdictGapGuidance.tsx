@@ -3,6 +3,8 @@
 import type { ReactNode } from 'react'
 import type { DealGapTier } from '@/components/iq-verdict/types'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
+import { ThreePathsPanel, type DealStructure, type DealStructuresPayload } from '@/components/iq-verdict/ThreePathsPanel'
+import { DealStructuresNarrative } from '@/components/iq-verdict/DealStructuresNarrative'
 
 export interface VerdictGapGuidanceProps {
   tier: DealGapTier
@@ -15,6 +17,9 @@ export interface VerdictGapGuidanceProps {
   onNavigateStrategy: (section?: StrategyWorksheetSection) => void
   onDealMaker: () => void
   onSignIn: () => void
+  dealStructures?: DealStructuresPayload | null
+  onOpenStructureInStrategy?: (structure: DealStructure) => void
+  onShowPitch?: (structure: DealStructure) => void
 }
 
 function LeverButton({
@@ -55,6 +60,9 @@ export function VerdictGapGuidance({
   onNavigateStrategy,
   onDealMaker,
   onSignIn,
+  dealStructures,
+  onOpenStructureInStrategy,
+  onShowPitch,
 }: VerdictGapGuidanceProps) {
   if (effectiveDisplayPct > 0 || dealGapPct <= 0) {
     return null
@@ -62,24 +70,39 @@ export function VerdictGapGuidance({
 
   const anchorWord = isListed ? 'asking price' : 'estimated market value'
   const showFullLevers = dealGapPct > 5
+  const hasStructures = !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
 
   return (
-    <div style={{ marginTop: 12, maxWidth: 560 }}>
+    <div style={{ marginTop: 12, maxWidth: 720 }}>
       <p style={{ margin: 0, fontSize: 13, fontWeight: 600, lineHeight: 1.45, color: 'var(--text-heading)' }}>
         {tier.headline}
       </p>
       <p style={{ margin: '8px 0 0', fontSize: 12, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
         {tier.subHeadline}
       </p>
-      <p style={{ margin: '10px 0 0', fontSize: 13, lineHeight: 1.55, color: 'var(--text-body)' }}>
-        Your <strong style={{ color: 'var(--text-heading)' }}>Target Buy</strong> is what the model needs for cash flow
-        at <strong style={{ color: 'var(--text-heading)' }}>20% down, ~6% interest, 30-year</strong> financing. The gap
-        to <strong style={{ color: 'var(--text-heading)' }}>{anchorWord}</strong> does not mean the deal is dead—it
-        means the <strong style={{ color: 'var(--text-heading)' }}>price, income, or structure</strong> has to change for
-        the math to work.
-      </p>
 
-      {showFullLevers && (
+      {hasStructures && (
+        <>
+          <DealStructuresNarrative paragraphs={dealStructures!.narrativeParagraphs} />
+          <ThreePathsPanel
+            payload={dealStructures!}
+            onOpenInStrategy={onOpenStructureInStrategy}
+            onShowPitch={onShowPitch}
+          />
+        </>
+      )}
+
+      {!hasStructures && (
+        <p style={{ margin: '10px 0 0', fontSize: 13, lineHeight: 1.55, color: 'var(--text-body)' }}>
+          Your <strong style={{ color: 'var(--text-heading)' }}>Target Buy</strong> is what the model needs for cash flow
+          at <strong style={{ color: 'var(--text-heading)' }}>20% down, ~6% interest, 30-year</strong> financing. The gap
+          to <strong style={{ color: 'var(--text-heading)' }}>{anchorWord}</strong> does not mean the deal is dead—it
+          means the <strong style={{ color: 'var(--text-heading)' }}>price, income, or structure</strong> has to change for
+          the math to work.
+        </p>
+      )}
+
+      {!hasStructures && showFullLevers && (
         <>
           <p
             style={{

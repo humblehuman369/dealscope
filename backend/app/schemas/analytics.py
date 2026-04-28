@@ -8,6 +8,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.schemas.deal_structures import DealStructuresPayload
+
 # ===========================================
 # Helper: camelCase alias generator
 # ===========================================
@@ -242,6 +244,11 @@ class IQVerdictResponse(BaseModel):
     discount_bracket_label: str = Field("", description="Investor discount bracket context")
     # AI-generated deal narrative (motivational coaching paragraph)
     deal_narrative: str | None = Field(None, description="AI-generated deal narrative for investor coaching")
+    # Three Paths — alternative deal structures shown when Deal Gap is negative
+    deal_structures: DealStructuresPayload | None = Field(
+        None,
+        description="Three Paths alternatives + 5th-grade narrative; null when gap is non-negative",
+    )
 
 
 # ===========================================
