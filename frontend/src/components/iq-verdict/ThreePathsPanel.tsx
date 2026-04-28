@@ -87,16 +87,17 @@ function PathCard({
     <div
       role="article"
       aria-label={`Path ${index + 1}: ${structure.headline}`}
-      className="rounded-xl"
+      className="rounded-xl h-full min-h-0"
       style={{
         background: 'var(--surface-card)',
         border: '1px solid var(--border-default)',
         padding: 16,
         display: 'flex',
         flexDirection: 'column',
-        gap: 12,
+        minHeight: 0,
       }}
     >
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
       <div className="flex items-center gap-2 flex-wrap">
         <span
           style={{
@@ -252,8 +253,9 @@ function PathCard({
           </Link>
         </p>
       )}
+      </div>
 
-      <div className="flex items-center gap-2 flex-wrap" style={{ marginTop: 2 }}>
+      <div className="flex shrink-0 flex-wrap items-center gap-2 pt-3">
         {onOpenInStrategy && (
           <button
             type="button"
@@ -316,6 +318,7 @@ export function ThreePathsPanel({
 
   return (
     <div
+      className="w-full min-w-0"
       style={{
         marginTop: 16,
         display: 'flex',
@@ -336,10 +339,12 @@ export function ThreePathsPanel({
         {pathCountHeading(payload.paths.length)}
       </p>
       <div
+        className="w-full min-w-0"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: 10,
+          alignItems: 'stretch',
         }}
       >
         {payload.paths.map((path, idx) => (

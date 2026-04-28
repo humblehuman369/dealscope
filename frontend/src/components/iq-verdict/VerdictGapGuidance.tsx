@@ -91,7 +91,7 @@ export function VerdictGapGuidance({
   }, [hasStructures, dealStructures, pathsSig, dealGapPct, propertyState])
 
   return (
-    <div style={{ marginTop: 12, maxWidth: 720 }}>
+    <div style={{ marginTop: 12, width: '100%', maxWidth: '100%', minWidth: 0 }}>
       <p style={{ margin: 0, fontSize: 13, fontWeight: 600, lineHeight: 1.45, color: 'var(--text-heading)' }}>
         {tier.headline}
       </p>
