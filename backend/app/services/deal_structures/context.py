@@ -55,6 +55,16 @@ class StructureContext:
     # Rate-buydown heuristic
     year_built: int | None = None
 
+    # Sub2 real-data / assumable (optional; from public records when present)
+    existing_loan_type: str | None = None
+    estimated_existing_loan_balance: float | None = None
+    estimated_existing_loan_rate: float | None = None
+
+    # FHA house-hack
+    unit_count: int | None = None
+    is_owner_occupied: bool | None = None
+    bedrooms: int = 3
+
     @property
     def deal_gap_amount(self) -> float:
         return self.list_price - self.target_buy_price

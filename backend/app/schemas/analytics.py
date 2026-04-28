@@ -33,6 +33,8 @@ class IQVerdictInput(BaseModel):
     on calculations that drive investment decisions.
     """
 
+    model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
+
     list_price: float = Field(..., gt=0, le=100_000_000, description="Property list price")
     purchase_price: float | None = Field(
         None, gt=0, le=100_000_000, description="User-override purchase price (bypasses buy_price calculation)"
@@ -128,6 +130,45 @@ class IQVerdictInput(BaseModel):
         le=2100,
         description="Used for new-construction heuristic on rate-buydown template",
     )
+    # Public-records enrichment (T8.5 / assumable); optional until integration lands
+    existing_loan_type: str | None = Field(
+        None,
+        description="Seller's existing mortgage type when known: FHA, VA, USDA, conventional",
+    )
+    estimated_existing_loan_balance: float | None = Field(
+        None,
+        ge=0,
+        description="Current mortgage balance when known (else Sub2 uses heuristic)",
+    )
+    estimated_existing_loan_rate: float | None = Field(
+        None,
+        ge=0,
+        le=0.30,
+        description="Actual note rate when known (annual decimal)",
+    )
+    # FHA house-hack / multifamily hints
+    unit_count: int | None = Field(
+        None,
+        ge=1,
+        le=8,
+        description="Number of units (2–4 for small multifamily house-hack)",
+    )
+    is_owner_occupied: bool | None = Field(
+        None,
+        description="Buyer intends to owner-occupy (house-hack)",
+    )
+
+    @field_validator("existing_loan_type", mode="before")
+    @classmethod
+    def normalize_loan_type(cls, v: object) -> str | None:
+        if v is None or v == "":
+            return None
+        if not isinstance(v, str):
+            return None
+        u = v.strip().upper()
+        if u in ("FHA", "VA", "USDA", "CONVENTIONAL"):
+            return u
+        return None
 
     @field_validator("state", mode="before")
     @classmethod

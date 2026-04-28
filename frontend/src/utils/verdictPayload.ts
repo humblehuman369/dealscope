@@ -33,6 +33,10 @@ export interface VerdictPayloadBase {
   estimatedPurchaseYear?: number | null
   estimatedPurchasePrice?: number | null
   yearBuilt?: number | null
+  /** 2–4 units → FHA house-hack template eligibility */
+  unitCount?: number | null
+  /** Owner-occ intent for house-hack path */
+  isOwnerOccupied?: boolean | null
 }
 
 export function buildVerdictAnalysisPayload(
@@ -81,6 +85,8 @@ export function buildVerdictAnalysisPayload(
     estimated_purchase_year: base.estimatedPurchaseYear ?? undefined,
     estimated_purchase_price: base.estimatedPurchasePrice ?? undefined,
     year_built: base.yearBuilt ?? undefined,
+    unit_count: base.unitCount ?? undefined,
+    is_owner_occupied: base.isOwnerOccupied ?? undefined,
   }
 
   if (overrides) {
@@ -170,5 +176,7 @@ export function buildVerdictBaseFromPropertyResponse(
     })(),
     estimatedPurchasePrice: data?.listing?.last_sold_price ?? undefined,
     yearBuilt: data?.details?.year_built ?? undefined,
+    unitCount: data?.details?.num_units ?? data?.num_units ?? undefined,
+    isOwnerOccupied: undefined,
   }
 }

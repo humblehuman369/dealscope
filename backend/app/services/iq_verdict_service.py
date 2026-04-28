@@ -1093,6 +1093,12 @@ def compute_iq_verdict(
         estimated_purchase_year=input_data.estimated_purchase_year,
         estimated_purchase_price=input_data.estimated_purchase_price,
         year_built=input_data.year_built,
+        existing_loan_type=input_data.existing_loan_type,
+        estimated_existing_loan_balance=input_data.estimated_existing_loan_balance,
+        estimated_existing_loan_rate=input_data.estimated_existing_loan_rate,
+        unit_count=input_data.unit_count,
+        is_owner_occupied=input_data.is_owner_occupied,
+        bedrooms=input_data.bedrooms,
     )
     deal_structures_payload = compute_deal_structures(structure_ctx)
 
