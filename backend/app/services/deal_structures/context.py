@@ -65,6 +65,9 @@ class StructureContext:
     is_owner_occupied: bool | None = None
     bedrooms: int = 3
 
+    # Regional selector calibration (T15) — two-letter state when known
+    state: str | None = None
+
     @property
     def deal_gap_amount(self) -> float:
         return self.list_price - self.target_buy_price

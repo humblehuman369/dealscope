@@ -1099,6 +1099,7 @@ def compute_iq_verdict(
         unit_count=input_data.unit_count,
         is_owner_occupied=input_data.is_owner_occupied,
         bedrooms=input_data.bedrooms,
+        state=input_data.state,
     )
     deal_structures_payload = compute_deal_structures(structure_ctx)
 

@@ -104,6 +104,7 @@ export function VerdictGapGuidance({
           <DealStructuresNarrative paragraphs={dealStructures!.narrativeParagraphs} />
           <ThreePathsPanel
             payload={dealStructures!}
+            propertyState={propertyState}
             onOpenInStrategy={onOpenStructureInStrategy}
             onShowPitch={onShowPitch}
           />
