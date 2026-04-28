@@ -22,6 +22,7 @@ import {
   DEFAULT_FLIP_DEAL_MAKER_STATE,
   DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
   DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
+  DEFAULT_SELLER_FINANCING_FIELDS,
 } from './types'
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 
@@ -40,6 +41,7 @@ export function buildLTRState(
     closingCostsPercent: 0.03,
     interestRate: 0.06,
     loanTermYears: 30,
+    ...DEFAULT_SELLER_FINANCING_FIELDS,
     rehabBudget: 0,
     arv: price * 1.0,
     monthlyRent: property.rent ?? 2800,

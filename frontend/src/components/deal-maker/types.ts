@@ -3,6 +3,13 @@
  * TypeScript interfaces for the Deal Maker worksheet system (Web Frontend)
  */
 
+/** Seller carry / 2nd mortgage inputs — persisted as backend `seller_carry_*` */
+export const DEFAULT_SELLER_FINANCING_FIELDS = {
+  sellerFinancingAmount: 0,
+  sellerInterestRate: 0,
+  sellerTermYears: 5,
+}
+
 // =============================================================================
 // DEAL MAKER STATE
 // =============================================================================
@@ -294,6 +301,9 @@ export interface STRDealMakerState {
   loanType: LoanType
   interestRate: number
   loanTermYears: number
+  sellerFinancingAmount: number
+  sellerInterestRate: number
+  sellerTermYears: number
   
   // Tab 3: Rehab & Valuation (add furniture)
   rehabBudget: number
@@ -448,6 +458,7 @@ export const DEFAULT_STR_DEAL_MAKER_STATE: STRDealMakerState = {
   loanType: '30-year',
   interestRate: 0.06,
   loanTermYears: 30,
+  ...DEFAULT_SELLER_FINANCING_FIELDS,
   
   // Tab 3: Rehab & Valuation (with furniture)
   rehabBudget: 25000,
@@ -522,6 +533,9 @@ export interface BRRRRDealMakerState {
   downPaymentPercent: number     // Hard money down (10-20%)
   closingCostsPercent: number
   hardMoneyRate: number          // Short-term financing rate (10-12%)
+  sellerFinancingAmount: number
+  sellerInterestRate: number
+  sellerTermYears: number
   
   // Phase 2: Rehab
   rehabBudget: number
@@ -667,6 +681,7 @@ export const DEFAULT_BRRRR_DEAL_MAKER_STATE: BRRRRDealMakerState = {
   downPaymentPercent: 0.20,      // Hard money typical
   closingCostsPercent: 0.02,     // Lower for investment
   hardMoneyRate: 0.12,           // 12% hard money rate
+  ...DEFAULT_SELLER_FINANCING_FIELDS,
   
   // Phase 2: Rehab
   rehabBudget: 40000,
@@ -729,6 +744,9 @@ export interface FlipDealMakerState {
   hardMoneyLtv: number           // 90% typical
   hardMoneyRate: number          // 12% typical
   loanPoints: number             // 1-3 points
+  sellerFinancingAmount: number
+  sellerInterestRate: number
+  sellerTermYears: number
   
   // Phase 3: Rehab
   rehabBudget: number
@@ -862,6 +880,7 @@ export const DEFAULT_FLIP_DEAL_MAKER_STATE: FlipDealMakerState = {
   hardMoneyLtv: 0.90,            // Matches FLIP.hard_money_ltv
   hardMoneyRate: 0.12,           // Matches FLIP.hard_money_rate
   loanPoints: 2,                 // 2 points typical
+  ...DEFAULT_SELLER_FINANCING_FIELDS,
   
   // Phase 3: Rehab
   rehabBudget: 50000,
@@ -916,6 +935,9 @@ export interface HouseHackDealMakerState {
   loanTermYears: number
   pmiRate: number                 // PMI/MIP annual rate (0.85% FHA)
   closingCostsPercent: number
+  sellerFinancingAmount: number
+  sellerInterestRate: number
+  sellerTermYears: number
   
   // Phase 3: Rent (Unit Income)
   avgRentPerUnit: number          // Average rent per rented unit
@@ -1053,6 +1075,7 @@ export const DEFAULT_HOUSEHACK_DEAL_MAKER_STATE: HouseHackDealMakerState = {
   loanTermYears: 30,
   pmiRate: 0.0085,                // FHA MIP rate
   closingCostsPercent: 0.03,
+  ...DEFAULT_SELLER_FINANCING_FIELDS,
   
   // Phase 3: Rent
   avgRentPerUnit: 1500,
@@ -1103,6 +1126,9 @@ export interface WholesaleDealMakerState {
   earnestMoney: number              // Earnest money deposit (at risk)
   inspectionPeriodDays: number      // Days for due diligence
   daysToClose: number               // Total timeline to close
+  sellerFinancingAmount: number
+  sellerInterestRate: number
+  sellerTermYears: number
   
   // Phase 3: Assignment
   assignmentFee: number             // Your wholesale fee
@@ -1198,6 +1224,7 @@ export const DEFAULT_WHOLESALE_DEAL_MAKER_STATE: WholesaleDealMakerState = {
   earnestMoney: 1000,
   inspectionPeriodDays: 14,
   daysToClose: 45,
+  ...DEFAULT_SELLER_FINANCING_FIELDS,
   
   // Phase 3: Assignment
   assignmentFee: 15000,
@@ -1234,6 +1261,9 @@ export interface LTRDealMakerState {
   loanType?: '15-year' | '30-year' | 'arm'
   interestRate: number
   loanTermYears: number
+  sellerFinancingAmount: number
+  sellerInterestRate: number
+  sellerTermYears: number
   rehabBudget: number
   arv: number
   monthlyRent: number

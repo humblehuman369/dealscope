@@ -509,6 +509,9 @@ function StrategyContent() {
       closingCosts: { key: 'closingCosts', toOverride: (v) => v * 100 },
       interestRate: { key: 'interestRate' },
       loanTerm: { key: 'loanTerm' },
+      sellerFinancingAmount: { key: 'sellerFinancingAmount' },
+      sellerInterestRate: { key: 'sellerInterestRate' },
+      sellerTermYears: { key: 'sellerTermYears' },
       rehabBudget: { key: 'rehabBudget' },
       marketValue: { key: 'listPrice' },
       arv: { key: 'arv' },
@@ -687,6 +690,21 @@ function StrategyContent() {
 
   const worksheetState: AnyStrategyState = (() => {
     const io = inlineOverrides as Record<string, number | undefined>
+    const ioAny = inlineOverrides as Record<string, unknown>
+    const sf = {
+      sellerFinancingAmount:
+        (typeof ioAny.sellerFinancingAmount === 'number' ? ioAny.sellerFinancingAmount : null) ??
+        (typeof ioAny.seller_carry_amount === 'number' ? ioAny.seller_carry_amount : null) ??
+        0,
+      sellerInterestRate:
+        (typeof ioAny.sellerInterestRate === 'number' ? ioAny.sellerInterestRate : null) ??
+        (typeof ioAny.seller_carry_rate === 'number' ? ioAny.seller_carry_rate : null) ??
+        0,
+      sellerTermYears:
+        (typeof ioAny.sellerTermYears === 'number' ? ioAny.sellerTermYears : null) ??
+        (typeof ioAny.seller_carry_term_years === 'number' ? ioAny.seller_carry_term_years : null) ??
+        5,
+    }
     const arvVal = io.arv ?? bd?.arv ?? data?.inputs_used?.arv ?? listPrice
 
     switch (currentStrategyType) {
@@ -716,6 +734,7 @@ function StrategyContent() {
           annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
           annualInsurance: io.insurance ?? insurance,
           monthlyHoa: 0,
+          ...sf,
         } satisfies STRDealMakerState
       }
 
@@ -743,6 +762,7 @@ function StrategyContent() {
           annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
           annualInsurance: io.insurance ?? insurance,
           monthlyHoa: io.monthlyHoa ?? 0,
+          ...sf,
         } satisfies BRRRRDealMakerState
 
       case 'flip':
@@ -762,6 +782,7 @@ function StrategyContent() {
           daysOnMarket: io.daysOnMarket ?? DEFAULT_FLIP_DEAL_MAKER_STATE.daysOnMarket,
           sellingCostsPct: io.sellingCostsPct ?? (bd?.selling_costs_pct != null ? bd.selling_costs_pct / 100 : DEFAULT_FLIP_DEAL_MAKER_STATE.sellingCostsPct),
           capitalGainsRate: io.capitalGainsRate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.capitalGainsRate,
+          ...sf,
         } satisfies FlipDealMakerState
 
       case 'house_hack': {
@@ -787,6 +808,7 @@ function StrategyContent() {
           utilitiesMonthly: io.utilitiesMonthly ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.utilitiesMonthly,
           maintenanceRate: io.maintenanceRate ?? maintPct,
           capexRate: io.capexRate ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.capexRate,
+          ...sf,
         } satisfies HouseHackDealMakerState
       }
 
@@ -803,6 +825,7 @@ function StrategyContent() {
           assignmentFee: io.assignmentFee ?? bd?.assignment_fee ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.assignmentFee,
           marketingCosts: io.marketingCosts ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.marketingCosts,
           closingCosts: io.closingCosts ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.closingCosts,
+          ...sf,
         } satisfies WholesaleDealMakerState
       }
 
@@ -824,6 +847,7 @@ function StrategyContent() {
           annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
           annualInsurance: io.insurance ?? insurance,
           monthlyHoa: 0,
+          ...sf,
         } satisfies LTRDealMakerState
     }
   })()
@@ -1048,6 +1072,9 @@ function StrategyContent() {
       closingCostsPercent: 'closingCosts',
       interestRate: 'interestRate',
       loanTermYears: 'loanTerm',
+      sellerFinancingAmount: 'sellerFinancingAmount',
+      sellerInterestRate: 'sellerInterestRate',
+      sellerTermYears: 'sellerTermYears',
       rehabBudget: 'rehabBudget',
       arv: 'arv',
       monthlyRent: 'monthlyRent',

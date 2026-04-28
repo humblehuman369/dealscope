@@ -31,7 +31,11 @@ export function preLoadedRecordToDealMakerPatch(levers: Record<string, unknown>)
   }
   const extras = levers.pending_extras ?? levers.pendingExtras
   if (extras && typeof extras === 'object') {
-    Object.assign(patch, extras as Record<string, unknown>)
+    const ex = extras as Record<string, unknown>
+    Object.assign(patch, ex)
+    if (typeof ex.seller_carry_amount === 'number') patch.sellerFinancingAmount = ex.seller_carry_amount
+    if (typeof ex.seller_carry_rate === 'number') patch.sellerInterestRate = ex.seller_carry_rate
+    if (typeof ex.seller_carry_term_years === 'number') patch.sellerTermYears = ex.seller_carry_term_years
   }
   return patch
 }

@@ -53,6 +53,18 @@ function num(obj: Record<string, unknown>, key: string): number {
   return typeof v === 'number' && isFinite(v) ? v : 0
 }
 
+type SellerFinExport = Pick<
+  LTRDealMakerState,
+  'sellerFinancingAmount' | 'sellerInterestRate' | 'sellerTermYears'
+>
+
+function appendSellerFinancingRows(ws: ExcelJS.Worksheet, row: number, state: SellerFinExport): number {
+  addRow(ws, row++, 'Seller Financing Amount', state.sellerFinancingAmount, CUR)
+  addRow(ws, row++, 'Seller Interest', state.sellerInterestRate, PCT2)
+  addRow(ws, row++, 'Seller Term', state.sellerTermYears, '#,##0 "years"')
+  return row
+}
+
 function applyHeaderRow(ws: ExcelJS.Worksheet, row: number, text: string) {
   const r = ws.getRow(row)
   ws.mergeCells(row, 1, row, 3)
@@ -200,6 +212,7 @@ function buildLTRSheet(wb: ExcelJS.Workbook, state: LTRDealMakerState, metrics: 
   addRow(ws, r++, 'Loan Amount', loanAmount, CUR)
   addRow(ws, r++, 'Interest Rate', state.interestRate, PCT2)
   addRow(ws, r++, 'Loan Term', state.loanTermYears, '#,##0 "years"')
+  r = appendSellerFinancingRows(ws, r, state)
   addRow(ws, r++, 'Monthly Payment', monthlyPayment, CUR)
   addTotalRow(ws, r++, 'Annual Debt Service', monthlyPayment * 12, CUR)
 
@@ -261,6 +274,7 @@ function buildSTRSheet(wb: ExcelJS.Workbook, state: STRDealMakerState, metrics: 
   addRow(ws, r++, 'Loan Amount', loanAmount, CUR)
   addRow(ws, r++, 'Interest Rate', state.interestRate, PCT2)
   addRow(ws, r++, 'Loan Term', state.loanTermYears, '#,##0 "years"')
+  r = appendSellerFinancingRows(ws, r, state)
   addRow(ws, r++, 'Monthly Payment', monthlyPayment, CUR)
   addTotalRow(ws, r++, 'Annual Debt Service', monthlyPayment * 12, CUR)
 
@@ -321,6 +335,7 @@ function buildBRRRRSheet(wb: ExcelJS.Workbook, state: BRRRRDealMakerState, metri
   addRow(ws, r++, 'Discount from Market', state.buyDiscountPct, PCT)
   addRow(ws, r++, 'Down Payment', initialDown, CUR, `${(state.downPaymentPercent * 100).toFixed(0)}%`)
   addRow(ws, r++, 'Hard Money Rate', state.hardMoneyRate, PCT2)
+  r = appendSellerFinancingRows(ws, r, state)
   addRow(ws, r++, 'Closing Costs', initialClosing, CUR)
   addTotalRow(ws, r++, 'Cash Required', cashPhase1, CUR)
 
@@ -398,6 +413,7 @@ function buildFlipSheet(wb: ExcelJS.Workbook, state: FlipDealMakerState, metrics
     addRow(ws, r++, 'Points', state.loanPoints, '0.0 "pts"')
     addRow(ws, r++, 'Loan Amount', loanAmount, CUR)
   }
+  r = appendSellerFinancingRows(ws, r, state)
   addTotalRow(ws, r++, 'Cash at Purchase', cashAtPurchase, CUR)
 
   r++
@@ -464,6 +480,7 @@ function buildHouseHackSheet(wb: ExcelJS.Workbook, state: HouseHackDealMakerStat
   addRow(ws, r++, 'Interest Rate', state.interestRate, PCT2)
   addRow(ws, r++, 'PMI/MIP Rate', state.pmiRate, PCT2)
   addRow(ws, r++, 'Closing Costs', closingCosts, CUR, `${(state.closingCostsPercent * 100).toFixed(1)}%`)
+  r = appendSellerFinancingRows(ws, r, state)
   addTotalRow(ws, r++, 'Cash to Close', cashToClose, CUR)
 
   r++
@@ -531,6 +548,7 @@ function buildWholesaleSheet(wb: ExcelJS.Workbook, state: WholesaleDealMakerStat
   addRow(ws, r++, 'Earnest Money', state.earnestMoney, CUR)
   addRow(ws, r++, 'Inspection Period', state.inspectionPeriodDays, '#,##0 "days"')
   addRow(ws, r++, 'Days to Close', state.daysToClose, '#,##0 "days"')
+  r = appendSellerFinancingRows(ws, r, state)
   addTotalRow(ws, r++, 'Cash at Risk', cashAtRisk, CUR)
 
   r++
