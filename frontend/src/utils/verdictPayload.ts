@@ -9,7 +9,7 @@ export interface VerdictPayloadBase {
   listPrice: number
   monthlyRent: number
   propertyTaxes: number
-  insurance: number
+  insurance: number | null
   bedrooms: number
   bathrooms: number
   sqft: number
@@ -45,7 +45,7 @@ export function buildVerdictAnalysisPayload(
   if (overrides?.listPrice != null) listPrice = overrides.listPrice
   if (overrides?.monthlyRent != null) monthlyRent = overrides.monthlyRent
   if (overrides?.propertyTaxes != null) propertyTaxes = overrides.propertyTaxes
-  if (overrides?.insurance != null) insurance = overrides.insurance
+  if (overrides?.insurance !== undefined) insurance = overrides.insurance
   if (overrides?.arv != null) arv = overrides.arv
 
   if (sourceOverrides.price != null) listPrice = sourceOverrides.price
@@ -135,7 +135,7 @@ export function buildVerdictBaseFromPropertyResponse(
     listPrice: Math.round(resolvedPrice),
     monthlyRent: resolvedRent,
     propertyTaxes: data?.market?.property_taxes_annual ?? 0,
-    insurance: data?.market?.insurance_annual ?? 0,
+    insurance: data?.market?.insurance_annual ?? null,
     bedrooms: data?.details?.bedrooms || 3,
     bathrooms: data?.details?.bathrooms || 2,
     sqft: data?.details?.square_footage || 1500,

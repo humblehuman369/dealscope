@@ -15,10 +15,8 @@ from app.schemas.property import AllAssumptions
 
 logger = logging.getLogger(__name__)
 
-# Insurance rates sourced from NBER / Redfin median home value data (2024).
-# Rates = average annual premium / median home value by state.
-# Other adjustment fields use state-specific values where available,
-# falling back to national averages.
+# Regional market adjustments (tax, rent/price, appreciation, vacancy).
+# Insurance is handled globally via ``OPERATING.insurance_pct`` — not ZIP tables.
 _DEFAULT_ADJ: dict[str, Any] = {
     "property_tax_rate": 0.012,
     "rent_to_price_ratio": 0.008,
@@ -28,95 +26,89 @@ _DEFAULT_ADJ: dict[str, Any] = {
 
 MARKET_ADJUSTMENTS: dict[str, dict[str, Any]] = {
     # ── Southeast ────────────────────────────────────────────────
-    "AL": {"insurance_rate": 0.012, **_DEFAULT_ADJ},
-    "AR": {"insurance_rate": 0.016, **_DEFAULT_ADJ},
+    "AL": {**_DEFAULT_ADJ},
+    "AR": {**_DEFAULT_ADJ},
     "FL": {
-        "insurance_rate": 0.014,
         "property_tax_rate": 0.01,
         "rent_to_price_ratio": 0.007,
         "appreciation_rate": 0.05,
         "vacancy_rate": 0.06,
     },
     "FL_SOUTH": {
-        "insurance_rate": 0.018,
         "property_tax_rate": 0.012,
         "rent_to_price_ratio": 0.006,
         "appreciation_rate": 0.06,
         "vacancy_rate": 0.05,
     },
     "GA": {
-        "insurance_rate": 0.007,
         "property_tax_rate": 0.012,
         "rent_to_price_ratio": 0.008,
         "appreciation_rate": 0.045,
         "vacancy_rate": 0.07,
     },
-    "KY": {"insurance_rate": 0.014, **_DEFAULT_ADJ},
-    "LA": {"insurance_rate": 0.015, **_DEFAULT_ADJ},
-    "MS": {"insurance_rate": 0.015, **_DEFAULT_ADJ},
-    "NC": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
-    "SC": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
-    "TN": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
-    "VA": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
-    "WV": {"insurance_rate": 0.007, **_DEFAULT_ADJ},
+    "KY": {**_DEFAULT_ADJ},
+    "LA": {**_DEFAULT_ADJ},
+    "MS": {**_DEFAULT_ADJ},
+    "NC": {**_DEFAULT_ADJ},
+    "SC": {**_DEFAULT_ADJ},
+    "TN": {**_DEFAULT_ADJ},
+    "VA": {**_DEFAULT_ADJ},
+    "WV": {**_DEFAULT_ADJ},
     # ── Southwest / South Central ────────────────────────────────
-    "AZ": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
-    "NM": {"insurance_rate": 0.010, **_DEFAULT_ADJ},
-    "OK": {"insurance_rate": 0.019, **_DEFAULT_ADJ},
+    "AZ": {**_DEFAULT_ADJ},
+    "NM": {**_DEFAULT_ADJ},
+    "OK": {**_DEFAULT_ADJ},
     "TX": {
-        "insurance_rate": 0.011,
         "property_tax_rate": 0.022,
         "rent_to_price_ratio": 0.009,
         "appreciation_rate": 0.04,
         "vacancy_rate": 0.07,
     },
     # ── Midwest / Plains ─────────────────────────────────────────
-    "IA": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
-    "IL": {"insurance_rate": 0.011, **_DEFAULT_ADJ},
-    "IN": {"insurance_rate": 0.012, **_DEFAULT_ADJ},
-    "KS": {"insurance_rate": 0.018, **_DEFAULT_ADJ},
-    "MI": {"insurance_rate": 0.010, **_DEFAULT_ADJ},
-    "MN": {"insurance_rate": 0.007, **_DEFAULT_ADJ},
-    "MO": {"insurance_rate": 0.015, **_DEFAULT_ADJ},
-    "ND": {"insurance_rate": 0.012, **_DEFAULT_ADJ},
-    "NE": {"insurance_rate": 0.020, **_DEFAULT_ADJ},
-    "OH": {"insurance_rate": 0.008, **_DEFAULT_ADJ},
-    "SD": {"insurance_rate": 0.011, **_DEFAULT_ADJ},
-    "WI": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
+    "IA": {**_DEFAULT_ADJ},
+    "IL": {**_DEFAULT_ADJ},
+    "IN": {**_DEFAULT_ADJ},
+    "KS": {**_DEFAULT_ADJ},
+    "MI": {**_DEFAULT_ADJ},
+    "MN": {**_DEFAULT_ADJ},
+    "MO": {**_DEFAULT_ADJ},
+    "ND": {**_DEFAULT_ADJ},
+    "NE": {**_DEFAULT_ADJ},
+    "OH": {**_DEFAULT_ADJ},
+    "SD": {**_DEFAULT_ADJ},
+    "WI": {**_DEFAULT_ADJ},
     # ── Northeast ────────────────────────────────────────────────
-    "CT": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
-    "DC": {"insurance_rate": 0.004, **_DEFAULT_ADJ},
-    "DE": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
-    "MA": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
-    "MD": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
-    "ME": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
-    "NH": {"insurance_rate": 0.003, **_DEFAULT_ADJ},
-    "NJ": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
-    "NY": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
-    "PA": {"insurance_rate": 0.007, **_DEFAULT_ADJ},
-    "RI": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
-    "VT": {"insurance_rate": 0.004, **_DEFAULT_ADJ},
+    "CT": {**_DEFAULT_ADJ},
+    "DC": {**_DEFAULT_ADJ},
+    "DE": {**_DEFAULT_ADJ},
+    "MA": {**_DEFAULT_ADJ},
+    "MD": {**_DEFAULT_ADJ},
+    "ME": {**_DEFAULT_ADJ},
+    "NH": {**_DEFAULT_ADJ},
+    "NJ": {**_DEFAULT_ADJ},
+    "NY": {**_DEFAULT_ADJ},
+    "PA": {**_DEFAULT_ADJ},
+    "RI": {**_DEFAULT_ADJ},
+    "VT": {**_DEFAULT_ADJ},
     # ── West / Mountain ──────────────────────────────────────────
-    "AK": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
+    "AK": {**_DEFAULT_ADJ},
     "CA": {
-        "insurance_rate": 0.005,
         "property_tax_rate": 0.0075,
         "rent_to_price_ratio": 0.004,
         "appreciation_rate": 0.04,
         "vacancy_rate": 0.04,
     },
-    "CO": {"insurance_rate": 0.009, **_DEFAULT_ADJ},
-    "HI": {"insurance_rate": 0.002, **_DEFAULT_ADJ},
-    "ID": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
-    "MT": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
-    "NV": {"insurance_rate": 0.004, **_DEFAULT_ADJ},
-    "OR": {"insurance_rate": 0.004, **_DEFAULT_ADJ},
-    "UT": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
-    "WA": {"insurance_rate": 0.005, **_DEFAULT_ADJ},
-    "WY": {"insurance_rate": 0.006, **_DEFAULT_ADJ},
+    "CO": {**_DEFAULT_ADJ},
+    "HI": {**_DEFAULT_ADJ},
+    "ID": {**_DEFAULT_ADJ},
+    "MT": {**_DEFAULT_ADJ},
+    "NV": {**_DEFAULT_ADJ},
+    "OR": {**_DEFAULT_ADJ},
+    "UT": {**_DEFAULT_ADJ},
+    "WA": {**_DEFAULT_ADJ},
+    "WY": {**_DEFAULT_ADJ},
     # ── National fallback ────────────────────────────────────────
     "DEFAULT": {
-        "insurance_rate": 0.010,
         "property_tax_rate": 0.012,
         "rent_to_price_ratio": 0.008,
         "appreciation_rate": 0.04,
@@ -272,7 +264,7 @@ def get_state_from_zip(zip_code: str) -> str:
 def get_market_adjustments(zip_code: str) -> dict[str, Any]:
     """
     Get market-specific adjustment factors for a zip code.
-    Returns factors like insurance_rate, property_tax_rate, etc.
+    Returns factors like property_tax_rate, rent_to_price_ratio, etc.
     """
     state = get_state_from_zip(zip_code)
 

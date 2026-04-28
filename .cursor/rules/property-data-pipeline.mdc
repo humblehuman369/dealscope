@@ -12,10 +12,8 @@ There are TWO `DataNormalizer` classes. Only the one in `api_clients.py` is used
 | File | Status | Used By |
 |------|--------|---------|
 | `backend/app/services/api_clients.py` | **ACTIVE** | `PropertyService` via `create_api_clients()` |
-| `backend/app/services/data_normalizer.py` | UNUSED | Nothing — legacy reference only |
 
-**Never modify `data_normalizer.py` expecting it to affect production.** All normalizer
-changes must go in `api_clients.py :: DataNormalizer`.
+**Never modify `data_normalizer.py` expecting it to affect production** (if present in older branches). All normalizer changes must go in `api_clients.py :: DataNormalizer`.
 
 ## Active Normalizer Architecture (`api_clients.py`)
 
@@ -86,9 +84,14 @@ const data = await fetchProperty(address)  // cached via React Query
 `PropertyService.search_property()` invalidates Redis cache when:
 1. Off-market property missing zestimate and market_price
 2. **Source data exists but IQ estimate fields are missing** (pre-IQ-Estimate cached data)
+3. **`market.insurance_annual` is missing** (stale or pre-standardization cache)
 
-The staleness check at lines ~234-249 of `property_service.py` ensures old cached
-data without `value_iq_estimate` / `rental_stats` is re-fetched automatically.
+## Property insurance (annual)
+
+- **Single formula:** `insurance_annual = property_value × OPERATING.insurance_pct` (default **1%** in `app.core.defaults.OPERATING`). `property_value` uses the first available: `value_iq_estimate` → `zestimate` → `current_value_avm` → `list_price` in `PropertyService._estimate_insurance()`.
+- **No** third-party insurance APIs, county/ACS tables, or per-ZIP `insurance_rate` in `MARKET_ADJUSTMENTS`. User-editable **insurance** is the global `operating.insurance_pct` in admin/defaults (not regional overrides).
+- When no property value exists, **`insurance_annual` is `null`** — UI shows **Unavailable**; do not fabricate a dollar amount.
+- **Frontend:** canonical field is `PropertyResponse.market.insurance_annual`. Helpers live in `frontend/src/lib/insurance.ts` (`getAnnualInsurance`, `OPERATING_INSURANCE_PCT` for numeric worksheet placeholders only).
 
 ## Critical Rules
 

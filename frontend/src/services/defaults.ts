@@ -30,7 +30,6 @@ export interface ResolvedDefaultsResponse {
 export interface MarketAdjustments {
   zip_code: string
   region: string
-  insurance_rate: number
   property_tax_rate: number
   vacancy_rate: number
   rent_to_price_ratio: number

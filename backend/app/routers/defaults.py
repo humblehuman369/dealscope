@@ -83,7 +83,7 @@ async def get_resolved_defaults(
 
     Resolution order (later overrides earlier):
     1. **System defaults** - Base values from the platform
-    2. **Market adjustments** - ZIP-code based adjustments (insurance, vacancy, appreciation)
+    2. **Market adjustments** - ZIP-code based adjustments (vacancy, appreciation, tax hints)
     3. **User profile overrides** - User's saved preferences (if authenticated)
 
     Returns the merged defaults ready for use in calculations.
@@ -94,7 +94,6 @@ async def get_resolved_defaults(
         "system_defaults": { ... },
         "market_adjustments": {
             "region": "FL_SOUTH",
-            "insurance_rate": 0.018,
             "vacancy_rate": 0.05
         },
         "user_overrides": {
@@ -123,8 +122,6 @@ async def get_resolved_defaults(
             if "growth" not in resolved:
                 resolved["growth"] = {}
 
-            if "insurance_rate" in market_adjustments:
-                resolved["operating"]["insurance_pct"] = market_adjustments["insurance_rate"]
             if "vacancy_rate" in market_adjustments:
                 resolved["operating"]["vacancy_rate"] = market_adjustments["vacancy_rate"]
             if "appreciation_rate" in market_adjustments:
@@ -158,7 +155,6 @@ async def get_market_defaults(zip_code: str):
     Get market-specific adjustments for a ZIP code.
 
     Returns location-based adjustments for:
-    - **insurance_rate**: Insurance as % of property value
     - **property_tax_rate**: Effective property tax rate
     - **vacancy_rate**: Expected vacancy rate for the market
     - **rent_to_price_ratio**: Expected rent/price ratio

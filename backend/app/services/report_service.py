@@ -479,7 +479,8 @@ class ReportService:
 
         # Operating Expenses
         property_taxes = ltr.get("property_taxes", 4800)
-        insurance = ltr.get("insurance", 1800)
+        _ins = ltr.get("insurance")
+        insurance = 0.0 if _ins is None else float(_ins)
         property_management = ltr.get("property_management", annual_gross_rent * 0.10)
         maintenance = ltr.get("maintenance", annual_gross_rent * 0.05)
         utilities = ltr.get("utilities", 900)

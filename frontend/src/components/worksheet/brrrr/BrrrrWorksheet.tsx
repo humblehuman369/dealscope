@@ -7,6 +7,7 @@ import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { ArrowLeft, Calculator } from 'lucide-react'
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
 import { useDealScore } from '@/hooks/useDealScore'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
@@ -93,7 +94,8 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
   // STATE - Updated defaults per default_assumptions.csv
   const listPrice = propertyData.listPrice || 200000
   const defaultArv = propertyData.arv || listPrice * 1.35
-  const defaultInsurance = propertyData.insurance || (listPrice * 0.01) // 1% of list price
+  const defaultInsurance =
+    propertyData.insurance ?? listPrice * OPERATING_INSURANCE_PCT
   const defaultRehabCosts = defaultArv * DEFAULT_RENOVATION_BUDGET_PCT // 5% of ARV
   const defaultRefiClosingCosts = defaultArv * 0.75 * 0.03 // 3% of refinance amount
   const defaultMonthlyRent = propertyData.monthlyRent || 2200

@@ -15,6 +15,8 @@ Updated for 2025 South Florida construction costs.
 
 import logging
 from dataclasses import dataclass, field
+
+from app.core.defaults import OPERATING
 from datetime import datetime
 from enum import StrEnum
 from typing import Any
@@ -946,8 +948,8 @@ class RehabIntelligence:
         annual_tax = self.arv * 0.018
         monthly_taxes = annual_tax / 12
 
-        # Monthly insurance (FL average ~1.0% due to hurricane risk)
-        annual_insurance = self.arv * 0.010
+        # Monthly insurance (holding phase uses global insurance_pct × ARV)
+        annual_insurance = self.arv * OPERATING.insurance_pct
         monthly_insurance = annual_insurance / 12
 
         # Monthly utilities (based on size)

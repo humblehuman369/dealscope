@@ -1,5 +1,6 @@
 'use client'
 
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
@@ -14,10 +15,14 @@ export function CashFlowSection() {
   const snapshotRent = propertyData?.property_data_snapshot?.monthlyRent
   const snapshotTaxes = propertyData?.property_data_snapshot?.propertyTaxes
   const snapshotInsurance = propertyData?.property_data_snapshot?.insurance
-  
+  const snapList = propertyData?.property_data_snapshot?.listPrice
+
   const originalRent = (snapshotRent && snapshotRent > 0) ? snapshotRent : 3000
   const originalTaxes = (snapshotTaxes && snapshotTaxes > 0) ? snapshotTaxes : 5000
-  const originalInsurance = (snapshotInsurance && snapshotInsurance > 0) ? snapshotInsurance : 2000
+  const originalInsurance =
+    snapshotInsurance != null && snapshotInsurance > 0
+      ? snapshotInsurance
+      : Math.round((snapList && snapList > 0 ? snapList : 350_000) * OPERATING_INSURANCE_PCT)
 
   const multiplier = viewMode === 'monthly' ? 1/12 : 1
 

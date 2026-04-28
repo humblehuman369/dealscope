@@ -165,7 +165,7 @@ export const EXPENSES_SLIDERS: SliderConfig[] = [
   { id: 'maintenanceRate', label: 'Maintenance', min: 0.03, max: 0.10, step: 0.01, format: 'percentage', sourceLabel: 'Industry standard' },
   { id: 'managementRate', label: 'Property Management', min: 0, max: 0.12, step: 0.01, format: 'percentage', sourceLabel: 'Industry standard' },
   { id: 'annualPropertyTax', label: 'Property Taxes', min: 0, max: 20000, step: 100, format: 'currencyPerYear', sourceLabel: 'County assessment' },
-  { id: 'annualInsurance', label: 'Insurance', min: 0, max: 5000, step: 100, format: 'currencyPerYear', sourceLabel: 'ZIP-based estimate', isEstimate: true },
+  { id: 'annualInsurance', label: 'Insurance', min: 0, max: 5000, step: 100, format: 'currencyPerYear', sourceLabel: 'Global insurance % × property value', isEstimate: true },
   { id: 'monthlyHoa', label: 'HOA', min: 0, max: 500, step: 25, format: 'currencyPerMonth' },
 ]
 
@@ -209,7 +209,7 @@ export const DEFAULT_DEAL_MAKER_STATE: DealMakerState = {
   maintenanceRate: 0.05,         // Matches OPERATING.maintenance_pct
   managementRate: 0.00,          // Matches OPERATING.property_management_pct
   annualPropertyTax: 3600,
-  annualInsurance: 1500,
+  annualInsurance: 3000, // 1% of default buyPrice (OPERATING.insurance_pct)
   monthlyHoa: 0,
 }
 
@@ -423,7 +423,7 @@ export const STR_EXPENSES_SLIDERS: STRSliderConfig[] = [
   { id: 'additionalUtilitiesMonthly', label: 'Additional Utilities', min: 0, max: 500, step: 25, format: 'currencyPerMonth' },
   { id: 'maintenanceRate', label: 'Maintenance', min: 0.03, max: 0.15, step: 0.01, format: 'percentage', sourceLabel: 'Industry standard' },
   { id: 'annualPropertyTax', label: 'Property Taxes', min: 0, max: 20000, step: 100, format: 'currencyPerYear', sourceLabel: 'County assessment' },
-  { id: 'annualInsurance', label: 'Insurance', min: 0, max: 8000, step: 100, format: 'currencyPerYear', sourceLabel: 'ZIP-based estimate', isEstimate: true },
+  { id: 'annualInsurance', label: 'Insurance', min: 0, max: 8000, step: 100, format: 'currencyPerYear', sourceLabel: 'Global insurance % × property value', isEstimate: true },
   { id: 'monthlyHoa', label: 'HOA', min: 0, max: 500, step: 25, format: 'currencyPerMonth' },
 ]
 
@@ -468,7 +468,7 @@ export const DEFAULT_STR_DEAL_MAKER_STATE: STRDealMakerState = {
   additionalUtilitiesMonthly: 0, // Matches STR.additional_utilities_monthly
   maintenanceRate: 0.05,
   annualPropertyTax: 3600,
-  annualInsurance: 3000,         // Higher for STR (1% of price)
+  annualInsurance: 3000,         // 1% of default buyPrice (OPERATING.insurance_pct)
   monthlyHoa: 0,
 }
 
@@ -646,7 +646,7 @@ export const BRRRR_REFINANCE_SLIDERS: BRRRRSliderConfig[] = [
 // Phase 5: Expenses sliders (shared with rent phase for post-refi analysis)
 export const BRRRR_EXPENSES_SLIDERS: BRRRRSliderConfig[] = [
   { id: 'annualPropertyTax', label: 'Property Taxes', min: 0, max: 20000, step: 100, format: 'currencyPerYear', sourceLabel: 'County assessment' },
-  { id: 'annualInsurance', label: 'Insurance', min: 0, max: 5000, step: 100, format: 'currencyPerYear', sourceLabel: 'ZIP-based estimate', isEstimate: true },
+  { id: 'annualInsurance', label: 'Insurance', min: 0, max: 5000, step: 100, format: 'currencyPerYear', sourceLabel: 'Global insurance % × property value', isEstimate: true },
   { id: 'monthlyHoa', label: 'HOA', min: 0, max: 500, step: 25, format: 'currencyPerMonth' },
 ]
 
@@ -690,7 +690,7 @@ export const DEFAULT_BRRRR_DEAL_MAKER_STATE: BRRRRDealMakerState = {
   maintenanceRate: 0.05,
   managementRate: 0.08,
   annualPropertyTax: 4200,
-  annualInsurance: 1800,
+  annualInsurance: 2500, // 1% of default purchasePrice 250k
   monthlyHoa: 0,
 }
 
@@ -1022,7 +1022,7 @@ export const HOUSEHACK_RENT_SLIDERS: HouseHackSliderConfig[] = [
 // Phase 4: Expenses sliders
 export const HOUSEHACK_EXPENSES_SLIDERS: HouseHackSliderConfig[] = [
   { id: 'annualPropertyTax', label: 'Property Taxes', min: 0, max: 30000, step: 500, format: 'currencyPerYear', sourceLabel: 'County assessment' },
-  { id: 'annualInsurance', label: 'Insurance', min: 0, max: 10000, step: 100, format: 'currencyPerYear', sourceLabel: 'Multi-unit rate' },
+  { id: 'annualInsurance', label: 'Insurance', min: 0, max: 10000, step: 100, format: 'currencyPerYear', sourceLabel: 'Global insurance % × property value' },
   { id: 'monthlyHoa', label: 'HOA', min: 0, max: 1000, step: 25, format: 'currencyPerMonth' },
   { id: 'utilitiesMonthly', label: 'Shared Utilities', min: 0, max: 1000, step: 25, format: 'currencyPerMonth', sourceLabel: 'Owner paid' },
   { id: 'maintenanceRate', label: 'Maintenance', min: 0, max: 0.15, step: 0.01, format: 'percentage', sourceLabel: '% of rent' },
@@ -1061,7 +1061,7 @@ export const DEFAULT_HOUSEHACK_DEAL_MAKER_STATE: HouseHackDealMakerState = {
   
   // Phase 4: Expenses
   annualPropertyTax: 6000,
-  annualInsurance: 2400,
+  annualInsurance: 4000, // 1% of default purchasePrice 400k
   monthlyHoa: 0,
   utilitiesMonthly: 200,
   maintenanceRate: 0.05,

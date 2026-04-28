@@ -42,7 +42,8 @@ const FIELD_DESCRIPTIONS: Record<string, string> = {
   vacancy_rate: 'Expected vacancy loss as a percentage of gross rent',
   property_management_pct: 'Property management fee as a percentage of gross rent',
   maintenance_pct: 'Annual maintenance reserve as a percentage of gross rent',
-  insurance_pct: 'Annual insurance as a percentage of purchase price',
+  insurance_pct:
+    'Annual property insurance as a percentage of property value (matches global default insurance %)',
   utilities_monthly: 'Estimated monthly utility cost in dollars',
   landscaping_annual: 'Annual landscaping cost in dollars',
   pest_control_annual: 'Annual pest control cost in dollars',
@@ -55,7 +56,8 @@ const FIELD_DESCRIPTIONS: Record<string, string> = {
   supplies_monthly: 'Monthly guest supplies cost in dollars',
   additional_utilities_monthly: 'Additional monthly utility cost for STR in dollars',
   furniture_setup_cost: 'One-time furniture and setup cost in dollars',
-  str_insurance_pct: 'STR insurance as a percentage of purchase price',
+  str_insurance_pct:
+    'Legacy STR field in schema; calculators use operating.insurance_pct × purchase price',
   // Rehab
   renovation_budget_pct: 'Renovation budget as a percentage of ARV',
   contingency_pct: 'Contingency reserve as a percentage of rehab budget',

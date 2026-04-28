@@ -574,7 +574,7 @@ class PropertyService:
             mashvisor_data=mashvisor_data,
         )
 
-        # Expose address fields to _estimate_insurance (not in DataNormalizer FIELD_MAPPING)
+        # Expose RentCast address fields to normalized (not in FIELD_MAPPING)
         if rentcast_data:
             if rentcast_data.get("county"):
                 normalized["county"] = rentcast_data["county"]
@@ -833,7 +833,7 @@ class PropertyService:
             list_price=max(1, list_price),
             monthly_rent=monthly_rent,
             property_taxes=market.property_taxes_annual or (list_price * 0.012),
-            insurance=market.insurance_annual or (list_price * 0.01),
+            insurance=market.insurance_annual,
             bedrooms=details.bedrooms or 3,
             bathrooms=float(details.bathrooms or 2),
             sqft=details.square_footage,
@@ -1133,14 +1133,13 @@ class PropertyService:
             return avm * 0.012
         return 4500  # Default fallback
 
-    def _estimate_insurance(self, data: dict) -> float:
-        """Estimate annual insurance.
+    def _estimate_insurance(self, data: dict) -> float | None:
+        """Estimate annual insurance as property_value × default insurance_pct.
 
-        Primary: county-level landlord ratio (ACS) x state market calibration.
-        Fallback: state insurance_rate from :func:`get_market_adjustments` (ZIP).
+        Uses :data:`app.core.defaults.OPERATING.insurance_pct` (1% by default).
+        Returns ``None`` when no property value is available (no fabrication).
         """
-        from app.services import insurance_lookup
-        from app.services.assumptions_service import get_market_adjustments
+        from app.core.defaults import OPERATING
 
         market_price = (
             data.get("value_iq_estimate")
@@ -1149,20 +1148,8 @@ class PropertyService:
             or data.get("list_price")
         )
         if not market_price:
-            return 1500  # safe fallback when no price data available
-
-        county_annual = insurance_lookup.estimate_landlord_insurance_annual(
-            float(market_price),
-            data.get("state"),
-            data.get("county"),
-        )
-        if county_annual is not None:
-            return float(county_annual)
-
-        zip_code = data.get("zip_code", "")
-        adjustments = get_market_adjustments(zip_code)
-        insurance_rate = adjustments.get("insurance_rate", 0.01)
-        return round(market_price * insurance_rate, 2)
+            return None
+        return round(float(market_price) * OPERATING.insurance_pct, 2)
 
     async def _resolve_zpid_from_address(self, address: str) -> str | None:
         """Resolve a Zillow zpid from a full address."""

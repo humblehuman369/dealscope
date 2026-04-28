@@ -15,8 +15,6 @@ export const FALLBACK_PROPERTY = {
   price: 350_000,
   /** Derived: price * 0.012 */
   get propertyTaxes() { return Math.round(this.price * 0.012) },
-  /** Derived: price * 0.01 */
-  get insurance() { return Math.round(this.price * 0.01) },
   /** Empty string — do not hardcode a US state */
   state: '',
   zipCode: '',

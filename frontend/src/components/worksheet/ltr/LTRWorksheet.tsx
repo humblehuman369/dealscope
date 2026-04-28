@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useDealScore } from '@/hooks/useDealScore'
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
 import { ProGate } from '@/components/ProGate'
 
@@ -152,7 +153,8 @@ export function LTRWorksheet({
   const listPrice = propertyData.listPrice || 723600
   const defaultMonthlyRent = propertyData.monthlyRent || 8081
   const defaultPropertyTaxes = propertyData.propertyTaxes || 6471
-  const defaultInsurance = propertyData.insurance || (listPrice * 0.01)
+  const defaultInsurance =
+    propertyData.insurance ?? listPrice * OPERATING_INSURANCE_PCT
   const defaultArv = propertyData.arv || listPrice * 1.1 || 795960
 
   // Calculate initial purchase price as 95% of estimated breakeven

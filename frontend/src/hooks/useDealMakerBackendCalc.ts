@@ -10,6 +10,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { api } from '@/lib/api-client'
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 
 const DEBOUNCE_MS = 150
 
@@ -90,15 +91,17 @@ function buildPayload(
       supplies_monthly: s.suppliesMonthly || 100,
       utilities_monthly: s.additionalUtilitiesMonthly || 0,
       property_taxes_annual: s.annualPropertyTax || 3600,
-      insurance_annual: s.annualInsurance || 1500,
+      insurance_annual:
+        s.annualInsurance ?? buyPrice * OPERATING_INSURANCE_PCT,
       maintenance_pct: s.maintenanceRate || 0.05,
     }
   }
 
   if (strategyType === 'brrrr') {
     const s = state as Record<string, number>
+    const pp = s.purchasePrice || s.buyPrice || 0
     return {
-      purchase_price: s.purchasePrice || s.buyPrice,
+      purchase_price: pp,
       rehab_costs: s.rehabBudget || 0,
       arv: s.arv || 0,
       monthly_rent: s.postRehabMonthlyRent || s.monthlyRent || 0,
@@ -109,7 +112,7 @@ function buildPayload(
       refi_interest_rate: s.refinanceInterestRate || 0.06,
       refi_loan_term: s.refinanceTermYears || 30,
       property_taxes_annual: s.annualPropertyTax || 3600,
-      insurance_annual: s.annualInsurance || 1500,
+      insurance_annual: s.annualInsurance ?? pp * OPERATING_INSURANCE_PCT,
       vacancy_rate: s.vacancyRate || 0.05,
       property_management_pct: s.managementRate || 0.08,
       maintenance_pct: s.maintenanceRate || 0.05,
@@ -137,7 +140,9 @@ function buildPayload(
       selling_costs_pct: Number(s.sellingCostsPct) || 0.08,
       capital_gains_rate: Number(s.capitalGainsRate) || 0.22,
       property_taxes_annual: 0,
-      insurance_annual: 0,
+      insurance_annual:
+        (s.annualInsurance as number | undefined) ??
+        purchasePrice * OPERATING_INSURANCE_PCT,
       utilities_monthly: Number(s.holdingCostsMonthly) || 0,
       dumpster_monthly: 0,
     }
@@ -160,7 +165,8 @@ function buildPayload(
       closing_costs: purchasePrice * (s.closingCostsPercent || 0.03),
       pmi_rate: s.pmiRate || 0.0085,
       property_taxes_annual: s.annualPropertyTax || 6000,
-      insurance_annual: s.annualInsurance || 2400,
+      insurance_annual:
+        s.annualInsurance ?? purchasePrice * OPERATING_INSURANCE_PCT,
       vacancy_rate: s.vacancyRate || 0.05,
       maintenance_pct: s.maintenanceRate || 0.05,
       capex_pct: s.capexRate || 0.05,
