@@ -122,6 +122,21 @@ const CATEGORY_MARKER_HEX: Record<DealCategory, string> = {
   unknown: '#9CA3AF',
 }
 
+/**
+ * Dark-map variant of marker fills. Each color shifts one Tailwind tier deeper
+ * (500 → 600/700) so pins read clearly on the dark map canvas without the
+ * fluorescent saturation that the bright variants produce against black.
+ * The yellow → amber shift (EAB308 → D97706) is the most visible change.
+ */
+const CATEGORY_MARKER_HEX_DARK: Record<DealCategory, string> = {
+  distressed: '#DC2626',
+  stale_60: '#EA580C',
+  stale_30: '#D97706',
+  owner_listed: '#16A34A',
+  active: '#15803D',
+  unknown: '#6B7280',
+}
+
 function distressLabel(canonical: CanonicalStatus): string {
   switch (canonical) {
     case 'foreclosure':
@@ -296,8 +311,8 @@ export function classifyListings(listings: MapListing[]): Map<string, DealSignal
   return results
 }
 
-export function markerColorForCategory(category: DealCategory): string {
-  return CATEGORY_MARKER_HEX[category]
+export function markerColorForCategory(category: DealCategory, isDark = false): string {
+  return isDark ? CATEGORY_MARKER_HEX_DARK[category] : CATEGORY_MARKER_HEX[category]
 }
 
 export function sortListings(
