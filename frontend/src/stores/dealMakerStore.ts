@@ -169,6 +169,11 @@ export interface DealMakerRecord {
   
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
+
+  // Seller carry / 2nd (optional — aligns with backend DealMakerRecord)
+  seller_carry_amount?: number | null
+  seller_carry_rate?: number | null
+  seller_carry_term_years?: number | null
   
   // Cached metrics
   cached_metrics: CachedMetrics | null
@@ -270,6 +275,10 @@ export interface DealMakerUpdate {
   
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
+
+  seller_carry_amount?: number
+  seller_carry_rate?: number
+  seller_carry_term_years?: number
 }
 
 // ============================================

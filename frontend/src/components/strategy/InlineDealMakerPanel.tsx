@@ -10,6 +10,9 @@ export interface InlineDealMakerValues {
   closingCosts: number
   interestRate: number
   loanTerm: number
+  sellerFinancingAmount: number
+  sellerInterestRate: number
+  sellerTermYears: number
   rehabBudget: number
   marketValue: number
   arv: number
@@ -73,6 +76,12 @@ const FINANCING_SLIDERS: SliderConfig[] = [
     helpText: 'Annual rate on your mortgage loan. Even small changes significantly impact your monthly payment and long-term cost.' },
   { id: 'loanTermYears' as any, label: 'Loan Term', min: 10, max: 30, step: 5, format: 'years',
     helpText: '30-year terms have lower monthly payments but pay more total interest. 15-year terms build equity faster.' },
+  { id: 'sellerFinancingAmount' as any, label: 'Seller Financing Amount', min: 0, max: 500000, step: 5000, format: 'currency',
+    helpText: 'Principal the seller carries as a second mortgage or installment note (creative financing).' },
+  { id: 'sellerInterestRate' as any, label: 'Seller Interest', min: 0, max: 0.15, step: 0.0025, format: 'percentage',
+    helpText: 'Annual rate on the seller-financed portion — often lower than hard money when negotiating creative terms.' },
+  { id: 'sellerTermYears' as any, label: 'Seller Term', min: 1, max: 30, step: 1, format: 'years',
+    helpText: 'Amortization term for the seller note (may include a balloon earlier than full amortization).' },
 ]
 
 const REHAB_SLIDERS: SliderConfig[] = [
@@ -138,6 +147,9 @@ const SLIDER_ID_TO_FIELD: Record<string, keyof InlineDealMakerValues> = {
   closingCostsPercent: 'closingCosts',
   interestRate: 'interestRate',
   loanTermYears: 'loanTerm',
+  sellerFinancingAmount: 'sellerFinancingAmount',
+  sellerInterestRate: 'sellerInterestRate',
+  sellerTermYears: 'sellerTermYears',
   rehabBudget: 'rehabBudget',
   marketValue: 'marketValue',
   arv: 'arv',
@@ -158,6 +170,8 @@ function dynamicMax(sliderId: string, listPrice: number): Partial<SliderConfig> 
   if (sliderId === 'buyPrice') return { max: Math.max(2000000, listPrice * 2) }
   if (sliderId === 'marketValue') return { max: Math.max(2000000, listPrice * 2) }
   if (sliderId === 'arv') return { max: Math.max(2000000, listPrice * 2) }
+  if (sliderId === 'sellerFinancingAmount')
+    return { max: Math.min(800000, Math.max(0, listPrice * 0.95) || 500000) }
   return {}
 }
 

@@ -214,6 +214,48 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           onChange={(v) => onSliderChange('loanTerm', v)}
           listPrice={listPrice}
         />
+        <SliderRow
+          config={{
+            id: 'sellerFinancingAmount' as any,
+            label: 'Seller Financing Amount',
+            min: 0,
+            max: Math.min(800000, Math.max(50000, listPrice * 0.95)),
+            step: 5000,
+            format: 'currency',
+            helpText: 'Principal the seller carries as a second mortgage or installment note (creative financing).',
+          }}
+          value={sliderValues.sellerFinancingAmount ?? 0}
+          onChange={(v) => onSliderChange('sellerFinancingAmount', v)}
+          listPrice={listPrice}
+        />
+        <SliderRow
+          config={{
+            id: 'sellerInterestRate' as any,
+            label: 'Seller Interest',
+            min: 0,
+            max: 0.15,
+            step: 0.0025,
+            format: 'percentage',
+            helpText: 'Annual rate on the seller-financed portion.',
+          }}
+          value={sliderValues.sellerInterestRate ?? 0}
+          onChange={(v) => onSliderChange('sellerInterestRate', v)}
+          listPrice={listPrice}
+        />
+        <SliderRow
+          config={{
+            id: 'sellerTermYears' as any,
+            label: 'Seller Term',
+            min: 1,
+            max: 30,
+            step: 1,
+            format: 'years',
+            helpText: 'Amortization term for the seller note.',
+          }}
+          value={sliderValues.sellerTermYears ?? 5}
+          onChange={(v) => onSliderChange('sellerTermYears', v)}
+          listPrice={listPrice}
+        />
         <DisplayRow label="Monthly Payment" value={formatCurrency(monthlyPI)} />
         <TotalRow label="Annual Payment" value={formatCurrency(annualDebt)} />
       </div>

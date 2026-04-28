@@ -141,6 +141,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   const state: AnyStrategyState = useMemo(() => {
     if (isSavedPropertyMode && hasRecord) {
       const record = dealMakerStore.record!
+      const sf = {
+        sellerFinancingAmount: record.seller_carry_amount ?? 0,
+        sellerInterestRate: record.seller_carry_rate ?? 0,
+        sellerTermYears: record.seller_carry_term_years ?? 5,
+      }
       
       // For STR strategy, return STR state from store
       if (strategyType === 'str') {
@@ -167,6 +172,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           annualPropertyTax: record.annual_property_tax,
           annualInsurance: record.annual_insurance,
           monthlyHoa: record.monthly_hoa,
+          ...sf,
         } as STRDealMakerState
       }
       
@@ -195,6 +201,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           annualPropertyTax: record.annual_property_tax,
           annualInsurance: record.annual_insurance,
           monthlyHoa: record.monthly_hoa,
+          ...sf,
         } as BRRRRDealMakerState
       }
       
@@ -216,6 +223,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           daysOnMarket: record.days_on_market ?? DEFAULT_FLIP_DEAL_MAKER_STATE.daysOnMarket,
           sellingCostsPct: record.selling_costs_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.sellingCostsPct,
           capitalGainsRate: record.capital_gains_rate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.capitalGainsRate,
+          ...sf,
         } as FlipDealMakerState
       }
       
@@ -241,6 +249,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           utilitiesMonthly: record.utilities_monthly ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.utilitiesMonthly,
           maintenanceRate: record.maintenance_pct,
           capexRate: record.capex_rate ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.capexRate,
+          ...sf,
         } as HouseHackDealMakerState
       }
       
@@ -257,6 +266,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           assignmentFee: record.assignment_fee ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.assignmentFee,
           marketingCosts: record.marketing_costs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.marketingCosts,
           closingCosts: record.wholesale_closing_costs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.closingCosts,
+          ...sf,
         } as WholesaleDealMakerState
       }
       
@@ -277,6 +287,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         annualPropertyTax: record.annual_property_tax,
         annualInsurance: record.annual_insurance,
         monthlyHoa: record.monthly_hoa,
+        ...sf,
       } as LTRDealMakerState
     }
     
@@ -989,6 +1000,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         assignmentFee: 'assignment_fee',
         marketingCosts: 'marketing_costs',
         closingCosts: 'wholesale_closing_costs',
+        sellerFinancingAmount: 'seller_carry_amount',
+        sellerInterestRate: 'seller_carry_rate',
+        sellerTermYears: 'seller_carry_term_years',
       }
       
       const storeField = fieldMap[key]
