@@ -1427,70 +1427,35 @@ function DealMakerMockup() {
 }
 
 function MapSearchMockup() {
-  // Pre-graded Verdict pins — left to right roughly mimics a map cluster
-  const pins: Array<{ x: number; y: number; tier: 'deal' | 'check' | 'pass' | 'distress'; label: string }> = [
-    { x: 12, y: 22, tier: 'deal', label: '$285K' },
-    { x: 28, y: 60, tier: 'check', label: '$420K' },
-    { x: 38, y: 28, tier: 'deal', label: '$315K' },
-    { x: 50, y: 50, tier: 'distress', label: 'PRE-FC' },
-    { x: 62, y: 18, tier: 'pass', label: '$680K' },
-    { x: 70, y: 68, tier: 'deal', label: '$340K' },
-    { x: 82, y: 38, tier: 'check', label: '$510K' },
-    { x: 88, y: 72, tier: 'distress', label: 'AUCTION' },
-  ];
-  const tierStyle = (t: typeof pins[number]['tier']) =>
-    t === 'deal'
-      ? 'bg-emerald-500 border-emerald-300 text-white'
-      : t === 'check'
-        ? 'bg-amber-500 border-amber-300 text-black'
-        : t === 'distress'
-          ? 'bg-rose-500 border-rose-300 text-white'
-          : 'bg-rose-900 border-rose-700 text-rose-200';
-
   return (
     <>
-      {/* View toggle + filter chip row */}
+      {/* View toggle + active filter chip row */}
       <div className="flex items-center justify-between mb-3">
         <div className="inline-flex rounded-lg border border-[#1E2530] overflow-hidden text-[10px] font-bold">
           <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-300">Map</span>
           <span className="px-2.5 py-1 text-slate-400">Satellite</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase bg-rose-500/15 text-rose-300 border border-rose-500/40">Pre-Foreclosure</span>
-          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase bg-amber-500/15 text-amber-300 border border-amber-500/40">90-day stale</span>
+          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase bg-rose-500/15 text-rose-300 border border-rose-500/40">
+            Foreclosure + Pre-FC + Auction
+          </span>
         </div>
       </div>
 
-      {/* Map canvas with pins */}
-      <div
-        className="relative rounded-lg overflow-hidden mb-4 border border-[#1E2530]"
-        style={{
-          height: 220,
-          background:
-            'linear-gradient(135deg, #0a1f1a 0%, #0a2030 50%, #0a182a 100%)',
-          backgroundImage:
-            'linear-gradient(0deg, transparent 24%, rgba(52,211,153,0.06) 25%, rgba(52,211,153,0.06) 26%, transparent 27%, transparent 74%, rgba(52,211,153,0.06) 75%, rgba(52,211,153,0.06) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(52,211,153,0.06) 25%, rgba(52,211,153,0.06) 26%, transparent 27%, transparent 74%, rgba(52,211,153,0.06) 75%, rgba(52,211,153,0.06) 76%, transparent 77%, transparent)',
-          backgroundSize: '40px 40px',
-        }}
-      >
-        {/* Subtle road overlay */}
-        <div
-          aria-hidden
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.04) 31%, rgba(255,255,255,0.04) 33%, transparent 34%), linear-gradient(180deg, transparent 60%, rgba(255,255,255,0.05) 61%, rgba(255,255,255,0.05) 62%, transparent 63%)',
-          }}
+      {/* Real product screenshot — Greenacres ZIP, distressed filter active.
+          Shows the foreclosure pipeline as red pins clustered across a real
+          neighborhood, anchored by recognizable retail (CSL Plasma, Marshalls,
+          Target, Braman Honda) so the map reads as the actual product, not a
+          stylized mockup. */}
+      <div className="relative rounded-lg overflow-hidden mb-4 border border-[#1E2530] bg-black">
+        <Image
+          src="/images/map-search-distressed-greenacres.png"
+          alt="DealGapIQ Map Search — distressed listings (foreclosure, pre-foreclosure, auction) across the Greenacres, FL area, each pre-graded with a red Verdict pin"
+          width={700}
+          height={520}
+          className="w-full h-auto"
+          sizes="(min-width: 1024px) 480px, 100vw"
         />
-        {pins.map((p, i) => (
-          <div
-            key={i}
-            className={`absolute rounded-md border px-1.5 py-0.5 text-[9px] font-bold tabular-nums shadow-lg ${tierStyle(p.tier)}`}
-            style={{ left: `${p.x}%`, top: `${p.y}%`, transform: 'translate(-50%, -50%)' }}
-          >
-            {p.label}
-          </div>
-        ))}
       </div>
 
       {/* Filter row */}
@@ -1500,13 +1465,13 @@ function MapSearchMockup() {
         <FilterChip label="Auction" count="34" />
       </div>
 
-      {/* Result row */}
-      <div className="rounded-lg bg-black border border-emerald-500/25 p-3 flex justify-between items-center">
+      {/* Result row — counts distressed pins visible in the screenshot above */}
+      <div className="rounded-lg bg-black border border-rose-500/25 p-3 flex justify-between items-center">
         <div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-300 font-bold">DEALS IN VIEW</div>
-          <div className="text-[10px] text-slate-500">8 properties pre-graded</div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-rose-300 font-bold">DISTRESSED IN VIEW</div>
+          <div className="text-[10px] text-slate-500">Pre-graded across this ZIP</div>
         </div>
-        <div className="text-3xl font-bold text-emerald-400 tabular-nums">3</div>
+        <div className="text-3xl font-bold text-rose-400 tabular-nums">10</div>
       </div>
     </>
   );
