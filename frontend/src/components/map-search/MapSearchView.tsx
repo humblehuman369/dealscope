@@ -21,7 +21,7 @@ import { Loader2, Home, MousePointerClick, List, MapIcon, Check, Sun, Moon } fro
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import type { MapListing } from '@/lib/api'
-import { markerColorForCategory, type DealSignalResult } from '@/lib/dealSignal'
+import { markerColorForCategory, type DealCategory, type DealSignalResult } from '@/lib/dealSignal'
 import { FilterPanel } from './FilterPanel'
 import { PropertyPreviewCard } from './PropertyPreviewCard'
 import { PropertyCardList } from './PropertyCardList'
@@ -79,18 +79,22 @@ const US_BOUNDS = {
   west: -165,
 }
 
-const MAP_MARKER_LEGEND: { color: string; label: string }[] = [
-  { color: '#16A34A', label: 'Active' },
-  { color: '#22C55E', label: 'Owner listed' },
-  { color: '#EAB308', label: '30+ days on market' },
-  { color: '#F97316', label: '60+ days on market' },
-  { color: '#EF4444', label: 'Auction / foreclosure' },
-  { color: '#9CA3AF', label: 'Status or DOM unknown' },
+const MAP_MARKER_LEGEND: { category: DealCategory; label: string }[] = [
+  { category: 'active', label: 'Active' },
+  { category: 'owner_listed', label: 'Owner listed' },
+  { category: 'stale_30', label: '30+ days on market' },
+  { category: 'stale_60', label: '60+ days on market' },
+  { category: 'distressed', label: 'Auction / foreclosure' },
+  { category: 'unknown', label: 'Status or DOM unknown' },
 ]
 
 function MapMarkerLegend({ isDark }: { isDark: boolean }) {
   const [open, setOpen] = useState(false)
   const surface = getMapOverlaySurface(isDark)
+  const legendRows = MAP_MARKER_LEGEND.map((row) => ({
+    label: row.label,
+    color: markerColorForCategory(row.category, isDark),
+  }))
   return (
     <>
       <div
@@ -112,7 +116,7 @@ function MapMarkerLegend({ isDark }: { isDark: boolean }) {
             Marker colors
           </p>
           <ul className="space-y-1">
-            {MAP_MARKER_LEGEND.map((row) => (
+            {legendRows.map((row) => (
               <li
                 key={row.label}
                 className="flex items-center gap-2 text-[11px]"
@@ -152,7 +156,7 @@ function MapMarkerLegend({ isDark }: { isDark: boolean }) {
             }}
           >
             <ul className="space-y-1.5">
-              {MAP_MARKER_LEGEND.map((row) => (
+              {legendRows.map((row) => (
                 <li
                   key={row.label}
                   className="flex items-center gap-2 text-[11px]"
@@ -400,6 +404,7 @@ interface MapContentProps {
   // Polygon vertices owned by `useMapSearch`. Used to re-render a saved
   // polygon onto the map when restored from the session snapshot.
   polygon: number[][] | null
+  isDarkMap: boolean
 }
 
 function MapContent({
@@ -415,6 +420,7 @@ function MapContent({
   panToRef,
   mapInstanceRef,
   polygon,
+  isDarkMap,
 }: MapContentProps) {
   const map = useMap()
 
@@ -584,7 +590,7 @@ function MapContent({
           markerBorder = isSelected ? 'var(--accent-sky)' : 'rgba(255,255,255,0.7)'
           displayLabel = listing.night_price != null ? `$${listing.night_price}/n` : 'Airbnb'
         } else {
-          markerBg = signal ? markerColorForCategory(signal.category) : 'var(--surface-card)'
+          markerBg = signal ? markerColorForCategory(signal.category, isDarkMap) : 'var(--surface-card)'
           markerText = signal ? '#fff' : 'var(--text-heading)'
           markerBorder = isSelected
             ? 'var(--accent-sky)'
@@ -1124,6 +1130,7 @@ export function MapSearchView() {
             panToRef={panToRef}
             mapInstanceRef={mapInstanceRef}
             polygon={polygon}
+            isDarkMap={isDarkMap}
           />
           {dropPin && (
             <AdvancedMarker position={dropPin}>
