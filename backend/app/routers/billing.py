@@ -145,7 +145,7 @@ async def sync_iap(current_user: CurrentUser, db: DbSession):
     """
     import httpx
 
-    from app.models.subscription import TIER_LIMITS, Subscription, SubscriptionStatus, SubscriptionTier
+    from app.models.subscription import TIER_LIMITS, SubscriptionStatus, SubscriptionTier
 
     subscription = await billing_service.get_or_create_subscription(db, current_user.id)
 
