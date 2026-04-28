@@ -969,7 +969,13 @@ def compute_iq_verdict(
     strategies = [
         _calculate_ltr_strategy(buy_price, monthly_rent, property_taxes, insurance, rehab_cost, a),
         _calculate_str_strategy(
-            buy_price, adr, occupancy, property_taxes, insurance, rehab_cost, a,
+            buy_price,
+            adr,
+            occupancy,
+            property_taxes,
+            insurance,
+            rehab_cost,
+            a,
             monthly_revenue_override=mashvisor_monthly,
         ),
         _calculate_brrrr_strategy(buy_price, monthly_rent, property_taxes, insurance, arv, rehab_cost, a),

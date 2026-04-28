@@ -711,7 +711,9 @@ class EmailService:
 
         receipt_link = ""
         if receipt_url:
-            receipt_link = f'<a href="{receipt_url}" style="color: {self.BRAND_LINK}; font-weight: 600;">View receipt</a>'
+            receipt_link = (
+                f'<a href="{receipt_url}" style="color: {self.BRAND_LINK}; font-weight: 600;">View receipt</a>'
+            )
         if invoice_pdf_url:
             separator = " &middot; " if receipt_link else ""
             receipt_link += f'{separator}<a href="{invoice_pdf_url}" style="color: {self.BRAND_LINK}; font-weight: 600;">Download invoice (PDF)</a>'
@@ -785,7 +787,9 @@ class EmailService:
             amount_display = (
                 f"${amount_cents / 100:,.2f}" if currency == "usd" else f"{amount_cents / 100:,.2f} {currency.upper()}"
             )
-            amount_sentence = f"your payment of <strong style=\"color: {self.TXT_HEADING};\">{amount_display}</strong> for"
+            amount_sentence = (
+                f'your payment of <strong style="color: {self.TXT_HEADING};">{amount_display}</strong> for'
+            )
             preview_text = f"Action required: payment of {amount_display} failed"
         else:
             amount_sentence = "your payment for"
@@ -1115,15 +1119,15 @@ class EmailService:
 
         total_row = ""
         if total_users is not None:
-            total_row = f'''
+            total_row = f"""
                 <tr>
                     <td style="padding-top: 8px;">
                         <p style="font-size: 12px; color: {self.TXT_SECONDARY}; margin: 0; text-transform: uppercase; letter-spacing: 0.08em;">Total users</p>
                         <p style="font-size: 15px; color: {self.TXT_HEADING}; margin: 4px 0 0 0; font-weight: 700;">{total_users:,}</p>
                     </td>
-                </tr>'''
+                </tr>"""
 
-        content = f'''
+        content = f"""
 <h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
     🎉 New DealGapIQ signup
 </h1>
@@ -1174,7 +1178,7 @@ class EmailService:
     This is an internal operational notification. Manage recipients via the
     <code style="color: {self.TXT_SECONDARY};">ADMIN_NOTIFICATION_EMAILS</code> environment variable.
 </p>
-'''
+"""
 
         html = self._base_template(content, f"New signup: {new_user_email}")
 
@@ -1296,7 +1300,7 @@ class EmailService:
         """Confirm account deletion or scheduled deletion."""
         date_note = ""
         if deletion_date:
-            date_note = f" Your data will be permanently deleted on <strong style=\"color: {self.TXT_HEADING};\">{deletion_date}</strong>."
+            date_note = f' Your data will be permanently deleted on <strong style="color: {self.TXT_HEADING};">{deletion_date}</strong>.'
 
         content = f'''
 <h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">

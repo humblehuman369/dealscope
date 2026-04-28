@@ -1398,12 +1398,24 @@ class DataNormalizer:
         """
         ts = timestamp.isoformat()
         mashvisor_fields = [
-            "str_occupancy_mashvisor", "str_adr_mashvisor", "str_revenue_annual",
-            "str_sample_size", "str_city_fallback", "str_confidence",
-            "str_cash_flow", "str_cap_rate", "str_revpar", "str_tax_rate",
-            "str_yoy_occupancy", "str_yoy_income", "str_yoy_adr",
-            "str_reg_rating", "str_reg_day_limit", "str_reg_permit_fee",
-            "str_reg_rules_summary", "str_reg_rules_source",
+            "str_occupancy_mashvisor",
+            "str_adr_mashvisor",
+            "str_revenue_annual",
+            "str_sample_size",
+            "str_city_fallback",
+            "str_confidence",
+            "str_cash_flow",
+            "str_cap_rate",
+            "str_revpar",
+            "str_tax_rate",
+            "str_yoy_occupancy",
+            "str_yoy_income",
+            "str_yoy_adr",
+            "str_reg_rating",
+            "str_reg_day_limit",
+            "str_reg_permit_fee",
+            "str_reg_rules_summary",
+            "str_reg_rules_source",
             "str_reg_legal_for_occupied",
             # /rental-rates traditional → drives RentalMarketStatistics.mashvisor_estimate
             "rental_mashvisor_estimate",
@@ -1421,8 +1433,11 @@ class DataNormalizer:
             for field in mashvisor_fields:
                 normalized[field] = None
                 provenance[field] = {
-                    "source": "missing", "fetched_at": ts,
-                    "confidence": "low", "raw_values": None, "conflict_flag": False,
+                    "source": "missing",
+                    "fetched_at": ts,
+                    "confidence": "low",
+                    "raw_values": None,
+                    "conflict_flag": False,
                 }
             return
 
@@ -1493,7 +1508,8 @@ class DataNormalizer:
             if m_occ is not None:
                 normalized["occupancy_rate"] = m_occ / 100.0  # Mashvisor is 0-100, we store 0-1
                 provenance["occupancy_rate"] = {
-                    "source": "mashvisor", "fetched_at": ts,
+                    "source": "mashvisor",
+                    "fetched_at": ts,
                     "confidence": prov_confidence,
                     "raw_values": {"mashvisor": m_occ, "axesso": _prior_axesso_value("occupancy_rate")},
                     "conflict_flag": False,
@@ -1501,7 +1517,8 @@ class DataNormalizer:
             if m_adr is not None:
                 normalized["average_daily_rate"] = m_adr
                 provenance["average_daily_rate"] = {
-                    "source": "mashvisor", "fetched_at": ts,
+                    "source": "mashvisor",
+                    "fetched_at": ts,
                     "confidence": prov_confidence,
                     "raw_values": {"mashvisor": m_adr, "axesso": _prior_axesso_value("average_daily_rate")},
                     "conflict_flag": False,
@@ -1910,7 +1927,9 @@ def create_api_clients(
     realtor_rapidapi_host: str = "realtor-search.p.rapidapi.com",
     mashvisor_api_key: str = "",
     mashvisor_rapidapi_host: str = "mashvisor-api.p.rapidapi.com",
-) -> tuple[RentCastClient, AXESSOClient, DataNormalizer, RedfinClient | None, RealtorClient | None, MashvisorClient | None]:
+) -> tuple[
+    RentCastClient, AXESSOClient, DataNormalizer, RedfinClient | None, RealtorClient | None, MashvisorClient | None
+]:
     """Create configured API clients and normalizer."""
     rentcast = RentCastClient(rentcast_api_key, rentcast_url)
     axesso = AXESSOClient(axesso_api_key, axesso_url)
@@ -1919,8 +1938,6 @@ def create_api_clients(
     realtor = (
         RealtorClient(realtor_api_key, realtor_rapidapi_host) if realtor_api_key and realtor_rapidapi_host else None
     )
-    mashvisor = (
-        MashvisorClient(mashvisor_api_key, mashvisor_rapidapi_host) if mashvisor_api_key else None
-    )
+    mashvisor = MashvisorClient(mashvisor_api_key, mashvisor_rapidapi_host) if mashvisor_api_key else None
 
     return rentcast, axesso, normalizer, redfin, realtor, mashvisor

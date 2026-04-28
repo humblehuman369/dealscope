@@ -335,26 +335,41 @@ class PropertyService:
             beds = bedrooms or 3
 
             import asyncio as _aio
+
             lookup_task = self.mashvisor.str_lookup(
-                state=parts["state"], city=parts["city"],
-                zip_code=parts["zip"], beds=beds, address=parts["street"],
+                state=parts["state"],
+                city=parts["city"],
+                zip_code=parts["zip"],
+                beds=beds,
+                address=parts["street"],
             )
             hist_task = self.mashvisor.str_historical(
-                state=parts["state"], city=parts["city"],
-                zip_code=parts["zip"], beds=beds,
+                state=parts["state"],
+                city=parts["city"],
+                zip_code=parts["zip"],
+                beds=beds,
             )
             reg_task = self.mashvisor.str_regulatory(
-                state=parts["state"], city=parts["city"],
+                state=parts["state"],
+                city=parts["city"],
             )
             trad_rates_task = self.mashvisor.traditional_rental_rates(
-                state=parts["state"], city=parts["city"], zip_code=parts["zip"],
+                state=parts["state"],
+                city=parts["city"],
+                zip_code=parts["zip"],
             )
             airbnb_rates_task = self.mashvisor.airbnb_rental_rates(
-                state=parts["state"], city=parts["city"], zip_code=parts["zip"],
+                state=parts["state"],
+                city=parts["city"],
+                zip_code=parts["zip"],
             )
 
             lookup_resp, hist_resp, reg_resp, trad_resp, airbnb_resp = await _aio.gather(
-                lookup_task, hist_task, reg_task, trad_rates_task, airbnb_rates_task,
+                lookup_task,
+                hist_task,
+                reg_task,
+                trad_rates_task,
+                airbnb_rates_task,
                 return_exceptions=True,
             )
 
@@ -1566,8 +1581,11 @@ class PropertyService:
         mash_monthly_for_adr = str_stats_for_defaults.monthly_revenue_per_bed if str_stats_for_defaults else None
         adr = (
             property_data.rentals.average_daily_rate
-            or (mash_monthly_for_adr / 30 / (property_data.rentals.occupancy_rate or 0.65)
-                if mash_monthly_for_adr else None)
+            or (
+                mash_monthly_for_adr / 30 / (property_data.rentals.occupancy_rate or 0.65)
+                if mash_monthly_for_adr
+                else None
+            )
             or 250
         )
         occupancy = property_data.rentals.occupancy_rate or 0.75
@@ -1735,10 +1753,7 @@ class PropertyService:
         if not isinstance(url, str) or not url:
             return False
         u = url.lower()
-        return (
-            "maps.googleapis.com/maps/api/staticmap" in u
-            or "maps.googleapis.com/maps/api/streetview" in u
-        )
+        return "maps.googleapis.com/maps/api/staticmap" in u or "maps.googleapis.com/maps/api/streetview" in u
 
     def _normalize_photo(self, photo: dict[str, Any]) -> dict[str, Any] | None:
         """

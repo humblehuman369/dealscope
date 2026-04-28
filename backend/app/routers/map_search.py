@@ -121,20 +121,28 @@ async def get_heatmap(
         # airbnb_rental, traditional_coc, occupancy_rate, etc.)
         metric_value = p.get("value")
         if metric_value is None:
-            for k in ("airbnb_coc", "airbnb_rental", "traditional_coc",
-                       "traditional_rental", "occupancy_rate", "listing_price"):
+            for k in (
+                "airbnb_coc",
+                "airbnb_rental",
+                "traditional_coc",
+                "traditional_rental",
+                "occupancy_rate",
+                "listing_price",
+            ):
                 if p.get(k) is not None:
                     metric_value = p[k]
                     break
-        polygons.append(HeatmapPolygon(
-            id=p.get("id", 0),
-            boundary=p.get("boundary", ""),
-            color=p.get("color"),
-            border_color=p.get("border_color"),
-            color_level=p.get("color_level"),
-            value=metric_value,
-            airbnb_coc=p.get("airbnb_coc"),
-        ))
+        polygons.append(
+            HeatmapPolygon(
+                id=p.get("id", 0),
+                boundary=p.get("boundary", ""),
+                color=p.get("color"),
+                border_color=p.get("border_color"),
+                color_level=p.get("color_level"),
+                value=metric_value,
+                airbnb_coc=p.get("airbnb_coc"),
+            )
+        )
 
     result = HeatmapResponse(
         polygons=polygons,
@@ -178,14 +186,16 @@ async def get_neighborhoods(
     for n in raw:
         if not isinstance(n, dict):
             continue
-        neighborhoods.append(NeighborhoodSummary(
-            id=n.get("id", 0),
-            name=n.get("name", ""),
-            city=n.get("city", city),
-            state=n.get("state", state),
-            latitude=n.get("latitude"),
-            longitude=n.get("longitude"),
-        ))
+        neighborhoods.append(
+            NeighborhoodSummary(
+                id=n.get("id", 0),
+                name=n.get("name", ""),
+                city=n.get("city", city),
+                state=n.get("state", state),
+                latitude=n.get("latitude"),
+                longitude=n.get("longitude"),
+            )
+        )
 
     result = NeighborhoodListResponse(
         neighborhoods=neighborhoods,

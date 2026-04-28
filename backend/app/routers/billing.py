@@ -181,15 +181,12 @@ async def sync_iap(current_user: CurrentUser, db: DbSession):
                 sub_detail = subscriber.get("subscriptions", {}).get(product_id, {}) if product_id else {}
                 period_type = (sub_detail.get("period_type") or "").lower()
                 is_trial_period = period_type in ("trial", "intro")
-                desired_status = (
-                    SubscriptionStatus.TRIALING if is_trial_period else SubscriptionStatus.ACTIVE
-                )
+                desired_status = SubscriptionStatus.TRIALING if is_trial_period else SubscriptionStatus.ACTIVE
 
                 # Sync if entitlement is active AND either tier or status differs from truth.
                 # (Status check matters so a TRIAL→ACTIVE transition gets picked up.)
                 needs_sync = is_active and (
-                    subscription.tier != SubscriptionTier.PRO
-                    or subscription.status != desired_status
+                    subscription.tier != SubscriptionTier.PRO or subscription.status != desired_status
                 )
 
                 if needs_sync:
@@ -207,9 +204,7 @@ async def sync_iap(current_user: CurrentUser, db: DbSession):
                     if is_trial_period:
                         purchase_str = sub_detail.get("purchase_date") or ent.get("purchase_date")
                         if purchase_str:
-                            subscription.trial_start = datetime.fromisoformat(
-                                purchase_str.replace("Z", "+00:00")
-                            )
+                            subscription.trial_start = datetime.fromisoformat(purchase_str.replace("Z", "+00:00"))
                         subscription.trial_end = expires_dt
 
                     subscription.updated_at = datetime.now(UTC)
@@ -602,9 +597,7 @@ async def revenuecat_webhook(
         is_trial_period = period_type in ("TRIAL", "INTRO")
 
         subscription.tier = SubscriptionTier.PRO
-        subscription.status = (
-            SubscriptionStatus.TRIALING if is_trial_period else SubscriptionStatus.ACTIVE
-        )
+        subscription.status = SubscriptionStatus.TRIALING if is_trial_period else SubscriptionStatus.ACTIVE
         subscription.properties_limit = pro_limits["properties_limit"]
         subscription.searches_per_month = pro_limits["searches_per_month"]
         subscription.api_calls_per_month = pro_limits["api_calls_per_month"]

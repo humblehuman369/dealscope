@@ -156,9 +156,7 @@ def normalize_county_name(name: str | None) -> str | None:
     return _normalize_county_for_key(name)
 
 
-def lookup_county_insurance(
-    state: str | None, county: str | None
-) -> CountyInsuranceRecord | None:
+def lookup_county_insurance(state: str | None, county: str | None) -> CountyInsuranceRecord | None:
     _load_json()
     st = resolve_state_abbrev(state)
     ck = _normalize_county_for_key(str(county or "")) if county else None
