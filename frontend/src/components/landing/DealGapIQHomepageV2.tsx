@@ -166,7 +166,7 @@ function HeroSection({
 }) {
   return (
     <section className="px-6 md:px-12 lg:px-20 pt-16 md:pt-24 pb-20 md:pb-28">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-start">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center">
         {/* Copy column */}
         <div className="lg:col-span-7">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05] mb-6">
@@ -224,11 +224,8 @@ function HeroSection({
           <AppStoreBadges />
         </div>
 
-        {/* Phone mockup + ZIP map column — tells the "one property OR a whole
-            ZIP" story in a single visual stack. Phone shows one verdict;
-            map below shows the same product hunting across an entire
-            neighborhood. */}
-        <div className="lg:col-span-5 flex flex-col items-center lg:items-end gap-6">
+        {/* Phone mockup column */}
+        <div className="lg:col-span-5 flex justify-center lg:justify-end">
           <PhoneFrame>
             <div className="bg-black p-5">
               <div className="flex items-center justify-between mb-4 pt-2">
@@ -262,29 +259,6 @@ function HeroSection({
               </div>
             </div>
           </PhoneFrame>
-
-          {/* ZIP-level map preview. Real product screenshot — Greenacres, FL
-              — shows the verdict layer applied across an entire neighborhood
-              with the green/yellow/red pre-graded pins the verdict copy
-              promises. */}
-          <div className="w-full max-w-[420px]">
-            <div className="text-[10px] uppercase tracking-[0.25em] text-sky-300 font-bold mb-2 text-center lg:text-right">
-              Or hunt the whole ZIP →
-            </div>
-            <div className="rounded-xl overflow-hidden border border-[#1E2530] bg-black shadow-2xl">
-              <Image
-                src="/images/map-search-all-greenacres.png"
-                alt="DealGapIQ Map Search across Greenacres, FL — every parcel pre-graded with green, yellow, or red Verdict pins"
-                width={780}
-                height={520}
-                className="w-full h-auto"
-                sizes="(min-width: 1024px) 420px, 100vw"
-              />
-            </div>
-            <div className="text-[10px] text-slate-500 mt-2 text-center lg:text-right tabular-nums">
-              Greenacres, FL · every parcel pre-graded
-            </div>
-          </div>
         </div>
       </div>
     </section>
