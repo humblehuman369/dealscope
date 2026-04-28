@@ -2606,7 +2606,12 @@ input[type="range"]::-moz-range-thumb {
    guarantees we only filter THIS map (not LocationMap, scanner, etc.). */
 .map-search-crisp-dark canvas,
 .map-search-crisp-dark img[draggable="false"] {
-  filter: contrast(1.4) saturate(0.55) brightness(0.85);
+  /* Tuned to keep tiles meaningfully darker than Google's stock dark theme
+     while letting street/city/POI labels read close to their natural color.
+     Brightness 1.0 stops the global dim that was darkening label glyphs;
+     saturate 0.75 brings back enough green/blue tint to read as natural;
+     contrast 1.18 keeps tile crispness without crushing label outlines. */
+  filter: contrast(1.18) saturate(0.75) brightness(1);
 }
 
 /* Map-search address bar — placeholder follows dynamic map-overlay chrome set on the parent */
