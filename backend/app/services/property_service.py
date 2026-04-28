@@ -1146,7 +1146,7 @@ class PropertyService:
             value fed into operating expenses for the headline Deal Gap, so
             our presentation matches market convention. Falls back to $1,500
             when no price data is available.
-        risk_adjusted: county-level ACS landlord ratio × state calibration
+        risk_adjusted: county-level ACS landlord ratio x state calibration
             multiplier (preferred), or state ZIP-based rate (fallback).
             Surfaced in the UI as a transparency layer next to the baseline.
             Returns None when neither county nor ZIP data resolves.
