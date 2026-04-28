@@ -16,24 +16,24 @@ export function DealStructuresNarrative({ paragraphs }: DealStructuresNarrativeP
     <div
       style={{
         marginTop: 12,
-        padding: 14,
+        padding: '16px 18px',
         borderRadius: 10,
         background: 'var(--surface-card)',
         border: '1px solid var(--border-default)',
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: 12,
         maxWidth: 720,
       }}
     >
       <p
         style={{
           margin: 0,
-          fontSize: 11,
+          fontSize: 16,
           fontWeight: 700,
-          letterSpacing: '0.06em',
+          letterSpacing: '0.04em',
           textTransform: 'uppercase',
-          color: 'var(--accent-sky)',
+          color: 'var(--text-heading)',
         }}
       >
         In plain English
@@ -43,8 +43,8 @@ export function DealStructuresNarrative({ paragraphs }: DealStructuresNarrativeP
           key={idx}
           style={{
             margin: 0,
-            fontSize: 13.5,
-            lineHeight: 1.6,
+            fontSize: 13,
+            lineHeight: 1.55,
             color: idx === paragraphs.length - 1 ? 'var(--text-heading)' : 'var(--text-body)',
             fontWeight: idx === paragraphs.length - 1 ? 600 : 400,
           }}
