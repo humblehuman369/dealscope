@@ -224,46 +224,9 @@ function HeroSection({
           <AppStoreBadges />
         </div>
 
-        {/* Phone mockup column — phone sits on top of an atmospheric map
-            backdrop so the verdict reads as an artifact emerging from a
-            wider hunting context, not as an isolated dashboard. */}
+        {/* Phone mockup column */}
         <div className="lg:col-span-5 flex justify-center lg:justify-end">
-          <div className="relative">
-            {/* Atmospheric map backdrop. Heavily blurred, low opacity, with
-                a radial vignette mask that fades the edges to transparent
-                so the effect reads as ambient rather than as a literal
-                second screenshot. lg-only — on mobile the phone stands
-                alone to keep the layout tight. */}
-            <div
-              aria-hidden
-              className="hidden lg:block absolute pointer-events-none overflow-hidden"
-              style={{
-                top: -80,
-                bottom: -80,
-                left: -160,
-                right: -160,
-                maskImage:
-                  'radial-gradient(ellipse at center, rgba(0,0,0,0.9) 18%, rgba(0,0,0,0.55) 45%, transparent 78%)',
-                WebkitMaskImage:
-                  'radial-gradient(ellipse at center, rgba(0,0,0,0.9) 18%, rgba(0,0,0,0.55) 45%, transparent 78%)',
-              }}
-            >
-              <Image
-                src="/images/map-search-all-greenacres.png"
-                alt=""
-                fill
-                sizes="(min-width: 1024px) 700px, 100vw"
-                className="object-cover"
-                style={{
-                  opacity: 0.12,
-                  filter: 'blur(6px)',
-                }}
-              />
-            </div>
-
-            {/* Phone — relative z-10 so it sits above the atmospheric backdrop */}
-            <div className="relative z-10">
-              <PhoneFrame>
+          <PhoneFrame>
             <div className="bg-black p-5">
               <div className="flex items-center justify-between mb-4 pt-2">
                 <span className="text-base font-bold">
@@ -296,8 +259,6 @@ function HeroSection({
               </div>
             </div>
           </PhoneFrame>
-            </div>
-          </div>
         </div>
       </div>
     </section>
