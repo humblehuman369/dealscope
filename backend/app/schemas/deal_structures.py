@@ -1,6 +1,6 @@
 """Schemas for the Three Paths feature — deal structures shown when Deal Gap is negative."""
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -47,6 +47,14 @@ class DealStructure(BaseModel):
     ranking_score: float = Field(0, description="0-100 realism score; higher = more plausible")
     pitch_script: str | None = Field(None, description="Negotiation script the buyer can copy/paste")
     caveat: str | None = Field(None, description="Honest one-line caveat shown in card detail")
+    selection_reason: str | None = Field(
+        None,
+        description="Why this structure was selected for this property (shown above levers)",
+    )
+    pre_loaded_record: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Partial overrides for Strategy worksheet / Deal Maker (snake_case keys)",
+    )
 
 
 class DealStructuresPayload(BaseModel):

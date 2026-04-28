@@ -52,6 +52,10 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         f"I can close fast and clean — would the seller meet me there?"
     )
 
+    sel_reason = f"Shown because a {gap_pct:.1f}% price reduction closes the gap to the Target Buy"
+    if ctx.days_on_market and ctx.days_on_market > 60:
+        sel_reason = f"Shown because the property has been listed {ctx.days_on_market} days — price flexibility is more likely"
+
     return DealStructure(
         id=ID,
         family=FAMILY,
@@ -82,4 +86,6 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         ranking_score=min(100.0, max(0.0, ranking)),
         pitch_script=pitch,
         caveat=None,
+        selection_reason=sel_reason,
+        pre_loaded_record={"custom_purchase_price": new_price},
     )

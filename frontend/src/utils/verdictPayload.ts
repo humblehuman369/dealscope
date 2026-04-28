@@ -29,6 +29,10 @@ export interface VerdictPayloadBase {
   marketTemperature?: string | null
   /** Two-letter state code for regional investor discount probability */
   state?: string | null
+  /** Last sale — drives Three Paths Sub2 heuristic when set */
+  estimatedPurchaseYear?: number | null
+  estimatedPurchasePrice?: number | null
+  yearBuilt?: number | null
 }
 
 export function buildVerdictAnalysisPayload(
@@ -74,6 +78,9 @@ export function buildVerdictAnalysisPayload(
     is_fsbo: base.isFsbo ?? false,
     market_temperature: base.marketTemperature ?? undefined,
     state: base.state ?? undefined,
+    estimated_purchase_year: base.estimatedPurchaseYear ?? undefined,
+    estimated_purchase_price: base.estimatedPurchasePrice ?? undefined,
+    year_built: base.yearBuilt ?? undefined,
   }
 
   if (overrides) {
@@ -154,5 +161,14 @@ export function buildVerdictBaseFromPropertyResponse(
     isFsbo: data?.listing?.is_fsbo || false,
     marketTemperature: data?.market?.market_stats?.market_temperature || undefined,
     state: data?.state ?? data?.details?.state ?? undefined,
+    estimatedPurchaseYear: (() => {
+      const raw = data?.listing?.date_sold
+      if (!raw || typeof raw !== 'string') return undefined
+      const d = new Date(raw)
+      if (Number.isNaN(d.getTime())) return undefined
+      return d.getFullYear()
+    })(),
+    estimatedPurchasePrice: data?.listing?.last_sold_price ?? undefined,
+    yearBuilt: data?.details?.year_built ?? undefined,
   }
 }

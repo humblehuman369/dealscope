@@ -75,6 +75,27 @@ def _paragraph_for(structure: DealStructure, ctx: StructureContext, index: int) 
             f"This might mean fixing the place up, or just checking that the current rent matches the neighborhood."
         )
 
+    if sid == "sub2":
+        return (
+            f"{lead} is to keep paying the seller's existing loan instead of taking out a brand-new mortgage. "
+            f"When their rate is much lower than today's rates, your monthly payment can drop a lot. "
+            f"Banks sometimes call loans due when a home sells, so people use title structures their attorney sets up."
+        )
+
+    if sid == "rate-buydown-2-1":
+        return (
+            f"{lead} is to ask the seller to pay for a rate buydown. "
+            f"You still get a normal loan, but your payment is lower in year one and year two while you raise rents or line up a refinance. "
+            f"Builders and motivated sellers use this a lot when a listing has been sitting."
+        )
+
+    if sid == "larger-down":
+        return (
+            f"{lead} is to put more money down at closing. "
+            f"A bigger down payment means a smaller loan, so your monthly payment goes down. "
+            f"People do this when they have cash sitting in savings and want the house to cash flow."
+        )
+
     return f"{lead}: {structure.headline}. {structure.summary}"
 
 

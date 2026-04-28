@@ -146,6 +146,17 @@ GROWTH = GrowthDefaults()
 # Buy discount percentage below breakeven (5% = buy at 95% of breakeven)
 DEFAULT_BUY_DISCOUNT_PCT = 0.05
 
+# Per-template kill switches for Three Paths (`deal_structures`). Keys match template module ``ID``.
+# Merged with DB/admin overrides via ``AllAssumptions.structure_template_flags``.
+STRUCTURE_TEMPLATE_FLAGS: dict[str, bool] = {
+    "price-negotiation": True,
+    "seller-second-zero-balloon": True,
+    "rent-verification": True,
+    "sub2": True,
+    "rate-buydown-2-1": True,
+    "larger-down": True,
+}
+
 
 def get_all_defaults() -> dict[str, Any]:
     """
@@ -221,6 +232,7 @@ def get_all_defaults() -> dict[str, Any]:
             "expense_growth_rate": GROWTH.expense_growth_rate,
         },
         "buy_discount_pct": DEFAULT_BUY_DISCOUNT_PCT,
+        "structure_template_flags": dict(STRUCTURE_TEMPLATE_FLAGS),
     }
 
 

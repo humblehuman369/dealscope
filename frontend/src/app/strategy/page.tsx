@@ -28,6 +28,13 @@ import {
   readDealMakerOverrides,
   writeDealMakerOverrides,
 } from '@/utils/addressIdentity'
+import { decodeScenario } from '@/lib/dealStructures/scenarioPayload'
+import {
+  appendSavedThreePathScenario,
+  preLoadedRecordToDealMakerPatch,
+  readLastAppliedScenario,
+  writeLastAppliedScenario,
+} from '@/lib/dealStructures/loadScenario'
 import { getConditionAdjustment } from '@/utils/property-adjustments'
 import { calculateMortgagePayment } from '@/utils/calculations'
 import { tw } from '@/components/iq-verdict/verdict-design-tokens'
@@ -188,6 +195,7 @@ function StrategyContent() {
   const resolvedAddressRef = useRef(addressParam)
   /** After first successful property load, refetches skip full-page loader (DealMaker sliders / session echo). */
   const hasLoadedPropertyRef = useRef(false)
+  const threePathsScenarioKeyRef = useRef<string | null>(null)
 
   useEffect(() => {
     hasLoadedPropertyRef.current = false
@@ -235,6 +243,54 @@ function StrategyContent() {
     // Do not subscribe to dealMakerOverridesUpdated: this page writes session on slider change;
     // re-loading would setInitialOverrides and retrigger full fetch + loading flash. Initial read on mount is enough.
   }, [addressParam, strategyParam])
+
+  // Three Paths: apply ?scenario= base64 payload from Verdict, then strip from URL.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !addressParam) return
+    const sc = searchParams.get('scenario')
+    if (!sc) return
+    const dedupeKey = `${addressParam}|${sc}`
+    if (threePathsScenarioKeyRef.current === dedupeKey) return
+    threePathsScenarioKeyRef.current = dedupeKey
+
+    let decoded = decodeScenario(sc)
+    if (!decoded) {
+      decoded = readLastAppliedScenario()
+    }
+    if (!decoded) return
+    writeLastAppliedScenario(decoded)
+
+    const patch = preLoadedRecordToDealMakerPatch((decoded.levers ?? {}) as Record<string, unknown>)
+    try {
+      writeDealMakerOverrides(
+        addressParam,
+        { ...patch, threePathsLabel: decoded.label } as Record<string, unknown>,
+        { origin: 'verdict_sync' },
+      )
+    } catch {
+      /* ignore */
+    }
+    appendSavedThreePathScenario({
+      label: decoded.label,
+      structureId: decoded.structureId,
+      savedAt: Date.now(),
+      address: addressParam,
+      payload: decoded,
+    })
+
+    const nextParams = new URLSearchParams(searchParams.toString())
+    nextParams.delete('scenario')
+    router.replace(`/strategy?${nextParams.toString()}`, { scroll: false })
+
+    try {
+      const merged = readDealMakerOverrides(addressParam)
+      if (merged && isInitialOverrideEligible(merged)) {
+        setInitialOverrides(merged)
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [addressParam, searchParams, router])
 
   const savePropertySnapshot = useMemo(() => {
     if (!addressParam || !propertyInfo) return undefined
