@@ -31,6 +31,8 @@ from app.services.calculators.common import (
     calculate_cash_on_cash,
     calculate_dscr,
 )
+from app.services.deal_structures import compute_deal_structures
+from app.services.deal_structures.context import StructureContext
 
 logger = logging.getLogger(__name__)
 
@@ -1060,6 +1062,34 @@ def compute_iq_verdict(
         is_fsbo=input_data.is_fsbo or False,
     )
 
+    # Three Paths — alternative deal structures, only computed when gap is negative.
+    structure_ctx = StructureContext(
+        list_price=list_price,
+        target_buy_price=buy_price,
+        income_value=income_value,
+        deal_gap_pct=deal_gap_pct,
+        monthly_rent=monthly_rent,
+        property_taxes_annual=property_taxes,
+        insurance_annual=insurance,
+        down_payment_pct=down_pct,
+        interest_rate=rate,
+        loan_term_years=term,
+        closing_costs_pct=closing_pct,
+        vacancy_rate=vacancy,
+        maintenance_pct=maint_pct,
+        management_pct=mgmt_pct,
+        capex_pct=capex_pct,
+        utilities_annual=utilities_annual,
+        other_annual_expenses=other_annual,
+        is_listed=bool(input_data.is_listed) if input_data.is_listed is not None else True,
+        days_on_market=input_data.days_on_market,
+        is_fsbo=bool(input_data.is_fsbo),
+        is_foreclosure=bool(input_data.is_foreclosure),
+        is_bank_owned=bool(input_data.is_bank_owned),
+        market_temperature=input_data.market_temperature,
+    )
+    deal_structures_payload = compute_deal_structures(structure_ctx)
+
     opp_grade, opp_label, opp_color = _score_to_grade_label(deal_score)
     ret_grade, ret_label, ret_color = _score_to_grade_label(top_strategy["score"])
 
@@ -1138,6 +1168,7 @@ def compute_iq_verdict(
         deal_factors=[DealFactor(**f) for f in deal_factors_raw],
         discount_bracket_label=bracket_label,
         deal_narrative=deal_narrative,
+        deal_structures=deal_structures_payload if deal_structures_payload.has_paths else None,
     )
 
 
