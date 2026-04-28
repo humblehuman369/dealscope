@@ -23,6 +23,7 @@ import {
   DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
   DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
 } from './types'
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 
 // ------------------------------------------------------------------
 // Individual strategy initializers
@@ -32,21 +33,22 @@ export function buildLTRState(
   property: DealMakerPropertyData,
   listPrice?: number,
 ): LTRDealMakerState {
+  const price = listPrice ?? property.price ?? 350000
   return {
-    buyPrice: listPrice ?? property.price ?? 350000,
+    buyPrice: price,
     downPaymentPercent: 0.20,
     closingCostsPercent: 0.03,
     interestRate: 0.06,
     loanTermYears: 30,
     rehabBudget: 0,
-    arv: (listPrice ?? property.price ?? 350000) * 1.0,
+    arv: price * 1.0,
     monthlyRent: property.rent ?? 2800,
     otherIncome: 0,
     vacancyRate: 0.01,
     maintenanceRate: 0.05,
     managementRate: 0.00,
     annualPropertyTax: property.propertyTax || 4200,
-    annualInsurance: property.insurance || 1800,
+    annualInsurance: property.insurance ?? Math.round(price * OPERATING_INSURANCE_PCT),
     monthlyHoa: 0,
   }
 }
@@ -61,7 +63,8 @@ export function buildSTRState(
     buyPrice: basePrice,
     arv: basePrice * 1.0,
     annualPropertyTax: property.propertyTax || 4200,
-    annualInsurance: (property.insurance || 1800) * 1.5, // Higher for STR
+    annualInsurance:
+      property.insurance ?? Math.round(basePrice * OPERATING_INSURANCE_PCT),
   }
 }
 
@@ -77,7 +80,8 @@ export function buildBRRRRState(
     arv: basePrice * 1.15,
     postRehabMonthlyRent: property.rent ? property.rent * 1.1 : 2800,
     annualPropertyTax: property.propertyTax || 4200,
-    annualInsurance: property.insurance || 1800,
+    annualInsurance:
+      property.insurance ?? Math.round(discountedPrice * OPERATING_INSURANCE_PCT),
   }
 }
 
@@ -93,7 +97,7 @@ export function buildFlipState(
     arv: basePrice * 1.10,
     holdingCostsMonthly:
       (property.propertyTax || 4200) / 12 +
-      (property.insurance || 1800) / 12 +
+      (property.insurance ?? discountedPrice * OPERATING_INSURANCE_PCT) / 12 +
       200,
   }
 }
@@ -111,7 +115,8 @@ export function buildHouseHackState(
       : 1500,
     avgRentPerUnit: property.rent ? Math.round(property.rent / 4) : 1500,
     annualPropertyTax: property.propertyTax || 6000,
-    annualInsurance: property.insurance || 2400,
+    annualInsurance:
+      property.insurance ?? Math.round(basePrice * OPERATING_INSURANCE_PCT),
   }
 }
 

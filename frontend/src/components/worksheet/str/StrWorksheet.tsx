@@ -22,6 +22,7 @@ import { EquityChart } from '../charts/EquityChart'
 // Chart components
 import { StrRevenueBreakdown } from '../charts/StrRevenueBreakdown'
 import { ProGate } from '@/components/ProGate'
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { KeyMetricsGrid } from '../charts/KeyMetricsGrid'
 import { StrVsLtrComparison } from '../charts/StrVsLtrComparison'
 import { STRMetricsChart, buildSTRMetricsData } from './STRMetricsChart'
@@ -185,7 +186,8 @@ export function StrWorksheet({
     purchasePrice: inputs.purchase_price,
     monthlyRent: estimatedMonthlyRent,
     propertyTaxes: inputs.property_taxes_annual || 6000,
-    insurance: inputs.insurance_annual || (originalPrice * 0.01),
+    insurance:
+      inputs.insurance_annual ?? originalPrice * OPERATING_INSURANCE_PCT,
     vacancyRate: 1 - (inputs.occupancy_rate || 0.65), // Convert occupancy to vacancy
     maintenancePct: 0.05,
     managementPct: 0.10, // STR management typically 10%
@@ -637,7 +639,10 @@ export function StrWorksheet({
                     listPrice: String(originalPrice),
                     rentEstimate: String(Math.round(estimatedMonthlyRent)),
                     propertyTax: String(inputs.property_taxes_annual || 6000),
-                    insurance: String(inputs.insurance_annual || 1500),
+                    insurance: String(
+                      inputs.insurance_annual ??
+                        Math.round(originalPrice * OPERATING_INSURANCE_PCT),
+                    ),
                   })
                   router.push(`/deal-maker/${encodedAddress}?${params.toString()}`)
                 }}

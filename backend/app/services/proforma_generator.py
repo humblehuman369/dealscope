@@ -995,7 +995,11 @@ async def generate_proforma_data(
     vacancy_rate = _OPS.vacancy_rate * 100  # Convert to percent
     management_pct = _OPS.property_management_pct
     maintenance_pct = _OPS.maintenance_pct
-    insurance = insurance_override or (purchase_price * _OPS.insurance_pct)
+    insurance = (
+        insurance_override
+        if insurance_override is not None
+        else (purchase_price * _OPS.insurance_pct)
+    )
     utilities = _OPS.utilities_monthly * 12
     landscaping = _OPS.landscaping_annual
     pest_control = _OPS.pest_control_annual

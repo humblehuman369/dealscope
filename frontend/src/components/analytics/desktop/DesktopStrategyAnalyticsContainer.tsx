@@ -56,6 +56,7 @@ import {
 
 // Import desktop styles
 import './desktop-analytics.css'
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 
 // ============================================
@@ -139,7 +140,8 @@ function createDefaultAssumptions(property: PropertyData): TargetAssumptions {
     occupancyRate: property.occupancyRate || 0.70,
     vacancyRate: 0.05,
     propertyTaxes: property.propertyTaxes || property.listPrice * 0.012,
-    insurance: property.insurance || 1800,
+    insurance:
+      property.insurance ?? property.listPrice * OPERATING_INSURANCE_PCT,
     managementPct: 0.08,
     maintenancePct: 0.05,
     rehabCost,

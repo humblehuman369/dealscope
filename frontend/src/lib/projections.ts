@@ -3,6 +3,8 @@
  * 10-year projections, scenario comparison, and multi-property analysis
  */
 
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
+
 // ============================================
 // TYPES
 // ============================================
@@ -303,7 +305,7 @@ export function getDefaultProjectionAssumptions(
     annualRentGrowth: 0.03,
     vacancyRate: 0.05,
     propertyTaxes,
-    insurance: 1500,
+    insurance: Math.round(purchasePrice * OPERATING_INSURANCE_PCT),
     propertyTaxGrowth: 0.02,
     insuranceGrowth: 0.03,
     managementPct: 0.08,

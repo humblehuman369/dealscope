@@ -7,6 +7,7 @@ import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { ArrowLeft, Calculator } from 'lucide-react'
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_BUY_DISCOUNT_PCT } from '@/lib/iqTarget'
 import { useDealScore } from '@/hooks/useDealScore'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
@@ -138,7 +139,8 @@ export function FlipWorksheet({
   // ============================================
   const listPrice = propertyData.listPrice || 300000
   const defaultArv = propertyData.arv || listPrice * 1.35
-  const defaultInsurance = propertyData.insurance || (listPrice * 0.01) // 1% of list price
+  const defaultInsurance =
+    propertyData.insurance ?? listPrice * OPERATING_INSURANCE_PCT
   const defaultRehabCosts = defaultArv * DEFAULT_RENOVATION_BUDGET_PCT // 5% of ARV
   
   // For flips, estimate breakeven using 70% rule: ARV * 0.70 - Rehab = MAO

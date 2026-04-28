@@ -87,11 +87,10 @@ class DealMakerService:
         if zip_code:
             market = get_market_adjustments(zip_code)
             assumptions_dict = assumptions.model_dump(
-                exclude={"insurance_pct", "vacancy_rate", "appreciation_rate", "market_region"}
+                exclude={"vacancy_rate", "appreciation_rate", "market_region"}
             )
             assumptions = InitialAssumptions(
                 **assumptions_dict,
-                insurance_pct=market.get("insurance_rate", o.insurance_pct),
                 vacancy_rate=market.get("vacancy_rate", o.vacancy_rate),
                 appreciation_rate=market.get("appreciation_rate", a.appreciation_rate),
                 market_region=market.get("region"),

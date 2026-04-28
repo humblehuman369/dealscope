@@ -15,10 +15,20 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.property import AllAssumptions
+from app.schemas.property import AllAssumptions, OperatingAssumptions
 from app.services.assumptions_service import get_default_assumptions
 
 logger = logging.getLogger(__name__)
+
+
+def _resolve_insurance_annual(o: OperatingAssumptions, base_price: float) -> float:
+    """Annual insurance from explicit override or ``base_price × insurance_pct``.
+
+    Uses ``is not None`` so a user-entered ``0`` is preserved.
+    """
+    if o.insurance_annual is not None:
+        return o.insurance_annual
+    return base_price * o.insurance_pct
 
 
 async def resolve_assumptions(
@@ -73,7 +83,7 @@ def build_ltr_params(
 ) -> dict[str, Any]:
     f = assumptions.financing
     o = assumptions.operating
-    insurance_annual = o.insurance_annual if o.insurance_annual else purchase_price * o.insurance_pct
+    insurance_annual = _resolve_insurance_annual(o, purchase_price)
     return dict(
         purchase_price=purchase_price,
         monthly_rent=monthly_rent,
@@ -107,7 +117,7 @@ def build_str_params(
     f = assumptions.financing
     o = assumptions.operating
     s = assumptions.str_assumptions
-    insurance_annual = s.str_insurance_annual if s.str_insurance_annual else purchase_price * s.str_insurance_pct
+    insurance_annual = _resolve_insurance_annual(o, purchase_price)
     maintenance_annual = purchase_price * o.maintenance_pct
     return dict(
         purchase_price=purchase_price,
@@ -148,7 +158,7 @@ def build_brrrr_params(
     renovation_budget = r.renovation_budget if r.renovation_budget else arv * r.renovation_budget_pct
     monthly_holding = r.monthly_holding_costs if r.monthly_holding_costs else (market_value * r.holding_costs_pct) / 12
     refi_closing = b.refinance_closing_costs if b.refinance_closing_costs else arv * b.refinance_closing_costs_pct
-    insurance_annual = o.insurance_annual if o.insurance_annual else arv * o.insurance_pct
+    insurance_annual = _resolve_insurance_annual(o, market_value)
     return dict(
         market_value=market_value,
         arv=arv,
@@ -184,7 +194,7 @@ def build_flip_params(
     r = assumptions.rehab
     fl = assumptions.flip
     renovation_budget = r.renovation_budget if r.renovation_budget else arv * r.renovation_budget_pct
-    insurance_annual = o.insurance_annual if o.insurance_annual else market_value * o.insurance_pct
+    insurance_annual = _resolve_insurance_annual(o, market_value)
     return dict(
         market_value=market_value,
         arv=arv,
@@ -213,7 +223,7 @@ def build_house_hack_params(
     f = assumptions.financing
     o = assumptions.operating
     h = assumptions.house_hack
-    insurance_annual = o.insurance_annual if o.insurance_annual else purchase_price * o.insurance_pct
+    insurance_annual = _resolve_insurance_annual(o, purchase_price)
     return dict(
         purchase_price=purchase_price,
         monthly_rent_per_room=monthly_rent_per_room,

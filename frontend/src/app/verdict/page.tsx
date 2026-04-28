@@ -477,7 +477,7 @@ function VerdictContent() {
         let listPriceForCalc: number
         let rentForCalc: number
         let taxesForCalc: number
-        let insuranceForCalc: number
+        let insuranceForCalc: number | null
         let arvForCalc: number | null
         
         if (isSavedPropertyMode && hasRecord && dealMakerStore.record) {
@@ -512,7 +512,7 @@ function VerdictContent() {
             : (propertyData.propertyTaxes || 0)
           insuranceForCalc = overrideInsurance 
             ? parseFloat(overrideInsurance) 
-            : (propertyData.insurance || 0)
+            : (propertyData.insurance ?? null)
           arvForCalc = overrideArv 
             ? parseFloat(overrideArv) 
             : (propertyData.arv ?? null)

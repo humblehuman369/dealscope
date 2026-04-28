@@ -1,3 +1,5 @@
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
+
 /**
  * RehabIntelligence - Intelligent Rehab Cost Estimation Engine
  * 
@@ -777,7 +779,7 @@ export class RehabIntelligence {
     const loanAmount = this.arv * ltv
     const monthlyInterest = (loanAmount * loanRate) / 12
     const monthlyTaxes = (this.arv * 0.018) / 12
-    const monthlyInsurance = (this.arv * 0.010) / 12
+    const monthlyInsurance = (this.arv * OPERATING_INSURANCE_PCT) / 12
     
     let monthlyUtilities: number
     if (this.sqFt > 4000) {

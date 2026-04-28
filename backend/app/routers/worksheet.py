@@ -10,6 +10,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
+from app.core.defaults import OPERATING
 from app.core.deps import DbSession
 from app.services.assumption_resolver import resolve_assumptions
 from app.services.calculators import (
@@ -82,7 +83,7 @@ class BRRRRWorksheetInput(BaseModel):
     sqft: float | None = None
     monthly_rent: float
     property_taxes_annual: float = 6000
-    insurance_annual: float = 2000
+    insurance_annual: float | None = None
     utilities_monthly: float = 0
     down_payment_pct: float = 0.20
     loan_to_cost_pct: float | None = None
@@ -109,7 +110,7 @@ class FlipWorksheetInput(BaseModel):
     points: float = 2
     holding_months: float = 6
     property_taxes_annual: float = 4000
-    insurance_annual: float = 1500
+    insurance_annual: float | None = None
     utilities_monthly: float = 150
     dumpster_monthly: float = 100
     inspection_costs: float = 0
@@ -126,7 +127,7 @@ class HouseHackWorksheetInput(BaseModel):
     list_price: float | None = None
     fha_max_price: float | None = None
     property_taxes_annual: float = 6000
-    insurance_annual: float = 2000
+    insurance_annual: float | None = None
     down_payment_pct: float = 0.035
     interest_rate: float = 0.07
     loan_term_years: int = 30
@@ -302,7 +303,7 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
         ia = (
             input_data.insurance_annual
             if input_data.insurance_annual is not None
-            else input_data.purchase_price * s.str_insurance_pct
+            else input_data.purchase_price * o.insurance_pct
         )
 
         result = calculate_str(
@@ -418,6 +419,12 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
     """Calculate BRRRR worksheet metrics."""
     try:
         a = await resolve_assumptions(db)
+        o = a.operating
+        ia = (
+            input_data.insurance_annual
+            if input_data.insurance_annual is not None
+            else input_data.purchase_price * o.insurance_pct
+        )
         purchase_costs_pct = (
             input_data.purchase_costs / input_data.purchase_price
             if input_data.purchase_costs > 0
@@ -452,7 +459,7 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
             operating_expense_pct=input_data.property_management_pct
             + input_data.maintenance_pct
             + input_data.capex_pct,
-            insurance_annual=input_data.insurance_annual,
+            insurance_annual=ia,
         )
 
         sqft = input_data.sqft or 1
@@ -471,7 +478,7 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
         annual_interest = initial_loan_amount * input_data.interest_rate
         holding_interest = annual_interest * (input_data.holding_months / 12)
         holding_taxes = input_data.property_taxes_annual * (input_data.holding_months / 12)
-        holding_insurance = input_data.insurance_annual * (input_data.holding_months / 12)
+        holding_insurance = ia * (input_data.holding_months / 12)
         holding_utilities = input_data.utilities_monthly * input_data.holding_months
         total_holding_costs = holding_interest + holding_taxes + holding_insurance + holding_utilities
         cash_out_at_refi = result["cash_out_at_refinance"]
@@ -486,7 +493,7 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
         maintenance = effective_income * input_data.maintenance_pct
         capex = effective_income * input_data.capex_pct
         total_expenses = (
-            input_data.property_taxes_annual + input_data.insurance_annual + property_management + maintenance + capex
+            input_data.property_taxes_annual + ia + property_management + maintenance + capex
         )
         noi = effective_income - total_expenses
         annual_debt_service = result["new_monthly_pi"] * 12
@@ -534,7 +541,7 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
             "vacancy_loss": vacancy_loss,
             "effective_income": effective_income,
             "property_taxes": input_data.property_taxes_annual,
-            "insurance": input_data.insurance_annual,
+            "insurance": ia,
             "property_management": property_management,
             "maintenance": maintenance,
             "capex": capex,
@@ -566,6 +573,11 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
 async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
     """Calculate Fix & Flip worksheet metrics."""
     try:
+        ins_annual = (
+            input_data.insurance_annual
+            if input_data.insurance_annual is not None
+            else input_data.purchase_price * OPERATING.insurance_pct
+        )
         purchase_costs_pct = (
             input_data.purchase_costs / input_data.purchase_price if input_data.purchase_costs > 0 else 0.03
         )
@@ -581,7 +593,7 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
             contingency_pct=input_data.contingency_pct,
             holding_period_months=input_data.holding_months,
             property_taxes_annual=input_data.property_taxes_annual,
-            insurance_annual=input_data.insurance_annual,
+            insurance_annual=ins_annual,
             utilities_monthly=input_data.utilities_monthly,
             security_maintenance_monthly=input_data.dumpster_monthly,
             selling_costs_pct=input_data.selling_costs_pct,
@@ -600,7 +612,7 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
         else:
             monthly_payment = (loan_amount * input_data.interest_rate) / 12
         monthly_taxes = input_data.property_taxes_annual / 12
-        monthly_insurance = input_data.insurance_annual / 12
+        monthly_insurance = ins_annual / 12
         monthly_holding_base = (
             monthly_payment
             + monthly_taxes
@@ -688,6 +700,11 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
 async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
     """Calculate House Hack worksheet metrics."""
     try:
+        ins_annual = (
+            input_data.insurance_annual
+            if input_data.insurance_annual is not None
+            else input_data.purchase_price * OPERATING.insurance_pct
+        )
         total_rent = sum(input_data.unit_rents)
         rooms_rented = sum(1 for r in input_data.unit_rents if r > 0)
         avg_rent = total_rent / rooms_rented if rooms_rented > 0 else 0
@@ -705,7 +722,7 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
             if input_data.closing_costs > 0
             else 0.03,
             fha_mip_rate=input_data.pmi_rate,
-            insurance_annual=input_data.insurance_annual,
+            insurance_annual=ins_annual,
             utilities_shared_monthly=input_data.utilities_monthly,
             maintenance_monthly=input_data.maintenance_monthly + input_data.capex_monthly,
         )
@@ -717,7 +734,7 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
         )
         capex_monthly = total_rent * input_data.capex_pct if input_data.capex_monthly == 0 else input_data.capex_monthly
         monthly_taxes = input_data.property_taxes_annual / 12
-        monthly_insurance = input_data.insurance_annual / 12
+        monthly_insurance = ins_annual / 12
         monthly_pmi = (result["loan_amount"] * input_data.pmi_rate) / 12
         monthly_piti = result["monthly_pi"] + monthly_pmi
         effective_rental_income = total_rent * (1 - input_data.vacancy_rate)

@@ -210,7 +210,6 @@ Returns fully resolved defaults for a specific location.
   "defaults": { ... },
   "market_adjustments": {
     "region": "FL_SOUTH",
-    "insurance_rate": 0.018,
     "property_tax_rate": 0.012
   },
   "user_overrides": { ... },

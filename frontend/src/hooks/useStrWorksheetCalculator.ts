@@ -8,6 +8,7 @@
 
 import { useMemo } from 'react'
 import { SavedProperty } from '@/types/savedProperty'
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
 import {
   useWorksheetCalculator,
@@ -18,7 +19,6 @@ import {
 // FALLBACK DEFAULTS — Must match backend/app/core/defaults.py
 // Components using this hook should ideally pass defaults from useDefaults()
 // =============================================================================
-const FALLBACK_INSURANCE_PCT = 0.01
 const FALLBACK_DOWN_PAYMENT_PCT = 0.20
 const FALLBACK_INTEREST_RATE = 0.06
 const FALLBACK_VACANCY_RATE = 0.01
@@ -117,7 +117,7 @@ const defaultInputs: StrWorksheetInputs = {
   cleaning_cost_per_turn: 150,
   supplies_monthly: 100,
   utilities_monthly: 100,
-  insurance_annual: 485000 * FALLBACK_INSURANCE_PCT,
+  insurance_annual: 485000 * OPERATING_INSURANCE_PCT,
   property_taxes_annual: 485 * 12,
   maintenance_pct: FALLBACK_MAINTENANCE_PCT,
   capex_pct: 0.05,
@@ -136,7 +136,7 @@ const strConfig: WorksheetStrategyConfig<StrWorksheetInputs, StrWorksheetResult>
     const data = property.property_data_snapshot || {}
     const listPrice = data.listPrice ?? defaults.purchase_price
     const propertyTaxes = data.propertyTaxes ?? defaults.property_taxes_annual
-    const insurance = data.insurance ?? listPrice * FALLBACK_INSURANCE_PCT
+    const insurance = data.insurance ?? listPrice * OPERATING_INSURANCE_PCT
     const adr = data.averageDailyRate ?? defaults.average_daily_rate
     const occupancy = data.occupancyRate ?? defaults.occupancy_rate
     // Mashvisor /rental-rates per-bed monthly STR revenue (when present)

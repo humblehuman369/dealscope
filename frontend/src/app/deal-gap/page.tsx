@@ -5,6 +5,7 @@ import { DealGapChart } from '@/components/analytics/DealGapChart'
 import { useDealScore } from '@/hooks/useDealScore'
 import { ArrowLeft, Home, TrendingDown, DollarSign, Target } from 'lucide-react'
 import Link from 'next/link'
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 
 /**
  * Deal Gap Page
@@ -34,7 +35,7 @@ export default function DealGapPage() {
   const [listPrice, setListPrice] = useState(520000)
   const [monthlyRent, setMonthlyRent] = useState(3500)
   const [propertyTaxes, setPropertyTaxes] = useState(6000)
-  const [insurance, setInsurance] = useState(2400)
+  const [insurance, setInsurance] = useState(Math.round(520_000 * OPERATING_INSURANCE_PCT))
   const [buyPrice, setBuyPrice] = useState(450000)
 
   // Input handlers with currency formatting

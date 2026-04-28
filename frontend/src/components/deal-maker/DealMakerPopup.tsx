@@ -15,6 +15,7 @@ import { calculateMortgagePayment } from '@/utils/calculations'
 import { useSession } from '@/hooks/useSession'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 
 // Strategy type - matches VerdictIQ header options
 export type PopupStrategyType = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
@@ -131,7 +132,7 @@ const BASE_DEFAULTS: DealMakerValues = {
   rehabBudget: 0,
   arv: 350000,
   propertyTaxes: 4200,
-  insurance: 1800,
+  insurance: Math.round(350000 * OPERATING_INSURANCE_PCT),
   // LTR
   monthlyRent: 2800,
   vacancyRate: 5,
@@ -200,7 +201,6 @@ const DEFAULT_LTR_VALUES: DealMakerValues = {
 // Default values for STR strategy
 const DEFAULT_STR_VALUES: DealMakerValues = {
   ...BASE_DEFAULTS,
-  insurance: 2400, // Higher for STR
 }
 
 // Default values for BRRRR strategy

@@ -7,6 +7,7 @@ import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { ArrowLeft, Calculator } from 'lucide-react'
+import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_BUY_DISCOUNT_PCT } from '@/lib/iqTarget'
 import { useDealScore } from '@/hooks/useDealScore'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
@@ -123,7 +124,7 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
     purchasePrice: contractPrice,
     monthlyRent: estimatedMonthlyRent,
     propertyTaxes: listPrice * 0.012, // Estimate 1.2% property tax
-    insurance: listPrice * 0.01, // Estimate 1% insurance
+    insurance: listPrice * OPERATING_INSURANCE_PCT,
     vacancyRate: 0.05,
     maintenancePct: 0.05,
     managementPct: 0.08,
