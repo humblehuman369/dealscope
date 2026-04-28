@@ -117,6 +117,8 @@ export interface IQAnalysisResult {
   dealFactors?: DealFactor[];
   discountBracketLabel?: string;
   dealNarrative?: string | null;
+  /** Three Paths payload — alternative deal structures when Deal Gap is negative */
+  dealStructures?: DealStructuresPayloadShape | null;
   /** Same as backend deal_probability_score — cumulative regional investor probability */
   dealProbabilityScore?: number;
   /** Cumulative share of investors closing at this Deal Gap depth or deeper (regional cohort) */
@@ -250,6 +252,18 @@ export type DealGapTierLabel =
   | 'Wide Negative Gap'
   | 'Extreme Negative Gap';
 
+// Imported from ThreePathsPanel to avoid duplicating the shape.
+import type { DealStructuresPayload as _DSP } from '@/components/iq-verdict/ThreePathsPanel'
+export type DealStructuresPayloadShape = _DSP
+
+export type MotivatingDealLabel =
+  | 'Cash-Flow Deal'
+  | 'Negotiable Deal'
+  | 'Near Deal'
+  | 'Potential Deal'
+  | 'Structured Deal'
+  | 'Reset Deal';
+
 export interface DealGapTier {
   label: DealGapTierLabel;
   color: string;
@@ -258,11 +272,22 @@ export interface DealGapTier {
   icon: string;
   headline: string;
   subHeadline: string;
+  motivatingLabel: MotivatingDealLabel;
+  motivatingSubtitle: string;
 }
 
 const SUB_HEADLINE_POSITIVE = 'A positive DealGap indicates the asking price is below supported market value, creating measurable investor opportunity. Larger positive percentages generally indicate stronger pricing advantage.'
 const SUB_HEADLINE_NEUTRAL = 'A neutral DealGap means price and value are in balance — the deal may still work, but advantage must come from execution, financing, or future upside.'
 const SUB_HEADLINE_NEGATIVE = 'A negative DealGap indicates the asking price is above supported market value, where stronger negotiation, improved structure, or revised assumptions may be required to make the deal work. Larger negative percentages generally indicate reduced pricing advantage.'
+
+const MOTIVATING_SUBTITLES = {
+  cashFlow: 'clears at standard terms',
+  negotiable: 'small ask closes it',
+  near: 'one lever away',
+  potential: 'structure makes it work',
+  structured: 'needs creative terms',
+  reset: 'wholesale or BRRRR territory',
+} as const
 
 /**
  * Map a Deal Gap percentage to a branded tier with styling and copy.
@@ -289,6 +314,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
       icon: '✓',
       headline: `The INCOME VALUE is +${absGap} above ${positivePriceLabel}.`,
       subHeadline: SUB_HEADLINE_POSITIVE,
+      motivatingLabel: 'Cash-Flow Deal',
+      motivatingSubtitle: MOTIVATING_SUBTITLES.cashFlow,
     };
   }
   if (dealGapPercent < -20) {
@@ -300,6 +327,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
       icon: '✓',
       headline: `The INCOME VALUE is +${absGap} above ${positivePriceLabel}.`,
       subHeadline: SUB_HEADLINE_POSITIVE,
+      motivatingLabel: 'Cash-Flow Deal',
+      motivatingSubtitle: MOTIVATING_SUBTITLES.cashFlow,
     };
   }
   if (dealGapPercent < -10) {
@@ -311,6 +340,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
       icon: '✓',
       headline: `The INCOME VALUE is +${absGap} above ${positivePriceLabel}.`,
       subHeadline: SUB_HEADLINE_POSITIVE,
+      motivatingLabel: 'Cash-Flow Deal',
+      motivatingSubtitle: MOTIVATING_SUBTITLES.cashFlow,
     };
   }
   if (dealGapPercent < -5) {
@@ -322,6 +353,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
       icon: '✓',
       headline: `The INCOME VALUE is +${absGap} above ${positivePriceLabel}.`,
       subHeadline: SUB_HEADLINE_POSITIVE,
+      motivatingLabel: 'Cash-Flow Deal',
+      motivatingSubtitle: MOTIVATING_SUBTITLES.cashFlow,
     };
   }
   if (dealGapPercent < 0) {
@@ -333,6 +366,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
       icon: '✓',
       headline: `The INCOME VALUE is +${absGap} above ${positivePriceLabel}.`,
       subHeadline: SUB_HEADLINE_POSITIVE,
+      motivatingLabel: 'Cash-Flow Deal',
+      motivatingSubtitle: MOTIVATING_SUBTITLES.cashFlow,
     };
   }
 
@@ -346,6 +381,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
       icon: '✓',
       headline: `The TARGET BUY works at ${negativePriceLabel}.`,
       subHeadline: SUB_HEADLINE_NEUTRAL,
+      motivatingLabel: 'Cash-Flow Deal',
+      motivatingSubtitle: MOTIVATING_SUBTITLES.cashFlow,
     };
   }
 
@@ -359,6 +396,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
       icon: '✓',
       headline: `The TARGET BUY is ${absGap} below ${negativePriceLabel}.`,
       subHeadline: SUB_HEADLINE_NEGATIVE,
+      motivatingLabel: 'Negotiable Deal',
+      motivatingSubtitle: MOTIVATING_SUBTITLES.negotiable,
     };
   }
   if (dealGapPercent <= 10) {
@@ -370,6 +409,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
       icon: '⚡',
       headline: `The TARGET BUY is ${absGap} below ${negativePriceLabel}.`,
       subHeadline: SUB_HEADLINE_NEGATIVE,
+      motivatingLabel: 'Near Deal',
+      motivatingSubtitle: MOTIVATING_SUBTITLES.near,
     };
   }
   if (dealGapPercent <= 20) {
@@ -381,6 +422,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
       icon: '⚠',
       headline: `The TARGET BUY is ${absGap} below ${negativePriceLabel}.`,
       subHeadline: SUB_HEADLINE_NEGATIVE,
+      motivatingLabel: 'Potential Deal',
+      motivatingSubtitle: MOTIVATING_SUBTITLES.potential,
     };
   }
   if (dealGapPercent <= 30) {
@@ -392,6 +435,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
       icon: '✕',
       headline: `The TARGET BUY is ${absGap} below ${negativePriceLabel}.`,
       subHeadline: SUB_HEADLINE_NEGATIVE,
+      motivatingLabel: 'Structured Deal',
+      motivatingSubtitle: MOTIVATING_SUBTITLES.structured,
     };
   }
   return {
@@ -402,6 +447,8 @@ export function getDealGapTier(dealGapPercent: number, isListed: boolean = true)
     icon: '✕',
     headline: `The TARGET BUY is ${absGap} below ${negativePriceLabel}.`,
     subHeadline: SUB_HEADLINE_NEGATIVE,
+    motivatingLabel: 'Reset Deal',
+    motivatingSubtitle: MOTIVATING_SUBTITLES.reset,
   };
 }
 
