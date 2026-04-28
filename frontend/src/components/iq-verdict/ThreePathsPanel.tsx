@@ -73,18 +73,18 @@ function PathCard({
       style={{
         background: 'var(--surface-card)',
         border: '1px solid var(--border-default)',
-        padding: 14,
+        padding: 16,
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: 12,
       }}
     >
       <div className="flex items-center gap-2 flex-wrap">
         <span
           style={{
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: 800,
-            letterSpacing: '0.08em',
+            letterSpacing: '0.06em',
             textTransform: 'uppercase',
             color: accent,
           }}
@@ -93,9 +93,9 @@ function PathCard({
         </span>
         <span
           style={{
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: 700,
-            letterSpacing: '0.06em',
+            letterSpacing: '0.05em',
             textTransform: 'uppercase',
             color: 'var(--text-secondary)',
           }}
@@ -105,7 +105,7 @@ function PathCard({
         <span
           className="ml-auto"
           style={{
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: 600,
             color: 'var(--text-secondary)',
             fontStyle: 'italic',
@@ -119,8 +119,8 @@ function PathCard({
         style={{
           margin: 0,
           fontSize: 15,
-          fontWeight: 700,
-          lineHeight: 1.25,
+          fontWeight: 600,
+          lineHeight: 1.35,
           color: 'var(--text-heading)',
         }}
       >
@@ -128,7 +128,7 @@ function PathCard({
       </h4>
 
       {structure.selectionReason && (
-        <p style={{ margin: 0, fontSize: 11.5, lineHeight: 1.45, color: 'var(--text-secondary)' }}>
+        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.45, color: 'var(--text-secondary)' }}>
           {structure.selectionReason}
         </p>
       )}
@@ -149,7 +149,7 @@ function PathCard({
             <div
               key={i}
               className="flex items-center justify-between gap-2"
-              style={{ fontSize: 12.5, lineHeight: 1.4 }}
+              style={{ fontSize: 13, lineHeight: 1.45 }}
             >
               <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{lever.label}</span>
               <span className="tabular-nums" style={{ color: 'var(--text-body)', fontWeight: 600 }}>
@@ -170,8 +170,8 @@ function PathCard({
       <p
         style={{
           margin: 0,
-          fontSize: 12.5,
-          lineHeight: 1.5,
+          fontSize: 13,
+          lineHeight: 1.55,
           color: 'var(--text-body)',
         }}
       >
@@ -182,7 +182,7 @@ function PathCard({
         <p
           style={{
             margin: 0,
-            fontSize: 11.5,
+            fontSize: 13,
             lineHeight: 1.45,
             color: 'var(--text-secondary)',
             fontStyle: 'italic',
@@ -197,7 +197,7 @@ function PathCard({
           <button
             type="button"
             onClick={() => onOpenInStrategy(structure, index)}
-            className="rounded-md px-3 py-1.5 text-[12px] font-semibold transition-colors"
+            className="rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
             style={{
               background: 'var(--accent-sky)',
               color: 'var(--surface-base, #fff)',
@@ -211,7 +211,7 @@ function PathCard({
           <button
             type="button"
             onClick={() => onShowPitch(structure)}
-            className="rounded-md px-3 py-1.5 text-[12px] font-semibold transition-colors"
+            className="rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
             style={{
               background: 'transparent',
               color: 'var(--accent-sky)',
@@ -238,20 +238,20 @@ export function ThreePathsPanel({
   return (
     <div
       style={{
-        marginTop: 14,
+        marginTop: 16,
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: 14,
       }}
     >
       <p
         style={{
           margin: 0,
-          fontSize: 11,
+          fontSize: 16,
           fontWeight: 700,
-          letterSpacing: '0.06em',
+          letterSpacing: '0.04em',
           textTransform: 'uppercase',
-          color: 'var(--accent-sky)',
+          color: 'var(--text-heading)',
         }}
       >
         Three paths to make this work
