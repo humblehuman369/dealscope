@@ -2,6 +2,7 @@
 
 from . import (
     assumable,
+    blended_plan,
     fha_house_hack,
     larger_down,
     price_negotiation,
@@ -25,6 +26,7 @@ ALL_TEMPLATES = [
 __all__ = [
     "ALL_TEMPLATES",
     "assumable",
+    "blended_plan",
     "fha_house_hack",
     "larger_down",
     "price_negotiation",

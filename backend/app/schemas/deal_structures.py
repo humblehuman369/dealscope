@@ -16,6 +16,7 @@ StructureFamily = Literal[
     "financing",
     "income",
     "strategy_switch",
+    "blended",
 ]
 
 

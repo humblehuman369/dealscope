@@ -12,6 +12,7 @@ export type StructureFamily =
   | 'financing'
   | 'income'
   | 'strategy_switch'
+  | 'blended'
 
 export interface DealStructureLever {
   label: string
@@ -57,6 +58,14 @@ const FAMILY_ACCENT: Record<StructureFamily, string> = {
   financing: 'var(--accent-sky)',
   income: '#a78bfa',
   strategy_switch: '#f97316',
+  blended: '#8b5cf6',
+}
+
+const PATH_COUNT_WORD = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six']
+function pathCountHeading(n: number): string {
+  const word = PATH_COUNT_WORD[n] ?? String(n)
+  const noun = n === 1 ? 'path' : 'paths'
+  return `${word} ${noun} to make this work`
 }
 
 function PathCard({
@@ -324,7 +333,7 @@ export function ThreePathsPanel({
           color: 'var(--text-heading)',
         }}
       >
-        Three paths to make this work
+        {pathCountHeading(payload.paths.length)}
       </p>
       <div
         style={{
