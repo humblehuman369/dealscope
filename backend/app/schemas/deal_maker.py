@@ -223,6 +223,14 @@ class DealMakerRecord(BaseModel):
         None, description="Investment strategy type (ltr, str, brrrr, flip, house_hack, wholesale)"
     )
 
+    # === Three Paths / creative-finance (optional; pre_loaded_record from Verdict) ===
+    seller_carry_amount: float | None = Field(None, description="Seller 2nd principal / carry amount")
+    seller_carry_rate: float | None = Field(None, description="Seller carry note rate (0.0 = 0%%)")
+    seller_carry_term_years: int | None = Field(None, description="Amortized term for seller note")
+    seller_carry_balloon_years: int | None = Field(None, description="Balloon due in N years")
+    closing_cost_credit: float | None = Field(None, description="Seller credit toward closing ($)")
+    is_owner_occupied: bool | None = Field(None, description="Owner-occ / house-hack intent")
+
     # === Cached Metrics ===
     cached_metrics: CachedMetrics | None = Field(None, description="Computed metrics - recalculated on every change")
 
@@ -354,6 +362,14 @@ class DealMakerRecordUpdate(BaseModel):
 
     # Strategy type
     strategy_type: str | None = Field(None, description="Strategy type")
+
+    # Three Paths / creative-finance
+    seller_carry_amount: float | None = Field(None, ge=0, description="Seller carry amount")
+    seller_carry_rate: float | None = Field(None, ge=0, le=0.2, description="Seller carry rate")
+    seller_carry_term_years: int | None = Field(None, ge=1, le=40, description="Seller note term years")
+    seller_carry_balloon_years: int | None = Field(None, ge=1, le=40, description="Balloon years")
+    closing_cost_credit: float | None = Field(None, ge=0, description="Closing cost credit $")
+    is_owner_occupied: bool | None = Field(None, description="Owner-occupied / house-hack")
 
     @model_validator(mode="after")
     def validate_cross_field_constraints(self):

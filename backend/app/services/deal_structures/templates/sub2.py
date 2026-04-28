@@ -42,6 +42,89 @@ def _remaining_balance(original_principal: float, annual_rate: float, years: int
 def solve(ctx: StructureContext) -> DealStructure | None:
     if ctx.deal_gap_amount <= 0:
         return None
+
+    use_real = (
+        ctx.estimated_existing_loan_balance is not None
+        and ctx.estimated_existing_loan_balance > 0
+        and ctx.estimated_existing_loan_rate is not None
+        and ctx.estimated_existing_loan_rate > 0
+    )
+
+    if use_real:
+        assumed_rate = float(ctx.estimated_existing_loan_rate)
+        if assumed_rate >= ctx.interest_rate - 0.015:
+            return None
+        remaining_bal = float(ctx.estimated_existing_loan_balance)
+        existing_pmt = calculate_monthly_mortgage(remaining_bal, assumed_rate, 30)
+        monthly_savings = ctx.baseline_monthly_pi - existing_pmt
+        if monthly_savings <= 0:
+            return None
+        implied_equity = max(0.0, ctx.list_price - remaining_bal)
+        cash_required = round(0.80 * implied_equity + ctx.list_price * ctx.closing_costs_pct, 0)
+        new_cf = ctx.baseline_monthly_cash_flow + monthly_savings
+        if new_cf < 0:
+            return None
+        ranking = 78.0
+        if ctx.days_on_market and ctx.days_on_market > 60:
+            ranking += 10  # CALIBRATION PLACEHOLDER — refine via A/B test (see T17 / T15)
+        if ctx.is_fsbo:
+            ranking += 6  # CALIBRATION PLACEHOLDER
+        if ctx.is_foreclosure or ctx.is_bank_owned:
+            ranking -= 15
+        if ctx.market_temperature and ctx.market_temperature.lower() == "cold":
+            ranking += 5
+        sel_reason = (
+            f"Shown because records point to ~{fmt_money(remaining_bal)} at ~{assumed_rate * 100:.1f}% "
+            "— cheaper debt service than a new loan at today's rates."
+        )
+        pitch = (
+            f"I'm structured to take over the existing financing near {assumed_rate * 100:.1f}% "
+            f"instead of a new loan at today’s rates — about ${existing_pmt:,.0f}/mo on the reported balance."
+        )
+        caveat = (
+            "Confirm balance and assumption eligibility with the lender before you rely on these numbers. "
+            "The bank can technically call the loan due (due-on-sale clause); it's rare in practice but real."
+        )
+        return DealStructure(
+            id=ID,
+            family=FAMILY,
+            family_label=FAMILY_LABEL,
+            realism_label="Lowest cost of capital",
+            headline=f"Take over the seller's ~{assumed_rate * 100:.1f}% loan",
+            summary=(
+                f"Saves about {fmt_money(monthly_savings)}/mo on debt service vs a new loan at "
+                f"{ctx.interest_rate * 100:.1f}%. Expect ~{fmt_money(cash_required)} cash toward seller equity."
+            ),
+            levers=[
+                StructureLever(
+                    label="Your new-loan P&I (baseline)",
+                    before_label=f"${round(ctx.baseline_monthly_pi):,}",
+                    after_label=f"${round(existing_pmt):,} (seller loan)",
+                    delta_label=None,
+                ),
+                StructureLever(
+                    label="Reported loan balance",
+                    before_label="—",
+                    after_label=fmt_money(remaining_bal),
+                    delta_label=None,
+                ),
+            ],
+            monthly_savings=round(monthly_savings, 2),
+            cash_required=float(cash_required),
+            ranking_score=min(100.0, max(0.0, ranking)),
+            pitch_script=pitch,
+            caveat=caveat,
+            selection_reason=sel_reason,
+            pre_loaded_record={
+                "pending_extras": {
+                    "three_paths_structure_id": ID,
+                    "sub2_from_records": True,
+                    "sub2_heuristic_rate": assumed_rate,
+                    "sub2_heuristic_balance": remaining_bal,
+                }
+            },
+        )
+
     if ctx.estimated_purchase_year is None:
         return None
     if ctx.estimated_purchase_price is None or ctx.estimated_purchase_price <= 0:

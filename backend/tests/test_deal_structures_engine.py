@@ -69,7 +69,7 @@ def test_selector_weights_perturbation_invariant():
 
 
 def test_sub2_fires_with_sale_year_and_price():
-    """2021 rate proxy beats baseline 6.5% and yields positive monthly_savings under test context."""
+    """2021 rate proxy beats baseline 6.5%; Sub2 or Morby (Sub2 + seller-2nd merged) may appear."""
     ctx = _base_ctx(
         estimated_purchase_year=2021,
         estimated_purchase_price=350_000,
@@ -77,7 +77,7 @@ def test_sub2_fires_with_sale_year_and_price():
     )
     out = compute_deal_structures(ctx)
     ids = [p.id for p in out.paths]
-    assert "sub2" in ids
+    assert "sub2" in ids or "morby-method" in ids
 
 
 def test_template_ids_registered():

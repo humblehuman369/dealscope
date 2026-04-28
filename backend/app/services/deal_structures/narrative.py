@@ -96,6 +96,26 @@ def _paragraph_for(structure: DealStructure, ctx: StructureContext, index: int) 
             f"People do this when they have cash sitting in savings and want the house to cash flow."
         )
 
+    if sid == "morby-method":
+        return (
+            f"{lead} bundles two moves together: keep paying the seller's cheaper existing loan instead of "
+            f"replacing it with a brand-new mortgage, and ask the seller to carry part of the price at 0% for a few years. "
+            f"Investors talk about this combo by name because it fixes cash flow without cutting the seller's price."
+        )
+
+    if sid == "assumable":
+        return (
+            f"{lead} is to assume the seller's existing government-backed loan if the lender allows it. "
+            f"When that loan's rate is far below today's rates, the monthly savings can be huge—but getting the lender's "
+            f"approval usually takes longer than a brand-new loan, so people only do this when the math clearly wins."
+        )
+
+    if sid == "fha-house-hack":
+        return (
+            f"{lead} is to buy as an owner-occupant with a small-down FHA loan and let roommates or other units pay part of the mortgage. "
+            f"You have to actually live there for a while. It's a different lifestyle trade than a straight rental, but it fixes the payment math."
+        )
+
     return f"{lead}: {structure.headline}. {structure.summary}"
 
 

@@ -1,6 +1,9 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import Link from 'next/link'
+
+import { trackEvent } from '@/lib/eventTracking'
 
 export type StructureFamily =
   | 'price'
@@ -189,6 +192,24 @@ function PathCard({
           }}
         >
           {structure.caveat}
+        </p>
+      )}
+
+      {(structure.family === 'financing' || structure.family === 'strategy_switch') && (
+        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.45, color: 'var(--text-secondary)' }}>
+          Get this contract reviewed by a creative-finance attorney —{' '}
+          <Link
+            href="/legal/find-attorney"
+            className="font-semibold underline-offset-2 hover:underline"
+            style={{ color: 'var(--accent-sky)' }}
+            onClick={() =>
+              trackEvent('path_attorney_link_clicked', {
+                structure_id: structure.id,
+              })
+            }
+          >
+            Find one
+          </Link>
         </p>
       )}
 

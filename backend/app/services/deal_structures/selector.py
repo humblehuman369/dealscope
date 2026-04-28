@@ -3,6 +3,7 @@
 from app.schemas.deal_structures import DealStructure
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.templates import ALL_TEMPLATES
+from app.services.deal_structures.templates import morby_method as morby_template
 
 
 def _apply_listing_signals(ctx: StructureContext, structure: DealStructure) -> float:
@@ -41,6 +42,35 @@ def _apply_listing_signals(ctx: StructureContext, structure: DealStructure) -> f
     return min(100.0, max(0.0, score))
 
 
+def _substitute_morby_method(
+    candidates: list[DealStructure],
+    ctx: StructureContext,
+) -> list[DealStructure]:
+    """When both Sub2 and seller-2nd are feasible, replace with one Morby Method card (T10)."""
+    flags = ctx.template_flags or {}
+    if not flags.get("morby-method", True):
+        return candidates
+    by_id = {c.id: c for c in candidates}
+    sub = by_id.get("sub2")
+    ss = by_id.get("seller-second-zero-balloon")
+    if sub is None or ss is None:
+        return candidates
+    # sub/ss scores already include listing signals; combine() adds a small Morby bonus on top.
+    merged = morby_template.combine(sub, ss, ctx)
+    out = [c for c in candidates if c.id not in ("sub2", "seller-second-zero-balloon")]
+    out.append(merged)
+    return out
+
+
+def _prioritize_assumable(selected: list[DealStructure]) -> list[DealStructure]:
+    """T9: when the assumable card is selected, it wins Path 1."""
+    if not any(s.id == "assumable" for s in selected):
+        return selected
+    first = next(s for s in selected if s.id == "assumable")
+    rest = [s for s in selected if s.id != "assumable"]
+    return [first, *rest]
+
+
 def select_three_paths(
     ctx: StructureContext,
     templates: list | None = None,
@@ -62,6 +92,8 @@ def select_three_paths(
     if not candidates:
         return []
 
+    candidates = _substitute_morby_method(candidates, ctx)
+
     candidates.sort(key=lambda s: s.ranking_score, reverse=True)
 
     selected: list[DealStructure] = []
@@ -78,4 +110,4 @@ def select_three_paths(
     if non_price_avail and all(s.family == "price" for s in selected):
         selected[-1] = non_price_avail[0]
 
-    return selected
+    return _prioritize_assumable(selected)

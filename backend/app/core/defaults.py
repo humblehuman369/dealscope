@@ -155,6 +155,11 @@ STRUCTURE_TEMPLATE_FLAGS: dict[str, bool] = {
     "sub2": True,
     "rate-buydown-2-1": True,
     "larger-down": True,
+    # Phase 3 — enable after data / QA (assumable needs existing_loan_type from T8.5)
+    "assumable": False,
+    "morby-method": True,
+    "fha-house-hack": True,
+    "sub2-real-data": False,
 }
 
 
