@@ -97,6 +97,67 @@ def normalize_listing_status(raw: str | None) -> str | None:
     return _STATUS_MAP.get(raw.lower().strip())
 
 
+# ─── Cross-source dedup priority ─────────────────────────────────────────
+# Mirrors frontend/src/lib/dealSignal.ts :: listingMergePriority. When the
+# same property address surfaces in multiple upstream queries (e.g.,
+# RentCast generic sale + Zillow `auc`/`fore`/`pre` URL search), we keep
+# the row that carries the strongest investor signal so the distress
+# label survives the merge. Without this the generic for-sale row almost
+# always wins the race (it's the first task submitted) and any
+# foreclosure / pre-foreclosure / auction tag from the dedicated
+# distressed query is silently dropped — the user-visible symptom is
+# distressed pins flickering in on the first fetch and being replaced by
+# Active pins on the next viewport refresh.
+
+_LISTING_STATUS_PRIORITY: dict[str, int] = {
+    "foreclosure": 100,
+    "pre-foreclosure": 100,
+    "auction": 100,
+    "owner_listed": 80,
+    "active": 40,
+    "off-market": 10,
+    "sold": 10,
+}
+
+
+def _listing_status_priority(raw_status: str | None) -> int:
+    """Return the dedup priority for a listing's raw status string."""
+    canonical = normalize_listing_status(raw_status)
+    if canonical is None:
+        # Unrecognized but non-empty raw status — slight preference over a
+        # row with no status at all, but still below "active".
+        return 20 if raw_status else 0
+    return _LISTING_STATUS_PRIORITY.get(canonical, 20)
+
+
+# Display fields that we never want to drop just because the higher-priority
+# row happens to be sparser. If the winner is missing one of these and the
+# loser has it, copy it forward so the marker still has a photo / price / etc.
+_PRESERVE_FROM_LOSER: tuple[str, ...] = (
+    "photo_url",
+    "price",
+    "bedrooms",
+    "bathrooms",
+    "sqft",
+    "year_built",
+    "days_on_market",
+    "property_type",
+)
+
+
+def _merge_preserving_loser_fields(winner: MapListing, loser: MapListing) -> MapListing:
+    """Return ``winner`` with any missing display fields filled from ``loser``."""
+    updates: dict[str, Any] = {}
+    for field in _PRESERVE_FROM_LOSER:
+        if getattr(winner, field) is None:
+            loser_value = getattr(loser, field)
+            if loser_value is not None:
+                updates[field] = loser_value
+    if not updates:
+        return winner
+    return winner.model_copy(update=updates)
+
+
 def _round_coord(val: float, precision: int = 3) -> float:
     """Round a coordinate for cache key stability (~111 m at the equator)."""
     return round(val, precision)
@@ -253,8 +314,15 @@ class MapSearchService:
             s for s in (req.listing_statuses or ["active"]) if s in CANONICAL_STATUSES
         } or {"active"}
 
-        listings: list[MapListing] = []
-        seen_addresses: set[str] = set()
+        # Address-keyed dedup map. We collect rows from every upstream
+        # source in parallel, then keep the row whose listing_status
+        # carries the strongest investor signal (see
+        # ``_listing_status_priority``). This guarantees that a property
+        # tagged ``Foreclosure`` by the dedicated distressed query is not
+        # masked by an ``Active`` row returned earlier from RentCast or
+        # Zillow's generic ``forSale`` query — the historical bug behind
+        # distressed pins disappearing after a single zoom.
+        listings_by_addr: dict[str, MapListing] = {}
         raw_source_totals: int = 0
 
         # Fetch from all sources at all grid points in parallel
@@ -349,22 +417,22 @@ class MapSearchService:
                 continue
             raw_source_totals += len(result)
             for item in result:
-                addr_key = item.address.lower().strip()
-                if addr_key and addr_key not in seen_addresses:
-                    seen_addresses.add(addr_key)
-                    listings.append(item)
+                self._merge_listing_into(listings_by_addr, item)
 
-        # Merge Mashvisor Airbnb listings when requested
+        # Merge Mashvisor Airbnb listings when requested. Airbnb rows are
+        # already a distinct inventory bucket (id-prefixed
+        # ``mashvisor_airbnb_*``) so they only collide with sale/rental
+        # rows when the address truly matches — in that case the sale row
+        # outranks the Airbnb tag and the Airbnb is intentionally dropped.
         if req.include_str_listings and self.mashvisor:
             str_listings = await self._fetch_mashvisor_str_listings(
                 req, center_lat, center_lng
             )
             for item in str_listings:
-                addr_key = item.address.lower().strip()
-                if addr_key and addr_key not in seen_addresses:
-                    seen_addresses.add(addr_key)
-                    listings.append(item)
+                self._merge_listing_into(listings_by_addr, item)
             raw_source_totals += len(str_listings)
+
+        listings = list(listings_by_addr.values())
 
         # Defense-in-depth viewport filter. Each upstream source is told to
         # search around the viewport, but radius queries (RentCast 5–100mi
@@ -439,6 +507,34 @@ class MapSearchService:
 
         await cache.set(cache_key, response.model_dump(mode="json"), ttl_seconds=MAP_CACHE_TTL)
         return response
+
+    @staticmethod
+    def _merge_listing_into(
+        bucket: dict[str, MapListing], item: MapListing
+    ) -> None:
+        """Insert ``item`` into ``bucket`` keyed by lower-cased address.
+
+        When an address already exists, keep the row with the higher
+        :func:`_listing_status_priority` and copy any missing display
+        fields forward from the loser. This is the cross-source dedup
+        that prevents distressed labels from being lost behind generic
+        for-sale rows.
+        """
+        addr_key = item.address.lower().strip()
+        if not addr_key:
+            return
+        existing = bucket.get(addr_key)
+        if existing is None:
+            bucket[addr_key] = item
+            return
+        existing_pri = _listing_status_priority(existing.listing_status)
+        new_pri = _listing_status_priority(item.listing_status)
+        if new_pri > existing_pri:
+            bucket[addr_key] = _merge_preserving_loser_fields(item, existing)
+        else:
+            # Same-or-lower priority: existing wins, but pick up any
+            # display fields it was missing.
+            bucket[addr_key] = _merge_preserving_loser_fields(existing, item)
 
     @staticmethod
     def _radius_to_bbox(
