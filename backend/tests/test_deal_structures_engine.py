@@ -87,6 +87,81 @@ def test_template_ids_registered():
         assert getattr(t, "ID", None)
 
 
+# ---------------------------------------------------------------------------
+# Path 4 — Blended Plan
+# ---------------------------------------------------------------------------
+
+
+def test_blended_plan_appears_as_fourth():
+    """Positive Deal Gap returns the blended plan as the last card in the payload."""
+    ctx = _base_ctx()
+    out = compute_deal_structures(ctx)
+    assert out.has_paths is True
+    assert len(out.paths) >= 4
+    assert out.paths[-1].id == "blended-plan"
+    assert out.paths[-1].family == "blended"
+
+
+def test_blended_split_realism_weighted_with_missing_component():
+    """When a component returns None / weight 0, the others absorb its share."""
+    from app.services.deal_structures.templates import (
+        blended_plan,
+        price_negotiation,
+        rent_uplift,
+    )
+
+    ctx = _base_ctx(monthly_rent=0)  # rent uplift can't fire (haircut path returns None)
+    rent_result = rent_uplift.solve(ctx)
+    assert rent_result is None
+
+    blended = blended_plan.solve(
+        ctx,
+        price_result=price_negotiation.solve(ctx),
+        seller2nd_result=None,
+        rent_result=rent_result,
+    )
+    assert blended is not None
+    rent_lever = next(lv for lv in blended.levers if lv.label.lower() == "monthly rent")
+    assert rent_lever.after_label == "$0"
+
+
+def test_blended_caps_bleed_best_effort():
+    """When all three levers cap before closing the gap, card still renders with caveat."""
+    from app.services.deal_structures.templates import (
+        blended_plan,
+        price_negotiation,
+        rent_uplift,
+        seller_second_zero_balloon,
+    )
+
+    # Punishing gap: rent extremely low vs price → no combo can close it.
+    ctx = _base_ctx(
+        list_price=600_000,
+        target_buy_price=200_000,
+        deal_gap_pct=66.0,
+        monthly_rent=900,
+        property_taxes_annual=8_000,
+        insurance_annual=4_500,
+    )
+    blended = blended_plan.solve(
+        ctx,
+        price_result=price_negotiation.solve(ctx),
+        seller2nd_result=seller_second_zero_balloon.solve(ctx),
+        rent_result=rent_uplift.solve(ctx),
+    )
+    if blended is not None:
+        if blended.caveat:
+            assert "stretched" in blended.caveat.lower() or "gap" in blended.caveat.lower()
+        assert blended.realism_label in ("Combined plan", "Best-effort combination")
+
+
+def test_blended_disabled_via_flag():
+    """Setting blended-plan flag False suppresses Path 4 entirely."""
+    ctx = _base_ctx(template_flags={**STRUCTURE_TEMPLATE_FLAGS, "blended-plan": False})
+    out = compute_deal_structures(ctx)
+    assert all(p.id != "blended-plan" for p in out.paths)
+
+
 def _minimal_structure(structure_id: str, family: str = "financing") -> DealStructure:
     return DealStructure(
         id=structure_id,

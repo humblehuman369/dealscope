@@ -18,13 +18,14 @@ _OPENER_TEMPLATE = (
     "Here are {count} ways people fix it."
 )
 
-_CLOSER = "Any one of these makes the deal work. You don't need all three."
+_CLOSER = "Any one of these makes the deal work. You don't need all of them."
 
 
 _POSITION_LEAD = {
     0: "One way",
     1: "Another way",
     2: "A third way",
+    3: "A fourth way",
 }
 
 
@@ -116,6 +117,27 @@ def _paragraph_for(structure: DealStructure, ctx: StructureContext, index: int) 
             f"You have to actually live there for a while. It's a different lifestyle trade than a straight rental, but it fixes the payment math."
         )
 
+    if sid == "blended-plan":
+        new_price = next(
+            (lever.after_label for lever in structure.levers if lever.label.lower() == "purchase price"),
+            "a smaller cut",
+        )
+        new_rent = next(
+            (lever.after_label for lever in structure.levers if lever.label.lower() == "monthly rent"),
+            "a small bump",
+        )
+        carry_label = next(
+            (lever.after_label for lever in structure.levers if "2nd" in lever.label.lower()),
+            "a small piece",
+        )
+        return (
+            f"{lead} is to mix all three moves together. "
+            f"Ask for a smaller price cut to {new_price}, get the seller to carry {carry_label} of the price at 0% "
+            f"for a few years, and verify rent at {new_rent} a month. "
+            f"No single ask is large — together they make the math work. "
+            f"This is what real deals usually look like."
+        )
+
     return f"{lead}: {structure.headline}. {structure.summary}"
 
 
@@ -141,4 +163,4 @@ def build_narrative(structures: list[DealStructure], ctx: StructureContext) -> l
 
 
 def _words_for(n: int) -> str:
-    return {1: "one", 2: "two", 3: "three"}.get(n, str(n))
+    return {1: "one", 2: "two", 3: "three", 4: "four", 5: "five"}.get(n, str(n))

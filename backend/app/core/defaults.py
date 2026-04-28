@@ -160,6 +160,8 @@ STRUCTURE_TEMPLATE_FLAGS: dict[str, bool] = {
     "morby-method": True,
     "fha-house-hack": True,
     "sub2-real-data": False,
+    # Path 4 — Blended Plan: combines partial price + seller 2nd + rent uplift.
+    "blended-plan": True,
 }
 
 
