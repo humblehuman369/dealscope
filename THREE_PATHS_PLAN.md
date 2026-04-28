@@ -152,7 +152,7 @@ Expected: 3 paths, narrative with 5 paragraphs (opener + 3 paths + closer).
 - `three_paths_rendered` — fired from `VerdictGapGuidance.tsx` once per verdict view when the panel mounts. Properties: `path_count`, `families: string[]`, `top_family`, `deal_gap_pct`, `state`.
 - `path_pitch_opened` — fired from the pitch modal (shipping in T1) on open. Properties: `structure_id`, `family`.
 - `path_opened_in_strategy` — fired from the scenario handoff util (shipping in T2) before navigation. Properties: `structure_id`, `family`.
-- Wire through whatever analytics util the codebase already uses — locate via `grep -rn "analytics.track\|posthog\|amplitude\|segment.track" frontend/src/lib`. If none exists, add a thin `frontend/src/lib/analytics/track.ts` wrapper that no-ops when the env var is unset, so this ticket is never blocked on partner selection (one of the open questions in section 12).
+- Wire through `frontend/src/lib/eventTracking.ts` — `trackEvent(name, props)` wraps **Vercel Analytics** (`@vercel/analytics`) and respects cookie consent. Map the three event names to `trackEvent` (platform decision: section 12).
 
 **Acceptance criteria:**
 - Setting `STRUCTURE_TEMPLATE_FLAGS["price-negotiation"] = False` in admin defaults makes the price card disappear from the verdict response on the next request, with no redeploy. Verified with one before/after API call.
@@ -183,6 +183,8 @@ interface PitchScriptModalProps {
 - "Copy to clipboard" button uses `navigator.clipboard.writeText`.
 - Headline = structure name, body = `pitchScript`, footer has Copy + Close buttons.
 - Style with existing CSS variables (`var(--surface-elevated)`, `var(--text-heading)`, `var(--accent-sky)`).
+
+**Product decision (section 12):** **Copy to clipboard only** in v1 — do not add “share via email” or other share channels for the pitch modal.
 
 **Acceptance criteria:**
 - Clicking "How to pitch this" on any card opens the modal with that structure's script.
@@ -225,6 +227,8 @@ interface PitchScriptModalProps {
 - Strategy worksheet: on mount, read `searchParams.get('scenario')`, call `decodeScenario`, apply via existing form-state setter, then strip the query param via `router.replace(/strategy)` so the URL stays clean and refresh does not re-apply twice. On version mismatch (`decodeScenario` returns `null`), fall back to `lastAppliedScenario` from localStorage; if both fail, no-op (scenario load is best-effort, never blocks Strategy).
 - Update `onOpenStructureInStrategy` in `frontend/src/app/verdict/page.tsx` (~line 1772) to call `loadScenario(structure)` and navigate to the returned URL. Fire the `path_opened_in_strategy` telemetry event (from T0.5) immediately before navigation.
 
+**Product decision (section 12):** **Auto-save each opened path as a named scenario** so users can return later. When the user lands on Strategy from a path, also persist a saved scenario with a human label, e.g. `Path 1 — Negotiate`, `Path 2 — Seller carry`, `Path 3 — Rent uplift` (derive label from path index + structure `family_label` or `headline` truncated). Reuse the Strategy worksheet’s existing saved-scenario / snapshot mechanism if one exists; otherwise add a small `savedThreePathScenarios` list in localStorage (or align with Deal Maker saved deals) with `{ label, scenarioPayload, structureId, savedAt }`, surfaced in Strategy UI so users can reopen without returning to Verdict.
+
 **Acceptance criteria:**
 - Clicking "Open in Strategy" on the price-negotiation card lands the user on Strategy with the lower price already populated.
 - Cmd-click / middle-click "Open in Strategy" opens Strategy in a new tab with the scenario applied (URL-based transport works across tabs; localStorage version did not).
@@ -232,6 +236,7 @@ interface PitchScriptModalProps {
 - Switching back to the verdict page and into a different card produces a different Strategy state (each navigation carries its own URL payload — no stale localStorage interference).
 - A truncated or tampered `scenario` param falls back to `lastAppliedScenario`; if both are unusable, Strategy loads with no preload and no error toast.
 - Works for all three MVP templates.
+- After handoff, a **labeled saved scenario** appears in Strategy (or the designated list) so the user can reopen `Path N — …` without re-running Verdict.
 
 **Dependency:** T0 — confirm Strategy form-state setter shape; T0.5 — `path_opened_in_strategy` event handler available.
 
@@ -772,15 +777,22 @@ flowchart LR
 
 ---
 
-## 12. Open questions for product / Brad
+## 12. Product decisions (answered) and open follow-ups
 
-1. Pitch modal — do we want a "share via email" option, or only copy-to-clipboard?
-2. Strategy pre-load — should each scenario also auto-save with a label ("Path 1 — Negotiate") so users can come back to them?
-3. Affiliate program — which legal-services / lender partners are in pipeline for V4 disclaimer links?
-4. Telemetry — which analytics platform are we on (Segment, Amplitude, PostHog, custom)?
-5. Should the motivating chart label be themeable/configurable per region (some regions might prefer "Negotiable" over "Potential")?
+### Decisions (Brad — recorded)
 
-These don't block V2 work but should be answered before T13 / T14 / T16.
+| Topic | Decision |
+|-------|----------|
+| **1. Pitch modal** | **Copy to clipboard only** in v1. No share-via-email or other share channels unless revisited after launch metrics. |
+| **2. Strategy pre-load** | **Yes — auto-save** each opened path as a **labeled scenario** (e.g. `Path 1 — Negotiate`, `Path 2 — …`) so users can return without re-running Verdict. Implement in T2 alongside URL handoff; wire to existing Strategy saved-scenario UX if present. |
+| **3. Affiliate program (T16)** | **None in pipeline currently.** T16 remains scoped as placeholder URLs / tracked links until a partner is signed; do not block ship on affiliates. |
+| **4. Telemetry / analytics platform** | **Vercel Analytics** — use [`frontend/src/lib/eventTracking.ts`](frontend/src/lib/eventTracking.ts) (`trackEvent`). Respects cookie consent. Three Paths events (`three_paths_rendered`, `path_pitch_opened`, `path_opened_in_strategy`, etc.) fire through this layer; dashboards live in the Vercel project unless we add a second sink later. |
+| **5. Motivating chart label — regional / themeable** | **Yes.** Motivating tier labels and subtitles should be **configurable per region** (e.g. state or cohort) so copy can prefer “Negotiable” vs “Potential” where it tests better. Implementation path: extend defaults / admin assumptions (or a small `MOTIVATING_LABEL_OVERRIDES` map keyed by `state` or `region`) and thread into `DealGapTier` resolution in `frontend/src/components/iq-verdict/types.ts` — treat as a follow-up ticket after T0 baseline (does not block MVP Three Paths cards). |
+
+### Open follow-ups (non-blocking unless noted)
+
+- **Second analytics sink:** If product later standardizes on Segment, PostHog, or Amplitude, extend `eventTracking.ts` to dual-write; today single source of truth is Vercel Analytics + consent gate.
+- **T16 affiliates:** Re-open when a legal-services or lender partner exists; until then disclaimer links can route to internal education pages.
 
 ---
 
