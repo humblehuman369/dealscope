@@ -48,7 +48,9 @@ class IQVerdictInput(BaseModel):
     # When supplied, the STR strategy bypasses ADR x 365 x occupancy and uses
     # this value x 12 as the canonical annual revenue.
     mashvisor_monthly_str_revenue: float | None = Field(
-        None, ge=0, le=1_000_000,
+        None,
+        ge=0,
+        le=1_000_000,
         description="Mashvisor per-bedroom monthly STR revenue (replaces ADR x 30 x occupancy fallback)",
     )
     listing_status: str | None = Field(None, max_length=50, description="Listing status")

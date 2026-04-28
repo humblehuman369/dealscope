@@ -234,10 +234,10 @@ class Settings(BaseSettings):
     # ===========================================
     # Apple Sign In
     # ===========================================
-    APPLE_CLIENT_ID: str = ""          # Services ID (e.g. com.dealgapiq.web)
-    APPLE_TEAM_ID: str = ""            # 10-char Team ID from developer.apple.com
-    APPLE_KEY_ID: str = ""             # Key ID for the Sign in with Apple private key
-    APPLE_PRIVATE_KEY: str = ""        # PEM contents of the .p8 key (newlines as \n)
+    APPLE_CLIENT_ID: str = ""  # Services ID (e.g. com.dealgapiq.web)
+    APPLE_TEAM_ID: str = ""  # 10-char Team ID from developer.apple.com
+    APPLE_KEY_ID: str = ""  # Key ID for the Sign in with Apple private key
+    APPLE_PRIVATE_KEY: str = ""  # PEM contents of the .p8 key (newlines as \n)
 
     # ===========================================
     # Data Retention

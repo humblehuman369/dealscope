@@ -583,6 +583,7 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
     if state_raw:
         import base64 as _b64
         import json as _json
+
         try:
             state_data = _json.loads(_b64.urlsafe_b64decode(str(state_raw) + "=="))
             mr = state_data.get("mobile_redirect")
@@ -655,6 +656,7 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
     user_data_raw = form.get("user")
     if user_data_raw:
         import json as _json
+
         try:
             user_info = _json.loads(str(user_data_raw))
             first = user_info.get("name", {}).get("firstName", "")
@@ -894,7 +896,9 @@ async def resend_verification(body: ResendVerificationRequest, db: DbSession):
                 )
         except Exception as exc:
             logger.error("Resend verification email crashed for %s: %s", user.email, exc, exc_info=True)
-    return AuthMessage(message="If an account exists with that email and is unverified, a verification link has been sent.")
+    return AuthMessage(
+        message="If an account exists with that email and is unverified, a verification link has been sent."
+    )
 
 
 # ------------------------------------------------------------------

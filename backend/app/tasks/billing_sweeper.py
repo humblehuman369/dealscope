@@ -74,8 +74,7 @@ async def sweep_expired_subscriptions() -> dict[str, int]:
             stale_trials = (await db.execute(trials_q)).scalars().all()
             for sub in stale_trials:
                 logger.info(
-                    "billing_sweeper: downgrading stale trial user_id=%s "
-                    "trial_end=%s now=%s",
+                    "billing_sweeper: downgrading stale trial user_id=%s trial_end=%s now=%s",
                     sub.user_id,
                     sub.trial_end,
                     now,
@@ -99,8 +98,7 @@ async def sweep_expired_subscriptions() -> dict[str, int]:
             stale_paid = (await db.execute(paid_q)).scalars().all()
             for sub in stale_paid:
                 logger.info(
-                    "billing_sweeper: downgrading stale paid user_id=%s "
-                    "current_period_end=%s now=%s",
+                    "billing_sweeper: downgrading stale paid user_id=%s current_period_end=%s now=%s",
                     sub.user_id,
                     sub.current_period_end,
                     now,

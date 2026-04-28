@@ -310,9 +310,7 @@ class MapSearchService:
         # preserves today's behavior (active-only). Unknown values are
         # silently dropped so the API stays forgiving for clients on older
         # builds.
-        requested_statuses = {
-            s for s in (req.listing_statuses or ["active"]) if s in CANONICAL_STATUSES
-        } or {"active"}
+        requested_statuses = {s for s in (req.listing_statuses or ["active"]) if s in CANONICAL_STATUSES} or {"active"}
 
         # Address-keyed dedup map. We collect rows from every upstream
         # source in parallel, then keep the row whose listing_status
@@ -368,9 +366,7 @@ class MapSearchService:
                     if requested_statuses & {"active", "owner_listed"}:
                         tasks.append(
                             asyncio.create_task(
-                                self._fetch_zillow(
-                                    pt_lat, pt_lng, sub_radius, "forSale", req, None
-                                ),
+                                self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forSale", req, None),
                             )
                         )
                     # All three distressed buckets route through the URL-based
@@ -385,7 +381,10 @@ class MapSearchService:
                             tasks.append(
                                 asyncio.create_task(
                                     self._fetch_zillow_distressed(
-                                        pt_lat, pt_lng, sub_radius, distressed_status,
+                                        pt_lat,
+                                        pt_lng,
+                                        sub_radius,
+                                        distressed_status,
                                     ),
                                 )
                             )
@@ -403,9 +402,7 @@ class MapSearchService:
                     if self.zillow:
                         tasks.append(
                             asyncio.create_task(
-                                self._fetch_zillow(
-                                    pt_lat, pt_lng, sub_radius, "forRent", req, None
-                                ),
+                                self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forRent", req, None),
                             )
                         )
 
@@ -425,9 +422,7 @@ class MapSearchService:
         # rows when the address truly matches — in that case the sale row
         # outranks the Airbnb tag and the Airbnb is intentionally dropped.
         if req.include_str_listings and self.mashvisor:
-            str_listings = await self._fetch_mashvisor_str_listings(
-                req, center_lat, center_lng
-            )
+            str_listings = await self._fetch_mashvisor_str_listings(req, center_lat, center_lng)
             for item in str_listings:
                 self._merge_listing_into(listings_by_addr, item)
             raw_source_totals += len(str_listings)
@@ -446,8 +441,7 @@ class MapSearchService:
         listings = [
             item
             for item in listings
-            if req.south <= item.latitude <= req.north
-            and req.west <= item.longitude <= req.east
+            if req.south <= item.latitude <= req.north and req.west <= item.longitude <= req.east
         ]
         if pre_bounds_count != len(listings):
             logger.info(
@@ -472,11 +466,7 @@ class MapSearchService:
         # contains the statuses the caller asked for, regardless of how
         # generous each upstream provider was. Unrecognized statuses are
         # also dropped here.
-        listings = [
-            item
-            for item in listings
-            if normalize_listing_status(item.listing_status) in requested_statuses
-        ]
+        listings = [item for item in listings if normalize_listing_status(item.listing_status) in requested_statuses]
 
         # Estimate total: if every sub-query returned its limit, there are
         # likely more listings than we fetched. Extrapolate conservatively.
@@ -509,9 +499,7 @@ class MapSearchService:
         return response
 
     @staticmethod
-    def _merge_listing_into(
-        bucket: dict[str, MapListing], item: MapListing
-    ) -> None:
+    def _merge_listing_into(bucket: dict[str, MapListing], item: MapListing) -> None:
         """Insert ``item`` into ``bucket`` keyed by lower-cased address.
 
         When an address already exists, keep the row with the higher
@@ -537,9 +525,7 @@ class MapSearchService:
             bucket[addr_key] = _merge_preserving_loser_fields(existing, item)
 
     @staticmethod
-    def _radius_to_bbox(
-        lat: float, lng: float, radius_miles: float
-    ) -> tuple[float, float, float, float]:
+    def _radius_to_bbox(lat: float, lng: float, radius_miles: float) -> tuple[float, float, float, float]:
         """Approximate a square (north, south, east, west) around a center.
 
         Used to convert the existing grid-cell radius searches into the
@@ -748,22 +734,13 @@ class MapSearchService:
             )
 
             # Compact label so logs stay greppable when params change
-            label = (
-                f"{status}+{','.join(f'{k}={v}' for k, v in extra_params.items())}"
-                if extra_params
-                else status
-            )
+            label = f"{status}+{','.join(f'{k}={v}' for k, v in extra_params.items())}" if extra_params else status
 
             if not resp.success or not resp.data:
                 logger.info("Zillow %s returned no data", label)
                 return []
 
-            raw_props = (
-                resp.data.get("results")
-                or resp.data.get("props")
-                or resp.data.get("searchResults")
-                or []
-            )
+            raw_props = resp.data.get("results") or resp.data.get("props") or resp.data.get("searchResults") or []
             if isinstance(resp.data, dict) and not raw_props:
                 for val in resp.data.values():
                     if isinstance(val, list) and len(val) > 0:
@@ -847,12 +824,8 @@ class MapSearchService:
         if status not in self._DISTRESSED_LABELS:
             return []
 
-        north, south, east, west = self._radius_to_bbox(
-            center_lat, center_lng, max(radius_miles, 0.5)
-        )
-        url = self._zillow_distressed_url(
-            north, south, east, west, {status}
-        )
+        north, south, east, west = self._radius_to_bbox(center_lat, center_lng, max(radius_miles, 0.5))
+        url = self._zillow_distressed_url(north, south, east, west, {status})
         if not url:
             return []
 
@@ -862,12 +835,7 @@ class MapSearchService:
                 logger.info("Zillow %s returned no data", status)
                 return []
 
-            raw_props = (
-                resp.data.get("results")
-                or resp.data.get("props")
-                or resp.data.get("searchResults")
-                or []
-            )
+            raw_props = resp.data.get("results") or resp.data.get("props") or resp.data.get("searchResults") or []
             if isinstance(resp.data, dict) and not raw_props:
                 for val in resp.data.values():
                     if isinstance(val, list) and len(val) > 0:
@@ -878,7 +846,7 @@ class MapSearchService:
             # Pre-foreclosure URL is distressed-only — blanket-tag every row.
             # Foreclosure/auction URLs include agent-listed actives — only
             # keep rows whose derived status matches the requested bucket.
-            blanket_tag = (status == "pre-foreclosure")
+            blanket_tag = status == "pre-foreclosure"
 
             results: list[MapListing] = []
             kept_via_derive = 0
@@ -901,7 +869,10 @@ class MapSearchService:
             else:
                 logger.info(
                     "Zillow %s: %d/%d rows matched %s",
-                    status, kept_via_derive, len(raw_props), label,
+                    status,
+                    kept_via_derive,
+                    len(raw_props),
+                    label,
                 )
             return results
         except Exception:
@@ -963,9 +934,7 @@ class MapSearchService:
             # Fetch Airbnb listings for each in-viewport neighborhood in parallel
             airbnb_tasks = [
                 asyncio.create_task(
-                    self.mashvisor.neighborhood_airbnb_listings(
-                        neighborhood_id=nb["id"], state=state, items=20
-                    )
+                    self.mashvisor.neighborhood_airbnb_listings(neighborhood_id=nb["id"], state=state, items=20)
                 )
                 for nb in in_viewport
                 if nb.get("id")
@@ -994,26 +963,28 @@ class MapSearchService:
                     # Check the listing is within the viewport bounds
                     if not (req.south <= lat <= req.north and req.west <= lon <= req.east):
                         continue
-                    listings.append(MapListing(
-                        id=f"mashvisor_airbnb_{prop.get('id', '')}",
-                        address=prop.get("address") or prop.get("name", "Airbnb Listing"),
-                        city=prop.get("airbnbCity"),
-                        state=prop.get("state"),
-                        zip_code=prop.get("zip"),
-                        latitude=lat,
-                        longitude=lon,
-                        price=None,
-                        bedrooms=prop.get("numOfRooms"),
-                        bathrooms=prop.get("numOfBaths"),
-                        property_type=prop.get("propertyType"),
-                        listing_status="active",
-                        photo_url=prop.get("image"),
-                        source="mashvisor_airbnb",
-                        night_price=prop.get("nightPrice"),
-                        occupancy=prop.get("occupancy"),
-                        star_rating=prop.get("startRating") or prop.get("starRating"),
-                        reviews_count=prop.get("reviewsCount"),
-                    ))
+                    listings.append(
+                        MapListing(
+                            id=f"mashvisor_airbnb_{prop.get('id', '')}",
+                            address=prop.get("address") or prop.get("name", "Airbnb Listing"),
+                            city=prop.get("airbnbCity"),
+                            state=prop.get("state"),
+                            zip_code=prop.get("zip"),
+                            latitude=lat,
+                            longitude=lon,
+                            price=None,
+                            bedrooms=prop.get("numOfRooms"),
+                            bathrooms=prop.get("numOfBaths"),
+                            property_type=prop.get("propertyType"),
+                            listing_status="active",
+                            photo_url=prop.get("image"),
+                            source="mashvisor_airbnb",
+                            night_price=prop.get("nightPrice"),
+                            occupancy=prop.get("occupancy"),
+                            star_rating=prop.get("startRating") or prop.get("starRating"),
+                            reviews_count=prop.get("reviewsCount"),
+                        )
+                    )
 
             logger.info("Mashvisor STR: %d Airbnb listings from %d neighborhoods", len(listings), len(in_viewport))
             return listings
@@ -1201,9 +1172,7 @@ class MapSearchService:
             sqft=item.get("squareFootage"),
             property_type=item.get("propertyType"),
             listing_status=raw_status,
-            photo_url=MapSearchService._extract_photo_url(
-                item, primary_keys=("photoUrl", "imgSrc")
-            ),
+            photo_url=MapSearchService._extract_photo_url(item, primary_keys=("photoUrl", "imgSrc")),
             source="rentcast",
             days_on_market=item.get("daysOnMarket"),
             year_built=item.get("yearBuilt"),
