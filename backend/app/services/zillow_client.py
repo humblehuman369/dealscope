@@ -715,7 +715,6 @@ class ZillowDataExtractor:
         is_foreclosure = listing_sub_type.get("isForeclosure", False)
         is_bank_owned = listing_sub_type.get("isBankOwned", False)
         is_fsbo = listing_sub_type.get("isFSBO", False)
-        is_fsba = listing_sub_type.get("isFSBA", False)
         is_auction = listing_sub_type.get("isForAuction", False)
         is_coming_soon = listing_sub_type.get("isComingSoon", False)
 

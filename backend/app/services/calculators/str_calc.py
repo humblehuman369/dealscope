@@ -66,7 +66,7 @@ def calculate_str(
 
     ``monthly_revenue_override`` (optional) — Mashvisor /rental-rates per-bed
     monthly STR revenue. When provided, replaces the formula-derived
-    ``ADR × (365 × occupancy)`` rental revenue with ``override × 12``.
+    ``ADR x (365 x occupancy)`` rental revenue with ``override x 12``.
     Cleaning fee revenue, break-even occupancy, and seasonality continue to
     use ADR + occupancy because they need per-night structure that Mashvisor's
     flat monthly figure doesn't expose.

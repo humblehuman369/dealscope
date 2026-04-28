@@ -545,7 +545,7 @@ def _get_cumulative_investor_pct(deal_gap_pct: float, region_key: str) -> int:
             total += pct * (hi - deal_gap_pct) / (hi - lo)
         else:
             total += pct
-    rounded = int(round(total))
+    rounded = round(total)
     return max(1, min(99, rounded))
 
 

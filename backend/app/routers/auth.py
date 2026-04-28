@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections.abc import Coroutine
+from typing import Any
 from urllib.parse import urlencode, urlparse
 
 import httpx
@@ -52,6 +54,17 @@ from app.services.signup_notification_service import signup_notification_service
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
+
+
+# Strong references for fire-and-forget signup notification tasks. Without
+# this set, asyncio may GC the task mid-execution (RUF006).
+_BACKGROUND_TASKS: set[asyncio.Task[Any]] = set()
+
+
+def _fire_and_forget(coro: Coroutine[Any, Any, Any]) -> None:
+    task = asyncio.create_task(coro)
+    _BACKGROUND_TASKS.add(task)
+    task.add_done_callback(_BACKGROUND_TASKS.discard)
 
 
 # ------------------------------------------------------------------
@@ -204,7 +217,7 @@ async def register(body: UserRegister, request: Request, response: Response, db:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
     # Notify admins of the new signup (fire-and-forget; never blocks signup)
-    asyncio.create_task(
+    _fire_and_forget(
         signup_notification_service.notify(
             user_id=user.id,
             email=user.email,
@@ -462,7 +475,7 @@ async def google_callback(request: Request, response: Response, db: DbSession):
 
     # Notify admins on first-time Google signup only (skip returning users)
     if _created:
-        asyncio.create_task(
+        _fire_and_forget(
             signup_notification_service.notify(
                 user_id=user.id,
                 email=user.email,
@@ -503,6 +516,7 @@ def _generate_apple_client_secret() -> str:
     one per request (valid 5 minutes) for simplicity.
     """
     import time
+
     import jwt as pyjwt
 
     now = int(time.time())
@@ -671,7 +685,7 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
 
     # Notify admins on first-time Apple signup only (skip returning users)
     if _created:
-        asyncio.create_task(
+        _fire_and_forget(
             signup_notification_service.notify(
                 user_id=user.id,
                 email=user.email,

@@ -536,7 +536,7 @@ class AuthService:
         self,
         db: AsyncSession,
         email: str,
-    ) -> tuple[str, "User"] | None:
+    ) -> tuple[str, User] | None:
         """Look up user by email and create a new verification token.
 
         Returns ``(raw_token, user)`` or ``None`` if user doesn't exist

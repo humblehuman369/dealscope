@@ -35,9 +35,9 @@ from app.schemas.property import (
     ProvenanceMap,
     RentalData,
     RentalMarketStatistics,
+    StrategyType,
     STRMarketStats,
     STRRegulatory,
-    StrategyType,
     STRResults,
     ValuationData,
     WholesaleResults,
@@ -1095,7 +1095,7 @@ class PropertyService:
            revenue, bedroom-matched) → ADR = monthly_revenue / 30 / occupancy.
            This is the canonical fallback when Mashvisor str_lookup didn't
            supply ``average_daily_rate`` directly (e.g. low sample size).
-        2. LTR-derived heuristic (existing behavior): 2.5× daily equivalent
+        2. LTR-derived heuristic (existing behavior): 2.5x daily equivalent
            of monthly LTR rent.
         3. Hard $200 default — last resort.
         """
@@ -1121,11 +1121,11 @@ class PropertyService:
     def _estimate_insurance(self, data: dict) -> float:
         """Estimate annual insurance.
 
-        Primary: county-level landlord ratio (ACS) × state market calibration.
+        Primary: county-level landlord ratio (ACS) x state market calibration.
         Fallback: state insurance_rate from :func:`get_market_adjustments` (ZIP).
         """
-        from app.services.assumptions_service import get_market_adjustments
         from app.services import insurance_lookup
+        from app.services.assumptions_service import get_market_adjustments
 
         market_price = (
             data.get("value_iq_estimate")
