@@ -1792,6 +1792,10 @@ function VerdictContent() {
                   onNavigateAppraiser={navigateToAppraiser}
                   onNavigateStrategy={navigateToStrategy}
                   onSignIn={() => openAuthModal('login')}
+                  dealStructures={analysis.dealStructures}
+                  propertyState={property?.state ?? null}
+                  onOpenStructureInStrategy={openThreePathInStrategy}
+                  onShowPitch={(s) => setPitchModalStructure(s)}
                 />
               ) : dealGapPct > 0 ? (
                 <VerdictGapGuidance
@@ -1818,6 +1822,10 @@ function VerdictContent() {
                   onNavigateAppraiser={navigateToAppraiser}
                   onNavigateStrategy={navigateToStrategy}
                   onSignIn={() => openAuthModal('login')}
+                  dealStructures={analysis.dealStructures}
+                  propertyState={property?.state ?? null}
+                  onOpenStructureInStrategy={openThreePathInStrategy}
+                  onShowPitch={(s) => setPitchModalStructure(s)}
                 />
               )}
 
