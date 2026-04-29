@@ -264,12 +264,14 @@ export function PitchScriptModal({ structure, onClose, propertyAddress }: PitchS
   const backdropRef = useRef<HTMLDivElement>(null)
   const trackedId = useRef<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [emailHintShown, setEmailHintShown] = useState(false)
 
   useEffect(() => {
     if (!structure?.pitchScript) return
     if (trackedId.current === structure.id) return
     trackedId.current = structure.id
     setCopied(false)
+    setEmailHintShown(false)
     trackEvent('path_pitch_opened', { structure_id: structure.id, family: structure.family })
   }, [structure])
 
@@ -286,6 +288,25 @@ export function PitchScriptModal({ structure, onClose, propertyAddress }: PitchS
     if (!structure?.pitchScript) return [] as PitchBlock[]
     return parsePitch(structure.pitchScript)
   }, [structure?.pitchScript])
+
+  /**
+   * Pre-compute the mailto: href so the Email button can render as a real
+   * anchor element. Anchor clicks are the most reliable way to dispatch
+   * mailto: to the OS handler — `window.location.href` assignment silently
+   * fails in many real-world cases (Chrome with no protocol handler chosen,
+   * popup blockers, in-app browsers, Capacitor WebView, etc.).
+   */
+  const mailtoHref = useMemo(() => {
+    if (!structure?.pitchScript) return ''
+    const subject = `Negotiation playbook: ${structure.headline}`
+    const body = buildEmailBody({
+      headline: structure.headline,
+      pitch: structure.pitchScript,
+      propertyAddress,
+      familyLabel: structure.familyLabel ?? null,
+    })
+    return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }, [structure?.pitchScript, structure?.headline, structure?.familyLabel, propertyAddress])
 
   if (!structure?.pitchScript) return null
 
@@ -335,21 +356,27 @@ export function PitchScriptModal({ structure, onClose, propertyAddress }: PitchS
     trackEvent('path_pitch_printed', { structure_id: structure.id, family: structure.family })
   }
 
-  const email = () => {
+  /**
+   * Side-effects fired alongside the anchor's native navigation:
+   *   1. Copy full body to clipboard as a paste-fallback (Outlook & Gmail web
+   *      silently truncate long mailto bodies).
+   *   2. Track the analytics event.
+   *   3. Show an instructional hint after a short delay — if no mail handler
+   *      is registered, the click looks like nothing happened. We tell the
+   *      user the body has been copied to clipboard so they can paste into
+   *      Gmail/Outlook web manually.
+   */
+  const onEmailClick = () => {
     if (!structure?.pitchScript) return
-    const subject = `Negotiation playbook: ${structure.headline}`
     const body = buildEmailBody({
       headline: structure.headline,
       pitch: structure.pitchScript,
       propertyAddress,
       familyLabel: structure.familyLabel ?? null,
     })
-    // Some mail clients (notably Outlook and Gmail web) silently truncate
-    // very long mailto bodies. Always copy the full script to clipboard
-    // alongside opening the mail client so the user has a paste fallback.
     navigator.clipboard?.writeText(body).catch(() => {})
-    const href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    window.location.href = href
+    setEmailHintShown(true)
+    window.setTimeout(() => setEmailHintShown(false), 6000)
     trackEvent('path_pitch_emailed', { structure_id: structure.id, family: structure.family })
   }
 
@@ -478,71 +505,108 @@ export function PitchScriptModal({ structure, onClose, propertyAddress }: PitchS
         </div>
 
         <div
-          className="flex flex-wrap items-center gap-2"
           style={{
-            padding: '14px 20px',
+            padding: '12px 20px 14px',
             borderTop: '1px solid var(--border-default)',
-            justifyContent: 'flex-end',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
           }}
         >
           {/*
-            Print is a desktop-first feature. In the Capacitor WebView,
-            window.open / browser print dialog are unreliable — hide it there.
-            Email-via-mailto works on iOS/Android via the OS mail handler.
+            Email-action hint. Shown for ~6s after the user clicks Email.
+            mailto: depends on the OS having a registered mail handler — many
+            users (especially on Chrome / webmail-only setups) will see nothing
+            happen. We always copy the body to clipboard alongside the click,
+            so the hint tells them exactly how to recover.
           */}
-          {!IS_CAPACITOR && (
-            <button
-              type="button"
-              onClick={print}
-              aria-label="Print this script"
-              className="rounded-md px-3 py-2 text-[13px] font-semibold transition-colors hover:bg-[var(--surface-card)]"
+          {emailHintShown && (
+            <div
+              role="status"
+              aria-live="polite"
+              style={{
+                fontSize: 12.5,
+                lineHeight: 1.45,
+                color: 'var(--text-secondary)',
+                background: 'var(--surface-card)',
+                border: '1px solid var(--border-subtle, var(--border-default))',
+                borderRadius: 8,
+                padding: '8px 10px',
+              }}
+            >
+              <strong style={{ color: 'var(--text-heading)' }}>Mail app didn't open?</strong>{' '}
+              The full playbook has been copied to your clipboard — paste it into Gmail, Outlook,
+              or any compose window. (Browsers only open mail apps when one is registered as the
+              default handler.)
+            </div>
+          )}
+
+          <div
+            className="flex flex-wrap items-center gap-2"
+            style={{ justifyContent: 'flex-end' }}
+          >
+            {/*
+              Print is a desktop-first feature. In the Capacitor WebView,
+              window.open / browser print dialog are unreliable — hide it there.
+              Email-via-mailto via an anchor click works on iOS/Android too.
+            */}
+            {!IS_CAPACITOR && (
+              <button
+                type="button"
+                onClick={print}
+                aria-label="Print this script"
+                className="rounded-md px-3 py-2 text-[13px] font-semibold transition-colors hover:bg-[var(--surface-card)]"
+                style={{
+                  background: 'transparent',
+                  color: 'var(--text-heading)',
+                  border: '1px solid var(--border-default)',
+                }}
+              >
+                Print
+              </button>
+            )}
+            <a
+              href={mailtoHref}
+              onClick={onEmailClick}
+              aria-label="Email this script to yourself"
+              className="rounded-md px-3 py-2 text-[13px] font-semibold transition-colors hover:bg-[var(--surface-card)] no-underline"
               style={{
                 background: 'transparent',
                 color: 'var(--text-heading)',
                 border: '1px solid var(--border-default)',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
               }}
             >
-              Print
+              Email to me
+            </a>
+            <button
+              type="button"
+              onClick={copy}
+              className="rounded-md px-4 py-2 text-[13px] font-semibold transition-colors"
+              style={{
+                background: copied ? 'var(--accent-positive, #16a34a)' : 'var(--accent-sky)',
+                color: 'var(--surface-base, #fff)',
+                border: 'none',
+                minWidth: 150,
+              }}
+            >
+              {copied ? 'Copied to clipboard' : 'Copy script'}
             </button>
-          )}
-          <button
-            type="button"
-            onClick={email}
-            aria-label="Email this script to yourself"
-            className="rounded-md px-3 py-2 text-[13px] font-semibold transition-colors hover:bg-[var(--surface-card)]"
-            style={{
-              background: 'transparent',
-              color: 'var(--text-heading)',
-              border: '1px solid var(--border-default)',
-            }}
-          >
-            Email to me
-          </button>
-          <button
-            type="button"
-            onClick={copy}
-            className="rounded-md px-4 py-2 text-[13px] font-semibold transition-colors"
-            style={{
-              background: copied ? 'var(--accent-positive, #16a34a)' : 'var(--accent-sky)',
-              color: 'var(--surface-base, #fff)',
-              border: 'none',
-              minWidth: 150,
-            }}
-          >
-            {copied ? 'Copied to clipboard' : 'Copy script'}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md px-3 py-2 text-[13px] font-semibold"
-            style={{
-              background: 'transparent',
-              color: 'var(--text-secondary)',
-              border: 'none',
-            }}
-          >
-            Close
-          </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md px-3 py-2 text-[13px] font-semibold"
+              style={{
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                border: 'none',
+              }}
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>
