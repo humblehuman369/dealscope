@@ -68,6 +68,9 @@ class StructureContext:
     # Regional selector calibration (T15) — two-letter state when known
     state: str | None = None
 
+    # T17 — per-user template-family dismissals (selector applies a ranking penalty)
+    dismissed_families: tuple[str, ...] = ()
+
     @property
     def deal_gap_amount(self) -> float:
         return self.list_price - self.target_buy_price

@@ -157,6 +157,13 @@ class IQVerdictInput(BaseModel):
         None,
         description="Buyer intends to owner-occupy (house-hack)",
     )
+    # T17 — per-user template-family dismissals (localStorage on the client; selector
+    # applies a -25 ranking penalty to matching candidates so dismissed families don't
+    # keep leading the lineup on every subsequent property the user analyzes).
+    dismissed_families: list[str] | None = Field(
+        default=None,
+        description="StructureFamily IDs the user has dismissed (e.g. ['financing'])",
+    )
 
     @field_validator("existing_loan_type", mode="before")
     @classmethod

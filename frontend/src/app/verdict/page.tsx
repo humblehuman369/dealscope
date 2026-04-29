@@ -60,6 +60,7 @@ import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import type { DealStructure } from '@/components/iq-verdict/ThreePathsPanel'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
 import { buildStrategyUrlWithScenario } from '@/lib/dealStructures/loadScenario'
+import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'
 import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
 
 // Backend analysis response type — canonical shape from @dealscope/shared.
@@ -576,6 +577,7 @@ function VerdictContent() {
           isFsbo: data.listing?.is_fsbo || false,
           marketTemperature: data.market?.market_stats?.market_temperature || undefined,
           state: propertyData.state || undefined,
+          dismissedFamilies: getDismissedFamilies(),
         }
         const analysisBody = buildVerdictAnalysisPayload(
           payloadBase,

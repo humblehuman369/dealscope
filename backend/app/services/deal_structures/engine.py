@@ -30,7 +30,9 @@ def compute_deal_structures(ctx: StructureContext) -> DealStructuresPayload:
     paths = select_three_paths(ctx, templates=enabled_templates)
 
     # Path 4 — Blended Plan: always attempt when Deal Gap is positive (kill-switch via flag).
-    if merged_flags.get("blended-plan", True):
+    # T17 — also suppress when the user has explicitly dismissed the 'blended' family.
+    blended_dismissed = "blended" in (ctx.dismissed_families or ())
+    if merged_flags.get("blended-plan", True) and not blended_dismissed:
         blended = blended_plan.solve(
             ctx,
             price_result=price_negotiation.solve(ctx),

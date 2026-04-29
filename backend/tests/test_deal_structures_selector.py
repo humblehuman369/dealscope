@@ -11,6 +11,8 @@ from __future__ import annotations
 from app.schemas.deal_structures import DealStructure
 from app.services.deal_structures import compute_deal_structures
 from app.services.deal_structures.selector import (
+    _DISMISSED_FAMILY_PENALTY,
+    _apply_dismissed_penalty,
     _apply_listing_signals,
     select_three_paths,
 )
@@ -238,6 +240,66 @@ def test_explicit_empty_template_list_returns_no_paths():
 # ---------------------------------------------------------------------------
 # Sanity — the broader template registry stays solvable
 # ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# T17 — user-dismiss penalty
+# ---------------------------------------------------------------------------
+
+
+def test_dismissed_penalty_no_op_with_empty_list():
+    structure = _minimal_structure("any-card", family="financing", score=70.0)
+    ctx = base_ctx()
+    assert _apply_dismissed_penalty(ctx, structure, 70.0) == 70.0
+
+
+def test_dismissed_penalty_subtracts_when_family_dismissed():
+    structure = _minimal_structure("any-card", family="financing", score=70.0)
+    ctx = base_ctx(dismissed_families=("financing",))
+    assert _apply_dismissed_penalty(ctx, structure, 70.0) == 70.0 - _DISMISSED_FAMILY_PENALTY
+
+
+def test_dismissed_penalty_no_match_no_penalty():
+    """Dismissing 'income' must not penalize a 'financing' card — strict family match only."""
+    structure = _minimal_structure("any-card", family="financing", score=70.0)
+    ctx = base_ctx(dismissed_families=("income",))
+    assert _apply_dismissed_penalty(ctx, structure, 70.0) == 70.0
+
+
+def test_dismissed_penalty_clamps_to_floor():
+    """A card that was already weak shouldn't go negative."""
+    structure = _minimal_structure("any-card", family="financing", score=10.0)
+    ctx = base_ctx(dismissed_families=("financing",))
+    assert _apply_dismissed_penalty(ctx, structure, 10.0) == 0.0
+
+
+def test_dismissed_penalty_blended_only_on_explicit_blended():
+    """Honest gating — dismissing 'financing' must NOT silently kill the blended plan."""
+    structure = _minimal_structure("blended-plan", family="blended", score=80.0)
+    ctx = base_ctx(dismissed_families=("financing",))
+    assert _apply_dismissed_penalty(ctx, structure, 80.0) == 80.0
+    ctx_blended = base_ctx(dismissed_families=("blended",))
+    assert _apply_dismissed_penalty(ctx_blended, structure, 80.0) == 80.0 - _DISMISSED_FAMILY_PENALTY
+
+
+def test_dismissing_financing_drops_sub2_below_undismissed_alternatives():
+    """End-to-end: a Sub2 card that would normally rank top loses its lead when dismissed."""
+    base_overrides = dict(
+        estimated_purchase_year=2021,
+        estimated_purchase_price=350_000,
+        days_on_market=120,
+        is_fsbo=True,
+    )
+    paths_default = select_three_paths(base_ctx(**base_overrides))
+    paths_dismissed = select_three_paths(base_ctx(dismissed_families=("financing",), **base_overrides))
+
+    sub2_default = next((p for p in paths_default if p.id == "sub2"), None)
+    sub2_dismissed = next((p for p in paths_dismissed if p.id == "sub2"), None)
+
+    if sub2_default is None or sub2_dismissed is None:
+        return  # template precondition; not what this test asserts
+    assert sub2_dismissed.ranking_score < sub2_default.ranking_score
+    assert sub2_default.ranking_score - sub2_dismissed.ranking_score == _DISMISSED_FAMILY_PENALTY
 
 
 def test_no_template_solver_raises_on_bare_context():

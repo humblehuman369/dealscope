@@ -37,6 +37,8 @@ export interface VerdictPayloadBase {
   unitCount?: number | null
   /** Owner-occ intent for house-hack path */
   isOwnerOccupied?: boolean | null
+  /** T17 — families the user has dismissed; selector applies a ranking penalty */
+  dismissedFamilies?: string[]
 }
 
 export function buildVerdictAnalysisPayload(
@@ -87,6 +89,10 @@ export function buildVerdictAnalysisPayload(
     year_built: base.yearBuilt ?? undefined,
     unit_count: base.unitCount ?? undefined,
     is_owner_occupied: base.isOwnerOccupied ?? undefined,
+    dismissed_families:
+      base.dismissedFamilies && base.dismissedFamilies.length > 0
+        ? base.dismissedFamilies
+        : undefined,
   }
 
   if (overrides) {
