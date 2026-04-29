@@ -2128,7 +2128,21 @@ function VerdictContent() {
         scoreType={methodologyScoreType}
       />
 
-      <PitchScriptModal structure={pitchModalStructure} onClose={() => setPitchModalStructure(null)} />
+      <PitchScriptModal
+        structure={pitchModalStructure}
+        onClose={() => setPitchModalStructure(null)}
+        propertyAddress={
+          property
+            ? [
+                property.address,
+                property.city,
+                [property.state, property.zip].filter(Boolean).join(' '),
+              ]
+                .filter(Boolean)
+                .join(', ') || null
+            : null
+        }
+      />
 
     </>
   )

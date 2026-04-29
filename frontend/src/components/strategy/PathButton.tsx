@@ -48,13 +48,20 @@ export function PathButton({
   const isDisabled = disabled || !structure.preLoadedRecord || Object.keys(structure.preLoadedRecord ?? {}).length === 0
 
   const baseStyle: CSSProperties = {
-    background: active ? accent : 'var(--surface-card)',
-    border: `1px solid ${active ? accent : 'var(--border-default)'}`,
-    color: active ? 'var(--text-inverse)' : 'var(--text-heading)',
+    // Active state mirrors the worksheet SliderRow's path-highlight glow:
+    // soft sky-blue gradient + sky-blue inset edge. Family color stays on the
+    // 4px left border so the four buttons remain visually distinct.
+    background: active
+      ? 'linear-gradient(90deg, rgba(15, 164, 233, 0.18), rgba(15, 164, 233, 0.04) 72%, transparent), var(--surface-card)'
+      : 'var(--surface-card)',
+    border: `1px solid ${active ? 'rgba(15, 164, 233, 0.55)' : 'var(--border-default)'}`,
+    color: 'var(--text-heading)',
     borderLeft: `4px solid ${accent}`,
+    boxShadow: active ? 'inset 3px 0 0 rgba(15, 164, 233, 0.55)' : 'none',
     cursor: isDisabled ? 'not-allowed' : 'pointer',
     opacity: isDisabled ? 0.55 : 1,
-    transition: 'background-color 120ms ease, border-color 120ms ease, transform 80ms ease',
+    transition:
+      'background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 80ms ease',
     textAlign: 'left',
     width: '100%',
     minWidth: 0,
@@ -73,10 +80,7 @@ export function PathButton({
       <div className="flex items-center justify-between gap-2 min-w-0">
         <span
           className="text-[11px] font-bold uppercase tracking-wider"
-          style={{
-            color: active ? 'var(--text-inverse)' : accent,
-            opacity: active ? 0.9 : 1,
-          }}
+          style={{ color: accent }}
         >
           {label}
         </span>
@@ -84,8 +88,8 @@ export function PathButton({
           <span
             className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
             style={{
-              background: 'rgba(255,255,255,0.2)',
-              color: 'var(--text-inverse)',
+              background: 'var(--accent-sky)',
+              color: '#FFFFFF',
             }}
           >
             Applied
@@ -94,17 +98,14 @@ export function PathButton({
       </div>
       <div
         className="text-sm font-semibold leading-tight truncate"
-        style={{ color: active ? 'var(--text-inverse)' : 'var(--text-heading)' }}
+        style={{ color: 'var(--text-heading)' }}
       >
         {subtitle}
       </div>
       {headline && (
         <div
           className="text-[12px] leading-snug truncate"
-          style={{
-            color: active ? 'var(--text-inverse)' : 'var(--text-secondary)',
-            opacity: active ? 0.85 : 1,
-          }}
+          style={{ color: 'var(--text-secondary)' }}
         >
           {headline}
         </div>
