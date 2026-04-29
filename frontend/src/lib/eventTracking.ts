@@ -4,7 +4,8 @@
  * Respects cookie consent: events are only sent when user has accepted analytics.
  *
  * Three Paths (T0.5 / T14): `three_paths_rendered`, `path_pitch_opened`, `path_opened_in_strategy`,
- * `path_card_caveat_viewed`, `path_attorney_link_clicked`, `assumable_pv_displayed`.
+ * `path_card_caveat_viewed`, `path_attorney_link_clicked`, `assumable_pv_displayed`,
+ * `morby_method_substituted`.
  * (T17) `path_family_dismissed` — when user-dismiss UI exists.
  */
 
