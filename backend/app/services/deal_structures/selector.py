@@ -11,6 +11,10 @@ _TX_FL_SUB2_BONUS = 5.0
 _COHORT_FINANCING_BONUS = 5.0  # coastal_northeast + midwest_affordability
 _CA_NY_ASSUMABLE_BONUS = 8.0
 
+# T17 — large enough to drop a family out of the top 3 unless it's the only viable
+# option, but not so large it removes it entirely (user might change their mind).
+_DISMISSED_FAMILY_PENALTY = 25.0
+
 
 def _apply_regional_calibration(ctx: StructureContext, structure: DealStructure, score: float) -> float:
     """Adjust realism score by U.S. state cohort (reuses ``resolve_investor_probability_region``)."""
@@ -35,6 +39,22 @@ def _apply_regional_calibration(ctx: StructureContext, structure: DealStructure,
     if code in ("CA", "NY") and structure.id == "assumable":
         score += _CA_NY_ASSUMABLE_BONUS
 
+    return min(100.0, max(0.0, score))
+
+
+def _apply_dismissed_penalty(ctx: StructureContext, structure: DealStructure, score: float) -> float:
+    """T17 — penalize structures whose family the user has dismissed.
+
+    Single-lever cards lose ``_DISMISSED_FAMILY_PENALTY`` directly. The Blended
+    Plan (``family == 'blended'``) is its own family — only penalized when the
+    user explicitly dismisses ``'blended'``, not when they dismiss a constituent
+    family. This matches the honest-gating doctrine: do exactly what the user
+    asked for, no more.
+    """
+    if not ctx.dismissed_families:
+        return score
+    if structure.family in ctx.dismissed_families:
+        score -= _DISMISSED_FAMILY_PENALTY
     return min(100.0, max(0.0, score))
 
 
@@ -120,6 +140,7 @@ def select_three_paths(
         if result is not None and result.monthly_savings > 0:
             adjusted = _apply_listing_signals(ctx, result)
             adjusted = _apply_regional_calibration(ctx, result, adjusted)
+            adjusted = _apply_dismissed_penalty(ctx, result, adjusted)
             candidates.append(result.model_copy(update={"ranking_score": adjusted}))
 
     if not candidates:

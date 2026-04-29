@@ -160,6 +160,25 @@ def test_blended_disabled_via_flag():
     assert all(p.id != "blended-plan" for p in out.paths)
 
 
+# ---------------------------------------------------------------------------
+# T17 — user-dismiss signal at the engine level
+# ---------------------------------------------------------------------------
+
+
+def test_blended_suppressed_when_blended_family_dismissed():
+    """Dismissing the 'blended' family must drop Path 4 entirely, not just penalize it."""
+    ctx = _base_ctx(dismissed_families=("blended",))
+    out = compute_deal_structures(ctx)
+    assert all(p.family != "blended" for p in out.paths)
+
+
+def test_blended_still_appears_when_unrelated_family_dismissed():
+    """Dismissing 'income' must not silently drop the Blended Plan — it owns its own family."""
+    ctx = _base_ctx(dismissed_families=("income",))
+    out = compute_deal_structures(ctx)
+    assert any(p.family == "blended" for p in out.paths)
+
+
 def _minimal_structure(structure_id: str, family: str = "financing") -> DealStructure:
     return DealStructure(
         id=structure_id,

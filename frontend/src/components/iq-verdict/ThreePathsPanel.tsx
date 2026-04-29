@@ -1,10 +1,16 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 
 import { trackEvent } from '@/lib/eventTracking'
+import {
+  dismissFamily,
+  dismissedCount,
+  getDismissedFamilies,
+  resetDismissedFamilies,
+} from '@/lib/dealStructures/userPreferences'
 
 export type StructureFamily =
   | 'price'
@@ -50,6 +56,9 @@ interface ThreePathsPanelProps {
   propertyState?: string | null
   onOpenInStrategy?: (structure: DealStructure, index: number) => void
   onShowPitch?: (structure: DealStructure) => void
+  /** T17 — fired when a card is dismissed (after localStorage write).
+   *  Use to refetch / re-render so the next verdict has the lower ranking applied. */
+  onDismissFamily?: (family: StructureFamily) => void
 }
 
 const FAMILY_ACCENT: Record<StructureFamily, string> = {
@@ -74,12 +83,14 @@ function PathCard({
   propertyState,
   onOpenInStrategy,
   onShowPitch,
+  onDismiss,
 }: {
   structure: DealStructure
   index: number
   propertyState?: string | null
   onOpenInStrategy?: (s: DealStructure, i: number) => void
   onShowPitch?: (s: DealStructure) => void
+  onDismiss?: (s: DealStructure) => void
 }) {
   const caveatOpenedRef = useRef(false)
   const accent = FAMILY_ACCENT[structure.family] || 'var(--accent-sky)'
@@ -289,6 +300,17 @@ function PathCard({
             How to pitch this
           </button>
         )}
+        {onDismiss && (
+          <button
+            type="button"
+            onClick={() => onDismiss(structure)}
+            className="ml-auto cursor-pointer text-xs font-medium underline-offset-2 hover:underline"
+            style={{ color: 'var(--text-secondary)', background: 'transparent', border: 'none', padding: 0 }}
+            aria-label={`Hide ${structure.familyLabel} cards for 30 days`}
+          >
+            Not interested in this kind of deal
+          </button>
+        )}
       </div>
     </div>
   )
@@ -299,42 +321,73 @@ export function ThreePathsPanel({
   propertyState,
   onOpenInStrategy,
   onShowPitch,
+  onDismissFamily,
 }: ThreePathsPanelProps): ReactNode {
   const lastAssumableSigRef = useRef('')
   const lastMorbySigRef = useRef('')
 
-  const pathsSig = payload.paths.map((p) => p.id).join('|')
+  // T17 — local mirror of the dismissed list so the UI updates without a refetch.
+  // Initialized from localStorage on mount; mutations write through and refresh state.
+  const [sessionDismissed, setSessionDismissed] = useState<string[]>([])
+  useEffect(() => {
+    setSessionDismissed(getDismissedFamilies())
+  }, [])
+
+  const visiblePaths = useMemo(
+    () => payload.paths.filter((p) => !sessionDismissed.includes(p.family)),
+    [payload.paths, sessionDismissed],
+  )
+
+  const handleDismiss = (s: DealStructure) => {
+    dismissFamily(s.family)
+    const next = getDismissedFamilies()
+    setSessionDismissed(next)
+    trackEvent('path_family_dismissed', {
+      family: s.family,
+      structure_id: s.id,
+      dismissed_count: dismissedCount(s.family),
+      state: propertyState ?? undefined,
+    })
+    onDismissFamily?.(s.family)
+  }
+
+  const handleReset = () => {
+    resetDismissedFamilies()
+    setSessionDismissed([])
+  }
+
+  const pathsSig = visiblePaths.map((p) => p.id).join('|')
 
   useEffect(() => {
-    if (!payload.hasPaths || payload.paths.length === 0) return
-    const hasAssumable = payload.paths.some((p) => p.id === 'assumable')
+    if (visiblePaths.length === 0) return
+    const hasAssumable = visiblePaths.some((p) => p.id === 'assumable')
     if (!hasAssumable) return
     const dedupe = `${pathsSig}|${propertyState ?? ''}`
     if (lastAssumableSigRef.current === dedupe) return
     lastAssumableSigRef.current = dedupe
     trackEvent('assumable_pv_displayed', {
-      path_count: payload.paths.length,
+      path_count: visiblePaths.length,
       state: propertyState ?? undefined,
     })
-  }, [payload.hasPaths, pathsSig, propertyState])
+  }, [visiblePaths, pathsSig, propertyState])
 
   // T14: Morby Method substitution event — fires when the Morby card is in the lineup.
   // The selector substitutes Sub2 + seller-2nd with this combined card; surfacing as a
   // distinct event lets us measure how often the substitution actually triggers in the wild.
   useEffect(() => {
-    if (!payload.hasPaths || payload.paths.length === 0) return
-    const hasMorby = payload.paths.some((p) => p.id === 'morby-method')
+    if (visiblePaths.length === 0) return
+    const hasMorby = visiblePaths.some((p) => p.id === 'morby-method')
     if (!hasMorby) return
     const dedupe = `${pathsSig}|${propertyState ?? ''}`
     if (lastMorbySigRef.current === dedupe) return
     lastMorbySigRef.current = dedupe
     trackEvent('morby_method_substituted', {
-      path_count: payload.paths.length,
+      path_count: visiblePaths.length,
       state: propertyState ?? undefined,
     })
-  }, [payload.hasPaths, pathsSig, propertyState])
+  }, [visiblePaths, pathsSig, propertyState])
 
-  if (!payload.hasPaths || payload.paths.length === 0) {
+  if (!payload.hasPaths || visiblePaths.length === 0) {
     return null
   }
 
@@ -348,24 +401,36 @@ export function ThreePathsPanel({
         gap: 14,
       }}
     >
-      {(() => {
-        const { lead, tail } = pathCountWords(payload.paths.length)
-        return (
-          <p
-            style={{
-              margin: 0,
-              fontSize: 18,
-              fontWeight: 700,
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              color: 'var(--text-heading)',
-            }}
+      <div className="flex items-baseline justify-between gap-3 flex-wrap">
+        {(() => {
+          const { lead, tail } = pathCountWords(visiblePaths.length)
+          return (
+            <p
+              style={{
+                margin: 0,
+                fontSize: 18,
+                fontWeight: 700,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                color: 'var(--text-heading)',
+              }}
+            >
+              <span style={{ color: 'var(--accent-sky-light)' }}>{lead}</span>{' '}
+              {tail}
+            </p>
+          )
+        })()}
+        {sessionDismissed.length > 0 && (
+          <button
+            type="button"
+            onClick={handleReset}
+            className="cursor-pointer text-xs font-medium underline-offset-2 hover:underline"
+            style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
           >
-            <span style={{ color: 'var(--accent-sky-light)' }}>{lead}</span>{' '}
-            {tail}
-          </p>
-        )
-      })()}
+            Reset preferences ({sessionDismissed.length})
+          </button>
+        )}
+      </div>
       <div
         className="w-full min-w-0"
         style={{
@@ -375,7 +440,7 @@ export function ThreePathsPanel({
           alignItems: 'stretch',
         }}
       >
-        {payload.paths.map((path, idx) => (
+        {visiblePaths.map((path, idx) => (
           <PathCard
             key={path.id}
             structure={path}
@@ -383,6 +448,7 @@ export function ThreePathsPanel({
             propertyState={propertyState}
             onOpenInStrategy={onOpenInStrategy}
             onShowPitch={onShowPitch}
+            onDismiss={handleDismiss}
           />
         ))}
       </div>
