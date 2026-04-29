@@ -36,6 +36,10 @@ import {
   readLastAppliedScenario,
   writeLastAppliedScenario,
 } from '@/lib/dealStructures/loadScenario'
+import {
+  computeHighlightedStateFields,
+  inlineOverrideKeyToStateField,
+} from '@/lib/dealStructures/pathHighlights'
 import { getConditionAdjustment } from '@/utils/property-adjustments'
 import { calculateMortgagePayment } from '@/utils/calculations'
 import { tw } from '@/components/iq-verdict/verdict-design-tokens'
@@ -211,6 +215,17 @@ function StrategyContent() {
   const [inlineOverrides, setInlineOverrides] = useState<Record<string, any>>({})
   // Currently applied Three Paths structure (so the matching button highlights).
   const [appliedPathId, setAppliedPathId] = useState<string | null>(null)
+  // Worksheet state-field names whose value the most recently applied path
+  // actually changed vs the prior baseline. Drives the soft glow on
+  // SliderRow's via WorksheetHighlightContext.
+  const [highlightedFields, setHighlightedFields] = useState<Set<string>>(() => new Set())
+
+  // Wipe highlights whenever the analyzed address changes — different property,
+  // different baseline.
+  useEffect(() => {
+    setHighlightedFields(new Set())
+    setAppliedPathId(null)
+  }, [addressParam])
   // Merged view used by all downstream calculations.
   const dealMakerOverrides = useMemo(() => {
     if (!initialOverrides && Object.keys(inlineOverrides).length === 0) return null
@@ -572,6 +587,9 @@ function StrategyContent() {
 
   const handleStrategyChange = useCallback((strategyId: string) => {
     setSelectedStrategyId(strategyId)
+    // Highlights are tracked under per-strategy state-field names; switching
+    // strategies invalidates them.
+    setHighlightedFields(new Set())
     const merged = { ...(initialOverrides ?? {}), ...inlineOverrides }
     recalcVerdict(propertyInfo, merged, sourceOverrides)
   }, [initialOverrides, inlineOverrides, propertyInfo, sourceOverrides, recalcVerdict])
@@ -618,6 +636,15 @@ function StrategyContent() {
       scheduleRecalc(next)
       return next
     })
+    // A manual slider edit invalidates the path-applied glow on this field.
+    setHighlightedFields((prev) => {
+      if (prev.size === 0) return prev
+      const stateField = inlineOverrideKeyToStateField(mapping.key, currentStrategyTypeRef.current)
+      if (!stateField || !prev.has(stateField)) return prev
+      const next = new Set(prev)
+      next.delete(stateField)
+      return next
+    })
   }, [scheduleRecalc])
 
   /**
@@ -641,6 +668,13 @@ function StrategyContent() {
       return next
     })
     setAppliedPathId(structure.id)
+    setHighlightedFields(
+      computeHighlightedStateFields(
+        patch,
+        worksheetStateRef.current,
+        currentStrategyTypeRef.current,
+      ),
+    )
     trackEvent('path_applied_in_strategy', {
       structure_id: structure.id,
       family: structure.family,
@@ -666,6 +700,7 @@ function StrategyContent() {
       return next as Record<string, any>
     })
     setAppliedPathId(null)
+    setHighlightedFields(new Set())
     trackEvent('path_cleared_in_strategy')
   }, [scheduleRecalc])
 
@@ -983,6 +1018,16 @@ function StrategyContent() {
         } satisfies LTRDealMakerState
     }
   })()
+
+  // Live snapshot of worksheetState + active strategy so applyPathPatch can
+  // diff against the current baseline before the patch is merged in, and the
+  // manual-edit hook in handleInlineSliderChange can drop the right glow.
+  const worksheetStateRef = useRef<AnyStrategyState | null>(null)
+  const currentStrategyTypeRef = useRef<StrategyType>(currentStrategyType)
+  useEffect(() => {
+    worksheetStateRef.current = worksheetState
+    currentStrategyTypeRef.current = currentStrategyType
+  })
 
   const worksheetMetrics = (() => {
     switch (currentStrategyType) {
@@ -1802,6 +1847,7 @@ function StrategyContent() {
             isCalculating={isRecalculating}
             propertyAddress={resolvedAddress}
             flushWithinParent
+            highlightedFields={highlightedFields}
           />
 
           {/* IQ Estimate Source Selector */}

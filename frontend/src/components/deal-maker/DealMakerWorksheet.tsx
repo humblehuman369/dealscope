@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef, createContext, useContext, useMemo } from 'react'
 import { exportDealMakerExcel } from './exportExcel'
 import type {
   StrategyType,
@@ -47,6 +47,18 @@ const C = {
   body: 'var(--text-body)',
   border: 'var(--border-subtle)',
 } as const
+
+/**
+ * Set of worksheet state-field names (e.g. `buyPrice`, `downPaymentPercent`,
+ * `sellerFinancingAmount`) whose value the most recently applied Three Paths
+ * structure changed vs the prior baseline. Consumed by `SliderRow` to render
+ * a soft accent glow on the matching rows.
+ *
+ * Default is an empty set, so worksheets used outside the Strategy page (e.g.
+ * the standalone DealMaker tab) silently render no glow.
+ */
+const EMPTY_HIGHLIGHTS: ReadonlySet<string> = new Set()
+const WorksheetHighlightContext = createContext<ReadonlySet<string>>(EMPTY_HIGHLIGHTS)
 
 function SectionHeader({ title, anchorId }: { title: string; anchorId?: string }) {
   return (
@@ -119,6 +131,7 @@ function SellerFinancingRows({
   return (
     <>
       <SliderRow
+        field="sellerFinancingAmount"
         label="Seller Financing Amount"
         value={state.sellerFinancingAmount}
         displayValue={fmt(state.sellerFinancingAmount)}
@@ -128,6 +141,7 @@ function SellerFinancingRows({
         onChange={(v) => up('sellerFinancingAmount', v)}
       />
       <SliderRow
+        field="sellerInterestRate"
         label="Seller Interest"
         value={state.sellerInterestRate * 100}
         displayValue={`${(state.sellerInterestRate * 100).toFixed(2)}%`}
@@ -138,6 +152,7 @@ function SellerFinancingRows({
         parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
       />
       <SliderRow
+        field="sellerTermYears"
         label="Seller Term"
         value={state.sellerTermYears}
         displayValue={`${state.sellerTermYears} years`}
@@ -164,6 +179,13 @@ interface SliderRowProps {
   step?: number
   onChange: (v: number) => void
   parseInput?: (raw: string) => number
+  /**
+   * Worksheet state-field name (e.g. `buyPrice`, `downPaymentPercent`,
+   * `sellerFinancingAmount`). When this matches an entry in the
+   * `WorksheetHighlightContext`, the row renders a soft accent glow to
+   * indicate the value was set by an applied Three Paths structure.
+   */
+  field?: string
 }
 
 function adaptRange(val: number, propMin: number, propMax: number): [number, number] {
@@ -176,7 +198,9 @@ function adaptRange(val: number, propMin: number, propMax: number): [number, num
   return [propMin, propMax]
 }
 
-function SliderRow({ label, value, displayValue, secondaryValue, min, max, step, onChange, parseInput }: SliderRowProps) {
+function SliderRow({ label, value, displayValue, secondaryValue, min, max, step, onChange, parseInput, field }: SliderRowProps) {
+  const highlights = useContext(WorksheetHighlightContext)
+  const highlight = !!field && highlights.has(field)
   const [rangeMin, setRangeMin] = useState(() => adaptRange(value, min, max)[0])
   const [rangeMax, setRangeMax] = useState(() => adaptRange(value, min, max)[1])
   const [editing, setEditing] = useState(false)
@@ -244,7 +268,13 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
   return (
     <div
       className="grid grid-cols-[1fr_119px] sm:grid-cols-[0.7fr_1.5fr_50px_119px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
-      style={{ borderBottom: `1px solid ${C.border}` }}
+      style={{
+        borderBottom: `1px solid ${C.border}`,
+        background: highlight
+          ? 'linear-gradient(90deg, color-mix(in srgb, var(--accent-sky) 12%, transparent), transparent 70%)'
+          : undefined,
+      }}
+      data-path-highlight={highlight || undefined}
     >
       <span className="text-sm" style={{ color: C.body }}>{label}</span>
       <div className="relative h-5 hidden sm:flex items-center justify-center min-w-[40px]">
@@ -360,8 +390,8 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
     <>
       <SectionHeader title="What You'd Pay" anchorId="strategy-worksheet-purchase" />
       <Row label="Market Price" value={fmt(listPrice || state.buyPrice)} />
-      <SliderRow label="Buy Price" value={state.buyPrice} displayValue={fmt(state.buyPrice)} min={50000} max={2000000} onChange={(v) => up('buyPrice', v)} />
-      <SliderRow label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={5} max={50} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
+      <SliderRow field="buyPrice" label="Buy Price" value={state.buyPrice} displayValue={fmt(state.buyPrice)} min={50000} max={2000000} onChange={(v) => up('buyPrice', v)} />
+      <SliderRow field="downPaymentPercent" label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={5} max={50} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <div id="strategy-worksheet-rehab" className="scroll-mt-28 h-0 overflow-hidden" aria-hidden />
       <SliderRow label="Rehab Budget" value={state.rehabBudget} displayValue={fmt(state.rehabBudget)} min={0} max={100000} onChange={(v) => up('rehabBudget', v)} />
@@ -371,8 +401,8 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
 
       <SectionHeader title="Your Loan Payment" anchorId="strategy-worksheet-financing" />
       <Row label="Loan Amount" value={fmt(loanAmount)} />
-      <SliderRow label="Interest Rate" value={state.interestRate * 100} displayValue={`${(state.interestRate * 100).toFixed(2)}%`} min={5} max={12} step={0.25} onChange={(v) => up('interestRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
-      <SliderRow label="Loan Term" value={state.loanTermYears} displayValue={`${state.loanTermYears} years`} min={10} max={30} onChange={(v) => up('loanTermYears', Math.round(v))} parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)} />
+      <SliderRow field="interestRate" label="Interest Rate" value={state.interestRate * 100} displayValue={`${(state.interestRate * 100).toFixed(2)}%`} min={5} max={12} step={0.25} onChange={(v) => up('interestRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
+      <SliderRow field="loanTermYears" label="Loan Term" value={state.loanTermYears} displayValue={`${state.loanTermYears} years`} min={10} max={30} onChange={(v) => up('loanTermYears', Math.round(v))} parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)} />
       <SellerFinancingRows basePrice={state.buyPrice} state={state} up={up} />
       <Row label="Monthly Payment" value={fmt(monthlyPayment)} />
       <TotalRow label="Annual Payment" value={fmt(monthlyPayment * 12)} />
@@ -390,7 +420,7 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
       <Divider />
 
       <SectionHeader title="What You'd Earn" anchorId="strategy-worksheet-income" />
-      <SliderRow label="Monthly Rent" value={state.monthlyRent} displayValue={fmt(state.monthlyRent)} min={500} max={10000} onChange={(v) => up('monthlyRent', v)} />
+      <SliderRow field="monthlyRent" label="Monthly Rent" value={state.monthlyRent} displayValue={fmt(state.monthlyRent)} min={500} max={10000} onChange={(v) => up('monthlyRent', v)} />
       <Row label="Gross Monthly" value={fmt(grossMonthly)} />
       <Row label="Annual Cash Flow" value={fmt(annualProfit)} color={annualProfit >= 0 ? C.blue : '#F43F5E'} />
       <Row label="Cap Rate" value={`${capRate.toFixed(2)}%`} />
@@ -429,8 +459,8 @@ function STRWorksheet({ state, metrics, listPrice, up }: {
     <>
       <SectionHeader title="What You'd Pay" />
       <Row label="Market Price" value={fmt(listPrice || state.buyPrice)} />
-      <SliderRow label="Buy Price" value={state.buyPrice} displayValue={fmt(state.buyPrice)} min={50000} max={2000000} onChange={(v) => up('buyPrice', v)} />
-      <SliderRow label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={5} max={50} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
+      <SliderRow field="buyPrice" label="Buy Price" value={state.buyPrice} displayValue={fmt(state.buyPrice)} min={50000} max={2000000} onChange={(v) => up('buyPrice', v)} />
+      <SliderRow field="downPaymentPercent" label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={5} max={50} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <SliderRow label="Rehab Budget" value={state.rehabBudget} displayValue={fmt(state.rehabBudget)} min={0} max={100000} onChange={(v) => up('rehabBudget', v)} />
       <SliderRow label="Furniture & Setup" value={state.furnitureSetupCost} displayValue={fmt(state.furnitureSetupCost)} min={0} max={30000} onChange={(v) => up('furnitureSetupCost', v)} />
@@ -440,8 +470,8 @@ function STRWorksheet({ state, metrics, listPrice, up }: {
 
       <SectionHeader title="Your Loan Payment" />
       <Row label="Loan Amount" value={fmt(loanAmount)} />
-      <SliderRow label="Interest Rate" value={state.interestRate * 100} displayValue={`${(state.interestRate * 100).toFixed(2)}%`} min={5} max={12} step={0.25} onChange={(v) => up('interestRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
-      <SliderRow label="Loan Term" value={state.loanTermYears} displayValue={`${state.loanTermYears} years`} min={10} max={30} onChange={(v) => up('loanTermYears', Math.round(v))} parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)} />
+      <SliderRow field="interestRate" label="Interest Rate" value={state.interestRate * 100} displayValue={`${(state.interestRate * 100).toFixed(2)}%`} min={5} max={12} step={0.25} onChange={(v) => up('interestRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
+      <SliderRow field="loanTermYears" label="Loan Term" value={state.loanTermYears} displayValue={`${state.loanTermYears} years`} min={10} max={30} onChange={(v) => up('loanTermYears', Math.round(v))} parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)} />
       <SellerFinancingRows basePrice={state.buyPrice} state={state} up={up} />
       <Row label="Monthly Payment" value={fmt(monthlyPayment)} />
       <TotalRow label="Annual Payment" value={fmt(monthlyPayment * 12)} />
@@ -506,9 +536,9 @@ function BRRRRWorksheet({ state, metrics, up }: {
   return (
     <>
       <SectionHeader title="Phase 1 — Buy" />
-      <SliderRow label="Purchase Price" value={state.purchasePrice} displayValue={fmt(state.purchasePrice)} min={50000} max={2000000} onChange={(v) => up('purchasePrice', v)} />
+      <SliderRow field="purchasePrice" label="Purchase Price" value={state.purchasePrice} displayValue={fmt(state.purchasePrice)} min={50000} max={2000000} onChange={(v) => up('purchasePrice', v)} />
       <SliderRow label="Discount" value={state.buyDiscountPct * 100} displayValue={`${(state.buyDiscountPct * 100).toFixed(0)}%`} min={0} max={30} onChange={(v) => up('buyDiscountPct', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
-      <SliderRow label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(0)}%`} displayValue={fmt(initialDown)} min={10} max={30} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
+      <SliderRow field="downPaymentPercent" label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(0)}%`} displayValue={fmt(initialDown)} min={10} max={30} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
       <SliderRow label="Hard Money Rate" value={state.hardMoneyRate * 100} displayValue={`${(state.hardMoneyRate * 100).toFixed(1)}%`} min={8} max={15} step={0.5} onChange={(v) => up('hardMoneyRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SellerFinancingRows basePrice={state.purchasePrice} state={state} up={up} />
       <Row label="Closing Costs" value={fmt(initialClosing)} />
@@ -584,7 +614,7 @@ function FlipWorksheet({ state, metrics, up }: {
   return (
     <>
       <SectionHeader title="Acquisition" />
-      <SliderRow label="Purchase Price" value={state.purchasePrice} displayValue={fmt(state.purchasePrice)} min={50000} max={2000000} onChange={(v) => up('purchasePrice', v)} />
+      <SliderRow field="purchasePrice" label="Purchase Price" value={state.purchasePrice} displayValue={fmt(state.purchasePrice)} min={50000} max={2000000} onChange={(v) => up('purchasePrice', v)} />
       <SliderRow label="Discount from ARV" value={state.purchaseDiscountPct * 100} displayValue={`${(state.purchaseDiscountPct * 100).toFixed(0)}%`} min={0} max={40} onChange={(v) => up('purchaseDiscountPct', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} step={0.5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
       <ToggleRow label="Financing" options={[{ id: 'cash', label: 'Cash' }, { id: 'hardMoney', label: 'Hard Money' }]} value={state.financingType} onChange={(v) => up('financingType', v)} />
@@ -662,12 +692,12 @@ function HouseHackWorksheet({ state, metrics, up }: {
   return (
     <>
       <SectionHeader title="What You'd Pay" />
-      <SliderRow label="Purchase Price" value={state.purchasePrice} displayValue={fmt(state.purchasePrice)} min={100000} max={2000000} onChange={(v) => up('purchasePrice', v)} />
+      <SliderRow field="purchasePrice" label="Purchase Price" value={state.purchasePrice} displayValue={fmt(state.purchasePrice)} min={100000} max={2000000} onChange={(v) => up('purchasePrice', v)} />
       <SliderRow label="Total Units" value={state.totalUnits} displayValue={`${state.totalUnits} units`} min={2} max={8} onChange={(v) => up('totalUnits', Math.round(v))} />
       <SliderRow label="Owner Units" value={state.ownerOccupiedUnits} displayValue={`${state.ownerOccupiedUnits}`} min={1} max={2} onChange={(v) => up('ownerOccupiedUnits', Math.round(v))} />
       <ToggleRow label="Loan Type" options={[{ id: 'fha', label: 'FHA' }, { id: 'conventional', label: 'Conv' }, { id: 'va', label: 'VA' }]} value={state.loanType} onChange={(v) => up('loanType', v)} />
-      <SliderRow label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={state.loanType === 'va' ? 0 : state.loanType === 'fha' ? 3.5 : 5} max={25} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
-      <SliderRow label="Interest Rate" value={state.interestRate * 100} displayValue={`${(state.interestRate * 100).toFixed(2)}%`} min={4} max={10} step={0.25} onChange={(v) => up('interestRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
+      <SliderRow field="downPaymentPercent" label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={state.loanType === 'va' ? 0 : state.loanType === 'fha' ? 3.5 : 5} max={25} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
+      <SliderRow field="interestRate" label="Interest Rate" value={state.interestRate * 100} displayValue={`${(state.interestRate * 100).toFixed(2)}%`} min={4} max={10} step={0.25} onChange={(v) => up('interestRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow label="PMI/MIP Rate" value={state.pmiRate * 100} displayValue={`${(state.pmiRate * 100).toFixed(2)}%`} min={0} max={1.5} onChange={(v) => up('pmiRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
       <SellerFinancingRows basePrice={state.purchasePrice} state={state} up={up} />
@@ -737,7 +767,7 @@ function WholesaleWorksheet({ state, metrics, up }: {
       <SectionHeader title="Deal Analysis" />
       <SliderRow label="ARV" value={state.arv} displayValue={fmt(state.arv)} min={50000} max={2000000} onChange={(v) => up('arv', v)} />
       <SliderRow label="Est. Repairs" value={state.estimatedRepairs} displayValue={fmt(state.estimatedRepairs)} min={0} max={200000} onChange={(v) => up('estimatedRepairs', v)} />
-      <SliderRow label="Contract Price" value={state.contractPrice} displayValue={fmt(state.contractPrice)} min={25000} max={1500000} onChange={(v) => up('contractPrice', v)} />
+      <SliderRow field="contractPrice" label="Contract Price" value={state.contractPrice} displayValue={fmt(state.contractPrice)} min={25000} max={1500000} onChange={(v) => up('contractPrice', v)} />
       <TotalRow label="MAO (70% Rule)" value={fmt(mao)} />
       <div className="mt-1" />
       <StatusRow label="70% Rule" pass={meets70} />
@@ -989,6 +1019,13 @@ export interface DealMakerWorksheetProps {
   isCalculating: boolean
   propertyAddress?: string
   flushWithinParent?: boolean
+  /**
+   * Worksheet state-field names whose value the most recently applied Three
+   * Paths structure changed vs the prior baseline. Strategy page passes this
+   * in; the standalone DealMaker tab does not, so highlights are silently
+   * disabled there.
+   */
+  highlightedFields?: ReadonlySet<string>
 }
 
 export function DealMakerWorksheet({
@@ -1000,7 +1037,14 @@ export function DealMakerWorksheet({
   isCalculating,
   propertyAddress,
   flushWithinParent = false,
+  highlightedFields,
 }: DealMakerWorksheetProps) {
+  // Memoize so SliderRow consumers don't re-subscribe every render when the
+  // parent passes the same Set reference.
+  const highlightContextValue = useMemo<ReadonlySet<string>>(
+    () => highlightedFields ?? EMPTY_HIGHLIGHTS,
+    [highlightedFields],
+  )
   const [exporting, setExporting] = useState(false)
   const [exportDone, setExportDone] = useState(false)
 
@@ -1018,6 +1062,7 @@ export function DealMakerWorksheet({
   }, [strategyType, state, metrics, propertyAddress, listPrice])
 
   return (
+    <WorksheetHighlightContext.Provider value={highlightContextValue}>
     <section className={`${flushWithinParent ? '' : 'mx-4 sm:mx-6'} pb-24 sm:pb-28`}>
       <div
         className="rounded-xl p-4 sm:p-5 relative"
@@ -1076,5 +1121,6 @@ export function DealMakerWorksheet({
         </div>
       </div>
     </section>
+    </WorksheetHighlightContext.Provider>
   )
 }

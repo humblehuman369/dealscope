@@ -101,7 +101,7 @@ function PathCard({
       <div className="flex items-center gap-2 flex-wrap">
         <span
           style={{
-            fontSize: 14,
+            fontSize: 18,
             fontWeight: 800,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
