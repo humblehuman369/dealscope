@@ -235,7 +235,12 @@ function PathCard({
         </details>
       )}
 
-      {(structure.family === 'financing' || structure.family === 'strategy_switch') && (
+      {/* T13: attorney disclaimer renders on financing, strategy_switch, AND blended.
+          The blended plan is structurally financing-inclusive (always carries a seller 2nd
+          lever), so the contract review concern applies the same as a pure financing card. */}
+      {(structure.family === 'financing' ||
+        structure.family === 'strategy_switch' ||
+        structure.family === 'blended') && (
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.45, color: 'var(--text-secondary)' }}>
           Get this contract reviewed by a creative-finance attorney —{' '}
           <Link
@@ -296,6 +301,7 @@ export function ThreePathsPanel({
   onShowPitch,
 }: ThreePathsPanelProps): ReactNode {
   const lastAssumableSigRef = useRef('')
+  const lastMorbySigRef = useRef('')
 
   const pathsSig = payload.paths.map((p) => p.id).join('|')
 
@@ -307,6 +313,22 @@ export function ThreePathsPanel({
     if (lastAssumableSigRef.current === dedupe) return
     lastAssumableSigRef.current = dedupe
     trackEvent('assumable_pv_displayed', {
+      path_count: payload.paths.length,
+      state: propertyState ?? undefined,
+    })
+  }, [payload.hasPaths, pathsSig, propertyState])
+
+  // T14: Morby Method substitution event — fires when the Morby card is in the lineup.
+  // The selector substitutes Sub2 + seller-2nd with this combined card; surfacing as a
+  // distinct event lets us measure how often the substitution actually triggers in the wild.
+  useEffect(() => {
+    if (!payload.hasPaths || payload.paths.length === 0) return
+    const hasMorby = payload.paths.some((p) => p.id === 'morby-method')
+    if (!hasMorby) return
+    const dedupe = `${pathsSig}|${propertyState ?? ''}`
+    if (lastMorbySigRef.current === dedupe) return
+    lastMorbySigRef.current = dedupe
+    trackEvent('morby_method_substituted', {
       path_count: payload.paths.length,
       state: propertyState ?? undefined,
     })
