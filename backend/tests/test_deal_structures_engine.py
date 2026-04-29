@@ -1,11 +1,9 @@
 """Golden-style tests for Three Paths engine + selector."""
 
-import pytest
-
 from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
+from app.schemas.deal_structures import DealStructure
 from app.services.deal_structures import compute_deal_structures
 from app.services.deal_structures.context import StructureContext
-from app.schemas.deal_structures import DealStructure
 from app.services.deal_structures.selector import _apply_regional_calibration, select_three_paths
 from app.services.deal_structures.templates import ALL_TEMPLATES
 
