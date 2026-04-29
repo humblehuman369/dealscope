@@ -182,6 +182,8 @@ function StrategyContent() {
   const worksheetSectionParam = parseStrategyWorksheetSection(searchParams.get('section'))
   const { fetchProperty } = usePropertyData()
   const [data, setData] = useState<BackendAnalysisResponse | null>(null)
+  /** Matches `data` to `addressParam` so we never show another property's paths during a fetch. */
+  const [analysisAddressKey, setAnalysisAddressKey] = useState<string | null>(null)
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(() => {
     if (!addressParam) return true
@@ -241,6 +243,8 @@ function StrategyContent() {
    * Strategy "Apply a Path" buttons share a single source of truth.
    */
   const dealStructurePaths = useMemo<DealStructure[]>(() => {
+    const addrKey = addressParam ? canonicalizeAddressForIdentity(addressParam) : ''
+    if (!addrKey || analysisAddressKey !== addrKey) return []
     // FastAPI serializes IQVerdictResponse with camelCase aliases (`dealStructures`);
     // keep snake_case for any client that still receives it.
     const d = data as Record<string, unknown> | null
@@ -275,7 +279,7 @@ function StrategyContent() {
         | Record<string, unknown>
         | null,
     }))
-  }, [data])
+  }, [data, addressParam, analysisAddressKey])
 
   /**
    * After a path is applied, `scheduleRecalc` can return a verdict payload with
@@ -286,15 +290,19 @@ function StrategyContent() {
    */
   const [cachedDealStructurePaths, setCachedDealStructurePaths] = useState<DealStructure[]>([])
 
+  // Clear first, then refill from the latest payload in a separate effect below.
+  // If these run in the opposite order, the address effect wipes the cache after
+  // we populate it — so after a recalc omits `dealStructures`, buttons disappear.
+  useEffect(() => {
+    setCachedDealStructurePaths([])
+    setAnalysisAddressKey(null)
+  }, [addressParam])
+
   useEffect(() => {
     if (dealStructurePaths.length > 0) {
       setCachedDealStructurePaths(dealStructurePaths)
     }
   }, [dealStructurePaths])
-
-  useEffect(() => {
-    setCachedDealStructurePaths([])
-  }, [addressParam])
 
   const displayDealStructurePaths = useMemo(
     () => (dealStructurePaths.length > 0 ? dealStructurePaths : cachedDealStructurePaths),
@@ -494,12 +502,15 @@ function StrategyContent() {
       const payload = buildVerdictAnalysisPayload(toPayloadBase(propInfo), overrides, srcOverrides)
       const analysis = await api.post<BackendAnalysisResponse>('/api/v1/analysis/verdict', payload)
       setData(analysis)
+      if (addressParam) {
+        setAnalysisAddressKey(canonicalizeAddressForIdentity(addressParam))
+      }
     } catch (err) {
       console.error('[StrategyIQ] Recalculation failed:', err)
     } finally {
       setIsRecalculating(false)
     }
-  }, [toPayloadBase])
+  }, [toPayloadBase, addressParam])
 
   useEffect(() => {
     async function fetchData() {
@@ -572,6 +583,7 @@ function StrategyContent() {
         const payload = buildVerdictAnalysisPayload(toPayloadBase(enrichedPropInfo), dealMakerOverrides, sourceOverrides)
         const analysis = await api.post<BackendAnalysisResponse>('/api/v1/analysis/verdict', payload)
         setData(analysis)
+        setAnalysisAddressKey(canonical)
         hasLoadedPropertyRef.current = true
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load')
