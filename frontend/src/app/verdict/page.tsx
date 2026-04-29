@@ -1158,8 +1158,16 @@ function VerdictContent() {
     ? ((incomeValue - property.price) / property.price) * 100
     : 0
   const isPositiveIncomeCase = incomeValue > property.price && priceGapPct > 0.1
-  // Deal Gap is always the margin between Target Buy and Market Price.
-  const effectiveDisplayPct = -dealGapPct
+  // Deal Gap (headline) — mirrors the slider's DEAL GAP bracket so both agree.
+  // When a Sweet Spot exists (Income Value above Market Price) and Target Buy is
+  // essentially at or above Market, surface the positive spread from Market to
+  // Income Value (the actual cash-flow opportunity) instead of the trivial
+  // Market-vs-Target Buy delta. Otherwise show the discount needed from Market
+  // down to Target Buy.
+  const isDealGain = dealGapPct < 0.5 && isPositiveIncomeCase
+  const effectiveDisplayPct = isDealGain
+    ? priceGapPct
+    : -dealGapPct
   const dealGapDisplay = `${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
   // Cumulative investor probability from backend (regional cohort); fallback for stale clients.
@@ -1444,26 +1452,27 @@ function VerdictContent() {
                 const dealBracketPct = property.price > 0 && purchasePrice > 0
                   ? ((property.price - purchasePrice) / property.price) * 100
                   : 0
-                const isDealGain = dealBracketPct < 0.5 && isPositiveIncomeCase
-                const dealBracketRight = isDealGain && incomePos != null
+                // Re-derive isDealGain locally with the slider's own bracket pct
+                // for the visual layout, but keep dealDisplayPct in sync with the
+                // headline `effectiveDisplayPct` so both surfaces always agree.
+                const isDealGainLocal = dealBracketPct < 0.5 && isPositiveIncomeCase
+                const dealBracketRight = isDealGainLocal && incomePos != null
                   ? incomePos
                   : (targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0)
-                const showDealBracket = isDealGain
+                const showDealBracket = isDealGainLocal
                   ? (dealBracketRight - dealBracketLeft) >= 3
                   : (dealBracketRight - dealBracketLeft) >= 3 && Math.abs(dealBracketPct) > 0.1
-                const dealDisplayPct = isDealGain
-                  ? ((incomeValue - purchasePrice) / property.price) * 100
-                  : -dealBracketPct
+                const dealDisplayPct = effectiveDisplayPct
 
                 const priceGapLeft = incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
                 const priceGapRight = incomePos != null && marketPos != null ? Math.max(incomePos, marketPos) : 0
                 const priceGap = property.price > 0 && incomeValue > 0
                   ? ((incomeValue - property.price) / property.price) * 100
                   : 0
-                const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3
+                const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3 && !isDealGainLocal
 
                 const bracketLabel = 'DEAL GAP'
-                const bracketColor = isDealGain ? 'var(--status-positive)' : 'var(--accent-sky)'
+                const bracketColor = isDealGainLocal ? 'var(--status-positive)' : 'var(--accent-sky)'
                 const sweetSpotLeft = marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
                 const sweetSpotWidth = marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
                 const tbMarketOverlap = targetBuyPos != null && marketPos != null && Math.abs(targetBuyPos - marketPos) < 3
