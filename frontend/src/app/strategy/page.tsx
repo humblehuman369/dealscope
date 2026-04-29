@@ -672,8 +672,16 @@ function StrategyContent() {
   const applyPathPatch = useCallback((structure: DealStructure, idx: number) => {
     const patch = preLoadedRecordToDealMakerPatch(structure.preLoadedRecord ?? {})
     setInlineOverrides((prev) => {
+      // Reset any prior path-applied fields back to baseline before layering
+      // the new patch — otherwise switching Path 1 → Path 2 leaves stale
+      // auto-fills (e.g. Path 1's purchasePrice) when Path 2 only touches
+      // a different subset of fields.
+      const cleared: Record<string, unknown> = { ...prev }
+      for (const key of PATH_PATCH_FIELD_KEYS) {
+        delete cleared[key as string]
+      }
       const next = {
-        ...prev,
+        ...cleared,
         ...patch,
         threePathsLabel: `Path ${idx + 1} — ${structure.familyLabel || structure.headline}`,
       }
@@ -681,7 +689,7 @@ function StrategyContent() {
         writeDealMakerOverrides(resolvedAddressRef.current, next, { origin: 'verdict_sync' })
       } catch { /* ignore */ }
       scheduleRecalc(next)
-      return next
+      return next as Record<string, any>
     })
     setAppliedPathId(structure.id)
     setHighlightedFields(
