@@ -116,7 +116,7 @@ function PathCard({
             fontWeight: 700,
             letterSpacing: '0.05em',
             textTransform: 'uppercase',
-            color: 'var(--text-secondary)',
+            color: '#FFFFFF',
           }}
         >
           · {structure.familyLabel}
