@@ -24,7 +24,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X, MoreVertical, Info, DollarSign, LayoutDashboard } from 'lucide-react'
+import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X, Info, DollarSign, LayoutDashboard } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
@@ -200,8 +200,6 @@ export function AppHeader({
   
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
-  const [showMoreMenu, setShowMoreMenu] = useState(false)
-  const moreMenuRef = useRef<HTMLDivElement>(null)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const mobileNavRef = useRef<HTMLDivElement>(null)
   const [scrolledPast, setScrolledPast] = useState(false)
@@ -225,19 +223,6 @@ export function AppHeader({
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showProfileMenu])
-
-  // Close more menu on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
-        setShowMoreMenu(false)
-      }
-    }
-    if (showMoreMenu) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showMoreMenu])
 
   // Close mobile nav on outside click
   useEffect(() => {
@@ -569,20 +554,6 @@ export function AppHeader({
                 </Link>
               </>
             )}
-            {/* Dashboard — visible primary nav for signed-in users (testers were missing the dropdown). */}
-            {isAuthenticated && (
-              <Link
-                href="/dashboard"
-                className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                style={{
-                  color: 'var(--text-heading)',
-                  borderBottom: pathname === '/dashboard' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                  paddingBottom: 2,
-                }}
-              >
-                Dashboard
-              </Link>
-            )}
             {/* Property search button opens modal */}
             <button
               onClick={() => setSearchModalOpen(true)}
@@ -600,72 +571,32 @@ export function AppHeader({
               />
               <span className="hidden sm:inline text-sm font-medium whitespace-nowrap">Property Search</span>
             </button>
-            {isHomepage ? (
-              <button
-                onClick={toggleTheme}
-                className="hidden sm:flex min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] items-center justify-center"
-                aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            {/* Dashboard — visible primary nav for signed-in users. */}
+            {isAuthenticated && (
+              <Link
+                href="/dashboard"
+                className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                style={{
+                  color: 'var(--text-heading)',
+                  borderBottom: pathname === '/dashboard' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
+                  paddingBottom: 2,
+                }}
               >
-                {mounted && theme === 'dark' ? (
-                  <Sun className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
-                ) : (
-                  <Moon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
-                )}
-              </button>
-            ) : (
-              <div className="relative" ref={moreMenuRef}>
-                <button
-                  onClick={() => setShowMoreMenu(prev => !prev)}
-                  className="min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] p-1.5 sm:p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
-                  aria-label="More options"
-                  aria-expanded={showMoreMenu}
-                  aria-haspopup="true"
-                >
-                  <MoreVertical
-                    className="w-5 h-5 sm:w-6 sm:h-6"
-                    style={{ color: 'var(--text-heading)' }}
-                  />
-                </button>
-                {showMoreMenu && (
-                  <div
-                    className="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-lg py-1 z-50"
-                    style={{
-                      background: 'var(--surface-card)',
-                      border: '1px solid var(--border-default)',
-                    }}
-                  >
-                    <Link
-                      href="/about"
-                      onClick={() => setShowMoreMenu(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                      style={{ color: 'var(--text-heading)' }}
-                    >
-                      <Info className="w-4 h-4" /> About
-                    </Link>
-                    <Link
-                      href="/pricing"
-                      onClick={() => setShowMoreMenu(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                      style={{ color: 'var(--text-heading)' }}
-                    >
-                      <DollarSign className="w-4 h-4" /> Pricing
-                    </Link>
-                    <div style={{ borderTop: '1px solid var(--border-default)' }} className="my-1" />
-                    <button
-                      onClick={() => { toggleTheme(); setShowMoreMenu(false) }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                      style={{ color: 'var(--text-heading)' }}
-                    >
-                      {mounted && theme === 'dark' ? (
-                        <><Sun className="w-4 h-4" /> Light Mode</>
-                      ) : (
-                        <><Moon className="w-4 h-4" /> Dark Mode</>
-                      )}
-                    </button>
-                  </div>
-                )}
-              </div>
+                Dashboard
+              </Link>
             )}
+            {/* Theme toggle — always shown directly (no dropdown) */}
+            <button
+              onClick={toggleTheme}
+              className="hidden sm:flex min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] items-center justify-center"
+              aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {mounted && theme === 'dark' ? (
+                <Sun className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
+              ) : (
+                <Moon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
+              )}
+            </button>
             {isAuthenticated ? (
               <div className="relative" ref={profileMenuRef}>
                 <button
