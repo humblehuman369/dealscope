@@ -899,10 +899,6 @@ function FounderDeepSection() {
                 height={352}
                 className="w-full h-full object-cover object-top"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none" />
-              <div className="absolute bottom-3 left-3 right-3 text-center">
-                <div className="text-[10px] uppercase tracking-widest text-sky-300 font-bold">Founder</div>
-              </div>
             </div>
           </div>
 
