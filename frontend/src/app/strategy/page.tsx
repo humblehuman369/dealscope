@@ -31,6 +31,7 @@ import {
 import { decodeScenario } from '@/lib/dealStructures/scenarioPayload'
 import {
   appendSavedThreePathScenario,
+  PATH_PATCH_FIELD_KEYS,
   preLoadedRecordToDealMakerPatch,
   readLastAppliedScenario,
   writeLastAppliedScenario,
@@ -82,6 +83,9 @@ import {
   DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
 } from '@/components/deal-maker/types'
 import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
+import type { DealStructure } from '@/components/iq-verdict/ThreePathsPanel'
+import { PathButton } from '@/components/strategy/PathButton'
+import { trackEvent } from '@/lib/eventTracking'
 
 // Types from existing verdict system
 interface BackendAnalysisResponse {
@@ -205,11 +209,59 @@ function StrategyContent() {
   const [initialOverrides, setInitialOverrides] = useState<Record<string, any> | null>(null)
   // Inline slider overrides — local-only, never re-triggers API fetch.
   const [inlineOverrides, setInlineOverrides] = useState<Record<string, any>>({})
+  // Currently applied Three Paths structure (so the matching button highlights).
+  const [appliedPathId, setAppliedPathId] = useState<string | null>(null)
   // Merged view used by all downstream calculations.
   const dealMakerOverrides = useMemo(() => {
     if (!initialOverrides && Object.keys(inlineOverrides).length === 0) return null
     return { ...(initialOverrides ?? {}), ...inlineOverrides }
   }, [initialOverrides, inlineOverrides])
+
+  /**
+   * Parse `data.deal_structures` into the typed `DealStructure[]` shape used by
+   * the Verdict page's `ThreePathsPanel`. We re-use the same structure so the
+   * Strategy "Apply a Path" buttons share a single source of truth.
+   */
+  const dealStructurePaths = useMemo<DealStructure[]>(() => {
+    const raw = (data as any)?.deal_structures
+    if (!raw || raw.has_paths === false) return []
+    const paths = Array.isArray(raw.paths) ? raw.paths : []
+    return paths.map((p: any) => ({
+      id: String(p.id ?? ''),
+      family: p.family,
+      familyLabel: (p.family_label ?? p.familyLabel ?? '') as string,
+      realismLabel: (p.realism_label ?? p.realismLabel ?? '') as string,
+      headline: (p.headline ?? '') as string,
+      summary: (p.summary ?? '') as string,
+      levers: (p.levers ?? []).map((lv: any) => ({
+        label: lv.label,
+        beforeLabel: lv.before_label ?? lv.beforeLabel ?? '',
+        afterLabel: lv.after_label ?? lv.afterLabel ?? '',
+        deltaLabel: lv.delta_label ?? lv.deltaLabel ?? null,
+      })),
+      monthlySavings: (p.monthly_savings ?? p.monthlySavings ?? 0) as number,
+      cashRequired: (p.cash_required ?? p.cashRequired ?? 0) as number,
+      rankingScore: (p.ranking_score ?? p.rankingScore ?? 0) as number,
+      pitchScript: (p.pitch_script ?? p.pitchScript ?? null) as string | null,
+      caveat: (p.caveat ?? null) as string | null,
+      selectionReason: (p.selection_reason ?? p.selectionReason ?? null) as string | null,
+      preLoadedRecord: (p.pre_loaded_record ?? p.preLoadedRecord ?? null) as
+        | Record<string, unknown>
+        | null,
+    }))
+  }, [data])
+
+  /** Fire once per address when the Strategy page surfaces path buttons. */
+  const pathsRenderedAddressRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (dealStructurePaths.length === 0) return
+    if (pathsRenderedAddressRef.current === addressParam) return
+    pathsRenderedAddressRef.current = addressParam
+    trackEvent('three_paths_rendered_in_strategy', {
+      path_count: dealStructurePaths.length,
+      address_present: Boolean(addressParam),
+    })
+  }, [dealStructurePaths.length, addressParam])
 
   useEffect(() => {
     if (typeof window === 'undefined' || !addressParam) return
@@ -535,6 +587,55 @@ function StrategyContent() {
       scheduleRecalc(next)
       return next
     })
+  }, [scheduleRecalc])
+
+  /**
+   * Apply a Three Paths structure to the worksheet directly (bypasses the
+   * slider FIELD_MAP scaling because `preLoadedRecordToDealMakerPatch` already
+   * returns values in the canonical `inlineOverrides` shape). Persists to
+   * session so the DealMaker tab stays in sync, and triggers a debounced recalc.
+   */
+  const applyPathPatch = useCallback((structure: DealStructure, idx: number) => {
+    const patch = preLoadedRecordToDealMakerPatch(structure.preLoadedRecord ?? {})
+    setInlineOverrides((prev) => {
+      const next = {
+        ...prev,
+        ...patch,
+        threePathsLabel: `Path ${idx + 1} — ${structure.familyLabel || structure.headline}`,
+      }
+      try {
+        writeDealMakerOverrides(resolvedAddressRef.current, next, { origin: 'verdict_sync' })
+      } catch { /* ignore */ }
+      scheduleRecalc(next)
+      return next
+    })
+    setAppliedPathId(structure.id)
+    trackEvent('path_applied_in_strategy', {
+      structure_id: structure.id,
+      family: structure.family,
+      path_index: idx + 1,
+    })
+  }, [scheduleRecalc])
+
+  /**
+   * Strip every key the path mapper might have written from `inlineOverrides`,
+   * persist the cleared state, and trigger a recalc so the worksheet returns
+   * to its baseline (backend-derived) values.
+   */
+  const clearAppliedPath = useCallback(() => {
+    setInlineOverrides((prev) => {
+      const next: Record<string, unknown> = { ...prev }
+      for (const key of PATH_PATCH_FIELD_KEYS) {
+        delete next[key as string]
+      }
+      try {
+        writeDealMakerOverrides(resolvedAddressRef.current, next, { origin: 'dealmaker_edit' })
+      } catch { /* ignore */ }
+      scheduleRecalc(next)
+      return next as Record<string, any>
+    })
+    setAppliedPathId(null)
+    trackEvent('path_cleared_in_strategy')
   }, [scheduleRecalc])
 
   useEffect(() => {
@@ -1614,6 +1715,49 @@ function StrategyContent() {
               {propertyInfo.rentals.str_market_stats?.median_occupancy != null && (
                 <STRConfidenceLabel stats={propertyInfo.rentals.str_market_stats} />
               )}
+            </div>
+          )}
+
+          {/* Apply a Path — pre-fills the worksheet with a Three Paths structure */}
+          {dealStructurePaths.length > 0 && (
+            <div className="px-4 sm:px-6 mb-4 mt-6">
+              <div className="flex items-center justify-between mb-2 gap-3">
+                <div className="flex flex-col">
+                  <h3
+                    className="text-sm font-bold uppercase tracking-wider"
+                    style={{ color: 'var(--text-heading)' }}
+                  >
+                    Apply a Path to the Worksheet
+                  </h3>
+                  <p
+                    className="text-[12px] mt-0.5"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    Pre-fills price, rent, financing, and seller-carry sliders.
+                  </p>
+                </div>
+                {appliedPathId && (
+                  <button
+                    type="button"
+                    onClick={clearAppliedPath}
+                    className="text-xs font-semibold underline shrink-0"
+                    style={{ color: 'var(--accent-sky)' }}
+                  >
+                    Reset to baseline
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                {dealStructurePaths.slice(0, 4).map((p, i) => (
+                  <PathButton
+                    key={p.id}
+                    structure={p}
+                    index={i}
+                    active={appliedPathId === p.id}
+                    onClick={applyPathPatch}
+                  />
+                ))}
+              </div>
             </div>
           )}
 
