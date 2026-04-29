@@ -12,8 +12,6 @@
 
 import type { AnyStrategyState, StrategyType } from '@/components/deal-maker/types'
 
-const FLOAT_EPSILON = 0.005
-
 interface FieldChange {
   stateField: string
   newValue: number | boolean | string
@@ -88,32 +86,51 @@ function mapPatchKeyToFieldChange(
       return { stateField: patchKey, newValue: patchValue }
     }
 
+    // Raw `pending_extras` keys merged onto the patch via Object.assign (see loadScenario.ts).
+    case 'seller_carry_amount': {
+      if (typeof patchValue !== 'number') return null
+      return { stateField: 'sellerFinancingAmount', newValue: patchValue }
+    }
+    case 'seller_carry_rate': {
+      if (typeof patchValue !== 'number') return null
+      return { stateField: 'sellerInterestRate', newValue: patchValue }
+    }
+    case 'seller_carry_term_years': {
+      if (typeof patchValue !== 'number') return null
+      return { stateField: 'sellerTermYears', newValue: patchValue }
+    }
+    /** Backend decimal (e.g. 0.30); same semantic as mapped `downPayment` / worksheet percent. */
+    case 'down_payment_pct_override': {
+      if (typeof patchValue !== 'number') return null
+      if (strategy === 'flip' || strategy === 'wholesale') return null
+      return { stateField: 'downPaymentPercent', newValue: patchValue }
+    }
+    /** Present next to normalized `interestRate` on the patch; map for robustness. */
+    case 'sub2_heuristic_rate': {
+      if (typeof patchValue !== 'number') return null
+      if (strategy === 'ltr' || strategy === 'str' || strategy === 'house_hack') {
+        return { stateField: 'interestRate', newValue: patchValue }
+      }
+      return null
+    }
+
     default:
       return null
   }
 }
 
 /**
- * Compare two values with a tolerance suitable for slider-derived floats.
- * Booleans/strings use strict equality.
- */
-function valuesDiffer(a: unknown, b: unknown): boolean {
-  if (typeof a === 'number' && typeof b === 'number') {
-    if (!Number.isFinite(a) || !Number.isFinite(b)) return a !== b
-    return Math.abs(a - b) > FLOAT_EPSILON
-  }
-  return a !== b
-}
-
-/**
- * Returns the set of worksheet state-field names whose value the patch will
- * change vs `baseline`. When `baseline` is null (first render before
- * worksheetState is captured), every patch key that maps to a slider is
- * treated as "changed".
+ * Returns worksheet state-field names to accent after applying a path.
+ *
+ * We highlight every slider-backed field the patch touches (deduped by
+ * stateField), not only fields whose numeric value differs from the prior
+ * baseline. Otherwise nothing glows when the worksheet already matched the path
+ * (common after Verdict → Strategy) or when rounding matches — users still need
+ * to see what the path applies.
  */
 export function computeHighlightedStateFields(
   patch: Record<string, unknown>,
-  baseline: AnyStrategyState | null,
+  _baseline: AnyStrategyState | null,
   strategy: StrategyType,
 ): Set<string> {
   const out = new Set<string>()
@@ -122,16 +139,7 @@ export function computeHighlightedStateFields(
   for (const [patchKey, patchValue] of Object.entries(patch)) {
     const change = mapPatchKeyToFieldChange(patchKey, patchValue, strategy)
     if (!change) continue
-
-    if (!baseline) {
-      out.add(change.stateField)
-      continue
-    }
-
-    const baselineValue = (baseline as unknown as Record<string, unknown>)[change.stateField]
-    if (valuesDiffer(change.newValue, baselineValue)) {
-      out.add(change.stateField)
-    }
+    out.add(change.stateField)
   }
 
   return out
