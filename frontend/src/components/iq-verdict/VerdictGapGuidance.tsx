@@ -211,6 +211,15 @@ export interface VerdictPositiveGuidanceProps {
   onNavigateAppraiser: () => void
   onNavigateStrategy: (section?: StrategyWorksheetSection) => void
   onSignIn: () => void
+  /**
+   * Three Paths payload — when supplied by the backend, render the path cards
+   * here too so Deal Gain / positive-gap properties don't lose access to the
+   * "what would make this even better" structures.
+   */
+  dealStructures?: DealStructuresPayload | null
+  onOpenStructureInStrategy?: (structure: DealStructure, index: number) => void
+  onShowPitch?: (structure: DealStructure) => void
+  propertyState?: string | null
 }
 
 function StaticTip({ children }: { children: ReactNode }) {
@@ -239,8 +248,13 @@ export function VerdictPositiveGuidance({
   onNavigateAppraiser,
   onNavigateStrategy,
   onSignIn,
+  dealStructures,
+  onOpenStructureInStrategy,
+  onShowPitch,
+  propertyState,
 }: VerdictPositiveGuidanceProps) {
   const isPositive = effectiveDisplayPct > 0
+  const hasStructures = !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
 
   return (
     <div style={{ marginTop: 12, maxWidth: 560 }}>
@@ -249,6 +263,15 @@ export function VerdictPositiveGuidance({
           ? 'This deal cash flows at current terms. Here\u2019s what to do next.'
           : 'At modeled terms, target buy aligns with the market anchor. Verify your assumptions before committing.'}
       </p>
+
+      {hasStructures && (
+        <ThreePathsPanel
+          payload={dealStructures!}
+          propertyState={propertyState}
+          onOpenInStrategy={onOpenStructureInStrategy}
+          onShowPitch={onShowPitch}
+        />
+      )}
 
       <p
         style={{
