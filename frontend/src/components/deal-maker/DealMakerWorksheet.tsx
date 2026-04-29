@@ -267,12 +267,17 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
 
   return (
     <div
-      className="grid grid-cols-[1fr_119px] sm:grid-cols-[0.7fr_1.5fr_50px_119px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
+      className={`grid grid-cols-[1fr_119px] sm:grid-cols-[0.7fr_1.5fr_50px_119px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors${highlight ? '' : ' hover:bg-white/[0.03]'}`}
       style={{
         borderBottom: `1px solid ${C.border}`,
-        background: highlight
-          ? 'linear-gradient(90deg, color-mix(in srgb, var(--accent-sky) 12%, transparent), transparent 70%)'
-          : undefined,
+        // Path-applied glow: avoid Tailwind hover overlay wiping it; rgba works without color-mix().
+        ...(highlight
+          ? {
+              background:
+                'linear-gradient(90deg, rgba(15, 164, 233, 0.14), rgba(15, 164, 233, 0.02) 72%, transparent)',
+              boxShadow: 'inset 3px 0 0 rgba(15, 164, 233, 0.55)',
+            }
+          : {}),
       }}
       data-path-highlight={highlight || undefined}
     >
