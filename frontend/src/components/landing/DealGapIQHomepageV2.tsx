@@ -176,10 +176,7 @@ function HeroSection({
             </span>
           </h1>
           <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-xl mb-3">
-            One address. <span className="text-white font-semibold">15 seconds.</span> A{' '}
-            <span className="text-emerald-400 font-semibold">green</span>{' '}/{' '}
-            <span className="text-amber-400 font-semibold">yellow</span>{' '}/{' '}
-            <span className="text-rose-400 font-semibold">red</span> verdict on whether it&rsquo;s a deal — backed by{' '}
+            One address. <span className="text-white font-semibold">15 seconds.</span> A verdict on whether it&rsquo;s a deal — backed by{' '}
             <span className="text-white font-semibold">5 data sources</span> and explained in plain English.
           </p>
           <p className="text-base text-slate-400 mb-8">
@@ -405,9 +402,8 @@ function WorkbenchSection() {
         headline="Hunt deals across an entire market."
         body={
           <>
-            Map &amp; Satellite views of any ZIP — every parcel pre-graded with a{' '}
-            <span className="text-emerald-300 font-semibold">green / yellow / red Verdict pin</span>.{' '}
-            Filter by foreclosure, pre-foreclosure, auction, or 30/60/90-day stale listings.
+            Map &amp; Satellite views of any ZIP — every parcel pre-graded and filtered by{' '}
+            <span className="text-emerald-300 font-semibold">foreclosure, pre-foreclosure, auction, or 30/60/90-day stale listings</span>.{' '}
             Click any lot for owner data and a full analysis in one tap.
           </>
         }
