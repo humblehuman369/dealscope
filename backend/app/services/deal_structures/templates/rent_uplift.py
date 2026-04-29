@@ -2,7 +2,7 @@
 
 from app.schemas.deal_structures import DealStructure, StructureLever
 from app.services.deal_structures.context import StructureContext
-from app.services.deal_structures.formatting import fmt_monthly, fmt_pct_delta
+from app.services.deal_structures.formatting import fmt_money_precise, fmt_monthly, fmt_pct_delta
 
 FAMILY = "income"
 FAMILY_LABEL = "Income uplift"
@@ -46,9 +46,42 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         ranking -= 4  # listed properties usually have rent already set near market
 
     pitch = (
-        f"Pull rent comps for the immediate area. If verified market rent comes in at "
-        f"${round(new_rent):,}/mo, the deal works at the asking price. "
-        f"This is a verification step, not a negotiation step."
+        "WHO TO CALL\n"
+        "Yourself — this is due diligence, not negotiation. Then 2 local property managers, then "
+        "the listing agent (only if rent is verified upward).\n\n"
+        "THIS IS NOT A NEGOTIATION — IT'S DUE DILIGENCE\n"
+        f"The deal works at full asking IF actual market rent is closer to "
+        f"${round(new_rent):,}/mo (vs. the modeled ${round(ctx.monthly_rent):,}/mo — a "
+        f"{bump_pct:.1f}% lift). Verify before you adjust your offer. Never raise your number on a "
+        "rent assumption you haven't confirmed.\n\n"
+        "VERIFICATION CHECKLIST — 60 MINUTES\n"
+        "1. Rentometer / Zillow Rental Manager — pull comps within 1 mile, same beds/baths, same "
+        "condition tier. Note the median, not the high.\n"
+        "2. Call 2 local property managers. Script: \"I'm under contract on [address] and weighing "
+        "what to charge. If I asked you to manage it, what would you list it at?\" PMs underwrite "
+        "rent for a living and tell you the truth — they want the listing.\n"
+        "3. Walk 3 active rental listings nearby. Take photos. Honestly assess condition gap.\n"
+        "4. If rehab is required to hit the higher rent, model the rehab cost AND the months of "
+        "lost rent in Strategy before committing.\n\n"
+        "IF VERIFIED \u2014 SEND THE OFFER AT ASKING\n"
+        f"\"My offer is at the asking price of {fmt_money_precise(ctx.list_price)}. My numbers "
+        "work because I've verified market rent at "
+        f"${round(new_rent):,}/mo with two local property managers and three active comps. Clean "
+        "offer in your inbox today.\"\n\n"
+        "IF NOT VERIFIED \u2014 PIVOT TO PRICE\n"
+        f"\"Comps came in lighter than I'd hoped — closer to ${round(ctx.monthly_rent):,}/mo. To "
+        "make the math work at that rent level, my number has to come down. What's the lowest the "
+        "seller would entertain?\"\n\n"
+        "TACTICS\n"
+        "\u2022 NEVER raise your offer based on a rent estimate from anyone who isn't willing to "
+        "manage the unit themselves. Online estimates are starting points, not truth.\n"
+        "\u2022 Property managers will sometimes inflate rent to win the listing — verify with at least 2.\n"
+        "\u2022 If the rent gap is small (<5%), it's almost always a verification win. If it's "
+        f"large (>{int(MAX_REALISTIC_BUMP_PCT * 100)}%), assume it requires rehab.\n"
+        "\u2022 Short-term rental conversion can boost gross rent 30-80% in the right zip — "
+        "explore the STR strategy in Strategy if zoning allows.\n"
+        "\u2022 Always lock in a 14-day feasibility/inspection window so you can verify rent "
+        "without risking your earnest deposit."
     )
 
     sel_reason = "Shown because a modest rent increase may be enough to clear the gap at the asking price"

@@ -3,7 +3,7 @@
 from app.schemas.deal_structures import DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
 from app.services.deal_structures.context import StructureContext
-from app.services.deal_structures.formatting import fmt_money
+from app.services.deal_structures.formatting import fmt_money, fmt_money_precise
 
 FAMILY = "financing"
 FAMILY_LABEL = "Buy your runway"
@@ -51,10 +51,57 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     if ctx.days_on_market and ctx.days_on_market > 30:
         sel_reason = f"Shown because the listing has been active {ctx.days_on_market} days — sellers often help with financing"
 
+    is_new_construction = (
+        ctx.year_built is not None and abs(ctx.year_built - 2026) <= 2
+    )
+    audience_line = (
+        "Builder's sales agent — new-construction sellers love this structure because it preserves "
+        "the headline price (which protects future comps in the development).\n"
+        if is_new_construction
+        else "Listing agent. Loop in your lender so they can quote the exact concession amount.\n"
+    )
+
     pitch = (
-        f"Ask the seller to buy down your rate: about {note * 100:.1f}% note, but you pay like "
-        f"{y1_rate * 100:.1f}% in year one and {y2_rate * 100:.1f}% in year two. "
-        f"That's roughly {fmt_money(monthly_savings_y1)} a month back in year one."
+        "WHO TO CALL\n"
+        f"{audience_line}\n"
+        "WHY THIS WORKS — AND WHY SELLERS ACCEPT IT\n"
+        f"A seller-paid 2-1 buydown costs the seller a one-time concession at closing of "
+        f"~{fmt_money(approx_cost)}. In exchange, your loan rate effectively drops to "
+        f"{y1_rate * 100:.1f}% in year one and {y2_rate * 100:.1f}% in year two before returning "
+        f"to the note rate of {note * 100:.1f}%. You pocket {fmt_money(monthly_savings_y1)}/mo in "
+        "year one — the runway you need to stabilize tenants, complete light improvements, or "
+        "raise rents.\n\n"
+        "Why sellers say yes: the headline price stays whole. A $10K price cut shows up forever "
+        f"in comps. A {fmt_money(approx_cost)} concession does not.\n\n"
+        "OPEN — frame it as price-preserving (not a discount)\n"
+        f"\"We've underwritten this carefully. At {fmt_money_precise(ctx.list_price)}, the year-one "
+        "cash flow is too tight to commit. Rather than ask the seller to cut price — which hurts "
+        "their comps and their net — would they consider a 2-1 rate buydown instead?\"\n\n"
+        "ASK — be specific so they can say yes\n"
+        f"\"My ask is a seller-paid 2-1 temporary buydown. First year at {y1_rate * 100:.1f}%, "
+        f"second year at {y2_rate * 100:.1f}%, then the note rate of {note * 100:.1f}% kicks in. "
+        f"My lender estimates the concession at roughly {fmt_money(approx_cost)} — they can write "
+        "the exact figure into the offer. The seller's headline price stays at "
+        f"{fmt_money_precise(ctx.list_price)}.\"\n\n"
+        "ANTICIPATE OBJECTIONS\n"
+        f"\u2022 \"Why should we pay for the buyer's rate?\" \u2192 \"Because at "
+        f"{fmt_money(approx_cost)} of concessions, the seller nets more than they would after a "
+        "$10-15K price cut. Their comps stay strong and the deal closes.\"\n"
+        "\u2022 \"What happens in year three?\" \u2192 \"By then I've stabilized rents and refi'd "
+        "into a better long-term loan, or the property carries the note rate cleanly. Your concern "
+        "ends at closing.\"\n"
+        "\u2022 \"Why not just lower price?\" \u2192 \"A buydown gives me the same monthly relief "
+        "without dropping the closing comp. Net to seller is similar — but the next listing in this "
+        "neighborhood prices off your sale.\"\n\n"
+        "TRIAL CLOSE\n"
+        f"\"If the seller is open to roughly {fmt_money(approx_cost)} in closing-cost concessions, "
+        "I can have a clean offer at full price signed by end of week. Want me to put my lender on "
+        "a quick call with the seller's lender to confirm the structure?\"\n\n"
+        "TACTICS\n"
+        "\u2022 Don't combine buydown asks with major price asks — pick one or the other. Sellers say no to both.\n"
+        "\u2022 Builders accept 2-1 buydowns ~70% of the time on aging inventory — always ask.\n"
+        "\u2022 Ask your lender to compare a 2-1 buydown vs. a permanent 1-point buydown — sometimes the permanent is better long term.\n"
+        "\u2022 Plan your refinance trigger BEFORE close — typically when rates drop 0.75% or in 24 months, whichever comes first."
     )
 
     return DealStructure(

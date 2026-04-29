@@ -3,7 +3,7 @@
 from app.schemas.deal_structures import DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
 from app.services.deal_structures.context import StructureContext
-from app.services.deal_structures.formatting import fmt_money, fmt_pct_delta
+from app.services.deal_structures.formatting import fmt_money, fmt_money_precise, fmt_pct_delta
 
 FAMILY = "capital_stack"
 FAMILY_LABEL = "More equity"
@@ -67,10 +67,41 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     if gap_pct < 10:
         sel_reason = f"Shown because the gap is under {gap_pct:.0f}% — extra equity may be enough without renegotiating price"
 
+    extra_cash = new_cash - ctx.baseline_cash_required
+    cash_tradeoff_years = (extra_cash / (monthly_savings * 12)) if monthly_savings > 0 else 0
     pitch = (
-        f"If you can bring {new_down * 100:.0f}% down instead of {ctx.down_payment_pct * 100:.0f}%, "
-        f"your P&I drops by about {fmt_money(monthly_savings)} a month. "
-        f"That's the trade: more cash today for better monthly cash flow."
+        "WHO TO CALL\n"
+        "First: yourself — this is a capital decision, not a negotiation. Then the listing agent, "
+        "to convert that capital strength into price flexibility.\n\n"
+        "THE MATH\n"
+        f"\u2022 Baseline plan: {ctx.down_payment_pct * 100:.0f}% down "
+        f"({fmt_money(ctx.baseline_cash_required)} cash to close)\n"
+        f"\u2022 This plan: {new_down * 100:.0f}% down "
+        f"({fmt_money(new_cash)} cash to close)\n"
+        f"\u2022 Extra cash up front: {fmt_money(extra_cash)}\n"
+        f"\u2022 Monthly P&I drops: {fmt_money(monthly_savings)}/mo back in your pocket\n"
+        f"\u2022 Payback on the extra cash: ~{cash_tradeoff_years:.1f} years from cash flow alone\n\n"
+        "THE TRADE-OFF — RUN THIS BEFORE COMMITTING\n"
+        "More equity = lower cash-on-cash return but higher monthly stability and faster equity "
+        "build. Open this in Strategy and compare CoC at both down-payment levels — make sure the "
+        "lower CoC is still acceptable to you. If you'll need this cash for the next deal in 6-12 "
+        "months, the opportunity cost may be larger than the monthly savings.\n\n"
+        "USE THIS AS LEVERAGE WITH THE SELLER\n"
+        "Bigger down = stronger offer. Don't just bring more cash quietly — translate it into price.\n\n"
+        "PITCH TO THE LISTING AGENT:\n"
+        f"\"My offer is {new_down * 100:.0f}% down at {fmt_money_precise(ctx.list_price)}, fast "
+        "close, no financing contingency, no appraisal contingency on the gap. That's a buyer "
+        "the seller can actually count on closing. In exchange for that certainty, what's the "
+        "lowest the seller would take?\"\n\n"
+        "BETTER YET — STACK CASH STRENGTH WITH A PRICE ASK:\n"
+        f"\"I'll bring {new_down * 100:.0f}% down — significantly more than a typical buyer — if "
+        "the seller meets me on price. Less risk for them at close, real savings for me on the "
+        "monthly. Let's split the upside.\"\n\n"
+        "TACTICS\n"
+        "\u2022 Cash buyers ALWAYS negotiate price. Your strength is certainty — make them pay for it.\n"
+        "\u2022 Show proof of funds early. Sellers discount cash claims they can't verify.\n"
+        "\u2022 Frame the larger down as protecting the SELLER (no appraisal risk, no financing fall-through), not as a flex.\n"
+        "\u2022 Ask for a faster close (14-21 days) to amplify the cash-strength advantage."
     )
 
     return DealStructure(

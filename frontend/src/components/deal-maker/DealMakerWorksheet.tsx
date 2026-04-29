@@ -320,8 +320,19 @@ function SliderRow({ label, value, displayValue, secondaryValue, min, max, step,
         onBlur={commit}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="text-sm font-semibold tabular-nums text-right outline-none w-[115px] rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] hover:text-[var(--accent-sky)]"
-        style={{ color: C.heading, border: '1px solid var(--border-subtle)', background: 'var(--surface-elevated)' }}
+        className={`text-sm font-semibold tabular-nums text-right outline-none w-[115px] rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] ${highlight ? '' : 'hover:text-[var(--accent-sky)]'}`}
+        style={
+          highlight
+            ? {
+                color: '#0F172A',
+                border: '1px solid #F59E0B',
+                background: '#FACC15',
+                boxShadow: '0 0 0 2px rgba(250, 204, 21, 0.35)',
+              }
+            : { color: C.heading, border: '1px solid var(--border-subtle)', background: 'var(--surface-elevated)' }
+        }
+        data-path-highlighted={highlight || undefined}
+        title={highlight ? 'Auto-filled by an applied path — edit to override' : undefined}
         size={10}
       />
     </div>
