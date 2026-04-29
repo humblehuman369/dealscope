@@ -204,6 +204,9 @@ function StrategyContent() {
   /** After first successful property load, refetches skip full-page loader (DealMaker sliders / session echo). */
   const hasLoadedPropertyRef = useRef(false)
   const threePathsScenarioKeyRef = useRef<string | null>(null)
+  /** Synced every render after `worksheetState` is computed (below early returns). */
+  const worksheetStateRef = useRef<AnyStrategyState | null>(null)
+  const currentStrategyTypeRef = useRef<StrategyType>('ltr')
 
   useEffect(() => {
     hasLoadedPropertyRef.current = false
@@ -1019,15 +1022,8 @@ function StrategyContent() {
     }
   })()
 
-  // Live snapshot of worksheetState + active strategy so applyPathPatch can
-  // diff against the current baseline before the patch is merged in, and the
-  // manual-edit hook in handleInlineSliderChange can drop the right glow.
-  const worksheetStateRef = useRef<AnyStrategyState | null>(null)
-  const currentStrategyTypeRef = useRef<StrategyType>(currentStrategyType)
-  useEffect(() => {
-    worksheetStateRef.current = worksheetState
-    currentStrategyTypeRef.current = currentStrategyType
-  })
+  worksheetStateRef.current = worksheetState
+  currentStrategyTypeRef.current = currentStrategyType
 
   const worksheetMetrics = (() => {
     switch (currentStrategyType) {
