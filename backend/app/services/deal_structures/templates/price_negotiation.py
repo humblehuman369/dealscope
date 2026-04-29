@@ -46,10 +46,52 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     if ctx.market_temperature and ctx.market_temperature.lower() == "cold":
         ranking += 4
 
+    monthly_pi_now = round(ctx.baseline_monthly_pi)
+    monthly_pi_new = round(new_monthly_pi)
+    dom_phrase = (
+        f"on the market for {ctx.days_on_market} days"
+        if ctx.days_on_market and ctx.days_on_market > 30
+        else "active right now"
+    )
+
     pitch = (
-        f"Based on the rent and expenses, my number is {fmt_money_precise(new_price)}. "
-        f"That's where the math works for me as an investor. "
-        f"I can close fast and clean — would the seller meet me there?"
+        "WHO TO CALL\n"
+        "Listing agent first. If FSBO, the seller direct.\n\n"
+        "OPEN — discover before you ask\n"
+        "\"Thanks for taking the call. Before I send a number over, can you walk me through what's "
+        f"driving the sale and where the seller would ideally land? I see the property has been "
+        f"{dom_phrase} — what's the seller's read on the activity so far?\"\n\n"
+        "ANCHOR — lead with math, not opinion\n"
+        f"\"Based on what this property can rent for and standard operating costs in the area, my "
+        f"number is {fmt_money_precise(new_price)}. That's not a lowball — that's the price where "
+        f"the monthly payment ({fmt_money_precise(monthly_pi_new)}/mo P&I) actually pencils for an "
+        f"investor who'd close in cash and on time. At {fmt_money_precise(ctx.list_price)} the "
+        f"payment is {fmt_money_precise(monthly_pi_now)}/mo and the deal loses money every single "
+        "month from day one.\"\n\n"
+        "ASK — one number, then go silent\n"
+        f"\"My offer is {fmt_money_precise(new_price)}. Cash, fast close, no financing contingency, "
+        "and I'm flexible on the seller's preferred close date. Would they meet me there?\"\n\n"
+        "(Stop talking. The next person to speak loses leverage.)\n\n"
+        "HANDLE PUSHBACK — Chris Voss calibrated question\n"
+        "If they push back on the number, don't argue or split the difference. Instead:\n"
+        f"\"I hear you. How am I supposed to make this work at {fmt_money_precise(ctx.list_price)} "
+        "when the rents won't cover the mortgage? Help me understand the seller's thinking on "
+        "price — what comps are they looking at?\"\n\n"
+        "TRADE A CONCESSION FOR A CONCESSION\n"
+        "If they need a higher number, ask for something in return:\n"
+        "\u2022 Faster close (cash certainty is worth real dollars)\n"
+        "\u2022 Free rent-back / leaseback after close\n"
+        "\u2022 Seller-paid closing costs\n"
+        "\u2022 Appliances, repair credits, or as-is sale with no inspection ask\n\n"
+        "TRIAL CLOSE\n"
+        "\"If we can agree on price, I can have a clean offer and proof of funds in your inbox "
+        "today. What would it take to get this signed by end of week?\"\n\n"
+        "TACTICS\n"
+        "\u2022 State your number once, then stay quiet. Sellers fill silence with concessions.\n"
+        "\u2022 Never explain your math unless asked. \"My number\" is more powerful than a spreadsheet.\n"
+        "\u2022 Always reference the seller's situation, never your own. \"My number is...\" not \"I need...\".\n"
+        "\u2022 If the listing has been stale, mention it gently — it's leverage. If it's fresh, don't.\n"
+        "\u2022 Walk away once. Sellers often call back within 48 hours."
     )
 
     sel_reason = f"Shown because a {gap_pct:.1f}% price reduction closes the gap to the Target Buy"

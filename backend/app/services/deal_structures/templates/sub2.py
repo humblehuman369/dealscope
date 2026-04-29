@@ -39,6 +39,98 @@ def _remaining_balance(original_principal: float, annual_rate: float, years: int
     return original_principal * (factor_n - factor_k) / (factor_n - 1)
 
 
+def _build_sub2_pitch(
+    *,
+    ctx: StructureContext,
+    assumed_rate: float,
+    existing_pmt: float,
+    implied_equity: float,
+    data_source: str,
+) -> str:
+    """Negotiation script for a Subject-to deal.
+
+    ``data_source`` is ``"public_records"`` when balance + rate come from records,
+    or ``"heuristic"`` when we estimate from purchase year. Confidence framing differs.
+    """
+    if data_source == "public_records":
+        bal_label = (
+            fmt_money(ctx.estimated_existing_loan_balance)
+            if ctx.estimated_existing_loan_balance
+            else "the reported balance"
+        )
+        confidence_line = (
+            f"Public records point to an existing loan of ~{bal_label} at "
+            f"~{assumed_rate * 100:.2f}%. Verify the exact balance with the seller's most recent "
+            "mortgage statement before signing."
+        )
+    else:
+        confidence_line = (
+            f"Based on the seller's likely purchase year, the existing loan is probably a "
+            f"~{assumed_rate * 100:.1f}% fixed-rate note. Ask the seller for their last mortgage "
+            "statement before signing — confirm rate, balance, and remaining term."
+        )
+    return (
+        "WHO TO CALL\n"
+        "The seller direct. This rarely works through a traditional listing agent — most agents "
+        "don't understand Sub2 and will discourage the seller from considering it. If the property "
+        "is FSBO or off-market, even better.\n\n"
+        "PREP — TWO QUESTIONS YOU MUST ASK FIRST\n"
+        "1. \"Do you have a mortgage on the property, and is the rate fixed?\" (Confirms the loan exists and is assumable in spirit.)\n"
+        "2. \"On closing day, do you need to walk away with a big check, or is debt relief and a clean exit more important?\"\n"
+        "   If they need a big cash check, Sub2 doesn't fit — pivot to a seller-second instead.\n\n"
+        f"{confidence_line}\n\n"
+        "THE OPEN — emotional discovery (Brent Daniels TTP style)\n"
+        "Don't lead with the structure. Lead with their situation:\n"
+        "\"Before I throw a number out, I want to understand what's going on. What's pushing the "
+        "sale, and what would success look like for you on closing day? Are you trying to relocate, "
+        "downsize, get out from under the payment, or something else entirely?\"\n\n"
+        "(Listen for pain. Sub2 sells itself when you've heard the pain.)\n\n"
+        "THE PITCH\n"
+        "\"Here's a way I can help you that a normal buyer can't. I'd take over the existing "
+        f"mortgage payments — the bank keeps getting paid the same {fmt_money_precise(existing_pmt)}/mo "
+        "they've been receiving — but you're no longer responsible for them. The deed transfers to "
+        "me at closing. The loan stays in your name on paper, but I'm contractually obligated to "
+        "make every payment on time, and we paper that with an attorney so you have legal recourse "
+        "if I don't.\"\n\n"
+        "WHAT'S IN IT FOR THE SELLER (lead with this)\n"
+        "1. A clean exit. No negotiating repairs, no inspection drama, no financing contingency.\n"
+        "2. The mortgage gets paid every month, on time, by me. That keeps your credit strong.\n"
+        "3. We close fast — no new loan to underwrite means 14-21 days, not 45.\n"
+        f"4. You walk away with roughly {fmt_money(implied_equity)} of equity, less my closing "
+        "costs. Yes, less than a retail sale — but a retail sale takes 60-90 days, requires "
+        "showings, demands repairs, and a deal can fall apart at any point.\n\n"
+        "ADDRESS THE FEAR — DUE-ON-SALE CLAUSE (do this BEFORE they ask)\n"
+        "\"You may have heard of a 'due-on-sale' clause — it gives the bank the right to call the "
+        "loan if title transfers. In practice, banks rarely call performing loans. They want their "
+        "money — and they're getting it on time, every month. But here's how I protect you "
+        "anyway: we put the property in a land trust before transfer (which doesn't trigger the "
+        "clause), the bank receives the same payment from the same servicer it always has, and we "
+        "set up a third-party servicing company so payments are documented. If I miss a payment, "
+        "you can take the property back. We both have an attorney review the docs.\"\n\n"
+        "ANTICIPATE OBJECTIONS\n"
+        "\u2022 \"What if you stop paying?\" \u2192 \"You'd reclaim the property through the trust "
+        "agreement and any payments I made stay with you. The downside risk to you is small.\"\n"
+        "\u2022 \"What about the loan being in my name?\" \u2192 \"It stays on your credit report "
+        "as a mortgage in good standing — that's actually positive for your credit. I have on-time "
+        "payments documented through a third-party servicer.\"\n"
+        "\u2022 \"How long until the loan is paid off / refinanced?\" \u2192 \"My plan is to refinance "
+        "in 5-7 years when rates come down or the property cash-flows enough to qualify. We can "
+        "agree to a maximum hold period in writing.\"\n\n"
+        "THE ASK — soft yes/no\n"
+        "\"Would you be open to walking through what this would look like on paper? I'll have my "
+        "creative-finance attorney draft the agreement so we both know we're protected. No "
+        "commitment from you until you've seen the structure and your attorney has signed off.\"\n\n"
+        "TRIAL CLOSE\n"
+        "\"What questions do you have about how this works for you?\"\n\n"
+        "TACTICS\n"
+        "\u2022 NEVER pitch Sub2 in the first 60 seconds. Build rapport, hear the pain, then offer the solution.\n"
+        "\u2022 Use \"would you be open to...\" framing — soft yes/no that doesn't trigger defensiveness (Pace Morby).\n"
+        "\u2022 Always reference an attorney. Sellers fear creative deals less when professional paper is involved.\n"
+        "\u2022 Pace Morby's rule: \"If they hesitate, ask 'what part doesn't sit right?' — then handle THAT specific objection.\"\n"
+        "\u2022 Use a third-party loan servicer (e.g., Note Servicing Center). Documentation is your protection AND the seller's."
+    )
+
+
 def solve(ctx: StructureContext) -> DealStructure | None:
     if ctx.deal_gap_amount <= 0:
         return None
@@ -77,9 +169,12 @@ def solve(ctx: StructureContext) -> DealStructure | None:
             f"Shown because records point to ~{fmt_money(remaining_bal)} at ~{assumed_rate * 100:.1f}% "
             "— cheaper debt service than a new loan at today's rates."
         )
-        pitch = (
-            f"I'm structured to take over the existing financing near {assumed_rate * 100:.1f}% "
-            f"instead of a new loan at today’s rates — about ${existing_pmt:,.0f}/mo on the reported balance."
+        pitch = _build_sub2_pitch(
+            ctx=ctx,
+            assumed_rate=assumed_rate,
+            existing_pmt=existing_pmt,
+            implied_equity=implied_equity,
+            data_source="public_records",
         )
         caveat = (
             "Confirm balance and assumption eligibility with the lender before you rely on these numbers. "
@@ -172,11 +267,12 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         f"when rates were ~{assumed_rate * 100:.1f}%"
     )
 
-    pitch = (
-        f"I'm structured to take over your existing financing around {assumed_rate * 100:.1f}% "
-        f"instead of putting on a new loan at today’s rates. "
-        f"My monthly payment lines up around ${existing_pmt:,.0f}/mo on the existing balance — "
-        f"that’s how I make the cash flow work at {fmt_money_precise(ctx.list_price)}."
+    pitch = _build_sub2_pitch(
+        ctx=ctx,
+        assumed_rate=assumed_rate,
+        existing_pmt=existing_pmt,
+        implied_equity=implied_equity,
+        data_source="heuristic",
     )
 
     caveat = (
