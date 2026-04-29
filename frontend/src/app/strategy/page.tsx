@@ -223,8 +223,15 @@ function StrategyContent() {
    * Strategy "Apply a Path" buttons share a single source of truth.
    */
   const dealStructurePaths = useMemo<DealStructure[]>(() => {
-    const raw = (data as any)?.deal_structures
-    if (!raw || raw.has_paths === false) return []
+    // FastAPI serializes IQVerdictResponse with camelCase aliases (`dealStructures`);
+    // keep snake_case for any client that still receives it.
+    const d = data as Record<string, unknown> | null
+    const raw =
+      (d?.deal_structures as Record<string, unknown> | undefined) ??
+      (d?.dealStructures as Record<string, unknown> | undefined)
+    if (!raw) return []
+    const hasPaths = (raw.has_paths as boolean | undefined) ?? (raw.hasPaths as boolean | undefined)
+    if (hasPaths === false) return []
     const paths = Array.isArray(raw.paths) ? raw.paths : []
     return paths.map((p: any) => ({
       id: String(p.id ?? ''),
