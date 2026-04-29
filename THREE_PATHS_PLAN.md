@@ -1,6 +1,44 @@
-# Three Paths — Implementation Plan (Cursor handoff)
+# Four Paths — Implementation Plan (Cursor handoff)
 
-A self-contained implementation plan for the **Three Paths** feature in DealGapIQ. Pick this up cold — every section below is enough context for an agent or engineer to start work without prior conversation.
+A self-contained implementation plan for the **Four Paths** feature in DealGapIQ. Pick this up cold — every section below is enough context for an agent or engineer to start work without prior conversation.
+
+> **Naming note:** this feature was originally scoped as "Three Paths" and the file kept that name for link stability. The product evolved to **four paths**: three single-lever structures (selected from price, capital, financing, income, strategy_switch) **plus one Blended Plan** that combines smaller portions of the first three. Treat every reference below to "three" as historical; the canonical count is **four**, with the fourth always being the blended combination.
+
+---
+
+## 0. Status snapshot (as of Apr 29, 2026)
+
+This plan was originally written as a forward-looking ticket sequence. Most of it has shipped. Use this section as the source of truth for what's live in production; the per-ticket sections below are kept as historical reference and design rationale.
+
+| Ticket | Status | Notes |
+|---|---|---|
+| T0 visual baseline | ✅ shipped | |
+| T0.5 feature flags + telemetry | ✅ shipped | `STRUCTURE_TEMPLATE_FLAGS` in `app.core.defaults`; `eventTracking.ts` |
+| T1 PitchScriptModal | ✅ shipped + extras | print + email beyond original spec |
+| T2 Open in Strategy | ✅ shipped | URL-based scenario handoff |
+| T3a Sub2 v1 | ✅ shipped | heuristic branch |
+| T3b Sub2 real data | ⚠️ blocked | T8.5 data partner not signed |
+| T4 Rate buydown | ✅ shipped | |
+| T5 Larger down | ✅ shipped | |
+| T6 Selector signals | ✅ shipped | `_apply_listing_signals` |
+| T7 Backend tests | ✅ shipped | engine + selector + per-template (97 tests) |
+| T8 DealMakerRecord schema | ✅ shipped | seller_carry_* fields wired |
+| T8.5 Public-records data partner | ❌ blocked | non-engineering — partner selection |
+| T9 Assumable | ✅ shipped | falls back to purchase-year heuristic when real data absent |
+| T10 Morby Method | ✅ shipped | post-selection substitution |
+| T11 Wraparound | ❌ quarantined | see Appendix A — legal review required |
+| T12 FHA house-hack | ✅ shipped | |
+| T13 Attorney disclaimer | ✅ shipped | renders on financing, strategy_switch, blended families |
+| T14 Telemetry expansion | ✅ shipped | core 3 + assumable_pv, morby_substituted, caveat_viewed, attorney_clicked, family_dismissed |
+| T15 Regional calibration | ✅ shipped | TX/FL Sub2, CA/NY assumable, midwest financing |
+| T16 Affiliate hooks | ❌ blocked | partner agreements |
+| T17 User-dismiss signal | ✅ shipped | localStorage + selector -25 penalty + path_family_dismissed event |
+
+**Shipped templates (9):** `price_negotiation`, `seller_second_zero_balloon`, `rent_uplift`, `sub2`, `rate_buydown`, `larger_down`, `assumable`, `fha_house_hack`, `morby_method` (post-selection), and `blended_plan` (engine-appended Path 4).
+
+**Test coverage:** 105 backend tests across `test_deal_structures_engine.py`, `test_deal_structures_selector.py`, and per-template files. Frontend typechecks clean.
+
+**Known cosmetic debt:** the panel component is still named `ThreePathsPanel.tsx` and the selector function is still `select_three_paths`. The render text says "FOUR PATHS TO MAKE THIS WORK" and four cards display correctly. File rename + function rename is XS effort; do it any time.
 
 ---
 
@@ -8,47 +46,44 @@ A self-contained implementation plan for the **Three Paths** feature in DealGapI
 
 DealGapIQ is a real-estate investment SaaS that scores any property's Deal Gap (the % discount needed from list price to make the deal cash-flow at standard 20%-down / 6.5% / 30-yr financing). When the gap is negative ("you'd need to negotiate the price down to make this work"), beginner users churn — they assume there are no deals.
 
-**Three Paths** turns every negative-gap property into three actionable, pre-computed alternative deal structures. Each structure closes the gap on its own using a different lever — price, capital stack, financing structure, income, or strategy. The user always sees a path forward; they never see a dead end.
+**Four Paths** turns every negative-gap property into four actionable, pre-computed alternative deal structures. The first three each close the gap independently using a different lever — price, capital stack, financing structure, income, or strategy. The fourth is a **Blended Plan** that combines smaller portions of the first three so no single ask carries the whole deal. The user always sees a path forward; they never see a dead end.
+
+**Why the blended fourth matters:** in real-world negotiation, sellers rarely accept one large concession but often accept several small ones. A 6% price cut might be a no; a 2% price cut + a small seller-carry + a verified rent bump is the same math distributed across three smaller asks. The Blended Plan models this directly and is often the path that actually closes.
 
 **Key UX principle (do not violate):** the accurate Deal Gap % stays visible as the credibility/transparency layer. A motivating headline ("Potential Deal · structure makes it work") sits above it. Same competitive-positioning playbook as foreclosure.com vs. Attom — reshape the headline number, keep the accurate one for transparency.
 
-**Competitive moat:** foreclosure.com surfaces only properties already discounted at auction; Attom and Datatree expose raw public-records data and leave synthesis to the user; mainstream MLS-derived tools (Redfin, Zillow, Realtor.com) end the conversation at "list price vs. estimate." None of them produce a per-property, structure-aware recommendation that turns a marginal listing into an actionable deal. Three Paths is category-defining because it is the synthesis layer — the answer to "so what do I do about this property?" — not another data feed.
+**Competitive moat:** foreclosure.com surfaces only properties already discounted at auction; Attom and Datatree expose raw public-records data and leave synthesis to the user; mainstream MLS-derived tools (Redfin, Zillow, Realtor.com) end the conversation at "list price vs. estimate." None of them produce a per-property, structure-aware recommendation that turns a marginal listing into an actionable deal. Four Paths is category-defining because it is the synthesis layer — the answer to "so what do I do about this property?" — not another data feed.
 
 ---
 
 ## 2. What's already built (do not re-implement)
 
+> See the **Status snapshot** above for the canonical ticket-by-ticket state. The following lists files and modules so you know where to look — not what's left to build.
+
 ### Phase 0 — Motivating chart label (frontend-only)
-- **Where:** `frontend/src/components/iq-verdict/types.ts`, lines around 259–451.
-- **What:** every `DealGapTier` now has `motivatingLabel` and `motivatingSubtitle` fields. Six rungs: Cash-Flow Deal → Negotiable Deal → Near Deal → Potential Deal → Structured Deal → Reset Deal. Every property lands on one rung; there is no "Not a Deal" outcome.
-- **Render site:** `frontend/src/app/verdict/page.tsx` around line 1699. The motivating label is the hero; the existing `−21% Deal Gap` and `Wide Negative Gap` chip stay below as the precision/credibility line.
+- **Where:** `frontend/src/components/iq-verdict/types.ts` — `motivatingLabel` and `motivatingSubtitle` on every `DealGapTier`. Six rungs: Cash-Flow Deal → Negotiable Deal → Near Deal → Potential Deal → Structured Deal → Reset Deal.
+- **Render site:** `frontend/src/app/verdict/page.tsx`. Motivating label is the hero; existing `Deal Gap %` chip stays below as the precision/credibility line.
 
-### Phase 1 — MVP backend module + 3 templates + narrative
-- **New module:** `backend/app/services/deal_structures/`
-  - `context.py` — `StructureContext` (frozen dataclass holding all baseline inputs and computed properties: `baseline_loan_amount`, `baseline_monthly_pi`, `baseline_monthly_cash_flow`, `baseline_cash_required`).
-  - `formatting.py` — `fmt_money`, `fmt_money_precise`, `fmt_pct_delta`, `fmt_money_delta`, `fmt_monthly`. Use these for all card/narrative copy — do not roll your own.
-  - `templates/__init__.py` — exposes `ALL_TEMPLATES` list. Add new templates here.
-  - `templates/price_negotiation.py` — solves to Target Buy.
-  - `templates/seller_second_zero_balloon.py` — seller carries a 2nd at 0% with 5-yr balloon.
-  - `templates/rent_uplift.py` — rent verification / light uplift.
-  - `selector.py` — `select_three_paths(ctx)` runs all templates, sorts by `ranking_score` desc, picks 3 from different families, guarantees at least one non-price option.
-  - `narrative.py` — generates 5th-grade walkthrough; position-aware lead-ins ("One way", "Another way", "A third way").
-  - `engine.py` — `compute_deal_structures(ctx)` is the public entrypoint. Returns empty `DealStructuresPayload` if gap is non-negative.
-- **New schema:** `backend/app/schemas/deal_structures.py` — `StructureLever`, `DealStructure`, `DealStructuresPayload`. Camel-case alias generator already configured.
-- **Wired into the verdict response:**
-  - `IQVerdictResponse.deal_structures` field added in `backend/app/schemas/analytics.py`.
-  - `iq_verdict_service.py` builds a `StructureContext` after computing `deal_gap_pct` and calls the engine. The payload attaches to the response only when `has_paths=True`.
-- **Frontend components:**
-  - `frontend/src/components/iq-verdict/ThreePathsPanel.tsx` — responsive grid of cards.
-  - `frontend/src/components/iq-verdict/DealStructuresNarrative.tsx` — narrative panel.
-  - `VerdictGapGuidance.tsx` — renders narrative + cards when payload is present; falls back to legacy lever buttons otherwise.
-  - Verdict page response normalization (`page.tsx` ~line 767) handles snake_case ↔ camelCase.
+### Phase 1+ — Deal-structures engine (`backend/app/services/deal_structures/`)
+- `context.py` — `StructureContext` (frozen dataclass): baseline inputs + computed `baseline_loan_amount`, `baseline_monthly_pi`, `baseline_monthly_cash_flow`, `baseline_cash_required`. Includes `dismissed_families: tuple[str, ...]` (T17), `template_flags: dict[str, bool]`, `state` (T15), all template-specific inputs.
+- `formatting.py` — `fmt_money`, `fmt_money_precise`, `fmt_pct_delta`, `fmt_money_delta`, `fmt_monthly`. Use these for all card/narrative copy — do not roll your own.
+- `templates/__init__.py` — exposes `ALL_TEMPLATES` (8 single-lever templates). The blended template and morby_method are NOT in this list — the engine and selector inject them separately.
+- `templates/*.py` — one file per template. See Status snapshot above for the full list.
+- `selector.py` — `select_three_paths(ctx, templates=None)`: runs templates, applies `_apply_listing_signals` (T6) + `_apply_regional_calibration` (T15) + `_apply_dismissed_penalty` (T17), enforces family diversity, picks up to 3, then runs `_substitute_morby_method` (T10) and `_prioritize_assumable` (T9 — assumable wins Path 1).
+- `narrative.py` — 5th-grade walkthrough; position-aware lead-ins.
+- `engine.py` — `compute_deal_structures(ctx)` is the public entrypoint. Filters `ALL_TEMPLATES` by feature flag, calls the selector, then appends the Blended Plan as Path 4 (suppressed when `'blended' in ctx.dismissed_families`).
+- `backend/app/schemas/deal_structures.py` — `StructureLever`, `DealStructure`, `DealStructuresPayload`. Includes `selection_reason`, `pre_loaded_record`, `family: blended` literal. Camel-case alias generator configured.
+- `backend/app/core/defaults.py :: STRUCTURE_TEMPLATE_FLAGS` — per-template kill switches.
 
-### What was verified
-
-- Backend module produces correct output via direct synthetic test (3 paths, narrative reads naturally).
-- Frontend typechecks clean with `npx tsc --noEmit`.
-- **Not yet verified visually in browser** — local Postgres was not running. Phase 2 starts with this verification.
+### Frontend
+- `frontend/src/components/iq-verdict/ThreePathsPanel.tsx` (filename historical) — responsive 4-card grid; per-card disclaimer for financing/strategy_switch/blended families; per-card "Not interested" affordance (T17); panel-level "Reset preferences" link.
+- `frontend/src/components/iq-verdict/DealStructuresNarrative.tsx` — narrative panel.
+- `frontend/src/components/iq-verdict/PitchScriptModal.tsx` — modal with copy + print + email.
+- `frontend/src/components/iq-verdict/VerdictGapGuidance.tsx` — orchestrates narrative + cards.
+- `frontend/src/lib/dealStructures/scenarioPayload.ts` + `loadScenario.ts` + `pathHighlights.ts` — T2 URL-based scenario handoff to Strategy.
+- `frontend/src/lib/dealStructures/userPreferences.ts` — T17 dismissal state (localStorage, 30-day TTL).
+- `frontend/src/lib/eventTracking.ts` — Vercel Analytics wrapper, cookie-consent gated. All Four Paths events documented in the file header.
+- `frontend/src/app/legal/find-attorney/page.tsx` — T13 placeholder (affiliate link in T16, blocked).
 
 ---
 
