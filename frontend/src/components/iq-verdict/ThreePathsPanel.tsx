@@ -62,10 +62,10 @@ const FAMILY_ACCENT: Record<StructureFamily, string> = {
 }
 
 const PATH_COUNT_WORD = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six']
-function pathCountHeading(n: number): string {
+function pathCountWords(n: number): { lead: string; tail: string } {
   const word = PATH_COUNT_WORD[n] ?? String(n)
   const noun = n === 1 ? 'path' : 'paths'
-  return `${word} ${noun} to make this work`
+  return { lead: `${word} ${noun}`, tail: 'to make this work' }
 }
 
 function PathCard({
@@ -101,7 +101,7 @@ function PathCard({
       <div className="flex items-center gap-2 flex-wrap">
         <span
           style={{
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: 800,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
@@ -112,7 +112,7 @@ function PathCard({
         </span>
         <span
           style={{
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: 700,
             letterSpacing: '0.05em',
             textTransform: 'uppercase',
@@ -326,18 +326,24 @@ export function ThreePathsPanel({
         gap: 14,
       }}
     >
-      <p
-        style={{
-          margin: 0,
-          fontSize: 16,
-          fontWeight: 700,
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
-          color: 'var(--text-heading)',
-        }}
-      >
-        {pathCountHeading(payload.paths.length)}
-      </p>
+      {(() => {
+        const { lead, tail } = pathCountWords(payload.paths.length)
+        return (
+          <p
+            style={{
+              margin: 0,
+              fontSize: 18,
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              color: 'var(--text-heading)',
+            }}
+          >
+            <span style={{ color: 'var(--accent-sky-light)' }}>{lead}</span>{' '}
+            {tail}
+          </p>
+        )
+      })()}
       <div
         className="w-full min-w-0"
         style={{
