@@ -1722,7 +1722,7 @@ function StrategyContent() {
             AuthGate section maxHeight (~320px); paths still apply overrides + recalc. */}
         {displayDealStructurePaths.length > 0 && (
           <section className="px-[1px] sm:px-5 pt-2 pb-2">
-            <div className="px-4 sm:px-6 mb-2">
+            <div className="mb-2">
               <div className="flex items-center justify-between mb-2 gap-3">
                 <div className="flex flex-col">
                   <h3
