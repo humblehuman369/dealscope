@@ -258,17 +258,41 @@ function StrategyContent() {
     }))
   }, [data])
 
+  /**
+   * After a path is applied, `scheduleRecalc` can return a verdict payload with
+   * `dealStructures` omitted (backend sets it to null when `has_paths` is
+   * false). Keep the last non-empty list so the four Path buttons stay visible
+   * and re-selectable; refresh from the server whenever a new non-empty
+   * payload arrives.
+   */
+  const [cachedDealStructurePaths, setCachedDealStructurePaths] = useState<DealStructure[]>([])
+
+  useEffect(() => {
+    if (dealStructurePaths.length > 0) {
+      setCachedDealStructurePaths(dealStructurePaths)
+    }
+  }, [dealStructurePaths])
+
+  useEffect(() => {
+    setCachedDealStructurePaths([])
+  }, [addressParam])
+
+  const displayDealStructurePaths = useMemo(
+    () => (dealStructurePaths.length > 0 ? dealStructurePaths : cachedDealStructurePaths),
+    [dealStructurePaths, cachedDealStructurePaths],
+  )
+
   /** Fire once per address when the Strategy page surfaces path buttons. */
   const pathsRenderedAddressRef = useRef<string | null>(null)
   useEffect(() => {
-    if (dealStructurePaths.length === 0) return
+    if (displayDealStructurePaths.length === 0) return
     if (pathsRenderedAddressRef.current === addressParam) return
     pathsRenderedAddressRef.current = addressParam
     trackEvent('three_paths_rendered_in_strategy', {
-      path_count: dealStructurePaths.length,
+      path_count: displayDealStructurePaths.length,
       address_present: Boolean(addressParam),
     })
-  }, [dealStructurePaths.length, addressParam])
+  }, [displayDealStructurePaths.length, addressParam])
 
   useEffect(() => {
     if (typeof window === 'undefined' || !addressParam) return
@@ -1726,7 +1750,7 @@ function StrategyContent() {
           )}
 
           {/* Apply a Path — pre-fills the worksheet with a Three Paths structure */}
-          {dealStructurePaths.length > 0 && (
+          {displayDealStructurePaths.length > 0 && (
             <div className="px-4 sm:px-6 mb-4 mt-6">
               <div className="flex items-center justify-between mb-2 gap-3">
                 <div className="flex flex-col">
@@ -1755,7 +1779,7 @@ function StrategyContent() {
                 )}
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                {dealStructurePaths.slice(0, 4).map((p, i) => (
+                {displayDealStructurePaths.slice(0, 4).map((p, i) => (
                   <PathButton
                     key={p.id}
                     structure={p}
