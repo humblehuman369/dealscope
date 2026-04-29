@@ -248,9 +248,10 @@ function StrategyContent() {
       (d?.deal_structures as Record<string, unknown> | undefined) ??
       (d?.dealStructures as Record<string, unknown> | undefined)
     if (!raw) return []
-    const hasPaths = (raw.has_paths as boolean | undefined) ?? (raw.hasPaths as boolean | undefined)
-    if (hasPaths === false) return []
     const paths = Array.isArray(raw.paths) ? raw.paths : []
+    const hasPaths = (raw.has_paths as boolean | undefined) ?? (raw.hasPaths as boolean | undefined)
+    // Prefer trusting a non-empty `paths` array even if `hasPaths` is false (defensive).
+    if (paths.length === 0 && hasPaths === false) return []
     return paths.map((p: any) => ({
       id: String(p.id ?? ''),
       family: p.family,
@@ -1697,6 +1698,52 @@ function StrategyContent() {
           `}</style>
         </section>
 
+        {/* Apply a Path — OUTSIDE AuthGate so signed-out users are not clipped by
+            AuthGate section maxHeight (~320px); paths still apply overrides + recalc. */}
+        {displayDealStructurePaths.length > 0 && (
+          <section className="px-[1px] sm:px-5 pt-2 pb-2">
+            <div className="px-4 sm:px-6 mb-2">
+              <div className="flex items-center justify-between mb-2 gap-3">
+                <div className="flex flex-col">
+                  <h3
+                    className="text-sm font-bold uppercase tracking-wider"
+                    style={{ color: 'var(--text-heading)' }}
+                  >
+                    Apply a Path to the Worksheet
+                  </h3>
+                  <p
+                    className="text-[12px] mt-0.5"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    Pre-fills price, rent, financing, and seller-carry sliders.
+                  </p>
+                </div>
+                {appliedPathId && (
+                  <button
+                    type="button"
+                    onClick={clearAppliedPath}
+                    className="text-xs font-semibold underline shrink-0"
+                    style={{ color: 'var(--accent-sky)' }}
+                  >
+                    Reset to baseline
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                {displayDealStructurePaths.slice(0, 4).map((p, i) => (
+                  <PathButton
+                    key={p.id}
+                    structure={p}
+                    index={i}
+                    active={appliedPathId === p.id}
+                    onClick={applyPathPatch}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Financial Breakdown — requires free (logged-in) tier */}
         <AuthGate feature="view the full strategy breakdown" mode="section">
         <section className="px-[1px] sm:px-5 pt-2 pb-6">
@@ -1787,49 +1834,6 @@ function StrategyContent() {
               {propertyInfo.rentals.str_market_stats?.median_occupancy != null && (
                 <STRConfidenceLabel stats={propertyInfo.rentals.str_market_stats} />
               )}
-            </div>
-          )}
-
-          {/* Apply a Path — pre-fills the worksheet with a Three Paths structure */}
-          {displayDealStructurePaths.length > 0 && (
-            <div className="px-4 sm:px-6 mb-4 mt-6">
-              <div className="flex items-center justify-between mb-2 gap-3">
-                <div className="flex flex-col">
-                  <h3
-                    className="text-sm font-bold uppercase tracking-wider"
-                    style={{ color: 'var(--text-heading)' }}
-                  >
-                    Apply a Path to the Worksheet
-                  </h3>
-                  <p
-                    className="text-[12px] mt-0.5"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    Pre-fills price, rent, financing, and seller-carry sliders.
-                  </p>
-                </div>
-                {appliedPathId && (
-                  <button
-                    type="button"
-                    onClick={clearAppliedPath}
-                    className="text-xs font-semibold underline shrink-0"
-                    style={{ color: 'var(--accent-sky)' }}
-                  >
-                    Reset to baseline
-                  </button>
-                )}
-              </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                {displayDealStructurePaths.slice(0, 4).map((p, i) => (
-                  <PathButton
-                    key={p.id}
-                    structure={p}
-                    index={i}
-                    active={appliedPathId === p.id}
-                    onClick={applyPathPatch}
-                  />
-                ))}
-              </div>
             </div>
           )}
 
