@@ -162,9 +162,9 @@ function HeroSection({
         <h1 className="mb-10 max-w-5xl mx-auto" style={HERO_H1_STYLE}>
           <span className="text-white">Stop Scrolling Listings.</span>
           <br />
-          <span className="text-sky-400">Start Hunting Real Deals.</span>
+          <span className="text-blue-500">Start Hunting Real Deals.</span>
           <br />
-          <span className="text-blue-500">Close Four Different Ways.</span>
+          <span className="text-sky-400">Close Four Different Ways.</span>
         </h1>
 
         <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto mb-12">
