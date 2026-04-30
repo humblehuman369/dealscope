@@ -1023,14 +1023,11 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
           </p>
         </div>
 
-        {/* Primary CTA */}
+        {/* Primary CTA — routes to /search where the user picks address / scan / map */}
         <div className="mb-10">
-          <PrimaryButtonLarge onClick={() => onVerdict('1014 N J St, Lake Worth, FL')}>
+          <PrimaryButtonLarge onClick={() => onVerdict()}>
             Run a Free Verdict <ChevronRight className="w-5 h-5" strokeWidth={2.5} />
           </PrimaryButtonLarge>
-          <div className="text-xs text-slate-500 mt-3 italic">
-            Try: 1014 N J St, Lake Worth, FL
-          </div>
         </div>
 
         {/* Lead magnet */}
