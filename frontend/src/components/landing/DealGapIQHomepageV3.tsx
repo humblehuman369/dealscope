@@ -157,54 +157,91 @@ function HeroSection({
   onSeePaths: () => void;
 }) {
   return (
-    <section className="px-6 md:px-12 lg:px-20 pt-24 md:pt-32 pb-32 md:pb-44">
-      <div className="max-w-7xl mx-auto text-center">
-        <h1 className="mb-10 max-w-5xl mx-auto" style={HERO_H1_STYLE}>
-          <span className="text-white">Stop Scrolling Listings.</span>
-          <br />
-          <span className="text-white">Start Hunting Real Deals.</span>
-          <br />
-          <span className="text-sky-400">Close Four Different Ways.</span>
-        </h1>
+    <section className="px-6 md:px-12 lg:px-20 pt-10 md:pt-14 pb-32 md:pb-44">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid xl:grid-cols-[7fr_5fr] gap-10 xl:gap-14 items-center">
+          {/* Text column — order 2 on mobile (below image), 1 on xl (left side) */}
+          <div className="text-center xl:text-left order-2 xl:order-1">
+            <h1
+              className="mb-8 xl:mb-10 mx-auto xl:mx-0 max-w-3xl xl:max-w-none text-[clamp(2.6rem,6vw,4.5rem)] xl:text-[clamp(2.4rem,4vw,3.75rem)]"
+              style={HEADLINE_STYLE}
+            >
+              <span className="text-white">Stop Scrolling Listings.</span>
+              <br />
+              <span className="text-white">Start Hunting Real Deals.</span>
+              <br />
+              <span className="text-sky-400">Close Four Different Ways.</span>
+            </h1>
 
-        <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto mb-12">
-          One address. <span className="text-white font-semibold">15 seconds.</span> A verdict backed by{' '}
-          <span className="text-white font-semibold">6 data sources</span> — and DealGap
-          <span className="text-sky-400">IQ</span> will craft{' '}
-          <span className="text-white font-semibold">four offer structures</span> that cash-flow,{' '}
-          <span className="text-white font-semibold">which you can customize</span>.
-        </p>
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto xl:mx-0 mb-9">
+              One address. <span className="text-white font-semibold">15 seconds.</span> A verdict backed by{' '}
+              <span className="text-white font-semibold">6 data sources</span> — and DealGap
+              <span className="text-sky-400">IQ</span> will craft{' '}
+              <span className="text-white font-semibold">four offer structures</span> that cash-flow,{' '}
+              <span className="text-white font-semibold">which you can customize</span>.
+            </p>
 
-        {/* Single primary CTA — routes to /search where the user picks address / scan / map */}
-        <div className="mb-8">
-          <PrimaryButtonLarge sublabel="on any property" onClick={() => onVerdict()}>
-            Run a Free Verdict <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
-          </PrimaryButtonLarge>
-        </div>
+            <div className="flex flex-col sm:flex-row items-center xl:items-start gap-5 sm:gap-6 mb-8">
+              <PrimaryButtonLarge sublabel="on any property" onClick={() => onVerdict()}>
+                Run a Free Verdict <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
+              </PrimaryButtonLarge>
+              <button
+                onClick={onSeePaths}
+                className="text-sm text-sky-400 font-semibold hover:underline inline-flex items-center gap-1.5"
+              >
+                See the Four Paths <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
+              </button>
+            </div>
 
-        <div className="mb-14">
-          <button
-            onClick={onSeePaths}
-            className="text-sm text-sky-400 font-semibold hover:underline inline-flex items-center gap-1.5"
-          >
-            See the Four Paths <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
-          </button>
-        </div>
+            {/* Trust strip */}
+            <div className="flex flex-wrap items-center justify-center xl:justify-start gap-x-6 gap-y-2 text-sm text-slate-400">
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-sky-400" strokeWidth={3} />
+                6 data sources
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-sky-400" strokeWidth={3} />
+                15-second analysis
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-sky-400" strokeWidth={3} />
+                No signup required
+              </span>
+            </div>
+          </div>
 
-        {/* Trust strip */}
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-slate-400">
-          <span className="flex items-center gap-1.5">
-            <Check className="w-4 h-4 text-sky-400" strokeWidth={3} />
-            6 data sources
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Check className="w-4 h-4 text-sky-400" strokeWidth={3} />
-            15-second analysis
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Check className="w-4 h-4 text-sky-400" strokeWidth={3} />
-            No signup required
-          </span>
+          {/* Image showcase — contained, designed object (rounded card + halo) */}
+          <div className="order-1 xl:order-2 relative w-full max-w-xl xl:max-w-none mx-auto">
+            {/* Cyan halo behind the card */}
+            <div
+              aria-hidden
+              className="absolute -inset-10 -z-10"
+              style={{
+                background:
+                  'radial-gradient(ellipse at center, rgba(56,189,248,0.25) 0%, transparent 60%)',
+                filter: 'blur(50px)',
+              }}
+            />
+
+            {/* Card */}
+            <div
+              className="relative rounded-3xl overflow-hidden"
+              style={{
+                border: '1px solid rgba(56,189,248,0.20)',
+                boxShadow: '0 30px 80px -20px rgba(15,164,233,0.35)',
+              }}
+            >
+              <Image
+                src="/images/phone-house-hero.png"
+                alt="DealGapIQ analyzing a residential property on a phone, with a suburban home in the background"
+                width={1024}
+                height={826}
+                priority
+                sizes="(max-width: 640px) 100vw, (max-width: 1280px) 60vw, 520px"
+                className="block w-full h-auto"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </section>
