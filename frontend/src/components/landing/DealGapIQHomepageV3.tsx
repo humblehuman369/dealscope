@@ -260,10 +260,10 @@ function DemoSection({ onTry }: { onTry: () => void }) {
           <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
             What You Get
           </div>
-          <h2 className="text-3xl md:text-5xl mb-6" style={HEADLINE_STYLE}>
+          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-6" style={HEADLINE_STYLE}>
             The Verdict tells you the gap.
             <br />
-            <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+            <span className="text-sky-400">
               We tell you how to close it.
             </span>
           </h2>
@@ -482,13 +482,13 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
             The Closing Tool Nobody Else Has
           </div>
           <h2
-            className="text-3xl md:text-5xl mb-6 max-w-4xl mx-auto text-balance"
+            className="text-3xl md:text-5xl lg:text-6xl mb-6 text-balance"
             style={HEADLINE_STYLE}
           >
             <span className="block">
               Subject-To. Seller holds a 0%{' '}2nd.
             </span>
-            <span className="block bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+            <span className="block text-sky-400">
               We write the script for every{' '}one.
             </span>
           </h2>
@@ -644,10 +644,10 @@ function ComparisonSection() {
           <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
             How It Compares
           </div>
-          <h2 className="text-3xl md:text-5xl mb-5" style={HEADLINE_STYLE}>
+          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-5" style={HEADLINE_STYLE}>
             Where most tools stop,
             <br />
-            <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+            <span className="text-sky-400">
               DealGapIQ keeps going.
             </span>
           </h2>
@@ -790,10 +790,10 @@ function TrustSection({
           <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
             The Trust Layer
           </div>
-          <h2 className="text-3xl md:text-5xl mb-5" style={HEADLINE_STYLE}>
+          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-5" style={HEADLINE_STYLE}>
             Trust comes from
             <br />
-            <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+            <span className="text-sky-400">
               seeing the work.
             </span>
           </h2>
@@ -1015,10 +1015,10 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
         <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
           Now Try It
         </div>
-        <h2 className="text-3xl md:text-5xl mb-6" style={HEADLINE_STYLE}>
+        <h2 className="text-3xl md:text-5xl lg:text-6xl mb-6" style={HEADLINE_STYLE}>
           Try it on the property
           <br />
-          <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+          <span className="text-sky-400">
             you've been watching.
           </span>
         </h2>
