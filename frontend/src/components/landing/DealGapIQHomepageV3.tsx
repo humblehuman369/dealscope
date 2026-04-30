@@ -469,11 +469,14 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
           <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
             The Closing Tool Nobody Else Has
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto">
-            Subject-To. Seller holds a 0% 2nd.
-            <br />
-            <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
-              We write the script for every one.
+          <h2
+            className="text-2xl sm:text-3xl md:text-4xl xl:text-5xl font-bold tracking-tight leading-[1.15] mb-6 max-w-4xl mx-auto text-balance"
+          >
+            <span className="block sm:whitespace-nowrap">
+              Subject-To. Seller holds a 0%{' '}2nd.
+            </span>
+            <span className="block sm:whitespace-nowrap bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+              We write the script for every{' '}one.
             </span>
           </h2>
         </div>
