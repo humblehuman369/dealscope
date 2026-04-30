@@ -160,13 +160,11 @@ function HeroSection({
     <section className="px-6 md:px-12 lg:px-20 pt-24 md:pt-32 pb-32 md:pb-44">
       <div className="max-w-7xl mx-auto text-center">
         <h1 className="mb-10 max-w-5xl mx-auto" style={HERO_H1_STYLE}>
-          Stop Scrolling Listings.
+          <span className="text-white">Stop Scrolling Listings.</span>
           <br />
-          Start Hunting Real Deals.
+          <span className="text-sky-400">Start Hunting Real Deals.</span>
           <br />
-          <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
-            Close Four Different Ways.
-          </span>
+          <span className="text-blue-500">Close Four Different Ways.</span>
         </h1>
 
         <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto mb-12">
@@ -484,13 +482,13 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
             The Closing Tool Nobody Else Has
           </div>
           <h2
-            className="text-2xl sm:text-3xl md:text-4xl xl:text-5xl mb-6 max-w-4xl mx-auto text-balance"
+            className="text-3xl md:text-5xl mb-6 max-w-4xl mx-auto text-balance"
             style={HEADLINE_STYLE}
           >
-            <span className="block sm:whitespace-nowrap">
+            <span className="block">
               Subject-To. Seller holds a 0%{' '}2nd.
             </span>
-            <span className="block sm:whitespace-nowrap bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
               We write the script for every{' '}one.
             </span>
           </h2>
@@ -1220,8 +1218,8 @@ function PrimaryButtonLarge({
       onClick={onClick}
       className="inline-flex items-center justify-center gap-3 px-9 py-3.5 rounded-xl text-black transition-all"
       style={{
-        background: 'linear-gradient(135deg, #0FA4E9 0%, #0465F2 100%)',
-        boxShadow: '0 12px 32px -8px rgba(15,164,233,0.55)',
+        background: '#38BDF8',
+        boxShadow: '0 12px 32px -8px rgba(56,189,248,0.55)',
       }}
     >
       <span className="flex flex-col items-center leading-tight">
