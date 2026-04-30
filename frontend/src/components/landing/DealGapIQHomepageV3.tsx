@@ -165,8 +165,8 @@ function HeroSection({
 
         {/* Single primary CTA — routes to /search where the user picks address / scan / map */}
         <div className="mb-6">
-          <PrimaryButtonLarge onClick={() => onVerdict()}>
-            Run a Free Verdict <ChevronRight className="w-5 h-5" strokeWidth={2.5} />
+          <PrimaryButtonLarge sublabel="on any property" onClick={() => onVerdict()}>
+            Run a Free Verdict <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
           </PrimaryButtonLarge>
         </div>
 
@@ -1025,8 +1025,8 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
 
         {/* Primary CTA — routes to /search where the user picks address / scan / map */}
         <div className="mb-10">
-          <PrimaryButtonLarge onClick={() => onVerdict()}>
-            Run a Free Verdict <ChevronRight className="w-5 h-5" strokeWidth={2.5} />
+          <PrimaryButtonLarge sublabel="on any property" onClick={() => onVerdict()}>
+            Run a Free Verdict <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
           </PrimaryButtonLarge>
         </div>
 
@@ -1190,21 +1190,30 @@ function PrimaryButton({
 
 function PrimaryButtonLarge({
   children,
+  sublabel,
   onClick,
 }: {
   children: React.ReactNode;
+  sublabel?: string;
   onClick?: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center justify-center gap-2 px-9 py-5 rounded-xl text-lg font-bold text-black transition-all"
+      className="inline-flex items-center justify-center gap-3 px-9 py-3.5 rounded-xl text-black transition-all"
       style={{
         background: 'linear-gradient(135deg, #0FA4E9 0%, #0465F2 100%)',
         boxShadow: '0 12px 32px -8px rgba(15,164,233,0.55)',
       }}
     >
-      {children}
+      <span className="flex flex-col items-center leading-tight">
+        <span className="text-lg font-bold">{children}</span>
+        {sublabel && (
+          <span className="text-[11px] font-semibold opacity-75 mt-0.5 tracking-wide">
+            {sublabel}
+          </span>
+        )}
+      </span>
     </button>
   );
 }
