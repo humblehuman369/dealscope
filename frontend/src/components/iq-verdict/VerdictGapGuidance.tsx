@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { trackEvent } from '@/lib/eventTracking'
 import type { DealGapTier } from '@/components/iq-verdict/types'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
-import { ThreePathsPanel, type DealStructure, type DealStructuresPayload } from '@/components/iq-verdict/ThreePathsPanel'
+import { FourPathsPanel, type DealStructure, type DealStructuresPayload } from '@/components/iq-verdict/FourPathsPanel'
 import { DealStructuresNarrative } from '@/components/iq-verdict/DealStructuresNarrative'
 
 export interface VerdictGapGuidanceProps {
@@ -102,7 +102,7 @@ export function VerdictGapGuidance({
       {hasStructures && (
         <>
           <DealStructuresNarrative paragraphs={dealStructures!.narrativeParagraphs} />
-          <ThreePathsPanel
+          <FourPathsPanel
             payload={dealStructures!}
             propertyState={propertyState}
             onOpenInStrategy={onOpenStructureInStrategy}
@@ -265,7 +265,7 @@ export function VerdictPositiveGuidance({
       </p>
 
       {hasStructures && (
-        <ThreePathsPanel
+        <FourPathsPanel
           payload={dealStructures!}
           propertyState={propertyState}
           onOpenInStrategy={onOpenStructureInStrategy}

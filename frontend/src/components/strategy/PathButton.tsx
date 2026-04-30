@@ -15,7 +15,7 @@
 
 import type { CSSProperties } from 'react'
 
-import type { DealStructure, StructureFamily } from '@/components/iq-verdict/ThreePathsPanel'
+import type { DealStructure, StructureFamily } from '@/components/iq-verdict/FourPathsPanel'
 
 export const PATH_FAMILY_ACCENT: Record<StructureFamily, string> = {
   price: '#84cc16',

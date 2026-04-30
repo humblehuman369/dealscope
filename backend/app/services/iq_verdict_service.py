@@ -9,6 +9,7 @@ No runtime reads from ``app.core.defaults`` singletons are allowed.
 
 import logging
 
+from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.core.formulas import calculate_buy_price, estimate_income_value
 from app.core.regions import resolve_investor_probability_region
 from app.schemas.analytics import (
@@ -31,7 +32,6 @@ from app.services.calculators.common import (
     calculate_cash_on_cash,
     calculate_dscr,
 )
-from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.services.deal_structures import compute_deal_structures
 from app.services.deal_structures.context import StructureContext
 

@@ -87,7 +87,7 @@ import {
   DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
 } from '@/components/deal-maker/types'
 import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
-import type { DealStructure } from '@/components/iq-verdict/ThreePathsPanel'
+import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { PathButton } from '@/components/strategy/PathButton'
 import { trackEvent } from '@/lib/eventTracking'
 
@@ -239,7 +239,7 @@ function StrategyContent() {
 
   /**
    * Parse `data.deal_structures` into the typed `DealStructure[]` shape used by
-   * the Verdict page's `ThreePathsPanel`. We re-use the same structure so the
+   * the Verdict page's `FourPathsPanel`. We re-use the same structure so the
    * Strategy "Apply a Path" buttons share a single source of truth.
    */
   const dealStructurePaths = useMemo<DealStructure[]>(() => {

@@ -1,6 +1,6 @@
 """Selector behavior — diversity, listing signals, regional calibration, post-selection passes.
 
-These tests exercise ``select_three_paths`` end-to-end against the real templates
+These tests exercise ``select_four_paths`` end-to-end against the real templates
 to catch regressions in ranking, family diversity, and the Morby/assumable special
 cases. Each test isolates one ranking signal so a future weight tweak only breaks
 the test it's meant to govern.
@@ -14,7 +14,7 @@ from app.services.deal_structures.selector import (
     _DISMISSED_FAMILY_PENALTY,
     _apply_dismissed_penalty,
     _apply_listing_signals,
-    select_three_paths,
+    select_four_paths,
 )
 from app.services.deal_structures.templates import (
     blended_plan,
@@ -50,20 +50,20 @@ def _minimal_structure(structure_id: str, family: str = "financing", score: floa
 
 
 def test_selector_picks_distinct_families():
-    paths = select_three_paths(base_ctx())
+    paths = select_four_paths(base_ctx())
     families = [p.family for p in paths]
     assert len(families) == len(set(families)), f"duplicated family in {families}"
 
 
 def test_selector_avoids_three_price_only_when_diversity_is_available():
     """Even if three price-family templates were top-ranked, selector must prefer diversity."""
-    paths = select_three_paths(base_ctx())
+    paths = select_four_paths(base_ctx())
     assert any(p.family != "price" for p in paths), "all-price selection violates diversity rule"
 
 
 def test_selector_returns_at_most_three_single_lever_paths():
     """Single-lever pool tops out at 3; the engine appends Path 4 (blended) on top of this."""
-    paths = select_three_paths(base_ctx())
+    paths = select_four_paths(base_ctx())
     assert len(paths) <= 3
 
 
@@ -135,8 +135,8 @@ def test_regional_tx_boosts_sub2_in_real_pipeline():
     sub_az = sub2.solve(ctx_neutral)
     if sub_tx is None or sub_az is None:
         return  # template gating; not what this test asserts
-    paths_tx = select_three_paths(ctx_tx)
-    paths_az = select_three_paths(ctx_neutral)
+    paths_tx = select_four_paths(ctx_tx)
+    paths_az = select_four_paths(ctx_neutral)
     sub_score_tx = next((p.ranking_score for p in paths_tx if p.id == "sub2"), None)
     sub_score_az = next((p.ranking_score for p in paths_az if p.id == "sub2"), None)
     if sub_score_tx is not None and sub_score_az is not None:
@@ -155,7 +155,7 @@ def test_assumable_takes_path_one_when_present():
         estimated_existing_loan_balance=240_000,
         estimated_existing_loan_rate=0.034,
     )
-    paths = select_three_paths(ctx)
+    paths = select_four_paths(ctx)
     if not any(p.id == "assumable" for p in paths):
         return  # assumable gating prevented the card; not what this test asserts
     assert paths[0].id == "assumable"
@@ -180,7 +180,7 @@ def test_morby_substitutes_when_both_sub2_and_seller_second_fire():
     if s is None or ss is None:
         return  # missing precondition; selector wouldn't substitute either
 
-    paths = select_three_paths(ctx)
+    paths = select_four_paths(ctx)
     ids = {p.id for p in paths}
     if "morby-method" in ids:
         assert "sub2" not in ids
@@ -196,7 +196,7 @@ def test_morby_disabled_via_flag():
         is_fsbo=True,
         template_flags={"morby-method": False},
     )
-    paths = select_three_paths(ctx)
+    paths = select_four_paths(ctx)
     assert all(p.id != "morby-method" for p in paths)
 
 
@@ -224,17 +224,17 @@ def test_engine_returns_no_paths_when_gap_zero():
 # ---------------------------------------------------------------------------
 
 
-def test_select_three_paths_accepts_explicit_template_list():
+def test_select_four_paths_accepts_explicit_template_list():
     """Caller can pass a subset; selector ignores ALL_TEMPLATES in that case."""
     ctx = base_ctx()
-    paths = select_three_paths(ctx, templates=[price_negotiation, rent_uplift])
+    paths = select_four_paths(ctx, templates=[price_negotiation, rent_uplift])
     ids = {p.id for p in paths}
     assert ids.issubset({price_negotiation.ID, rent_uplift.ID})
 
 
 def test_explicit_empty_template_list_returns_no_paths():
     ctx = base_ctx()
-    assert select_three_paths(ctx, templates=[]) == []
+    assert select_four_paths(ctx, templates=[]) == []
 
 
 # ---------------------------------------------------------------------------
@@ -290,8 +290,8 @@ def test_dismissing_financing_drops_sub2_below_undismissed_alternatives():
         days_on_market=120,
         is_fsbo=True,
     )
-    paths_default = select_three_paths(base_ctx(**base_overrides))
-    paths_dismissed = select_three_paths(base_ctx(dismissed_families=("financing",), **base_overrides))
+    paths_default = select_four_paths(base_ctx(**base_overrides))
+    paths_dismissed = select_four_paths(base_ctx(dismissed_families=("financing",), **base_overrides))
 
     sub2_default = next((p for p in paths_default if p.id == "sub2"), None)
     sub2_dismissed = next((p for p in paths_dismissed if p.id == "sub2"), None)

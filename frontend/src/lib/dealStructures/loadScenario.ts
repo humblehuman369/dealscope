@@ -3,7 +3,7 @@
  */
 
 import { encodeScenario, type ScenarioPayloadV1 } from '@/lib/dealStructures/scenarioPayload'
-import type { DealStructure } from '@/components/iq-verdict/ThreePathsPanel'
+import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 
 const LAST_KEY = 'dealscope_last_scenario_v1'
 const SAVED_LIST_KEY = 'dealscope_saved_three_path_scenarios_v1'

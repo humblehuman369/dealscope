@@ -1,3 +1,6 @@
+# ruff: noqa: RUF001, RUF002
+# Currency formatters use U+2212 (MINUS SIGN) instead of U+002D (HYPHEN-MINUS) for typographic
+# correctness — '−$25K' renders properly across fonts where '-$25K' looks like a stray hyphen.
 """Shared formatting helpers for deal-structure copy."""
 
 

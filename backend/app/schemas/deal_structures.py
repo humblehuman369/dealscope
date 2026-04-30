@@ -28,7 +28,7 @@ class StructureLever(BaseModel):
     label: str = Field(..., description="Lever name, e.g. 'Price', 'Seller carry'")
     before_label: str = Field(..., description="Baseline value, formatted (e.g. '$410K')")
     after_label: str = Field(..., description="New value, formatted (e.g. '$385K')")
-    delta_label: str | None = Field(None, description="Optional delta (e.g. '−6.1%')")
+    delta_label: str | None = Field(None, description="Optional delta (e.g. '−6.1%')")  # noqa: RUF001 — U+2212 minus sign is deliberate display formatting
 
 
 class DealStructure(BaseModel):
