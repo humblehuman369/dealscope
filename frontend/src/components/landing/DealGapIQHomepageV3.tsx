@@ -41,6 +41,20 @@ import {
 } from 'lucide-react';
 import { useAuthModal } from '@/hooks/useAuthModal';
 
+// Shared headline typography — every hero statement on the page (H1 + section H2s)
+// pulls from this so the family / weight / leading / tracking stay aligned.
+// Responsive size lives on the className (Tailwind utilities) so hierarchy is preserved.
+const HEADLINE_STYLE: React.CSSProperties = {
+  fontFamily: 'var(--font-dm-sans), "DM Sans", sans-serif',
+  fontWeight: 800,
+  lineHeight: 1.08,
+  letterSpacing: '-0.025em',
+};
+const HERO_H1_STYLE: React.CSSProperties = {
+  ...HEADLINE_STYLE,
+  fontSize: 'clamp(2.8rem, 6vw, 4.5rem)',
+};
+
 interface Props {
   onPointAndScan?: () => void;
 }
@@ -145,16 +159,7 @@ function HeroSection({
   return (
     <section className="px-6 md:px-12 lg:px-20 pt-24 md:pt-32 pb-32 md:pb-44">
       <div className="max-w-7xl mx-auto text-center">
-        <h1
-          className="mb-10 max-w-5xl mx-auto"
-          style={{
-            fontFamily: 'var(--font-dm-sans), "DM Sans", sans-serif',
-            fontSize: 'clamp(2.8rem, 6vw, 4.5rem)',
-            fontWeight: 800,
-            lineHeight: 1.08,
-            letterSpacing: '-0.025em',
-          }}
-        >
+        <h1 className="mb-10 max-w-5xl mx-auto" style={HERO_H1_STYLE}>
           Stop Scrolling Listings.
           <br />
           Start Hunting Real Deals.
@@ -257,7 +262,7 @@ function DemoSection({ onTry }: { onTry: () => void }) {
           <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
             What You Get
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-6">
+          <h2 className="text-3xl md:text-5xl mb-6" style={HEADLINE_STYLE}>
             The Verdict tells you the gap.
             <br />
             <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
@@ -479,7 +484,8 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
             The Closing Tool Nobody Else Has
           </div>
           <h2
-            className="text-2xl sm:text-3xl md:text-4xl xl:text-5xl font-bold tracking-tight leading-[1.2] mb-6 max-w-4xl mx-auto text-balance"
+            className="text-2xl sm:text-3xl md:text-4xl xl:text-5xl mb-6 max-w-4xl mx-auto text-balance"
+            style={HEADLINE_STYLE}
           >
             <span className="block sm:whitespace-nowrap">
               Subject-To. Seller holds a 0%{' '}2nd.
@@ -640,7 +646,7 @@ function ComparisonSection() {
           <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
             How It Compares
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-5">
+          <h2 className="text-3xl md:text-5xl mb-5" style={HEADLINE_STYLE}>
             Where most tools stop,
             <br />
             <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
@@ -786,7 +792,7 @@ function TrustSection({
           <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
             The Trust Layer
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-5">
+          <h2 className="text-3xl md:text-5xl mb-5" style={HEADLINE_STYLE}>
             Trust comes from
             <br />
             <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
@@ -1011,7 +1017,7 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
         <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
           Now Try It
         </div>
-        <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-6">
+        <h2 className="text-3xl md:text-5xl mb-6" style={HEADLINE_STYLE}>
           Try it on the property
           <br />
           <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
