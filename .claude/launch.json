@@ -6,7 +6,7 @@
       "runtimeExecutable": "sh",
       "runtimeArgs": [
         "-c",
-        "cd '/Users/bradgeisen/Claude Cowork/dealscope/optimistic-heisenberg-d5ddd5/frontend' && npm run dev"
+        "cd '/Users/bradgeisen/Claude Cowork/dealscope/lucid-mclean-8541cb/frontend' && npm run dev"
       ],
       "port": 3000,
       "autoPort": true
@@ -16,7 +16,7 @@
       "runtimeExecutable": "sh",
       "runtimeArgs": [
         "-c",
-        "cd '/Users/bradgeisen/Claude Cowork/dealscope/optimistic-heisenberg-d5ddd5/backend' && source /Users/bradgeisen/IQ-Data/dealscope/backend/venv/bin/activate && uvicorn app.main:app --reload --port 8000"
+        "cd '/Users/bradgeisen/Claude Cowork/dealscope/lucid-mclean-8541cb/backend' && source /Users/bradgeisen/IQ-Data/dealscope/backend/venv/bin/activate && uvicorn app.main:app --reload --port 8000"
       ],
       "port": 8000
     }

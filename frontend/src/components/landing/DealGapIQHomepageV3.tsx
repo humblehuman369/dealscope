@@ -143,9 +143,9 @@ function HeroSection({
   onSeePaths: () => void;
 }) {
   return (
-    <section className="px-6 md:px-12 lg:px-20 pt-20 md:pt-28 pb-24 md:pb-36">
+    <section className="px-6 md:px-12 lg:px-20 pt-24 md:pt-32 pb-32 md:pb-44">
       <div className="max-w-7xl mx-auto text-center">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.18] mb-8 max-w-5xl mx-auto">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15] mb-10 max-w-5xl mx-auto">
           Stop Scrolling Listings.
           <br />
           Start Hunting Real Deals.
@@ -155,7 +155,7 @@ function HeroSection({
           </span>
         </h1>
 
-        <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto mb-10">
+        <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto mb-12">
           One address. <span className="text-white font-semibold">15 seconds.</span> A verdict backed by{' '}
           <span className="text-white font-semibold">6 data sources</span> — and DealGap
           <span className="text-sky-400">IQ</span> will craft{' '}
@@ -164,13 +164,13 @@ function HeroSection({
         </p>
 
         {/* Single primary CTA — routes to /search where the user picks address / scan / map */}
-        <div className="mb-6">
+        <div className="mb-8">
           <PrimaryButtonLarge sublabel="on any property" onClick={() => onVerdict()}>
             Run a Free Verdict <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
           </PrimaryButtonLarge>
         </div>
 
-        <div className="mb-10">
+        <div className="mb-14">
           <button
             onClick={onSeePaths}
             className="text-sm text-sky-400 font-semibold hover:underline inline-flex items-center gap-1.5"
@@ -242,10 +242,10 @@ function HeroOptionButton({
 
 function DemoSection({ onTry }: { onTry: () => void }) {
   return (
-    <section id="demo" className="px-6 md:px-12 lg:px-20 pb-28 md:pb-40">
+    <section id="demo" className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
+        <div className="text-center mb-16 md:mb-20">
+          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
             What You Get
           </div>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-6">
@@ -257,22 +257,22 @@ function DemoSection({ onTry }: { onTry: () => void }) {
           </h2>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-start">
+        <div className="grid lg:grid-cols-2 gap-14 items-start">
           {/* Left: copy + bullets */}
           <div>
-            <p className="text-base md:text-lg text-slate-300 leading-relaxed mb-6">
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed mb-7">
               A verdict on this <span className="text-white font-semibold">$457,100</span> listing came back at{' '}
               <span className="text-amber-400 font-semibold tabular-nums">−6.4% Deal Gap</span> — the math doesn't
               pencil at standard 20%-down financing.{' '}
               <span className="text-slate-400">That's where most tools stop.</span>
             </p>
 
-            <p className="text-base md:text-lg text-slate-200 font-semibold mb-6">
+            <p className="text-base md:text-lg text-slate-200 font-semibold mb-7">
               DealGap<span className="text-sky-400">IQ</span> keeps going. Four pre-built offers, each one closing the
               gap a different way:
             </p>
 
-            <ol className="space-y-4 mb-8">
+            <ol className="space-y-5 mb-10">
               <PathBullet
                 num="1"
                 title="Verify the rent to $3,556."
@@ -296,7 +296,7 @@ function DemoSection({ onTry }: { onTry: () => void }) {
               />
             </ol>
 
-            <p className="text-sm text-slate-300 leading-relaxed mb-6">
+            <p className="text-sm text-slate-300 leading-relaxed mb-7">
               Each path opens a <span className="text-white font-semibold">pre-loaded, editable Strategy worksheet</span>{' '}
               — and a <span className="text-white font-semibold">negotiation script</span> you can print, email, or
               copy to present with confidence.
@@ -313,7 +313,7 @@ function DemoSection({ onTry }: { onTry: () => void }) {
           {/* Right: verdict screen mockup */}
           <div className="lg:sticky lg:top-8">
             <VerdictMockup />
-            <p className="text-center text-xs text-slate-500 mt-4 italic">
+            <p className="text-center text-xs text-slate-500 mt-5 italic">
               This is one of millions of listings. Run yours.
             </p>
           </div>
@@ -463,14 +463,14 @@ function MockCard({
 
 function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
   return (
-    <section className="px-6 md:px-12 lg:px-20 pb-28 md:pb-40">
+    <section className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
+        <div className="text-center mb-16 md:mb-20">
+          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
             The Closing Tool Nobody Else Has
           </div>
           <h2
-            className="text-2xl sm:text-3xl md:text-4xl xl:text-5xl font-bold tracking-tight leading-[1.15] mb-6 max-w-4xl mx-auto text-balance"
+            className="text-2xl sm:text-3xl md:text-4xl xl:text-5xl font-bold tracking-tight leading-[1.2] mb-6 max-w-4xl mx-auto text-balance"
           >
             <span className="block sm:whitespace-nowrap">
               Subject-To. Seller holds a 0%{' '}2nd.
@@ -481,10 +481,10 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
           </h2>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-start">
+        <div className="grid lg:grid-cols-2 gap-14 items-start">
           {/* Left: script breakdown */}
           <div>
-            <p className="text-base md:text-lg text-slate-300 leading-relaxed mb-6">
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed mb-7">
               Investors are quietly closing deals with structures most tools won't even model — Subject-To, seller
               carrybacks, 0% 2nds with a balloon, wraparound notes, rate buydowns. Knowing the structure isn't
               enough. You have to{' '}
@@ -492,11 +492,11 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
               to.
             </p>
 
-            <p className="text-base text-slate-200 font-semibold mb-5">
+            <p className="text-base text-slate-200 font-semibold mb-6">
               DealGap<span className="text-sky-400">IQ</span> writes the script for you, structure-by-structure:
             </p>
 
-            <ul className="space-y-3 mb-8">
+            <ul className="space-y-4 mb-10">
               <ScriptBullet label="Who to call." body="Listing agent or seller direct, depending on listing type and creative-finance fluency." />
               <ScriptBullet label="The frame." body={`"Price for terms" — what you're trading, why both sides win.`} />
               <ScriptBullet label="The opener." body="A discovery question that surfaces what the seller actually needs." />
@@ -505,7 +505,7 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
             </ul>
 
             {/* Print / Email / Copy strip */}
-            <div className="flex items-center gap-6 mb-8 pb-6 border-b border-[#14181F]">
+            <div className="flex items-center gap-6 mb-10 pb-8 border-b border-[#14181F]">
               <DeliveryIcon icon={<Printer className="w-5 h-5" />} label="Print" />
               <DeliveryIcon icon={<Mail className="w-5 h-5" />} label="Email" />
               <DeliveryIcon icon={<Copy className="w-5 h-5" />} label="Copy" />
@@ -532,9 +532,9 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
 
 function ScriptBullet({ label, body }: { label: string; body: string }) {
   return (
-    <li className="flex gap-3">
+    <li className="flex gap-3.5">
       <Check className="w-5 h-5 text-sky-400 mt-0.5 shrink-0" strokeWidth={2.5} />
-      <div>
+      <div className="leading-relaxed">
         <span className="text-white font-semibold">{label}</span>{' '}
         <span className="text-slate-400">{body}</span>
       </div>
@@ -562,7 +562,7 @@ function DeliveryIcon({ icon, label }: { icon: React.ReactNode; label: string })
 function PullQuoteCard() {
   return (
     <div
-      className="rounded-2xl p-7 md:p-8 relative"
+      className="rounded-2xl p-8 md:p-10 relative"
       style={{
         background: '#000',
         border: '1px solid rgba(15,164,233,0.35)',
@@ -579,9 +579,9 @@ function PullQuoteCard() {
         Sample Script
       </div>
 
-      <Sparkles className="w-5 h-5 text-sky-400 mb-3" />
+      <Sparkles className="w-5 h-5 text-sky-400 mb-4" />
 
-      <p className="text-base md:text-lg leading-relaxed text-slate-100 italic mb-5">
+      <p className="text-base md:text-lg leading-relaxed text-slate-100 italic mb-6">
         "I can pay full asking — <span className="not-italic font-semibold text-white">$646,050</span>, no haircut —
         if the seller is open to carrying <span className="not-italic font-semibold text-white">$129,210</span> of
         that as a second mortgage at <span className="not-italic font-semibold text-sky-400">0% interest</span> with a
@@ -591,7 +591,7 @@ function PullQuoteCard() {
 
       <div className="text-xs text-slate-500 not-italic">— A real DealGapIQ-generated pitch script</div>
 
-      <div className="mt-6 pt-5 border-t border-[#14181F] text-center">
+      <div className="mt-8 pt-6 border-t border-[#14181F] text-center">
         <div className="text-xs text-slate-400 italic">
           Knowing the structure isn't enough. DealGapIQ writes the script.
         </div>
@@ -625,13 +625,13 @@ const COMPARISON_ROWS: Array<{
 
 function ComparisonSection() {
   return (
-    <section className="px-6 md:px-12 lg:px-20 pb-28 md:pb-40">
+    <section className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
+        <div className="text-center mb-16 md:mb-20">
+          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
             How It Compares
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-5">
             Where most tools stop,
             <br />
             <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
@@ -643,14 +643,14 @@ function ComparisonSection() {
           </p>
         </div>
 
-        <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-4xl mx-auto mb-10 text-center">
+        <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-4xl mx-auto mb-12 text-center">
           Listing sites help you find properties. Cash-flow calculators help you analyze them. Neither helps you{' '}
           <span className="text-white font-semibold">structure the offer</span> that closes the gap.
         </p>
 
         <ComparisonTable />
 
-        <div className="text-center mt-10 mb-2">
+        <div className="text-center mt-12 mb-2">
           <div
             className="inline-block py-2 px-4 text-base md:text-lg italic font-semibold"
             style={{ color: '#7DD3FC' }}
@@ -659,7 +659,7 @@ function ComparisonSection() {
           </div>
         </div>
 
-        <p className="text-[11px] text-slate-600 max-w-3xl mx-auto text-center mt-8 leading-relaxed">
+        <p className="text-[11px] text-slate-600 max-w-3xl mx-auto text-center mt-10 leading-relaxed">
           Comparison reflects publicly documented features as of Q2 2026. Tools evolve — if a competitor adds a
           feature we've marked missing, we'll update this table. We don't compete on what they have; we compete on
           what they don't.
@@ -711,7 +711,7 @@ function ComparisonTable() {
             idx < COMPARISON_ROWS.length - 1 ? 'border-b border-[#14181F]' : ''
           }`}
         >
-          <div className="px-4 md:px-6 py-4">
+          <div className="px-4 md:px-6 py-5">
             <div className="text-sm font-semibold text-slate-200 leading-tight">{row.feature}</div>
             {row.subline && (
               <div className="text-[11px] text-slate-500 italic mt-0.5">{row.subline}</div>
@@ -749,7 +749,7 @@ function CompCell({
 
   return (
     <div
-      className="px-2 md:px-4 py-4 flex items-center justify-center"
+      className="px-2 md:px-4 py-5 flex items-center justify-center"
       style={highlight ? { background: 'rgba(15,164,233,0.05)' } : undefined}
     >
       {display}
@@ -771,13 +771,13 @@ function TrustSection({
   onMapSearch: () => void;
 }) {
   return (
-    <section className="px-6 md:px-12 lg:px-20 pb-28 md:pb-40">
+    <section className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
+        <div className="text-center mb-16 md:mb-20">
+          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
             The Trust Layer
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-5">
             Trust comes from
             <br />
             <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
@@ -791,14 +791,14 @@ function TrustSection({
         </div>
 
         {/* 5a — Data sources */}
-        <div className="mb-16">
-          <div className="text-center mb-6">
+        <div className="mb-20">
+          <div className="text-center mb-8">
             <h3 className="text-xl md:text-2xl font-bold text-white">
               Built on the data investors actually trust.
             </h3>
           </div>
           <DataSourceStrip />
-          <p className="text-center text-sm text-slate-400 mt-6 italic">
+          <p className="text-center text-sm text-slate-400 mt-8 italic">
             Data sources visible on every analysis.{' '}
             <span className="text-slate-200 font-semibold not-italic">
               Switch sources, see the math change.
@@ -859,15 +859,15 @@ function DataSourceStrip() {
 
 function FounderNote() {
   return (
-    <div className="max-w-3xl mx-auto mb-16">
+    <div className="max-w-3xl mx-auto mb-20">
       <div
-        className="rounded-2xl p-7 md:p-9"
+        className="rounded-2xl p-8 md:p-10"
         style={{
           background: '#000',
           border: '1px solid #14181F',
         }}
       >
-        <div className="flex items-center gap-4 mb-5">
+        <div className="flex items-center gap-4 mb-6">
           <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-sky-500/40 shrink-0 ring-2 ring-sky-500/10">
             <Image
               src="/images/brad-geisen.jpg"
@@ -922,16 +922,16 @@ function VerifyBlock({
 
   return (
     <div className="max-w-3xl mx-auto text-center">
-      <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+      <h3 className="text-2xl md:text-3xl font-bold text-white mb-5">
         Don't take our word for it. Take ours and check it.
       </h3>
-      <p className="text-base text-slate-400 leading-relaxed max-w-2xl mx-auto mb-7">
+      <p className="text-base text-slate-400 leading-relaxed max-w-2xl mx-auto mb-8">
         Run any property — yours, your neighbor's, the one you've been watching. Click any number on the verdict to
         see where it came from. Switch data sources and watch the four paths recompute live.{' '}
         <span className="text-slate-200 font-semibold">The methodology is the proof.</span>
       </p>
 
-      <form onSubmit={submit} className="max-w-md mx-auto mb-5">
+      <form onSubmit={submit} className="max-w-md mx-auto mb-6">
         <div className="relative">
           <Search className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
@@ -956,7 +956,7 @@ function VerifyBlock({
         </button>
       </form>
 
-      <div className="flex items-center gap-3 mb-4 max-w-md mx-auto">
+      <div className="flex items-center gap-3 mb-5 max-w-md mx-auto">
         <div className="flex-1 h-px bg-[#14181F]" />
         <span className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">or</span>
         <div className="flex-1 h-px bg-[#14181F]" />
@@ -997,9 +997,9 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
   };
 
   return (
-    <section className="px-6 md:px-12 lg:px-20 pb-28 md:pb-40">
+    <section className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
       <div className="max-w-4xl mx-auto text-center">
-        <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
+        <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
           Now Try It
         </div>
         <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-6">
@@ -1009,12 +1009,12 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
             you've been watching.
           </span>
         </h2>
-        <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-10">
+        <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-12">
           One free verdict. <span className="text-white font-semibold">No signup. No credit card.</span> Just paste an
           address.
         </p>
 
-        <div className="space-y-4 text-base text-slate-300 leading-relaxed max-w-2xl mx-auto mb-10 text-left">
+        <div className="space-y-5 text-base text-slate-300 leading-relaxed max-w-2xl mx-auto mb-12 text-left">
           <p className="text-center">No tutorials. No 14-day trial. No credit card up front.</p>
           <p>
             Paste a Zillow URL or street address. In 15 seconds you'll see the verdict, the four paths to close the
@@ -1027,7 +1027,7 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
         </div>
 
         {/* Primary CTA — routes to /search where the user picks address / scan / map */}
-        <div className="mb-10">
+        <div className="mb-14">
           <PrimaryButtonLarge sublabel="on any property" onClick={() => onVerdict()}>
             Run a Free Verdict <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
           </PrimaryButtonLarge>
@@ -1035,16 +1035,16 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
 
         {/* Lead magnet */}
         <div
-          className="rounded-2xl p-7 md:p-8 max-w-2xl mx-auto"
+          className="rounded-2xl p-8 md:p-10 max-w-2xl mx-auto"
           style={{
             background: '#000',
             border: '1px solid #14181F',
           }}
         >
-          <h3 className="text-base md:text-lg font-bold text-white mb-2">
+          <h3 className="text-base md:text-lg font-bold text-white mb-3">
             Not ready to run one yet?
           </h3>
-          <p className="text-sm text-slate-400 leading-relaxed mb-5">
+          <p className="text-sm text-slate-400 leading-relaxed mb-6">
             Get the <span className="text-white font-semibold">Creative Finance Field Guide</span> — a one-page PDF
             covering Subject-To, seller carrybacks, 0% 2nds, rate buydowns, and the assumable-mortgage play. Free, no
             signup beyond your email.
@@ -1083,8 +1083,8 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
         </div>
 
         {/* Manifesto */}
-        <div className="mt-16 pt-10 border-t border-[#14181F]">
-          <p className="text-base md:text-lg italic text-slate-300 max-w-2xl mx-auto">
+        <div className="mt-20 pt-12 border-t border-[#14181F]">
+          <p className="text-base md:text-lg italic text-slate-300 max-w-2xl mx-auto leading-relaxed">
             Built for the investor who knows the price tag isn't the deal.{' '}
             <span className="text-white not-italic font-semibold">The structure is.</span>
           </p>
