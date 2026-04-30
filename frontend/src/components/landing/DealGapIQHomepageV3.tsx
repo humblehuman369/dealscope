@@ -143,9 +143,9 @@ function HeroSection({
   onSeePaths: () => void;
 }) {
   return (
-    <section className="px-6 md:px-12 lg:px-20 pt-16 md:pt-24 pb-20 md:pb-28">
+    <section className="px-6 md:px-12 lg:px-20 pt-20 md:pt-28 pb-24 md:pb-36">
       <div className="max-w-7xl mx-auto text-center">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08] mb-6 max-w-5xl mx-auto">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.18] mb-8 max-w-5xl mx-auto">
           Stop Scrolling Listings.
           <br />
           Start Hunting Real Deals.
@@ -242,13 +242,13 @@ function HeroOptionButton({
 
 function DemoSection({ onTry }: { onTry: () => void }) {
   return (
-    <section id="demo" className="px-6 md:px-12 lg:px-20 pb-24 md:pb-32">
+    <section id="demo" className="px-6 md:px-12 lg:px-20 pb-28 md:pb-40">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
             What You Get
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1] mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-6">
             The Verdict tells you the gap.
             <br />
             <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
@@ -463,7 +463,7 @@ function MockCard({
 
 function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
   return (
-    <section className="px-6 md:px-12 lg:px-20 pb-24 md:pb-32">
+    <section className="px-6 md:px-12 lg:px-20 pb-28 md:pb-40">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
@@ -625,13 +625,13 @@ const COMPARISON_ROWS: Array<{
 
 function ComparisonSection() {
   return (
-    <section className="px-6 md:px-12 lg:px-20 pb-24 md:pb-32">
+    <section className="px-6 md:px-12 lg:px-20 pb-28 md:pb-40">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
             How It Compares
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1] mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-4">
             Where most tools stop,
             <br />
             <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
@@ -771,13 +771,13 @@ function TrustSection({
   onMapSearch: () => void;
 }) {
   return (
-    <section className="px-6 md:px-12 lg:px-20 pb-24 md:pb-32">
+    <section className="px-6 md:px-12 lg:px-20 pb-28 md:pb-40">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
             The Trust Layer
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1] mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-4">
             Trust comes from
             <br />
             <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
@@ -997,12 +997,12 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
   };
 
   return (
-    <section className="px-6 md:px-12 lg:px-20 pb-24 md:pb-32">
+    <section className="px-6 md:px-12 lg:px-20 pb-28 md:pb-40">
       <div className="max-w-4xl mx-auto text-center">
         <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-4">
           Now Try It
         </div>
-        <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1] mb-6">
+        <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] mb-6">
           Try it on the property
           <br />
           <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
