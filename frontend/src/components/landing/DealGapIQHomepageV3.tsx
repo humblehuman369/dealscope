@@ -166,11 +166,9 @@ function HeroSection({
               className="mb-8 xl:mb-10 mx-auto xl:mx-0 max-w-3xl xl:max-w-none text-[clamp(2.6rem,6vw,4.5rem)] xl:text-[clamp(2.4rem,4vw,3.75rem)]"
               style={HEADLINE_STYLE}
             >
-              <span className="text-white">Stop Scrolling Listings.</span>
-              <br />
-              <span className="text-white">Start Hunting Real Deals.</span>
-              <br />
-              <span className="text-sky-400">Close Four Different Ways.</span>
+              <span className="block text-balance text-white">Stop Scrolling Listings.</span>
+              <span className="block text-balance text-white">Start Hunting Real Deals.</span>
+              <span className="block text-balance text-sky-400">Close Four Different Ways.</span>
             </h1>
 
             <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto xl:mx-0 mb-9">
