@@ -252,8 +252,8 @@ export type DealGapTierLabel =
   | 'Wide Negative Gap'
   | 'Extreme Negative Gap';
 
-// Imported from ThreePathsPanel to avoid duplicating the shape.
-import type { DealStructuresPayload as _DSP } from '@/components/iq-verdict/ThreePathsPanel'
+// Imported from FourPathsPanel to avoid duplicating the shape.
+import type { DealStructuresPayload as _DSP } from '@/components/iq-verdict/FourPathsPanel'
 export type DealStructuresPayloadShape = _DSP
 
 export type MotivatingDealLabel =

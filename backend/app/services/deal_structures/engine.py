@@ -4,7 +4,7 @@ from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.schemas.deal_structures import DealStructuresPayload
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.narrative import build_narrative
-from app.services.deal_structures.selector import select_three_paths
+from app.services.deal_structures.selector import select_four_paths
 from app.services.deal_structures.templates import (
     ALL_TEMPLATES,
     blended_plan,
@@ -27,7 +27,7 @@ def compute_deal_structures(ctx: StructureContext) -> DealStructuresPayload:
     merged_flags = {**STRUCTURE_TEMPLATE_FLAGS, **ctx.template_flags}
     enabled_templates = [t for t in ALL_TEMPLATES if merged_flags.get(getattr(t, "ID", ""), True)]
 
-    paths = select_three_paths(ctx, templates=enabled_templates)
+    paths = select_four_paths(ctx, templates=enabled_templates)
 
     # Path 4 — Blended Plan: always attempt when Deal Gap is positive (kill-switch via flag).
     # T17 — also suppress when the user has explicitly dismissed the 'blended' family.

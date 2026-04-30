@@ -8,7 +8,7 @@ interface DealStructuresNarrativeProps {
 
 /**
  * 5th-grade-level walkthrough of the Three Paths.
- * Sits above the ThreePathsPanel as the primary text — the cards are the scannable reference.
+ * Sits above the FourPathsPanel as the primary text — the cards are the scannable reference.
  */
 export function DealStructuresNarrative({ paragraphs }: DealStructuresNarrativeProps): ReactNode {
   if (!paragraphs || paragraphs.length === 0) return null

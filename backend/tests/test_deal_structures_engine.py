@@ -4,7 +4,7 @@ from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.schemas.deal_structures import DealStructure
 from app.services.deal_structures import compute_deal_structures
 from app.services.deal_structures.context import StructureContext
-from app.services.deal_structures.selector import _apply_regional_calibration, select_three_paths
+from app.services.deal_structures.selector import _apply_regional_calibration, select_four_paths
 from app.services.deal_structures.templates import ALL_TEMPLATES
 
 
@@ -55,7 +55,7 @@ def test_flags_disable_template():
 
 def test_selector_respects_family_diversity():
     ctx = _base_ctx()
-    paths = select_three_paths(ctx)
+    paths = select_four_paths(ctx)
     families = [p.family for p in paths]
     assert len(families) == len(set(families))
 
@@ -63,7 +63,7 @@ def test_selector_respects_family_diversity():
 def test_selector_weights_perturbation_invariant():
     """Ranking remains finite after artificial score inflation (regression guard)."""
     ctx = _base_ctx(days_on_market=200, is_fsbo=True)
-    paths = select_three_paths(ctx)
+    paths = select_four_paths(ctx)
     for p in paths:
         assert 0 <= p.ranking_score <= 100
 

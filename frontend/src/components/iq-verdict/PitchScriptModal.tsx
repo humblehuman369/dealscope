@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { DealStructure } from '@/components/iq-verdict/ThreePathsPanel'
+import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { trackEvent } from '@/lib/eventTracking'
 import { IS_CAPACITOR } from '@/lib/env'
 

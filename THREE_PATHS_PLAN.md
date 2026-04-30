@@ -38,7 +38,7 @@ This plan was originally written as a forward-looking ticket sequence. Most of i
 
 **Test coverage:** 105 backend tests across `test_deal_structures_engine.py`, `test_deal_structures_selector.py`, and per-template files. Frontend typechecks clean.
 
-**Known cosmetic debt:** the panel component is still named `ThreePathsPanel.tsx` and the selector function is still `select_three_paths`. The render text says "FOUR PATHS TO MAKE THIS WORK" and four cards display correctly. File rename + function rename is XS effort; do it any time.
+**Naming alignment:** the panel component is `FourPathsPanel.tsx` and the selector function is `select_four_paths`. Deprecated re-export shims (`ThreePathsPanel`, `select_three_paths`) live at the old paths for one release to avoid breaking external imports — remove both shims in the next release cycle.
 
 ---
 
@@ -69,14 +69,14 @@ DealGapIQ is a real-estate investment SaaS that scores any property's Deal Gap (
 - `formatting.py` — `fmt_money`, `fmt_money_precise`, `fmt_pct_delta`, `fmt_money_delta`, `fmt_monthly`. Use these for all card/narrative copy — do not roll your own.
 - `templates/__init__.py` — exposes `ALL_TEMPLATES` (8 single-lever templates). The blended template and morby_method are NOT in this list — the engine and selector inject them separately.
 - `templates/*.py` — one file per template. See Status snapshot above for the full list.
-- `selector.py` — `select_three_paths(ctx, templates=None)`: runs templates, applies `_apply_listing_signals` (T6) + `_apply_regional_calibration` (T15) + `_apply_dismissed_penalty` (T17), enforces family diversity, picks up to 3, then runs `_substitute_morby_method` (T10) and `_prioritize_assumable` (T9 — assumable wins Path 1).
+- `selector.py` — `select_four_paths(ctx, templates=None)`: runs templates, applies `_apply_listing_signals` (T6) + `_apply_regional_calibration` (T15) + `_apply_dismissed_penalty` (T17), enforces family diversity, picks up to 3, then runs `_substitute_morby_method` (T10) and `_prioritize_assumable` (T9 — assumable wins Path 1). Deprecated alias `select_three_paths` is kept for one release.
 - `narrative.py` — 5th-grade walkthrough; position-aware lead-ins.
 - `engine.py` — `compute_deal_structures(ctx)` is the public entrypoint. Filters `ALL_TEMPLATES` by feature flag, calls the selector, then appends the Blended Plan as Path 4 (suppressed when `'blended' in ctx.dismissed_families`).
 - `backend/app/schemas/deal_structures.py` — `StructureLever`, `DealStructure`, `DealStructuresPayload`. Includes `selection_reason`, `pre_loaded_record`, `family: blended` literal. Camel-case alias generator configured.
 - `backend/app/core/defaults.py :: STRUCTURE_TEMPLATE_FLAGS` — per-template kill switches.
 
 ### Frontend
-- `frontend/src/components/iq-verdict/ThreePathsPanel.tsx` (filename historical) — responsive 4-card grid; per-card disclaimer for financing/strategy_switch/blended families; per-card "Not interested" affordance (T17); panel-level "Reset preferences" link.
+- `frontend/src/components/iq-verdict/FourPathsPanel.tsx` — responsive 4-card grid; per-card disclaimer for financing/strategy_switch/blended families; per-card "Not interested" affordance (T17); panel-level "Reset preferences" link. (`ThreePathsPanel.tsx` at the same directory is a one-release deprecation shim re-exporting from `FourPathsPanel`.)
 - `frontend/src/components/iq-verdict/DealStructuresNarrative.tsx` — narrative panel.
 - `frontend/src/components/iq-verdict/PitchScriptModal.tsx` — modal with copy + print + email.
 - `frontend/src/components/iq-verdict/VerdictGapGuidance.tsx` — orchestrates narrative + cards.

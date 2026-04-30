@@ -151,7 +151,7 @@ class IQVerdictInput(BaseModel):
         None,
         ge=1,
         le=8,
-        description="Number of units (2–4 for small multifamily house-hack)",
+        description="Number of units (2–4 for small multifamily house-hack)",  # noqa: RUF001 — en dash for number range
     )
     is_owner_occupied: bool | None = Field(
         None,

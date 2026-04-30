@@ -79,7 +79,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
 
     lt = str(ctx.existing_loan_type).upper()
     sel_reason = f"Shown because the seller's loan is {lt} and may be assumable at ~{note_rate * 100:.1f}%"
-    headline = f"Assumable {lt} loan — worth ~{fmt_money(pv)} in today’s dollars vs a new loan"
+    headline = f"Assumable {lt} loan — worth ~{fmt_money(pv)} in today’s dollars vs a new loan"  # noqa: RUF001 — typographic apostrophe in user-facing copy
     summary = (
         f"Assuming the existing {note_rate * 100:.1f}% note saves about {fmt_money(monthly_savings)}/mo in payment "
         f"versus {ctx.interest_rate * 100:.1f}% new financing on the same balance."
@@ -146,7 +146,8 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     )
 
     caveat = (
-        "Loan assumption takes 60–90 days for the lender’s approval. Slower than a new mortgage. "
+        # En dash for number range + typographic apostrophe — both are deliberate user-facing copy.
+        "Loan assumption takes 60–90 days for the lender’s approval. Slower than a new mortgage. "  # noqa: RUF001
         "Worth the wait when the rate gap is this big."
     )
 

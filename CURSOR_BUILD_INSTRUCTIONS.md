@@ -43,11 +43,11 @@ Confirm you've read the status snapshot and tell me which ticket you'll pick up 
 
 There is **no unblocked engineering work** on the Four Paths roadmap as of this writing. Every ticket the original plan called for is shipped, except the items listed below as quarantined or blocked.
 
-If you want to keep momentum, the highest-value adjacent work is:
+If you want to keep momentum, look at adjacent surfaces (homepage rebuild per `HOMEPAGE_MARKETING_PLAN.md`, Strategy worksheet polish, etc.) — Four Paths itself is at a clean stopping point.
 
-1. **Cosmetic file/function rename** (XS effort) — `ThreePathsPanel.tsx` → `FourPathsPanel.tsx` and `select_three_paths` → `select_four_paths`, with one-release backward-compat aliases. The render text already says "FOUR PATHS"; this just aligns the symbols. Cleans up new-contributor confusion.
-2. **Pre-existing ruff debt cleanup** — 9 ambiguous-unicode warnings (`RUF001` / `RUF002`) in `formatting.py`, `assumable.py`, `rate_buydown.py`, `analytics.py`. These are deliberate typography in user-facing copy (en-dashes for ranges, smart quotes); the right fix is per-line `# noqa: RUF001` suppressions, not character replacement. ~15 minutes.
-3. **`test_deal_structures_engine.py` import sort** — minor `I001` issue, ruff has it auto-fixable. <1 minute.
+In the next release cycle, **remove the deprecated shims**:
+- `frontend/src/components/iq-verdict/ThreePathsPanel.tsx` (re-exports `FourPathsPanel`)
+- `select_three_paths` alias in `backend/app/services/deal_structures/selector.py`
 
 ### Engineering — blocked on you
 

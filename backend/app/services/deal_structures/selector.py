@@ -123,11 +123,12 @@ def _prioritize_assumable(selected: list[DealStructure]) -> list[DealStructure]:
     return [first, *rest]
 
 
-def select_three_paths(
+def select_four_paths(
     ctx: StructureContext,
     templates: list | None = None,
 ) -> list[DealStructure]:
-    """Run each enabled template, adjust scores, then pick up to 3 with these rules:
+    """Run each enabled template, adjust scores, then pick up to 3 single-lever cards
+    with these rules (the engine appends the Blended Plan as Path 4 separately):
 
     1. No two structures from the same family.
     2. Order by ranking_score desc.
@@ -165,3 +166,9 @@ def select_three_paths(
         selected[-1] = non_price_avail[0]
 
     return _prioritize_assumable(selected)
+
+
+# Deprecated alias — kept for one release so external callers don't break mid-migration.
+# Remove in the next release cycle. (The function only ever returned the 3 single-lever
+# cards; the engine appends the Blended Plan as Path 4 — hence the rename.)
+select_three_paths = select_four_paths

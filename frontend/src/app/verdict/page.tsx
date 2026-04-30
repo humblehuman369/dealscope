@@ -57,7 +57,7 @@ import { buildVerdictAnalysisPayload, type VerdictPayloadBase } from '@/utils/ve
 import { MarketAnchorNote } from '@/components/iq-verdict/MarketAnchorNote'
 import { VerdictGapGuidance, VerdictPositiveGuidance } from '@/components/iq-verdict/VerdictGapGuidance'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
-import type { DealStructure } from '@/components/iq-verdict/ThreePathsPanel'
+import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
 import { buildStrategyUrlWithScenario } from '@/lib/dealStructures/loadScenario'
 import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'

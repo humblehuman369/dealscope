@@ -1,4 +1,4 @@
-"""2-1 seller-paid rate buydown — lower effective rate years 1–2."""
+"""2-1 seller-paid rate buydown — lower effective rate years 1–2."""  # noqa: RUF002 — en dash is deliberate range typography
 
 from app.schemas.deal_structures import DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
