@@ -145,7 +145,16 @@ function HeroSection({
   return (
     <section className="px-6 md:px-12 lg:px-20 pt-24 md:pt-32 pb-32 md:pb-44">
       <div className="max-w-7xl mx-auto text-center">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15] mb-10 max-w-5xl mx-auto">
+        <h1
+          className="mb-10 max-w-5xl mx-auto"
+          style={{
+            fontFamily: 'var(--font-dm-sans), "DM Sans", sans-serif',
+            fontSize: 'clamp(2.8rem, 6vw, 4.5rem)',
+            fontWeight: 800,
+            lineHeight: 1.08,
+            letterSpacing: '-0.025em',
+          }}
+        >
           Stop Scrolling Listings.
           <br />
           Start Hunting Real Deals.
