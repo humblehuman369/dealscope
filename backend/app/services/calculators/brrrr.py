@@ -30,6 +30,7 @@ def calculate_brrrr(
     vacancy_rate: float,
     operating_expense_pct: float,
     insurance_annual: float,
+    hoa_monthly: float = 0,
 ) -> dict[str, Any]:
     """Calculate BRRRR metrics.
 
@@ -67,7 +68,10 @@ def calculate_brrrr(
     # Phase 3: Rent
     annual_gross_rent = monthly_rent_post_rehab * 12
     effective_gross_income = annual_gross_rent * (1 - vacancy_rate)
-    operating_expenses = annual_gross_rent * operating_expense_pct + property_taxes_annual + insurance_annual
+    hoa_annual = hoa_monthly * 12
+    operating_expenses = (
+        annual_gross_rent * operating_expense_pct + property_taxes_annual + insurance_annual + hoa_annual
+    )
     noi = effective_gross_income - operating_expenses
     estimated_cap_rate = noi / arv if arv > 0 else 0
 
@@ -104,6 +108,7 @@ def calculate_brrrr(
         "arv": arv,
         "post_rehab_monthly_rent": monthly_rent_post_rehab,
         "annual_gross_rent": annual_gross_rent,
+        "hoa_annual": hoa_annual,
         "estimated_cap_rate": estimated_cap_rate,
         "refinance_loan_amount": refinance_loan_amount,
         "refinance_costs": refinance_closing_costs,

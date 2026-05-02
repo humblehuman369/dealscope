@@ -428,6 +428,7 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
       <SectionHeader title="What It Costs" anchorId="strategy-worksheet-costs" />
       <SliderRow label="Property Tax" value={state.annualPropertyTax} displayValue={`${fmt(state.annualPropertyTax)}/yr`} min={0} max={20000} onChange={(v) => up('annualPropertyTax', v)} />
       <SliderRow label="Insurance" value={state.annualInsurance} displayValue={`${fmt(state.annualInsurance)}/yr`} min={0} max={10000} onChange={(v) => up('annualInsurance', v)} />
+      <SliderRow label="HOA / Condo Fee" value={state.monthlyHoa} displayValue={`${fmt(state.monthlyHoa)}/mo`} min={0} max={1500} onChange={(v) => up('monthlyHoa', v)} />
       <SliderRow label="Management" value={(state.managementRate ?? 0) * 100} secondaryValue={`${((state.managementRate ?? 0) * 100).toFixed(0)}%`} displayValue={`${fmt(grossMonthly * (state.managementRate ?? 0) * 12)}/yr`} min={0} max={15} onChange={(v) => up('managementRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow label="Maintenance" value={state.maintenanceRate * 100} secondaryValue={`${(state.maintenanceRate * 100).toFixed(0)}%`} displayValue={`${fmt(grossMonthly * state.maintenanceRate * 12)}/yr`} min={0} max={15} onChange={(v) => up('maintenanceRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow label="Vacancy" value={state.vacancyRate * 100} secondaryValue={`${(state.vacancyRate * 100).toFixed(0)}%`} displayValue={`${fmt(grossMonthly * state.vacancyRate * 12)}/yr`} min={0} max={20} onChange={(v) => up('vacancyRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
@@ -513,6 +514,7 @@ function STRWorksheet({ state, metrics, listPrice, up }: {
       <SliderRow label="Utilities" value={state.additionalUtilitiesMonthly} displayValue={`${fmt(state.additionalUtilitiesMonthly)}/mo`} min={0} max={500} onChange={(v) => up('additionalUtilitiesMonthly', v)} />
       <SliderRow label="Property Tax" value={state.annualPropertyTax} displayValue={`${fmt(state.annualPropertyTax)}/yr`} min={0} max={20000} onChange={(v) => up('annualPropertyTax', v)} />
       <SliderRow label="Insurance" value={state.annualInsurance} displayValue={`${fmt(state.annualInsurance)}/yr`} min={0} max={10000} onChange={(v) => up('annualInsurance', v)} />
+      <SliderRow label="HOA / Condo Fee" value={state.monthlyHoa} displayValue={`${fmt(state.monthlyHoa)}/mo`} min={0} max={1500} onChange={(v) => up('monthlyHoa', v)} />
       <TotalRow label="Total Monthly" value={`${fmt(totalMonthlyExp)}/mo`} />
 
       <Divider />
@@ -653,6 +655,7 @@ function FlipWorksheet({ state, metrics, up }: {
       <SliderRow label="Rehab Time" value={state.rehabTimeMonths} displayValue={`${state.rehabTimeMonths} months`} min={1} max={12} onChange={(v) => up('rehabTimeMonths', Math.round(v))} parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)} />
       <SliderRow label="ARV" value={state.arv} displayValue={fmt(state.arv)} min={state.purchasePrice} max={state.purchasePrice * 2} onChange={(v) => up('arv', v)} />
       <SliderRow label="Holding Costs" value={state.holdingCostsMonthly} displayValue={`${fmt(state.holdingCostsMonthly)}/mo`} min={0} max={5000} onChange={(v) => up('holdingCostsMonthly', v)} />
+      <SliderRow label="HOA / Condo Fee" value={state.monthlyHoa} displayValue={`${fmt(state.monthlyHoa)}/mo`} min={0} max={1500} onChange={(v) => up('monthlyHoa', v)} />
       <SliderRow label="Days on Market" value={state.daysOnMarket} displayValue={`${state.daysOnMarket} days`} min={15} max={180} onChange={(v) => up('daysOnMarket', Math.round(v))} />
       <Row label="Total Rehab" value={fmt(totalRehab)} />
       <Row label={`Holding Period`} value={`${holdingMonths.toFixed(1)} months`} />
@@ -815,6 +818,7 @@ function WholesaleWorksheet({ state, metrics, up }: {
       <Row label="Buyer's Price" value={fmt(endBuyerPrice)} />
       <Row label="+ Repairs" value={fmt(state.estimatedRepairs)} />
       <Row label="All-In Cost" value={fmt(endBuyerAllIn)} />
+      <SliderRow label="HOA / Condo Fee" value={state.monthlyHoa} displayValue={`${fmt(state.monthlyHoa)}/mo`} min={0} max={1500} onChange={(v) => up('monthlyHoa', v)} />
       <Row label="Buyer Profit" value={fmt(endBuyerProfit)} color={endBuyerProfit >= 0 ? '#10B981' : '#F43F5E'} />
       <TotalRow label="Buyer ROI" value={`${endBuyerROI.toFixed(1)}%`} />
     </>

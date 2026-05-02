@@ -761,6 +761,9 @@ export interface FlipDealMakerState {
   // Phase 5: Sell
   sellingCostsPct: number        // Agent + closing (6-8%)
   capitalGainsRate: number       // Tax rate (15-25%)
+
+  // HOA / condo / co-op carrying cost during hold (monthly)
+  monthlyHoa: number
 }
 
 // =============================================================================
@@ -895,6 +898,8 @@ export const DEFAULT_FLIP_DEAL_MAKER_STATE: FlipDealMakerState = {
   // Phase 5: Sell
   sellingCostsPct: 0.08,         // Matches FLIP.selling_costs_pct
   capitalGainsRate: 0.22,        // 22% short-term cap gains (ordinary income)
+
+  monthlyHoa: 0,
 }
 
 // =============================================================================
@@ -1134,6 +1139,9 @@ export interface WholesaleDealMakerState {
   assignmentFee: number             // Your wholesale fee
   marketingCosts: number            // Marketing/acquisition costs
   closingCosts: number              // Your closing costs (minimal)
+
+  // HOA / condo / co-op (informational — affects end buyer's NOI, not the wholesaler's)
+  monthlyHoa: number
 }
 
 // =============================================================================
@@ -1230,6 +1238,8 @@ export const DEFAULT_WHOLESALE_DEAL_MAKER_STATE: WholesaleDealMakerState = {
   assignmentFee: 15000,
   marketingCosts: 500,
   closingCosts: 500,
+
+  monthlyHoa: 0,
 }
 
 // =============================================================================
@@ -1326,6 +1336,8 @@ export interface DealMakerPropertyData {
   image?: string
   propertyTax?: number
   insurance?: number
+  /** Monthly HOA / condo association / co-op fee from `market.hoa_fees_monthly` */
+  monthlyHoa?: number
 }
 
 export type AccordionSection = 'buyPrice' | 'financing' | 'rehab' | 'income' | 'expenses' | null

@@ -834,6 +834,7 @@ class PropertyService:
             monthly_rent=monthly_rent,
             property_taxes=market.property_taxes_annual or (list_price * 0.012),
             insurance=market.insurance_annual,
+            hoa_fees_monthly=market.hoa_fees_monthly,
             bedrooms=details.bedrooms or 3,
             bathrooms=float(details.bathrooms or 2),
             sqft=details.square_footage,
@@ -1653,6 +1654,7 @@ class PropertyService:
                 refinance_interest_rate=assumptions.brrrr.refinance_interest_rate,
                 refinance_term_years=assumptions.brrrr.refinance_term_years,
                 refinance_closing_costs=assumptions.brrrr.refinance_closing_costs,
+                hoa_monthly=hoa,
             )
             results.brrrr = BRRRRResults(**brrrr_result)
 
@@ -1674,6 +1676,7 @@ class PropertyService:
                 holding_period_months=assumptions.flip.holding_period_months,
                 property_taxes_annual=property_taxes,
                 selling_costs_pct=assumptions.flip.selling_costs_pct,
+                hoa_monthly=hoa,
             )
             results.flip = FlipResults(**flip_result)
 
@@ -1701,6 +1704,7 @@ class PropertyService:
                 closing_costs_pct=assumptions.financing.closing_costs_pct,
                 fha_mip_rate=assumptions.house_hack.fha_mip_rate,
                 insurance_annual=assumptions.operating.insurance_annual,
+                hoa_monthly=hoa,
             )
             results.house_hack = HouseHackResults(**house_hack_result)
 

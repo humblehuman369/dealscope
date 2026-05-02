@@ -26,6 +26,7 @@ def calculate_flip(
     capital_gains_rate: float,
     inspection_costs: float = 1000,
     security_maintenance_monthly: float = 83,
+    hoa_monthly: float = 0,
 ) -> dict[str, Any]:
     """Calculate Fix & Flip metrics.
 
@@ -58,8 +59,15 @@ def calculate_flip(
     insurance_holding = insurance_annual * (holding_period_months / 12)
     utilities_total = utilities_monthly * holding_period_months
     security_maintenance = security_maintenance_monthly * holding_period_months
+    # HOA / condo / co-op fees accrue every month the property is held.
+    hoa_holding = hoa_monthly * holding_period_months
     total_holding_costs = (
-        hard_money_interest + property_taxes_holding + insurance_holding + utilities_total + security_maintenance
+        hard_money_interest
+        + property_taxes_holding
+        + insurance_holding
+        + utilities_total
+        + security_maintenance
+        + hoa_holding
     )
 
     # Total Project Cost
@@ -105,6 +113,7 @@ def calculate_flip(
         "insurance": insurance_holding,
         "utilities": utilities_total,
         "security_maintenance": security_maintenance,
+        "hoa_holding": hoa_holding,
         "total_holding_costs": total_holding_costs,
         "arv": arv,
         "total_selling_costs": total_selling_costs,

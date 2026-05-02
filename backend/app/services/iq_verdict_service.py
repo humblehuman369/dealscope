@@ -84,6 +84,7 @@ def _calculate_ltr_strategy(
     insurance: float,
     rehab_cost: float,
     a: AllAssumptions,
+    hoa_annual: float = 0,
 ) -> dict:
     f = a.financing
     o = a.operating
@@ -101,7 +102,7 @@ def _calculate_ltr_strategy(
     mgmt = annual_rent * o.property_management_pct
     maint = annual_rent * o.maintenance_pct
     capex = annual_rent * o.capex_pct
-    op_ex = property_taxes + insurance + mgmt + maint + capex + utilities_annual + other_annual
+    op_ex = property_taxes + insurance + mgmt + maint + capex + utilities_annual + other_annual + hoa_annual
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
     monthly_cash_flow = annual_cash_flow / 12
@@ -147,6 +148,7 @@ def _calculate_ltr_strategy(
             "maintenance_pct": round(o.maintenance_pct * 100, 1),
             "reserves": round(capex),
             "reserves_pct": round(o.capex_pct * 100, 1),
+            "hoa_fees": round(hoa_annual),
             "total_operating_expenses": round(op_ex),
             "noi": round(noi),
             "annual_debt_service": round(annual_debt),
@@ -163,6 +165,7 @@ def _calculate_str_strategy(
     rehab_cost: float,
     a: AllAssumptions,
     monthly_revenue_override: float | None = None,
+    hoa_annual: float = 0,
 ) -> dict:
     f = a.financing
     o = a.operating
@@ -187,7 +190,17 @@ def _calculate_str_strategy(
     supplies = s.supplies_monthly * 12
     maintenance = annual_revenue * o.maintenance_pct
     capex = annual_revenue * o.capex_pct
-    op_ex = property_taxes + insurance + mgmt_fee + platform_fees + utilities + supplies + maintenance + capex
+    op_ex = (
+        property_taxes
+        + insurance
+        + mgmt_fee
+        + platform_fees
+        + utilities
+        + supplies
+        + maintenance
+        + capex
+        + hoa_annual
+    )
     noi = annual_revenue - op_ex
     annual_cash_flow = noi - annual_debt
     monthly_cash_flow = annual_cash_flow / 12
@@ -237,6 +250,7 @@ def _calculate_str_strategy(
             "reserves_pct": round(o.capex_pct * 100, 1),
             "supplies": round(supplies),
             "utilities": round(utilities),
+            "hoa_fees": round(hoa_annual),
             "total_operating_expenses": round(op_ex),
             "noi": round(noi),
             "annual_debt_service": round(annual_debt),
@@ -252,6 +266,7 @@ def _calculate_brrrr_strategy(
     arv: float,
     rehab_cost: float,
     a: AllAssumptions,
+    hoa_annual: float = 0,
 ) -> dict:
     f = a.financing
     o = a.operating
@@ -271,7 +286,7 @@ def _calculate_brrrr_strategy(
     mgmt = annual_rent * o.property_management_pct
     maint = annual_rent * o.maintenance_pct
     capex = annual_rent * o.capex_pct
-    op_ex = property_taxes + insurance + mgmt + maint + capex + utilities_annual + other_annual
+    op_ex = property_taxes + insurance + mgmt + maint + capex + utilities_annual + other_annual + hoa_annual
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
     min_cash_for_coc = max(cash_left, initial_cash * 0.10)
@@ -327,6 +342,7 @@ def _calculate_brrrr_strategy(
             "maintenance_pct": round(o.maintenance_pct * 100, 1),
             "reserves": round(capex),
             "reserves_pct": round(o.capex_pct * 100, 1),
+            "hoa_fees": round(hoa_annual),
             "total_operating_expenses": round(op_ex),
             "noi": round(noi),
             "annual_debt_service": round(annual_debt),
@@ -341,6 +357,7 @@ def _calculate_flip_strategy(
     property_taxes: float,
     insurance: float,
     a: AllAssumptions,
+    hoa_monthly: float = 0,
 ) -> dict:
     f = a.financing
     fl = a.flip
@@ -350,6 +367,7 @@ def _calculate_flip_strategy(
         (price * fl.hard_money_rate / 12 * holding_months)
         + (property_taxes / 12 * holding_months)
         + (insurance / 12 * holding_months)
+        + (hoa_monthly * holding_months)
     )
     selling_costs = arv * fl.selling_costs_pct
     total_investment = price + purchase_costs + rehab_cost + holding_costs
@@ -384,6 +402,7 @@ def _calculate_flip_strategy(
             "total_cash_needed": round(total_investment),
             "property_taxes": round(property_taxes),
             "insurance": round(insurance),
+            "hoa_holding": round(hoa_monthly * holding_months),
         },
     }
 
@@ -395,6 +414,7 @@ def _calculate_house_hack_strategy(
     property_taxes: float,
     insurance: float,
     a: AllAssumptions,
+    hoa_monthly: float = 0,
 ) -> dict:
     f = a.financing
     o = a.operating
@@ -413,7 +433,9 @@ def _calculate_house_hack_strategy(
     maintenance = rental_income * o.maintenance_pct
     capex = rental_income * o.capex_pct
     vacancy = rental_income * o.vacancy_rate
-    monthly_expenses = monthly_pi + monthly_taxes + monthly_insurance + pmi + maintenance + capex + vacancy
+    monthly_expenses = (
+        monthly_pi + monthly_taxes + monthly_insurance + pmi + maintenance + capex + vacancy + hoa_monthly
+    )
     housing_offset = (rental_income / monthly_expenses * 100) if monthly_expenses > 0 else 0
     annual_savings = rental_income * 12
     score = _performance_score(housing_offset, 1)
@@ -919,7 +941,12 @@ def compute_iq_verdict(
     buy_discount = input_data.buy_discount_pct if input_data.buy_discount_pct is not None else a.ltr.buy_discount_pct
 
     utilities_annual = a.operating.utilities_monthly * 12
-    other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual
+    # HOA / condo / co-op fees come from the property feed (AXESSO `hoaFee`).
+    # These are real, recurring carrying costs and MUST be included in opex —
+    # otherwise Income Value is overstated by HOA × 12 / cap-rate equivalent
+    # (a meaningful gap on every condo, townhome, and co-op).
+    hoa_annual = (input_data.hoa_fees_monthly or 0) * 12
+    other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual + hoa_annual
 
     # Apply per-request overrides to the assumptions object so strategy helpers inherit them
     a.financing.down_payment_pct = down_pct
@@ -969,8 +996,11 @@ def compute_iq_verdict(
     if income_value > 0 and buy_price > income_value:
         buy_price = income_value
 
+    hoa_monthly_input = input_data.hoa_fees_monthly or 0
     strategies = [
-        _calculate_ltr_strategy(buy_price, monthly_rent, property_taxes, insurance, rehab_cost, a),
+        _calculate_ltr_strategy(
+            buy_price, monthly_rent, property_taxes, insurance, rehab_cost, a, hoa_annual=hoa_annual
+        ),
         _calculate_str_strategy(
             buy_price,
             adr,
@@ -980,10 +1010,17 @@ def compute_iq_verdict(
             rehab_cost,
             a,
             monthly_revenue_override=mashvisor_monthly,
+            hoa_annual=hoa_annual,
         ),
-        _calculate_brrrr_strategy(buy_price, monthly_rent, property_taxes, insurance, arv, rehab_cost, a),
-        _calculate_flip_strategy(buy_price, arv, rehab_cost, property_taxes, insurance, a),
-        _calculate_house_hack_strategy(buy_price, monthly_rent, bedrooms, property_taxes, insurance, a),
+        _calculate_brrrr_strategy(
+            buy_price, monthly_rent, property_taxes, insurance, arv, rehab_cost, a, hoa_annual=hoa_annual
+        ),
+        _calculate_flip_strategy(
+            buy_price, arv, rehab_cost, property_taxes, insurance, a, hoa_monthly=hoa_monthly_input
+        ),
+        _calculate_house_hack_strategy(
+            buy_price, monthly_rent, bedrooms, property_taxes, insurance, a, hoa_monthly=hoa_monthly_input
+        ),
         _calculate_wholesale_strategy(buy_price, arv, rehab_cost),
     ]
 
@@ -1215,7 +1252,8 @@ def compute_deal_score(
 
     capex_pct = a.operating.capex_pct
     utilities_annual = a.operating.utilities_monthly * 12
-    other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual
+    hoa_annual = (input_data.hoa_fees_monthly or 0) * 12
+    other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual + hoa_annual
 
     income_value = estimate_income_value(
         monthly_rent=monthly_rent,

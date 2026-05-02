@@ -55,6 +55,7 @@ export default function DealMakerRoutePage() {
   const listPrice = parseNumericParam('listPrice')
   const propertyTax = parseNumericParam('propertyTax')
   const insurance = parseNumericParam('insurance')
+  const monthlyHoa = parseNumericParam('monthlyHoa')
   const rentEstimate = parseNumericParam('rentEstimate')
   const beds = parseNumericParam('beds')
   const baths = parseNumericParam('baths')
@@ -74,6 +75,7 @@ export default function DealMakerRoutePage() {
     rent: rentEstimate,
     propertyTax: propertyTax,
     insurance: insurance,
+    monthlyHoa: monthlyHoa,
     zpid: zpid,
   }
   

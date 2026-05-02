@@ -42,6 +42,15 @@ class IQVerdictInput(BaseModel):
     monthly_rent: float | None = Field(None, ge=0, le=1_000_000, description="Monthly rent (estimated if not provided)")
     property_taxes: float | None = Field(None, ge=0, le=1_000_000, description="Annual property taxes")
     insurance: float | None = Field(None, ge=0, le=1_000_000, description="Annual insurance")
+    hoa_fees_monthly: float | None = Field(
+        None,
+        ge=0,
+        le=10_000,
+        description=(
+            "Monthly HOA / condo / co-op association fee. Folded into operating "
+            "expenses for Income Value, Target Buy, and all strategy calculations."
+        ),
+    )
     bedrooms: int = Field(3, ge=0, le=100, description="Number of bedrooms")
     bathrooms: float = Field(2, ge=0, le=100, description="Number of bathrooms")
     sqft: int | None = Field(None, gt=0, le=1_000_000, description="Square footage")
@@ -329,6 +338,12 @@ class DealScoreInput(BaseModel):
     monthly_rent: float = Field(..., ge=0, le=1_000_000)
     property_taxes: float = Field(..., ge=0, le=1_000_000)
     insurance: float = Field(..., ge=0, le=1_000_000)
+    hoa_fees_monthly: float | None = Field(
+        None,
+        ge=0,
+        le=10_000,
+        description="Monthly HOA / condo / co-op fee, folded into operating expenses.",
+    )
     vacancy_rate: float | None = Field(None, ge=0, le=1)
     maintenance_pct: float | None = Field(None, ge=0, le=1)
     management_pct: float | None = Field(None, ge=0, le=1)

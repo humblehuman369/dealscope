@@ -10,6 +10,13 @@ export interface VerdictPayloadBase {
   monthlyRent: number
   propertyTaxes: number
   insurance: number | null
+  /**
+   * Monthly HOA / condo association / co-op fee from `market.hoa_fees_monthly`.
+   * Folded into operating expenses so Income Value reflects the real carrying
+   * cost on condos, townhomes, and co-ops (where omitting it overstates
+   * Income Value by HOA × 12 / mortgage-constant — often ~2x).
+   */
+  hoaFeesMonthly?: number | null
   bedrooms: number
   bathrooms: number
   sqft: number
@@ -50,12 +57,14 @@ export function buildVerdictAnalysisPayload(
   let monthlyRent = base.monthlyRent
   let propertyTaxes = base.propertyTaxes
   let insurance = base.insurance
+  let hoaFeesMonthly = base.hoaFeesMonthly ?? null
   let arv = base.arv ?? null
 
   if (overrides?.listPrice != null) listPrice = overrides.listPrice
   if (overrides?.monthlyRent != null) monthlyRent = overrides.monthlyRent
   if (overrides?.propertyTaxes != null) propertyTaxes = overrides.propertyTaxes
   if (overrides?.insurance !== undefined) insurance = overrides.insurance
+  if (overrides?.monthlyHoa != null) hoaFeesMonthly = overrides.monthlyHoa
   if (overrides?.arv != null) arv = overrides.arv
 
   if (sourceOverrides.price != null) listPrice = sourceOverrides.price
@@ -66,6 +75,7 @@ export function buildVerdictAnalysisPayload(
     monthly_rent: monthlyRent,
     property_taxes: propertyTaxes,
     insurance,
+    hoa_fees_monthly: hoaFeesMonthly ?? undefined,
     bedrooms: base.bedrooms,
     bathrooms: base.bathrooms,
     sqft: base.sqft,
@@ -155,6 +165,7 @@ export function buildVerdictBaseFromPropertyResponse(
     monthlyRent: resolvedRent,
     propertyTaxes: data?.market?.property_taxes_annual ?? 0,
     insurance: data?.market?.insurance_annual ?? null,
+    hoaFeesMonthly: data?.market?.hoa_fees_monthly ?? null,
     bedrooms: data?.details?.bedrooms || 3,
     bathrooms: data?.details?.bathrooms || 2,
     sqft: data?.details?.square_footage || 1500,

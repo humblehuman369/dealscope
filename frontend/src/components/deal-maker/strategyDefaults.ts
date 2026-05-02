@@ -51,7 +51,7 @@ export function buildLTRState(
     managementRate: 0.00,
     annualPropertyTax: property.propertyTax || 4200,
     annualInsurance: property.insurance ?? Math.round(price * OPERATING_INSURANCE_PCT),
-    monthlyHoa: 0,
+    monthlyHoa: property.monthlyHoa ?? 0,
   }
 }
 
@@ -67,6 +67,7 @@ export function buildSTRState(
     annualPropertyTax: property.propertyTax || 4200,
     annualInsurance:
       property.insurance ?? Math.round(basePrice * OPERATING_INSURANCE_PCT),
+    monthlyHoa: property.monthlyHoa ?? 0,
   }
 }
 
@@ -84,6 +85,7 @@ export function buildBRRRRState(
     annualPropertyTax: property.propertyTax || 4200,
     annualInsurance:
       property.insurance ?? Math.round(discountedPrice * OPERATING_INSURANCE_PCT),
+    monthlyHoa: property.monthlyHoa ?? 0,
   }
 }
 
@@ -93,14 +95,19 @@ export function buildFlipState(
 ): FlipDealMakerState {
   const basePrice = listPrice ?? property.price ?? 350000
   const discountedPrice = basePrice * 0.75
+  const monthlyHoa = property.monthlyHoa ?? 0
   return {
     ...DEFAULT_FLIP_DEAL_MAKER_STATE,
     purchasePrice: discountedPrice,
     arv: basePrice * 1.10,
+    // Holding costs already encode taxes + insurance + maintenance buffer.
+    // Add HOA so the slider total reflects the real monthly carry.
     holdingCostsMonthly:
       (property.propertyTax || 4200) / 12 +
       (property.insurance ?? discountedPrice * OPERATING_INSURANCE_PCT) / 12 +
-      200,
+      200 +
+      monthlyHoa,
+    monthlyHoa,
   }
 }
 
@@ -119,6 +126,7 @@ export function buildHouseHackState(
     annualPropertyTax: property.propertyTax || 6000,
     annualInsurance:
       property.insurance ?? Math.round(basePrice * OPERATING_INSURANCE_PCT),
+    monthlyHoa: property.monthlyHoa ?? 0,
   }
 }
 
@@ -138,6 +146,7 @@ export function buildWholesaleState(
     estimatedRepairs,
     contractPrice,
     squareFootage: property.sqft || 1500,
+    monthlyHoa: property.monthlyHoa ?? 0,
   }
 }
 

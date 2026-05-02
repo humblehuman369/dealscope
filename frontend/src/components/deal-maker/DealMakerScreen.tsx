@@ -223,6 +223,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           daysOnMarket: record.days_on_market ?? DEFAULT_FLIP_DEAL_MAKER_STATE.daysOnMarket,
           sellingCostsPct: record.selling_costs_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.sellingCostsPct,
           capitalGainsRate: record.capital_gains_rate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.capitalGainsRate,
+          monthlyHoa: record.monthly_hoa ?? 0,
           ...sf,
         } as FlipDealMakerState
       }
@@ -266,6 +267,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           assignmentFee: record.assignment_fee ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.assignmentFee,
           marketingCosts: record.marketing_costs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.marketingCosts,
           closingCosts: record.wholesale_closing_costs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.closingCosts,
+          monthlyHoa: record.monthly_hoa ?? 0,
           ...sf,
         } as WholesaleDealMakerState
       }
@@ -364,6 +366,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           endBuyerProfit: wsMetrics.endBuyerProfit,
           netProfit: wsMetrics.netProfit,
           roi: wsMetrics.roi,
+          monthlyHoa: state.monthlyHoa,
           timestamp: Date.now(),
         }
       } else if (strategyType === 'house_hack' && isHouseHackState(state)) {
@@ -423,6 +426,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           daysOnMarket: state.daysOnMarket,
           sellingCostsPct: state.sellingCostsPct,
           capitalGainsRate: state.capitalGainsRate,
+          monthlyHoa: state.monthlyHoa,
           timestamp: Date.now(),
         }
       } else if (strategyType === 'brrrr' && isBRRRRState(state)) {
