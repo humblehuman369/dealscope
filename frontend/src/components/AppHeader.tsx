@@ -552,6 +552,17 @@ export function AppHeader({
                 >
                   Pricing
                 </Link>
+                <Link
+                  href="/blog"
+                  className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                  style={{
+                    color: 'var(--text-heading)',
+                    borderBottom: pathname?.startsWith('/blog') ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
+                    paddingBottom: 2,
+                  }}
+                >
+                  Blog
+                </Link>
               </>
             )}
             {/* Property search button opens modal */}
@@ -631,6 +642,14 @@ export function AppHeader({
                           style={{ color: 'var(--text-heading)' }}
                         >
                           <DollarSign className="w-4 h-4" /> Pricing
+                        </Link>
+                        <Link
+                          href="/blog"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                          style={{ color: 'var(--text-heading)' }}
+                        >
+                          <Info className="w-4 h-4" /> Blog
                         </Link>
                         <button
                           onClick={() => { toggleTheme(); setShowProfileMenu(false) }}
@@ -760,6 +779,14 @@ export function AppHeader({
                           style={{ color: 'var(--text-heading)' }}
                         >
                           <DollarSign className="w-4 h-4" /> Pricing
+                        </Link>
+                        <Link
+                          href="/blog"
+                          onClick={() => setMobileNavOpen(false)}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                          style={{ color: 'var(--text-heading)' }}
+                        >
+                          <Info className="w-4 h-4" /> Blog
                         </Link>
                         <div style={{ borderTop: '1px solid var(--border-default)' }} className="my-1" />
                         <button
