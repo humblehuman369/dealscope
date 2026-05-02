@@ -25,6 +25,7 @@ def calculate_house_hack(
     maintenance_monthly: float = 200,
     conversion_cost: float | None = None,
     unit2_rent: float | None = None,
+    hoa_monthly: float = 0,
 ) -> dict[str, Any]:
     """Calculate House Hacking metrics.
 
@@ -51,7 +52,7 @@ def calculate_house_hack(
     monthly_mip = (loan_amount * fha_mip_rate) / 12
     monthly_taxes = property_taxes_annual / 12
     monthly_insurance = insurance_annual / 12
-    monthly_piti = monthly_pi + monthly_mip + monthly_taxes + monthly_insurance
+    monthly_piti = monthly_pi + monthly_mip + monthly_taxes + monthly_insurance + hoa_monthly
 
     # Scenario A: Rent Rooms
     total_monthly_income = monthly_rent_per_room * rooms_rented
@@ -87,6 +88,7 @@ def calculate_house_hack(
         "total_cash_required": total_cash_required,
         "monthly_pi": monthly_pi,
         "monthly_mip": monthly_mip,
+        "monthly_hoa": hoa_monthly,
         "monthly_piti": monthly_piti,
         "rooms_rented": rooms_rented,
         "room_rent": monthly_rent_per_room,

@@ -559,6 +559,7 @@ function VerdictContent() {
           monthlyRent: rentForCalc,
           propertyTaxes: taxesForCalc,
           insurance: insuranceForCalc,
+          hoaFeesMonthly: data.market?.hoa_fees_monthly ?? null,
           bedrooms: propertyData.beds,
           bathrooms: propertyData.baths,
           sqft: propertyData.sqft,

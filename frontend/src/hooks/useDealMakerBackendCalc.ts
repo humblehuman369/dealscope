@@ -94,6 +94,7 @@ function buildPayload(
       insurance_annual:
         s.annualInsurance ?? buyPrice * OPERATING_INSURANCE_PCT,
       maintenance_pct: s.maintenanceRate || 0.05,
+      hoa_monthly: s.monthlyHoa ?? 0,
     }
   }
 
@@ -116,6 +117,7 @@ function buildPayload(
       vacancy_rate: s.vacancyRate || 0.05,
       property_management_pct: s.managementRate || 0.08,
       maintenance_pct: s.maintenanceRate || 0.05,
+      hoa_monthly: s.monthlyHoa ?? 0,
     }
   }
 
@@ -145,6 +147,7 @@ function buildPayload(
         purchasePrice * OPERATING_INSURANCE_PCT,
       utilities_monthly: Number(s.holdingCostsMonthly) || 0,
       dumpster_monthly: 0,
+      hoa_monthly: Number(s.monthlyHoa) || 0,
     }
   }
 
@@ -171,6 +174,7 @@ function buildPayload(
       maintenance_pct: s.maintenanceRate || 0.05,
       capex_pct: s.capexRate || 0.05,
       utilities_monthly: s.utilitiesMonthly || 200,
+      hoa_monthly: s.monthlyHoa ?? 0,
     }
   }
 

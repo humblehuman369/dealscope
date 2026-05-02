@@ -73,6 +73,7 @@ class STRWorksheetInput(BaseModel):
     utilities_monthly: float | None = None
     maintenance_pct: float | None = None
     capex_pct: float = Field(0.05)
+    hoa_monthly: float = Field(0)
 
 
 class BRRRRWorksheetInput(BaseModel):
@@ -98,6 +99,7 @@ class BRRRRWorksheetInput(BaseModel):
     property_management_pct: float = 0.08
     maintenance_pct: float = 0.05
     capex_pct: float = 0.05
+    hoa_monthly: float = 0
 
 
 class FlipWorksheetInput(BaseModel):
@@ -118,6 +120,7 @@ class FlipWorksheetInput(BaseModel):
     selling_costs_pct: float = 0.08
     capital_gains_rate: float = 0.20
     loan_type: str | None = "interest_only"
+    hoa_monthly: float = 0
 
 
 class HouseHackWorksheetInput(BaseModel):
@@ -140,6 +143,7 @@ class HouseHackWorksheetInput(BaseModel):
     capex_monthly: float = 100
     utilities_monthly: float = 150
     loan_type: str | None = "conventional"
+    hoa_monthly: float = 0
 
 
 class WholesaleWorksheetInput(BaseModel):
@@ -329,6 +333,7 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
             maintenance_annual=input_data.purchase_price * (mp + input_data.capex_pct),
             landscaping_annual=o.landscaping_annual,
             pest_control_annual=o.pest_control_annual,
+            hoa_monthly=input_data.hoa_monthly,
         )
 
         supplies_annual = input_data.supplies_monthly * 12
@@ -390,6 +395,7 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
             "utilities": utilities_annual,
             "maintenance": maintenance_annual,
             "capex": capex_annual,
+            "hoa_fees": input_data.hoa_monthly * 12,
             "noi": result["noi"],
             "monthly_cash_flow": result["monthly_cash_flow"],
             "annual_cash_flow": result["annual_cash_flow"],
@@ -460,6 +466,7 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
             + input_data.maintenance_pct
             + input_data.capex_pct,
             insurance_annual=ia,
+            hoa_monthly=input_data.hoa_monthly,
         )
 
         sqft = input_data.sqft or 1
@@ -492,8 +499,9 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
         property_management = effective_income * input_data.property_management_pct
         maintenance = effective_income * input_data.maintenance_pct
         capex = effective_income * input_data.capex_pct
+        hoa_annual = input_data.hoa_monthly * 12
         total_expenses = (
-            input_data.property_taxes_annual + ia + property_management + maintenance + capex
+            input_data.property_taxes_annual + ia + property_management + maintenance + capex + hoa_annual
         )
         noi = effective_income - total_expenses
         annual_debt_service = result["new_monthly_pi"] * 12
@@ -545,6 +553,7 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
             "property_management": property_management,
             "maintenance": maintenance,
             "capex": capex,
+            "hoa_fees": hoa_annual,
             "total_expenses": total_expenses,
             "noi": noi,
             "monthly_cash_flow": annual_cash_flow / 12,
@@ -598,6 +607,7 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
             security_maintenance_monthly=input_data.dumpster_monthly,
             selling_costs_pct=input_data.selling_costs_pct,
             capital_gains_rate=input_data.capital_gains_rate,
+            hoa_monthly=input_data.hoa_monthly,
         )
 
         loan_amount = result["hard_money_loan"]
@@ -619,6 +629,7 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
             + monthly_insurance
             + input_data.utilities_monthly
             + input_data.dumpster_monthly
+            + input_data.hoa_monthly
         )
         total_holding_costs = monthly_holding_base * input_data.holding_months
         total_renovation = result["total_renovation"]
@@ -667,6 +678,7 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
             "points_cost": points_cost,
             "total_renovation": total_renovation,
             "total_holding_costs": total_holding_costs,
+            "hoa_holding": input_data.hoa_monthly * input_data.holding_months,
             "total_project_cost": total_project_cost,
             "total_cash_required": total_cash_required,
             "loan_amount": loan_amount,
@@ -725,6 +737,7 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
             insurance_annual=ins_annual,
             utilities_shared_monthly=input_data.utilities_monthly,
             maintenance_monthly=input_data.maintenance_monthly + input_data.capex_monthly,
+            hoa_monthly=input_data.hoa_monthly,
         )
 
         maintenance_monthly = (
@@ -736,10 +749,15 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
         monthly_taxes = input_data.property_taxes_annual / 12
         monthly_insurance = ins_annual / 12
         monthly_pmi = (result["loan_amount"] * input_data.pmi_rate) / 12
-        monthly_piti = result["monthly_pi"] + monthly_pmi
+        monthly_piti = result["monthly_pi"] + monthly_pmi + input_data.hoa_monthly
         effective_rental_income = total_rent * (1 - input_data.vacancy_rate)
         total_monthly_expenses = (
-            monthly_taxes + monthly_insurance + maintenance_monthly + capex_monthly + input_data.utilities_monthly
+            monthly_taxes
+            + monthly_insurance
+            + maintenance_monthly
+            + capex_monthly
+            + input_data.utilities_monthly
+            + input_data.hoa_monthly
         )
         your_housing_cost = monthly_piti + total_monthly_expenses - effective_rental_income
         savings_vs_renting = input_data.owner_market_rent - your_housing_cost
@@ -766,6 +784,7 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
             "loan_amount": result["loan_amount"],
             "monthly_payment": result["monthly_pi"],
             "monthly_pmi": monthly_pmi,
+            "monthly_hoa": input_data.hoa_monthly,
             "monthly_piti": monthly_piti,
             "down_payment": result["down_payment"],
             "closing_costs": result["closing_costs"],

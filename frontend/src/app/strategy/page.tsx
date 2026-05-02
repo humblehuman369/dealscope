@@ -469,6 +469,7 @@ function StrategyContent() {
       monthlyRent: propInfo?.monthlyRent ?? 0,
       propertyTaxes: propInfo?.propertyTaxes ?? 0,
       insurance: propInfo?.insurance ?? 0,
+      hoaFeesMonthly: propInfo?.market?.hoa_fees_monthly ?? null,
       bedrooms: propInfo?.details?.bedrooms || 3,
       bathrooms: propInfo?.details?.bathrooms || 2,
       sqft: propInfo?.details?.square_footage || 1500,
@@ -924,7 +925,7 @@ function StrategyContent() {
           maintenanceRate: io.maintenanceRate ?? maintPct,
           annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
           annualInsurance: io.insurance ?? insurance,
-          monthlyHoa: 0,
+          monthlyHoa: io.monthlyHoa ?? propertyInfo?.market?.hoa_fees_monthly ?? 0,
           ...sf,
         } satisfies STRDealMakerState
       }
@@ -952,11 +953,12 @@ function StrategyContent() {
           managementRate: io.managementRate != null ? io.managementRate / 100 : mgmtPct,
           annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
           annualInsurance: io.insurance ?? insurance,
-          monthlyHoa: io.monthlyHoa ?? 0,
+          monthlyHoa: io.monthlyHoa ?? propertyInfo?.market?.hoa_fees_monthly ?? 0,
           ...sf,
         } satisfies BRRRRDealMakerState
 
-      case 'flip':
+      case 'flip': {
+        const hoa = io.monthlyHoa ?? propertyInfo?.market?.hoa_fees_monthly ?? 0
         return {
           purchasePrice: io.purchasePrice ?? targetPrice,
           purchaseDiscountPct: io.purchaseDiscountPct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.purchaseDiscountPct,
@@ -969,12 +971,16 @@ function StrategyContent() {
           contingencyPct: io.contingencyPct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.contingencyPct,
           rehabTimeMonths: io.rehabTimeMonths ?? bd?.holding_months ?? DEFAULT_FLIP_DEAL_MAKER_STATE.rehabTimeMonths,
           arv: arvVal,
-          holdingCostsMonthly: io.holdingCostsMonthly ?? ((propertyTaxes / 12) + (insurance / 12) + 200),
+          // HOA accrues during the hold period, so seed it into the holding-costs
+          // baseline when the user hasn't overridden the row directly.
+          holdingCostsMonthly: io.holdingCostsMonthly ?? ((propertyTaxes / 12) + (insurance / 12) + 200 + hoa),
           daysOnMarket: io.daysOnMarket ?? DEFAULT_FLIP_DEAL_MAKER_STATE.daysOnMarket,
           sellingCostsPct: io.sellingCostsPct ?? (bd?.selling_costs_pct != null ? bd.selling_costs_pct / 100 : DEFAULT_FLIP_DEAL_MAKER_STATE.sellingCostsPct),
           capitalGainsRate: io.capitalGainsRate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.capitalGainsRate,
+          monthlyHoa: hoa,
           ...sf,
         } satisfies FlipDealMakerState
+      }
 
       case 'house_hack': {
         const totalBeds = bd?.total_bedrooms ?? propertyInfo?.details?.bedrooms ?? 4
@@ -995,7 +1001,7 @@ function StrategyContent() {
           currentHousingPayment: io.currentHousingPayment ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.currentHousingPayment,
           annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
           annualInsurance: io.insurance ?? insurance,
-          monthlyHoa: io.monthlyHoa ?? 0,
+          monthlyHoa: io.monthlyHoa ?? propertyInfo?.market?.hoa_fees_monthly ?? 0,
           utilitiesMonthly: io.utilitiesMonthly ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.utilitiesMonthly,
           maintenanceRate: io.maintenanceRate ?? maintPct,
           capexRate: io.capexRate ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.capexRate,
@@ -1016,6 +1022,7 @@ function StrategyContent() {
           assignmentFee: io.assignmentFee ?? bd?.assignment_fee ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.assignmentFee,
           marketingCosts: io.marketingCosts ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.marketingCosts,
           closingCosts: io.closingCosts ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.closingCosts,
+          monthlyHoa: io.monthlyHoa ?? propertyInfo?.market?.hoa_fees_monthly ?? 0,
           ...sf,
         } satisfies WholesaleDealMakerState
       }
@@ -1037,7 +1044,9 @@ function StrategyContent() {
           managementRate: io.managementRate != null ? io.managementRate / 100 : mgmtPct,
           annualPropertyTax: io.propertyTaxes ?? propertyTaxes,
           annualInsurance: io.insurance ?? insurance,
-          monthlyHoa: 0,
+          // Seed HOA from the property feed (`market.hoa_fees_monthly`) so condo /
+          // townhome / co-op carrying costs are part of NOI on first render.
+          monthlyHoa: io.monthlyHoa ?? propertyInfo?.market?.hoa_fees_monthly ?? 0,
           ...sf,
         } satisfies LTRDealMakerState
     }
@@ -1070,7 +1079,7 @@ function StrategyContent() {
           nightsOccupied: nightsOcc,
           monthlyExpenses: {
             mortgage: monthlyPI, taxes: propertyTaxes / 12, insurance: insurance / 12,
-            hoa: 0, utilities: (bd?.utilities ?? 0) / 12, maintenance: (bd?.maintenance ?? 0) / 12,
+            hoa: strState.monthlyHoa, utilities: (bd?.utilities ?? 0) / 12, maintenance: (bd?.maintenance ?? 0) / 12,
             management: (bd?.management ?? 0) / 12, platformFees: (bd?.platform_fees ?? 0) / 12,
             cleaning: strState.cleaningCostPerTurnover * turnovers / 12,
             supplies: strState.suppliesMonthly,
