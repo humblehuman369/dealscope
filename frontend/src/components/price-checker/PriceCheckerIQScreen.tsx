@@ -1243,65 +1243,85 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               />
             </div>
 
-            {/* 2-column layout: left comps + right sticky map */}
-            <div className={mapLayout === 'side'
-              ? 'md:grid md:grid-cols-2 md:gap-6 mt-3'
-              : 'mt-3'
-            }>
-              {/* Left column: controls + comp cards */}
-              <div className="min-w-0">
-                {/* Controls + Filters — sticky on desktop so they stay below the valuation panel */}
-                <div className="px-1 sm:px-1 md:px-0 min-w-0 md:sticky md:top-[304px] md:z-30 md:bg-[var(--surface-base)] md:pb-2">
+            {/* 2-column layout: bounded panel where left scrolls comps and
+                right keeps the map fixed (Zillow / Redfin pattern). When the
+                map is in 'top' layout (or on mobile) we fall back to natural
+                page flow with no internal scroll. */}
+            <div
+              className={mapLayout === 'side'
+                ? 'mt-3 md:sticky md:top-[300px] md:grid md:grid-cols-2 md:gap-6 md:h-[calc(100vh-316px)] md:min-h-[520px]'
+                : 'mt-3'
+              }
+            >
+              {/* Left column: scrollable comp list with sticky toolbar inside.
+                  The bounded-height + overflow styles only apply in side
+                  layout — in top layout the column is full-width and scrolls
+                  with the page like the original layout. */}
+              <div
+                className={`min-w-0${mapLayout === 'side'
+                  ? ' md:h-full md:overflow-y-auto md:rounded-xl md:bg-[var(--surface-base)] md:border md:border-[var(--border-subtle)] md:shadow-[var(--shadow-card)]'
+                  : ''}`}
+              >
+                {/* Toolbar — sticky at the top of its scrolling container in
+                    side layout so filters stay visible as comps scroll. */}
+                <div
+                  className={`px-1 sm:px-1 pb-2${mapLayout === 'side'
+                    ? ' md:sticky md:top-0 md:z-20 md:bg-[var(--surface-base)] md:border-b md:border-[var(--border-subtle)] md:px-3 md:py-2'
+                    : ''}`}
+                >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm text-[var(--text-heading)] flex-shrink-0">{selectedIds.size} of {filteredComps.length} selected</span>
 
                     <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide min-w-0">
-                    {/* New / All / Reset */}
-                    <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
-                      className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
-                      title="Replace unselected comps with new ones">
-                      <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />New
-                    </button>
-                    <button onClick={handleRefreshAll} disabled={loading}
-                      className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
-                      title="Fetch all new comps from API">
-                      <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />All
-                    </button>
-                    {hasChangedFromOriginal && (
-                      <button onClick={handleResetToOriginal} disabled={loading}
-                        className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/20 text-[11px] font-medium text-[var(--status-warning)] hover:bg-[var(--status-warning)]/15 disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
-                        title="Restore original system-selected comps">
-                        <RotateCcw className="w-3 h-3" />Reset
+                      {/* New / All / Reset */}
+                      <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
+                        className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+                        title="Replace unselected comps with new ones">
+                        <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />New
                       </button>
-                    )}
+                      <button onClick={handleRefreshAll} disabled={loading}
+                        className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--surface-base)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+                        title="Fetch all new comps from API">
+                        <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />All
+                      </button>
+                      {hasChangedFromOriginal && (
+                        <button onClick={handleResetToOriginal} disabled={loading}
+                          className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/20 text-[11px] font-medium text-[var(--status-warning)] hover:bg-[var(--status-warning)]/15 disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
+                          title="Restore original system-selected comps">
+                          <RotateCcw className="w-3 h-3" />Reset
+                        </button>
+                      )}
 
-                    {/* Divider */}
-                    <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
+                      <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
 
-                    {/* Recency filter */}
-                    <div className="flex rounded-lg bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-0.5 flex-shrink-0">
-                      {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
-                        <button key={val} onClick={() => setRecencyFilter(val)}
-                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 ${
-                            recencyFilter === val ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)]' : 'text-[var(--text-heading)] hover:text-[var(--text-heading)]'
-                          }`}>{label}</button>
-                      ))}
-                    </div>
+                      {/* Recency filter */}
+                      <div className="flex rounded-lg bg-[var(--surface-elevated)]/50 border border-[var(--border-subtle)] p-0.5 flex-shrink-0">
+                        {([['all', 'All'], ['30', '30 days'], ['90', '90 days']] as const).map(([val, label]) => (
+                          <button key={val} onClick={() => setRecencyFilter(val)}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 ${
+                              recencyFilter === val ? 'bg-[var(--surface-base)] text-[var(--accent-sky-light)] border border-[var(--border-subtle)]' : 'text-[var(--text-heading)] hover:text-[var(--text-heading)]'
+                            }`}>{label}</button>
+                        ))}
+                      </div>
 
-                    <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
+                      <div className="w-px h-5 bg-[var(--border-subtle)] flex-shrink-0" />
 
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set(filteredComps.map(c => c.id)))}
-                        className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Select All</button>
-                      <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set())}
-                        className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Clear</button>
-                    </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set(filteredComps.map(c => c.id)))}
+                          className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Select All</button>
+                        <button onClick={() => (isSale ? setSaleSelected : setRentSelected)(new Set())}
+                          className="flex-shrink-0 min-h-[44px] px-3 py-2 sm:py-1 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--surface-elevated)] rounded-lg whitespace-nowrap">Clear</button>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Comp Cards */}
-                <div className="w-full min-w-0 px-1 sm:px-1 md:px-0 mt-3 space-y-3">
+                {/* Comp Cards (scroll target inside left panel on desktop side layout) */}
+                <div
+                  className={`w-full min-w-0 px-1 sm:px-1 mt-3 space-y-3${mapLayout === 'side'
+                    ? ' md:px-3 md:py-3 md:mt-0'
+                    : ''}`}
+                >
                   {filteredComps.map(comp => (
                     <CompCard
                       key={comp.id}
@@ -1317,27 +1337,26 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                       onViewPhotos={comp.zpid ? () => setPhotoModalComp(comp) : undefined}
                     />
                   ))}
-                </div>
 
-                {/* Location Quality */}
-                <div className={`mx-1 md:mx-0 mt-4 p-3 rounded-lg bg-[var(--surface-base)] ${cardBorderGlow}`}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-[var(--text-heading)]">{comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} within 0.5 mi</span>
-                    <span className={`text-xs font-semibold ${
-                      comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'text-[var(--status-positive)]' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'text-[var(--status-warning)]' : 'text-[var(--text-heading)]'
-                    }`}>
-                      Location: {comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'EXCELLENT' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'GOOD' : 'FAIR'}
-                    </span>
+                  {/* Location Quality footer (inside scrollable column) */}
+                  <div className={`mt-2 p-3 rounded-lg bg-[var(--surface-base)] ${cardBorderGlow}`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-[var(--text-heading)]">{comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} within 0.5 mi</span>
+                      <span className={`text-xs font-semibold ${
+                        comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'text-[var(--status-positive)]' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'text-[var(--status-warning)]' : 'text-[var(--text-heading)]'
+                      }`}>
+                        Location: {comps.filter(c => c.distanceMiles <= 0.5).length >= 3 ? 'EXCELLENT' : comps.filter(c => c.distanceMiles <= 1).length >= 3 ? 'GOOD' : 'FAIR'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Right column: sticky map (desktop only, side layout) */}
+              {/* Right column: fixed map fills the panel height */}
               {mapLayout === 'side' && (
-                <div className="hidden md:block">
+                <div className="hidden md:block md:h-full">
                   <div
-                    className={`sticky top-[304px] rounded-xl overflow-hidden bg-[var(--surface-base)] flex flex-col ${largeCardBorderGlow}`}
-                    style={{ height: 'calc(100vh - 320px)' }}
+                    className={`rounded-xl overflow-hidden bg-[var(--surface-base)] flex flex-col h-full ${largeCardBorderGlow}`}
                   >
                     <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0">
                       <div className="flex items-center gap-2">
