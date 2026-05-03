@@ -161,8 +161,19 @@ export function calculateSimilarityScore(
     : 0
   const ageScore = Math.max(0, 100 - (yearDiff * 2))
   
-  // Lot score
-  const lotDiffPct = subject.lotSize > 0 && comp.lotSize > 0
+  // Lot score -- ignore implausible values (e.g. raw sqft leaking into an
+  // `acres` field) so similarity can't be unfairly tanked by bad data.
+  const subjectLotPlausible =
+    typeof subject.lotSize === 'number' &&
+    Number.isFinite(subject.lotSize) &&
+    subject.lotSize > 0 &&
+    subject.lotSize <= MAX_PLAUSIBLE_LOT_ACRES
+  const compLotPlausible =
+    typeof comp.lotSize === 'number' &&
+    Number.isFinite(comp.lotSize) &&
+    comp.lotSize > 0 &&
+    comp.lotSize <= MAX_PLAUSIBLE_LOT_ACRES
+  const lotDiffPct = (subjectLotPlausible && compLotPlausible)
     ? Math.abs(subject.lotSize - comp.lotSize) / subject.lotSize * 100
     : 20
   const lotScore = Math.max(0, 100 - lotDiffPct)
@@ -190,6 +201,12 @@ export function calculateSimilarityScore(
 // ADJUSTMENT CALCULATIONS
 // ============================================
 
+// Residential lots are effectively always under this acreage; values larger than
+// this almost always indicate a unit-conversion bug upstream (e.g. raw square
+// feet leaking into an `acres` field). Skip the lot adjustment in that case
+// instead of producing a multi-million-dollar correction.
+const MAX_PLAUSIBLE_LOT_ACRES = 50
+
 /**
  * Calculate price adjustments for a sale comp relative to subject.
  * Positive adjustments increase comp's value (comp is inferior).
@@ -200,21 +217,25 @@ export function calculateSaleAdjustments(
   comp: CompProperty
 ): { size: number; bedroom: number; bathroom: number; age: number; lot: number; total: number } {
   const f = SALE_ADJUSTMENT_FACTORS
-  
+
   const currentYear = new Date().getFullYear()
   const validYear = (y: number) => y >= 1800 && y <= currentYear
-  
+  const finitePositive = (n: unknown): n is number =>
+    typeof n === 'number' && Number.isFinite(n) && n > 0
+  const plausibleAcres = (n: unknown): boolean =>
+    finitePositive(n) && (n as number) <= MAX_PLAUSIBLE_LOT_ACRES
+
   const size = (subject.sqft - comp.sqft) * f.sqftAdjustmentPerSqft
   const bedroom = (subject.beds - comp.beds) * f.bedroomAdjustment
   const bathroom = (subject.baths - comp.baths) * f.bathroomAdjustment
   const age = (validYear(subject.yearBuilt) && validYear(comp.yearBuilt))
     ? (subject.yearBuilt - comp.yearBuilt) * f.ageAdjustmentPerYear
     : 0
-  const lot = (subject.lotSize > 0 && comp.lotSize > 0)
+  const lot = (plausibleAcres(subject.lotSize) && plausibleAcres(comp.lotSize))
     ? (subject.lotSize - comp.lotSize) * f.lotAdjustmentPerAcre
     : 0
   const total = size + bedroom + bathroom + age + lot
-  
+
   return { size, bedroom, bathroom, age, lot, total }
 }
 
