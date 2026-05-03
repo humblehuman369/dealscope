@@ -1,11 +1,28 @@
-import { SearchPageContent } from '@/components/SearchPageContent'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 /**
  * Search Page
- *
- * Full-page search experience that introduces all three entry paths:
- * Enter Address (inline input), Scan Property, and Map Search.
+ * 
+ * This page automatically opens the search modal.
+ * Used for direct navigation to /search or when linked from external sources.
  */
 export default function SearchPage() {
-  return <SearchPageContent />
+  const [showModal, setShowModal] = useState(true)
+  const router = useRouter()
+
+  const handleClose = () => {
+    setShowModal(false)
+    // Navigate back or to home when modal is closed
+    router.push('/')
+  }
+
+  return (
+    <div className="min-h-screen bg-[var(--surface-base)] transition-colors">
+      <SearchPropertyModal isOpen={showModal} onClose={handleClose} />
+    </div>
+  )
 }
