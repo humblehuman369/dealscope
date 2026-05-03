@@ -504,22 +504,33 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const loading = isSale ? saleLoading : rentLoading
   const loadFailed = isSale ? saleLoadFailed : rentLoadFailed
 
-  // Subject property for calculations -- infer from comps average if not provided
+  // Subject property for calculations -- infer from comp averages when the URL
+  // doesn't carry full subject metadata. Lot defaults to comp average (in acres)
+  // rather than a hard-coded 0.25 so adjustments stay in a realistic range.
   const subject: SubjectProperty = useMemo(() => {
-    // If subject data not provided, infer from the median of loaded comps
     const allComps = [...saleComps, ...rentComps]
     const inferSqft = allComps.length > 0 ? Math.round(allComps.reduce((s, c) => s + c.sqft, 0) / allComps.length) : 1500
     const inferYear = allComps.length > 0 ? Math.round(allComps.reduce((s, c) => s + c.yearBuilt, 0) / allComps.filter(c => c.yearBuilt > 0).length) || 2000 : 2000
     const inferBeds = allComps.length > 0 ? Math.round(allComps.reduce((s, c) => s + c.beds, 0) / allComps.length) : 3
     const inferBaths = allComps.length > 0 ? Math.round(allComps.reduce((s, c) => s + c.baths, 0) / allComps.length) : 2
 
+    // Only consider comps with plausible (residential) lot sizes when inferring,
+    // so a single bad value can't skew the subject's lot baseline.
+    const lotCandidates = allComps
+      .map((c) => c.lotSize)
+      .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0 && v <= 50)
+    const inferLot = lotCandidates.length > 0
+      ? Math.round((lotCandidates.reduce((s, v) => s + v, 0) / lotCandidates.length) * 100) / 100
+      : 0.25
+
     return {
-    sqft: property.sqft || inferSqft,
-    beds: property.beds || inferBeds,
-    baths: property.baths || inferBaths,
-    yearBuilt: property.yearBuilt || inferYear,
-    lotSize: property.lotSize || 0.25,
-  }}, [property, saleComps, rentComps])
+      sqft: property.sqft || inferSqft,
+      beds: property.beds || inferBeds,
+      baths: property.baths || inferBaths,
+      yearBuilt: property.yearBuilt || inferYear,
+      lotSize: property.lotSize || inferLot,
+    }
+  }, [property, saleComps, rentComps])
 
   // Appraisal calculations -- filter out comps with no usable price so a missing
   // upstream sale/rent value can never produce a negative or fabricated appraisal.

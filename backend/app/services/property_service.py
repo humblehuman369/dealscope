@@ -1397,6 +1397,10 @@ class PropertyService:
                     p for p in [address_line1, city, f"{state} {zip_code}".strip()] if p
                 )
 
+                # RentCast lotSize is in square feet; expose units explicitly.
+                lot_size_sqft = comp.get("lotSize")
+                lot_area_units = "Square Feet" if isinstance(lot_size_sqft, (int, float)) and lot_size_sqft > 0 else None
+
                 normalized_comps.append(
                     {
                         "id": comp_id or None,
@@ -1418,7 +1422,9 @@ class PropertyService:
                         "bedrooms": comp.get("bedrooms"),
                         "bathrooms": comp.get("bathrooms"),
                         "squareFootage": comp.get("squareFootage"),
-                        "lotSize": comp.get("lotSize"),
+                        "lotSize": lot_size_sqft,
+                        "lotAreaValue": lot_size_sqft,
+                        "lotAreaUnits": lot_area_units,
                         "yearBuilt": comp.get("yearBuilt"),
                         "price": comp.get("price"),
                         "listedDate": comp.get("listedDate"),
@@ -1591,6 +1597,13 @@ class PropertyService:
                 sale_price = comp.get("price")
                 date_sold_raw = comp.get("removedDate") or comp.get("lastSeenDate") or comp.get("listedDate")
 
+                # RentCast returns lotSize in SQUARE FEET. AXESSO returns it in acres
+                # via lotAreaUnits. Surface units explicitly so the shared frontend
+                # transformer doesn't treat 21,344 sqft as 21,344 acres (which yields
+                # appraisal adjustments in the hundreds of millions).
+                lot_size_sqft = comp.get("lotSize")
+                lot_area_units = "Square Feet" if isinstance(lot_size_sqft, (int, float)) and lot_size_sqft > 0 else None
+
                 normalized_comps.append(
                     {
                         "id": comp_id or None,
@@ -1612,7 +1625,11 @@ class PropertyService:
                         "bedrooms": comp.get("bedrooms"),
                         "bathrooms": comp.get("bathrooms"),
                         "squareFootage": comp.get("squareFootage"),
-                        "lotSize": comp.get("lotSize"),
+                        # Lot fields: AXESSO-shaped (lotAreaValue + lotAreaUnits) so the
+                        # frontend transformer can convert sqft → acres consistently.
+                        "lotSize": lot_size_sqft,
+                        "lotAreaValue": lot_size_sqft,
+                        "lotAreaUnits": lot_area_units,
                         "yearBuilt": comp.get("yearBuilt"),
                         "propertyType": comp.get("propertyType"),
                         # AXESSO-compatible price fields (canonical fields the FE reads)
