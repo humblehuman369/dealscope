@@ -298,31 +298,35 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
           </button>
 
           <div className="flex flex-col flex-1 min-h-0 sm:flex-none">
-            {/* Mobile: centered hero (search options) */}
+            {/* Mobile: icon top; title vertically centered in gap above Scan Property */}
             {!showAddressInput && (
-              <div className="sm:hidden flex flex-col items-center text-center mt-1 mb-2">
-                <div className="relative w-[146px] h-[146px] flex items-center justify-center mb-4">
-                  <div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[182px] h-[182px] pointer-events-none rounded-full"
-                    style={{
-                      background: 'radial-gradient(circle, rgba(15,164,233,0.22) 0%, transparent 70%)',
-                      filter: 'blur(8px)',
-                    }}
-                    aria-hidden
-                  />
-                  <Image
-                    src="/images/dealgapiq-icon.png"
-                    alt="DealGap IQ"
-                    className="relative z-[1] w-[135px] h-[135px] object-contain"
-                    width={135}
-                    height={135}
-                  />
+              <>
+                <div className="sm:hidden flex flex-col items-center shrink-0 mt-1">
+                  <div className="relative w-[146px] h-[146px] flex items-center justify-center">
+                    <div
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[182px] h-[182px] pointer-events-none rounded-full"
+                      style={{
+                        background: 'radial-gradient(circle, rgba(15,164,233,0.22) 0%, transparent 70%)',
+                        filter: 'blur(8px)',
+                      }}
+                      aria-hidden
+                    />
+                    <Image
+                      src="/images/dealgapiq-icon.png"
+                      alt="DealGap IQ"
+                      className="relative z-[1] w-[135px] h-[135px] object-contain"
+                      width={135}
+                      height={135}
+                    />
+                  </div>
                 </div>
-                <h2 className="text-2xl font-bold text-[var(--text-heading)] leading-tight px-2">
-                  <span className="block">How would you like to</span>
-                  <span className="block">search property?</span>
-                </h2>
-              </div>
+                <div className="flex-1 flex flex-col justify-center min-h-0 py-3 sm:hidden">
+                  <h2 className="text-2xl font-bold text-[var(--text-heading)] leading-tight text-center px-2">
+                    <span className="block">How would you like to</span>
+                    <span className="block">search property?</span>
+                  </h2>
+                </div>
+              </>
             )}
 
             {/* Mobile: compact hero (address entry) */}
@@ -374,7 +378,6 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
             {/* Options or Address Input */}
             {!showAddressInput ? (
               <>
-                <div className="flex-1 sm:flex-none min-h-0" aria-hidden />
                 <div className="space-y-4 sm:space-y-4 w-full shrink-0">
                   {/* Scan Property Option */}
                   <button
