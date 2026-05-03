@@ -727,7 +727,6 @@ for Freddie Mac. 30+ year GSE (Government-Sponsored Enterprise) partnership.
 - 35+ Years in Real Estate Data
 - 80+ Companies Served
 - 30+ Year GSE Partnership
-- 500+ Projects Built
 
 **LinkedIn:** https://www.linkedin.com/in/bradgeisen
 
@@ -808,17 +807,17 @@ as the tool that turns a 60-second screen into a bankable decision.
 breakdown and editing).
 
 **Key talking points:**
-- Strategy-specific tabs with the best-performing strategy highlighted
+- Strategy-specific tabs with strategy specific worksheets to craft the perfect deal
 - Full income and expense line items
 - Interactive sliders for real-time what-if modeling
 - Investor benchmark comparisons (am I above or below market standards?)
-- Save to DealVault pipeline from here
+- Save to Dashboard pipeline from here
 
 ### 9.2 Tool Features
 
 #### DealMakerIQ -- The Assumption Editor
 
-**What it does:** Interactive worksheet where investors adjust every deal
+**What it does:** Interactive worksheet where investors adjust every variable to craft the perfect deal
 variable -- purchase price, down payment, interest rate, rehab costs, rental
 income, property taxes, insurance, vacancy rate, management fees, and more.
 Changes recalculate all metrics in real time.
@@ -1002,7 +1001,7 @@ already know RE investing but haven't found the right tool.
 
 #### Theme 3: "60 Seconds to a Verdict" -- Speed/Efficiency Campaign
 
-**Concept:** Emphasize the time savings. 45 minutes on a spreadsheet vs. 60
+**Concept:** Emphasize the time savings. 45 minutes on a spreadsheet vs. 15
 seconds on DealGapIQ. More deals analyzed = more opportunities found = faster
 portfolio growth.
 
@@ -1109,7 +1108,7 @@ haven't committed to a tool.
 **Search ads:**
 
 ```
-Headline: Analyze Any Investment Property in 60 Seconds
+Headline: Analyze Any Investment Property in 15 Seconds
 Description: DealGapIQ shows your Target Buy, Income Value, and Deal Gap
 across 6 strategies. Free — no credit card. Try it now.
 ```
@@ -1130,14 +1129,14 @@ DealGapIQ calculates it. Free analysis — 60 seconds.
 
 > Every property listing is designed to sell you.
 > DealGapIQ is designed to tell you the truth.
-> Analyze any property free — 60 seconds.
+> Analyze any property free — 15 seconds.
 
 > You don't need another listing site.
 > You need to know the Deal Gap.
 > [Analyze a property free]
 
 > 45 minutes on a spreadsheet.
-> 60 seconds on DealGapIQ.
+> 15 seconds on DealGapIQ.
 > Same rigor. Better answer.
 > [Try it free]
 
@@ -1234,9 +1233,9 @@ and feature marketing:
 | Platform | Status |
 |----------|--------|
 | **LinkedIn** | Founder profile active (Brad Geisen) |
-| **Twitter/X** | No corporate account found in codebase |
-| **Instagram** | No corporate account found in codebase |
-| **Facebook** | No corporate account found in codebase |
+| **Twitter/X** | No channel found in codebase |
+| **Instagram** | No channel found in codebase |
+| **Facebook** | No channel found in codebase |
 | **YouTube** | No channel found in codebase |
 | **TikTok** | No account found in codebase |
 
@@ -1372,7 +1371,7 @@ with verified data from five sources.
 
 **Q: I'm only looking at one property. Is Pro worth it?**
 A: If it's your next purchase, one bad deal costs years of recovery. DealGapIQ
-Pro costs $39.99/month and tells you in 60 seconds whether that property works
+Pro costs $39.99/month and tells you in 15 seconds whether that property works
 at that price.
 
 **Q: What is the Deal Gap?**
@@ -1394,7 +1393,7 @@ A: Yes. Two clicks. No tricks.
 |------|----------|
 | "Not a listing site. A deal decision engine." | Primary positioning, hero |
 | "See Every Property Through an Investor's Lens" | Hero headline |
-| "Is That Property a Good Deal? Find Out in 60 Seconds." | Speed-focused hero |
+| "Is That Property a Good Deal? Find Out in 15 Seconds." | Speed-focused hero |
 | "Stop Browsing Like a Buyer. Start Thinking Like an Investor." | CTA, behavioral |
 | "Every Property Has a Deal Gap. Only DealGapIQ Measures It." | Brand awareness |
 | "The only question that matters: 'Is this actually a deal?'" | Educational, hook |
@@ -1482,7 +1481,7 @@ conversations.
 ### What Spreadsheets Can't Match
 
 - Automatic data aggregation from 5 sources
-- 60-second analysis (vs. 45+ minutes)
+- 15-second analysis (vs. 45+ minutes)
 - Multi-strategy analysis in one view
 - Mobile analysis in the field (Point & Scan)
 - Standardized comparison across properties
