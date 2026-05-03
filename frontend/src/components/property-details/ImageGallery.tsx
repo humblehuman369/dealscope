@@ -104,7 +104,7 @@ export function ImageGallery({
               </span>
             </div>
           )}
-          {hasImages && (
+          {hasImages && totalPhotos > 1 && (
             <div
               className="px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-2 ml-auto"
               style={{ backgroundColor: 'var(--surface-overlay)' }}
@@ -200,54 +200,30 @@ interface DesktopMosaicProps {
   onImageClick?: (index: number) => void
 }
 
-function DesktopMosaic({
-  images,
-  totalPhotos,
-  views,
-  imageError,
-  onImageError,
-  onImageClick,
-}: DesktopMosaicProps) {
-  const visibleCount = Math.min(images.length, 5)
-  const remaining = totalPhotos - visibleCount
-
+/**
+ * Reusable hero badges (views + total photo count). Hidden when there's only
+ * one photo because "1 photo" is noise — the count is self-evident.
+ */
+function HeroBadges({ views, totalPhotos }: { views?: number; totalPhotos: number }) {
   return (
-    <div
-      className="grid grid-rows-2 gap-1.5 rounded-[14px] overflow-hidden"
-      style={{
-        height: 400,
-        backgroundColor: 'var(--surface-elevated)',
-        gridTemplateColumns: '3fr 1fr 1fr',
-      }}
-    >
-      {/* Hero — left 60% (first column), full height (2 rows) */}
-      <MosaicCell
-        image={images[0]}
-        index={0}
-        failed={imageError[0]}
-        onError={onImageError}
-        onClick={onImageClick}
-        className="row-span-2"
-      >
-        {/* Views badge */}
-        {views !== undefined && (
-          <div className="absolute top-4 left-4 z-10">
-            <div
-              className="px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-2"
-              style={{ backgroundColor: 'var(--surface-overlay)' }}
+    <>
+      {views !== undefined && (
+        <div className="absolute top-4 left-4 z-10">
+          <div
+            className="px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-2"
+            style={{ backgroundColor: 'var(--surface-overlay)' }}
+          >
+            <Eye size={14} style={{ color: 'var(--text-secondary)' }} />
+            <span
+              className="text-sm font-medium"
+              style={{ color: 'var(--text-body)', fontVariantNumeric: 'tabular-nums' }}
             >
-              <Eye size={14} style={{ color: 'var(--text-secondary)' }} />
-              <span
-                className="text-sm font-medium"
-                style={{ color: 'var(--text-body)', fontVariantNumeric: 'tabular-nums' }}
-              >
-                {formatNumber(views)} views
-              </span>
-            </div>
+              {formatNumber(views)} views
+            </span>
           </div>
-        )}
-
-        {/* Photo count badge */}
+        </div>
+      )}
+      {totalPhotos > 1 && (
         <div className="absolute top-4 right-4 z-10">
           <div
             className="px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-2"
@@ -262,14 +238,172 @@ function DesktopMosaic({
             </span>
           </div>
         </div>
+      )}
+    </>
+  )
+}
+
+/**
+ * Desktop layout adapts to the photo count so we never render empty
+ * placeholder cells (which look broken). Layouts:
+ *   1 photo   → single full-width hero (height 400)
+ *   2 photos  → hero (2/3) + side image (1/3), full height
+ *   3 photos  → hero (2/3) + 2 stacked thumbnails (1/3)
+ *   4 photos  → hero (3/5) + 2 stacked thumbnails + 1 wide bottom cell
+ *   5+ photos → original mosaic with "+N more" overlay on the 5th cell
+ */
+function DesktopMosaic({
+  images,
+  totalPhotos,
+  views,
+  imageError,
+  onImageError,
+  onImageClick,
+}: DesktopMosaicProps) {
+  const containerStyle = {
+    height: 400,
+    backgroundColor: 'var(--surface-elevated)',
+  } as const
+  const containerClass = 'grid gap-1.5 rounded-[14px] overflow-hidden'
+
+  if (images.length === 1) {
+    return (
+      <div className={containerClass} style={containerStyle}>
+        <MosaicCell
+          image={images[0]}
+          index={0}
+          failed={imageError[0]}
+          onError={onImageError}
+          onClick={onImageClick}
+        >
+          <HeroBadges views={views} totalPhotos={totalPhotos} />
+        </MosaicCell>
+      </div>
+    )
+  }
+
+  if (images.length === 2) {
+    return (
+      <div
+        className={containerClass}
+        style={{ ...containerStyle, gridTemplateColumns: '2fr 1fr' }}
+      >
+        <MosaicCell
+          image={images[0]}
+          index={0}
+          failed={imageError[0]}
+          onError={onImageError}
+          onClick={onImageClick}
+        >
+          <HeroBadges views={views} totalPhotos={totalPhotos} />
+        </MosaicCell>
+        <MosaicCell
+          image={images[1]}
+          index={1}
+          failed={imageError[1]}
+          onError={onImageError}
+          onClick={onImageClick}
+        />
+      </div>
+    )
+  }
+
+  if (images.length === 3) {
+    return (
+      <div
+        className={`${containerClass} grid-rows-2`}
+        style={{ ...containerStyle, gridTemplateColumns: '2fr 1fr' }}
+      >
+        <MosaicCell
+          image={images[0]}
+          index={0}
+          failed={imageError[0]}
+          onError={onImageError}
+          onClick={onImageClick}
+          className="row-span-2"
+        >
+          <HeroBadges views={views} totalPhotos={totalPhotos} />
+        </MosaicCell>
+        <MosaicCell
+          image={images[1]}
+          index={1}
+          failed={imageError[1]}
+          onError={onImageError}
+          onClick={onImageClick}
+        />
+        <MosaicCell
+          image={images[2]}
+          index={2}
+          failed={imageError[2]}
+          onError={onImageError}
+          onClick={onImageClick}
+        />
+      </div>
+    )
+  }
+
+  if (images.length === 4) {
+    return (
+      <div
+        className={`${containerClass} grid-rows-2`}
+        style={{ ...containerStyle, gridTemplateColumns: '3fr 1fr 1fr' }}
+      >
+        <MosaicCell
+          image={images[0]}
+          index={0}
+          failed={imageError[0]}
+          onError={onImageError}
+          onClick={onImageClick}
+          className="row-span-2"
+        >
+          <HeroBadges views={views} totalPhotos={totalPhotos} />
+        </MosaicCell>
+        <MosaicCell
+          image={images[1]}
+          index={1}
+          failed={imageError[1]}
+          onError={onImageError}
+          onClick={onImageClick}
+        />
+        <MosaicCell
+          image={images[2]}
+          index={2}
+          failed={imageError[2]}
+          onError={onImageError}
+          onClick={onImageClick}
+        />
+        <MosaicCell
+          image={images[3]}
+          index={3}
+          failed={imageError[3]}
+          onError={onImageError}
+          onClick={onImageClick}
+          className="col-span-2"
+        />
+      </div>
+    )
+  }
+
+  const visibleCount = Math.min(images.length, 5)
+  const remaining = totalPhotos - visibleCount
+
+  return (
+    <div
+      className={`${containerClass} grid-rows-2`}
+      style={{ ...containerStyle, gridTemplateColumns: '3fr 1fr 1fr' }}
+    >
+      <MosaicCell
+        image={images[0]}
+        index={0}
+        failed={imageError[0]}
+        onError={onImageError}
+        onClick={onImageClick}
+        className="row-span-2"
+      >
+        <HeroBadges views={views} totalPhotos={totalPhotos} />
       </MosaicCell>
-
-      {/* Small cells — right 40% (1 col), 2 rows */}
       {[1, 2, 3, 4].map((i) => {
-        if (i >= images.length) return null
-
         const isLastVisible = i === visibleCount - 1 && remaining > 0
-
         return (
           <MosaicCell
             key={i}
@@ -290,17 +424,6 @@ function DesktopMosaic({
           </MosaicCell>
         )
       })}
-
-      {/* Fill empty right-side cells when fewer than 5 images */}
-      {images.length < 5 && Array.from({ length: 5 - images.length }).map((_, i) => (
-        <div
-          key={`empty-${i}`}
-          className="flex items-center justify-center"
-          style={{ backgroundColor: 'var(--surface-elevated)' }}
-        >
-          <ImageOff size={20} style={{ color: 'var(--text-secondary)', opacity: 0.4 }} />
-        </div>
-      ))}
     </div>
   )
 }
