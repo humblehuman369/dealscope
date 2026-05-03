@@ -1059,7 +1059,7 @@ export default function PricingContent() {
       <UpgradeModal
         isOpen={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
-        returnTo="/pricing"
+        returnTo="/"
         initialAnnual={isAnnual}
       />
 
