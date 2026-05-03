@@ -301,9 +301,9 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
             {/* Mobile: centered hero (search options) */}
             {!showAddressInput && (
               <div className="sm:hidden flex flex-col items-center text-center mt-1 mb-2">
-                <div className="relative w-[112px] h-[112px] flex items-center justify-center mb-4">
+                <div className="relative w-[146px] h-[146px] flex items-center justify-center mb-4">
                   <div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] pointer-events-none rounded-full"
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[182px] h-[182px] pointer-events-none rounded-full"
                     style={{
                       background: 'radial-gradient(circle, rgba(15,164,233,0.22) 0%, transparent 70%)',
                       filter: 'blur(8px)',
@@ -313,13 +313,14 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   <Image
                     src="/images/dealgapiq-icon.png"
                     alt="DealGap IQ"
-                    className="relative z-[1] w-[104px] h-[104px] object-contain"
-                    width={104}
-                    height={104}
+                    className="relative z-[1] w-[135px] h-[135px] object-contain"
+                    width={135}
+                    height={135}
                   />
                 </div>
                 <h2 className="text-2xl font-bold text-[var(--text-heading)] leading-tight px-2">
-                  How would you like to search property?
+                  <span className="block">How would you like to</span>
+                  <span className="block">search property?</span>
                 </h2>
               </div>
             )}
