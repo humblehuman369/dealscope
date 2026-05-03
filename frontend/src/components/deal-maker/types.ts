@@ -190,7 +190,7 @@ export const EXPENSES_SLIDERS: SliderConfig[] = [
  * Values should match backend/app/core/defaults.py to minimize visual jumps.
  * DO NOT change these values here - update backend/app/core/defaults.py instead.
  * 
- * See docs/DEFAULTS_ARCHITECTURE.md for full details.
+ * See docs/architecture/DEFAULTS_ARCHITECTURE.md for full details.
  */
 export const DEFAULT_DEAL_MAKER_STATE: DealMakerState = {
   // Tab 1: Buy Price

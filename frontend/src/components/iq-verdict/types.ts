@@ -794,7 +794,7 @@ export const STRATEGY_ROUTE_MAP: Record<IQStrategyId, string> = {
 // These are used for client-side calculations when API defaults are not available.
 // Ideally, components should use useDefaults() hook to get values from the API.
 // 
-// See docs/DEFAULTS_ARCHITECTURE.md for full details.
+// See docs/architecture/DEFAULTS_ARCHITECTURE.md for full details.
 // =============================================================================
 
 const FALLBACK_ASSUMPTIONS = {

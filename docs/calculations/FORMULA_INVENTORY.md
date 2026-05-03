@@ -2,7 +2,9 @@
 
 Single source of truth for all user-facing financial metrics. All calculations MUST be performed in the backend; frontend and mobile MUST display only API response values.
 
-**Last updated:** 2026-02-19
+**Last updated:** 2026-05-03
+
+For deep verification tables (backend ↔ API ↔ frontend chain), see [`CALCULATION_INTEGRITY_AUDIT.md`](./CALCULATION_INTEGRITY_AUDIT.md).
 
 ---
 

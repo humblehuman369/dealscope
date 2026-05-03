@@ -520,7 +520,7 @@ def _calculate_wholesale_strategy(price: float, arv: float, rehab_cost: float) -
 
 INVESTOR_DISCOUNT_BRACKETS: list[tuple[float, int, int, str]] = [
     # (max_gap_pct, score_at_bracket_start, score_at_bracket_end, investor_pct_label)
-    # Label copy reflects national baseline cohort (see docs/INVESTOR_DISCOUNT_DATA.md).
+    # Label copy reflects national baseline cohort (see docs/calculations/INVESTOR_DISCOUNT_DATA.md).
     (5, 95, 88, "about 32% of investors achieve these discounts"),
     (10, 88, 75, "about 24% of investors achieve these discounts"),
     (20, 75, 60, "about 16% of investors achieve these discounts"),
@@ -532,7 +532,7 @@ INVESTOR_DISCOUNT_BRACKETS: list[tuple[float, int, int, str]] = [
 AT_OR_ABOVE_LABEL = "about 19% of investors close at or above asking price"
 
 # Mutually exclusive cohort shares (at-or-above, then discount depth bins). Sum = 100%.
-# Sources: Redfin 2025 MLS, Cotality Q4 2025, Realtor.com Q1 2026 — see docs/INVESTOR_DISCOUNT_DATA.md.
+# Sources: Redfin 2025 MLS, Cotality Q4 2025, Realtor.com Q1 2026 — see docs/calculations/INVESTOR_DISCOUNT_DATA.md.
 REGIONAL_COHORT_PERCENTAGES: dict[str, tuple[float, ...]] = {
     "national": (19.0, 32.0, 24.0, 16.0, 5.5, 2.5, 1.0),
     "sun_belt": (15.0, 25.0, 25.0, 22.0, 8.0, 3.0, 2.0),

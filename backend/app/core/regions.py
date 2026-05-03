@@ -1,7 +1,7 @@
 """U.S. state → investor discount cohort for regional probability.
 
 Used by IQ Verdict cumulative discount probability (Sale-to-list style cohorts).
-See docs/INVESTOR_DISCOUNT_DATA.md for methodology.
+See docs/calculations/INVESTOR_DISCOUNT_DATA.md for methodology.
 """
 
 from __future__ import annotations
