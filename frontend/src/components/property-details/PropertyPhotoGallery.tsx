@@ -92,10 +92,18 @@ export function PropertyPhotoGallery({
     const hasCoords = latitude != null && longitude != null
     let streetViewUrl: string | null = null
     if (apiKey && !streetViewFailed) {
+      // return_error_code=true → Google returns HTTP 404 when no panorama
+      // exists at the location instead of the gray "Sorry, we have no
+      // imagery here" placeholder image (which loads as 200 OK and would
+      // never trigger our <img onError>, leaving a near-white box on dark
+      // mode for off-market properties in gated communities or rural areas).
+      // source=outdoor avoids interior PhotoSpheres for residential homes.
+      // See: https://developers.google.com/maps/documentation/streetview/request-streetview#no-imagery
+      const params = 'size=600x400&source=outdoor&return_error_code=true'
       if (hasCoords) {
-        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${latitude},${longitude}&key=${apiKey}`
+        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?${params}&location=${latitude},${longitude}&key=${apiKey}`
       } else if (address) {
-        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodeURIComponent(address)}&key=${apiKey}`
+        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?${params}&location=${encodeURIComponent(address)}&key=${apiKey}`
       }
     }
 
