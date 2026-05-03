@@ -209,7 +209,7 @@ function BillingContent() {
 
   return (
     <>
-    <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} returnTo="/billing" />
+    <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} returnTo="/billing" initialAnnual={isAnnual} />
     <div
       className="min-h-screen bg-[var(--surface-base)]"
       style={{ color: 'var(--text-heading)', fontFamily: FONT_DM, lineHeight: 1.7 }}

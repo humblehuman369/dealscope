@@ -1060,6 +1060,7 @@ export default function PricingContent() {
         isOpen={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
         returnTo="/pricing"
+        initialAnnual={isAnnual}
       />
 
       {/* ─── MOBILE STICKY CTA ─── */}
