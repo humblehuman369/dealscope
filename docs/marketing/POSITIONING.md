@@ -13,7 +13,7 @@ DealGapIQ is a real-estate investment SaaS that turns any US property address in
 
 ### In one paragraph
 
-Listing sites end at price. Investor calculators end at cash flow. Neither tells an investor *how to actually close a marginal deal*. DealGapIQ is the synthesis layer: paste an address, get a multi-source verdict (IQ Estimate, Zillow, RentCast, Redfin, public records), see the four ways the deal could close — price cut, capital, financing, income re-verification, or a blended creative-finance plan — and get a printable pitch script for each one. The tool the investor used to keep in Excel, packaged so 30 properties take 30 minutes instead of 30 weekends.
+Listing sites end at price. Investor calculators end at cash flow. Neither tells an investor *how to actually close a marginal deal*. DealGapIQ is the synthesis layer: either scan property with phone camera, enter an address, or search by map to get a multi-source verdict (IQ Estimate, Zillow, RentCast, Redfin, public records), see the four ways the deal could close — price cut, capital, financing, income re-verification, or a blended creative-finance plan — and get a printable pitch script for each one. The tool the investor used to keep in Excel, packaged so 30 properties take 30 minutes instead of 30 weekends.
 
 ### The core flow
 
