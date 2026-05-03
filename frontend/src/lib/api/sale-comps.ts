@@ -7,6 +7,7 @@ import { haversineDistance, calculateSimilarity } from './comps-transform-utils'
 import type { CompsIdentifier, SaleComp, SubjectProperty } from './types'
 
 const SIMILAR_SOLD_ENDPOINT = '/api/v1/similar-sold'
+const RENTCAST_SALE_ENDPOINT = '/api/v1/rentcast/sale-comps'
 
 interface BackendCompsResponse {
   success?: boolean
@@ -70,12 +71,12 @@ export function transformSaleComps(
       ? (item as { property: unknown }).property
       : item) as Record<string, unknown>
     const addr = (comp?.address as Record<string, unknown>) ?? {}
-    const address = toStr(addr.streetAddress ?? addr.street ?? comp?.address ?? comp?.fullAddress ?? comp?.streetAddress ?? '')
+    const address = toStr(addr.streetAddress ?? addr.street ?? comp?.formattedAddress ?? comp?.addressLine1 ?? comp?.address ?? comp?.fullAddress ?? comp?.streetAddress ?? '')
     const city = toStr(addr.city ?? comp?.city ?? '')
     const state = toStr(addr.state ?? comp?.state ?? '')
-    const zip = toStr(addr.zipcode ?? addr.zip ?? comp?.zip ?? comp?.zipcode ?? '')
+    const zip = toStr(addr.zipcode ?? addr.zip ?? comp?.zipCode ?? comp?.zip ?? comp?.zipcode ?? '')
     const salePrice = toNum(comp?.lastSoldPrice ?? comp?.soldPrice ?? comp?.salePrice ?? comp?.price ?? 0)
-    const sqft = toNum(comp?.livingAreaValue ?? comp?.livingArea ?? comp?.sqft ?? comp?.squareFeet ?? comp?.finishedSqFt ?? 0)
+    const sqft = toNum(comp?.livingAreaValue ?? comp?.livingArea ?? comp?.squareFootage ?? comp?.sqft ?? comp?.squareFeet ?? comp?.finishedSqFt ?? 0)
     const saleDateRaw = comp?.dateSold ?? comp?.saleDate ?? comp?.soldDate ?? comp?.lastSoldDate ?? ''
     const saleDate = saleDateRaw ? new Date(saleDateRaw as string).toISOString().split('T')[0] : ''
     const daysAgo = saleDate
@@ -171,7 +172,9 @@ export function transformSaleComps(
 }
 
 /**
- * Fetch sale comps from backend and return transformed SaleComp[].
+ * Fetch sale comps: try AXESSO similar-sold first (richer Zillow metadata),
+ * fall back to RentCast sale comps when AXESSO returns no comps OR returns
+ * comps with no usable sale prices (a known upstream gap in some markets).
  */
 export async function fetchSaleComps(
   identifier: CompsIdentifier,
@@ -200,38 +203,73 @@ export async function fetchSaleComps(
   if (params.limit === undefined) params.limit = '10'
   if (params.offset === undefined) params.offset = '0'
 
-  const res = await axessoGet<BackendCompsResponse>(
+  const axessoRes = await axessoGet<BackendCompsResponse>(
     SIMILAR_SOLD_ENDPOINT,
     params,
     undefined,
     options?.signal
   )
 
-  if (!res.ok || !res.data) {
-    return {
-      ...res,
-      data: null,
+  if (axessoRes.ok && axessoRes.data) {
+    const body = axessoRes.data as BackendCompsResponse
+    if (body.success !== false) {
+      const transformed = transformSaleComps(axessoRes.data, subject)
+      const hasUsablePrices = transformed.some((c) => c.salePrice > 0)
+      if (transformed.length > 0 && hasUsablePrices) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[comps_api] similar-sold (axesso) transformed', {
+            count: transformed.length,
+            rawResultsLength: Array.isArray(body.results) ? body.results.length : 0,
+          })
+        }
+        return { ...axessoRes, data: transformed }
+      }
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[comps_api] AXESSO similar-sold has no priced comps, falling back to RentCast', {
+          count: transformed.length,
+          hasUsablePrices,
+        })
+      }
     }
   }
 
-  const body = res.data as BackendCompsResponse
-  if (body.success === false) {
+  // Fallback: RentCast sale comps (avm/value comparables[]). Reliably returns
+  // sold prices, distance, and dates; lacks Zillow zpids/photos.
+  const rcParams: Record<string, string> = {}
+  if (identifier.zpid) rcParams.zpid = identifier.zpid
+  if (identifier.address) rcParams.address = identifier.address
+  if (identifier.limit != null) rcParams.limit = String(identifier.limit)
+  if (identifier.offset != null) rcParams.offset = String(identifier.offset)
+  if (identifier.exclude_zpids) rcParams.exclude_zpids = identifier.exclude_zpids
+
+  const rcRes = await axessoGet<BackendCompsResponse>(
+    RENTCAST_SALE_ENDPOINT,
+    rcParams,
+    undefined,
+    options?.signal
+  )
+
+  if (!rcRes.ok || !rcRes.data) {
+    // Surface the original AXESSO failure if RentCast also failed, so callers
+    // see the most useful upstream error context.
+    return axessoRes.ok ? { ...rcRes, data: null } : { ...axessoRes, data: null }
+  }
+
+  const rcBody = rcRes.data as BackendCompsResponse
+  if (rcBody.success === false) {
     return {
       ok: false,
       data: null,
-      status: res.status,
-      error: body.error ?? 'Failed to load comparable sales',
-      attempts: res.attempts,
-      durationMs: res.durationMs,
+      status: rcRes.status,
+      error: rcBody.error ?? 'Failed to load comparable sales',
+      attempts: rcRes.attempts,
+      durationMs: rcRes.durationMs,
     }
   }
 
-  const transformed = transformSaleComps(res.data, subject)
+  const transformed = transformSaleComps(rcRes.data, subject)
   if (process.env.NODE_ENV !== 'production') {
-    console.log('[comps_api] similar-sold transformed', { count: transformed.length, rawResultsLength: Array.isArray(body.results) ? body.results.length : 0 })
+    console.log('[comps_api] sale-comps (rentcast fallback) transformed', { count: transformed.length })
   }
-  return {
-    ...res,
-    data: transformed,
-  }
+  return { ...rcRes, data: transformed }
 }

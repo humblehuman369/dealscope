@@ -56,11 +56,18 @@ describe('comps API (sale-comps)', () => {
     })
 
     it('uses address when zpid not provided', async () => {
-      fetchMock.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ success: true, results: [] }),
-      })
+      // Empty AXESSO triggers RentCast fallback; mock both calls.
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true, results: [] }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true, results: [] }),
+        })
 
       await fetchSaleComps({ address: '123 Main St, City, ST 12345' })
 
@@ -70,41 +77,108 @@ describe('comps API (sale-comps)', () => {
       )
     })
 
-    it('returns not ok when API returns 200 with success: false', async () => {
-      fetchMock.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ success: false, error: 'No data from provider' }),
-      })
+    it('returns not ok when both AXESSO and RentCast fail', async () => {
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ success: false, error: 'No data from provider' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ success: false, error: 'RentCast also unavailable' }),
+        })
 
       const result = await fetchSaleComps({ zpid: '123' })
 
       expect(result.ok).toBe(false)
       expect(result.data).toBeNull()
-      expect(result.error).toContain('No data from provider')
     })
 
-    it('returns not ok for 404 and does not retry', async () => {
-      fetchMock.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        json: async () => ({}),
-      })
+    it('falls back to RentCast when AXESSO returns 404', async () => {
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+          json: async () => ({}),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            success: true,
+            results: [
+              {
+                id: 'rc-1',
+                formattedAddress: '123 RC Ave, City, ST 12345',
+                bedrooms: 3,
+                bathrooms: 2,
+                squareFootage: 1500,
+                price: 425000,
+                lastSoldPrice: 425000,
+                dateSold: '2025-09-01',
+              },
+            ],
+          }),
+        })
 
       const result = await fetchSaleComps({ zpid: '123' })
 
-      expect(result.ok).toBe(false)
-      expect(result.status).toBe(404)
-      expect(result.data).toBeNull()
-      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(result.ok).toBe(true)
+      expect(result.data).not.toBeNull()
+      expect(result.data!.length).toBe(1)
+      expect(result.data![0].salePrice).toBe(425000)
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      expect(fetchMock.mock.calls[1][0]).toEqual(
+        expect.stringContaining('/api/v1/rentcast/sale-comps')
+      )
+    })
+
+    it('falls back to RentCast when AXESSO returns comps with no prices', async () => {
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            success: true,
+            results: [
+              { zpid: 'a1', address: {}, lastSoldPrice: null, price: 0, livingAreaValue: 1500 },
+              { zpid: 'a2', address: {}, lastSoldPrice: null, price: 0, livingAreaValue: 1600 },
+            ],
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            success: true,
+            results: [
+              { id: 'rc-1', formattedAddress: '1 Comp Ln', bedrooms: 3, bathrooms: 2, squareFootage: 1500, price: 510000, dateSold: '2025-08-15' },
+            ],
+          }),
+        })
+
+      const result = await fetchSaleComps({ zpid: '999' })
+
+      expect(result.ok).toBe(true)
+      expect(result.data).not.toBeNull()
+      expect(result.data![0].salePrice).toBe(510000)
+      expect(fetchMock).toHaveBeenCalledTimes(2)
     })
 
     it('passes limit, offset, and exclude_zpids when provided', async () => {
-      fetchMock.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ success: true, results: [] }),
-      })
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true, results: [] }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true, results: [] }),
+        })
 
       await fetchSaleComps({
         zpid: '123',
