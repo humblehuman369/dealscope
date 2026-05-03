@@ -309,6 +309,44 @@ function StrategyContent() {
     [dealStructurePaths, cachedDealStructurePaths],
   )
 
+  /**
+   * Lock the visual order of the four Path buttons to the first non-empty
+   * lineup we receive for a given address. Without this, applying a path
+   * triggers a backend recalc which promotes the just-applied structure to
+   * highest-ranked, so it takes slot 1 on the next render — making it look
+   * like the buttons "rotate" each time the user clicks one. Buttons keyed
+   * by structure id stay in their original slots; new structures (rare,
+   * but possible if a recalc surfaces a previously-unranked option) are
+   * appended to the end so existing slots never move.
+   */
+  const [lockedPathOrder, setLockedPathOrder] = useState<string[]>([])
+
+  useEffect(() => {
+    setLockedPathOrder([])
+  }, [addressParam])
+
+  useEffect(() => {
+    if (displayDealStructurePaths.length === 0) return
+    setLockedPathOrder((prev) => {
+      if (prev.length === 0) {
+        return displayDealStructurePaths.map((p) => p.id)
+      }
+      const known = new Set(prev)
+      const additions = displayDealStructurePaths
+        .map((p) => p.id)
+        .filter((id) => !known.has(id))
+      return additions.length > 0 ? [...prev, ...additions] : prev
+    })
+  }, [displayDealStructurePaths])
+
+  const orderedDealStructurePaths = useMemo(() => {
+    if (lockedPathOrder.length === 0) return displayDealStructurePaths
+    const byId = new Map(displayDealStructurePaths.map((p) => [p.id, p]))
+    return lockedPathOrder
+      .map((id) => byId.get(id))
+      .filter((p): p is DealStructure => p !== undefined)
+  }, [displayDealStructurePaths, lockedPathOrder])
+
   /** Fire once per address when the Strategy page surfaces path buttons. */
   const pathsRenderedAddressRef = useRef<string | null>(null)
   useEffect(() => {
@@ -1759,7 +1797,7 @@ function StrategyContent() {
                 )}
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                {displayDealStructurePaths.slice(0, 4).map((p, i) => (
+                {orderedDealStructurePaths.slice(0, 4).map((p, i) => (
                   <PathButton
                     key={p.id}
                     structure={p}
