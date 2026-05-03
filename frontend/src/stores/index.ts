@@ -49,7 +49,7 @@ if (typeof window !== 'undefined') {
  * DO NOT reference DEFAULT_ASSUMPTIONS directly in components.
  * Always use the useDefaults() hook instead.
  * 
- * See docs/DEFAULTS_ARCHITECTURE.md for full details.
+ * See docs/architecture/DEFAULTS_ARCHITECTURE.md for full details.
  */
 
 // Types

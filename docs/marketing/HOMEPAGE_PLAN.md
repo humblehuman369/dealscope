@@ -2,7 +2,7 @@
 
 A complete homepage rewrite designed around the Four Paths feature (three single-lever structures plus one Blended Plan). Six sections, locked copy, visual treatment notes, and an implementation brief ready for a designer or developer to build.
 
-**Companion to:** `THREE_PATHS_PLAN.md` (which covers the engineering work). This doc covers the positioning and copy.
+**Companion to:** [`docs/feature-plans/FOUR_PATHS.md`](../feature-plans/FOUR_PATHS.md) (engineering plan for Four Paths). This doc covers the positioning and copy.
 
 ---
 

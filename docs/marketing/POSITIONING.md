@@ -1,6 +1,90 @@
-# DealGapIQ — Marketing Brand Content Template
+# DealGapIQ — Positioning (internal)
 
-> Source of truth for who we are, who we serve, and what we say. Every line should help a writer or designer make a confident on-brand decision without asking. Edit any section freely — this draft was pre-filled from `HOMEPAGE_MARKETING_PLAN.md`, `THREE_PATHS_PLAN.md`, and `README.md`.
+> One-page positioning for investors, partners, advisors, and new hires: what we do, who buys it, and why the structure of the offer — not the price tag — is the product.  
+> This document merges the former `DEALGAPIQ_OVERVIEW.md` and `BRAND_CONTENT_TEMPLATE.md`. Update when positioning, pricing, or persona definitions change.
+
+---
+
+## At a glance (company overview)
+
+### In one sentence
+
+DealGapIQ is a real-estate investment SaaS that turns any US property address into a 15-second verdict, four pre-built offer structures designed to close the gap, and the negotiation script for each.
+
+### In one paragraph
+
+Listing sites end at price. Investor calculators end at cash flow. Neither tells an investor *how to actually close a marginal deal*. DealGapIQ is the synthesis layer: paste an address, get a multi-source verdict (IQ Estimate, Zillow, RentCast, Redfin, public records), see the four ways the deal could close — price cut, capital, financing, income re-verification, or a blended creative-finance plan — and get a printable pitch script for each one. The tool the investor used to keep in Excel, packaged so 30 properties take 30 minutes instead of 30 weekends.
+
+### The core flow
+
+1. **Verdict** — One address in, multi-source valuation out. A Deal Gap % (verified value vs. asking) and a plain-English explanation a 5th grader could read.
+2. **Four Paths** — Three single-lever offers (price, capital, income re-verification) plus one Blended Plan that combines smaller asks. The "structure investors miss" layer.
+3. **Negotiation Playbook** — Per-structure pitch script: who to call, the frame, the opener, the ask, what's in it for the seller. Print, email, or copy-to-clipboard.
+4. **Strategy worksheet** — Pre-loaded with the chosen path's levers, ready to refine across six investment strategies (LTR, STR, BRRRR, Fix & Flip, House Hack, Wholesale).
+
+### What's under the hood
+
+| Capability | What it is |
+|---|---|
+| Multi-source valuation | IQ Estimate (proprietary blend), Zillow Zestimate, RentCast AVM, Redfin, public records |
+| Creative-finance modeling | Subject-To, seller carrybacks, 0% 2nds, rate buydowns, assumable mortgages, FHA house-hack, the Morby Method |
+| Six strategy calculators | LTR, STR, BRRRR, Fix & Flip, House Hack, Wholesale — full P&L per strategy |
+| Trust-first design | Every metric shows its data source. Switch the source, watch the math change. Nothing is fabricated; missing data shows as "Unavailable." |
+| Mobile + web | One codebase deployed to web, iOS, and Android via Capacitor |
+| Exportable reports | PDF, Excel, CSV for due diligence |
+
+### What we deliberately don't do
+
+- We don't give financial, legal, or investment advice. *We analyze. You decide.*
+- We don't model wraparound mortgages or land contracts (deferred pending state-by-state legal review).
+- We don't claim every property is a deal. Only that **every property has more leverage than the asking price suggests.**
+
+### Who buys it (summary)
+
+**Primary persona — the active investor:** A residential real-estate investor analyzing **20–100 properties to close 1–3 per year**, typically owning **1–50 doors** or actively working toward their first acquisition.
+
+**Why they buy**
+
+| Pain they feel today | What DealGapIQ replaces |
+|---|---|
+| "I analyzed 30 properties this month to find one candidate." | Excel templates rebuilt per property |
+| "Listing sites tell me the price; nobody tells me if it pencils." | Zillow / Redfin / Realtor.com (where their search ends) |
+| "Calculators confirm the math doesn't work — but not how to make it work." | DealCheck, BiggerPockets calc, Mashvisor (where their analysis ends) |
+| "I know what Sub2 is. I freeze when it's time to pitch it on the phone." | Coaching programs and forum threads (where execution stalls) |
+
+The willingness-to-pay driver isn't analysis — investors can analyze. It's **synthesis under time pressure**: turning a marginal listing into a credible offer script before someone else does.
+
+**Secondary segments**
+
+| Segment | What they care about |
+|---|---|
+| **Wholesalers** | Fast verdicts on off-market leads; assignment-fee math |
+| **House hackers** | First-time buyers running FHA scenarios; the strategy_switch path |
+| **Cold-market buy-and-hold investors** | Price negotiation + seller-financing structures (the only way deals pencil in their market) |
+| **Coaches and educators** *(channel partners, not end users)* | A live tool that proves their teaching curriculum on real properties |
+
+### How we're different
+
+The competitive moat is the **synthesis layer** — turning a verdict into actionable, structure-aware offers with a script.
+
+| | Listing sites *(Zillow, Redfin)* | Investor calculators *(DealCheck, BP, Mashvisor)* | **DealGapIQ** |
+|---|:---:|:---:|:---:|
+| Find properties | ✓ | — | ✓ |
+| Multi-source valuation | partial | partial | ✓ |
+| Cash-flow analysis | — | ✓ | ✓ |
+| Deal Gap verdict (verified vs. asking) | — | partial | ✓ |
+| Pre-built offer structures (four per property) | — | — | ✓ |
+| Creative-finance modeling (Sub2, seller carry, 0% 2nds) | — | — | ✓ |
+| Per-structure negotiation script | — | — | ✓ |
+| Off-market property analysis | — | partial | ✓ |
+
+**The one-line moat:** *That's where most tools stop. DealGapIQ keeps going.*
+
+### Market & monetization
+
+- **Pricing posture:** Free verdict, no signup, no credit card for the entry analysis. Paid tier(s) gate strategy worksheets, negotiation scripts, exports, and saved properties. Mobile IAP via RevenueCat; web checkout via Stripe.
+- **Acquisition motion:** SEO (creative-finance glossary pages), founder-led content in the BiggerPockets / Subto orbit, free verdict as the conversion event, lead magnet (Creative Finance Field Guide PDF) for top-of-funnel.
+- **Distribution surfaces:** Web (`dealgapiq.com`), iOS, Android — all rendering the same React app.
 
 ---
 
@@ -159,17 +243,19 @@
 
 ---
 
-## 5. Brand Documents *(optional)*
+## 5. Brand documents & downstream artifacts
 
 Link or attach as each becomes available.
 
-- **Brand guidelines / style guide:** *TBD — derive from this template + `globals.css` tokens.*
-- **Messaging framework / positioning doc:** [HOMEPAGE_MARKETING_PLAN.md](HOMEPAGE_MARKETING_PLAN.md) is the de facto positioning doc today.
-- **Product / engineering plan:** [THREE_PATHS_PLAN.md](THREE_PATHS_PLAN.md) — Four Paths feature, copy doctrine, ranking signals.
+- **Brand guidelines / style guide:** [`BRAND_AND_STYLE_GUIDE.md`](./BRAND_AND_STYLE_GUIDE.md)
+- **Messaging framework / homepage copy spec:** [`HOMEPAGE_PLAN.md`](./HOMEPAGE_PLAN.md)
+- **Product / engineering plan (Four Paths):** [`../feature-plans/FOUR_PATHS.md`](../feature-plans/FOUR_PATHS.md)
+- **Agency-facing campaign guide:** [`MARKETING_GUIDE.md`](./MARKETING_GUIDE.md)
+- **Zero-budget launch plan:** [`LAUNCH_MARKETING_PLAN.md`](./LAUNCH_MARKETING_PLAN.md)
 - **Boilerplate / "About us" copy:** *TBD — draft once founder-note signing decision (Section 5b of homepage plan) is made.*
 - **Press kit:** *TBD.*
 - **Customer case studies:** *Not in v1 — homepage plan deliberately omits stock testimonials. Add real, written-consent case studies as users opt in.*
-- **Competitive battlecards:** see the Section 4 comparison table in [HOMEPAGE_MARKETING_PLAN.md](HOMEPAGE_MARKETING_PLAN.md). Quarterly refresh required to stay credible.
+- **Competitive battlecards:** see the Section 4 comparison table in [`HOMEPAGE_PLAN.md`](./HOMEPAGE_PLAN.md). Quarterly refresh required to stay credible.
 - **FAQ / objection-handling doc:** *TBD — start with the top 5 from support / sales calls once they exist.*
 - **Lead magnet — Creative Finance Field Guide (PDF):** *Needs to be written.* One page front/back covering Subject-To, seller carrybacks, 0% 2nds, rate buydowns, assumable-mortgage play.
 - **Glossary of Creative Finance Terms:** SEO play; one page per term (Subject-To, Wraparound, Seller Carry, 2-1 Buydown, Assumable, Morby Method, FHA House-Hack, Blended Plan).
@@ -177,5 +263,15 @@ Link or attach as each becomes available.
 
 ---
 
-*Last updated: 2026-04-30*
+## The manifesto
+
+> The price tag isn't the deal. The structure is.
+>
+> Built for the investor who knows that good deals don't show up in a feed — they're constructed.
+>
+> *We analyze. You decide.*
+
+---
+
+*Last updated: 2026-05-03*  
 *Owner: Brad Geisen (brad@geisen.cc)*

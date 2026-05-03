@@ -342,7 +342,7 @@ export function ScoreMethodologySheet({
 
                 <p className="text-[11px] mt-4 leading-relaxed" style={{ color: T.label }}>
                   Sources: Redfin 2025 MLS sale-to-list, Cotality Q4 2025 Home Investor Report, Realtor.com Q1 2026 Market
-                  Clock (methodology in docs/INVESTOR_DISCOUNT_DATA.md).
+                  Clock (methodology in docs/calculations/INVESTOR_DISCOUNT_DATA.md).
                 </p>
               </div>
             </section>

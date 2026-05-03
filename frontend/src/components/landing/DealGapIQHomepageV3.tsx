@@ -4,7 +4,7 @@
  * DealGapIQHomepageV3
  *
  * Homepage rebuild centered on the Four Paths feature.
- * Source of truth for copy: HOMEPAGE_MARKETING_PLAN.md at the project root.
+ * Source of truth for copy: docs/marketing/HOMEPAGE_PLAN.md
  *
  * Sections (top → bottom):
  *  1. Hero — "Stop Scrolling Listings. Start Hunting Real Deals. Close Four Different Ways."

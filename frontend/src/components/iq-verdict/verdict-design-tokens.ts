@@ -2,7 +2,7 @@
  * VerdictIQ Design Tokens
  * 
  * A focused design system with specific tokens for the VerdictIQ page.
- * Based on an 8px spacing scale. See docs/BRAND_AND_STYLE_GUIDE.md.
+ * Based on an 8px spacing scale. See docs/marketing/BRAND_AND_STYLE_GUIDE.md.
  * 
  * Usage:
  * - Import tokens directly: import { spacing, typography, colors } from './verdict-design-tokens'

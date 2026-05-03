@@ -14,7 +14,7 @@ import { apiRequest } from '@/lib/api-client'
  * 
  * NOTE: Default values in this store are fallbacks only.
  * The store initializes from the centralized defaults API.
- * See docs/DEFAULTS_ARCHITECTURE.md for details.
+ * See docs/architecture/DEFAULTS_ARCHITECTURE.md for details.
  *
  * ARCHITECTURAL NOTE (M10 parity audit):
  * The frontend store is single-property focused (one worksheet at a time),
