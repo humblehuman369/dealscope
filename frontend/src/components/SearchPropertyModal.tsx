@@ -46,6 +46,10 @@ async function geocodeLocationQuery(
 
 type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable';
 
+/** Sky-tint surface + token base — theme-safe (no hardcoded page backgrounds). */
+const SEARCH_OPTION_CARD_BG =
+  'linear-gradient(180deg, rgba(15,164,233,0.05) 0%, rgba(15,164,233,0) 100%), var(--surface-base)';
+
 interface SearchPropertyModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -274,7 +278,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       >
         {/* Modal Content - fills the phone viewport on mobile, centered card on tablet+ */}
         <div 
-          className="relative w-full h-full overflow-y-auto sm:h-auto sm:max-w-md sm:rounded-2xl flex flex-col px-5 sm:p-8"
+          className="relative w-full h-full overflow-y-auto sm:h-auto sm:max-w-md sm:rounded-2xl flex flex-col min-h-0 px-5 sm:p-8"
           style={{
             background: 'var(--surface-base)',
             border: '1px solid var(--border-subtle)',
@@ -293,128 +297,179 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
             <X size={24} />
           </button>
 
-          {/* Header - IQ icon on left, text on right, left-aligned */}
-          <div className="mb-6 sm:mb-8 mt-2 sm:mt-0">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] flex-shrink-0 flex items-center justify-center">
-                <Image
-                  src="/images/dealgapiq-icon.png"
-                  alt="DealGap IQ" 
-                  className="w-[66px] h-[66px] sm:w-[78px] sm:h-[78px] object-contain"
-                  width={78}
-                  height={78}
-                />
-              </div>
-              <div className="min-w-0 pr-10 sm:pr-0">
-                <h2 className="text-xl sm:text-xl font-bold text-[var(--text-heading)] leading-tight">
-                  {showAddressInput ? 'Enter info to search' : 'How would you like to search property?'}
+          <div className="flex flex-col flex-1 min-h-0 sm:flex-none">
+            {/* Mobile: centered hero (search options) */}
+            {!showAddressInput && (
+              <div className="sm:hidden flex flex-col items-center text-center mt-1 mb-2">
+                <div className="relative w-[112px] h-[112px] flex items-center justify-center mb-4">
+                  <div
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] pointer-events-none rounded-full"
+                    style={{
+                      background: 'radial-gradient(circle, rgba(15,164,233,0.22) 0%, transparent 70%)',
+                      filter: 'blur(8px)',
+                    }}
+                    aria-hidden
+                  />
+                  <Image
+                    src="/images/dealgapiq-icon.png"
+                    alt="DealGap IQ"
+                    className="relative z-[1] w-[104px] h-[104px] object-contain"
+                    width={104}
+                    height={104}
+                  />
+                </div>
+                <h2 className="text-2xl font-bold text-[var(--text-heading)] leading-tight px-2">
+                  How would you like to search property?
                 </h2>
               </div>
+            )}
+
+            {/* Mobile: compact hero (address entry) */}
+            {showAddressInput && (
+              <div className="sm:hidden flex flex-col items-center text-center mt-1 mb-4">
+                <div className="relative w-20 h-20 flex items-center justify-center mb-3">
+                  <div
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] pointer-events-none rounded-full"
+                    style={{
+                      background: 'radial-gradient(circle, rgba(15,164,233,0.18) 0%, transparent 70%)',
+                      filter: 'blur(6px)',
+                    }}
+                    aria-hidden
+                  />
+                  <Image
+                    src="/images/dealgapiq-icon.png"
+                    alt="DealGap IQ"
+                    className="relative z-[1] w-16 h-16 object-contain"
+                    width={64}
+                    height={64}
+                  />
+                </div>
+                <h2 className="text-xl font-bold text-[var(--text-heading)] leading-tight px-2">
+                  Enter info to search
+                </h2>
+              </div>
+            )}
+
+            {/* Desktop / tablet: left-aligned header (unchanged pattern) */}
+            <div className="hidden sm:block mb-6 sm:mb-8 sm:mt-0">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-[84px] h-[84px] flex-shrink-0 flex items-center justify-center">
+                  <Image
+                    src="/images/dealgapiq-icon.png"
+                    alt="DealGap IQ"
+                    className="w-[78px] h-[78px] object-contain"
+                    width={78}
+                    height={78}
+                  />
+                </div>
+                <div className="min-w-0 pr-10 sm:pr-0">
+                  <h2 className="text-xl font-bold text-[var(--text-heading)] leading-tight">
+                    {showAddressInput ? 'Enter info to search' : 'How would you like to search property?'}
+                  </h2>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Options or Address Input */}
-          {!showAddressInput ? (
-            <div className="space-y-4 sm:space-y-4">
-              {/* Scan Property Option */}
-              <button 
-                onClick={handleScanProperty}
-                className="w-full flex items-center gap-4 sm:gap-5 p-5 sm:p-5 rounded-xl border transition-all text-left"
-                style={{
-                  background: 'var(--surface-base)',
-                  border: '1px solid var(--border-subtle)',
-                  boxShadow: 'var(--shadow-card)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.border = '1px solid var(--border-focus)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.border = '1px solid var(--border-subtle)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-card)';
-                }}
-              >
-                <div 
-                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'var(--accent-sky)' }}
-                >
-                  <Camera size={28} className="text-[var(--text-inverse)]" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text-heading)' }}>Scan Property</h3>
-                  <p className="text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
-                    Point your phone camera to scan any property for quick lookup
-                  </p>
-                </div>
-              </button>
+            {/* Options or Address Input */}
+            {!showAddressInput ? (
+              <>
+                <div className="flex-1 sm:flex-none min-h-0" aria-hidden />
+                <div className="space-y-4 sm:space-y-4 w-full shrink-0">
+                  {/* Scan Property Option */}
+                  <button
+                    type="button"
+                    onClick={handleScanProperty}
+                    className="w-full flex items-center gap-5 rounded-xl border transition-all duration-150 text-left
+                      p-6 sm:p-5
+                      border-[color:rgba(56,189,248,0.35)] shadow-[0_0_0_1px_rgba(56,189,248,0.15),0_0_28px_rgba(15,164,233,0.22)]
+                      sm:border-[color:var(--border-subtle)] sm:shadow-[var(--shadow-card)]
+                      hover:border-[color:var(--accent-sky)] hover:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]
+                      sm:hover:border-[color:var(--border-focus)] sm:hover:shadow-[var(--shadow-card-hover)]
+                      active:scale-[0.99] active:border-[color:var(--accent-sky)] active:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]"
+                    style={{ background: SEARCH_OPTION_CARD_BG }}
+                  >
+                    <div
+                      className="w-16 h-16 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'var(--accent-sky)' }}
+                    >
+                      <Camera size={32} className="text-[var(--text-inverse)] sm:hidden" />
+                      <Camera size={28} className="text-[var(--text-inverse)] hidden sm:block" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-lg sm:text-base font-bold mb-1" style={{ color: 'var(--text-heading)' }}>
+                        Scan Property
+                      </h3>
+                      <p className="text-sm leading-relaxed sm:leading-snug" style={{ color: 'var(--text-body)' }}>
+                        Point your phone camera to scan any property for quick lookup
+                      </p>
+                    </div>
+                  </button>
 
-              {/* Enter Address Option */}
-              <button 
-                onClick={() => setShowAddressInput(true)}
-                className="w-full flex items-center gap-4 sm:gap-5 p-5 sm:p-5 rounded-xl border transition-all text-left"
-                style={{
-                  background: 'var(--surface-base)',
-                  border: '1px solid var(--border-subtle)',
-                  boxShadow: 'var(--shadow-card)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.border = '1px solid var(--border-focus)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.border = '1px solid var(--border-subtle)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-card)';
-                }}
-              >
-                <div 
-                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'var(--accent-sky)' }}
-                >
-                  <Search size={28} className="text-[var(--text-inverse)]" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text-heading)' }}>Enter Address or search</h3>
-                  <p className="text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
-                    Type or paste any residential address, city, state or zipcode
-                  </p>
-                </div>
-              </button>
+                  {/* Enter Address Option */}
+                  <button
+                    type="button"
+                    onClick={() => setShowAddressInput(true)}
+                    className="w-full flex items-center gap-5 rounded-xl border transition-all duration-150 text-left
+                      p-6 sm:p-5
+                      border-[color:rgba(56,189,248,0.35)] shadow-[0_0_0_1px_rgba(56,189,248,0.15),0_0_28px_rgba(15,164,233,0.22)]
+                      sm:border-[color:var(--border-subtle)] sm:shadow-[var(--shadow-card)]
+                      hover:border-[color:var(--accent-sky)] hover:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]
+                      sm:hover:border-[color:var(--border-focus)] sm:hover:shadow-[var(--shadow-card-hover)]
+                      active:scale-[0.99] active:border-[color:var(--accent-sky)] active:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]"
+                    style={{ background: SEARCH_OPTION_CARD_BG }}
+                  >
+                    <div
+                      className="w-16 h-16 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'var(--accent-sky)' }}
+                    >
+                      <Search size={32} className="text-[var(--text-inverse)] sm:hidden" />
+                      <Search size={28} className="text-[var(--text-inverse)] hidden sm:block" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-lg sm:text-base font-bold mb-1" style={{ color: 'var(--text-heading)' }}>
+                        Enter Address or search
+                      </h3>
+                      <p className="text-sm leading-relaxed sm:leading-snug" style={{ color: 'var(--text-body)' }}>
+                        Type or paste any residential address, city, state or zipcode
+                      </p>
+                    </div>
+                  </button>
 
-              {/* Map Search Option */}
-              <button 
-                onClick={handleMapSearch}
-                className="w-full flex items-center gap-4 sm:gap-5 p-5 sm:p-5 rounded-xl border transition-all text-left"
-                style={{
-                  background: 'var(--surface-base)',
-                  border: '1px solid var(--border-subtle)',
-                  boxShadow: 'var(--shadow-card)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.border = '1px solid var(--border-focus)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.border = '1px solid var(--border-subtle)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-card)';
-                }}
-              >
-                <div 
-                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'var(--accent-sky)' }}
-                >
-                  <MapIcon size={28} className="text-[var(--text-inverse)]" />
+                  {/* Map Search Option */}
+                  <button
+                    type="button"
+                    onClick={handleMapSearch}
+                    className="w-full flex items-center gap-5 rounded-xl border transition-all duration-150 text-left
+                      p-6 sm:p-5
+                      border-[color:rgba(56,189,248,0.35)] shadow-[0_0_0_1px_rgba(56,189,248,0.15),0_0_28px_rgba(15,164,233,0.22)]
+                      sm:border-[color:var(--border-subtle)] sm:shadow-[var(--shadow-card)]
+                      hover:border-[color:var(--accent-sky)] hover:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]
+                      sm:hover:border-[color:var(--border-focus)] sm:hover:shadow-[var(--shadow-card-hover)]
+                      active:scale-[0.99] active:border-[color:var(--accent-sky)] active:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]"
+                    style={{ background: SEARCH_OPTION_CARD_BG }}
+                  >
+                    <div
+                      className="w-16 h-16 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'var(--accent-sky)' }}
+                    >
+                      <MapIcon size={32} className="text-[var(--text-inverse)] sm:hidden" />
+                      <MapIcon size={28} className="text-[var(--text-inverse)] hidden sm:block" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-lg sm:text-base font-bold mb-1" style={{ color: 'var(--text-heading)' }}>
+                        Map Search
+                      </h3>
+                      <p className="text-sm leading-relaxed sm:leading-snug" style={{ color: 'var(--text-body)' }}>
+                        Browse an area on the map with filters to find the best deals
+                      </p>
+                    </div>
+                  </button>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text-heading)' }}>Map Search</h3>
-                  <p className="text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
-                    Browse an area on the map with filters to find the best deals
-                  </p>
-                </div>
-              </button>
-            </div>
-          ) : (
+                <div className="flex-1 sm:flex-none min-h-0" aria-hidden />
+              </>
+            ) : (
             /* Address Input Form */
-            <form onSubmit={handleAddressSubmit} className="space-y-5">
+            <form onSubmit={handleAddressSubmit} className="space-y-5 flex flex-col flex-1 min-h-0 sm:flex-none">
               <div className="relative">
                 <Search 
                   size={20} 
@@ -450,7 +505,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                   autoFocus
                   name="address"
                   aria-label="Property address"
-                  className="w-full pl-12 pr-12 py-4 rounded-xl text-[var(--text-heading)] placeholder-[var(--text-label)] outline-none transition-colors"
+                  className="w-full pl-12 pr-12 rounded-xl text-base text-[var(--text-heading)] placeholder-[var(--text-label)] outline-none transition-colors py-5 sm:py-4"
                   style={{
                     background: 'var(--surface-input)',
                     border: '1px solid var(--border-default)',
@@ -569,6 +624,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
               </div>
             </form>
           )}
+          </div>
         </div>
       </div>
 
