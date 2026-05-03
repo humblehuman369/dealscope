@@ -1492,6 +1492,206 @@ class PropertyService:
                 "fetched_at": datetime.now(UTC).isoformat(),
             }
 
+    async def get_rentcast_sale_comps(
+        self,
+        zpid: str | None = None,
+        address: str | None = None,
+        limit: int = 10,
+        offset: int = 0,
+        exclude_zpids: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """
+        Fetch sale comps from RentCast (fallback when AXESSO similar-sold lacks prices).
+
+        Uses RentCast's value AVM endpoint and surfaces the ``comparables`` payload
+        when present. Mirrors :meth:`get_rentcast_rental_comps` but for sold/listed
+        sale comparables.
+        """
+        try:
+            resolved_address = (address or "").strip() or None
+            if not resolved_address and zpid:
+                resolved_address = await self._resolve_address_from_zpid(zpid)
+
+            if not resolved_address:
+                return {
+                    "success": False,
+                    "error": "At least one of address or zpid that resolves to an address is required",
+                    "results": [],
+                    "total_count": 0,
+                    "total_available": 0,
+                    "offset": offset,
+                    "limit": limit,
+                    "has_more": False,
+                    "provider": "rentcast",
+                    "fetched_at": datetime.now(UTC).isoformat(),
+                }
+
+            result = await self.rentcast.get_value_estimate(address=resolved_address)
+            if not result.success or not result.data:
+                logger.warning(
+                    "RentCast sale comps upstream failure",
+                    extra={
+                        "provider": "rentcast",
+                        "resolved_address": resolved_address,
+                        "status_code": result.status_code,
+                        "error": result.error,
+                    },
+                )
+                return {
+                    "success": False,
+                    "error": result.error or "Failed to fetch sale comps from RentCast",
+                    "results": [],
+                    "total_count": 0,
+                    "total_available": 0,
+                    "offset": offset,
+                    "limit": limit,
+                    "has_more": False,
+                    "provider": "rentcast",
+                    "fetched_at": datetime.now(UTC).isoformat(),
+                }
+
+            payload = result.data
+            comps_raw: list[dict[str, Any]] = []
+
+            if isinstance(payload, dict):
+                for key in ("comparables", "comps", "saleComps", "salesComps", "listings", "results", "data"):
+                    candidate = payload.get(key)
+                    if isinstance(candidate, list):
+                        comps_raw = [c for c in candidate if isinstance(c, dict)]
+                        break
+            elif isinstance(payload, list):
+                comps_raw = [c for c in payload if isinstance(c, dict)]
+
+            logger.info(
+                "RentCast sale comps fetched",
+                extra={
+                    "provider": "rentcast",
+                    "resolved_address": resolved_address,
+                    "upstream_status_code": result.status_code,
+                    "raw_comp_count": len(comps_raw),
+                },
+            )
+
+            normalized_comps: list[dict[str, Any]] = []
+            for comp in comps_raw:
+                comp_id = str(comp.get("id") or comp.get("zpid") or comp.get("propertyId") or "")
+                formatted_address = str(comp.get("formattedAddress") or "").strip()
+                address_line1 = str(comp.get("addressLine1") or "").strip()
+                address_line2 = str(comp.get("addressLine2") or "").strip()
+                city = str(comp.get("city") or "").strip()
+                state = str(comp.get("state") or "").strip()
+                zip_code = str(comp.get("zipCode") or comp.get("zipcode") or comp.get("zip") or "").strip()
+                display_address = formatted_address or ", ".join(
+                    p for p in [address_line1, city, f"{state} {zip_code}".strip()] if p
+                )
+
+                # RentCast comparables expose `price` as the sold/list price; map into the
+                # AXESSO-shaped fields the frontend transformer expects (lastSoldPrice/dateSold)
+                # so the same `transformSaleComps` path can consume both providers.
+                sale_price = comp.get("price")
+                date_sold_raw = comp.get("removedDate") or comp.get("lastSeenDate") or comp.get("listedDate")
+
+                normalized_comps.append(
+                    {
+                        "id": comp_id or None,
+                        "zpid": comp.get("zpid"),
+                        "propertyId": comp.get("propertyId"),
+                        "provider": "rentcast",
+                        "formattedAddress": display_address,
+                        "addressLine1": address_line1,
+                        "addressLine2": address_line2,
+                        "city": city,
+                        "state": state,
+                        "zipCode": zip_code,
+                        "address": {
+                            "streetAddress": address_line1 or display_address,
+                            "city": city,
+                            "state": state,
+                            "zipcode": zip_code,
+                        },
+                        "bedrooms": comp.get("bedrooms"),
+                        "bathrooms": comp.get("bathrooms"),
+                        "squareFootage": comp.get("squareFootage"),
+                        "lotSize": comp.get("lotSize"),
+                        "yearBuilt": comp.get("yearBuilt"),
+                        "propertyType": comp.get("propertyType"),
+                        # AXESSO-compatible price fields (canonical fields the FE reads)
+                        "price": sale_price,
+                        "lastSoldPrice": sale_price,
+                        "salePrice": sale_price,
+                        # AXESSO-compatible date fields
+                        "dateSold": date_sold_raw,
+                        "lastSoldDate": date_sold_raw,
+                        "listedDate": comp.get("listedDate"),
+                        "lastSeenDate": comp.get("lastSeenDate"),
+                        "removedDate": comp.get("removedDate"),
+                        "daysOld": comp.get("daysOld"),
+                        "distance": comp.get("distance"),
+                        "correlation": comp.get("correlation"),
+                        "latitude": comp.get("latitude"),
+                        "longitude": comp.get("longitude"),
+                        "status": comp.get("status"),
+                        "listingType": comp.get("listingType"),
+                        "url": comp.get("url") or comp.get("listingUrl") or comp.get("listingURL"),
+                        "imageUrl": comp.get("imageUrl"),
+                        "raw": comp,
+                    }
+                )
+
+            if exclude_zpids:
+                exclude_set = set(str(z) for z in exclude_zpids)
+                filtered: list[dict[str, Any]] = []
+                for comp in normalized_comps:
+                    comp_id = str(comp.get("zpid") or comp.get("id") or comp.get("propertyId") or "")
+                    if comp_id and comp_id in exclude_set:
+                        continue
+                    filtered.append(comp)
+                normalized_comps = filtered
+
+            total_available = len(normalized_comps)
+            paginated_results = normalized_comps[offset : offset + limit]
+
+            await self._enrich_comps_with_photos(paginated_results)
+
+            logger.info(
+                "RentCast sale comps ready",
+                extra={
+                    "provider": "rentcast",
+                    "resolved_address": resolved_address,
+                    "filtered_comp_count": total_available,
+                    "returned_comp_count": len(paginated_results),
+                    "offset": offset,
+                    "limit": limit,
+                },
+            )
+
+            return {
+                "success": True,
+                "results": paginated_results,
+                "total_count": len(paginated_results),
+                "total_available": total_available,
+                "offset": offset,
+                "limit": limit,
+                "has_more": (offset + limit) < total_available,
+                "provider": "rentcast",
+                "source_address": resolved_address,
+                "fetched_at": datetime.now(UTC).isoformat(),
+            }
+        except Exception as exc:
+            logger.error(f"Error fetching RentCast sale comps: {exc}")
+            return {
+                "success": False,
+                "error": str(exc),
+                "results": [],
+                "total_count": 0,
+                "total_available": 0,
+                "offset": offset,
+                "limit": limit,
+                "has_more": False,
+                "provider": "rentcast",
+                "fetched_at": datetime.now(UTC).isoformat(),
+            }
+
     def _build_market_location_candidates(self, location: str) -> list[str]:
         """Generate fallback location formats for market data queries."""
         normalized = " ".join(location.split()).strip()

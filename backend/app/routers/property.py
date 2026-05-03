@@ -477,6 +477,70 @@ async def get_rentcast_rental_comps(
         )
 
 
+@router.get("/rentcast/sale-comps")
+async def get_rentcast_sale_comps(
+    zpid: str | None = None,
+    address: str | None = None,
+    limit: int = Query(default=10, ge=1, le=50, description="Number of comps to return"),
+    offset: int = Query(default=0, ge=0, description="Number of comps to skip"),
+    exclude_zpids: str | None = Query(default=None, description="Comma-separated IDs to exclude"),
+):
+    """
+    Get sale comps from RentCast.
+
+    Fallback for AXESSO ``similar-sold`` when the upstream provider does not
+    return ``lastSoldPrice``. RentCast's ``avm/value`` endpoint reliably
+    surfaces sold-price data with distance, dates, and basic property attrs.
+    """
+    try:
+        if not zpid and not address:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="At least one of zpid or address is required",
+            )
+
+        exclude_list = []
+        if exclude_zpids:
+            exclude_list = [z.strip() for z in exclude_zpids.split(",") if z.strip()]
+
+        logger.info(
+            "RentCast sale comps request - zpid: %s, address: %s, limit: %s, offset: %s, exclude: %s IDs",
+            zpid,
+            address,
+            limit,
+            offset,
+            len(exclude_list),
+        )
+
+        result = await property_service.get_rentcast_sale_comps(
+            zpid=zpid,
+            address=address,
+            limit=limit,
+            offset=offset,
+            exclude_zpids=exclude_list,
+        )
+        logger.info(
+            "RentCast sale comps response",
+            extra={
+                "provider": "rentcast",
+                "success": result.get("success", False),
+                "returned_comp_count": len(result.get("results", []) or []),
+                "total_available": result.get("total_available"),
+                "offset": offset,
+                "limit": limit,
+            },
+        )
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"RentCast sale comps fetch error: {e!s}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
 @router.get("/similar-sold")
 async def get_similar_sold(
     zpid: str | None = None,

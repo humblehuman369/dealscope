@@ -249,23 +249,38 @@ function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onE
               <h4 className="text-sm font-semibold text-[var(--text-heading)] truncate">{comp.address}</h4>
               <p className="text-xs text-[var(--text-heading)] truncate">{comp.city}, {comp.state}</p>
             </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-sm font-bold text-[var(--text-heading)] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                {formatCurrency(isSale ? (comp as SaleComp).salePrice : (comp as RentComp).monthlyRent)}
-                {!isSale && <span className="text-xs font-normal text-[var(--text-heading)]">/mo</span>}
-              </p>
-              <div className="flex items-center justify-end gap-2 flex-wrap">
-                <p className="text-[13px] font-semibold text-[var(--accent-sky-light)] tabular-nums">
-                  ${Number(isSale ? (comp as SaleComp).pricePerSqft : (comp as RentComp).rentPerSqft).toFixed(2)}/sf{!isSale && '/mo'}
-                </p>
-                {comp.yearBuilt > 0 && (
-                  <span className="flex items-center gap-0.5 text-[13px] text-[var(--text-heading)] tabular-nums">
-                    <Calendar className="w-3 h-3 text-[var(--text-heading)]" aria-hidden />
-                    Yr Built {comp.yearBuilt}
-                  </span>
-                )}
-              </div>
-            </div>
+            {(() => {
+              const compPrice = isSale ? (comp as SaleComp).salePrice : (comp as RentComp).monthlyRent
+              const compPpsf = Number(isSale ? (comp as SaleComp).pricePerSqft : (comp as RentComp).rentPerSqft)
+              const priceMissing = !(compPrice > 0)
+              return (
+                <div className="text-right flex-shrink-0">
+                  <p className="text-sm font-bold text-[var(--text-heading)] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    {priceMissing ? (
+                      <span className="text-[13px] font-medium text-[var(--text-heading)]">Price unavailable</span>
+                    ) : (
+                      <>
+                        {formatCurrency(compPrice)}
+                        {!isSale && <span className="text-xs font-normal text-[var(--text-heading)]">/mo</span>}
+                      </>
+                    )}
+                  </p>
+                  <div className="flex items-center justify-end gap-2 flex-wrap">
+                    {!priceMissing && compPpsf > 0 && (
+                      <p className="text-[13px] font-semibold text-[var(--accent-sky-light)] tabular-nums">
+                        ${compPpsf.toFixed(2)}/sf{!isSale && '/mo'}
+                      </p>
+                    )}
+                    {comp.yearBuilt > 0 && (
+                      <span className="flex items-center gap-0.5 text-[13px] text-[var(--text-heading)] tabular-nums">
+                        <Calendar className="w-3 h-3 text-[var(--text-heading)]" aria-hidden />
+                        Yr Built {comp.yearBuilt}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
           </div>
 
           <div className="flex items-center gap-2 text-[13px] text-[var(--text-heading)] mb-1.5 pl-4">
@@ -506,16 +521,33 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     lotSize: property.lotSize || 0.25,
   }}, [property, saleComps, rentComps])
 
-  // Appraisal calculations
+  // Appraisal calculations -- filter out comps with no usable price so a missing
+  // upstream sale/rent value can never produce a negative or fabricated appraisal.
   const saleAppraisal = useMemo(() => {
-    const selected = saleComps.filter(c => saleSelected.has(c.id)).map(toCompProperty)
+    const selected = saleComps
+      .filter((c) => saleSelected.has(c.id) && c.salePrice > 0)
+      .map(toCompProperty)
     return calculateAppraisalValues(subject, selected)
   }, [saleSelected, saleComps, subject])
 
   const rentAppraisal = useMemo(() => {
-    const selected = rentComps.filter(c => rentSelected.has(c.id)).map(toCompProperty)
+    const selected = rentComps
+      .filter((c) => rentSelected.has(c.id) && c.monthlyRent > 0)
+      .map(toCompProperty)
     return calculateRentAppraisalValues(subject, selected)
   }, [rentSelected, rentComps, subject])
+
+  // When all selected comps are unpriced, the appraisal is unavailable. Surface
+  // this state so the UI can show "Unavailable" rather than $0 / negative math.
+  const saleHasPricedComps = useMemo(
+    () => saleComps.some((c) => saleSelected.has(c.id) && c.salePrice > 0),
+    [saleComps, saleSelected],
+  )
+  const rentHasPricedComps = useMemo(
+    () => rentComps.some((c) => rentSelected.has(c.id) && c.monthlyRent > 0),
+    [rentComps, rentSelected],
+  )
+  const appraisalUnavailable = isSale ? !saleHasPricedComps : !rentHasPricedComps
 
   // Fetch helpers (non-blocking; use compsService with retries and timeout)
   const subjectForComps: CompsSubjectProperty | undefined = useMemo(() => (fullAddress || property.zpid) ? {
@@ -906,6 +938,8 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                       else setRentOverrideMarket(v)
                     }}
                     className="text-lg font-bold text-[var(--text-heading)] tabular-nums bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/30 rounded px-1.5 py-0.5 w-full" />
+                ) : appraisalUnavailable ? (
+                  <div className="text-lg font-bold text-[var(--text-heading)] opacity-60">Unavailable</div>
                 ) : (
                   <div className="text-lg font-bold text-[var(--text-heading)] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {loading ? '...' : formatCurrency(isSale ? displayMarketValue : displayMarketRent)}
@@ -914,16 +948,22 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 )}
                 <div className="text-[13px] font-medium text-[var(--text-heading)] mt-0.5">As-Is Condition</div>
                 <div className="text-[13px] font-medium text-[var(--text-heading)]">
-                  Range: {isSale 
-                    ? `${formatCompactCurrency(saleAppraisal.rangeLow)} — ${formatCompactCurrency(saleAppraisal.rangeHigh)}`
-                    : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
-                  }
-                  {' '}<span className="text-[var(--status-positive)]">(From {selectedIds.size} selected)</span>
+                  {appraisalUnavailable ? (
+                    <span className="text-[var(--status-warning)]">No comp prices available — pick comps with sale prices to compute a range</span>
+                  ) : (
+                    <>
+                      Range: {isSale
+                        ? `${formatCompactCurrency(saleAppraisal.rangeLow)} — ${formatCompactCurrency(saleAppraisal.rangeHigh)}`
+                        : `$${rentAppraisal.rangeLow} — $${rentAppraisal.rangeHigh}`
+                      }
+                      {' '}<span className="text-[var(--status-positive)]">(From {isSale ? saleAppraisal.compCount : rentAppraisal.compCount} selected)</span>
+                    </>
+                  )}
                 </div>
                 <div className="mt-auto flex justify-end pt-1">
                   <button
                     onClick={handleApplyValues}
-                    disabled={(isSale ? displayMarketValue : displayMarketRent) === 0}
+                    disabled={appraisalUnavailable || (isSale ? displayMarketValue : displayMarketRent) <= 0}
                     className="px-2.5 py-[2.5px] rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
                   >
                     Apply to Deal
@@ -953,6 +993,8 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                       else setRentOverrideImproved(v)
                     }}
                     className="text-lg font-bold text-white tabular-nums bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/30 rounded px-1.5 py-0.5 w-full" />
+                ) : appraisalUnavailable ? (
+                  <div className="text-lg font-bold text-[var(--text-heading)] opacity-60">Unavailable</div>
                 ) : (
                   <div className="text-lg font-bold text-white tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {loading ? '...' : formatCurrency(isSale ? displayArv : displayImprovedRent)}
@@ -967,7 +1009,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                 <div className="mt-auto flex justify-end pt-1">
                   <button
                     onClick={handleApplyValues}
-                    disabled={(isSale ? displayArv : displayImprovedRent) === 0}
+                    disabled={appraisalUnavailable || (isSale ? displayArv : displayImprovedRent) <= 0}
                     className="px-2.5 py-[2.5px] rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
                   >
                     Apply to Deal
