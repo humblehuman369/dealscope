@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Home } from 'lucide-react'
+import { Home, Satellite } from 'lucide-react'
 import { ImageGallery, ImageGallerySkeleton } from './ImageGallery'
 import { PhotoLightbox } from './PhotoLightbox'
 import { fetchPropertyPhotos, zillowListingUrl } from '@/services/photoService'
@@ -40,10 +40,12 @@ export function PropertyPhotoGallery({
   )
   const [photos, setPhotos] = useState<string[]>(initialImages)
   const [streetViewFailed, setStreetViewFailed] = useState(false)
+  const [satelliteFailed, setSatelliteFailed] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   useEffect(() => {
     setStreetViewFailed(false)
+    setSatelliteFailed(false)
 
     if (initialImages.length > 0) {
       setState('loaded')
@@ -90,21 +92,33 @@ export function PropertyPhotoGallery({
   if (state === 'unavailable') {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
     const hasCoords = latitude != null && longitude != null
+    // Tiered fallback when Zillow has no listing photos (typical for
+    // off-market properties): Street View → Satellite tile → text panel.
+    // Investors care about the parcel context (lot size/shape, neighborhood,
+    // pool/roof) even when no real photos exist — a satellite tile is far
+    // more useful than a "Photos not available" message.
     let streetViewUrl: string | null = null
+    let satelliteUrl: string | null = null
     if (apiKey && !streetViewFailed) {
       // return_error_code=true → Google returns HTTP 404 when no panorama
       // exists at the location instead of the gray "Sorry, we have no
       // imagery here" placeholder image (which loads as 200 OK and would
-      // never trigger our <img onError>, leaving a near-white box on dark
+      // never trigger our <img onError>, leaving a near-white box in dark
       // mode for off-market properties in gated communities or rural areas).
       // source=outdoor avoids interior PhotoSpheres for residential homes.
       // See: https://developers.google.com/maps/documentation/streetview/request-streetview#no-imagery
-      const params = 'size=600x400&source=outdoor&return_error_code=true'
+      const sv = 'size=600x400&source=outdoor&return_error_code=true'
       if (hasCoords) {
-        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?${params}&location=${latitude},${longitude}&key=${apiKey}`
+        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?${sv}&location=${latitude},${longitude}&key=${apiKey}`
       } else if (address) {
-        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?${params}&location=${encodeURIComponent(address)}&key=${apiKey}`
+        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?${sv}&location=${encodeURIComponent(address)}&key=${apiKey}`
       }
+    }
+    if (apiKey && hasCoords && !satelliteFailed) {
+      // Satellite tile — exists for every lat/lng on Earth, so this
+      // guarantees a useful image. zoom=19 frames the parcel; on urban
+      // lots this shows the house, on rural lots it shows context.
+      satelliteUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=19&size=600x400&maptype=satellite&key=${apiKey}`
     }
 
     if (streetViewUrl) {
@@ -121,6 +135,58 @@ export function PropertyPhotoGallery({
               referrerPolicy="no-referrer"
               onError={() => setStreetViewFailed(true)}
             />
+          </div>
+        </div>
+      )
+    }
+
+    if (satelliteUrl) {
+      return (
+        <div className="space-y-3">
+          <div
+            className="relative rounded-[14px] overflow-hidden"
+            style={{ aspectRatio: '3/2', backgroundColor: 'var(--surface-elevated)' }}
+          >
+            <img
+              src={satelliteUrl}
+              alt={`Satellite view of ${address ?? 'property'}`}
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={() => setSatelliteFailed(true)}
+            />
+            {/* Source label so the user understands this is a satellite
+                tile, not a real listing photo. Mirrors badge styling used
+                by the in-gallery photo counter. */}
+            <div className="absolute top-3 left-3">
+              <div
+                className="px-2.5 py-1 rounded-lg backdrop-blur-md flex items-center gap-1.5"
+                style={{ backgroundColor: 'var(--surface-overlay)' }}
+              >
+                <Satellite size={12} style={{ color: 'var(--text-body)' }} />
+                <span
+                  className="text-xs font-medium"
+                  style={{ color: 'var(--text-body)' }}
+                >
+                  Satellite view
+                </span>
+              </div>
+            </div>
+            {/* Zillow link in the corner so the off-market workflow ("see
+                what little Zillow has") is still one tap away. */}
+            <div className="absolute bottom-3 right-3">
+              <a
+                href={zillowListingUrl(zpid)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-2.5 py-1 rounded-lg backdrop-blur-md text-xs font-medium"
+                style={{
+                  backgroundColor: 'var(--surface-overlay)',
+                  color: 'var(--accent-sky)',
+                }}
+              >
+                View on Zillow →
+              </a>
+            </div>
           </div>
         </div>
       )
