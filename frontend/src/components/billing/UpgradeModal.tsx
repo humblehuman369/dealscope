@@ -34,6 +34,12 @@ interface UpgradeModalProps {
   onClose: () => void
   /** Optional path to return to after successful checkout (e.g. /verdict, /strategy). */
   returnTo?: string
+  /**
+   * Pre-select the billing period when the modal opens. Defaults to `true` (annual)
+   * for callers that don't expose a toggle (e.g. ProGate). Pricing/billing pages
+   * pass their own toggle state so the modal mirrors the user's selection.
+   */
+  initialAnnual?: boolean
 }
 
 function pickRCPackage(packages: RCPackage[], annual: boolean): RCPackage | undefined {
@@ -48,13 +54,20 @@ function pickRCPackage(packages: RCPackage[], annual: boolean): RCPackage | unde
   )
 }
 
-export function UpgradeModal({ isOpen, onClose, returnTo }: UpgradeModalProps) {
-  const [annual, setAnnual] = useState(true)
+export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }: UpgradeModalProps) {
+  const [annual, setAnnual] = useState(initialAnnual)
   const [loading, setLoading] = useState(false)
   const [plans, setPlans] = useState<PricingPlan[]>([])
   const [error, setError] = useState<string | null>(null)
 
   const rc = useRevenueCat()
+
+  // Mirror the caller's billing selection every time the modal opens. Without
+  // this, a user who toggles to "Monthly" on the pricing page would still see
+  // "Annual" pre-selected here (and Stripe/RevenueCat would charge annually).
+  React.useEffect(() => {
+    if (isOpen) setAnnual(initialAnnual)
+  }, [isOpen, initialAnnual])
 
   // Fetch Stripe plans on open (web only)
   React.useEffect(() => {
