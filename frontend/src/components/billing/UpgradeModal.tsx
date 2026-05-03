@@ -8,6 +8,7 @@
  */
 
 import React, { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { X, Loader2, Check, RotateCcw, AlertCircle } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { billingApi } from '@/lib/api-client'
@@ -55,6 +56,7 @@ function pickRCPackage(packages: RCPackage[], annual: boolean): RCPackage | unde
 }
 
 export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }: UpgradeModalProps) {
+  const router = useRouter()
   const [annual, setAnnual] = useState(initialAnnual)
   const [loading, setLoading] = useState(false)
   const [plans, setPlans] = useState<PricingPlan[]>([])
@@ -105,7 +107,15 @@ export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }
       if (!rcPkg) return
       trackEvent('checkout_started', { source: 'upgrade_modal', plan: annual ? 'yearly' : 'monthly', platform: 'capacitor' })
       const success = await rc.purchase(rcPkg.identifier)
-      if (success) onClose()
+      if (success) {
+        onClose()
+        // Mirror the web post-checkout redirect: when the caller supplies a
+        // returnTo (e.g. "/" from /pricing or /billing), navigate there so
+        // mobile users don't get stranded on the pricing page after upgrading.
+        if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')) {
+          router.replace(returnTo)
+        }
+      }
       return
     }
 
@@ -143,7 +153,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }
     } finally {
       setLoading(false)
     }
-  }, [annual, proPlan, returnTo, rcPkg, rc, onClose])
+  }, [annual, proPlan, returnTo, rcPkg, rc, onClose, router])
 
   if (!isOpen) return null
 
