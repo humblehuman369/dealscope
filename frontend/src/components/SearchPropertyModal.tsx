@@ -262,9 +262,9 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
 
   return (
     <>
-      {/* Modal Backdrop */}
+      {/* Modal Backdrop — full-bleed on mobile, centered card on tablet+ */}
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 z-50 flex items-stretch justify-center sm:items-center sm:p-4"
         onClick={handleBackdropClick}
         style={{
           background: 'var(--surface-overlay)',
@@ -272,38 +272,41 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
           WebkitBackdropFilter: 'blur(8px)',
         }}
       >
-        {/* Modal Content - max-w-sm ensures it fits on mobile screens */}
+        {/* Modal Content - fills the phone viewport on mobile, centered card on tablet+ */}
         <div 
-          className="relative w-full max-w-sm sm:max-w-md rounded-2xl p-5 sm:p-8"
+          className="relative w-full h-full overflow-y-auto sm:h-auto sm:max-w-md sm:rounded-2xl flex flex-col px-5 sm:p-8"
           style={{
             background: 'var(--surface-base)',
             border: '1px solid var(--border-subtle)',
             boxShadow: 'var(--shadow-card-hover)',
+            paddingTop: 'max(env(safe-area-inset-top), 1.25rem)',
+            paddingBottom: 'max(env(safe-area-inset-bottom), 1.25rem)',
           }}
         >
           {/* Close Button */}
           <button 
             onClick={handleClose}
-            className="absolute top-4 right-4 p-2 rounded-lg text-[var(--text-label)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-elevated)] transition-colors"
+            className="absolute right-4 p-2 rounded-lg text-[var(--text-label)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-elevated)] transition-colors z-10"
+            style={{ top: 'max(env(safe-area-inset-top), 1rem)' }}
             aria-label="Close"
           >
             <X size={24} />
           </button>
 
           {/* Header - IQ icon on left, text on right, left-aligned */}
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-6 sm:mb-8 mt-2 sm:mt-0">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-[60px] h-[60px] sm:w-[84px] sm:h-[84px] flex-shrink-0 flex items-center justify-center">
+              <div className="w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] flex-shrink-0 flex items-center justify-center">
                 <Image
                   src="/images/dealgapiq-icon.png"
                   alt="DealGap IQ" 
-                  className="w-[54px] h-[54px] sm:w-[78px] sm:h-[78px] object-contain"
+                  className="w-[66px] h-[66px] sm:w-[78px] sm:h-[78px] object-contain"
                   width={78}
                   height={78}
                 />
               </div>
-              <div className="min-w-0">
-                <h2 className="text-lg sm:text-xl font-bold text-[var(--text-heading)] leading-tight">
+              <div className="min-w-0 pr-10 sm:pr-0">
+                <h2 className="text-xl sm:text-xl font-bold text-[var(--text-heading)] leading-tight">
                   {showAddressInput ? 'Enter info to search' : 'How would you like to search property?'}
                 </h2>
               </div>
@@ -312,11 +315,11 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
 
           {/* Options or Address Input */}
           {!showAddressInput ? (
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-4 sm:space-y-4">
               {/* Scan Property Option */}
               <button 
                 onClick={handleScanProperty}
-                className="w-full flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-xl border transition-all text-left"
+                className="w-full flex items-center gap-4 sm:gap-5 p-5 sm:p-5 rounded-xl border transition-all text-left"
                 style={{
                   background: 'var(--surface-base)',
                   border: '1px solid var(--border-subtle)',
@@ -332,15 +335,14 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                 }}
               >
                 <div 
-                  className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: 'var(--accent-sky)' }}
                 >
-                  <Camera size={22} className="text-[var(--text-inverse)] sm:hidden" />
-                  <Camera size={28} className="text-[var(--text-inverse)] hidden sm:block" />
+                  <Camera size={28} className="text-[var(--text-inverse)]" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: 'var(--text-heading)' }}>Scan Property</h3>
-                  <p className="text-xs sm:text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
+                  <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text-heading)' }}>Scan Property</h3>
+                  <p className="text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
                     Point your phone camera to scan any property for quick lookup
                   </p>
                 </div>
@@ -349,7 +351,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
               {/* Enter Address Option */}
               <button 
                 onClick={() => setShowAddressInput(true)}
-                className="w-full flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-xl border transition-all text-left"
+                className="w-full flex items-center gap-4 sm:gap-5 p-5 sm:p-5 rounded-xl border transition-all text-left"
                 style={{
                   background: 'var(--surface-base)',
                   border: '1px solid var(--border-subtle)',
@@ -365,15 +367,14 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                 }}
               >
                 <div 
-                  className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: 'var(--accent-sky)' }}
                 >
-                  <Search size={22} className="text-[var(--text-inverse)] sm:hidden" />
-                  <Search size={28} className="text-[var(--text-inverse)] hidden sm:block" />
+                  <Search size={28} className="text-[var(--text-inverse)]" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: 'var(--text-heading)' }}>Enter Address or search</h3>
-                  <p className="text-xs sm:text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
+                  <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text-heading)' }}>Enter Address or search</h3>
+                  <p className="text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
                     Type or paste any residential address, city, state or zipcode
                   </p>
                 </div>
@@ -382,7 +383,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
               {/* Map Search Option */}
               <button 
                 onClick={handleMapSearch}
-                className="w-full flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-xl border transition-all text-left"
+                className="w-full flex items-center gap-4 sm:gap-5 p-5 sm:p-5 rounded-xl border transition-all text-left"
                 style={{
                   background: 'var(--surface-base)',
                   border: '1px solid var(--border-subtle)',
@@ -398,15 +399,14 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                 }}
               >
                 <div 
-                  className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: 'var(--accent-sky)' }}
                 >
-                  <MapIcon size={22} className="text-[var(--text-inverse)] sm:hidden" />
-                  <MapIcon size={28} className="text-[var(--text-inverse)] hidden sm:block" />
+                  <MapIcon size={28} className="text-[var(--text-inverse)]" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold mb-0.5 sm:mb-1" style={{ color: 'var(--text-heading)' }}>Map Search</h3>
-                  <p className="text-xs sm:text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
+                  <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text-heading)' }}>Map Search</h3>
+                  <p className="text-sm leading-snug" style={{ color: 'var(--text-body)' }}>
                     Browse an area on the map with filters to find the best deals
                   </p>
                 </div>
