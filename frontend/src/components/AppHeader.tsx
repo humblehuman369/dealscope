@@ -24,12 +24,10 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X, MoreVertical, Info, DollarSign, LayoutDashboard } from 'lucide-react'
+import { Search, Menu, UserCircle, Sun, Moon, X, MoreVertical, Info, DollarSign, LayoutDashboard } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
-import { useSession, useLogout } from '@/hooks/useSession'
-import { useSubscription } from '@/hooks/useSubscription'
-import { useAuthModal } from '@/hooks/useAuthModal'
+import { useSession } from '@/hooks/useSession'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { readDealMakerOverrides } from '@/utils/addressIdentity'
 import { useTheme } from '@/context/ThemeContext'
@@ -198,33 +196,15 @@ export function AppHeader({
   const pathname = usePathname()
   const searchParams = useSearchParams()
   
-  const [showProfileMenu, setShowProfileMenu] = useState(false)
-  const profileMenuRef = useRef<HTMLDivElement>(null)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const moreMenuRef = useRef<HTMLDivElement>(null)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const mobileNavRef = useRef<HTMLDivElement>(null)
   const [scrolledPast, setScrolledPast] = useState(false)
-  
-  // Auth context
-  const { isAuthenticated, user, isAdmin } = useSession()
-  const { isPro } = useSubscription()
-  const { openAuthModal } = useAuthModal()
-  const logoutMutation = useLogout()
-  const { theme, toggleTheme, mounted } = useTheme()
 
-  // Close profile menu on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
-        setShowProfileMenu(false)
-      }
-    }
-    if (showProfileMenu) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showProfileMenu])
+  // Auth context
+  const { isAuthenticated } = useSession()
+  const { theme, toggleTheme, mounted } = useTheme()
 
   // Close more menu on outside click
   useEffect(() => {
@@ -409,19 +389,6 @@ export function AppHeader({
 
   const [searchModalOpen, setSearchModalOpen] = useState(false)
 
-  const handleProfileClick = () => {
-    if (!isAuthenticated) {
-      openAuthModal('login')
-      return
-    }
-    setShowProfileMenu((prev) => !prev)
-  }
-
-  const handleLogout = () => {
-    setShowProfileMenu(false)
-    logoutMutation.mutate()
-  }
-
   const handleTabChange = (tab: AppTab) => {
     // Build address params for navigation
     const encodedAddress = encodeURIComponent(displayAddress)
@@ -569,20 +536,6 @@ export function AppHeader({
                 </Link>
               </>
             )}
-            {/* Dashboard — visible primary nav for signed-in users (testers were missing the dropdown). */}
-            {isAuthenticated && (
-              <Link
-                href="/dashboard"
-                className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                style={{
-                  color: 'var(--text-heading)',
-                  borderBottom: pathname === '/dashboard' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                  paddingBottom: 2,
-                }}
-              >
-                Dashboard
-              </Link>
-            )}
             {/* Property search button opens modal */}
             <button
               onClick={() => setSearchModalOpen(true)}
@@ -667,121 +620,20 @@ export function AppHeader({
               </div>
             )}
             {isAuthenticated ? (
-              <div className="relative" ref={profileMenuRef}>
-                <button
-                  onClick={handleProfileClick}
-                  className="min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] p-1.5 sm:p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
-                  aria-label="Menu"
-                  aria-expanded={showProfileMenu}
-                  aria-haspopup="true"
-                >
-                  <Menu 
-                    className="w-5 h-5 sm:w-6 sm:h-6" 
-                    style={{ color: 'var(--text-heading)' }}
-                  />
-                </button>
-
-                {showProfileMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-navy-900 rounded-lg shadow-lg border border-slate-200 dark:border-navy-700 py-1 z-50">
-                    {isHomepage && (
-                      <div className="sm:hidden">
-                        <Link
-                          href="/about"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                          style={{ color: 'var(--text-heading)' }}
-                        >
-                          <Info className="w-4 h-4" /> About
-                        </Link>
-                        <Link
-                          href="/pricing"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                          style={{ color: 'var(--text-heading)' }}
-                        >
-                          <DollarSign className="w-4 h-4" /> Pricing
-                        </Link>
-                        <button
-                          onClick={() => { toggleTheme(); setShowProfileMenu(false) }}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                          style={{ color: 'var(--text-heading)' }}
-                        >
-                          {mounted && theme === 'dark' ? (
-                            <><Sun className="w-4 h-4" /> Light Mode</>
-                          ) : (
-                            <><Moon className="w-4 h-4" /> Dark Mode</>
-                          )}
-                        </button>
-                        <div className="border-t border-slate-100 dark:border-navy-700 my-1" />
-                      </div>
-                    )}
-                    {user && (
-                      <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-700">
-                        <div className="flex items-center gap-2">
-                          <p className="text-[14px] sm:text-[18px] font-medium text-slate-700 dark:text-slate-300 truncate">{user.full_name || 'User'}</p>
-                          <span
-                            className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] sm:text-[14px] font-semibold uppercase tracking-wide"
-                            style={{
-                              background: isPro ? 'rgba(15,164,233,0.15)' : 'rgba(148,163,184,0.15)',
-                              color: isPro ? 'var(--accent-sky)' : 'var(--text-label)',
-                            }}
-                          >
-                            {isPro ? 'Pro' : 'Starter'}
-                          </span>
-                        </div>
-                        <p className="text-[12px] sm:text-[16px] text-slate-400 truncate">{user.email}</p>
-                      </div>
-                    )}
-                    <button
-                      onClick={() => { setShowProfileMenu(false); router.push('/dashboard') }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                    >
-                      <LayoutDashboard className="w-4 h-4" /> Dashboard
-                    </button>
-                    <button
-                      onClick={() => { setShowProfileMenu(false); router.push('/profile') }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                    >
-                      <UserCircle className="w-4 h-4" /> Profile
-                    </button>
-                    <button
-                      onClick={() => { setShowProfileMenu(false); router.push('/search-history') }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                    >
-                      <History className="w-4 h-4" /> Search History
-                    </button>
-                    <button
-                      onClick={() => { setShowProfileMenu(false); router.push('/saved-properties') }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                    >
-                      <Bookmark className="w-4 h-4" /> Saved Properties
-                    </button>
-                    <button
-                      onClick={() => { setShowProfileMenu(false); router.push('/billing') }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                    >
-                      <CreditCard className="w-4 h-4" /> Billing
-                    </button>
-                    {isAdmin && (
-                      <button
-                        onClick={() => { setShowProfileMenu(false); router.push('/admin') }}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-                      >
-                        <ShieldCheck className="w-4 h-4" /> Admin Dashboard
-                      </button>
-                    )}
-                    <div className="border-t border-slate-100 dark:border-navy-700 mt-1 pt-1">
-                      <button
-                        onClick={handleLogout}
-                        disabled={logoutMutation.isPending}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" /> Sign Out
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 px-3 sm:px-4 min-h-[36px] sm:min-h-[40px] rounded-full font-semibold text-sm transition-all hover:opacity-90 whitespace-nowrap no-underline"
+                style={{
+                  background: pathname === '/dashboard' ? 'var(--accent-sky)' : 'var(--surface-elevated)',
+                  color: pathname === '/dashboard' ? 'var(--text-inverse)' : 'var(--text-heading)',
+                  border: `1px solid ${pathname === '/dashboard' ? 'var(--accent-sky)' : 'var(--border-default)'}`,
+                }}
+                aria-label="Open dashboard"
+                aria-current={pathname === '/dashboard' ? 'page' : undefined}
+              >
+                <LayoutDashboard className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Dashboard</span>
+              </Link>
             ) : (
               <>
                 <Link
