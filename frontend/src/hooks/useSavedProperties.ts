@@ -18,7 +18,10 @@ import {
   type QueryKey,
 } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
+import type { RehabSelection } from '@/lib/analytics'
+import type { RehabBudgetSummary } from '@/types/rehabBudget'
 import type {
+  ActiveFlipSummary,
   SavedPropertySummary,
   SavedPropertyStats,
   PropertyStatus,
@@ -32,6 +35,7 @@ export type { SavedPropertySummary, SavedPropertyStats }
 export const SAVED_PROPERTIES_KEYS = {
   /** Root — invalidating this refetches everything. */
   all: ['saved-properties'] as const,
+  activeFlips: () => [...SAVED_PROPERTIES_KEYS.all, 'active-flips'] as const,
   /** All list queries (any param combination). */
   lists: () => [...SAVED_PROPERTIES_KEYS.all, 'list'] as const,
   /** A specific list query (page + filters). */
@@ -189,6 +193,125 @@ export function useUpdateSavedPropertyStatus() {
       queryClient.invalidateQueries({
         queryKey: SAVED_PROPERTIES_KEYS.all,
       })
+    },
+  })
+}
+
+/** Active flips (Acquisition / Rehab / Listed / Sold) — flip-cycle pipeline. */
+export function useActiveFlips(includeSold = false) {
+  return useQuery({
+    queryKey: [...SAVED_PROPERTIES_KEYS.activeFlips(), includeSold],
+    queryFn: () =>
+      api.get<ActiveFlipSummary[]>(
+        `/api/v1/properties/saved/active-flips?include_sold=${includeSold}`,
+      ),
+    staleTime: 30_000,
+  })
+}
+
+export function useUpdateFlipStage() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      stage,
+      sold_price,
+    }: {
+      id: string
+      stage: string
+      sold_price?: number | null
+    }) =>
+      api.patch(`/api/v1/properties/saved/${id}/flip-stage`, { stage, sold_price }),
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
+    },
+  })
+}
+
+export function useRehabBudgetSummary(propertyId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['rehab-budget', propertyId],
+    queryFn: () =>
+      api.get<RehabBudgetSummary>(`/api/v1/properties/saved/${propertyId}/budget`),
+    enabled: Boolean(propertyId),
+    staleTime: 15_000,
+  })
+}
+
+export function useSeedRehabBudget() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      propertyId,
+      selections,
+      contingency_pct,
+      notes,
+    }: {
+      propertyId: string
+      selections: RehabSelection[]
+      contingency_pct: number
+      notes?: string | null
+    }) =>
+      api.post<RehabBudgetSummary>(`/api/v1/properties/saved/${propertyId}/budget/seed`, {
+        selections,
+        contingency_pct,
+        notes,
+      }),
+
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['rehab-budget', variables.propertyId] })
+      queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
+    },
+  })
+}
+
+export function useAddBudgetExpense() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      propertyId,
+      amount,
+      spent_on,
+      budget_line_id,
+      vendor,
+      description,
+    }: {
+      propertyId: string
+      amount: number
+      spent_on: string
+      budget_line_id?: string | null
+      vendor?: string | null
+      description?: string | null
+    }) =>
+      api.post(`/api/v1/properties/saved/${propertyId}/budget/expenses`, {
+        amount,
+        spent_on,
+        budget_line_id,
+        vendor,
+        description,
+      }),
+
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['rehab-budget', variables.propertyId] })
+    },
+  })
+}
+
+export function useDeleteBudgetExpense() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ propertyId, expenseId }: { propertyId: string; expenseId: string }) =>
+      api.delete(
+        `/api/v1/properties/saved/${propertyId}/budget/expenses/${expenseId}`,
+      ),
+
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['rehab-budget', variables.propertyId] })
     },
   })
 }

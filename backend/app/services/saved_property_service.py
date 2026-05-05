@@ -6,12 +6,13 @@ import logging
 import math
 import uuid
 from datetime import UTC, datetime
+from decimal import Decimal
 
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer, selectinload
 
-from app.models.saved_property import PropertyAdjustment, PropertyStatus, SavedProperty
+from app.models.saved_property import FlipStage, PropertyAdjustment, PropertyStatus, SavedProperty
 from app.models.subscription import Subscription
 from app.schemas.saved_property import (
     PropertyAdjustmentCreate,
@@ -20,6 +21,22 @@ from app.schemas.saved_property import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _maybe_initialize_flip_lifecycle(saved_property: SavedProperty, previous_status: PropertyStatus) -> None:
+    """When lead status becomes OWNED, start the flip-cycle pipeline at Acquisition."""
+    if saved_property.status != PropertyStatus.OWNED:
+        return
+    if previous_status == PropertyStatus.OWNED:
+        return
+    if saved_property.flip_stage is not None:
+        return
+    now = datetime.now(UTC)
+    saved_property.flip_stage = FlipStage.ACQUISITION
+    saved_property.flip_stage_entered_at = now
+    if saved_property.acquired_at is None:
+        saved_property.acquired_at = now
+
 
 # Common street‑type abbreviations → canonical short form.
 # Used by _normalize_address to make ILIKE matching resilient to
@@ -153,6 +170,11 @@ class SavedPropertyService:
 
         db.add(saved_property)
         await _adjust_properties_count(db, uuid.UUID(user_id), +1)
+        if data.status == PropertyStatus.OWNED and saved_property.flip_stage is None:
+            now = datetime.now(UTC)
+            saved_property.flip_stage = FlipStage.ACQUISITION
+            saved_property.flip_stage_entered_at = now
+            saved_property.acquired_at = now
         try:
             await db.commit()
         except IntegrityError as e:
@@ -359,6 +381,7 @@ class SavedPropertyService:
         if not saved_property:
             return None
 
+        previous_status = saved_property.status
         update_data = data.model_dump(exclude_unset=True)
 
         for field, value in update_data.items():
@@ -381,6 +404,8 @@ class SavedPropertyService:
                         db.add(adjustment)
 
             setattr(saved_property, field, value)
+
+        _maybe_initialize_flip_lifecycle(saved_property, previous_status)
 
         saved_property.updated_at = datetime.now(UTC)
 
@@ -424,7 +449,77 @@ class SavedPropertyService:
         count = result.rowcount
 
         logger.info(f"Bulk status update: {count} properties updated to {status.value}")
+
+        if status == PropertyStatus.OWNED and uuid_ids:
+            from sqlalchemy import update
+
+            await db.execute(
+                update(SavedProperty)
+                .where(
+                    SavedProperty.id.in_(uuid_ids),
+                    SavedProperty.user_id == uuid.UUID(user_id),
+                    SavedProperty.status == PropertyStatus.OWNED,
+                    SavedProperty.flip_stage.is_(None),
+                )
+                .values(
+                    flip_stage=FlipStage.ACQUISITION,
+                    flip_stage_entered_at=datetime.now(UTC),
+                    acquired_at=datetime.now(UTC),
+                    updated_at=datetime.now(UTC),
+                )
+            )
+            await db.commit()
+
         return count
+
+    async def update_flip_stage(
+        self,
+        db: AsyncSession,
+        property_id: str,
+        user_id: str,
+        stage: FlipStage,
+        sold_price: Decimal | None = None,
+    ) -> SavedProperty | None:
+        """Update flip lifecycle stage and stamp milestone timestamps."""
+        saved = await self.get_by_id(db, property_id, user_id)
+        if not saved:
+            return None
+
+        now = datetime.now(UTC)
+        saved.flip_stage = stage
+        saved.flip_stage_entered_at = now
+
+        if stage == FlipStage.REHAB and saved.rehab_started_at is None:
+            saved.rehab_started_at = now
+        if stage == FlipStage.LISTED:
+            saved.listed_at = now
+        if stage == FlipStage.SOLD:
+            saved.sold_at = now
+            if sold_price is not None:
+                saved.sold_price = sold_price
+
+        saved.updated_at = now
+        await db.commit()
+        await db.refresh(saved)
+        return saved
+
+    async def list_active_flips(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        *,
+        include_sold: bool = False,
+    ) -> list[SavedProperty]:
+        """Saved properties with a flip_stage set (Active Flips pipeline)."""
+        q = select(SavedProperty).where(
+            SavedProperty.user_id == uuid.UUID(user_id),
+            SavedProperty.flip_stage.isnot(None),
+        )
+        if not include_sold:
+            q = q.where(SavedProperty.flip_stage != FlipStage.SOLD)
+        q = q.order_by(SavedProperty.flip_stage_entered_at.desc().nullslast(), SavedProperty.updated_at.desc())
+        result = await db.execute(q.options(defer(SavedProperty.property_data_snapshot)))
+        return list(result.scalars().all())
 
     # ===========================================
     # Delete Operations

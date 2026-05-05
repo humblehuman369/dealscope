@@ -24,6 +24,15 @@ class PropertyStatus(StrEnum):
     ARCHIVED = "archived"
 
 
+class FlipStage(StrEnum):
+    """Post-acquisition flip lifecycle."""
+
+    ACQUISITION = "Acquisition"
+    REHAB = "Rehab"
+    LISTED = "Listed"
+    SOLD = "Sold"
+
+
 # ===========================================
 # Saved Property Schemas
 # ===========================================
@@ -154,6 +163,14 @@ class SavedPropertySummary(BaseModel):
     color_label: str | None
     priority: int | None
 
+    flip_stage: FlipStage | None = None
+    flip_stage_entered_at: datetime | None = None
+    acquired_at: datetime | None = None
+    rehab_started_at: datetime | None = None
+    listed_at: datetime | None = None
+    sold_at: datetime | None = None
+    sold_price: Decimal | None = None
+
     # Quick metrics
     best_strategy: str | None
     best_cash_flow: Decimal | None = None
@@ -171,6 +188,12 @@ class SavedPropertySummary(BaseModel):
     def display_name(self) -> str:
         """Return nickname or address."""
         return self.nickname or self.address_street
+
+
+class ActiveFlipSummary(SavedPropertySummary):
+    """SavedPropertySummary plus optional rehab budget health for the Active Flips pipeline."""
+
+    budget_variance_pct: str | None = None
 
 
 class SavedPropertyResponse(SavedPropertySummary):
@@ -260,3 +283,10 @@ class BulkTagUpdate(BaseModel):
     property_ids: list[str] = Field(..., min_length=1)
     add_tags: list[str] | None = None
     remove_tags: list[str] | None = None
+
+
+class FlipStageUpdate(BaseModel):
+    """Update post-acquisition flip stage."""
+
+    stage: FlipStage
+    sold_price: Decimal | None = Field(None, ge=0, description="Sale price when moving to Sold")

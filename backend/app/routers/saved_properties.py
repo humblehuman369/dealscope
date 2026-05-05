@@ -3,6 +3,7 @@ Saved Properties router for user's property portfolio management.
 """
 
 import logging
+import uuid
 from datetime import UTC
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Response, status
@@ -11,13 +12,17 @@ from sqlalchemy.exc import DatabaseError, IntegrityError
 
 from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession
+from app.models.saved_property import FlipStage as FlipStageORM
 from app.models.saved_property import PropertyStatus
 from app.schemas.deal_maker import (
     DealMakerRecordUpdate,
     DealMakerResponse,
 )
+from app.schemas.budget import BudgetExpenseCreate, BudgetExpenseOut, BudgetSeedRequest, BudgetSummaryOut
 from app.schemas.saved_property import (
+    ActiveFlipSummary,
     BulkStatusUpdate,
+    FlipStageUpdate,
     PropertyAdjustmentCreate,
     PropertyAdjustmentResponse,
     SavedPropertyCreate,
@@ -26,6 +31,7 @@ from app.schemas.saved_property import (
     SavedPropertyUpdate,
 )
 from app.services.billing_service import billing_service
+from app.services.budget_service import budget_service
 from app.services.deal_maker_service import DealMakerService
 from app.services.saved_property_service import sanitize_for_json_storage, saved_property_service
 from app.services.search_history_service import search_history_service
@@ -60,6 +66,13 @@ def _build_saved_property_response(
         full_address=saved.full_address,
         nickname=saved.nickname,
         status=saved.status,
+        flip_stage=saved.flip_stage,
+        flip_stage_entered_at=saved.flip_stage_entered_at,
+        acquired_at=saved.acquired_at,
+        rehab_started_at=saved.rehab_started_at,
+        listed_at=saved.listed_at,
+        sold_at=saved.sold_at,
+        sold_price=saved.sold_price,
         tags=saved.tags or [],
         color_label=saved.color_label,
         priority=saved.priority,
@@ -175,6 +188,13 @@ async def list_saved_properties(
             address_zip=p.address_zip,
             nickname=p.nickname,
             status=p.status,
+            flip_stage=p.flip_stage,
+            flip_stage_entered_at=p.flip_stage_entered_at,
+            acquired_at=p.acquired_at,
+            rehab_started_at=p.rehab_started_at,
+            listed_at=p.listed_at,
+            sold_at=p.sold_at,
+            sold_price=p.sold_price,
             tags=p.tags,
             color_label=p.color_label,
             priority=p.priority,
@@ -196,6 +216,55 @@ async def get_saved_properties_stats(
 ):
     """Get statistics about saved properties (counts by status, etc.)."""
     return await saved_property_service.get_stats(db, str(current_user.id))
+
+
+@router.get("/active-flips", response_model=list[ActiveFlipSummary], summary="Active flips (flip-cycle pipeline)")
+async def list_active_flips_endpoint(
+    current_user: CurrentUser,
+    db: DbSession,
+    include_sold: bool = Query(False, description="Include properties in Sold stage"),
+):
+    """Properties with a flip_stage set — Acquisition / Rehab / Listed / (optional Sold)."""
+    rows = await saved_property_service.list_active_flips(
+        db, str(current_user.id), include_sold=include_sold
+    )
+    out: list[ActiveFlipSummary] = []
+    uid = str(current_user.id)
+    for p in rows:
+        variance_pct: str | None = None
+        budget = await budget_service.get_budget_for_property(db, str(p.id), uid)
+        if budget:
+            summary = await budget_service.build_summary(db, budget)
+            variance_pct = summary.get("variance_pct")
+        out.append(
+            ActiveFlipSummary(
+                id=str(p.id),
+                address_street=p.address_street,
+                address_city=p.address_city,
+                address_state=p.address_state,
+                address_zip=p.address_zip,
+                nickname=p.nickname,
+                status=p.status,
+                flip_stage=p.flip_stage,
+                flip_stage_entered_at=p.flip_stage_entered_at,
+                acquired_at=p.acquired_at,
+                rehab_started_at=p.rehab_started_at,
+                listed_at=p.listed_at,
+                sold_at=p.sold_at,
+                sold_price=p.sold_price,
+                tags=p.tags,
+                color_label=p.color_label,
+                priority=p.priority,
+                best_strategy=p.best_strategy,
+                best_cash_flow=p.best_cash_flow,
+                best_coc_return=p.best_coc_return,
+                saved_at=p.saved_at,
+                last_viewed_at=p.last_viewed_at,
+                updated_at=p.updated_at,
+                budget_variance_pct=variance_pct,
+            )
+        )
+    return out
 
 
 # ===========================================
@@ -452,6 +521,144 @@ async def save_property(
         # In production, don't expose internal error details
         error_message = str(e) if settings.DEBUG else "Failed to save property. Please try again or contact support."
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=error_message)
+
+
+@router.patch(
+    "/{property_id}/flip-stage",
+    response_model=SavedPropertyResponse,
+    summary="Update flip-cycle stage (Acquisition / Rehab / Listed / Sold)",
+)
+async def update_flip_stage_endpoint(
+    property_id: str,
+    body: FlipStageUpdate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    """Advance or move the post-acquisition flip pipeline."""
+    stage_orm = FlipStageORM(body.stage.value)
+    saved = await saved_property_service.update_flip_stage(
+        db,
+        property_id=property_id,
+        user_id=str(current_user.id),
+        stage=stage_orm,
+        sold_price=body.sold_price,
+    )
+    if not saved:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    deal_maker = None
+    if saved.deal_maker_record:
+        deal_maker = DealMakerService.from_dict(saved.deal_maker_record)
+    return _build_saved_property_response(saved, deal_maker=deal_maker)
+
+
+@router.post(
+    "/{property_id}/budget/seed",
+    response_model=BudgetSummaryOut,
+    summary="Seed rehab budget from estimator selections",
+)
+async def seed_rehab_budget(
+    property_id: str,
+    body: BudgetSeedRequest,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    selections = [s.model_dump(by_alias=True) for s in body.selections]
+    try:
+        budget = await budget_service.seed_budget(
+            db,
+            property_id,
+            current_user.id,
+            selections,
+            body.contingency_pct,
+            body.notes,
+        )
+        summary = await budget_service.build_summary(db, budget)
+        return BudgetSummaryOut(**summary)
+    except PermissionError:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Budget baseline is locked")
+    except LookupError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+
+
+@router.get(
+    "/{property_id}/budget",
+    response_model=BudgetSummaryOut,
+    summary="Get rehab budget summary (estimate vs actual)",
+)
+async def get_rehab_budget_summary(property_id: str, current_user: CurrentUser, db: DbSession):
+    budget = await budget_service.get_budget_for_property(db, property_id, str(current_user.id))
+    if not budget:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No budget for this property")
+    summary = await budget_service.build_summary(db, budget)
+    return BudgetSummaryOut(**summary)
+
+
+@router.post("/{property_id}/budget/lock", response_model=BudgetSummaryOut, summary="Lock budget baseline")
+async def lock_rehab_budget(property_id: str, current_user: CurrentUser, db: DbSession):
+    b = await budget_service.lock_baseline(db, property_id, str(current_user.id))
+    if not b:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No budget for this property")
+    summary = await budget_service.build_summary(db, b)
+    return BudgetSummaryOut(**summary)
+
+
+@router.post(
+    "/{property_id}/budget/expenses",
+    response_model=BudgetExpenseOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Add an actual expense line",
+)
+async def add_budget_expense(
+    property_id: str,
+    body: BudgetExpenseCreate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    budget = await budget_service.get_budget_for_property(db, property_id, str(current_user.id))
+    if not budget:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No budget for this property")
+    line_id = uuid.UUID(body.budget_line_id) if body.budget_line_id else None
+    receipt_id = uuid.UUID(body.receipt_document_id) if body.receipt_document_id else None
+    ex = await budget_service.add_expense(
+        db,
+        budget,
+        user_id=current_user.id,
+        amount=body.amount,
+        spent_on=body.spent_on,
+        budget_line_id=line_id,
+        vendor=body.vendor,
+        description=body.description,
+        receipt_document_id=receipt_id,
+    )
+    return BudgetExpenseOut(
+        id=str(ex.id),
+        budget_id=str(ex.budget_id),
+        budget_line_id=str(ex.budget_line_id) if ex.budget_line_id else None,
+        amount=str(ex.amount),
+        spent_on=ex.spent_on,
+        vendor=ex.vendor,
+        description=ex.description,
+        receipt_document_id=str(ex.receipt_document_id) if ex.receipt_document_id else None,
+        created_at=ex.created_at,
+    )
+
+
+@router.delete(
+    "/{property_id}/budget/expenses/{expense_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a budget expense line",
+)
+async def delete_budget_expense(
+    property_id: str,
+    expense_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    ok = await budget_service.delete_expense(
+        db, expense_id, str(current_user.id), property_id=property_id
+    )
+    if not ok:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
 
 
 @router.get("/{property_id}", response_model=SavedPropertyResponse, summary="Get a saved property")

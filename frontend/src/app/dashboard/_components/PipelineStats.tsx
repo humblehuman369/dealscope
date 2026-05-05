@@ -24,7 +24,7 @@ export function PipelineStats({ activeStage, onSelectStage }: PipelineStatsProps
           <button
             key={stage}
             onClick={() => onSelectStage(isActive ? null : stage)}
-            className={`text-left rounded-xl p-4 border transition-all hover:border-[var(--border-strong)] ${
+            className={`text-left rounded-3xl p-4 border transition-all hover:border-[var(--border-strong)] ${
               isActive
                 ? 'border-[var(--border-focus)] bg-[var(--surface-elevated)]'
                 : 'border-[var(--border-default)] bg-[var(--surface-card)]'

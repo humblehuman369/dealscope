@@ -26,6 +26,8 @@ import {
   trackModeSwitched,
 } from '@/lib/estimatorTracking'
 import QuickRehabEstimate from './QuickRehabEstimate'
+import { BudgetTable } from '@/components/budget/BudgetTable'
+import { useRehabBudgetSummary, useSeedRehabBudget } from '@/hooks/useSavedProperties'
 
 type QualityTier = 'low' | 'mid' | 'high'
 type EstimatorMode = 'quick' | 'detailed'
@@ -92,7 +94,7 @@ function QualityTabs({
           className="px-2.5 py-1 rounded-md text-[15px] font-semibold cursor-pointer transition-all"
           style={{
             backgroundColor: value === tier.id ? 'var(--accent-sky)' : 'var(--surface-card)',
-            color: value === tier.id ? '#FFFFFF' : 'var(--text-secondary)',
+            color: value === tier.id ? 'var(--text-inverse)' : 'var(--text-secondary)',
             border: value === tier.id ? '1px solid var(--accent-sky)' : '1px solid var(--border-default)',
           }}
         >
@@ -415,6 +417,8 @@ interface RehabEstimatorProps {
   }
   costContext?: RegionalCostContext | null
   initialMode?: EstimatorMode
+  /** When set (e.g. `?saved_property_id=` on /rehab), user can save selections as a persisted budget. */
+  savedPropertyId?: string
 }
 
 export default function RehabEstimator({ 
@@ -423,7 +427,8 @@ export default function RehabEstimator({
   propertyAddress,
   propertyData,
   costContext,
-  initialMode = 'quick'
+  initialMode = 'quick',
+  savedPropertyId,
 }: RehabEstimatorProps) {
   const [mode, setModeRaw] = useState<EstimatorMode>(propertyData ? initialMode : 'detailed')
   const setMode = useCallback((newMode: EstimatorMode) => {
@@ -442,6 +447,10 @@ export default function RehabEstimator({
   }, [propertyData?.zip_code])
   const [activePreset, setActivePreset] = useState<string | null>(null)
   const [globalTier, setGlobalTier] = useState<QualityTier>('mid')
+  const [workspaceTab, setWorkspaceTab] = useState<'estimate' | 'budget'>('estimate')
+
+  const budgetQuery = useRehabBudgetSummary(savedPropertyId)
+  const seedBudget = useSeedRehabBudget()
 
   const presets: RehabPreset[] = useMemo(() => {
     if (propertyData) {
@@ -517,29 +526,78 @@ export default function RehabEstimator({
   const budgetPct = initialBudget > 0 ? Math.abs(budgetDiff / initialBudget * 100).toFixed(0) : 0
   
   if (mode === 'quick' && propertyData) {
+    const tabBar =
+      savedPropertyId ? (
+        <div className="flex rounded-xl border border-[var(--border-default)] p-1 gap-1 bg-[var(--surface-elevated)]">
+          <button
+            type="button"
+            className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
+            style={{
+              backgroundColor: workspaceTab === 'estimate' ? 'var(--surface-card)' : 'transparent',
+              color: 'var(--text-heading)',
+              boxShadow: workspaceTab === 'estimate' ? 'var(--shadow-card)' : undefined,
+            }}
+            onClick={() => setWorkspaceTab('estimate')}
+          >
+            Estimate
+          </button>
+          <button
+            type="button"
+            className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
+            style={{
+              backgroundColor: workspaceTab === 'budget' ? 'var(--surface-card)' : 'transparent',
+              color: 'var(--text-heading)',
+              boxShadow: workspaceTab === 'budget' ? 'var(--shadow-card)' : undefined,
+            }}
+            onClick={() => setWorkspaceTab('budget')}
+          >
+            Budget (actuals)
+          </button>
+        </div>
+      ) : null
+
     return (
       <div className="space-y-4">
         <ModeToggle mode={mode} onModeChange={setMode} />
-        
-        <QuickRehabEstimate
-          propertyData={propertyData}
-          onEstimateChange={onEstimateChange}
-          onSwitchToDetailed={() => setMode('detailed')}
-          costContext={costContext}
-        />
-        
-        {propertyAddress && (
-          <a
-            href={`/property?address=${encodeURIComponent(propertyAddress)}`}
-            className="block w-full py-2.5 rounded-lg text-[13px] font-semibold text-center cursor-pointer transition-all"
-            style={{
-              backgroundColor: 'var(--surface-card)',
-              color: 'var(--text-secondary)',
-              border: '2px solid var(--border-default)',
-            }}
-          >
-            ← Back to Property Analytics
-          </a>
+        {tabBar}
+        {savedPropertyId && workspaceTab === 'budget' ? (
+          budgetQuery.isLoading ? (
+            <div className="py-12 text-center text-[var(--text-secondary)]">Loading budget…</div>
+          ) : budgetQuery.data ? (
+            <BudgetTable
+              propertyId={savedPropertyId}
+              summary={budgetQuery.data}
+              onRefresh={() => budgetQuery.refetch()}
+            />
+          ) : (
+            <p className="py-6 text-[var(--text-secondary)]">
+              No budget saved yet. Switch to <strong className="text-[var(--text-heading)]">Estimate</strong>, switch to
+              detailed mode, add line items, and tap <strong>Save as budget</strong>.
+            </p>
+          )
+        ) : (
+          <>
+            <QuickRehabEstimate
+              propertyData={propertyData}
+              onEstimateChange={onEstimateChange}
+              onSwitchToDetailed={() => setMode('detailed')}
+              costContext={costContext}
+            />
+
+            {propertyAddress && (
+              <a
+                href={`/property?address=${encodeURIComponent(propertyAddress)}`}
+                className="block w-full py-2.5 rounded-lg text-[13px] font-semibold text-center cursor-pointer transition-all"
+                style={{
+                  backgroundColor: 'var(--surface-card)',
+                  color: 'var(--text-secondary)',
+                  border: '2px solid var(--border-default)',
+                }}
+              >
+                ← Back to Property Analytics
+              </a>
+            )}
+          </>
         )}
       </div>
     )
@@ -550,7 +608,52 @@ export default function RehabEstimator({
       {propertyData && (
         <ModeToggle mode={mode} onModeChange={setMode} />
       )}
-      
+
+      {savedPropertyId ? (
+        <div className="flex rounded-xl border border-[var(--border-default)] p-1 gap-1 bg-[var(--surface-elevated)]">
+          <button
+            type="button"
+            className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
+            style={{
+              backgroundColor: workspaceTab === 'estimate' ? 'var(--surface-card)' : 'transparent',
+              color: 'var(--text-heading)',
+              boxShadow: workspaceTab === 'estimate' ? 'var(--shadow-card)' : undefined,
+            }}
+            onClick={() => setWorkspaceTab('estimate')}
+          >
+            Estimate
+          </button>
+          <button
+            type="button"
+            className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
+            style={{
+              backgroundColor: workspaceTab === 'budget' ? 'var(--surface-card)' : 'transparent',
+              color: 'var(--text-heading)',
+              boxShadow: workspaceTab === 'budget' ? 'var(--shadow-card)' : undefined,
+            }}
+            onClick={() => setWorkspaceTab('budget')}
+          >
+            Budget (actuals)
+          </button>
+        </div>
+      ) : null}
+
+      {savedPropertyId && workspaceTab === 'budget' ? (
+        budgetQuery.isLoading ? (
+          <div className="py-12 text-center text-[var(--text-secondary)]">Loading budget…</div>
+        ) : budgetQuery.data ? (
+          <BudgetTable
+            propertyId={savedPropertyId}
+            summary={budgetQuery.data}
+            onRefresh={() => budgetQuery.refetch()}
+          />
+        ) : (
+          <p className="py-6 text-[var(--text-secondary)]">
+            Use <strong className="text-[var(--text-heading)]">Save as budget</strong> below after you’ve built your scope.
+          </p>
+        )
+      ) : (
+        <>
       {/* Quick Start Presets */}
       <div>
         <div className="flex items-center gap-2 mb-2">
@@ -627,6 +730,25 @@ export default function RehabEstimator({
         </div>
       </div>
 
+      {savedPropertyId && selections.length > 0 && (
+        <button
+          type="button"
+          disabled={seedBudget.isPending}
+          onClick={async () => {
+            await seedBudget.mutateAsync({
+              propertyId: savedPropertyId,
+              selections,
+              contingency_pct: contingencyPct,
+            })
+            setWorkspaceTab('budget')
+            await budgetQuery.refetch()
+          }}
+          className="w-full py-3 rounded-xl font-semibold text-[var(--text-inverse)] brand-gradient disabled:opacity-50"
+        >
+          {seedBudget.isPending ? 'Saving budget…' : 'Save as budget for this property'}
+        </button>
+      )}
+
       {/* Total Estimate */}
       <div className="rounded-xl px-4 py-3 flex justify-between items-center" style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
         <div>
@@ -680,6 +802,8 @@ export default function RehabEstimator({
         >
           Clear All Items
         </button>
+      )}
+        </>
       )}
     </div>
   )

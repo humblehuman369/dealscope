@@ -62,6 +62,7 @@ import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyW
 import { buildStrategyUrlWithScenario } from '@/lib/dealStructures/loadScenario'
 import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'
 import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
+import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 
 // Backend analysis response type — canonical shape from @dealscope/shared.
 // The backend serializes both snake_case and camelCase via Pydantic alias_generator,
@@ -1258,6 +1259,8 @@ function VerdictContent() {
               </button>
             </div>
           )}
+
+          {propertyIdParam ? <RehabBudgetBanner propertyId={propertyIdParam} /> : null}
 
           {/* Full-width photo gallery */}
           <section className="mx-0 sm:mx-5 mt-6">

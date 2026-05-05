@@ -22,12 +22,11 @@ function DashboardContent() {
   }, [])
 
   return (
-    <div
-      className="min-h-screen bg-[var(--surface-base)] py-8 px-4 sm:px-6 lg:px-8"
-      style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
-    >
+    <div className="min-h-screen bg-[var(--surface-base)] py-8 px-4 sm:px-6 lg:px-8 grid-fade">
       <div className="max-w-6xl mx-auto">
-        <DashboardHeader onSearchClick={() => setShowSearchModal(true)} />
+        <div className="soft-panel rounded-3xl p-6 sm:p-8 mb-8 border border-[var(--border-subtle)]">
+          <DashboardHeader onSearchClick={() => setShowSearchModal(true)} />
+        </div>
 
         {/* Pipeline stats — clickable filters that highlight the kanban column */}
         <PipelineStats
@@ -35,10 +34,10 @@ function DashboardContent() {
           onSelectStage={setHighlightStage}
         />
 
-        {/* The centerpiece — Saved Properties Kanban */}
+        {/* The centerpiece — Saved Properties Kanban (pre-purchase lead funnel) */}
         <section className="mb-8">
           <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--text-heading)] mb-3">
-            Deal Pipeline
+            Lead Pipeline
           </h2>
           <PipelineKanban
             highlightStage={highlightStage}
