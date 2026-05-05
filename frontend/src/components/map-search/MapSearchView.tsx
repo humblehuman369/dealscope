@@ -48,8 +48,51 @@ const MIN_ZOOM_FOR_GEOCODE = 13
 const HINT_DISMISSED_KEY = 'dealscope:map-click-hint-dismissed'
 const ZIP_CACHE_PREFIX = 'dealscope:zip-cache:'
 // Per-map theme override (independent of the global app theme).
-// Stored as 'light' | 'dark'; absence means "follow the global app theme".
+// Persisted as JSON `{ value, base }` where `base` is the global theme the
+// override was set against. The override is only restored when the saved
+// `base` still matches the current global theme — once the user changes the
+// global theme, the map snaps back to follow it and the user must opt in
+// again. Absence means "follow the global app theme".
 const MAP_THEME_OVERRIDE_KEY = 'dealscope:map-theme-override'
+
+type PersistedMapThemeOverride = {
+  value: 'light' | 'dark'
+  base: 'light' | 'dark'
+}
+
+function readPersistedMapThemeOverride(): PersistedMapThemeOverride | null {
+  try {
+    const raw = localStorage.getItem(MAP_THEME_OVERRIDE_KEY)
+    if (!raw) return null
+    // Back-compat: older builds stored the bare string 'light' | 'dark'.
+    // Treat those as stale (no recorded base) so the new contract takes over.
+    if (raw === 'light' || raw === 'dark') {
+      localStorage.removeItem(MAP_THEME_OVERRIDE_KEY)
+      return null
+    }
+    const parsed = JSON.parse(raw) as Partial<PersistedMapThemeOverride>
+    if (
+      (parsed?.value === 'light' || parsed?.value === 'dark') &&
+      (parsed?.base === 'light' || parsed?.base === 'dark')
+    ) {
+      return { value: parsed.value, base: parsed.base }
+    }
+    localStorage.removeItem(MAP_THEME_OVERRIDE_KEY)
+    return null
+  } catch {
+    return null
+  }
+}
+
+function writePersistedMapThemeOverride(value: PersistedMapThemeOverride | null) {
+  try {
+    if (value) {
+      localStorage.setItem(MAP_THEME_OVERRIDE_KEY, JSON.stringify(value))
+    } else {
+      localStorage.removeItem(MAP_THEME_OVERRIDE_KEY)
+    }
+  } catch { /* private browsing */ }
+}
 // Zoom used when centering on the user's saved ZIP (ZIP-level framing).
 const ACCOUNT_ZIP_INITIAL_ZOOM = 13
 
@@ -636,17 +679,38 @@ export function MapSearchView() {
   const { theme } = useTheme()
 
   // Per-map theme override. When set, beats the global app theme for the
-  // map's color scheme, canvas filter, and floating overlay tinting. Read
-  // from localStorage on mount so the user's prior choice persists across
-  // sessions.
+  // map's color scheme, canvas filter, and floating overlay tinting. The
+  // override is keyed to the global theme it was set against — when the
+  // global theme changes, we drop the override so the map re-syncs to the
+  // new global theme. The user can then toggle independently again.
   const [mapThemeOverride, setMapThemeOverride] = useState<'light' | 'dark' | null>(null)
 
+  // Restore saved override on mount, but only if it was set against the
+  // current global theme. A mismatch means the user changed the global theme
+  // between sessions and the override is stale.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(MAP_THEME_OVERRIDE_KEY)
-      if (saved === 'light' || saved === 'dark') setMapThemeOverride(saved)
-    } catch { /* private browsing */ }
+    const saved = readPersistedMapThemeOverride()
+    if (saved && saved.base === theme) {
+      setMapThemeOverride(saved.value)
+    } else if (saved) {
+      writePersistedMapThemeOverride(null)
+    }
+    // Intentionally only on mount — subsequent global theme changes are
+    // handled by the effect below so we can distinguish "user changed global
+    // theme" (clear override) from "initial hydration" (restore override).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Reset the per-map override whenever the global app theme changes after
+  // the initial render. This makes the map snap to follow the new global
+  // theme; the user can opt back into an override afterwards.
+  const previousGlobalThemeRef = useRef(theme)
+  useEffect(() => {
+    if (previousGlobalThemeRef.current === theme) return
+    previousGlobalThemeRef.current = theme
+    setMapThemeOverride(null)
+    writePersistedMapThemeOverride(null)
+  }, [theme])
 
   const isDarkMap = (mapThemeOverride ?? theme) === 'dark'
   const overlaySurface = getMapOverlaySurface(isDarkMap)
@@ -654,8 +718,8 @@ export function MapSearchView() {
   const toggleMapTheme = useCallback(() => {
     const next: 'light' | 'dark' = isDarkMap ? 'light' : 'dark'
     setMapThemeOverride(next)
-    try { localStorage.setItem(MAP_THEME_OVERRIDE_KEY, next) } catch { /* private browsing */ }
-  }, [isDarkMap])
+    writePersistedMapThemeOverride({ value: next, base: theme })
+  }, [isDarkMap, theme])
 
   const paramCenter = useMemo(() => {
     const lat = parseFloat(searchParams.get('lat') ?? '')
