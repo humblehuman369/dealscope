@@ -40,6 +40,7 @@ import {
   formatPrice, formatPercent, formatNumber, calculateMortgagePayment, getValueColor,
 } from './types'
 import { useDealMakerBackendCalc } from '@/hooks/useDealMakerBackendCalc'
+import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 import { DealMakerWorksheet } from './DealMakerWorksheet'
 import {
   buildInitialState,
@@ -94,7 +95,6 @@ interface DealMakerScreenProps {
   savedPropertyId?: string
   backTo?: { label: string; href: string }
 }
-
 
 
 
@@ -1160,6 +1160,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         .deal-maker-theme [style*="background: #000000"],
         .deal-maker-theme [style*="background:#000000"] { background: var(--surface-base) !important; }
       `}</style>
+
+      {savedPropertyId ? <RehabBudgetBanner propertyId={savedPropertyId} /> : null}
 
       {/* Back Navigation + Strategy Selector */}
       <div className="px-4 sm:px-6 pt-3">

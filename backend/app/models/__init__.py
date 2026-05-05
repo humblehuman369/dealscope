@@ -8,7 +8,8 @@ from app.models.audit_log import AuditAction, AuditLog
 from app.models.device_token import DevicePlatform, DeviceToken
 from app.models.document import Document, DocumentType
 from app.models.role import Permission, Role, RolePermission, UserRole
-from app.models.saved_property import PropertyAdjustment, PropertyStatus, SavedProperty
+from app.models.budget import BudgetExpense, BudgetLine, RehabBudget
+from app.models.saved_property import FlipStage, PropertyAdjustment, PropertyStatus, SavedProperty
 from app.models.search_history import SearchHistory
 from app.models.session import UserSession
 from app.models.share import SharedLink, ShareType
@@ -23,11 +24,15 @@ __all__ = [
     "DevicePlatform",
     "DeviceToken",
     "Document",
+    "BudgetExpense",
+    "BudgetLine",
     "DocumentType",
+    "FlipStage",
     "PaymentHistory",
     "Permission",
     "PropertyAdjustment",
     "PropertyStatus",
+    "RehabBudget",
     "Role",
     "RolePermission",
     "SavedProperty",

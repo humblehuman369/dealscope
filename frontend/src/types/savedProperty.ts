@@ -16,6 +16,9 @@ export type PropertyStatus =
   | 'passed' 
   | 'archived'
 
+/** Post-acquisition flip phases (matches backend FlipStage). */
+export type FlipStage = 'Acquisition' | 'Rehab' | 'Listed' | 'Sold'
+
 // Listing status for property (from AXESSO API)
 export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
 
@@ -41,6 +44,13 @@ export interface SavedPropertySummary {
   address_zip: string | null
   nickname: string | null
   status: PropertyStatus
+  flip_stage?: FlipStage | null
+  flip_stage_entered_at?: string | null
+  acquired_at?: string | null
+  rehab_started_at?: string | null
+  listed_at?: string | null
+  sold_at?: string | null
+  sold_price?: number | null
   tags: string[] | null
   color_label: string | null
   priority: number | null
@@ -50,6 +60,11 @@ export interface SavedPropertySummary {
   saved_at: string
   last_viewed_at: string | null
   updated_at: string
+}
+
+/** Active flips pipeline row — GET .../saved/active-flips */
+export interface ActiveFlipSummary extends SavedPropertySummary {
+  budget_variance_pct?: string | null
 }
 
 /** Stats returned by GET /api/v1/properties/saved/stats. */
@@ -75,6 +90,13 @@ export interface SavedProperty {
   // User customization
   nickname: string | null
   status: PropertyStatus
+  flip_stage?: FlipStage | null
+  flip_stage_entered_at?: string | null
+  acquired_at?: string | null
+  rehab_started_at?: string | null
+  listed_at?: string | null
+  sold_at?: string | null
+  sold_price?: number | null
   tags: string[] | null
   color_label: string | null
   priority: number | null

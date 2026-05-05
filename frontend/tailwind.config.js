@@ -198,8 +198,16 @@ module.exports = {
       //  the data/prose distinction.
       // ==========================================
       fontFamily: {
-        sans: ['var(--font-inter)', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        display: ['var(--font-inter)', 'Inter', '-apple-system', 'sans-serif'],
+        sans: [
+          'var(--font-poppins)',
+          'var(--font-inter)',
+          'Inter',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'sans-serif',
+        ],
+        display: ['var(--font-poppins)', 'var(--font-inter)', 'Inter', '-apple-system', 'sans-serif'],
         logo: ['var(--font-source-sans)', '"Source Sans 3"', 'sans-serif'],
       },
       fontSize: {
@@ -213,11 +221,11 @@ module.exports = {
       // Spacing & Layout
       // ==========================================
       borderRadius: {
-        'xl': '12px',
-        '2xl': '16px',
+        xl: '1rem',
+        '2xl': '1.25rem',
         '3xl': '1.5rem',
         '4xl': '2rem',
-        'pill': '40px',
+        pill: '40px',
       },
       boxShadow: {
         'brand': '0 4px 14px 0 rgba(4, 101, 242, 0.25)',
@@ -315,6 +323,9 @@ module.exports = {
       // ==========================================
       backgroundImage: {
         'gradient-brand': 'linear-gradient(135deg, #0465f2 0%, #38bdf8 100%)',
+        'brand-gradient': 'linear-gradient(135deg, #0465f2 0%, #0fa4e9 58%, #38bdf8 100%)',
+        'brand-radial':
+          'radial-gradient(circle at 20% 20%, rgba(56,189,248,0.24), transparent 32%), radial-gradient(circle at 85% 12%, rgba(4,101,242,0.18), transparent 28%)',
         'gradient-brand-vertical': 'linear-gradient(180deg, #0465f2 0%, #38bdf8 100%)',
         'gradient-hero': 'radial-gradient(ellipse 80% 60% at 50% 30%, rgba(12,18,32,0.6) 0%, #000 100%)',
         'gradient-dark': 'linear-gradient(135deg, #07172e 0%, #1f2937 100%)',

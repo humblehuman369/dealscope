@@ -7,18 +7,18 @@ type ThemeValue<T extends string = string> = {
 
 export const semanticTokens = {
   surface: {
-    base: { dark: '#000000', light: '#EAEEF3' },
-    section: { dark: '#060B14', light: '#F1F4F8' },
-    card: { dark: '#0C1220', light: '#FFFFFF' },
-    cardHover: { dark: '#101828', light: '#F5F7FA' },
-    elevated: { dark: '#101828', light: '#F8FAFC' },
+    base: { dark: '#000000', light: '#F7F9FC' },
+    section: { dark: '#060B14', light: '#FFFFFF' },
+    card: { dark: '#000000', light: '#FFFFFF' },
+    cardHover: { dark: '#0C1220', light: '#F1F5FB' },
+    elevated: { dark: '#0C1220', light: '#F8FAFC' },
     input: { dark: '#0C1220', light: '#FFFFFF' },
     overlay: { dark: 'rgba(0,0,0,0.8)', light: 'rgba(0,0,0,0.5)' },
   },
   text: {
-    heading: { dark: '#F1F5F9', light: '#000000' },
+    heading: { dark: '#F1F5F9', light: '#0F172A' },
     body: { dark: '#CBD5E1', light: '#1E293B' },
-    secondary: { dark: '#94A3B8', light: '#334155' },
+    secondary: { dark: '#94A3B8', light: '#475569' },
     label: { dark: '#7C8CA0', light: '#475569' },
     muted: { dark: '#64748B', light: '#64748B' },
     inverse: { dark: '#000000', light: '#FFFFFF' },
@@ -29,7 +29,7 @@ export const semanticTokens = {
     sky: { dark: '#0FA4E9', light: '#0465F2' },
     skyLight: { dark: '#38bdf8', light: '#0FA4E9' },
     brandGradientFrom: { dark: '#0465f2', light: '#0465F2' },
-    brandGradientTo: { dark: '#0FA4E9', light: '#0465F2' },
+    brandGradientTo: { dark: '#0FA4E9', light: '#0FA4E9' },
   },
   status: {
     positive: { dark: '#34d399', light: '#059669' },
@@ -47,14 +47,20 @@ export const semanticTokens = {
     wholesale: { dark: '#84cc16', light: '#4D7C0F' },
   },
   border: {
-    subtle: { dark: 'rgba(15,164,233,0.25)', light: '#D5DBE4' },
-    default: { dark: '#334155', light: '#B8C4CE' },
+    subtle: { dark: 'rgba(15,164,233,0.25)', light: '#E2E8F0' },
+    default: { dark: '#334155', light: '#CBD5E1' },
     strong: { dark: '#475569', light: '#8896A6' },
     focus: { dark: '#0FA4E9', light: '#0465F2' },
   },
   shadow: {
-    card: { dark: '0 0 20px rgba(15,164,233,0.15)', light: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' },
-    cardHover: { dark: '0 0 30px rgba(15,164,233,0.25)', light: '0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)' },
+    card: {
+      dark: '0 0 20px rgba(15,164,233,0.15)',
+      light: '0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(4, 101, 242, 0.06)',
+    },
+    cardHover: {
+      dark: '0 0 30px rgba(15,164,233,0.25)',
+      light: '0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(4, 101, 242, 0.08)',
+    },
     dropdown: { dark: '0 4px 12px rgba(0,0,0,0.5)', light: '0 10px 25px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.06)' },
   },
   chart: {

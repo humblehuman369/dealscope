@@ -17,8 +17,18 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.budget import RehabBudget
     from app.models.document import Document
     from app.models.user import User
+
+
+class FlipStage(enum.StrEnum):
+    """Post-acquisition flip lifecycle (FlipCycle-style phases)."""
+
+    ACQUISITION = "Acquisition"
+    REHAB = "Rehab"
+    LISTED = "Listed"
+    SOLD = "Sold"
 
 
 class PropertyStatus(enum.StrEnum):
@@ -65,6 +75,15 @@ class SavedProperty(Base):
 
     # User Customizations
     status: Mapped[PropertyStatus] = mapped_column(SQLEnum(PropertyStatus), default=PropertyStatus.WATCHING)
+
+    # Post-acquisition flip lifecycle (optional until property is owned / user advances)
+    flip_stage: Mapped[FlipStage | None] = mapped_column(SQLEnum(FlipStage, native_enum=False), nullable=True)
+    flip_stage_entered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    acquired_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    rehab_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    listed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    sold_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    sold_price: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
     nickname: Mapped[str | None] = mapped_column(String(100))  # User's custom name: "Beach House", "First Flip"
     tags: Mapped[list[str] | None] = mapped_column(
         ARRAY(String), default=list
@@ -124,6 +143,12 @@ class SavedProperty(Base):
         back_populates="saved_property",
         cascade="all, delete-orphan",
         order_by="PropertyAdjustment.created_at.desc()",
+    )
+    rehab_budget: Mapped["RehabBudget | None"] = relationship(
+        "RehabBudget",
+        back_populates="saved_property",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
 
     def get_display_name(self) -> str:

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Source_Sans_3, DM_Sans, Space_Mono } from 'next/font/google'
+import { Inter, Poppins, Source_Sans_3, DM_Sans, Space_Mono } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { LayoutWrapper } from '@/components/LayoutWrapper'
@@ -14,6 +14,13 @@ import { ThemeHydrationScript } from '@/components/theme/ThemeHydrationScript'
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+})
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-poppins',
   display: 'swap',
 })
 
@@ -84,7 +91,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`antialiased ${inter.variable} ${sourceSans.variable} ${dmSans.variable} ${spaceMono.variable}`}
+      className={`antialiased ${poppins.variable} ${inter.variable} ${sourceSans.variable} ${dmSans.variable} ${spaceMono.variable}`}
     >
       <head>
         <ThemeHydrationScript />

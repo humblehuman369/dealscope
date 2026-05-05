@@ -32,6 +32,7 @@ interface PropertyData {
 function RehabPageContent() {
   const searchParams = useSearchParams()
   const address = searchParams.get('address') || ''
+  const savedPropertyId = searchParams.get('saved_property_id') || undefined
   const initialBudget = parseInt(searchParams.get('budget') || '25000', 10)
   
   const [propertyData, setPropertyData] = useState<PropertyData | undefined>(undefined)
@@ -151,6 +152,7 @@ function RehabPageContent() {
                 propertyData={propertyData}
                 costContext={costContext}
                 initialMode={propertyData ? 'quick' : 'detailed'}
+                savedPropertyId={savedPropertyId}
               />
             )}
           </div>

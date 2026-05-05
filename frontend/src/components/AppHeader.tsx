@@ -120,6 +120,7 @@ const NO_PROPERTY_BAR_ROUTES = [
   '/billing',
   '/search-history',
   '/saved-properties',
+  '/pipeline',
   '/national-averages',
   '/onboarding',
   '/verify-email',
@@ -584,17 +585,30 @@ export function AppHeader({
             </button>
             {/* Dashboard — visible primary nav for signed-in users. */}
             {isAuthenticated && (
-              <Link
-                href="/dashboard"
-                className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                style={{
-                  color: 'var(--text-heading)',
-                  borderBottom: pathname === '/dashboard' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                  paddingBottom: 2,
-                }}
-              >
-                Dashboard
-              </Link>
+              <>
+                <Link
+                  href="/dashboard"
+                  className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                  style={{
+                    color: 'var(--text-heading)',
+                    borderBottom: pathname === '/dashboard' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
+                    paddingBottom: 2,
+                  }}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/pipeline"
+                  className="hidden md:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                  style={{
+                    color: 'var(--text-heading)',
+                    borderBottom: pathname === '/pipeline' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
+                    paddingBottom: 2,
+                  }}
+                >
+                  Pipeline
+                </Link>
+              </>
             )}
             {/* Theme toggle — always shown directly (no dropdown) */}
             <button

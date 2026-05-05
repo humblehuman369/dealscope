@@ -28,7 +28,8 @@ export function DashboardHeader({ onSearchClick }: DashboardHeaderProps) {
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
       <div className="min-w-0">
         <h1 className="text-3xl font-bold text-[var(--text-heading)] tracking-tight">
-          {getGreeting()}, <span className="text-[var(--accent-sky)]">{getFirstName(user?.full_name)}</span>
+          {getGreeting()},{' '}
+          <span className="brand-text-gradient font-bold">{getFirstName(user?.full_name)}</span>
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-[var(--text-secondary)]">
           <span>Welcome back to your deal pipeline.</span>
