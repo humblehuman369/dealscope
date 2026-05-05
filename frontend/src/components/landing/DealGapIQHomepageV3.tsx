@@ -7,7 +7,7 @@
  * Source of truth for copy: docs/marketing/HOMEPAGE_PLAN.md
  *
  * Sections (top → bottom):
- *  1. Hero — "Stop Scrolling Listings. Start Hunting Real Deals. Close Four Different Ways."
+ *  1. Hero — "Stop Scrolling Listings. Start Spotting Real Deals. Know What to Offer."
  *  2. After-the-verdict demo — Lake Worth example with the four paths
  *  3. Negotiation Playbook — Subject-To. Seller carrybacks. 0% 2nds.
  *  4. How it compares — table vs Listing Sites and Investor Calculators
@@ -167,16 +167,14 @@ function HeroSection({
               style={HEADLINE_STYLE}
             >
               <span className="block text-balance text-white">Stop Scrolling Listings.</span>
-              <span className="block text-balance text-white">Start Hunting Real Deals.</span>
-              <span className="block text-balance text-sky-400">Close Four Different Ways.</span>
+              <span className="block text-balance text-white">Start Spotting Real Deals.</span>
+              <span className="block text-balance text-sky-400">Know What to Offer.</span>
             </h1>
 
             <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto xl:mx-0 mb-9">
-              One address. <span className="text-white font-semibold">15 seconds.</span> A verdict backed by{' '}
-              <span className="text-white font-semibold">6 data sources</span> — and DealGap
-              <span className="text-sky-400">IQ</span> will craft{' '}
-              <span className="text-white font-semibold">four offer structures</span> that cash-flow,{' '}
-              <span className="text-white font-semibold">which you can customize</span>.
+              DealGap<span className="text-sky-400">IQ</span> helps investors turn{' '}
+              <span className="text-white font-semibold">listings, property data, and creative-finance scenarios</span>{' '}
+              into <span className="text-white font-semibold">clear deal decisions and offer strategies</span>.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center xl:items-start gap-5 sm:gap-6 mb-8">

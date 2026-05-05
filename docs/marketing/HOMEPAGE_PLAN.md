@@ -28,11 +28,11 @@ Three repeating motif lines run through the page. Each appears at least twice:
 
 ### Headline
 
-> # Stop Scrolling Listings. Start Hunting Real Deals. Close Four Different Ways.
+> # Stop Scrolling Listings. Start Spotting Real Deals. Know What to Offer.
 
 ### Subhead
 
-> One address. 15 seconds. A verdict backed by 5 data sources — and DealGapIQ will craft four offer structures to make the math work.
+> DealGapIQ helps investors turn listings, property data, and creative-finance scenarios into clear deal decisions and offer strategies.
 
 ### CTAs
 
