@@ -177,7 +177,7 @@ function HeroSection({
               into <span className="text-white font-semibold">clear deal decisions and offer strategies</span>.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center xl:items-start gap-5 sm:gap-6 mb-8">
+            <div className="flex flex-col sm:flex-row items-center justify-center xl:justify-start xl:items-start gap-5 sm:gap-6 mb-8">
               <PrimaryButtonLarge sublabel="on any property" onClick={() => onVerdict()}>
                 Run a Free Verdict <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
               </PrimaryButtonLarge>
