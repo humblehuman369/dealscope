@@ -62,6 +62,10 @@ def upgrade() -> None:
             UUID(as_uuid=True),
             sa.ForeignKey("rehab_budgets.id", ondelete="CASCADE"),
             nullable=False,
+            # `index=True` auto-creates `ix_budget_lines_budget_id`. Do NOT
+            # also add `op.create_index(...)` for the same name below — that
+            # duplicate caused the migration to fail with "relation already
+            # exists" on every environment.
             index=True,
         ),
         sa.Column("category_id", sa.String(64), nullable=False),
@@ -73,7 +77,7 @@ def upgrade() -> None:
         sa.Column("estimate_amount", sa.Numeric(14, 2), nullable=False),
         sa.Column("sort_order", sa.Integer(), nullable=False, server_default="0"),
     )
-    op.create_index(op.f("ix_budget_lines_budget_id"), "budget_lines", ["budget_id"], unique=False)
+    # Composite index is NOT auto-created — needs explicit op.create_index.
     op.create_index("ix_budget_lines_budget_category", "budget_lines", ["budget_id", "category_id"], unique=False)
 
     op.create_table(
@@ -84,6 +88,9 @@ def upgrade() -> None:
             UUID(as_uuid=True),
             sa.ForeignKey("rehab_budgets.id", ondelete="CASCADE"),
             nullable=False,
+            # `index=True` auto-creates `ix_budget_expenses_budget_id` —
+            # don't also add an explicit `op.create_index` for it (see note
+            # on budget_lines above).
             index=True,
         ),
         sa.Column(
@@ -91,6 +98,7 @@ def upgrade() -> None:
             UUID(as_uuid=True),
             sa.ForeignKey("budget_lines.id", ondelete="SET NULL"),
             nullable=True,
+            # Same — auto-creates `ix_budget_expenses_budget_line_id`.
             index=True,
         ),
         sa.Column("amount", sa.Numeric(14, 2), nullable=False),
@@ -116,17 +124,15 @@ def upgrade() -> None:
             server_default=sa.func.now(),
         ),
     )
-    op.create_index(op.f("ix_budget_expenses_budget_id"), "budget_expenses", ["budget_id"], unique=False)
-    op.create_index(op.f("ix_budget_expenses_budget_line_id"), "budget_expenses", ["budget_line_id"], unique=False)
 
 
 def downgrade() -> None:
-    op.drop_index(op.f("ix_budget_expenses_budget_line_id"), table_name="budget_expenses")
-    op.drop_index(op.f("ix_budget_expenses_budget_id"), table_name="budget_expenses")
+    # Indexes auto-created by `index=True` on the column declarations are
+    # removed automatically when their parent table is dropped — we only
+    # need to drop the composite index explicitly.
     op.drop_table("budget_expenses")
 
     op.drop_index("ix_budget_lines_budget_category", table_name="budget_lines")
-    op.drop_index(op.f("ix_budget_lines_budget_id"), table_name="budget_lines")
     op.drop_table("budget_lines")
 
     op.drop_table("rehab_budgets")
