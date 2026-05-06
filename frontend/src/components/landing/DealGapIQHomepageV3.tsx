@@ -736,26 +736,33 @@ function ComparisonSection() {
 }
 
 function ComparisonTable() {
+  const rowGrid =
+    'grid grid-cols-[2fr_1fr_1fr_1fr] md:grid-cols-[3fr_1fr_1fr_1.2fr]';
+  const cellDivider = 'border-r homepage-compare-border';
+
   return (
     <div
-      className="rounded-2xl overflow-hidden shadow-[var(--shadow-card)]"
+      className="rounded-2xl overflow-hidden shadow-[var(--shadow-card)] border homepage-compare-border"
       style={{
         background: 'var(--surface-card)',
-        border: '1px solid var(--border-subtle)',
       }}
     >
-      {/* Header row */}
-      <div className="grid grid-cols-[2fr_1fr_1fr_1fr] md:grid-cols-[3fr_1fr_1fr_1.2fr] border-b border-[var(--border-subtle)]">
-        <div className="px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+      {/* Header row — tinted band + column dividers */}
+      <div
+        className={`${rowGrid} border-b homepage-compare-border bg-[var(--homepage-table-header-bg)]`}
+      >
+        <div
+          className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider text-[var(--text-label)] ${cellDivider}`}
+        >
           Feature
         </div>
-        <div className="px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-label)]">
+        <div className={`px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-heading)] ${cellDivider}`}>
           <div>Listing Sites</div>
           <div className="text-[10px] font-normal text-[var(--text-muted)] mt-0.5 italic">
             Zillow, Redfin, Realtor.com
           </div>
         </div>
-        <div className="px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-label)]">
+        <div className={`px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-heading)] ${cellDivider}`}>
           <div>Investor Calculators</div>
           <div className="text-[10px] font-normal text-[var(--text-muted)] mt-0.5 italic">
             DealCheck, BP Calc, Mashvisor
@@ -764,7 +771,7 @@ function ComparisonTable() {
         <div
           className="px-2 md:px-4 py-4 text-center text-xs font-bold"
           style={{
-            background: 'var(--sky-tint-fill)',
+            background: 'rgba(4, 101, 242, 0.08)',
             color: 'var(--accent-sky)',
           }}
         >
@@ -776,18 +783,18 @@ function ComparisonTable() {
       {COMPARISON_ROWS.map((row, idx) => (
         <div
           key={row.feature}
-          className={`grid grid-cols-[2fr_1fr_1fr_1fr] md:grid-cols-[3fr_1fr_1fr_1.2fr] ${
-            idx < COMPARISON_ROWS.length - 1 ? 'border-b border-[var(--border-subtle)]' : ''
+          className={`${rowGrid} ${
+            idx < COMPARISON_ROWS.length - 1 ? 'border-b homepage-compare-border' : ''
           }`}
         >
-          <div className="px-4 md:px-6 py-5">
+          <div className={`px-4 md:px-6 py-5 ${cellDivider}`}>
             <div className="text-sm font-semibold text-[var(--text-heading)] leading-tight">{row.feature}</div>
             {row.subline && (
               <div className="text-[11px] text-[var(--text-muted)] italic mt-0.5">{row.subline}</div>
             )}
           </div>
-          <CompCell mark={row.listing} />
-          <CompCell mark={row.calc} />
+          <CompCell mark={row.listing} className={cellDivider} />
+          <CompCell mark={row.calc} className={cellDivider} />
           <CompCell mark={row.iq} highlight />
         </div>
       ))}
@@ -798,28 +805,30 @@ function ComparisonTable() {
 function CompCell({
   mark,
   highlight,
+  className = '',
 }: {
   mark: 'yes' | 'no' | 'partial';
   highlight?: boolean;
+  className?: string;
 }) {
   const display =
     mark === 'yes' ? (
       <Check
-        className={`w-5 h-5 ${highlight ? 'text-[var(--accent-sky)]' : 'text-emerald-400'}`}
+        className={`w-5 h-5 ${highlight ? 'text-[var(--accent-sky)]' : 'text-emerald-600'}`}
         strokeWidth={3}
       />
     ) : mark === 'partial' ? (
-      <span className="text-[11px] font-semibold text-amber-400 uppercase tracking-wider">
+      <span className="homepage-compare-partial text-[11px] font-semibold uppercase tracking-wider">
         partial
       </span>
     ) : (
-      <span className="text-[var(--text-muted)] text-lg">—</span>
+      <span className="text-[var(--text-muted)] text-lg font-light">—</span>
     );
 
   return (
     <div
-      className="px-2 md:px-4 py-5 flex items-center justify-center"
-      style={highlight ? { background: 'rgba(15,164,233,0.05)' } : undefined}
+      className={`px-2 md:px-4 py-5 flex items-center justify-center ${className}`.trim()}
+      style={highlight ? { background: 'rgba(15,164,233,0.06)' } : undefined}
     >
       {display}
     </div>
