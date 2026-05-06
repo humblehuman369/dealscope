@@ -315,3 +315,32 @@ export function useDeleteBudgetExpense() {
     },
   })
 }
+
+/**
+ * Update % complete on a single budget line. Returns the recomputed budget
+ * summary (projected/variance update server-side based on the new value).
+ */
+export function useUpdateBudgetLinePctComplete() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      propertyId,
+      lineId,
+      pct_complete,
+    }: {
+      propertyId: string
+      lineId: string
+      pct_complete: number
+    }) =>
+      api.patch<RehabBudgetSummary>(
+        `/api/v1/properties/saved/${propertyId}/budget/lines/${lineId}/pct_complete`,
+        { pct_complete },
+      ),
+
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['rehab-budget', variables.propertyId] })
+      queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.lists() })
+    },
+  })
+}

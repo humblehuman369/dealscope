@@ -19,7 +19,13 @@ from app.schemas.deal_maker import (
     DealMakerRecordUpdate,
     DealMakerResponse,
 )
-from app.schemas.budget import BudgetExpenseCreate, BudgetExpenseOut, BudgetSeedRequest, BudgetSummaryOut
+from app.schemas.budget import (
+    BudgetExpenseCreate,
+    BudgetExpenseOut,
+    BudgetLinePctCompleteUpdate,
+    BudgetSeedRequest,
+    BudgetSummaryOut,
+)
 from app.schemas.saved_property import (
     ActiveFlipSummary,
     BulkStatusUpdate,
@@ -759,6 +765,30 @@ async def add_budget_expense(
         receipt_document_id=str(ex.receipt_document_id) if ex.receipt_document_id else None,
         created_at=ex.created_at,
     )
+
+
+@router.patch(
+    "/{property_id}/budget/lines/{line_id}/pct_complete",
+    response_model=BudgetSummaryOut,
+    summary="Update % complete on a single budget line",
+)
+async def update_budget_line_pct_complete(
+    property_id: str,
+    line_id: str,
+    body: BudgetLinePctCompleteUpdate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    line = await budget_service.update_line_pct_complete(
+        db, property_id, str(current_user.id), line_id, body.pct_complete
+    )
+    if line is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Budget line not found")
+    budget = await budget_service.get_budget_for_property(db, property_id, str(current_user.id))
+    if not budget:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No budget for this property")
+    summary = await budget_service.build_summary(db, budget)
+    return BudgetSummaryOut(**summary)
 
 
 @router.delete(
