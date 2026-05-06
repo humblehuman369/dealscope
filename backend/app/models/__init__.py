@@ -5,6 +5,7 @@ All models are imported here for Alembic auto-discovery.
 
 from app.models.assumption_defaults import AdminAssumptionDefaults
 from app.models.audit_log import AuditAction, AuditLog
+from app.models.contact import ContactRole, PropertyContact
 from app.models.device_token import DevicePlatform, DeviceToken
 from app.models.document import Document, DocumentType
 from app.models.role import Permission, Role, RolePermission, UserRole
@@ -22,6 +23,7 @@ __all__ = [
     "AdminAssumptionDefaults",
     "AuditAction",
     "AuditLog",
+    "ContactRole",
     "DevicePlatform",
     "DeviceToken",
     "Document",
@@ -32,6 +34,7 @@ __all__ = [
     "PaymentHistory",
     "Permission",
     "PropertyAdjustment",
+    "PropertyContact",
     "PropertyStatus",
     "PropertyTask",
     "RehabBudget",

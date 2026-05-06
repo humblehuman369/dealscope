@@ -419,6 +419,20 @@ class SavedPropertyService:
         await db.commit()
         await db.refresh(saved_property)
 
+        # Auto-seed stage-templated tasks when the user moves a card to a new
+        # column. The seeding logic dedupes by title so revisiting a stage
+        # doesn't create duplicates. Lazy import avoids the circular dep
+        # between saved_property_service and task_service.
+        if status_did_change:
+            from app.services.task_service import task_service as _ts
+            try:
+                await _ts.seed_for_property(db, property_id, user_id)
+            except Exception as e:
+                # A seed failure shouldn't block the status change itself —
+                # the user already saw the column move and trusts that
+                # happened. Log and move on.
+                logger.warning("Auto-seed after status change failed: %s", e)
+
         logger.info(f"Property updated: {property_id}")
         return saved_property
 
@@ -512,6 +526,16 @@ class SavedPropertyService:
         saved.updated_at = now
         await db.commit()
         await db.refresh(saved)
+
+        # Auto-seed when crossing into a new lifecycle stage (Rehab, Listed,
+        # Stabilized, Setup, etc.). Same dedup behavior as the status-change
+        # path above.
+        from app.services.task_service import task_service as _ts
+        try:
+            await _ts.seed_for_property(db, property_id, user_id)
+        except Exception as e:
+            logger.warning("Auto-seed after flip-stage change failed: %s", e)
+
         return saved
 
     async def list_active_flips(

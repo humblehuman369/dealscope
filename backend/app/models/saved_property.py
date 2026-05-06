@@ -18,6 +18,7 @@ from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.budget import RehabBudget
+    from app.models.contact import PropertyContact
     from app.models.document import Document
     from app.models.task import PropertyTask
     from app.models.user import User
@@ -188,6 +189,12 @@ class SavedProperty(Base):
         back_populates="saved_property",
         cascade="all, delete-orphan",
         order_by="(PropertyTask.completed_at.is_not(None), PropertyTask.sort_order, PropertyTask.created_at)",
+    )
+    contacts: Mapped[list["PropertyContact"]] = relationship(
+        "PropertyContact",
+        back_populates="saved_property",
+        cascade="all, delete-orphan",
+        order_by="PropertyContact.created_at",
     )
 
     def get_display_name(self) -> str:

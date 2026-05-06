@@ -140,7 +140,8 @@ class TaskService:
 
         Idempotent in spirit: skips template items whose title already exists
         (case-insensitive) on this property, so clicking the button twice
-        doesn't create duplicates.
+        doesn't create duplicates. Sets ``due_date`` from the template's
+        ``due_offset_days`` (offset from now) when one is provided.
         """
         property_ = await self._ensure_owns_property(db, property_id, user_id)
         if property_ is None:
@@ -166,15 +167,20 @@ class TaskService:
         )
         next_order = (current_max or 0) + 1
 
+        from datetime import timedelta as _timedelta
+
+        now = datetime.now(UTC)
         created: list[PropertyTask] = []
-        for title, notes in items:
+        for title, notes, due_offset in items:
             if title.strip().lower() in existing_titles_lower:
                 continue
+            due_date = now + _timedelta(days=due_offset) if due_offset is not None else None
             task = PropertyTask(
                 saved_property_id=uuid.UUID(property_id),
                 created_by_id=uuid.UUID(user_id),
                 title=title,
                 notes=notes,
+                due_date=due_date,
                 sort_order=next_order,
             )
             db.add(task)
@@ -193,6 +199,65 @@ class TaskService:
         Exposed via the service so callers don't need to import the helper.
         """
         return template_label_for(property_)
+
+    async def list_upcoming_for_user(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        *,
+        days_ahead: int = 7,
+        include_overdue: bool = True,
+        limit: int = 50,
+    ) -> list[dict]:
+        """Tasks due in the next ``days_ahead`` days, optionally including
+        overdue. Returns enriched dicts with property context — single JOIN.
+        """
+        from datetime import timedelta as _timedelta
+
+        now = datetime.now(UTC)
+        horizon = now + _timedelta(days=days_ahead)
+        # Open tasks only (completed_at IS NULL).
+        # Either due in [now, horizon] OR overdue (due < now) when included.
+        if include_overdue:
+            due_filter = and_(
+                PropertyTask.due_date.is_not(None),
+                PropertyTask.due_date <= horizon,
+            )
+        else:
+            due_filter = and_(
+                PropertyTask.due_date.is_not(None),
+                PropertyTask.due_date >= now,
+                PropertyTask.due_date <= horizon,
+            )
+
+        result = await db.execute(
+            select(PropertyTask, SavedProperty)
+            .join(SavedProperty, SavedProperty.id == PropertyTask.saved_property_id)
+            .where(
+                SavedProperty.user_id == uuid.UUID(user_id),
+                PropertyTask.completed_at.is_(None),
+                due_filter,
+            )
+            .order_by(PropertyTask.due_date.asc())
+            .limit(limit)
+        )
+        out: list[dict] = []
+        for task, prop in result.all():
+            out.append(
+                {
+                    "id": str(task.id),
+                    "saved_property_id": str(prop.id),
+                    "property_nickname": prop.nickname,
+                    "property_address_street": prop.address_street,
+                    "property_address_city": prop.address_city,
+                    "property_address_state": prop.address_state,
+                    "property_status": prop.status.value if prop.status else "",
+                    "title": task.title,
+                    "due_date": task.due_date,
+                    "is_overdue": task.due_date < now if task.due_date else False,
+                }
+            )
+        return out
 
     async def summary_for_property(
         self, db: AsyncSession, property_id: str, user_id: str

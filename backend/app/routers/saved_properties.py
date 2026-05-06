@@ -37,10 +37,12 @@ from app.schemas.saved_property import (
     SavedPropertySummary,
     SavedPropertyUpdate,
 )
-from app.schemas.task import TaskCreate, TaskOut, TaskUpdate
+from app.schemas.contact import ContactCreate, ContactOut, ContactUpdate
+from app.schemas.task import TaskCreate, TaskOut, TaskUpdate, UpcomingTaskOut
 from app.schemas.timeline import NoteCreate, TimelineEvent
 from app.services.billing_service import billing_service
 from app.services.budget_service import budget_service
+from app.services.contact_service import contact_service
 from app.services.deal_maker_service import DealMakerService
 from app.services.saved_property_service import sanitize_for_json_storage, saved_property_service
 from app.services.search_history_service import search_history_service
@@ -391,6 +393,38 @@ async def list_active_flips_endpoint(
             )
         )
     return out
+
+
+@router.get(
+    "/tasks/upcoming",
+    response_model=list[UpcomingTaskOut],
+    summary="Tasks due soon across all of the user's properties",
+)
+async def list_upcoming_tasks(
+    current_user: CurrentUser,
+    db: DbSession,
+    days: int = Query(7, ge=1, le=60),
+    include_overdue: bool = Query(True),
+    limit: int = Query(50, ge=1, le=100),
+):
+    """Drives the dashboard "Due this week" widget. Includes overdue items by
+    default — they're the highest-signal ones the user needs to see."""
+    try:
+        rows = await task_service.list_upcoming_for_user(
+            db,
+            str(current_user.id),
+            days_ahead=days,
+            include_overdue=include_overdue,
+            limit=limit,
+        )
+    except Exception as exc:
+        # Tasks table may not exist yet during a deploy gap — render an empty
+        # widget rather than a hard 500.
+        if not is_schema_mismatch(exc):
+            raise
+        log_schema_mismatch("GET /properties/saved/tasks/upcoming", exc)
+        return []
+    return rows
 
 
 # ===========================================
@@ -917,6 +951,94 @@ async def seed_property_tasks(
     if created is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
     return [_task_to_out(t) for t in created]
+
+
+# ===========================================
+# Property Contacts
+# ===========================================
+
+
+def _contact_to_out(c) -> ContactOut:
+    return ContactOut(
+        id=str(c.id),
+        saved_property_id=str(c.saved_property_id),
+        name=c.name,
+        role=c.role,
+        company=c.company,
+        phone=c.phone,
+        email=c.email,
+        notes=c.notes,
+        created_at=c.created_at,
+        updated_at=c.updated_at,
+    )
+
+
+@router.get(
+    "/{property_id}/contacts",
+    response_model=list[ContactOut],
+    summary="List contacts for a saved property",
+)
+async def list_property_contacts(
+    property_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    contacts = await contact_service.list_for_property(db, property_id, str(current_user.id))
+    if contacts is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    return [_contact_to_out(c) for c in contacts]
+
+
+@router.post(
+    "/{property_id}/contacts",
+    response_model=ContactOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Add a contact (seller, agent, lender, etc.)",
+)
+async def create_property_contact(
+    property_id: str,
+    body: ContactCreate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    contact = await contact_service.create(db, property_id, str(current_user.id), body)
+    if contact is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    return _contact_to_out(contact)
+
+
+@router.patch(
+    "/{property_id}/contacts/{contact_id}",
+    response_model=ContactOut,
+    summary="Update a contact",
+)
+async def update_property_contact(
+    property_id: str,  # noqa: ARG001
+    contact_id: str,
+    body: ContactUpdate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    contact = await contact_service.update(db, contact_id, str(current_user.id), body)
+    if contact is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+    return _contact_to_out(contact)
+
+
+@router.delete(
+    "/{property_id}/contacts/{contact_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a contact",
+)
+async def delete_property_contact(
+    property_id: str,  # noqa: ARG001
+    contact_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    ok = await contact_service.delete(db, contact_id, str(current_user.id))
+    if not ok:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
 
 
 # ===========================================

@@ -47,3 +47,19 @@ class TaskSummary(BaseModel):
     total: int
     open: int
     overdue: int
+
+
+class UpcomingTaskOut(BaseModel):
+    """Task row enriched with property context — used by the dashboard
+    "Due this week" widget. Joins task → property in a single query."""
+
+    id: str
+    saved_property_id: str
+    property_nickname: str | None
+    property_address_street: str
+    property_address_city: str | None
+    property_address_state: str | None
+    property_status: str
+    title: str
+    due_date: datetime
+    is_overdue: bool

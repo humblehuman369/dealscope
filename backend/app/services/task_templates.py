@@ -21,108 +21,110 @@ from __future__ import annotations
 from app.models.saved_property import FlipStage, PropertyStatus, SavedProperty
 
 
-# Each template is a (title, optional notes) pair. We keep notes minimal —
-# the title is the prompt; notes are reserved for genuinely non-obvious
-# clarifications (none in the first cut).
-TaskTemplateItem = tuple[str, str | None]
+# Each template item is (title, notes, due_offset_days). Notes are reserved
+# for non-obvious clarifications. due_offset_days is the number of days from
+# stage-entry the user should plan to finish the task — we set it only where
+# the deadline is real (negotiating, under contract, owned-listed). Stages
+# that are exploratory (prospecting, pursuing) leave due dates blank.
+TaskTemplateItem = tuple[str, str | None, int | None]
 
 
 _PRE_PURCHASE_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
     PropertyStatus.PROSPECTING.value: [
-        ("Run cap-rate and cash-on-cash analysis", None),
-        ("Pull 3 nearby comps", None),
-        ("Estimate rehab budget at a high level", None),
-        ("Decide your max offer", None),
-        ("Decide whether to pursue (or pass)", None),
+        ("Run cap-rate and cash-on-cash analysis", None, None),
+        ("Pull 3 nearby comps", None, None),
+        ("Estimate rehab budget at a high level", None, None),
+        ("Decide your max offer", None, None),
+        ("Decide whether to pursue (or pass)", None, 7),
     ],
     PropertyStatus.PURSUING.value: [
-        ("Reach out to listing agent or seller", None),
-        ("Confirm seller motivation and timeline", None),
-        ("Request property disclosures", None),
-        ("Schedule a walkthrough", None),
-        ("Verify rent or rehab assumptions on-site", None),
+        ("Reach out to listing agent or seller", None, 1),
+        ("Confirm seller motivation and timeline", None, 3),
+        ("Request property disclosures", None, 3),
+        ("Schedule a walkthrough", None, 5),
+        ("Verify rent or rehab assumptions on-site", None, 7),
     ],
     PropertyStatus.NEGOTIATING.value: [
-        ("Send written offer", None),
-        ("Schedule inspection", None),
-        ("Confirm financing pre-approval", None),
-        ("Negotiate seller concessions", None),
-        ("Set inspection-contingency deadline", None),
+        ("Send written offer", None, 1),
+        ("Schedule inspection", None, 3),
+        ("Confirm financing pre-approval", None, 3),
+        ("Negotiate seller concessions", None, 5),
+        ("Set inspection-contingency deadline", None, 7),
     ],
     PropertyStatus.UNDER_CONTRACT.value: [
-        ("Wire earnest money", None),
-        ("Order appraisal", None),
-        ("Inspection walkthrough", None),
-        ("Lock interest rate", None),
-        ("Final loan approval", None),
-        ("Schedule closing", None),
+        ("Wire earnest money", None, 2),
+        ("Order appraisal", None, 5),
+        ("Inspection walkthrough", None, 7),
+        ("Lock interest rate", None, 10),
+        ("Final loan approval", None, 21),
+        ("Schedule closing", None, 30),
     ],
 }
 
 
 _OWNED_BASE_TEMPLATE: list[TaskTemplateItem] = [
-    ("Set up utilities in your name", None),
-    ("Change locks and access codes", None),
-    ("Take baseline photos and video", None),
-    ("Update insurance to landlord/builder policy", None),
+    ("Set up utilities in your name", None, 3),
+    ("Change locks and access codes", None, 3),
+    ("Take baseline photos and video", None, 7),
+    ("Update insurance to landlord/builder policy", None, 7),
 ]
 
 
 _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
     # Flip
     f"flip_{FlipStage.REHAB.value.lower()}": [
-        ("Get 3 contractor bids", None),
-        ("Pull permits if required", None),
-        ("Order materials", None),
-        ("Set rehab milestones (demo, rough-in, finish)", None),
+        ("Get 3 contractor bids", None, 7),
+        ("Pull permits if required", None, 14),
+        ("Order materials", None, 14),
+        ("Set rehab milestones (demo, rough-in, finish)", None, 7),
     ],
     f"flip_{FlipStage.LISTED.value.lower()}": [
-        ("Stage the property", None),
-        ("Schedule professional photos", None),
-        ("Set first-weekend showings", None),
-        ("Review price vs. market every week", None),
+        ("Stage the property", None, 3),
+        ("Schedule professional photos", None, 3),
+        ("Set first-weekend showings", None, 5),
+        ("Review price vs. market every week", None, 7),
     ],
     # BRRRR — diverges from flip after rehab
     f"brrrr_{FlipStage.REHAB.value.lower()}": [
-        ("Get 3 contractor bids", None),
-        ("Pull permits if required", None),
-        ("Track rehab spend against estimator", None),
-        ("Plan ARV-driven scope (don't over-improve)", None),
+        ("Get 3 contractor bids", None, 7),
+        ("Pull permits if required", None, 14),
+        ("Track rehab spend against estimator", None, 7),
+        ("Plan ARV-driven scope (don't over-improve)", None, 14),
     ],
     f"brrrr_{FlipStage.STABILIZED.value.lower()}": [
-        ("Lease unit at market rent", None),
-        ("Verify 30-90 day rent seasoning window", None),
-        ("Gather lease + rent-roll for refi underwriting", None),
+        ("Lease unit at market rent", None, 14),
+        ("Verify 30-90 day rent seasoning window", None, 30),
+        ("Gather lease + rent-roll for refi underwriting", None, 60),
     ],
     f"brrrr_{FlipStage.REFINANCED.value.lower()}": [
-        ("Confirm long-term loan terms", None),
-        ("Pull cash out at closing", None),
-        ("Set up DSCR-loan payment auto-pay", None),
+        ("Confirm long-term loan terms", None, 7),
+        ("Pull cash out at closing", None, 14),
+        ("Set up DSCR-loan payment auto-pay", None, 30),
     ],
     # Long-term rental
     f"ltr_{FlipStage.MAKE_READY.value.lower()}": [
-        ("Deep clean", None),
-        ("Make minor cosmetic repairs", None),
-        ("List on Zillow / RentRedi / Apartments.com", None),
-        ("Set tenant screening criteria", None),
+        ("Deep clean", None, 3),
+        ("Make minor cosmetic repairs", None, 7),
+        ("List on Zillow / RentRedi / Apartments.com", None, 7),
+        ("Set tenant screening criteria", None, 7),
     ],
     f"ltr_{FlipStage.LEASED.value.lower()}": [
-        ("Sign lease", None),
-        ("Collect first month + deposit", None),
-        ("Set up rent collection (auto-pay if possible)", None),
+        ("Sign lease", None, 1),
+        ("Collect first month + deposit", None, 1),
+        ("Set up rent collection (auto-pay if possible)", None, 7),
     ],
     # Short-term rental
     f"str_{FlipStage.SETUP.value.lower()}": [
-        ("Furnish and stage", None),
-        ("Stock linens, kitchen basics, supplies", None),
-        ("Set up Airbnb / VRBO listings", None),
-        ("Set dynamic-pricing strategy", None),
-        ("Hire a co-host or cleaner", None),
+        ("Furnish and stage", None, 14),
+        ("Stock linens, kitchen basics, supplies", None, 14),
+        ("Set up Airbnb / VRBO listings", None, 21),
+        ("Set dynamic-pricing strategy", None, 21),
+        ("Hire a co-host or cleaner", None, 21),
     ],
     f"str_{FlipStage.LIVE.value.lower()}": [
-        ("Monitor first 10 reviews closely", None),
-        ("Iterate listing photos and copy after first month", None),
-        ("Track occupancy + ADR weekly", None),
+        ("Monitor first 10 reviews closely", None, 30),
+        ("Iterate listing photos and copy after first month", None, 30),
+        ("Track occupancy + ADR weekly", None, 7),
     ],
 }
 
