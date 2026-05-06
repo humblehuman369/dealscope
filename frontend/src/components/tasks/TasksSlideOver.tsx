@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   Circle,
   Mail,
+  Pencil,
   Phone,
   Plus,
   ListChecks,
@@ -40,6 +41,7 @@ import {
   useContacts,
   useCreateContact,
   useDeleteContact,
+  useUpdateContact,
 } from '@/hooks/useContacts'
 import type { PropertyTask } from '@/types/task'
 import type { TimelineEvent, TimelineEventKind } from '@/types/timeline'
@@ -265,6 +267,10 @@ function TasksTab({
     del.mutate(t.id)
   }
 
+  function handleEdit(t: PropertyTask, body: { title?: string; due_date?: string | null }) {
+    update.mutate({ taskId: t.id, body })
+  }
+
   return (
     <>
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
@@ -293,7 +299,13 @@ function TasksTab({
         ) : (
           <>
             {openItems.map((t) => (
-              <TaskRow key={t.id} task={t} onToggle={handleToggle} onDelete={handleDelete} />
+              <TaskRow
+                key={t.id}
+                task={t}
+                onToggle={handleToggle}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+              />
             ))}
             {doneItems.length > 0 && (
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mt-4 mb-1 px-2">
@@ -301,7 +313,13 @@ function TasksTab({
               </p>
             )}
             {doneItems.map((t) => (
-              <TaskRow key={t.id} task={t} onToggle={handleToggle} onDelete={handleDelete} />
+              <TaskRow
+                key={t.id}
+                task={t}
+                onToggle={handleToggle}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+              />
             ))}
           </>
         )}
@@ -337,12 +355,90 @@ interface TaskRowProps {
   task: PropertyTask
   onToggle: (t: PropertyTask) => void
   onDelete: (t: PropertyTask) => void
+  onEdit: (t: PropertyTask, body: { title?: string; due_date?: string | null }) => void
 }
 
-function TaskRow({ task, onToggle, onDelete }: TaskRowProps) {
+/** ISO datetime → "yyyy-MM-dd" for the <input type="date"> value. */
+function isoToDateInput(iso: string | null | undefined): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (!Number.isFinite(d.getTime())) return ''
+  return d.toISOString().slice(0, 10)
+}
+
+function TaskRow({ task, onToggle, onDelete, onEdit }: TaskRowProps) {
   const isDone = task.completed_at !== null
   const due = formatDue(task.due_date)
   const isOverdue = !isDone && task.due_date !== null && new Date(task.due_date).getTime() < Date.now()
+  const [editing, setEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState(task.title)
+  const [editDate, setEditDate] = useState(isoToDateInput(task.due_date))
+
+  function startEdit() {
+    setEditTitle(task.title)
+    setEditDate(isoToDateInput(task.due_date))
+    setEditing(true)
+  }
+
+  function saveEdit() {
+    const t = editTitle.trim()
+    if (!t) return
+    const body: { title?: string; due_date?: string | null } = {}
+    if (t !== task.title) body.title = t
+    // Convert "yyyy-MM-dd" → end-of-day ISO so a "due today" task is overdue
+    // only after the day ends. Empty string clears the due date.
+    const desiredDate = editDate
+      ? new Date(`${editDate}T23:59:59Z`).toISOString()
+      : null
+    if (desiredDate !== task.due_date) body.due_date = desiredDate
+    if (Object.keys(body).length > 0) {
+      onEdit(task, body)
+    }
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <div className="rounded-lg p-2 bg-[var(--surface-elevated)] border border-[var(--border-default)] space-y-2">
+        <input
+          type="text"
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') saveEdit()
+            if (e.key === 'Escape') setEditing(false)
+          }}
+          className="w-full rounded border border-[var(--border-default)] bg-[var(--surface-input)] px-2 py-1.5 text-sm text-[var(--text-heading)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)]"
+        />
+        <div className="flex items-center justify-between gap-2">
+          <input
+            type="date"
+            value={editDate}
+            onChange={(e) => setEditDate(e.target.value)}
+            className="rounded border border-[var(--border-default)] bg-[var(--surface-input)] px-2 py-1 text-xs text-[var(--text-heading)]"
+          />
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="px-2 py-1 text-xs font-semibold text-[var(--text-label)] hover:text-[var(--text-body)]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={saveEdit}
+              disabled={!editTitle.trim()}
+              className="px-2 py-1 rounded text-xs font-semibold bg-[var(--accent-sky)] text-[var(--text-inverse)] hover:bg-[var(--accent-sky-light)] disabled:opacity-50"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="group flex items-start gap-2 px-2 py-2 rounded-lg hover:bg-[var(--hover-overlay)]">
@@ -380,14 +476,24 @@ function TaskRow({ task, onToggle, onDelete }: TaskRowProps) {
           </p>
         )}
       </div>
-      <button
-        type="button"
-        onClick={() => onDelete(task)}
-        aria-label="Delete task"
-        className="shrink-0 mt-0.5 p-1 rounded text-[var(--text-label)] hover:text-[var(--status-negative)] opacity-0 group-hover:opacity-100 transition-opacity"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
+      <div className="shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          type="button"
+          onClick={startEdit}
+          aria-label="Edit task"
+          className="p-1 rounded text-[var(--text-label)] hover:text-[var(--accent-sky)]"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onDelete(task)}
+          aria-label="Delete task"
+          className="p-1 rounded text-[var(--text-label)] hover:text-[var(--status-negative)]"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   )
 }
@@ -572,6 +678,7 @@ function visualForKind(kind: TimelineEventKind): {
 function ContactsTab({ propertyId }: { propertyId: string }) {
   const contacts = useContacts(propertyId)
   const create = useCreateContact(propertyId)
+  const update = useUpdateContact(propertyId)
   const del = useDeleteContact(propertyId)
 
   const [showForm, setShowForm] = useState(false)
@@ -633,7 +740,12 @@ function ContactsTab({ propertyId }: { propertyId: string }) {
           </div>
         ) : (
           items.map((c) => (
-            <ContactRow key={c.id} contact={c} onDelete={() => del.mutate(c.id)} />
+            <ContactRow
+              key={c.id}
+              contact={c}
+              onDelete={() => del.mutate(c.id)}
+              onEdit={(body) => update.mutate({ contactId: c.id, body })}
+            />
           ))
         )}
       </div>
@@ -726,10 +838,123 @@ function ContactsTab({ propertyId }: { propertyId: string }) {
 function ContactRow({
   contact,
   onDelete,
+  onEdit,
 }: {
   contact: PropertyContact
   onDelete: () => void
+  onEdit: (body: {
+    name?: string
+    role?: ContactRole
+    phone?: string | null
+    email?: string | null
+    company?: string | null
+  }) => void
 }) {
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState(contact.name)
+  const [role, setRole] = useState<ContactRole>(contact.role)
+  const [phone, setPhone] = useState(contact.phone ?? '')
+  const [email, setEmail] = useState(contact.email ?? '')
+  const [company, setCompany] = useState(contact.company ?? '')
+
+  function startEdit() {
+    setName(contact.name)
+    setRole(contact.role)
+    setPhone(contact.phone ?? '')
+    setEmail(contact.email ?? '')
+    setCompany(contact.company ?? '')
+    setEditing(true)
+  }
+
+  function saveEdit() {
+    if (!name.trim()) return
+    const body: {
+      name?: string
+      role?: ContactRole
+      phone?: string | null
+      email?: string | null
+      company?: string | null
+    } = {}
+    if (name.trim() !== contact.name) body.name = name.trim()
+    if (role !== contact.role) body.role = role
+    const newPhone = phone.trim() || null
+    if (newPhone !== contact.phone) body.phone = newPhone
+    const newEmail = email.trim() || null
+    if (newEmail !== contact.email) body.email = newEmail
+    const newCompany = company.trim() || null
+    if (newCompany !== contact.company) body.company = newCompany
+    if (Object.keys(body).length > 0) onEdit(body)
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <div className="rounded-lg p-2.5 bg-[var(--surface-elevated)] border border-[var(--border-default)] space-y-2">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Name"
+            autoFocus
+            className="flex-1 rounded border border-[var(--border-default)] bg-[var(--surface-input)] px-2 py-1.5 text-sm text-[var(--text-heading)]"
+          />
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as ContactRole)}
+            className="rounded border border-[var(--border-default)] bg-[var(--surface-input)] px-2 py-1.5 text-sm text-[var(--text-heading)]"
+          >
+            {CONTACT_ROLES_ORDERED.map((r) => (
+              <option key={r} value={r}>
+                {CONTACT_ROLE_LABELS[r]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Phone"
+            className="flex-1 rounded border border-[var(--border-default)] bg-[var(--surface-input)] px-2 py-1.5 text-sm text-[var(--text-heading)]"
+          />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="flex-1 rounded border border-[var(--border-default)] bg-[var(--surface-input)] px-2 py-1.5 text-sm text-[var(--text-heading)]"
+          />
+        </div>
+        <input
+          type="text"
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+          placeholder="Company"
+          className="w-full rounded border border-[var(--border-default)] bg-[var(--surface-input)] px-2 py-1.5 text-sm text-[var(--text-heading)]"
+        />
+        <div className="flex justify-end gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => setEditing(false)}
+            className="px-2 py-1 text-xs font-semibold text-[var(--text-label)] hover:text-[var(--text-body)]"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={saveEdit}
+            disabled={!name.trim()}
+            className="px-3 py-1 rounded text-xs font-semibold bg-[var(--accent-sky)] text-[var(--text-inverse)] hover:bg-[var(--accent-sky-light)] disabled:opacity-50"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="group rounded-lg p-2.5 hover:bg-[var(--hover-overlay)]">
       <div className="flex items-start justify-between gap-2">
@@ -769,14 +994,24 @@ function ContactRow({
             <p className="mt-1 text-[11px] text-[var(--text-label)] whitespace-pre-wrap">{contact.notes}</p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={onDelete}
-          aria-label="Delete contact"
-          className="shrink-0 mt-0.5 p-1 rounded text-[var(--text-label)] hover:text-[var(--status-negative)] opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        <div className="shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            type="button"
+            onClick={startEdit}
+            aria-label="Edit contact"
+            className="p-1 rounded text-[var(--text-label)] hover:text-[var(--accent-sky)]"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            aria-label="Delete contact"
+            className="p-1 rounded text-[var(--text-label)] hover:text-[var(--status-negative)]"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   )
