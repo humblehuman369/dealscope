@@ -101,20 +101,36 @@ def upgrade() -> None:
             # 3. Rename 'contacted' → 'pursuing' if needed.
             if "contacted" in labels and "pursuing" not in labels:
                 op.execute("ALTER TYPE propertystatus RENAME VALUE 'contacted' TO 'pursuing'")
-                labels.discard("contacted")
-                labels.add("pursuing")
             elif "contacted" in labels and "pursuing" in labels:
                 op.execute(
                     "UPDATE saved_properties SET status = 'pursuing' WHERE status = 'contacted'"
                 )
 
-            # 4. Add the new 'negotiating' value. Safe to reference 'pursuing'
-            #    here only because the rename above has now been committed by
-            #    the autocommit block.
-            if "negotiating" not in labels:
+            # 4. Ensure 'pursuing' exists — it may not if the enum was created
+            #    from the model (without 'contacted' to rename) or if the
+            #    database never had the old labels.
+            #    Re-read labels from the database to see the committed state.
+            live_labels = _enum_labels(bind, "propertystatus")
+
+            if "pursuing" not in live_labels:
                 op.execute(
-                    "ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS 'negotiating' AFTER 'pursuing'"
+                    "ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS 'pursuing'"
                 )
+
+            # 5. Add the new 'negotiating' value. Re-read labels again since
+            #    we may have just added 'pursuing' above.
+            live_labels = _enum_labels(bind, "propertystatus")
+
+            if "negotiating" not in live_labels:
+                if "pursuing" in live_labels:
+                    op.execute(
+                        "ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS 'negotiating' AFTER 'pursuing'"
+                    )
+                else:
+                    # Fallback: add without positional hint
+                    op.execute(
+                        "ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS 'negotiating'"
+                    )
     else:
         # Plain VARCHAR column — no enum schema to mutate. Just rewrite the
         # row values; 'negotiating' needs no schema change because any string
