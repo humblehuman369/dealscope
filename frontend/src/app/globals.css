@@ -232,9 +232,9 @@
 }
 
 [data-theme='light'] {
-  /* App canvas: #0fa4e9 @ 15% on white; Signal Blue #0465f2 primary */
-  --surface-base: #ecf8fe;
-  --surface-base: color-mix(in srgb, #0fa4e9 15%, #ffffff);
+  /* App canvas: #0fa4e9 @ 5% on white; Signal Blue #0465f2 primary */
+  --surface-base: #f3fafe;
+  --surface-base: color-mix(in srgb, #0fa4e9 5%, #ffffff);
   --surface-section: #ffffff;
   --surface-card: #ffffff;
   --surface-card-elevated: rgba(255, 255, 255, 0.96);
@@ -303,9 +303,9 @@
   --slider-thumb-border: #0465f2;
   --slider-track-bg: rgba(24, 32, 28, 0.1);
 
-  /* Informational card tint — soft sky (matches canvas hue) */
-  --sky-tint-fill: rgba(15, 164, 233, 0.15);
-  --sky-tint-border: rgba(15, 164, 233, 0.15);
+  /* Informational card tint — same sky @ 5% as shell */
+  --sky-tint-fill: rgba(15, 164, 233, 0.05);
+  --sky-tint-border: rgba(15, 164, 233, 0.12);
 }
 
 /* FlipCycle-style brand utilities */
@@ -336,10 +336,10 @@
 
 [data-theme='light'] .grid-fade {
   background-image:
-    radial-gradient(circle at 20% 20%, rgba(15, 164, 233, 0.12), transparent 32%),
-    radial-gradient(circle at 85% 12%, rgba(15, 164, 233, 0.08), transparent 28%),
-    linear-gradient(rgba(15, 164, 233, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 164, 233, 0.045) 1px, transparent 1px);
+    radial-gradient(circle at 20% 20%, rgba(15, 164, 233, 0.05), transparent 32%),
+    radial-gradient(circle at 85% 12%, rgba(15, 164, 233, 0.035), transparent 28%),
+    linear-gradient(rgba(15, 164, 233, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 164, 233, 0.02) 1px, transparent 1px);
   background-size: auto, auto, 44px 44px, 44px 44px;
 }
 
