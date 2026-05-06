@@ -14,8 +14,9 @@ import {
   formatRelativeDate,
 } from '@/lib/savedPropertyStatus'
 import type { PropertyStatus, SavedPropertySummary } from '@/types/savedProperty'
-import { ChevronRight, MoreHorizontal, Bookmark } from 'lucide-react'
+import { ChevronRight, MoreHorizontal, Bookmark, ListChecks } from 'lucide-react'
 import { DataBoundary } from '@/components/ui/DataBoundary'
+import { TasksSlideOver } from '@/components/tasks/TasksSlideOver'
 
 interface PipelineKanbanProps {
   highlightStage: PropertyStatus | null
@@ -96,6 +97,9 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
 
   // Drag state: which column is currently being hovered as a drop target.
   const [dropTargetStage, setDropTargetStage] = useState<PropertyStatus | null>(null)
+
+  // Property whose Tasks slide-over is currently open (null = closed).
+  const [tasksFor, setTasksFor] = useState<SavedPropertySummary | null>(null)
 
   // Group by status
   const byStatus = useMemo(() => {
@@ -209,6 +213,7 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
                       onChangeStatus={(newStatus: PropertyStatus) =>
                         updateStatus.mutate({ id: p.id, status: newStatus })
                       }
+                      onOpenTasks={() => setTasksFor(p)}
                       isUpdating={updateStatus.isPending}
                     />
                   ))
@@ -230,6 +235,13 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
           </button>
         </div>
       )}
+
+      <TasksSlideOver
+        propertyId={tasksFor?.id ?? null}
+        propertyTitle={tasksFor ? shortAddress(tasksFor) : ''}
+        open={tasksFor !== null}
+        onClose={() => setTasksFor(null)}
+      />
     </DataBoundary>
   )
 }
@@ -241,10 +253,11 @@ interface KanbanCardProps {
   property: SavedPropertySummary
   onClick: () => void
   onChangeStatus: (newStatus: PropertyStatus) => void
+  onOpenTasks: () => void
   isUpdating: boolean
 }
 
-function KanbanCard({ property, onClick, onChangeStatus, isUpdating }: KanbanCardProps) {
+function KanbanCard({ property, onClick, onChangeStatus, onOpenTasks, isUpdating }: KanbanCardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const strategyLabel = property.best_strategy
@@ -276,7 +289,7 @@ function KanbanCard({ property, onClick, onChangeStatus, isUpdating }: KanbanCar
         onClick={onClick}
         className="w-full text-left rounded-lg p-2.5 bg-[var(--surface-elevated)] border border-[var(--border-default)] hover:border-[var(--border-focus)] transition-all cursor-grab active:cursor-grabbing"
       >
-        <p className="text-sm font-semibold text-[var(--text-heading)] truncate pr-6">
+        <p className="text-sm font-semibold text-[var(--text-heading)] truncate pr-16">
           {shortAddress(property)}
         </p>
         {property.address_city && (
@@ -311,6 +324,27 @@ function KanbanCard({ property, onClick, onChangeStatus, isUpdating }: KanbanCar
             {strategyLabel}
           </p>
         ) : null}
+      </button>
+
+      {/* Tasks badge — clickable. Always rendered so users discover the
+          surface even on properties with zero tasks. Overdue items get a
+          warning dot. */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          onOpenTasks()
+        }}
+        className="absolute top-1.5 right-9 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold tabular-nums text-[var(--text-label)] hover:text-[var(--accent-sky)] hover:bg-[var(--hover-overlay)] transition-colors"
+        aria-label={`${property.task_count_open ?? 0} open tasks`}
+        title={`${property.task_count_open ?? 0} open${
+          property.task_count_overdue ? ` · ${property.task_count_overdue} overdue` : ''
+        }`}
+      >
+        <ListChecks className="w-3.5 h-3.5" />
+        <span>{property.task_count_open ?? 0}</span>
+        {!!property.task_count_overdue && property.task_count_overdue > 0 && (
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-negative)]" aria-hidden />
+        )}
       </button>
 
       {/* Status menu trigger */}

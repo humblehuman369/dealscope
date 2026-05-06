@@ -75,6 +75,10 @@ export interface SavedPropertySummary {
   status_changed_at?: string | null
   /** Rehab budget variance as a percent string (e.g. "12.5"). Populated only for owned properties. */
   budget_variance_pct?: string | null
+  /** Open (incomplete) task count — drives the kanban card task badge. */
+  task_count_open?: number
+  /** Subset of open tasks whose due_date is in the past. */
+  task_count_overdue?: number
 }
 
 /** Active flips pipeline row — GET .../saved/active-flips */

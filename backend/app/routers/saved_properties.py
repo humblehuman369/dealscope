@@ -31,11 +31,13 @@ from app.schemas.saved_property import (
     SavedPropertySummary,
     SavedPropertyUpdate,
 )
+from app.schemas.task import TaskCreate, TaskOut, TaskUpdate
 from app.services.billing_service import billing_service
 from app.services.budget_service import budget_service
 from app.services.deal_maker_service import DealMakerService
 from app.services.saved_property_service import sanitize_for_json_storage, saved_property_service
 from app.services.search_history_service import search_history_service
+from app.services.task_service import task_service
 
 logger = logging.getLogger(__name__)
 
@@ -220,6 +222,45 @@ async def list_saved_properties(
                     raise
                 log_schema_mismatch("GET /properties/saved:budget_enrichment", exc)
 
+    # Bulk-load open task counts in a single GROUP BY — avoids the N+1 we'd
+    # get from per-property summary calls. Skip when the page is empty.
+    task_counts: dict[str, dict[str, int]] = {}
+    if properties:
+        try:
+            from datetime import datetime as _dt
+
+            from sqlalchemy import and_ as _and, func as _func, select as _select
+
+            from app.models.task import PropertyTask
+
+            now_utc = _dt.now(UTC)
+            ids = [p.id for p in properties]
+            stmt = (
+                _select(
+                    PropertyTask.saved_property_id,
+                    _func.count().filter(PropertyTask.completed_at.is_(None)).label("open"),
+                    _func.count()
+                    .filter(
+                        _and(
+                            PropertyTask.completed_at.is_(None),
+                            PropertyTask.due_date.is_not(None),
+                            PropertyTask.due_date < now_utc,
+                        )
+                    )
+                    .label("overdue"),
+                )
+                .where(PropertyTask.saved_property_id.in_(ids))
+                .group_by(PropertyTask.saved_property_id)
+            )
+            rows = (await db.execute(stmt)).all()
+            for prop_id, open_count, overdue in rows:
+                task_counts[str(prop_id)] = {"open": int(open_count), "overdue": int(overdue)}
+        except Exception as exc:
+            # Tasks table may not exist yet during a deploy gap.
+            if not is_schema_mismatch(exc):
+                raise
+            log_schema_mismatch("GET /properties/saved:task_count_enrichment", exc)
+
     return [
         SavedPropertySummary(
             id=str(p.id),
@@ -247,6 +288,8 @@ async def list_saved_properties(
             updated_at=p.updated_at,
             status_changed_at=p.status_changed_at,
             budget_variance_pct=owned_variance.get(str(p.id)),
+            task_count_open=task_counts.get(str(p.id), {}).get("open", 0),
+            task_count_overdue=task_counts.get(str(p.id), {}).get("overdue", 0),
         )
         for p in properties
     ]
@@ -734,6 +777,93 @@ async def delete_budget_expense(
     )
     if not ok:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
+
+
+# ===========================================
+# Property Tasks
+# ===========================================
+
+
+def _task_to_out(task) -> TaskOut:
+    return TaskOut(
+        id=str(task.id),
+        saved_property_id=str(task.saved_property_id),
+        title=task.title,
+        notes=task.notes,
+        due_date=task.due_date,
+        completed_at=task.completed_at,
+        sort_order=task.sort_order,
+        created_at=task.created_at,
+        updated_at=task.updated_at,
+    )
+
+
+@router.get(
+    "/{property_id}/tasks",
+    response_model=list[TaskOut],
+    summary="List tasks for a saved property",
+)
+async def list_property_tasks(
+    property_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    tasks = await task_service.list_for_property(db, property_id, str(current_user.id))
+    if tasks is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    return [_task_to_out(t) for t in tasks]
+
+
+@router.post(
+    "/{property_id}/tasks",
+    response_model=TaskOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a task on a saved property",
+)
+async def create_property_task(
+    property_id: str,
+    body: TaskCreate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    task = await task_service.create(db, property_id, str(current_user.id), body)
+    if task is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    return _task_to_out(task)
+
+
+@router.patch(
+    "/{property_id}/tasks/{task_id}",
+    response_model=TaskOut,
+    summary="Update a task (toggle complete, edit fields)",
+)
+async def update_property_task(
+    property_id: str,  # noqa: ARG001 — kept in URL for symmetry & clean ownership scoping client-side
+    task_id: str,
+    body: TaskUpdate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    task = await task_service.update(db, task_id, str(current_user.id), body)
+    if task is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+    return _task_to_out(task)
+
+
+@router.delete(
+    "/{property_id}/tasks/{task_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a task",
+)
+async def delete_property_task(
+    property_id: str,  # noqa: ARG001
+    task_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    ok = await task_service.delete(db, task_id, str(current_user.id))
+    if not ok:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
 
 
 @router.get("/{property_id}", response_model=SavedPropertyResponse, summary="Get a saved property")

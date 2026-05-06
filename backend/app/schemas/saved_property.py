@@ -202,6 +202,11 @@ class SavedPropertySummary(BaseModel):
     # budget query for everything else).
     budget_variance_pct: str | None = None
 
+    # Open task counts — drive the task badge on each kanban card. Computed
+    # in a single GROUP BY query in the list endpoint.
+    task_count_open: int = 0
+    task_count_overdue: int = 0
+
     class Config:
         from_attributes = True
 

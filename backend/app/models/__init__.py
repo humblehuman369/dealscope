@@ -10,6 +10,7 @@ from app.models.document import Document, DocumentType
 from app.models.role import Permission, Role, RolePermission, UserRole
 from app.models.budget import BudgetExpense, BudgetLine, RehabBudget
 from app.models.saved_property import FlipStage, PropertyAdjustment, PropertyStatus, SavedProperty
+from app.models.task import PropertyTask
 from app.models.search_history import SearchHistory
 from app.models.session import UserSession
 from app.models.share import SharedLink, ShareType
@@ -32,6 +33,7 @@ __all__ = [
     "Permission",
     "PropertyAdjustment",
     "PropertyStatus",
+    "PropertyTask",
     "RehabBudget",
     "Role",
     "RolePermission",

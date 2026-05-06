@@ -19,6 +19,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.budget import RehabBudget
     from app.models.document import Document
+    from app.models.task import PropertyTask
     from app.models.user import User
 
 
@@ -181,6 +182,12 @@ class SavedProperty(Base):
         back_populates="saved_property",
         uselist=False,
         cascade="all, delete-orphan",
+    )
+    tasks: Mapped[list["PropertyTask"]] = relationship(
+        "PropertyTask",
+        back_populates="saved_property",
+        cascade="all, delete-orphan",
+        order_by="(PropertyTask.completed_at.is_not(None), PropertyTask.sort_order, PropertyTask.created_at)",
     )
 
     def get_display_name(self) -> str:
