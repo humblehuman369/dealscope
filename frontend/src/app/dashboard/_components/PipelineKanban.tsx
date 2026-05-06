@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   useSavedProperties,
@@ -64,22 +65,39 @@ function daysSince(iso: string | null | undefined): number | null {
   return Math.max(0, Math.floor((Date.now() - t) / 86_400_000))
 }
 
-/** Variance badge mirrors the styling used on the Active Flips page. */
-function VarianceBadge({ pct }: { pct: string }) {
+/** Variance badge mirrors the styling used on the Active Flips page.
+ *
+ * Renders as a Link to the property's Budget vs Actual page when a propertyId
+ * is supplied — clicking the badge is the natural drill-down path.
+ */
+function VarianceBadge({ pct, propertyId }: { pct: string; propertyId?: string }) {
   const n = parseFloat(pct)
   if (!Number.isFinite(n)) return null
   const cls =
     n <= 0
-      ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300'
+      ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300 hover:bg-emerald-500/20'
       : n <= 10
-      ? 'bg-amber-500/10 text-amber-900 ring-amber-500/25 dark:text-amber-200'
-      : 'bg-red-500/10 text-red-700 ring-red-500/25 dark:text-red-300'
-  return (
-    <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ring-1 ${cls}`}>
+      ? 'bg-amber-500/10 text-amber-900 ring-amber-500/25 dark:text-amber-200 hover:bg-amber-500/20'
+      : 'bg-red-500/10 text-red-700 ring-red-500/25 dark:text-red-300 hover:bg-red-500/20'
+  const content = (
+    <>
       {n > 0 ? '+' : ''}
       {pct}% vs est.
-    </span>
+    </>
   )
+  const baseClasses = `text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ring-1 transition-colors ${cls}`
+  if (propertyId) {
+    return (
+      <Link
+        href={`/budget/${propertyId}`}
+        onClick={(e) => e.stopPropagation()}
+        className={`inline-flex ${baseClasses}`}
+      >
+        {content}
+      </Link>
+    )
+  }
+  return <span className={baseClasses}>{content}</span>
 }
 
 export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanbanProps) {
@@ -318,7 +336,7 @@ function KanbanCard({ property, onClick, onChangeStatus, onOpenTasks, isUpdating
         </div>
         {showVariance ? (
           <div className="mt-2">
-            <VarianceBadge pct={property.budget_variance_pct as string} />
+            <VarianceBadge pct={property.budget_variance_pct as string} propertyId={property.id} />
           </div>
         ) : strategyLabel ? (
           <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-label)] truncate">

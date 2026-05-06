@@ -71,6 +71,10 @@ class BudgetLine(Base):
     quantity: Mapped[Decimal] = mapped_column(Numeric(14, 4), nullable=False)
     unit_cost: Mapped[Decimal] = mapped_column(Numeric(14, 4), nullable=False)
     estimate_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    # User-input completion (0–100). Drives the projection: when a line is 50%
+    # complete and we've spent $5K so far, the projected line total is $10K.
+    # Stored as Numeric(5,2) so we can show "33.33%" without floats.
+    pct_complete: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=Decimal("0"))
     sort_order: Mapped[int] = mapped_column(default=0)
 
     budget: Mapped["RehabBudget"] = relationship("RehabBudget", back_populates="lines")

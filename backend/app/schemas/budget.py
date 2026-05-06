@@ -60,7 +60,14 @@ class BudgetSummaryOut(BaseModel):
     baseline_locked_at: str | None
     actual_total: str
     unallocated_actual: str
+    projected_total: str
     variance: str
     variance_pct: str
     lines: list[dict[str, Any]]
     categories: dict[str, dict[str, str]]
+
+
+class BudgetLinePctCompleteUpdate(BaseModel):
+    """Body for PATCH .../budget/lines/{line_id}/pct_complete."""
+
+    pct_complete: Decimal = Field(..., ge=0, le=100)

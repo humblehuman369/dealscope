@@ -12,6 +12,10 @@ export interface RehabBudgetLineSummary {
   unit_cost: string
   estimate_amount: string
   actual_amount: string
+  /** User-input completion 0–100 (string for Decimal precision). */
+  pct_complete?: string
+  /** Forecasted line total: actual / (pct/100) when pct > 0, else estimate. */
+  projected_amount?: string
   variance: string
   variance_pct: string
   status: 'good' | 'warn' | 'bad'
@@ -27,6 +31,8 @@ export interface RehabBudgetSummary {
   baseline_locked_at: string | null
   actual_total: string
   unallocated_actual: string
+  /** Forecasted final spend: sum of line projections + contingency + unallocated. */
+  projected_total?: string
   variance: string
   variance_pct: string
   lines: RehabBudgetLineSummary[]

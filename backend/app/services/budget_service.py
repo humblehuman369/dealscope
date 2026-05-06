@@ -118,18 +118,25 @@ class BudgetService:
         baseline = budget.baseline_total
 
         actual_total = sum((ex.amount for ex in expenses), Decimal("0"))
-        variance = actual_total - baseline
-        variance_pct = (
-            (variance / baseline * Decimal("100")).quantize(Decimal("0.01"))
-            if baseline and baseline > 0
-            else Decimal("0")
-        )
 
+        # Per-line breakdown — Analysis/Budgeted/To Date/% Complete/Projected/Variance.
+        # Projection: if pct_complete > 0 we extrapolate (to_date / pct), else
+        # we fall back to the line's own budgeted estimate. This is the
+        # FlipperForce pattern — % complete is the user-controlled lever that
+        # turns "what's spent" into "what we'll end up at".
+        projected_lines_total = Decimal("0")
         line_rows: list[dict[str, Any]] = []
         for ln in sorted(lines, key=lambda x: x.sort_order):
             spent = line_spent.get(ln.id, Decimal("0"))
             est = ln.estimate_amount
-            v = spent - est
+            pct = Decimal(ln.pct_complete or 0)
+            if pct > 0 and spent > 0:
+                projected = (spent / pct * Decimal("100")).quantize(Decimal("0.01"))
+            else:
+                # No completion signal — best estimate is still the budget.
+                # Using max() keeps us honest if spend already overran.
+                projected = max(est, spent)
+            v = projected - est
             v_pct = (v / est * Decimal("100")).quantize(Decimal("0.01")) if est > 0 else Decimal("0")
             ratio = (spent / est) if est > 0 else Decimal("0")
             if ratio <= Decimal("0.95"):
@@ -138,6 +145,7 @@ class BudgetService:
                 status = "warn"
             else:
                 status = "bad"
+            projected_lines_total += projected
             line_rows.append(
                 {
                     "id": str(ln.id),
@@ -149,11 +157,27 @@ class BudgetService:
                     "unit_cost": str(ln.unit_cost),
                     "estimate_amount": str(ln.estimate_amount),
                     "actual_amount": str(spent),
+                    "pct_complete": str(pct),
+                    "projected_amount": str(projected),
                     "variance": str(v),
                     "variance_pct": str(v_pct),
                     "status": status,
                 }
             )
+
+        # Project total = sum of line projections + contingency + unallocated
+        # (an expense booked outside any line is a real cost that still hits
+        # the bottom line).
+        projected_total = (projected_lines_total + contingency_amt + unallocated).quantize(Decimal("0.01"))
+
+        # Variance against the locked baseline (Analysis snapshot) — what the
+        # comparison-table totals row uses.
+        variance = projected_total - baseline
+        variance_pct = (
+            (variance / baseline * Decimal("100")).quantize(Decimal("0.01"))
+            if baseline and baseline > 0
+            else Decimal("0")
+        )
 
         cat_rollups: dict[str, dict[str, Decimal]] = {}
         for ln in lines:
@@ -174,6 +198,7 @@ class BudgetService:
             "baseline_locked_at": budget.baseline_locked_at.isoformat() if budget.baseline_locked_at else None,
             "actual_total": str(actual_total),
             "unallocated_actual": str(unallocated),
+            "projected_total": str(projected_total),
             "variance": str(variance),
             "variance_pct": str(variance_pct),
             "lines": line_rows,
@@ -182,6 +207,40 @@ class BudgetService:
                 for k, v in cat_rollups.items()
             },
         }
+
+    async def update_line_pct_complete(
+        self,
+        db: AsyncSession,
+        property_id: str,
+        user_id: str,
+        line_id: str,
+        pct_complete: Decimal,
+    ) -> BudgetLine | None:
+        """Set ``pct_complete`` on a single line (0-100). Property ownership
+        is verified through the budget → property join."""
+        result = await db.execute(
+            select(BudgetLine)
+            .join(RehabBudget, RehabBudget.id == BudgetLine.budget_id)
+            .join(SavedProperty, SavedProperty.id == RehabBudget.saved_property_id)
+            .where(
+                BudgetLine.id == uuid.UUID(line_id),
+                RehabBudget.saved_property_id == uuid.UUID(property_id),
+                SavedProperty.user_id == uuid.UUID(user_id),
+            )
+        )
+        line = result.scalar_one_or_none()
+        if line is None:
+            return None
+        # Clamp into [0, 100] — the schema enforces this too but defending here
+        # keeps the database consistent regardless of the caller.
+        if pct_complete < 0:
+            pct_complete = Decimal("0")
+        if pct_complete > 100:
+            pct_complete = Decimal("100")
+        line.pct_complete = pct_complete
+        await db.commit()
+        await db.refresh(line)
+        return line
 
     async def add_expense(
         self,
