@@ -327,9 +327,9 @@
  * - Stronger card shadow + hairline (matches “How it compares” table depth)
  */
 [data-theme='light'][data-homepage-v3='true'] {
-  --text-secondary: #3d4540;
-  --text-label: #4d554f;
-  --text-muted: #5f6862;
+  --text-secondary: #2a312e;
+  --text-label: #3a423d;
+  --text-muted: #475045;
   --shadow-card:
     0 1px 2px rgba(24, 32, 28, 0.06),
     0 6px 22px rgba(4, 101, 242, 0.09),
@@ -338,7 +338,18 @@
     0 4px 16px rgba(24, 32, 28, 0.08),
     0 10px 30px rgba(4, 101, 242, 0.11),
     0 0 0 1px rgba(15, 164, 233, 0.14);
-  --border-subtle: rgba(24, 32, 28, 0.12);
+  --border-subtle: rgba(24, 32, 28, 0.15);
+  /* “How it compares” table — stronger grid + outer rim */
+  --homepage-table-border: rgba(24, 32, 28, 0.18);
+  --homepage-table-header-bg: var(--surface-elevated);
+}
+
+[data-theme='light'][data-homepage-v3='true'] .homepage-compare-border {
+  border-color: var(--homepage-table-border);
+}
+
+[data-theme='light'][data-homepage-v3='true'] .homepage-compare-partial {
+  color: #9a3412;
 }
 
 /* FlipCycle-style brand utilities */
