@@ -427,8 +427,9 @@ input[type="range"]::-moz-range-thumb {
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Page canvas tint lives in #app-content-canvas (below header + address bar), not on body */
   [data-theme='light'] body {
-    background: var(--color-base);
+    background: var(--surface-card);
     -webkit-font-smoothing: auto;
     -moz-osx-font-smoothing: auto;
   }

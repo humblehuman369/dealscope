@@ -492,6 +492,8 @@ export function AppHeader({
 
   return (
     <>
+      {/* Top chrome: solid card surface; page canvas tint starts in LayoutWrapper below this stack */}
+      <div className="relative z-50 bg-[var(--surface-card)]">
       {/* Fixed safe-area cover — prevents scrolling content from showing behind the device notch/status bar */}
       <div
         className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"
@@ -503,10 +505,9 @@ export function AppHeader({
       />
 
       <header className="relative z-50">
-        {/* Brand Bar - pure black (scrolls away) */}
+        {/* Brand Bar */}
         <div 
           className="flex items-center justify-between gap-3 px-4 py-3 pt-safe-header"
-          style={{ backgroundColor: 'var(--surface-card)' }}
         >
           {/* Left: Logo — themed image (dark/light variants) */}
           <button
@@ -835,7 +836,6 @@ export function AppHeader({
           <div
             className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
             style={{
-              background: 'radial-gradient(ellipse at 40% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 90% 100%, var(--color-teal-dim) 0%, transparent 70%), var(--surface-card)',
               borderTop: '1px solid var(--border-subtle)',
               borderBottom: '1px solid var(--border-subtle)',
               WebkitOverflowScrolling: 'touch',
@@ -868,17 +868,14 @@ export function AppHeader({
 
       </header>
 
-      <SearchPropertyModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
-
-      {/* Property Address Bar + Details Dropdown — rendered OUTSIDE <header> so
-          sticky works against the viewport/body scroll, not the header's own bounds. */}
+      {/* Property Address Bar — outside <header> so sticky uses viewport scroll */}
       {shouldShowPropertyBar && displayAddress && (() => {
         const addrParts = parseDisplayAddress(displayAddress)
         const p = resolvedProperty
         return (
           <div
             className="sticky z-40"
-            style={{ top: 'env(safe-area-inset-top, 0px)', backgroundColor: 'var(--surface-card)' }}
+            style={{ top: 'env(safe-area-inset-top, 0px)' }}
           >
             <PropertyAddressBar
               address={p?.address ?? addrParts.streetAddress}
@@ -901,6 +898,9 @@ export function AppHeader({
           </div>
         )
       })()}
+      </div>
+
+      <SearchPropertyModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
     </>
   )
 }

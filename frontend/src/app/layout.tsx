@@ -96,7 +96,7 @@ export default function RootLayout({
       <head>
         <ThemeHydrationScript />
       </head>
-      <body className="font-sans bg-[var(--surface-base)] text-[var(--text-body)] transition-colors duration-300">
+      <body className="font-sans min-h-screen flex flex-col text-[var(--text-body)] transition-colors duration-300">
         <SentryInit />
         <Providers>
           {/* Layout with unified AppHeader */}

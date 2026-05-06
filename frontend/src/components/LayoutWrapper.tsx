@@ -26,7 +26,7 @@ interface LayoutWrapperProps {
 
 export function LayoutWrapper({ children }: LayoutWrapperProps) {
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col">
       {/* Skip to main content — visible on focus for keyboard users */}
       <a
         href="#main-content"
@@ -48,19 +48,28 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
         <DashboardLandingGate />
       </Suspense>
 
-      {/* 
+      {/*
+        Canvas shell: app page tint starts here (below brand + tab + address chrome).
+        Usage bar + routes sit on the same surface as the page.
+      */}
+      <div
+        id="app-content-canvas"
+        className="flex min-h-0 flex-1 flex-col bg-[var(--surface-base)]"
+      >
+        {/* 
         Usage bar — Starter-only, hidden on /billing and non-dashboard routes.
         Renders between the nav and page content.
       */}
-      <Suspense fallback={null}>
-        <UsageBar />
-      </Suspense>
+        <Suspense fallback={null}>
+          <UsageBar />
+        </Suspense>
 
-      {/* Main content — skip link target */}
-      <div id="main-content" tabIndex={-1}>
-        {children}
+        {/* Main content — skip link target */}
+        <div id="main-content" className="flex min-h-0 flex-1 flex-col" tabIndex={-1}>
+          {children}
+        </div>
       </div>
-    </>
+    </div>
   )
 }
 

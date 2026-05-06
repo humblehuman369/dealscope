@@ -30,7 +30,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <CapacitorBridge />
-        {children}
+        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
         <Suspense fallback={null}>
           <AuthModal />
         </Suspense>
