@@ -89,6 +89,49 @@ export function useUpcomingTasks(opts?: { days?: number; limit?: number }) {
 }
 
 /**
+ * Bulk reorder tasks by sending IDs in their new desired order. The backend
+ * updates ``sort_order`` to match the array index. Returns the property's
+ * full task list in the new order so we can rehydrate cache without a
+ * separate GET.
+ */
+export function useReorderTasks(propertyId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (taskIds: string[]) =>
+      api.post<PropertyTask[]>(
+        `/api/v1/properties/saved/${propertyId}/tasks/reorder`,
+        { task_ids: taskIds },
+      ),
+    // Optimistic: write the reordered list to cache immediately so the user
+    // sees the new position even before the server round-trip.
+    onMutate: async (taskIds) => {
+      await qc.cancelQueries({ queryKey: TASKS_KEYS.forProperty(propertyId) })
+      const previous = qc.getQueryData<PropertyTask[]>(
+        TASKS_KEYS.forProperty(propertyId),
+      )
+      if (previous) {
+        const byId = new Map(previous.map((t) => [t.id, t]))
+        const reordered = [
+          ...taskIds.map((id) => byId.get(id)).filter((t): t is PropertyTask => !!t),
+          // Tasks not in the reorder list (e.g. completed ones) stay where they are.
+          ...previous.filter((t) => !taskIds.includes(t.id)),
+        ]
+        qc.setQueryData(TASKS_KEYS.forProperty(propertyId), reordered)
+      }
+      return { previous }
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) {
+        qc.setQueryData(TASKS_KEYS.forProperty(propertyId), ctx.previous)
+      }
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: TASKS_KEYS.forProperty(propertyId) })
+    },
+  })
+}
+
+/**
  * Seed stage-templated tasks for a property. Returns the newly-created
  * tasks (existing duplicates are skipped server-side).
  */
