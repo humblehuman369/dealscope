@@ -1265,10 +1265,10 @@ function PrimaryButton({
     <button
       type={type}
       onClick={onClick}
-      className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-bold text-black transition-all whitespace-nowrap"
+      className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-bold text-[var(--text-inverse)] transition-all whitespace-nowrap hover:brightness-[1.03] active:brightness-[0.98]"
       style={{
-        background: 'linear-gradient(135deg, #0FA4E9 0%, #0465F2 100%)',
-        boxShadow: '0 8px 24px -8px rgba(15,164,233,0.5)',
+        background: 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)',
+        boxShadow: '0 8px 24px -8px rgba(4, 101, 242, 0.45)',
       }}
     >
       {children}
@@ -1288,16 +1288,16 @@ function PrimaryButtonLarge({
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center justify-center gap-3 px-9 py-3.5 rounded-xl text-black transition-all"
+      className="inline-flex items-center justify-center gap-3 px-9 py-3.5 rounded-xl text-[var(--text-inverse)] transition-all hover:brightness-[1.03] active:brightness-[0.98]"
       style={{
-        background: '#38BDF8',
-        boxShadow: '0 12px 32px -8px rgba(56,189,248,0.55)',
+        background: 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)',
+        boxShadow: '0 12px 32px -8px rgba(4, 101, 242, 0.45)',
       }}
     >
       <span className="flex flex-col items-center leading-tight">
         <span className="text-lg font-bold">{children}</span>
         {sublabel && (
-          <span className="text-[11px] font-semibold opacity-75 mt-0.5 tracking-wide">
+          <span className="text-[11px] font-semibold opacity-80 mt-0.5 tracking-wide">
             {sublabel}
           </span>
         )}
