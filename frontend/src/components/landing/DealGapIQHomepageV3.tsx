@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { useTheme } from '@/context/ThemeContext';
+import type { ThemePreference } from '@/lib/theme/constants';
 
 // Shared headline typography — every hero statement on the page (H1 + section H2s)
 // pulls from this so the family / weight / leading / tracking stay aligned.
@@ -85,12 +86,27 @@ function AuthParamHandler() {
 
 export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
   const router = useRouter();
-  const { setTheme } = useTheme();
+  const { setTheme, preference } = useTheme();
+  const preferenceBeforeHomeRef = React.useRef<ThemePreference | null>(null);
 
-  /** Marketing homepage is always light so global chrome + tokens match this layout */
+  /**
+   * Force light while this page is mounted so global chrome + tokens match the marketing layout.
+   * Captures `preference` once (first effect run) and restores it on unmount so leaving `/` does
+   * not leave users stuck in light mode. `[]` deps: `setTheme` is not stable on the provider.
+   */
   React.useEffect(() => {
+    if (preferenceBeforeHomeRef.current === null) {
+      preferenceBeforeHomeRef.current = preference;
+    }
     setTheme('light');
-  }, [setTheme]);
+    return () => {
+      const previous = preferenceBeforeHomeRef.current;
+      if (previous != null) {
+        setTheme(previous);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount/unmount only; see comment above
+  }, []);
 
   const handleVerdictClick = (presetAddress?: string) => {
     if (presetAddress) {
