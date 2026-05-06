@@ -29,6 +29,9 @@ DEFAULT_NOTIFICATION_PREFS: dict[str, bool] = {
     "property_alerts": True,
     "subscription_alerts": True,
     "marketing": True,
+    # Daily digest of overdue tasks across all properties — fired by the
+    # /api/v1/jobs/overdue-task-notifications cron endpoint.
+    "task_alerts": True,
 }
 
 

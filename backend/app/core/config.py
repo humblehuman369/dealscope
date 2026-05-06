@@ -89,6 +89,11 @@ class Settings(BaseSettings):
 
     ANTHROPIC_API_KEY: str = ""
 
+    # Shared secret for triggering scheduled jobs from an external cron
+    # (Vercel cron, GitHub Actions, k8s CronJob, etc.). Empty default means
+    # the /jobs endpoints are effectively disabled until configured.
+    CRON_SECRET: str = ""
+
     # ===========================================
     # JWT Authentication
     # ===========================================
