@@ -40,9 +40,9 @@ import { useTheme } from '@/context/ThemeContext'
 
 const colors = {
   background: {
-    /** Top chrome (brand + tabs): solid card surface so canvas tint stays below */
-    deepNavy: 'var(--surface-card)',
-    surface: 'var(--surface-card)',
+    /** Harmonized top strip — between pure white cards and sky canvas */
+    deepNavy: 'var(--surface-chrome)',
+    surface: 'var(--surface-chrome)',
     elevated: 'var(--surface-elevated)',
   },
   brand: {
@@ -56,7 +56,8 @@ const colors = {
     tertiary: 'var(--text-label)',
   },
   ui: {
-    border: 'var(--border-subtle)',
+    /** Tab rails — sky hairlines so strip matches chrome/canvas family */
+    border: 'var(--border-chrome)',
   },
 }
 
@@ -493,13 +494,13 @@ export function AppHeader({
   return (
     <>
       {/* Top chrome: solid card surface; page canvas tint starts in LayoutWrapper below this stack */}
-      <div className="relative z-50 bg-[var(--surface-card)]">
+      <div className="relative z-50 bg-[var(--surface-chrome)]">
       {/* Fixed safe-area cover — prevents scrolling content from showing behind the device notch/status bar */}
       <div
         className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"
         style={{
           height: 'env(safe-area-inset-top, 0px)',
-          background: 'var(--surface-card)',
+          background: 'var(--surface-chrome)',
         }}
         aria-hidden="true"
       />
@@ -836,8 +837,8 @@ export function AppHeader({
           <div
             className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
             style={{
-              borderTop: '1px solid var(--border-subtle)',
-              borderBottom: '1px solid var(--border-subtle)',
+              borderTop: '1px solid var(--border-chrome)',
+              borderBottom: '1px solid var(--border-chrome)',
               WebkitOverflowScrolling: 'touch',
             }}
           >

@@ -11,8 +11,8 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 
 const barTokens = {
-  /** Match header chrome — canvas tint is below this bar */
-  surface: 'var(--surface-card)',
+  /** Same harmonized strip as AppHeader */
+  surface: 'var(--surface-chrome)',
   border: 'var(--border-subtle)',
   heading: 'var(--text-heading)',
   label: 'var(--text-label)',
