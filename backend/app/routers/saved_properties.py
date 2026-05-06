@@ -38,12 +38,14 @@ from app.schemas.saved_property import (
     SavedPropertyUpdate,
 )
 from app.schemas.task import TaskCreate, TaskOut, TaskUpdate
+from app.schemas.timeline import NoteCreate, TimelineEvent
 from app.services.billing_service import billing_service
 from app.services.budget_service import budget_service
 from app.services.deal_maker_service import DealMakerService
 from app.services.saved_property_service import sanitize_for_json_storage, saved_property_service
 from app.services.search_history_service import search_history_service
 from app.services.task_service import task_service
+from app.services.timeline_service import timeline_service
 
 logger = logging.getLogger(__name__)
 
@@ -915,6 +917,73 @@ async def seed_property_tasks(
     if created is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
     return [_task_to_out(t) for t in created]
+
+
+# ===========================================
+# Property Timeline (Activity)
+# ===========================================
+
+
+@router.get(
+    "/{property_id}/timeline",
+    response_model=list[TimelineEvent],
+    summary="Per-property activity timeline",
+)
+async def list_property_timeline(
+    property_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+    limit: int = Query(100, ge=1, le=500),
+):
+    events = await timeline_service.list_for_property(
+        db, property_id, str(current_user.id), limit=limit
+    )
+    if events is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    return events
+
+
+@router.post(
+    "/{property_id}/timeline/notes",
+    response_model=TimelineEvent,
+    status_code=status.HTTP_201_CREATED,
+    summary="Add a user-authored note to the timeline",
+)
+async def add_property_note(
+    property_id: str,
+    body: NoteCreate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    adj = await timeline_service.add_note(db, property_id, str(current_user.id), body.text)
+    if adj is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    return TimelineEvent(
+        id=f"adj:{adj.id}",
+        kind="note",
+        occurred_at=adj.created_at,
+        title=adj.reason or "Note",
+        body=None,
+        meta={"adjustment_id": str(adj.id)},
+    )
+
+
+@router.delete(
+    "/{property_id}/timeline/notes/{adjustment_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a user-authored note",
+)
+async def delete_property_note(
+    property_id: str,
+    adjustment_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    ok = await timeline_service.delete_note(
+        db, property_id, str(current_user.id), adjustment_id
+    )
+    if not ok:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
 
 
 @router.get("/{property_id}", response_model=SavedPropertyResponse, summary="Get a saved property")
