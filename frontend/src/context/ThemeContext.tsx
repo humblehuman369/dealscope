@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react'
 import { ThemeMode, ThemePreference } from '@/lib/theme/constants'
 import { readStoredThemePreference, writeStoredThemePreference } from '@/lib/theme/storage'
 import { resolveTheme } from '@/lib/theme/resolveTheme'
@@ -69,15 +69,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.style.colorScheme = theme
   }, [theme, mounted])
 
-  const setPreference = (nextPreference: ThemePreference) => {
+  const setPreference = useCallback((nextPreference: ThemePreference) => {
     const systemPrefersDark = window.matchMedia(MEDIA_QUERY).matches
     setPreferenceState(nextPreference)
     setTheme(resolveTheme(nextPreference, systemPrefersDark))
-  }
+  }, [])
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setPreference(theme === 'dark' ? 'light' : 'dark')
-  }
+  }, [theme, setPreference])
 
   const tokens = useMemo(() => resolveThemeTokens(theme), [theme])
 
