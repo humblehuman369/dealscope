@@ -74,7 +74,7 @@ _OWNED_BASE_TEMPLATE: list[TaskTemplateItem] = [
 
 
 _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
-    # Flip — Rehab is the entry stage now (was Acquisition).
+    # Flip — Rehab is the entry stage; the first-time-owned base tasks fold in.
     f"flip_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
         ("Get 3 contractor bids", None, 7),
         ("Pull permits if required", None, 14),
@@ -87,7 +87,7 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Set first-weekend showings", None, 5),
         ("Review price vs. market every week", None, 7),
     ],
-    # BRRRR — Rehab is the entry stage; first-time-owned tasks fold in.
+    # BRRRR — diverges from flip after rehab.
     f"brrrr_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
         ("Get 3 contractor bids", None, 7),
         ("Pull permits if required", None, 14),
@@ -104,8 +104,14 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Pull cash out at closing", None, 14),
         ("Set up DSCR-loan payment auto-pay", None, 30),
     ],
-    # Long-term rental — Make Ready is the entry stage.
-    f"ltr_{FlipStage.MAKE_READY.value.lower()}": _OWNED_BASE_TEMPLATE + [
+    # Long-term rental — Rehab is now the entry stage; Make Ready follows.
+    f"ltr_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
+        ("Get 3 contractor bids", None, 7),
+        ("Pull permits if required", None, 14),
+        ("Choose tenant-grade durable finishes", None, 14),
+        ("Plan rehab scope to support target market rent", None, 14),
+    ],
+    f"ltr_{FlipStage.MAKE_READY.value.lower()}": [
         ("Deep clean", None, 3),
         ("Make minor cosmetic repairs", None, 7),
         ("List on Zillow / RentRedi / Apartments.com", None, 7),
@@ -116,8 +122,14 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Collect first month + deposit", None, 1),
         ("Set up rent collection (auto-pay if possible)", None, 7),
     ],
-    # Short-term rental — Setup is the entry stage.
-    f"str_{FlipStage.SETUP.value.lower()}": _OWNED_BASE_TEMPLATE + [
+    # Short-term rental — Rehab is the entry stage; Setup follows.
+    f"str_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
+        ("Get 3 contractor bids", None, 7),
+        ("Pull permits if required", None, 14),
+        ("Plan rehab around guest experience (lighting, comfort, photos)", None, 14),
+        ("Source memorable design touches that earn 5-star reviews", None, 14),
+    ],
+    f"str_{FlipStage.SETUP.value.lower()}": [
         ("Furnish and stage", None, 14),
         ("Stock linens, kitchen basics, supplies", None, 14),
         ("Set up Airbnb / VRBO listings", None, 21),
@@ -129,15 +141,40 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Iterate listing photos and copy after first month", None, 30),
         ("Track occupancy + ADR weekly", None, 7),
     ],
+    # House Hack — same shape as LTR but with owner-occupancy considerations.
+    f"house_hack_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
+        ("Get 3 contractor bids", None, 7),
+        ("Pull permits if required", None, 14),
+        ("Plan owner-unit + rental-unit improvements", None, 14),
+        ("Confirm zoning + occupancy compliance", None, 14),
+    ],
+    f"house_hack_{FlipStage.MAKE_READY.value.lower()}": [
+        ("Move into your unit", None, 7),
+        ("Make rental units lease-ready", None, 14),
+        ("List rental units on Zillow / RentRedi", None, 14),
+        ("Set tenant screening criteria", None, 14),
+    ],
+    f"house_hack_{FlipStage.LEASED.value.lower()}": [
+        ("Sign tenant leases", None, 7),
+        ("Collect first month + deposits", None, 7),
+        ("Set up rent collection (auto-pay if possible)", None, 14),
+    ],
+    # Wholesale — minimal-cleanup quick exit (a.k.a. wholetail).
+    f"wholesale_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
+        ("Identify minimum-viable cleanup scope", None, 7),
+        ("Get a quick contractor quote", None, 7),
+        ("Set target list price + timeline", None, 14),
+    ],
+    f"wholesale_{FlipStage.SOLD.value.lower()}": [],
 }
 
 
 def _resolve_strategy(best_strategy: str | None) -> str:
     s = (best_strategy or "").lower()
-    if s in {"flip", "brrrr", "ltr", "str"}:
+    if s in {"flip", "brrrr", "ltr", "str", "house_hack", "wholesale"}:
         return s
-    # Wholesale lives in the pre-purchase pipeline; subject_to has no template
-    # set yet. Default to flip — most common owned trajectory.
+    # subject_to and other niche strategies have no template set yet — default
+    # to flip so the user still gets a useful starter checklist.
     return "flip"
 
 
