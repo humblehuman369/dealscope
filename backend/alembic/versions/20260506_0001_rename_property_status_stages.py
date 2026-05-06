@@ -70,34 +70,51 @@ def upgrade() -> None:
     is_native_enum = bool(labels)
 
     if is_native_enum:
-        # 1. Rename 'watching' → 'prospecting' if needed.
-        if "watching" in labels and "prospecting" not in labels:
-            op.execute("ALTER TYPE propertystatus RENAME VALUE 'watching' TO 'prospecting'")
-            labels.discard("watching")
-            labels.add("prospecting")
-        elif "watching" in labels and "prospecting" in labels:
-            # Both labels coexist (partial prior migration) — migrate the rows
-            # to the new label. Old label survives in the enum as an orphan.
-            op.execute("UPDATE saved_properties SET status = 'prospecting' WHERE status = 'watching'")
+        # All enum DDL runs inside an autocommit block so each ALTER TYPE is
+        # committed before the next runs. This is required for the final
+        # ``ADD VALUE … AFTER 'pursuing'`` step: Postgres resolves the AFTER
+        # reference through the syscache, which only sees committed data, so
+        # an in-transaction RENAME of 'contacted' → 'pursuing' is invisible
+        # to a subsequent ADD VALUE in the same transaction. Statements in
+        # this block are individually durable, which is fine — the migration
+        # is idempotent (each step guards on the live label set), so a
+        # partial run is safely picked up on the next deploy.
+        with op.get_context().autocommit_block():
+            # 1. Rename 'watching' → 'prospecting' if needed.
+            if "watching" in labels and "prospecting" not in labels:
+                op.execute("ALTER TYPE propertystatus RENAME VALUE 'watching' TO 'prospecting'")
+                labels.discard("watching")
+                labels.add("prospecting")
+            elif "watching" in labels and "prospecting" in labels:
+                # Both labels coexist (partial prior migration) — migrate the
+                # rows to the new label. Old label survives as an orphan.
+                op.execute(
+                    "UPDATE saved_properties SET status = 'prospecting' WHERE status = 'watching'"
+                )
 
-        # 2. Collapse 'analyzing' rows into 'prospecting'. Label survives.
-        if "analyzing" in labels:
-            op.execute("UPDATE saved_properties SET status = 'prospecting' WHERE status = 'analyzing'")
+            # 2. Collapse 'analyzing' rows into 'prospecting'. Label survives.
+            if "analyzing" in labels:
+                op.execute(
+                    "UPDATE saved_properties SET status = 'prospecting' WHERE status = 'analyzing'"
+                )
 
-        # 3. Rename 'contacted' → 'pursuing' if needed.
-        if "contacted" in labels and "pursuing" not in labels:
-            op.execute("ALTER TYPE propertystatus RENAME VALUE 'contacted' TO 'pursuing'")
-            labels.discard("contacted")
-            labels.add("pursuing")
-        elif "contacted" in labels and "pursuing" in labels:
-            op.execute("UPDATE saved_properties SET status = 'pursuing' WHERE status = 'contacted'")
+            # 3. Rename 'contacted' → 'pursuing' if needed.
+            if "contacted" in labels and "pursuing" not in labels:
+                op.execute("ALTER TYPE propertystatus RENAME VALUE 'contacted' TO 'pursuing'")
+                labels.discard("contacted")
+                labels.add("pursuing")
+            elif "contacted" in labels and "pursuing" in labels:
+                op.execute(
+                    "UPDATE saved_properties SET status = 'pursuing' WHERE status = 'contacted'"
+                )
 
-        # 4. Add the new 'negotiating' value. We don't reference it in this
-        #    transaction so the PG12+ same-tx restriction does not bite.
-        if "negotiating" not in labels:
-            op.execute(
-                "ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS 'negotiating' AFTER 'pursuing'"
-            )
+            # 4. Add the new 'negotiating' value. Safe to reference 'pursuing'
+            #    here only because the rename above has now been committed by
+            #    the autocommit block.
+            if "negotiating" not in labels:
+                op.execute(
+                    "ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS 'negotiating' AFTER 'pursuing'"
+                )
     else:
         # Plain VARCHAR column — no enum schema to mutate. Just rewrite the
         # row values; 'negotiating' needs no schema change because any string
@@ -116,18 +133,30 @@ def downgrade() -> None:
 
     # Move any 'negotiating' rows back into 'pursuing' before renaming so the
     # rename does not leave orphan rows pointing at a not-yet-existing label.
-    op.execute("UPDATE saved_properties SET status = 'pursuing' WHERE status = 'negotiating'")
+    # Guard the comparison: if the column is a native enum and 'negotiating'
+    # was never added (e.g. partial upgrade rollback), `status = 'negotiating'`
+    # itself errors with "invalid enum label".
+    if not is_native_enum or "negotiating" in labels:
+        op.execute("UPDATE saved_properties SET status = 'pursuing' WHERE status = 'negotiating'")
 
     if is_native_enum:
-        if "pursuing" in labels and "contacted" not in labels:
-            op.execute("ALTER TYPE propertystatus RENAME VALUE 'pursuing' TO 'contacted'")
-        elif "pursuing" in labels and "contacted" in labels:
-            op.execute("UPDATE saved_properties SET status = 'contacted' WHERE status = 'pursuing'")
+        # Wrap the rename DDL in autocommit for symmetry with upgrade(); a
+        # downgrade followed by re-upgrade would otherwise hit the same
+        # syscache visibility quirk on the AFTER clause.
+        with op.get_context().autocommit_block():
+            if "pursuing" in labels and "contacted" not in labels:
+                op.execute("ALTER TYPE propertystatus RENAME VALUE 'pursuing' TO 'contacted'")
+            elif "pursuing" in labels and "contacted" in labels:
+                op.execute(
+                    "UPDATE saved_properties SET status = 'contacted' WHERE status = 'pursuing'"
+                )
 
-        if "prospecting" in labels and "watching" not in labels:
-            op.execute("ALTER TYPE propertystatus RENAME VALUE 'prospecting' TO 'watching'")
-        elif "prospecting" in labels and "watching" in labels:
-            op.execute("UPDATE saved_properties SET status = 'watching' WHERE status = 'prospecting'")
+            if "prospecting" in labels and "watching" not in labels:
+                op.execute("ALTER TYPE propertystatus RENAME VALUE 'prospecting' TO 'watching'")
+            elif "prospecting" in labels and "watching" in labels:
+                op.execute(
+                    "UPDATE saved_properties SET status = 'watching' WHERE status = 'prospecting'"
+                )
     else:
         op.execute("UPDATE saved_properties SET status = 'contacted' WHERE status = 'pursuing'")
         op.execute("UPDATE saved_properties SET status = 'watching' WHERE status = 'prospecting'")
