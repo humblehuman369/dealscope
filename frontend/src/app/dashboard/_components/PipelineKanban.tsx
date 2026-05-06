@@ -22,7 +22,7 @@ import {
   type LifecycleStrategy,
 } from '@/lib/lifecycleStages'
 import type { FlipStage, PropertyStatus, SavedPropertySummary } from '@/types/savedProperty'
-import { ChevronRight, MoreHorizontal, Bookmark, ListChecks } from 'lucide-react'
+import { ChevronDown, ChevronRight, MoreHorizontal, Bookmark, ListChecks } from 'lucide-react'
 import { DataBoundary } from '@/components/ui/DataBoundary'
 
 interface PipelineKanbanProps {
@@ -218,6 +218,18 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
 
   const [dropTarget, setDropTarget] = useState<{ tier: 'pre' | 'post'; index: number } | null>(null)
 
+  // Per-column collapse state — keyed by ``"${tier}-${index}"``. Defaults to
+  // expanded; user opts into collapse to keep the board compact when running
+  // a wide funnel.
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+  const toggleCollapse = (key: string) =>
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+
   const columns = useMemo(() => computeColumns(strategy), [strategy])
 
   // Bucket properties into columns. Anything that doesn't match the active
@@ -357,13 +369,17 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
         <div className="flex gap-3 min-w-max">
           {/* Tier 1: Pre-purchase funnel */}
           <TierGroup label="Active Funnel" tone="sky">
-            {columns.pre.map((col, i) => (
+            {columns.pre.map((col, i) => {
+              const key = `pre-${i}`
+              return (
               <KanbanColumn
-                key={`pre-${i}`}
+                key={key}
                 col={col}
                 items={byColumn[0][i]}
                 isHighlighted={col.kind === 'pre' && col.status === highlightStage}
                 isDropTarget={!!dropTarget && dropTarget.tier === 'pre' && dropTarget.index === i}
+                isCollapsed={collapsed.has(key)}
+                onToggleCollapse={() => toggleCollapse(key)}
                 onDragOver={(e) => {
                   if (e.dataTransfer.types.includes(DRAG_MIME)) {
                     e.preventDefault()
@@ -382,23 +398,28 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
                 isUpdating={updateStatus.isPending || updateFlipStage.isPending}
                 showStrategyChip={false}
               />
-            ))}
+              )
+            })}
           </TierGroup>
 
-          {/* Vertical divider between tiers */}
-          <div className="w-px shrink-0 bg-[var(--border-default)]" aria-hidden />
-
-          {/* Tier 2: Post-purchase lifecycle */}
-          <TierGroup label={strategy === 'all' ? 'Owned' : STRATEGY_HEADER[strategy]} tone="positive">
-            {columns.post.map((col, i) => (
+          {/* Tier 2: Post-purchase lifecycle — no tier label or divider; the
+              column headers (with the per-strategy stage names) carry enough
+              context on their own and a label "Fix & Flip" above one column
+              read as a stray header. */}
+          <TierGroup tone="positive">
+            {columns.post.map((col, i) => {
+              const key = `post-${i}`
+              return (
               <KanbanColumn
-                key={`post-${i}`}
+                key={key}
                 col={col}
                 items={byColumn[1][i]}
                 isHighlighted={false}
                 isDropTarget={!!dropTarget && dropTarget.tier === 'post' && dropTarget.index === i}
                 isGhost={noOwnedYet}
                 isEntryStage={i === 0 && col.kind === 'owned-stage'}
+                isCollapsed={collapsed.has(key)}
+                onToggleCollapse={() => toggleCollapse(key)}
                 onDragOver={(e) => {
                   if (e.dataTransfer.types.includes(DRAG_MIME)) {
                     e.preventDefault()
@@ -417,7 +438,8 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
                 isUpdating={updateStatus.isPending || updateFlipStage.isPending}
                 showStrategyChip={strategy === 'all'}
               />
-            ))}
+              )
+            })}
           </TierGroup>
 
           {/* Tier 3 (collapsible): Closed deals — passed / archived. Off by
@@ -549,7 +571,7 @@ function TierGroup({
   children,
   action,
 }: {
-  label: string
+  label?: string
   tone: 'sky' | 'positive' | 'muted'
   children: React.ReactNode
   action?: React.ReactNode
@@ -560,12 +582,25 @@ function TierGroup({
       : tone === 'positive'
       ? 'text-[var(--status-positive)]'
       : 'text-[var(--text-label)]'
+  // When no label is supplied (post-purchase tier), still reserve the same
+  // vertical space the labelled tier uses so column tops align across tiers.
+  // Otherwise the post-purchase columns would float a header-height higher
+  // than the pre-purchase ones, which looked ugly mid-row.
+  const showHeader = !!label || !!action
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between gap-2 mb-1.5 px-1">
-        <p className={`text-[10px] font-bold uppercase tracking-wide ${toneClass}`}>{label}</p>
-        {action}
-      </div>
+      {showHeader ? (
+        <div className="flex items-center justify-between gap-2 mb-1.5 px-1">
+          {label ? (
+            <p className={`text-[10px] font-bold uppercase tracking-wide ${toneClass}`}>{label}</p>
+          ) : (
+            <span aria-hidden />
+          )}
+          {action}
+        </div>
+      ) : (
+        <div aria-hidden className="mb-1.5 px-1 h-[14px]" />
+      )}
       <div className="flex gap-3">{children}</div>
     </div>
   )
@@ -585,6 +620,9 @@ interface KanbanColumnProps {
   /** True for the first column of a strategy's post-purchase tail — pinned
    *  visually so users learn this is where freshly-closed deals land. */
   isEntryStage?: boolean
+  /** Accordion state — clicking the header toggles. Body hides when true. */
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void
   onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void
@@ -602,6 +640,8 @@ function KanbanColumn({
   isDropTarget,
   isGhost,
   isEntryStage,
+  isCollapsed,
+  onToggleCollapse,
   onDragOver,
   onDragLeave,
   onDrop,
@@ -635,10 +675,15 @@ function KanbanColumn({
           : isHighlighted
           ? 'border-[var(--border-focus)] bg-[var(--surface-elevated)]'
           : 'border-[var(--border-default)] bg-[var(--surface-card)]'
-      } flex flex-col min-h-[180px]`}
+      } flex flex-col self-start`}
     >
-      <div className={`flex items-center justify-between px-3 py-2 border-b border-[var(--border-default)] ${headerBg}`}>
-        <div className="min-w-0 flex flex-col gap-0.5">
+      <button
+        type="button"
+        onClick={onToggleCollapse}
+        aria-expanded={!isCollapsed}
+        className={`flex items-center justify-between gap-2 px-3 py-2 border-b border-[var(--border-default)] w-full text-left ${headerBg} hover:brightness-110 transition-[filter]`}
+      >
+        <div className="min-w-0 flex flex-col gap-0.5 flex-1">
           <h3 className={`text-xs font-bold uppercase tracking-wide ${headerColor}`}>{col.label}</h3>
           {isEntryStage && (
             <span className="text-[9px] font-semibold uppercase tracking-wide text-[var(--text-label)]">
@@ -649,32 +694,43 @@ function KanbanColumn({
         <span className="text-xs font-semibold tabular-nums text-[var(--text-label)]">
           {items.length}
         </span>
-      </div>
-      <div className="p-2 flex flex-col gap-2 flex-1">
-        {items.length === 0 ? (
-          isGhost ? (
-            <p className="text-[11px] text-[var(--text-label)] leading-snug py-3 text-center px-1">
-              Once a deal hits Owned, your <span className="font-semibold">{col.label}</span> phase lives here.
-            </p>
+        <ChevronDown
+          aria-hidden
+          className={`w-3.5 h-3.5 text-[var(--text-label)] transition-transform ${
+            isCollapsed ? '-rotate-90' : ''
+          }`}
+        />
+      </button>
+      {!isCollapsed && (
+        // Capped at ~1.5 cards so columns stay scannable even when stacked
+        // with deals — extras scroll inside. Empty / ghost / drop-target
+        // states render in the same body region but don't trigger scroll.
+        <div className="p-2 flex flex-col gap-2 max-h-[150px] overflow-y-auto">
+          {items.length === 0 ? (
+            isGhost ? (
+              <p className="text-[11px] text-[var(--text-label)] leading-snug py-3 text-center px-1">
+                Once a deal hits Owned, your <span className="font-semibold">{col.label}</span> phase lives here.
+              </p>
+            ) : (
+              <p className="text-xs text-[var(--text-label)] py-3 text-center">
+                {isDropTarget ? 'Drop to move here' : 'No properties'}
+              </p>
+            )
           ) : (
-            <p className="text-xs text-[var(--text-label)] py-3 text-center">
-              {isDropTarget ? 'Drop to move here' : 'No properties'}
-            </p>
-          )
-        ) : (
-          items.map((p) => (
-            <KanbanCard
-              key={p.id}
-              property={p}
-              onClick={() => onCardClick(p)}
-              onChangeStatus={(s) => onChangeStatus(p.id, s)}
-              onOpenTasks={() => onOpenTasks(p)}
-              isUpdating={isUpdating}
-              showStrategyChip={showStrategyChip}
-            />
-          ))
-        )}
-      </div>
+            items.map((p) => (
+              <KanbanCard
+                key={p.id}
+                property={p}
+                onClick={() => onCardClick(p)}
+                onChangeStatus={(s) => onChangeStatus(p.id, s)}
+                onOpenTasks={() => onOpenTasks(p)}
+                isUpdating={isUpdating}
+                showStrategyChip={showStrategyChip}
+              />
+            ))
+          )}
+        </div>
+      )}
     </div>
   )
 }
