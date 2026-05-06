@@ -32,21 +32,21 @@ export interface MetricsAccordionProps {
 
 // Grade badge styling
 const GRADE_STYLES: Record<MetricGrade, { light: string; dark: string }> = {
-  A: { 
-    light: 'bg-green-100 text-green-600', 
-    dark: 'bg-green-500/20 text-green-400' 
+  A: {
+    light: 'bg-[rgba(31,138,112,0.12)] text-[var(--status-positive)]',
+    dark: 'bg-green-500/20 text-green-400',
   },
-  B: { 
-    light: 'bg-blue-100 text-blue-600', 
-    dark: 'bg-blue-500/20 text-blue-400' 
+  B: {
+    light: 'bg-[rgba(4,101,242,0.12)] text-[var(--accent-brand-blue)]',
+    dark: 'bg-blue-500/20 text-blue-400',
   },
-  C: { 
-    light: 'bg-amber-100 text-amber-600', 
-    dark: 'bg-amber-500/20 text-amber-400' 
+  C: {
+    light: 'bg-[rgba(183,121,31,0.14)] text-[var(--status-warning)]',
+    dark: 'bg-amber-500/20 text-amber-400',
   },
-  D: { 
-    light: 'bg-red-100 text-red-600', 
-    dark: 'bg-red-500/20 text-red-400' 
+  D: {
+    light: 'bg-[rgba(180,35,24,0.12)] text-[var(--status-negative)]',
+    dark: 'bg-red-500/20 text-red-400',
   },
 };
 
@@ -84,7 +84,7 @@ export function MetricsAccordion({
   };
 
   return (
-    <div className={`rounded-xl mb-3 overflow-hidden ${isDark ? 'bg-[#0F1D32]' : 'bg-white'}`}>
+    <div className={`rounded-xl mb-3 overflow-hidden ${isDark ? 'bg-[#0F1D32]' : 'bg-[var(--surface-card)]'}`}>
       {/* Header */}
       <button 
         className="w-full flex items-center justify-between px-4 py-3.5 hover:opacity-90 transition-opacity"
@@ -95,18 +95,18 @@ export function MetricsAccordion({
             {icon}
           </div>
           <div className="text-left">
-            <span className={`text-[15px] font-semibold ${isDark ? 'text-white' : 'text-[#0A1628]'}`}>
+            <span className={`text-[15px] font-semibold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
               {title}
             </span>
             {subtitle && (
-              <span className={`block text-[11px] mt-0.5 ${isDark ? 'text-white/50' : 'text-slate-400'}`}>
+              <span className={`block text-[11px] mt-0.5 ${isDark ? 'text-white/50' : 'text-[var(--text-muted)]'}`}>
                 {subtitle}
               </span>
             )}
           </div>
         </div>
         <svg 
-          className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''} ${isDark ? 'text-white/50' : 'text-slate-400'}`} 
+          className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''} ${isDark ? 'text-white/50' : 'text-[var(--text-muted)]'}`} 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -123,22 +123,22 @@ export function MetricsAccordion({
               key={index} 
               className={`flex items-center justify-between py-3 ${
                 index !== metrics.length - 1 
-                  ? `border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}` 
+                  ? `border-b ${isDark ? 'border-white/[0.06]' : 'border-[var(--border-subtle)]'}` 
                   : ''
               }`}
             >
               <div className="flex-1">
-                <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-[#0A1628]'}`}>
+                <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
                   {metric.label}
                 </span>
                 {metric.sublabel && (
-                  <span className={`block text-[11px] mt-0.5 ${isDark ? 'text-white/50' : 'text-slate-400'}`}>
+                  <span className={`block text-[11px] mt-0.5 ${isDark ? 'text-white/50' : 'text-[var(--text-muted)]'}`}>
                     {metric.sublabel}
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-[#0A1628]'}`}>
+                <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
                   {metric.value}
                 </span>
                 <span className={`px-2 py-1 rounded text-[10px] font-bold tracking-wide ${getGradeStyle(metric.grade)}`}>

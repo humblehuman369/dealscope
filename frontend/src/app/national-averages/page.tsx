@@ -28,17 +28,17 @@ import {
 
 // DealGapIQ Design System Colors
 const COLORS = {
-  navy: '#0A1628',
+  navy: '#18201c',
   teal: 'var(--accent-sky)',
   tealLight: 'var(--accent-sky)',
-  electricCyan: '#00D4FF',
-  danger: '#EF4444',
-  warning: '#F59E0B',
-  surface50: '#F8FAFC',
-  surface100: '#F1F5F9',
-  surface200: '#E2E8F0',
-  surface400: '#94A3B8',
-  surface500: '#64748B',
+  electricCyan: '#00e5ff',
+  danger: '#b42318',
+  warning: '#b7791f',
+  surface50: '#f7f4ee',
+  surface100: '#e8f3ef',
+  surface200: '#e1e8ed',
+  surface400: '#aab2bd',
+  surface500: '#6f756d',
   surface600: '#475569',
 }
 
@@ -248,8 +248,8 @@ function BenchmarkBar({ low, avg, high, unit, higherIsBetter }: {
         style={{ width: '30%', background: segmentColors.low }}
       >
         <div className="flex flex-col items-center gap-0.5 select-none">
-          <span className="text-[10px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>Low</span>
-          <span className="text-[9px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(15,23,42,.55)' }}>
+          <span className="text-[10px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(24,32,28,.72)' }}>Low</span>
+          <span className="text-[9px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(24,32,28,.55)' }}>
             {low}
           </span>
         </div>
@@ -260,8 +260,8 @@ function BenchmarkBar({ low, avg, high, unit, higherIsBetter }: {
         style={{ width: '40%', background: segmentColors.avg }}
       >
         <div className="flex flex-col items-center gap-0.5 select-none">
-          <span className="text-[10px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>Avg</span>
-          <span className="text-[9px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(15,23,42,.55)' }}>
+          <span className="text-[10px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(24,32,28,.72)' }}>Avg</span>
+          <span className="text-[9px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(24,32,28,.55)' }}>
             {avg}
           </span>
         </div>
@@ -272,8 +272,8 @@ function BenchmarkBar({ low, avg, high, unit, higherIsBetter }: {
         style={{ width: '30%', background: segmentColors.high }}
       >
         <div className="flex flex-col items-center gap-0.5 select-none">
-          <span className="text-[10px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>High</span>
-          <span className="text-[9px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(15,23,42,.55)' }}>
+          <span className="text-[10px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(24,32,28,.72)' }}>High</span>
+          <span className="text-[9px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(24,32,28,.55)' }}>
             {high}
           </span>
         </div>
@@ -301,9 +301,9 @@ function MetricCard({ metric, isOpen, onToggle }: {
   const Icon = metric.icon
   
   return (
-    <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+    <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-subtle)] shadow-sm overflow-hidden">
       <button 
-        className="w-full flex items-center gap-3 p-4 text-left hover:bg-[#F8FAFC] transition-colors"
+        className="w-full flex items-center gap-3 p-4 text-left hover:bg-[var(--surface-elevated)] transition-colors"
         onClick={onToggle}
       >
         <div 
@@ -313,20 +313,20 @@ function MetricCard({ metric, isOpen, onToggle }: {
           <Icon className="w-5 h-5" style={{ color: COLORS.teal }} />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-[#0A1628] truncate">{metric.name}</h3>
-          <p className="text-xs text-[#64748B] truncate">{metric.shortDescription}</p>
+          <h3 className="text-sm font-semibold text-[var(--text-heading)] truncate">{metric.name}</h3>
+          <p className="text-xs text-[var(--text-secondary)] truncate">{metric.shortDescription}</p>
         </div>
         <ChevronDown 
-          className="w-5 h-5 text-[#94A3B8] flex-shrink-0 transition-transform"
+          className="w-5 h-5 text-[var(--text-muted)] flex-shrink-0 transition-transform"
           style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)' }}
         />
       </button>
       
       {isOpen && (
-        <div className="px-4 pb-4 border-t border-[#F1F5F9]">
+        <div className="px-4 pb-4 border-t border-[var(--border-subtle)]">
           {/* What it measures */}
           <div className="mt-4 mb-4">
-            <p className="text-sm text-[#475569] leading-relaxed">
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
               {metric.whatItMeasures}
             </p>
           </div>
@@ -336,15 +336,15 @@ function MetricCard({ metric, isOpen, onToggle }: {
             className="p-3 rounded-lg mb-4"
             style={{ backgroundColor: COLORS.surface100 }}
           >
-            <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-1">Formula</p>
-            <p className="text-sm font-mono font-medium text-[#0A1628]">
+            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-1">Formula</p>
+            <p className="text-sm font-mono font-medium text-[var(--text-heading)]">
               {metric.formula}
             </p>
           </div>
           
           {/* Benchmark bar */}
           <div className="mb-4">
-            <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-2">National Benchmarks</p>
+            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-2">National Benchmarks</p>
             <BenchmarkBar 
               low={metric.low}
               avg={metric.avg}
@@ -356,12 +356,12 @@ function MetricCard({ metric, isOpen, onToggle }: {
           
           {/* Interpretation */}
           <div className="mb-4">
-            <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-2">What the Numbers Mean</p>
+            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-2">What the Numbers Mean</p>
             <div className="space-y-2">
               {metric.interpretation.map((item, idx) => (
                 <div key={idx} className="flex items-start gap-2 text-sm">
-                  <span className="font-semibold text-[#0A1628] min-w-[70px]">{item.range}</span>
-                  <span className="text-[#64748B]">{item.meaning}</span>
+                  <span className="font-semibold text-[var(--text-heading)] min-w-[70px]">{item.range}</span>
+                  <span className="text-[var(--text-secondary)]">{item.meaning}</span>
                 </div>
               ))}
             </div>
@@ -373,7 +373,7 @@ function MetricCard({ metric, isOpen, onToggle }: {
             style={{ backgroundColor: `${COLORS.teal}10`, border: `1px solid ${COLORS.teal}20` }}
           >
             <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: COLORS.teal }} />
-            <p className="text-xs text-[#475569] leading-relaxed">
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
               {metric.insight}
             </p>
           </div>
@@ -391,19 +391,19 @@ export default function NationalAveragesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-['Inter',sans-serif]">
+    <div className="min-h-screen bg-[var(--surface-base)] font-['Inter',sans-serif]">
       {/* Header */}
-      <header className="bg-white border-b border-[#E2E8F0] sticky top-0 z-10">
+      <header className="bg-[var(--surface-card)] border-b border-[var(--border-subtle)] sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link 
             href="/"
-            className="w-9 h-9 rounded-lg bg-[#F1F5F9] flex items-center justify-center hover:bg-[#E2E8F0] transition-colors"
+            className="w-9 h-9 rounded-lg bg-[var(--surface-elevated)] flex items-center justify-center hover:bg-[var(--surface-card-hover)] transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-[#64748B]" />
+            <ArrowLeft className="w-5 h-5 text-[var(--text-secondary)]" />
           </Link>
           <div>
-            <h1 className="text-lg font-bold text-[#0A1628]">National Benchmarks</h1>
-            <p className="text-xs text-[#64748B]">Investment metric reference guide</p>
+            <h1 className="text-lg font-bold text-[var(--text-heading)]">National Benchmarks</h1>
+            <p className="text-xs text-[var(--text-secondary)]">Investment metric reference guide</p>
           </div>
         </div>
       </header>
@@ -411,14 +411,14 @@ export default function NationalAveragesPage() {
       {/* Main content */}
       <main className="max-w-2xl mx-auto px-4 py-6">
         {/* Intro section */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4 mb-6">
-          <h2 className="text-base font-bold text-[#0A1628] mb-2">Understanding the Numbers</h2>
-          <p className="text-sm text-[#475569] leading-relaxed mb-3">
+        <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-subtle)] shadow-sm p-4 mb-6">
+          <h2 className="text-base font-bold text-[var(--text-heading)] mb-2">Understanding the Numbers</h2>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-3">
             DealGapIQ evaluates every property against 8 key investment metrics. These national benchmarks 
             help you understand how a deal compares to market standards and what ranges indicate strong, 
             average, or weak performance.
           </p>
-          <p className="text-xs text-[#94A3B8] italic">
+          <p className="text-xs text-[var(--text-muted)] italic">
             Data reflects Q4 2025 - Q1 2026 from institutional research (CBRE, Freddie Mac) across 50+ metropolitan markets.
           </p>
         </div>
@@ -436,12 +436,12 @@ export default function NationalAveragesPage() {
         </div>
 
         {/* Key insights section */}
-        <div className="bg-gradient-to-br from-[#0A1628] to-[#1E293B] rounded-xl p-5 text-white mb-6">
+        <div className="bg-gradient-to-br from-[#07172e] to-[#10223d] rounded-xl p-5 text-white mb-6">
           <h2 className="text-base font-bold mb-3">Key Takeaways</h2>
           
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] mt-1.5 flex-shrink-0" />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00e5ff] mt-1.5 flex-shrink-0" />
               <p className="text-white/90">
                 <span className="font-semibold text-white">No single metric tells the complete story.</span>{' '}
                 Sophisticated investors triangulate across multiple dimensions to assess risk-adjusted return potential.
@@ -449,7 +449,7 @@ export default function NationalAveragesPage() {
             </div>
             
             <div className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] mt-1.5 flex-shrink-0" />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00e5ff] mt-1.5 flex-shrink-0" />
               <p className="text-white/90">
                 <span className="font-semibold text-white">Properties must perform across multiple metrics.</span>{' '}
                 A property with an attractive 7% cap rate but 0.95x DSCR is unfinanceable.
@@ -457,7 +457,7 @@ export default function NationalAveragesPage() {
             </div>
             
             <div className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] mt-1.5 flex-shrink-0" />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00e5ff] mt-1.5 flex-shrink-0" />
               <p className="text-white/90">
                 <span className="font-semibold text-white">Context matters.</span>{' '}
                 A 6% cap rate in a high-growth Sun Belt market differs fundamentally from a 6% cap rate in a declining market.
@@ -467,17 +467,17 @@ export default function NationalAveragesPage() {
         </div>
 
         {/* Investor profiles */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4 mb-6">
-          <h2 className="text-base font-bold text-[#0A1628] mb-4">Target Ranges by Investor Profile</h2>
+        <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-subtle)] shadow-sm p-4 mb-6">
+          <h2 className="text-base font-bold text-[var(--text-heading)] mb-4">Target Ranges by Investor Profile</h2>
           
           <div className="space-y-4">
             {/* Conservative */}
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full bg-[var(--accent-sky)]" />
-                <span className="text-sm font-semibold text-[#0A1628]">Conservative Investors</span>
+                <span className="text-sm font-semibold text-[var(--text-heading)]">Conservative Investors</span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs text-[#64748B]">
+              <div className="grid grid-cols-2 gap-2 text-xs text-[var(--text-secondary)]">
                 <span>Cap Rate: 5.5-6.5%+</span>
                 <span>CoC: 8-10%+</span>
                 <span>DSCR: 1.30x+</span>
@@ -488,10 +488,10 @@ export default function NationalAveragesPage() {
             {/* Moderate */}
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-[#F59E0B]" />
-                <span className="text-sm font-semibold text-[#0A1628]">Moderate Investors</span>
+                <div className="w-3 h-3 rounded-full bg-[#b7791f]" />
+                <span className="text-sm font-semibold text-[var(--text-heading)]">Moderate Investors</span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs text-[#64748B]">
+              <div className="grid grid-cols-2 gap-2 text-xs text-[var(--text-secondary)]">
                 <span>Cap Rate: 5.0-6.0%</span>
                 <span>CoC: 7-9%</span>
                 <span>DSCR: 1.20-1.30x</span>
@@ -502,10 +502,10 @@ export default function NationalAveragesPage() {
             {/* Aggressive */}
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-[#EF4444]" />
-                <span className="text-sm font-semibold text-[#0A1628]">Growth/Aggressive Investors</span>
+                <div className="w-3 h-3 rounded-full bg-[#b42318]" />
+                <span className="text-sm font-semibold text-[var(--text-heading)]">Growth/Aggressive Investors</span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs text-[#64748B]">
+              <div className="grid grid-cols-2 gap-2 text-xs text-[var(--text-secondary)]">
                 <span>Cap Rate: 4.5-5.5%</span>
                 <span>CoC: 5-8%</span>
                 <span>DSCR: 1.10-1.25x</span>
@@ -516,7 +516,7 @@ export default function NationalAveragesPage() {
         </div>
 
         {/* Footer */}
-        <div className="text-center text-xs text-[#94A3B8] pb-6">
+        <div className="text-center text-xs text-[var(--text-muted)] pb-6">
           <p className="mb-1">Data sources: CBRE, Freddie Mac, Fannie Mae, industry research</p>
           <p>Updated Q1 2026 • DealGapIQ</p>
         </div>

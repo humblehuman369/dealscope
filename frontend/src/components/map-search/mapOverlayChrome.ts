@@ -26,11 +26,11 @@ export function getMapOverlaySurface(isDark: boolean): MapOverlayChrome {
  * the global app theme is still dark (`--surface-elevated` would stay black).
  */
 export const MAP_FILTER_LIGHT_CONTROLS = {
-  idleBg: '#f1f5f9',
-  idleBorder: '1px solid rgba(15, 23, 42, 0.12)',
-  idleText: 'rgba(15, 23, 42, 0.92)',
-  sectionLabel: 'rgba(71, 85, 105, 1)',
-  placeholder: 'rgba(100, 116, 139, 0.85)',
+  idleBg: '#f7f4ee',
+  idleBorder: '1px solid rgba(24, 32, 28, 0.12)',
+  idleText: 'rgba(24, 32, 28, 0.92)',
+  sectionLabel: 'rgba(111, 117, 109, 1)',
+  placeholder: 'rgba(111, 117, 109, 0.85)',
 } as const
 
 /** Distressed-deals callout — readable text on soft red (light map mode). */

@@ -61,8 +61,8 @@ const getListingDaysAgo = (dateString: string): number => {
 const getFreshnessBadge = (dateString: string): { label: string; color: string; bgColor: string } | null => {
   const daysAgo = getListingDaysAgo(dateString)
   if (daysAgo < 0) return null
-  if (daysAgo <= 30) return { label: 'Recent', color: '#10B981', bgColor: '#10B98115' }
-  if (daysAgo > 90) return { label: 'Older listing', color: '#F59E0B', bgColor: '#F59E0B15' }
+  if (daysAgo <= 30) return { label: 'Recent', color: '#1f8a70', bgColor: '#1f8a7015' }
+  if (daysAgo > 90) return { label: 'Older listing', color: '#b7791f', bgColor: '#b7791f15' }
   return null
 }
 
@@ -87,13 +87,13 @@ function toCompProperty(comp: RentComp): CompProperty {
 // COMPONENTS
 // ============================================
 const RentalCardSkeleton = () => (
-  <div className="bg-white rounded-xl border border-slate-200 p-4 animate-pulse">
+  <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] p-4 animate-pulse">
     <div className="flex gap-4">
-      <div className="w-24 h-24 bg-slate-200 rounded-lg flex-shrink-0" />
+      <div className="w-24 h-24 bg-[var(--chart-grid)] rounded-lg flex-shrink-0" />
       <div className="flex-1 space-y-2">
-        <div className="h-4 bg-slate-200 rounded w-3/4" />
-        <div className="h-3 bg-slate-200 rounded w-1/2" />
-        <div className="h-3 bg-slate-200 rounded w-1/3" />
+        <div className="h-4 bg-[var(--chart-grid)] rounded w-3/4" />
+        <div className="h-3 bg-[var(--chart-grid)] rounded w-1/2" />
+        <div className="h-3 bg-[var(--chart-grid)] rounded w-1/3" />
       </div>
     </div>
   </div>
@@ -101,18 +101,18 @@ const RentalCardSkeleton = () => (
 
 const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: number; icon: React.ElementType }) => (
   <div className="flex items-center gap-2">
-    <Icon className="w-3 h-3 text-slate-400 flex-shrink-0" />
-    <span className="text-xs text-slate-500 w-14">{label}</span>
-    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+    <Icon className="w-3 h-3 text-[var(--text-muted)] flex-shrink-0" />
+    <span className="text-xs text-[var(--text-secondary)] w-14">{label}</span>
+    <div className="flex-1 h-1.5 bg-[var(--surface-elevated)] rounded-full overflow-hidden">
       <div
         className="h-full rounded-full transition-all duration-500"
         style={{
           width: `${value}%`,
-          backgroundColor: value >= 90 ? 'var(--accent-sky)' : value >= 75 ? '#0E7490' : '#F59E0B'
+          backgroundColor: value >= 90 ? 'var(--accent-sky)' : value >= 75 ? '#146c59' : '#b7791f'
         }}
       />
     </div>
-    <span className="text-xs font-semibold text-slate-700 w-8 text-right tabular-nums">{value}%</span>
+    <span className="text-xs font-semibold text-[var(--text-body)] w-8 text-right tabular-nums">{value}%</span>
   </div>
 )
 
@@ -155,30 +155,30 @@ const DualRentValuationPanel = ({
   const capRate = purchasePrice > 0 ? (estimatedNOI / purchasePrice) * 100 : 0
 
   return (
-    <div className="bg-gradient-to-r from-teal-500/10 via-cyan-500/5 to-teal-500/10 rounded-xl p-4 border border-teal-200/50">
+    <div className="bg-gradient-to-r from-[var(--accent-sky)]/10 via-[var(--accent-brand-blue)]/5 to-[var(--accent-sky)]/10 rounded-xl p-4 border border-[rgba(31,138,112,0.25)]/50">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-teal-500" />
+          <div className="w-10 h-10 rounded-full bg-[var(--surface-card)] shadow-sm flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-[var(--accent-sky)]" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-800">Rental Appraisal</h3>
-            <p className="text-xs text-slate-500">From {selectedCount} selected comps</p>
+            <h3 className="text-sm font-bold text-[var(--text-heading)]">Rental Appraisal</h3>
+            <p className="text-xs text-[var(--text-secondary)]">From {selectedCount} selected comps</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="text-center px-3 py-1 rounded-lg bg-white/60">
-            <div className="text-lg font-bold text-teal-600 tabular-nums">{capRate.toFixed(1)}%</div>
-            <div className="text-[10px] text-slate-500 uppercase">Est. Cap Rate</div>
+          <div className="text-center px-3 py-1 rounded-lg bg-[var(--surface-card)]/60">
+            <div className="text-lg font-bold text-[var(--accent-sky)] tabular-nums">{capRate.toFixed(1)}%</div>
+            <div className="text-[10px] text-[var(--text-secondary)] uppercase">Est. Cap Rate</div>
           </div>
-          <div className="text-center px-3 py-1 rounded-lg bg-white/60">
+          <div className="text-center px-3 py-1 rounded-lg bg-[var(--surface-card)]/60">
             <div className="text-lg font-bold tabular-nums" style={{ 
-              color: appraisalResult.confidence >= 85 ? 'var(--accent-sky)' : appraisalResult.confidence >= 70 ? '#F59E0B' : '#EF4444' 
+              color: appraisalResult.confidence >= 85 ? 'var(--accent-sky)' : appraisalResult.confidence >= 70 ? '#b7791f' : '#b42318' 
             }}>
               {loading ? '...' : appraisalResult.confidence}%
             </div>
-            <div className="text-[10px] text-slate-500 uppercase">Confidence</div>
+            <div className="text-[10px] text-[var(--text-secondary)] uppercase">Confidence</div>
           </div>
         </div>
       </div>
@@ -186,12 +186,12 @@ const DualRentValuationPanel = ({
       {/* Dual Rent Display */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         {/* Market Rent */}
-        <div className="bg-white rounded-lg p-3 border border-slate-200">
+        <div className="bg-[var(--surface-card)] rounded-lg p-3 border border-[var(--border-default)]">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Est. Market Rent</span>
+            <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide">Est. Market Rent</span>
             <button
               onClick={onToggleMarketRentOverride}
-              className={`p-1 rounded transition-colors ${isMarketRentOverridden ? 'text-amber-500 bg-amber-50' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-1 rounded transition-colors ${isMarketRentOverridden ? 'text-[var(--status-warning)] bg-[rgba(183,121,31,0.08)]' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`}
               title={isMarketRentOverridden ? 'Value overridden - click to reset' : 'Click to override'}
             >
               {isMarketRentOverridden ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
@@ -206,29 +206,29 @@ const DualRentValuationPanel = ({
                   const val = parseInt(e.target.value.replace(/[^0-9]/g, ''))
                   if (!isNaN(val)) onMarketRentChange(val)
                 }}
-                className="text-xl font-bold text-slate-800 tabular-nums bg-amber-50 border border-amber-200 rounded px-2 py-1 w-24"
+                className="text-xl font-bold text-[var(--text-heading)] tabular-nums bg-[rgba(183,121,31,0.08)] border border-[rgba(183,121,31,0.25)] rounded px-2 py-1 w-24"
               />
-              <span className="text-sm font-normal text-slate-400 ml-1">/mo</span>
+              <span className="text-sm font-normal text-[var(--text-muted)] ml-1">/mo</span>
             </div>
           ) : (
-            <div className="text-xl font-bold text-slate-800 tabular-nums">
+            <div className="text-xl font-bold text-[var(--text-heading)] tabular-nums">
               {loading ? '...' : formatCurrency(displayMarketRent)}
-              <span className="text-sm font-normal text-slate-400">/mo</span>
+              <span className="text-sm font-normal text-[var(--text-muted)]">/mo</span>
             </div>
           )}
-          <div className="text-[10px] text-slate-400 mt-1">As-Is Condition</div>
-          <div className="text-xs text-slate-500 mt-1">
+          <div className="text-[10px] text-[var(--text-muted)] mt-1">As-Is Condition</div>
+          <div className="text-xs text-[var(--text-secondary)] mt-1">
             Range: ${appraisalResult.rangeLow} — ${appraisalResult.rangeHigh}
           </div>
         </div>
 
         {/* Improved Rent */}
-        <div className="bg-white rounded-lg p-3 border border-teal-200">
+        <div className="bg-[var(--surface-card)] rounded-lg p-3 border border-[rgba(31,138,112,0.25)]">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-semibold text-teal-600 uppercase tracking-wide">Improved Rent</span>
+            <span className="text-xs font-semibold text-[var(--accent-sky)] uppercase tracking-wide">Improved Rent</span>
             <button
               onClick={onToggleImprovedRentOverride}
-              className={`p-1 rounded transition-colors ${isImprovedRentOverridden ? 'text-amber-500 bg-amber-50' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-1 rounded transition-colors ${isImprovedRentOverridden ? 'text-[var(--status-warning)] bg-[rgba(183,121,31,0.08)]' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`}
               title={isImprovedRentOverridden ? 'Value overridden - click to reset' : 'Click to override'}
             >
               {isImprovedRentOverridden ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
@@ -243,17 +243,17 @@ const DualRentValuationPanel = ({
                   const val = parseInt(e.target.value.replace(/[^0-9]/g, ''))
                   if (!isNaN(val)) onImprovedRentChange(val)
                 }}
-                className="text-xl font-bold text-teal-700 tabular-nums bg-amber-50 border border-amber-200 rounded px-2 py-1 w-24"
+                className="text-xl font-bold text-[var(--accent-sky-light)] tabular-nums bg-[rgba(183,121,31,0.08)] border border-[rgba(183,121,31,0.25)] rounded px-2 py-1 w-24"
               />
-              <span className="text-sm font-normal text-slate-400 ml-1">/mo</span>
+              <span className="text-sm font-normal text-[var(--text-muted)] ml-1">/mo</span>
             </div>
           ) : (
-            <div className="text-xl font-bold text-teal-700 tabular-nums">
+            <div className="text-xl font-bold text-[var(--accent-sky-light)] tabular-nums">
               {loading ? '...' : formatCurrency(displayImprovedRent)}
-              <span className="text-sm font-normal text-slate-400">/mo</span>
+              <span className="text-sm font-normal text-[var(--text-muted)]">/mo</span>
             </div>
           )}
-          <div className="text-[10px] text-slate-400 mt-1">Post-Rehab (+10% premium)</div>
+          <div className="text-[10px] text-[var(--text-muted)] mt-1">Post-Rehab (+10% premium)</div>
           <div className="flex items-center gap-1 mt-1">
             <TrendingUp className="w-3 h-3 text-green-500" />
             <span className="text-[10px] font-medium text-green-600">Updated condition premium</span>
@@ -263,22 +263,22 @@ const DualRentValuationPanel = ({
 
       {/* Additional Metrics */}
       <div className="grid grid-cols-3 gap-3 mb-3">
-        <div className="bg-white/50 rounded-lg p-2 text-center">
-          <div className="text-[10px] text-slate-500 uppercase">Rent/Sq.Ft.</div>
-          <div className="text-sm font-semibold text-slate-800 tabular-nums">${appraisalResult.rentPerSqft}</div>
+        <div className="bg-[var(--surface-card)]/50 rounded-lg p-2 text-center">
+          <div className="text-[10px] text-[var(--text-secondary)] uppercase">Rent/Sq.Ft.</div>
+          <div className="text-sm font-semibold text-[var(--text-heading)] tabular-nums">${appraisalResult.rentPerSqft}</div>
         </div>
-        <div className="bg-white/50 rounded-lg p-2 text-center">
-          <div className="text-[10px] text-slate-500 uppercase">Annual Gross</div>
-          <div className="text-sm font-semibold text-teal-600 tabular-nums">{formatCurrency(annualGross)}</div>
+        <div className="bg-[var(--surface-card)]/50 rounded-lg p-2 text-center">
+          <div className="text-[10px] text-[var(--text-secondary)] uppercase">Annual Gross</div>
+          <div className="text-sm font-semibold text-[var(--accent-sky)] tabular-nums">{formatCurrency(annualGross)}</div>
         </div>
-        <div className="bg-white/50 rounded-lg p-2 text-center">
-          <div className="text-[10px] text-slate-500 uppercase">Est. NOI (60%)</div>
-          <div className="text-sm font-semibold text-slate-800 tabular-nums">{formatCurrency(estimatedNOI)}</div>
+        <div className="bg-[var(--surface-card)]/50 rounded-lg p-2 text-center">
+          <div className="text-[10px] text-[var(--text-secondary)] uppercase">Est. NOI (60%)</div>
+          <div className="text-sm font-semibold text-[var(--text-heading)] tabular-nums">{formatCurrency(estimatedNOI)}</div>
         </div>
       </div>
 
       {/* Methodology Info */}
-      <div className="flex items-center justify-between text-xs text-slate-500 mb-3 px-1">
+      <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] mb-3 px-1">
         <div className="flex items-center gap-1">
           <Info className="w-3 h-3" />
           <span>Weighted hybrid: Adjusted rents (50%) + $/sqft (50%)</span>
@@ -290,7 +290,7 @@ const DualRentValuationPanel = ({
       <button
         onClick={onApplyRent}
         disabled={displayMarketRent === 0}
-        className="w-full px-4 py-2.5 rounded-lg bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full px-4 py-2.5 rounded-lg bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         Apply Rent to Deal Analysis
       </button>
@@ -311,56 +311,56 @@ const RentAdjustmentGrid = ({
   if (compAdjustments.length === 0) return null
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--surface-elevated)] transition-colors"
       >
         <div className="flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-teal-500" />
-          <span className="text-sm font-semibold text-slate-700">Rent Adjustment Breakdown</span>
-          <span className="text-xs text-slate-400">({compAdjustments.length} comps)</span>
+          <DollarSign className="w-4 h-4 text-[var(--accent-sky)]" />
+          <span className="text-sm font-semibold text-[var(--text-body)]">Rent Adjustment Breakdown</span>
+          <span className="text-xs text-[var(--text-muted)]">({compAdjustments.length} comps)</span>
         </div>
-        {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+        {isExpanded ? <ChevronUp className="w-4 h-4 text-[var(--text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />}
       </button>
 
       {isExpanded && (
-        <div className="border-t border-slate-100">
+        <div className="border-t border-[var(--border-subtle)]">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead className="bg-slate-50">
+              <thead className="bg-[var(--surface-elevated)]">
                 <tr>
-                  <th className="px-3 py-2 text-left font-semibold text-slate-600">Comp Address</th>
-                  <th className="px-3 py-2 text-right font-semibold text-slate-600">Base Rent</th>
-                  <th className="px-3 py-2 text-right font-semibold text-slate-600">Size</th>
-                  <th className="px-3 py-2 text-right font-semibold text-slate-600">Bed</th>
-                  <th className="px-3 py-2 text-right font-semibold text-slate-600">Bath</th>
-                  <th className="px-3 py-2 text-right font-semibold text-teal-600">Adjusted</th>
-                  <th className="px-3 py-2 text-right font-semibold text-slate-600">Weight</th>
+                  <th className="px-3 py-2 text-left font-semibold text-[var(--text-secondary)]">Comp Address</th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Base Rent</th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Size</th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Bed</th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Bath</th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--accent-sky)]">Adjusted</th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Weight</th>
                 </tr>
               </thead>
               <tbody>
                 {compAdjustments.map((ca, idx) => (
-                  <tr key={ca.compId} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                    <td className="px-3 py-2 text-slate-700 truncate max-w-[150px]" title={ca.compAddress}>
+                  <tr key={ca.compId} className={idx % 2 === 0 ? 'bg-[var(--surface-card)]' : 'bg-[var(--surface-elevated)]/50'}>
+                    <td className="px-3 py-2 text-[var(--text-body)] truncate max-w-[150px]" title={ca.compAddress}>
                       {ca.compAddress}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-slate-600">
+                    <td className="px-3 py-2 text-right tabular-nums text-[var(--text-secondary)]">
                       ${ca.basePrice}
                     </td>
-                    <td className={`px-3 py-2 text-right tabular-nums ${ca.sizeAdjustment >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                    <td className={`px-3 py-2 text-right tabular-nums ${ca.sizeAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}>
                       {ca.sizeAdjustment >= 0 ? '+' : ''}${ca.sizeAdjustment}
                     </td>
-                    <td className={`px-3 py-2 text-right tabular-nums ${ca.bedroomAdjustment >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                    <td className={`px-3 py-2 text-right tabular-nums ${ca.bedroomAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}>
                       {ca.bedroomAdjustment >= 0 ? '+' : ''}${ca.bedroomAdjustment}
                     </td>
-                    <td className={`px-3 py-2 text-right tabular-nums ${ca.bathroomAdjustment >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                    <td className={`px-3 py-2 text-right tabular-nums ${ca.bathroomAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}>
                       {ca.bathroomAdjustment >= 0 ? '+' : ''}${ca.bathroomAdjustment}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-teal-700">
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-[var(--accent-sky-light)]">
                       ${ca.adjustedPrice}/mo
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-slate-500">
+                    <td className="px-3 py-2 text-right tabular-nums text-[var(--text-secondary)]">
                       {(ca.weight * 100).toFixed(1)}%
                     </td>
                   </tr>
@@ -411,14 +411,14 @@ const RentalCompCard = ({
   return (
     <div className={`relative rounded-xl border transition-all overflow-hidden ${
       isSelected 
-        ? 'bg-white ring-2 ring-teal-500/20 border-teal-200' 
-        : 'bg-slate-50 border-slate-200 hover:border-slate-300'
+        ? 'bg-[var(--surface-card)] ring-2 ring-[var(--accent-sky)]/20 border-[rgba(31,138,112,0.25)]' 
+        : 'bg-[var(--surface-elevated)] border-[var(--border-default)] hover:border-[var(--border-default)]'
     }`}>
       {/* Selection checkbox */}
       <button
         onClick={onToggle}
         className={`absolute top-3 left-3 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-          isSelected ? 'bg-teal-500 border-teal-500' : 'bg-white border-slate-300 hover:border-teal-500'
+          isSelected ? 'bg-[var(--accent-sky)] border-[var(--accent-sky)]' : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:border-[var(--accent-sky)]'
         }`}
       >
         {isSelected && <Check className="w-3 h-3 text-white" />}
@@ -429,7 +429,7 @@ const RentalCompCard = ({
         <button
           onClick={onRefreshComp}
           disabled={refreshing}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-teal-500 hover:border-teal-300 transition-colors disabled:opacity-50"
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--accent-sky)] hover:border-[rgba(31,138,112,0.4)] transition-colors disabled:opacity-50"
           title="Replace this comp with a new one"
         >
           <RotateCcw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
@@ -438,7 +438,7 @@ const RentalCompCard = ({
 
       <div className="flex">
         {/* Image */}
-        <div className="relative w-24 h-24 flex-shrink-0 bg-slate-100">
+        <div className="relative w-24 h-24 flex-shrink-0 bg-[var(--surface-elevated)]">
           {comp.imageUrl ? (
             <img 
               src={comp.imageUrl} 
@@ -447,12 +447,12 @@ const RentalCompCard = ({
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} 
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-slate-200">
-              <Home className="w-5 h-5 text-slate-400" />
+            <div className="w-full h-full flex items-center justify-center bg-[var(--chart-grid)]">
+              <Home className="w-5 h-5 text-[var(--text-muted)]" />
             </div>
           )}
-          <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-white/90 backdrop-blur-sm shadow-sm">
-            <span className="text-[10px] font-semibold text-teal-600 tabular-nums">{comp.distanceMiles?.toFixed(2)} mi</span>
+          <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-[var(--surface-card)]/90 backdrop-blur-sm shadow-sm">
+            <span className="text-[10px] font-semibold text-[var(--accent-sky)] tabular-nums">{comp.distanceMiles?.toFixed(2)} mi</span>
           </div>
         </div>
 
@@ -460,19 +460,19 @@ const RentalCompCard = ({
         <div className="flex-1 p-3 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="min-w-0 pl-4">
-              <h4 className="text-sm font-semibold text-slate-800 truncate">{comp.address}</h4>
-              <p className="text-xs text-slate-400 truncate">{comp.city}, {comp.state}</p>
+              <h4 className="text-sm font-semibold text-[var(--text-heading)] truncate">{comp.address}</h4>
+              <p className="text-xs text-[var(--text-muted)] truncate">{comp.city}, {comp.state}</p>
             </div>
             <div className="text-right flex-shrink-0">
-              <p className="text-sm font-bold text-teal-600 tabular-nums">
+              <p className="text-sm font-bold text-[var(--accent-sky)] tabular-nums">
                 {formatCurrency(comp.monthlyRent)}
-                <span className="text-xs font-normal text-slate-400">/mo</span>
+                <span className="text-xs font-normal text-[var(--text-muted)]">/mo</span>
               </p>
-              <p className="text-[10px] text-slate-400 tabular-nums">${comp.rentPerSqft?.toFixed(2)}/sf</p>
+              <p className="text-[10px] text-[var(--text-muted)] tabular-nums">${comp.rentPerSqft?.toFixed(2)}/sf</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-slate-500 mb-1 pl-4">
+          <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)] mb-1 pl-4">
             <span className="flex items-center gap-0.5"><Bed className="w-3 h-3" />{comp.beds}</span>
             <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{comp.baths}</span>
             <span className="flex items-center gap-0.5 tabular-nums"><Square className="w-3 h-3" />{comp.sqft?.toLocaleString()} sq ft</span>
@@ -481,8 +481,8 @@ const RentalCompCard = ({
 
           <div className="flex items-center justify-between pl-4">
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-slate-400">Listed {formatDate(comp.listingDate)}</span>
-              <span className="text-[10px] px-1 py-0.5 rounded bg-slate-100 text-slate-500">{getListingAge(comp.listingDate)}</span>
+              <span className="text-[10px] text-[var(--text-muted)]">Listed {formatDate(comp.listingDate)}</span>
+              <span className="text-[10px] px-1 py-0.5 rounded bg-[var(--surface-elevated)] text-[var(--text-secondary)]">{getListingAge(comp.listingDate)}</span>
               {freshnessBadge && (
                 <span 
                   className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
@@ -492,29 +492,29 @@ const RentalCompCard = ({
                 </span>
               )}
             </div>
-            <button onClick={onExpand} className="text-xs text-teal-600 hover:text-teal-700 font-medium flex items-center gap-0.5">
+            <button onClick={onExpand} className="text-xs text-[var(--accent-sky)] hover:text-[var(--accent-sky-light)] font-medium flex items-center gap-0.5">
               Details <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </button>
           </div>
         </div>
 
         {/* Match Score */}
-        <div className="w-16 flex flex-col items-center justify-center bg-slate-50 border-l border-slate-100">
+        <div className="w-16 flex flex-col items-center justify-center bg-[var(--surface-elevated)] border-l border-[var(--border-subtle)]">
           <div className="text-xl font-bold tabular-nums" style={{ 
-            color: similarity.overall >= 90 ? 'var(--accent-sky)' : similarity.overall >= 75 ? '#0E7490' : '#F59E0B' 
+            color: similarity.overall >= 90 ? 'var(--accent-sky)' : similarity.overall >= 75 ? '#146c59' : '#b7791f' 
           }}>
             {similarity.overall}
           </div>
-          <span className="text-[10px] text-slate-400">% Match</span>
+          <span className="text-[10px] text-[var(--text-muted)]">% Match</span>
         </div>
       </div>
 
       {/* Expanded Details */}
       {isExpanded && (
-        <div className="border-t border-slate-100 p-3 bg-slate-50/50">
+        <div className="border-t border-[var(--border-subtle)] p-3 bg-[var(--surface-elevated)]/50">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h5 className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-2">Similarity</h5>
+              <h5 className="text-[10px] font-semibold text-[var(--accent-sky)] uppercase tracking-wide mb-2">Similarity</h5>
               <div className="space-y-1.5">
                 <SimilarityBar label="Location" value={similarity.location} icon={MapPin} />
                 <SimilarityBar label="Size" value={similarity.size} icon={Square} />
@@ -523,7 +523,7 @@ const RentalCompCard = ({
               </div>
             </div>
             <div>
-              <h5 className="text-[10px] font-semibold text-slate-700 uppercase tracking-wide mb-2">Rent Adjustments</h5>
+              <h5 className="text-[10px] font-semibold text-[var(--text-body)] uppercase tracking-wide mb-2">Rent Adjustments</h5>
               <div className="space-y-1">
                 {[
                   { label: 'Size', value: adjustments.size },
@@ -531,15 +531,15 @@ const RentalCompCard = ({
                   { label: 'Bathroom', value: adjustments.bathroom },
                 ].map((adj) => (
                   <div key={adj.label} className="flex justify-between text-xs">
-                    <span className="text-slate-500">{adj.label}</span>
-                    <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                    <span className="text-[var(--text-secondary)]">{adj.label}</span>
+                    <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}>
                       {adj.value >= 0 ? '+' : ''}{formatCurrency(adj.value)}/mo
                     </span>
                   </div>
                 ))}
-                <div className="flex justify-between text-xs pt-1 border-t border-slate-200">
-                  <span className="font-semibold text-slate-700">Adjusted</span>
-                  <span className="font-bold text-teal-600 tabular-nums">{formatCurrency(comp.monthlyRent + adjustments.total)}/mo</span>
+                <div className="flex justify-between text-xs pt-1 border-t border-[var(--border-default)]">
+                  <span className="font-semibold text-[var(--text-body)]">Adjusted</span>
+                  <span className="font-bold text-[var(--accent-sky)] tabular-nums">{formatCurrency(comp.monthlyRent + adjustments.total)}/mo</span>
                 </div>
               </div>
             </div>
@@ -845,9 +845,9 @@ export function RentalCompsSection() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-slate-800">Rental Appraisal Toolkit</h2>
-          <p className="text-sm text-slate-500">Comparable rentals for {subject.address}</p>
-          <p className="text-xs text-slate-400 mt-1">
+          <h2 className="text-lg font-bold text-[var(--text-heading)]">Rental Appraisal Toolkit</h2>
+          <p className="text-sm text-[var(--text-secondary)]">Comparable rentals for {subject.address}</p>
+          <p className="text-xs text-[var(--text-muted)] mt-1">
             Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         </div>
@@ -855,7 +855,7 @@ export function RentalCompsSection() {
           <button
             onClick={handleRefreshUnselected}
             disabled={loading || selectedCompIds.size === 0}
-            className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1.5"
+            className="px-3 py-2 rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] disabled:opacity-50 flex items-center gap-1.5"
             title="Get new comps for unselected items"
           >
             <RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -864,7 +864,7 @@ export function RentalCompsSection() {
           <button
             onClick={handleRefreshAll}
             disabled={loading}
-            className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1.5"
+            className="px-3 py-2 rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] disabled:opacity-50 flex items-center gap-1.5"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh All
@@ -906,8 +906,8 @@ export function RentalCompsSection() {
 
       {/* Recency Filters */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-slate-500">Filter by:</span>
-        <div className="flex rounded-lg bg-slate-100 p-0.5">
+        <span className="text-xs text-[var(--text-secondary)]">Filter by:</span>
+        <div className="flex rounded-lg bg-[var(--surface-elevated)] p-0.5">
           {[
             { value: 'all' as const, label: 'All' },
             { value: '30' as const, label: 'Last 30 days' },
@@ -918,8 +918,8 @@ export function RentalCompsSection() {
               onClick={() => setRecencyFilter(filter.value)}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                 recencyFilter === filter.value
-                  ? 'bg-white text-teal-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-[var(--surface-card)] text-[var(--accent-sky)] shadow-sm'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-body)]'
               }`}
             >
               {filter.label}
@@ -930,19 +930,19 @@ export function RentalCompsSection() {
 
       {/* Controls */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-slate-500">
+        <div className="text-sm text-[var(--text-secondary)]">
           {selectedCompIds.size} of {filteredComps.length} rentals selected
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSelectedCompIds(new Set(filteredComps.map(c => c.id)))}
-            className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
+            className="px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] rounded-lg"
           >
             Select All
           </button>
           <button
             onClick={() => setSelectedCompIds(new Set())}
-            className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
+            className="px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] rounded-lg"
           >
             Clear
           </button>
@@ -953,22 +953,22 @@ export function RentalCompsSection() {
       {loading && comps.length === 0 && !loadFailed && (
         <div className="space-y-3">
           {[1, 2, 3].map(i => <RentalCardSkeleton key={i} />)}
-          <p className="text-xs text-slate-500 text-center">Loading comparable rentals...</p>
+          <p className="text-xs text-[var(--text-secondary)] text-center">Loading comparable rentals...</p>
         </div>
       )}
 
       {/* Unavailable (friendly fallback — no raw errors) */}
       {loadFailed && !loading && (
-        <div className="rounded-xl border border-slate-200 p-6 text-center bg-slate-50/80">
-          <Info className="mx-auto mb-3 text-slate-400 w-10 h-10" aria-hidden />
-          <h3 className="text-sm font-semibold text-slate-700 mb-1">Comparable rentals temporarily unavailable</h3>
-          <p className="text-xs text-slate-600 mb-4 max-w-sm mx-auto">
+        <div className="rounded-xl border border-[var(--border-default)] p-6 text-center bg-[var(--surface-elevated)]/80">
+          <Info className="mx-auto mb-3 text-[var(--text-muted)] w-10 h-10" aria-hidden />
+          <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">Comparable rentals temporarily unavailable</h3>
+          <p className="text-xs text-[var(--text-secondary)] mb-4 max-w-sm mx-auto">
             Your deal analysis and scores above are complete. Comps will appear here when the data source is back online.
           </p>
           <button
             type="button"
             onClick={() => handleRefreshAll()}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+            className="px-4 py-2 text-sm font-medium text-[var(--text-body)] bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg hover:bg-[var(--surface-elevated)]"
           >
             Retry
           </button>
@@ -977,10 +977,10 @@ export function RentalCompsSection() {
 
       {/* Empty (success but no comps found) */}
       {!loading && !loadFailed && comps.length === 0 && (
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
-          <Home className="mx-auto mb-2 text-slate-400 w-8 h-8" />
-          <h3 className="text-sm font-semibold text-slate-700 mb-1">No Rental Comps Found</h3>
-          <p className="text-xs text-slate-500">Try refreshing or check the property address</p>
+        <div className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-xl p-6 text-center">
+          <Home className="mx-auto mb-2 text-[var(--text-muted)] w-8 h-8" />
+          <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">No Rental Comps Found</h3>
+          <p className="text-xs text-[var(--text-secondary)]">Try refreshing or check the property address</p>
         </div>
       )}
 
@@ -1009,17 +1009,17 @@ export function RentalCompsSection() {
 
       {/* Distance-based confidence indicator */}
       {!loading && !loadFailed && comps.length > 0 && (
-        <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-100">
+        <div className="mt-4 p-3 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-[var(--text-secondary)]">
               {comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} comps within 0.5 mi
             </span>
             <span className={`text-xs font-semibold ${
               comps.filter(c => c.distanceMiles <= 0.5).length >= 3 
-                ? 'text-teal-600' 
+                ? 'text-[var(--accent-sky)]' 
                 : comps.filter(c => c.distanceMiles <= 1).length >= 3 
-                  ? 'text-amber-500' 
-                  : 'text-slate-500'
+                  ? 'text-[var(--status-warning)]' 
+                  : 'text-[var(--text-secondary)]'
             }`}>
               Location Quality: {
                 comps.filter(c => c.distanceMiles <= 0.5).length >= 3 

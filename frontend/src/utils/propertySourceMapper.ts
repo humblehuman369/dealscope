@@ -4,7 +4,7 @@ import type { IQEstimateSources, DataSourceId } from '@/components/iq-verdict/IQ
 export const SOURCE_META: Record<DataSourceId, { label: string; color: string }> = {
   iq: { label: 'IQ Estimate', color: 'var(--accent-sky)' },
   zillow: { label: 'Zillow', color: '#4A90D9' },
-  rentcast: { label: 'RentCast', color: '#F59E0B' },
+  rentcast: { label: 'RentCast', color: '#b7791f' },
   redfin: { label: 'Redfin', color: '#EF5350' },
   realtor: { label: 'Realtor', color: '#D92228' },
   mashvisor: { label: 'Mashvisor', color: '#06B6D4' },

@@ -55,10 +55,10 @@ function CircularProgress({
 
   // Score color based on value
   const getScoreColor = () => {
-    if (score >= 80) return '#22c55e'; // green
-    if (score >= 60) return 'var(--accent-sky)'; // teal
-    if (score >= 40) return '#f59e0b'; // amber
-    return '#ef4444'; // red
+    if (score >= 80) return 'var(--status-positive)';
+    if (score >= 60) return 'var(--accent-brand-blue)';
+    if (score >= 40) return 'var(--status-warning)';
+    return 'var(--status-negative)';
   };
 
   return (
@@ -69,7 +69,7 @@ function CircularProgress({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={isDark ? 'rgba(255,255,255,0.1)' : '#E2E8F0'}
+          stroke={isDark ? 'rgba(255,255,255,0.1)' : 'var(--chart-grid)'}
           strokeWidth={strokeWidth}
           fill="transparent"
         />
@@ -89,10 +89,10 @@ function CircularProgress({
       </svg>
       {/* Score text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`text-[28px] font-extrabold ${isDark ? 'text-white' : 'text-[#0A1628]'}`}>
+        <span className={`text-[28px] font-extrabold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
           {score}
         </span>
-        <span className={`text-xs font-medium -mt-1 ${isDark ? 'text-white/50' : 'text-slate-400'}`}>
+        <span className={`text-xs font-medium -mt-1 ${isDark ? 'text-white/50' : 'text-[var(--text-muted)]'}`}>
           /100
         </span>
       </div>
@@ -111,7 +111,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
       case 'Good Fit': return 'text-green-500';
       case 'Fair': return 'text-amber-500';
       case 'Poor': return 'text-red-500';
-      default: return isDark ? 'text-white' : 'text-[#0A1628]';
+      default: return isDark ? 'text-white' : 'text-[var(--text-heading)]';
     }
   };
 
@@ -121,7 +121,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
       case 'Low': return 'text-green-500';
       case 'Moderate': return 'text-amber-500';
       case 'High': return 'text-red-500';
-      default: return isDark ? 'text-white' : 'text-[#0A1628]';
+      default: return isDark ? 'text-white' : 'text-[var(--text-heading)]';
     }
   };
 
@@ -131,12 +131,12 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
       case 'Good': return 'text-green-500';
       case 'Fair': return 'text-[var(--accent-sky)]';
       case 'Poor': return 'text-red-500';
-      default: return isDark ? 'text-white' : 'text-[#0A1628]';
+      default: return isDark ? 'text-white' : 'text-[var(--text-heading)]';
     }
   };
 
   return (
-    <div className={`rounded-xl p-4 mb-3 ${isDark ? 'bg-[#0F1D32]' : 'bg-white'}`}>
+    <div className={`rounded-xl p-4 mb-3 ${isDark ? 'bg-[#0F1D32]' : 'bg-[var(--surface-card)]'}`}>
       {/* Header */}
       <h3 className="text-[11px] font-bold tracking-wide text-[var(--accent-sky)] mb-4">
         PROFIT QUALITY
@@ -150,7 +150,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
         {/* Metrics column */}
         <div className="flex-1 space-y-3">
           <div className="flex justify-between items-center">
-            <span className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-slate-500'}`}>
+            <span className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-[var(--text-secondary)]'}`}>
               Strategy Fit
             </span>
             <span className={`text-[13px] font-semibold ${getStrategyFitColor()}`}>
@@ -158,7 +158,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-slate-500'}`}>
+            <span className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-[var(--text-secondary)]'}`}>
               Risk Level
             </span>
             <span className={`text-[13px] font-semibold ${getRiskLevelColor()}`}>
@@ -166,7 +166,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-slate-500'}`}>
+            <span className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-[var(--text-secondary)]'}`}>
               Protection
             </span>
             <span className={`text-[13px] font-semibold ${getProtectionColor()}`}>
@@ -180,7 +180,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
       <div className="flex items-center justify-between mt-4">
         {/* View Factors */}
         <button 
-          className={`flex items-center gap-1 py-1 ${isDark ? 'text-white/60' : 'text-slate-500'} hover:opacity-80 transition-opacity`}
+          className={`flex items-center gap-1 py-1 ${isDark ? 'text-white/60' : 'text-[var(--text-secondary)]'} hover:opacity-80 transition-opacity`}
           onClick={() => setShowFactors(!showFactors)}
         >
           <span className="text-xs font-medium">View Factors</span>
@@ -220,10 +220,10 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
               )}
-              <span className={`flex-1 text-xs ${isDark ? 'text-white/80' : 'text-gray-700'}`}>
+              <span className={`flex-1 text-xs ${isDark ? 'text-white/80' : 'text-[var(--text-body)]'}`}>
                 {factor.label}
               </span>
-              <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-[#0A1628]'}`}>
+              <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
                 {factor.value}
               </span>
             </div>
@@ -233,7 +233,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
 
       {/* Insight */}
       <div className="mt-4 pl-3 border-l-[3px] border-[var(--accent-sky)]">
-        <p className={`text-[13px] leading-[18px] ${isDark ? 'text-white/80' : 'text-gray-700'}`}>
+        <p className={`text-[13px] leading-[18px] ${isDark ? 'text-white/80' : 'text-[var(--text-body)]'}`}>
           {data.insight}
         </p>
       </div>

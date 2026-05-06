@@ -58,11 +58,11 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
 
   return (
     <div className={`min-h-screen overflow-x-hidden transition-colors duration-300 ${
-      isDark ? 'bg-[#07172e] text-[#e1e8ed]' : 'bg-[#f8fafc] text-gray-900'
+      isDark ? 'bg-[#07172e] text-[#e1e8ed]' : 'bg-[var(--surface-base)] text-[var(--text-heading)]'
     }`}>
       {/* Header */}
       <header className="relative z-10 flex justify-between items-center px-5 py-3 lg:px-12 lg:py-5 max-w-7xl mx-auto">
-        <div className={`text-xl lg:text-2xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        <div className={`text-xl lg:text-2xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
           DealGap<span className={isDark ? 'text-accent-500' : 'text-accent-light'}>IQ</span>
         </div>
         
@@ -73,14 +73,14 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
               isDark 
                 ? 'bg-white/10 hover:bg-white/15' 
-                : 'bg-gray-200 hover:bg-gray-300'
+                : 'bg-[var(--surface-elevated)] hover:bg-[var(--surface-card-hover)]'
             }`}
             aria-label="Toggle theme"
           >
             {isDark ? (
               <Sun className="w-4 h-4 text-accent-500" />
             ) : (
-              <Moon className="w-4 h-4 text-gray-600" />
+              <Moon className="w-4 h-4 text-[var(--text-secondary)]" />
             )}
           </button>
 
@@ -91,7 +91,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                 className={`text-sm font-medium transition-colors ${
                   isDark 
                     ? 'text-white/70 hover:text-white' 
-                    : 'text-gray-500 hover:text-gray-700'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-heading)]'
                 }`}
               >
                 Dashboard
@@ -101,7 +101,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                 className={`hidden lg:block text-sm font-medium transition-colors ${
                   isDark 
                     ? 'text-white/50 hover:text-white/70' 
-                    : 'text-gray-400 hover:text-gray-600'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
                 }`}
               >
                 Sign Out
@@ -114,7 +114,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                 className={`text-sm font-medium transition-colors ${
                   isDark 
                     ? 'text-white/70 hover:text-white' 
-                    : 'text-gray-500 hover:text-gray-700'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-heading)]'
                 }`}
               >
                 Sign In
@@ -133,7 +133,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
       {/* Hero Section */}
       <section className="relative z-10 px-5 pt-6 lg:pt-16 text-center max-w-4xl mx-auto">
         <h1 className={`font-bold text-[28px] lg:text-[52px] leading-[1.2] mb-1 ${
-          isDark ? 'text-white' : 'text-gray-900'
+          isDark ? 'text-white' : 'text-[var(--text-heading)]'
         }`}>
           Know the Real Return
         </h1>
@@ -159,7 +159,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             className={`w-full max-w-[460px] mt-4 p-4 rounded-2xl border animate-in slide-in-from-top-2 duration-200 ${
               isDark 
                 ? 'bg-white/[0.08] border-white/10' 
-                : 'bg-white border-gray-200 shadow-lg'
+                : 'bg-[var(--surface-card)] border-[var(--border-default)] shadow-lg'
             }`}
             style={{ backdropFilter: isDark ? 'blur(12px)' : undefined }}
           >
@@ -172,7 +172,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
               <div className={`flex items-center gap-2 rounded-xl px-4 py-3 border ${
                 isDark 
                   ? 'bg-white/10 border-white/10' 
-                  : 'bg-gray-50 border-gray-200'
+                  : 'bg-[var(--surface-elevated)] border-[var(--border-default)]'
               }`}>
                 <MapPin className={`w-5 h-5 flex-shrink-0 ${isDark ? 'text-accent-500' : 'text-accent-light'}`} />
                 <AddressAutocomplete
@@ -183,7 +183,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                   className={`flex-1 bg-transparent text-sm outline-none ${
                     isDark 
                       ? 'text-white placeholder-white/50' 
-                      : 'text-gray-900 placeholder-gray-400'
+                      : 'text-[var(--text-heading)] placeholder-[var(--text-muted)]'
                   }`}
                   autoFocus
                 />
@@ -196,13 +196,15 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                     ? `text-white shadow-lg` 
                     : isDark 
                       ? 'bg-white/10 text-white/40 cursor-not-allowed'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-[var(--surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
                   }`}
                 style={searchAddress.trim() ? {
                   background: isDark 
                     ? 'linear-gradient(135deg, #0097a7 0%, var(--accent-sky) 100%)'
-                    : 'linear-gradient(135deg, var(--accent-sky) 0%, #0097a7 100%)',
-                  boxShadow: '0 4px 20px rgba(0, 151, 167, 0.4)'
+                    : 'linear-gradient(135deg, #1f8a70 0%, #146c59 100%)',
+                  boxShadow: isDark
+                    ? '0 4px 20px rgba(0, 151, 167, 0.4)'
+                    : '0 4px 20px rgba(31, 138, 112, 0.35)'
                 } : undefined}
               >
                 {isSearching ? (
@@ -228,12 +230,12 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
         style={{ 
           background: isDark 
             ? 'linear-gradient(180deg, #0a1628 0%, #07172e 50%, #061324 100%)' 
-            : 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)'
+            : 'linear-gradient(180deg, #f7f4ee 0%, #ffffff 50%, #e8f3ef 100%)'
         }}
       >
         {/* Section Header */}
         <div className="flex justify-between items-center mb-4 max-w-4xl mx-auto">
-          <h2 className={`text-lg lg:text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          <h2 className={`text-lg lg:text-xl font-bold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
             See Your <span className={isDark ? 'text-accent-500' : 'text-accent-light'}>Profit Potential</span>
           </h2>
           <span className={`text-sm font-semibold cursor-pointer ${isDark ? 'text-accent-500' : 'text-accent-light'}`}>
@@ -262,19 +264,19 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
 
         {/* Stats Row */}
         <div className={`flex justify-between py-5 mt-6 border-t border-b max-w-4xl mx-auto ${
-          isDark ? 'border-white/10' : 'border-gray-200'
+          isDark ? 'border-white/10' : 'border-[var(--border-default)]'
         }`}>
           <div className="text-center flex-1">
             <div className={`text-xl lg:text-2xl font-bold ${isDark ? 'text-accent-500' : 'text-accent-light'}`}>10K+</div>
-            <div className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Analyzed</div>
+            <div className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}>Analyzed</div>
           </div>
           <div className="text-center flex-1">
             <div className="text-xl lg:text-2xl font-bold text-emerald-500">$2.4M</div>
-            <div className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Profit Found</div>
+            <div className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}>Profit Found</div>
           </div>
           <div className="text-center flex-1">
-            <div className={`text-xl lg:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>60s</div>
-            <div className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Avg. Analysis</div>
+            <div className={`text-xl lg:text-2xl font-bold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>60s</div>
+            <div className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}>Avg. Analysis</div>
           </div>
         </div>
 
@@ -286,13 +288,15 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             style={{
               background: isDark 
                 ? 'linear-gradient(135deg, #0097a7 0%, var(--accent-sky) 100%)'
-                : 'linear-gradient(135deg, var(--accent-sky) 0%, #0097a7 100%)',
-              boxShadow: '0 8px 32px rgba(0, 151, 167, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+                : 'linear-gradient(135deg, #1f8a70 0%, #146c59 100%)',
+              boxShadow: isDark
+                ? '0 8px 32px rgba(0, 151, 167, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+                : '0 8px 32px rgba(31, 138, 112, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)'
             }}
           >
             Start Analyzing Now
           </button>
-          <p className={`text-center text-xs mt-3 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+          <p className={`text-center text-xs mt-3 ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}>
             Free • No credit card required
           </p>
         </div>
@@ -300,7 +304,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
 
       {/* Bottom Nav (Mobile Style) */}
       <nav 
-        className={`flex justify-around py-3 px-5 ${isDark ? 'bg-[#061324]' : 'bg-white'}`}
+        className={`flex justify-around py-3 px-5 ${isDark ? 'bg-[#061324]' : 'bg-[var(--surface-card)]'}`}
         style={{ 
           borderTop: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(7,23,46,0.06)'
         }}
@@ -313,11 +317,11 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
       </nav>
 
       {/* Footer */}
-      <footer className={`py-6 text-center ${isDark ? 'bg-[#061324]' : 'bg-white'}`}>
-        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+      <footer className={`py-6 text-center ${isDark ? 'bg-[#061324]' : 'bg-[var(--surface-card)]'}`}>
+        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-[var(--text-secondary)]'}`}>
           © 2026 DealGapIQ. All rights reserved.
         </p>
-        <p className={`text-sm font-semibold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        <p className={`text-sm font-semibold mt-1 ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
           Invest like a Guru!
         </p>
       </footer>
@@ -342,7 +346,7 @@ function StrategyCard({ name, icon, roi, color, bgColor, isProfit, isDark }: Str
       className={`flex-shrink-0 w-[130px] p-4 rounded-2xl transition-transform hover:scale-105 cursor-pointer ${
         isDark 
           ? 'bg-white/[0.04] border border-white/[0.06]' 
-          : 'bg-white border border-gray-100 shadow-sm'
+          : 'bg-[var(--surface-card)] border border-[var(--border-subtle)] shadow-sm'
       }`}
       style={{ scrollSnapAlign: 'start' }}
     >
@@ -355,7 +359,7 @@ function StrategyCard({ name, icon, roi, color, bgColor, isProfit, isDark }: Str
       </div>
       
       {/* Name */}
-      <div className={`text-[11px] font-medium mb-2 leading-tight ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+      <div className={`text-[11px] font-medium mb-2 leading-tight ${isDark ? 'text-gray-400' : 'text-[var(--text-secondary)]'}`}>
         {name}
       </div>
       
@@ -365,7 +369,7 @@ function StrategyCard({ name, icon, roi, color, bgColor, isProfit, isDark }: Str
       </div>
       
       {/* Label */}
-      <div className={`text-[10px] font-semibold uppercase tracking-wide ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
+      <div className={`text-[10px] font-semibold uppercase tracking-wide ${isDark ? 'text-gray-600' : 'text-[var(--text-muted)]'}`}>
         {isProfit ? 'Est. Profit' : 'Est. ROI'}
       </div>
     </div>
@@ -384,8 +388,8 @@ function NavItem({ icon, label, active, isDark }: NavItemProps) {
   return (
     <div className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${
       active 
-        ? isDark ? 'text-accent-500' : 'text-brand-500'
-        : isDark ? 'text-gray-600' : 'text-gray-400'
+        ? isDark ? 'text-accent-500' : 'text-[var(--accent-sky)]'
+        : isDark ? 'text-gray-600' : 'text-[var(--text-muted)]'
     }`}>
       <span className="text-lg">{icon}</span>
       <span className="text-[10px] font-semibold">{label}</span>

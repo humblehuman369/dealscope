@@ -31,10 +31,10 @@ function MiniBarChart({
   const hasNegative = data.some(d => d < 0)
   
   const colors: Record<string, { positive: string; negative: string }> = {
-    blue: { positive: 'bg-blue-500', negative: 'bg-blue-300' },
-    green: { positive: 'bg-emerald-500', negative: 'bg-red-400' },
-    purple: { positive: 'bg-purple-500', negative: 'bg-purple-300' },
-    orange: { positive: 'bg-orange-500', negative: 'bg-orange-300' },
+    blue: { positive: 'bg-[var(--accent-brand-blue)]', negative: 'bg-[rgba(4,101,242,0.35)]' },
+    green: { positive: 'bg-[var(--status-positive)]', negative: 'bg-[var(--status-negative)]' },
+    purple: { positive: 'bg-[#8b5cf6]', negative: 'bg-[#c4b5fd]' },
+    orange: { positive: 'bg-[#f97316]', negative: 'bg-[#fdba74]' },
   }
   
   return (
@@ -51,7 +51,7 @@ function MiniBarChart({
               }`}
               style={{ height: `${barHeight}%`, minHeight: value !== 0 ? 4 : 0 }}
             />
-            <span className="text-[10px] text-gray-400 mt-1">Y{i + 1}</span>
+            <span className="text-[10px] text-[var(--text-muted)] mt-1">Y{i + 1}</span>
           </div>
         )
       })}
@@ -111,16 +111,16 @@ function StackedAreaChart({
         {/* Gradients */}
         <defs>
           <linearGradient id="gradient-appreciation" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#10b981" />
-            <stop offset="100%" stopColor="#059669" />
+            <stop offset="0%" stopColor="#0465f2" />
+            <stop offset="100%" stopColor="#0354d1" />
           </linearGradient>
           <linearGradient id="gradient-paydown" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#3b82f6" />
-            <stop offset="100%" stopColor="#2563eb" />
+            <stop offset="0%" stopColor="#07172e" />
+            <stop offset="100%" stopColor="#10223d" />
           </linearGradient>
           <linearGradient id="gradient-cashflow" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#8b5cf6" />
-            <stop offset="100%" stopColor="#7c3aed" />
+            <stop offset="0%" stopColor="#1f8a70" />
+            <stop offset="100%" stopColor="#146c59" />
           </linearGradient>
         </defs>
       </svg>
@@ -128,15 +128,15 @@ function StackedAreaChart({
       {/* Legend - Wrap on mobile */}
       <div className="flex flex-wrap justify-center gap-3 sm:gap-6 mt-3">
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-purple-500 flex-shrink-0" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#1f8a70] flex-shrink-0" />
           <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">Cash Flow</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-blue-500 flex-shrink-0" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#07172e] flex-shrink-0" />
           <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">Loan Paydown</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 flex-shrink-0" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#0465f2] flex-shrink-0" />
           <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">Appreciation</span>
         </div>
       </div>
@@ -166,13 +166,13 @@ function SummaryCard({
   return (
     <div className={`p-2.5 sm:p-3 rounded-xl ${
       highlight 
-        ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30 border border-emerald-200 dark:border-emerald-700' 
-        : 'bg-white dark:bg-navy-800 border border-gray-100 dark:border-navy-700'
+        ? 'bg-gradient-to-br from-[rgba(31,138,112,0.08)] to-[rgba(31,138,112,0.14)] dark:from-emerald-900/30 dark:to-green-900/30 border border-[rgba(31,138,112,0.25)] dark:border-emerald-700' 
+        : 'bg-[var(--surface-card)] dark:bg-navy-800 border border-[var(--border-subtle)] dark:border-navy-700'
     }`}>
       <div className="flex items-start justify-between">
         <div className="min-w-0">
           <div className="text-[9px] sm:text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5 truncate">{label}</div>
-          <div className={`text-base sm:text-lg font-bold ${highlight ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>
+          <div className={`text-base sm:text-lg font-bold ${highlight ? 'text-[var(--status-positive)] dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>
             {value}
           </div>
           {subValue && (
@@ -182,7 +182,7 @@ function SummaryCard({
       </div>
       {trend && (
         <div className={`flex items-center gap-1 mt-1 text-[10px] sm:text-xs ${
-          trend === 'up' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
+          trend === 'up' ? 'text-[var(--status-positive)] dark:text-emerald-400' : 'text-[var(--status-negative)] dark:text-red-400'
         }`}>
           <ArrowUpRight className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${trend === 'down' ? 'rotate-180' : ''}`} />
           <span>{trend === 'up' ? 'Positive' : 'Declining'}</span>

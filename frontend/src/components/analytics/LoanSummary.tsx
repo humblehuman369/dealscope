@@ -107,8 +107,8 @@ export function PieChartBreakdown({
             className="w-full h-full rounded-full"
             style={{
               background: `conic-gradient(
-                var(--color-teal) 0deg ${principalDegrees}deg,
-                rgba(239,68,68,0.7) ${principalDegrees}deg 360deg
+                var(--status-positive) 0deg ${principalDegrees}deg,
+                var(--color-navy) ${principalDegrees}deg 360deg
               )`
             }}
           />
