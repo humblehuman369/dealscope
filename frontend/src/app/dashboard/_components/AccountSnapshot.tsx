@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   LogOut,
   ChevronRight,
+  Trophy,
 } from 'lucide-react'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -111,6 +112,12 @@ export function AccountSnapshot() {
           icon={<Bookmark className="w-5 h-5" />}
           title="Saved Properties"
           description="Full list with filters and notes"
+        />
+        <AccountCard
+          href="/portfolio"
+          icon={<Trophy className="w-5 h-5" />}
+          title="Portfolio"
+          description="Closed deals and your track record"
         />
         <AccountCard
           href="/billing"
