@@ -39,6 +39,14 @@ const MOVE_TO_OPTIONS: PropertyStatus[] = [
 // accept text drops from elsewhere on the page.
 const DRAG_MIME = 'application/x-savedproperty-id'
 
+// Late-funnel stages where "days in stage" is a more useful action signal
+// than "last touched" — these are the columns where deadlines live.
+const TIME_IN_STAGE_STATUSES: ReadonlySet<PropertyStatus> = new Set([
+  'negotiating',
+  'under_contract',
+  'owned',
+])
+
 function shortAddress(p: SavedPropertySummary): string {
   return p.nickname || p.address_street
 }
@@ -46,6 +54,31 @@ function shortAddress(p: SavedPropertySummary): string {
 function buildFullAddress(p: SavedPropertySummary): string {
   const stateZip = [p.address_state, p.address_zip].filter(Boolean).join(' ')
   return [p.address_street, p.address_city, stateZip].filter(Boolean).join(', ')
+}
+
+function daysSince(iso: string | null | undefined): number | null {
+  if (!iso) return null
+  const t = new Date(iso).getTime()
+  if (!Number.isFinite(t)) return null
+  return Math.max(0, Math.floor((Date.now() - t) / 86_400_000))
+}
+
+/** Variance badge mirrors the styling used on the Active Flips page. */
+function VarianceBadge({ pct }: { pct: string }) {
+  const n = parseFloat(pct)
+  if (!Number.isFinite(n)) return null
+  const cls =
+    n <= 0
+      ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300'
+      : n <= 10
+      ? 'bg-amber-500/10 text-amber-900 ring-amber-500/25 dark:text-amber-200'
+      : 'bg-red-500/10 text-red-700 ring-red-500/25 dark:text-red-300'
+  return (
+    <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ring-1 ${cls}`}>
+      {n > 0 ? '+' : ''}
+      {pct}% vs est.
+    </span>
+  )
 }
 
 export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanbanProps) {
@@ -218,6 +251,16 @@ function KanbanCard({ property, onClick, onChangeStatus, isUpdating }: KanbanCar
     ? (STRATEGY_LABELS[property.best_strategy] ?? property.best_strategy)
     : null
 
+  // Late-stage cards swap the "last updated" timestamp for a "days in stage"
+  // counter — what the user actually needs to act on at this point in the
+  // funnel. ``status_changed_at`` is populated by the backend; pre-migration
+  // rows fall back to ``updated_at``.
+  const showDaysInStage = TIME_IN_STAGE_STATUSES.has(property.status)
+  const daysInStage = showDaysInStage
+    ? daysSince(property.status_changed_at ?? property.updated_at)
+    : null
+  const showVariance = property.status === 'owned' && !!property.budget_variance_pct
+
   return (
     <div
       className={`relative group ${isDragging ? 'opacity-50' : ''}`}
@@ -243,7 +286,9 @@ function KanbanCard({ property, onClick, onChangeStatus, isUpdating }: KanbanCar
         )}
         <div className="mt-2 flex items-center justify-between gap-2">
           <span className="text-[11px] text-[var(--text-label)]">
-            {formatRelativeDate(property.updated_at)}
+            {showDaysInStage && daysInStage !== null
+              ? `${daysInStage}d in stage`
+              : formatRelativeDate(property.updated_at)}
           </span>
           {property.best_cash_flow != null && (
             <span
@@ -257,11 +302,15 @@ function KanbanCard({ property, onClick, onChangeStatus, isUpdating }: KanbanCar
             </span>
           )}
         </div>
-        {strategyLabel && (
+        {showVariance ? (
+          <div className="mt-2">
+            <VarianceBadge pct={property.budget_variance_pct as string} />
+          </div>
+        ) : strategyLabel ? (
           <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-label)] truncate">
             {strategyLabel}
           </p>
-        )}
+        ) : null}
       </button>
 
       {/* Status menu trigger */}

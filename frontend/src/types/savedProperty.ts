@@ -16,8 +16,19 @@ export type PropertyStatus =
   | 'passed'
   | 'archived'
 
-/** Post-acquisition flip phases (matches backend FlipStage). */
-export type FlipStage = 'Acquisition' | 'Rehab' | 'Listed' | 'Sold'
+/** Post-acquisition lifecycle stages — flip, BRRRR, LTR, STR (matches backend FlipStage). */
+export type FlipStage =
+  | 'Acquisition'
+  | 'Rehab'
+  | 'Listed'
+  | 'Sold'
+  | 'Stabilized'
+  | 'Refinanced'
+  | 'MakeReady'
+  | 'Leased'
+  | 'Setup'
+  | 'Live'
+  | 'Held'
 
 // Listing status for property (from AXESSO API)
 export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
@@ -60,12 +71,14 @@ export interface SavedPropertySummary {
   saved_at: string
   last_viewed_at: string | null
   updated_at: string
+  /** When `status` was last changed — drives "X days in stage" on the kanban. */
+  status_changed_at?: string | null
+  /** Rehab budget variance as a percent string (e.g. "12.5"). Populated only for owned properties. */
+  budget_variance_pct?: string | null
 }
 
 /** Active flips pipeline row — GET .../saved/active-flips */
-export interface ActiveFlipSummary extends SavedPropertySummary {
-  budget_variance_pct?: string | null
-}
+export type ActiveFlipSummary = SavedPropertySummary
 
 /** Stats returned by GET /api/v1/properties/saved/stats. */
 export interface SavedPropertyStats {

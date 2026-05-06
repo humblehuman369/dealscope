@@ -25,12 +25,24 @@ class PropertyStatus(StrEnum):
 
 
 class FlipStage(StrEnum):
-    """Post-acquisition flip lifecycle."""
+    """Post-acquisition lifecycle stages — mirrors models.saved_property.FlipStage."""
 
+    # Flip
     ACQUISITION = "Acquisition"
     REHAB = "Rehab"
     LISTED = "Listed"
     SOLD = "Sold"
+    # BRRRR
+    STABILIZED = "Stabilized"
+    REFINANCED = "Refinanced"
+    # LTR
+    MAKE_READY = "MakeReady"
+    LEASED = "Leased"
+    # STR
+    SETUP = "Setup"
+    LIVE = "Live"
+    # Shared terminal hold state
+    HELD = "Held"
 
 
 # ===========================================
@@ -180,6 +192,15 @@ class SavedPropertySummary(BaseModel):
     saved_at: datetime
     last_viewed_at: datetime | None
     updated_at: datetime
+    # When the row's ``status`` was last changed — used by the dashboard
+    # kanban to render "X days in stage". Falls back to saved_at on
+    # newly-saved properties.
+    status_changed_at: datetime | None = None
+
+    # Rehab budget health, populated only for owned properties (the kanban
+    # only renders this badge in the Owned column, so we skip the per-row
+    # budget query for everything else).
+    budget_variance_pct: str | None = None
 
     class Config:
         from_attributes = True
@@ -191,9 +212,13 @@ class SavedPropertySummary(BaseModel):
 
 
 class ActiveFlipSummary(SavedPropertySummary):
-    """SavedPropertySummary plus optional rehab budget health for the Active Flips pipeline."""
+    """SavedPropertySummary alias kept for the Active Flips pipeline endpoint.
 
-    budget_variance_pct: str | None = None
+    All fields are now on the parent. This subclass exists only as a stable
+    response shape for ``/api/v1/properties/saved/active-flips``.
+    """
+
+    pass
 
 
 class SavedPropertyResponse(SavedPropertySummary):

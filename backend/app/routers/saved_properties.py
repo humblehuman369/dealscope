@@ -96,6 +96,7 @@ def _build_saved_property_response(
         saved_at=saved.saved_at,
         last_viewed_at=saved.last_viewed_at,
         updated_at=saved.updated_at,
+        status_changed_at=saved.status_changed_at,
         document_count=document_count,
         adjustment_count=adjustment_count,
     )
@@ -197,6 +198,28 @@ async def list_saved_properties(
 
     response.headers["X-Total-Count"] = str(total)
 
+    # Variance is rendered on Owned cards only — fetch it just for those
+    # rows. ``budget_service.build_summary`` does its own DB roundtrip per
+    # property, so limiting the lookup to owned rows keeps the list endpoint
+    # cheap for the typical case where most rows are pre-purchase.
+    owned_variance: dict[str, str | None] = {}
+    owned_rows = [p for p in properties if p.status == PropertyStatus.OWNED]
+    if owned_rows:
+        uid_str = str(current_user.id)
+        for p in owned_rows:
+            try:
+                budget = await budget_service.get_budget_for_property(db, str(p.id), uid_str)
+                if budget:
+                    summary = await budget_service.build_summary(db, budget)
+                    owned_variance[str(p.id)] = summary.get("variance_pct")
+            except Exception as exc:
+                # Same defensive posture as the active-flips endpoint — a
+                # missing budget table during a deploy gap shouldn't break
+                # the dashboard. See app/core/schema_guard.py.
+                if not is_schema_mismatch(exc):
+                    raise
+                log_schema_mismatch("GET /properties/saved:budget_enrichment", exc)
+
     return [
         SavedPropertySummary(
             id=str(p.id),
@@ -222,6 +245,8 @@ async def list_saved_properties(
             saved_at=p.saved_at,
             last_viewed_at=p.last_viewed_at,
             updated_at=p.updated_at,
+            status_changed_at=p.status_changed_at,
+            budget_variance_pct=owned_variance.get(str(p.id)),
         )
         for p in properties
     ]
@@ -310,6 +335,7 @@ async def list_active_flips_endpoint(
                 saved_at=p.saved_at,
                 last_viewed_at=p.last_viewed_at,
                 updated_at=p.updated_at,
+                status_changed_at=p.status_changed_at,
                 budget_variance_pct=variance_pct,
             )
         )
