@@ -22,6 +22,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.budget import BudgetExpense, RehabBudget
+from app.models.contact import PropertyContact
 from app.models.saved_property import PropertyAdjustment, SavedProperty
 from app.models.task import PropertyTask
 
@@ -34,6 +35,7 @@ TimelineEventKind = Literal[
     "task_reopened",
     "expense_added",
     "budget_locked",
+    "contact_added",
     "note",
 ]
 
@@ -170,7 +172,32 @@ class TimelineService:
                 }
             )
 
-        # 4) RehabBudget.baseline_locked_at — single milestone.
+        # 4) PropertyContact — only "added" surfaces; updates are too noisy.
+        contact_rows = (
+            await db.execute(
+                select(PropertyContact)
+                .where(PropertyContact.saved_property_id == prop_uuid)
+                .order_by(PropertyContact.created_at.desc())
+                .limit(limit)
+            )
+        ).scalars().all()
+        for c in contact_rows:
+            role_label = c.role.value.replace("_", " ").title() if c.role else "Contact"
+            events.append(
+                {
+                    "id": f"contact:{c.id}",
+                    "kind": "contact_added",
+                    "occurred_at": c.created_at,
+                    "title": f"Contact added: {c.name} ({role_label})",
+                    "body": c.company,
+                    "meta": {
+                        "contact_id": str(c.id),
+                        "role": c.role.value if c.role else None,
+                    },
+                }
+            )
+
+        # 5) RehabBudget.baseline_locked_at — single milestone.
         budget_row = (
             await db.execute(
                 select(RehabBudget).where(RehabBudget.saved_property_id == prop_uuid)

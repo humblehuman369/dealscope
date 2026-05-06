@@ -17,12 +17,15 @@ import {
   ArrowRight,
   CheckCircle2,
   Circle,
-  ListChecks,
+  Mail,
+  Phone,
   Plus,
+  ListChecks,
   Send,
   Sparkles,
   StickyNote,
   Trash2,
+  Users,
   X,
 } from 'lucide-react'
 import {
@@ -33,8 +36,19 @@ import {
   useUpdateTask,
 } from '@/hooks/useTasks'
 import { useAddNote, useDeleteNote, useTimeline } from '@/hooks/useTimeline'
+import {
+  useContacts,
+  useCreateContact,
+  useDeleteContact,
+} from '@/hooks/useContacts'
 import type { PropertyTask } from '@/types/task'
 import type { TimelineEvent, TimelineEventKind } from '@/types/timeline'
+import {
+  CONTACT_ROLES_ORDERED,
+  CONTACT_ROLE_LABELS,
+  type ContactRole,
+  type PropertyContact,
+} from '@/types/contact'
 
 interface TasksSlideOverProps {
   propertyId: string | null
@@ -45,7 +59,7 @@ interface TasksSlideOverProps {
   onClose: () => void
 }
 
-type Tab = 'tasks' | 'activity'
+type Tab = 'tasks' | 'activity' | 'contacts'
 
 function formatDue(iso: string | null): string | null {
   if (!iso) return null
@@ -136,7 +150,7 @@ export function TasksSlideOver({
         <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-[var(--border-default)]">
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)]">
-              {tab === 'tasks' ? 'Tasks' : 'Activity'}
+              {tab === 'tasks' ? 'Tasks' : tab === 'activity' ? 'Activity' : 'Contacts'}
             </p>
             <h2 className="text-lg font-bold text-[var(--text-heading)] truncate">
               {propertyTitle}
@@ -157,6 +171,9 @@ export function TasksSlideOver({
           <TabButton active={tab === 'tasks'} onClick={() => setTab('tasks')} icon={<ListChecks className="w-3.5 h-3.5" />}>
             Tasks
           </TabButton>
+          <TabButton active={tab === 'contacts'} onClick={() => setTab('contacts')} icon={<Users className="w-3.5 h-3.5" />}>
+            Contacts
+          </TabButton>
           <TabButton active={tab === 'activity'} onClick={() => setTab('activity')} icon={<Activity className="w-3.5 h-3.5" />}>
             Activity
           </TabButton>
@@ -164,6 +181,8 @@ export function TasksSlideOver({
 
         {tab === 'tasks' ? (
           <TasksTab propertyId={propertyId} stageLabel={stageLabel ?? null} inputRef={inputRef} />
+        ) : tab === 'contacts' ? (
+          <ContactsTab propertyId={propertyId} />
         ) : (
           <ActivityTab propertyId={propertyId} />
         )}
@@ -538,9 +557,227 @@ function visualForKind(kind: TimelineEventKind): {
       return { Icon: Plus, color: '#f59e0b' } // amber
     case 'budget_locked':
       return { Icon: ListChecks, color: '#8b5cf6' } // violet
+    case 'contact_added':
+      return { Icon: Users, color: '#06b6d4' } // cyan
     case 'note':
       return { Icon: StickyNote, color: '#0ea5e9' }
     default:
       return { Icon: Circle, color: '#94a3b8' }
   }
+}
+
+// ───────────────────────────────────────────────────────
+// Contacts tab
+
+function ContactsTab({ propertyId }: { propertyId: string }) {
+  const contacts = useContacts(propertyId)
+  const create = useCreateContact(propertyId)
+  const del = useDeleteContact(propertyId)
+
+  const [showForm, setShowForm] = useState(false)
+  const [name, setName] = useState('')
+  const [role, setRole] = useState<ContactRole>('listing_agent')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [company, setCompany] = useState('')
+
+  const items = contacts.data ?? []
+
+  function reset() {
+    setName('')
+    setRole('listing_agent')
+    setPhone('')
+    setEmail('')
+    setCompany('')
+    setShowForm(false)
+  }
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!name.trim()) return
+    create.mutate(
+      {
+        name: name.trim(),
+        role,
+        phone: phone.trim() || null,
+        email: email.trim() || null,
+        company: company.trim() || null,
+      },
+      { onSuccess: reset },
+    )
+  }
+
+  return (
+    <>
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
+        {contacts.isLoading ? (
+          <p className="text-sm text-[var(--text-label)] text-center py-6">Loading…</p>
+        ) : contacts.isError ? (
+          <p className="text-sm text-[var(--status-negative)] text-center py-6">
+            Couldn&apos;t load contacts.{' '}
+            <button onClick={() => contacts.refetch()} className="underline">Retry</button>
+          </p>
+        ) : items.length === 0 && !showForm ? (
+          <div className="flex flex-col items-center text-center py-8 px-4 gap-3">
+            <p className="text-sm text-[var(--text-label)]">
+              No contacts yet — add the seller, agent, or anyone else involved with this deal.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add a contact
+            </button>
+          </div>
+        ) : (
+          items.map((c) => (
+            <ContactRow key={c.id} contact={c} onDelete={() => del.mutate(c.id)} />
+          ))
+        )}
+      </div>
+
+      {/* Add form: pinned to bottom. Toggle visibility via "+" button when
+          there are existing contacts; auto-shown for empty state via the CTA. */}
+      {showForm ? (
+        <form
+          onSubmit={submit}
+          className="border-t border-[var(--border-default)] px-3 py-3 space-y-2"
+        >
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name"
+              required
+              className="flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--surface-input)] px-3 py-2 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)]"
+            />
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as ContactRole)}
+              className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-input)] px-2 py-2 text-sm text-[var(--text-heading)]"
+            >
+              {CONTACT_ROLES_ORDERED.map((r) => (
+                <option key={r} value={r}>
+                  {CONTACT_ROLE_LABELS[r]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Phone"
+              className="flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--surface-input)] px-3 py-2 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-label)]"
+            />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              className="flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--surface-input)] px-3 py-2 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-label)]"
+            />
+          </div>
+          <input
+            type="text"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            placeholder="Company (optional)"
+            className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--surface-input)] px-3 py-2 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-label)]"
+          />
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={reset}
+              className="px-3 py-1.5 text-xs font-semibold text-[var(--text-label)] hover:text-[var(--text-body)]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!name.trim() || create.isPending}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--accent-sky)] text-[var(--text-inverse)] hover:bg-[var(--accent-sky-light)] disabled:opacity-50"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Save contact
+            </button>
+          </div>
+        </form>
+      ) : items.length > 0 ? (
+        <div className="border-t border-[var(--border-default)] px-3 py-3">
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add another contact
+          </button>
+        </div>
+      ) : null}
+    </>
+  )
+}
+
+function ContactRow({
+  contact,
+  onDelete,
+}: {
+  contact: PropertyContact
+  onDelete: () => void
+}) {
+  return (
+    <div className="group rounded-lg p-2.5 hover:bg-[var(--hover-overlay)]">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-semibold text-[var(--text-heading)] truncate">
+              {contact.name}
+            </p>
+            <span className="inline-flex text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--color-sky-dim)] text-[var(--accent-sky)]">
+              {CONTACT_ROLE_LABELS[contact.role]}
+            </span>
+          </div>
+          {contact.company && (
+            <p className="text-[11px] text-[var(--text-label)] truncate">{contact.company}</p>
+          )}
+          <div className="mt-1 flex flex-wrap items-center gap-3">
+            {contact.phone && (
+              <a
+                href={`tel:${contact.phone}`}
+                className="inline-flex items-center gap-1 text-xs text-[var(--accent-sky)] hover:underline"
+              >
+                <Phone className="w-3 h-3" />
+                {contact.phone}
+              </a>
+            )}
+            {contact.email && (
+              <a
+                href={`mailto:${contact.email}`}
+                className="inline-flex items-center gap-1 text-xs text-[var(--accent-sky)] hover:underline truncate max-w-[200px]"
+              >
+                <Mail className="w-3 h-3" />
+                {contact.email}
+              </a>
+            )}
+          </div>
+          {contact.notes && (
+            <p className="mt-1 text-[11px] text-[var(--text-label)] whitespace-pre-wrap">{contact.notes}</p>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={onDelete}
+          aria-label="Delete contact"
+          className="shrink-0 mt-0.5 p-1 rounded text-[var(--text-label)] hover:text-[var(--status-negative)] opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  )
 }

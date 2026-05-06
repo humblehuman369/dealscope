@@ -11,6 +11,7 @@ import type {
   PropertyTask,
   PropertyTaskCreate,
   PropertyTaskUpdate,
+  UpcomingTask,
 } from '@/types/task'
 import { SAVED_PROPERTIES_KEYS } from '@/hooks/useSavedProperties'
 
@@ -65,6 +66,25 @@ export function useDeleteTask(propertyId: string) {
       qc.invalidateQueries({ queryKey: TASKS_KEYS.forProperty(propertyId) })
       qc.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.lists() })
     },
+  })
+}
+
+/**
+ * Tasks due across all of the user's properties — drives the dashboard
+ * "Due this week" widget. Refreshes whenever a task changes anywhere.
+ */
+export function useUpcomingTasks(opts?: { days?: number; limit?: number }) {
+  const days = opts?.days ?? 7
+  const limit = opts?.limit ?? 25
+  return useQuery({
+    queryKey: [...TASKS_KEYS.all, 'upcoming', { days, limit }] as const,
+    queryFn: () => {
+      const sp = new URLSearchParams({ days: String(days), limit: String(limit) })
+      return api.get<UpcomingTask[]>(
+        `/api/v1/properties/saved/tasks/upcoming?${sp.toString()}`,
+      )
+    },
+    staleTime: 30_000,
   })
 }
 

@@ -10,6 +10,7 @@ export type TimelineEventKind =
   | 'task_reopened'
   | 'expense_added'
   | 'budget_locked'
+  | 'contact_added'
   | 'note'
 
 export interface TimelineEvent {

@@ -28,3 +28,17 @@ export interface PropertyTaskUpdate {
   /** Datetime ISO to mark complete; null to reopen. Omit field to leave unchanged. */
   completed_at?: string | null
 }
+
+/** Row in the dashboard "Due this week" widget — task + property context. */
+export interface UpcomingTask {
+  id: string
+  saved_property_id: string
+  property_nickname: string | null
+  property_address_street: string
+  property_address_city: string | null
+  property_address_state: string | null
+  property_status: string
+  title: string
+  due_date: string
+  is_overdue: boolean
+}

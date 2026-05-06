@@ -17,11 +17,13 @@ import {
 import type { PropertyStatus, SavedPropertySummary } from '@/types/savedProperty'
 import { ChevronRight, MoreHorizontal, Bookmark, ListChecks } from 'lucide-react'
 import { DataBoundary } from '@/components/ui/DataBoundary'
-import { TasksSlideOver } from '@/components/tasks/TasksSlideOver'
 
 interface PipelineKanbanProps {
   highlightStage: PropertyStatus | null
   onEmptyAction: () => void
+  /** Open the per-property slide-over (shared with the dashboard's
+   *  "Due this week" widget so both surfaces drive the same panel). */
+  onOpenTasks: (target: { id: string; title: string; stageLabel: string | null }) => void
 }
 
 // Statuses available in the per-card "Move to" dropdown — the active pipeline
@@ -100,7 +102,7 @@ function VarianceBadge({ pct, propertyId }: { pct: string; propertyId?: string }
   return <span className={baseClasses}>{content}</span>
 }
 
-export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanbanProps) {
+export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: PipelineKanbanProps) {
   const router = useRouter()
 
   // Fetch up to 100 active properties — enough for any practical pipeline view.
@@ -115,9 +117,6 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
 
   // Drag state: which column is currently being hovered as a drop target.
   const [dropTargetStage, setDropTargetStage] = useState<PropertyStatus | null>(null)
-
-  // Property whose Tasks slide-over is currently open (null = closed).
-  const [tasksFor, setTasksFor] = useState<SavedPropertySummary | null>(null)
 
   // Group by status
   const byStatus = useMemo(() => {
@@ -231,7 +230,13 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
                       onChangeStatus={(newStatus: PropertyStatus) =>
                         updateStatus.mutate({ id: p.id, status: newStatus })
                       }
-                      onOpenTasks={() => setTasksFor(p)}
+                      onOpenTasks={() =>
+                        onOpenTasks({
+                          id: p.id,
+                          title: shortAddress(p),
+                          stageLabel: STATUS_CONFIG[p.status].label,
+                        })
+                      }
                       isUpdating={updateStatus.isPending}
                     />
                   ))
@@ -253,14 +258,6 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
           </button>
         </div>
       )}
-
-      <TasksSlideOver
-        propertyId={tasksFor?.id ?? null}
-        propertyTitle={tasksFor ? shortAddress(tasksFor) : ''}
-        stageLabel={tasksFor ? STATUS_CONFIG[tasksFor.status].label : null}
-        open={tasksFor !== null}
-        onClose={() => setTasksFor(null)}
-      />
     </DataBoundary>
   )
 }
