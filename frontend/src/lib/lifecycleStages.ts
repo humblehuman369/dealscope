@@ -18,15 +18,20 @@ import type { FlipStage } from '@/types/savedProperty'
 
 export type LifecycleStrategy = 'flip' | 'brrrr' | 'ltr' | 'str'
 
-/** Ordered stage progression for each strategy. First = entry, last = terminal. */
+/** Ordered stage progression for each strategy. First = entry (the moment a
+ *  deal hits Owned), last = terminal. The legacy ``Acquisition`` stage was
+ *  collapsed in Phase 10A — entering Owned now drops the deal directly into
+ *  the strategy's first real working column. */
 export const STAGES_BY_STRATEGY: Record<LifecycleStrategy, FlipStage[]> = {
-  flip:  ['Acquisition', 'Rehab', 'Listed', 'Sold'],
-  brrrr: ['Acquisition', 'Rehab', 'Stabilized', 'Refinanced', 'Held'],
-  ltr:   ['Acquisition', 'MakeReady', 'Leased', 'Held'],
-  str:   ['Acquisition', 'Setup', 'Live', 'Held'],
+  flip:  ['Rehab', 'Listed', 'Sold'],
+  brrrr: ['Rehab', 'Stabilized', 'Refinanced', 'Held'],
+  ltr:   ['MakeReady', 'Leased', 'Held'],
+  str:   ['Setup', 'Live', 'Held'],
 }
 
-/** Display labels — what shows in the column header. */
+/** Display labels — what shows in the column header. ``Acquisition`` is
+ *  retained as a defensive label for any stale rows that survive migration;
+ *  it's not used by ``STAGES_BY_STRATEGY`` anymore. */
 export const STAGE_LABELS: Record<FlipStage, string> = {
   Acquisition: 'Acquired',
   Rehab: 'Rehab',
