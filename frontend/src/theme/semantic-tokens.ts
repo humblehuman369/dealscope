@@ -7,7 +7,7 @@ type ThemeValue<T extends string = string> = {
 
 export const semanticTokens = {
   surface: {
-    base: { dark: '#000000', light: 'color-mix(in srgb, #0fa4e9 5%, #ffffff)' },
+    base: { dark: '#000000', light: 'color-mix(in srgb, #0fa4e9 8%, #ffffff)' },
     /** Nav strip / overscroll — between pure white cards and canvas */
     chrome: { dark: '#000000', light: 'color-mix(in srgb, #0fa4e9 3%, #ffffff)' },
     section: { dark: '#060B14', light: '#ffffff' },
