@@ -100,8 +100,8 @@ function PathCard({
       aria-label={`Path ${index + 1}: ${structure.headline}`}
       className="rounded-xl h-full min-h-0"
       style={{
-        background: 'var(--surface-card)',
-        border: '1px solid var(--border-default)',
+        background: 'linear-gradient(0deg, var(--sky-tint-fill, transparent), var(--sky-tint-fill, transparent)), var(--surface-card)',
+        border: '1px solid var(--sky-tint-border, var(--border-default))',
         padding: 16,
         display: 'flex',
         flexDirection: 'column',

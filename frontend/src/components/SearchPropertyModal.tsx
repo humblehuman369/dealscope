@@ -46,9 +46,9 @@ async function geocodeLocationQuery(
 
 type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable';
 
-/** Sky-tint surface + token base — theme-safe (no hardcoded page backgrounds). */
+/** Sky tint #0fa4e9 @ 15% on surface card — matches legacy DealGapIQ informational panels. */
 const SEARCH_OPTION_CARD_BG =
-  'linear-gradient(180deg, rgba(15,164,233,0.05) 0%, rgba(15,164,233,0) 100%), var(--surface-base)';
+  'linear-gradient(0deg, var(--sky-tint-fill, transparent), var(--sky-tint-fill, transparent)), var(--surface-card)';
 
 interface SearchPropertyModalProps {
   isOpen: boolean;
@@ -386,7 +386,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                     className="w-full flex items-center gap-5 rounded-xl border transition-all duration-150 text-left
                       p-6 sm:p-5
                       border-[color:rgba(56,189,248,0.35)] shadow-[0_0_0_1px_rgba(56,189,248,0.15),0_0_28px_rgba(15,164,233,0.22)]
-                      sm:border-[color:var(--border-subtle)] sm:shadow-[var(--shadow-card)]
+                      sm:border-[color:var(--sky-tint-border)] sm:shadow-[var(--shadow-card)]
                       hover:border-[color:var(--accent-sky)] hover:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]
                       sm:hover:border-[color:var(--border-focus)] sm:hover:shadow-[var(--shadow-card-hover)]
                       active:scale-[0.99] active:border-[color:var(--accent-sky)] active:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]"
@@ -416,7 +416,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                     className="w-full flex items-center gap-5 rounded-xl border transition-all duration-150 text-left
                       p-6 sm:p-5
                       border-[color:rgba(56,189,248,0.35)] shadow-[0_0_0_1px_rgba(56,189,248,0.15),0_0_28px_rgba(15,164,233,0.22)]
-                      sm:border-[color:var(--border-subtle)] sm:shadow-[var(--shadow-card)]
+                      sm:border-[color:var(--sky-tint-border)] sm:shadow-[var(--shadow-card)]
                       hover:border-[color:var(--accent-sky)] hover:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]
                       sm:hover:border-[color:var(--border-focus)] sm:hover:shadow-[var(--shadow-card-hover)]
                       active:scale-[0.99] active:border-[color:var(--accent-sky)] active:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]"
@@ -446,7 +446,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                     className="w-full flex items-center gap-5 rounded-xl border transition-all duration-150 text-left
                       p-6 sm:p-5
                       border-[color:rgba(56,189,248,0.35)] shadow-[0_0_0_1px_rgba(56,189,248,0.15),0_0_28px_rgba(15,164,233,0.22)]
-                      sm:border-[color:var(--border-subtle)] sm:shadow-[var(--shadow-card)]
+                      sm:border-[color:var(--sky-tint-border)] sm:shadow-[var(--shadow-card)]
                       hover:border-[color:var(--accent-sky)] hover:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]
                       sm:hover:border-[color:var(--border-focus)] sm:hover:shadow-[var(--shadow-card-hover)]
                       active:scale-[0.99] active:border-[color:var(--accent-sky)] active:shadow-[0_0_0_1px_var(--accent-sky),0_0_36px_rgba(15,164,233,0.34)]"
