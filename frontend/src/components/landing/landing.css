@@ -18,7 +18,7 @@
   --danger: #b42318;
   
   /* Light Theme Colors */
-  --bg-primary: #f7f4ee;
+  --bg-primary: color-mix(in srgb, #0fa4e9 15%, #ffffff);
   --bg-secondary: #ffffff;
   --bg-card: rgba(4, 101, 242, 0.04);
   --bg-card-hover: rgba(4, 101, 242, 0.08);
@@ -28,7 +28,7 @@
   --border-color: rgba(24, 32, 28, 0.1);
   --border-hover: rgba(24, 32, 28, 0.18);
   --shadow-color: rgba(24, 32, 28, 0.1);
-  --header-bg: rgba(247, 244, 238, 0.94);
+  --header-bg: color-mix(in srgb, #0fa4e9 12%, rgba(255, 255, 255, 0.94));
   
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-primary);
