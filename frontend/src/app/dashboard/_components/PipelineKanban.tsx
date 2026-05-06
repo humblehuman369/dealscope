@@ -413,6 +413,7 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
                 isHighlighted={false}
                 isDropTarget={!!dropTarget && dropTarget.tier === 'post' && dropTarget.index === i}
                 isGhost={noOwnedYet}
+                isEntryStage={i === 0 && col.kind === 'owned-stage'}
                 onDragOver={(e) => {
                   if (e.dataTransfer.types.includes(DRAG_MIME)) {
                     e.preventDefault()
@@ -622,8 +623,11 @@ interface KanbanColumnProps {
   isHighlighted: boolean
   isDropTarget: boolean
   /** Render dimmed with a "future stage" hint when no Owned properties exist
-   *  yet — telegraphs the FlipCycle progression on day one. */
+   *  yet — telegraphs the post-purchase progression on day one. */
   isGhost?: boolean
+  /** True for the first column of a strategy's post-purchase tail — pinned
+   *  visually so users learn this is where freshly-closed deals land. */
+  isEntryStage?: boolean
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void
   onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void
@@ -640,6 +644,7 @@ function KanbanColumn({
   isHighlighted,
   isDropTarget,
   isGhost,
+  isEntryStage,
   onDragOver,
   onDragLeave,
   onDrop,
@@ -676,7 +681,14 @@ function KanbanColumn({
       } flex flex-col min-h-[180px]`}
     >
       <div className={`flex items-center justify-between px-3 py-2 border-b border-[var(--border-default)] ${headerBg}`}>
-        <h3 className={`text-xs font-bold uppercase tracking-wide ${headerColor}`}>{col.label}</h3>
+        <div className="min-w-0 flex flex-col gap-0.5">
+          <h3 className={`text-xs font-bold uppercase tracking-wide ${headerColor}`}>{col.label}</h3>
+          {isEntryStage && (
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-[var(--text-label)]">
+              Entry point
+            </span>
+          )}
+        </div>
         <span className="text-xs font-semibold tabular-nums text-[var(--text-label)]">
           {items.length}
         </span>
@@ -862,24 +874,31 @@ function KanbanCard({
             <p className="px-3 py-1 text-[10px] uppercase tracking-wide text-[var(--text-label)]">
               Move to
             </p>
-            {MOVE_TO_OPTIONS.map((s) => (
-              <button
-                key={s}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setMenuOpen(false)
-                  if (s !== property.status) onChangeStatus(s)
-                }}
-                className={`w-full text-left px-3 py-1.5 text-xs transition-colors hover:bg-[var(--hover-overlay)] ${
-                  s === property.status
-                    ? 'text-[var(--accent-sky)] font-semibold'
-                    : 'text-[var(--text-body)]'
-                }`}
-              >
-                {STATUS_CONFIG[s].label}
-                {s === property.status && ' ✓'}
-              </button>
-            ))}
+            {MOVE_TO_OPTIONS.map((s) => {
+              // "Owned" carries hidden side effects (status flip + auto-assign
+              // to Rehab) that aren't obvious from a single word — surface
+              // the outcome inline so the user knows what happens on click.
+              const label =
+                s === 'owned' ? 'Mark Owned (lands in Rehab)' : STATUS_CONFIG[s].label
+              return (
+                <button
+                  key={s}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setMenuOpen(false)
+                    if (s !== property.status) onChangeStatus(s)
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-xs transition-colors hover:bg-[var(--hover-overlay)] ${
+                    s === property.status
+                      ? 'text-[var(--accent-sky)] font-semibold'
+                      : 'text-[var(--text-body)]'
+                  }`}
+                >
+                  {label}
+                  {s === property.status && ' ✓'}
+                </button>
+              )
+            })}
           </div>
         </>
       )}
