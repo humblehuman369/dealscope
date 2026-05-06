@@ -11,7 +11,8 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 
 const barTokens = {
-  surface: 'var(--surface-base)',
+  /** Match header chrome — canvas tint is below this bar */
+  surface: 'var(--surface-card)',
   border: 'var(--border-subtle)',
   heading: 'var(--text-heading)',
   label: 'var(--text-label)',
@@ -171,7 +172,7 @@ export function PropertyAddressBar({
     <div
       className="w-full px-1 sm:px-6"
       style={{
-        background: 'var(--surface-base)',
+        background: barTokens.surface,
         fontFamily: "'DM Sans', sans-serif",
       }}
     >
