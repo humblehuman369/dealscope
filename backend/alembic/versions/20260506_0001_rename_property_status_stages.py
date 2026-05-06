@@ -11,6 +11,16 @@ the same mental phase). The old 'contacted' is renamed to 'pursuing' (more
 accurate framing). A brand-new 'negotiating' stage is inserted between
 pursuing and under_contract — the phase where most deals actually die.
 
+Defensive design: ``saved_properties.status`` was originally created as
+``VARCHAR(20)`` in the initial migration (20241228_0001) and was *never*
+explicitly converted to a Postgres ENUM. The Python model later switched to
+``SQLEnum(PropertyStatus)``, which works fine over a VARCHAR at runtime but
+means that production databases (built strictly from migrations) have no
+``propertystatus`` enum type, while local dev databases recreated from the
+model may. This migration therefore introspects the live schema and only
+issues ``ALTER TYPE`` statements when the enum actually exists; otherwise it
+falls through to plain UPDATE statements on the VARCHAR column.
+
 Postgres enum constraints worth knowing:
 - RENAME VALUE works inside a transaction.
 - ADD VALUE works inside a transaction in Postgres 12+ as long as the new
@@ -20,6 +30,7 @@ Postgres enum constraints worth knowing:
   harmless. Same applies to 'negotiating' on downgrade.
 """
 
+import sqlalchemy as sa
 from alembic import op
 
 revision = "20260506_0001"
@@ -28,31 +39,98 @@ branch_labels = None
 depends_on = None
 
 
+def _enum_labels(bind, type_name: str) -> set[str]:
+    """Return the set of enum labels for ``type_name`` in the default schema.
+
+    Returns an empty set if the type does not exist (i.e. the column is a
+    plain VARCHAR rather than a native Postgres enum).
+    """
+    type_exists = bind.execute(
+        sa.text("SELECT 1 FROM pg_type WHERE typname = :name"),
+        {"name": type_name},
+    ).scalar()
+    if not type_exists:
+        return set()
+    return {
+        row[0]
+        for row in bind.execute(
+            sa.text(
+                "SELECT enumlabel FROM pg_enum "
+                "WHERE enumtypid = (SELECT oid FROM pg_type WHERE typname = :name) "
+                "ORDER BY enumsortorder"
+            ),
+            {"name": type_name},
+        )
+    }
+
+
 def upgrade() -> None:
-    # 1. Rename 'watching' → 'prospecting'.
-    op.execute("ALTER TYPE propertystatus RENAME VALUE 'watching' TO 'prospecting'")
+    bind = op.get_bind()
+    labels = _enum_labels(bind, "propertystatus")
+    is_native_enum = bool(labels)
 
-    # 2. Collapse 'analyzing' rows into 'prospecting'. The 'analyzing' enum
-    #    label survives in the type (Postgres can't drop enum values) but no
-    #    rows reference it after this UPDATE.
-    op.execute("UPDATE saved_properties SET status = 'prospecting' WHERE status = 'analyzing'")
+    if is_native_enum:
+        # 1. Rename 'watching' → 'prospecting' if needed.
+        if "watching" in labels and "prospecting" not in labels:
+            op.execute("ALTER TYPE propertystatus RENAME VALUE 'watching' TO 'prospecting'")
+            labels.discard("watching")
+            labels.add("prospecting")
+        elif "watching" in labels and "prospecting" in labels:
+            # Both labels coexist (partial prior migration) — migrate the rows
+            # to the new label. Old label survives in the enum as an orphan.
+            op.execute("UPDATE saved_properties SET status = 'prospecting' WHERE status = 'watching'")
 
-    # 3. Rename 'contacted' → 'pursuing'.
-    op.execute("ALTER TYPE propertystatus RENAME VALUE 'contacted' TO 'pursuing'")
+        # 2. Collapse 'analyzing' rows into 'prospecting'. Label survives.
+        if "analyzing" in labels:
+            op.execute("UPDATE saved_properties SET status = 'prospecting' WHERE status = 'analyzing'")
 
-    # 4. Add the new 'negotiating' value, positioned between 'pursuing' and
-    #    'under_contract' so kanban ordering is preserved when callers iterate
-    #    enum values in order.
-    op.execute("ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS 'negotiating' AFTER 'pursuing'")
+        # 3. Rename 'contacted' → 'pursuing' if needed.
+        if "contacted" in labels and "pursuing" not in labels:
+            op.execute("ALTER TYPE propertystatus RENAME VALUE 'contacted' TO 'pursuing'")
+            labels.discard("contacted")
+            labels.add("pursuing")
+        elif "contacted" in labels and "pursuing" in labels:
+            op.execute("UPDATE saved_properties SET status = 'pursuing' WHERE status = 'contacted'")
+
+        # 4. Add the new 'negotiating' value. We don't reference it in this
+        #    transaction so the PG12+ same-tx restriction does not bite.
+        if "negotiating" not in labels:
+            op.execute(
+                "ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS 'negotiating' AFTER 'pursuing'"
+            )
+    else:
+        # Plain VARCHAR column — no enum schema to mutate. Just rewrite the
+        # row values; 'negotiating' needs no schema change because any string
+        # of length ≤ 20 is allowed.
+        op.execute(
+            "UPDATE saved_properties SET status = 'prospecting' "
+            "WHERE status IN ('watching', 'analyzing')"
+        )
+        op.execute("UPDATE saved_properties SET status = 'pursuing' WHERE status = 'contacted'")
 
 
 def downgrade() -> None:
-    # Move any 'negotiating' rows back into 'pursuing' before renaming.
+    bind = op.get_bind()
+    labels = _enum_labels(bind, "propertystatus")
+    is_native_enum = bool(labels)
+
+    # Move any 'negotiating' rows back into 'pursuing' before renaming so the
+    # rename does not leave orphan rows pointing at a not-yet-existing label.
     op.execute("UPDATE saved_properties SET status = 'pursuing' WHERE status = 'negotiating'")
 
-    op.execute("ALTER TYPE propertystatus RENAME VALUE 'pursuing' TO 'contacted'")
-    op.execute("ALTER TYPE propertystatus RENAME VALUE 'prospecting' TO 'watching'")
+    if is_native_enum:
+        if "pursuing" in labels and "contacted" not in labels:
+            op.execute("ALTER TYPE propertystatus RENAME VALUE 'pursuing' TO 'contacted'")
+        elif "pursuing" in labels and "contacted" in labels:
+            op.execute("UPDATE saved_properties SET status = 'contacted' WHERE status = 'pursuing'")
 
-    # 'analyzing' label is still present from the original type definition;
-    # nothing to do there. 'negotiating' label remains as an orphan — Postgres
-    # has no DROP VALUE.
+        if "prospecting" in labels and "watching" not in labels:
+            op.execute("ALTER TYPE propertystatus RENAME VALUE 'prospecting' TO 'watching'")
+        elif "prospecting" in labels and "watching" in labels:
+            op.execute("UPDATE saved_properties SET status = 'watching' WHERE status = 'prospecting'")
+    else:
+        op.execute("UPDATE saved_properties SET status = 'contacted' WHERE status = 'pursuing'")
+        op.execute("UPDATE saved_properties SET status = 'watching' WHERE status = 'prospecting'")
+
+    # 'analyzing' label (if it ever existed) and 'negotiating' label remain as
+    # orphans — Postgres has no DROP VALUE.
