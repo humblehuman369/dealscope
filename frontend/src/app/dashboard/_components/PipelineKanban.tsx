@@ -28,7 +28,6 @@ import { DataBoundary } from '@/components/ui/DataBoundary'
 interface PipelineKanbanProps {
   highlightStage: PropertyStatus | null
   onEmptyAction: () => void
-  onOpenTasks: (target: { id: string; title: string; stageLabel: string | null }) => void
 }
 
 // Pre-purchase tier — universal across every strategy.
@@ -90,11 +89,6 @@ function shortAddress(p: SavedPropertySummary): string {
   return p.nickname || p.address_street
 }
 
-function buildFullAddress(p: SavedPropertySummary): string {
-  const stateZip = [p.address_state, p.address_zip].filter(Boolean).join(' ')
-  return [p.address_street, p.address_city, stateZip].filter(Boolean).join(', ')
-}
-
 function daysSince(iso: string | null | undefined): number | null {
   if (!iso) return null
   const t = new Date(iso).getTime()
@@ -123,7 +117,7 @@ function VarianceBadge({ pct, propertyId }: { pct: string; propertyId?: string }
   if (propertyId) {
     return (
       <Link
-        href={`/budget/${propertyId}`}
+        href={`/deals/${propertyId}?tab=budget`}
         onClick={(e) => e.stopPropagation()}
         className={`inline-flex ${baseClasses}`}
       >
@@ -183,7 +177,7 @@ function columnIndexFor(
   return idx >= 0 ? { tier: 'post', index: idx } : null
 }
 
-export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: PipelineKanbanProps) {
+export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanbanProps) {
   const router = useRouter()
 
   const query = useSavedProperties({
@@ -382,18 +376,9 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
                   setDropTarget(null)
                 }}
                 onDrop={(e) => handleDrop({ tier: 'pre', index: i }, e)}
-                onCardClick={(p) => {
-                  const addr = buildFullAddress(p)
-                  router.push(`/verdict?address=${encodeURIComponent(addr)}`)
-                }}
+                onCardClick={(p) => router.push(`/deals/${p.id}`)}
                 onChangeStatus={(id, status) => updateStatus.mutate({ id, status })}
-                onOpenTasks={(p) =>
-                  onOpenTasks({
-                    id: p.id,
-                    title: shortAddress(p),
-                    stageLabel: STATUS_CONFIG[p.status].label,
-                  })
-                }
+                onOpenTasks={(p) => router.push(`/deals/${p.id}?tab=tasks`)}
                 isUpdating={updateStatus.isPending || updateFlipStage.isPending}
                 showStrategyChip={false}
               />
@@ -426,19 +411,9 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
                   setDropTarget(null)
                 }}
                 onDrop={(e) => handleDrop({ tier: 'post', index: i }, e)}
-                onCardClick={(p) => {
-                  const addr = buildFullAddress(p)
-                  router.push(`/verdict?address=${encodeURIComponent(addr)}`)
-                }}
+                onCardClick={(p) => router.push(`/deals/${p.id}`)}
                 onChangeStatus={(id, status) => updateStatus.mutate({ id, status })}
-                onOpenTasks={(p) =>
-                  onOpenTasks({
-                    id: p.id,
-                    title: shortAddress(p),
-                    stageLabel:
-                      p.flip_stage ? STAGE_LABELS[p.flip_stage] : STATUS_CONFIG[p.status].label,
-                  })
-                }
+                onOpenTasks={(p) => router.push(`/deals/${p.id}?tab=tasks`)}
                 isUpdating={updateStatus.isPending || updateFlipStage.isPending}
                 showStrategyChip={strategy === 'all'}
               />
@@ -482,18 +457,9 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
                       onDragOver={() => {}}
                       onDragLeave={() => {}}
                       onDrop={() => {}}
-                      onCardClick={(p) => {
-                        const addr = buildFullAddress(p)
-                        router.push(`/verdict?address=${encodeURIComponent(addr)}`)
-                      }}
+                      onCardClick={(p) => router.push(`/deals/${p.id}`)}
                       onChangeStatus={(id, status) => updateStatus.mutate({ id, status })}
-                      onOpenTasks={(p) =>
-                        onOpenTasks({
-                          id: p.id,
-                          title: shortAddress(p),
-                          stageLabel: STATUS_CONFIG[p.status].label,
-                        })
-                      }
+                      onOpenTasks={(p) => router.push(`/deals/${p.id}?tab=tasks`)}
                       isUpdating={updateStatus.isPending}
                       showStrategyChip={false}
                     />
@@ -512,18 +478,9 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
                       onDragOver={() => {}}
                       onDragLeave={() => {}}
                       onDrop={() => {}}
-                      onCardClick={(p) => {
-                        const addr = buildFullAddress(p)
-                        router.push(`/verdict?address=${encodeURIComponent(addr)}`)
-                      }}
+                      onCardClick={(p) => router.push(`/deals/${p.id}`)}
                       onChangeStatus={(id, status) => updateStatus.mutate({ id, status })}
-                      onOpenTasks={(p) =>
-                        onOpenTasks({
-                          id: p.id,
-                          title: shortAddress(p),
-                          stageLabel: STATUS_CONFIG[p.status].label,
-                        })
-                      }
+                      onOpenTasks={(p) => router.push(`/deals/${p.id}?tab=tasks`)}
                       isUpdating={updateStatus.isPending}
                       showStrategyChip={false}
                     />
