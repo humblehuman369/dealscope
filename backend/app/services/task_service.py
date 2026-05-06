@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.saved_property import SavedProperty
 from app.models.task import PropertyTask
 from app.schemas.task import TaskCreate, TaskUpdate
+from app.services.task_templates import template_for, template_label_for
 
 
 class TaskService:
@@ -131,6 +132,67 @@ class TaskService:
         await db.delete(task)
         await db.commit()
         return True
+
+    async def seed_for_property(
+        self, db: AsyncSession, property_id: str, user_id: str
+    ) -> list[PropertyTask] | None:
+        """Create stage-templated tasks for the property's current state.
+
+        Idempotent in spirit: skips template items whose title already exists
+        (case-insensitive) on this property, so clicking the button twice
+        doesn't create duplicates.
+        """
+        property_ = await self._ensure_owns_property(db, property_id, user_id)
+        if property_ is None:
+            return None
+
+        items = template_for(property_)
+        if not items:
+            return []
+
+        # Pull existing titles to dedupe — single round-trip.
+        existing = await db.execute(
+            select(PropertyTask.title).where(
+                PropertyTask.saved_property_id == uuid.UUID(property_id)
+            )
+        )
+        existing_titles_lower = {t.strip().lower() for (t,) in existing.all()}
+
+        # Pick a starting sort_order beyond any existing tasks.
+        current_max = await db.scalar(
+            select(func.max(PropertyTask.sort_order)).where(
+                PropertyTask.saved_property_id == uuid.UUID(property_id)
+            )
+        )
+        next_order = (current_max or 0) + 1
+
+        created: list[PropertyTask] = []
+        for title, notes in items:
+            if title.strip().lower() in existing_titles_lower:
+                continue
+            task = PropertyTask(
+                saved_property_id=uuid.UUID(property_id),
+                created_by_id=uuid.UUID(user_id),
+                title=title,
+                notes=notes,
+                sort_order=next_order,
+            )
+            db.add(task)
+            created.append(task)
+            next_order += 1
+
+        if created:
+            await db.commit()
+            for t in created:
+                await db.refresh(t)
+        return created
+
+    def template_label(self, property_: SavedProperty) -> str:
+        """Pass-through to ``task_templates.template_label_for``.
+
+        Exposed via the service so callers don't need to import the helper.
+        """
+        return template_label_for(property_)
 
     async def summary_for_property(
         self, db: AsyncSession, property_id: str, user_id: str

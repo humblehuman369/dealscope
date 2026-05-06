@@ -866,6 +866,27 @@ async def delete_property_task(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
 
 
+@router.post(
+    "/{property_id}/tasks/seed",
+    response_model=list[TaskOut],
+    status_code=status.HTTP_201_CREATED,
+    summary="Seed common tasks for the property's current stage",
+)
+async def seed_property_tasks(
+    property_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    """Add a small set of suggested tasks based on the property's pipeline
+    state (and strategy + flip stage for owned properties). Skips items whose
+    title already exists, so calling twice is safe.
+    """
+    created = await task_service.seed_for_property(db, property_id, str(current_user.id))
+    if created is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    return [_task_to_out(t) for t in created]
+
+
 @router.get("/{property_id}", response_model=SavedPropertyResponse, summary="Get a saved property")
 async def get_saved_property(
     property_id: str,

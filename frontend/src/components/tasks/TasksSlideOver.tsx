@@ -10,10 +10,11 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
-import { CheckCircle2, Circle, Plus, Trash2, X } from 'lucide-react'
+import { CheckCircle2, Circle, Plus, Sparkles, Trash2, X } from 'lucide-react'
 import {
   useCreateTask,
   useDeleteTask,
+  useSeedTasks,
   useTasks,
   useUpdateTask,
 } from '@/hooks/useTasks'
@@ -22,6 +23,8 @@ import type { PropertyTask } from '@/types/task'
 interface TasksSlideOverProps {
   propertyId: string | null
   propertyTitle: string
+  /** Human label for the property's current pipeline stage — used on the "Suggest common tasks" button. */
+  stageLabel?: string | null
   open: boolean
   onClose: () => void
 }
@@ -39,11 +42,12 @@ function formatDue(iso: string | null): string | null {
   return `Due in ${days}d`
 }
 
-export function TasksSlideOver({ propertyId, propertyTitle, open, onClose }: TasksSlideOverProps) {
+export function TasksSlideOver({ propertyId, propertyTitle, stageLabel, open, onClose }: TasksSlideOverProps) {
   const tasks = useTasks(propertyId)
   const create = useCreateTask(propertyId ?? '')
   const update = useUpdateTask(propertyId ?? '')
   const del = useDeleteTask(propertyId ?? '')
+  const seed = useSeedTasks(propertyId ?? '')
 
   const [newTitle, setNewTitle] = useState('')
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -143,9 +147,20 @@ export function TasksSlideOver({ propertyId, propertyTitle, open, onClose }: Tas
               <button onClick={() => tasks.refetch()} className="underline">Retry</button>
             </p>
           ) : items.length === 0 ? (
-            <p className="text-sm text-[var(--text-label)] text-center py-8 px-4">
-              No tasks yet — add the next thing you need to do for this deal.
-            </p>
+            <div className="flex flex-col items-center text-center py-8 px-4 gap-3">
+              <p className="text-sm text-[var(--text-label)]">
+                No tasks yet — add the next thing you need to do for this deal.
+              </p>
+              <button
+                type="button"
+                onClick={() => seed.mutate()}
+                disabled={seed.isPending}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] disabled:opacity-50 transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Suggest common tasks{stageLabel ? ` for ${stageLabel}` : ''}
+              </button>
+            </div>
           ) : (
             <>
               {openItems.map((t) => (
