@@ -352,6 +352,26 @@
   color: #9a3412;
 }
 
+/* Marketing homepage — dark: comparison table + card depth (inherits base dark tokens) */
+[data-theme='dark'][data-homepage-v3='true'] {
+  --homepage-table-border: rgba(148, 163, 184, 0.2);
+  --homepage-table-header-bg: var(--surface-elevated);
+  --shadow-card:
+    0 0 0 1px rgba(15, 164, 233, 0.12),
+    0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow-card-hover:
+    0 0 0 1px rgba(15, 164, 233, 0.18),
+    0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme='dark'][data-homepage-v3='true'] .homepage-compare-border {
+  border-color: var(--homepage-table-border);
+}
+
+[data-theme='dark'][data-homepage-v3='true'] .homepage-compare-partial {
+  color: #fb923c;
+}
+
 /* FlipCycle-style brand utilities */
 .brand-gradient {
   background-image: linear-gradient(135deg, #0465f2 0%, #0fa4e9 58%, #38bdf8 100%);
