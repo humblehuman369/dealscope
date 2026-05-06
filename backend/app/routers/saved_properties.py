@@ -38,7 +38,7 @@ from app.schemas.saved_property import (
     SavedPropertyUpdate,
 )
 from app.schemas.contact import ContactCreate, ContactOut, ContactUpdate
-from app.schemas.task import TaskCreate, TaskOut, TaskUpdate, UpcomingTaskOut
+from app.schemas.task import TaskCreate, TaskOut, TaskReorderRequest, TaskUpdate, UpcomingTaskOut
 from app.schemas.timeline import NoteCreate, TimelineEvent
 from app.services.billing_service import billing_service
 from app.services.budget_service import budget_service
@@ -930,6 +930,31 @@ async def delete_property_task(
     ok = await task_service.delete(db, task_id, str(current_user.id))
     if not ok:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+
+
+@router.post(
+    "/{property_id}/tasks/reorder",
+    response_model=list[TaskOut],
+    summary="Reorder tasks by sending IDs in their new desired order",
+)
+async def reorder_property_tasks(
+    property_id: str,
+    body: TaskReorderRequest,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    updated = await task_service.reorder_for_property(
+        db, property_id, str(current_user.id), body.task_ids
+    )
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    # Return the property's tasks in their new order so the client can
+    # rehydrate without a separate GET. Re-list ensures the response includes
+    # tasks not in the reorder request (they keep prior sort_order).
+    fresh = await task_service.list_for_property(db, property_id, str(current_user.id))
+    if fresh is None:
+        return [_task_to_out(t) for t in updated]
+    return [_task_to_out(t) for t in fresh]
 
 
 @router.post(

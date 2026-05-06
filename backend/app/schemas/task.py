@@ -49,6 +49,12 @@ class TaskSummary(BaseModel):
     overdue: int
 
 
+class TaskReorderRequest(BaseModel):
+    """Bulk reorder by sending task IDs in their new desired order."""
+
+    task_ids: list[str] = Field(..., min_length=1, max_length=200)
+
+
 class UpcomingTaskOut(BaseModel):
     """Task row enriched with property context — used by the dashboard
     "Due this week" widget. Joins task → property in a single query."""

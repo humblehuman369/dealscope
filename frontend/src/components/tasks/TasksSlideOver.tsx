@@ -17,6 +17,7 @@ import {
   ArrowRight,
   CheckCircle2,
   Circle,
+  GripVertical,
   Mail,
   Pencil,
   Phone,
@@ -32,6 +33,7 @@ import {
 import {
   useCreateTask,
   useDeleteTask,
+  useReorderTasks,
   useSeedTasks,
   useTasks,
   useUpdateTask,
@@ -227,6 +229,10 @@ function TabButton({
 // ───────────────────────────────────────────────────────
 // Tasks tab
 
+// Drag MIME type kept distinct from the kanban's so a kanban card can't be
+// dropped into the task list and vice versa.
+const TASK_DRAG_MIME = 'application/x-propertytask-id'
+
 function TasksTab({
   propertyId,
   stageLabel,
@@ -241,11 +247,41 @@ function TasksTab({
   const update = useUpdateTask(propertyId)
   const del = useDeleteTask(propertyId)
   const seed = useSeedTasks(propertyId)
+  const reorder = useReorderTasks(propertyId)
   const [newTitle, setNewTitle] = useState('')
+
+  // Currently-dragged task id; used to compute drop position and styling.
+  const [dragId, setDragId] = useState<string | null>(null)
 
   const items = tasks.data ?? []
   const openItems = items.filter((t) => t.completed_at === null)
   const doneItems = items.filter((t) => t.completed_at !== null)
+
+  // When dropping ``dragId`` ABOVE ``targetId``, return the new ordered array
+  // of open task ids. ``targetId === null`` means drop at the bottom of the
+  // open list. We only reorder the open subset — completed tasks render in a
+  // separate group and their order doesn't matter.
+  function reorderOpen(dragId: string, targetId: string | null): string[] {
+    const ids = openItems.map((t) => t.id)
+    const fromIdx = ids.indexOf(dragId)
+    if (fromIdx === -1) return ids
+    ids.splice(fromIdx, 1)
+    const toIdx = targetId === null ? ids.length : ids.indexOf(targetId)
+    if (toIdx === -1) ids.push(dragId)
+    else ids.splice(toIdx, 0, dragId)
+    return ids
+  }
+
+  function handleDrop(targetId: string | null, e: React.DragEvent<HTMLElement>) {
+    e.preventDefault()
+    const id = e.dataTransfer.getData(TASK_DRAG_MIME)
+    setDragId(null)
+    if (!id || id === targetId) return
+    const newOrder = reorderOpen(id, targetId)
+    if (newOrder.join('|') !== openItems.map((t) => t.id).join('|')) {
+      reorder.mutate(newOrder)
+    }
+  }
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault()
@@ -305,8 +341,39 @@ function TasksTab({
                 onToggle={handleToggle}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
+                draggable
+                isDragging={dragId === t.id}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData(TASK_DRAG_MIME, t.id)
+                  e.dataTransfer.effectAllowed = 'move'
+                  setDragId(t.id)
+                }}
+                onDragEnd={() => setDragId(null)}
+                onDragOver={(e) => {
+                  if (e.dataTransfer.types.includes(TASK_DRAG_MIME)) {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                  }
+                }}
+                onDrop={(e) => handleDrop(t.id, e)}
               />
             ))}
+            {/* Tail drop zone — drop here to send a task to the bottom of
+                the open list. Renders as a thin gutter only when something
+                is being dragged, to avoid visual noise the rest of the time. */}
+            {dragId && (
+              <div
+                onDragOver={(e) => {
+                  if (e.dataTransfer.types.includes(TASK_DRAG_MIME)) {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                  }
+                }}
+                onDrop={(e) => handleDrop(null, e)}
+                className="h-6 rounded border border-dashed border-[var(--accent-sky)] mx-2 my-1"
+                aria-hidden
+              />
+            )}
             {doneItems.length > 0 && (
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mt-4 mb-1 px-2">
                 Completed
@@ -356,6 +423,14 @@ interface TaskRowProps {
   onToggle: (t: PropertyTask) => void
   onDelete: (t: PropertyTask) => void
   onEdit: (t: PropertyTask, body: { title?: string; due_date?: string | null }) => void
+  // Drag-related props are optional so completed-section rows (which aren't
+  // reorderable) don't have to pass them.
+  draggable?: boolean
+  isDragging?: boolean
+  onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void
+  onDragEnd?: () => void
+  onDragOver?: (e: React.DragEvent<HTMLDivElement>) => void
+  onDrop?: (e: React.DragEvent<HTMLDivElement>) => void
 }
 
 /** ISO datetime → "yyyy-MM-dd" for the <input type="date"> value. */
@@ -366,7 +441,18 @@ function isoToDateInput(iso: string | null | undefined): string {
   return d.toISOString().slice(0, 10)
 }
 
-function TaskRow({ task, onToggle, onDelete, onEdit }: TaskRowProps) {
+function TaskRow({
+  task,
+  onToggle,
+  onDelete,
+  onEdit,
+  draggable,
+  isDragging,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
+}: TaskRowProps) {
   const isDone = task.completed_at !== null
   const due = formatDue(task.due_date)
   const isOverdue = !isDone && task.due_date !== null && new Date(task.due_date).getTime() < Date.now()
@@ -441,7 +527,25 @@ function TaskRow({ task, onToggle, onDelete, onEdit }: TaskRowProps) {
   }
 
   return (
-    <div className="group flex items-start gap-2 px-2 py-2 rounded-lg hover:bg-[var(--hover-overlay)]">
+    <div
+      className={`group flex items-start gap-1 px-1 py-2 rounded-lg hover:bg-[var(--hover-overlay)] ${
+        isDragging ? 'opacity-40' : ''
+      }`}
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
+      {draggable && (
+        <span
+          aria-hidden
+          className="shrink-0 mt-0.5 text-[var(--text-label)] cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+          title="Drag to reorder"
+        >
+          <GripVertical className="w-4 h-4" />
+        </span>
+      )}
       <button
         type="button"
         onClick={() => onToggle(task)}

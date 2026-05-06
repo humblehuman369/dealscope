@@ -200,6 +200,47 @@ class TaskService:
         """
         return template_label_for(property_)
 
+    async def reorder_for_property(
+        self,
+        db: AsyncSession,
+        property_id: str,
+        user_id: str,
+        ordered_task_ids: list[str],
+    ) -> list[PropertyTask] | None:
+        """Bulk-update ``sort_order`` to match the order of ``ordered_task_ids``.
+
+        Tasks belonging to other properties or other users are silently
+        ignored — defensive against a stale frontend cache. Tasks not present
+        in the supplied list keep their existing sort_order (they slot
+        wherever they were).
+        """
+        if not await self._ensure_owns_property(db, property_id, user_id):
+            return None
+
+        # Validate UUIDs and load just this property's tasks. Single round
+        # trip — we don't trust the client to send only valid IDs.
+        try:
+            wanted_ids = [uuid.UUID(t) for t in ordered_task_ids]
+        except (ValueError, TypeError):
+            return None
+
+        result = await db.execute(
+            select(PropertyTask).where(
+                PropertyTask.saved_property_id == uuid.UUID(property_id),
+                PropertyTask.id.in_(wanted_ids),
+            )
+        )
+        owned_by_id = {t.id: t for t in result.scalars().all()}
+
+        # Reassign sort_order in the requested order. Skip stale IDs.
+        for idx, tid in enumerate(wanted_ids):
+            task = owned_by_id.get(tid)
+            if task is not None:
+                task.sort_order = idx
+
+        await db.commit()
+        return list(owned_by_id.values())
+
     async def list_upcoming_for_user(
         self,
         db: AsyncSession,
