@@ -14,12 +14,11 @@
  *  5. Trust Layer — data sources + founder note + verify-it-yourself
  *  6. Closer — final CTA + lead magnet + manifesto line
  *
- * Design language:
- *  - Pure black backgrounds inside cards
- *  - Hazy cyan ambient glow over the page
- *  - Gradient text on section H1/H2 (sky → blue)
- *  - Slate body text (--text-body / --text-secondary)
- *  - Lucide icons throughout
+ * Design language (light — matches app shell: surface-base, surface-card, chrome):
+ *  - White cards on sky-wash canvas; sky hairlines
+ *  - Soft cyan ambient glow (same hue family as --surface-base)
+ *  - Accent links/icons via --accent-sky
+ *  - Body via semantic text tokens
  *  - max-w-7xl centered containers, generous vertical rhythm
  */
 
@@ -40,6 +39,7 @@ import {
   Map as MapIcon,
 } from 'lucide-react';
 import { useAuthModal } from '@/hooks/useAuthModal';
+import { useTheme } from '@/context/ThemeContext';
 
 // Shared headline typography — every hero statement on the page (H1 + section H2s)
 // pulls from this so the family / weight / leading / tracking stay aligned.
@@ -85,6 +85,12 @@ function AuthParamHandler() {
 
 export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
   const router = useRouter();
+  const { setTheme } = useTheme();
+
+  /** Marketing homepage is always light so global chrome + tokens match this layout */
+  React.useEffect(() => {
+    setTheme('light');
+  }, [setTheme]);
 
   const handleVerdictClick = (presetAddress?: string) => {
     if (presetAddress) {
@@ -102,20 +108,25 @@ export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-x-hidden antialiased">
-      {/* Hazy ambient glow — fixed, behind all content */}
+    <div
+      data-theme="light"
+      className="min-h-screen bg-[var(--surface-base)] text-[var(--text-body)] relative overflow-x-hidden antialiased grid-fade"
+    >
+      {/* Ambient glow — same sky family as app canvas, lighter than dark-mode hero */}
       <div
         aria-hidden
         className="fixed inset-0 pointer-events-none z-0"
         style={{
           background:
-            'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(15,164,233,0.08) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 100% 30%, rgba(4,101,242,0.04) 0%, transparent 50%), radial-gradient(ellipse 60% 40% at 0% 60%, rgba(139,92,246,0.03) 0%, transparent 50%)',
+            'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(15,164,233,0.07) 0%, transparent 58%), radial-gradient(ellipse 60% 40% at 100% 28%, rgba(4,101,242,0.05) 0%, transparent 50%), radial-gradient(ellipse 55% 38% at 0% 58%, rgba(15,164,233,0.04) 0%, transparent 50%)',
         }}
       />
       <div
         aria-hidden
         className="fixed inset-0 pointer-events-none z-0"
-        style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.4) 100%)' }}
+        style={{
+          background: 'linear-gradient(180deg, transparent 0%, rgba(15,164,233,0.04) 100%)',
+        }}
       />
 
       <Suspense fallback={null}>
@@ -166,15 +177,15 @@ function HeroSection({
               className="mb-8 xl:mb-10 mx-auto xl:mx-0 max-w-3xl xl:max-w-none text-[clamp(2.6rem,6vw,4.5rem)] xl:text-[clamp(2.4rem,4vw,3.75rem)]"
               style={HEADLINE_STYLE}
             >
-              <span className="block text-balance text-white">Stop Scrolling Listings.</span>
-              <span className="block text-balance text-white">Start Spotting Real Deals.</span>
-              <span className="block text-balance text-sky-400">Know What to Offer.</span>
+              <span className="block text-balance text-[var(--text-heading)]">Stop Scrolling Listings.</span>
+              <span className="block text-balance text-[var(--text-heading)]">Start Spotting Real Deals.</span>
+              <span className="block text-balance text-[var(--accent-sky)]">Know What to Offer.</span>
             </h1>
 
-            <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto xl:mx-0 mb-9">
-              DealGap<span className="text-sky-400">IQ</span> helps investors turn{' '}
-              <span className="text-white font-semibold">listings, property data, and creative-finance scenarios</span>{' '}
-              into <span className="text-white font-semibold">clear deal decisions and offer strategies</span>.
+            <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto xl:mx-0 mb-9">
+              DealGap<span className="text-[var(--accent-sky)]">IQ</span> helps investors turn{' '}
+              <span className="text-[var(--text-heading)] font-semibold">listings, property data, and creative-finance scenarios</span>{' '}
+              into <span className="text-[var(--text-heading)] font-semibold">clear deal decisions and offer strategies</span>.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center xl:justify-start xl:items-start gap-5 sm:gap-6 mb-8">
@@ -183,24 +194,24 @@ function HeroSection({
               </PrimaryButtonLarge>
               <button
                 onClick={onSeePaths}
-                className="text-sm text-sky-400 font-semibold hover:underline inline-flex items-center gap-1.5"
+                className="text-sm text-[var(--accent-sky)] font-semibold hover:underline inline-flex items-center gap-1.5"
               >
                 See the Four Paths <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
               </button>
             </div>
 
             {/* Trust strip */}
-            <div className="flex flex-wrap items-center justify-center xl:justify-start gap-x-6 gap-y-2 text-sm text-slate-400">
+            <div className="flex flex-wrap items-center justify-center xl:justify-start gap-x-6 gap-y-2 text-sm text-[var(--text-label)]">
               <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-sky-400" strokeWidth={3} />
+                <Check className="w-4 h-4 text-[var(--accent-sky)]" strokeWidth={3} />
                 6 data sources
               </span>
               <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-sky-400" strokeWidth={3} />
+                <Check className="w-4 h-4 text-[var(--accent-sky)]" strokeWidth={3} />
                 15-second analysis
               </span>
               <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-sky-400" strokeWidth={3} />
+                <Check className="w-4 h-4 text-[var(--accent-sky)]" strokeWidth={3} />
                 No signup required
               </span>
             </div>
@@ -274,9 +285,9 @@ function HeroOptionButton({
         (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)';
       }}
     >
-      <span className="text-sky-400 shrink-0">{icon}</span>
-      <span className="text-sm font-semibold text-white whitespace-nowrap">{label}</span>
-      <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-sky-400 transition-colors shrink-0" strokeWidth={2.5} />
+      <span className="text-[var(--accent-sky)] shrink-0">{icon}</span>
+      <span className="text-sm font-semibold text-[var(--text-heading)] whitespace-nowrap">{label}</span>
+      <ChevronRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--accent-sky)] transition-colors shrink-0" strokeWidth={2.5} />
     </button>
   );
 }
@@ -290,13 +301,13 @@ function DemoSection({ onTry }: { onTry: () => void }) {
     <section id="demo" className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16 md:mb-20">
-          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
+          <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
             What You Get
           </div>
           <h2 className="text-3xl md:text-5xl lg:text-6xl mb-6" style={HEADLINE_STYLE}>
             The Verdict tells you the gap.
             <br />
-            <span className="text-sky-400">
+            <span className="text-[var(--accent-sky)]">
               We tell you how to close it.
             </span>
           </h2>
@@ -305,15 +316,15 @@ function DemoSection({ onTry }: { onTry: () => void }) {
         <div className="grid lg:grid-cols-2 gap-14 items-start">
           {/* Left: copy + bullets */}
           <div>
-            <p className="text-base md:text-lg text-slate-300 leading-relaxed mb-7">
-              A verdict on this <span className="text-white font-semibold">$457,100</span> listing came back at{' '}
+            <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed mb-7">
+              A verdict on this <span className="text-[var(--text-heading)] font-semibold">$457,100</span> listing came back at{' '}
               <span className="text-amber-400 font-semibold tabular-nums">−6.4% Deal Gap</span> — the math doesn't
               pencil at standard 20%-down financing.{' '}
-              <span className="text-slate-400">That's where most tools stop.</span>
+              <span className="text-[var(--text-label)]">That's where most tools stop.</span>
             </p>
 
-            <p className="text-base md:text-lg text-slate-200 font-semibold mb-7">
-              DealGap<span className="text-sky-400">IQ</span> keeps going. Four pre-built offers, each one closing the
+            <p className="text-base md:text-lg text-[var(--text-heading)] font-semibold mb-7">
+              DealGap<span className="text-[var(--accent-sky)]">IQ</span> keeps going. Four pre-built offers, each one closing the
               gap a different way:
             </p>
 
@@ -341,15 +352,15 @@ function DemoSection({ onTry }: { onTry: () => void }) {
               />
             </ol>
 
-            <p className="text-sm text-slate-300 leading-relaxed mb-7">
-              Each path opens a <span className="text-white font-semibold">pre-loaded, editable Strategy worksheet</span>{' '}
-              — and a <span className="text-white font-semibold">negotiation script</span> you can print, email, or
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-7">
+              Each path opens a <span className="text-[var(--text-heading)] font-semibold">pre-loaded, editable Strategy worksheet</span>{' '}
+              — and a <span className="text-[var(--text-heading)] font-semibold">negotiation script</span> you can print, email, or
               copy to present with confidence.
             </p>
 
             <button
               onClick={onTry}
-              className="inline-flex items-center gap-1.5 text-sky-400 font-semibold text-sm hover:underline"
+              className="inline-flex items-center gap-1.5 text-[var(--accent-sky)] font-semibold text-sm hover:underline"
             >
               Try it on a property <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
             </button>
@@ -358,7 +369,7 @@ function DemoSection({ onTry }: { onTry: () => void }) {
           {/* Right: verdict screen mockup */}
           <div className="lg:sticky lg:top-8">
             <VerdictMockup />
-            <p className="text-center text-xs text-slate-500 mt-5 italic">
+            <p className="text-center text-xs text-[var(--text-muted)] mt-5 italic">
               This is one of millions of listings. Run yours.
             </p>
           </div>
@@ -383,7 +394,7 @@ function PathBullet({
     <li className="flex gap-4">
       <div
         className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold tabular-nums ${
-          highlight ? 'text-black' : 'text-sky-400'
+          highlight ? 'text-black' : 'text-[var(--accent-sky)]'
         }`}
         style={{
           background: highlight
@@ -395,15 +406,15 @@ function PathBullet({
         {num}
       </div>
       <div className="flex-1 pt-0.5">
-        <div className="text-base font-semibold text-white leading-snug mb-1">
+        <div className="text-base font-semibold text-[var(--text-heading)] leading-snug mb-1">
           {title}
           {highlight && (
-            <span className="ml-2 inline-block text-[10px] uppercase tracking-wider font-bold text-sky-400 align-middle">
+            <span className="ml-2 inline-block text-[10px] uppercase tracking-wider font-bold text-[var(--accent-sky)] align-middle">
               ← The structure investors miss
             </span>
           )}
         </div>
-        <div className="text-sm text-slate-400 leading-relaxed">{body}</div>
+        <div className="text-sm text-[var(--text-label)] leading-relaxed">{body}</div>
       </div>
     </li>
   );
@@ -414,16 +425,15 @@ function VerdictMockup() {
   // Mirrors what the real verdict page renders for the Lake Worth example.
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden shadow-[var(--shadow-card)]"
       style={{
-        background: '#000',
-        border: '1px solid #14181F',
-        boxShadow: '0 24px 60px -20px rgba(15,164,233,0.25)',
+        background: 'var(--surface-card)',
+        border: '1px solid var(--border-subtle)',
       }}
     >
       {/* Header strip */}
-      <div className="px-5 py-3 border-b border-[#14181F] flex items-center justify-between">
-        <span className="text-sm font-semibold text-slate-200">
+      <div className="px-5 py-3 border-b border-[var(--border-subtle)] flex items-center justify-between">
+        <span className="text-sm font-semibold text-[var(--text-heading)]">
           1014–16 N J St, Lake Worth, FL
         </span>
         <span className="text-[10px] font-bold tracking-widest text-amber-400">LISTED</span>
@@ -431,14 +441,14 @@ function VerdictMockup() {
 
       {/* DealGap row */}
       <div className="px-5 pt-5 pb-3 text-center">
-        <div className="text-xs uppercase tracking-[0.2em] text-sky-400 font-bold mb-2">
+        <div className="text-xs uppercase tracking-[0.2em] text-[var(--accent-sky)] font-bold mb-2">
           Near Deal · one lever away
         </div>
         <div className="text-3xl font-bold tabular-nums">
-          <span className="text-slate-200">DealGap </span>
+          <span className="text-[var(--text-heading)]">DealGap </span>
           <span className="text-amber-400">−6.4%</span>
         </div>
-        <div className="text-xs text-slate-500 mt-1.5">
+        <div className="text-xs text-[var(--text-muted)] mt-1.5">
           Mild Negative Gap · $457,100 list · $428K target buy
         </div>
       </div>
@@ -456,9 +466,9 @@ function VerdictMockup() {
         <div
           className="rounded-lg py-2.5 text-center text-xs font-semibold"
           style={{
-            background: 'linear-gradient(135deg, rgba(15,164,233,0.15) 0%, rgba(4,101,242,0.10) 100%)',
-            border: '1px solid rgba(15,164,233,0.30)',
-            color: '#7DD3FC',
+            background: 'linear-gradient(135deg, rgba(15,164,233,0.12) 0%, rgba(4,101,242,0.08) 100%)',
+            border: '1px solid var(--border-chrome)',
+            color: 'var(--accent-sky)',
           }}
         >
           Continue to Strategy →
@@ -483,21 +493,21 @@ function MockCard({
     <div
       className="rounded-lg p-3"
       style={{
-        background: highlight ? 'rgba(15,164,233,0.05)' : '#0A0F18',
-        border: `1px solid ${highlight ? 'rgba(15,164,233,0.40)' : '#1E2530'}`,
+        background: highlight ? 'var(--sky-tint-fill)' : 'var(--surface-elevated)',
+        border: `1px solid ${highlight ? 'var(--border-focus)' : 'var(--border-subtle)'}`,
       }}
     >
       <div className="flex items-center justify-between mb-1.5">
         <span
           className={`text-[9px] font-bold uppercase tracking-wider ${
-            highlight ? 'text-sky-400' : 'text-slate-500'
+            highlight ? 'text-[var(--accent-sky)]' : 'text-[var(--text-muted)]'
           }`}
         >
           Path {num}
         </span>
-        <span className="text-[9px] text-slate-500 italic">{tag}</span>
+        <span className="text-[9px] text-[var(--text-muted)] italic">{tag}</span>
       </div>
-      <div className="text-xs font-semibold text-white leading-snug">{title}</div>
+      <div className="text-xs font-semibold text-[var(--text-heading)] leading-snug">{title}</div>
     </div>
   );
 }
@@ -511,7 +521,7 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
     <section className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16 md:mb-20">
-          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
+          <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
             The Closing Tool Nobody Else Has
           </div>
           <h2
@@ -521,7 +531,7 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
             <span className="block">
               Subject-To. Seller holds a 0%{' '}2nd.
             </span>
-            <span className="block text-sky-400">
+            <span className="block text-[var(--accent-sky)]">
               We write the script for every{' '}one.
             </span>
           </h2>
@@ -530,16 +540,16 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
         <div className="grid lg:grid-cols-2 gap-14 items-start">
           {/* Left: script breakdown */}
           <div>
-            <p className="text-base md:text-lg text-slate-300 leading-relaxed mb-7">
+            <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed mb-7">
               Investors are quietly closing deals with structures most tools won't even model — Subject-To, seller
               carrybacks, 0% 2nds with a balloon, wraparound notes, rate buydowns. Knowing the structure isn't
               enough. You have to{' '}
-              <span className="text-white font-semibold">pitch it on the phone</span>, in language a seller will agree
+              <span className="text-[var(--text-heading)] font-semibold">pitch it on the phone</span>, in language a seller will agree
               to.
             </p>
 
-            <p className="text-base text-slate-200 font-semibold mb-6">
-              DealGap<span className="text-sky-400">IQ</span> writes the script for you, structure-by-structure:
+            <p className="text-base text-[var(--text-heading)] font-semibold mb-6">
+              DealGap<span className="text-[var(--accent-sky)]">IQ</span> writes the script for you, structure-by-structure:
             </p>
 
             <ul className="space-y-4 mb-10">
@@ -551,16 +561,16 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
             </ul>
 
             {/* Print / Email / Copy strip */}
-            <div className="flex items-center gap-6 mb-10 pb-8 border-b border-[#14181F]">
+            <div className="flex items-center gap-6 mb-10 pb-8 border-b border-[var(--border-subtle)]">
               <DeliveryIcon icon={<Printer className="w-5 h-5" />} label="Print" />
               <DeliveryIcon icon={<Mail className="w-5 h-5" />} label="Email" />
               <DeliveryIcon icon={<Copy className="w-5 h-5" />} label="Copy" />
-              <span className="text-xs text-slate-500 italic ml-auto">One click.</span>
+              <span className="text-xs text-[var(--text-muted)] italic ml-auto">One click.</span>
             </div>
 
             <button
               onClick={onSeeScript}
-              className="inline-flex items-center gap-1.5 text-sky-400 font-semibold text-sm hover:underline"
+              className="inline-flex items-center gap-1.5 text-[var(--accent-sky)] font-semibold text-sm hover:underline"
             >
               See a sample script <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
             </button>
@@ -579,10 +589,10 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
 function ScriptBullet({ label, body }: { label: string; body: string }) {
   return (
     <li className="flex gap-3.5">
-      <Check className="w-5 h-5 text-sky-400 mt-0.5 shrink-0" strokeWidth={2.5} />
+      <Check className="w-5 h-5 text-[var(--accent-sky)] mt-0.5 shrink-0" strokeWidth={2.5} />
       <div className="leading-relaxed">
-        <span className="text-white font-semibold">{label}</span>{' '}
-        <span className="text-slate-400">{body}</span>
+        <span className="text-[var(--text-heading)] font-semibold">{label}</span>{' '}
+        <span className="text-[var(--text-label)]">{body}</span>
       </div>
     </li>
   );
@@ -592,7 +602,7 @@ function DeliveryIcon({ icon, label }: { icon: React.ReactNode; label: string })
   return (
     <div className="flex flex-col items-center gap-1.5">
       <div
-        className="w-11 h-11 rounded-xl flex items-center justify-center text-sky-400"
+        className="w-11 h-11 rounded-xl flex items-center justify-center text-[var(--accent-sky)]"
         style={{
           background: 'rgba(15,164,233,0.08)',
           border: '1px solid rgba(15,164,233,0.30)',
@@ -600,7 +610,7 @@ function DeliveryIcon({ icon, label }: { icon: React.ReactNode; label: string })
       >
         {icon}
       </div>
-      <span className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider">{label}</span>
+      <span className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">{label}</span>
     </div>
   );
 }
@@ -608,11 +618,10 @@ function DeliveryIcon({ icon, label }: { icon: React.ReactNode; label: string })
 function PullQuoteCard() {
   return (
     <div
-      className="rounded-2xl p-8 md:p-10 relative"
+      className="rounded-2xl p-8 md:p-10 relative shadow-[var(--shadow-card)]"
       style={{
-        background: '#000',
-        border: '1px solid rgba(15,164,233,0.35)',
-        boxShadow: '0 24px 60px -20px rgba(15,164,233,0.20)',
+        background: 'var(--surface-card)',
+        border: '1px solid var(--border-chrome)',
       }}
     >
       <div
@@ -625,20 +634,20 @@ function PullQuoteCard() {
         Sample Script
       </div>
 
-      <Sparkles className="w-5 h-5 text-sky-400 mb-4" />
+      <Sparkles className="w-5 h-5 text-[var(--accent-sky)] mb-4" />
 
-      <p className="text-base md:text-lg leading-relaxed text-slate-100 italic mb-6">
-        "I can pay full asking — <span className="not-italic font-semibold text-white">$646,050</span>, no haircut —
-        if the seller is open to carrying <span className="not-italic font-semibold text-white">$129,210</span> of
-        that as a second mortgage at <span className="not-italic font-semibold text-sky-400">0% interest</span> with a
+      <p className="text-base md:text-lg leading-relaxed text-[var(--text-heading)] italic mb-6">
+        "I can pay full asking — <span className="not-italic font-semibold text-[var(--text-heading)]">$646,050</span>, no haircut —
+        if the seller is open to carrying <span className="not-italic font-semibold text-[var(--text-heading)]">$129,210</span> of
+        that as a second mortgage at <span className="not-italic font-semibold text-[var(--accent-sky)]">0% interest</span> with a
         5-year balloon. Bank takes the first, seller takes the second, and in 5 years I refinance and the seller gets
-        a single check for <span className="not-italic font-semibold text-white">$129,210</span>."
+        a single check for <span className="not-italic font-semibold text-[var(--text-heading)]">$129,210</span>."
       </p>
 
-      <div className="text-xs text-slate-500 not-italic">— A real DealGapIQ-generated pitch script</div>
+      <div className="text-xs text-[var(--text-muted)] not-italic">— A real DealGapIQ-generated pitch script</div>
 
-      <div className="mt-8 pt-6 border-t border-[#14181F] text-center">
-        <div className="text-xs text-slate-400 italic">
+      <div className="mt-8 pt-6 border-t border-[var(--border-subtle)] text-center">
+        <div className="text-xs text-[var(--text-label)] italic">
           Knowing the structure isn't enough. DealGapIQ writes the script.
         </div>
       </div>
@@ -674,24 +683,24 @@ function ComparisonSection() {
     <section className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16 md:mb-20">
-          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
+          <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
             How It Compares
           </div>
           <h2 className="text-3xl md:text-5xl lg:text-6xl mb-5" style={HEADLINE_STYLE}>
             Where most tools stop,
             <br />
-            <span className="text-sky-400">
+            <span className="text-[var(--accent-sky)]">
               DealGapIQ keeps going.
             </span>
           </h2>
-          <p className="text-base text-slate-400 max-w-2xl mx-auto italic">
+          <p className="text-base text-[var(--text-label)] max-w-2xl mx-auto italic">
             Side-by-side with the tools investors already use.
           </p>
         </div>
 
-        <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-4xl mx-auto mb-12 text-center">
+        <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed max-w-4xl mx-auto mb-12 text-center">
           Listing sites help you find properties. Cash-flow calculators help you analyze them. Neither helps you{' '}
-          <span className="text-white font-semibold">structure the offer</span> that closes the gap.
+          <span className="text-[var(--text-heading)] font-semibold">structure the offer</span> that closes the gap.
         </p>
 
         <ComparisonTable />
@@ -699,13 +708,13 @@ function ComparisonSection() {
         <div className="text-center mt-12 mb-2">
           <div
             className="inline-block py-2 px-4 text-base md:text-lg italic font-semibold"
-            style={{ color: '#7DD3FC' }}
+            style={{ color: 'var(--accent-sky)' }}
           >
             That's where most tools stop. DealGapIQ keeps going.
           </div>
         </div>
 
-        <p className="text-[11px] text-slate-600 max-w-3xl mx-auto text-center mt-10 leading-relaxed">
+        <p className="text-[11px] text-[var(--text-muted)] max-w-3xl mx-auto text-center mt-10 leading-relaxed">
           Comparison reflects publicly documented features as of Q2 2026. Tools evolve — if a competitor adds a
           feature we've marked missing, we'll update this table. We don't compete on what they have; we compete on
           what they don't.
@@ -718,32 +727,35 @@ function ComparisonSection() {
 function ComparisonTable() {
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden shadow-[var(--shadow-card)]"
       style={{
-        background: '#000',
-        border: '1px solid #14181F',
+        background: 'var(--surface-card)',
+        border: '1px solid var(--border-subtle)',
       }}
     >
       {/* Header row */}
-      <div className="grid grid-cols-[2fr_1fr_1fr_1fr] md:grid-cols-[3fr_1fr_1fr_1.2fr] border-b border-[#14181F]">
-        <div className="px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+      <div className="grid grid-cols-[2fr_1fr_1fr_1fr] md:grid-cols-[3fr_1fr_1fr_1.2fr] border-b border-[var(--border-subtle)]">
+        <div className="px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
           Feature
         </div>
-        <div className="px-2 md:px-4 py-4 text-center text-xs font-bold text-slate-400">
+        <div className="px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-label)]">
           <div>Listing Sites</div>
-          <div className="text-[10px] font-normal text-slate-600 mt-0.5 italic">
+          <div className="text-[10px] font-normal text-[var(--text-muted)] mt-0.5 italic">
             Zillow, Redfin, Realtor.com
           </div>
         </div>
-        <div className="px-2 md:px-4 py-4 text-center text-xs font-bold text-slate-400">
+        <div className="px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-label)]">
           <div>Investor Calculators</div>
-          <div className="text-[10px] font-normal text-slate-600 mt-0.5 italic">
+          <div className="text-[10px] font-normal text-[var(--text-muted)] mt-0.5 italic">
             DealCheck, BP Calc, Mashvisor
           </div>
         </div>
         <div
           className="px-2 md:px-4 py-4 text-center text-xs font-bold"
-          style={{ background: 'rgba(15,164,233,0.08)', color: '#7DD3FC' }}
+          style={{
+            background: 'var(--sky-tint-fill)',
+            color: 'var(--accent-sky)',
+          }}
         >
           <div>DealGapIQ</div>
         </div>
@@ -754,13 +766,13 @@ function ComparisonTable() {
         <div
           key={row.feature}
           className={`grid grid-cols-[2fr_1fr_1fr_1fr] md:grid-cols-[3fr_1fr_1fr_1.2fr] ${
-            idx < COMPARISON_ROWS.length - 1 ? 'border-b border-[#14181F]' : ''
+            idx < COMPARISON_ROWS.length - 1 ? 'border-b border-[var(--border-subtle)]' : ''
           }`}
         >
           <div className="px-4 md:px-6 py-5">
-            <div className="text-sm font-semibold text-slate-200 leading-tight">{row.feature}</div>
+            <div className="text-sm font-semibold text-[var(--text-heading)] leading-tight">{row.feature}</div>
             {row.subline && (
-              <div className="text-[11px] text-slate-500 italic mt-0.5">{row.subline}</div>
+              <div className="text-[11px] text-[var(--text-muted)] italic mt-0.5">{row.subline}</div>
             )}
           </div>
           <CompCell mark={row.listing} />
@@ -782,7 +794,7 @@ function CompCell({
   const display =
     mark === 'yes' ? (
       <Check
-        className={`w-5 h-5 ${highlight ? 'text-sky-400' : 'text-emerald-400'}`}
+        className={`w-5 h-5 ${highlight ? 'text-[var(--accent-sky)]' : 'text-emerald-400'}`}
         strokeWidth={3}
       />
     ) : mark === 'partial' ? (
@@ -790,7 +802,7 @@ function CompCell({
         partial
       </span>
     ) : (
-      <span className="text-slate-700 text-lg">—</span>
+      <span className="text-[var(--text-muted)] text-lg">—</span>
     );
 
   return (
@@ -820,33 +832,33 @@ function TrustSection({
     <section className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16 md:mb-20">
-          <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
+          <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
             The Trust Layer
           </div>
           <h2 className="text-3xl md:text-5xl lg:text-6xl mb-5" style={HEADLINE_STYLE}>
             Trust comes from
             <br />
-            <span className="text-sky-400">
+            <span className="text-[var(--accent-sky)]">
               seeing the work.
             </span>
           </h2>
-          <p className="text-base text-slate-400 max-w-2xl mx-auto">
+          <p className="text-base text-[var(--text-label)] max-w-2xl mx-auto">
             Every number on this site is sourced. Every structure is reviewable.{' '}
-            <span className="text-slate-300 font-semibold">Run your own zip code.</span>
+            <span className="text-[var(--text-secondary)] font-semibold">Run your own zip code.</span>
           </p>
         </div>
 
         {/* 5a — Data sources */}
         <div className="mb-20">
           <div className="text-center mb-8">
-            <h3 className="text-xl md:text-2xl font-bold text-white">
+            <h3 className="text-xl md:text-2xl font-bold text-[var(--text-heading)]">
               Built on the data investors actually trust.
             </h3>
           </div>
           <DataSourceStrip />
-          <p className="text-center text-sm text-slate-400 mt-8 italic">
+          <p className="text-center text-sm text-[var(--text-label)] mt-8 italic">
             Data sources visible on every analysis.{' '}
-            <span className="text-slate-200 font-semibold not-italic">
+            <span className="text-[var(--text-heading)] font-semibold not-italic">
               Switch sources, see the math change.
             </span>
           </p>
@@ -881,10 +893,10 @@ function DataSourceStrip() {
       {sources.map((s) => (
         <div
           key={s.name}
-          className="rounded-xl p-4 text-center"
+          className="rounded-xl p-4 text-center shadow-[var(--shadow-card)]"
           style={{
-            background: '#000',
-            border: '1px solid #14181F',
+            background: 'var(--surface-card)',
+            border: '1px solid var(--border-subtle)',
           }}
         >
           <div className="w-10 h-10 rounded-lg mx-auto mb-3 flex items-center justify-center"
@@ -893,10 +905,10 @@ function DataSourceStrip() {
               border: '1px solid rgba(15,164,233,0.30)',
             }}
           >
-            <Database className="w-5 h-5 text-sky-400" />
+            <Database className="w-5 h-5 text-[var(--accent-sky)]" />
           </div>
-          <div className="text-sm font-semibold text-white mb-1">{s.name}</div>
-          <div className="text-[11px] text-slate-500 leading-snug">{s.desc}</div>
+          <div className="text-sm font-semibold text-[var(--text-heading)] mb-1">{s.name}</div>
+          <div className="text-[11px] text-[var(--text-muted)] leading-snug">{s.desc}</div>
         </div>
       ))}
     </div>
@@ -907,14 +919,14 @@ function FounderNote() {
   return (
     <div className="max-w-3xl mx-auto mb-20">
       <div
-        className="rounded-2xl p-8 md:p-10"
+        className="rounded-2xl p-8 md:p-10 shadow-[var(--shadow-card)]"
         style={{
-          background: '#000',
-          border: '1px solid #14181F',
+          background: 'var(--surface-card)',
+          border: '1px solid var(--border-subtle)',
         }}
       >
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-sky-500/40 shrink-0 ring-2 ring-sky-500/10">
+          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[var(--border-chrome)] shrink-0 ring-2 ring-[var(--sky-tint-fill)]">
             <Image
               src="/images/brad-geisen.jpg"
               alt="Brad Geisen, Founder of DealGapIQ"
@@ -924,19 +936,19 @@ function FounderNote() {
             />
           </div>
           <div>
-            <div className="text-xs uppercase tracking-widest text-sky-400 font-bold">Why we built this</div>
-            <div className="text-sm text-slate-300 mt-0.5">
-              Brad Geisen · Founder of <span className="text-white font-semibold">Foreclosure.com</span>
+            <div className="text-xs uppercase tracking-widest text-[var(--accent-sky)] font-bold">Why we built this</div>
+            <div className="text-sm text-[var(--text-secondary)] mt-0.5">
+              Brad Geisen · Founder of <span className="text-[var(--text-heading)] font-semibold">Foreclosure.com</span>
             </div>
           </div>
         </div>
 
-        <div className="space-y-4 italic text-slate-300 leading-relaxed">
+        <div className="space-y-4 italic text-[var(--text-secondary)] leading-relaxed">
           <p>
             Most "deal analysis" tools were built for spreadsheet warriors who already know what they're doing. We
             built DealGapIQ for the investor who's tired of analyzing 30 properties to find one — and learning the
             hard way that{' '}
-            <span className="text-white not-italic font-semibold">"good deals" don't show up in a feed</span>. They're
+            <span className="text-[var(--text-heading)] not-italic font-semibold">"good deals" don't show up in a feed</span>. They're
             constructed.
           </p>
           <p>
@@ -968,24 +980,24 @@ function VerifyBlock({
 
   return (
     <div className="max-w-3xl mx-auto text-center">
-      <h3 className="text-2xl md:text-3xl font-bold text-white mb-5">
+      <h3 className="text-2xl md:text-3xl font-bold text-[var(--text-heading)] mb-5">
         Don't take our word for it. Take ours and check it.
       </h3>
-      <p className="text-base text-slate-400 leading-relaxed max-w-2xl mx-auto mb-8">
+      <p className="text-base text-[var(--text-label)] leading-relaxed max-w-2xl mx-auto mb-8">
         Run any property — yours, your neighbor's, the one you've been watching. Click any number on the verdict to
         see where it came from. Switch data sources and watch the four paths recompute live.{' '}
-        <span className="text-slate-200 font-semibold">The methodology is the proof.</span>
+        <span className="text-[var(--text-heading)] font-semibold">The methodology is the proof.</span>
       </p>
 
       <form onSubmit={submit} className="max-w-md mx-auto mb-6">
         <div className="relative">
-          <Search className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={val}
             onChange={(e) => setVal(e.target.value)}
             placeholder="Enter address, City or Zip code."
-            className="w-full pl-11 pr-4 py-3.5 rounded-xl text-sm text-white placeholder-slate-500 outline-none transition-colors"
+            className="w-full pl-11 pr-4 py-3.5 rounded-xl text-sm text-[var(--text-heading)] placeholder-[var(--text-muted)] outline-none transition-colors"
             style={{
               background: 'var(--surface-elevated)',
               border: '1px solid var(--border-default)',
@@ -1003,9 +1015,9 @@ function VerifyBlock({
       </form>
 
       <div className="flex items-center gap-3 mb-5 max-w-md mx-auto">
-        <div className="flex-1 h-px bg-[#14181F]" />
-        <span className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">or</span>
-        <div className="flex-1 h-px bg-[#14181F]" />
+        <div className="flex-1 h-px bg-[var(--border-subtle)]" />
+        <span className="text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-semibold">or</span>
+        <div className="flex-1 h-px bg-[var(--border-subtle)]" />
       </div>
 
       <div className="flex flex-row justify-center gap-2 sm:gap-3">
@@ -1045,28 +1057,28 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
   return (
     <section className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
       <div className="max-w-4xl mx-auto text-center">
-        <div className="text-xs uppercase tracking-[0.25em] text-sky-400 font-bold mb-5">
+        <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
           Now Try It
         </div>
         <h2 className="text-3xl md:text-5xl lg:text-6xl mb-6" style={HEADLINE_STYLE}>
           Try it on the property
           <br />
-          <span className="text-sky-400">
+          <span className="text-[var(--accent-sky)]">
             you've been watching.
           </span>
         </h2>
-        <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-12">
-          One free verdict. <span className="text-white font-semibold">No signup. No credit card.</span> Just paste an
+        <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto mb-12">
+          One free verdict. <span className="text-[var(--text-heading)] font-semibold">No signup. No credit card.</span> Just paste an
           address.
         </p>
 
-        <div className="space-y-5 text-base text-slate-300 leading-relaxed max-w-2xl mx-auto mb-12 text-left">
+        <div className="space-y-5 text-base text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto mb-12 text-left">
           <p className="text-center">No tutorials. No 14-day trial. No credit card up front.</p>
           <p>
             Paste a Zillow URL or street address. In 15 seconds you'll see the verdict, the four paths to close the
             gap, and the negotiation script for each.
           </p>
-          <p className="text-slate-400">
+          <p className="text-[var(--text-label)]">
             If the math works, you'll know. If it needs structure, you'll see exactly which structures fit. If it's
             not a deal, you'll have spent 15 seconds — not a weekend in Excel.
           </p>
@@ -1081,17 +1093,17 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
 
         {/* Lead magnet */}
         <div
-          className="rounded-2xl p-8 md:p-10 max-w-2xl mx-auto"
+          className="rounded-2xl p-8 md:p-10 max-w-2xl mx-auto shadow-[var(--shadow-card)]"
           style={{
-            background: '#000',
-            border: '1px solid #14181F',
+            background: 'var(--surface-card)',
+            border: '1px solid var(--border-subtle)',
           }}
         >
-          <h3 className="text-base md:text-lg font-bold text-white mb-3">
+          <h3 className="text-base md:text-lg font-bold text-[var(--text-heading)] mb-3">
             Not ready to run one yet?
           </h3>
-          <p className="text-sm text-slate-400 leading-relaxed mb-6">
-            Get the <span className="text-white font-semibold">Creative Finance Field Guide</span> — a one-page PDF
+          <p className="text-sm text-[var(--text-label)] leading-relaxed mb-6">
+            Get the <span className="text-[var(--text-heading)] font-semibold">Creative Finance Field Guide</span> — a one-page PDF
             covering Subject-To, seller carrybacks, 0% 2nds, rate buydowns, and the assumable-mortgage play. Free, no
             signup beyond your email.
           </p>
@@ -1109,7 +1121,7 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="flex-1 px-4 py-3 rounded-lg text-sm text-white placeholder-slate-500 outline-none transition-colors"
+                className="flex-1 px-4 py-3 rounded-lg text-sm text-[var(--text-heading)] placeholder-[var(--text-muted)] outline-none transition-colors"
                 style={{
                   background: 'var(--surface-elevated)',
                   border: '1px solid var(--border-default)',
@@ -1120,7 +1132,11 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
               />
               <button
                 type="submit"
-                className="px-6 py-3 rounded-lg text-sm font-bold text-white bg-black border border-sky-500/40 hover:border-sky-500 transition"
+                className="px-6 py-3 rounded-lg text-sm font-bold text-[var(--text-inverse)] transition hover:opacity-90"
+                style={{
+                  background: 'linear-gradient(135deg, #0FA4E9 0%, #0465F2 100%)',
+                  boxShadow: 'var(--shadow-card)',
+                }}
               >
                 Email me the guide →
               </button>
@@ -1129,10 +1145,10 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
         </div>
 
         {/* Manifesto */}
-        <div className="mt-20 pt-12 border-t border-[#14181F]">
-          <p className="text-base md:text-lg italic text-slate-300 max-w-2xl mx-auto leading-relaxed">
+        <div className="mt-20 pt-12 border-t border-[var(--border-subtle)]">
+          <p className="text-base md:text-lg italic text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
             Built for the investor who knows the price tag isn't the deal.{' '}
-            <span className="text-white not-italic font-semibold">The structure is.</span>
+            <span className="text-[var(--text-heading)] not-italic font-semibold">The structure is.</span>
           </p>
         </div>
       </div>
@@ -1148,60 +1164,63 @@ function SiteFooter() {
   return (
     <footer
       className="relative z-10 px-6 md:px-12 lg:px-20 py-12 mt-12 border-t"
-      style={{ borderColor: '#14181F', background: '#000' }}
+      style={{
+        borderColor: 'var(--border-subtle)',
+        background: 'var(--surface-card)',
+      }}
     >
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="text-xl font-bold mb-2">
-              DealGap<span className="text-sky-400">IQ</span>
+              DealGap<span className="text-[var(--accent-sky)]">IQ</span>
             </div>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              We analyze. <span className="text-slate-200 font-semibold">You decide.</span>
+            <p className="text-sm text-[var(--text-label)] leading-relaxed">
+              We analyze. <span className="text-[var(--text-heading)] font-semibold">You decide.</span>
             </p>
           </div>
 
           {/* Product */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mb-3">
               Product
             </h4>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li><Link href="/verdict" className="hover:text-sky-400 transition-colors">Verdict</Link></li>
-              <li><Link href="/strategy" className="hover:text-sky-400 transition-colors">Strategy</Link></li>
-              <li><Link href="/deal-maker" className="hover:text-sky-400 transition-colors">DealMaker</Link></li>
-              <li><Link href="/pricing" className="hover:text-sky-400 transition-colors">Pricing</Link></li>
+            <ul className="space-y-2 text-sm text-[var(--text-label)]">
+              <li><Link href="/verdict" className="hover:text-[var(--accent-sky)] transition-colors">Verdict</Link></li>
+              <li><Link href="/strategy" className="hover:text-[var(--accent-sky)] transition-colors">Strategy</Link></li>
+              <li><Link href="/deal-maker" className="hover:text-[var(--accent-sky)] transition-colors">DealMaker</Link></li>
+              <li><Link href="/pricing" className="hover:text-[var(--accent-sky)] transition-colors">Pricing</Link></li>
             </ul>
           </div>
 
           {/* Resources */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mb-3">
               Resources
             </h4>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li><Link href="/about" className="hover:text-sky-400 transition-colors">About</Link></li>
-              <li><Link href="/help" className="hover:text-sky-400 transition-colors">Help Center</Link></li>
-              <li><span className="text-slate-600">Field Guide</span></li>
-              <li><span className="text-slate-600">Glossary</span></li>
+            <ul className="space-y-2 text-sm text-[var(--text-label)]">
+              <li><Link href="/about" className="hover:text-[var(--accent-sky)] transition-colors">About</Link></li>
+              <li><Link href="/help" className="hover:text-[var(--accent-sky)] transition-colors">Help Center</Link></li>
+              <li><span className="text-[var(--text-muted)]">Field Guide</span></li>
+              <li><span className="text-[var(--text-muted)]">Glossary</span></li>
             </ul>
           </div>
 
           {/* Legal */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mb-3">
               Legal
             </h4>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li><Link href="/privacy" className="hover:text-sky-400 transition-colors">Privacy</Link></li>
-              <li><Link href="/terms" className="hover:text-sky-400 transition-colors">Terms</Link></li>
-              <li><Link href="/disclosures" className="hover:text-sky-400 transition-colors">Disclosures</Link></li>
+            <ul className="space-y-2 text-sm text-[var(--text-label)]">
+              <li><Link href="/privacy" className="hover:text-[var(--accent-sky)] transition-colors">Privacy</Link></li>
+              <li><Link href="/terms" className="hover:text-[var(--accent-sky)] transition-colors">Terms</Link></li>
+              <li><Link href="/disclosures" className="hover:text-[var(--accent-sky)] transition-colors">Disclosures</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="pt-6 border-t border-[#14181F] text-xs text-slate-500 text-center">
+        <div className="pt-6 border-t border-[var(--border-subtle)] text-xs text-[var(--text-muted)] text-center">
           © 2026 DealGapIQ. We analyze. You decide.
         </div>
       </div>
