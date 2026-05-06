@@ -232,9 +232,22 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
     return { byColumn, hiddenOwned, totalActive }
   }, [columns, query.data, strategy])
 
-  const closedCount = useMemo(
-    () => (query.data ?? []).filter((p) => p.status === 'passed' || p.status === 'archived').length,
+  const closedItems = useMemo(
+    () => (query.data ?? []).filter((p) => p.status === 'passed' || p.status === 'archived'),
     [query.data],
+  )
+  const closedCount = closedItems.length
+  const passedItems = useMemo(() => closedItems.filter((p) => p.status === 'passed'), [closedItems])
+  const archivedItems = useMemo(() => closedItems.filter((p) => p.status === 'archived'), [closedItems])
+
+  const [showClosed, setShowClosed] = useState(false)
+
+  // True when the user has at least one tracked deal but nothing has hit
+  // Owned yet — drives ghost-column rendering for the post-purchase tier
+  // so the "FlipCycle" promise is visible from day one.
+  const noOwnedYet = useMemo(
+    () => totalActive > 0 && byColumn[1].every((items) => items.length === 0),
+    [byColumn, totalActive],
   )
 
   function handleDrop(
@@ -389,6 +402,7 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
                 items={byColumn[1][i]}
                 isHighlighted={false}
                 isDropTarget={!!dropTarget && dropTarget.tier === 'post' && dropTarget.index === i}
+                isGhost={noOwnedYet}
                 onDragOver={(e) => {
                   if (e.dataTransfer.types.includes(DRAG_MIME)) {
                     e.preventDefault()
@@ -419,6 +433,100 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
               />
             ))}
           </TierGroup>
+
+          {/* Tier 3 (collapsible): Closed deals — passed / archived. Off by
+              default so the active board stays scannable; toggling opens
+              two columns inline so the user can see history without
+              leaving the page. */}
+          {closedCount > 0 && (
+            <>
+              <div className="w-px shrink-0 bg-[var(--border-default)]" aria-hidden />
+              <TierGroup
+                label={`Closed · ${closedCount}`}
+                tone="muted"
+                action={
+                  <button
+                    type="button"
+                    onClick={() => setShowClosed((prev) => !prev)}
+                    className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] hover:text-[var(--accent-sky)] transition-colors"
+                  >
+                    {showClosed ? 'Hide' : 'Show'}
+                  </button>
+                }
+              >
+                {showClosed ? (
+                  <>
+                    <KanbanColumn
+                      col={{
+                        kind: 'pre',
+                        status: 'passed',
+                        label: STATUS_CONFIG.passed.label,
+                        bg: STATUS_CONFIG.passed.bg,
+                        color: STATUS_CONFIG.passed.color,
+                      }}
+                      items={passedItems}
+                      isHighlighted={false}
+                      isDropTarget={false}
+                      isGhost={false}
+                      onDragOver={() => {}}
+                      onDragLeave={() => {}}
+                      onDrop={() => {}}
+                      onCardClick={(p) => {
+                        const addr = buildFullAddress(p)
+                        router.push(`/verdict?address=${encodeURIComponent(addr)}`)
+                      }}
+                      onChangeStatus={(id, status) => updateStatus.mutate({ id, status })}
+                      onOpenTasks={(p) =>
+                        onOpenTasks({
+                          id: p.id,
+                          title: shortAddress(p),
+                          stageLabel: STATUS_CONFIG[p.status].label,
+                        })
+                      }
+                      isUpdating={updateStatus.isPending}
+                      showStrategyChip={false}
+                    />
+                    <KanbanColumn
+                      col={{
+                        kind: 'pre',
+                        status: 'archived',
+                        label: STATUS_CONFIG.archived.label,
+                        bg: STATUS_CONFIG.archived.bg,
+                        color: STATUS_CONFIG.archived.color,
+                      }}
+                      items={archivedItems}
+                      isHighlighted={false}
+                      isDropTarget={false}
+                      isGhost={false}
+                      onDragOver={() => {}}
+                      onDragLeave={() => {}}
+                      onDrop={() => {}}
+                      onCardClick={(p) => {
+                        const addr = buildFullAddress(p)
+                        router.push(`/verdict?address=${encodeURIComponent(addr)}`)
+                      }}
+                      onChangeStatus={(id, status) => updateStatus.mutate({ id, status })}
+                      onOpenTasks={(p) =>
+                        onOpenTasks({
+                          id: p.id,
+                          title: shortAddress(p),
+                          stageLabel: STATUS_CONFIG[p.status].label,
+                        })
+                      }
+                      isUpdating={updateStatus.isPending}
+                      showStrategyChip={false}
+                    />
+                  </>
+                ) : (
+                  <ClosedSummaryCard
+                    passed={passedItems.length}
+                    archived={archivedItems.length}
+                    onClick={() => setShowClosed(true)}
+                  />
+                )}
+              </TierGroup>
+            </>
+          )}
         </div>
       </div>
 
@@ -428,12 +536,39 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
             onClick={() => router.push('/saved-properties')}
             className="inline-flex items-center gap-1 text-sm text-[var(--text-label)] hover:text-[var(--accent-sky)] transition-colors"
           >
-            View {closedCount} closed (passed/archived)
+            See full saved-properties list
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       )}
     </DataBoundary>
+  )
+}
+
+// ───────────────────────────────────────────────────────
+// Collapsed-closed summary card
+
+function ClosedSummaryCard({
+  passed,
+  archived,
+  onClick,
+}: {
+  passed: number
+  archived: number
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-[200px] shrink-0 min-h-[180px] rounded-xl border border-dashed border-[var(--border-default)] bg-[var(--surface-card)] flex flex-col items-center justify-center gap-1 text-[var(--text-label)] hover:border-[var(--accent-sky)] hover:text-[var(--accent-sky)] transition-colors"
+    >
+      <span className="text-2xl font-bold tabular-nums">{passed + archived}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-wide">
+        {passed} passed · {archived} archived
+      </span>
+      <span className="text-[10px] text-[var(--text-label)] mt-1">Click to expand</span>
+    </button>
   )
 }
 
@@ -444,18 +579,25 @@ function TierGroup({
   label,
   tone,
   children,
+  action,
 }: {
   label: string
-  tone: 'sky' | 'positive'
+  tone: 'sky' | 'positive' | 'muted'
   children: React.ReactNode
+  action?: React.ReactNode
 }) {
   const toneClass =
-    tone === 'sky' ? 'text-[var(--accent-sky)]' : 'text-[var(--status-positive)]'
+    tone === 'sky'
+      ? 'text-[var(--accent-sky)]'
+      : tone === 'positive'
+      ? 'text-[var(--status-positive)]'
+      : 'text-[var(--text-label)]'
   return (
     <div className="flex flex-col">
-      <p className={`text-[10px] font-bold uppercase tracking-wide ${toneClass} mb-1.5 px-1`}>
-        {label}
-      </p>
+      <div className="flex items-center justify-between gap-2 mb-1.5 px-1">
+        <p className={`text-[10px] font-bold uppercase tracking-wide ${toneClass}`}>{label}</p>
+        {action}
+      </div>
       <div className="flex gap-3">{children}</div>
     </div>
   )
@@ -469,6 +611,9 @@ interface KanbanColumnProps {
   items: SavedPropertySummary[]
   isHighlighted: boolean
   isDropTarget: boolean
+  /** Render dimmed with a "future stage" hint when no Owned properties exist
+   *  yet — telegraphs the FlipCycle progression on day one. */
+  isGhost?: boolean
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void
   onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void
@@ -484,6 +629,7 @@ function KanbanColumn({
   items,
   isHighlighted,
   isDropTarget,
+  isGhost,
   onDragOver,
   onDragLeave,
   onDrop,
@@ -512,6 +658,8 @@ function KanbanColumn({
       className={`w-[200px] shrink-0 rounded-xl border transition-colors ${
         isDropTarget
           ? 'border-[var(--accent-sky)] bg-[var(--color-sky-dim)] ring-2 ring-[var(--accent-sky)] ring-offset-1 ring-offset-[var(--surface-base)]'
+          : isGhost
+          ? 'border-dashed border-[var(--border-default)] bg-[var(--surface-base)] opacity-60'
           : isHighlighted
           ? 'border-[var(--border-focus)] bg-[var(--surface-elevated)]'
           : 'border-[var(--border-default)] bg-[var(--surface-card)]'
@@ -525,9 +673,15 @@ function KanbanColumn({
       </div>
       <div className="p-2 flex flex-col gap-2 flex-1">
         {items.length === 0 ? (
-          <p className="text-xs text-[var(--text-label)] py-3 text-center">
-            {isDropTarget ? 'Drop to move here' : 'No properties'}
-          </p>
+          isGhost ? (
+            <p className="text-[11px] text-[var(--text-label)] leading-snug py-3 text-center px-1">
+              Once a deal hits Owned, your <span className="font-semibold">{col.label}</span> phase lives here.
+            </p>
+          ) : (
+            <p className="text-xs text-[var(--text-label)] py-3 text-center">
+              {isDropTarget ? 'Drop to move here' : 'No properties'}
+            </p>
+          )
         ) : (
           items.map((p) => (
             <KanbanCard
