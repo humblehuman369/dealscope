@@ -230,7 +230,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
         style={{ 
           background: isDark 
             ? 'linear-gradient(180deg, #0a1628 0%, #07172e 50%, #061324 100%)' 
-            : 'linear-gradient(180deg, #f7f4ee 0%, #ffffff 50%, #e8f3ef 100%)'
+            : 'linear-gradient(180deg, color-mix(in srgb, #0fa4e9 15%, #ffffff) 0%, #ffffff 50%, #eef4ff 100%)'
         }}
       >
         {/* Section Header */}

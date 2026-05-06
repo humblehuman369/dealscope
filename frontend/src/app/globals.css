@@ -232,8 +232,9 @@
 }
 
 [data-theme='light'] {
-  /* Warm canvas, deep slate text — Signal Blue (#0465f2) primary (no emerald) */
-  --surface-base: #f7f4ee;
+  /* App canvas: #0fa4e9 @ 15% on white; Signal Blue #0465f2 primary */
+  --surface-base: #ecf8fe;
+  --surface-base: color-mix(in srgb, #0fa4e9 15%, #ffffff);
   --surface-section: #ffffff;
   --surface-card: #ffffff;
   --surface-card-elevated: rgba(255, 255, 255, 0.96);
@@ -302,9 +303,9 @@
   --slider-thumb-border: #0465f2;
   --slider-track-bg: rgba(24, 32, 28, 0.1);
 
-  /* Primary brand @ 15% — informational rows/cards (search modal, Three Paths) */
-  --sky-tint-fill: rgba(4, 101, 242, 0.15);
-  --sky-tint-border: rgba(4, 101, 242, 0.15);
+  /* Informational card tint — soft sky (matches canvas hue) */
+  --sky-tint-fill: rgba(15, 164, 233, 0.15);
+  --sky-tint-border: rgba(15, 164, 233, 0.15);
 }
 
 /* FlipCycle-style brand utilities */
@@ -335,10 +336,10 @@
 
 [data-theme='light'] .grid-fade {
   background-image:
-    radial-gradient(circle at 20% 20%, rgba(4, 101, 242, 0.14), transparent 32%),
-    radial-gradient(circle at 85% 12%, rgba(4, 101, 242, 0.1), transparent 28%),
-    linear-gradient(rgba(4, 101, 242, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(4, 101, 242, 0.05) 1px, transparent 1px);
+    radial-gradient(circle at 20% 20%, rgba(15, 164, 233, 0.12), transparent 32%),
+    radial-gradient(circle at 85% 12%, rgba(15, 164, 233, 0.08), transparent 28%),
+    linear-gradient(rgba(15, 164, 233, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 164, 233, 0.045) 1px, transparent 1px);
   background-size: auto, auto, 44px 44px, 44px 44px;
 }
 
@@ -427,10 +428,7 @@ input[type="range"]::-moz-range-thumb {
   }
 
   [data-theme='light'] body {
-    background:
-      radial-gradient(ellipse 80% 50% at 50% -5%, rgba(4, 101, 242, 0.07) 0%, transparent 100%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(4, 101, 242, 0.04) 0%, transparent 100%),
-      var(--color-base);
+    background: var(--color-base);
     -webkit-font-smoothing: auto;
     -moz-osx-font-smoothing: auto;
   }
