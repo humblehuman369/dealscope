@@ -14,6 +14,7 @@ TimelineEventKind = Literal[
     "expense_added",
     "budget_locked",
     "contact_added",
+    "document_added",
     "note",
 ]
 

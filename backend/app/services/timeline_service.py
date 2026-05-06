@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.budget import BudgetExpense, RehabBudget
 from app.models.contact import PropertyContact
+from app.models.document import Document
 from app.models.saved_property import PropertyAdjustment, SavedProperty
 from app.models.task import PropertyTask
 
@@ -36,6 +37,7 @@ TimelineEventKind = Literal[
     "expense_added",
     "budget_locked",
     "contact_added",
+    "document_added",
     "note",
 ]
 
@@ -197,7 +199,42 @@ class TimelineService:
                 }
             )
 
-        # 5) RehabBudget.baseline_locked_at — single milestone.
+        # 5) Document — uploaded files are deal-level events worth surfacing.
+        try:
+            doc_rows = (
+                await db.execute(
+                    select(Document)
+                    .where(Document.property_id == prop_uuid)
+                    .order_by(Document.uploaded_at.desc())
+                    .limit(limit)
+                )
+            ).scalars().all()
+            for d in doc_rows:
+                doc_type_label = (
+                    d.document_type.value.replace("_", " ").title()
+                    if d.document_type
+                    else "Document"
+                )
+                events.append(
+                    {
+                        "id": f"doc:{d.id}",
+                        "kind": "document_added",
+                        "occurred_at": d.uploaded_at,
+                        "title": f"Document uploaded: {d.original_filename or d.filename} ({doc_type_label})",
+                        "body": d.description,
+                        "meta": {
+                            "document_id": str(d.id),
+                            "document_type": d.document_type.value if d.document_type else None,
+                            "file_size": d.file_size,
+                        },
+                    }
+                )
+        except Exception:
+            # Documents table or column drift shouldn't fail the timeline —
+            # the rest of the events are still useful on their own.
+            pass
+
+        # 6) RehabBudget.baseline_locked_at — single milestone.
         budget_row = (
             await db.execute(
                 select(RehabBudget).where(RehabBudget.saved_property_id == prop_uuid)
