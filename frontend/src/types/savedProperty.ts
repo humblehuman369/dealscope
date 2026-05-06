@@ -7,13 +7,13 @@ import type { PropertyDataSnapshot } from '@dealscope/shared'
 
 export type { PropertyDataSnapshot }
 
-export type PropertyStatus = 
-  | 'watching' 
-  | 'analyzing' 
-  | 'contacted' 
-  | 'under_contract' 
-  | 'owned' 
-  | 'passed' 
+export type PropertyStatus =
+  | 'prospecting'    // Watching / Analyzing — research & underwriting
+  | 'pursuing'       // Pursue / Outreach — contacted seller or agent
+  | 'negotiating'    // Active price/terms negotiation
+  | 'under_contract' // Offer accepted, in escrow
+  | 'owned'          // User owns this property
+  | 'passed'
   | 'archived'
 
 /** Post-acquisition flip phases (matches backend FlipStage). */

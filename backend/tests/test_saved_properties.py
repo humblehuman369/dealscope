@@ -75,7 +75,7 @@ class TestCreateProperty:
         assert saved is not None
         assert saved.address_street == sample_property_data["address_street"]
         assert saved.user_id == created_user.id
-        assert saved.status.value == PropertyStatus.WATCHING.value
+        assert saved.status.value == PropertyStatus.PROSPECTING.value
 
     async def test_save_duplicate_raises(
         self, db_session, created_user, service, sample_property_data
@@ -129,13 +129,13 @@ class TestReadProperty:
             db_session, str(saved.id), str(created_user.id), ModelPropertyStatus.ARCHIVED
         )
 
-        watching = await service.list_properties(
-            db_session, str(created_user.id), status=ModelPropertyStatus.WATCHING
+        prospecting = await service.list_properties(
+            db_session, str(created_user.id), status=ModelPropertyStatus.PROSPECTING
         )
         archived = await service.list_properties(
             db_session, str(created_user.id), status=ModelPropertyStatus.ARCHIVED
         )
-        assert len(watching) == 0
+        assert len(prospecting) == 0
         assert len(archived) == 1
 
     async def test_count_properties(self, db_session, created_user, service):

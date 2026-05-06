@@ -156,28 +156,28 @@ function SavedPropertiesContent() {
               </div>
             </div>
 
-            {/* Watching — sky (attention) */}
+            {/* Prospecting — sky (research / attention) */}
             <div className="bg-[var(--surface-card)] rounded-xl p-4 border border-[var(--border-default)]">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-[var(--color-sky-dim)] rounded-lg">
                   <Eye className="w-5 h-5 text-[var(--accent-sky)]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{statusCounts.watching || 0}</p>
-                  <p className="text-xs text-[var(--text-label)] font-medium">Watching</p>
+                  <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{statusCounts.prospecting || 0}</p>
+                  <p className="text-xs text-[var(--text-label)] font-medium">Prospecting</p>
                 </div>
               </div>
             </div>
 
-            {/* Analyzing — teal (positive process) */}
+            {/* Negotiating — amber (active deal-making) */}
             <div className="bg-[var(--surface-card)] rounded-xl p-4 border border-[var(--border-default)]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-[var(--surface-elevated)] rounded-lg">
-                  <BarChart3 className="w-5 h-5 text-[var(--status-info)]" />
+                <div className="p-2 bg-[rgba(251,191,36,0.10)] rounded-lg">
+                  <BarChart3 className="w-5 h-5 text-[var(--status-warning)]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{statusCounts.analyzing || 0}</p>
-                  <p className="text-xs text-[var(--text-label)] font-medium">Analyzing</p>
+                  <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{statusCounts.negotiating || 0}</p>
+                  <p className="text-xs text-[var(--text-label)] font-medium">Negotiating</p>
                 </div>
               </div>
             </div>
@@ -211,7 +211,7 @@ function SavedPropertiesContent() {
           >
             All
           </button>
-          {(['watching', 'analyzing', 'contacted', 'under_contract', 'owned', 'passed'] as PropertyStatus[]).map(s => {
+          {(['prospecting', 'pursuing', 'negotiating', 'under_contract', 'owned', 'passed'] as PropertyStatus[]).map(s => {
             const config = STATUS_CONFIG[s]
             const count = statusCounts[s] || 0
             if (count === 0 && filterStatus !== s) return null
@@ -270,7 +270,7 @@ function SavedPropertiesContent() {
             {/* ── Property Items ──────────────────── */}
             <div className="divide-y divide-[var(--border-subtle)]">
               {properties.map((property: SavedPropertySummary) => {
-                const statusConfig = STATUS_CONFIG[property.status] || STATUS_CONFIG.watching
+                const statusConfig = STATUS_CONFIG[property.status] || STATUS_CONFIG.prospecting
                 return (
                   <div
                     key={property.id}

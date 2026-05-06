@@ -32,12 +32,18 @@ class FlipStage(enum.StrEnum):
 
 
 class PropertyStatus(enum.StrEnum):
-    """Status of a saved property in the user's pipeline."""
+    """Status of a saved property in the user's pipeline.
 
-    WATCHING = "watching"  # Just monitoring
-    ANALYZING = "analyzing"  # Actively analyzing the deal
-    CONTACTED = "contacted"  # Contacted seller/agent
-    UNDER_CONTRACT = "under_contract"  # Deal is in progress
+    Note: 'analyzing' (legacy) and 'watching' (legacy alias) remain in the
+    Postgres enum type for backward compatibility but no rows reference them
+    after migration 20260506_0001 — analyzing was merged into prospecting,
+    watching was renamed to prospecting.
+    """
+
+    PROSPECTING = "prospecting"  # Watching / Analyzing — research & underwriting
+    PURSUING = "pursuing"  # Reached out to seller/agent (was CONTACTED)
+    NEGOTIATING = "negotiating"  # Active price/terms negotiation
+    UNDER_CONTRACT = "under_contract"  # Offer accepted, in escrow
     OWNED = "owned"  # User owns this property
     PASSED = "passed"  # Decided not to pursue
     ARCHIVED = "archived"  # Old/inactive
@@ -74,7 +80,7 @@ class SavedProperty(Base):
     property_data_snapshot: Mapped[dict | None] = mapped_column(JSON, default=dict)  # Full PropertyResponse cached
 
     # User Customizations
-    status: Mapped[PropertyStatus] = mapped_column(SQLEnum(PropertyStatus), default=PropertyStatus.WATCHING)
+    status: Mapped[PropertyStatus] = mapped_column(SQLEnum(PropertyStatus), default=PropertyStatus.PROSPECTING)
 
     # Post-acquisition flip lifecycle (optional until property is owned / user advances)
     flip_stage: Mapped[FlipStage | None] = mapped_column(SQLEnum(FlipStage, native_enum=False), nullable=True)

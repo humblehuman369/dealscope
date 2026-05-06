@@ -13,11 +13,11 @@ from app.schemas.deal_maker import DealMakerRecord
 
 
 class PropertyStatus(StrEnum):
-    """Status of a saved property."""
+    """Status of a saved property. Mirrors models.saved_property.PropertyStatus."""
 
-    WATCHING = "watching"
-    ANALYZING = "analyzing"
-    CONTACTED = "contacted"
+    PROSPECTING = "prospecting"
+    PURSUING = "pursuing"
+    NEGOTIATING = "negotiating"
     UNDER_CONTRACT = "under_contract"
     OWNED = "owned"
     PASSED = "passed"
@@ -77,7 +77,7 @@ class SavedPropertyCreate(SavedPropertyBase):
     )
 
     # Initial status
-    status: PropertyStatus = PropertyStatus.WATCHING
+    status: PropertyStatus = PropertyStatus.PROSPECTING
 
     @classmethod
     def _check_json_size(cls, v: dict | None, field_name: str, max_bytes: int = 524_288) -> dict | None:

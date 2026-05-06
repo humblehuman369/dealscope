@@ -34,7 +34,7 @@ describe('SAVED_PROPERTIES_KEYS', () => {
     })
 
     it('same params produce identical keys', () => {
-      const params = { page: 0, pageSize: 10, status: 'analyzing', search: 'test' }
+      const params = { page: 0, pageSize: 10, status: 'pursuing', search: 'test' }
       const key1 = SAVED_PROPERTIES_KEYS.list(params)
       const key2 = SAVED_PROPERTIES_KEYS.list(params)
       expect(JSON.stringify(key1)).toBe(JSON.stringify(key2))

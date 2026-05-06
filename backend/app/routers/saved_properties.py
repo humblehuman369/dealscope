@@ -141,7 +141,7 @@ async def check_property_saved(
         return {
             "is_saved": True,
             "saved_property_id": str(saved.id),
-            "status": saved.status.value if saved.status else "watching",
+            "status": saved.status.value if saved.status else "prospecting",
             "saved_at": saved.saved_at,
         }
 
