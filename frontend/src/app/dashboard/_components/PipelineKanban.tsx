@@ -61,13 +61,23 @@ const TIME_IN_STAGE_STATUSES: ReadonlySet<PropertyStatus> = new Set([
 ])
 
 type StrategyFilter = 'all' | LifecycleStrategy
-const STRATEGY_FILTERS: StrategyFilter[] = ['all', 'flip', 'brrrr', 'ltr', 'str']
+const STRATEGY_FILTERS: StrategyFilter[] = [
+  'all',
+  'flip',
+  'brrrr',
+  'ltr',
+  'str',
+  'house_hack',
+  'wholesale',
+]
 const STRATEGY_FILTER_LABEL: Record<StrategyFilter, string> = {
   all: 'All Strategies',
   flip: 'Fix & Flip',
   brrrr: 'BRRRR',
   ltr: 'LTR',
   str: 'STR',
+  house_hack: 'House Hack',
+  wholesale: 'Wholesale',
 }
 
 // Column descriptor — encodes which API call to fire on drop.
@@ -188,7 +198,14 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
   // Default the strategy filter to whatever the user owns most of, falling
   // back to "all" so multi-strategy investors aren't tunnelled into one path.
   const defaultStrategy: StrategyFilter = useMemo(() => {
-    const counts: Record<LifecycleStrategy, number> = { flip: 0, brrrr: 0, ltr: 0, str: 0 }
+    const counts: Record<LifecycleStrategy, number> = {
+      flip: 0,
+      brrrr: 0,
+      ltr: 0,
+      str: 0,
+      house_hack: 0,
+      wholesale: 0,
+    }
     for (const p of query.data ?? []) {
       if (p.status === 'owned') counts[resolveStrategy(p.best_strategy)] += 1
     }
@@ -271,21 +288,14 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
       // Already in the right column?
       if (property.status === 'owned' && property.flip_stage === col.stage) return
       if (property.status !== 'owned') {
-        // Promote to Owned first (backend auto-assigns first stage), then
-        // jump to the target stage. Two requests, but mostly idempotent —
-        // worst case the user briefly sees the property in the auto-assigned
-        // first stage before flip_stage updates.
+        // Promote to Owned first (backend auto-assigns Rehab — the universal
+        // first stage). When the user drops directly into a later stage,
+        // chain a second call to override.
         updateStatus.mutate(
           { id, status: 'owned' },
           {
             onSuccess: () => {
-              if (col.stage !== 'Rehab' && col.stage !== 'MakeReady' && col.stage !== 'Setup') {
-                // Only fire the second call when the target isn't the
-                // first stage (which the backend already assigned).
-                updateFlipStage.mutate({ id, stage: col.stage })
-              } else if (property.best_strategy && resolveStrategy(property.best_strategy) === col.strategy) {
-                // Strategy matches but auto-assigned stage may differ from
-                // the dropped target — set it explicitly.
+              if (col.stage !== 'Rehab') {
                 updateFlipStage.mutate({ id, stage: col.stage })
               }
             },
@@ -393,8 +403,8 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
           {/* Vertical divider between tiers */}
           <div className="w-px shrink-0 bg-[var(--border-default)]" aria-hidden />
 
-          {/* Tier 2: Post-purchase / FlipCycle */}
-          <TierGroup label={strategy === 'all' ? 'Owned' : `${STRATEGY_HEADER[strategy]} · FlipCycle`} tone="positive">
+          {/* Tier 2: Post-purchase lifecycle */}
+          <TierGroup label={strategy === 'all' ? 'Owned' : STRATEGY_HEADER[strategy]} tone="positive">
             {columns.post.map((col, i) => (
               <KanbanColumn
                 key={`post-${i}`}
@@ -727,8 +737,16 @@ function KanbanCard({
     : null
 
   const showDaysInStage = TIME_IN_STAGE_STATUSES.has(property.status)
+  // For Owned cards we want time-in-current-lifecycle-stage (Rehab → Listed
+  // → Sold etc.), not time-since-becoming-Owned. ``flip_stage_entered_at``
+  // is stamped on every flip-stage transition; fall back to the broader
+  // status_changed_at if it's missing.
   const daysInStage = showDaysInStage
-    ? daysSince(property.status_changed_at ?? property.updated_at)
+    ? daysSince(
+        property.status === 'owned'
+          ? property.flip_stage_entered_at ?? property.status_changed_at ?? property.updated_at
+          : property.status_changed_at ?? property.updated_at,
+      )
     : null
   const showVariance = property.status === 'owned' && !!property.budget_variance_pct
 

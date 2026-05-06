@@ -24,20 +24,15 @@ logger = logging.getLogger(__name__)
 
 
 def _first_post_purchase_stage(best_strategy: str | None) -> FlipStage:
-    """First lifecycle stage when a deal hits ``status='owned'`` — strategy
-    determines whether the user lands in Rehab, Make-Ready, or Setup.
+    """First lifecycle stage when a deal hits ``status='owned'``.
 
-    The legacy ``Acquisition`` stage was eliminated in Phase 10A; ownership
-    is now signaled solely by ``status='owned'``, and the kanban surfaces
-    the strategy's first *real* phase as the entry column.
+    ``best_strategy`` is kept in the signature for forward-compat — historically
+    different strategies landed in different first stages — but every strategy
+    (flip, BRRRR, LTR, STR, House Hack, Wholesale) now starts at Rehab. That's
+    the universal "you just took the keys, here's your first checklist" phase
+    we agreed on. Strategy then governs which columns come *after* Rehab.
     """
-    s = (best_strategy or "").lower()
-    if s == "ltr":
-        return FlipStage.MAKE_READY
-    if s == "str":
-        return FlipStage.SETUP
-    # flip / brrrr / subject_to / wholesale / unknown → Rehab is the
-    # universal fallback (most common path for first-time owned deals).
+    del best_strategy  # noqa: ignore — preserved for signature stability
     return FlipStage.REHAB
 
 
@@ -495,17 +490,10 @@ class SavedPropertyService:
         logger.info(f"Bulk status update: {count} properties updated to {status.value}")
 
         if status == PropertyStatus.OWNED and uuid_ids:
-            from sqlalchemy import case, update
+            from sqlalchemy import update
 
-            # Strategy-aware first stage: LTR → MakeReady, STR → Setup,
-            # everything else (flip / brrrr / null / unknown) → Rehab. Single
-            # CASE expression so we still hit the DB just once.
-            first_stage_expr = case(
-                (SavedProperty.best_strategy == "ltr", FlipStage.MAKE_READY.value),
-                (SavedProperty.best_strategy == "str", FlipStage.SETUP.value),
-                else_=FlipStage.REHAB.value,
-            )
-
+            # Rehab is the universal first stage now — single literal value,
+            # no per-row CASE expression needed.
             await db.execute(
                 update(SavedProperty)
                 .where(
@@ -515,7 +503,7 @@ class SavedPropertyService:
                     SavedProperty.flip_stage.is_(None),
                 )
                 .values(
-                    flip_stage=first_stage_expr,
+                    flip_stage=FlipStage.REHAB.value,
                     flip_stage_entered_at=datetime.now(UTC),
                     acquired_at=datetime.now(UTC),
                     updated_at=datetime.now(UTC),
