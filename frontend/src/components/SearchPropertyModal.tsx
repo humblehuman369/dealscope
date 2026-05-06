@@ -46,7 +46,7 @@ async function geocodeLocationQuery(
 
 type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable';
 
-/** Sky tint #0fa4e9 @ 5% on surface card (matches app shell). */
+/** Sky tint #0fa4e9 @ 8% canvas / card tints (matches app shell). */
 const SEARCH_OPTION_CARD_BG =
   'linear-gradient(0deg, var(--sky-tint-fill, transparent), var(--sky-tint-fill, transparent)), var(--surface-card)';
 

@@ -18,7 +18,7 @@
   --danger: #b42318;
   
   /* Light Theme Colors */
-  --bg-primary: color-mix(in srgb, #0fa4e9 5%, #ffffff);
+  --bg-primary: color-mix(in srgb, #0fa4e9 8%, #ffffff);
   --bg-secondary: #ffffff;
   --bg-card: rgba(4, 101, 242, 0.04);
   --bg-card-hover: rgba(4, 101, 242, 0.08);

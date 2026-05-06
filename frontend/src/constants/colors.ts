@@ -207,8 +207,8 @@ export const gradients = {
   brandLight: 'linear-gradient(135deg, #0465f2 0%, #0354d1 100%)',
   /** Dark mode backgrounds */
   backgroundDark: 'linear-gradient(135deg, #07172e 0%, #1f2937 100%)',
-  /** Light mode backgrounds (#0fa4e9 @ 5% on white → white) */
-  backgroundLight: 'linear-gradient(135deg, color-mix(in srgb, #0fa4e9 5%, #ffffff) 0%, #ffffff 100%)',
+  /** Light mode backgrounds (#0fa4e9 @ 8% on white → white) */
+  backgroundLight: 'linear-gradient(135deg, color-mix(in srgb, #0fa4e9 8%, #ffffff) 0%, #ffffff 100%)',
   /** Premium card shine overlay */
   cardShine: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
 };

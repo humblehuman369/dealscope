@@ -26,7 +26,7 @@ export function getMapOverlaySurface(isDark: boolean): MapOverlayChrome {
  * the global app theme is still dark (`--surface-elevated` would stay black).
  */
 export const MAP_FILTER_LIGHT_CONTROLS = {
-  idleBg: '#f3fafe',
+  idleBg: '#ecf8fd',
   idleBorder: '1px solid rgba(24, 32, 28, 0.12)',
   idleText: 'rgba(24, 32, 28, 0.92)',
   sectionLabel: 'rgba(111, 117, 109, 1)',

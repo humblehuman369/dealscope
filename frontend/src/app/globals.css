@@ -242,8 +242,8 @@
    * canvas → one step deeper so content still reads as “on brand sky wash”
    * elevated cards stay pure white inside the canvas
    */
-  --surface-base: #f3fafe;
-  --surface-base: color-mix(in srgb, #0fa4e9 5%, #ffffff);
+  --surface-base: #ecf8fd;
+  --surface-base: color-mix(in srgb, #0fa4e9 8%, #ffffff);
   --surface-chrome: #f7fcfe;
   --surface-chrome: color-mix(in srgb, #0fa4e9 3%, #ffffff);
   --surface-section: #ffffff;
