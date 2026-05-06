@@ -10,7 +10,6 @@ import type { PropertyStatus } from '@/types/savedProperty'
 import { DashboardHeader } from './_components/DashboardHeader'
 import { PipelineStats } from './_components/PipelineStats'
 import { PipelineKanban } from './_components/PipelineKanban'
-import { RecentSearches } from './_components/RecentSearches'
 import { AccountSnapshot } from './_components/AccountSnapshot'
 import { UpcomingTasks } from './_components/UpcomingTasks'
 
@@ -50,11 +49,9 @@ function DashboardContent() {
           onOpen={(target) => router.push(`/deals/${target.id}?tab=tasks`)}
         />
 
-        {/* Two-column lower section: Recent Searches + Account */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RecentSearches />
-          <AccountSnapshot />
-        </div>
+        {/* Account snapshot — single column now that Recent Searches lives
+            on the saved-properties page as its own tab. */}
+        <AccountSnapshot />
       </div>
 
       <SearchPropertyModal

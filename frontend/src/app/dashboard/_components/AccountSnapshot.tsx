@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import {
   UserCircle,
-  History,
   Bookmark,
   CreditCard,
   ShieldCheck,
@@ -102,16 +101,10 @@ export function AccountSnapshot() {
           description="Account, business, investor preferences"
         />
         <AccountCard
-          href="/search-history"
-          icon={<History className="w-5 h-5" />}
-          title="Search History"
-          description="Every property you've analyzed"
-        />
-        <AccountCard
           href="/saved-properties"
           icon={<Bookmark className="w-5 h-5" />}
-          title="Saved Properties"
-          description="Full list with filters and notes"
+          title="Recent Searches & Saved Properties"
+          description="Everything you've analyzed plus your tracked deals"
         />
         <AccountCard
           href="/portfolio"
