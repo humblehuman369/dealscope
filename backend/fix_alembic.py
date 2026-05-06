@@ -71,8 +71,19 @@ def _check_column_exists(url: str, table: str, column: str) -> bool:
         return False  # Assume missing so we try to fix it
 
 
+AUTH_REVISION = "20260206_0001"
+
+
 def _apply_auth_columns_sql(url: str) -> bool:
-    """Fallback: add auth columns via raw SQL if Alembic can't."""
+    """Fallback: re-create the auth schema (one specific migration) via raw SQL.
+
+    Stamps Alembic to *AUTH_REVISION* on success — NOT to ``head``. Stamping
+    to head here was a long-standing bug that silently marked every later
+    migration as applied (device tokens, Google OAuth, properties count, the
+    flip pipeline, etc.) without actually running them. The caller is
+    responsible for running the remaining migrations afterwards via the
+    standard Alembic upgrade path.
+    """
     try:
         import psycopg
         conn_url = url
@@ -235,8 +246,11 @@ def _apply_auth_columns_sql(url: str) -> bool:
                     )
                     log.info("  Roles and permissions seeded.")
 
-        # Stamp alembic to head so future migrations work
-        _alembic(["stamp", "head"])
+        # Stamp Alembic to the auth migration's revision — NOT head — so
+        # subsequent migrations (device tokens, Google OAuth, properties
+        # count, flip pipeline, etc.) still run on the next `alembic upgrade
+        # head`. See AUTH_REVISION docstring above.
+        _alembic(["stamp", AUTH_REVISION])
         return True
     except Exception as e:
         log.error("SQL fallback failed: %s", e)
@@ -304,29 +318,40 @@ def main() -> None:
     log.info("Checking database schema ...")
 
     # ---- Historical recovery: very old databases that pre-date the auth
-    # migration may be missing auth columns. Apply a raw-SQL recovery in
-    # that one specific case so login keeps working long enough for the
-    # operator to investigate. New deployments hit `has_auth = True` and
-    # skip this branch entirely.
+    # migration may be missing auth columns. Restore the auth schema first
+    # so the standard upgrade path below can carry the DB the rest of the
+    # way to head. New deployments hit `has_auth = True` and skip this
+    # branch entirely.
     has_auth = _check_column_exists(db_url, "users", "failed_login_attempts")
     log.info("Auth columns present: %s", has_auth)
 
     if not has_auth:
         log.warning("Auth columns missing — attempting historical recovery path ...")
         _alembic(["stamp", PRE_AUTH_REVISION])
-        result = _alembic(["upgrade", "head"])
+        result = _alembic(["upgrade", AUTH_REVISION])
         if result.returncode != 0:
-            log.warning("Alembic recovery failed: %s", (result.stderr + result.stdout).strip())
+            log.warning(
+                "Alembic recovery to %s failed: %s",
+                AUTH_REVISION,
+                (result.stderr + result.stdout).strip(),
+            )
             log.info("Applying auth schema via raw SQL fallback ...")
             if not _apply_auth_columns_sql(db_url):
                 log.error("Could not apply auth schema. Refusing to start.")
                 sys.exit(1)
-            log.info("Auth schema applied successfully via SQL.")
+            log.info(
+                "Auth schema applied via SQL — Alembic stamped at %s. Remaining "
+                "migrations will be applied by the standard upgrade path below.",
+                AUTH_REVISION,
+            )
         else:
-            log.info("Alembic recovery applied successfully.")
-        return
+            log.info("Alembic recovery to %s succeeded.", AUTH_REVISION)
+        # Fall through to the standard upgrade path below — recovery only
+        # gets the DB to AUTH_REVISION; everything after that has to come
+        # from the regular migration chain.
 
-    # Standard path: just run the migrations. Failure is fatal.
+    # Standard path (also runs after recovery): bring the DB all the way to
+    # head. Failure is fatal — no silent stamps, no early returns.
     _run_alembic_upgrade_fatal()
 
 
