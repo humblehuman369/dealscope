@@ -126,6 +126,7 @@ export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
   return (
     <div
       data-theme="light"
+      data-homepage-v3="true"
       className="min-h-screen bg-[var(--surface-base)] text-[var(--text-body)] relative overflow-x-hidden antialiased grid-fade"
     >
       {/* Ambient glow — same sky family as app canvas, lighter than dark-mode hero */}
@@ -246,14 +247,8 @@ function HeroSection({
               }}
             />
 
-            {/* Card */}
-            <div
-              className="relative rounded-3xl overflow-hidden"
-              style={{
-                border: '1px solid rgba(56,189,248,0.20)',
-                boxShadow: '0 30px 80px -20px rgba(15,164,233,0.35)',
-              }}
-            >
+            {/* Card — same lift + hairline as comparison table (tokens override on data-homepage-v3) */}
+            <div className="relative rounded-3xl overflow-hidden border border-[var(--border-chrome)] shadow-[var(--shadow-card)]">
               <Image
                 src="/images/phone-house-hero.png"
                 alt="DealGapIQ analyzing a residential property on a phone, with a suburban home in the background"
@@ -1179,7 +1174,7 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
 function SiteFooter() {
   return (
     <footer
-      className="relative z-10 px-6 md:px-12 lg:px-20 py-12 mt-12 border-t"
+      className="relative z-10 px-6 md:px-12 lg:px-20 py-12 mt-12 border-t shadow-[0_-8px_32px_-14px_rgba(24,32,28,0.06)]"
       style={{
         borderColor: 'var(--border-subtle)',
         background: 'var(--surface-card)',
