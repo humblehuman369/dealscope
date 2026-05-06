@@ -384,6 +384,10 @@ class SavedPropertyService:
         previous_status = saved_property.status
         update_data = data.model_dump(exclude_unset=True)
 
+        # Detect status change so we can stamp status_changed_at exactly when
+        # it actually moves — model defaults only fire on insert, not update.
+        status_did_change = "status" in update_data and update_data["status"] is not None and update_data["status"] != previous_status
+
         for field, value in update_data.items():
             # Handle DealMakerRecord conversion to dict
             if field == "deal_maker_record" and value is not None:
@@ -407,7 +411,10 @@ class SavedPropertyService:
 
         _maybe_initialize_flip_lifecycle(saved_property, previous_status)
 
-        saved_property.updated_at = datetime.now(UTC)
+        now = datetime.now(UTC)
+        if status_did_change:
+            saved_property.status_changed_at = now
+        saved_property.updated_at = now
 
         await db.commit()
         await db.refresh(saved_property)
@@ -438,11 +445,15 @@ class SavedPropertyService:
         if not uuid_ids:
             return 0
 
-        # Bulk update with single query
+        # Bulk update with single query. We also stamp status_changed_at on
+        # every targeted row — accepting that some rows may already be in this
+        # status (in which case the timestamp is a no-op refresh). Worth it to
+        # avoid a per-row read-then-decide pattern.
+        now = datetime.now(UTC)
         result = await db.execute(
             update(SavedProperty)
             .where(SavedProperty.id.in_(uuid_ids), SavedProperty.user_id == uuid.UUID(user_id))
-            .values(status=status, updated_at=datetime.now(UTC))
+            .values(status=status, updated_at=now, status_changed_at=now)
         )
 
         await db.commit()

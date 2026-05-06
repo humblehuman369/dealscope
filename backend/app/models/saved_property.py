@@ -23,12 +23,31 @@ if TYPE_CHECKING:
 
 
 class FlipStage(enum.StrEnum):
-    """Post-acquisition flip lifecycle (FlipCycle-style phases)."""
+    """Post-acquisition lifecycle stages.
 
+    Despite the legacy name, this enum spans every strategy's post-purchase
+    phases — flip, BRRRR, long-term rental, and short-term rental. The
+    column is stored as VARCHAR (``native_enum=False``) so adding new values
+    needs no database migration. The frontend's lifecycleStages.ts decides
+    which subset is rendered for each property based on its strategy.
+    """
+
+    # Flip
     ACQUISITION = "Acquisition"
     REHAB = "Rehab"
     LISTED = "Listed"
     SOLD = "Sold"
+    # BRRRR
+    STABILIZED = "Stabilized"
+    REFINANCED = "Refinanced"
+    # LTR
+    MAKE_READY = "MakeReady"
+    LEASED = "Leased"
+    # STR
+    SETUP = "Setup"
+    LIVE = "Live"
+    # Shared terminal "we're holding it long-term" state for BRRRR / LTR / STR
+    HELD = "Held"
 
 
 class PropertyStatus(enum.StrEnum):
@@ -81,6 +100,13 @@ class SavedProperty(Base):
 
     # User Customizations
     status: Mapped[PropertyStatus] = mapped_column(SQLEnum(PropertyStatus), default=PropertyStatus.PROSPECTING)
+    # Stamped whenever ``status`` changes — used by the kanban to compute
+    # "days in current stage" without having to scan the adjustments table.
+    status_changed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+    )
 
     # Post-acquisition flip lifecycle (optional until property is owned / user advances)
     flip_stage: Mapped[FlipStage | None] = mapped_column(SQLEnum(FlipStage, native_enum=False), nullable=True)
