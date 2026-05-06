@@ -22,6 +22,7 @@ import {
   BarChart3,
   Clock,
   ExternalLink,
+  FileText,
   FolderOpen,
   ListChecks,
   Receipt,
@@ -238,14 +239,23 @@ function DealHeader({ deal }: { deal: DealDetail }) {
             )}
           </div>
         </div>
-        <Link
-          href={`/strategy?address=${encodeURIComponent(buildVerdictAddress(deal))}`}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] transition-colors no-underline shrink-0"
-        >
-          <BarChart3 className="w-4 h-4" />
-          View Analysis
-          <ExternalLink className="w-3 h-3" />
-        </Link>
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          <Link
+            href={`/deals/${deal.id}/report`}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] transition-colors no-underline"
+          >
+            <FileText className="w-4 h-4" />
+            Deal Report
+          </Link>
+          <Link
+            href={`/strategy?address=${encodeURIComponent(buildVerdictAddress(deal))}`}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] transition-colors no-underline"
+          >
+            <BarChart3 className="w-4 h-4" />
+            View Analysis
+            <ExternalLink className="w-3 h-3" />
+          </Link>
+        </div>
       </div>
 
       {/* 4-stat strip — populated when a budget exists; shows placeholder copy
