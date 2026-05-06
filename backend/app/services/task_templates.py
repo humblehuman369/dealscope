@@ -62,6 +62,9 @@ _PRE_PURCHASE_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
 }
 
 
+# "You just got the keys" tasks — universal regardless of strategy. Phase 10A
+# folds these into each strategy's first post-purchase stage (Rehab / Make
+# Ready / Setup) since the standalone Acquisition column was eliminated.
 _OWNED_BASE_TEMPLATE: list[TaskTemplateItem] = [
     ("Set up utilities in your name", None, 3),
     ("Change locks and access codes", None, 3),
@@ -71,8 +74,8 @@ _OWNED_BASE_TEMPLATE: list[TaskTemplateItem] = [
 
 
 _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
-    # Flip
-    f"flip_{FlipStage.REHAB.value.lower()}": [
+    # Flip — Rehab is the entry stage now (was Acquisition).
+    f"flip_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
         ("Get 3 contractor bids", None, 7),
         ("Pull permits if required", None, 14),
         ("Order materials", None, 14),
@@ -84,8 +87,8 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Set first-weekend showings", None, 5),
         ("Review price vs. market every week", None, 7),
     ],
-    # BRRRR — diverges from flip after rehab
-    f"brrrr_{FlipStage.REHAB.value.lower()}": [
+    # BRRRR — Rehab is the entry stage; first-time-owned tasks fold in.
+    f"brrrr_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
         ("Get 3 contractor bids", None, 7),
         ("Pull permits if required", None, 14),
         ("Track rehab spend against estimator", None, 7),
@@ -101,8 +104,8 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Pull cash out at closing", None, 14),
         ("Set up DSCR-loan payment auto-pay", None, 30),
     ],
-    # Long-term rental
-    f"ltr_{FlipStage.MAKE_READY.value.lower()}": [
+    # Long-term rental — Make Ready is the entry stage.
+    f"ltr_{FlipStage.MAKE_READY.value.lower()}": _OWNED_BASE_TEMPLATE + [
         ("Deep clean", None, 3),
         ("Make minor cosmetic repairs", None, 7),
         ("List on Zillow / RentRedi / Apartments.com", None, 7),
@@ -113,8 +116,8 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Collect first month + deposit", None, 1),
         ("Set up rent collection (auto-pay if possible)", None, 7),
     ],
-    # Short-term rental
-    f"str_{FlipStage.SETUP.value.lower()}": [
+    # Short-term rental — Setup is the entry stage.
+    f"str_{FlipStage.SETUP.value.lower()}": _OWNED_BASE_TEMPLATE + [
         ("Furnish and stage", None, 14),
         ("Stock linens, kitchen basics, supplies", None, 14),
         ("Set up Airbnb / VRBO listings", None, 21),

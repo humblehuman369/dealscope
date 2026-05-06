@@ -23,8 +23,27 @@ from app.schemas.saved_property import (
 logger = logging.getLogger(__name__)
 
 
+def _first_post_purchase_stage(best_strategy: str | None) -> FlipStage:
+    """First lifecycle stage when a deal hits ``status='owned'`` — strategy
+    determines whether the user lands in Rehab, Make-Ready, or Setup.
+
+    The legacy ``Acquisition`` stage was eliminated in Phase 10A; ownership
+    is now signaled solely by ``status='owned'``, and the kanban surfaces
+    the strategy's first *real* phase as the entry column.
+    """
+    s = (best_strategy or "").lower()
+    if s == "ltr":
+        return FlipStage.MAKE_READY
+    if s == "str":
+        return FlipStage.SETUP
+    # flip / brrrr / subject_to / wholesale / unknown → Rehab is the
+    # universal fallback (most common path for first-time owned deals).
+    return FlipStage.REHAB
+
+
 def _maybe_initialize_flip_lifecycle(saved_property: SavedProperty, previous_status: PropertyStatus) -> None:
-    """When lead status becomes OWNED, start the flip-cycle pipeline at Acquisition."""
+    """When lead status becomes OWNED, drop the deal into the strategy's
+    first post-purchase column."""
     if saved_property.status != PropertyStatus.OWNED:
         return
     if previous_status == PropertyStatus.OWNED:
@@ -32,7 +51,7 @@ def _maybe_initialize_flip_lifecycle(saved_property: SavedProperty, previous_sta
     if saved_property.flip_stage is not None:
         return
     now = datetime.now(UTC)
-    saved_property.flip_stage = FlipStage.ACQUISITION
+    saved_property.flip_stage = _first_post_purchase_stage(saved_property.best_strategy)
     saved_property.flip_stage_entered_at = now
     if saved_property.acquired_at is None:
         saved_property.acquired_at = now
@@ -172,7 +191,7 @@ class SavedPropertyService:
         await _adjust_properties_count(db, uuid.UUID(user_id), +1)
         if data.status == PropertyStatus.OWNED and saved_property.flip_stage is None:
             now = datetime.now(UTC)
-            saved_property.flip_stage = FlipStage.ACQUISITION
+            saved_property.flip_stage = _first_post_purchase_stage(saved_property.best_strategy)
             saved_property.flip_stage_entered_at = now
             saved_property.acquired_at = now
         try:
@@ -476,7 +495,16 @@ class SavedPropertyService:
         logger.info(f"Bulk status update: {count} properties updated to {status.value}")
 
         if status == PropertyStatus.OWNED and uuid_ids:
-            from sqlalchemy import update
+            from sqlalchemy import case, update
+
+            # Strategy-aware first stage: LTR → MakeReady, STR → Setup,
+            # everything else (flip / brrrr / null / unknown) → Rehab. Single
+            # CASE expression so we still hit the DB just once.
+            first_stage_expr = case(
+                (SavedProperty.best_strategy == "ltr", FlipStage.MAKE_READY.value),
+                (SavedProperty.best_strategy == "str", FlipStage.SETUP.value),
+                else_=FlipStage.REHAB.value,
+            )
 
             await db.execute(
                 update(SavedProperty)
@@ -487,7 +515,7 @@ class SavedPropertyService:
                     SavedProperty.flip_stage.is_(None),
                 )
                 .values(
-                    flip_stage=FlipStage.ACQUISITION,
+                    flip_stage=first_stage_expr,
                     flip_stage_entered_at=datetime.now(UTC),
                     acquired_at=datetime.now(UTC),
                     updated_at=datetime.now(UTC),
