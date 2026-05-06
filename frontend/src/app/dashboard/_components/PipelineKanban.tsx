@@ -5,30 +5,41 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   useSavedProperties,
+  useUpdateFlipStage,
   useUpdateSavedPropertyStatus,
 } from '@/hooks/useSavedProperties'
 import {
-  PIPELINE_STAGES,
   STATUS_CONFIG,
   STRATEGY_LABELS,
   formatCurrency,
   formatRelativeDate,
 } from '@/lib/savedPropertyStatus'
-import type { PropertyStatus, SavedPropertySummary } from '@/types/savedProperty'
+import {
+  STAGES_BY_STRATEGY,
+  STAGE_LABELS,
+  STRATEGY_HEADER,
+  resolveStrategy,
+  type LifecycleStrategy,
+} from '@/lib/lifecycleStages'
+import type { FlipStage, PropertyStatus, SavedPropertySummary } from '@/types/savedProperty'
 import { ChevronRight, MoreHorizontal, Bookmark, ListChecks } from 'lucide-react'
 import { DataBoundary } from '@/components/ui/DataBoundary'
 
 interface PipelineKanbanProps {
   highlightStage: PropertyStatus | null
   onEmptyAction: () => void
-  /** Open the per-property slide-over (shared with the dashboard's
-   *  "Due this week" widget so both surfaces drive the same panel). */
   onOpenTasks: (target: { id: string; title: string; stageLabel: string | null }) => void
 }
 
-// Statuses available in the per-card "Move to" dropdown — the active pipeline
-// plus the two terminal columns. Kept in this order so a user reading the
-// dropdown follows the funnel left-to-right then ends at the bench.
+// Pre-purchase tier — universal across every strategy.
+const PRE_STAGES: PropertyStatus[] = [
+  'prospecting',
+  'pursuing',
+  'negotiating',
+  'under_contract',
+]
+
+// Statuses available in the per-card "Move to" dropdown.
 const MOVE_TO_OPTIONS: PropertyStatus[] = [
   'prospecting',
   'pursuing',
@@ -39,8 +50,6 @@ const MOVE_TO_OPTIONS: PropertyStatus[] = [
   'archived',
 ]
 
-// Drag payload uses a custom MIME type so the kanban doesn't accidentally
-// accept text drops from elsewhere on the page.
 const DRAG_MIME = 'application/x-savedproperty-id'
 
 // Late-funnel stages where "days in stage" is a more useful action signal
@@ -50,6 +59,22 @@ const TIME_IN_STAGE_STATUSES: ReadonlySet<PropertyStatus> = new Set([
   'under_contract',
   'owned',
 ])
+
+type StrategyFilter = 'all' | LifecycleStrategy
+const STRATEGY_FILTERS: StrategyFilter[] = ['all', 'flip', 'brrrr', 'ltr', 'str']
+const STRATEGY_FILTER_LABEL: Record<StrategyFilter, string> = {
+  all: 'All Strategies',
+  flip: 'Fix & Flip',
+  brrrr: 'BRRRR',
+  ltr: 'LTR',
+  str: 'STR',
+}
+
+// Column descriptor — encodes which API call to fire on drop.
+type Column =
+  | { kind: 'pre'; status: PropertyStatus; label: string; bg: string; color: string }
+  | { kind: 'owned-stage'; stage: FlipStage; strategy: LifecycleStrategy; label: string }
+  | { kind: 'owned-all'; label: string }
 
 function shortAddress(p: SavedPropertySummary): string {
   return p.nickname || p.address_street
@@ -67,11 +92,8 @@ function daysSince(iso: string | null | undefined): number | null {
   return Math.max(0, Math.floor((Date.now() - t) / 86_400_000))
 }
 
-/** Variance badge mirrors the styling used on the Active Flips page.
- *
- * Renders as a Link to the property's Budget vs Actual page when a propertyId
- * is supplied — clicking the badge is the natural drill-down path.
- */
+/** Variance badge mirrors the styling used elsewhere; doubles as a link to
+ *  the Budget page when a propertyId is supplied. */
 function VarianceBadge({ pct, propertyId }: { pct: string; propertyId?: string }) {
   const n = parseFloat(pct)
   if (!Number.isFinite(n)) return null
@@ -102,53 +124,168 @@ function VarianceBadge({ pct, propertyId }: { pct: string; propertyId?: string }
   return <span className={baseClasses}>{content}</span>
 }
 
+/** Compute the kanban's columns based on the active strategy filter.
+ *  The pre-purchase tier is always the same 4 columns; the post-purchase
+ *  tier varies. "All" shows a single unified Owned column where cards
+ *  carry strategy chips; specific strategies show their own progression. */
+function computeColumns(strategy: StrategyFilter): { pre: Column[]; post: Column[] } {
+  const pre: Column[] = PRE_STAGES.map((s) => ({
+    kind: 'pre',
+    status: s,
+    label: STATUS_CONFIG[s].label,
+    bg: STATUS_CONFIG[s].bg,
+    color: STATUS_CONFIG[s].color,
+  }))
+
+  const post: Column[] =
+    strategy === 'all'
+      ? [{ kind: 'owned-all', label: 'Owned' }]
+      : STAGES_BY_STRATEGY[strategy].map((stage) => ({
+          kind: 'owned-stage',
+          stage,
+          strategy,
+          label: STAGE_LABELS[stage],
+        }))
+
+  return { pre, post }
+}
+
+/** Decide which column a property belongs in given the active filter. */
+function columnIndexFor(
+  p: SavedPropertySummary,
+  columns: { pre: Column[]; post: Column[] },
+  strategy: StrategyFilter,
+): { tier: 'pre' | 'post'; index: number } | null {
+  if (p.status !== 'owned') {
+    const idx = columns.pre.findIndex((c) => c.kind === 'pre' && c.status === p.status)
+    return idx >= 0 ? { tier: 'pre', index: idx } : null
+  }
+  // Owned property:
+  if (strategy === 'all') {
+    return { tier: 'post', index: 0 }
+  }
+  const propStrategy = resolveStrategy(p.best_strategy)
+  if (propStrategy !== strategy) return null
+  if (!p.flip_stage) return null
+  const idx = columns.post.findIndex(
+    (c) => c.kind === 'owned-stage' && c.stage === p.flip_stage,
+  )
+  return idx >= 0 ? { tier: 'post', index: idx } : null
+}
+
 export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: PipelineKanbanProps) {
   const router = useRouter()
 
-  // Fetch up to 100 active properties — enough for any practical pipeline view.
   const query = useSavedProperties({
     page: 0,
     pageSize: 100,
     status: 'all',
     search: '',
   })
-
   const updateStatus = useUpdateSavedPropertyStatus()
+  const updateFlipStage = useUpdateFlipStage()
 
-  // Drag state: which column is currently being hovered as a drop target.
-  const [dropTargetStage, setDropTargetStage] = useState<PropertyStatus | null>(null)
-
-  // Group by status
-  const byStatus = useMemo(() => {
-    const groups: Record<PropertyStatus, SavedPropertySummary[]> = {
-      prospecting: [],
-      pursuing: [],
-      negotiating: [],
-      under_contract: [],
-      owned: [],
-      passed: [],
-      archived: [],
-    }
+  // Default the strategy filter to whatever the user owns most of, falling
+  // back to "all" so multi-strategy investors aren't tunnelled into one path.
+  const defaultStrategy: StrategyFilter = useMemo(() => {
+    const counts: Record<LifecycleStrategy, number> = { flip: 0, brrrr: 0, ltr: 0, str: 0 }
     for (const p of query.data ?? []) {
-      groups[p.status]?.push(p)
+      if (p.status === 'owned') counts[resolveStrategy(p.best_strategy)] += 1
     }
-    return groups
+    const top = (Object.entries(counts) as [LifecycleStrategy, number][])
+      .sort((a, b) => b[1] - a[1])[0]
+    return top && top[1] > 0 ? top[0] : 'all'
   }, [query.data])
 
-  const totalActive = PIPELINE_STAGES.reduce(
-    (sum, stage) => sum + byStatus[stage].length,
-    0,
-  )
-  const archivedCount = byStatus.passed.length + byStatus.archived.length
+  const [strategy, setStrategy] = useState<StrategyFilter>('all')
+  // Sync to data-driven default on first load.
+  const [strategyTouched, setStrategyTouched] = useState(false)
+  if (!strategyTouched && defaultStrategy !== 'all' && strategy === 'all') {
+    setStrategy(defaultStrategy)
+    setStrategyTouched(true)
+  }
 
-  function handleDrop(stage: PropertyStatus, e: React.DragEvent<HTMLDivElement>) {
+  const [dropTarget, setDropTarget] = useState<{ tier: 'pre' | 'post'; index: number } | null>(null)
+
+  const columns = useMemo(() => computeColumns(strategy), [strategy])
+
+  // Bucket properties into columns. Anything that doesn't match the active
+  // filter (e.g. a flip Owned when the LTR filter is on) is held aside so
+  // it can be surfaced via the count chip instead of disappearing silently.
+  const { byColumn, hiddenOwned, totalActive } = useMemo(() => {
+    const byColumn: SavedPropertySummary[][][] = [
+      columns.pre.map(() => [] as SavedPropertySummary[]),
+      columns.post.map(() => [] as SavedPropertySummary[]),
+    ]
+    let hiddenOwned = 0
+    let totalActive = 0
+    for (const p of query.data ?? []) {
+      if (p.status === 'passed' || p.status === 'archived') continue
+      const slot = columnIndexFor(p, columns, strategy)
+      if (!slot) {
+        if (p.status === 'owned') hiddenOwned += 1
+        continue
+      }
+      byColumn[slot.tier === 'pre' ? 0 : 1][slot.index].push(p)
+      totalActive += 1
+    }
+    return { byColumn, hiddenOwned, totalActive }
+  }, [columns, query.data, strategy])
+
+  const closedCount = useMemo(
+    () => (query.data ?? []).filter((p) => p.status === 'passed' || p.status === 'archived').length,
+    [query.data],
+  )
+
+  function handleDrop(
+    target: { tier: 'pre' | 'post'; index: number },
+    e: React.DragEvent<HTMLDivElement>,
+  ) {
     e.preventDefault()
-    setDropTargetStage(null)
+    setDropTarget(null)
     const id = e.dataTransfer.getData(DRAG_MIME)
     if (!id) return
     const property = (query.data ?? []).find((p) => p.id === id)
-    if (!property || property.status === stage) return
-    updateStatus.mutate({ id, status: stage })
+    if (!property) return
+
+    const col = target.tier === 'pre' ? columns.pre[target.index] : columns.post[target.index]
+    if (!col) return
+
+    if (col.kind === 'pre') {
+      if (property.status === col.status) return
+      updateStatus.mutate({ id, status: col.status })
+    } else if (col.kind === 'owned-stage') {
+      // Already in the right column?
+      if (property.status === 'owned' && property.flip_stage === col.stage) return
+      if (property.status !== 'owned') {
+        // Promote to Owned first (backend auto-assigns first stage), then
+        // jump to the target stage. Two requests, but mostly idempotent —
+        // worst case the user briefly sees the property in the auto-assigned
+        // first stage before flip_stage updates.
+        updateStatus.mutate(
+          { id, status: 'owned' },
+          {
+            onSuccess: () => {
+              if (col.stage !== 'Rehab' && col.stage !== 'MakeReady' && col.stage !== 'Setup') {
+                // Only fire the second call when the target isn't the
+                // first stage (which the backend already assigned).
+                updateFlipStage.mutate({ id, stage: col.stage })
+              } else if (property.best_strategy && resolveStrategy(property.best_strategy) === col.strategy) {
+                // Strategy matches but auto-assigned stage may differ from
+                // the dropped target — set it explicitly.
+                updateFlipStage.mutate({ id, stage: col.stage })
+              }
+            },
+          },
+        )
+      } else {
+        updateFlipStage.mutate({ id, stage: col.stage })
+      }
+    } else if (col.kind === 'owned-all') {
+      if (property.status !== 'owned') {
+        updateStatus.mutate({ id, status: 'owned' })
+      }
+    }
   }
 
   return (
@@ -156,7 +293,7 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
       isLoading={query.isLoading}
       error={query.isError ? 'Failed to load your pipeline' : null}
       onRetry={() => query.refetch()}
-      isEmpty={totalActive === 0}
+      isEmpty={totalActive === 0 && hiddenOwned === 0}
       emptyIcon={<Bookmark className="w-8 h-8 text-[var(--text-label)]" />}
       emptyTitle="Your pipeline is empty"
       emptyDescription="Save properties from any analysis page to start tracking deals here."
@@ -169,96 +306,243 @@ export function PipelineKanban({ highlightStage, onEmptyAction, onOpenTasks }: P
         </button>
       }
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        {PIPELINE_STAGES.map(stage => {
-          const items = byStatus[stage]
-          const config = STATUS_CONFIG[stage]
-          const isHighlighted = highlightStage === stage
-          const isDropTarget = dropTargetStage === stage
-
+      {/* Strategy filter pills — drives which post-purchase columns render. */}
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        {STRATEGY_FILTERS.map((s) => {
+          const active = strategy === s
           return (
-            <div
-              key={stage}
-              onDragOver={(e) => {
-                if (e.dataTransfer.types.includes(DRAG_MIME)) {
-                  e.preventDefault()
-                  e.dataTransfer.dropEffect = 'move'
-                  if (dropTargetStage !== stage) setDropTargetStage(stage)
-                }
+            <button
+              key={s}
+              type="button"
+              onClick={() => {
+                setStrategy(s)
+                setStrategyTouched(true)
               }}
-              onDragLeave={(e) => {
-                // Only clear when leaving the column, not when crossing a child.
-                if (e.currentTarget.contains(e.relatedTarget as Node)) return
-                if (dropTargetStage === stage) setDropTargetStage(null)
-              }}
-              onDrop={(e) => handleDrop(stage, e)}
-              className={`rounded-xl border transition-colors ${
-                isDropTarget
-                  ? 'border-[var(--accent-sky)] bg-[var(--color-sky-dim)] ring-2 ring-[var(--accent-sky)] ring-offset-1 ring-offset-[var(--surface-base)]'
-                  : isHighlighted
-                  ? 'border-[var(--border-focus)] bg-[var(--surface-elevated)]'
-                  : 'border-[var(--border-default)] bg-[var(--surface-card)]'
-              } flex flex-col min-h-[180px]`}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                active
+                  ? 'bg-[var(--accent-sky)] text-[var(--text-inverse)]'
+                  : 'bg-[var(--surface-card)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:text-[var(--text-body)] hover:border-[var(--border-strong)]'
+              }`}
             >
-              {/* Column header */}
-              <div
-                className={`flex items-center justify-between px-3 py-2 border-b border-[var(--border-default)] ${config.bg}`}
-              >
-                <h3 className={`text-xs font-bold uppercase tracking-wide ${config.color}`}>
-                  {config.label}
-                </h3>
-                <span className="text-xs font-semibold tabular-nums text-[var(--text-label)]">
-                  {items.length}
-                </span>
-              </div>
-
-              {/* Cards */}
-              <div className="p-2 flex flex-col gap-2 flex-1">
-                {items.length === 0 ? (
-                  <p className="text-xs text-[var(--text-label)] py-3 text-center">
-                    {isDropTarget ? 'Drop to move here' : 'No properties'}
-                  </p>
-                ) : (
-                  items.map(p => (
-                    <KanbanCard
-                      key={p.id}
-                      property={p}
-                      onClick={() => {
-                        const addr = buildFullAddress(p)
-                        router.push(`/verdict?address=${encodeURIComponent(addr)}`)
-                      }}
-                      onChangeStatus={(newStatus: PropertyStatus) =>
-                        updateStatus.mutate({ id: p.id, status: newStatus })
-                      }
-                      onOpenTasks={() =>
-                        onOpenTasks({
-                          id: p.id,
-                          title: shortAddress(p),
-                          stageLabel: STATUS_CONFIG[p.status].label,
-                        })
-                      }
-                      isUpdating={updateStatus.isPending}
-                    />
-                  ))
-                )}
-              </div>
-            </div>
+              {STRATEGY_FILTER_LABEL[s]}
+            </button>
           )
         })}
+        {hiddenOwned > 0 && (
+          <span className="text-[11px] text-[var(--text-label)] ml-1">
+            {hiddenOwned} owned in other strateg{hiddenOwned === 1 ? 'y' : 'ies'} hidden
+          </span>
+        )}
       </div>
 
-      {archivedCount > 0 && (
+      {/* Tiered kanban — pre-purchase, divider, post-purchase. */}
+      <div className="overflow-x-auto pb-1">
+        <div className="flex gap-3 min-w-max">
+          {/* Tier 1: Pre-purchase funnel */}
+          <TierGroup label="Active Funnel" tone="sky">
+            {columns.pre.map((col, i) => (
+              <KanbanColumn
+                key={`pre-${i}`}
+                col={col}
+                items={byColumn[0][i]}
+                isHighlighted={col.kind === 'pre' && col.status === highlightStage}
+                isDropTarget={!!dropTarget && dropTarget.tier === 'pre' && dropTarget.index === i}
+                onDragOver={(e) => {
+                  if (e.dataTransfer.types.includes(DRAG_MIME)) {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                    setDropTarget({ tier: 'pre', index: i })
+                  }
+                }}
+                onDragLeave={(e) => {
+                  if (e.currentTarget.contains(e.relatedTarget as Node)) return
+                  setDropTarget(null)
+                }}
+                onDrop={(e) => handleDrop({ tier: 'pre', index: i }, e)}
+                onCardClick={(p) => {
+                  const addr = buildFullAddress(p)
+                  router.push(`/verdict?address=${encodeURIComponent(addr)}`)
+                }}
+                onChangeStatus={(id, status) => updateStatus.mutate({ id, status })}
+                onOpenTasks={(p) =>
+                  onOpenTasks({
+                    id: p.id,
+                    title: shortAddress(p),
+                    stageLabel: STATUS_CONFIG[p.status].label,
+                  })
+                }
+                isUpdating={updateStatus.isPending || updateFlipStage.isPending}
+                showStrategyChip={false}
+              />
+            ))}
+          </TierGroup>
+
+          {/* Vertical divider between tiers */}
+          <div className="w-px shrink-0 bg-[var(--border-default)]" aria-hidden />
+
+          {/* Tier 2: Post-purchase / FlipCycle */}
+          <TierGroup label={strategy === 'all' ? 'Owned' : `${STRATEGY_HEADER[strategy]} · FlipCycle`} tone="positive">
+            {columns.post.map((col, i) => (
+              <KanbanColumn
+                key={`post-${i}`}
+                col={col}
+                items={byColumn[1][i]}
+                isHighlighted={false}
+                isDropTarget={!!dropTarget && dropTarget.tier === 'post' && dropTarget.index === i}
+                onDragOver={(e) => {
+                  if (e.dataTransfer.types.includes(DRAG_MIME)) {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                    setDropTarget({ tier: 'post', index: i })
+                  }
+                }}
+                onDragLeave={(e) => {
+                  if (e.currentTarget.contains(e.relatedTarget as Node)) return
+                  setDropTarget(null)
+                }}
+                onDrop={(e) => handleDrop({ tier: 'post', index: i }, e)}
+                onCardClick={(p) => {
+                  const addr = buildFullAddress(p)
+                  router.push(`/verdict?address=${encodeURIComponent(addr)}`)
+                }}
+                onChangeStatus={(id, status) => updateStatus.mutate({ id, status })}
+                onOpenTasks={(p) =>
+                  onOpenTasks({
+                    id: p.id,
+                    title: shortAddress(p),
+                    stageLabel:
+                      p.flip_stage ? STAGE_LABELS[p.flip_stage] : STATUS_CONFIG[p.status].label,
+                  })
+                }
+                isUpdating={updateStatus.isPending || updateFlipStage.isPending}
+                showStrategyChip={strategy === 'all'}
+              />
+            ))}
+          </TierGroup>
+        </div>
+      </div>
+
+      {closedCount > 0 && (
         <div className="mt-4 text-right">
           <button
             onClick={() => router.push('/saved-properties')}
             className="inline-flex items-center gap-1 text-sm text-[var(--text-label)] hover:text-[var(--accent-sky)] transition-colors"
           >
-            View {archivedCount} archived/passed
+            View {closedCount} closed (passed/archived)
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       )}
     </DataBoundary>
+  )
+}
+
+// ───────────────────────────────────────────────────────
+// Tier wrapper
+
+function TierGroup({
+  label,
+  tone,
+  children,
+}: {
+  label: string
+  tone: 'sky' | 'positive'
+  children: React.ReactNode
+}) {
+  const toneClass =
+    tone === 'sky' ? 'text-[var(--accent-sky)]' : 'text-[var(--status-positive)]'
+  return (
+    <div className="flex flex-col">
+      <p className={`text-[10px] font-bold uppercase tracking-wide ${toneClass} mb-1.5 px-1`}>
+        {label}
+      </p>
+      <div className="flex gap-3">{children}</div>
+    </div>
+  )
+}
+
+// ───────────────────────────────────────────────────────
+// Column
+
+interface KanbanColumnProps {
+  col: Column
+  items: SavedPropertySummary[]
+  isHighlighted: boolean
+  isDropTarget: boolean
+  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void
+  onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void
+  onDrop: (e: React.DragEvent<HTMLDivElement>) => void
+  onCardClick: (p: SavedPropertySummary) => void
+  onChangeStatus: (id: string, status: PropertyStatus) => void
+  onOpenTasks: (p: SavedPropertySummary) => void
+  isUpdating: boolean
+  showStrategyChip: boolean
+}
+
+function KanbanColumn({
+  col,
+  items,
+  isHighlighted,
+  isDropTarget,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onCardClick,
+  onChangeStatus,
+  onOpenTasks,
+  isUpdating,
+  showStrategyChip,
+}: KanbanColumnProps) {
+  const headerBg =
+    col.kind === 'pre'
+      ? col.bg
+      : col.kind === 'owned-stage'
+      ? 'bg-[rgba(52,211,153,0.10)]'
+      : 'bg-[rgba(52,211,153,0.10)]'
+  const headerColor =
+    col.kind === 'pre'
+      ? col.color
+      : 'text-[var(--status-positive)]'
+
+  return (
+    <div
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      className={`w-[200px] shrink-0 rounded-xl border transition-colors ${
+        isDropTarget
+          ? 'border-[var(--accent-sky)] bg-[var(--color-sky-dim)] ring-2 ring-[var(--accent-sky)] ring-offset-1 ring-offset-[var(--surface-base)]'
+          : isHighlighted
+          ? 'border-[var(--border-focus)] bg-[var(--surface-elevated)]'
+          : 'border-[var(--border-default)] bg-[var(--surface-card)]'
+      } flex flex-col min-h-[180px]`}
+    >
+      <div className={`flex items-center justify-between px-3 py-2 border-b border-[var(--border-default)] ${headerBg}`}>
+        <h3 className={`text-xs font-bold uppercase tracking-wide ${headerColor}`}>{col.label}</h3>
+        <span className="text-xs font-semibold tabular-nums text-[var(--text-label)]">
+          {items.length}
+        </span>
+      </div>
+      <div className="p-2 flex flex-col gap-2 flex-1">
+        {items.length === 0 ? (
+          <p className="text-xs text-[var(--text-label)] py-3 text-center">
+            {isDropTarget ? 'Drop to move here' : 'No properties'}
+          </p>
+        ) : (
+          items.map((p) => (
+            <KanbanCard
+              key={p.id}
+              property={p}
+              onClick={() => onCardClick(p)}
+              onChangeStatus={(s) => onChangeStatus(p.id, s)}
+              onOpenTasks={() => onOpenTasks(p)}
+              isUpdating={isUpdating}
+              showStrategyChip={showStrategyChip}
+            />
+          ))
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -271,24 +555,32 @@ interface KanbanCardProps {
   onChangeStatus: (newStatus: PropertyStatus) => void
   onOpenTasks: () => void
   isUpdating: boolean
+  showStrategyChip: boolean
 }
 
-function KanbanCard({ property, onClick, onChangeStatus, onOpenTasks, isUpdating }: KanbanCardProps) {
+function KanbanCard({
+  property,
+  onClick,
+  onChangeStatus,
+  onOpenTasks,
+  isUpdating,
+  showStrategyChip,
+}: KanbanCardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const strategyLabel = property.best_strategy
     ? (STRATEGY_LABELS[property.best_strategy] ?? property.best_strategy)
     : null
 
-  // Late-stage cards swap the "last updated" timestamp for a "days in stage"
-  // counter — what the user actually needs to act on at this point in the
-  // funnel. ``status_changed_at`` is populated by the backend; pre-migration
-  // rows fall back to ``updated_at``.
   const showDaysInStage = TIME_IN_STAGE_STATUSES.has(property.status)
   const daysInStage = showDaysInStage
     ? daysSince(property.status_changed_at ?? property.updated_at)
     : null
   const showVariance = property.status === 'owned' && !!property.budget_variance_pct
+
+  // The "All" filter shows owned cards from every strategy together; surface
+  // the strategy + sub-stage as chips so the user can scan them at a glance.
+  const showStageBadge = property.status === 'owned' && !!property.flip_stage
 
   return (
     <div
@@ -310,7 +602,8 @@ function KanbanCard({ property, onClick, onChangeStatus, onOpenTasks, isUpdating
         </p>
         {property.address_city && (
           <p className="text-[11px] text-[var(--text-label)] truncate">
-            {property.address_city}{property.address_state ? `, ${property.address_state}` : ''}
+            {property.address_city}
+            {property.address_state ? `, ${property.address_state}` : ''}
           </p>
         )}
         <div className="mt-2 flex items-center justify-between gap-2">
@@ -331,20 +624,28 @@ function KanbanCard({ property, onClick, onChangeStatus, onOpenTasks, isUpdating
             </span>
           )}
         </div>
-        {showVariance ? (
-          <div className="mt-2">
-            <VarianceBadge pct={property.budget_variance_pct as string} propertyId={property.id} />
+        {(showStrategyChip && showStageBadge) || showVariance ? (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {showStrategyChip && showStageBadge && (
+              <span className="inline-flex text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--surface-elevated)] text-[var(--text-secondary)] ring-1 ring-[var(--border-default)]">
+                {strategyLabel ?? 'Flip'} · {STAGE_LABELS[property.flip_stage as FlipStage]}
+              </span>
+            )}
+            {showVariance && (
+              <VarianceBadge
+                pct={property.budget_variance_pct as string}
+                propertyId={property.id}
+              />
+            )}
           </div>
-        ) : strategyLabel ? (
+        ) : strategyLabel && property.status !== 'owned' ? (
           <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-label)] truncate">
             {strategyLabel}
           </p>
         ) : null}
       </button>
 
-      {/* Tasks badge — clickable. Always rendered so users discover the
-          surface even on properties with zero tasks. Overdue items get a
-          warning dot. */}
+      {/* Tasks badge */}
       <button
         onClick={(e) => {
           e.stopPropagation()
@@ -363,11 +664,11 @@ function KanbanCard({ property, onClick, onChangeStatus, onOpenTasks, isUpdating
         )}
       </button>
 
-      {/* Status menu trigger */}
+      {/* Status menu */}
       <button
         onClick={(e) => {
           e.stopPropagation()
-          setMenuOpen(prev => !prev)
+          setMenuOpen((prev) => !prev)
         }}
         className="absolute top-1.5 right-1.5 p-1 rounded hover:bg-[var(--hover-overlay)] text-[var(--text-label)]"
         aria-label="Change status"
@@ -378,11 +679,7 @@ function KanbanCard({ property, onClick, onChangeStatus, onOpenTasks, isUpdating
 
       {menuOpen && (
         <>
-          {/* Backdrop to close on outside click */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setMenuOpen(false)}
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
           <div
             className="absolute right-1.5 top-8 z-50 w-44 rounded-lg shadow-lg py-1"
             style={{
@@ -393,15 +690,13 @@ function KanbanCard({ property, onClick, onChangeStatus, onOpenTasks, isUpdating
             <p className="px-3 py-1 text-[10px] uppercase tracking-wide text-[var(--text-label)]">
               Move to
             </p>
-            {MOVE_TO_OPTIONS.map(s => (
+            {MOVE_TO_OPTIONS.map((s) => (
               <button
                 key={s}
                 onClick={(e) => {
                   e.stopPropagation()
                   setMenuOpen(false)
-                  if (s !== property.status) {
-                    onChangeStatus(s)
-                  }
+                  if (s !== property.status) onChangeStatus(s)
                 }}
                 className={`w-full text-left px-3 py-1.5 text-xs transition-colors hover:bg-[var(--hover-overlay)] ${
                   s === property.status
