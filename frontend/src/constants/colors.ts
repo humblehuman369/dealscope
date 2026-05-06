@@ -34,7 +34,7 @@ export const colors = {
   },
 
   // Accent — Theme-aware brand
-  // Dark Mode: #0FA4E9 (Soft Cyan) | Light Mode: #1f8a70 (Investor Emerald — Workcycle)
+  // Dark Mode: #0FA4E9 (Soft Cyan) | Light Mode: #0465f2 (Signal Blue primary)
   accent: {
     50: '#f0f9ff',
     100: '#e0f2fe',
@@ -42,7 +42,7 @@ export const colors = {
     300: '#7dd3fc',  // Sky blue highlight
     400: '#38bdf8',
     500: '#0FA4E9',  // Dark mode accent — soft cyan
-    light: '#1f8a70', // Light mode accent — investor emerald
+    light: '#0465f2', // Light mode accent — Signal Blue
     600: '#0284c7',
     700: '#0369a1',
     800: '#075985',
@@ -192,7 +192,7 @@ export const colors = {
     light: '#e1e8ed',
     default: '#d1d9e0',
     dark: '#aab2bd',
-    focus: '#1f8a70',
+    focus: '#0465f2',
   },
 } as const;
 
@@ -203,8 +203,8 @@ export const colors = {
 export const gradients = {
   /** CTA buttons, hero elements - dark mode */
   brandDark: 'linear-gradient(135deg, #0465f2 0%, #0FA4E9 100%)',
-  /** CTA buttons, hero elements - light mode (Workcycle emerald) */
-  brandLight: 'linear-gradient(135deg, #1f8a70 0%, #146c59 100%)',
+  /** CTA buttons, hero elements - light mode (Signal Blue) */
+  brandLight: 'linear-gradient(135deg, #0465f2 0%, #0354d1 100%)',
   /** Dark mode backgrounds */
   backgroundDark: 'linear-gradient(135deg, #07172e 0%, #1f2937 100%)',
   /** Light mode backgrounds (warm canvas → white) */

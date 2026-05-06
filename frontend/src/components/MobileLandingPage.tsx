@@ -201,10 +201,10 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                 style={searchAddress.trim() ? {
                   background: isDark 
                     ? 'linear-gradient(135deg, #0097a7 0%, var(--accent-sky) 100%)'
-                    : 'linear-gradient(135deg, #1f8a70 0%, #146c59 100%)',
+                    : 'linear-gradient(135deg, #0465f2 0%, #0354d1 100%)',
                   boxShadow: isDark
                     ? '0 4px 20px rgba(0, 151, 167, 0.4)'
-                    : '0 4px 20px rgba(31, 138, 112, 0.35)'
+                    : '0 4px 20px rgba(4, 101, 242, 0.35)'
                 } : undefined}
               >
                 {isSearching ? (
@@ -271,7 +271,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             <div className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}>Analyzed</div>
           </div>
           <div className="text-center flex-1">
-            <div className="text-xl lg:text-2xl font-bold text-emerald-500">$2.4M</div>
+            <div className="text-xl lg:text-2xl font-bold text-blue-600">$2.4M</div>
             <div className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}>Profit Found</div>
           </div>
           <div className="text-center flex-1">
@@ -288,10 +288,10 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             style={{
               background: isDark 
                 ? 'linear-gradient(135deg, #0097a7 0%, var(--accent-sky) 100%)'
-                : 'linear-gradient(135deg, #1f8a70 0%, #146c59 100%)',
+                : 'linear-gradient(135deg, #0465f2 0%, #0354d1 100%)',
               boxShadow: isDark
                 ? '0 8px 32px rgba(0, 151, 167, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
-                : '0 8px 32px rgba(31, 138, 112, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)'
+                : '0 8px 32px rgba(4, 101, 242, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)'
             }}
           >
             Start Analyzing Now

@@ -119,8 +119,8 @@ function StackedAreaChart({
             <stop offset="100%" stopColor="#10223d" />
           </linearGradient>
           <linearGradient id="gradient-cashflow" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1f8a70" />
-            <stop offset="100%" stopColor="#146c59" />
+            <stop offset="0%" stopColor="#0465f2" />
+            <stop offset="100%" stopColor="#0354d1" />
           </linearGradient>
         </defs>
       </svg>
@@ -128,7 +128,7 @@ function StackedAreaChart({
       {/* Legend - Wrap on mobile */}
       <div className="flex flex-wrap justify-center gap-3 sm:gap-6 mt-3">
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#1f8a70] flex-shrink-0" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#0465f2] flex-shrink-0" />
           <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">Cash Flow</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -166,13 +166,13 @@ function SummaryCard({
   return (
     <div className={`p-2.5 sm:p-3 rounded-xl ${
       highlight 
-        ? 'bg-gradient-to-br from-[rgba(31,138,112,0.08)] to-[rgba(31,138,112,0.14)] dark:from-emerald-900/30 dark:to-green-900/30 border border-[rgba(31,138,112,0.25)] dark:border-emerald-700' 
+        ? 'bg-gradient-to-br from-[rgba(4, 101, 242,0.08)] to-[rgba(4, 101, 242,0.14)] dark:from-blue-950/40 dark:to-blue-900/30 border border-[rgba(4, 101, 242,0.25)] dark:border-blue-700' 
         : 'bg-[var(--surface-card)] dark:bg-navy-800 border border-[var(--border-subtle)] dark:border-navy-700'
     }`}>
       <div className="flex items-start justify-between">
         <div className="min-w-0">
           <div className="text-[9px] sm:text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5 truncate">{label}</div>
-          <div className={`text-base sm:text-lg font-bold ${highlight ? 'text-[var(--status-positive)] dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>
+          <div className={`text-base sm:text-lg font-bold ${highlight ? 'text-[var(--status-positive)] dark:text-blue-400' : 'text-gray-900 dark:text-white'}`}>
             {value}
           </div>
           {subValue && (
@@ -182,7 +182,7 @@ function SummaryCard({
       </div>
       {trend && (
         <div className={`flex items-center gap-1 mt-1 text-[10px] sm:text-xs ${
-          trend === 'up' ? 'text-[var(--status-positive)] dark:text-emerald-400' : 'text-[var(--status-negative)] dark:text-red-400'
+          trend === 'up' ? 'text-[var(--status-positive)] dark:text-blue-400' : 'text-[var(--status-negative)] dark:text-red-400'
         }`}>
           <ArrowUpRight className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${trend === 'down' ? 'rotate-180' : ''}`} />
           <span>{trend === 'up' ? 'Positive' : 'Declining'}</span>
@@ -219,10 +219,10 @@ function ProjectionTable({ data }: { data: YearlyProjection[] }) {
               <td className="py-2 px-1.5 text-right">{formatCompactCurrency(row.propertyValue)}</td>
               <td className="py-2 px-1.5 text-right text-gray-500">{formatCompactCurrency(row.loanBalance)}</td>
               <td className="py-2 px-1.5 text-right text-blue-600 font-medium">{formatCompactCurrency(row.totalEquity)}</td>
-              <td className={`py-2 px-1.5 text-right font-medium ${row.cashFlow >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              <td className={`py-2 px-1.5 text-right font-medium ${row.cashFlow >= 0 ? 'text-blue-600' : 'text-red-500'}`}>
                 {formatCompactCurrency(row.cashFlow)}
               </td>
-              <td className={`py-2 px-1.5 text-right ${row.cumulativeCashFlow >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              <td className={`py-2 px-1.5 text-right ${row.cumulativeCashFlow >= 0 ? 'text-blue-600' : 'text-red-500'}`}>
                 {formatCompactCurrency(row.cumulativeCashFlow)}
               </td>
               <td className="py-2 px-1.5 text-right font-semibold text-purple-600">{formatCompactCurrency(row.totalWealth)}</td>
@@ -260,18 +260,18 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* 10-Year Result Summary - Mobile optimized */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-3 sm:p-5 text-white">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl p-3 sm:p-5 text-white">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="text-emerald-100 text-[10px] sm:text-xs uppercase tracking-wide">10-Year Net Gain</div>
+            <div className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wide">10-Year Net Gain</div>
             <div className="text-2xl sm:text-3xl font-bold mt-0.5 sm:mt-1">+{formatCompactCurrency(year10.totalWealth - totalCashInvested)}</div>
-            <div className="text-emerald-200 text-xs sm:text-sm mt-0.5 sm:mt-1">
+            <div className="text-blue-200 text-xs sm:text-sm mt-0.5 sm:mt-1">
               {formatCompactCurrency(totalCashInvested)} → {formatCompactCurrency(year10.totalWealth)}
             </div>
           </div>
           <div className="text-right">
             <div className="text-3xl sm:text-4xl font-bold">{summary.equityMultiple.toFixed(1)}x</div>
-            <div className="text-emerald-200 text-xs sm:text-sm">Return Multiple</div>
+            <div className="text-blue-200 text-xs sm:text-sm">Return Multiple</div>
           </div>
         </div>
       </div>
@@ -323,7 +323,7 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
             <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">Principal Paydown</div>
           </div>
           <div className="text-center min-w-0">
-            <div className="text-[14px] sm:text-lg font-bold text-emerald-600">{formatCompactCurrency(year10.equityFromAppreciation)}</div>
+            <div className="text-[14px] sm:text-lg font-bold text-blue-600">{formatCompactCurrency(year10.equityFromAppreciation)}</div>
             <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">Appreciation</div>
           </div>
         </div>
@@ -340,7 +340,7 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
           />
           <div className="mt-2 sm:mt-3 text-center">
             <span className="text-[13px] font-bold text-gray-600 dark:text-white">Avg: </span>
-            <span className="text-[13px] sm:text-[14px] font-bold text-emerald-600">
+            <span className="text-[13px] sm:text-[14px] font-bold text-blue-600">
               {formatCurrency(summary.totalCashFlow / 10)}/year
             </span>
           </div>

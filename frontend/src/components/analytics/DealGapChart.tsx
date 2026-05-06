@@ -29,7 +29,7 @@ function colorForPosition(p: number): string {
     { p: 0.0, c: [180, 35, 24] }, // loss — Workcycle error
     { p: 0.36, c: [183, 121, 31] }, // risk — warning
     { p: 0.50, c: [253, 216, 53] }, // negotiate band
-    { p: 0.72, c: [31, 138, 112] }, // profit — investor emerald
+    { p: 0.72, c: [56, 189, 248] }, // profit — sky (toward Signal Blue)
     { p: 1.0, c: [4, 101, 242] }, // deep value — Signal Blue
   ]
   const clampedP = Math.max(0, Math.min(1, p))
@@ -52,7 +52,7 @@ function getZoneBadgeStyles(zone: DealZoneLabel): string {
     case 'Deep Value':
       return 'bg-[rgba(4,101,242,0.15)] text-[var(--accent-brand-blue)] border-[rgba(4,101,242,0.25)]'
     case 'Profit Zone':
-      return 'bg-[rgba(31,138,112,0.15)] text-[var(--status-positive)] border-[rgba(31,138,112,0.25)]'
+      return 'bg-[rgba(4, 101, 242,0.15)] text-[var(--status-positive)] border-[rgba(4, 101, 242,0.25)]'
     case 'Income Value / Negotiate':
       return 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30'
     case 'High Risk':

@@ -232,13 +232,13 @@
 }
 
 [data-theme='light'] {
-  /* Workcycle — warm canvas, deep slate text, emerald primary action */
+  /* Warm canvas, deep slate text — Signal Blue (#0465f2) primary (no emerald) */
   --surface-base: #f7f4ee;
   --surface-section: #ffffff;
   --surface-card: #ffffff;
   --surface-card-elevated: rgba(255, 255, 255, 0.96);
-  --surface-card-hover: #e8f3ef;
-  --surface-elevated: #e8f3ef;
+  --surface-card-hover: #eef4ff;
+  --surface-elevated: #eef4ff;
   --surface-input: #ffffff;
   --surface-overlay: rgba(7, 23, 46, 0.45);
 
@@ -248,15 +248,15 @@
   --text-label: #6f756d;
   --text-muted: #aab2bd;
   --text-inverse: #ffffff;
-  --text-link: #1f8a70;
+  --text-link: #0465f2;
 
   --accent-brand-blue: #0465f2;
-  --accent-sky: #1f8a70;
-  --accent-sky-light: #146c59;
-  --accent-gradient-from: #1f8a70;
-  --accent-gradient-to: #146c59;
+  --accent-sky: #0465f2;
+  --accent-sky-light: #0354d1;
+  --accent-gradient-from: #0465f2;
+  --accent-gradient-to: #0354d1;
 
-  --status-positive: #1f8a70;
+  --status-positive: #0465f2;
   --status-warning: #b7791f;
   --status-negative: #b42318;
   --status-info: #0465f2;
@@ -272,12 +272,12 @@
   --border-subtle: #e1e8ed;
   --border-default: #aab2bd;
   --border-strong: #6f756d;
-  --border-focus: #1f8a70;
+  --border-focus: #0465f2;
 
-  --shadow-card: 0 1px 2px rgba(24, 32, 28, 0.04), 0 4px 12px rgba(31, 138, 112, 0.06);
-  --shadow-card-hover: 0 4px 16px rgba(24, 32, 28, 0.08), 0 2px 8px rgba(31, 138, 112, 0.1);
+  --shadow-card: 0 1px 2px rgba(24, 32, 28, 0.04), 0 4px 12px rgba(4, 101, 242, 0.08);
+  --shadow-card-hover: 0 4px 16px rgba(24, 32, 28, 0.08), 0 2px 8px rgba(4, 101, 242, 0.12);
   --shadow-dropdown: 0 10px 25px rgba(24, 32, 28, 0.1), 0 4px 10px rgba(24, 32, 28, 0.06);
-  --glow-sky-inset: rgba(31, 138, 112, 0.16);
+  --glow-sky-inset: rgba(4, 101, 242, 0.18);
   --hover-overlay: rgba(7, 23, 46, 0.05);
 
   --chart-grid: #e1e8ed;
@@ -287,24 +287,24 @@
 
   --color-navy: #07172e;
 
-  --color-sky-dim: rgba(31, 138, 112, 0.1);
-  --color-teal-dim: rgba(31, 138, 112, 0.12);
+  --color-sky-dim: rgba(4, 101, 242, 0.1);
+  --color-teal-dim: rgba(4, 101, 242, 0.12);
   --color-gold-dim: rgba(183, 121, 31, 0.14);
   --color-red-dim: rgba(180, 35, 24, 0.12);
-  --color-green-dim: rgba(31, 138, 112, 0.12);
+  --color-green-dim: rgba(4, 101, 242, 0.12);
   --color-border: var(--border-default);
   --color-border-light: var(--border-subtle);
-  --dg-bg-selected: rgba(31, 138, 112, 0.1);
+  --dg-bg-selected: rgba(4, 101, 242, 0.1);
   --dg-border-medium: var(--border-default);
   --dg-border-light: var(--border-subtle);
 
   --slider-thumb-bg: #ffffff;
-  --slider-thumb-border: #1f8a70;
+  --slider-thumb-border: #0465f2;
   --slider-track-bg: rgba(24, 32, 28, 0.1);
 
-  /* Legacy sky (#0fa4e9) @ 15% — informational rows/cards (search modal, Three Paths) */
-  --sky-tint-fill: rgba(15, 164, 233, 0.15);
-  --sky-tint-border: rgba(15, 164, 233, 0.15);
+  /* Primary brand @ 15% — informational rows/cards (search modal, Three Paths) */
+  --sky-tint-fill: rgba(4, 101, 242, 0.15);
+  --sky-tint-border: rgba(4, 101, 242, 0.15);
 }
 
 /* FlipCycle-style brand utilities */
@@ -321,8 +321,8 @@
 
 [data-theme='light'] .soft-panel {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.76));
-  box-shadow: 0 24px 80px rgba(31, 138, 112, 0.11);
-  border: 1px solid rgba(31, 138, 112, 0.12);
+  box-shadow: 0 24px 80px rgba(4, 101, 242, 0.12);
+  border: 1px solid rgba(4, 101, 242, 0.14);
   backdrop-filter: blur(18px);
 }
 
@@ -335,10 +335,10 @@
 
 [data-theme='light'] .grid-fade {
   background-image:
-    radial-gradient(circle at 20% 20%, rgba(31, 138, 112, 0.18), transparent 32%),
-    radial-gradient(circle at 85% 12%, rgba(31, 138, 112, 0.14), transparent 28%),
-    linear-gradient(rgba(31, 138, 112, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(31, 138, 112, 0.045) 1px, transparent 1px);
+    radial-gradient(circle at 20% 20%, rgba(4, 101, 242, 0.14), transparent 32%),
+    radial-gradient(circle at 85% 12%, rgba(4, 101, 242, 0.1), transparent 28%),
+    linear-gradient(rgba(4, 101, 242, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(4, 101, 242, 0.05) 1px, transparent 1px);
   background-size: auto, auto, 44px 44px, 44px 44px;
 }
 
@@ -405,7 +405,7 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 [data-theme='light'] input[type="range"]:focus::-webkit-slider-thumb {
-  box-shadow: 0 0 0 4px rgba(31, 138, 112, 0.25);
+  box-shadow: 0 0 0 4px rgba(4, 101, 242, 0.28);
 }
 
 /* ==========================================
@@ -428,8 +428,8 @@ input[type="range"]::-moz-range-thumb {
 
   [data-theme='light'] body {
     background:
-      radial-gradient(ellipse 80% 50% at 50% -5%, rgba(31, 138, 112, 0.06) 0%, transparent 100%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(31, 138, 112, 0.03) 0%, transparent 100%),
+      radial-gradient(ellipse 80% 50% at 50% -5%, rgba(4, 101, 242, 0.07) 0%, transparent 100%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(4, 101, 242, 0.04) 0%, transparent 100%),
       var(--color-base);
     -webkit-font-smoothing: auto;
     -moz-osx-font-smoothing: auto;
@@ -2658,7 +2658,7 @@ input[type="range"]::-moz-range-thumb {
 }
 [data-theme='light'] .pac-item:hover,
 [data-theme='light'] .pac-item-selected {
-  background: rgba(31, 138, 112, 0.08) !important;
+  background: rgba(4, 101, 242, 0.1) !important;
 }
 [data-theme='light'] .pac-item-query {
   color: var(--text-heading) !important;

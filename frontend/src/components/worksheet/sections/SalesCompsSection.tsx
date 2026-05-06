@@ -153,7 +153,7 @@ const DualValuationPanel = ({
   const displayArv = isArvOverridden ? manualArv : appraisalResult.arv
 
   return (
-    <div className="bg-gradient-to-r from-[var(--accent-sky)]/10 via-[var(--accent-brand-blue)]/5 to-[var(--accent-sky)]/10 rounded-xl p-4 border border-[rgba(31,138,112,0.25)]/50">
+    <div className="bg-gradient-to-r from-[var(--accent-sky)]/10 via-[var(--accent-brand-blue)]/5 to-[var(--accent-sky)]/10 rounded-xl p-4 border border-[rgba(4, 101, 242,0.25)]/50">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -215,7 +215,7 @@ const DualValuationPanel = ({
         </div>
 
         {/* ARV */}
-        <div className="bg-[var(--surface-card)] rounded-lg p-3 border border-[rgba(31,138,112,0.25)]">
+        <div className="bg-[var(--surface-card)] rounded-lg p-3 border border-[rgba(4, 101, 242,0.25)]">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-semibold text-[var(--accent-sky)] uppercase tracking-wide">Est. After Repair Value</span>
             <button
@@ -404,7 +404,7 @@ const CompCard = ({
   return (
     <div className={`relative rounded-xl border transition-all overflow-hidden ${
       isSelected 
-        ? 'bg-[var(--surface-card)] ring-2 ring-[var(--accent-sky)]/20 border-[rgba(31,138,112,0.25)]' 
+        ? 'bg-[var(--surface-card)] ring-2 ring-[var(--accent-sky)]/20 border-[rgba(4, 101, 242,0.25)]' 
         : 'bg-[var(--surface-elevated)] border-[var(--border-default)] hover:border-[var(--border-default)]'
     }`}>
       {/* Selection checkbox */}
@@ -422,7 +422,7 @@ const CompCard = ({
         <button
           onClick={onRefreshComp}
           disabled={refreshing}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--accent-sky)] hover:border-[rgba(31,138,112,0.4)] transition-colors disabled:opacity-50"
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--accent-sky)] hover:border-[rgba(4, 101, 242,0.4)] transition-colors disabled:opacity-50"
           title="Replace this comp with a new one"
         >
           <RotateCcw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
