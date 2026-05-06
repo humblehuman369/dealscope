@@ -104,6 +104,10 @@
   --status-pass: var(--status-positive);
   --status-fail: var(--status-negative);
 
+  /* Top nav / overscroll — defaults match dark card until light overrides */
+  --surface-chrome: var(--surface-card);
+  --border-chrome: var(--border-subtle);
+
   /* ---- Legacy aliases (for backward compat) ---- */
   --color-base: var(--surface-base);
   --color-card: var(--surface-card);
@@ -232,9 +236,16 @@
 }
 
 [data-theme='light'] {
-  /* App canvas: #0fa4e9 @ 5% on white; Signal Blue #0465f2 primary */
+  /*
+   * Harmonized surfaces (same hue #0fa4e9):
+   * chrome → subtle tint so nav meets canvas without a harsh white seam
+   * canvas → one step deeper so content still reads as “on brand sky wash”
+   * elevated cards stay pure white inside the canvas
+   */
   --surface-base: #f3fafe;
   --surface-base: color-mix(in srgb, #0fa4e9 5%, #ffffff);
+  --surface-chrome: #f7fcfe;
+  --surface-chrome: color-mix(in srgb, #0fa4e9 3%, #ffffff);
   --surface-section: #ffffff;
   --surface-card: #ffffff;
   --surface-card-elevated: rgba(255, 255, 255, 0.96);
@@ -270,6 +281,8 @@
   --strategy-house-hack: #0f766e;
   --strategy-wholesale: #4d7c0f;
 
+  /* Hairlines on nav/tab chrome — sky hue, not neutral gray */
+  --border-chrome: rgba(15, 164, 233, 0.14);
   --border-subtle: #e1e8ed;
   --border-default: #aab2bd;
   --border-strong: #6f756d;
@@ -335,11 +348,12 @@
 }
 
 [data-theme='light'] .grid-fade {
+  /* Slightly softer than canvas mix so texture blends rather than stacks extra blue */
   background-image:
-    radial-gradient(circle at 20% 20%, rgba(15, 164, 233, 0.05), transparent 32%),
-    radial-gradient(circle at 85% 12%, rgba(15, 164, 233, 0.035), transparent 28%),
-    linear-gradient(rgba(15, 164, 233, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 164, 233, 0.02) 1px, transparent 1px);
+    radial-gradient(circle at 20% 20%, rgba(15, 164, 233, 0.04), transparent 32%),
+    radial-gradient(circle at 85% 12%, rgba(15, 164, 233, 0.028), transparent 28%),
+    linear-gradient(rgba(15, 164, 233, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 164, 233, 0.018) 1px, transparent 1px);
   background-size: auto, auto, 44px 44px, 44px 44px;
 }
 
@@ -427,9 +441,9 @@ input[type="range"]::-moz-range-thumb {
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Page canvas tint lives in #app-content-canvas (below header + address bar), not on body */
+  /* Match chrome so overscroll / gaps never flash pure white against tinted nav */
   [data-theme='light'] body {
-    background: var(--surface-card);
+    background: var(--surface-chrome);
     -webkit-font-smoothing: auto;
     -moz-osx-font-smoothing: auto;
   }

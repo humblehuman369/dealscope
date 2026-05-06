@@ -63,7 +63,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
       {/* Header — solid card surface in light so canvas tint starts below */}
       <header
         className={`relative z-10 w-full px-5 py-3 lg:px-12 lg:py-5 ${
-          isDark ? '' : 'bg-[var(--surface-card)] border-b border-[var(--border-subtle)]'
+          isDark ? '' : 'bg-[var(--surface-chrome)] border-b border-[var(--border-chrome)]'
         }`}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
