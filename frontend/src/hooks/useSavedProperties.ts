@@ -279,6 +279,7 @@ export function useAddBudgetExpense() {
       budget_line_id,
       vendor,
       description,
+      receipt_document_id,
     }: {
       propertyId: string
       amount: number
@@ -286,6 +287,7 @@ export function useAddBudgetExpense() {
       budget_line_id?: string | null
       vendor?: string | null
       description?: string | null
+      receipt_document_id?: string | null
     }) =>
       api.post(`/api/v1/properties/saved/${propertyId}/budget/expenses`, {
         amount,
@@ -293,10 +295,61 @@ export function useAddBudgetExpense() {
         budget_line_id,
         vendor,
         description,
+        receipt_document_id,
       }),
 
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['rehab-budget', variables.propertyId] })
+    },
+  })
+}
+
+/**
+ * Upload a receipt image (or PDF) and run AI extraction in one round trip.
+ * Returns ``{document_id, parsed}`` — caller pre-fills an expense form with
+ * ``parsed`` and links via ``document_id`` when the user saves.
+ */
+export interface ParsedReceipt {
+  vendor: string | null
+  amount: string | null
+  spent_on: string | null
+  suggested_line_id: string | null
+  description: string | null
+}
+
+export interface ReceiptUploadResponse {
+  document_id: string
+  parsed: ParsedReceipt | null
+}
+
+async function postReceipt(propertyId: string, file: File): Promise<ReceiptUploadResponse> {
+  const fd = new FormData()
+  fd.append('file', file)
+  const resp = await fetch(
+    `/api/v1/properties/saved/${propertyId}/budget/receipts/parse`,
+    { method: 'POST', body: fd, credentials: 'include' },
+  )
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => '')
+    let detail = text
+    try {
+      detail = (JSON.parse(text) as { detail?: string }).detail ?? text
+    } catch {
+      // Body wasn't JSON — keep raw text.
+    }
+    throw new Error(detail || `Receipt parse failed (${resp.status})`)
+  }
+  return (await resp.json()) as ReceiptUploadResponse
+}
+
+export function useParseReceipt(propertyId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => postReceipt(propertyId, file),
+    onSuccess: () => {
+      // Invalidate budget so the document count reflects the upload, even
+      // if the user doesn't go on to save the expense.
+      queryClient.invalidateQueries({ queryKey: ['rehab-budget', propertyId] })
     },
   })
 }
