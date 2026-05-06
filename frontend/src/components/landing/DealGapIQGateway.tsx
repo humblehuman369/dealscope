@@ -16,7 +16,7 @@ interface DealGapIQGatewayProps {
 
 const IQIcon: React.FC<{ size?: number; className?: string }> = ({ size = 64, className = '' }) => (
   <img
-    src="/images/iq-icon-blue.png"
+    src="/images/dealgapiq-icon.png"
     alt="IQ"
     width={size}
     height={size}
