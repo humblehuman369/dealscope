@@ -108,13 +108,36 @@ def upgrade() -> None:
                     "UPDATE saved_properties SET status = 'pursuing' WHERE status = 'contacted'"
                 )
 
-            # 4. Add the new 'negotiating' value. Safe to reference 'pursuing'
-            #    here only because the rename above has now been committed by
-            #    the autocommit block.
-            if "negotiating" not in labels:
-                op.execute(
-                    "ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS 'negotiating' AFTER 'pursuing'"
-                )
+            # 4. Add the new 'negotiating' value. The AFTER reference must
+            #    point at a label that actually exists in the live (committed)
+            #    catalog right now — production states have surfaced where
+            #    neither 'contacted' nor 'pursuing' was present, so the rename
+            #    branch above was a no-op and 'pursuing' never appeared. Pick
+            #    the best available anchor so 'negotiating' lands in the
+            #    intended sort position (between pursuing and under_contract);
+            #    if no anchor exists, append at the end. The kanban orders
+            #    columns explicitly in code, so a trailing position is a
+            #    survivable fallback rather than a hard failure.
+            #
+            #    Re-read labels from the catalog because the autocommit_block
+            #    has now committed any renames we issued above — the in-memory
+            #    ``labels`` set tracks our intent but is not authoritative.
+            current_labels = _enum_labels(bind, "propertystatus")
+            if "negotiating" not in current_labels:
+                if "pursuing" in current_labels:
+                    op.execute(
+                        "ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS "
+                        "'negotiating' AFTER 'pursuing'"
+                    )
+                elif "under_contract" in current_labels:
+                    op.execute(
+                        "ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS "
+                        "'negotiating' BEFORE 'under_contract'"
+                    )
+                else:
+                    op.execute(
+                        "ALTER TYPE propertystatus ADD VALUE IF NOT EXISTS 'negotiating'"
+                    )
     else:
         # Plain VARCHAR column — no enum schema to mutate. Just rewrite the
         # row values; 'negotiating' needs no schema change because any string
