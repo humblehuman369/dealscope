@@ -14,12 +14,10 @@
  *  5. Trust Layer — data sources + founder note + verify-it-yourself
  *  6. Closer — final CTA + lead magnet + manifesto line
  *
- * Design language (light — matches app shell: surface-base, surface-card, chrome):
- *  - White cards on sky-wash canvas; sky hairlines
- *  - Soft cyan ambient glow (same hue family as --surface-base)
- *  - Accent links/icons via --accent-sky
- *  - Body via semantic text tokens
- *  - max-w-7xl centered containers, generous vertical rhythm
+ * Design language — follows global theme tokens (surface-base, surface-card, chrome):
+ *  - Light: sky-wash canvas, white cards
+ *  - Dark: black canvas, elevated cards, cyan hairlines
+ *  - Accent links/icons via --accent-sky; semantic text tokens throughout
  */
 
 import React, { Suspense } from 'react';
@@ -40,7 +38,6 @@ import {
 } from 'lucide-react';
 import { useAuthModal } from '@/hooks/useAuthModal';
 import { useTheme } from '@/context/ThemeContext';
-import type { ThemePreference } from '@/lib/theme/constants';
 
 // Shared headline typography — every hero statement on the page (H1 + section H2s)
 // pulls from this so the family / weight / leading / tracking stay aligned.
@@ -86,27 +83,20 @@ function AuthParamHandler() {
 
 export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
   const router = useRouter();
-  const { setTheme, preference } = useTheme();
-  const preferenceBeforeHomeRef = React.useRef<ThemePreference | null>(null);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
-  /**
-   * Force light while this page is mounted so global chrome + tokens match the marketing layout.
-   * Captures `preference` once (first effect run) and restores it on unmount so leaving `/` does
-   * not leave users stuck in light mode. `[]` deps: `setTheme` is not stable on the provider.
-   */
-  React.useEffect(() => {
-    if (preferenceBeforeHomeRef.current === null) {
-      preferenceBeforeHomeRef.current = preference;
-    }
-    setTheme('light');
-    return () => {
-      const previous = preferenceBeforeHomeRef.current;
-      if (previous != null) {
-        setTheme(previous);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount/unmount only; see comment above
-  }, []);
+  const ambientBackdropStyle: React.CSSProperties = {
+    background: isDark
+      ? 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(15,164,233,0.22) 0%, transparent 58%), radial-gradient(ellipse 60% 40% at 100% 28%, rgba(4,101,242,0.14) 0%, transparent 50%), radial-gradient(ellipse 55% 38% at 0% 58%, rgba(15,164,233,0.12) 0%, transparent 50%)'
+      : 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(15,164,233,0.07) 0%, transparent 58%), radial-gradient(ellipse 60% 40% at 100% 28%, rgba(4,101,242,0.05) 0%, transparent 50%), radial-gradient(ellipse 55% 38% at 0% 58%, rgba(15,164,233,0.04) 0%, transparent 50%)',
+  };
+
+  const ambientWashStyle: React.CSSProperties = {
+    background: isDark
+      ? 'linear-gradient(180deg, transparent 0%, rgba(15,164,233,0.07) 100%)'
+      : 'linear-gradient(180deg, transparent 0%, rgba(15,164,233,0.04) 100%)',
+  };
 
   const handleVerdictClick = (presetAddress?: string) => {
     if (presetAddress) {
@@ -125,26 +115,13 @@ export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
 
   return (
     <div
-      data-theme="light"
+      data-theme={theme}
       data-homepage-v3="true"
       className="min-h-screen bg-[var(--surface-base)] text-[var(--text-body)] relative overflow-x-hidden antialiased grid-fade"
     >
-      {/* Ambient glow — same sky family as app canvas, lighter than dark-mode hero */}
-      <div
-        aria-hidden
-        className="fixed inset-0 pointer-events-none z-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(15,164,233,0.07) 0%, transparent 58%), radial-gradient(ellipse 60% 40% at 100% 28%, rgba(4,101,242,0.05) 0%, transparent 50%), radial-gradient(ellipse 55% 38% at 0% 58%, rgba(15,164,233,0.04) 0%, transparent 50%)',
-        }}
-      />
-      <div
-        aria-hidden
-        className="fixed inset-0 pointer-events-none z-0"
-        style={{
-          background: 'linear-gradient(180deg, transparent 0%, rgba(15,164,233,0.04) 100%)',
-        }}
-      />
+      {/* Ambient glow — sky family; stronger opacities on dark canvas */}
+      <div aria-hidden className="fixed inset-0 pointer-events-none z-0" style={ambientBackdropStyle} />
+      <div aria-hidden className="fixed inset-0 pointer-events-none z-0" style={ambientWashStyle} />
 
       <Suspense fallback={null}>
         <AuthParamHandler />
@@ -200,7 +177,10 @@ function HeroSection({
             </h1>
 
             <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto xl:mx-0 mb-9">
-              DealGap<span className="text-[var(--accent-sky)]">IQ</span> helps investors turn{' '}
+              <span className="font-bold">
+                DealGap<span className="text-[var(--accent-sky)]">IQ</span>
+              </span>{' '}
+              helps investors turn{' '}
               <span className="text-[var(--text-heading)] font-semibold">listings, property data, and creative-finance scenarios</span>{' '}
               into <span className="text-[var(--text-heading)] font-semibold">clear deal decisions and offer strategies</span>.
             </p>
@@ -405,7 +385,7 @@ function PathBullet({
     <li className="flex gap-4">
       <div
         className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold tabular-nums ${
-          highlight ? 'text-black' : 'text-[var(--accent-sky)]'
+          highlight ? 'text-white' : 'text-[var(--accent-sky)]'
         }`}
         style={{
           background: highlight
@@ -639,7 +619,7 @@ function PullQuoteCard() {
         className="absolute -top-3 left-7 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] rounded"
         style={{
           background: 'linear-gradient(135deg, #0FA4E9 0%, #0465F2 100%)',
-          color: '#000',
+          color: '#ffffff',
         }}
       >
         Sample Script
@@ -814,7 +794,7 @@ function CompCell({
   const display =
     mark === 'yes' ? (
       <Check
-        className={`w-5 h-5 ${highlight ? 'text-[var(--accent-sky)]' : 'text-emerald-600'}`}
+        className={`w-5 h-5 ${highlight ? 'text-[var(--accent-sky)]' : 'text-[var(--status-positive)]'}`}
         strokeWidth={3}
       />
     ) : mark === 'partial' ? (
@@ -1152,7 +1132,7 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
               />
               <button
                 type="submit"
-                className="px-6 py-3 rounded-lg text-sm font-bold text-[var(--text-inverse)] transition hover:opacity-90"
+                className="px-6 py-3 rounded-lg text-sm font-bold text-white transition hover:opacity-90"
                 style={{
                   background: 'linear-gradient(135deg, #0FA4E9 0%, #0465F2 100%)',
                   boxShadow: 'var(--shadow-card)',
@@ -1265,7 +1245,7 @@ function PrimaryButton({
     <button
       type={type}
       onClick={onClick}
-      className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-bold text-[var(--text-inverse)] transition-all whitespace-nowrap hover:brightness-[1.03] active:brightness-[0.98]"
+      className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-bold text-white transition-all whitespace-nowrap hover:brightness-[1.03] active:brightness-[0.98]"
       style={{
         background: 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)',
         boxShadow: '0 8px 24px -8px rgba(4, 101, 242, 0.45)',
@@ -1288,7 +1268,7 @@ function PrimaryButtonLarge({
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center justify-center gap-3 px-9 py-3.5 rounded-xl text-[var(--text-inverse)] transition-all hover:brightness-[1.03] active:brightness-[0.98]"
+      className="inline-flex items-center justify-center gap-3 px-9 py-3.5 rounded-xl text-white transition-all hover:brightness-[1.03] active:brightness-[0.98]"
       style={{
         background: 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)',
         boxShadow: '0 12px 32px -8px rgba(4, 101, 242, 0.45)',
