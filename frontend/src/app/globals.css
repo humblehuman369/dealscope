@@ -301,6 +301,10 @@
   --slider-thumb-bg: #ffffff;
   --slider-thumb-border: #1f8a70;
   --slider-track-bg: rgba(24, 32, 28, 0.1);
+
+  /* Legacy sky (#0fa4e9) @ 15% — informational rows/cards (search modal, Three Paths) */
+  --sky-tint-fill: rgba(15, 164, 233, 0.15);
+  --sky-tint-border: rgba(15, 164, 233, 0.15);
 }
 
 /* FlipCycle-style brand utilities */

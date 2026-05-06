@@ -18,8 +18,9 @@ export function DealStructuresNarrative({ paragraphs }: DealStructuresNarrativeP
         marginTop: 12,
         padding: '16px 18px',
         borderRadius: 10,
-        background: 'var(--surface-card)',
-        border: '1px solid var(--border-default)',
+        background:
+          'linear-gradient(0deg, var(--sky-tint-fill, transparent), var(--sky-tint-fill, transparent)), var(--surface-card)',
+        border: '1px solid var(--sky-tint-border, var(--border-default))',
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
