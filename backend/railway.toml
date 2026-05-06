@@ -3,8 +3,20 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-# Fix alembic version mismatch, then start server
+# Run migrations as a one-off pre-deploy task. If this fails, Railway
+# rejects the deploy and the previous version stays live — which is what
+# we want, because shipping new code against a stale schema is what
+# caused the saved-properties / pipeline incident. fix_alembic.py also
+# guards against this at boot, but preDeployCommand is the proper Railway
+# pattern: it runs once per deploy in a dedicated task, not on every
+# replica boot.
+preDeployCommand = "alembic upgrade head"
+
+# fix_alembic.py runs `alembic upgrade head` again as a defense-in-depth
+# safety net (no-op if preDeployCommand already ran), and also handles the
+# historical auth-column recovery path for very old databases.
 startCommand = "python fix_alembic.py"
+
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"

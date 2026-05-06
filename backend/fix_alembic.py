@@ -2,16 +2,22 @@
 fix_alembic.py — Ensure database schema is up to date before app startup.
 
 Called by Railway's start command:
-    python fix_alembic.py && uvicorn app.main:app ...
+    python fix_alembic.py
 
 Strategy:
-  1. Connect to the database directly and check if auth columns exist.
-  2. If missing, stamp Alembic to the pre-auth revision and re-run migrations.
-  3. If Alembic fails, apply the schema changes via raw SQL as a fallback.
-  4. Always exit 0 so the app can start.
+  1. Run `alembic upgrade head`. If it fails, exit non-zero so Railway
+     surfaces the failure (deploy is rolled back / health check fails fast)
+     instead of silently masking it.
+  2. As a one-off historical safety net, ensure auth columns exist for very
+     old databases that pre-date the auth migration. This path only runs when
+     the auth columns are genuinely missing.
+  3. Exec into start.py once schema state is good.
+
+Important: DO NOT add any TRUNCATE / DELETE / data-destruction logic here.
+This script runs on every Railway boot. Anything destructive becomes a
+production data loss bomb.
 """
 
-import asyncio
 import logging
 import os
 import subprocess
@@ -263,89 +269,73 @@ def _ensure_column(url: str, table: str, column: str, col_type: str) -> None:
         log.error("Failed to add %s.%s: %s", table, column, e)
 
 
-def _one_time_truncate(url: str) -> None:
-    """One-time truncation of sample data. Safe to leave in — it no-ops after first run."""
-    try:
-        import psycopg
-        conn_url = url
-        if "railway.internal" in conn_url:
-            if "sslmode=" not in conn_url:
-                sep = "&" if "?" in conn_url else "?"
-                conn_url = f"{conn_url}{sep}sslmode=disable"
-        with psycopg.connect(conn_url, autocommit=True, connect_timeout=10) as conn:
-            with conn.cursor() as cur:
-                # Check if there's a marker that we've already truncated
-                cur.execute(
-                    "SELECT 1 FROM information_schema.columns "
-                    "WHERE table_name = 'saved_properties' AND column_name = 'id'"
-                )
-                if not cur.fetchone():
-                    return  # Table doesn't exist yet
+def _run_alembic_upgrade_fatal() -> None:
+    """Run `alembic upgrade head`. Exit non-zero on failure.
 
-                cur.execute("SELECT COUNT(*) FROM saved_properties")
-                count = cur.fetchone()[0]
-                if count > 0:
-                    log.info("Truncating %d rows from saved_properties (sample data reset) ...", count)
-                    cur.execute("TRUNCATE saved_properties CASCADE")
-                    log.info("saved_properties truncated.")
-                else:
-                    log.info("saved_properties already empty — skipping truncate.")
-    except Exception as e:
-        log.error("Truncate failed (non-fatal): %s", e)
+    Previous versions silently called `alembic stamp head` when upgrade
+    failed, which marked the DB as up-to-date without applying the schema.
+    That hid migration failures across deploys and let the running code
+    diverge from the live schema. Never do that again — deploy failure is
+    *infinitely* better than schema drift.
+    """
+    log.info("Running `alembic upgrade head` ...")
+    result = _alembic(["upgrade", "head"])
+    if result.returncode == 0:
+        log.info("Alembic upgrade succeeded.")
+        if result.stdout.strip():
+            log.info("alembic stdout: %s", result.stdout.strip())
+        return
+
+    log.error(
+        "ALEMBIC UPGRADE FAILED — refusing to start the app with a stale schema. "
+        "stderr: %s | stdout: %s",
+        result.stderr.strip(),
+        result.stdout.strip(),
+    )
+    sys.exit(1)
 
 
 def main() -> None:
     db_url = _get_database_url()
     if not db_url:
+        log.warning("DATABASE_URL not set — skipping schema check.")
         return
 
     log.info("Checking database schema ...")
 
-    # ---- Ensure critical columns that migrations may have skipped ----
-    _ensure_column(db_url, "saved_properties", "deal_maker_record", "JSONB")
-
-    # ---- One-time: clear sample data from dashboard deletion ----
-    _one_time_truncate(db_url)
-
-    # Check if auth columns exist
+    # ---- Historical recovery: very old databases that pre-date the auth
+    # migration may be missing auth columns. Apply a raw-SQL recovery in
+    # that one specific case so login keeps working long enough for the
+    # operator to investigate. New deployments hit `has_auth = True` and
+    # skip this branch entirely.
     has_auth = _check_column_exists(db_url, "users", "failed_login_attempts")
     log.info("Auth columns present: %s", has_auth)
 
-    if has_auth:
-        # Schema looks good — just run normal alembic upgrade
+    if not has_auth:
+        log.warning("Auth columns missing — attempting historical recovery path ...")
+        _alembic(["stamp", PRE_AUTH_REVISION])
         result = _alembic(["upgrade", "head"])
-        if result.returncode == 0:
-            log.info("Alembic upgrade succeeded.")
+        if result.returncode != 0:
+            log.warning("Alembic recovery failed: %s", (result.stderr + result.stdout).strip())
+            log.info("Applying auth schema via raw SQL fallback ...")
+            if not _apply_auth_columns_sql(db_url):
+                log.error("Could not apply auth schema. Refusing to start.")
+                sys.exit(1)
+            log.info("Auth schema applied successfully via SQL.")
         else:
-            log.warning("Alembic upgrade output: %s", (result.stderr + result.stdout).strip())
-            # Non-fatal — stamp to head if already at correct state
-            _alembic(["stamp", "head"])
+            log.info("Alembic recovery applied successfully.")
         return
 
-    # Auth columns missing — try Alembic first
-    log.info("Auth columns missing. Attempting Alembic migration ...")
-    _alembic(["stamp", PRE_AUTH_REVISION])
-    result = _alembic(["upgrade", "head"])
-
-    if result.returncode == 0:
-        log.info("Alembic migration applied successfully.")
-        return
-
-    log.warning("Alembic failed: %s", (result.stderr + result.stdout).strip())
-
-    # Fallback: apply schema changes via raw SQL
-    log.info("Applying auth schema via raw SQL fallback ...")
-    if _apply_auth_columns_sql(db_url):
-        log.info("Auth schema applied successfully via SQL.")
-    else:
-        log.error("Could not apply auth schema. Login will not work.")
+    # Standard path: just run the migrations. Failure is fatal.
+    _run_alembic_upgrade_fatal()
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        log.error("fix_alembic.py crashed (non-fatal): %s", e)
+    # Let SystemExit propagate (we use sys.exit(1) intentionally to fail the
+    # boot when the schema can't be reconciled). Any other unexpected crash
+    # is also fatal — silently exec'ing into start.py with a possibly broken
+    # schema is the very pattern that produced the prior data-loss incident.
+    main()
 
     # Replace this process with start.py (uvicorn wrapper).
     # os.execv replaces the current process entirely — same PID, no shell

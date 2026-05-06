@@ -12,6 +12,7 @@ from sqlalchemy.exc import DatabaseError, IntegrityError
 
 from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession
+from app.core.schema_guard import is_schema_mismatch, log_schema_mismatch
 from app.models.saved_property import FlipStage as FlipStageORM
 from app.models.saved_property import PropertyStatus
 from app.schemas.deal_maker import (
@@ -120,13 +121,21 @@ async def check_property_saved(
     Check if a property is already saved by the current user.
     Returns saved property id and status if found, or null.
     """
-    saved = await saved_property_service.get_by_address_or_id(
-        db=db,
-        user_id=str(current_user.id),
-        external_id=external_id,
-        address=address,
-        zpid=zpid,
-    )
+    try:
+        saved = await saved_property_service.get_by_address_or_id(
+            db=db,
+            user_id=str(current_user.id),
+            external_id=external_id,
+            address=address,
+            zpid=zpid,
+        )
+    except Exception as exc:
+        # Schema-mismatch fallback: pretend the property isn't saved so the
+        # frontend's save toggle stays clickable. See app/core/schema_guard.py.
+        if not is_schema_mismatch(exc):
+            raise
+        log_schema_mismatch("GET /properties/saved/check", exc)
+        return {"is_saved": False, "saved_property_id": None, "status": None, "saved_at": None}
 
     if saved:
         return {
@@ -166,16 +175,25 @@ async def list_saved_properties(
     """
     tag_list = tags.split(",") if tags else None
 
-    properties, total = await saved_property_service.list_properties(
-        db=db,
-        user_id=str(current_user.id),
-        status=status,
-        tags=tag_list,
-        search=search,
-        limit=limit,
-        offset=offset,
-        order_by=order_by,
-    )
+    try:
+        properties, total = await saved_property_service.list_properties(
+            db=db,
+            user_id=str(current_user.id),
+            status=status,
+            tags=tag_list,
+            search=search,
+            limit=limit,
+            offset=offset,
+            order_by=order_by,
+        )
+    except Exception as exc:
+        # Schema-mismatch fallback: render the page as "no properties yet"
+        # rather than a hard 500. See app/core/schema_guard.py.
+        if not is_schema_mismatch(exc):
+            raise
+        log_schema_mismatch("GET /properties/saved", exc)
+        response.headers["X-Total-Count"] = "0"
+        return []
 
     response.headers["X-Total-Count"] = str(total)
 
@@ -215,7 +233,18 @@ async def get_saved_properties_stats(
     db: DbSession,
 ):
     """Get statistics about saved properties (counts by status, etc.)."""
-    return await saved_property_service.get_stats(db, str(current_user.id))
+    try:
+        return await saved_property_service.get_stats(db, str(current_user.id))
+    except Exception as exc:
+        # Schema-mismatch fallback: dashboard counters render as zeros instead
+        # of erroring. See app/core/schema_guard.py.
+        if not is_schema_mismatch(exc):
+            raise
+        log_schema_mismatch("GET /properties/saved/stats", exc)
+        return {
+            "total": 0,
+            "by_status": {status.value: 0 for status in PropertyStatus},
+        }
 
 
 @router.get("/active-flips", response_model=list[ActiveFlipSummary], summary="Active flips (flip-cycle pipeline)")
@@ -225,17 +254,37 @@ async def list_active_flips_endpoint(
     include_sold: bool = Query(False, description="Include properties in Sold stage"),
 ):
     """Properties with a flip_stage set — Acquisition / Rehab / Listed / (optional Sold)."""
-    rows = await saved_property_service.list_active_flips(
-        db, str(current_user.id), include_sold=include_sold
-    )
+    try:
+        rows = await saved_property_service.list_active_flips(
+            db, str(current_user.id), include_sold=include_sold
+        )
+    except Exception as exc:
+        # Schema-mismatch fallback: Pipeline page renders the "no active flips
+        # yet" empty state instead of erroring. See app/core/schema_guard.py.
+        if not is_schema_mismatch(exc):
+            raise
+        log_schema_mismatch("GET /properties/saved/active-flips", exc)
+        return []
+
     out: list[ActiveFlipSummary] = []
     uid = str(current_user.id)
     for p in rows:
         variance_pct: str | None = None
-        budget = await budget_service.get_budget_for_property(db, str(p.id), uid)
-        if budget:
-            summary = await budget_service.build_summary(db, budget)
-            variance_pct = summary.get("variance_pct")
+        try:
+            budget = await budget_service.get_budget_for_property(db, str(p.id), uid)
+            if budget:
+                summary = await budget_service.build_summary(db, budget)
+                variance_pct = summary.get("variance_pct")
+        except Exception as exc:
+            # Budget tables (rehab_budgets / budget_lines / budget_expenses)
+            # may not exist yet during a deploy gap. Don't let that block the
+            # whole pipeline — render the card without a budget badge.
+            if not is_schema_mismatch(exc):
+                raise
+            log_schema_mismatch(
+                "GET /properties/saved/active-flips:budget_enrichment", exc
+            )
+            variance_pct = None
         out.append(
             ActiveFlipSummary(
                 id=str(p.id),
