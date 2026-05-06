@@ -322,11 +322,13 @@
 }
 
 /*
- * Marketing homepage (DealGapIQHomepageV3) — scoped on root via data-homepage-v3:
- * - Darker supporting greys for readability on sky-wash canvas
- * - Stronger card shadow + hairline (matches “How it compares” table depth)
+ * Marketing homepage (DealGapIQHomepageV3) — scoped via data-homepage-v3 on the page root.
+ * Selectors use html[data-theme] so tokens follow document theme (no duplicate data-theme on the section root).
+ *
+ * Light: darker supporting greys on sky-wash canvas; stronger card shadow.
+ * Dark: lifted text ramp + hairlines on #000 so long-form copy and split headlines stay readable.
  */
-[data-theme='light'][data-homepage-v3='true'] {
+html[data-theme='light'] [data-homepage-v3='true'] {
   --text-secondary: #2a312e;
   --text-label: #3a423d;
   --text-muted: #475045;
@@ -344,31 +346,41 @@
   --homepage-table-header-bg: var(--surface-elevated);
 }
 
-[data-theme='light'][data-homepage-v3='true'] .homepage-compare-border {
+html[data-theme='light'] [data-homepage-v3='true'] .homepage-compare-border {
   border-color: var(--homepage-table-border);
 }
 
-[data-theme='light'][data-homepage-v3='true'] .homepage-compare-partial {
+html[data-theme='light'] [data-homepage-v3='true'] .homepage-compare-partial {
   color: #9a3412;
 }
 
-/* Marketing homepage — dark: comparison table + card depth (inherits base dark tokens) */
-[data-theme='dark'][data-homepage-v3='true'] {
-  --homepage-table-border: rgba(148, 163, 184, 0.2);
+html[data-theme='dark'] [data-homepage-v3='true'] {
+  /* Panels slightly lifted off pure black for section separation */
+  --surface-card: var(--surface-elevated);
+
+  /* Long-form marketing on true black — brighter ramp than default app chrome */
+  --text-body: #e2e8f0;
+  --text-secondary: #cbd5e1;
+  --text-label: #a8b9cc;
+  --text-muted: #8b9daf;
+  --border-subtle: rgba(148, 163, 184, 0.28);
+  --border-chrome: rgba(56, 189, 248, 0.28);
+
+  --homepage-table-border: rgba(148, 163, 184, 0.35);
   --homepage-table-header-bg: var(--surface-elevated);
   --shadow-card:
-    0 0 0 1px rgba(15, 164, 233, 0.12),
+    0 0 0 1px rgba(15, 164, 233, 0.14),
     0 8px 32px rgba(0, 0, 0, 0.45);
   --shadow-card-hover:
-    0 0 0 1px rgba(15, 164, 233, 0.18),
+    0 0 0 1px rgba(15, 164, 233, 0.2),
     0 12px 40px rgba(0, 0, 0, 0.55);
 }
 
-[data-theme='dark'][data-homepage-v3='true'] .homepage-compare-border {
+html[data-theme='dark'] [data-homepage-v3='true'] .homepage-compare-border {
   border-color: var(--homepage-table-border);
 }
 
-[data-theme='dark'][data-homepage-v3='true'] .homepage-compare-partial {
+html[data-theme='dark'] [data-homepage-v3='true'] .homepage-compare-partial {
   color: #fb923c;
 }
 

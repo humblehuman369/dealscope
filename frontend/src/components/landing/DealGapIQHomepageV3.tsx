@@ -115,7 +115,6 @@ export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
 
   return (
     <div
-      data-theme={theme}
       data-homepage-v3="true"
       className="min-h-screen bg-[var(--surface-base)] text-[var(--text-body)] relative overflow-x-hidden antialiased grid-fade"
     >
@@ -295,7 +294,7 @@ function DemoSection({ onTry }: { onTry: () => void }) {
           <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
             What You Get
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-6" style={HEADLINE_STYLE}>
+          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-6 text-[var(--text-heading)]" style={HEADLINE_STYLE}>
             The Verdict tells you the gap.
             <br />
             <span className="text-[var(--accent-sky)]">
@@ -516,7 +515,7 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
             The Closing Tool Nobody Else Has
           </div>
           <h2
-            className="text-3xl md:text-5xl lg:text-6xl mb-6 text-balance"
+            className="text-3xl md:text-5xl lg:text-6xl mb-6 text-balance text-[var(--text-heading)]"
             style={HEADLINE_STYLE}
           >
             <span className="block">
@@ -677,7 +676,7 @@ function ComparisonSection() {
           <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
             How It Compares
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-5" style={HEADLINE_STYLE}>
+          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-5 text-[var(--text-heading)]" style={HEADLINE_STYLE}>
             Where most tools stop,
             <br />
             <span className="text-[var(--accent-sky)]">
@@ -835,7 +834,7 @@ function TrustSection({
           <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
             The Trust Layer
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-5" style={HEADLINE_STYLE}>
+          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-5 text-[var(--text-heading)]" style={HEADLINE_STYLE}>
             Trust comes from
             <br />
             <span className="text-[var(--accent-sky)]">
@@ -1060,7 +1059,7 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
         <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
           Now Try It
         </div>
-        <h2 className="text-3xl md:text-5xl lg:text-6xl mb-6" style={HEADLINE_STYLE}>
+        <h2 className="text-3xl md:text-5xl lg:text-6xl mb-6 text-[var(--text-heading)]" style={HEADLINE_STYLE}>
           Try it on the property
           <br />
           <span className="text-[var(--accent-sky)]">
@@ -1109,7 +1108,7 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
           </p>
 
           {emailSubmitted ? (
-            <div className="text-sm text-emerald-400 font-semibold">
+            <div className="text-sm text-[var(--status-positive)] font-semibold">
               <Check className="w-4 h-4 inline mr-1.5" strokeWidth={3} />
               Check your inbox — the guide is on its way.
             </div>
@@ -1248,7 +1247,7 @@ function PrimaryButton({
       className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-bold text-white transition-all whitespace-nowrap hover:brightness-[1.03] active:brightness-[0.98]"
       style={{
         background: 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)',
-        boxShadow: '0 8px 24px -8px rgba(4, 101, 242, 0.45)',
+        boxShadow: '0 8px 24px -10px rgba(4, 101, 242, 0.35)',
       }}
     >
       {children}
@@ -1271,7 +1270,7 @@ function PrimaryButtonLarge({
       className="inline-flex items-center justify-center gap-3 px-9 py-3.5 rounded-xl text-white transition-all hover:brightness-[1.03] active:brightness-[0.98]"
       style={{
         background: 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)',
-        boxShadow: '0 12px 32px -8px rgba(4, 101, 242, 0.45)',
+        boxShadow: '0 12px 32px -10px rgba(4, 101, 242, 0.35)',
       }}
     >
       <span className="flex flex-col items-center leading-tight">
