@@ -84,18 +84,16 @@ function AuthParamHandler() {
 export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
   const router = useRouter();
   const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  /** Light marketing canvas only: sky grid + soft glows. Dark mode matches app shell — flat var(--surface-base), no overlay. */
+  const isLightMarketing = theme === 'light';
 
   const ambientBackdropStyle: React.CSSProperties = {
-    background: isDark
-      ? 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(15,164,233,0.22) 0%, transparent 58%), radial-gradient(ellipse 60% 40% at 100% 28%, rgba(4,101,242,0.14) 0%, transparent 50%), radial-gradient(ellipse 55% 38% at 0% 58%, rgba(15,164,233,0.12) 0%, transparent 50%)'
-      : 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(15,164,233,0.07) 0%, transparent 58%), radial-gradient(ellipse 60% 40% at 100% 28%, rgba(4,101,242,0.05) 0%, transparent 50%), radial-gradient(ellipse 55% 38% at 0% 58%, rgba(15,164,233,0.04) 0%, transparent 50%)',
+    background:
+      'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(15,164,233,0.07) 0%, transparent 58%), radial-gradient(ellipse 60% 40% at 100% 28%, rgba(4,101,242,0.05) 0%, transparent 50%), radial-gradient(ellipse 55% 38% at 0% 58%, rgba(15,164,233,0.04) 0%, transparent 50%)',
   };
 
   const ambientWashStyle: React.CSSProperties = {
-    background: isDark
-      ? 'linear-gradient(180deg, transparent 0%, rgba(15,164,233,0.07) 100%)'
-      : 'linear-gradient(180deg, transparent 0%, rgba(15,164,233,0.04) 100%)',
+    background: 'linear-gradient(180deg, transparent 0%, rgba(15,164,233,0.04) 100%)',
   };
 
   const handleVerdictClick = (presetAddress?: string) => {
@@ -116,11 +114,15 @@ export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
   return (
     <div
       data-homepage-v3="true"
-      className="min-h-screen bg-[var(--surface-base)] text-[var(--text-body)] relative overflow-x-hidden antialiased grid-fade"
+      className={`min-h-screen bg-[var(--surface-base)] text-[var(--text-body)] relative overflow-x-hidden antialiased ${isLightMarketing ? 'grid-fade' : ''}`}
     >
-      {/* Ambient glow — sky family; stronger opacities on dark canvas */}
-      <div aria-hidden className="fixed inset-0 pointer-events-none z-0" style={ambientBackdropStyle} />
-      <div aria-hidden className="fixed inset-0 pointer-events-none z-0" style={ambientWashStyle} />
+      {/* Light-only: sky wash + grid (same family as dashboard grid-fade). Dark = plain shell like other routes. */}
+      {isLightMarketing && (
+        <>
+          <div aria-hidden className="fixed inset-0 pointer-events-none z-0" style={ambientBackdropStyle} />
+          <div aria-hidden className="fixed inset-0 pointer-events-none z-0" style={ambientWashStyle} />
+        </>
+      )}
 
       <Suspense fallback={null}>
         <AuthParamHandler />
