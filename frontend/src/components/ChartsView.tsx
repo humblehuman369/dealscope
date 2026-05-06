@@ -47,37 +47,37 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
   return (
     <div className="space-y-4">
       {/* Top Summary - Mobile optimized */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-xl p-3 sm:p-4 text-white">
+      <div className="bg-gradient-to-r from-[#1f8a70] via-[#146c59] to-[#0465f2] rounded-xl p-3 sm:p-4 text-white">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="text-emerald-200 text-[10px] uppercase tracking-wide">Annual Cash Flow</div>
+            <div className="text-white/80 text-[10px] uppercase tracking-wide">Annual Cash Flow</div>
             <div className="text-lg sm:text-xl font-bold">{formatCompactCurrency(yearData.cashFlow)}</div>
           </div>
           <div className="hidden sm:block text-2xl font-thin text-white/30">→</div>
           <div className="text-right min-w-0">
-            <div className="text-emerald-200 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Cumulative</div>
+            <div className="text-white/80 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Cumulative</div>
             <div className="text-xl sm:text-2xl font-bold">{formatCompactCurrency(currentCumulative)}</div>
           </div>
           <div className="text-right pl-3 border-l border-white/20 min-w-0">
-            <div className="text-emerald-200 text-[10px] uppercase tracking-wide">10-Year Total</div>
-            <div className="text-lg sm:text-xl font-bold text-cyan-300">{formatCompactCurrency(totalCF)}</div>
+            <div className="text-white/80 text-[10px] uppercase tracking-wide">10-Year Total</div>
+            <div className="text-lg sm:text-xl font-bold text-[#00e5ff]">{formatCompactCurrency(totalCF)}</div>
           </div>
         </div>
       </div>
       
       {/* Radial Progress + Bar Chart - Stack on mobile */}
-      <div className="bg-white rounded-xl border border-gray-100 p-3 sm:p-5">
+      <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-subtle)] p-3 sm:p-5">
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           {/* Radial Chart - Centered on mobile */}
           <div className="relative flex-shrink-0">
             <svg width={(radius + strokeWidth) * 2 + 16} height={(radius + strokeWidth) * 2 + 16}>
               <defs>
                 <linearGradient id="cashFlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="var(--accent-sky)" />
+                  <stop offset="0%" stopColor="#1f8a70" />
+                  <stop offset="100%" stopColor="#146c59" />
                 </linearGradient>
                 <filter id="cashGlow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#10b981" floodOpacity="0.5" />
+                  <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#1f8a70" floodOpacity="0.5" />
                 </filter>
               </defs>
               
@@ -87,7 +87,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
                 cy={radius + strokeWidth + 8}
                 r={radius}
                 fill="none"
-                stroke="#e5e7eb"
+                stroke="var(--chart-grid)"
                 strokeWidth={strokeWidth}
               />
               
@@ -112,7 +112,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
                 x={radius + strokeWidth + 8}
                 y={radius + strokeWidth + 3}
                 textAnchor="middle"
-                className="text-xl font-bold fill-gray-900"
+                className="text-xl font-bold fill-[var(--text-heading)]"
                 fontSize="16"
               >
                 {formatCompactCurrency(currentCumulative)}
@@ -121,7 +121,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
                 x={radius + strokeWidth + 8}
                 y={radius + strokeWidth + 18}
                 textAnchor="middle"
-                className="fill-gray-400"
+                className="fill-[var(--text-muted)]"
                 fontSize="9"
               >
                 Cumulative
@@ -131,7 +131,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
           
           {/* Bar Chart - Full width on mobile */}
           <div className="w-full sm:flex-1">
-            <div className="text-sm font-medium text-gray-700 mb-2 sm:mb-3">Annual Cash Flow by Year</div>
+            <div className="text-sm font-medium text-[var(--text-heading)] mb-2 sm:mb-3">Annual Cash Flow by Year</div>
             <div className="flex items-end gap-1 h-24 sm:h-32">
               {data.map((d, i) => {
                 const maxCF = Math.max(...data.map(x => x.cashFlow))
@@ -145,8 +145,8 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
                     onClick={() => setSelectedYear(i)}
                     className={`flex-1 rounded-t-lg transition-all duration-300 cursor-pointer hover:opacity-80 ${
                       isSelected 
-                        ? isPositive ? 'bg-gradient-to-t from-emerald-600 to-teal-500' : 'bg-gradient-to-t from-red-600 to-red-400'
-                        : isPositive ? 'bg-gradient-to-t from-emerald-200 to-emerald-100' : 'bg-gradient-to-t from-red-200 to-red-100'
+                        ? isPositive ? 'bg-gradient-to-t from-[#146c59] to-[#1f8a70]' : 'bg-gradient-to-t from-[#b42318] to-[#dc2626]'
+                        : isPositive ? 'bg-gradient-to-t from-[rgba(31,138,112,0.35)] to-[rgba(31,138,112,0.15)]' : 'bg-gradient-to-t from-[rgba(180,35,24,0.35)] to-[rgba(180,35,24,0.12)]'
                     }`}
                     style={{ height: `${Math.max(height, 10)}%` }}
                     title={`Year ${d.year}: ${formatCurrency(d.cashFlow)}`}
@@ -159,7 +159,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
                 <div 
                   key={i} 
                   className={`flex-1 text-center text-[9px] sm:text-[10px] transition-colors ${
-                    i === selectedYear ? 'text-emerald-600 font-bold' : 'text-gray-400'
+                    i === selectedYear ? 'text-[var(--status-positive)] font-bold' : 'text-[var(--text-muted)]'
                   }`}
                 >
                   Y{d.year}
@@ -187,7 +187,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
                 if (selectedYear >= 9) setSelectedYear(0)
                 setIsPlaying(!isPlaying)
               }}
-              className="p-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 transition-colors"
+              className="p-1.5 rounded-full bg-[#1f8a70] hover:bg-[#146c59] transition-colors"
               title={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-white" />}
@@ -211,7 +211,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
                 onClick={() => setSelectedYear(i)}
                 className={`flex-1 h-2 rounded-full transition-all duration-300 ${
                   i <= selectedYear 
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-400' 
+                    ? 'bg-gradient-to-r from-[#1f8a70] to-[#0465f2]' 
                     : 'bg-white/20'
                 } ${i === selectedYear ? 'scale-y-150' : ''}`}
               />
@@ -228,7 +228,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
         </div>
         
         <div className="text-center mt-2">
-          <span className="text-emerald-400 font-bold">Year {selectedYear + 1}</span>
+          <span className="text-[#00e5ff] font-bold">Year {selectedYear + 1}</span>
           <span className="text-white/50 text-sm ml-2">of 10</span>
         </div>
       </div>
@@ -264,9 +264,9 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
   
   // Equity components
   const equityComponents = [
-    { label: 'Down Payment', value: totalCashInvested, color: '#6366f1', icon: DollarSign },
-    { label: 'Loan Paydown', value: yearData.equityFromPaydown, color: '#3b82f6', icon: Building2 },
-    { label: 'Appreciation', value: yearData.equityFromAppreciation, color: '#10b981', icon: TrendingUp },
+    { label: 'Down Payment', value: totalCashInvested, color: '#1f8a70', icon: DollarSign },
+    { label: 'Loan Paydown', value: yearData.equityFromPaydown, color: '#07172e', icon: Building2 },
+    { label: 'Appreciation', value: yearData.equityFromAppreciation, color: '#0465f2', icon: TrendingUp },
   ]
   
   const totalEquity = yearData.totalEquity
@@ -282,20 +282,20 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
   return (
     <div className="space-y-4">
       {/* Top Summary - Mobile optimized */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-xl p-3 sm:p-4 text-white">
+      <div className="bg-gradient-to-r from-[#0465f2] via-[#07172e] to-[#1f8a70] rounded-xl p-3 sm:p-4 text-white">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="text-blue-200 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Equity</div>
+            <div className="text-white/80 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Equity</div>
             <div className="text-xl sm:text-2xl font-bold">{formatCompactCurrency(totalEquity)}</div>
           </div>
           <div className="hidden sm:block text-2xl font-thin text-white/30">→</div>
           <div className="text-right min-w-0">
-            <div className="text-blue-200 text-[10px] uppercase tracking-wide">Year 10 Equity</div>
+            <div className="text-white/80 text-[10px] uppercase tracking-wide">Year 10 Equity</div>
             <div className="text-lg sm:text-xl font-bold">{formatCompactCurrency(maxEquity)}</div>
           </div>
           <div className="text-right pl-3 border-l border-white/20 min-w-0">
-            <div className="text-blue-200 text-[10px] uppercase tracking-wide">Equity Gain</div>
-            <div className="text-lg sm:text-xl font-bold text-emerald-300">
+            <div className="text-white/80 text-[10px] uppercase tracking-wide">Equity Gain</div>
+            <div className="text-lg sm:text-xl font-bold text-[#00e5ff]">
               +{formatCompactCurrency(totalEquity - totalCashInvested)}
             </div>
           </div>
@@ -303,7 +303,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
       </div>
       
       {/* Donut + Breakdown - Stack on mobile */}
-      <div className="bg-white rounded-xl border border-gray-100 p-3 sm:p-5">
+      <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-subtle)] p-3 sm:p-5">
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           {/* Donut Chart - Centered on mobile */}
           <div className="relative flex-shrink-0">
@@ -326,7 +326,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                 cy={radius + strokeWidth + 8}
                 r={radius}
                 fill="none"
-                stroke="#e5e7eb"
+                stroke="var(--chart-grid)"
                 strokeWidth={strokeWidth}
               />
               
@@ -361,7 +361,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                 x={radius + strokeWidth + 8}
                 y={radius + strokeWidth + 3}
                 textAnchor="middle"
-                className="text-lg font-bold fill-gray-900"
+                className="text-lg font-bold fill-[var(--text-heading)]"
                 fontSize="16"
               >
                 {formatCompactCurrency(totalEquity)}
@@ -370,7 +370,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                 x={radius + strokeWidth + 8}
                 y={radius + strokeWidth + 16}
                 textAnchor="middle"
-                className="fill-gray-400"
+                className="fill-[var(--text-muted)]"
                 fontSize="8"
               >
                 Total Equity
@@ -380,7 +380,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
           
           {/* Breakdown - Full width on mobile */}
           <div className="w-full sm:flex-1 space-y-2.5">
-            <div className="text-sm font-medium text-gray-700 mb-3">Equity Breakdown</div>
+            <div className="text-sm font-medium text-[var(--text-heading)] mb-3">Equity Breakdown</div>
             {(() => { cumulativePercent = 0; return null; })()}
             {equityComponents.map((seg, i) => {
               const percent = totalEquity > 0 ? (seg.value / totalEquity) * 100 : 0
@@ -396,12 +396,12 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-sm text-gray-700 truncate">{seg.label}</span>
+                      <span className="text-sm text-[var(--text-heading)] truncate">{seg.label}</span>
                       <span className="text-sm font-bold flex-shrink-0" style={{ color: seg.color }}>
                         {formatCompactCurrency(seg.value)}
                       </span>
                     </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-[var(--chart-grid)] rounded-full overflow-hidden">
                       <div 
                         className="h-full rounded-full transition-all duration-500"
                         style={{ 
@@ -411,7 +411,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                       />
                     </div>
                   </div>
-                  <span className="text-xs text-gray-400 w-8 text-right flex-shrink-0">{percent.toFixed(0)}%</span>
+                  <span className="text-xs text-[var(--text-muted)] w-8 text-right flex-shrink-0">{percent.toFixed(0)}%</span>
                 </div>
               )
             })}
@@ -420,13 +420,13 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
       </div>
       
       {/* Equity vs Loan Comparison */}
-      <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-xl p-5 border border-gray-200">
+      <div className="bg-[var(--surface-elevated)] rounded-xl p-5 border border-[var(--border-default)]">
         <div className="flex items-center justify-between mb-4">
-          <div className="text-sm font-medium text-gray-700">Equity vs Loan Balance</div>
+          <div className="text-sm font-medium text-[var(--text-heading)]">Equity vs Loan Balance</div>
           {crossoverYear > 0 && selectedYear >= crossoverYear && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-100 rounded-full">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-xs font-medium text-emerald-700">Equity exceeds loan!</span>
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-[rgba(31,138,112,0.12)] rounded-full">
+              <Sparkles className="w-3.5 h-3.5 text-[var(--status-positive)]" />
+              <span className="text-xs font-medium text-[var(--status-positive)]">Equity exceeds loan!</span>
             </div>
           )}
         </div>
@@ -434,10 +434,10 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
         <div className="space-y-3">
           {/* Equity Bar */}
           <div className="flex items-center gap-3">
-            <div className="w-20 text-xs text-gray-500">Equity</div>
-            <div className="flex-1 h-8 bg-white rounded-lg overflow-hidden border border-gray-200">
+            <div className="w-20 text-xs text-[var(--text-secondary)]">Equity</div>
+            <div className="flex-1 h-8 bg-[var(--surface-card)] rounded-lg overflow-hidden border border-[var(--border-default)]">
               <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-end px-2 transition-all duration-500"
+                className="h-full bg-gradient-to-r from-[#1f8a70] to-[#146c59] rounded-lg flex items-center justify-end px-2 transition-all duration-500"
                 style={{ width: `${(totalEquity / Math.max(totalEquity, yearData.loanBalance)) * 100}%` }}
               >
                 <span className="text-xs font-bold text-white">{formatCompactCurrency(totalEquity)}</span>
@@ -447,10 +447,10 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
           
           {/* Loan Bar */}
           <div className="flex items-center gap-3">
-            <div className="w-20 text-xs text-gray-500">Loan</div>
-            <div className="flex-1 h-8 bg-white rounded-lg overflow-hidden border border-gray-200">
+            <div className="w-20 text-xs text-[var(--text-secondary)]">Loan</div>
+            <div className="flex-1 h-8 bg-[var(--surface-card)] rounded-lg overflow-hidden border border-[var(--border-default)]">
               <div 
-                className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-lg flex items-center justify-end px-2 transition-all duration-500"
+                className="h-full bg-gradient-to-r from-[#07172e] to-[#10223d] rounded-lg flex items-center justify-end px-2 transition-all duration-500"
                 style={{ width: `${(yearData.loanBalance / Math.max(totalEquity, yearData.loanBalance)) * 100}%` }}
               >
                 <span className="text-xs font-bold text-white">{formatCompactCurrency(yearData.loanBalance)}</span>
@@ -460,9 +460,9 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
         </div>
         
         {crossoverYear > 0 && (
-          <div className="mt-4 pt-3 border-t border-gray-200 text-center">
-            <span className="text-xs text-gray-500">Crossover Point: </span>
-            <span className="text-xs font-bold text-emerald-600">Year {crossoverYear + 1}</span>
+          <div className="mt-4 pt-3 border-t border-[var(--border-subtle)] text-center">
+            <span className="text-xs text-[var(--text-secondary)]">Crossover Point: </span>
+            <span className="text-xs font-bold text-[var(--status-positive)]">Year {crossoverYear + 1}</span>
           </div>
         )}
       </div>
@@ -484,7 +484,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                 if (selectedYear >= 9) setSelectedYear(0)
                 setIsPlaying(!isPlaying)
               }}
-              className="p-1.5 rounded-full bg-blue-500 hover:bg-blue-400 transition-colors"
+              className="p-1.5 rounded-full bg-[#1f8a70] hover:bg-[#146c59] transition-colors"
               title={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-white" />}
@@ -508,7 +508,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                 onClick={() => setSelectedYear(i)}
                 className={`flex-1 h-2 rounded-full transition-all duration-300 ${
                   i <= selectedYear 
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-400' 
+                    ? 'bg-gradient-to-r from-[#1f8a70] to-[#0465f2]' 
                     : 'bg-white/20'
                 } ${i === selectedYear ? 'scale-y-150' : ''}`}
               />
@@ -525,7 +525,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
         </div>
         
         <div className="text-center mt-2">
-          <span className="text-blue-400 font-bold">Year {selectedYear + 1}</span>
+          <span className="text-[#00e5ff] font-bold">Year {selectedYear + 1}</span>
           <span className="text-white/50 text-sm ml-2">of 10</span>
         </div>
       </div>
@@ -559,9 +559,9 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
   const yearData = data[selectedYear]
   
   const segments = [
-    { label: 'Cash Flow', value: Math.max(0, yearData.cumulativeCashFlow), color: '#8b5cf6', icon: Wallet },
-    { label: 'Paydown', value: yearData.equityFromPaydown, color: '#3b82f6', icon: Building2 },
-    { label: 'Appreciation', value: yearData.equityFromAppreciation, color: '#10b981', icon: TrendingUp },
+    { label: 'Cash Flow', value: Math.max(0, yearData.cumulativeCashFlow), color: '#1f8a70', icon: Wallet },
+    { label: 'Paydown', value: yearData.equityFromPaydown, color: '#07172e', icon: Building2 },
+    { label: 'Appreciation', value: yearData.equityFromAppreciation, color: '#0465f2', icon: TrendingUp },
   ]
   
   const total = segments.reduce((sum, s) => sum + s.value, 0)
@@ -575,20 +575,20 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
   return (
     <div className="space-y-4">
       {/* Top Summary - Mobile optimized with wrap */}
-      <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-xl p-3 sm:p-4 text-white">
+      <div className="bg-gradient-to-r from-[#1f8a70] via-[#07172e] to-[#0465f2] rounded-xl p-3 sm:p-4 text-white">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="text-purple-200 text-[10px] uppercase tracking-wide">Initial Investment</div>
+            <div className="text-white/80 text-[10px] uppercase tracking-wide">Initial Investment</div>
             <div className="text-lg sm:text-xl font-bold">{formatCompactCurrency(totalCashInvested)}</div>
           </div>
           <div className="hidden sm:block text-2xl font-thin text-white/30">→</div>
           <div className="text-right min-w-0">
-            <div className="text-purple-200 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Wealth</div>
+            <div className="text-white/80 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Wealth</div>
             <div className="text-xl sm:text-2xl font-bold">{formatCompactCurrency(yearData.totalWealth)}</div>
           </div>
           <div className="text-right pl-3 border-l border-white/20 min-w-0">
-            <div className="text-purple-200 text-[10px] uppercase tracking-wide">Return</div>
-            <div className="text-lg sm:text-xl font-bold text-emerald-300">
+            <div className="text-white/80 text-[10px] uppercase tracking-wide">Return</div>
+            <div className="text-lg sm:text-xl font-bold text-[#00e5ff]">
               {(yearData.totalWealth / totalCashInvested).toFixed(1)}x
             </div>
           </div>
@@ -596,7 +596,7 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
       </div>
       
       {/* Donut Chart - Stack vertically on mobile */}
-      <div className="bg-white rounded-xl border border-gray-100 p-3 sm:p-5">
+      <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-subtle)] p-3 sm:p-5">
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           {/* Donut - Centered on mobile */}
           <div className="relative flex-shrink-0">
@@ -619,7 +619,7 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
                 cy={radius + strokeWidth + 8}
                 r={radius}
                 fill="none"
-                stroke="#f3f4f6"
+                stroke="var(--chart-grid)"
                 strokeWidth={strokeWidth}
               />
               
@@ -653,16 +653,16 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
                 cx={radius + strokeWidth + 8}
                 cy={radius + strokeWidth + 8}
                 r={radius - strokeWidth - 6}
-                fill="white"
+                fill="var(--surface-card)"
                 filter="url(#donutShadow)"
               />
             </svg>
             
             {/* Center content */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="text-[9px] text-gray-400 uppercase tracking-wide">Total Wealth</div>
-              <div className="text-xl font-bold text-gray-900">{formatCompactCurrency(yearData.totalWealth)}</div>
-              <div className="mt-0.5 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-medium">
+              <div className="text-[9px] text-[var(--text-muted)] uppercase tracking-wide">Total Wealth</div>
+              <div className="text-xl font-bold text-[var(--text-heading)]">{formatCompactCurrency(yearData.totalWealth)}</div>
+              <div className="mt-0.5 px-1.5 py-0.5 bg-[rgba(31,138,112,0.14)] text-[var(--status-positive)] rounded text-[10px] font-medium">
                 +{formatCompactCurrency(yearData.totalWealth - totalCashInvested)}
               </div>
             </div>
@@ -674,21 +674,21 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
               const percent = total > 0 ? (seg.value / total) * 100 : 0
               
               return (
-                <div key={i} className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5">
+                <div key={i} className="bg-[var(--surface-elevated)] dark:bg-navy-700/50 rounded-lg p-2.5">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2 min-w-0">
                       <div 
                         className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: seg.color }}
                       />
-                      <span className="text-[13px] font-medium text-gray-800 dark:text-white truncate">{seg.label}</span>
-                      <span className="text-[13px] text-gray-600 dark:text-white">{percent.toFixed(0)}%</span>
+                      <span className="text-[13px] font-medium text-[var(--text-heading)] dark:text-white truncate">{seg.label}</span>
+                      <span className="text-[13px] text-[var(--text-secondary)] dark:text-white">{percent.toFixed(0)}%</span>
                     </div>
                     <div className="text-[13px] font-semibold flex-shrink-0" style={{ color: seg.color }}>
                       {formatCompactCurrency(seg.value)}
                     </div>
                   </div>
-                  <div className="h-1 bg-gray-200 dark:bg-navy-600 rounded-full overflow-hidden">
+                  <div className="h-1 bg-[var(--chart-grid)] dark:bg-navy-600 rounded-full overflow-hidden">
                     <div 
                       className="h-full rounded-full transition-all duration-700"
                       style={{ width: `${percent}%`, backgroundColor: seg.color }}
@@ -745,7 +745,7 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
                   }}
                   className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${
                     i <= selectedYear 
-                      ? 'bg-gradient-to-r from-purple-500 to-indigo-500' 
+                      ? 'bg-gradient-to-r from-[#1f8a70] to-[#0465f2]' 
                       : 'bg-white/20'
                   } ${i === selectedYear ? 'scale-y-150' : ''}`}
                 />
@@ -782,12 +782,12 @@ export default function ChartsView({ projections, totalCashInvested }: ChartsVie
     <div className="space-y-3 sm:space-y-4">
       {/* Header */}
       <div>
-        <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white">Wealth Visualizer</h2>
-        <p className="text-[13px] sm:text-[14px] text-gray-600 dark:text-white">Interactive 10-year investment analysis</p>
+        <h2 className="text-base sm:text-lg font-semibold text-[var(--text-heading)] dark:text-white">Wealth Visualizer</h2>
+        <p className="text-[13px] sm:text-[14px] text-[var(--text-secondary)] dark:text-white">Interactive 10-year investment analysis</p>
       </div>
 
       {/* Tab Selector - Mobile optimized */}
-      <div className="flex gap-1 sm:gap-2 p-1 bg-gray-100 dark:bg-navy-700 rounded-xl overflow-x-auto">
+      <div className="flex gap-1 sm:gap-2 p-1 bg-[var(--surface-elevated)] dark:bg-navy-700 rounded-xl overflow-x-auto">
         {tabs.map(tab => {
           const isActive = activeChart === tab.id
           
@@ -797,13 +797,13 @@ export default function ChartsView({ projections, totalCashInvested }: ChartsVie
               onClick={() => setActiveChart(tab.id as any)}
               className={`flex-1 min-w-0 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 py-2 sm:py-2.5 px-2 sm:px-4 rounded-lg text-[13px] sm:text-[14px] font-medium transition-all duration-200 ${
                 isActive 
-                  ? 'bg-white dark:bg-navy-600 shadow-sm text-gray-900 dark:text-white' 
-                  : 'text-gray-600 dark:text-white hover:text-gray-700 dark:hover:text-gray-200'
+                  ? 'bg-[var(--surface-card)] dark:bg-navy-600 shadow-sm text-[var(--text-heading)] dark:text-white' 
+                  : 'text-[var(--text-secondary)] dark:text-white hover:text-[var(--text-heading)] dark:hover:text-gray-200'
               }`}
             >
               <span className="truncate">{tab.label}</span>
               <span className={`text-[11px] sm:text-[13px] px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap ${
-                isActive ? 'bg-gray-100 dark:bg-navy-500 text-gray-700 dark:text-white' : 'text-gray-600 dark:text-white'
+                isActive ? 'bg-[var(--surface-elevated)] dark:bg-navy-500 text-[var(--text-heading)] dark:text-white' : 'text-[var(--text-secondary)] dark:text-white'
               }`}>
                 {formatCompactCurrency(tab.value)}
               </span>

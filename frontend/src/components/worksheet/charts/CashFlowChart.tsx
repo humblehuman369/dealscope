@@ -47,15 +47,15 @@ export function CashFlowChart() {
       {/* Legend */}
       <div className="flex items-center gap-4 mb-4 text-xs">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-[#0284c7]" />
+          <div className="w-3 h-3 rounded-sm bg-[var(--status-positive)]" />
           <span className="text-[var(--ws-text-secondary)]">Operating Income</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-[#ef4444]" />
+          <div className="w-3 h-3 rounded-sm bg-[var(--color-navy)]" />
           <span className="text-[var(--ws-text-secondary)]">Operating Expenses</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-[#22c55e]" />
+          <div className="w-3 h-3 rounded-sm bg-[var(--status-positive)]" />
           <span className="text-[var(--ws-text-secondary)]">Cash Flow</span>
         </div>
       </div>
@@ -85,7 +85,7 @@ export function CashFlowChart() {
               <div key={index} className="flex-1 flex flex-col items-center relative h-full">
                 {/* Income bar */}
                 <div 
-                  className="absolute w-[30%] left-[10%] bg-[#0284c7] rounded-t-sm transition-all duration-300"
+                  className="absolute w-[30%] left-[10%] bg-[var(--status-positive)] rounded-t-sm transition-all duration-300"
                   style={{
                     bottom: `${zeroLine}%`,
                     height: `${getBarHeight(year.effectiveRent) - zeroLine}%`,
@@ -94,7 +94,7 @@ export function CashFlowChart() {
                 
                 {/* Expenses bar */}
                 <div 
-                  className="absolute w-[30%] left-[35%] bg-[#ef4444] rounded-t-sm transition-all duration-300"
+                  className="absolute w-[30%] left-[35%] bg-[var(--color-navy)] rounded-t-sm transition-all duration-300"
                   style={{
                     bottom: `${zeroLine}%`,
                     height: `${getBarHeight(year.operatingExpenses + year.debtService) - zeroLine}%`,
@@ -104,7 +104,7 @@ export function CashFlowChart() {
                 {/* Cash flow bar */}
                 <div 
                   className={`absolute w-[30%] right-[10%] rounded-sm transition-all duration-300 ${
-                    year.cashFlow >= 0 ? 'bg-[#22c55e]' : 'bg-[#f97316]'
+                    year.cashFlow >= 0 ? 'bg-[var(--status-positive)]' : 'bg-[var(--status-negative)]'
                   }`}
                   style={{
                     bottom: year.cashFlow >= 0 ? `${zeroLine}%` : undefined,

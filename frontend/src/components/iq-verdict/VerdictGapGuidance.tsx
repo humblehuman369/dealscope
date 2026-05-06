@@ -69,16 +69,13 @@ export function VerdictGapGuidance({
   onShowPitch,
   propertyState,
 }: VerdictGapGuidanceProps) {
-  if (effectiveDisplayPct > 0 || dealGapPct <= 0) {
-    return null
-  }
-
   const anchorWord = isListed ? 'asking price' : 'estimated market value'
   const showFullLevers = dealGapPct > 5
   const hasStructures = !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
   const pathsSig = dealStructures?.paths.map((p) => p.id).join('|') ?? ''
 
   useEffect(() => {
+    if (effectiveDisplayPct > 0 || dealGapPct <= 0) return
     if (!hasStructures || !dealStructures || !pathsSig) return
     const families = dealStructures.paths.map((p) => p.family)
     trackEvent('three_paths_rendered', {
@@ -88,7 +85,18 @@ export function VerdictGapGuidance({
       deal_gap_pct: dealGapPct,
       state: propertyState ?? '',
     })
-  }, [hasStructures, dealStructures, pathsSig, dealGapPct, propertyState])
+  }, [
+    effectiveDisplayPct,
+    dealGapPct,
+    hasStructures,
+    dealStructures,
+    pathsSig,
+    propertyState,
+  ])
+
+  if (effectiveDisplayPct > 0 || dealGapPct <= 0) {
+    return null
+  }
 
   return (
     <div style={{ marginTop: 12, width: '100%', maxWidth: '100%', minWidth: 0 }}>

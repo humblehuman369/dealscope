@@ -104,9 +104,9 @@ export function SliderInput({
             [&::-webkit-slider-thumb]:w-6
             [&::-webkit-slider-thumb]:h-6
             [&::-webkit-slider-thumb]:rounded-full
-            [&::-webkit-slider-thumb]:bg-[#F1F5F9]
+            [&::-webkit-slider-thumb]:bg-[var(--slider-thumb-bg)]
             [&::-webkit-slider-thumb]:border-[3px]
-            [&::-webkit-slider-thumb]:border-[#0C1220]
+            [&::-webkit-slider-thumb]:border-[var(--slider-thumb-border)]
             [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(255,255,255,0.25)]
             [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:transition-transform
@@ -116,9 +116,9 @@ export function SliderInput({
             [&::-moz-range-thumb]:w-6
             [&::-moz-range-thumb]:h-6
             [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:bg-[#F1F5F9]
+            [&::-moz-range-thumb]:bg-[var(--slider-thumb-bg)]
             [&::-moz-range-thumb]:border-[3px]
-            [&::-moz-range-thumb]:border-[#0C1220]
+            [&::-moz-range-thumb]:border-[var(--slider-thumb-border)]
             [&::-moz-range-thumb]:shadow-[0_0_8px_rgba(255,255,255,0.25)]
             [&::-moz-range-thumb]:cursor-pointer"
           style={{

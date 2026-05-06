@@ -99,37 +99,37 @@ const NAV_ITEMS = [
 // Icon components
 const NavIcons: Record<string, (isActive: boolean) => JSX.Element> = {
   search: (isActive) => (
-    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : '#F1F5F9'} strokeWidth="1.5" viewBox="0 0 24 24">
+    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : 'var(--text-muted)'} strokeWidth="1.5" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
     </svg>
   ),
   home: (isActive) => (
-    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : '#F1F5F9'} strokeWidth="1.5" viewBox="0 0 24 24">
+    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : 'var(--text-muted)'} strokeWidth="1.5" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
     </svg>
   ),
   trends: (isActive) => (
-    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : '#F1F5F9'} strokeWidth="1.5" viewBox="0 0 24 24">
+    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : 'var(--text-muted)'} strokeWidth="1.5" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
     </svg>
   ),
   analysis: (isActive) => (
-    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : '#F1F5F9'} strokeWidth="1.5" viewBox="0 0 24 24">
+    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : 'var(--text-muted)'} strokeWidth="1.5" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
     </svg>
   ),
   compare: (isActive) => (
-    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : '#F1F5F9'} strokeWidth="1.5" viewBox="0 0 24 24">
+    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : 'var(--text-muted)'} strokeWidth="1.5" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/>
     </svg>
   ),
   reports: (isActive) => (
-    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : '#F1F5F9'} strokeWidth="1.5" viewBox="0 0 24 24">
+    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : 'var(--text-muted)'} strokeWidth="1.5" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
     </svg>
   ),
   deals: (isActive) => (
-    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : '#F1F5F9'} strokeWidth="1.5" viewBox="0 0 24 24">
+    <svg width="18" height="18" fill="none" stroke={isActive ? 'var(--accent-sky)' : 'var(--text-muted)'} strokeWidth="1.5" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
     </svg>
   ),
@@ -233,13 +233,13 @@ export function PropertyDetailsPage({
 
   // Content component
   const PageContent = () => (
-    <div className="flex flex-col h-full bg-[#F1F5F9] font-sans relative">
+    <div className="flex flex-col h-full bg-[var(--surface-base)] font-sans relative">
       {/* Compact Header */}
       <header className="sticky top-0 z-50">
         {/* App Header */}
-        <div className="bg-white px-4 py-2.5 flex items-center justify-between border-b border-slate-200">
+        <div className="bg-[var(--surface-card)] px-4 py-2.5 flex items-center justify-between border-b border-[var(--border-default)]">
           <div className="text-lg font-extrabold">
-            <span className="text-[#0A1628]">DealGap</span>
+            <span className="text-[var(--text-heading)]">DealGap</span>
             <span className="text-[var(--accent-sky)]">IQ</span>
           </div>
           <div className="flex items-center gap-3">
@@ -275,10 +275,10 @@ export function PropertyDetailsPage({
               <div className="flex items-center gap-2.5">
                 <div className="text-base font-bold tracking-wide">
                   <span className="text-white">PROPERTY </span>
-                  <span className="text-[#00D4FF]">DETAILS</span>
+                  <span className="text-[#00e5ff]">DETAILS</span>
                 </div>
                 <button
-                  className={`flex items-center gap-1 px-2.5 py-1 bg-white/10 border border-white/20 rounded-2xl text-[#00D4FF] text-[11px] font-semibold hover:bg-white/15 transition-colors`}
+                  className={`flex items-center gap-1 px-2.5 py-1 bg-white/10 border border-white/20 rounded-2xl text-[#00e5ff] text-[11px] font-semibold hover:bg-white/15 transition-colors`}
                   onClick={() => setIsStrategyOpen(!isStrategyOpen)}
                 >
                   <span>{currentStrategy}</span>
@@ -333,15 +333,15 @@ export function PropertyDetailsPage({
                   <span className="text-[9px] text-slate-500 uppercase tracking-wide">Sqft</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-[#00D4FF]">{formatPrice(property.price)}</span>
+                  <span className="text-xs font-semibold text-[#00e5ff]">{formatPrice(property.price)}</span>
                   <span className="text-[9px] text-slate-500 uppercase tracking-wide">Est. Value</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-[#00D4FF]">{formatPrice(property.rent || 0)}</span>
+                  <span className="text-xs font-semibold text-[#00e5ff]">{formatPrice(property.rent || 0)}</span>
                   <span className="text-[9px] text-slate-500 uppercase tracking-wide">Est. Rent</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-semibold text-[#0A1628] bg-[#00D4FF] px-1.5 py-0.5 rounded inline-block w-fit">For Sale</span>
+                  <span className="text-[10px] font-semibold text-[var(--text-inverse)] bg-[var(--accent-sky)] px-1.5 py-0.5 rounded inline-block w-fit">For Sale</span>
                   <span className="text-[9px] text-slate-500 uppercase tracking-wide mt-0.5">Status</span>
                 </div>
               </div>
@@ -350,7 +350,7 @@ export function PropertyDetailsPage({
 
           {/* Strategy Dropdown */}
           {isStrategyOpen && (
-            <div className="absolute top-full left-4 right-4 bg-white rounded-xl shadow-2xl z-50 overflow-hidden mt-0">
+            <div className="absolute top-full left-4 right-4 bg-[var(--surface-card)] rounded-xl shadow-2xl z-50 overflow-hidden mt-0">
               <div className="px-3.5 pt-2.5 pb-1 text-[9px] font-semibold text-slate-400 uppercase tracking-wider">
                 Strategy
               </div>
@@ -358,7 +358,7 @@ export function PropertyDetailsPage({
                 <button
                   key={strategy.short}
                   className={`flex items-center justify-between w-full px-3.5 py-2.5 text-[13px] font-medium hover:bg-slate-50 transition-colors ${
-                    strategy.short === currentStrategy ? 'text-[var(--accent-sky)] font-semibold' : 'text-[#0A1628]'
+                    strategy.short === currentStrategy ? 'text-[var(--accent-sky)] font-semibold' : 'text-[var(--text-heading)]'
                   }`}
                   onClick={() => handleStrategySelect(strategy.short)}
                 >
@@ -375,7 +375,7 @@ export function PropertyDetailsPage({
         </div>
 
         {/* Icon Nav */}
-        <nav className="bg-white px-2 py-1.5 flex items-center justify-around border-b border-slate-200">
+        <nav className="bg-[var(--surface-card)] px-2 py-1.5 flex items-center justify-around border-b border-[var(--border-default)]">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
@@ -394,7 +394,7 @@ export function PropertyDetailsPage({
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pb-24">
         {/* Image Gallery */}
-        <section className="bg-white mb-2.5">
+        <section className="bg-[var(--surface-card)] mb-2.5">
           <div className="relative w-full h-60 overflow-hidden bg-slate-100">
             {property.images?.length ? (
               <>
@@ -407,7 +407,7 @@ export function PropertyDetailsPage({
                   className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
                   onClick={() => setCurrentImageIndex(i => Math.max(0, i - 1))}
                 >
-                  <svg width="16" height="16" fill="none" stroke="#0A1628" viewBox="0 0 24 24">
+                  <svg width="16" height="16" fill="none" stroke="var(--text-heading)" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/>
                   </svg>
                 </button>
@@ -415,7 +415,7 @@ export function PropertyDetailsPage({
                   className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
                   onClick={() => setCurrentImageIndex(i => Math.min(property.images!.length - 1, i + 1))}
                 >
-                  <svg width="16" height="16" fill="none" stroke="#0A1628" viewBox="0 0 24 24">
+                  <svg width="16" height="16" fill="none" stroke="var(--text-heading)" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </button>
@@ -450,7 +450,7 @@ export function PropertyDetailsPage({
         </section>
 
         {/* Property Facts Accordion */}
-        <div className={`bg-white rounded-xl mx-4 mb-2.5 border border-slate-100 shadow-sm overflow-hidden ${expandedSections.facts ? 'open' : ''}`}>
+        <div className={`bg-[var(--surface-card)] rounded-xl mx-4 mb-2.5 border border-[var(--border-subtle)] shadow-sm overflow-hidden ${expandedSections.facts ? 'open' : ''}`}>
           <div 
             className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-slate-50 transition-colors"
             onClick={() => toggleSection('facts')}
@@ -458,7 +458,7 @@ export function PropertyDetailsPage({
             <svg className="w-6 h-6 text-[var(--accent-sky)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
             </svg>
-            <span className="flex-1 text-sm font-semibold text-[#0A1628] uppercase tracking-wide">Property Facts</span>
+            <span className="flex-1 text-sm font-semibold text-[var(--text-heading)] uppercase tracking-wide">Property Facts</span>
             <svg 
               className={`w-5 h-5 text-slate-400 transition-transform ${expandedSections.facts ? 'rotate-180' : ''}`} 
               fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -473,9 +473,9 @@ export function PropertyDetailsPage({
                 {keySpecs.map((spec, idx) => (
                   <div 
                     key={idx}
-                    className="bg-gradient-to-br from-[#0A1628] to-[#1E293B] rounded-xl py-3 px-2 flex flex-col items-center gap-1"
+                    className="bg-gradient-to-br from-[#07172e] to-[#10223d] rounded-xl py-3 px-2 flex flex-col items-center gap-1"
                   >
-                    <div className="text-[#00D4FF]">
+                    <div className="text-[#00e5ff]">
                       <FactIcon type={spec.icon} />
                     </div>
                     <div className="text-lg font-bold text-white tabular-nums">{spec.value}</div>
@@ -492,7 +492,7 @@ export function PropertyDetailsPage({
                 {propertyFacts.map((fact, idx) => (
                   <div 
                     key={idx}
-                    className={`flex items-center justify-between py-2.5 ${idx !== propertyFacts.length - 1 ? 'border-b border-slate-100' : ''}`}
+                    className={`flex items-center justify-between py-2.5 ${idx !== propertyFacts.length - 1 ? 'border-b border-[var(--border-subtle)]' : ''}`}
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 bg-slate-100 rounded-md flex items-center justify-center text-slate-500">
@@ -501,7 +501,7 @@ export function PropertyDetailsPage({
                       <span className="text-[13px] font-medium text-slate-500">{fact.label}</span>
                     </div>
                     <div className="flex flex-col items-end gap-0.5">
-                      <span className={`text-sm font-semibold tabular-nums ${fact.highlight ? 'text-[var(--accent-sky)]' : 'text-[#0A1628]'}`}>
+                      <span className={`text-sm font-semibold tabular-nums ${fact.highlight ? 'text-[var(--accent-sky)]' : 'text-[var(--text-heading)]'}`}>
                         {fact.value}
                       </span>
                       {fact.subValue && (
@@ -516,7 +516,7 @@ export function PropertyDetailsPage({
         </div>
 
         {/* Features & Amenities Accordion */}
-        <div className={`bg-white rounded-xl mx-4 mb-2.5 border border-slate-100 shadow-sm overflow-hidden ${expandedSections.features ? 'open' : ''}`}>
+        <div className={`bg-[var(--surface-card)] rounded-xl mx-4 mb-2.5 border border-[var(--border-subtle)] shadow-sm overflow-hidden ${expandedSections.features ? 'open' : ''}`}>
           <div 
             className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-slate-50 transition-colors"
             onClick={() => toggleSection('features')}
@@ -524,7 +524,7 @@ export function PropertyDetailsPage({
             <svg className="w-6 h-6 text-[var(--accent-sky)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
             </svg>
-            <span className="flex-1 text-sm font-semibold text-[#0A1628] uppercase tracking-wide">Features & Amenities</span>
+            <span className="flex-1 text-sm font-semibold text-[var(--text-heading)] uppercase tracking-wide">Features & Amenities</span>
             <svg 
               className={`w-5 h-5 text-slate-400 transition-transform ${expandedSections.features ? 'rotate-180' : ''}`} 
               fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -557,7 +557,7 @@ export function PropertyDetailsPage({
         </div>
 
         {/* Location Accordion */}
-        <div className={`bg-white rounded-xl mx-4 mb-2.5 border border-slate-100 shadow-sm overflow-hidden ${expandedSections.location ? 'open' : ''}`}>
+        <div className={`bg-[var(--surface-card)] rounded-xl mx-4 mb-2.5 border border-[var(--border-subtle)] shadow-sm overflow-hidden ${expandedSections.location ? 'open' : ''}`}>
           <div 
             className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-slate-50 transition-colors"
             onClick={() => toggleSection('location')}
@@ -566,7 +566,7 @@ export function PropertyDetailsPage({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
             </svg>
-            <span className="flex-1 text-sm font-semibold text-[#0A1628] uppercase tracking-wide">Location</span>
+            <span className="flex-1 text-sm font-semibold text-[var(--text-heading)] uppercase tracking-wide">Location</span>
             <svg 
               className={`w-5 h-5 text-slate-400 transition-transform ${expandedSections.location ? 'rotate-180' : ''}`} 
               fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -587,7 +587,7 @@ export function PropertyDetailsPage({
       </main>
 
       {/* Bottom Action Bar */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white px-4 py-3 flex items-center justify-between gap-2 border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="absolute bottom-0 left-0 right-0 bg-[var(--surface-card)] px-4 py-3 flex items-center justify-between gap-2 border-t border-[var(--border-default)] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <button className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-slate-500 hover:text-[var(--accent-sky)] transition-colors" onClick={onBack}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>

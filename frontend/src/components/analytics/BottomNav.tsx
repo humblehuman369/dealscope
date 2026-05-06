@@ -25,7 +25,7 @@ export function BottomNav({ activeTab = 'analytics', onNavigate }: BottomNavProp
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[var(--surface-base)]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/[0.06] z-50 safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 bg-[var(--surface-base)]/95 backdrop-blur-lg border-t border-[var(--border-default)] dark:border-white/[0.06] z-50 safe-area-pb">
       <div className="max-w-lg mx-auto flex items-center justify-around h-16">
         {tabs.map(({ id, label, icon: Icon }) => {
           const isActive = id === activeTab

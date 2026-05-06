@@ -72,15 +72,15 @@ export function EquityChart() {
       {/* Legend */}
       <div className="flex items-center gap-4 mb-4 text-xs">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-[#0284c7]" />
+          <div className="w-3 h-3 rounded-sm bg-[var(--accent-brand-blue)]" />
           <span className="text-[var(--ws-text-secondary)]">Property Value</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-[#ef4444]" />
+          <div className="w-3 h-3 rounded-sm bg-[var(--color-navy)]" />
           <span className="text-[var(--ws-text-secondary)]">Loan Balance</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-[#22c55e]/30" />
+          <div className="w-3 h-3 rounded-sm bg-[var(--status-positive)]/30" />
           <span className="text-[var(--ws-text-secondary)]">Total Equity</span>
         </div>
       </div>
@@ -104,7 +104,7 @@ export function EquityChart() {
             {/* Equity area fill */}
             <path
               d={equityAreaPath}
-              fill="rgba(34, 197, 94, 0.2)"
+              fill="rgba(31, 138, 112, 0.2)"
               stroke="none"
             />
 
@@ -112,7 +112,7 @@ export function EquityChart() {
             <path
               d={valuePath}
               fill="none"
-              stroke="#0284c7"
+              stroke="var(--accent-brand-blue)"
               strokeWidth="0.5"
             />
 
@@ -120,7 +120,7 @@ export function EquityChart() {
             <path
               d={loanPath}
               fill="none"
-              stroke="#ef4444"
+              stroke="var(--color-navy)"
               strokeWidth="0.5"
             />
 
@@ -132,16 +132,16 @@ export function EquityChart() {
                 return i === 0 ? `M ${x} ${yVal}` : `L ${x} ${yVal}`
               }).join(' ')}
               fill="none"
-              stroke="#22c55e"
+              stroke="var(--status-positive)"
               strokeWidth="0.5"
             />
 
             {/* Data points */}
             {years.map((y, i) => (
               <g key={i}>
-                <circle cx={getX(i)} cy={getY(y.propertyValue)} r="1" fill="#0284c7" />
-                <circle cx={getX(i)} cy={getY(y.loanBalance)} r="1" fill="#ef4444" />
-                <circle cx={getX(i)} cy={getY(y.totalEquity)} r="1" fill="#22c55e" />
+                <circle cx={getX(i)} cy={getY(y.propertyValue)} r="1" fill="var(--accent-brand-blue)" />
+                <circle cx={getX(i)} cy={getY(y.loanBalance)} r="1" fill="var(--color-navy)" />
+                <circle cx={getX(i)} cy={getY(y.totalEquity)} r="1" fill="var(--status-positive)" />
               </g>
             ))}
           </svg>
