@@ -40,7 +40,8 @@ import { useTheme } from '@/context/ThemeContext'
 
 const colors = {
   background: {
-    deepNavy: 'var(--surface-base)',
+    /** Top chrome (brand + tabs): solid card surface so canvas tint stays below */
+    deepNavy: 'var(--surface-card)',
     surface: 'var(--surface-card)',
     elevated: 'var(--surface-elevated)',
   },
@@ -489,9 +490,6 @@ export function AppHeader({
     return null
   }
 
-  // Header and toolbar theme-aware background
-  const headerBg = 'var(--surface-base)'
-
   return (
     <>
       {/* Fixed safe-area cover — prevents scrolling content from showing behind the device notch/status bar */}
@@ -499,7 +497,7 @@ export function AppHeader({
         className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"
         style={{
           height: 'env(safe-area-inset-top, 0px)',
-          background: 'var(--surface-base)',
+          background: 'var(--surface-card)',
         }}
         aria-hidden="true"
       />
@@ -508,7 +506,7 @@ export function AppHeader({
         {/* Brand Bar - pure black (scrolls away) */}
         <div 
           className="flex items-center justify-between gap-3 px-4 py-3 pt-safe-header"
-          style={{ backgroundColor: 'var(--surface-base)' }}
+          style={{ backgroundColor: 'var(--surface-card)' }}
         >
           {/* Left: Logo — themed image (dark/light variants) */}
           <button
@@ -837,7 +835,7 @@ export function AppHeader({
           <div
             className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
             style={{
-              background: 'radial-gradient(ellipse at 40% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 90% 100%, var(--color-teal-dim) 0%, transparent 70%), var(--surface-base)',
+              background: 'radial-gradient(ellipse at 40% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 90% 100%, var(--color-teal-dim) 0%, transparent 70%), var(--surface-card)',
               borderTop: '1px solid var(--border-subtle)',
               borderBottom: '1px solid var(--border-subtle)',
               WebkitOverflowScrolling: 'touch',
@@ -880,7 +878,7 @@ export function AppHeader({
         return (
           <div
             className="sticky z-40"
-            style={{ top: 'env(safe-area-inset-top, 0px)', backgroundColor: 'var(--surface-base)' }}
+            style={{ top: 'env(safe-area-inset-top, 0px)', backgroundColor: 'var(--surface-card)' }}
           >
             <PropertyAddressBar
               address={p?.address ?? addrParts.streetAddress}

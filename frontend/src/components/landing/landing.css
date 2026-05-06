@@ -28,7 +28,8 @@
   --border-color: rgba(24, 32, 28, 0.1);
   --border-hover: rgba(24, 32, 28, 0.18);
   --shadow-color: rgba(24, 32, 28, 0.1);
-  --header-bg: color-mix(in srgb, #0fa4e9 5%, rgba(255, 255, 255, 0.94));
+  /* Solid header chrome — page tint (--bg-primary) starts below nav */
+  --header-bg: #ffffff;
   
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-primary);

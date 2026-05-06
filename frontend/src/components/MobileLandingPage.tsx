@@ -60,8 +60,13 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
     <div className={`min-h-screen overflow-x-hidden transition-colors duration-300 ${
       isDark ? 'bg-[#07172e] text-[#e1e8ed]' : 'bg-[var(--surface-base)] text-[var(--text-heading)]'
     }`}>
-      {/* Header */}
-      <header className="relative z-10 flex justify-between items-center px-5 py-3 lg:px-12 lg:py-5 max-w-7xl mx-auto">
+      {/* Header — solid card surface in light so canvas tint starts below */}
+      <header
+        className={`relative z-10 w-full px-5 py-3 lg:px-12 lg:py-5 ${
+          isDark ? '' : 'bg-[var(--surface-card)] border-b border-[var(--border-subtle)]'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className={`text-xl lg:text-2xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
           DealGap<span className={isDark ? 'text-accent-500' : 'text-accent-light'}>IQ</span>
         </div>
@@ -127,6 +132,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
               </button>
             </>
           )}
+        </div>
         </div>
       </header>
 
