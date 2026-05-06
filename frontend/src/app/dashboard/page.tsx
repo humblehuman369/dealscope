@@ -33,12 +33,6 @@ function DashboardContent() {
         {/* Pipeline stats — clickable filters that highlight the kanban column */}
         <PipelineStats activeStage={highlightStage} onSelectStage={setHighlightStage} />
 
-        {/* "Due this week" cross-property roll-up — clicking a row jumps to the
-            Tasks tab on the deal workflow page. */}
-        <UpcomingTasks
-          onOpen={(target) => router.push(`/deals/${target.id}?tab=tasks`)}
-        />
-
         {/* The centerpiece — Saved Properties Kanban (pre-purchase + post-purchase). */}
         <section className="mb-8">
           <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--text-heading)] mb-3">
@@ -49,6 +43,12 @@ function DashboardContent() {
             onEmptyAction={() => setShowSearchModal(true)}
           />
         </section>
+
+        {/* "Due this week" cross-property roll-up — clicking a row jumps to the
+            Tasks tab on the deal workflow page. */}
+        <UpcomingTasks
+          onOpen={(target) => router.push(`/deals/${target.id}?tab=tasks`)}
+        />
 
         {/* Two-column lower section: Recent Searches + Account */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
