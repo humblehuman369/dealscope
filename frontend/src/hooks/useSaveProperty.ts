@@ -111,7 +111,7 @@ export function useSaveProperty({
         full_address: displayAddress,
         zpid: propertySnapshot?.zpid ?? undefined,
         property_data_snapshot: Object.keys(snapshot).length > 0 ? snapshot : undefined,
-        status: 'watching',
+        status: 'prospecting',
       })
       setIsSaved(true)
       setSavedPropertyId(result?.id ?? null)

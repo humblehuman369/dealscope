@@ -324,7 +324,7 @@ class SavedPropertyUser(HttpUser):
                 "address_city": "Miami",
                 "address_state": "FL",
                 "address_zip": "33101",
-                "status": "watching",
+                "status": "prospecting",
             },
             headers=self._headers(),
             name="/api/v1/properties/saved [create]",

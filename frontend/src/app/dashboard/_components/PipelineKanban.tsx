@@ -22,6 +22,23 @@ interface PipelineKanbanProps {
   onEmptyAction: () => void
 }
 
+// Statuses available in the per-card "Move to" dropdown — the active pipeline
+// plus the two terminal columns. Kept in this order so a user reading the
+// dropdown follows the funnel left-to-right then ends at the bench.
+const MOVE_TO_OPTIONS: PropertyStatus[] = [
+  'prospecting',
+  'pursuing',
+  'negotiating',
+  'under_contract',
+  'owned',
+  'passed',
+  'archived',
+]
+
+// Drag payload uses a custom MIME type so the kanban doesn't accidentally
+// accept text drops from elsewhere on the page.
+const DRAG_MIME = 'application/x-savedproperty-id'
+
 function shortAddress(p: SavedPropertySummary): string {
   return p.nickname || p.address_street
 }
@@ -44,12 +61,15 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
 
   const updateStatus = useUpdateSavedPropertyStatus()
 
+  // Drag state: which column is currently being hovered as a drop target.
+  const [dropTargetStage, setDropTargetStage] = useState<PropertyStatus | null>(null)
+
   // Group by status
   const byStatus = useMemo(() => {
     const groups: Record<PropertyStatus, SavedPropertySummary[]> = {
-      watching: [],
-      analyzing: [],
-      contacted: [],
+      prospecting: [],
+      pursuing: [],
+      negotiating: [],
       under_contract: [],
       owned: [],
       passed: [],
@@ -66,6 +86,16 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
     0,
   )
   const archivedCount = byStatus.passed.length + byStatus.archived.length
+
+  function handleDrop(stage: PropertyStatus, e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault()
+    setDropTargetStage(null)
+    const id = e.dataTransfer.getData(DRAG_MIME)
+    if (!id) return
+    const property = (query.data ?? []).find((p) => p.id === id)
+    if (!property || property.status === stage) return
+    updateStatus.mutate({ id, status: stage })
+  }
 
   return (
     <DataBoundary
@@ -90,12 +120,28 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
           const items = byStatus[stage]
           const config = STATUS_CONFIG[stage]
           const isHighlighted = highlightStage === stage
+          const isDropTarget = dropTargetStage === stage
 
           return (
             <div
               key={stage}
-              className={`rounded-xl border ${
-                isHighlighted
+              onDragOver={(e) => {
+                if (e.dataTransfer.types.includes(DRAG_MIME)) {
+                  e.preventDefault()
+                  e.dataTransfer.dropEffect = 'move'
+                  if (dropTargetStage !== stage) setDropTargetStage(stage)
+                }
+              }}
+              onDragLeave={(e) => {
+                // Only clear when leaving the column, not when crossing a child.
+                if (e.currentTarget.contains(e.relatedTarget as Node)) return
+                if (dropTargetStage === stage) setDropTargetStage(null)
+              }}
+              onDrop={(e) => handleDrop(stage, e)}
+              className={`rounded-xl border transition-colors ${
+                isDropTarget
+                  ? 'border-[var(--accent-sky)] bg-[var(--color-sky-dim)] ring-2 ring-[var(--accent-sky)] ring-offset-1 ring-offset-[var(--surface-base)]'
+                  : isHighlighted
                   ? 'border-[var(--border-focus)] bg-[var(--surface-elevated)]'
                   : 'border-[var(--border-default)] bg-[var(--surface-card)]'
               } flex flex-col min-h-[180px]`}
@@ -116,7 +162,7 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
               <div className="p-2 flex flex-col gap-2 flex-1">
                 {items.length === 0 ? (
                   <p className="text-xs text-[var(--text-label)] py-3 text-center">
-                    No properties
+                    {isDropTarget ? 'Drop to move here' : 'No properties'}
                   </p>
                 ) : (
                   items.map(p => (
@@ -167,15 +213,25 @@ interface KanbanCardProps {
 
 function KanbanCard({ property, onClick, onChangeStatus, isUpdating }: KanbanCardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const strategyLabel = property.best_strategy
     ? (STRATEGY_LABELS[property.best_strategy] ?? property.best_strategy)
     : null
 
   return (
-    <div className="relative group">
+    <div
+      className={`relative group ${isDragging ? 'opacity-50' : ''}`}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData(DRAG_MIME, property.id)
+        e.dataTransfer.effectAllowed = 'move'
+        setIsDragging(true)
+      }}
+      onDragEnd={() => setIsDragging(false)}
+    >
       <button
         onClick={onClick}
-        className="w-full text-left rounded-lg p-2.5 bg-[var(--surface-elevated)] border border-[var(--border-default)] hover:border-[var(--border-focus)] transition-all"
+        className="w-full text-left rounded-lg p-2.5 bg-[var(--surface-elevated)] border border-[var(--border-default)] hover:border-[var(--border-focus)] transition-all cursor-grab active:cursor-grabbing"
       >
         <p className="text-sm font-semibold text-[var(--text-heading)] truncate pr-6">
           {shortAddress(property)}
@@ -238,7 +294,7 @@ function KanbanCard({ property, onClick, onChangeStatus, isUpdating }: KanbanCar
             <p className="px-3 py-1 text-[10px] uppercase tracking-wide text-[var(--text-label)]">
               Move to
             </p>
-            {(['watching', 'analyzing', 'contacted', 'under_contract', 'owned', 'passed', 'archived'] as PropertyStatus[]).map(s => (
+            {MOVE_TO_OPTIONS.map(s => (
               <button
                 key={s}
                 onClick={(e) => {
