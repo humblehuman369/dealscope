@@ -61,7 +61,7 @@ const getListingDaysAgo = (dateString: string): number => {
 const getFreshnessBadge = (dateString: string): { label: string; color: string; bgColor: string } | null => {
   const daysAgo = getListingDaysAgo(dateString)
   if (daysAgo < 0) return null
-  if (daysAgo <= 30) return { label: 'Recent', color: '#1f8a70', bgColor: '#1f8a7015' }
+  if (daysAgo <= 30) return { label: 'Recent', color: '#0465f2', bgColor: 'rgba(4, 101, 242, 0.12)' }
   if (daysAgo > 90) return { label: 'Older listing', color: '#b7791f', bgColor: '#b7791f15' }
   return null
 }
@@ -108,7 +108,7 @@ const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: num
         className="h-full rounded-full transition-all duration-500"
         style={{
           width: `${value}%`,
-          backgroundColor: value >= 90 ? 'var(--accent-sky)' : value >= 75 ? '#146c59' : '#b7791f'
+          backgroundColor: value >= 90 ? 'var(--accent-sky)' : value >= 75 ? '#0354d1' : '#b7791f'
         }}
       />
     </div>
@@ -155,7 +155,7 @@ const DualRentValuationPanel = ({
   const capRate = purchasePrice > 0 ? (estimatedNOI / purchasePrice) * 100 : 0
 
   return (
-    <div className="bg-gradient-to-r from-[var(--accent-sky)]/10 via-[var(--accent-brand-blue)]/5 to-[var(--accent-sky)]/10 rounded-xl p-4 border border-[rgba(31,138,112,0.25)]/50">
+    <div className="bg-gradient-to-r from-[var(--accent-sky)]/10 via-[var(--accent-brand-blue)]/5 to-[var(--accent-sky)]/10 rounded-xl p-4 border border-[rgba(4, 101, 242,0.25)]/50">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -223,7 +223,7 @@ const DualRentValuationPanel = ({
         </div>
 
         {/* Improved Rent */}
-        <div className="bg-[var(--surface-card)] rounded-lg p-3 border border-[rgba(31,138,112,0.25)]">
+        <div className="bg-[var(--surface-card)] rounded-lg p-3 border border-[rgba(4, 101, 242,0.25)]">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-semibold text-[var(--accent-sky)] uppercase tracking-wide">Improved Rent</span>
             <button
@@ -411,7 +411,7 @@ const RentalCompCard = ({
   return (
     <div className={`relative rounded-xl border transition-all overflow-hidden ${
       isSelected 
-        ? 'bg-[var(--surface-card)] ring-2 ring-[var(--accent-sky)]/20 border-[rgba(31,138,112,0.25)]' 
+        ? 'bg-[var(--surface-card)] ring-2 ring-[var(--accent-sky)]/20 border-[rgba(4, 101, 242,0.25)]' 
         : 'bg-[var(--surface-elevated)] border-[var(--border-default)] hover:border-[var(--border-default)]'
     }`}>
       {/* Selection checkbox */}
@@ -429,7 +429,7 @@ const RentalCompCard = ({
         <button
           onClick={onRefreshComp}
           disabled={refreshing}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--accent-sky)] hover:border-[rgba(31,138,112,0.4)] transition-colors disabled:opacity-50"
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--accent-sky)] hover:border-[rgba(4, 101, 242,0.4)] transition-colors disabled:opacity-50"
           title="Replace this comp with a new one"
         >
           <RotateCcw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
@@ -501,7 +501,7 @@ const RentalCompCard = ({
         {/* Match Score */}
         <div className="w-16 flex flex-col items-center justify-center bg-[var(--surface-elevated)] border-l border-[var(--border-subtle)]">
           <div className="text-xl font-bold tabular-nums" style={{ 
-            color: similarity.overall >= 90 ? 'var(--accent-sky)' : similarity.overall >= 75 ? '#146c59' : '#b7791f' 
+            color: similarity.overall >= 90 ? 'var(--accent-sky)' : similarity.overall >= 75 ? '#0354d1' : '#b7791f' 
           }}>
             {similarity.overall}
           </div>

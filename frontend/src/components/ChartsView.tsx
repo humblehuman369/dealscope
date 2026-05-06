@@ -47,7 +47,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
   return (
     <div className="space-y-4">
       {/* Top Summary - Mobile optimized */}
-      <div className="bg-gradient-to-r from-[#1f8a70] via-[#146c59] to-[#0465f2] rounded-xl p-3 sm:p-4 text-white">
+      <div className="bg-gradient-to-r from-[#0465f2] via-[#0354d1] to-[#0465f2] rounded-xl p-3 sm:p-4 text-white">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
             <div className="text-white/80 text-[10px] uppercase tracking-wide">Annual Cash Flow</div>
@@ -73,11 +73,11 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
             <svg width={(radius + strokeWidth) * 2 + 16} height={(radius + strokeWidth) * 2 + 16}>
               <defs>
                 <linearGradient id="cashFlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#1f8a70" />
-                  <stop offset="100%" stopColor="#146c59" />
+                  <stop offset="0%" stopColor="#0465f2" />
+                  <stop offset="100%" stopColor="#0354d1" />
                 </linearGradient>
                 <filter id="cashGlow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#1f8a70" floodOpacity="0.5" />
+                  <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#0465f2" floodOpacity="0.5" />
                 </filter>
               </defs>
               
@@ -145,8 +145,8 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
                     onClick={() => setSelectedYear(i)}
                     className={`flex-1 rounded-t-lg transition-all duration-300 cursor-pointer hover:opacity-80 ${
                       isSelected 
-                        ? isPositive ? 'bg-gradient-to-t from-[#146c59] to-[#1f8a70]' : 'bg-gradient-to-t from-[#b42318] to-[#dc2626]'
-                        : isPositive ? 'bg-gradient-to-t from-[rgba(31,138,112,0.35)] to-[rgba(31,138,112,0.15)]' : 'bg-gradient-to-t from-[rgba(180,35,24,0.35)] to-[rgba(180,35,24,0.12)]'
+                        ? isPositive ? 'bg-gradient-to-t from-[#0354d1] to-[#0465f2]' : 'bg-gradient-to-t from-[#b42318] to-[#dc2626]'
+                        : isPositive ? 'bg-gradient-to-t from-[rgba(4, 101, 242,0.35)] to-[rgba(4, 101, 242,0.15)]' : 'bg-gradient-to-t from-[rgba(180,35,24,0.35)] to-[rgba(180,35,24,0.12)]'
                     }`}
                     style={{ height: `${Math.max(height, 10)}%` }}
                     title={`Year ${d.year}: ${formatCurrency(d.cashFlow)}`}
@@ -187,7 +187,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
                 if (selectedYear >= 9) setSelectedYear(0)
                 setIsPlaying(!isPlaying)
               }}
-              className="p-1.5 rounded-full bg-[#1f8a70] hover:bg-[#146c59] transition-colors"
+              className="p-1.5 rounded-full bg-[#0465f2] hover:bg-[#0354d1] transition-colors"
               title={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-white" />}
@@ -211,7 +211,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
                 onClick={() => setSelectedYear(i)}
                 className={`flex-1 h-2 rounded-full transition-all duration-300 ${
                   i <= selectedYear 
-                    ? 'bg-gradient-to-r from-[#1f8a70] to-[#0465f2]' 
+                    ? 'bg-gradient-to-r from-[#0465f2] to-[#0465f2]' 
                     : 'bg-white/20'
                 } ${i === selectedYear ? 'scale-y-150' : ''}`}
               />
@@ -264,7 +264,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
   
   // Equity components
   const equityComponents = [
-    { label: 'Down Payment', value: totalCashInvested, color: '#1f8a70', icon: DollarSign },
+    { label: 'Down Payment', value: totalCashInvested, color: '#0465f2', icon: DollarSign },
     { label: 'Loan Paydown', value: yearData.equityFromPaydown, color: '#07172e', icon: Building2 },
     { label: 'Appreciation', value: yearData.equityFromAppreciation, color: '#0465f2', icon: TrendingUp },
   ]
@@ -282,7 +282,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
   return (
     <div className="space-y-4">
       {/* Top Summary - Mobile optimized */}
-      <div className="bg-gradient-to-r from-[#0465f2] via-[#07172e] to-[#1f8a70] rounded-xl p-3 sm:p-4 text-white">
+      <div className="bg-gradient-to-r from-[#0465f2] via-[#07172e] to-[#0465f2] rounded-xl p-3 sm:p-4 text-white">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
             <div className="text-white/80 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Equity</div>
@@ -424,7 +424,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
         <div className="flex items-center justify-between mb-4">
           <div className="text-sm font-medium text-[var(--text-heading)]">Equity vs Loan Balance</div>
           {crossoverYear > 0 && selectedYear >= crossoverYear && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-[rgba(31,138,112,0.12)] rounded-full">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-[rgba(4, 101, 242,0.12)] rounded-full">
               <Sparkles className="w-3.5 h-3.5 text-[var(--status-positive)]" />
               <span className="text-xs font-medium text-[var(--status-positive)]">Equity exceeds loan!</span>
             </div>
@@ -437,7 +437,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
             <div className="w-20 text-xs text-[var(--text-secondary)]">Equity</div>
             <div className="flex-1 h-8 bg-[var(--surface-card)] rounded-lg overflow-hidden border border-[var(--border-default)]">
               <div 
-                className="h-full bg-gradient-to-r from-[#1f8a70] to-[#146c59] rounded-lg flex items-center justify-end px-2 transition-all duration-500"
+                className="h-full bg-gradient-to-r from-[#0465f2] to-[#0354d1] rounded-lg flex items-center justify-end px-2 transition-all duration-500"
                 style={{ width: `${(totalEquity / Math.max(totalEquity, yearData.loanBalance)) * 100}%` }}
               >
                 <span className="text-xs font-bold text-white">{formatCompactCurrency(totalEquity)}</span>
@@ -484,7 +484,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                 if (selectedYear >= 9) setSelectedYear(0)
                 setIsPlaying(!isPlaying)
               }}
-              className="p-1.5 rounded-full bg-[#1f8a70] hover:bg-[#146c59] transition-colors"
+              className="p-1.5 rounded-full bg-[#0465f2] hover:bg-[#0354d1] transition-colors"
               title={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-white" />}
@@ -508,7 +508,7 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
                 onClick={() => setSelectedYear(i)}
                 className={`flex-1 h-2 rounded-full transition-all duration-300 ${
                   i <= selectedYear 
-                    ? 'bg-gradient-to-r from-[#1f8a70] to-[#0465f2]' 
+                    ? 'bg-gradient-to-r from-[#0465f2] to-[#0465f2]' 
                     : 'bg-white/20'
                 } ${i === selectedYear ? 'scale-y-150' : ''}`}
               />
@@ -559,7 +559,7 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
   const yearData = data[selectedYear]
   
   const segments = [
-    { label: 'Cash Flow', value: Math.max(0, yearData.cumulativeCashFlow), color: '#1f8a70', icon: Wallet },
+    { label: 'Cash Flow', value: Math.max(0, yearData.cumulativeCashFlow), color: '#0465f2', icon: Wallet },
     { label: 'Paydown', value: yearData.equityFromPaydown, color: '#07172e', icon: Building2 },
     { label: 'Appreciation', value: yearData.equityFromAppreciation, color: '#0465f2', icon: TrendingUp },
   ]
@@ -575,7 +575,7 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
   return (
     <div className="space-y-4">
       {/* Top Summary - Mobile optimized with wrap */}
-      <div className="bg-gradient-to-r from-[#1f8a70] via-[#07172e] to-[#0465f2] rounded-xl p-3 sm:p-4 text-white">
+      <div className="bg-gradient-to-r from-[#0465f2] via-[#07172e] to-[#0465f2] rounded-xl p-3 sm:p-4 text-white">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
             <div className="text-white/80 text-[10px] uppercase tracking-wide">Initial Investment</div>
@@ -662,7 +662,7 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="text-[9px] text-[var(--text-muted)] uppercase tracking-wide">Total Wealth</div>
               <div className="text-xl font-bold text-[var(--text-heading)]">{formatCompactCurrency(yearData.totalWealth)}</div>
-              <div className="mt-0.5 px-1.5 py-0.5 bg-[rgba(31,138,112,0.14)] text-[var(--status-positive)] rounded text-[10px] font-medium">
+              <div className="mt-0.5 px-1.5 py-0.5 bg-[rgba(4, 101, 242,0.14)] text-[var(--status-positive)] rounded text-[10px] font-medium">
                 +{formatCompactCurrency(yearData.totalWealth - totalCashInvested)}
               </div>
             </div>
@@ -745,7 +745,7 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
                   }}
                   className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${
                     i <= selectedYear 
-                      ? 'bg-gradient-to-r from-[#1f8a70] to-[#0465f2]' 
+                      ? 'bg-gradient-to-r from-[#0465f2] to-[#0465f2]' 
                       : 'bg-white/20'
                   } ${i === selectedYear ? 'scale-y-150' : ''}`}
                 />

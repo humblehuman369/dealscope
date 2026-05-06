@@ -104,7 +104,7 @@ export function EquityChart() {
             {/* Equity area fill */}
             <path
               d={equityAreaPath}
-              fill="rgba(31, 138, 112, 0.2)"
+              fill="rgba(4, 101, 242, 0.2)"
               stroke="none"
             />
 

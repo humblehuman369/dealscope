@@ -33,7 +33,7 @@ export interface MetricsAccordionProps {
 // Grade badge styling
 const GRADE_STYLES: Record<MetricGrade, { light: string; dark: string }> = {
   A: {
-    light: 'bg-[rgba(31,138,112,0.12)] text-[var(--status-positive)]',
+    light: 'bg-[rgba(4,101,242,0.12)] text-[var(--status-positive)]',
     dark: 'bg-green-500/20 text-green-400',
   },
   B: {
