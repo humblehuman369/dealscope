@@ -67,3 +67,22 @@ export function useDeleteTask(propertyId: string) {
     },
   })
 }
+
+/**
+ * Seed stage-templated tasks for a property. Returns the newly-created
+ * tasks (existing duplicates are skipped server-side).
+ */
+export function useSeedTasks(propertyId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () =>
+      api.post<PropertyTask[]>(
+        `/api/v1/properties/saved/${propertyId}/tasks/seed`,
+        {},
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: TASKS_KEYS.forProperty(propertyId) })
+      qc.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.lists() })
+    },
+  })
+}

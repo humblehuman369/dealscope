@@ -239,6 +239,7 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
       <TasksSlideOver
         propertyId={tasksFor?.id ?? null}
         propertyTitle={tasksFor ? shortAddress(tasksFor) : ''}
+        stageLabel={tasksFor ? STATUS_CONFIG[tasksFor.status].label : null}
         open={tasksFor !== null}
         onClose={() => setTasksFor(null)}
       />
