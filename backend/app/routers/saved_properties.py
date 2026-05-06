@@ -6,7 +6,7 @@ import logging
 import uuid
 from datetime import UTC
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Response, status
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Query, Response, UploadFile, status
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.exc import DatabaseError, IntegrityError
 
@@ -25,6 +25,8 @@ from app.schemas.budget import (
     BudgetLinePctCompleteUpdate,
     BudgetSeedRequest,
     BudgetSummaryOut,
+    ParsedReceipt,
+    ReceiptUploadResponse,
 )
 from app.schemas.saved_property import (
     ActiveFlipSummary,
@@ -44,6 +46,8 @@ from app.services.billing_service import billing_service
 from app.services.budget_service import budget_service
 from app.services.contact_service import contact_service
 from app.services.deal_maker_service import DealMakerService
+from app.services.document_service import ALLOWED_TYPES as DOC_ALLOWED_TYPES, document_service
+from app.services.receipt_parser_service import receipt_parser_service
 from app.services.saved_property_service import sanitize_for_json_storage, saved_property_service
 from app.services.search_history_service import search_history_service
 from app.services.task_service import task_service
@@ -825,6 +829,82 @@ async def update_budget_line_pct_complete(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No budget for this property")
     summary = await budget_service.build_summary(db, budget)
     return BudgetSummaryOut(**summary)
+
+
+@router.post(
+    "/{property_id}/budget/receipts/parse",
+    response_model=ReceiptUploadResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Upload a receipt + parse it with AI",
+)
+async def upload_and_parse_receipt(
+    property_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+    file: UploadFile = File(...),
+):
+    """Stores the receipt as a Document and runs Claude vision against it.
+
+    Returns ``{document_id, parsed}``. ``parsed`` may be null if the AI is
+    disabled (no API key) or returned nothing usable — the frontend still
+    has the document_id and shows an empty editable expense form so the
+    user can type values manually.
+    """
+    # Verify ownership early; reuse the budget-line lookup so we can pass
+    # available lines to the parser as classification context.
+    budget = await budget_service.get_budget_for_property(db, property_id, str(current_user.id))
+    if not budget:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No budget for this property")
+
+    if not file.content_type or file.content_type not in DOC_ALLOWED_TYPES:
+        allowed = ", ".join(sorted(DOC_ALLOWED_TYPES))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported file type. Allowed: {allowed}",
+        )
+
+    content = await file.read()
+
+    # 1) Persist the file as a generic Document — even when parsing fails the
+    # upload is durable and linkable from BudgetExpense via receipt_document_id.
+    from io import BytesIO
+
+    from app.models.document import DocumentType
+
+    try:
+        document = await document_service.upload_document(
+            db=db,
+            user_id=str(current_user.id),
+            file=BytesIO(content),
+            filename=file.filename or "receipt",
+            content_type=file.content_type,
+            file_size=len(content),
+            document_type=DocumentType.OTHER,
+            property_id=property_id,
+            description="Receipt (AI-parsed)",
+        )
+    except Exception as exc:
+        logger.error("Receipt upload failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Receipt upload failed",
+        )
+
+    # 2) Pull the budget's line summary as classification context for the AI.
+    summary = await budget_service.build_summary(db, budget)
+    available_lines = [
+        {"id": ln["id"], "label": ln["label"], "category_id": ln.get("category_id", "")}
+        for ln in summary.get("lines", [])
+    ]
+
+    parsed_dict = await receipt_parser_service.parse(
+        image_bytes=content,
+        mime_type=file.content_type,
+        available_lines=available_lines,
+    )
+    parsed = ParsedReceipt(**parsed_dict) if parsed_dict else None
+
+    return ReceiptUploadResponse(document_id=str(document.id), parsed=parsed)
 
 
 @router.delete(

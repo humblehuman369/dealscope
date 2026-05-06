@@ -71,3 +71,24 @@ class BudgetLinePctCompleteUpdate(BaseModel):
     """Body for PATCH .../budget/lines/{line_id}/pct_complete."""
 
     pct_complete: Decimal = Field(..., ge=0, le=100)
+
+
+class ParsedReceipt(BaseModel):
+    """Fields extracted from a receipt image by the AI parser. Every value
+    is nullable — the frontend treats them as editable defaults, not the
+    final truth."""
+
+    vendor: str | None = None
+    amount: str | None = None
+    spent_on: str | None = None
+    suggested_line_id: str | None = None
+    description: str | None = None
+
+
+class ReceiptUploadResponse(BaseModel):
+    """Returned from the upload+parse endpoint. ``document_id`` is always
+    populated (the file landed); ``parsed`` is null when the AI parser is
+    unavailable or returned no usable data."""
+
+    document_id: str
+    parsed: ParsedReceipt | None = None

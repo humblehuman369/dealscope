@@ -11,15 +11,16 @@
  * pipeline + budget vs actual features Brad asked for at the start" goal.
  */
 
-import { use, useState } from 'react'
+import { use, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, FileText, Plus, Sparkles, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { DataBoundary } from '@/components/ui/DataBoundary'
 import { api } from '@/lib/api-client'
 import {
   useAddBudgetExpense,
+  useParseReceipt,
   useRehabBudgetSummary,
   useUpdateBudgetLinePctComplete,
 } from '@/hooks/useSavedProperties'
@@ -300,10 +301,17 @@ function ExpenseAddForm({
   lines: RehabBudgetLineSummary[]
 }) {
   const add = useAddBudgetExpense()
+  const parse = useParseReceipt(propertyId)
   const [amount, setAmount] = useState('')
   const [spentOn, setSpentOn] = useState(() => new Date().toISOString().slice(0, 10))
   const [vendor, setVendor] = useState('')
   const [lineId, setLineId] = useState<string>('')
+  const [description, setDescription] = useState<string>('')
+  // ID of the uploaded receipt document — set after AI parse, cleared on
+  // save or when user clicks the X. Linked to the expense on submit.
+  const [receiptId, setReceiptId] = useState<string | null>(null)
+  const [showAiBanner, setShowAiBanner] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -316,15 +324,49 @@ function ExpenseAddForm({
         spent_on: spentOn,
         budget_line_id: lineId || null,
         vendor: vendor.trim() || null,
-        description: null,
+        description: description.trim() || null,
+        receipt_document_id: receiptId,
       },
       {
         onSuccess: () => {
           setAmount('')
           setVendor('')
+          setDescription('')
+          setReceiptId(null)
+          setShowAiBanner(false)
         },
       },
     )
+  }
+
+  function pickReceipt() {
+    fileInputRef.current?.click()
+  }
+
+  function onReceiptSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    parse.mutate(file, {
+      onSuccess: ({ document_id, parsed }) => {
+        setReceiptId(document_id)
+        if (parsed) {
+          // Pre-fill any field the AI extracted; leave existing user input
+          // untouched when the AI returned null for that field.
+          if (parsed.amount) setAmount(parsed.amount)
+          if (parsed.vendor) setVendor(parsed.vendor)
+          if (parsed.spent_on) setSpentOn(parsed.spent_on)
+          if (parsed.description) setDescription(parsed.description)
+          if (parsed.suggested_line_id) setLineId(parsed.suggested_line_id)
+        }
+        setShowAiBanner(true)
+      },
+    })
+  }
+
+  function clearReceipt() {
+    setReceiptId(null)
+    setShowAiBanner(false)
   }
 
   return (
@@ -336,9 +378,54 @@ function ExpenseAddForm({
         border: '1px solid var(--border-default)',
       }}
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-label)] mb-3">
-        Log a new expense
-      </p>
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-label)]">
+          Log a new expense
+        </p>
+        <button
+          type="button"
+          onClick={pickReceipt}
+          disabled={parse.isPending}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] disabled:opacity-50 transition-colors"
+          title="Upload a receipt; we'll fill in the details"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          {parse.isPending ? 'Parsing receipt…' : 'Upload receipt (AI)'}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+          onChange={onReceiptSelected}
+          className="hidden"
+        />
+      </div>
+      {parse.isError && (
+        <p className="mb-3 text-xs text-[var(--status-negative)]">
+          Couldn&apos;t parse that file: {(parse.error as Error)?.message ?? 'unknown error'}
+        </p>
+      )}
+      {showAiBanner && receiptId && (
+        <div
+          className="mb-3 flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs"
+          style={{ background: 'var(--color-sky-dim)', color: 'var(--accent-sky)' }}
+        >
+          <span className="inline-flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5" />
+            Receipt attached. {parse.data?.parsed
+              ? 'AI pre-filled what it could — review before saving.'
+              : 'AI couldn’t read it; type the values yourself.'}
+          </span>
+          <button
+            type="button"
+            onClick={clearReceipt}
+            aria-label="Detach receipt"
+            className="p-1 rounded hover:bg-[var(--surface-elevated)]"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      )}
       <div className="flex flex-wrap gap-3 items-end">
         <label className="text-xs text-[var(--text-label)]">
           Amount
@@ -366,6 +453,15 @@ function ExpenseAddForm({
             className="mt-1 block w-44 rounded-lg border border-[var(--border-default)] bg-[var(--surface-input)] px-2 py-1.5 text-sm text-[var(--text-heading)]"
             value={vendor}
             onChange={(e) => setVendor(e.target.value)}
+            placeholder="(optional)"
+          />
+        </label>
+        <label className="text-xs text-[var(--text-label)] flex-1 min-w-[180px]">
+          Description
+          <input
+            className="mt-1 block w-full rounded-lg border border-[var(--border-default)] bg-[var(--surface-input)] px-2 py-1.5 text-sm text-[var(--text-heading)]"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             placeholder="(optional)"
           />
         </label>
