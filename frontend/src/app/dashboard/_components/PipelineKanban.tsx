@@ -218,12 +218,13 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
 
   const [dropTarget, setDropTarget] = useState<{ tier: 'pre' | 'post'; index: number } | null>(null)
 
-  // Per-column collapse state — keyed by ``"${tier}-${index}"``. Defaults to
-  // expanded; user opts into collapse to keep the board compact when running
-  // a wide funnel.
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
-  const toggleCollapse = (key: string) =>
-    setCollapsed((prev) => {
+  // Per-column expand state — keyed by ``"${tier}-${index}"``. Default is
+  // *closed* (compact 1.5-card view with internal scroll); opening reveals
+  // the full list inline. Closed is the dashboard's tidy default; open is
+  // for moments when you want everything in one column visible at once.
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const toggleExpand = (key: string) =>
+    setExpanded((prev) => {
       const next = new Set(prev)
       if (next.has(key)) next.delete(key)
       else next.add(key)
@@ -378,8 +379,8 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
                 items={byColumn[0][i]}
                 isHighlighted={col.kind === 'pre' && col.status === highlightStage}
                 isDropTarget={!!dropTarget && dropTarget.tier === 'pre' && dropTarget.index === i}
-                isCollapsed={collapsed.has(key)}
-                onToggleCollapse={() => toggleCollapse(key)}
+                isExpanded={expanded.has(key)}
+                onToggleExpand={() => toggleExpand(key)}
                 onDragOver={(e) => {
                   if (e.dataTransfer.types.includes(DRAG_MIME)) {
                     e.preventDefault()
@@ -418,8 +419,8 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
                 isDropTarget={!!dropTarget && dropTarget.tier === 'post' && dropTarget.index === i}
                 isGhost={noOwnedYet}
                 isEntryStage={i === 0 && col.kind === 'owned-stage'}
-                isCollapsed={collapsed.has(key)}
-                onToggleCollapse={() => toggleCollapse(key)}
+                isExpanded={expanded.has(key)}
+                onToggleExpand={() => toggleExpand(key)}
                 onDragOver={(e) => {
                   if (e.dataTransfer.types.includes(DRAG_MIME)) {
                     e.preventDefault()
@@ -620,9 +621,12 @@ interface KanbanColumnProps {
   /** True for the first column of a strategy's post-purchase tail — pinned
    *  visually so users learn this is where freshly-closed deals land. */
   isEntryStage?: boolean
-  /** Accordion state — clicking the header toggles. Body hides when true. */
-  isCollapsed?: boolean
-  onToggleCollapse?: () => void
+  /** Accordion state. Closed (default, ``isExpanded`` falsy) caps the card
+   *  list at ~1.5 cards with internal scroll for the dashboard's tidy
+   *  default; open shows the full list inline so the user can scan
+   *  everything in one column at once. */
+  isExpanded?: boolean
+  onToggleExpand?: () => void
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void
   onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void
@@ -640,8 +644,8 @@ function KanbanColumn({
   isDropTarget,
   isGhost,
   isEntryStage,
-  isCollapsed,
-  onToggleCollapse,
+  isExpanded,
+  onToggleExpand,
   onDragOver,
   onDragLeave,
   onDrop,
@@ -679,8 +683,8 @@ function KanbanColumn({
     >
       <button
         type="button"
-        onClick={onToggleCollapse}
-        aria-expanded={!isCollapsed}
+        onClick={onToggleExpand}
+        aria-expanded={!!isExpanded}
         className={`flex items-center justify-between gap-2 px-3 py-2 border-b border-[var(--border-default)] w-full text-left ${headerBg} hover:brightness-110 transition-[filter]`}
       >
         <div className="min-w-0 flex flex-col gap-0.5 flex-1">
@@ -697,40 +701,42 @@ function KanbanColumn({
         <ChevronDown
           aria-hidden
           className={`w-3.5 h-3.5 text-[var(--text-label)] transition-transform ${
-            isCollapsed ? '-rotate-90' : ''
+            isExpanded ? 'rotate-180' : ''
           }`}
         />
       </button>
-      {!isCollapsed && (
-        // Capped at ~1.5 cards so columns stay scannable even when stacked
-        // with deals — extras scroll inside. Empty / ghost / drop-target
-        // states render in the same body region but don't trigger scroll.
-        <div className="p-2 flex flex-col gap-2 max-h-[150px] overflow-y-auto">
-          {items.length === 0 ? (
-            isGhost ? (
-              <p className="text-[11px] text-[var(--text-label)] leading-snug py-3 text-center px-1">
-                Once a deal hits Owned, your <span className="font-semibold">{col.label}</span> phase lives here.
-              </p>
-            ) : (
-              <p className="text-xs text-[var(--text-label)] py-3 text-center">
-                {isDropTarget ? 'Drop to move here' : 'No properties'}
-              </p>
-            )
+      {/* Default (closed accordion) caps the list at ~1.5 cards with internal
+          scroll so the dashboard stays compact even when stacked. Open
+          accordion drops the cap so the user sees the entire column inline. */}
+      <div
+        className={`p-2 flex flex-col gap-2 ${
+          isExpanded ? '' : 'max-h-[150px] overflow-y-auto'
+        }`}
+      >
+        {items.length === 0 ? (
+          isGhost ? (
+            <p className="text-[11px] text-[var(--text-label)] leading-snug py-3 text-center px-1">
+              Once a deal hits Owned, your <span className="font-semibold">{col.label}</span> phase lives here.
+            </p>
           ) : (
-            items.map((p) => (
-              <KanbanCard
-                key={p.id}
-                property={p}
-                onClick={() => onCardClick(p)}
-                onChangeStatus={(s) => onChangeStatus(p.id, s)}
-                onOpenTasks={() => onOpenTasks(p)}
-                isUpdating={isUpdating}
-                showStrategyChip={showStrategyChip}
-              />
-            ))
-          )}
-        </div>
-      )}
+            <p className="text-xs text-[var(--text-label)] py-3 text-center">
+              {isDropTarget ? 'Drop to move here' : 'No properties'}
+            </p>
+          )
+        ) : (
+          items.map((p) => (
+            <KanbanCard
+              key={p.id}
+              property={p}
+              onClick={() => onCardClick(p)}
+              onChangeStatus={(s) => onChangeStatus(p.id, s)}
+              onOpenTasks={() => onOpenTasks(p)}
+              isUpdating={isUpdating}
+              showStrategyChip={showStrategyChip}
+            />
+          ))
+        )}
+      </div>
     </div>
   )
 }
