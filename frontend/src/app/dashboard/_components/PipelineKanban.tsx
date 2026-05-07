@@ -418,7 +418,6 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
                 isHighlighted={false}
                 isDropTarget={!!dropTarget && dropTarget.tier === 'post' && dropTarget.index === i}
                 isGhost={noOwnedYet}
-                isEntryStage={i === 0 && col.kind === 'owned-stage'}
                 isExpanded={expanded.has(key)}
                 onToggleExpand={() => toggleExpand(key)}
                 onDragOver={(e) => {
@@ -618,13 +617,10 @@ interface KanbanColumnProps {
   /** Render dimmed with a "future stage" hint when no Owned properties exist
    *  yet — telegraphs the post-purchase progression on day one. */
   isGhost?: boolean
-  /** True for the first column of a strategy's post-purchase tail — pinned
-   *  visually so users learn this is where freshly-closed deals land. */
-  isEntryStage?: boolean
-  /** Accordion state. Closed (default, ``isExpanded`` falsy) caps the card
-   *  list at ~1.5 cards with internal scroll for the dashboard's tidy
-   *  default; open shows the full list inline so the user can scan
-   *  everything in one column at once. */
+  /** Accordion state. Closed (default, ``isExpanded`` falsy) pins the card
+   *  list to a fixed ~1.5-card height with internal scroll so every column
+   *  in the row aligns at the same bottom edge for a tidy dashboard;
+   *  open shows the full list inline. */
   isExpanded?: boolean
   onToggleExpand?: () => void
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void
@@ -643,7 +639,6 @@ function KanbanColumn({
   isHighlighted,
   isDropTarget,
   isGhost,
-  isEntryStage,
   isExpanded,
   onToggleExpand,
   onDragOver,
@@ -687,14 +682,11 @@ function KanbanColumn({
         aria-expanded={!!isExpanded}
         className={`flex items-center justify-between gap-2 px-3 py-2 border-b border-[var(--border-default)] w-full text-left ${headerBg} hover:brightness-110 transition-[filter]`}
       >
-        <div className="min-w-0 flex flex-col gap-0.5 flex-1">
-          <h3 className={`text-xs font-bold uppercase tracking-wide ${headerColor}`}>{col.label}</h3>
-          {isEntryStage && (
-            <span className="text-[9px] font-semibold uppercase tracking-wide text-[var(--text-label)]">
-              Entry point
-            </span>
-          )}
-        </div>
+        <h3
+          className={`text-xs font-bold uppercase tracking-wide truncate min-w-0 flex-1 ${headerColor}`}
+        >
+          {col.label}
+        </h3>
         <span className="text-xs font-semibold tabular-nums text-[var(--text-label)]">
           {items.length}
         </span>
@@ -705,21 +697,24 @@ function KanbanColumn({
           }`}
         />
       </button>
-      {/* Default (closed accordion) caps the list at ~1.5 cards with internal
-          scroll so the dashboard stays compact even when stacked. Open
+      {/* Closed accordion: every column shares the same fixed body height
+          (~1.5 cards) so the row aligns at a consistent bottom edge —
+          empty columns hold space, full columns scroll internally. Open
           accordion drops the cap so the user sees the entire column inline. */}
       <div
         className={`p-2 flex flex-col gap-2 ${
-          isExpanded ? '' : 'max-h-[150px] overflow-y-auto'
+          isExpanded
+            ? ''
+            : `h-[140px] ${items.length === 0 ? 'justify-center' : 'overflow-y-auto'}`
         }`}
       >
         {items.length === 0 ? (
           isGhost ? (
-            <p className="text-[11px] text-[var(--text-label)] leading-snug py-3 text-center px-1">
+            <p className="text-[11px] text-[var(--text-label)] leading-snug text-center px-1">
               Once a deal hits Owned, your <span className="font-semibold">{col.label}</span> phase lives here.
             </p>
           ) : (
-            <p className="text-xs text-[var(--text-label)] py-3 text-center">
+            <p className="text-xs text-[var(--text-label)] text-center">
               {isDropTarget ? 'Drop to move here' : 'No properties'}
             </p>
           )
