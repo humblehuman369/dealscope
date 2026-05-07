@@ -19,13 +19,12 @@ module.exports = {
       //   eye learns the system within seconds.
       // ==========================================
       colors: {
-        // ---- Base surfaces (true-black → deep navy) ----
-        base: {
-          DEFAULT: '#000000',     // Page background
-          card: '#0C1220',        // Card / surface
-          panel: '#101828',       // Elevated panels
-          'panel-hover': '#152238',
-        },
+        // NOTE: Do NOT add a top-level color named `base`. Tailwind would generate
+        // `text-base` / `bg-base` / `border-base` color utilities that silently
+        // shadow the built-in `text-base` font-size utility, turning any element
+        // with `text-base` into `color: #000` (invisible on dark surfaces).
+        // Use the CSS variables in globals.css (`--surface-base`, `--surface-card`,
+        // `--surface-elevated`) via `bg-[var(--surface-base)]` etc. instead.
 
         // ---- Four-tier Slate text hierarchy ----
         //  All readable, no faint greys.
