@@ -95,10 +95,12 @@
   --chart-tooltip: #0C1220;
   --chart-tooltip-text: #F1F5F9;
 
-  /* Range slider (theme-tunable) */
+  /* Range slider (theme-tunable). Track shows clearly at 8px height with
+     these alpha levels. (Earlier versions also had a bug where the WebKit
+     pseudo-element name was wrong — see the runnable-track rule below.) */
   --slider-thumb-bg: #f1f5f9;
   --slider-thumb-border: #000000;
-  --slider-track-bg: rgba(255, 255, 255, 0.07);
+  --slider-track-bg: rgba(148, 163, 184, 0.40);
 
   /* Aliases for components referencing pass/fail */
   --status-pass: var(--status-positive);
@@ -232,7 +234,7 @@
 
   --slider-thumb-bg: #f1f5f9;
   --slider-thumb-border: #000000;
-  --slider-track-bg: rgba(255, 255, 255, 0.07);
+  --slider-track-bg: rgba(148, 163, 184, 0.40);
 }
 
 [data-theme='light'] {
@@ -314,7 +316,9 @@
 
   --slider-thumb-bg: #ffffff;
   --slider-thumb-border: #0465f2;
-  --slider-track-bg: rgba(24, 32, 28, 0.1);
+  /* Light-mode track: high-contrast slate fill so the bar reads against
+     the elevated card background without disappearing. */
+  --slider-track-bg: rgba(15, 23, 42, 0.40);
 
   /* Informational card tint — same sky @ 5% as shell */
   --sky-tint-fill: rgba(15, 164, 233, 0.05);
@@ -438,10 +442,14 @@ input[type="range"] {
   cursor: pointer;
 }
 
-input[type="range"]::-webkit-slider-track {
-  height: 6px;
+/* WebKit's visible bar is `::-webkit-slider-runnable-track`, NOT
+   `::-webkit-slider-track`. The latter selector matches no element in
+   modern Chrome/Safari, which is why the track styling silently had no
+   effect for years until the Activation Arc surfaced sliders prominently. */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
   background: var(--slider-track-bg);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -450,7 +458,8 @@ input[type="range"]::-webkit-slider-thumb {
   height: 18px;
   border-radius: 50%;
   background: var(--slider-thumb-bg);
-  margin-top: -6px;
+  /* Track is now 8px tall — center the 18px thumb on it. */
+  margin-top: -5px;
   border: 3px solid var(--slider-thumb-border);
   box-shadow: 0 0 8px rgba(255,255,255,0.3);
   transition: transform 0.15s ease;
@@ -465,9 +474,9 @@ input[type="range"]:focus::-webkit-slider-thumb {
 }
 
 input[type="range"]::-moz-range-track {
-  height: 6px;
+  height: 8px;
   background: var(--slider-track-bg);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 input[type="range"]::-moz-range-thumb {

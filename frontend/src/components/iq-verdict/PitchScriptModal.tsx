@@ -4,6 +4,14 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { trackEvent } from '@/lib/eventTracking'
 import { IS_CAPACITOR } from '@/lib/env'
+import { buildRecapEmailDraft } from '@/lib/negotiation/recapEmail'
+
+// Activation Arc Phase 5 (N1) — creative-finance families that get the
+// attorney-review reminder in the pre-call checklist. Mirrors the rule in
+// the existing per-card disclaimer logic.
+const CREATIVE_FAMILIES = new Set(['financing', 'strategy_switch', 'blended'])
+
+type NegotiationOutcome = 'dead' | 'in_play' | 'under_contract'
 
 export interface PitchScriptModalProps {
   structure: DealStructure | null
@@ -266,12 +274,31 @@ export function PitchScriptModal({ structure, onClose, propertyAddress }: PitchS
   const [copied, setCopied] = useState(false)
   const [emailHintShown, setEmailHintShown] = useState(false)
 
+  // Activation Arc Phase 5 (N1) — pre-call checklist state. Walk-away
+  // price is pre-filled from the structure's cash_required so the user
+  // commits to a number before they dial.
+  const [walkAwayPrice, setWalkAwayPrice] = useState<string>('')
+  const [checklistOpened, setChecklistOpened] = useState(false)
+
+  // Activation Arc Phase 5 (N5) — outcome capture state. Tracks the user's
+  // post-call disposition; "in_play" reveals the recap-email draft.
+  const [outcome, setOutcome] = useState<NegotiationOutcome | null>(null)
+  const [callNote, setCallNote] = useState<string>('')
+  const isCreative = structure ? CREATIVE_FAMILIES.has(structure.family) : false
+
   useEffect(() => {
     if (!structure?.pitchScript) return
     if (trackedId.current === structure.id) return
     trackedId.current = structure.id
     setCopied(false)
     setEmailHintShown(false)
+    // N1 — pre-fill walk-away price from the structure's cash requirement.
+    setWalkAwayPrice(
+      structure.cashRequired > 0 ? String(Math.round(structure.cashRequired)) : '',
+    )
+    setOutcome(null)
+    setCallNote('')
+    setChecklistOpened(false)
     trackEvent('path_pitch_opened', { structure_id: structure.id, family: structure.family })
   }, [structure])
 
@@ -466,6 +493,106 @@ export function PitchScriptModal({ structure, onClose, propertyAddress }: PitchS
             gap: 10,
           }}
         >
+          {/* Activation Arc Phase 5 (N1) — pre-call checklist. Collapsible
+              <details> so the script body remains the primary content. The
+              walk-away input commits the user to a number before the call. */}
+          <details
+            onToggle={(e) => {
+              const open = (e.target as HTMLDetailsElement).open
+              if (open && !checklistOpened) {
+                setChecklistOpened(true)
+                trackEvent('negotiation_checklist_viewed', {
+                  structure_id: structure.id,
+                  family: structure.family,
+                })
+              }
+            }}
+            style={{
+              border: '1px solid var(--border-default)',
+              borderRadius: 10,
+              padding: '8px 12px',
+              background: 'var(--surface-card)',
+            }}
+          >
+            <summary
+              style={{
+                cursor: 'pointer',
+                listStyle: 'none',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'var(--accent-sky)',
+              }}
+            >
+              Pre-call checklist
+            </summary>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12.5, color: 'var(--text-body)' }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-heading)' }}>
+                  Your walk-away price
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={walkAwayPrice}
+                  onChange={(e) => setWalkAwayPrice(e.target.value.replace(/[^0-9]/g, ''))}
+                  onBlur={() => {
+                    const n = Number(walkAwayPrice)
+                    if (n > 0) {
+                      trackEvent('negotiation_walkaway_set', {
+                        structure_id: structure.id,
+                        walk_away_price: n,
+                      })
+                    }
+                  }}
+                  placeholder="$0"
+                  aria-label="Walk-away price"
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 6,
+                    border: '1px solid var(--border-default)',
+                    background: 'var(--surface-base, var(--surface-card))',
+                    color: 'var(--text-heading)',
+                    fontSize: 14,
+                  }}
+                />
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                  Pre-filled from this structure's cash-to-close. Commit to a number before the call — you should never improvise this on the phone.
+                </span>
+              </label>
+
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-heading)', marginBottom: 4 }}>
+                  Diagnose before you anchor (4 dimensions)
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: 'var(--text-body)', lineHeight: 1.55 }}>
+                  <li><strong>Timeline urgency</strong> — relocating? pre-foreclosure? double mortgage payments?</li>
+                  <li><strong>Equity position</strong> — what they owe vs. what they need to walk with</li>
+                  <li><strong>Emotional attachment</strong> — inherited home, raised kids there, or just an asset</li>
+                  <li><strong>Post-sale plans</strong> — where are they going; what does closing day need to make happen?</li>
+                </ul>
+              </div>
+
+              {isCreative && (
+                <div
+                  style={{
+                    fontSize: 11.5,
+                    lineHeight: 1.45,
+                    color: 'var(--text-secondary)',
+                    background: 'var(--surface-base, var(--surface-card))',
+                    border: '1px solid var(--border-default)',
+                    borderRadius: 8,
+                    padding: '8px 10px',
+                  }}
+                >
+                  <strong style={{ color: 'var(--text-heading)' }}>Attorney-review reminder:</strong>{' '}
+                  This structure includes creative-finance terms. Plan to have everything reviewed by a real estate attorney before signing — and recommend the seller do the same.
+                </div>
+              )}
+            </div>
+          </details>
+
           {blocks.map((block, i) => {
             if (block.kind === 'heading') {
               return (
@@ -502,6 +629,139 @@ export function PitchScriptModal({ structure, onClose, propertyAddress }: PitchS
               </p>
             )
           })}
+
+          {/* Activation Arc Phase 5 (N5) — outcome capture + recap email.
+              Renders below the script. Three outcomes: dead / in-play /
+              under-contract. "In-play" reveals a recap-email draft routed
+              through mailto: (same handoff used by the script's email
+              button). Logging the outcome is purely client-side in v1;
+              durable persistence into DealMakerRecord is a follow-up. */}
+          <details
+            style={{
+              border: '1px solid var(--border-default)',
+              borderRadius: 10,
+              padding: '8px 12px',
+              background: 'var(--surface-card)',
+              marginTop: 8,
+            }}
+          >
+            <summary
+              style={{
+                cursor: 'pointer',
+                listStyle: 'none',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'var(--accent-sky)',
+              }}
+            >
+              After the call — log outcome
+            </summary>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {(
+                  [
+                    ['dead', 'Dead'],
+                    ['in_play', 'In play'],
+                    ['under_contract', 'Under contract'],
+                  ] as Array<[NegotiationOutcome, string]>
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      setOutcome(id)
+                      trackEvent('negotiation_outcome_logged', {
+                        structure_id: structure.id,
+                        outcome: id,
+                      })
+                    }}
+                    aria-pressed={outcome === id}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 999,
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      border: '1px solid var(--border-default)',
+                      background:
+                        outcome === id
+                          ? 'var(--accent-sky)'
+                          : 'transparent',
+                      color:
+                        outcome === id
+                          ? 'var(--surface-base, #fff)'
+                          : 'var(--text-body)',
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {outcome === 'in_play' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12.5, color: 'var(--text-body)' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--text-heading)' }}>
+                      One-line note (optional)
+                    </span>
+                    <input
+                      type="text"
+                      value={callNote}
+                      onChange={(e) => setCallNote(e.target.value)}
+                      placeholder="What did you agree on?"
+                      aria-label="Call note"
+                      style={{
+                        padding: '8px 10px',
+                        borderRadius: 6,
+                        border: '1px solid var(--border-default)',
+                        background: 'var(--surface-base, var(--surface-card))',
+                        color: 'var(--text-heading)',
+                        fontSize: 14,
+                      }}
+                    />
+                  </label>
+                  <a
+                    href={(() => {
+                      const draft = buildRecapEmailDraft({
+                        structure,
+                        propertyAddress,
+                        callNote,
+                      })
+                      return `mailto:?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`
+                    })()}
+                    onClick={() => {
+                      trackEvent('negotiation_recap_drafted', {
+                        structure_id: structure.id,
+                      })
+                      try {
+                        const draft = buildRecapEmailDraft({ structure, propertyAddress, callNote })
+                        navigator.clipboard?.writeText(draft.body).catch(() => {})
+                      } catch {
+                        /* ignore */
+                      }
+                    }}
+                    className="rounded-md px-3 py-2 text-[13px] font-semibold transition-colors no-underline"
+                    style={{
+                      background: 'var(--accent-sky)',
+                      color: 'var(--surface-base, #fff)',
+                      border: 'none',
+                      textDecoration: 'none',
+                      display: 'inline-block',
+                      width: 'fit-content',
+                    }}
+                  >
+                    Draft 24-hr recap email
+                  </a>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0 }}>
+                    Opens your mail app with a pre-written recap. Body is also copied to your clipboard so you can paste into webmail.
+                    {isCreative && ' Attorney-review reminder is included automatically.'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </details>
         </div>
 
         <div

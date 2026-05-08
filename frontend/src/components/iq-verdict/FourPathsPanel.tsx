@@ -11,6 +11,8 @@ import {
   getDismissedFamilies,
   resetDismissedFamilies,
 } from '@/lib/dealStructures/userPreferences'
+import { AskIQ } from '@/components/iq-verdict/AskIQ'
+import { IQIcon } from '@/lib/iq/iqIcon'
 
 export type StructureFamily =
   | 'price'
@@ -19,6 +21,10 @@ export type StructureFamily =
   | 'income'
   | 'strategy_switch'
   | 'blended'
+  // Activation Arc Phase 0 — conventional headline blend rendered above the
+  // Four Paths panel via HeadlineStructureCard. Never appears in the cards
+  // grid below; included in the union so payload typing stays exhaustive.
+  | 'conventional_headline'
 
 export interface DealStructureLever {
   label: string
@@ -48,6 +54,21 @@ export interface DealStructuresPayload {
   paths: DealStructure[]
   narrativeParagraphs: string[]
   hasPaths: boolean
+  // Activation Arc Phase 0 (E2 + E3). See docs/feature-plans/ACTIVATION_ARC.md §3.
+  /**
+   * Recommended starting structure for this property — a conventional blend
+   * of price, rent, and down-payment levers. Null when no plausible
+   * conventional structure cashflows; the verdict UI then falls back to the
+   * existing motivating-tier behavior (honest gating, no fabricated card).
+   */
+  headlineStructure?: DealStructure | null
+  /**
+   * Gap between buyer's profile cash and what the headline structure
+   * requires at close, in dollars. Null when buyer cash is unknown or no
+   * headline structure exists. When > 0, the engine has already promoted
+   * one financing-family card with downpayment-reducer copy in `paths`.
+   */
+  cashShortfall?: number | null
 }
 
 interface FourPathsPanelProps {
@@ -59,6 +80,14 @@ interface FourPathsPanelProps {
   /** T17 — fired when a card is dismissed (after localStorage write).
    *  Use to refetch / re-render so the next verdict has the lower ranking applied. */
   onDismissFamily?: (family: StructureFamily) => void
+  /**
+   * Activation Arc Phase 0 (A1) — when a HeadlineStructureCard renders above
+   * this panel (i.e. `payload.headlineStructure != null`), the panel header
+   * reframes from "Four paths to make this work" to "Other ways to close this
+   * gap on this property." Pass true from the verdict page once the headline
+   * is known to be present.
+   */
+  hasHeadlineAbove?: boolean
 }
 
 const FAMILY_ACCENT: Record<StructureFamily, string> = {
@@ -68,6 +97,11 @@ const FAMILY_ACCENT: Record<StructureFamily, string> = {
   income: '#a78bfa',
   strategy_switch: '#f97316',
   blended: '#8b5cf6',
+  // conventional_headline never renders inside this panel — it sits above the
+  // Four Paths grid in HeadlineStructureCard. The entry is required for type
+  // exhaustiveness; falling back to the brand accent keeps any defensive
+  // rendering visually coherent.
+  conventional_headline: 'var(--accent-sky)',
 }
 
 const PATH_COUNT_WORD = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six']
@@ -322,6 +356,7 @@ export function FourPathsPanel({
   onOpenInStrategy,
   onShowPitch,
   onDismissFamily,
+  hasHeadlineAbove,
 }: FourPathsPanelProps): ReactNode {
   const lastAssumableSigRef = useRef('')
   const lastMorbySigRef = useRef('')
@@ -403,6 +438,36 @@ export function FourPathsPanel({
     >
       <div className="flex items-baseline justify-between gap-3 flex-wrap">
         {(() => {
+          // Activation Arc Phase 0 (A1) — when a HeadlineStructureCard sits
+          // above this panel, the cards below are *alternatives to the
+          // recommended structure*, not the answer. Reframing the header
+          // copy is the smallest possible change with the largest meaning
+          // shift: the cards stop reading as "the answer" and start reading
+          // as "other ways investors approach properties like this."
+          if (hasHeadlineAbove) {
+            return (
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 18,
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-heading)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                {/* D3 — IQ icon attributes the alternatives to IQ.
+                    With the headline structure (also IQ-attributed) above,
+                    the icon here creates continuity. */}
+                <IQIcon size={20} ariaLabel="" />
+                <span style={{ color: 'var(--accent-sky-light)' }}>Other ways</span>{' '}
+                to close this gap
+              </p>
+            )
+          }
           const { lead, tail } = pathCountWords(visiblePaths.length)
           return (
             <p
@@ -451,6 +516,14 @@ export function FourPathsPanel({
             onDismiss={handleDismiss}
           />
         ))}
+      </div>
+
+      {/* Activation Arc Phase 3 (C1) — Ask IQ chip lives below the path
+          cards. Opens a modal with curated negotiation Q&A. Curated content
+          only in v1; freeform LLM responses are explicitly out of scope per
+          ACTIVATION_ARC.md §9 non-goals. */}
+      <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: 4 }}>
+        <AskIQ fromPanel="four_paths" />
       </div>
     </div>
   )

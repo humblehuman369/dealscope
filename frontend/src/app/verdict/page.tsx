@@ -131,6 +131,84 @@ function getStrategyIcon(strategyId: string): string {
   return icons[strategyId] || '📊'
 }
 
+/**
+ * Activation Arc Phase 0 (A2) — extract financing assumptions from the
+ * analysis response for the surfaced personalization line in
+ * VerdictGapGuidance. Returns null when defaults_used is unavailable
+ * (e.g. older cached responses).
+ *
+ * Detects customization by comparing against the platform-shipped
+ * FALLBACK_ASSUMPTIONS defined in components/iq-verdict/types.ts. When the
+ * resolved value diverges from the platform default, we treat the user as
+ * having customized — even if the divergence came from a regional override
+ * rather than a profile setting. The product copy ("your assumptions" vs.
+ * "standard assumptions") is honest either way: the user is seeing values
+ * that are not the global defaults.
+ */
+function extractPersonalization(analysis: import('@/components/iq-verdict/types').IQAnalysisResult) {
+  const fin = analysis.defaults_used?.['financing']
+  if (!fin) return null
+  const dp = fin['down_payment_pct']
+  const rate = fin['interest_rate']
+  const term = fin['loan_term_years']
+  if (typeof dp !== 'number' || typeof rate !== 'number' || typeof term !== 'number') {
+    return null
+  }
+  // Platform defaults — kept in sync with backend/app/core/defaults.py FINANCING.
+  const PLATFORM_DEFAULTS = {
+    downPaymentPct: 0.20,
+    interestRate: 0.06,
+    loanTermYears: 30,
+  }
+  const isCustomized =
+    Math.abs(dp - PLATFORM_DEFAULTS.downPaymentPct) > 1e-6 ||
+    Math.abs(rate - PLATFORM_DEFAULTS.interestRate) > 1e-6 ||
+    term !== PLATFORM_DEFAULTS.loanTermYears
+  return {
+    downPaymentPct: dp,
+    interestRate: rate,
+    loanTermYears: term,
+    isCustomized,
+  }
+}
+
+/**
+ * Activation Arc Phase 0 (B1) — assemble the SandboxBaseInputs from the
+ * verdict response. Returns null when required fields are missing — the
+ * sandbox component then doesn't render and the page falls back to the
+ * existing layout.
+ */
+function extractSandboxBaseInputs(
+  analysis: import('@/components/iq-verdict/types').IQAnalysisResult,
+  property: import('@/components/iq-verdict/types').IQProperty | null | undefined,
+  isListed: boolean,
+) {
+  const fin = analysis.defaults_used?.['financing']
+  const op = analysis.defaults_used?.['operating']
+  const inputs = analysis.inputsUsed
+  const listPrice = analysis.listPrice ?? property?.price
+  const monthlyRent = inputs?.monthly_rent ?? property?.monthlyRent
+  if (!fin || !op || typeof listPrice !== 'number' || typeof monthlyRent !== 'number') {
+    return null
+  }
+  return {
+    listPrice,
+    monthlyRent,
+    propertyTaxesAnnual: inputs?.property_taxes ?? property?.propertyTaxes ?? 0,
+    insuranceAnnual: inputs?.insurance ?? property?.insurance ?? 0,
+    downPaymentPct: typeof fin['down_payment_pct'] === 'number' ? fin['down_payment_pct'] : 0.20,
+    interestRate: typeof fin['interest_rate'] === 'number' ? fin['interest_rate'] : 0.065,
+    loanTermYears: typeof fin['loan_term_years'] === 'number' ? fin['loan_term_years'] : 30,
+    closingCostsPct: typeof fin['closing_costs_pct'] === 'number' ? fin['closing_costs_pct'] : 0.03,
+    vacancyRate: typeof op['vacancy_rate'] === 'number' ? op['vacancy_rate'] : 0.05,
+    maintenancePct: typeof op['maintenance_pct'] === 'number' ? op['maintenance_pct'] : 0.05,
+    managementPct: typeof op['property_management_pct'] === 'number' ? op['property_management_pct'] : 0.0,
+    capexPct: typeof op['capex_pct'] === 'number' ? op['capex_pct'] : 0.05,
+    buyDiscountPct: 0.05,
+    isListed,
+  }
+}
+
 function VerdictContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -1819,6 +1897,10 @@ function VerdictContent() {
                   propertyState={property?.state ?? null}
                   onOpenStructureInStrategy={openThreePathInStrategy}
                   onShowPitch={(s) => setPitchModalStructure(s)}
+                  personalization={extractPersonalization(analysis)}
+                  onCustomizeAssumptions={() => router.push('/profile')}
+                  sandboxBaseInputs={extractSandboxBaseInputs(analysis, property, isListed)}
+                  propertyAddress={property?.address ?? null}
                 />
               ) : (
                 <VerdictPositiveGuidance

@@ -24,6 +24,10 @@ export const PATH_FAMILY_ACCENT: Record<StructureFamily, string> = {
   income: '#a78bfa',
   strategy_switch: '#f97316',
   blended: '#8b5cf6',
+  // conventional_headline cards aren't rendered as PathButtons — they live in
+  // the verdict-page HeadlineStructureCard. Entry is here for type
+  // exhaustiveness; visually defaults to the brand accent.
+  conventional_headline: 'var(--accent-sky)',
 }
 
 interface PathButtonProps {
