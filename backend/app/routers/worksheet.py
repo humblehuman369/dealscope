@@ -66,6 +66,7 @@ class STRWorksheetInput(BaseModel):
     interest_rate: float | None = None
     loan_term_years: int | None = None
     closing_costs: float = 0
+    rehab_costs: float = Field(0)
     furnishing_budget: float | None = None
     platform_fees_pct: float | None = None
     property_management_pct: float | None = None
