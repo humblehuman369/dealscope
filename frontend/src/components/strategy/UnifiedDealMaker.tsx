@@ -169,8 +169,8 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           listPrice={listPrice}
         />
         <SliderRow
-          config={{ id: 'downPaymentPercent' as any, label: 'Down Payment', min: 0, max: 0.50, step: 0.005, format: 'percentage',
-            helpText: 'Percentage of buy price paid upfront in cash. Higher down payments reduce your mortgage but require more cash at closing.' }}
+          config={{ id: 'downPaymentPercent' as any, label: 'Down Payment', min: 0.05, max: 1.00, step: 0.005, format: 'percentage',
+            helpText: 'Percentage of buy price paid upfront in cash. Set to 100% for an all-cash deal with no financing.' }}
           value={sliderValues.downPayment}
           onChange={(v) => onSliderChange('downPayment', v)}
           suffix={formatCurrency(downPayment)}
@@ -218,11 +218,11 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           config={{
             id: 'sellerFinancingAmount' as any,
             label: 'Seller Financing Amount',
-            min: 0,
-            max: Math.min(800000, Math.max(50000, listPrice * 0.95)),
+            min: listPrice > 0 ? listPrice * 0.05 : 0,
+            max: listPrice > 0 ? listPrice * 1.00 : 500000,
             step: 5000,
             format: 'currency',
-            helpText: 'Principal the seller carries as a second mortgage or installment note (creative financing).',
+            helpText: 'Principal the seller carries as a second mortgage or installment note. Range is 5% to 100% of buy price.',
           }}
           value={sliderValues.sellerFinancingAmount ?? 0}
           onChange={(v) => onSliderChange('sellerFinancingAmount', v)}
