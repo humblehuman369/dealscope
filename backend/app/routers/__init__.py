@@ -28,6 +28,7 @@ _ROUTER_MANIFEST: list[tuple[str, str]] = [
     ("Property", "app.routers.property"),
     ("Health", "app.routers.health"),
     ("Analytics", "app.routers.analytics"),
+    ("Sandbox", "app.routers.sandbox"),
     ("Worksheet", "app.routers.worksheet"),
     ("Comparison", "app.routers.comparison"),
     ("LOI", "app.routers.loi"),
