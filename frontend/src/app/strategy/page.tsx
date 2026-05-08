@@ -90,6 +90,7 @@ import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMake
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { PathButton } from '@/components/strategy/PathButton'
 import { trackEvent } from '@/lib/eventTracking'
+import { computeDealGapIncomeValue } from '@/utils/estimateIncomeValue'
 
 /** Cash to close from DealMaker sliders — Model A (must stay aligned with DealMakerWorksheet). */
 function cashNeededFromLtrState(s: LTRDealMakerState): number {
@@ -1352,6 +1353,18 @@ function StrategyContent() {
     }
   })() as AnyStrategyMetrics
 
+  /** Income Value marker + brackets — same economics as backend `estimate_income_value`, driven by live worksheet state. */
+  const dealGapIncomeValue = (() => {
+    const live = computeDealGapIncomeValue(currentStrategyType, worksheetState)
+    if (live > 0) return live
+    const apiIv =
+      (dealMakerOverrides as Record<string, unknown> | null)?.incomeValue ??
+      data?.income_value ??
+      (data as Record<string, unknown>)?.incomeValue
+    if (typeof apiIv === 'number' && Number.isFinite(apiIv) && apiIv > 0) return apiIv
+    return listPrice
+  })()
+
   const handleWorksheetUpdate = (key: string, value: number | string) => {
     /* Worksheet `up()` field names → InlineDealMakerValues keys (`propertyTaxes`/`insurance` match worksheetState `io.*` and verdictPayload). */
     const fieldMap: Record<string, keyof InlineDealMakerValues> = {
@@ -1522,7 +1535,7 @@ function StrategyContent() {
 
         {/* Deal Gap Price Cards + Scale Bar — synced with Verdict page */}
         {listPrice > 0 && targetPrice > 0 && (() => {
-          const incomeVal = dealMakerOverrides?.incomeValue ?? data?.income_value ?? (data as any)?.incomeValue ?? listPrice
+          const incomeVal = dealGapIncomeValue
           const isListedProp = !!propertyInfo?.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(propertyInfo.listingStatus)
           const pLabel = isListedProp ? 'Asking' : 'Market'
           return (
