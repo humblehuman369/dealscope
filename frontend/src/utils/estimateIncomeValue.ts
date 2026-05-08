@@ -27,11 +27,16 @@ export interface EstimateIncomeValueParams {
   maintenancePct: number
   /** 0–1 — management % of annual gross rent */
   managementPct: number
+  /** Annual hurdle on equity for WACC (e.g. 0.08); pure cash uses this alone */
+  requiredEquityYield?: number
   /** 0–1 — reserves/capex % of annual gross rent */
   capexPct?: number
   utilitiesAnnual?: number
   otherAnnualExpenses?: number
 }
+
+/** Default matches backend ``OPERATING.required_equity_yield`` */
+export const DEFAULT_REQUIRED_EQUITY_YIELD = 0.08
 
 export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
   const {
@@ -44,6 +49,7 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
     vacancyRate,
     maintenancePct,
     managementPct,
+    requiredEquityYield = DEFAULT_REQUIRED_EQUITY_YIELD,
     capexPct = 0,
     utilitiesAnnual = 0,
     otherAnnualExpenses = 0,
@@ -55,6 +61,7 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
   const ins = Math.max(0, insuranceAnnual ?? 0)
 
   const downPct = Math.min(1, Math.max(0, downPaymentPct))
+  const equityYield = Math.min(0.5, Math.max(0.001, requiredEquityYield))
   const rate = Math.min(0.3, Math.max(0, interestRate))
   const term = Math.max(1, Math.min(50, Math.round(loanTermYears)))
   const vacancy = Math.min(1, Math.max(0, vacancyRate))
@@ -93,12 +100,12 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
     mortgageConstantAnnual = term > 0 ? 1 / term : 0
   }
 
-  const denominator = ltvRatio * mortgageConstantAnnual
-  if (denominator <= 0) {
-    return Math.round(noi / 0.05)
-  }
+  const debtCost = ltvRatio * mortgageConstantAnnual
+  const equityCost = downPct * equityYield
+  const wacc = debtCost + equityCost
+  if (wacc <= 0) return 0
 
-  return Math.round(noi / denominator)
+  return Math.round(noi / wacc)
 }
 
 /**
@@ -122,6 +129,7 @@ export function computeDealGapIncomeValue(
         vacancyRate: s.vacancyRate,
         maintenancePct: s.maintenanceRate,
         managementPct: s.managementRate ?? 0,
+        requiredEquityYield: s.requiredEquityYield ?? DEFAULT_REQUIRED_EQUITY_YIELD,
         capexPct: 0,
         utilitiesAnnual: 0,
         otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12,

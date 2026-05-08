@@ -57,6 +57,16 @@ from app.services.zillow_client import create_zillow_client
 
 logger = logging.getLogger(__name__)
 
+# Bumped when Income Value / Deal Gap economics change (must invalidate Redis payloads).
+_PROPERTY_CACHE_FORMULA_VERSION = 2
+
+
+def _strip_property_cache_meta(payload: dict[str, Any]) -> dict[str, Any]:
+    """Remove cache-only keys before ``PropertyResponse`` validation."""
+    out = dict(payload)
+    out.pop("valuation_formula_version", None)
+    return out
+
 
 class PropertyService:
     """
@@ -108,7 +118,7 @@ class PropertyService:
         cached = await self._cache.get(f"prop_id:{property_id}")
         if cached:
             try:
-                return PropertyResponse(**cached)
+                return PropertyResponse(**_strip_property_cache_meta(cached))
             except Exception as e:
                 logger.warning("Failed to deserialize cached property %s: %s", property_id, e)
         return None
@@ -473,6 +483,7 @@ class PropertyService:
                 )
                 market_cached = cached_data.get("market") or {}
                 missing_insurance = market_cached.get("insurance_annual") is None
+                legacy_valuation_formula = cached_data.get("valuation_formula_version") != _PROPERTY_CACHE_FORMULA_VERSION
                 # HOA / condo / co-op fees are mandatory for property types
                 # where they almost always apply (Condo, Townhouse, Co-op,
                 # Multi-Family). Cached entries pre-dating the AXESSO HOA
@@ -530,6 +541,7 @@ class PropertyService:
                     or missing_hoa
                     or zillow_stale
                     or redfin_stale
+                    or legacy_valuation_formula
                 )
                 if stale:
                     reason = (
@@ -537,6 +549,8 @@ class PropertyService:
                         if zillow_stale
                         else "Redfin data absent > 4h"
                         if redfin_stale
+                        else "pre-WACC valuation_formula_version"
+                        if legacy_valuation_formula
                         else "insurance_annual missing"
                         if missing_insurance
                         else "hoa_fees_monthly missing on HOA-likely property"
@@ -551,7 +565,7 @@ class PropertyService:
                         cached_data = self._apply_market_price_to_cached(cached_data)
                         timings["total_ms"] = (time.perf_counter() - t0) * 1000
                         logger.info("search_property timings (cache hit): %s", timings)
-                        return PropertyResponse(**cached_data)
+                        return PropertyResponse(**_strip_property_cache_meta(cached_data))
                     except Exception as e:
                         logger.warning(f"Failed to deserialize cached property: {e}")
 
@@ -781,6 +795,7 @@ class PropertyService:
         if pre_fetched is None:
             try:
                 serialized = response.model_dump()
+                serialized["valuation_formula_version"] = _PROPERTY_CACHE_FORMULA_VERSION
                 # Shorter TTL when Zillow or Redfin data is absent so APIs
                 # are retried sooner (4 h vs default 24 h).
                 _has_zillow = response.zpid is not None or (
