@@ -17,7 +17,7 @@ import {
   AdvancedMarkerAnchorPoint,
   type MapMouseEvent,
 } from '@vis.gl/react-google-maps'
-import { Loader2, Home, MousePointerClick, List, MapIcon, Check, Sun, Moon } from 'lucide-react'
+import { Loader2, Home, MousePointerClick, List, MapIcon, Check, Sun, Moon, ChevronDown } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import type { MapListing } from '@/lib/api'
@@ -131,34 +131,67 @@ const MAP_MARKER_LEGEND: { category: DealCategory; label: string }[] = [
   { category: 'unknown', label: 'Status or DOM unknown' },
 ]
 
-function MapMarkerLegend({ isDark }: { isDark: boolean }) {
-  const [open, setOpen] = useState(false)
+function MapMarkerLegend({
+  isDark,
+  open,
+  onToggle,
+}: {
+  isDark: boolean
+  open: boolean
+  onToggle: () => void
+}) {
   const surface = getMapOverlaySurface(isDark)
   const legendRows = MAP_MARKER_LEGEND.map((row) => ({
     label: row.label,
     color: markerColorForCategory(row.category, isDark),
   }))
   return (
-    <>
+    <div
+      className="absolute bottom-4 left-3 z-10 max-w-[min(92vw,16rem)] pointer-events-auto"
+      role="region"
+      aria-label="Map marker color legend"
+    >
       <div
-        className="hidden md:block absolute bottom-4 left-3 z-10 max-w-[min(92vw,16rem)] pointer-events-auto"
-        role="region"
-        aria-label="Map marker color legend"
+        className="rounded-lg shadow-lg overflow-hidden"
+        style={{
+          backgroundColor: surface.backgroundColor,
+          border: `1px solid ${surface.borderColor}`,
+        }}
       >
-        <div
-          className="rounded-lg px-3 py-2 shadow-lg"
-          style={{
-            backgroundColor: surface.backgroundColor,
-            border: `1px solid ${surface.borderColor}`,
-          }}
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          aria-controls="map-marker-legend-body"
+          className="flex items-center justify-between gap-3 w-full px-3 py-1.5"
         >
-          <p
-            className="text-[10px] font-semibold uppercase tracking-wide mb-1.5"
+          <span
+            className="text-[10px] font-semibold uppercase tracking-wide"
             style={{ color: surface.secondaryText }}
           >
             Marker colors
-          </p>
-          <ul className="space-y-1">
+          </span>
+          <ChevronDown
+            size={12}
+            aria-hidden
+            style={{
+              color: surface.secondaryText,
+              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 200ms ease',
+            }}
+          />
+        </button>
+        <div
+          id="map-marker-legend-body"
+          aria-hidden={!open}
+          style={{
+            maxHeight: open ? '240px' : '0px',
+            opacity: open ? 1 : 0,
+            transition: 'max-height 220ms ease, opacity 160ms ease',
+            overflow: 'hidden',
+          }}
+        >
+          <ul className="space-y-1 px-3 pb-2">
             {legendRows.map((row) => (
               <li
                 key={row.label}
@@ -176,48 +209,7 @@ function MapMarkerLegend({ isDark }: { isDark: boolean }) {
           </ul>
         </div>
       </div>
-      <div className="md:hidden absolute bottom-4 left-3 z-10 pointer-events-auto">
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          className="px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-lg"
-          style={{
-            backgroundColor: surface.backgroundColor,
-            color: surface.primaryText,
-            border: `1px solid ${surface.borderColor}`,
-          }}
-          aria-expanded={open}
-        >
-          Legend
-        </button>
-        {open && (
-          <div
-            className="mt-2 rounded-lg px-3 py-2 shadow-lg max-w-[min(92vw,16rem)]"
-            style={{
-              backgroundColor: surface.backgroundColor,
-              border: `1px solid ${surface.borderColor}`,
-            }}
-          >
-            <ul className="space-y-1.5">
-              {legendRows.map((row) => (
-                <li
-                  key={row.label}
-                  className="flex items-center gap-2 text-[11px]"
-                  style={{ color: surface.primaryText }}
-                >
-                  <span
-                    className="h-2.5 w-2.5 rounded-sm flex-shrink-0"
-                    style={{ backgroundColor: row.color }}
-                    aria-hidden
-                  />
-                  {row.label}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    </>
+    </div>
   )
 }
 
@@ -448,6 +440,10 @@ interface MapContentProps {
   // polygon onto the map when restored from the session snapshot.
   polygon: number[][] | null
   isDarkMap: boolean
+  // Fires the first time the user pans or zooms the map after the initial
+  // camera has settled. Used to auto-collapse the marker-color legend so it
+  // stops occupying screen space once the user starts exploring.
+  onUserCameraInteraction?: () => void
 }
 
 function MapContent({
@@ -464,6 +460,7 @@ function MapContent({
   mapInstanceRef,
   polygon,
   isDarkMap,
+  onUserCameraInteraction,
 }: MapContentProps) {
   const map = useMap()
 
@@ -544,6 +541,31 @@ function MapContent({
     })
     return () => google.maps.event.removeListener(listener)
   }, [map, onBoundsChanged])
+
+  // Auto-collapse the marker-color legend the first time the user actually
+  // pans or zooms the map. We arm the listeners only after the first `idle`
+  // event so the initial camera setup (FitToRadius / LabelGeocoder / snapshot
+  // restore) doesn't immediately collapse it on first paint. `dragstart` is
+  // unambiguously user-initiated; `zoom_changed` covers both wheel zoom and
+  // the +/- control once armed.
+  useEffect(() => {
+    if (!map || !onUserCameraInteraction) return
+    let armed = false
+    const armOnce = map.addListener('idle', () => {
+      armed = true
+      google.maps.event.removeListener(armOnce)
+    })
+    const handle = () => {
+      if (armed) onUserCameraInteraction()
+    }
+    const dragListener = map.addListener('dragstart', handle)
+    const zoomListener = map.addListener('zoom_changed', handle)
+    return () => {
+      google.maps.event.removeListener(armOnce)
+      google.maps.event.removeListener(dragListener)
+      google.maps.event.removeListener(zoomListener)
+    }
+  }, [map, onUserCameraInteraction])
 
   // Hydrate a saved polygon onto the map when one exists in state but no
   // google.maps.Polygon instance has been created yet (typical case: returning
@@ -859,6 +881,13 @@ export function MapSearchView() {
   const [selectedListing, setSelectedListing] = useState<MapListing | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
+  // Marker-color legend starts expanded so first-time users immediately see
+  // what the colors mean. It auto-collapses the first time the user pans or
+  // zooms the map (handled inside MapContent), and can be re-toggled via the
+  // header chevron.
+  const [legendOpen, setLegendOpen] = useState(true)
+  const collapseLegend = useCallback(() => setLegendOpen(false), [])
+  const toggleLegend = useCallback(() => setLegendOpen((o) => !o), [])
   const [activeLabel] = useState<string | null>(locationLabel)
   const [showLabel, setShowLabel] = useState(!!locationLabel)
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
@@ -1195,6 +1224,7 @@ export function MapSearchView() {
             mapInstanceRef={mapInstanceRef}
             polygon={polygon}
             isDarkMap={isDarkMap}
+            onUserCameraInteraction={collapseLegend}
           />
           {dropPin && (
             <AdvancedMarker position={dropPin}>
@@ -1306,7 +1336,7 @@ export function MapSearchView() {
         </Map>
       </APIProvider>
 
-      <MapMarkerLegend isDark={isDarkMap} />
+      <MapMarkerLegend isDark={isDarkMap} open={legendOpen} onToggle={toggleLegend} />
 
       {/* Per-map theme toggle — right margin, stacked above Google’s bottom-right
           camera/directional control (clear of mid-right zoom +/- stack). */}
