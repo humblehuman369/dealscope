@@ -238,6 +238,11 @@ function StrategyContent() {
   const [initialOverrides, setInitialOverrides] = useState<Record<string, any> | null>(null)
   // Inline slider overrides — local-only, never re-triggers API fetch.
   const [inlineOverrides, setInlineOverrides] = useState<Record<string, any>>({})
+  /** Mirrors `inlineOverrides` for debounced recalc so we always merge the latest committed state. */
+  const inlineOverridesRef = useRef<Record<string, any>>({})
+  useEffect(() => {
+    inlineOverridesRef.current = inlineOverrides
+  }, [inlineOverrides])
   // Currently applied Three Paths structure (so the matching button highlights).
   const [appliedPathId, setAppliedPathId] = useState<string | null>(null)
   // Worksheet state-field names whose value the most recently applied path
@@ -669,13 +674,13 @@ function StrategyContent() {
     recalcVerdict(propertyInfo, merged, sourceOverrides)
   }, [initialOverrides, inlineOverrides, propertyInfo, sourceOverrides, recalcVerdict])
 
-  // Trigger debounced backend recalculation when sliders change
-  const scheduleRecalc = useCallback((nextOverrides: Record<string, any>, nextSourceOverrides?: { price?: number; monthlyRent?: number }) => {
+  // Debounced verdict recalc — reads overrides from `inlineOverridesRef` at fire time so merges stay in sync with React state.
+  const scheduleRecalc = useCallback(() => {
     if (recalcDebounceRef.current) clearTimeout(recalcDebounceRef.current)
     recalcDebounceRef.current = setTimeout(() => {
-      const merged = { ...(initialOverrides ?? {}), ...nextOverrides }
-      recalcVerdict(propertyInfo, merged, nextSourceOverrides ?? sourceOverrides)
-    }, 500)
+      const merged = { ...(initialOverrides ?? {}), ...inlineOverridesRef.current }
+      recalcVerdict(propertyInfo, merged, sourceOverrides)
+    }, 300)
   }, [initialOverrides, propertyInfo, sourceOverrides, recalcVerdict])
 
   const handleInlineSliderChange = useCallback((field: keyof InlineDealMakerValues, value: number) => {
@@ -704,11 +709,12 @@ function StrategyContent() {
     }
     setInlineOverrides((prev) => {
       const next = { ...prev, [mapping.key]: overrideValue }
+      inlineOverridesRef.current = next
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(() => {
         try { writeDealMakerOverrides(resolvedAddressRef.current, next, { origin: 'dealmaker_edit' }) } catch { /* ignore */ }
       }, 300)
-      scheduleRecalc(next)
+      scheduleRecalc()
       return next
     })
     // A manual slider edit invalidates the path-applied glow on this field.
@@ -744,10 +750,11 @@ function StrategyContent() {
         ...patch,
         threePathsLabel: `Path ${idx + 1} — ${structure.familyLabel || structure.headline}`,
       }
+      inlineOverridesRef.current = next as Record<string, any>
       try {
         writeDealMakerOverrides(resolvedAddressRef.current, next, { origin: 'verdict_sync' })
       } catch { /* ignore */ }
-      scheduleRecalc(next)
+      scheduleRecalc()
       return next as Record<string, any>
     })
     setAppliedPathId(structure.id)
@@ -776,10 +783,11 @@ function StrategyContent() {
       for (const key of PATH_PATCH_FIELD_KEYS) {
         delete next[key as string]
       }
+      inlineOverridesRef.current = next as Record<string, any>
       try {
         writeDealMakerOverrides(resolvedAddressRef.current, next, { origin: 'dealmaker_edit' })
       } catch { /* ignore */ }
-      scheduleRecalc(next)
+      scheduleRecalc()
       return next as Record<string, any>
     })
     setAppliedPathId(null)
@@ -1332,6 +1340,7 @@ function StrategyContent() {
   })() as AnyStrategyMetrics
 
   const handleWorksheetUpdate = (key: string, value: number | string) => {
+    /* Worksheet `up()` field names → InlineDealMakerValues keys (`propertyTaxes`/`insurance` match worksheetState `io.*` and verdictPayload). */
     const fieldMap: Record<string, keyof InlineDealMakerValues> = {
       buyPrice: 'buyPrice',
       downPaymentPercent: 'downPayment',
@@ -1359,11 +1368,12 @@ function StrategyContent() {
     } else {
       setInlineOverrides((prev) => {
         const next = { ...prev, [key]: value }
+        inlineOverridesRef.current = next
         if (debounceRef.current) clearTimeout(debounceRef.current)
         debounceRef.current = setTimeout(() => {
           try { writeDealMakerOverrides(resolvedAddressRef.current, next, { origin: 'dealmaker_edit' }) } catch { /* ignore */ }
         }, 300)
-        scheduleRecalc(next)
+        scheduleRecalc()
         return next
       })
     }
