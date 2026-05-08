@@ -119,21 +119,10 @@ function PathCard({
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
             lineHeight: 1.2,
-            color: accent,
           }}
         >
-          {`Path ${index + 1} · ${structure.familyLabel}`}
-        </span>
-        <span
-          className="ml-auto"
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: 'var(--text-secondary)',
-            fontStyle: 'italic',
-          }}
-        >
-          {structure.realismLabel}
+          <span style={{ color: accent }}>{`Path ${index + 1}`}</span>
+          <span style={{ color: '#FFFFFF' }}>{` · ${structure.familyLabel}`}</span>
         </span>
       </div>
 
