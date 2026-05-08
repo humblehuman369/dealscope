@@ -452,17 +452,13 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
   const annualProfit = num(m, 'annualProfit')
   const capRate = num(m, 'capRate')
   const cocReturn = num(m, 'cocReturn')
-  const cashFromMetrics = m['cashNeeded']
-  const cashNeeded =
-    typeof cashFromMetrics === 'number' && isFinite(cashFromMetrics)
-      ? cashFromMetrics
-      : cashNeededSellerOffset(
-          state.buyPrice,
-          state.downPaymentPercent,
-          closingCosts,
-          state.rehabBudget,
-          state.sellerFinancingAmount,
-        )
+  const cashNeeded = cashNeededSellerOffset(
+    state.buyPrice,
+    state.downPaymentPercent,
+    closingCosts,
+    state.rehabBudget,
+    state.sellerFinancingAmount,
+  )
 
   return (
     <>
@@ -541,17 +537,13 @@ function STRWorksheet({ state, metrics, listPrice, up }: {
         ? monthlyPI(state.sellerFinancingAmount, state.sellerInterestRate, state.sellerTermYears)
         : 0
   const monthlyPayment = num(m, 'monthlyPayment') || bankMonthly + sellerMonthly
-  const cashFromMetrics = m['cashNeeded']
-  const cashNeeded =
-    typeof cashFromMetrics === 'number' && isFinite(cashFromMetrics)
-      ? cashFromMetrics
-      : cashNeededSellerOffset(
-          state.buyPrice,
-          state.downPaymentPercent,
-          closingCosts,
-          state.furnitureSetupCost + state.rehabBudget,
-          state.sellerFinancingAmount,
-        )
+  const cashNeeded = cashNeededSellerOffset(
+    state.buyPrice,
+    state.downPaymentPercent,
+    closingCosts,
+    state.furnitureSetupCost + state.rehabBudget,
+    state.sellerFinancingAmount,
+  )
   const nightsOccupied = num(m, 'nightsOccupied')
   const monthlyGross = num(m, 'monthlyGrossRevenue')
   const annualGross = num(m, 'annualGrossRevenue')

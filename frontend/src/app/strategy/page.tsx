@@ -91,6 +91,26 @@ import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { PathButton } from '@/components/strategy/PathButton'
 import { trackEvent } from '@/lib/eventTracking'
 
+/** Cash to close from DealMaker sliders — Model A (must stay aligned with DealMakerWorksheet). */
+function cashNeededFromLtrState(s: LTRDealMakerState): number {
+  const buy = s.buyPrice
+  if (buy <= 0) return 0
+  const dp = buy * s.downPaymentPercent
+  const cc = buy * s.closingCostsPercent
+  const sc = Math.max(0, s.sellerFinancingAmount ?? 0)
+  return Math.max(0, dp + cc + (s.rehabBudget ?? 0) - sc)
+}
+
+function cashNeededFromStrState(s: STRDealMakerState): number {
+  const buy = s.buyPrice
+  if (buy <= 0) return 0
+  const dp = buy * s.downPaymentPercent
+  const cc = buy * s.closingCostsPercent
+  const sc = Math.max(0, s.sellerFinancingAmount ?? 0)
+  const extra = (s.rehabBudget ?? 0) + (s.furnitureSetupCost ?? 0)
+  return Math.max(0, dp + cc + extra - sc)
+}
+
 // Types from existing verdict system
 interface BackendAnalysisResponse {
   deal_score: number
@@ -1102,11 +1122,14 @@ function StrategyContent() {
         const annualRevenue = bd?.annual_gross_revenue ?? adr * 365 * occ
         const nightsOcc = Math.round(365 * occ)
         const turnovers = Math.ceil(nightsOcc / strState.avgLengthOfStayDays)
+        const cashNeededWs = cashNeededFromStrState(strState)
+        const dpFromState = strState.buyPrice * strState.downPaymentPercent
+        const closingFromState = strState.buyPrice * strState.closingCostsPercent
         return {
-          cashNeeded: totalCashNeeded,
-          totalInvestmentWithFurniture: totalCashNeeded + strState.furnitureSetupCost,
-          downPaymentAmount: downPayment,
-          closingCostsAmount: closingCosts,
+          cashNeeded: cashNeededWs,
+          totalInvestmentWithFurniture: cashNeededWs,
+          downPaymentAmount: dpFromState,
+          closingCostsAmount: closingFromState,
           loanAmount,
           monthlyPayment: monthlyPI,
           grossNightlyRevenue: adr,
@@ -1290,9 +1313,10 @@ function StrategyContent() {
       }
 
       case 'ltr':
-      default:
+      default: {
+        const ltrState = worksheetState as LTRDealMakerState
         return {
-          cashNeeded: totalCashNeeded,
+          cashNeeded: cashNeededFromLtrState(ltrState),
           dealGap: dealGapPct / 100,
           annualProfit: strategyAnnualCashFlow,
           capRate: capRateVal ?? 0,
@@ -1303,6 +1327,7 @@ function StrategyContent() {
           grossMonthlyIncome: monthlyRent,
           totalMonthlyExpenses: totalExpenses / 12,
         } satisfies LTRDealMakerMetrics
+      }
     }
   })() as AnyStrategyMetrics
 
