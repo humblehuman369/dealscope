@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Camera, Search, X, ArrowLeft, Loader2, CheckCircle2, AlertTriangle, AlertCircle, MapIcon } from 'lucide-react';
 import { AddressAutocomplete, type AddressComponents, type PlaceMetadata } from '@/components/AddressAutocomplete';
 import { InfoDialog } from '@/components/ui/ConfirmDialog';
+import { useTheme } from '@/context/ThemeContext';
 import { trackEvent } from '@/lib/eventTracking';
 import type { AddressValidationResult } from '@/types/address';
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env';
@@ -58,6 +59,10 @@ interface SearchPropertyModalProps {
 
 export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchPropertyModalProps) {
   const router = useRouter();
+  const { theme } = useTheme();
+  const dealGapIqIcon = theme === 'dark'
+    ? '/images/dealgapiq-icon-dark.png'
+    : '/images/dealgapiq-icon.png';
   const [address, setAddress] = useState('');
   const [showAddressInput, setShowAddressInput] = useState(false);
   const [showScanInfo, setShowScanInfo] = useState(false);
@@ -312,7 +317,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                       aria-hidden
                     />
                     <Image
-                      src="/images/dealgapiq-icon.png"
+                      src={dealGapIqIcon}
                       alt="DealGap IQ"
                       className="relative z-[1] w-[135px] h-[135px] object-contain"
                       width={135}
@@ -342,7 +347,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
                     aria-hidden
                   />
                   <Image
-                    src="/images/dealgapiq-icon.png"
+                    src={dealGapIqIcon}
                     alt="DealGap IQ"
                     className="relative z-[1] w-16 h-16 object-contain"
                     width={64}
@@ -360,7 +365,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="w-[84px] h-[84px] flex-shrink-0 flex items-center justify-center">
                   <Image
-                    src="/images/dealgapiq-icon.png"
+                    src={dealGapIqIcon}
                     alt="DealGap IQ"
                     className="w-[78px] h-[78px] object-contain"
                     width={78}

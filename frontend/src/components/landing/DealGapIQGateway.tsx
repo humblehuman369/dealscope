@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
+import { useTheme } from '@/context/ThemeContext';
 import './dealgapiq-gateway.css';
 
 type Step = 'start' | 'address' | 'scan';
@@ -14,16 +15,20 @@ interface DealGapIQGatewayProps {
   onScanProperty?: () => void;
 }
 
-const IQIcon: React.FC<{ size?: number; className?: string }> = ({ size = 64, className = '' }) => (
-  <img
-    src="/images/dealgapiq-icon.png"
-    alt="IQ"
-    width={size}
-    height={size}
-    className={className}
-    style={{ objectFit: 'contain' }}
-  />
-);
+const IQIcon: React.FC<{ size?: number; className?: string }> = ({ size = 64, className = '' }) => {
+  const { theme } = useTheme();
+  const src = theme === 'dark' ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png';
+  return (
+    <img
+      src={src}
+      alt="DealGap IQ"
+      width={size}
+      height={size}
+      className={className}
+      style={{ objectFit: 'contain' }}
+    />
+  );
+};
 
 export function DealGapIQGateway({ initialStep = 'start', onClose, onScanProperty }: DealGapIQGatewayProps) {
   const router = useRouter();
