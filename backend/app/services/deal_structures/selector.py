@@ -172,3 +172,90 @@ def select_four_paths(
 # Remove in the next release cycle. (The function only ever returned the 3 single-lever
 # cards; the engine appends the Blended Plan as Path 4 — hence the rename.)
 select_three_paths = select_four_paths
+
+
+# ---------------------------------------------------------------------------
+# Activation Arc Phase 0 (E3) — Downpayment-reducer promotion
+# ---------------------------------------------------------------------------
+
+
+def _format_money_short(value: float) -> str:
+    """Compact currency for the override headline (e.g. '$40K', '$7,500').
+
+    Duplicates ``formatting.fmt_money`` deliberately — selector.py shouldn't
+    import from formatting.py for one helper; the doctrine is each module owns
+    its own copy logic. Matches fmt_money's output exactly.
+    """
+    if abs(value) >= 1_000_000:
+        return f"${value / 1_000_000:.2f}M"
+    if abs(value) >= 10_000:
+        return f"${round(value / 1000)}K"
+    return f"${round(value):,}"
+
+
+def apply_downpayment_reducer_promotion(
+    paths: list[DealStructure],
+    cash_shortfall: float,
+) -> list[DealStructure]:
+    """Promote one financing-family card with downpayment-reducer copy.
+
+    When the buyer's profile cash is below what the conventional headline
+    requires, find the highest-ranked financing-family card already in
+    ``paths`` and override its ``headline`` and ``selection_reason`` to frame
+    it as "cut your down payment by $X with a small seller carry." The card's
+    math (cash_required, monthly_savings, levers, pre_loaded_record) is left
+    untouched — only the copy reframes.
+
+    Honest-fallback: if no financing-family card was selected for this
+    property, the function returns ``paths`` unchanged. We don't fabricate a
+    new card; the engine's diversity rules already concluded that financing
+    structures aren't viable here.
+
+    Args:
+        paths: Selected paths from ``select_four_paths`` (or with Blended
+            appended). May be empty.
+        cash_shortfall: Dollars short. Caller is responsible for ensuring this
+            is > 0 — this function does not validate.
+
+    Returns:
+        New list with at most one card replaced. Original list is not mutated.
+    """
+    if cash_shortfall <= 0 or not paths:
+        return paths
+
+    financing_indices = [
+        i for i, p in enumerate(paths) if p.family == "financing"
+    ]
+    if not financing_indices:
+        return paths
+
+    # Pick the highest-ranked financing card. The selector already ordered
+    # candidates by ranking_score before diversity selection, so among the
+    # picked paths the financing card with the largest ranking_score is the
+    # most plausible for this property.
+    best_idx = max(financing_indices, key=lambda i: paths[i].ranking_score)
+    best = paths[best_idx]
+
+    # Uniform override copy in v1 — all financing-family templates share this
+    # framing. Future iteration could specialize per template (Sub2 talks about
+    # the existing low-rate loan; seller-second talks about a carryback note;
+    # Morby method combines both). For v1 the uniform message lands the
+    # downpayment-reducer reframe without per-template branching.
+    shortfall_label = _format_money_short(cash_shortfall)
+    new_headline = f"Cut your down payment by {shortfall_label} with a small seller carry"
+    new_reason = (
+        f"Promoted because the recommended conventional structure needs more "
+        f"cash than your profile shows. This option can reduce your cash to "
+        f"close by about {shortfall_label}."
+    )
+
+    promoted = best.model_copy(
+        update={
+            "headline": new_headline,
+            "selection_reason": new_reason,
+        }
+    )
+
+    new_paths = list(paths)
+    new_paths[best_idx] = promoted
+    return new_paths

@@ -1138,6 +1138,7 @@ def compute_iq_verdict(
         bedrooms=input_data.bedrooms,
         state=input_data.state,
         dismissed_families=tuple(input_data.dismissed_families or ()),
+        user_cash_available=input_data.user_cash_available,
     )
     deal_structures_payload = compute_deal_structures(structure_ctx)
 

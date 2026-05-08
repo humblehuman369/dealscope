@@ -71,6 +71,12 @@ class StructureContext:
     # T17 — per-user template-family dismissals (selector applies a ranking penalty)
     dismissed_families: tuple[str, ...] = ()
 
+    # Activation Arc Phase 0 (E3) — buyer's available cash (from user profile).
+    # When set, the engine computes cash_shortfall against the headline blend's
+    # required cash and the selector promotes one financing-family card with
+    # downpayment-reducer copy. None = unknown; engine treats as "no shortfall".
+    user_cash_available: float | None = None
+
     @property
     def deal_gap_amount(self) -> float:
         return self.list_price - self.target_buy_price

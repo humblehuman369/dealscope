@@ -116,6 +116,20 @@ class IQVerdictInput(BaseModel):
     buy_discount_pct: float | None = Field(
         None, ge=0, le=0.50, description="Target buy discount below Income Value (e.g. 0.05 = 5%%)"
     )
+    # Activation Arc Phase 0 (E3) — buyer cash available from user profile.
+    # Used to compute cash_shortfall against the conventional headline blend
+    # and to contextually promote seller-financing cards as downpayment reducers.
+    user_cash_available: float | None = Field(
+        None,
+        ge=0,
+        le=100_000_000,
+        description=(
+            "Buyer's available cash for closing, in dollars. When set, the engine "
+            "computes cash_shortfall against the recommended headline structure "
+            "and the selector promotes one financing-family card with "
+            "downpayment-reducer copy. Null = unknown."
+        ),
+    )
     state: str | None = Field(
         None,
         min_length=2,

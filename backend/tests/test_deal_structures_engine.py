@@ -210,3 +210,216 @@ def test_regional_calibration_ca_ny_assumable_and_midwest_financing():
     sub = _minimal_structure("sub2")
     ctx_oh = _base_ctx(state="OH")
     assert _apply_regional_calibration(ctx_oh, sub, 70) == 75  # midwest financing +5
+
+
+# ---------------------------------------------------------------------------
+# Activation Arc — Phase 0: Conventional Headline Blend on the payload
+# ---------------------------------------------------------------------------
+
+
+def test_headline_structure_present_when_blend_solves():
+    """Engine attaches the headline blend to payload.headline_structure when one exists."""
+    ctx = _base_ctx(monthly_rent=2400, list_price=410_000, deal_gap_pct=12.2, target_buy_price=360_000)
+    payload = compute_deal_structures(ctx)
+    assert payload.headline_structure is not None
+    assert payload.headline_structure.family == "conventional_headline"
+    assert payload.headline_structure.id == "headline-conventional-blend"
+
+
+def test_headline_structure_none_when_no_plausible_blend():
+    """Honest gating: hopelessly underwater property returns headline_structure=None."""
+    ctx = _base_ctx(
+        list_price=600_000,
+        target_buy_price=200_000,
+        deal_gap_pct=66.0,
+        monthly_rent=600,
+    )
+    payload = compute_deal_structures(ctx)
+    assert payload.headline_structure is None
+
+
+def test_headline_structure_none_when_no_deal_gap():
+    """Engine short-circuits when deal_gap is non-positive — headline_structure=None too."""
+    ctx = _base_ctx(deal_gap_pct=0, target_buy_price=400_000)
+    payload = compute_deal_structures(ctx)
+    assert payload.headline_structure is None
+    assert payload.has_paths is False
+
+
+def test_headline_structure_respects_kill_switch_flag():
+    """When the headline-conventional-blend flag is False, the engine skips computation."""
+    ctx = _base_ctx(
+        monthly_rent=2400,
+        deal_gap_pct=12.2,
+        target_buy_price=360_000,
+        template_flags={"headline-conventional-blend": False},
+    )
+    payload = compute_deal_structures(ctx)
+    assert payload.headline_structure is None
+
+
+def test_cash_shortfall_is_none_when_user_cash_unset_at_engine_level():
+    """When user_cash_available is unset on context, cash_shortfall is None — even
+    if a headline_structure exists. We can't compute a meaningful shortfall
+    without knowing the buyer's cash. (E3 populates it when both are present.)
+    """
+    ctx = _base_ctx(monthly_rent=2400, deal_gap_pct=12.2, target_buy_price=360_000)
+    payload = compute_deal_structures(ctx)
+    assert payload.cash_shortfall is None
+
+
+def test_payload_serializes_camel_case_for_frontend():
+    """Frontend consumes camelCase. Verify alias generator covers the new fields."""
+    ctx = _base_ctx(monthly_rent=2400, deal_gap_pct=12.2, target_buy_price=360_000)
+    payload = compute_deal_structures(ctx)
+    serialized = payload.model_dump(by_alias=True)
+    assert "headlineStructure" in serialized
+    assert "cashShortfall" in serialized
+    # snake_case keys should NOT appear when by_alias=True
+    assert "headline_structure" not in serialized
+    assert "cash_shortfall" not in serialized
+
+
+def test_headline_structure_independent_of_four_paths_selector():
+    """Headline runs independently of the selector — paths and headline can both populate."""
+    ctx = _base_ctx(monthly_rent=2400, list_price=410_000, deal_gap_pct=12.2, target_buy_price=360_000)
+    payload = compute_deal_structures(ctx)
+    if payload.headline_structure is None:
+        return  # parameter combo didn't trigger headline; skip
+    # Both should be present for a viable property — they're independent
+    assert payload.has_paths is True
+    assert len(payload.paths) >= 1
+    # The headline's family is unique to the headline — never appears in paths
+    path_families = {p.family for p in payload.paths}
+    assert "conventional_headline" not in path_families
+
+
+# ---------------------------------------------------------------------------
+# Activation Arc — Phase 0 (E3): cash-shortfall + downpayment-reducer override
+# ---------------------------------------------------------------------------
+
+
+def _e3_ctx(**overrides):
+    """Context that reliably produces a non-trivial headline cash requirement."""
+    base = dict(
+        list_price=410_000,
+        target_buy_price=360_000,
+        deal_gap_pct=12.2,
+        monthly_rent=2400,
+        market_temperature="cold",
+        estimated_purchase_year=2021,
+        estimated_purchase_price=300_000,
+        is_fsbo=True,
+        days_on_market=75,
+    )
+    base.update(overrides)
+    return _base_ctx(**base)
+
+
+def test_cash_shortfall_is_none_when_user_cash_unset():
+    """No buyer profile cash → engine cannot compute a meaningful shortfall."""
+    ctx = _e3_ctx(user_cash_available=None)
+    payload = compute_deal_structures(ctx)
+    assert payload.cash_shortfall is None
+
+
+def test_cash_shortfall_is_zero_when_user_has_enough():
+    """Buyer cash exceeds headline requirement → shortfall is exactly 0.0 (not None)."""
+    ctx = _e3_ctx(user_cash_available=500_000)
+    payload = compute_deal_structures(ctx)
+    if payload.headline_structure is None:
+        return
+    assert payload.cash_shortfall == 0.0
+
+
+def test_cash_shortfall_positive_when_user_short():
+    """Buyer cash below headline requirement → positive shortfall in dollars."""
+    ctx = _e3_ctx(user_cash_available=40_000)
+    payload = compute_deal_structures(ctx)
+    if payload.headline_structure is None:
+        return
+    expected = payload.headline_structure.cash_required - 40_000
+    assert payload.cash_shortfall == round(expected, 0)
+    assert payload.cash_shortfall > 0
+
+
+def test_cash_shortfall_none_when_no_headline():
+    """No plausible conventional structure → cash_shortfall is also None."""
+    ctx = _e3_ctx(
+        list_price=600_000,
+        target_buy_price=200_000,
+        deal_gap_pct=66.0,
+        monthly_rent=600,
+        user_cash_available=40_000,
+    )
+    payload = compute_deal_structures(ctx)
+    assert payload.headline_structure is None
+    assert payload.cash_shortfall is None
+
+
+def test_financing_card_promoted_when_shortfall_positive():
+    """When shortfall > 0, one financing-family card gets the downpayment-reducer headline."""
+    ctx = _e3_ctx(user_cash_available=40_000)
+    payload = compute_deal_structures(ctx)
+    if payload.cash_shortfall is None or payload.cash_shortfall <= 0:
+        return
+    fin_cards = [p for p in payload.paths if p.family == "financing"]
+    if not fin_cards:
+        return  # no financing card was selected for this property; honest fallback
+    promoted = [c for c in fin_cards if c.headline.startswith("Cut your down payment by")]
+    assert len(promoted) >= 1
+
+
+def test_financing_card_unchanged_when_user_has_enough_cash():
+    """When buyer has the cash, financing cards keep their standard creative-finance copy."""
+    ctx = _e3_ctx(user_cash_available=500_000)
+    payload = compute_deal_structures(ctx)
+    fin_cards = [p for p in payload.paths if p.family == "financing"]
+    if not fin_cards:
+        return
+    for card in fin_cards:
+        assert not card.headline.startswith("Cut your down payment by")
+
+
+def test_financing_card_unchanged_when_user_cash_unset():
+    """No profile cash → no shortfall to compute → no override."""
+    ctx = _e3_ctx(user_cash_available=None)
+    payload = compute_deal_structures(ctx)
+    fin_cards = [p for p in payload.paths if p.family == "financing"]
+    if not fin_cards:
+        return
+    for card in fin_cards:
+        assert not card.headline.startswith("Cut your down payment by")
+
+
+def test_promotion_only_overrides_copy_not_math():
+    """Locked: the override changes only headline + selection_reason. Math is unchanged."""
+    ctx_rich = _e3_ctx(user_cash_available=500_000)
+    ctx_short = _e3_ctx(user_cash_available=40_000)
+
+    rich_payload = compute_deal_structures(ctx_rich)
+    short_payload = compute_deal_structures(ctx_short)
+
+    rich_fin = next((p for p in rich_payload.paths if p.family == "financing"), None)
+    short_fin = next((p for p in short_payload.paths if p.family == "financing"), None)
+    if rich_fin is None or short_fin is None:
+        return
+
+    # Math fields should be identical between the two presentations.
+    assert rich_fin.id == short_fin.id
+    assert rich_fin.cash_required == short_fin.cash_required
+    assert rich_fin.monthly_savings == short_fin.monthly_savings
+    assert rich_fin.ranking_score == short_fin.ranking_score
+    # Levers are the same content (compare serialized form to avoid identity issues).
+    assert [lv.model_dump() for lv in rich_fin.levers] == [
+        lv.model_dump() for lv in short_fin.levers
+    ]
+
+
+def test_payload_camel_case_includes_new_e3_fields():
+    """Frontend sees camelCase: cashShortfall must be in the serialized payload."""
+    ctx = _e3_ctx(user_cash_available=40_000)
+    payload = compute_deal_structures(ctx)
+    serialized = payload.model_dump(by_alias=True)
+    # cashShortfall is always present (may be 0.0, positive, or None).
+    assert "cashShortfall" in serialized

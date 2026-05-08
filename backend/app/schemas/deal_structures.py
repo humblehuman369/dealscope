@@ -17,6 +17,7 @@ StructureFamily = Literal[
     "income",
     "strategy_switch",
     "blended",
+    "conventional_headline",
 ]
 
 
@@ -69,3 +70,25 @@ class DealStructuresPayload(BaseModel):
         description="5th-grade-level walkthrough; each item is one paragraph",
     )
     has_paths: bool = Field(False, description="True when at least one feasible structure was found")
+
+    # Activation Arc — Phase 0 (Conventional Headline Blend).
+    # See docs/feature-plans/ACTIVATION_ARC.md §3.
+    headline_structure: DealStructure | None = Field(
+        None,
+        description=(
+            "Recommended starting structure for this property — a conventional "
+            "blend of price, rent, and down-payment levers. Null when no "
+            "plausible conventional structure cashflows; frontend then falls "
+            "back to the existing motivating-tier behavior (honest gating)."
+        ),
+    )
+    cash_shortfall: float | None = Field(
+        None,
+        description=(
+            "Gap between buyer's profile cash and what the headline structure "
+            "requires at close, in dollars. Null when buyer cash is unknown or "
+            "no shortfall exists. When > 0, the selector promotes one "
+            "seller-financing-family card with a downpayment-reducer headline "
+            "(populated in E3, not E2)."
+        ),
+    )
