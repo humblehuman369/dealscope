@@ -163,16 +163,14 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
 
   const buyPx = sliderValues.buyPrice
   const sellerAmt = Math.max(0, sliderValues.sellerFinancingAmount ?? 0)
-  const bankLoanDerived = Math.max(0, buyPx - Math.max(downPayment, sellerAmt))
-  const cashEquityAtClose = Math.max(0, downPayment - sellerAmt)
-  const cashNeededModelA = cashEquityAtClose + closingCosts + rehabCost
+  const bankLoanDerived = Math.max(0, buyPx - downPayment)
+  const cashNeededModelA = Math.max(0, downPayment + closingCosts + rehabCost - sellerAmt)
   const bankPiEst = monthlyMortgagePI(bankLoanDerived, sliderValues.interestRate, sliderValues.loanTerm)
   const sellerPiEst =
     sellerAmt > 0
       ? monthlyMortgagePI(sellerAmt, sliderValues.sellerInterestRate ?? 0, sliderValues.sellerTermYears ?? 5)
       : 0
   const combinedPiEst = bankPiEst + sellerPiEst
-  const sellerOverDown = Math.max(0, sellerAmt - downPayment)
 
   const totalExpensesWithMortgage = totalExpenses + annualDebt
 
@@ -197,6 +195,7 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           suffix={formatCurrency(downPayment)}
           listPrice={listPrice}
         />
+        <DisplayRow label="Bank Loan" value={formatCurrency(bankLoanDerived)} />
         <SliderRow
           config={{
             id: 'sellerFinancingAmount' as any,
@@ -211,12 +210,6 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           onChange={(v) => onSliderChange('sellerFinancingAmount', v)}
           listPrice={listPrice}
         />
-        <DisplayRow label="Bank Loan" value={formatCurrency(bankLoanDerived)} />
-        {sellerOverDown > 0 && (
-          <div className="text-[11px] leading-snug pl-4 pr-1 pb-1" style={{ color: 'var(--text-secondary)' }}>
-            Seller is carrying {formatCurrency(sellerOverDown)} above the down payment; bank loan reduced accordingly.
-          </div>
-        )}
         <SliderRow
           config={{ id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage',
             helpText: 'Fees paid at closing — title insurance, appraisal, attorney, etc. Typically 2–5% of the purchase price.' }}

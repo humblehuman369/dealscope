@@ -230,6 +230,7 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession):
             rent_growth_rate=a.rent_growth_rate,
             expense_growth_rate=a.expense_growth_rate,
             hoa_monthly=input_data.hoa_monthly,
+            rehab_costs=input_data.rehab_costs or 0,
             seller_carry_amount=sca,
             seller_carry_rate=scr,
             seller_carry_term_years=sct,
@@ -243,7 +244,7 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession):
         rehab_psf = input_data.rehab_costs / sqft if sqft > 0 else 0
         equity = arv - input_data.purchase_price
         equity_after_rehab = equity - input_data.rehab_costs
-        total_cash_needed = result["total_cash_required"] + input_data.rehab_costs
+        total_cash_needed = result["total_cash_required"]
         maintenance_only = annual_gross_rent * input_data.maintenance_pct
         capex_reserve = annual_gross_rent * input_data.capex_pct
         mao = (arv * 0.70) - input_data.rehab_costs
@@ -367,6 +368,7 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
             landscaping_annual=o.landscaping_annual,
             pest_control_annual=o.pest_control_annual,
             hoa_monthly=input_data.hoa_monthly,
+            rehab_costs=input_data.rehab_costs or 0,
             seller_carry_amount=sca,
             seller_carry_rate=scr,
             seller_carry_term_years=sct,

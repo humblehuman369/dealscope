@@ -639,11 +639,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         const sellerFin = ltrState.sellerFinancingAmount ?? 0
         const loanAmt =
           n('loan_amount') ||
-          Math.max(0, buyPrice - Math.max(downPaymentAmt, sellerFin))
+          Math.max(0, buyPrice - downPaymentAmt)
         const monthlyPmt = n('monthly_payment')
         const cashNeeded =
           n('total_cash_needed') ||
-          Math.max(0, downPaymentAmt - sellerFin) + closingCostsAmt + ltrState.rehabBudget
+          Math.max(0, downPaymentAmt + closingCostsAmt + ltrState.rehabBudget - sellerFin)
         const annualCF = n('annual_cash_flow')
         const grossMonthly = (n('annual_gross_rent') || 0) / 12
         const totalExpAnnual = n('gross_expenses')
@@ -675,14 +675,18 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         const sellerFin = strState.sellerFinancingAmount ?? 0
         const loanAmt =
           n('loan_amount') ||
-          Math.max(0, buyPrice - Math.max(downPaymentAmt, sellerFin))
+          Math.max(0, buyPrice - downPaymentAmt)
         const monthlyPmt = n('monthly_payment')
         const cashNeeded =
           n('total_cash_needed') ||
-          Math.max(0, downPaymentAmt - sellerFin) +
-            closingCostsAmt +
-            strState.furnitureSetupCost +
-            strState.rehabBudget
+          Math.max(
+            0,
+            downPaymentAmt +
+              closingCostsAmt +
+              strState.furnitureSetupCost +
+              strState.rehabBudget -
+              sellerFin,
+          )
         const annualGross = n('gross_revenue')
         const nightsOcc = n('nights_occupied')
         const numBookings = n('num_bookings')
@@ -929,12 +933,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     const closingCostsAmount = ltrState.buyPrice * ltrState.closingCostsPercent
     const sellerFin = ltrState.sellerFinancingAmount ?? 0
     const cashNeeded =
-      Math.max(0, downPaymentAmount - sellerFin) + closingCostsAmount + ltrState.rehabBudget
+      Math.max(0, downPaymentAmount + closingCostsAmount + ltrState.rehabBudget - sellerFin)
 
-    const loanAmount = Math.max(
-      0,
-      ltrState.buyPrice - Math.max(downPaymentAmount, sellerFin),
-    )
+    const loanAmount = Math.max(0, ltrState.buyPrice - downPaymentAmount)
     const sellerPi =
       sellerFin > 0
         ? calculateMortgagePayment(sellerFin, ltrState.sellerInterestRate ?? 0, ltrState.sellerTermYears ?? 30)
