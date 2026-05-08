@@ -153,7 +153,7 @@ function SellerFinancingPrincipalRow({
   return (
     <SliderRow
       field="sellerFinancingAmount"
-      label="Seller Financing Amount"
+      label="Seller Financing"
       value={state.sellerFinancingAmount}
       displayValue={fmt(state.sellerFinancingAmount)}
       min={minSeller}
