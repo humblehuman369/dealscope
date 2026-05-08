@@ -1,10 +1,15 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Home, Satellite } from 'lucide-react'
+import { Home, Satellite, Eye } from 'lucide-react'
 import { ImageGallery, ImageGallerySkeleton } from './ImageGallery'
 import { PhotoLightbox } from './PhotoLightbox'
 import { fetchPropertyPhotos, zillowListingUrl } from '@/services/photoService'
+import {
+  buildStreetViewUrl,
+  resolveBestStreetView,
+  type StreetViewParams,
+} from '@/lib/streetView'
 
 type GalleryState = 'loading' | 'loaded' | 'unavailable'
 
@@ -42,10 +47,15 @@ export function PropertyPhotoGallery({
   const [streetViewFailed, setStreetViewFailed] = useState(false)
   const [satelliteFailed, setSatelliteFailed] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  // Resolved Street View framing — pano id + heading computed via the
+  // Maps JS StreetViewService so the camera faces the building. Null while
+  // the resolution promise is in flight or when no outdoor pano exists.
+  const [smartStreetView, setSmartStreetView] = useState<StreetViewParams | null>(null)
 
   useEffect(() => {
     setStreetViewFailed(false)
     setSatelliteFailed(false)
+    setSmartStreetView(null)
 
     if (initialImages.length > 0) {
       setState('loaded')
@@ -77,6 +87,29 @@ export function PropertyPhotoGallery({
     }
   }, [zpid, initialImages.length])
 
+  // Once we know we'll be falling back to Street View (zillow had no real
+  // photos), kick off a one-shot resolve of the *best* framing — nearest
+  // outdoor pano with a heading computed toward the parcel — and upgrade
+  // the static URL when it lands. The address-first quick path renders
+  // first paint, so this is purely a quality-of-image upgrade.
+  useEffect(() => {
+    if (state !== 'unavailable') return
+    if (smartStreetView) return
+    if (streetViewFailed) return
+    if (latitude == null || longitude == null) return
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
+    if (!apiKey) return
+
+    let cancelled = false
+    resolveBestStreetView(apiKey, latitude, longitude).then((params) => {
+      if (cancelled) return
+      if (params) setSmartStreetView(params)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [state, smartStreetView, streetViewFailed, latitude, longitude])
+
   const openLightbox = useCallback((index: number) => {
     setLightboxIndex(index)
   }, [])
@@ -100,19 +133,20 @@ export function PropertyPhotoGallery({
     let streetViewUrl: string | null = null
     let satelliteUrl: string | null = null
     if (apiKey && !streetViewFailed) {
-      // return_error_code=true → Google returns HTTP 404 when no panorama
-      // exists at the location instead of the gray "Sorry, we have no
-      // imagery here" placeholder image (which loads as 200 OK and would
-      // never trigger our <img onError>, leaving a near-white box in dark
-      // mode for off-market properties in gated communities or rural areas).
-      // source=outdoor avoids interior PhotoSpheres for residential homes.
-      // See: https://developers.google.com/maps/documentation/streetview/request-streetview#no-imagery
-      const sv = 'size=600x400&source=outdoor&return_error_code=true'
-      if (hasCoords) {
-        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?${sv}&location=${latitude},${longitude}&key=${apiKey}`
-      } else if (address) {
-        streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?${sv}&location=${encodeURIComponent(address)}&key=${apiKey}`
-      }
+      // Smart URL (pano + computed heading) once the StreetViewService has
+      // resolved the nearest outdoor pano and bearing toward the parcel —
+      // this matches the building-facing framing Zillow uses on their own
+      // off-market Street View placeholder. Until then, fall back to the
+      // address-first quick path (which Google geocodes and orients toward
+      // the building) so first paint isn't blank.
+      streetViewUrl = buildStreetViewUrl({
+        apiKey,
+        size: '600x400',
+        address,
+        latitude: hasCoords ? latitude : undefined,
+        longitude: hasCoords ? longitude : undefined,
+        params: smartStreetView,
+      })
     }
     if (apiKey && hasCoords && !satelliteFailed) {
       // Satellite tile — exists for every lat/lng on Earth, so this
@@ -135,6 +169,23 @@ export function PropertyPhotoGallery({
               referrerPolicy="no-referrer"
               onError={() => setStreetViewFailed(true)}
             />
+            {/* Source badge so users understand this is Street View, not a
+                real listing photo — matches the badge Zillow shows when they
+                use the same fallback. */}
+            <div className="absolute top-3 left-3">
+              <div
+                className="px-2.5 py-1 rounded-lg backdrop-blur-md flex items-center gap-1.5"
+                style={{ backgroundColor: 'var(--surface-overlay)' }}
+              >
+                <Eye size={12} style={{ color: 'var(--text-body)' }} />
+                <span
+                  className="text-xs font-medium"
+                  style={{ color: 'var(--text-body)' }}
+                >
+                  Street View
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       )
