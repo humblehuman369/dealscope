@@ -65,8 +65,8 @@ const TOUR_STEPS: TourStep[] = [
 const PURCHASE_SLIDERS: SliderConfig[] = [
   { id: 'buyPrice' as any, label: 'Buy Price', min: 50000, max: 2000000, step: 5000, format: 'currency',
     helpText: 'The price you offer the seller. Lower buy prices improve your cash flow and return metrics.' },
-  { id: 'downPaymentPercent' as any, label: 'Down Payment', min: 0, max: 0.50, step: 0.05, format: 'percentage',
-    helpText: 'Percentage of buy price paid upfront in cash. Higher down payments reduce your mortgage but require more cash at closing.' },
+  { id: 'downPaymentPercent' as any, label: 'Down Payment', min: 0.05, max: 1.00, step: 0.05, format: 'percentage',
+    helpText: 'Percentage of buy price paid upfront in cash. Set to 100% for an all-cash deal with no financing.' },
   { id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage',
     helpText: 'Fees paid at closing \u2014 title insurance, appraisal, attorney, etc. Typically 2\u20135% of the purchase price.' },
 ]
@@ -170,8 +170,12 @@ function dynamicMax(sliderId: string, listPrice: number): Partial<SliderConfig> 
   if (sliderId === 'buyPrice') return { max: Math.max(2000000, listPrice * 2) }
   if (sliderId === 'marketValue') return { max: Math.max(2000000, listPrice * 2) }
   if (sliderId === 'arv') return { max: Math.max(2000000, listPrice * 2) }
-  if (sliderId === 'sellerFinancingAmount')
-    return { max: Math.min(800000, Math.max(0, listPrice * 0.95) || 500000) }
+  if (sliderId === 'sellerFinancingAmount') {
+    if (listPrice > 0) {
+      return { min: listPrice * 0.05, max: listPrice * 1.00 }
+    }
+    return { min: 0, max: 500000 }
+  }
   return {}
 }
 
