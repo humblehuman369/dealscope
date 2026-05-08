@@ -156,8 +156,8 @@ function SellerFinancingPrincipalRow({
   state: SellerFinancingSlice
   up: (k: string, v: number | string) => void
 }) {
-  const minSeller = basePrice > 0 ? basePrice * 0.05 : 0
-  const maxSeller = basePrice > 0 ? basePrice * 1.00 : 500000
+  const minSeller = 0
+  const maxSeller = basePrice > 0 ? basePrice * 1.0 : 500000
   return (
     <SliderRow
       field="sellerFinancingAmount"
@@ -472,7 +472,7 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
       <SliderRow field="downPaymentPercent" label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={5} max={100} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <Row label="Bank Loan" value={fmt(loanAmount)} />
       <SellerFinancingPrincipalRow basePrice={state.buyPrice} state={state} up={up} />
-      <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
+      <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={0} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <div id="strategy-worksheet-rehab" className="scroll-mt-28 h-0 overflow-hidden" aria-hidden />
       <SliderRow label="Rehab Budget" value={state.rehabBudget} displayValue={fmt(state.rehabBudget)} min={0} max={100000} onChange={(v) => up('rehabBudget', v)} />
       <TotalRow label="Cash Needed" value={fmt(cashNeeded)} />
@@ -568,7 +568,7 @@ function STRWorksheet({ state, metrics, listPrice, up }: {
       <SliderRow field="downPaymentPercent" label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={5} max={100} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <Row label="Bank Loan" value={fmt(loanAmount)} />
       <SellerFinancingPrincipalRow basePrice={state.buyPrice} state={state} up={up} />
-      <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
+      <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={0} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <SliderRow label="Rehab Budget" value={state.rehabBudget} displayValue={fmt(state.rehabBudget)} min={0} max={100000} onChange={(v) => up('rehabBudget', v)} />
       <SliderRow label="Furniture & Setup" value={state.furnitureSetupCost} displayValue={fmt(state.furnitureSetupCost)} min={0} max={30000} onChange={(v) => up('furnitureSetupCost', v)} />
       <TotalRow label="Cash Needed" value={fmt(cashNeeded)} />
@@ -745,7 +745,7 @@ function FlipWorksheet({ state, metrics, up }: {
       <SectionHeader title="Acquisition" />
       <SliderRow field="purchasePrice" label="Purchase Price" value={state.purchasePrice} displayValue={fmt(state.purchasePrice)} min={50000} max={2000000} onChange={(v) => up('purchasePrice', v)} />
       <SliderRow label="Discount from ARV" value={state.purchaseDiscountPct * 100} displayValue={`${(state.purchaseDiscountPct * 100).toFixed(0)}%`} min={0} max={40} onChange={(v) => up('purchaseDiscountPct', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
-      <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} step={0.5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
+      <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={0} max={5} step={0.5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
       <ToggleRow label="Financing" options={[{ id: 'cash', label: 'Cash' }, { id: 'hardMoney', label: 'Hard Money' }]} value={state.financingType} onChange={(v) => up('financingType', v)} />
       {state.financingType !== 'cash' && (
         <>
@@ -856,7 +856,7 @@ function HouseHackWorksheet({ state, metrics, up }: {
       <SellerFinancingPrincipalRow basePrice={state.purchasePrice} state={state} up={up} />
       <SliderRow field="interestRate" label="Interest Rate" value={state.interestRate * 100} displayValue={`${(state.interestRate * 100).toFixed(2)}%`} min={4} max={10} step={0.25} onChange={(v) => up('interestRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow label="PMI/MIP Rate" value={state.pmiRate * 100} displayValue={`${(state.pmiRate * 100).toFixed(2)}%`} min={0} max={1.5} onChange={(v) => up('pmiRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
-      <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
+      <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={0} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
       <TotalRow label="Cash to Close" value={fmt(cashToClose)} />
 
       <Divider />

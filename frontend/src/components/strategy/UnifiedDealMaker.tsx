@@ -200,19 +200,19 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           config={{
             id: 'sellerFinancingAmount' as any,
             label: 'Seller Financing',
-            min: listPrice > 0 ? listPrice * 0.05 : 0,
+            min: 0,
             max: listPrice > 0 ? listPrice * 1.0 : 500000,
             step: 5000,
             format: 'currency',
-            helpText: 'Principal the seller carries as a second mortgage or installment note. Range is 5% to 100% of buy price.',
+            helpText: 'Principal the seller carries as a second mortgage or installment note. Range is 0% to 100% of buy price.',
           }}
           value={sliderValues.sellerFinancingAmount ?? 0}
           onChange={(v) => onSliderChange('sellerFinancingAmount', v)}
           listPrice={listPrice}
         />
         <SliderRow
-          config={{ id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage',
-            helpText: 'Fees paid at closing — title insurance, appraisal, attorney, etc. Typically 2–5% of the purchase price.' }}
+          config={{ id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0, max: 0.05, step: 0.005, format: 'percentage',
+            helpText: 'Fees paid at closing — title insurance, appraisal, attorney, etc. Often 0–5% of the purchase price depending on deal structure.' }}
           value={sliderValues.closingCosts}
           onChange={(v) => onSliderChange('closingCosts', v)}
           suffix={formatCurrency(closingCosts)}
