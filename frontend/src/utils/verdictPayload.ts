@@ -119,6 +119,16 @@ export function buildVerdictAnalysisPayload(
     if (overrides.vacancyRate != null) payload.vacancy_rate = overrides.vacancyRate / 100
     if (overrides.managementRate != null) payload.management_pct = overrides.managementRate / 100
     if (overrides.rehabBudget != null) payload.rehab_cost = overrides.rehabBudget
+    if (overrides.sellerFinancingAmount != null && overrides.sellerFinancingAmount >= 0) {
+      payload.seller_carry_amount = overrides.sellerFinancingAmount
+    }
+    if (overrides.sellerInterestRate != null) {
+      const raw = overrides.sellerInterestRate as number
+      payload.seller_carry_rate = raw <= 1 ? raw : raw / 100
+    }
+    if (overrides.sellerTermYears != null) {
+      payload.seller_carry_term_years = overrides.sellerTermYears
+    }
   }
 
   return payload

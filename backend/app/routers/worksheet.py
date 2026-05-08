@@ -50,6 +50,9 @@ class LTRWorksheetInput(BaseModel):
     hoa_monthly: float = Field(0)
     arv: float = Field(None)
     sqft: float = Field(None)
+    seller_carry_amount: float | None = Field(None, ge=0, description="Seller note principal (Model A)")
+    seller_carry_rate: float | None = Field(None, ge=0, le=0.30, description="Seller note annual rate")
+    seller_carry_term_years: int | None = Field(None, ge=1, le=40, description="Seller note amortization years")
 
 
 class STRWorksheetInput(BaseModel):
@@ -74,6 +77,9 @@ class STRWorksheetInput(BaseModel):
     maintenance_pct: float | None = None
     capex_pct: float = Field(0.05)
     hoa_monthly: float = Field(0)
+    seller_carry_amount: float | None = Field(None, ge=0)
+    seller_carry_rate: float | None = Field(None, ge=0, le=0.30)
+    seller_carry_term_years: int | None = Field(None, ge=1, le=40)
 
 
 class BRRRRWorksheetInput(BaseModel):
@@ -100,6 +106,9 @@ class BRRRRWorksheetInput(BaseModel):
     maintenance_pct: float = 0.05
     capex_pct: float = 0.05
     hoa_monthly: float = 0
+    seller_carry_amount: float | None = Field(None, ge=0)
+    seller_carry_rate: float | None = Field(None, ge=0, le=0.30)
+    seller_carry_term_years: int | None = Field(None, ge=1, le=40)
 
 
 class FlipWorksheetInput(BaseModel):
@@ -121,6 +130,9 @@ class FlipWorksheetInput(BaseModel):
     capital_gains_rate: float = 0.20
     loan_type: str | None = "interest_only"
     hoa_monthly: float = 0
+    seller_carry_amount: float | None = Field(None, ge=0)
+    seller_carry_rate: float | None = Field(None, ge=0, le=0.30)
+    seller_carry_term_years: int | None = Field(None, ge=1, le=40)
 
 
 class HouseHackWorksheetInput(BaseModel):
@@ -144,6 +156,9 @@ class HouseHackWorksheetInput(BaseModel):
     utilities_monthly: float = 150
     loan_type: str | None = "conventional"
     hoa_monthly: float = 0
+    seller_carry_amount: float | None = Field(None, ge=0)
+    seller_carry_rate: float | None = Field(None, ge=0, le=0.30)
+    seller_carry_term_years: int | None = Field(None, ge=1, le=40)
 
 
 class WholesaleWorksheetInput(BaseModel):
@@ -158,6 +173,9 @@ class WholesaleWorksheetInput(BaseModel):
     investor_down_payment_pct: float = 0.25
     investor_purchase_costs_pct: float = 0.03
     tax_rate: float = 0.20
+    seller_carry_amount: float | None = Field(None, ge=0)
+    seller_carry_rate: float | None = Field(None, ge=0, le=0.30)
+    seller_carry_term_years: int | None = Field(None, ge=1, le=40)
 
 
 # ===========================================
@@ -187,6 +205,10 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession):
             else input_data.purchase_price * o.insurance_pct
         )
 
+        sca = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
+        scr = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
+        sct = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
+
         result = calculate_ltr(
             purchase_price=input_data.purchase_price,
             monthly_rent=input_data.monthly_rent,
@@ -208,6 +230,9 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession):
             rent_growth_rate=a.rent_growth_rate,
             expense_growth_rate=a.expense_growth_rate,
             hoa_monthly=input_data.hoa_monthly,
+            seller_carry_amount=sca,
+            seller_carry_rate=scr,
+            seller_carry_term_years=sct,
         )
 
         arv = input_data.arv or input_data.purchase_price
@@ -239,6 +264,10 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession):
             "hoa_fees": result["hoa_fees"],
             "loan_amount": result["loan_amount"],
             "down_payment": result["down_payment"],
+            "cash_equity_at_close": result.get("cash_equity_at_close", result["down_payment"]),
+            "seller_carry_amount": result.get("seller_carry_amount", 0),
+            "bank_monthly_payment": result.get("bank_monthly_pi", result["monthly_pi"]),
+            "seller_monthly_payment": result.get("seller_monthly_pi", 0),
             "closing_costs": result["closing_costs"],
             "monthly_payment": result["monthly_pi"],
             "annual_debt_service": result["annual_debt_service"],
@@ -310,6 +339,10 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
             else input_data.purchase_price * o.insurance_pct
         )
 
+        sca = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
+        scr = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
+        sct = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
+
         result = calculate_str(
             purchase_price=input_data.purchase_price,
             average_daily_rate=input_data.average_daily_rate,
@@ -334,6 +367,9 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
             landscaping_annual=o.landscaping_annual,
             pest_control_annual=o.pest_control_annual,
             hoa_monthly=input_data.hoa_monthly,
+            seller_carry_amount=sca,
+            seller_carry_rate=scr,
+            seller_carry_term_years=sct,
         )
 
         supplies_annual = input_data.supplies_monthly * 12
@@ -405,6 +441,10 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
             "break_even_occupancy": result["break_even_occupancy"] * 100,
             "deal_score": deal_score,
             "loan_amount": result["loan_amount"],
+            "cash_equity_at_close": result.get("cash_equity_at_close", result["down_payment"]),
+            "seller_carry_amount": result.get("seller_carry_amount", 0),
+            "bank_monthly_payment": result.get("bank_monthly_pi", result["monthly_pi"]),
+            "seller_monthly_payment": result.get("seller_monthly_pi", 0),
             "monthly_payment": result["monthly_pi"],
             "annual_debt_service": annual_debt_service,
             "total_cash_needed": total_cash_needed,
@@ -443,6 +483,10 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
         )
         monthly_holding = (input_data.purchase_price * a.rehab.holding_costs_pct) / 12
 
+        sca = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
+        scr = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
+        sct = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
+
         result = calculate_brrrr(
             market_value=input_data.purchase_price,
             arv=input_data.arv,
@@ -467,6 +511,9 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
             + input_data.capex_pct,
             insurance_annual=ia,
             hoa_monthly=input_data.hoa_monthly,
+            seller_carry_amount=sca,
+            seller_carry_rate=scr,
+            seller_carry_term_years=sct,
         )
 
         sqft = input_data.sqft or 1
@@ -481,7 +528,8 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
         )
         loan_to_cost_pct = input_data.loan_to_cost_pct or loan_to_cost
         points_cost = initial_loan_amount * (input_data.points / 100)
-        cash_to_close = result["down_payment"] + input_data.purchase_costs + points_cost
+        ce = result.get("cash_equity_at_close", result["down_payment"])
+        cash_to_close = ce + input_data.purchase_costs + points_cost
         annual_interest = initial_loan_amount * input_data.interest_rate
         holding_interest = annual_interest * (input_data.holding_months / 12)
         holding_taxes = input_data.property_taxes_annual * (input_data.holding_months / 12)
@@ -490,7 +538,7 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
         total_holding_costs = holding_interest + holding_taxes + holding_insurance + holding_utilities
         cash_out_at_refi = result["cash_out_at_refinance"]
         total_cash_invested = (
-            result["down_payment"] + input_data.purchase_costs + points_cost + total_rehab + total_holding_costs
+            ce + input_data.purchase_costs + points_cost + total_rehab + total_holding_costs
         )
         cash_left_in_deal = total_cash_invested - cash_out_at_refi
         annual_gross_rent = result["annual_gross_rent"]
@@ -590,6 +638,10 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
         purchase_costs_pct = (
             input_data.purchase_costs / input_data.purchase_price if input_data.purchase_costs > 0 else 0.03
         )
+        sca = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
+        scr = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
+        sct = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
+
         result = calculate_flip(
             market_value=input_data.purchase_price,
             arv=input_data.arv,
@@ -608,6 +660,9 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
             selling_costs_pct=input_data.selling_costs_pct,
             capital_gains_rate=input_data.capital_gains_rate,
             hoa_monthly=input_data.hoa_monthly,
+            seller_carry_amount=sca,
+            seller_carry_rate=scr,
+            seller_carry_term_years=sct,
         )
 
         loan_amount = result["hard_money_loan"]
@@ -721,6 +776,10 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
         rooms_rented = sum(1 for r in input_data.unit_rents if r > 0)
         avg_rent = total_rent / rooms_rented if rooms_rented > 0 else 0
 
+        sca = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
+        scr = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
+        sct = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
+
         result = calculate_house_hack(
             purchase_price=input_data.purchase_price,
             monthly_rent_per_room=avg_rent,
@@ -738,6 +797,9 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
             utilities_shared_monthly=input_data.utilities_monthly,
             maintenance_monthly=input_data.maintenance_monthly + input_data.capex_monthly,
             hoa_monthly=input_data.hoa_monthly,
+            seller_carry_amount=sca,
+            seller_carry_rate=scr,
+            seller_carry_term_years=sct,
         )
 
         maintenance_monthly = (

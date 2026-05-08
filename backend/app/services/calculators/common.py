@@ -86,6 +86,8 @@ def validate_financial_inputs(
 
 def calculate_monthly_mortgage(principal: float, annual_rate: float, years: int) -> float:
     """Calculate monthly mortgage payment (P&I)."""
+    if principal <= 0 or years < 1:
+        return 0.0
     if annual_rate == 0:
         return principal / (years * 12)
 
@@ -95,6 +97,41 @@ def calculate_monthly_mortgage(principal: float, annual_rate: float, years: int)
     payment = principal * (monthly_rate * (1 + monthly_rate) ** num_payments) / ((1 + monthly_rate) ** num_payments - 1)
 
     return payment
+
+
+def model_a_bank_loan_and_cash_equity(
+    purchase_price: float,
+    down_payment_dollars: float,
+    seller_carry_amount: float,
+) -> tuple[float, float]:
+    """Seller-second stack: bank loan and buyer cash equity at close.
+
+    bank_loan = purchase_price - max(down_payment_dollars, seller_carry_amount)
+    cash_equity = max(0, down_payment_dollars - seller_carry_amount)
+    """
+    dp = max(0.0, float(down_payment_dollars))
+    sc = max(0.0, float(seller_carry_amount or 0.0))
+    cap = max(dp, sc)
+    bank_loan = max(0.0, float(purchase_price) - cap)
+    cash_equity = max(0.0, dp - sc)
+    return bank_loan, cash_equity
+
+
+def combined_bank_and_seller_pi(
+    bank_loan: float,
+    bank_rate: float,
+    bank_term_years: int,
+    seller_principal: float,
+    seller_rate: float,
+    seller_term_years: int,
+) -> tuple[float, float, float]:
+    """Returns (bank_monthly_pi, seller_monthly_pi, combined_monthly_pi)."""
+    bank_pi = calculate_monthly_mortgage(bank_loan, bank_rate, bank_term_years)
+    if seller_principal <= 0:
+        return bank_pi, 0.0, bank_pi
+    st = max(1, int(seller_term_years or 5))
+    seller_pi = calculate_monthly_mortgage(seller_principal, seller_rate, st)
+    return bank_pi, seller_pi, bank_pi + seller_pi
 
 
 def calculate_noi(gross_income: float, operating_expenses: float) -> float:

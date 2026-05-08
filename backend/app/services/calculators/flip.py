@@ -6,7 +6,7 @@ No imports from app.core.defaults allowed.
 
 from typing import Any
 
-from .common import validate_financial_inputs
+from .common import model_a_bank_loan_and_cash_equity, validate_financial_inputs
 
 
 def calculate_flip(
@@ -27,6 +27,9 @@ def calculate_flip(
     inspection_costs: float = 1000,
     security_maintenance_monthly: float = 83,
     hoa_monthly: float = 0,
+    seller_carry_amount: float = 0.0,
+    seller_carry_rate: float = 0.0,
+    seller_carry_term_years: int = 30,
 ) -> dict[str, Any]:
     """Calculate Fix & Flip metrics.
 
@@ -42,12 +45,16 @@ def calculate_flip(
         holding_period_months=int(holding_period_months) if holding_period_months else None,
     )
 
-    # Acquisition
+    # Acquisition — Model A seller second on equity slot (nominal buyer equity before seller note)
     purchase_price = market_value * (1 - purchase_discount_pct)
-    hard_money_loan = purchase_price * hard_money_ltv
-    down_payment = purchase_price - hard_money_loan
+    nominal_equity = purchase_price * (1 - hard_money_ltv)
+    sc = max(0.0, float(seller_carry_amount or 0.0))
+    hard_money_loan, cash_equity_at_close = model_a_bank_loan_and_cash_equity(
+        purchase_price, nominal_equity, sc
+    )
+    down_payment = nominal_equity
     closing_costs = purchase_price * closing_costs_pct
-    total_acquisition_cash = down_payment + closing_costs + inspection_costs
+    total_acquisition_cash = cash_equity_at_close + closing_costs + inspection_costs
 
     # Renovation
     contingency = renovation_budget * contingency_pct
@@ -102,6 +109,8 @@ def calculate_flip(
         "purchase_price": purchase_price,
         "hard_money_loan": hard_money_loan,
         "down_payment": down_payment,
+        "cash_equity_at_close": cash_equity_at_close,
+        "seller_carry_amount": sc,
         "closing_costs": closing_costs,
         "inspection_costs": inspection_costs,
         "total_acquisition_cash": total_acquisition_cash,

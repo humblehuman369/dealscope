@@ -6,7 +6,12 @@ No imports from app.core.defaults allowed.
 
 from typing import Any
 
-from .common import calculate_monthly_mortgage, validate_financial_inputs
+from .common import (
+    calculate_monthly_mortgage,
+    combined_bank_and_seller_pi,
+    model_a_bank_loan_and_cash_equity,
+    validate_financial_inputs,
+)
 
 
 def calculate_brrrr(
@@ -31,6 +36,9 @@ def calculate_brrrr(
     operating_expense_pct: float,
     insurance_annual: float,
     hoa_monthly: float = 0,
+    seller_carry_amount: float = 0.0,
+    seller_carry_rate: float = 0.0,
+    seller_carry_term_years: int = 30,
 ) -> dict[str, Any]:
     """Calculate BRRRR metrics.
 
@@ -49,12 +57,15 @@ def calculate_brrrr(
         holding_period_months=holding_period_months,
     )
 
-    # Phase 1: Buy (at discount)
+    # Phase 1: Buy (at discount) — Model A seller second on acquisition
     purchase_price = market_value * (1 - purchase_discount_pct)
     down_payment = purchase_price * down_payment_pct
     closing_costs = purchase_price * closing_costs_pct
-    initial_loan_amount = purchase_price - down_payment
-    cash_required_phase1 = down_payment + closing_costs
+    sc = max(0.0, float(seller_carry_amount or 0.0))
+    initial_loan_amount, cash_equity_phase1 = model_a_bank_loan_and_cash_equity(
+        purchase_price, down_payment, sc
+    )
+    cash_required_phase1 = cash_equity_phase1 + closing_costs
 
     # Phase 2: Rehab
     contingency = renovation_budget * contingency_pct
@@ -78,7 +89,14 @@ def calculate_brrrr(
     # Phase 4: Refinance
     refinance_loan_amount = arv * refinance_ltv
     cash_out = refinance_loan_amount - initial_loan_amount - refinance_closing_costs
-    new_monthly_pi = calculate_monthly_mortgage(refinance_loan_amount, refinance_interest_rate, refinance_term_years)
+    _, seller_pi, new_monthly_pi = combined_bank_and_seller_pi(
+        refinance_loan_amount,
+        refinance_interest_rate,
+        refinance_term_years,
+        sc,
+        seller_carry_rate,
+        seller_carry_term_years,
+    )
     new_annual_debt_service = new_monthly_pi * 12
 
     # Phase 5: Repeat Analysis
@@ -98,6 +116,9 @@ def calculate_brrrr(
     return {
         "purchase_price": purchase_price,
         "down_payment": down_payment,
+        "cash_equity_at_close": cash_equity_phase1,
+        "seller_carry_amount": sc,
+        "seller_monthly_pi": seller_pi,
         "closing_costs": closing_costs,
         "initial_loan_amount": initial_loan_amount,
         "cash_required_phase1": cash_required_phase1,

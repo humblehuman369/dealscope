@@ -6,7 +6,12 @@ No imports from app.core.defaults allowed.
 
 from typing import Any
 
-from .common import calculate_monthly_mortgage, validate_financial_inputs
+from .common import (
+    calculate_monthly_mortgage,
+    combined_bank_and_seller_pi,
+    model_a_bank_loan_and_cash_equity,
+    validate_financial_inputs,
+)
 
 
 def calculate_house_hack(
@@ -26,6 +31,9 @@ def calculate_house_hack(
     conversion_cost: float | None = None,
     unit2_rent: float | None = None,
     hoa_monthly: float = 0,
+    seller_carry_amount: float = 0.0,
+    seller_carry_rate: float = 0.0,
+    seller_carry_term_years: int = 30,
 ) -> dict[str, Any]:
     """Calculate House Hacking metrics.
 
@@ -41,20 +49,28 @@ def calculate_house_hack(
         loan_term_years=loan_term_years,
     )
 
-    # Acquisition (FHA)
+    # Acquisition (Model A — seller second)
     down_payment = purchase_price * down_payment_pct
     closing_costs = purchase_price * closing_costs_pct
-    total_cash_required = down_payment + closing_costs
-    loan_amount = purchase_price - down_payment
+    sc = max(0.0, float(seller_carry_amount or 0.0))
+    loan_amount, cash_equity_at_close = model_a_bank_loan_and_cash_equity(purchase_price, down_payment, sc)
+    total_cash_required = cash_equity_at_close + closing_costs
 
-    # Monthly Costs
-    monthly_pi = calculate_monthly_mortgage(loan_amount, interest_rate, loan_term_years)
+    # Monthly Costs — bank P&I + seller note; MIP on bank loan only
+    bank_pi, seller_pi, monthly_pi = combined_bank_and_seller_pi(
+        loan_amount,
+        interest_rate,
+        loan_term_years,
+        sc,
+        seller_carry_rate,
+        seller_carry_term_years,
+    )
     monthly_mip = (loan_amount * fha_mip_rate) / 12
     monthly_taxes = property_taxes_annual / 12
     monthly_insurance = insurance_annual / 12
     monthly_piti = monthly_pi + monthly_mip + monthly_taxes + monthly_insurance + hoa_monthly
 
-    # Scenario A: Rent Rooms
+    # Scenario A: Rent Rooms (seller_pi already inside monthly_pi combined — monthly_piti adds taxes/ins/MIP)
     total_monthly_income = monthly_rent_per_room * rooms_rented
     total_monthly_expenses = monthly_piti + utilities_shared_monthly + maintenance_monthly
     net_housing_cost_a = total_monthly_expenses - total_monthly_income
@@ -83,8 +99,12 @@ def calculate_house_hack(
     return {
         "purchase_price": purchase_price,
         "down_payment": down_payment,
+        "cash_equity_at_close": cash_equity_at_close,
         "closing_costs": closing_costs,
         "loan_amount": loan_amount,
+        "seller_carry_amount": sc,
+        "bank_monthly_pi": bank_pi,
+        "seller_monthly_pi": seller_pi,
         "total_cash_required": total_cash_required,
         "monthly_pi": monthly_pi,
         "monthly_mip": monthly_mip,

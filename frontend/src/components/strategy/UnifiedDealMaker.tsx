@@ -9,6 +9,14 @@ function formatCurrency(v: number): string {
   return `$${Math.round(v).toLocaleString()}`
 }
 
+function monthlyMortgagePI(principal: number, annualRate: number, years: number): number {
+  if (principal <= 0 || years <= 0) return 0
+  if (annualRate === 0) return principal / (years * 12)
+  const r = annualRate / 12
+  const n = years * 12
+  return (principal * (r * (1 + r) ** n)) / ((1 + r) ** n - 1)
+}
+
 const C = {
   blue: 'var(--accent-sky)',
   heading: 'var(--text-heading)',
@@ -124,16 +132,16 @@ function SectionDivider() {
 export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
   const {
     listPrice,
-    targetPrice,
-    loanAmount,
+    targetPrice: _targetPrice,
+    loanAmount: _loanAmount,
     downPayment,
     downPaymentPct,
     closingCosts,
     closingCostsPct,
     rehabCost,
-    rate,
+    rate: _rate,
     loanTermYears,
-    monthlyPI,
+    monthlyPI: _monthlyPIFromAnalysis,
     annualDebt,
     propertyTaxes,
     insurance,
@@ -152,6 +160,19 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
     cashOnCash,
     annualCashFlow,
   } = props
+
+  const buyPx = sliderValues.buyPrice
+  const sellerAmt = Math.max(0, sliderValues.sellerFinancingAmount ?? 0)
+  const bankLoanDerived = Math.max(0, buyPx - Math.max(downPayment, sellerAmt))
+  const cashEquityAtClose = Math.max(0, downPayment - sellerAmt)
+  const cashNeededModelA = cashEquityAtClose + closingCosts + rehabCost
+  const bankPiEst = monthlyMortgagePI(bankLoanDerived, sliderValues.interestRate, sliderValues.loanTerm)
+  const sellerPiEst =
+    sellerAmt > 0
+      ? monthlyMortgagePI(sellerAmt, sliderValues.sellerInterestRate ?? 0, sliderValues.sellerTermYears ?? 5)
+      : 0
+  const combinedPiEst = bankPiEst + sellerPiEst
+  const sellerOverDown = Math.max(0, sellerAmt - downPayment)
 
   const totalExpensesWithMortgage = totalExpenses + annualDebt
 
@@ -177,6 +198,26 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           listPrice={listPrice}
         />
         <SliderRow
+          config={{
+            id: 'sellerFinancingAmount' as any,
+            label: 'Seller Financing Amount',
+            min: listPrice > 0 ? listPrice * 0.05 : 0,
+            max: listPrice > 0 ? listPrice * 1.0 : 500000,
+            step: 5000,
+            format: 'currency',
+            helpText: 'Principal the seller carries as a second mortgage or installment note. Range is 5% to 100% of buy price.',
+          }}
+          value={sliderValues.sellerFinancingAmount ?? 0}
+          onChange={(v) => onSliderChange('sellerFinancingAmount', v)}
+          listPrice={listPrice}
+        />
+        <DisplayRow label="Bank Loan" value={formatCurrency(bankLoanDerived)} />
+        {sellerOverDown > 0 && (
+          <div className="text-[11px] leading-snug pl-4 pr-1 pb-1" style={{ color: 'var(--text-secondary)' }}>
+            Seller is carrying {formatCurrency(sellerOverDown)} above the down payment; bank loan reduced accordingly.
+          </div>
+        )}
+        <SliderRow
           config={{ id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage',
             helpText: 'Fees paid at closing — title insurance, appraisal, attorney, etc. Typically 2–5% of the purchase price.' }}
           value={sliderValues.closingCosts}
@@ -191,7 +232,7 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           onChange={(v) => onSliderChange('rehabBudget', v)}
           listPrice={listPrice}
         />
-        <TotalRow label="Cash Needed" value={formatCurrency(downPayment + closingCosts + rehabCost)} />
+        <TotalRow label="Cash Needed" value={formatCurrency(cashNeededModelA)} />
       </div>
 
       <SectionDivider />
@@ -199,7 +240,7 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
       {/* YOUR LOAN PAYMENT */}
       <div>
         <SectionHeader title="Your Loan Payment" />
-        <DisplayRow label="Loan Amount" value={formatCurrency(loanAmount)} />
+        <DisplayRow label="Loan Amount" value={formatCurrency(bankLoanDerived)} />
         <SliderRow
           config={{ id: 'interestRate' as any, label: 'Interest Rate', min: 0.04, max: 0.12, step: 0.00125, format: 'percentage',
             helpText: 'Annual rate on your mortgage loan. Even small changes significantly impact your monthly payment and long-term cost.' }}
@@ -214,20 +255,7 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           onChange={(v) => onSliderChange('loanTerm', v)}
           listPrice={listPrice}
         />
-        <SliderRow
-          config={{
-            id: 'sellerFinancingAmount' as any,
-            label: 'Seller Financing Amount',
-            min: listPrice > 0 ? listPrice * 0.05 : 0,
-            max: listPrice > 0 ? listPrice * 1.00 : 500000,
-            step: 5000,
-            format: 'currency',
-            helpText: 'Principal the seller carries as a second mortgage or installment note. Range is 5% to 100% of buy price.',
-          }}
-          value={sliderValues.sellerFinancingAmount ?? 0}
-          onChange={(v) => onSliderChange('sellerFinancingAmount', v)}
-          listPrice={listPrice}
-        />
+        <DisplayRow label="Bank P&amp;I (est.)" value={`${formatCurrency(bankPiEst)}/mo`} />
         <SliderRow
           config={{
             id: 'sellerInterestRate' as any,
@@ -256,7 +284,10 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           onChange={(v) => onSliderChange('sellerTermYears', v)}
           listPrice={listPrice}
         />
-        <DisplayRow label="Monthly Payment" value={formatCurrency(monthlyPI)} />
+        {sellerAmt > 0 && (
+          <DisplayRow label="Seller P&amp;I (est.)" value={`${formatCurrency(sellerPiEst)}/mo`} />
+        )}
+        <DisplayRow label="Combined Monthly Payment (est.)" value={`${formatCurrency(combinedPiEst)}/mo`} />
         <TotalRow label="Annual Payment" value={formatCurrency(annualDebt)} />
       </div>
 

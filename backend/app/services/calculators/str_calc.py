@@ -11,7 +11,8 @@ from .common import (
     calculate_cap_rate,
     calculate_cash_on_cash,
     calculate_dscr,
-    calculate_monthly_mortgage,
+    combined_bank_and_seller_pi,
+    model_a_bank_loan_and_cash_equity,
     validate_financial_inputs,
 )
 
@@ -57,6 +58,9 @@ def calculate_str(
     hoa_monthly: float = 0,
     seasonality: list[dict[str, Any]] | None = None,
     monthly_revenue_override: float | None = None,
+    seller_carry_amount: float = 0.0,
+    seller_carry_rate: float = 0.0,
+    seller_carry_term_years: int = 30,
 ) -> dict[str, Any]:
     """Calculate Short-Term Rental metrics.
 
@@ -78,14 +82,22 @@ def calculate_str(
         loan_term_years=loan_term_years,
     )
 
-    # Acquisition
+    # Acquisition (Model A — seller second)
     down_payment = purchase_price * down_payment_pct
     closing_costs = purchase_price * closing_costs_pct
-    total_cash_required = down_payment + closing_costs + furniture_setup_cost
-    loan_amount = purchase_price - down_payment
+    sc = max(0.0, float(seller_carry_amount or 0.0))
+    loan_amount, cash_equity_at_close = model_a_bank_loan_and_cash_equity(purchase_price, down_payment, sc)
+    total_cash_required = cash_equity_at_close + closing_costs + furniture_setup_cost
 
     # Financing
-    monthly_pi = calculate_monthly_mortgage(loan_amount, interest_rate, loan_term_years)
+    bank_pi, seller_pi, monthly_pi = combined_bank_and_seller_pi(
+        loan_amount,
+        interest_rate,
+        loan_term_years,
+        sc,
+        seller_carry_rate,
+        seller_carry_term_years,
+    )
     annual_debt_service = monthly_pi * 12
 
     # Revenue
@@ -193,6 +205,9 @@ def calculate_str(
         "pest_control": pest_control_annual,
         "total_operating_expenses": total_operating_expenses,
         "loan_amount": loan_amount,
+        "seller_carry_amount": sc,
+        "bank_monthly_pi": bank_pi,
+        "seller_monthly_pi": seller_pi,
         "monthly_pi": monthly_pi,
         "annual_debt_service": annual_debt_service,
         "noi": noi,
@@ -205,6 +220,7 @@ def calculate_str(
         "break_even_occupancy": break_even_occupancy,
         "total_cash_required": total_cash_required,
         "down_payment": down_payment,
+        "cash_equity_at_close": cash_equity_at_close,
         "closing_costs": closing_costs,
         "furniture_setup": furniture_setup_cost,
         "seasonality_analysis": seasonality_analysis,

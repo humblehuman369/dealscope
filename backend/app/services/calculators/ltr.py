@@ -13,6 +13,8 @@ from .common import (
     calculate_dscr,
     calculate_grm,
     calculate_monthly_mortgage,
+    combined_bank_and_seller_pi,
+    model_a_bank_loan_and_cash_equity,
     validate_financial_inputs,
 )
 
@@ -36,6 +38,9 @@ def calculate_ltr(
     rent_growth_rate: float,
     expense_growth_rate: float,
     hoa_monthly: float = 0,
+    seller_carry_amount: float = 0.0,
+    seller_carry_rate: float = 0.0,
+    seller_carry_term_years: int = 30,
 ) -> dict[str, Any]:
     """Calculate Long-Term Rental metrics.
 
@@ -51,14 +56,22 @@ def calculate_ltr(
         loan_term_years=loan_term_years,
     )
 
-    # Acquisition
+    # Acquisition (Model A — seller second reduces cash equity; may shrink bank loan)
     down_payment = purchase_price * down_payment_pct
     closing_costs = purchase_price * closing_costs_pct
-    total_cash_required = down_payment + closing_costs
-    loan_amount = purchase_price - down_payment
+    sc = max(0.0, float(seller_carry_amount or 0.0))
+    loan_amount, cash_equity_at_close = model_a_bank_loan_and_cash_equity(purchase_price, down_payment, sc)
+    total_cash_required = cash_equity_at_close + closing_costs
 
-    # Financing
-    monthly_pi = calculate_monthly_mortgage(loan_amount, interest_rate, loan_term_years)
+    # Financing — combined bank + seller note P&I
+    bank_pi, seller_pi, monthly_pi = combined_bank_and_seller_pi(
+        loan_amount,
+        interest_rate,
+        loan_term_years,
+        sc,
+        seller_carry_rate,
+        seller_carry_term_years,
+    )
     annual_debt_service = monthly_pi * 12
 
     # Income
@@ -144,6 +157,9 @@ def calculate_ltr(
         "hoa_fees": hoa_annual,
         "total_operating_expenses": total_operating_expenses,
         "loan_amount": loan_amount,
+        "seller_carry_amount": sc,
+        "bank_monthly_pi": bank_pi,
+        "seller_monthly_pi": seller_pi,
         "monthly_pi": monthly_pi,
         "annual_debt_service": annual_debt_service,
         "noi": noi,
@@ -156,6 +172,7 @@ def calculate_ltr(
         "one_percent_rule": one_percent_rule,
         "total_cash_required": total_cash_required,
         "down_payment": down_payment,
+        "cash_equity_at_close": cash_equity_at_close,
         "closing_costs": closing_costs,
         "ten_year_projection": ten_year_projection,
     }
