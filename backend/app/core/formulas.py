@@ -1,13 +1,15 @@
 """Core valuation formulas for DealGapIQ.
 
-Pure functions — every parameter is required (no defaults imports).
-The AssumptionResolver is responsible for providing resolved values.
+Pure functions. Optional default kwargs use ``FINANCING`` / ``OPERATING`` for
+test and direct-call convenience; production paths should pass explicit values.
 
 Functions moved here from defaults.py to enforce separation between
 "schema / seed defaults" and "calculation logic."
 """
 
 import logging
+
+from app.core.defaults import DEFAULT_BUY_DISCOUNT_PCT, FINANCING, OPERATING
 
 logger = logging.getLogger(__name__)
 
@@ -50,27 +52,27 @@ def estimate_income_value(
     monthly_rent: float,
     property_taxes: float,
     insurance: float,
-    down_payment_pct: float,
-    interest_rate: float,
-    loan_term_years: int,
-    vacancy_rate: float,
-    maintenance_pct: float,
-    management_pct: float,
+    down_payment_pct: float | None = None,
+    interest_rate: float | None = None,
+    loan_term_years: int | None = None,
+    vacancy_rate: float | None = None,
+    maintenance_pct: float | None = None,
+    management_pct: float | None = None,
+    required_equity_yield: float | None = None,
     capex_pct: float = 0.0,
     utilities_annual: float = 0.0,
     other_annual_expenses: float = 0.0,
 ) -> float:
-    """Income Value — the purchase price at which cash flow = $0.
+    """Income Value — breakeven purchase price using a WACC-style hurdle.
 
-    At this price, rental income exactly covers operating expenses
-    and debt service (NOI = Annual Debt Service).
-    Above this price, cash flow turns negative. Below it, positive.
+    NOI must cover weighted annual capital cost: debt (LTV × mortgage constant)
+    plus equity ((1−LTV) × required_equity_yield). Pure cash uses only the equity leg.
 
     Percentage-based expenses (maintenance, management, capex) are
     computed on annual_gross_rent (before vacancy), matching the LTR
     strategy calculator so both produce the same breakeven price.
 
-    All parameters are required and fully resolved by the caller.
+    Callers should pass explicit assumptions in production; None uses FINANCING/OPERATING.
     """
     if monthly_rent is None or monthly_rent < 0:
         return 0
@@ -79,12 +81,21 @@ def estimate_income_value(
     if insurance is None or insurance < 0:
         insurance = 0
 
-    down_pct = _clamp(down_payment_pct, 0.0, 1.0, "down_payment_pct")
-    rate = _clamp(interest_rate, 0.0, 0.30, "interest_rate")
-    term = max(1, min(loan_term_years, 50))
-    vacancy = _clamp(vacancy_rate, 0.0, 1.0, "vacancy_rate")
-    maint_pct = _clamp(maintenance_pct, 0.0, 1.0, "maintenance_pct")
-    mgmt_pct = _clamp(management_pct, 0.0, 1.0, "management_pct")
+    dp = down_payment_pct if down_payment_pct is not None else FINANCING.down_payment_pct
+    rate_in = interest_rate if interest_rate is not None else FINANCING.interest_rate
+    term_in = loan_term_years if loan_term_years is not None else FINANCING.loan_term_years
+    vac_in = vacancy_rate if vacancy_rate is not None else OPERATING.vacancy_rate
+    maint_in = maintenance_pct if maintenance_pct is not None else OPERATING.maintenance_pct
+    mgmt_in = management_pct if management_pct is not None else OPERATING.property_management_pct
+    equity_in = required_equity_yield if required_equity_yield is not None else OPERATING.required_equity_yield
+
+    down_pct = _clamp(dp, 0.0, 1.0, "down_payment_pct")
+    equity_yield = _clamp(equity_in, 0.001, 0.50, "required_equity_yield")
+    rate = _clamp(rate_in, 0.0, 0.30, "interest_rate")
+    term = max(1, min(term_in, 50))
+    vacancy = _clamp(vac_in, 0.0, 1.0, "vacancy_rate")
+    maint_pct = _clamp(maint_in, 0.0, 1.0, "maintenance_pct")
+    mgmt_pct = _clamp(mgmt_in, 0.0, 1.0, "management_pct")
     cap_pct = _clamp(capex_pct, 0.0, 1.0, "capex_pct")
 
     annual_gross_rent = monthly_rent * 12
@@ -119,11 +130,14 @@ def estimate_income_value(
     else:
         mortgage_constant = 1 / term if term > 0 else 0
 
-    denominator = ltv_ratio * mortgage_constant
-    if denominator <= 0:
-        return round(noi / 0.05)
+    # WACC-style annual hurdle: price debt and equity so cash buyers are not "free capital."
+    debt_cost = ltv_ratio * mortgage_constant
+    equity_cost = down_pct * equity_yield
+    wacc = debt_cost + equity_cost
+    if wacc <= 0:
+        return 0
 
-    return round(noi / denominator)
+    return round(noi / wacc)
 
 
 def calculate_buy_price(
@@ -131,20 +145,20 @@ def calculate_buy_price(
     monthly_rent: float,
     property_taxes: float,
     insurance: float,
-    buy_discount_pct: float,
-    down_payment_pct: float,
-    interest_rate: float,
-    loan_term_years: int,
-    vacancy_rate: float,
-    maintenance_pct: float,
-    management_pct: float,
+    buy_discount_pct: float | None = None,
+    down_payment_pct: float | None = None,
+    interest_rate: float | None = None,
+    loan_term_years: int | None = None,
+    vacancy_rate: float | None = None,
+    maintenance_pct: float | None = None,
+    management_pct: float | None = None,
+    required_equity_yield: float | None = None,
     capex_pct: float = 0.0,
     utilities_annual: float = 0.0,
     other_annual_expenses: float = 0.0,
 ) -> float:
     """Target Buy Price = Income Value x (1 - Buy Discount %).
 
-    All parameters required and fully resolved by the caller.
     Returns the lesser of the calculated buy price or market_price.
     """
     if market_price is None or market_price <= 0:
@@ -152,7 +166,8 @@ def calculate_buy_price(
     if monthly_rent is None or monthly_rent < 0:
         return market_price
 
-    discount_pct = _clamp(buy_discount_pct, 0.0, 0.50, "buy_discount_pct")
+    bd = buy_discount_pct if buy_discount_pct is not None else DEFAULT_BUY_DISCOUNT_PCT
+    discount_pct = _clamp(bd, 0.0, 0.50, "buy_discount_pct")
 
     income_value = estimate_income_value(
         monthly_rent=monthly_rent,
@@ -164,6 +179,7 @@ def calculate_buy_price(
         vacancy_rate=vacancy_rate,
         maintenance_pct=maintenance_pct,
         management_pct=management_pct,
+        required_equity_yield=required_equity_yield,
         capex_pct=capex_pct,
         utilities_annual=utilities_annual,
         other_annual_expenses=other_annual_expenses,
