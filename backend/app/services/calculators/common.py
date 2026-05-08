@@ -99,12 +99,33 @@ def calculate_monthly_mortgage(principal: float, annual_rate: float, years: int)
     return payment
 
 
+def conventional_first_lien_loan(purchase_price: float, down_payment_dollars: float) -> float:
+    """Bank loan = purchase price − down payment (seller carry does not change loan principal)."""
+    pp = float(purchase_price)
+    dp = max(0.0, float(down_payment_dollars))
+    return max(0.0, pp - dp)
+
+
+def cash_needed_after_seller(
+    down_payment_dollars: float,
+    closing_costs: float,
+    extra_cash_costs: float,
+    seller_carry_amount: float,
+) -> float:
+    """Cash out of pocket = down + closing + extra (e.g. rehab, furniture) − seller financing."""
+    dp = max(0.0, float(down_payment_dollars))
+    cc = max(0.0, float(closing_costs))
+    ex = max(0.0, float(extra_cash_costs))
+    sc = max(0.0, float(seller_carry_amount or 0.0))
+    return max(0.0, dp + cc + ex - sc)
+
+
 def model_a_bank_loan_and_cash_equity(
     purchase_price: float,
     down_payment_dollars: float,
     seller_carry_amount: float,
 ) -> tuple[float, float]:
-    """Seller-second stack: bank loan and buyer cash equity at close.
+    """Used by fix-and-flip nominal-equity stack (hard money + seller on equity slot).
 
     bank_loan = purchase_price - max(down_payment_dollars, seller_carry_amount)
     cash_equity = max(0, down_payment_dollars - seller_carry_amount)

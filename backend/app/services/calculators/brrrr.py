@@ -8,8 +8,9 @@ from typing import Any
 
 from .common import (
     calculate_monthly_mortgage,
+    cash_needed_after_seller,
     combined_bank_and_seller_pi,
-    model_a_bank_loan_and_cash_equity,
+    conventional_first_lien_loan,
     validate_financial_inputs,
 )
 
@@ -57,15 +58,14 @@ def calculate_brrrr(
         holding_period_months=holding_period_months,
     )
 
-    # Phase 1: Buy (at discount) — Model A seller second on acquisition
+    # Phase 1: Buy (at discount) — conventional bank loan; seller carry offsets cash only
     purchase_price = market_value * (1 - purchase_discount_pct)
     down_payment = purchase_price * down_payment_pct
     closing_costs = purchase_price * closing_costs_pct
     sc = max(0.0, float(seller_carry_amount or 0.0))
-    initial_loan_amount, cash_equity_phase1 = model_a_bank_loan_and_cash_equity(
-        purchase_price, down_payment, sc
-    )
-    cash_required_phase1 = cash_equity_phase1 + closing_costs
+    initial_loan_amount = conventional_first_lien_loan(purchase_price, down_payment)
+    cash_equity_phase1 = max(0.0, down_payment - sc)
+    cash_required_phase1 = cash_needed_after_seller(down_payment, closing_costs, 0.0, sc)
 
     # Phase 2: Rehab
     contingency = renovation_budget * contingency_pct

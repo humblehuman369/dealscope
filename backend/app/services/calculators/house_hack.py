@@ -8,8 +8,9 @@ from typing import Any
 
 from .common import (
     calculate_monthly_mortgage,
+    cash_needed_after_seller,
     combined_bank_and_seller_pi,
-    model_a_bank_loan_and_cash_equity,
+    conventional_first_lien_loan,
     validate_financial_inputs,
 )
 
@@ -49,12 +50,13 @@ def calculate_house_hack(
         loan_term_years=loan_term_years,
     )
 
-    # Acquisition (Model A — seller second)
+    # Acquisition — conventional bank loan; seller carry offsets cash only
     down_payment = purchase_price * down_payment_pct
     closing_costs = purchase_price * closing_costs_pct
     sc = max(0.0, float(seller_carry_amount or 0.0))
-    loan_amount, cash_equity_at_close = model_a_bank_loan_and_cash_equity(purchase_price, down_payment, sc)
-    total_cash_required = cash_equity_at_close + closing_costs
+    loan_amount = conventional_first_lien_loan(purchase_price, down_payment)
+    cash_equity_at_close = max(0.0, down_payment - sc)
+    total_cash_required = cash_needed_after_seller(down_payment, closing_costs, 0.0, sc)
 
     # Monthly Costs — bank P&I + seller note; MIP on bank loan only
     bank_pi, seller_pi, monthly_pi = combined_bank_and_seller_pi(

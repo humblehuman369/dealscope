@@ -11,8 +11,9 @@ from .common import (
     calculate_cap_rate,
     calculate_cash_on_cash,
     calculate_dscr,
+    cash_needed_after_seller,
     combined_bank_and_seller_pi,
-    model_a_bank_loan_and_cash_equity,
+    conventional_first_lien_loan,
     validate_financial_inputs,
 )
 
@@ -58,6 +59,7 @@ def calculate_str(
     hoa_monthly: float = 0,
     seasonality: list[dict[str, Any]] | None = None,
     monthly_revenue_override: float | None = None,
+    rehab_costs: float = 0.0,
     seller_carry_amount: float = 0.0,
     seller_carry_rate: float = 0.0,
     seller_carry_term_years: int = 30,
@@ -82,12 +84,18 @@ def calculate_str(
         loan_term_years=loan_term_years,
     )
 
-    # Acquisition (Model A — seller second)
+    # Acquisition — conventional bank loan; seller carry offsets cash only
     down_payment = purchase_price * down_payment_pct
     closing_costs = purchase_price * closing_costs_pct
     sc = max(0.0, float(seller_carry_amount or 0.0))
-    loan_amount, cash_equity_at_close = model_a_bank_loan_and_cash_equity(purchase_price, down_payment, sc)
-    total_cash_required = cash_equity_at_close + closing_costs + furniture_setup_cost
+    loan_amount = conventional_first_lien_loan(purchase_price, down_payment)
+    cash_equity_at_close = max(0.0, down_payment - sc)
+    total_cash_required = cash_needed_after_seller(
+        down_payment,
+        closing_costs,
+        furniture_setup_cost + rehab_costs,
+        sc,
+    )
 
     # Financing
     bank_pi, seller_pi, monthly_pi = combined_bank_and_seller_pi(
