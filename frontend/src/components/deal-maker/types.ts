@@ -326,6 +326,7 @@ export interface STRDealMakerState {
   annualPropertyTax: number
   annualInsurance: number
   monthlyHoa: number
+  requiredEquityYield?: number
 }
 
 // Union type for any strategy state
@@ -1270,6 +1271,8 @@ export interface LTRDealMakerState {
   buyPrice: number
   downPaymentPercent: number
   closingCostsPercent: number
+  /** Hurdle on equity for Income Value WACC (default 8%) */
+  requiredEquityYield?: number
   loanType?: '15-year' | '30-year' | 'arm'
   interestRate: number
   loanTermYears: number
