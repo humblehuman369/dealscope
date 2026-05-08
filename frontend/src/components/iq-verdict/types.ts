@@ -802,6 +802,7 @@ const FALLBACK_ASSUMPTIONS = {
   downPaymentPct: 0.20,         // FINANCING.down_payment_pct
   loanTermYears: 30,            // FINANCING.loan_term_years
   closingCostsPct: 0.03,        // FINANCING.closing_costs_pct
+  requiredEquityYield: 0.08,    // OPERATING.required_equity_yield (WACC equity leg)
   vacancyRate: 0.01,            // OPERATING.vacancy_rate
   managementPct: 0.00,          // OPERATING.property_management_pct
   maintenancePct: 0.05,         // OPERATING.maintenance_pct
@@ -834,8 +835,7 @@ function calculateMonthlyMortgage(principal: number, annualRate: number, years: 
 }
 
 /**
- * Estimate Income Value purchase price for LTR
- * Income Value is the price where income covers all costs (NOI = Debt Service)
+ * Estimate Income Value purchase price for LTR (WACC: debt constant + equity hurdle).
  */
 function estimateIncomeValue(
   monthlyRent: number,
@@ -853,12 +853,17 @@ function estimateIncomeValue(
   
   const monthlyRate = DEFAULT_ASSUMPTIONS.interestRate / 12;
   const numPayments = DEFAULT_ASSUMPTIONS.loanTermYears * 12;
-  const ltvRatio = 1 - DEFAULT_ASSUMPTIONS.downPaymentPct;
+  const downPct = DEFAULT_ASSUMPTIONS.downPaymentPct;
+  const ltvRatio = 1 - downPct;
   const mortgageConstant = (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
                            (Math.pow(1 + monthlyRate, numPayments) - 1) * 12;
   
-  const incomeValue = noi / (ltvRatio * mortgageConstant);
-  return Math.round(incomeValue);
+  const debtCost = ltvRatio * mortgageConstant;
+  const equityCost = downPct * DEFAULT_ASSUMPTIONS.requiredEquityYield;
+  const wacc = debtCost + equityCost;
+  if (wacc <= 0) return 0;
+
+  return Math.round(noi / wacc);
 }
 
 /**

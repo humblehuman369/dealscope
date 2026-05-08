@@ -35,25 +35,45 @@ class TestEstimateIncomeValue:
         )
         assert iv == 0
 
-    def test_custom_down_payment_and_rate(self):
+    def test_financing_stack_changes_income_value(self):
+        """Down payment changes the WACC blend (debt constant vs equity yield); IV is not necessarily monotonic."""
         iv_default = estimate_income_value(
             monthly_rent=2500,
             property_taxes=3600,
             insurance=1200,
         )
-        iv_low_down = estimate_income_value(
+        iv_other = estimate_income_value(
             monthly_rent=2500,
             property_taxes=3600,
             insurance=1200,
-            down_payment_pct=0.10,
+            down_payment_pct=0.50,
         )
-        # Lower down → more debt → lower income value (higher payment)
-        assert iv_low_down < iv_default
+        assert iv_default != iv_other
 
     def test_deterministic_for_fixed_inputs(self):
         a = estimate_income_value(3000, 4000, 1500)
         b = estimate_income_value(3000, 4000, 1500)
         assert a == b
+
+    def test_cash_uses_equity_hurdle_not_legacy_cap_floor(self):
+        """100% cash: Income Value = NOI / required_equity_yield (no silent NOI/5%)."""
+        iv = estimate_income_value(
+            monthly_rent=2500,
+            property_taxes=3600,
+            insurance=1200,
+            down_payment_pct=1.0,
+            required_equity_yield=0.08,
+        )
+        monthly_rent = 2500
+        annual_gross = monthly_rent * 12
+        vacancy = 0.01
+        maint_pct = 0.05
+        egi = annual_gross * (1 - vacancy)
+        maint = annual_gross * maint_pct
+        opex = 3600 + 1200 + maint
+        noi = egi - opex
+        expected = round(noi / 0.08)
+        assert iv == expected
 
 
 class TestCalculateBuyPrice:
@@ -63,7 +83,7 @@ class TestCalculateBuyPrice:
         """Target buy should be at or below list price."""
         list_price = 400_000
         buy = calculate_buy_price(
-            list_price=list_price,
+            market_price=list_price,
             monthly_rent=2500,
             property_taxes=3600,
             insurance=1200,
@@ -75,7 +95,7 @@ class TestCalculateBuyPrice:
         """Default buy_discount_pct is 0.05 → buy = income_value * 0.95."""
         list_price = 1_000_000
         buy = calculate_buy_price(
-            list_price=list_price,
+            market_price=list_price,
             monthly_rent=3500,
             property_taxes=5000,
             insurance=2000,
@@ -88,7 +108,7 @@ class TestCalculateBuyPrice:
         """When income value is above list, return list_price."""
         list_price = 200_000
         buy = calculate_buy_price(
-            list_price=list_price,
+            market_price=list_price,
             monthly_rent=5000,  # High rent → high income value
             property_taxes=2000,
             insurance=1000,
@@ -101,14 +121,14 @@ class TestCalculateBuyPrice:
     def test_custom_buy_discount(self):
         list_price = 500_000
         buy_5 = calculate_buy_price(
-            list_price=list_price,
+            market_price=list_price,
             monthly_rent=3000,
             property_taxes=4000,
             insurance=1200,
             buy_discount_pct=0.05,
         )
         buy_10 = calculate_buy_price(
-            list_price=list_price,
+            market_price=list_price,
             monthly_rent=3000,
             property_taxes=4000,
             insurance=1200,

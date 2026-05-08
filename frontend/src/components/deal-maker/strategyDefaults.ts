@@ -25,6 +25,7 @@ import {
   DEFAULT_SELLER_FINANCING_FIELDS,
 } from './types'
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
+import { DEFAULT_REQUIRED_EQUITY_YIELD } from '@/utils/estimateIncomeValue'
 
 // ------------------------------------------------------------------
 // Individual strategy initializers
@@ -52,6 +53,7 @@ export function buildLTRState(
     annualPropertyTax: property.propertyTax || 4200,
     annualInsurance: property.insurance ?? Math.round(price * OPERATING_INSURANCE_PCT),
     monthlyHoa: property.monthlyHoa ?? 0,
+    requiredEquityYield: DEFAULT_REQUIRED_EQUITY_YIELD,
   }
 }
 

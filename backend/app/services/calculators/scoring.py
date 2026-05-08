@@ -240,7 +240,8 @@ def calculate_deal_opportunity_score(
     The score answers: "How likely can you negotiate the required discount?"
 
     Formula:
-    1. Deal Gap % = (List Price - Income Value) / List Price (required discount)
+    1. Deal Gap % = (List Price - Income Value) / List Price (required discount).
+       Income Value must use the same WACC-based breakeven as Verdict (debt + equity hurdle).
     2. Motivation = Seller signals + Market condition modifier
     3. IQ Score = Probability of achieving Deal Gap given Motivation
 

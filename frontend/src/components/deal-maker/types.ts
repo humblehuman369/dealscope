@@ -564,6 +564,7 @@ export interface BRRRRDealMakerState {
   annualPropertyTax: number
   annualInsurance: number
   monthlyHoa: number
+  requiredEquityYield?: number
 }
 
 // =============================================================================
@@ -959,6 +960,7 @@ export interface HouseHackDealMakerState {
   utilitiesMonthly: number        // Shared utilities owner pays
   maintenanceRate: number         // % of rent
   capexRate: number               // % of rent for reserves
+  requiredEquityYield?: number
 }
 
 // =============================================================================

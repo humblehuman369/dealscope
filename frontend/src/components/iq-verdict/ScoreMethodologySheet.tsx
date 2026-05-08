@@ -258,7 +258,8 @@ export function ScoreMethodologySheet({
                     <DollarSign className="w-4 h-4" style={{ color: T.green }} />
                   </div>
                   <p className="text-sm font-semibold leading-relaxed" style={{ color: T.heading }}>
-                    The highest price the rental income can support. The maximum price you can pay and still break even on monthly cash flow.
+                    The highest price the rental income can support at your blended cost of capital: mortgage debt plus a required return on
+                    any cash you put in (default 8% annually — the &quot;equity yield&quot; hurdle).
                   </p>
                 </div>
 
@@ -266,7 +267,7 @@ export function ScoreMethodologySheet({
                   Breakeven is calculated using YOUR assumptions:
                 </p>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-4">
-                  {['Down payment %', 'Interest rate', 'Loan term', 'Income value', 'Management fees', 'Maintenance %'].map((item) => (
+                  {['Down payment %', 'Interest rate', 'Loan term', 'Required equity yield', 'Management fees', 'Maintenance %'].map((item) => (
                     <div key={item} className="flex items-center gap-1.5 text-[11px]">
                       <span style={{ color: T.teal }}>•</span>
                       <span style={{ color: T.secondary }}>{item}</span>
@@ -276,7 +277,7 @@ export function ScoreMethodologySheet({
 
                 <div className="p-3.5 rounded-lg" style={{ backgroundColor: 'rgba(52,211,153,0.05)', border: `1px solid rgba(52,211,153,0.12)` }}>
                   <p className="text-xs leading-relaxed" style={{ color: T.body }}>
-                    <span className="font-semibold" style={{ color: T.green }}>At breakeven:</span> Monthly rental income exactly covers all expenses (mortgage, taxes, insurance, vacancy, maintenance, management). Any price below breakeven = positive cash flow.
+                    <span className="font-semibold" style={{ color: T.green }}>At breakeven:</span> NOI covers operating expenses plus your annual capital cost (loan payments on the financed portion and the hurdle return on your equity). Any price below Income Value = positive cash flow vs. that hurdle.
                   </p>
                 </div>
 
