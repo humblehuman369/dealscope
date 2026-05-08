@@ -69,8 +69,8 @@ const PURCHASE_SLIDERS: SliderConfig[] = [
     helpText: 'Percentage of buy price paid upfront in cash. Set to 100% for an all-cash deal with no financing.' },
   { id: 'sellerFinancingAmount' as any, label: 'Seller Financing', min: 0, max: 500000, step: 5000, format: 'currency',
     helpText: 'Principal the seller carries as a second mortgage or installment note (creative financing).' },
-  { id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage',
-    helpText: 'Fees paid at closing \u2014 title insurance, appraisal, attorney, etc. Typically 2\u20135% of the purchase price.' },
+  { id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0, max: 0.05, step: 0.005, format: 'percentage',
+    helpText: 'Fees paid at closing \u2014 title insurance, appraisal, attorney, etc. Slider range is 0\u20135% of the purchase price.' },
 ]
 
 const FINANCING_SLIDERS: SliderConfig[] = [
@@ -172,7 +172,7 @@ function dynamicMax(sliderId: string, listPrice: number): Partial<SliderConfig> 
   if (sliderId === 'arv') return { max: Math.max(2000000, listPrice * 2) }
   if (sliderId === 'sellerFinancingAmount') {
     if (listPrice > 0) {
-      return { min: listPrice * 0.05, max: listPrice * 1.00 }
+      return { min: 0, max: listPrice * 1.0 }
     }
     return { min: 0, max: 500000 }
   }

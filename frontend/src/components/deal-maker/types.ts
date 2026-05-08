@@ -133,7 +133,7 @@ export interface SliderConfig {
 export const BUY_PRICE_SLIDERS: SliderConfig[] = [
   { id: 'buyPrice', label: 'Buy Price', min: 50000, max: 2000000, step: 5000, format: 'currency', sourceLabel: 'IQ Breakeven Analysis' },
   { id: 'downPaymentPercent', label: 'Down Payment', min: 0.05, max: 1.00, step: 0.05, format: 'percentage', sourceLabel: 'Industry standard' },
-  { id: 'closingCostsPercent', label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage', sourceLabel: 'Industry standard' },
+  { id: 'closingCostsPercent', label: 'Closing Costs', min: 0, max: 0.05, step: 0.005, format: 'percentage', sourceLabel: 'Industry standard' },
 ]
 
 // Tab 2: Financing sliders
@@ -834,7 +834,7 @@ export interface FlipSliderConfig {
 export const FLIP_BUY_SLIDERS: FlipSliderConfig[] = [
   { id: 'purchasePrice', label: 'Purchase Price', min: 50000, max: 2000000, step: 5000, format: 'currency', sourceLabel: 'Discounted from ARV' },
   { id: 'purchaseDiscountPct', label: 'Discount from ARV', min: 0, max: 0.40, step: 0.01, format: 'percentage', sourceLabel: 'Target: 20-30%' },
-  { id: 'closingCostsPercent', label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage', sourceLabel: 'Buyer closing' },
+  { id: 'closingCostsPercent', label: 'Closing Costs', min: 0, max: 0.05, step: 0.005, format: 'percentage', sourceLabel: 'Buyer closing' },
 ]
 
 // Phase 2: Financing sliders
@@ -1038,7 +1038,7 @@ export const HOUSEHACK_FINANCE_SLIDERS: HouseHackSliderConfig[] = [
   { id: 'downPaymentPercent', label: 'Down Payment', min: 0, max: 0.25, step: 0.005, format: 'percentage', sourceLabel: 'FHA: 3.5% min' },
   { id: 'interestRate', label: 'Interest Rate', min: 0.04, max: 0.10, step: 0.00125, format: 'percentage', sourceLabel: 'Current rates' },
   { id: 'pmiRate', label: 'PMI/MIP Rate', min: 0, max: 0.015, step: 0.0005, format: 'percentage', sourceLabel: 'FHA: 0.85%' },
-  { id: 'closingCostsPercent', label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage', sourceLabel: 'Buyer closing' },
+  { id: 'closingCostsPercent', label: 'Closing Costs', min: 0, max: 0.05, step: 0.005, format: 'percentage', sourceLabel: 'Buyer closing' },
 ]
 
 // Phase 3: Rent sliders
