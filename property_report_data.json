@@ -1,0 +1,153 @@
+{
+  "address": "3788 Moon Bay Cir, Wellington, FL 33414",
+  "price": "FMV ~$721,000",
+  "date": "May 8, 2026",
+  "overall_score": 65,
+  "property_details": {
+    "beds": "5",
+    "baths": "3",
+    "sqft": "3,012",
+    "year_built": "1998",
+    "lot_size": "0.20 acres",
+    "property_type": "Single Family — Grand Isles of Wellington (gated)"
+  },
+  "categories": {
+    "Value & Comps": {"score": 70, "weight": "25%"},
+    "Income Potential": {"score": 45, "weight": "20%"},
+    "Neighborhood Quality": {"score": 82, "weight": "20%"},
+    "Investment Upside": {"score": 65, "weight": "20%"},
+    "Market Conditions": {"score": 60, "weight": "15%"}
+  },
+  "comps": [
+    {"address": "3818 Moon Bay Cir", "price": "$735,000", "sqft": "3,012", "price_sqft": "$244", "sold_date": "Feb 2026", "distance": "0.05 mi"},
+    {"address": "3744 Moon Bay Cir", "price": "$695,000", "sqft": "2,950", "price_sqft": "$236", "sold_date": "Dec 2025", "distance": "0.10 mi"},
+    {"address": "11218 Sea Grass Cir", "price": "$705,000", "sqft": "3,014", "price_sqft": "$234", "sold_date": "Jan 2026", "distance": "0.20 mi"},
+    {"address": "3940 Lazy River Pkwy", "price": "$725,000", "sqft": "3,100", "price_sqft": "$234", "sold_date": "Mar 2026", "distance": "0.25 mi"},
+    {"address": "11367 Sea Grass Cir (active)", "price": "$815,000", "sqft": "3,014", "price_sqft": "$270", "sold_date": "Listed", "distance": "0.30 mi"},
+    {"address": "11489 Sea Grass Cir (active)", "price": "$849,000", "sqft": "3,014", "price_sqft": "$282", "sold_date": "Listed", "distance": "0.30 mi"}
+  ],
+  "comp_summary": {
+    "avg_price": "Closed avg ~$715K | FMV est $721K",
+    "avg_price_sqft": "$237/sqft (closed) vs $276/sqft (active asks)"
+  },
+  "cashflow": {
+    "items": [
+      {"item": "Gross Rental Income (market)", "monthly": "$4,200", "annual": "$50,400"},
+      {"item": "Vacancy (1% DealGapIQ default)", "monthly": "-$42", "annual": "-$504"},
+      {"item": "Effective Gross Income", "monthly": "$4,158", "annual": "$49,896"},
+      {"item": "Mortgage P&I (6%, 30-yr, 80% LTV)", "monthly": "-$3,458", "annual": "-$41,496"},
+      {"item": "Property Taxes (1.2% non-homestead)", "monthly": "-$721", "annual": "-$8,652"},
+      {"item": "Insurance (1% of price — FL flag)", "monthly": "-$601", "annual": "-$7,210"},
+      {"item": "HOA (Grand Isles)", "monthly": "-$210", "annual": "-$2,520"},
+      {"item": "Maintenance (5% of rent)", "monthly": "-$210", "annual": "-$2,520"},
+      {"item": "CapEx (5% of rent)", "monthly": "-$210", "annual": "-$2,520"},
+      {"item": "Utilities owner-paid", "monthly": "-$100", "annual": "-$1,200"},
+      {"item": "Pest Control", "monthly": "-$17", "annual": "-$200"},
+      {"item": "Net Cash Flow (LTR @ FMV)", "monthly": "-$1,369", "annual": "-$16,428"}
+    ]
+  },
+  "investment_metrics": {
+    "cap_rate": "3.48%",
+    "cap_rate_status": "Below typical 5% threshold — appreciation/lifestyle play, not income",
+    "cash_on_cash": "-7.9%",
+    "coc_status": "Negative leverage at 6% rates vs 3.5% cap; fix requires cash, lower price, or STR",
+    "grm": "14.3x",
+    "grm_status": "Tight for FL — typical investor target 8–11x",
+    "dscr": "0.60",
+    "dscr_status": "Well below 1.25 lender minimum; will not qualify for DSCR loan",
+    "one_pct": "0.58%",
+    "one_pct_status": "Below 1% rule — Wellington is appreciation, not yield",
+    "breakeven": "127%",
+    "breakeven_status": "Cannot break even on rent alone at FMV + financing"
+  },
+  "mortgage": {
+    "purchase_price": "$721,000 (FMV)",
+    "down_payment": "$144,200 (20%)",
+    "loan_amount": "$576,800",
+    "rate": "6.00% (DealGapIQ default)",
+    "term": "30-year fixed",
+    "monthly_pi": "$3,458",
+    "monthly_piti": "$4,990 (incl. tax/ins/HOA)"
+  },
+  "neighborhood": {
+    "scores": {
+      "School Rating": 78,
+      "Safety / Crime": 80,
+      "Walkability": 12,
+      "Transit Access": 5,
+      "Equestrian / Lifestyle": 95,
+      "Growth Trajectory": 80
+    },
+    "details": [
+      {"factor": "Elementary", "detail": "Equestrian Trails — GreatSchools 10/10", "notes": "Top 2.3% in Florida; signature draw"},
+      {"factor": "Middle School", "detail": "Polo Park Middle — ~7/10", "notes": "Solid; balanced academics & arts"},
+      {"factor": "High School", "detail": "Palm Beach Central — split rating", "notes": "Niche A−, GreatSchools 4/10 — verify in person"},
+      {"factor": "Equestrian Access", "detail": "WEF / Wellington International ~10 min", "notes": "$352M annual economic impact; Dec–Mar season"},
+      {"factor": "Polo", "detail": "International Polo Club ~3 min", "notes": "Active polo & equestrian community"},
+      {"factor": "Walkability", "detail": "Walk Score 7–10 (car dependent)", "notes": "Suburban/gated layout; transit non-existent"},
+      {"factor": "Community", "detail": "Grand Isles — 611 homes, 24/7 manned gate", "notes": "Clubhouse, pool, tennis/pickleball, fitness"},
+      {"factor": "HOA Fee", "detail": "~$200–$220/mo", "notes": "Low for amenity stack; verify lease/STR rules"}
+    ],
+    "demographics": {
+      "population_growth": "Wellington steady; 33414 net inflow from NY/NJ",
+      "median_age": "~42 years (family-skewed)",
+      "employment_rate": "Healthy — equestrian, hospitality, healthcare, finance",
+      "major_employers": "Wellington Regional Medical, equestrian economy, county/school district"
+    }
+  },
+  "strategies": [
+    {"strategy": "Buy & Hold (LTR)", "projected_return": "~15% 5-yr IRR via appreciation", "timeframe": "5–10 years",
+     "pros": "Wellington 8% recent appreciation + WEF demand floor",
+     "risk": "Negative monthly cash flow at 6% rates; insurance shocks; rate-driven exit"},
+    {"strategy": "STR / Seasonal Lease (WEF)", "projected_return": "~9% CoC unlevered (cash buyer)", "timeframe": "Annual cycle",
+     "pros": "$20K–$100K/mo Jan–Apr WEF rates; ~$36K season income",
+     "risk": "HOA may restrict short leases — verify before offer; off-season vacancy 5 mo"},
+    {"strategy": "Fix & Flip", "projected_return": "Limited margin", "timeframe": "4–6 months",
+     "pros": "Property age (1998) supports light cosmetic refresh",
+     "risk": "Soft buyer's market + DOM rising; twin actives at $815K stale → margin compressed"},
+    {"strategy": "BRRRR", "projected_return": "Capital recycle limited", "timeframe": "12–18 months",
+     "pros": "Possible if bought 5–10% below FMV with refresh",
+     "risk": "ARV ceiling near asking comps; rehab arbitrage thin in this price tier"}
+  ],
+  "appreciation_projections": [
+    {"year": "Year 1", "conservative": "$728,000", "moderate": "$757,000", "aggressive": "$779,000"},
+    {"year": "Year 3", "conservative": "$743,000", "moderate": "$834,800", "aggressive": "$908,000"},
+    {"year": "Year 5", "conservative": "$758,000", "moderate": "$920,400", "aggressive": "$1,059,000"},
+    {"year": "Year 10", "conservative": "$796,500", "moderate": "$1,174,500", "aggressive": "$1,556,500"}
+  ],
+  "scenarios": [
+    {"scenario": "Bull Case", "probability": "25%", "return": "+30% to +45% (5yr)",
+     "trigger": "WEF expansion + FL insurance reform + sustained NY/NJ migration; STR/seasonal-lease income captured"},
+    {"scenario": "Base Case", "probability": "55%", "return": "+15% to +25% (5yr)",
+     "trigger": "Steady 5% appreciation, sticky 6% rates, normal hurricane seasons; LTR breaks even by year 4"},
+    {"scenario": "Bear Case", "probability": "20%", "return": "-5% to -15% (5yr)",
+     "trigger": "HOA bans short leases, FL insurance reverses gains, major hurricane, equestrian-economy contraction"}
+  ],
+  "recommendation": {
+    "signal": "HOLD / WATCH",
+    "summary": "3788 Moon Bay Cir is a high-quality home in an excellent equestrian-adjacent neighborhood (Grand Isles of Wellington), but the income economics do not pencil at conventional financing — at FMV $721K and 6% rates, a long-term rental loses ~$1,400/mo. The current 'twin' active listings asking $815K–$849K are ~$95K–$128K above defensible FMV; the soft buyer's market (~8 months supply, list prices -11% YoY) gives a buyer real negotiating leverage. Best fit: cash buyer (or 5+ year appreciation horizon) using a WEF seasonal-lease overlay during Jan–Apr — but ONLY after verifying Grand Isles HOA lease minimums, since a no-STR rule eliminates the strategy entirely.",
+    "suggested_offer": "$680,000 – $720,000 (vs current twin asks $815K+)",
+    "action_items": [
+      "Verify Grand Isles HOA covenants on minimum lease term — STR strategy depends on this",
+      "Get fresh insurance quotes — if roof >15 yrs, expect $10K–$12K/yr (not $7,210 default)",
+      "Inspect: roof age, HVAC, hurricane shutters, pool equipment (1998 build)",
+      "Confirm flood zone + check whether flood insurance is required",
+      "Anchor offer to closed comps ($680K–$720K), not stale twin asks at $815K+",
+      "If pursuing STR: validate WEF seasonal ADRs with 2–3 local property managers"
+    ]
+  },
+  "risk_factors": [
+    {"factor": "Florida Insurance Crisis", "probability": "Medium-High", "impact": "High",
+     "notes": "Still 2-3x 2019 levels; one bad season could spike further. 2026 saw first relief (Citizens -8.7%, PBC -11.9%)."},
+    {"factor": "HOA Lease Restrictions", "probability": "Medium", "impact": "High",
+     "notes": "Grand Isles may have minimum lease terms that eliminate STR/WEF seasonal strategy. MUST verify before offer."},
+    {"factor": "Negative Leverage at 6% Rates", "probability": "High", "impact": "High",
+     "notes": "Cap rate ~3.5% vs 6% borrowing = ~$1,400/mo cash bleed for any LTR investor"},
+    {"factor": "Hurricane / Flood", "probability": "Medium", "impact": "High",
+     "notes": "Wellington inland but not immune; verify flood zone and rebuilding cost coverage"},
+    {"factor": "Equestrian Economy Concentration", "probability": "Low", "impact": "Medium",
+     "notes": "WEF venue stability is a single-point demand driver for the Wellington premium"},
+    {"factor": "List-to-Sale Gap (Buyer's Market)", "probability": "Medium", "impact": "Low",
+     "notes": "Real risk to seller, opportunity for buyer — clearing prices ~94% of list right now"}
+  ]
+}
