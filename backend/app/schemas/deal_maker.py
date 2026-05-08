@@ -16,6 +16,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
+from app.core.defaults import OPERATING
+
 
 class InitialAssumptions(BaseModel):
     """
@@ -35,6 +37,10 @@ class InitialAssumptions(BaseModel):
     management_pct: float = Field(0.00, description="Property management as % of rent")
     insurance_pct: float = Field(0.01, description="Insurance as % of purchase price")
     capex_pct: float = Field(0.05, description="CapEx reserve as % of rent")
+    required_equity_yield: float = Field(
+        default_factory=lambda: float(OPERATING.required_equity_yield),
+        description="Hurdle on equity for Income Value (0.08 = 8%%)",
+    )
 
     # Growth
     appreciation_rate: float = Field(0.05, description="Annual appreciation rate")
@@ -89,7 +95,13 @@ class CachedMetrics(BaseModel):
 
     # Deal analysis
     deal_gap_pct: float | None = Field(None, description="Discount from list price needed")
-    income_value: float | None = Field(None, description="Income Value — price where cash flow = $0")
+    income_value: float | None = Field(
+        None, description="Income Value — breakeven price at WACC (debt + required equity yield)"
+    )
+    metrics_calculation_version: int = Field(
+        2,
+        description="Increment when income_value / deal_gap formula changes; busts client-side stale cache",
+    )
 
     # Metadata
     calculated_at: datetime | None = None
@@ -155,6 +167,10 @@ class DealMakerRecord(BaseModel):
     maintenance_pct: float = Field(0.05, description="Maintenance as % of rent")
     management_pct: float = Field(0.00, description="Management as % of rent")
     capex_pct: float = Field(0.05, description="CapEx reserve as % of rent")
+    required_equity_yield: float = Field(
+        default_factory=lambda: float(OPERATING.required_equity_yield),
+        description="Hurdle on equity for Income Value WACC (0.08 = 8%%)",
+    )
 
     # Operating Expenses (fixed)
     annual_property_tax: float = Field(0, description="Annual property taxes")
@@ -237,7 +253,7 @@ class DealMakerRecord(BaseModel):
     # === Metadata ===
     created_at: datetime | None = Field(None, description="When record was created")
     updated_at: datetime | None = Field(None, description="Last update time")
-    version: int = Field(1, description="Schema version for migrations")
+    version: int = Field(2, description="Schema version for migrations")
 
     class Config:
         from_attributes = True
@@ -297,6 +313,9 @@ class DealMakerRecordUpdate(BaseModel):
     maintenance_pct: float | None = Field(None, ge=0, le=1)
     management_pct: float | None = Field(None, ge=0, le=1)
     capex_pct: float | None = Field(None, ge=0, le=1)
+    required_equity_yield: float | None = Field(
+        None, ge=0, le=1, description="Required return on equity for Income Value (0.08 = 8%%)"
+    )
 
     # Operating Expenses (fixed)
     annual_property_tax: float | None = Field(None, ge=0)
