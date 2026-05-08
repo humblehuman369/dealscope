@@ -200,7 +200,7 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
         <SliderRow
           config={{
             id: 'sellerFinancingAmount' as any,
-            label: 'Seller Financing Amount',
+            label: 'Seller Financing',
             min: listPrice > 0 ? listPrice * 0.05 : 0,
             max: listPrice > 0 ? listPrice * 1.0 : 500000,
             step: 5000,

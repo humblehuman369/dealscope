@@ -67,7 +67,7 @@ const PURCHASE_SLIDERS: SliderConfig[] = [
     helpText: 'The price you offer the seller. Lower buy prices improve your cash flow and return metrics.' },
   { id: 'downPaymentPercent' as any, label: 'Down Payment', min: 0.05, max: 1.00, step: 0.05, format: 'percentage',
     helpText: 'Percentage of buy price paid upfront in cash. Set to 100% for an all-cash deal with no financing.' },
-  { id: 'sellerFinancingAmount' as any, label: 'Seller Financing Amount', min: 0, max: 500000, step: 5000, format: 'currency',
+  { id: 'sellerFinancingAmount' as any, label: 'Seller Financing', min: 0, max: 500000, step: 5000, format: 'currency',
     helpText: 'Principal the seller carries as a second mortgage or installment note (creative financing).' },
   { id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage',
     helpText: 'Fees paid at closing \u2014 title insurance, appraisal, attorney, etc. Typically 2\u20135% of the purchase price.' },

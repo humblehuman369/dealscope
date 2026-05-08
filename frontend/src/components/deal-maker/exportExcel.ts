@@ -59,7 +59,7 @@ type SellerFinExport = Pick<
 >
 
 function appendSellerFinancingRows(ws: ExcelJS.Worksheet, row: number, state: SellerFinExport): number {
-  addRow(ws, row++, 'Seller Financing Amount', state.sellerFinancingAmount, CUR)
+  addRow(ws, row++, 'Seller Financing', state.sellerFinancingAmount, CUR)
   addRow(ws, row++, 'Seller Interest', state.sellerInterestRate, PCT2)
   addRow(ws, row++, 'Seller Term', state.sellerTermYears, '#,##0 "years"')
   return row
