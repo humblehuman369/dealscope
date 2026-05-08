@@ -1219,7 +1219,14 @@ class DataNormalizer:
         "has_pool": (None, "hasPool", "axesso"),
         "has_garage": (None, "hasGarage", "axesso"),
         "garage_spaces": (None, "parkingSpaces", "axesso"),
-        "hoa_fees_monthly": (None, "hoaFee", "axesso"),
+        # HOA / condo / co-op fees — `monthlyHoaFee` is the top-level numeric
+        # field on the AXESSO/Zillow property payload (e.g. `monthlyHoaFee: 72`).
+        # The `hoaFee` field exists only inside `resoFacts` and as a *string*
+        # (e.g. "$72 monthly") which used to silently coerce to None / 0 here.
+        # `_extract_hoa_from_reso_facts()` is invoked after FIELD_MAPPING as a
+        # string-parsing fallback for properties where the numeric field is
+        # absent but `resoFacts.associationFee` / `resoFacts.hoaFee` is present.
+        "hoa_fees_monthly": (None, "monthlyHoaFee", "axesso"),
     }
 
     def __init__(self):
@@ -1306,6 +1313,25 @@ class DataNormalizer:
                 "raw_values": raw_values if raw_values else None,
                 "conflict_flag": conflict,
             }
+
+        # HOA fallback — when AXESSO returns null `monthlyHoaFee` but the fee
+        # is still present as a string inside `resoFacts` (e.g. "$72 monthly"),
+        # parse it and update both normalized + provenance so downstream
+        # surfaces (Property page, Strategy page, DealMaker worksheets) see the
+        # correct monthly amount instead of $0.
+        if normalized.get("hoa_fees_monthly") is None and isinstance(axesso_data, dict):
+            reso = axesso_data.get("resoFacts")
+            if isinstance(reso, dict):
+                hoa_monthly = self._extract_hoa_from_reso_facts(reso)
+                if hoa_monthly is not None:
+                    normalized["hoa_fees_monthly"] = hoa_monthly
+                    provenance["hoa_fees_monthly"] = {
+                        "source": "axesso",
+                        "fetched_at": timestamp.isoformat(),
+                        "confidence": "medium",
+                        "raw_values": {"axesso_resoFacts": hoa_monthly},
+                        "conflict_flag": False,
+                    }
 
         # Inject Redfin estimate as a standalone source (bypasses FIELD_MAPPING)
         self._inject_redfin_data(normalized, provenance, redfin_data, timestamp)
@@ -1859,6 +1885,87 @@ class DataNormalizer:
             },
             "value_iq_estimate",
         )
+
+    def _extract_hoa_from_reso_facts(self, reso: dict[str, Any]) -> float | None:
+        """Parse a monthly HOA / condo / co-op fee from AXESSO `resoFacts`.
+
+        AXESSO returns the numeric monthly HOA at the top level
+        (`monthlyHoaFee`). On the small number of listings where that field is
+        null, the fee is still surfaced inside `resoFacts` as a *string* such
+        as "$72 monthly", "$1,200 annually", or "$300 quarterly". This helper
+        normalises any of those string forms into a monthly USD amount.
+
+        Returns ``None`` when no parseable HOA fee can be extracted — never
+        fabricates a value.
+        """
+        if not isinstance(reso, dict):
+            return None
+
+        candidates: list[Any] = [
+            reso.get("hoaFee"),
+            reso.get("hoaFeeTotal"),
+            reso.get("associationFee"),
+            reso.get("associationFee2"),
+        ]
+
+        for raw in candidates:
+            monthly = self._coerce_hoa_value_to_monthly(raw)
+            if monthly is not None:
+                return monthly
+        return None
+
+    @staticmethod
+    def _coerce_hoa_value_to_monthly(raw: Any) -> float | None:
+        """Convert a raw HOA fee (number or display string) to a monthly amount.
+
+        Handles inputs like:
+          - 72            -> 72.0  (assumed monthly)
+          - "$72 monthly" -> 72.0
+          - "$200 quarterly" -> 66.67
+          - "$2,400 annually" / "$2,400/yr" -> 200.0
+          - "$30 weekly"  -> 130.0
+        Returns None for unparseable / negative / zero strings without a
+        recognisable amount.
+        """
+        if raw is None:
+            return None
+        if isinstance(raw, (int, float)):
+            try:
+                val = float(raw)
+            except (TypeError, ValueError):
+                return None
+            return val if val > 0 else None
+        if not isinstance(raw, str):
+            return None
+
+        text = raw.strip()
+        if not text:
+            return None
+
+        import re
+
+        amount_match = re.search(r"[-+]?\$?\s*([\d,]+(?:\.\d+)?)", text)
+        if not amount_match:
+            return None
+        try:
+            amount = float(amount_match.group(1).replace(",", ""))
+        except ValueError:
+            return None
+        if amount <= 0:
+            return None
+
+        lowered = text.lower()
+        if any(tok in lowered for tok in ("annual", "/yr", "per year", "yearly")):
+            return round(amount / 12.0, 2)
+        if any(tok in lowered for tok in ("quarter", "/qtr")):
+            return round(amount / 3.0, 2)
+        if any(tok in lowered for tok in ("semi-annual", "semiannual", "/6mo", "biannual", "bi-annual")):
+            return round(amount / 6.0, 2)
+        if any(tok in lowered for tok in ("week", "/wk")):
+            return round(amount * 52.0 / 12.0, 2)
+        if any(tok in lowered for tok in ("bi-week", "biweek")):
+            return round(amount * 26.0 / 12.0, 2)
+        return amount
 
     def _get_nested_value(self, data: dict | None, field: str) -> Any:
         """Get value from potentially nested dict using dot notation."""

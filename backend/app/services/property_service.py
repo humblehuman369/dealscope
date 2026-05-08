@@ -473,6 +473,18 @@ class PropertyService:
                 )
                 market_cached = cached_data.get("market") or {}
                 missing_insurance = market_cached.get("insurance_annual") is None
+                # HOA / condo / co-op fees are mandatory for property types
+                # where they almost always apply (Condo, Townhouse, Co-op,
+                # Multi-Family). Cached entries pre-dating the AXESSO HOA
+                # field-mapping fix recorded `hoa_fees_monthly: null` for
+                # these properties and showed $0 across Strategy / DealMaker /
+                # Property pages — re-fetch so `monthlyHoaFee` is captured.
+                details_cached = cached_data.get("details") or {}
+                ptype = str(details_cached.get("property_type") or "").lower()
+                hoa_likely = any(
+                    tok in ptype for tok in ("condo", "town", "co-op", "coop", "multi", "apartment")
+                )
+                missing_hoa = hoa_likely and market_cached.get("hoa_fees_monthly") in (None, 0)
                 # Zillow data completely absent — AXESSO likely had a transient
                 # failure.  Re-fetch after 4 hours to give the API time to
                 # recover without hammering it on every request.
@@ -515,6 +527,7 @@ class PropertyService:
                     )
                     or missing_iq_fields
                     or missing_insurance
+                    or missing_hoa
                     or zillow_stale
                     or redfin_stale
                 )
@@ -526,6 +539,8 @@ class PropertyService:
                         if redfin_stale
                         else "insurance_annual missing"
                         if missing_insurance
+                        else "hoa_fees_monthly missing on HOA-likely property"
+                        if missing_hoa
                         else "IQ estimate data missing"
                     )
                     logger.info("Cache hit for %s but %s — forcing re-fetch", address, reason)

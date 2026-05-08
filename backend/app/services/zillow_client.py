@@ -674,13 +674,19 @@ class ZillowDataExtractor:
 
     @staticmethod
     def extract_features(data: dict[str, Any]) -> dict[str, Any]:
-        """Extract property features."""
+        """Extract property features.
+
+        ``monthlyHoaFee`` is the top-level numeric monthly HOA / condo / co-op
+        fee. The legacy ``hoaFee`` field is a display string ("$72 monthly")
+        nested under ``resoFacts`` and is *not* present at the root, so reading
+        it from ``data.get("hoaFee")`` returned ``None`` for every property.
+        """
         return {
             "has_pool": data.get("hasPool"),
             "has_garage": data.get("hasGarage"),
             "parking_spaces": data.get("parkingSpaces"),
             "stories": data.get("stories"),
-            "hoa_fee": data.get("hoaFee"),
+            "hoa_fee": data.get("monthlyHoaFee"),
             "description": data.get("description"),
         }
 
