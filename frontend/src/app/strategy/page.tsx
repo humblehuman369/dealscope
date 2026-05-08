@@ -839,10 +839,23 @@ function StrategyContent() {
   // Score — capped at 95 (no deal is 100% certain)
   const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
 
-  // All financial values are backend-authoritative — sourced from the verdict API response.
-  // When sliders change, a debounced backend recalc fires and updates `data`.
-  const listPrice = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? 0
-  const targetPrice = data.purchase_price ?? (data as any).purchasePrice ?? Math.round(listPrice * 0.85)
+  // List / target buy: API is canonical after recalc, but DealMaker session overrides must win
+  // immediately so the Deal Gap graph and metric bar match the worksheet (not one request behind).
+  const listPriceBase = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? 0
+  const listPriceOverride = dealMakerOverrides != null ? dealMakerOverrides.listPrice : undefined
+  const listPrice =
+    typeof listPriceOverride === 'number' && isFinite(listPriceOverride) && listPriceOverride > 0
+      ? listPriceOverride
+      : listPriceBase
+
+  const targetFromOverrides =
+    dealMakerOverrides != null
+      ? (dealMakerOverrides.purchasePrice ?? dealMakerOverrides.buyPrice)
+      : undefined
+  const targetPrice =
+    typeof targetFromOverrides === 'number' && isFinite(targetFromOverrides) && targetFromOverrides > 0
+      ? targetFromOverrides
+      : (data.purchase_price ?? (data as any).purchasePrice ?? Math.round(listPrice * 0.85))
   const parsed = parseAddressString(addressParam)
 
   // Strategy-specific financial breakdown from backend
