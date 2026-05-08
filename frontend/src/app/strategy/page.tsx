@@ -288,6 +288,7 @@ function StrategyContent() {
       familyLabel: (p.family_label ?? p.familyLabel ?? '') as string,
       realismLabel: (p.realism_label ?? p.realismLabel ?? '') as string,
       headline: (p.headline ?? '') as string,
+      bullets: Array.isArray(p.bullets) ? (p.bullets as string[]) : [],
       summary: (p.summary ?? '') as string,
       levers: (p.levers ?? []).map((lv: any) => ({
         label: lv.label,

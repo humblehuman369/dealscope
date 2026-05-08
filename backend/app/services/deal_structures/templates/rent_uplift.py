@@ -5,7 +5,7 @@ from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.formatting import fmt_money_precise, fmt_monthly, fmt_pct_delta
 
 FAMILY = "income"
-FAMILY_LABEL = "Income uplift"
+FAMILY_LABEL = "Rent increase"
 ID = "rent-verification"
 
 MAX_REALISTIC_BUMP_PCT = 0.20  # cap rent increase at +20% — beyond that becomes implausible
@@ -84,9 +84,9 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         "without risking your earnest deposit."
     )
 
-    sel_reason = "Shown because a modest rent increase may be enough to clear the gap at the asking price"
+    sel_reason = "Local market conditions are the key factors to support an increase."
     if bump_pct > 12:
-        sel_reason = "Shown because the gap needs a larger rent lift — verify comps before leaning on this path"
+        sel_reason = "The gap needs a larger rent lift — verify comps before leaning on this path."
 
     return DealStructure(
         id=ID,
@@ -94,13 +94,17 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label=realism_label,
         headline=f"Verify or raise rent to ${round(new_rent):,}",
+        bullets=[
+            "Verify market rent range",
+            f"Raise rent to ${round(new_rent):,}",
+        ],
         summary=(
-            f"Closes {fmt_monthly(monthly_savings)} of the gap. "
-            f"Run rent comps in Appraiser to confirm — or plan a light rehab."
+            f"Only {fmt_monthly(monthly_savings)} closes the gap. "
+            f"Run rent comps in Appraiser to confirm and/or plan a light rehab."
         ),
         levers=[
             StructureLever(
-                label="Monthly rent",
+                label="Target rent",
                 before_label=f"${round(ctx.monthly_rent):,}",
                 after_label=f"${round(new_rent):,}",
                 delta_label=fmt_pct_delta(ctx.monthly_rent, new_rent),

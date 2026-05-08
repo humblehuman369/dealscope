@@ -10,7 +10,7 @@ from app.services.deal_structures.formatting import (
 )
 
 FAMILY = "price"
-FAMILY_LABEL = "Price negotiation"
+FAMILY_LABEL = "Negotiate price"
 ID = "price-negotiation"
 
 
@@ -94,9 +94,16 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         "\u2022 Walk away once. Sellers often call back within 48 hours."
     )
 
-    sel_reason = f"Shown because a {gap_pct:.1f}% price reduction closes the gap to the Target Buy"
     if ctx.days_on_market and ctx.days_on_market > 60:
-        sel_reason = f"Shown because the property has been listed {ctx.days_on_market} days — price flexibility is more likely"
+        sel_reason = (
+            f"The property has been listed {ctx.days_on_market} days. "
+            "Seller's price flexibility is more likely."
+        )
+    else:
+        sel_reason = (
+            "The seller's personal and financial situation will indicate "
+            "if price flexibility is more likely."
+        )
 
     return DealStructure(
         id=ID,
@@ -104,8 +111,12 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label=realism_label,
         headline=f"Negotiate to {fmt_money(new_price)}",
+        bullets=[
+            f"Price reduction: {gap_pct:.1f}% price cut",
+            f"Target price: {fmt_money(new_price)}",
+        ],
         summary=(
-            f"Closes the gap at the lower price. "
+            f"A lower price reduces monthly P&I. "
             f"Cash to close drops to {fmt_money(new_cash_required)} "
             f"(from {fmt_money(ctx.baseline_cash_required)})."
         ),

@@ -41,6 +41,10 @@ class DealStructure(BaseModel):
     family_label: str = Field(..., description="Short family chip label, e.g. 'Price negotiation'")
     realism_label: str = Field(..., description="Slot label, e.g. 'Most realistic'")
     headline: str = Field(..., description="Card headline (under 60 chars)")
+    bullets: list[str] = Field(
+        default_factory=list,
+        description="2-3 short action bullets shown at the top of the card (replaces headline in UI when present)",
+    )
     summary: str = Field(..., description="One-sentence summary under the levers")
     levers: list[StructureLever] = Field(default_factory=list)
     monthly_savings: float = Field(0, description="Estimated monthly cash-flow improvement vs baseline")

@@ -135,6 +135,10 @@ def combine(sub2_result: DealStructure, seller_second_result: DealStructure, _ct
         family_label=FAMILY_LABEL,
         realism_label="Named pattern",
         headline=headline,
+        bullets=[
+            "Take over the seller's existing loan",
+            "Add a 0% seller second for the equity gap",
+        ],
         summary=summary,
         levers=levers[:8],
         monthly_savings=round(monthly_savings, 2),

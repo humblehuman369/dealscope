@@ -781,6 +781,7 @@ function VerdictContent() {
           familyLabel: p.family_label ?? p.familyLabel ?? '',
           realismLabel: p.realism_label ?? p.realismLabel ?? '',
           headline: p.headline,
+          bullets: Array.isArray(p.bullets) ? (p.bullets as string[]) : [],
           summary: p.summary,
           levers: (p.levers ?? []).map((lv: any) => ({
             label: lv.label,

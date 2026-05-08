@@ -157,6 +157,10 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label="Best when assumable",
         headline=headline,
+        bullets=[
+            f"Assume the seller's {lt} loan at ~{note_rate * 100:.1f}%",
+            f"Worth ~{fmt_money(pv)} in today's dollars",
+        ],
         summary=summary,
         levers=[
             StructureLever(

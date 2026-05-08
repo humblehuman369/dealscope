@@ -33,6 +33,8 @@ export interface DealStructure {
   familyLabel: string
   realismLabel: string
   headline: string
+  /** Optional 2-3 short action bullets shown at the top of the card; replaces headline when present. */
+  bullets?: string[]
   summary: string
   levers: DealStructureLever[]
   monthlySavings: number
@@ -112,25 +114,15 @@ function PathCard({
       <div className="flex items-center gap-2 flex-wrap">
         <span
           style={{
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: 800,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
+            lineHeight: 1.2,
             color: accent,
           }}
         >
-          Path {index + 1}
-        </span>
-        <span
-          style={{
-            fontSize: 14,
-            fontWeight: 700,
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
-            color: '#FFFFFF',
-          }}
-        >
-          · {structure.familyLabel}
+          {`Path ${index + 1} · ${structure.familyLabel}`}
         </span>
         <span
           className="ml-auto"
@@ -145,17 +137,44 @@ function PathCard({
         </span>
       </div>
 
-      <h4
-        style={{
-          margin: 0,
-          fontSize: 15,
-          fontWeight: 600,
-          lineHeight: 1.35,
-          color: 'var(--text-heading)',
-        }}
-      >
-        {structure.headline}
-      </h4>
+      {structure.bullets && structure.bullets.length > 0 ? (
+        <ul
+          style={{
+            margin: 0,
+            paddingLeft: 18,
+            listStyleType: 'disc',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+          }}
+        >
+          {structure.bullets.map((b, i) => (
+            <li
+              key={i}
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                lineHeight: 1.4,
+                color: 'var(--text-heading)',
+              }}
+            >
+              {b}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <h4
+          style={{
+            margin: 0,
+            fontSize: 15,
+            fontWeight: 600,
+            lineHeight: 1.35,
+            color: 'var(--text-heading)',
+          }}
+        >
+          {structure.headline}
+        </h4>
+      )}
 
       {structure.selectionReason && (
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.45, color: 'var(--text-secondary)' }}>

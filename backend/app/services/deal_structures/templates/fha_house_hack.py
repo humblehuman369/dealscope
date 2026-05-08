@@ -94,6 +94,10 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label="Owner-occ path",
         headline=f"FHA {FHA_DOWN_PCT * 100:.1f}% down — live in it, rent the rest",
+        bullets=[
+            f"FHA {FHA_DOWN_PCT * 100:.1f}% down (owner-occ)",
+            f"Live in it, rent the rest ({mode})",
+        ],
         summary=(
             f"Owner-occ FHA at ~{fha_rate * 100:.2f}% + MIP improves cash flow by about {fmt_money(monthly_savings)}/mo "
             f"versus your baseline investor loan—requires living there at least one year."

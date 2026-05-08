@@ -147,9 +147,16 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     )
 
     dom = ctx.days_on_market or 0
-    sel_reason = "Shown because seller financing can bridge the cash-flow gap without cutting list price"
     if dom > 60:
-        sel_reason = f"Shown because the property has been listed {dom} days — sellers are more open to creative terms"
+        sel_reason = (
+            f"The property has been listed {dom} days. "
+            "Seller's price flexibility is more likely."
+        )
+    else:
+        sel_reason = (
+            "The seller's personal and financial situation will indicate "
+            "if price flexibility is more likely."
+        )
 
     return DealStructure(
         id=ID,
@@ -157,6 +164,10 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label=realism_label,
         headline=f"Pay full asking — seller carries a {fmt_money(chosen_second)} 2nd at 0%",
+        bullets=[
+            "Pay full asking",
+            f"Seller carries a {fmt_money(chosen_second)} 2nd at 0%",
+        ],
         summary=(
             f"Saves {fmt_monthly(monthly_savings)}. Seller gets their price plus "
             f"{fmt_money(chosen_second)} back in {DEFAULT_BALLOON_YEARS} years."

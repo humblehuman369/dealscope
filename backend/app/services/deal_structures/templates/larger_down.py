@@ -110,6 +110,10 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label="Capital-heavy path",
         headline=f"Put {new_down * 100:.0f}% down ({fmt_money(new_cash)})",
+        bullets=[
+            f"Increase down payment to {new_down * 100:.0f}%",
+            f"Bring {fmt_money(new_cash)} to close",
+        ],
         summary=(
             f"Adds about {fmt_money(delta_cash)} cash vs baseline closing but saves "
             f"{fmt_money(monthly_savings)}/mo on the mortgage."
