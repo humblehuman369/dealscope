@@ -186,6 +186,10 @@ def solve(ctx: StructureContext) -> DealStructure | None:
             family_label=FAMILY_LABEL,
             realism_label="Lowest cost of capital",
             headline=f"Take over the seller's ~{assumed_rate * 100:.1f}% loan",
+            bullets=[
+                f"Take over seller's ~{assumed_rate * 100:.1f}% loan",
+                f"Bring ~{fmt_money(cash_required)} to close",
+            ],
             summary=(
                 f"Saves about {fmt_money(monthly_savings)}/mo on debt service vs a new loan at "
                 f"{ctx.interest_rate * 100:.1f}%. Expect ~{fmt_money(cash_required)} cash toward seller equity."
@@ -288,6 +292,10 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label="Lowest cost of capital",
         headline=f"Take over the seller's ~{assumed_rate * 100:.1f}% loan",
+        bullets=[
+            f"Take over seller's ~{assumed_rate * 100:.1f}% loan",
+            f"Bring ~{fmt_money(cash_required)} to close",
+        ],
         summary=(
             f"Saves about {fmt_money(monthly_savings)}/mo on debt service vs a new loan at "
             f"{ctx.interest_rate * 100:.1f}%. Expect ~{fmt_money(cash_required)} cash toward seller equity."

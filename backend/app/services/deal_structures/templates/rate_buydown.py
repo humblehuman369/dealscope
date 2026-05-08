@@ -110,6 +110,10 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label="New construction friendly",
         headline=f"Seller pays a 2-1 rate buydown ({fmt_money(approx_cost)})",
+        bullets=[
+            "Seller funds a 2-1 rate buydown",
+            f"Year 1 rate drops to {y1_rate * 100:.1f}%",
+        ],
         summary=(
             f"Year 1 P&I near ${y1_pi:,.0f}/mo vs ${base_pi:,.0f}/mo at the note rate — "
             f"often enough to land positive cash flow while the seller helps with ~{fmt_money(approx_cost)}."

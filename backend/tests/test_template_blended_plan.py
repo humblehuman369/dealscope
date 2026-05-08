@@ -56,7 +56,7 @@ def test_renders_three_levers_in_canonical_order():
     assert result is not None
     assert len(result.levers) == 3
     labels = [lever.label.lower() for lever in result.levers]
-    assert "purchase price" in labels[0]
+    assert "target price" in labels[0]
     assert "seller 2nd" in labels[1]
     assert "monthly rent" in labels[2]
 

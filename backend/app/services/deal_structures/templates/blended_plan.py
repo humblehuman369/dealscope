@@ -244,6 +244,11 @@ def solve(
         f"Blend: {price_pct:.1f}% price cut + {fmt_money(chosen_second)} seller 2nd + "
         f"{bump_pct:.1f}% rent lift"
     )
+    bullets = [
+        f"Target price: {price_pct:.1f}% price cut",
+        f"Seller 2nd: {fmt_money(chosen_second)} seller 2nd",
+        f"Raise rent: {bump_pct:.1f}% rent lift",
+    ]
     summary = (
         f"Combines all three moves so no single ask carries the whole gap. "
         f"Together they save about {fmt_monthly(monthly_savings)} vs the baseline."
@@ -255,7 +260,7 @@ def solve(
         )
 
     sel_reason = (
-        "Shown because real deals usually combine moves — a smaller price cut, a partial seller carry, "
+        "Real deals usually combine moves — a smaller price cut, a partial seller carry, "
         "and a modest rent lift can clear the gap together when no single lever wants to do it alone."
     )
 
@@ -330,10 +335,11 @@ def solve(
         family_label=FAMILY_LABEL,
         realism_label=realism_label,
         headline=headline,
+        bullets=bullets,
         summary=summary,
         levers=[
             StructureLever(
-                label="Purchase price",
+                label="Target price",
                 before_label=fmt_money(ctx.list_price),
                 after_label=fmt_money(new_price),
                 delta_label=fmt_pct_delta(ctx.list_price, new_price),
