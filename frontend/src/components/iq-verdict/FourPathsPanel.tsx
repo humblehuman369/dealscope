@@ -174,34 +174,68 @@ function PathCard({
       {structure.levers.length > 0 && (
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4,
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1fr) auto auto auto auto',
+            columnGap: 6,
+            rowGap: 4,
+            alignItems: 'baseline',
             paddingTop: 8,
             paddingBottom: 8,
             borderTop: '1px solid var(--border-subtle, var(--border-default))',
             borderBottom: '1px solid var(--border-subtle, var(--border-default))',
+            fontSize: 13,
+            lineHeight: 1.45,
           }}
         >
-          {structure.levers.map((lever, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between gap-2"
-              style={{ fontSize: 13, lineHeight: 1.45 }}
-            >
-              <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{lever.label}</span>
-              <span className="tabular-nums" style={{ color: 'var(--text-body)', fontWeight: 600 }}>
-                <span style={{ color: 'var(--text-secondary)' }}>{lever.beforeLabel}</span>
-                {' → '}
-                <span style={{ color: 'var(--text-heading)' }}>{lever.afterLabel}</span>
-                {lever.deltaLabel && (
-                  <span style={{ marginLeft: 6, color: accent, fontWeight: 700 }}>
-                    {lever.deltaLabel}
-                  </span>
-                )}
-              </span>
-            </div>
-          ))}
+          {structure.levers.map((lever, i) => {
+            // Treat an em-dash placeholder as "no before value" — hide the dash and arrow.
+            const hasBefore =
+              !!lever.beforeLabel && lever.beforeLabel.trim() !== '—' && lever.beforeLabel.trim() !== '-'
+            return (
+              <div key={i} style={{ display: 'contents' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: 500, minWidth: 0 }}>
+                  {lever.label}
+                </span>
+                <span
+                  className="tabular-nums"
+                  style={{
+                    color: 'var(--text-secondary)',
+                    fontWeight: 600,
+                    textAlign: 'right',
+                  }}
+                >
+                  {hasBefore ? lever.beforeLabel : ''}
+                </span>
+                <span
+                  className="tabular-nums"
+                  style={{ color: 'var(--text-secondary)', fontWeight: 600 }}
+                >
+                  {hasBefore ? '→' : ''}
+                </span>
+                <span
+                  className="tabular-nums"
+                  style={{
+                    color: 'var(--text-heading)',
+                    fontWeight: 600,
+                    textAlign: 'right',
+                  }}
+                >
+                  {lever.afterLabel}
+                </span>
+                <span
+                  className="tabular-nums"
+                  style={{
+                    color: accent,
+                    fontWeight: 700,
+                    textAlign: 'right',
+                    minWidth: lever.deltaLabel ? undefined : 0,
+                  }}
+                >
+                  {lever.deltaLabel ?? ''}
+                </span>
+              </div>
+            )
+          })}
         </div>
       )}
 
