@@ -6,7 +6,7 @@
       "runtimeExecutable": "sh",
       "runtimeArgs": [
         "-c",
-        "cd '/Users/bradgeisen/IQ-Data/social-media-marketing/dealscope/dreamy-antonelli-9f99fb/frontend' && npm run dev"
+        "cd '/Users/bradgeisen/IQ-Data/social-media-marketing/dealscope/upbeat-haslett-d13602/frontend' && npm run dev"
       ],
       "port": 3000,
       "autoPort": true
@@ -16,7 +16,7 @@
       "runtimeExecutable": "sh",
       "runtimeArgs": [
         "-c",
-        "cd '/Users/bradgeisen/IQ-Data/social-media-marketing/dealscope/dreamy-antonelli-9f99fb/backend' && source /Users/bradgeisen/IQ-Data/dealscope/backend/venv/bin/activate && uvicorn app.main:app --reload --port 8000"
+        "cd '/Users/bradgeisen/IQ-Data/social-media-marketing/dealscope/upbeat-haslett-d13602/backend' && source /Users/bradgeisen/IQ-Data/dealscope/backend/venv/bin/activate && uvicorn app.main:app --reload --port 8000"
       ],
       "port": 8000
     }
