@@ -1865,6 +1865,19 @@ function VerdictContent() {
                       maxWidth: 620,
                     }}
                   >
+                    <strong>Income Value</strong> prices both your loan (mortgage payment as % of price)
+                    and your cash (required equity yield — default 8%, editable in defaults).
+                    Cash purchases are not treated as free capital, so Deal Gap stays meaningful when you pay in full.
+                  </p>
+                  <p
+                    style={{
+                      margin: '0 0 12px',
+                      fontSize: 13,
+                      lineHeight: 1.55,
+                      color: 'var(--text-secondary)',
+                      maxWidth: 620,
+                    }}
+                  >
                     {effectiveDisplayPct > 0
                       ? 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'
                       : 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'}

@@ -149,7 +149,7 @@ class TestBuyPrice:
 
     def test_basic_positive_result(self):
         result = calculate_buy_price(
-            list_price=300_000,
+            market_price=300_000,
             monthly_rent=2000,
             property_taxes=3000,
             insurance=1200,
@@ -159,7 +159,7 @@ class TestBuyPrice:
     def test_buy_price_never_exceeds_list(self):
         """Buy price should never exceed the list price."""
         result = calculate_buy_price(
-            list_price=100_000,
+            market_price=100_000,
             monthly_rent=5000,  # very high rent
             property_taxes=1000,
             insurance=500,
@@ -168,7 +168,7 @@ class TestBuyPrice:
 
     def test_zero_list_price_returns_zero(self):
         result = calculate_buy_price(
-            list_price=0,
+            market_price=0,
             monthly_rent=2000,
             property_taxes=3000,
             insurance=1200,
@@ -177,7 +177,7 @@ class TestBuyPrice:
 
     def test_negative_list_price_returns_zero(self):
         result = calculate_buy_price(
-            list_price=-100_000,
+            market_price=-100_000,
             monthly_rent=2000,
             property_taxes=3000,
             insurance=1200,
@@ -186,7 +186,7 @@ class TestBuyPrice:
 
     def test_none_list_price_returns_zero(self):
         result = calculate_buy_price(
-            list_price=None,
+            market_price=None,
             monthly_rent=2000,
             property_taxes=3000,
             insurance=1200,
@@ -196,7 +196,7 @@ class TestBuyPrice:
     def test_none_rent_returns_list_price(self):
         """If rent is None we can't calculate breakeven — return list price."""
         result = calculate_buy_price(
-            list_price=300_000,
+            market_price=300_000,
             monthly_rent=None,
             property_taxes=3000,
             insurance=1200,
@@ -205,7 +205,7 @@ class TestBuyPrice:
 
     def test_negative_rent_returns_list_price(self):
         result = calculate_buy_price(
-            list_price=300_000,
+            market_price=300_000,
             monthly_rent=-500,
             property_taxes=3000,
             insurance=1200,
@@ -215,7 +215,7 @@ class TestBuyPrice:
     def test_discount_clamped_to_50_pct(self):
         """Discount > 50% should be clamped; result must still be positive."""
         result = calculate_buy_price(
-            list_price=500_000,
+            market_price=500_000,
             monthly_rent=3000,
             property_taxes=5000,
             insurance=2000,
@@ -226,7 +226,7 @@ class TestBuyPrice:
     def test_zero_discount(self):
         """0% discount means buy price == breakeven (capped at list)."""
         result = calculate_buy_price(
-            list_price=500_000,
+            market_price=500_000,
             monthly_rent=3000,
             property_taxes=5000,
             insurance=2000,

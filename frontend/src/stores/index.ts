@@ -62,6 +62,8 @@ export interface FinancingAssumptions {
 }
 
 export interface OperatingAssumptions {
+  /** Annual hurdle on equity in Income Value WACC (0.08 = 8%) */
+  required_equity_yield: number
   vacancy_rate: number
   property_management_pct: number
   maintenance_pct: number
@@ -153,6 +155,7 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
     closing_costs_pct: 0.03,       // 3%
   },
   operating: {
+    required_equity_yield: 0.08,   // 8% — cost of cash in Income Value (WACC equity leg)
     vacancy_rate: 0.01,            // 1% (was 5%)
     property_management_pct: 0.00, // 0% (was 10%)
     maintenance_pct: 0.05,         // 5% (was 10%)
@@ -281,9 +284,17 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
     }),
     {
       name: 'dealgapiq-assumptions',
-      version: 2, // Increment version to trigger migration
+      version: 3, // v3: required_equity_yield on operating
       migrate: (persistedState: unknown, version: number) => {
         const state = persistedState as AssumptionsStore
+
+        if (version < 3) {
+          const assumptions = { ...state.assumptions } as unknown as Record<string, Record<string, unknown>>
+          if (assumptions.operating && !('required_equity_yield' in assumptions.operating)) {
+            assumptions.operating.required_equity_yield = 0.08
+          }
+          state.assumptions = assumptions as unknown as AllAssumptions
+        }
         
         if (version === 0 || version === 1) {
           // Migration from v1 to v2: Convert fixed values to percentages
@@ -298,6 +309,9 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
               // Since we don't know the original purchase price, just use the new default
               operating.insurance_pct = 0.01
               delete operating.insurance_annual
+            }
+            if (!('required_equity_yield' in operating)) {
+              operating.required_equity_yield = 0.08
             }
           }
           
@@ -367,8 +381,12 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
             assumptions: assumptions as unknown as AllAssumptions,
           }
         }
-        
-        return state
+
+        const assumptionsFinal = { ...state.assumptions } as unknown as Record<string, Record<string, unknown>>
+        if (assumptionsFinal.operating && assumptionsFinal.operating.required_equity_yield == null) {
+          assumptionsFinal.operating.required_equity_yield = 0.08
+        }
+        return { ...state, assumptions: assumptionsFinal as unknown as AllAssumptions }
       },
     }
   )

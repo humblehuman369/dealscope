@@ -64,6 +64,18 @@ const EDITABLE_DEFAULTS: SliderConfig[] = [
   },
   // Operating
   {
+    key: 'operating.required_equity_yield',
+    category: 'operating',
+    field: 'required_equity_yield',
+    label: 'Required Equity Yield',
+    description:
+      'Minimum annual return on equity used in Income Value (WACC). Prices the cost of cash like debt.',
+    min: 0.04,
+    max: 0.2,
+    step: 0.005,
+    isPercentage: true,
+  },
+  {
     key: 'operating.vacancy_rate',
     category: 'operating',
     field: 'vacancy_rate',
