@@ -14,6 +14,22 @@ import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 
 const DEBOUNCE_MS = 150
 
+function sellerCarryFields(state: Record<string, unknown>): {
+  seller_carry_amount: number
+  seller_carry_rate: number
+  seller_carry_term_years: number
+} {
+  const amt = state.sellerFinancingAmount
+  const rate = state.sellerInterestRate
+  const term = state.sellerTermYears
+  return {
+    seller_carry_amount: typeof amt === 'number' && Number.isFinite(amt) ? amt : 0,
+    seller_carry_rate: typeof rate === 'number' && Number.isFinite(rate) ? rate : 0,
+    seller_carry_term_years:
+      typeof term === 'number' && Number.isFinite(term) ? Math.max(1, Math.round(term)) : 30,
+  }
+}
+
 // Strategy type from deal maker types
 type StrategyType = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
 
@@ -68,6 +84,7 @@ function buildPayload(
       property_taxes_annual: s.annualPropertyTax,
       insurance_annual: s.annualInsurance,
       hoa_monthly: s.monthlyHoa || 0,
+      ...sellerCarryFields(state),
     }
   }
 
@@ -95,6 +112,7 @@ function buildPayload(
         s.annualInsurance ?? buyPrice * OPERATING_INSURANCE_PCT,
       maintenance_pct: s.maintenanceRate || 0.05,
       hoa_monthly: s.monthlyHoa ?? 0,
+      ...sellerCarryFields(state),
     }
   }
 
@@ -118,6 +136,7 @@ function buildPayload(
       property_management_pct: s.managementRate || 0.08,
       maintenance_pct: s.maintenanceRate || 0.05,
       hoa_monthly: s.monthlyHoa ?? 0,
+      ...sellerCarryFields(state),
     }
   }
 
@@ -148,6 +167,7 @@ function buildPayload(
       utilities_monthly: Number(s.holdingCostsMonthly) || 0,
       dumpster_monthly: 0,
       hoa_monthly: Number(s.monthlyHoa) || 0,
+      ...sellerCarryFields(state),
     }
   }
 
@@ -175,6 +195,7 @@ function buildPayload(
       capex_pct: s.capexRate || 0.05,
       utilities_monthly: s.utilitiesMonthly || 200,
       hoa_monthly: s.monthlyHoa ?? 0,
+      ...sellerCarryFields(state),
     }
   }
 
@@ -190,6 +211,7 @@ function buildPayload(
     assignment_fee: assignmentFee,
     marketing_costs: s.marketingCosts || 500,
     earnest_money: s.earnestMoney || 1000,
+    ...sellerCarryFields(state),
   }
 }
 

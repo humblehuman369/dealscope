@@ -31,6 +31,8 @@ from app.services.calculators.common import (
     calculate_cap_rate,
     calculate_cash_on_cash,
     calculate_dscr,
+    combined_bank_and_seller_pi,
+    model_a_bank_loan_and_cash_equity,
 )
 from app.services.deal_structures import compute_deal_structures
 from app.services.deal_structures.context import StructureContext
@@ -85,14 +87,25 @@ def _calculate_ltr_strategy(
     rehab_cost: float,
     a: AllAssumptions,
     hoa_annual: float = 0,
+    seller_carry_amount: float = 0.0,
+    seller_carry_rate: float = 0.0,
+    seller_carry_term_years: int = 30,
 ) -> dict:
     f = a.financing
     o = a.operating
     down_payment = price * f.down_payment_pct
     closing_costs = price * f.closing_costs_pct
-    loan_amount = price - down_payment
-    total_cash = down_payment + closing_costs + rehab_cost
-    monthly_pi = calculate_monthly_mortgage(loan_amount, f.interest_rate, f.loan_term_years)
+    sc = max(0.0, float(seller_carry_amount or 0.0))
+    loan_amount, cash_equity = model_a_bank_loan_and_cash_equity(price, down_payment, sc)
+    total_cash = cash_equity + closing_costs + rehab_cost
+    bank_pi, seller_pi, monthly_pi = combined_bank_and_seller_pi(
+        loan_amount,
+        f.interest_rate,
+        f.loan_term_years,
+        sc,
+        seller_carry_rate,
+        seller_carry_term_years,
+    )
     annual_debt = monthly_pi * 12
     annual_rent = monthly_rent * 12
     vacancy_loss = annual_rent * o.vacancy_rate
@@ -127,6 +140,8 @@ def _calculate_ltr_strategy(
             "purchase_price": round(price),
             "down_payment": round(down_payment),
             "down_payment_pct": round(f.down_payment_pct * 100, 1),
+            "seller_carry_amount": round(sc),
+            "cash_equity_at_close": round(cash_equity),
             "closing_costs": round(closing_costs),
             "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
             "rehab_cost": round(rehab_cost),
@@ -135,6 +150,8 @@ def _calculate_ltr_strategy(
             "interest_rate": round(f.interest_rate * 100, 1),
             "loan_term_years": f.loan_term_years,
             "monthly_payment": round(monthly_pi),
+            "bank_monthly_payment": round(bank_pi),
+            "seller_monthly_payment": round(seller_pi),
             "monthly_rent": round(monthly_rent),
             "annual_gross_rent": round(annual_rent),
             "vacancy_rate": round(o.vacancy_rate * 100, 1),
@@ -166,15 +183,26 @@ def _calculate_str_strategy(
     a: AllAssumptions,
     monthly_revenue_override: float | None = None,
     hoa_annual: float = 0,
+    seller_carry_amount: float = 0.0,
+    seller_carry_rate: float = 0.0,
+    seller_carry_term_years: int = 30,
 ) -> dict:
     f = a.financing
     o = a.operating
     s = a.str_assumptions
     down_payment = price * f.down_payment_pct
     closing_costs = price * f.closing_costs_pct
-    total_cash = down_payment + closing_costs + s.furniture_setup_cost + rehab_cost
-    loan_amount = price - down_payment
-    monthly_pi = calculate_monthly_mortgage(loan_amount, f.interest_rate, f.loan_term_years)
+    sc = max(0.0, float(seller_carry_amount or 0.0))
+    loan_amount, cash_equity = model_a_bank_loan_and_cash_equity(price, down_payment, sc)
+    total_cash = cash_equity + closing_costs + s.furniture_setup_cost + rehab_cost
+    bank_pi, seller_pi, monthly_pi = combined_bank_and_seller_pi(
+        loan_amount,
+        f.interest_rate,
+        f.loan_term_years,
+        sc,
+        seller_carry_rate,
+        seller_carry_term_years,
+    )
     annual_debt = monthly_pi * 12
     # Mashvisor monthly STR revenue (per-bed) bypasses ADR×365×occupancy
     # when supplied. All percentage-based opex (mgmt, platform, maintenance,
@@ -225,6 +253,8 @@ def _calculate_str_strategy(
             "purchase_price": round(price),
             "down_payment": round(down_payment),
             "down_payment_pct": round(f.down_payment_pct * 100, 1),
+            "seller_carry_amount": round(sc),
+            "cash_equity_at_close": round(cash_equity),
             "closing_costs": round(closing_costs),
             "closing_costs_pct": round(f.closing_costs_pct * 100, 1),
             "furniture_setup": round(s.furniture_setup_cost),
@@ -234,6 +264,8 @@ def _calculate_str_strategy(
             "interest_rate": round(f.interest_rate * 100, 1),
             "loan_term_years": f.loan_term_years,
             "monthly_payment": round(monthly_pi),
+            "bank_monthly_payment": round(bank_pi),
+            "seller_monthly_payment": round(seller_pi),
             "adr": round(adr),
             "occupancy_rate": round(occupancy * 100, 1),
             "annual_gross_revenue": round(annual_revenue),
@@ -997,9 +1029,22 @@ def compute_iq_verdict(
         buy_price = income_value
 
     hoa_monthly_input = input_data.hoa_fees_monthly or 0
+    sc_amt = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
+    sc_rate = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
+    sc_term = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
+
     strategies = [
         _calculate_ltr_strategy(
-            buy_price, monthly_rent, property_taxes, insurance, rehab_cost, a, hoa_annual=hoa_annual
+            buy_price,
+            monthly_rent,
+            property_taxes,
+            insurance,
+            rehab_cost,
+            a,
+            hoa_annual=hoa_annual,
+            seller_carry_amount=sc_amt,
+            seller_carry_rate=sc_rate,
+            seller_carry_term_years=sc_term,
         ),
         _calculate_str_strategy(
             buy_price,
@@ -1011,6 +1056,9 @@ def compute_iq_verdict(
             a,
             monthly_revenue_override=mashvisor_monthly,
             hoa_annual=hoa_annual,
+            seller_carry_amount=sc_amt,
+            seller_carry_rate=sc_rate,
+            seller_carry_term_years=sc_term,
         ),
         _calculate_brrrr_strategy(
             buy_price, monthly_rent, property_taxes, insurance, arv, rehab_cost, a, hoa_annual=hoa_annual

@@ -173,6 +173,25 @@ class IQVerdictInput(BaseModel):
         default=None,
         description="StructureFamily IDs the user has dismissed (e.g. ['financing'])",
     )
+    # Seller second / carry (Model A) — optional; 0 = no seller financing
+    seller_carry_amount: float | None = Field(
+        None,
+        ge=0,
+        le=100_000_000,
+        description="Seller note principal in dollars",
+    )
+    seller_carry_rate: float | None = Field(
+        None,
+        ge=0,
+        le=0.30,
+        description="Seller note annual interest rate (decimal, e.g. 0.06 = 6%)",
+    )
+    seller_carry_term_years: int | None = Field(
+        None,
+        ge=1,
+        le=40,
+        description="Seller note amortization term in years",
+    )
 
     @field_validator("existing_loan_type", mode="before")
     @classmethod

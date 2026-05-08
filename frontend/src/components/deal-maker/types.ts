@@ -356,6 +356,8 @@ export interface STRMetrics {
   closingCostsAmount: number
   loanAmount: number
   monthlyPayment: number
+  bankMonthlyPayment?: number
+  sellerMonthlyPayment?: number
   
   // Revenue
   grossNightlyRevenue: number
@@ -1294,6 +1296,10 @@ export interface LTRDealMakerMetrics {
   cocReturn: number
   monthlyPayment: number
   loanAmount: number
+  /** When seller financing is used, bank note P&I (optional; from API) */
+  bankMonthlyPayment?: number
+  /** Seller note P&I (optional; from API) */
+  sellerMonthlyPayment?: number
   equityCreated: number
   grossMonthlyIncome: number
   totalMonthlyExpenses: number

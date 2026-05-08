@@ -67,6 +67,8 @@ const PURCHASE_SLIDERS: SliderConfig[] = [
     helpText: 'The price you offer the seller. Lower buy prices improve your cash flow and return metrics.' },
   { id: 'downPaymentPercent' as any, label: 'Down Payment', min: 0.05, max: 1.00, step: 0.05, format: 'percentage',
     helpText: 'Percentage of buy price paid upfront in cash. Set to 100% for an all-cash deal with no financing.' },
+  { id: 'sellerFinancingAmount' as any, label: 'Seller Financing Amount', min: 0, max: 500000, step: 5000, format: 'currency',
+    helpText: 'Principal the seller carries as a second mortgage or installment note (creative financing).' },
   { id: 'closingCostsPercent' as any, label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage',
     helpText: 'Fees paid at closing \u2014 title insurance, appraisal, attorney, etc. Typically 2\u20135% of the purchase price.' },
 ]
@@ -76,8 +78,6 @@ const FINANCING_SLIDERS: SliderConfig[] = [
     helpText: 'Annual rate on your mortgage loan. Even small changes significantly impact your monthly payment and long-term cost.' },
   { id: 'loanTermYears' as any, label: 'Loan Term', min: 10, max: 30, step: 5, format: 'years',
     helpText: '30-year terms have lower monthly payments but pay more total interest. 15-year terms build equity faster.' },
-  { id: 'sellerFinancingAmount' as any, label: 'Seller Financing Amount', min: 0, max: 500000, step: 5000, format: 'currency',
-    helpText: 'Principal the seller carries as a second mortgage or installment note (creative financing).' },
   { id: 'sellerInterestRate' as any, label: 'Seller Interest', min: 0, max: 0.15, step: 0.0025, format: 'percentage',
     helpText: 'Annual rate on the seller-financed portion — often lower than hard money when negotiating creative terms.' },
   { id: 'sellerTermYears' as any, label: 'Seller Term', min: 1, max: 30, step: 1, format: 'years',

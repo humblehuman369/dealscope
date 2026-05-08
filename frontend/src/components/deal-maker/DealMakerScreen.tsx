@@ -626,19 +626,63 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   
   // Map backend result to the metrics shape the UI expects
   const metrics = useMemo<AnyStrategyMetrics>(() => {
-    // If backend result available for non-LTR strategies, map snake_case → camelCase
-    if (backendResult && strategyType !== 'ltr') {
+    // Map backend worksheet API (snake_case) → camelCase metrics
+    if (backendResult) {
       const br = backendResult as Record<string, number | boolean | string>
       const n = (k: string) => { const v = br[k]; return typeof v === 'number' && isFinite(v) ? v : 0 }
+
+      if (strategyType === 'ltr') {
+        const ltrState = state as LTRDealMakerState
+        const buyPrice = ltrState.buyPrice
+        const downPaymentAmt = buyPrice * ltrState.downPaymentPercent
+        const closingCostsAmt = n('closing_costs') || buyPrice * ltrState.closingCostsPercent
+        const sellerFin = ltrState.sellerFinancingAmount ?? 0
+        const loanAmt =
+          n('loan_amount') ||
+          Math.max(0, buyPrice - Math.max(downPaymentAmt, sellerFin))
+        const monthlyPmt = n('monthly_payment')
+        const cashNeeded =
+          n('total_cash_needed') ||
+          Math.max(0, downPaymentAmt - sellerFin) + closingCostsAmt + ltrState.rehabBudget
+        const annualCF = n('annual_cash_flow')
+        const grossMonthly = (n('annual_gross_rent') || 0) / 12
+        const totalExpAnnual = n('gross_expenses')
+        const totalMonthlyExpenses = (totalExpAnnual + n('annual_debt_service')) / 12
+        const effectiveListPrice = listPrice ?? buyPrice
+        const dealGap = effectiveListPrice > 0 ? (effectiveListPrice - buyPrice) / effectiveListPrice : 0
+        const totalInvestment = buyPrice + ltrState.rehabBudget
+        return {
+          cashNeeded,
+          dealGap,
+          annualProfit: annualCF,
+          capRate: n('cap_rate'),
+          cocReturn: n('cash_on_cash_return'),
+          monthlyPayment: monthlyPmt,
+          loanAmount: loanAmt,
+          bankMonthlyPayment: n('bank_monthly_payment'),
+          sellerMonthlyPayment: n('seller_monthly_payment'),
+          equityCreated: (ltrState.arv || buyPrice) - totalInvestment,
+          grossMonthlyIncome: grossMonthly + ltrState.otherIncome,
+          totalMonthlyExpenses,
+        } as LTRDealMakerMetrics
+      }
 
       if (strategyType === 'str') {
         const strState = state as STRDealMakerState
         const buyPrice = strState.buyPrice
         const downPaymentAmt = n('down_payment') || (buyPrice * strState.downPaymentPercent)
         const closingCostsAmt = n('closing_costs') || (buyPrice * strState.closingCostsPercent)
-        const loanAmt = n('loan_amount') || (buyPrice - downPaymentAmt)
+        const sellerFin = strState.sellerFinancingAmount ?? 0
+        const loanAmt =
+          n('loan_amount') ||
+          Math.max(0, buyPrice - Math.max(downPaymentAmt, sellerFin))
         const monthlyPmt = n('monthly_payment')
-        const cashNeeded = n('total_cash_needed') || (downPaymentAmt + closingCostsAmt + strState.furnitureSetupCost)
+        const cashNeeded =
+          n('total_cash_needed') ||
+          Math.max(0, downPaymentAmt - sellerFin) +
+            closingCostsAmt +
+            strState.furnitureSetupCost +
+            strState.rehabBudget
         const annualGross = n('gross_revenue')
         const nightsOcc = n('nights_occupied')
         const numBookings = n('num_bookings')
@@ -652,6 +696,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           closingCostsAmount: closingCostsAmt,
           loanAmount: loanAmt,
           monthlyPayment: monthlyPmt,
+          bankMonthlyPayment: n('bank_monthly_payment'),
+          sellerMonthlyPayment: n('seller_monthly_payment'),
           grossNightlyRevenue: n('rental_revenue') / 365,
           monthlyGrossRevenue: annualGross / 12,
           annualGrossRevenue: annualGross,
@@ -877,14 +923,24 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       } as LTRDealMakerMetrics
     }
     
-    // For unsaved LTR properties, calculate locally
+    // For unsaved LTR properties, calculate locally (Model A — seller second)
     const ltrState = state as LTRDealMakerState
     const downPaymentAmount = ltrState.buyPrice * ltrState.downPaymentPercent
     const closingCostsAmount = ltrState.buyPrice * ltrState.closingCostsPercent
-    const cashNeeded = downPaymentAmount + closingCostsAmount + ltrState.rehabBudget
+    const sellerFin = ltrState.sellerFinancingAmount ?? 0
+    const cashNeeded =
+      Math.max(0, downPaymentAmount - sellerFin) + closingCostsAmount + ltrState.rehabBudget
 
-    const loanAmount = ltrState.buyPrice - downPaymentAmount
-    const monthlyPayment = calculateMortgagePayment(loanAmount, ltrState.interestRate, ltrState.loanTermYears)
+    const loanAmount = Math.max(
+      0,
+      ltrState.buyPrice - Math.max(downPaymentAmount, sellerFin),
+    )
+    const sellerPi =
+      sellerFin > 0
+        ? calculateMortgagePayment(sellerFin, ltrState.sellerInterestRate ?? 0, ltrState.sellerTermYears ?? 30)
+        : 0
+    const bankPi = calculateMortgagePayment(loanAmount, ltrState.interestRate, ltrState.loanTermYears)
+    const monthlyPayment = bankPi + sellerPi
 
     const totalInvestment = ltrState.buyPrice + ltrState.rehabBudget
     const equityCreated = ltrState.arv - totalInvestment
@@ -927,7 +983,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       grossMonthlyIncome,
       totalMonthlyExpenses,
     } as LTRDealMakerMetrics
-  }, [state, listPrice, isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType])
+  }, [state, listPrice, isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, backendResult])
 
   // Update state - use store for saved properties, local state for unsaved
   const updateState = useCallback((key: string, value: number | string) => {

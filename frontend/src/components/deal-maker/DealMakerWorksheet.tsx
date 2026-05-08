@@ -37,6 +37,27 @@ function num(obj: Record<string, unknown>, key: string): number {
   return typeof v === 'number' && isFinite(v) ? v : 0
 }
 
+/** Model A seller-second: bank loan = price − max(down$, seller$) */
+function modelABankLoan(price: number, downPaymentPct: number, sellerFinancing: number): number {
+  if (price <= 0) return 0
+  const dp = price * downPaymentPct
+  const sc = Math.max(0, sellerFinancing)
+  return Math.max(0, price - Math.max(dp, sc))
+}
+
+function modelACashEquity(price: number, downPaymentPct: number, sellerFinancing: number): number {
+  if (price <= 0) return 0
+  return Math.max(0, price * downPaymentPct - Math.max(0, sellerFinancing))
+}
+
+function monthlyPI(principal: number, annualRate: number, years: number): number {
+  if (principal <= 0 || years <= 0) return 0
+  if (annualRate === 0) return principal / (years * 12)
+  const r = annualRate / 12
+  const n = years * 12
+  return (principal * (r * (1 + r) ** n)) / ((1 + r) ** n - 1)
+}
+
 // ---------------------------------------------------------------------------
 // Visual building blocks
 // ---------------------------------------------------------------------------
@@ -118,7 +139,7 @@ type SellerFinancingSlice = Pick<
   'sellerFinancingAmount' | 'sellerInterestRate' | 'sellerTermYears'
 >
 
-function SellerFinancingRows({
+function SellerFinancingPrincipalRow({
   basePrice,
   state,
   up,
@@ -130,17 +151,29 @@ function SellerFinancingRows({
   const minSeller = basePrice > 0 ? basePrice * 0.05 : 0
   const maxSeller = basePrice > 0 ? basePrice * 1.00 : 500000
   return (
+    <SliderRow
+      field="sellerFinancingAmount"
+      label="Seller Financing Amount"
+      value={state.sellerFinancingAmount}
+      displayValue={fmt(state.sellerFinancingAmount)}
+      min={minSeller}
+      max={maxSeller}
+      step={1000}
+      onChange={(v) => up('sellerFinancingAmount', v)}
+    />
+  )
+}
+
+function SellerNoteTermsRows({
+  state,
+  up,
+}: {
+  state: SellerFinancingSlice
+  up: (k: string, v: number | string) => void
+}) {
+  if (!(state.sellerFinancingAmount > 0)) return null
+  return (
     <>
-      <SliderRow
-        field="sellerFinancingAmount"
-        label="Seller Financing Amount"
-        value={state.sellerFinancingAmount}
-        displayValue={fmt(state.sellerFinancingAmount)}
-        min={minSeller}
-        max={maxSeller}
-        step={1000}
-        onChange={(v) => up('sellerFinancingAmount', v)}
-      />
       <SliderRow
         field="sellerInterestRate"
         label="Seller Interest"
@@ -163,6 +196,16 @@ function SellerFinancingRows({
         parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)}
       />
     </>
+  )
+}
+
+function SellerOverageNote({ downDollars, sellerAmt }: { downDollars: number; sellerAmt: number }) {
+  if (sellerAmt <= downDollars) return null
+  const over = sellerAmt - downDollars
+  return (
+    <div className="text-[11px] leading-snug pl-4 pr-1 pb-1" style={{ color: 'var(--text-secondary)' }}>
+      Seller is carrying {fmt(over)} above the down payment; bank loan reduced accordingly.
+    </div>
   )
 }
 
@@ -390,8 +433,22 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
   const m = metrics as unknown as Record<string, unknown>
   const downPayment = state.buyPrice * state.downPaymentPercent
   const closingCosts = state.buyPrice * state.closingCostsPercent
-  const loanAmount = num(m, 'loanAmount') || (state.buyPrice - downPayment)
-  const monthlyPayment = num(m, 'monthlyPayment')
+  const loanAmount =
+    num(m, 'loanAmount') ||
+    modelABankLoan(state.buyPrice, state.downPaymentPercent, state.sellerFinancingAmount)
+  const bankRaw = m['bankMonthlyPayment']
+  const sellerRaw = m['sellerMonthlyPayment']
+  const bankMonthly =
+    typeof bankRaw === 'number' && isFinite(bankRaw)
+      ? bankRaw
+      : monthlyPI(loanAmount, state.interestRate, state.loanTermYears)
+  const sellerMonthly =
+    typeof sellerRaw === 'number' && isFinite(sellerRaw)
+      ? sellerRaw
+      : state.sellerFinancingAmount > 0
+        ? monthlyPI(state.sellerFinancingAmount, state.sellerInterestRate, state.sellerTermYears)
+        : 0
+  const monthlyPayment = num(m, 'monthlyPayment') || bankMonthly + sellerMonthly
   const grossMonthly = num(m, 'grossMonthlyIncome') || (state.monthlyRent + state.otherIncome)
   const totalMonthlyExp = num(m, 'totalMonthlyExpenses')
   const annualProfit = num(m, 'annualProfit')
@@ -401,7 +458,9 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
   const cashNeeded =
     typeof cashFromMetrics === 'number' && isFinite(cashFromMetrics)
       ? cashFromMetrics
-      : downPayment + closingCosts + state.rehabBudget
+      : modelACashEquity(state.buyPrice, state.downPaymentPercent, state.sellerFinancingAmount) +
+        closingCosts +
+        state.rehabBudget
 
   return (
     <>
@@ -409,6 +468,9 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
       <Row label="Market Price" value={fmt(listPrice || state.buyPrice)} />
       <SliderRow field="buyPrice" label="Buy Price" value={state.buyPrice} displayValue={fmt(state.buyPrice)} min={50000} max={2000000} onChange={(v) => up('buyPrice', v)} />
       <SliderRow field="downPaymentPercent" label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={5} max={100} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
+      <SellerFinancingPrincipalRow basePrice={state.buyPrice} state={state} up={up} />
+      <Row label="Bank Loan" value={fmt(loanAmount)} />
+      <SellerOverageNote downDollars={downPayment} sellerAmt={state.sellerFinancingAmount} />
       <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <div id="strategy-worksheet-rehab" className="scroll-mt-28 h-0 overflow-hidden" aria-hidden />
       <SliderRow label="Rehab Budget" value={state.rehabBudget} displayValue={fmt(state.rehabBudget)} min={0} max={100000} onChange={(v) => up('rehabBudget', v)} />
@@ -420,8 +482,12 @@ function LTRWorksheet({ state, metrics, listPrice, up }: {
       <Row label="Loan Amount" value={fmt(loanAmount)} />
       <SliderRow field="interestRate" label="Interest Rate" value={state.interestRate * 100} displayValue={`${(state.interestRate * 100).toFixed(2)}%`} min={5} max={12} step={0.25} onChange={(v) => up('interestRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow field="loanTermYears" label="Loan Term" value={state.loanTermYears} displayValue={`${state.loanTermYears} years`} min={10} max={30} onChange={(v) => up('loanTermYears', Math.round(v))} parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)} />
-      <SellerFinancingRows basePrice={state.buyPrice} state={state} up={up} />
-      <Row label="Monthly Payment" value={fmt(monthlyPayment)} />
+      <Row label="Bank P&amp;I" value={`${fmt(bankMonthly)}/mo`} />
+      <SellerNoteTermsRows state={state} up={up} />
+      {state.sellerFinancingAmount > 0 && (
+        <Row label="Seller P&amp;I" value={`${fmt(sellerMonthly)}/mo`} />
+      )}
+      <Row label="Combined Monthly Payment" value={`${fmt(monthlyPayment)}/mo`} />
       <TotalRow label="Annual Payment" value={fmt(monthlyPayment * 12)} />
 
       <Divider />
@@ -458,13 +524,30 @@ function STRWorksheet({ state, metrics, listPrice, up }: {
   const m = metrics as unknown as Record<string, unknown>
   const downPayment = num(m, 'downPaymentAmount') || (state.buyPrice * state.downPaymentPercent)
   const closingCosts = num(m, 'closingCostsAmount') || (state.buyPrice * state.closingCostsPercent)
-  const loanAmount = num(m, 'loanAmount') || (state.buyPrice - downPayment)
-  const monthlyPayment = num(m, 'monthlyPayment')
+  const loanAmount =
+    num(m, 'loanAmount') ||
+    modelABankLoan(state.buyPrice, state.downPaymentPercent, state.sellerFinancingAmount)
+  const bankRaw = m['bankMonthlyPayment']
+  const sellerRaw = m['sellerMonthlyPayment']
+  const bankMonthly =
+    typeof bankRaw === 'number' && isFinite(bankRaw)
+      ? bankRaw
+      : monthlyPI(loanAmount, state.interestRate, state.loanTermYears)
+  const sellerMonthly =
+    typeof sellerRaw === 'number' && isFinite(sellerRaw)
+      ? sellerRaw
+      : state.sellerFinancingAmount > 0
+        ? monthlyPI(state.sellerFinancingAmount, state.sellerInterestRate, state.sellerTermYears)
+        : 0
+  const monthlyPayment = num(m, 'monthlyPayment') || bankMonthly + sellerMonthly
   const cashFromMetrics = m['cashNeeded']
   const cashNeeded =
     typeof cashFromMetrics === 'number' && isFinite(cashFromMetrics)
       ? cashFromMetrics
-      : downPayment + closingCosts + state.furnitureSetupCost + state.rehabBudget
+      : modelACashEquity(state.buyPrice, state.downPaymentPercent, state.sellerFinancingAmount) +
+        closingCosts +
+        state.furnitureSetupCost +
+        state.rehabBudget
   const nightsOccupied = num(m, 'nightsOccupied')
   const monthlyGross = num(m, 'monthlyGrossRevenue')
   const annualGross = num(m, 'annualGrossRevenue')
@@ -479,6 +562,9 @@ function STRWorksheet({ state, metrics, listPrice, up }: {
       <Row label="Market Price" value={fmt(listPrice || state.buyPrice)} />
       <SliderRow field="buyPrice" label="Buy Price" value={state.buyPrice} displayValue={fmt(state.buyPrice)} min={50000} max={2000000} onChange={(v) => up('buyPrice', v)} />
       <SliderRow field="downPaymentPercent" label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={5} max={100} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
+      <SellerFinancingPrincipalRow basePrice={state.buyPrice} state={state} up={up} />
+      <Row label="Bank Loan" value={fmt(loanAmount)} />
+      <SellerOverageNote downDollars={downPayment} sellerAmt={state.sellerFinancingAmount} />
       <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0 }} />
       <SliderRow label="Rehab Budget" value={state.rehabBudget} displayValue={fmt(state.rehabBudget)} min={0} max={100000} onChange={(v) => up('rehabBudget', v)} />
       <SliderRow label="Furniture & Setup" value={state.furnitureSetupCost} displayValue={fmt(state.furnitureSetupCost)} min={0} max={30000} onChange={(v) => up('furnitureSetupCost', v)} />
@@ -490,8 +576,12 @@ function STRWorksheet({ state, metrics, listPrice, up }: {
       <Row label="Loan Amount" value={fmt(loanAmount)} />
       <SliderRow field="interestRate" label="Interest Rate" value={state.interestRate * 100} displayValue={`${(state.interestRate * 100).toFixed(2)}%`} min={5} max={12} step={0.25} onChange={(v) => up('interestRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow field="loanTermYears" label="Loan Term" value={state.loanTermYears} displayValue={`${state.loanTermYears} years`} min={10} max={30} onChange={(v) => up('loanTermYears', Math.round(v))} parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)} />
-      <SellerFinancingRows basePrice={state.buyPrice} state={state} up={up} />
-      <Row label="Monthly Payment" value={fmt(monthlyPayment)} />
+      <Row label="Bank P&amp;I" value={`${fmt(bankMonthly)}/mo`} />
+      <SellerNoteTermsRows state={state} up={up} />
+      {state.sellerFinancingAmount > 0 && (
+        <Row label="Seller P&amp;I" value={`${fmt(sellerMonthly)}/mo`} />
+      )}
+      <Row label="Combined Monthly Payment" value={`${fmt(monthlyPayment)}/mo`} />
       <TotalRow label="Annual Payment" value={fmt(monthlyPayment * 12)} />
 
       <Divider />
@@ -537,6 +627,13 @@ function BRRRRWorksheet({ state, metrics, up }: {
   up: (k: string, v: number | string) => void
 }) {
   const m = metrics as unknown as Record<string, unknown>
+  const purchaseEff = state.purchasePrice * (1 - state.buyDiscountPct)
+  const downDollars = purchaseEff * state.downPaymentPercent
+  const initialLoanRaw = m['initialLoanAmount']
+  const initialLoan =
+    typeof initialLoanRaw === 'number' && isFinite(initialLoanRaw)
+      ? initialLoanRaw
+      : modelABankLoan(purchaseEff, state.downPaymentPercent, state.sellerFinancingAmount)
   const initialDown = num(m, 'initialDownPayment')
   const initialClosing = num(m, 'initialClosingCosts')
   const cashPhase1 = num(m, 'cashRequiredPhase1')
@@ -558,9 +655,12 @@ function BRRRRWorksheet({ state, metrics, up }: {
       <SliderRow field="purchasePrice" label="Purchase Price" value={state.purchasePrice} displayValue={fmt(state.purchasePrice)} min={50000} max={2000000} onChange={(v) => up('purchasePrice', v)} />
       <SliderRow label="Discount" value={state.buyDiscountPct * 100} displayValue={`${(state.buyDiscountPct * 100).toFixed(0)}%`} min={0} max={30} onChange={(v) => up('buyDiscountPct', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow field="downPaymentPercent" label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(0)}%`} displayValue={fmt(initialDown)} min={5} max={100} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
+      <SellerFinancingPrincipalRow basePrice={state.purchasePrice} state={state} up={up} />
+      <Row label="Bank Loan" value={fmt(initialLoan)} />
+      <SellerOverageNote downDollars={downDollars} sellerAmt={state.sellerFinancingAmount} />
       <SliderRow label="Hard Money Rate" value={state.hardMoneyRate * 100} displayValue={`${(state.hardMoneyRate * 100).toFixed(1)}%`} min={8} max={15} step={0.5} onChange={(v) => up('hardMoneyRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
-      <SellerFinancingRows basePrice={state.purchasePrice} state={state} up={up} />
       <Row label="Closing Costs" value={fmt(initialClosing)} />
+      <SellerNoteTermsRows state={state} up={up} />
       <TotalRow label="Cash Required" value={fmt(cashPhase1)} />
 
       <Divider />
@@ -611,9 +711,21 @@ function FlipWorksheet({ state, metrics, up }: {
   up: (k: string, v: number | string) => void
 }) {
   const m = metrics as unknown as Record<string, unknown>
+  const purchaseEff = state.purchasePrice * (1 - state.purchaseDiscountPct)
+  const nominalEquity =
+    state.financingType === 'cash' ? purchaseEff : purchaseEff * (1 - state.hardMoneyLtv)
   const loanAmount = num(m, 'loanAmount')
   const downPayment = num(m, 'downPayment')
   const closingCosts = num(m, 'closingCosts')
+  const hmMonthly =
+    state.financingType !== 'cash' && loanAmount > 0
+      ? (loanAmount * state.hardMoneyRate) / 12
+      : 0
+  const sellerMonthly =
+    state.sellerFinancingAmount > 0
+      ? monthlyPI(state.sellerFinancingAmount, state.sellerInterestRate, state.sellerTermYears)
+      : 0
+  const combinedDebtMonthly = hmMonthly + sellerMonthly
   const points = num(m, 'loanPointsCost')
   const cashAtPurchase = num(m, 'cashAtPurchase')
   const totalRehab = num(m, 'totalRehabCost')
@@ -642,10 +754,21 @@ function FlipWorksheet({ state, metrics, up }: {
           <SliderRow label="LTV" value={state.hardMoneyLtv * 100} displayValue={`${(state.hardMoneyLtv * 100).toFixed(0)}%`} min={70} max={100} onChange={(v) => up('hardMoneyLtv', v / 100)} />
           <SliderRow label="Interest Rate" value={state.hardMoneyRate * 100} displayValue={`${(state.hardMoneyRate * 100).toFixed(1)}%`} min={8} max={18} step={0.5} onChange={(v) => up('hardMoneyRate', v / 100)} />
           <SliderRow label="Points" value={state.loanPoints} displayValue={`${state.loanPoints.toFixed(1)} pts`} min={0} max={5} onChange={(v) => up('loanPoints', v)} />
-          <Row label="Loan Amount" value={fmt(loanAmount)} />
         </>
       )}
-      <SellerFinancingRows basePrice={state.purchasePrice} state={state} up={up} />
+      <SellerFinancingPrincipalRow basePrice={state.purchasePrice} state={state} up={up} />
+      <Row
+        label={state.financingType === 'cash' ? 'Bank / Hard Money Loan' : 'Hard Money Loan'}
+        value={fmt(loanAmount)}
+      />
+      <SellerOverageNote downDollars={nominalEquity} sellerAmt={state.sellerFinancingAmount} />
+      <SellerNoteTermsRows state={state} up={up} />
+      {state.sellerFinancingAmount > 0 && (
+        <>
+          <Row label="Seller P&amp;I (est.)" value={`${fmt(sellerMonthly)}/mo`} />
+          <Row label="Combined Debt Service (est.)" value={`${fmt(combinedDebtMonthly)}/mo`} />
+        </>
+      )}
       <TotalRow label="Cash at Purchase" value={fmt(cashAtPurchase)} />
 
       <Divider />
@@ -692,14 +815,29 @@ function HouseHackWorksheet({ state, metrics, up }: {
   up: (k: string, v: number | string) => void
 }) {
   const m = metrics as unknown as Record<string, unknown>
+  const loanAmt =
+    num(m, 'loanAmount') ||
+    modelABankLoan(state.purchasePrice, state.downPaymentPercent, state.sellerFinancingAmount)
   const downPayment = num(m, 'downPayment')
   const closingCosts = num(m, 'closingCosts')
   const cashToClose = num(m, 'cashToClose')
-  const pi = num(m, 'monthlyPrincipalInterest')
+  const bankPiCalc = monthlyPI(loanAmt, state.interestRate, state.loanTermYears)
+  const sellerPiCalc =
+    state.sellerFinancingAmount > 0
+      ? monthlyPI(state.sellerFinancingAmount, state.sellerInterestRate, state.sellerTermYears)
+      : 0
+  const combinedPiFallback = bankPiCalc + sellerPiCalc
+  const piRaw = m['monthlyPrincipalInterest']
+  const pi =
+    typeof piRaw === 'number' && isFinite(piRaw) ? piRaw : combinedPiFallback
   const pmi = num(m, 'monthlyPmi')
   const taxes = num(m, 'monthlyTaxes')
   const ins = num(m, 'monthlyInsurance')
-  const piti = num(m, 'monthlyPITI')
+  const pitiRaw = m['monthlyPITI']
+  const piti =
+    typeof pitiRaw === 'number' && isFinite(pitiRaw)
+      ? pitiRaw
+      : pi + pmi + taxes + ins + state.monthlyHoa
   const rentedUnits = num(m, 'rentedUnits')
   const grossRental = num(m, 'grossRentalIncome')
   const effectiveRental = num(m, 'effectiveRentalIncome')
@@ -717,16 +855,30 @@ function HouseHackWorksheet({ state, metrics, up }: {
       <SliderRow label="Owner Units" value={state.ownerOccupiedUnits} displayValue={`${state.ownerOccupiedUnits}`} min={1} max={2} onChange={(v) => up('ownerOccupiedUnits', Math.round(v))} />
       <ToggleRow label="Loan Type" options={[{ id: 'fha', label: 'FHA' }, { id: 'conventional', label: 'Conv' }, { id: 'va', label: 'VA' }]} value={state.loanType} onChange={(v) => up('loanType', v)} />
       <SliderRow field="downPaymentPercent" label="Down Payment" value={state.downPaymentPercent * 100} secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`} displayValue={fmt(downPayment)} min={state.loanType === 'va' ? 0 : state.loanType === 'fha' ? 3.5 : 5} max={100} onChange={(v) => up('downPaymentPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
+      <SellerFinancingPrincipalRow basePrice={state.purchasePrice} state={state} up={up} />
+      <Row label="Bank Loan" value={fmt(loanAmt)} />
+      <SellerOverageNote
+        downDollars={state.purchasePrice * state.downPaymentPercent}
+        sellerAmt={state.sellerFinancingAmount}
+      />
       <SliderRow field="interestRate" label="Interest Rate" value={state.interestRate * 100} displayValue={`${(state.interestRate * 100).toFixed(2)}%`} min={4} max={10} step={0.25} onChange={(v) => up('interestRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow label="PMI/MIP Rate" value={state.pmiRate * 100} displayValue={`${(state.pmiRate * 100).toFixed(2)}%`} min={0} max={1.5} onChange={(v) => up('pmiRate', v / 100)} parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))} />
       <SliderRow label="Closing Costs" value={state.closingCostsPercent * 100} secondaryValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`} displayValue={fmt(closingCosts)} min={2} max={5} onChange={(v) => up('closingCostsPercent', v / 100)} parseInput={(s) => { const n = parseFloat(s.replace(/[^0-9.]/g, '')); return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0 }} />
-      <SellerFinancingRows basePrice={state.purchasePrice} state={state} up={up} />
       <TotalRow label="Cash to Close" value={fmt(cashToClose)} />
 
       <Divider />
 
       <SectionHeader title="Monthly Payment" />
-      <Row label="Principal & Interest" value={`${fmt(pi)}/mo`} />
+      <SellerNoteTermsRows state={state} up={up} />
+      {state.sellerFinancingAmount > 0 ? (
+        <>
+          <Row label="Bank P&amp;I" value={`${fmt(bankPiCalc)}/mo`} />
+          <Row label="Seller P&amp;I" value={`${fmt(sellerPiCalc)}/mo`} />
+          <Row label="Combined Monthly Payment" value={`${fmt(pi)}/mo`} />
+        </>
+      ) : (
+        <Row label="Principal &amp; Interest" value={`${fmt(pi)}/mo`} />
+      )}
       {pmi > 0 && <Row label="PMI/MIP" value={`${fmt(pmi)}/mo`} />}
       <Row label="Property Tax" value={`${fmt(taxes)}/mo`} />
       <Row label="Insurance" value={`${fmt(ins)}/mo`} />
@@ -798,7 +950,8 @@ function WholesaleWorksheet({ state, metrics, up }: {
       <SliderRow label="Earnest Money" value={state.earnestMoney} displayValue={fmt(state.earnestMoney)} min={100} max={10000} onChange={(v) => up('earnestMoney', v)} />
       <SliderRow label="Inspection" value={state.inspectionPeriodDays} displayValue={`${state.inspectionPeriodDays} days`} min={7} max={30} onChange={(v) => up('inspectionPeriodDays', Math.round(v))} />
       <SliderRow label="Days to Close" value={state.daysToClose} displayValue={`${state.daysToClose} days`} min={21} max={90} onChange={(v) => up('daysToClose', Math.round(v))} />
-      <SellerFinancingRows basePrice={state.contractPrice} state={state} up={up} />
+      <SellerFinancingPrincipalRow basePrice={state.contractPrice} state={state} up={up} />
+      <SellerNoteTermsRows state={state} up={up} />
       <TotalRow label="Cash at Risk" value={fmt(cashAtRisk)} />
 
       <Divider />
