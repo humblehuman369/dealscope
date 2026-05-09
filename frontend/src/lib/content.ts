@@ -20,6 +20,11 @@ export type Frontmatter = {
   author?: string
   word_count_target?: number
   internal_links?: string[]
+  /** ISO-8601 publication date (e.g. "2026-04-12"). Falls back via `date` if `datePublished` not set. */
+  date?: string
+  datePublished?: string
+  /** ISO-8601 last-modified date for the post. Used in Article schema. */
+  dateModified?: string
 }
 
 export type ContentFile = {

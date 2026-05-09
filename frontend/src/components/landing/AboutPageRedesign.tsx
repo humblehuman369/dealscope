@@ -22,9 +22,10 @@ const PRINCIPLES = [
 ];
 
 const CREDS = [
-  { value: '35+ Years', label: 'Real Estate Data' },
-  { value: '30+ Years', label: 'GSE Partnerships' },
-  { value: '35+ Years', label: 'Real Estate Investor' },
+  { value: '35+ Years', label: 'Leadership' },
+  { value: '30+ Years', label: 'GSE & HUD Partnership' },
+  { value: '1,000+', label: 'Properties Acquired & Sold' },
+  { value: '50+', label: 'Real Estate Projects' },
 ];
 
 const MARKETING_ITEMS = [
@@ -223,39 +224,108 @@ export function AboutPageRedesign() {
       </section>
 
       {/* FOUNDER */}
-      <section className="about-founder">
+      <section className="about-founder" id="brad-geisen">
         <div className="about-founder-inner">
           <div className="about-founder-photo">
-            <img src="/images/brad-geisen-about.png" alt="Brad Geisen" />
+            <img src="/images/brad-geisen-about.png" alt="Brad Geisen, Founder of DealGapIQ and Foreclosure.com" />
           </div>
           <div className="about-founder-text">
             <h2>About the Founder</h2>
             <p>
-              Most real estate platforms are built to help you find properties.<br />
-              Very few are built by someone who understands how deals actually work.
+              <strong>Brad Geisen</strong> is the founder of DealGapIQ and the founder of <strong>Foreclosure.com</strong> &mdash;
+              a proven entrepreneur with more than 35 years of leadership experience across real estate,
+              development, asset management, fintech, and technology development.
             </p>
             <p>
-              DealGapIQ was created by a founder who has spent a career on the side of the market where
-              properties are <strong>analyzed, structured, and executed</strong> &mdash; not just listed.
+              Brad&apos;s journey began with a profound impact on the real estate sector. In 1989, before the
+              digital era existed, he began aggregating foreclosure data and publishing weekly distressed-asset
+              listings for investors &mdash; meticulously typed on a typewriter long before data platforms were
+              conceived. By age 24, he was running a $40M business profiled on the front of <em>The News</em>
+              business section: <em>&ldquo;He finds fortune in foreclosures.&rdquo;</em>
             </p>
             <p>
-              Behind the scenes, he has worked on large-scale real estate disposition programs for major institutions
-              and government agencies, helping shape how properties are evaluated, priced, and sold at scale. At the
-              same time, he has personally invested in <strong>thousands of properties</strong>, gaining firsthand insight into
-              what separates a listing from a true opportunity.
+              In <strong>1991</strong>, Brad was awarded his first GSE contract to run a pilot program for the
+              <strong> U.S. Department of Housing and Urban Development (HUD)</strong> to outsource the property
+              disposition division &mdash; the first outsourcing partnership of its kind in federal agency
+              history. The program delivered such extraordinary results that it became the standard for
+              HUD&apos;s nationwide disposition operations, a framework still in operation today.
             </p>
             <p>
-              That combination &mdash; institutional perspective and real-world execution &mdash; is what powers DealGapIQ.
-              Because the reality is simple:
+              He took the 1989 model online in 1998 as ForeclosureFreesearch.com, which would later evolve into
+              <strong> Foreclosure.com</strong> &mdash; the first centralized national platform for foreclosure
+              data and the transformative solution that modernized how the real estate and financial sectors
+              accessed distressed-property information.
+            </p>
+            <p>
+              In <strong>2000</strong>, <strong>Fannie Mae</strong> &mdash; the largest U.S. Government-Sponsored
+              Enterprise &mdash; approached Brad after discovering that his proprietary data system possessed
+              more comprehensive knowledge of their property portfolio than their own internal infrastructure.
+              Fannie Mae commissioned Brad to build a proprietary platform to completely transform their
+              asset-management operations. The result was <strong>HomePath.com</strong>, designed, built, and
+              managed by Brad and his team. The success of this initiative immediately captured the attention
+              of <strong>Freddie Mac</strong>, who entrusted him with an identical mandate, leading to the
+              creation of <strong>HomeSteps.com</strong>.
+            </p>
+            <p>
+              For over three decades, Brad has served as a trusted technology provider to both Fannie Mae and
+              Freddie Mac &mdash; an extraordinary tenure in regulatory-governed, compliance-driven environments
+              where trust, consistency, and innovation must coexist.
+            </p>
+            <p>
+              Beyond technology, Brad successfully developed an extensive portfolio of residential communities,
+              commercial buildings, mixed-use retail centers, and comprehensive land development projects &mdash;
+              including the <strong>Comerica Bank Regional Headquarters</strong> in Boca Raton, Florida, completed
+              in 2008. As a licensed real estate broker, he has owned and operated multiple brokerages and managed
+              broker networks nationwide for GSEs, banks, non-profits, and service providers, and he has personally
+              acquired, rehabbed, and sold over 1,000 residential properties as an investor.
             </p>
             <p className="about-founder-emphasis">
               <em>Every property can be a deal.</em><br />
               <em>But only if you understand the numbers behind it.</em>
             </p>
             <p>
-              DealGapIQ was built to bring that level of clarity to every investor &mdash; turning complex analysis into a
-              simple, confident decision.
+              DealGapIQ was built to bring institutional-grade analysis to every investor &mdash; the same
+              underwriting discipline Brad applied to GSE asset-management for thirty years, condensed into a
+              decision tool that runs in seconds.
             </p>
+
+            {/* Credentials grid — citation-ready stats */}
+            <dl
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                gap: '1.25rem',
+                marginTop: '2rem',
+                paddingTop: '1.5rem',
+                borderTop: '1px solid rgba(255,255,255,0.07)',
+              }}
+            >
+              {CREDS.map((c) => (
+                <div key={c.label} style={{ textAlign: 'left' }}>
+                  <dt
+                    style={{
+                      fontSize: '1.875rem',
+                      fontWeight: 700,
+                      color: 'var(--accent-sky)',
+                      letterSpacing: '-0.02em',
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {c.value}
+                  </dt>
+                  <dd
+                    style={{
+                      fontSize: '0.8125rem',
+                      color: 'var(--text-secondary)',
+                      marginTop: '0.25rem',
+                      marginLeft: 0,
+                    }}
+                  >
+                    {c.label}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </div>
       </section>

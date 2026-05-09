@@ -6,21 +6,53 @@ export const metadata: Metadata = {
   title: 'Glossary of Creative Finance Terms — DealGapIQ',
   description:
     'Plain-English definitions of the creative-finance structures active investors use: Subject-To, seller carrybacks, 0% 2nds, the Morby Method, FHA house-hack, and more.',
+  alternates: { canonical: '/glossary' },
   openGraph: {
     title: 'Glossary of Creative Finance Terms — DealGapIQ',
     description:
       'Plain-English definitions of the creative-finance structures active investors use.',
+    url: '/glossary',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Glossary — DealGapIQ',
+    description: 'Plain-English creative-finance term definitions.',
   },
 }
 
+const BASE = 'https://dealgapiq.com'
+
 export default async function GlossaryIndex() {
   const terms = await getAllContent('glossary')
+
+  const definedTermSetJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'DefinedTermSet',
+    '@id': `${BASE}/glossary#termset`,
+    name: 'DealGapIQ Glossary of Creative Finance Terms',
+    url: `${BASE}/glossary`,
+    description:
+      'Plain-English definitions of the creative-finance structures real-estate investors use: Subject-To, seller carrybacks, 0% 2nds, the Morby Method, FHA house-hack, and more.',
+    hasDefinedTerm: terms.map((t) => ({
+      '@type': 'DefinedTerm',
+      '@id': `${BASE}/glossary/${t.slug}#term`,
+      name: t.frontmatter.title,
+      description: t.frontmatter.meta_description || '',
+      url: `${BASE}/glossary/${t.slug}`,
+      inDefinedTermSet: `${BASE}/glossary#termset`,
+    })),
+  }
 
   return (
     <main
       className="min-h-screen px-4 py-10 sm:py-16"
       style={{ background: 'var(--surface-base)' }}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(definedTermSetJsonLd) }}
+      />
       <div className="max-w-3xl mx-auto">
         <header className="mb-12">
           <h1
