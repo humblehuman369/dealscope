@@ -327,12 +327,12 @@ function PathCard({
         </details>
       )}
 
-      {/* T13: attorney disclaimer renders on financing, strategy_switch, AND blended.
-          The blended plan is structurally financing-inclusive (always carries a seller 2nd
-          lever), so the contract review concern applies the same as a pure financing card. */}
-      {(structure.family === 'financing' ||
-        structure.family === 'strategy_switch' ||
-        structure.family === 'blended') && (
+      {/* T13: attorney disclaimer renders on strategy_switch and blended only.
+          Pure-financing cards (Creative Finance, Morby Method, Sub2, Assumable)
+          suppress the line on the first view to keep the card uncluttered —
+          the same legal context lives in the "How to pitch this" pitch script
+          and in the linked /legal/find-attorney page. */}
+      {(structure.family === 'strategy_switch' || structure.family === 'blended') && (
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.45, color: 'var(--text-secondary)' }}>
           Get this contract reviewed by a creative-finance attorney —{' '}
           <Link
