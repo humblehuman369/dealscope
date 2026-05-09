@@ -197,13 +197,20 @@ function PathCard({
         </h4>
       )}
 
-      {structure.selectionReason && (
+      {/* Suppress selectionReason on blended-plan cards — the summary below
+          already carries the same thesis. The data is still on the structure
+          for downstream consumers (PDF, Strategy, accessibility). */}
+      {structure.selectionReason && structure.family !== 'blended' && (
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.45, color: 'var(--text-secondary)' }}>
           {structure.selectionReason}
         </p>
       )}
 
-      {structure.levers.length > 0 && (
+      {/* Blended-plan cards put the full math in the bullets above, so the
+          separate lever block is suppressed here to avoid repeating the same
+          numbers twice on the first view. The lever data is still on the
+          structure for downstream consumers (PDF, Strategy, etc.). */}
+      {structure.family !== 'blended' && structure.levers.length > 0 && (
         <div
           style={{
             display: 'grid',

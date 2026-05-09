@@ -163,11 +163,10 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family=FAMILY,
         family_label=FAMILY_LABEL,
         realism_label=realism_label,
-        headline=f"Pay full asking — seller carries a {fmt_money(chosen_second)} 2nd at 0%",
-        bullets=[
-            "Pay full asking",
-            f"Seller carries a {fmt_money(chosen_second)} 2nd at 0%",
-        ],
+        headline=f"Seller Financing {fmt_money(chosen_second)}",
+        # Single-bullet headline action keeps the first view scannable —
+        # the lever block below carries the full breakdown.
+        bullets=[f"Seller Financing {fmt_money(chosen_second)}"],
         summary=(
             f"Saves {fmt_monthly(monthly_savings)}. Seller gets their price plus "
             f"{fmt_money(chosen_second)} back in {DEFAULT_BALLOON_YEARS} years."
@@ -186,9 +185,12 @@ def solve(ctx: StructureContext) -> DealStructure | None:
                 delta_label=None,
             ),
             StructureLever(
-                label=f"Seller 2nd (0%, {DEFAULT_BALLOON_YEARS}yr balloon)",
-                before_label="—",
-                after_label=fmt_money(chosen_second),
+                label="Seller 2nd",
+                # No "before" value — this is a brand-new note. The grid renderer
+                # hides the arrow when before is empty, so the row reads cleanly:
+                #   Seller 2nd        $94,000 (0%, 5yr balloon)
+                before_label="",
+                after_label=f"{fmt_money(chosen_second)} (0%, {DEFAULT_BALLOON_YEARS}yr balloon)",
                 delta_label=None,
             ),
         ],

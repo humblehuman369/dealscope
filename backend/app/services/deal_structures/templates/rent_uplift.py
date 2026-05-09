@@ -115,9 +115,10 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         cash_required=round(ctx.baseline_cash_required, 0),
         ranking_score=min(100.0, max(0.0, ranking)),
         pitch_script=pitch,
-        # Caveat moved into the pitch script (not shown on the card) to
-        # keep the first view uncluttered. Re-enable here if needed.
-        caveat=None,
+        caveat=(
+            "Always verify rent with local comps before committing. "
+            "If a rehab is required to get there, model the rehab cost in Strategy."
+        ),
         selection_reason=sel_reason,
         pre_loaded_record={"custom_rent_estimate": new_rent},
     )
