@@ -6,10 +6,18 @@ export const metadata: Metadata = {
   title: 'Blog — DealGapIQ',
   description:
     'Real-estate investment analysis, creative-finance teardowns, and the pitch scripts that close the deal. Built for active investors who know the price tag isn\'t the deal — the structure is.',
+  alternates: { canonical: '/blog' },
   openGraph: {
     title: 'Blog — DealGapIQ',
     description:
       'Real-estate investment analysis, creative-finance teardowns, and the pitch scripts that close the deal.',
+    url: '/blog',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Blog — DealGapIQ',
+    description: 'Deal teardowns, creative-finance breakdowns, and pitch scripts.',
   },
 }
 

@@ -4,7 +4,20 @@ import WhatIsDealGapIQ from './WhatIsDealGapIQ'
 export const metadata: Metadata = {
   title: 'What is DealGapIQ? — DealGapIQ',
   description:
-    'DealGapIQ answers the only question that matters: Is this actually a deal? Analyze any property, any strategy, instantly.',
+    'DealGapIQ answers the only question that matters: Is this actually a deal? Analyze any property across six investment strategies and four closing paths in seconds.',
+  alternates: { canonical: '/what-is-dealgapiq' },
+  openGraph: {
+    title: 'What is DealGapIQ?',
+    description:
+      'Analyze any property across six investment strategies and four closing paths in seconds.',
+    url: '/what-is-dealgapiq',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'What is DealGapIQ?',
+    description: 'Analyze any property across six strategies and four closing paths in seconds.',
+  },
 }
 
 export default function WhatIsItPage() {
