@@ -7,12 +7,13 @@
  *  - API endpoint
  *  - Default inputs
  *  - Property → initial inputs mapping
+ *  - Admin-resolved-defaults → inputs mapping (defaults-architecture rule)
  *  - Inputs → API payload mapping
  *  - Optional input-update side effects
  *
  * The hook handles the shared boilerplate:
  *  - State management (inputs, result, isCalculating, error)
- *  - One-time initialization from property data
+ *  - One-time initialization from static defaults → admin defaults → property
  *  - Debounced API calculation (150ms)
  *  - Error handling
  *  - Generic updateInput with optional side-effect overrides
@@ -21,6 +22,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { apiRequest } from '@/lib/api-client'
 import { SavedProperty } from '@/types/savedProperty'
+import { useDefaults } from './useDefaults'
+import type { AllAssumptions } from '@/stores/index'
 
 // ---------------------------------------------------------------------------
 // Configuration interface — each strategy implements this
@@ -44,6 +47,14 @@ export interface WorksheetStrategyConfig<
    * Return a partial object — only the fields that should differ from defaults.
    */
   initializeFromProperty: (property: SavedProperty, defaults: TInputs) => Partial<TInputs>
+
+  /**
+   * Map admin-resolved defaults (system → market → user assumptions, from
+   * `useDefaults()`) onto the strategy's input shape. Return a partial
+   * object — only the fields that should be sourced from admin. Property
+   * overrides win, so this should NOT include property-derived fields.
+   */
+  applyAdminDefaults?: (admin: AllAssumptions) => Partial<TInputs>
 
   /**
    * Transform the current inputs into the API payload shape.
@@ -95,12 +106,20 @@ export function useWorksheetCalculator<
   property: SavedProperty | null,
   config: WorksheetStrategyConfig<TInputs, TResult>,
 ): UseWorksheetCalculatorReturn<TInputs, TResult> {
+  // -- Admin-resolved defaults (system → market → user) --------------------
+  // Drives initial slider values so e.g. STR `platform_fees_pct`,
+  // `furnishing_budget`, `cleaning_cost_per_turn` reflect whatever the owner
+  // has configured in /admin/assumptions instead of static fallbacks.
+  const zip = property?.address_zip || undefined
+  const { defaults: adminDefaults } = useDefaults(zip)
+
   // -- State ----------------------------------------------------------------
   const [inputs, setInputs] = useState<TInputs>(config.defaultInputs)
   const [result, setResult] = useState<TResult | null>(null)
   const [isCalculating, setIsCalculating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const hasInitialized = useRef(false)
+  const adminAppliedRef = useRef(false)
 
   // Keep config in a ref so the calculation effect doesn't re-fire when the
   // caller happens to define config inline (unstable reference). The config
@@ -109,17 +128,51 @@ export function useWorksheetCalculator<
   configRef.current = config
 
   // -- Initialize from property (once) --------------------------------------
+  // Resolution order: static defaults → admin defaults → property snapshot.
+  // Property snapshot wins so real listing data is never replaced by an
+  // admin assumption.
   useEffect(() => {
     if (!property || hasInitialized.current) return
 
-    const overrides = configRef.current.initializeFromProperty(
+    const adminOverrides =
+      adminDefaults && configRef.current.applyAdminDefaults
+        ? configRef.current.applyAdminDefaults(adminDefaults)
+        : {}
+
+    const propertyOverrides = configRef.current.initializeFromProperty(
       property,
       configRef.current.defaultInputs,
     )
 
-    setInputs((prev) => ({ ...prev, ...overrides }))
+    setInputs((prev) => ({ ...prev, ...adminOverrides, ...propertyOverrides }))
     hasInitialized.current = true
-  }, [property])
+    adminAppliedRef.current = !!adminDefaults
+  }, [property, adminDefaults])
+
+  // -- Late-arriving admin defaults ----------------------------------------
+  // If property arrived first and admin defaults resolve later, layer them
+  // in once. We only overwrite admin-managed fields; the user's edits and
+  // property snapshot values are preserved by re-applying property
+  // overrides on top.
+  useEffect(() => {
+    if (!property) return
+    if (!adminDefaults) return
+    if (!hasInitialized.current) return
+    if (adminAppliedRef.current) return
+    if (!configRef.current.applyAdminDefaults) {
+      adminAppliedRef.current = true
+      return
+    }
+
+    const adminOverrides = configRef.current.applyAdminDefaults(adminDefaults)
+    const propertyOverrides = configRef.current.initializeFromProperty(
+      property,
+      configRef.current.defaultInputs,
+    )
+
+    setInputs((prev) => ({ ...prev, ...adminOverrides, ...propertyOverrides }))
+    adminAppliedRef.current = true
+  }, [adminDefaults, property])
 
   // -- Debounced API calculation --------------------------------------------
   useEffect(() => {

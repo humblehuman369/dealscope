@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
@@ -10,6 +10,7 @@ import { ArrowLeft, Calculator } from 'lucide-react'
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_BUY_DISCOUNT_PCT } from '@/lib/iqTarget'
 import { useDealScore } from '@/hooks/useDealScore'
+import { useDefaults } from '@/hooks/useDefaults'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
 
 // Section components for tab navigation
@@ -86,6 +87,12 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   const state = property.address_state || ''
   const zip = property.address_zip || ''
 
+  // Admin-resolved defaults (system → market → user). Render-then-update:
+  // state seeds with hardcoded fallbacks for an instant first paint, then
+  // re-seeds once defaults arrive. Tracked per-property via ref so user
+  // slider edits are never clobbered by a late-arriving response.
+  const { defaults: adminDefaults } = useDefaults(zip || undefined)
+
   // STATE - Updated defaults per default_assumptions.csv
   const listPrice = propertyData.listPrice || 200000
   const defaultArv = propertyData.arv || listPrice * 1.4
@@ -101,11 +108,31 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   const [contractPrice, setContractPrice] = useState(initialContractPrice)
   const [arv, setArv] = useState(defaultArv)
   const [rehabCosts, setRehabCosts] = useState(defaultRehabCosts)         // 5% of ARV
-  const [assignmentFee, setAssignmentFee] = useState(15000)               // $15,000
-  const [earnestMoney, setEarnestMoney] = useState(1000)                  // $1,000
-  const [marketingCosts, setMarketingCosts] = useState(500)               // $500
-  const [closingCostsPct, setClosingCostsPct] = useState(3)               // 3%
+  const [assignmentFee, setAssignmentFee] = useState(15000)               // wholesale.assignment_fee
+  const [earnestMoney, setEarnestMoney] = useState(1000)                  // wholesale.earnest_money_deposit
+  const [marketingCosts, setMarketingCosts] = useState(500)               // wholesale.marketing_costs
+  const [closingCostsPct, setClosingCostsPct] = useState(3)               // financing.closing_costs_pct
   const [buyerTargetProfit, setBuyerTargetProfit] = useState(25)
+
+  // Re-seed admin-driven sliders once defaults resolve. Keyed by property
+  // identity so this fires exactly once per property and never overwrites
+  // user edits. Property-data fields (ARV, contract price, rehab) come from
+  // the property snapshot and are intentionally excluded.
+  const adminAppliedKeyRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!adminDefaults) return
+    const key = `${propertyId}|${listPrice}`
+    if (adminAppliedKeyRef.current === key) return
+    adminAppliedKeyRef.current = key
+
+    const f = adminDefaults.financing
+    const w = adminDefaults.wholesale
+
+    if (Number.isFinite(w?.assignment_fee)) setAssignmentFee(w.assignment_fee)
+    if (Number.isFinite(w?.earnest_money_deposit)) setEarnestMoney(w.earnest_money_deposit)
+    if (Number.isFinite(w?.marketing_costs)) setMarketingCosts(w.marketing_costs)
+    if (Number.isFinite(f?.closing_costs_pct)) setClosingCostsPct(f.closing_costs_pct * 100)
+  }, [adminDefaults, propertyId, listPrice])
   
   // Hybrid accordion mode
   const [currentSection, setCurrentSection] = useState<number | null>(0)

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
@@ -10,6 +10,7 @@ import { ArrowLeft, Calculator } from 'lucide-react'
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
 import { useDealScore } from '@/hooks/useDealScore'
+import { useDefaults } from '@/hooks/useDefaults'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
 
 // Section components for tab navigation
@@ -88,6 +89,12 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
   const state = property.address_state || ''
   const zip = property.address_zip || ''
 
+  // Admin-resolved defaults (system → market → user). Render-then-update:
+  // state seeds with hardcoded fallbacks for an instant first paint, then
+  // re-seeds once defaults arrive. Tracked per-property via ref so user
+  // slider edits are never clobbered by a late-arriving response.
+  const { defaults: adminDefaults } = useDefaults(zip || undefined)
+
   // STATE - Updated defaults per default_assumptions.csv
   const listPrice = propertyData.listPrice || 400000
   const defaultInsurance =
@@ -115,22 +122,51 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
   })
   
   const [purchasePrice, setPurchasePrice] = useState(initialPurchasePrice)
-  const [downPaymentPct, setDownPaymentPct] = useState(3.5)               // 3.5% FHA
-  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)
-  const [interestRate, setInterestRate] = useState(6.0)                   // 6%
-  const [loanTerm, setLoanTerm] = useState(30)
+  const [downPaymentPct, setDownPaymentPct] = useState(3.5)               // house_hack.fha_down_payment_pct
+  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)             // financing.closing_costs_pct
+  const [interestRate, setInterestRate] = useState(6.0)                   // house_hack.fha_interest_rate
+  const [loanTerm, setLoanTerm] = useState(30)                            // financing.loan_term_years
   const [propertyType, setPropertyType] = useState<'duplex' | 'triplex' | 'fourplex'>('duplex')
   const [ownerUnit, setOwnerUnit] = useState(0)
-  const [unit1Rent, setUnit1Rent] = useState(defaultRoomRent)             // Calculated from formula
-  const [unit2Rent, setUnit2Rent] = useState(Math.round(rentPerRoom))     // Rent per room
+  const [unit1Rent, setUnit1Rent] = useState(defaultRoomRent)
+  const [unit2Rent, setUnit2Rent] = useState(Math.round(rentPerRoom))
   const [unit3Rent, setUnit3Rent] = useState(Math.round(rentPerRoom))
   const [unit4Rent, setUnit4Rent] = useState(Math.round(rentPerRoom))
-  const [vacancyRate, setVacancyRate] = useState(1)                       // 1%
+  const [vacancyRate, setVacancyRate] = useState(1)                       // operating.vacancy_rate
   const [propertyTaxes, setPropertyTaxes] = useState(defaultPropertyTaxes)
-  const [insurance, setInsurance] = useState(defaultInsurance)            // 1% of purchase price
-  const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)
-  const [maintenancePct, setMaintenancePct] = useState(5)
-  const [marketRent, setMarketRent] = useState(defaultMarketRent)         // Rent per room
+  const [insurance, setInsurance] = useState(defaultInsurance)            // operating.insurance_pct × value
+  const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)               // operating.property_management_pct
+  const [maintenancePct, setMaintenancePct] = useState(5)                 // operating.maintenance_pct
+  const [marketRent, setMarketRent] = useState(defaultMarketRent)
+
+  // Re-seed admin-driven sliders once defaults resolve. Keyed by property
+  // identity so this fires once per property and never clobbers user edits.
+  // Property-snapshot inputs (taxes, rents, insurance dollar amount,
+  // purchase price) are intentionally excluded — those come from the
+  // property data, not admin assumptions.
+  const adminAppliedKeyRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!adminDefaults) return
+    const key = `${propertyId}|${listPrice}`
+    if (adminAppliedKeyRef.current === key) return
+    adminAppliedKeyRef.current = key
+
+    const f = adminDefaults.financing
+    const hh = adminDefaults.house_hack
+    const o = adminDefaults.operating
+
+    if (Number.isFinite(hh?.fha_down_payment_pct)) setDownPaymentPct(hh.fha_down_payment_pct * 100)
+    if (Number.isFinite(hh?.fha_interest_rate)) setInterestRate(hh.fha_interest_rate * 100)
+    if (Number.isFinite(f?.closing_costs_pct)) setPurchaseCostsPct(f.closing_costs_pct * 100)
+    if (Number.isFinite(f?.loan_term_years)) setLoanTerm(f.loan_term_years)
+    if (Number.isFinite(o?.vacancy_rate)) setVacancyRate(o.vacancy_rate * 100)
+    if (Number.isFinite(o?.property_management_pct)) setPropertyMgmtPct(o.property_management_pct * 100)
+    if (Number.isFinite(o?.maintenance_pct)) setMaintenancePct(o.maintenance_pct * 100)
+
+    if (propertyData.insurance == null && Number.isFinite(o?.insurance_pct)) {
+      setInsurance(listPrice * o.insurance_pct)
+    }
+  }, [adminDefaults, propertyId, listPrice, propertyData.insurance])
   
   // Hybrid accordion mode
   const [currentSection, setCurrentSection] = useState<number | null>(0)

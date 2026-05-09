@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
@@ -10,6 +10,7 @@ import { ArrowLeft, Calculator } from 'lucide-react'
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
 import { useDealScore } from '@/hooks/useDealScore'
+import { useDefaults } from '@/hooks/useDefaults'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
 
 // Section components for tab navigation
@@ -91,6 +92,12 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
   const state = property.address_state || ''
   const zip = property.address_zip || ''
 
+  // Admin-resolved defaults (system → market → user). Render-then-update:
+  // state seeds with hardcoded fallbacks for an instant first paint, then
+  // re-seeds once defaults arrive. Tracked per-property via ref so user
+  // slider edits are never clobbered by a late-arriving response.
+  const { defaults: adminDefaults } = useDefaults(zip || undefined)
+
   // STATE - Updated defaults per default_assumptions.csv
   const listPrice = propertyData.listPrice || 200000
   const defaultArv = propertyData.arv || listPrice * 1.35
@@ -116,23 +123,68 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
   })
   
   const [purchasePrice, setPurchasePrice] = useState(initialPurchasePrice)
-  const [rehabCosts, setRehabCosts] = useState(defaultRehabCosts)         // 5% of ARV
-  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)             // 3%
-  const [loanToCostPct, setLoanToCostPct] = useState(90)
-  const [interestRate, setInterestRate] = useState(12)                    // 12% hard money
+  const [rehabCosts, setRehabCosts] = useState(defaultRehabCosts)              // 5% of ARV
+  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)                  // financing.closing_costs_pct
+  const [loanToCostPct, setLoanToCostPct] = useState(90)                       // flip.hard_money_ltv (shared)
+  const [interestRate, setInterestRate] = useState(12)                         // flip.hard_money_rate (shared)
   const [loanPoints, setLoanPoints] = useState(2)
   const [arv, setArv] = useState(defaultArv)
-  const [holdingMonths, setHoldingMonths] = useState(4)
+  const [holdingMonths, setHoldingMonths] = useState(4)                        // rehab.holding_period_months
   const [propertyTaxes, setPropertyTaxes] = useState(defaultPropertyTaxes)
-  const [insurance, setInsurance] = useState(defaultInsurance)            // 1% of purchase price
-  const [utilities, setUtilities] = useState(100)                         // $100
-  const [refiLtvPct, setRefiLtvPct] = useState(75)
-  const [refiInterestRate, setRefiInterestRate] = useState(6.0)           // 6%
-  const [refiClosingCosts, setRefiClosingCosts] = useState(defaultRefiClosingCosts) // 3% of refi amount
+  const [insurance, setInsurance] = useState(defaultInsurance)                 // operating.insurance_pct × value
+  const [utilities, setUtilities] = useState(100)                              // operating.utilities_monthly
+  const [refiLtvPct, setRefiLtvPct] = useState(75)                             // brrrr.refinance_ltv
+  const [refiInterestRate, setRefiInterestRate] = useState(6.0)                // brrrr.refinance_interest_rate
+  const [refiClosingCosts, setRefiClosingCosts] = useState(defaultRefiClosingCosts) // brrrr.refinance_closing_costs_pct
   const [monthlyRent, setMonthlyRent] = useState(defaultMonthlyRent)
-  const [vacancyRate, setVacancyRate] = useState(1)                       // 1%
-  const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)               // 0%
-  const [maintenancePct, setMaintenancePct] = useState(5)                 // 5%
+  const [vacancyRate, setVacancyRate] = useState(1)                            // operating.vacancy_rate
+  const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)                    // operating.property_management_pct
+  const [maintenancePct, setMaintenancePct] = useState(5)                      // operating.maintenance_pct
+
+  // Re-seed admin-driven sliders once defaults resolve. Keyed by property
+  // identity so this fires exactly once per property and never overwrites
+  // user edits. Property-data fields (taxes, ARV, rent, rehab dollar amount,
+  // purchase price) come from the property snapshot and are intentionally
+  // excluded.
+  const adminAppliedKeyRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!adminDefaults) return
+    const key = `${propertyId}|${listPrice}`
+    if (adminAppliedKeyRef.current === key) return
+    adminAppliedKeyRef.current = key
+
+    const f = adminDefaults.financing
+    const fl = adminDefaults.flip
+    const b = adminDefaults.brrrr
+    const r = adminDefaults.rehab
+    const o = adminDefaults.operating
+
+    if (Number.isFinite(f?.closing_costs_pct)) setPurchaseCostsPct(f.closing_costs_pct * 100)
+    // BRRRR's purchase phase shares Flip's hard-money admin keys.
+    if (Number.isFinite(fl?.hard_money_ltv)) setLoanToCostPct(fl.hard_money_ltv * 100)
+    if (Number.isFinite(fl?.hard_money_rate)) setInterestRate(fl.hard_money_rate * 100)
+    if (Number.isFinite(r?.holding_period_months)) setHoldingMonths(r.holding_period_months)
+    if (Number.isFinite(b?.refinance_ltv)) setRefiLtvPct(b.refinance_ltv * 100)
+    if (Number.isFinite(b?.refinance_interest_rate)) setRefiInterestRate(b.refinance_interest_rate * 100)
+    if (Number.isFinite(o?.utilities_monthly)) setUtilities(o.utilities_monthly)
+    if (Number.isFinite(o?.vacancy_rate)) setVacancyRate(o.vacancy_rate * 100)
+    if (Number.isFinite(o?.property_management_pct)) setPropertyMgmtPct(o.property_management_pct * 100)
+    if (Number.isFinite(o?.maintenance_pct)) setMaintenancePct(o.maintenance_pct * 100)
+
+    // Insurance dollar amount: only re-seed when the property has no value of
+    // its own. Property-snapshot insurance always wins per data-consistency rule.
+    if (propertyData.insurance == null && Number.isFinite(o?.insurance_pct)) {
+      setInsurance(listPrice * o.insurance_pct)
+    }
+
+    // Refinance closing costs dollars derive from ARV × refi_ltv × refi_closing_costs_pct.
+    if (
+      Number.isFinite(b?.refinance_ltv) &&
+      Number.isFinite(b?.refinance_closing_costs_pct)
+    ) {
+      setRefiClosingCosts(defaultArv * b.refinance_ltv * b.refinance_closing_costs_pct)
+    }
+  }, [adminDefaults, propertyId, listPrice, defaultArv, propertyData.insurance])
   
   // Hybrid accordion mode
   const [currentSection, setCurrentSection] = useState<number | null>(0)
