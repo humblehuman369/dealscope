@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useDealScore } from '@/hooks/useDealScore'
+import { useDefaults } from '@/hooks/useDefaults'
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
 import { ProGate } from '@/components/ProGate'
@@ -147,6 +148,12 @@ export function LTRWorksheet({
   const zip = propertyData.zipCode || property.address_zip || ''
   const fullAddress = property.full_address || `${address}${city ? `, ${city}` : ''}${state ? `, ${state}` : ''}${zip ? ` ${zip}` : ''}`
 
+  // Admin-resolved defaults (system → market → user). Render-then-update:
+  // state seeds with hardcoded fallbacks for an instant first paint, then
+  // re-seeds once defaults arrive. Tracked per-property via ref so user
+  // edits (when sliders are made editable) are never clobbered.
+  const { defaults: adminDefaults } = useDefaults(zip || undefined)
+
   // ============================================
   // FINANCIAL INPUTS (from property data or defaults)
   // ============================================
@@ -173,22 +180,55 @@ export function LTRWorksheet({
 
   const initialRehabBudget = Math.round(defaultArv * DEFAULT_RENOVATION_BUDGET_PCT)
 
-  // State for editable inputs
+  // State for editable inputs. Admin-managed assumptions retain their
+  // setters so the re-seed effect below can update them once defaults
+  // resolve. The values are used read-only by the UI today; setters are
+  // kept for the defaults-architecture re-seed pattern (and unblock making
+  // these editable in the future).
   const [purchasePrice, setPurchasePrice] = useState(initialPurchasePrice)
-  const [downPaymentPct] = useState(20)
-  const [purchaseCostsPct] = useState(3)
-  const [interestRate] = useState(6.0)
-  const [loanTerm] = useState(30)
+  const [downPaymentPct, setDownPaymentPct] = useState(20)              // financing.down_payment_pct
+  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)           // financing.closing_costs_pct
+  const [interestRate, setInterestRate] = useState(6.0)                 // financing.interest_rate
+  const [loanTerm, setLoanTerm] = useState(30)                          // financing.loan_term_years
   const [rehabCosts] = useState(initialRehabBudget)
   const [arv] = useState(defaultArv)
   const [monthlyRent] = useState(defaultMonthlyRent)
-  const [vacancyRate] = useState(1)
+  const [vacancyRate, setVacancyRate] = useState(1)                     // operating.vacancy_rate
   const [propertyTaxes] = useState(defaultPropertyTaxes)
-  const [insurance] = useState(defaultInsurance)
-  const [propertyMgmtPct] = useState(0)
-  const [maintenancePct] = useState(5)
-  const [capExPct] = useState(0)
+  const [insurance, setInsurance] = useState(defaultInsurance)          // operating.insurance_pct × value
+  const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)             // operating.property_management_pct
+  const [maintenancePct, setMaintenancePct] = useState(5)               // operating.maintenance_pct
+  const [capExPct, setCapExPct] = useState(0)                           // operating.capex_pct
   const [hoaFees] = useState(0)
+
+  // Re-seed admin-driven assumptions once defaults resolve. Keyed by
+  // property identity so this fires exactly once per property. Property
+  // snapshot fields (taxes, rent, insurance dollar amount, ARV, rehab,
+  // purchase price) are intentionally excluded — those come from the
+  // property data, not admin assumptions.
+  const adminAppliedKeyRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!adminDefaults) return
+    const key = `${propertyId}|${listPrice}`
+    if (adminAppliedKeyRef.current === key) return
+    adminAppliedKeyRef.current = key
+
+    const f = adminDefaults.financing
+    const o = adminDefaults.operating
+
+    if (Number.isFinite(f?.down_payment_pct)) setDownPaymentPct(f.down_payment_pct * 100)
+    if (Number.isFinite(f?.closing_costs_pct)) setPurchaseCostsPct(f.closing_costs_pct * 100)
+    if (Number.isFinite(f?.interest_rate)) setInterestRate(f.interest_rate * 100)
+    if (Number.isFinite(f?.loan_term_years)) setLoanTerm(f.loan_term_years)
+    if (Number.isFinite(o?.vacancy_rate)) setVacancyRate(o.vacancy_rate * 100)
+    if (Number.isFinite(o?.property_management_pct)) setPropertyMgmtPct(o.property_management_pct * 100)
+    if (Number.isFinite(o?.maintenance_pct)) setMaintenancePct(o.maintenance_pct * 100)
+    if (Number.isFinite(o?.capex_pct)) setCapExPct(o.capex_pct * 100)
+
+    if (propertyData.insurance == null && Number.isFinite(o?.insurance_pct)) {
+      setInsurance(listPrice * o.insurance_pct)
+    }
+  }, [adminDefaults, propertyId, listPrice, propertyData.insurance])
 
   // ============================================
   // DEAL SCORE FROM BACKEND API

@@ -132,6 +132,29 @@ const strConfig: WorksheetStrategyConfig<StrWorksheetInputs, StrWorksheetResult>
   strategyName: 'STR',
   defaultInputs,
 
+  applyAdminDefaults(admin) {
+    const f = admin.financing
+    const o = admin.operating
+    const s = admin.str
+    const overrides: Partial<StrWorksheetInputs> = {}
+
+    if (Number.isFinite(f?.down_payment_pct)) overrides.down_payment_pct = f.down_payment_pct
+    if (Number.isFinite(f?.interest_rate)) overrides.interest_rate = f.interest_rate
+    if (Number.isFinite(f?.loan_term_years)) overrides.loan_term_years = f.loan_term_years
+    if (Number.isFinite(o?.maintenance_pct)) overrides.maintenance_pct = o.maintenance_pct
+    if (Number.isFinite(o?.capex_pct)) overrides.capex_pct = o.capex_pct
+    if (Number.isFinite(o?.utilities_monthly)) overrides.utilities_monthly = o.utilities_monthly
+    if (Number.isFinite(s?.furniture_setup_cost)) overrides.furnishing_budget = s.furniture_setup_cost
+    if (Number.isFinite(s?.cleaning_fee_revenue)) overrides.cleaning_fee_revenue = s.cleaning_fee_revenue
+    if (Number.isFinite(s?.avg_length_of_stay_days)) overrides.avg_booking_length = s.avg_length_of_stay_days
+    if (Number.isFinite(s?.platform_fees_pct)) overrides.platform_fees_pct = s.platform_fees_pct
+    if (Number.isFinite(s?.str_management_pct)) overrides.property_management_pct = s.str_management_pct
+    if (Number.isFinite(s?.cleaning_cost_per_turnover)) overrides.cleaning_cost_per_turn = s.cleaning_cost_per_turnover
+    if (Number.isFinite(s?.supplies_monthly)) overrides.supplies_monthly = s.supplies_monthly
+
+    return overrides
+  },
+
   initializeFromProperty(property, defaults) {
     const data = property.property_data_snapshot || {}
     const listPrice = data.listPrice ?? defaults.purchase_price
