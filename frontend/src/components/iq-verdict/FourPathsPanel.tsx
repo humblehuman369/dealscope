@@ -79,6 +79,38 @@ function pathCountWords(n: number): { lead: string; tail: string } {
   return { lead: `${word} ${noun}`, tail: 'to make this work' }
 }
 
+// In-summary tokens that should be rendered as clickable links to the matching
+// in-app tool. Keeps copy-side wording stable while letting product link to the
+// right surface (e.g. "Appraiser page" → /price-intel).
+const SUMMARY_LINKS: Array<{ token: string; href: string }> = [
+  { token: 'Appraiser page', href: '/price-intel' },
+  { token: 'Appraiser', href: '/price-intel' },
+  { token: 'Strategy worksheet', href: '/strategy' },
+]
+
+function renderSummaryWithLinks(summary: string): React.ReactNode {
+  if (!summary) return summary
+  // Compile a single regex that matches any known token (longest first so
+  // "Appraiser page" wins over "Appraiser").
+  const sorted = [...SUMMARY_LINKS].sort((a, b) => b.token.length - a.token.length)
+  const pattern = new RegExp(`(${sorted.map((l) => l.token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g')
+  const parts = summary.split(pattern)
+  return parts.map((part, idx) => {
+    const link = sorted.find((l) => l.token === part)
+    if (!link) return <span key={idx}>{part}</span>
+    return (
+      <Link
+        key={idx}
+        href={link.href}
+        className="font-semibold underline-offset-2 hover:underline"
+        style={{ color: 'var(--accent-sky)' }}
+      >
+        {part}
+      </Link>
+    )
+  })
+}
+
 function PathCard({
   structure,
   index,
@@ -247,7 +279,7 @@ function PathCard({
           color: 'var(--text-body)',
         }}
       >
-        {structure.summary}
+        {renderSummaryWithLinks(structure.summary)}
       </p>
 
       {structure.caveat && (

@@ -88,24 +88,25 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     if bump_pct > 12:
         sel_reason = "The gap needs a larger rent lift — verify comps before leaning on this path."
 
+    bump_dollars = max(0, round(actual_bump))
     return DealStructure(
         id=ID,
         family=FAMILY,
         family_label=FAMILY_LABEL,
         realism_label=realism_label,
-        headline=f"Verify or raise rent to ${round(new_rent):,}",
-        bullets=[
-            "Verify market rent range",
-            f"Raise rent to ${round(new_rent):,}",
-        ],
-        summary=(
-            f"Only {fmt_monthly(monthly_savings)} closes the gap. "
-            f"Run rent comps in Appraiser to confirm and/or plan a light rehab."
-        ),
+        headline=f"Target Rent → ${round(new_rent):,}",
+        # Single-bullet headline action keeps the first view scannable —
+        # the full explanation is reachable via "How to pitch this".
+        bullets=[f"Target Rent → ${round(new_rent):,}"],
+        # Compact closing line — points the user to the deeper tool instead of
+        # restating the math already shown above.
+        summary="Confirm local rent. Go to the Appraiser page in DealGapIQ.",
         levers=[
             StructureLever(
-                label="Target rent",
-                before_label=f"${round(ctx.monthly_rent):,}",
+                label="Target Rent",
+                # Show the rent bump inline so the math is self-evident:
+                #   $5,764 + $25 → $5,791  +0.5%
+                before_label=f"${round(ctx.monthly_rent):,} + ${bump_dollars:,}",
                 after_label=f"${round(new_rent):,}",
                 delta_label=fmt_pct_delta(ctx.monthly_rent, new_rent),
             ),
@@ -114,10 +115,9 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         cash_required=round(ctx.baseline_cash_required, 0),
         ranking_score=min(100.0, max(0.0, ranking)),
         pitch_script=pitch,
-        caveat=(
-            "Always verify rent with local comps before committing. "
-            "If a rehab is required to get there, model the rehab cost in Strategy."
-        ),
+        # Caveat moved into the pitch script (not shown on the card) to
+        # keep the first view uncluttered. Re-enable here if needed.
+        caveat=None,
         selection_reason=sel_reason,
         pre_loaded_record={"custom_rent_estimate": new_rent},
     )
