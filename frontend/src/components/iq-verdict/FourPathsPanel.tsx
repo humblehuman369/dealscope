@@ -206,7 +206,20 @@ function PathCard({
   const savingsLabel = formatSavings(structure.monthlySavings)
   const showAttorneyLine =
     structure.family === 'strategy_switch' || structure.family === 'blended'
-  const bullets = structure.bullets && structure.bullets.length > 0 ? structure.bullets : null
+  // For the Rent Increase ("income") card, split a combined "Target Rent: <formula>"
+  // bullet into two lines (label + formula) so the long arithmetic expression
+  // doesn't visually compete with the label. The backend template already emits
+  // the split form, but this normalizer keeps the UI working against older
+  // backend builds that still emit a single concatenated bullet.
+  const bullets = (() => {
+    const raw = structure.bullets && structure.bullets.length > 0 ? structure.bullets : null
+    if (!raw) return null
+    if (structure.family === 'income' && raw.length === 1) {
+      const match = raw[0].match(/^(Target Rent:)\s*\u00A0?\s*(\$.+)$/)
+      if (match) return [match[1], match[2]]
+    }
+    return raw
+  })()
 
   return (
     <div
@@ -224,9 +237,10 @@ function PathCard({
         minHeight: 0,
       }}
     >
-      {/* HEADER ROW — Path # · TITLE on the left, Savings KPI pill on the right.
+      {/* HEADER ROW — Path # · TITLE on the left, Savings KPI label on the right.
           The KPI is the highest-impact at-a-glance number and earns the visual
-          weight on the right edge of the header. */}
+          weight on the right edge of the header. Rendered as plain accent text
+          (no pill background) so it reads consistently across accent colors. */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <span
           style={{
@@ -252,11 +266,7 @@ function PathCard({
               fontWeight: 700,
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
-              padding: '4px 10px',
-              borderRadius: 999,
               color: accent,
-              background: `${accent}1A`,
-              border: `1px solid ${accent}40`,
             }}
           >
             {savingsLabel}

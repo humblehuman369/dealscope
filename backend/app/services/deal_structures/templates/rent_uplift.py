@@ -96,11 +96,13 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label=realism_label,
         headline=f"Target Rent → ${round(new_rent):,}",
-        # Math-carrying bullet — same pattern across all four paths so the
-        # cards read with consistent visual rhythm.
+        # Math-carrying bullets — split across two lines (label, then formula)
+        # so the long arithmetic expression doesn't compete with the label
+        # for visual weight on the Rent Increase card.
         bullets=[
-            f"Target Rent:\u00A0${round(ctx.monthly_rent):,} + ${bump_dollars:,} → "
-            f"${round(new_rent):,}  {pct_label}"
+            "Target Rent:",
+            f"${round(ctx.monthly_rent):,} + ${bump_dollars:,} → "
+            f"${round(new_rent):,}  {pct_label}",
         ],
         # Compact closing line — points the user to the deeper tool instead of
         # restating the math already shown above.
