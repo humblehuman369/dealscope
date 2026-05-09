@@ -113,8 +113,13 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label="Capital-heavy path",
         headline=f"Down Payment {new_down * 100:.0f}%",
-        # Single-bullet headline — the lever block carries the breakdown.
-        bullets=[f"Down Payment {new_down * 100:.0f}%"],
+        # Math-carrying bullets — full breakdown so the card reads on its own
+        # without a separate lever block.
+        bullets=[
+            f"Down payment:\u00A0{ctx.down_payment_pct * 100:.0f}% → "
+            f"{new_down * 100:.0f}%  ({fmt_money(new_down * ctx.list_price)})",
+            f"Monthly P&I:\u00A0${round(ctx.baseline_monthly_pi):,} → ${round(new_pi):,}",
+        ],
         summary=(
             f"Adds about {fmt_money(delta_cash)} cash vs baseline closing but saves "
             f"{fmt_money(monthly_savings)}/mo on the mortgage."

@@ -164,9 +164,14 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label=realism_label,
         headline=f"Seller Financing {fmt_money(chosen_second)}",
-        # Single-bullet headline action keeps the first view scannable —
-        # the lever block below carries the full breakdown.
-        bullets=[f"Seller Financing {fmt_money(chosen_second)}"],
+        # Math-carrying bullets — full breakdown in three lines so the card
+        # tells the whole story without a separate lever block.
+        bullets=[
+            f"Offer price:\u00A0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
+            f"1st mortgage:\u00A0{fmt_money(bank_loan)} → "
+            f"{fmt_money(new_bank_loan)} @ {ctx.interest_rate * 100:.1f}%",
+            f"Seller 2nd:\u00A0{fmt_money(chosen_second)} (0%, {DEFAULT_BALLOON_YEARS}yr balloon)",
+        ],
         summary=(
             f"Saves {fmt_monthly(monthly_savings)}. Seller gets their price plus "
             f"{fmt_money(chosen_second)} back in {DEFAULT_BALLOON_YEARS} years."
