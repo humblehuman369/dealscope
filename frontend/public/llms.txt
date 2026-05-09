@@ -1,0 +1,39 @@
+# DealGapIQ
+
+> DealGapIQ is a SaaS deal-analysis tool for U.S. residential real estate investors. It scores any listing across six investment strategies (Long-term Rental, Short-term Rental, BRRRR, Fix & Flip, House Hacking, Wholesale) and four closing paths (cash, conventional, subject-to, seller-finance), and tells investors the maximum offer for each. Founded by Brad Geisen, founder of Foreclosure.com.
+
+## Core
+- [Home](https://dealgapiq.com/): Product overview and the IQ Verdict explainer
+- [Pricing](https://dealgapiq.com/pricing): Starter (free, 3 analyses/mo) and Pro Investor ($29.17/mo annual). 7-day free trial, cancel anytime.
+- [About](https://dealgapiq.com/about): Founder background and product origin
+
+## What & Why
+- [What is DealGapIQ](https://dealgapiq.com/what-is-dealgapiq): Plain-English explainer of the product
+- [What is the Deal Gap](https://dealgapiq.com/deal-gap): Core methodology concept — the gap between asking price and what the deal actually supports
+- [Methodology](https://dealgapiq.com/methodology): Every formula DealGapIQ uses — IQ Verdict score, Deal Gap, Income Value, Target Buy, Deal Opportunity Score, Seller Motivation indicators, six strategy P&Ls, default assumptions, data sources
+- [Six investment strategies](https://dealgapiq.com/strategies): LTR, STR, BRRRR, Fix & Flip, House Hacking, Wholesale
+- [IQ Verdict (feature page)](https://dealgapiq.com/verdict): How the Verdict scoring works
+- [Strategy Analysis (feature page)](https://dealgapiq.com/strategy): How the strategy deep-dive works
+- [DealMaker (feature page)](https://dealgapiq.com/deal-maker): How the DealMaker workflow works
+
+## Education
+- [Blog](https://dealgapiq.com/blog): Case studies and pitch scripts
+- [Glossary](https://dealgapiq.com/glossary): Real-estate-investor term definitions
+- [Help Center](https://dealgapiq.com/help): Getting started and FAQ
+
+## Legal
+- [Disclosures](https://dealgapiq.com/disclosures): Data accuracy, limitations, and "not financial advice" disclaimers
+- [Privacy](https://dealgapiq.com/privacy)
+- [Terms](https://dealgapiq.com/terms)
+
+## Find DealGapIQ
+- LinkedIn: https://www.linkedin.com/company/111962234/
+- YouTube: https://www.youtube.com/channel/UCpmz8af1CqO6XYIIffshKzQ
+- X (Twitter): https://x.com/dealgapiq
+- Facebook: https://www.facebook.com/profile.php?id=61588805535168
+
+## Founder
+- Brad Geisen on LinkedIn: https://www.linkedin.com/in/bradgeisen
+- Brad Geisen on Facebook: https://www.facebook.com/brad.geisen.3
+- Foreclosure.com (Brad's flagship company): https://www.foreclosure.com
+- Foreclosure.com on LinkedIn: https://www.linkedin.com/company/foreclosure-com/

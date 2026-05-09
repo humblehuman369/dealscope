@@ -7,6 +7,7 @@ import { Toaster } from '@/components/feedback'
 import { SentryInit } from '@/components/SentryInit'
 import { AnalyticsAndConsent } from '@/components/AnalyticsAndConsent'
 import { ThemeHydrationScript } from '@/components/theme/ThemeHydrationScript'
+import { SiteStructuredData } from '@/components/seo/StructuredData'
 
 // ── Self-hosted fonts via next/font ────────────────
 // Eliminates render-blocking requests to fonts.googleapis.com.
@@ -54,8 +55,15 @@ const canonicalBase =
     : 'https://dealgapiq.com'
 
 export const metadata: Metadata = {
-  title: defaultTitle,
+  metadataBase: new URL(canonicalBase),
+  title: {
+    default: defaultTitle,
+    template: '%s | DealGapIQ',
+  },
   description: defaultDescription,
+  alternates: {
+    canonical: '/',
+  },
   icons: {
     icon: '/favicon.png',
     apple: '/favicon.png',
@@ -64,7 +72,7 @@ export const metadata: Metadata = {
     title: defaultTitle,
     description: defaultDescription,
     type: 'website',
-    url: canonicalBase,
+    url: '/',
     siteName: 'DealGapIQ',
   },
   twitter: {
@@ -77,7 +85,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  // maximumScale removed — disabling user pinch-zoom is a WCAG 2.1 accessibility regression.
   viewportFit: 'cover',
   themeColor: '#000000',
 }
@@ -95,6 +103,7 @@ export default function RootLayout({
     >
       <head>
         <ThemeHydrationScript />
+        <SiteStructuredData />
       </head>
       <body className="font-sans min-h-screen flex flex-col text-[var(--text-body)] transition-colors duration-300">
         <SentryInit />

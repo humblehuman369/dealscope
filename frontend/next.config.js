@@ -25,9 +25,13 @@ if (!isCapacitor) {
       headers: [
         { key: 'X-Content-Type-Options', value: 'nosniff' },
         { key: 'X-Frame-Options', value: 'DENY' },
-        { key: 'X-XSS-Protection', value: '1; mode=block' },
+        // X-XSS-Protection removed — deprecated in modern browsers; CSP supersedes it.
         { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
+        {
+          key: 'Permissions-Policy',
+          value: 'camera=(), microphone=(), geolocation=(self), payment=(self), interest-cohort=()',
+        },
         {
           key: 'Content-Security-Policy',
           value: [
@@ -55,6 +59,20 @@ if (!isCapacitor) {
     { source: '/verdict-iq', destination: '/verdict', permanent: true },
     { source: '/compare', destination: '/price-intel?view=sale', permanent: true },
     { source: '/rental-comps', destination: '/price-intel?view=rent', permanent: true },
+    // GEO remediation Phase 1: fix dead URLs surfaced by the audit
+    { source: '/dealmaker', destination: '/deal-maker', permanent: true },
+    { source: '/help-center', destination: '/help', permanent: true },
+    { source: '/field-guide', destination: '/blog', permanent: true },
+    // GEO remediation Phase 2.1 (Option A): app routes moved to /app/* namespace.
+    // Old URLs with query params (real users mid-flow / external links) redirect to the new app routes.
+    // /verdict (no query) and /strategy (no query) and /deal-maker (no query) remain as marketing pages.
+    { source: '/verdict',    has: [{ type: 'query', key: 'address' }],    destination: '/app/verdict',    permanent: true },
+    { source: '/verdict',    has: [{ type: 'query', key: 'propertyId' }], destination: '/app/verdict',    permanent: true },
+    { source: '/strategy',   has: [{ type: 'query', key: 'address' }],    destination: '/app/strategy',   permanent: true },
+    { source: '/strategy',   has: [{ type: 'query', key: 'propertyId' }], destination: '/app/strategy',   permanent: true },
+    { source: '/deal-maker', has: [{ type: 'query', key: 'address' }],    destination: '/app/deal-maker', permanent: true },
+    { source: '/deal-maker', has: [{ type: 'query', key: 'propertyId' }], destination: '/app/deal-maker', permanent: true },
+    { source: '/deal-maker', has: [{ type: 'query', key: 'from' }],       destination: '/app/deal-maker', permanent: true },
   ]
 
   nextConfig.rewrites = async () => {
