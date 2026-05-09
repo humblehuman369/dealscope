@@ -75,7 +75,7 @@ const FAMILY_ACCENT: Record<StructureFamily, string> = {
 const PATH_COUNT_WORD = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six']
 function pathCountWords(n: number): { lead: string; tail: string } {
   const word = PATH_COUNT_WORD[n] ?? String(n)
-  const noun = n === 1 ? 'path' : 'paths'
+  const noun = n === 1 ? 'option' : 'options'
   return { lead: `${word} ${noun}`, tail: 'to make this work' }
 }
 
@@ -211,7 +211,7 @@ function PathCard({
   return (
     <div
       role="article"
-      aria-label={`Path ${index + 1}: ${structure.headline}`}
+      aria-label={`Option ${index + 1}: ${structure.headline}`}
       className="rounded-xl h-full min-h-0"
       style={{
         background: 'var(--surface-card)',
@@ -238,7 +238,7 @@ function PathCard({
             minWidth: 0,
           }}
         >
-          <span style={{ color: accent }}>{`Path ${index + 1}`}</span>
+          <span style={{ color: accent }}>{`Option ${index + 1}`}</span>
           <span style={{ color: 'var(--text-heading)' }}>
             {` · ${structure.familyLabel}`}
           </span>
