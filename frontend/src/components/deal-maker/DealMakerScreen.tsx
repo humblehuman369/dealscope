@@ -19,9 +19,10 @@
  * - No more fetching defaults on every page load - they're locked in the DealMakerRecord
  */
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDealMakerStore, useDealMakerDerived, useDealMakerReady } from '@/stores/dealMakerStore'
+import { useDefaults } from '@/hooks/useDefaults'
 import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity'
 import {
   // Strategy types & defaults
@@ -109,10 +110,17 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   // Determine if we're in "saved property mode" (use store) or "unsaved mode" (use local state)
   const isSavedPropertyMode = !!savedPropertyId
   
+  // Admin-resolved defaults — drives initial slider values for unsaved properties so
+  // hard-money rate, FHA down-payment, MIP, selling-costs, etc. reflect whatever the
+  // owner has configured in /admin/assumptions instead of the hardcoded fallbacks.
+  // Render-then-update pattern: states seed with hardcoded fallbacks for instant render,
+  // then re-seed once `defaults` resolves (via the effect below).
+  const { defaults: adminDefaults } = useDefaults(property.zipCode || undefined)
+  
   // Get initial state for a strategy (unsaved property mode).
   // Logic extracted to ./strategyDefaults.ts for maintainability.
   const getInitialLocalState = (strategy: StrategyType): AnyStrategyState =>
-    buildInitialState(strategy, property, listPrice)
+    buildInitialState(strategy, property, listPrice, adminDefaults)
   
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
@@ -124,6 +132,25 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   const [localHouseHackState, setLocalHouseHackState] = useState<HouseHackDealMakerState>(() => buildHouseHackState(property, listPrice))
   const [localWholesaleState, setLocalWholesaleState] = useState<WholesaleDealMakerState>(() => buildWholesaleState(property, listPrice))
   const [localBRRRRState, setLocalBRRRRState] = useState<BRRRRDealMakerState>(() => buildBRRRRState(property, listPrice))
+  
+  // Re-seed local slider state once admin defaults arrive. We only do this once per
+  // address (tracked via ref) so subsequent edits the user makes are never clobbered
+  // by a late-arriving defaults response. Saved-property mode bypasses this entirely
+  // because the store already feeds each slider from the persisted DealMakerRecord.
+  const adminDefaultsAppliedKeyRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (isSavedPropertyMode) return
+    if (!adminDefaults) return
+    const key = `${property.address}|${property.city}|${property.state}|${property.zipCode}|${listPrice ?? ''}`
+    if (adminDefaultsAppliedKeyRef.current === key) return
+    adminDefaultsAppliedKeyRef.current = key
+    setLocalLTRState(buildLTRState(property, listPrice, adminDefaults))
+    setLocalSTRState(buildSTRState(property, listPrice, adminDefaults))
+    setLocalFlipState(buildFlipState(property, listPrice, adminDefaults))
+    setLocalHouseHackState(buildHouseHackState(property, listPrice, adminDefaults))
+    setLocalWholesaleState(buildWholesaleState(property, listPrice, adminDefaults))
+    setLocalBRRRRState(buildBRRRRState(property, listPrice, adminDefaults))
+  }, [adminDefaults, isSavedPropertyMode, property, listPrice])
   
   // Load Deal Maker record from backend for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property

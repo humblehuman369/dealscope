@@ -38,6 +38,40 @@ export interface EstimateIncomeValueParams {
 /** Default matches backend ``OPERATING.required_equity_yield`` */
 export const DEFAULT_REQUIRED_EQUITY_YIELD = 0.08
 
+// ---------------------------------------------------------------------------
+// Backend-aligned operating expense defaults
+//
+// The Deal Gap bar's Income Value must subtract the SAME operating expenses
+// the worksheet displays (NOI / Cap Rate / Cash-on-Cash). Otherwise the bar's
+// Income Value runs higher than the worksheet implies, producing a Price Gap
+// that disagrees with the cap-rate / cash-flow numbers right below it.
+//
+// These constants mirror `backend/app/core/defaults.OperatingDefaults` and
+// must stay in sync. The backend NOI used for `data.income_value` and the
+// LTR/STR/BRRRR strategy breakdowns deducts capex (5%), utilities ($100/mo),
+// and pest control ($200/yr) from rent — so the client-side Income Value
+// must do the same.
+// ---------------------------------------------------------------------------
+
+/** Default reserves / capex as % of annual gross rent (mirrors backend `OPERATING.capex_pct`). */
+export const DEFAULT_OPERATING_CAPEX_PCT = 0.05
+
+/** Default monthly utilities included in opex (mirrors backend `OPERATING.utilities_monthly`). */
+export const DEFAULT_OPERATING_UTILITIES_MONTHLY = 100
+
+/** Default annual landscaping (mirrors backend `OPERATING.landscaping_annual`). */
+export const DEFAULT_OPERATING_LANDSCAPING_ANNUAL = 0
+
+/** Default annual pest control (mirrors backend `OPERATING.pest_control_annual`). */
+export const DEFAULT_OPERATING_PEST_CONTROL_ANNUAL = 200
+
+/** Backend's "other annual expenses" line item summed for convenience. */
+const DEFAULT_OPERATING_OTHER_ANNUAL =
+  DEFAULT_OPERATING_LANDSCAPING_ANNUAL + DEFAULT_OPERATING_PEST_CONTROL_ANNUAL
+
+/** Default base utilities (annual) summed for convenience. */
+const DEFAULT_OPERATING_UTILITIES_ANNUAL = DEFAULT_OPERATING_UTILITIES_MONTHLY * 12
+
 export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
   const {
     monthlyRent,
@@ -130,9 +164,13 @@ export function computeDealGapIncomeValue(
         maintenancePct: s.maintenanceRate,
         managementPct: s.managementRate ?? 0,
         requiredEquityYield: s.requiredEquityYield ?? DEFAULT_REQUIRED_EQUITY_YIELD,
-        capexPct: 0,
-        utilitiesAnnual: 0,
-        otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12,
+        // Backend `_calculate_long_term_rental` and `compute_deal_score` both
+        // deduct capex, utilities, and pest control from NOI. Keep these in
+        // sync so the Deal Gap bar's Income Value matches the worksheet's
+        // Cap Rate / Cash-on-Cash exactly.
+        capexPct: DEFAULT_OPERATING_CAPEX_PCT,
+        utilitiesAnnual: DEFAULT_OPERATING_UTILITIES_ANNUAL,
+        otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12 + DEFAULT_OPERATING_OTHER_ANNUAL,
       })
     }
     case 'str': {
@@ -150,9 +188,16 @@ export function computeDealGapIncomeValue(
         maintenancePct: s.maintenanceRate,
         managementPct: s.strManagementRate,
         requiredEquityYield: s.requiredEquityYield ?? DEFAULT_REQUIRED_EQUITY_YIELD,
-        capexPct: 0,
-        utilitiesAnnual: (s.additionalUtilitiesMonthly ?? 0) * 12,
-        otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12 + platformAnnual + (s.suppliesMonthly ?? 0) * 12,
+        // Backend `_calculate_str_strategy` deducts base utilities, capex,
+        // platform fees, supplies, and HOA from STR revenue. Mirror that here
+        // so the bar agrees with the worksheet's NOI / Cap Rate.
+        capexPct: DEFAULT_OPERATING_CAPEX_PCT,
+        utilitiesAnnual:
+          DEFAULT_OPERATING_UTILITIES_ANNUAL + (s.additionalUtilitiesMonthly ?? 0) * 12,
+        otherAnnualExpenses:
+          (s.monthlyHoa ?? 0) * 12 +
+          platformAnnual +
+          (s.suppliesMonthly ?? 0) * 12,
       })
     }
     case 'brrrr': {
@@ -168,9 +213,12 @@ export function computeDealGapIncomeValue(
         maintenancePct: s.maintenanceRate,
         managementPct: s.managementRate,
         requiredEquityYield: s.requiredEquityYield ?? DEFAULT_REQUIRED_EQUITY_YIELD,
-        capexPct: 0,
-        utilitiesAnnual: 0,
-        otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12,
+        // Backend `_calculate_brrrr_strategy` (verdict response NOI) deducts
+        // capex, utilities, and pest control. Match here so the bar's Income
+        // Value lines up with the worksheet Cap Rate.
+        capexPct: DEFAULT_OPERATING_CAPEX_PCT,
+        utilitiesAnnual: DEFAULT_OPERATING_UTILITIES_ANNUAL,
+        otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12 + DEFAULT_OPERATING_OTHER_ANNUAL,
       })
     }
     case 'house_hack': {

@@ -5,6 +5,15 @@
  * DYNAMIC SCORING: Strategies are scored 0-100 based on actual property economics
  */
 
+import {
+  estimateIncomeValue as estimateIncomeValueCanonical,
+  DEFAULT_REQUIRED_EQUITY_YIELD,
+  DEFAULT_OPERATING_CAPEX_PCT,
+  DEFAULT_OPERATING_UTILITIES_MONTHLY,
+  DEFAULT_OPERATING_LANDSCAPING_ANNUAL,
+  DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
+} from '@/utils/estimateIncomeValue';
+
 // ===================
 // PROPERTY TYPES
 // ===================
@@ -836,34 +845,40 @@ function calculateMonthlyMortgage(principal: number, annualRate: number, years: 
 
 /**
  * Estimate Income Value purchase price for LTR (WACC: debt constant + equity hurdle).
+ *
+ * Delegates to the canonical helper in `@/utils/estimateIncomeValue` so this
+ * fallback path stays in lockstep with both the Strategy page Deal Gap bar
+ * and `backend/app/core/formulas.estimate_income_value`. Subtracts the same
+ * operating expense set the backend uses (maintenance + management on gross
+ * rent, plus capex, utilities, pest control, and HOA).
  */
 function estimateIncomeValue(
   monthlyRent: number,
   propertyTaxes: number,
-  insurance: number
+  insurance: number,
+  monthlyHoa: number = 0
 ): number {
-  const annualGrossRent = monthlyRent * 12;
-  const effectiveGrossIncome = annualGrossRent * (1 - DEFAULT_ASSUMPTIONS.vacancyRate);
-  const annualMaintenance = effectiveGrossIncome * DEFAULT_ASSUMPTIONS.maintenancePct;
-  const annualManagement = effectiveGrossIncome * DEFAULT_ASSUMPTIONS.managementPct;
-  const operatingExpenses = propertyTaxes + insurance + annualMaintenance + annualManagement;
-  const noi = effectiveGrossIncome - operatingExpenses;
-  
-  if (noi <= 0) return 0;
-  
-  const monthlyRate = DEFAULT_ASSUMPTIONS.interestRate / 12;
-  const numPayments = DEFAULT_ASSUMPTIONS.loanTermYears * 12;
-  const downPct = DEFAULT_ASSUMPTIONS.downPaymentPct;
-  const ltvRatio = 1 - downPct;
-  const mortgageConstant = (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
-                           (Math.pow(1 + monthlyRate, numPayments) - 1) * 12;
-  
-  const debtCost = ltvRatio * mortgageConstant;
-  const equityCost = downPct * DEFAULT_ASSUMPTIONS.requiredEquityYield;
-  const wacc = debtCost + equityCost;
-  if (wacc <= 0) return 0;
+  const utilitiesAnnual = DEFAULT_OPERATING_UTILITIES_MONTHLY * 12;
+  const otherAnnualExpenses =
+    DEFAULT_OPERATING_LANDSCAPING_ANNUAL +
+    DEFAULT_OPERATING_PEST_CONTROL_ANNUAL +
+    Math.max(0, monthlyHoa) * 12;
 
-  return Math.round(noi / wacc);
+  return estimateIncomeValueCanonical({
+    monthlyRent,
+    propertyTaxesAnnual: propertyTaxes,
+    insuranceAnnual: insurance,
+    downPaymentPct: DEFAULT_ASSUMPTIONS.downPaymentPct,
+    interestRate: DEFAULT_ASSUMPTIONS.interestRate,
+    loanTermYears: DEFAULT_ASSUMPTIONS.loanTermYears,
+    vacancyRate: DEFAULT_ASSUMPTIONS.vacancyRate,
+    maintenancePct: DEFAULT_ASSUMPTIONS.maintenancePct,
+    managementPct: DEFAULT_ASSUMPTIONS.managementPct,
+    requiredEquityYield: DEFAULT_REQUIRED_EQUITY_YIELD,
+    capexPct: DEFAULT_OPERATING_CAPEX_PCT,
+    utilitiesAnnual,
+    otherAnnualExpenses,
+  });
 }
 
 /**
@@ -873,9 +888,10 @@ function calculateTargetPurchasePrice(
   listPrice: number,
   monthlyRent: number,
   propertyTaxes: number,
-  insurance: number
+  insurance: number,
+  monthlyHoa: number = 0
 ): number {
-  const incomeValue = estimateIncomeValue(monthlyRent, propertyTaxes, insurance);
+  const incomeValue = estimateIncomeValue(monthlyRent, propertyTaxes, insurance, monthlyHoa);
   if (incomeValue <= 0) return listPrice;
   const buyPrice = Math.round(incomeValue * (1 - DEFAULT_ASSUMPTIONS.buyDiscountPct));
   return Math.min(buyPrice, listPrice);
@@ -944,6 +960,7 @@ function calculateLTRStrategy(
   monthlyRent: number,
   propertyTaxes: number,
   insurance: number,
+  monthlyHoa: number = 0,
   downPaymentPct: number = DEFAULT_ASSUMPTIONS.downPaymentPct,
   interestRate: number = DEFAULT_ASSUMPTIONS.interestRate,
   loanTermYears: number = DEFAULT_ASSUMPTIONS.loanTermYears,
@@ -959,7 +976,23 @@ function calculateLTRStrategy(
   const annualDebtService = monthlyPI * 12;
   const annualGrossRent = monthlyRent * 12;
   const effectiveGrossIncome = annualGrossRent * (1 - vacancyRate);
-  const totalOpEx = propertyTaxes + insurance + (annualGrossRent * managementPct) + (annualGrossRent * maintenancePct);
+  // Mirror backend `_calculate_long_term_rental`: percentage-based opex
+  // (mgmt, maint, capex) is computed on annual gross rent, plus base
+  // utilities, landscaping/pest, and HOA. Without these, frontend NOI runs
+  // higher than backend and produces optimistic CoC / Cap Rate scores.
+  const utilitiesAnnual = DEFAULT_OPERATING_UTILITIES_MONTHLY * 12;
+  const otherAnnual =
+    DEFAULT_OPERATING_LANDSCAPING_ANNUAL + DEFAULT_OPERATING_PEST_CONTROL_ANNUAL;
+  const hoaAnnual = Math.max(0, monthlyHoa) * 12;
+  const totalOpEx =
+    propertyTaxes +
+    insurance +
+    annualGrossRent * managementPct +
+    annualGrossRent * maintenancePct +
+    annualGrossRent * DEFAULT_OPERATING_CAPEX_PCT +
+    utilitiesAnnual +
+    otherAnnual +
+    hoaAnnual;
   const noi = effectiveGrossIncome - totalOpEx;
   const annualCashFlow = noi - annualDebtService;
   const cashOnCash = totalCashRequired > 0 ? annualCashFlow / totalCashRequired : 0;
@@ -986,6 +1019,7 @@ function calculateSTRStrategy(
   occupancyRate: number,
   propertyTaxes: number,
   insurance: number,
+  monthlyHoa: number = 0,
   downPaymentPct: number = DEFAULT_ASSUMPTIONS.downPaymentPct,
   interestRate: number = DEFAULT_ASSUMPTIONS.interestRate,
   loanTermYears: number = DEFAULT_ASSUMPTIONS.loanTermYears,
@@ -1004,12 +1038,26 @@ function calculateSTRStrategy(
     mashvisorMonthlyStrRevenue && mashvisorMonthlyStrRevenue > 0
       ? mashvisorMonthlyStrRevenue * 12
       : averageDailyRate * 365 * occupancyRate;
+  // Mirror backend `_calculate_str_strategy`: revenue minus mgmt + platform
+  // + base utilities + supplies + maintenance + capex + HOA. STR backend
+  // does NOT subtract vacancy from revenue (occupancy already reflects it).
   const managementFee = annualGrossRevenue * DEFAULT_ASSUMPTIONS.strManagementPct;
   const platformFees = annualGrossRevenue * DEFAULT_ASSUMPTIONS.platformFeesPct;
-  const utilities = 1200;  // $100/mo (was $300/mo)
-  const supplies = 1200;   // $100/mo (was $200/mo)
+  const utilities = DEFAULT_OPERATING_UTILITIES_MONTHLY * 12;
+  const supplies = 1200; // STR.supplies_monthly default ($100/mo)
   const maintenance = annualGrossRevenue * DEFAULT_ASSUMPTIONS.maintenancePct;
-  const totalOpEx = propertyTaxes + insurance + managementFee + platformFees + utilities + supplies + maintenance;
+  const capex = annualGrossRevenue * DEFAULT_OPERATING_CAPEX_PCT;
+  const hoaAnnual = Math.max(0, monthlyHoa) * 12;
+  const totalOpEx =
+    propertyTaxes +
+    insurance +
+    managementFee +
+    platformFees +
+    utilities +
+    supplies +
+    maintenance +
+    capex +
+    hoaAnnual;
   const noi = annualGrossRevenue - totalOpEx;
   const annualCashFlow = noi - annualDebtService;
   const cashOnCash = totalCashRequired > 0 ? annualCashFlow / totalCashRequired : 0;
@@ -1037,24 +1085,39 @@ function calculateBRRRRStrategy(
   insurance: number,
   arv: number,
   rehabCost: number,
+  monthlyHoa: number = 0,
   interestRate: number = DEFAULT_ASSUMPTIONS.refinanceRate,
   loanTermYears: number = DEFAULT_ASSUMPTIONS.loanTermYears
 ): StrategyCalculationResult {
   // Initial investment (10% down on purchase via hard money + rehab + closing)
   const initialCash = (price * 0.10) + rehabCost + (price * DEFAULT_ASSUMPTIONS.closingCostsPct);
-  
+
   // Refinance at 75% of ARV
   const refinanceLoanAmount = arv * DEFAULT_ASSUMPTIONS.refinanceLtv;
   const cashBack = refinanceLoanAmount - (price * 0.90); // Pay off initial loan
   const cashLeftInDeal = Math.max(0, initialCash - Math.max(0, cashBack));
   const cashRecoveryPercent = initialCash > 0 ? ((initialCash - cashLeftInDeal) / initialCash) * 100 : 0;
-  
-  // Post-refi cash flow
+
+  // Post-refi cash flow — mirror backend `_calculate_brrrr_strategy` opex:
+  // mgmt + maint + capex on annual gross rent, plus base utilities,
+  // landscaping/pest, and HOA.
   const monthlyPI = calculateMonthlyMortgage(refinanceLoanAmount, interestRate, loanTermYears);
   const annualDebtService = monthlyPI * 12;
   const annualGrossRent = monthlyRent * 12;
   const effectiveGrossIncome = annualGrossRent * (1 - DEFAULT_ASSUMPTIONS.vacancyRate);
-  const totalOpEx = propertyTaxes + insurance + (annualGrossRent * DEFAULT_ASSUMPTIONS.managementPct) + (annualGrossRent * DEFAULT_ASSUMPTIONS.maintenancePct);
+  const utilitiesAnnual = DEFAULT_OPERATING_UTILITIES_MONTHLY * 12;
+  const otherAnnual =
+    DEFAULT_OPERATING_LANDSCAPING_ANNUAL + DEFAULT_OPERATING_PEST_CONTROL_ANNUAL;
+  const hoaAnnual = Math.max(0, monthlyHoa) * 12;
+  const totalOpEx =
+    propertyTaxes +
+    insurance +
+    annualGrossRent * DEFAULT_ASSUMPTIONS.managementPct +
+    annualGrossRent * DEFAULT_ASSUMPTIONS.maintenancePct +
+    annualGrossRent * DEFAULT_OPERATING_CAPEX_PCT +
+    utilitiesAnnual +
+    otherAnnual +
+    hoaAnnual;
   const noi = effectiveGrossIncome - totalOpEx;
   const annualCashFlow = noi - annualDebtService;
   
@@ -1099,13 +1162,18 @@ function calculateFlipStrategy(
   rehabCost: number,
   propertyTaxes: number,
   insurance: number,
+  monthlyHoa: number = 0,
   holdingPeriodMonths: number = 6
 ): StrategyCalculationResult {
   const purchaseCosts = price * DEFAULT_ASSUMPTIONS.closingCostsPct;
-  const holdingCosts = 
+  // Mirror backend `_calculate_flip_strategy`: holding costs include HOA
+  // accrual during the hold period (otherwise condos look more profitable
+  // than they really are).
+  const holdingCosts =
     (price * 0.12 / 12 * holdingPeriodMonths) + // Hard money interest
     (propertyTaxes / 12 * holdingPeriodMonths) +
-    (insurance / 12 * holdingPeriodMonths);
+    (insurance / 12 * holdingPeriodMonths) +
+    (Math.max(0, monthlyHoa) * holdingPeriodMonths);
   const sellingCosts = arv * DEFAULT_ASSUMPTIONS.sellingCostsPct; // 8%
   const totalInvestment = price + purchaseCosts + rehabCost + holdingCosts;
   const netProfit = arv - totalInvestment - sellingCosts;
@@ -1133,6 +1201,7 @@ function calculateHouseHackStrategy(
   beds: number,
   propertyTaxes: number,
   insurance: number,
+  monthlyHoa: number = 0,
   interestRate: number = DEFAULT_ASSUMPTIONS.interestRate,
   loanTermYears: number = DEFAULT_ASSUMPTIONS.loanTermYears
 ): StrategyCalculationResult {
@@ -1140,7 +1209,7 @@ function calculateHouseHackStrategy(
   const roomsRented = Math.max(1, totalBedrooms - 1);
   const rentPerRoom = monthlyRent / totalBedrooms;
   const monthlyRentalIncome = rentPerRoom * roomsRented;
-  
+
   // FHA financing (3.5% down)
   const downPayment = price * 0.035;
   const closingCosts = price * DEFAULT_ASSUMPTIONS.closingCostsPct;
@@ -1149,10 +1218,22 @@ function calculateHouseHackStrategy(
   const monthlyTaxes = propertyTaxes / 12;
   const monthlyInsurance = insurance / 12;
   const pmi = loanAmount * 0.0085 / 12;
+  // Mirror backend `_calculate_house_hack_strategy`: monthly expenses
+  // include maintenance + capex + vacancy (all on rental income), plus
+  // HOA. Without capex + HOA the housing-offset score runs optimistic.
   const maintenance = monthlyRentalIncome * DEFAULT_ASSUMPTIONS.maintenancePct;
+  const capex = monthlyRentalIncome * DEFAULT_OPERATING_CAPEX_PCT;
   const vacancy = monthlyRentalIncome * DEFAULT_ASSUMPTIONS.vacancyRate;
-  
-  const monthlyExpenses = monthlyPI + monthlyTaxes + monthlyInsurance + pmi + maintenance + vacancy;
+
+  const monthlyExpenses =
+    monthlyPI +
+    monthlyTaxes +
+    monthlyInsurance +
+    pmi +
+    maintenance +
+    capex +
+    vacancy +
+    Math.max(0, monthlyHoa);
   const effectiveHousingCost = monthlyExpenses - monthlyRentalIncome;
   const housingCostOffset = monthlyExpenses > 0 ? (monthlyRentalIncome / monthlyExpenses) * 100 : 0;
   
@@ -1228,6 +1309,7 @@ export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult
   const monthlyRent = property.monthlyRent ?? 0;
   const propertyTaxes = property.propertyTaxes ?? listPrice * 0.012; // 1.2% estimate
   const insurance = property.insurance ?? listPrice * DEFAULT_ASSUMPTIONS.insurancePct; // 1% of price
+  const monthlyHoa = property.hoa ?? 0;
   const arv = property.arv ?? listPrice * 1.15; // 15% above list
   const rehabCost = arv * DEFAULT_ASSUMPTIONS.rehabBudgetPct; // 5% of ARV
   // Mashvisor monthly STR revenue takes priority — drives both the
@@ -1243,20 +1325,20 @@ export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult
   const beds = property.beds || 3; // beds=0 is invalid, so || is fine here
 
   // Calculate target purchase price as 95% of Income Value (aligned with worksheets)
-  const targetPrice = calculateTargetPurchasePrice(listPrice, monthlyRent, propertyTaxes, insurance);
+  const targetPrice = calculateTargetPurchasePrice(listPrice, monthlyRent, propertyTaxes, insurance, monthlyHoa);
 
   // Calculate all strategies in fixed display order:
   // 1. Long-term Rental, 2. Short-term Rental, 3. BRRRR, 4. Fix & Flip, 5. House Hack, 6. Wholesale
   // Use targetPrice (95% of Income Value) instead of listPrice for consistent analysis
   const strategyResults: StrategyCalculationResult[] = [
-    calculateLTRStrategy(targetPrice, monthlyRent, propertyTaxes, insurance),
+    calculateLTRStrategy(targetPrice, monthlyRent, propertyTaxes, insurance, monthlyHoa),
     calculateSTRStrategy(
-      targetPrice, averageDailyRate, occupancyRate, propertyTaxes, insurance,
+      targetPrice, averageDailyRate, occupancyRate, propertyTaxes, insurance, monthlyHoa,
       undefined, undefined, undefined, mashvisorMonthlyStr,
     ),
-    calculateBRRRRStrategy(targetPrice, monthlyRent, propertyTaxes, insurance, arv, rehabCost),
-    calculateFlipStrategy(targetPrice, arv, rehabCost, propertyTaxes, insurance),
-    calculateHouseHackStrategy(targetPrice, monthlyRent, beds, propertyTaxes, insurance),
+    calculateBRRRRStrategy(targetPrice, monthlyRent, propertyTaxes, insurance, arv, rehabCost, monthlyHoa),
+    calculateFlipStrategy(targetPrice, arv, rehabCost, propertyTaxes, insurance, monthlyHoa),
+    calculateHouseHackStrategy(targetPrice, monthlyRent, beds, propertyTaxes, insurance, monthlyHoa),
     calculateWholesaleStrategy(targetPrice, arv, rehabCost),
   ];
   
