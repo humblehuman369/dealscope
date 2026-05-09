@@ -206,6 +206,36 @@ export function AppHeader({
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const mobileNavRef = useRef<HTMLDivElement>(null)
   const [scrolledPast, setScrolledPast] = useState(false)
+  // Tracks the live property address bar height as a CSS variable so other
+  // pages can stack additional sticky elements directly underneath it
+  // (e.g. the Strategy page's Deal Gap bar).
+  const addressBarObserverRef = useRef<ResizeObserver | null>(null)
+  const addressBarRef = useCallback((node: HTMLDivElement | null) => {
+    if (typeof window === 'undefined') return
+    const root = document.documentElement
+    if (addressBarObserverRef.current) {
+      addressBarObserverRef.current.disconnect()
+      addressBarObserverRef.current = null
+    }
+    if (!node) {
+      root.style.setProperty('--app-address-bar-height', '0px')
+      return
+    }
+    root.style.setProperty(
+      '--app-address-bar-height',
+      `${Math.round(node.getBoundingClientRect().height)}px`,
+    )
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        root.style.setProperty(
+          '--app-address-bar-height',
+          `${Math.round(entry.contentRect.height)}px`,
+        )
+      }
+    })
+    observer.observe(node)
+    addressBarObserverRef.current = observer
+  }, [])
   
   // Auth context
   const { isAuthenticated, user, isAdmin } = useSession()
@@ -868,13 +898,20 @@ export function AppHeader({
         )}
 
       </header>
+      </div>
 
-      {/* Property Address Bar — outside <header> so sticky uses viewport scroll */}
+      {/*
+        Property Address Bar — rendered as a top-level sibling of the brand+tabs
+        wrapper so its sticky containing block is the LayoutWrapper (which spans
+        the entire page). Nested inside the brand+tabs wrapper, the bar would
+        un-stick the moment the wrapper's bottom edge crossed the viewport top.
+      */}
       {shouldShowPropertyBar && displayAddress && (() => {
         const addrParts = parseDisplayAddress(displayAddress)
         const p = resolvedProperty
         return (
           <div
+            ref={addressBarRef}
             className="sticky z-40"
             style={{ top: 'env(safe-area-inset-top, 0px)' }}
           >
@@ -899,7 +936,6 @@ export function AppHeader({
           </div>
         )
       })()}
-      </div>
 
       <SearchPropertyModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
     </>
