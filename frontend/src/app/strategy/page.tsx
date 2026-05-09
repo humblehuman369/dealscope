@@ -1540,6 +1540,7 @@ function StrategyContent() {
           const isListedProp = !!propertyInfo?.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(propertyInfo.listingStatus)
           const pLabel = isListedProp ? 'Asking' : 'Market'
           return (
+          <>
           <section className="px-[1px] sm:px-5 pt-6 pb-2">
             {/* Three price metric cards */}
             <div className="flex flex-row gap-1.5 sm:gap-2.5 items-stretch mb-6">
@@ -1578,8 +1579,28 @@ function StrategyContent() {
                 Watch: What is the Deal Gap?
               </button>
             </div>
+          </section>
 
-            <div className="relative" style={{ paddingTop: 20 }}>
+          {/*
+            Sticky Deal Gap bar — pins directly under the property address bar
+            so the user can keep watching the gaps move while editing the worksheet.
+            Containing block is the page-level wrapper, so the bar stays pinned
+            through the entire scroll of cards / next-steps / worksheet content.
+            Bar values (targetPrice, listPrice, dealGapIncomeValue) are reactive
+            and update live as the worksheet sliders are adjusted.
+          */}
+          <div
+            className="sticky z-30 px-[1px] sm:px-5"
+            style={{
+              top: 'calc(env(safe-area-inset-top, 0px) + var(--app-address-bar-height, 0px))',
+              background: 'var(--surface-base)',
+              borderBottom: '1px solid var(--border-subtle)',
+              paddingTop: 2,
+              paddingBottom: 6,
+              boxShadow: '0 6px 14px -10px rgba(0,0,0,0.45)',
+            }}
+          >
+            <div className="relative" style={{ paddingTop: 10 }}>
               {(() => {
                 const markers = [
                   { label: 'TARGET', price: targetPrice, dotColor: 'var(--accent-sky)' },
@@ -1759,7 +1780,8 @@ function StrategyContent() {
                 )
               })()}
             </div>
-          </section>
+          </div>
+          </>
           )
         })()}
 
