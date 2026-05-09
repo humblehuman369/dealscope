@@ -89,15 +89,19 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         sel_reason = "The gap needs a larger rent lift — verify comps before leaning on this path."
 
     bump_dollars = max(0, round(actual_bump))
+    pct_label = f"+{bump_pct:.1f}%" if bump_pct >= 0 else f"{bump_pct:.1f}%"
     return DealStructure(
         id=ID,
         family=FAMILY,
         family_label=FAMILY_LABEL,
         realism_label=realism_label,
         headline=f"Target Rent → ${round(new_rent):,}",
-        # Single-bullet headline action keeps the first view scannable —
-        # the full explanation is reachable via "How to pitch this".
-        bullets=[f"Target Rent → ${round(new_rent):,}"],
+        # Math-carrying bullet — same pattern across all four paths so the
+        # cards read with consistent visual rhythm.
+        bullets=[
+            f"Target Rent:\u00A0${round(ctx.monthly_rent):,} + ${bump_dollars:,} → "
+            f"${round(new_rent):,}  {pct_label}"
+        ],
         # Compact closing line — points the user to the deeper tool instead of
         # restating the math already shown above.
         summary="Confirm local rent. Go to the Appraiser page in DealGapIQ.",
