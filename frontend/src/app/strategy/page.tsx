@@ -20,6 +20,7 @@ import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { api } from '@/lib/api-client'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
+import { useDefaults } from '@/hooks/useDefaults'
 import { parseAddressString } from '@/utils/formatters'
 import {
   canonicalizeAddressForIdentity,
@@ -311,6 +312,24 @@ function StrategyContent() {
   /** Matches `data` to `addressParam` so we never show another property's paths during a fetch. */
   const [analysisAddressKey, setAnalysisAddressKey] = useState<string | null>(null)
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
+  // Admin-resolved operating defaults (capex / utilities / pest control) drive
+  // the Deal Gap bar's live Income Value during slider edits before the backend
+  // recalc returns. Without this, the bar uses compile-time fallbacks and can
+  // disagree with the worksheet when the admin has tuned `OPERATING.*`.
+  const adminZipCode = (propertyInfo?.address?.zip_code ?? propertyInfo?.address?.zip) || undefined
+  const { defaults: adminDefaults } = useDefaults(adminZipCode)
+  const dealGapOperatingOverrides = useMemo(
+    () =>
+      adminDefaults
+        ? {
+            capexPct: adminDefaults.operating?.capex_pct,
+            utilitiesMonthly: adminDefaults.operating?.utilities_monthly,
+            landscapingAnnual: adminDefaults.operating?.landscaping_annual,
+            pestControlAnnual: adminDefaults.operating?.pest_control_annual,
+          }
+        : null,
+    [adminDefaults],
+  )
   const [isLoading, setIsLoading] = useState(() => {
     if (!addressParam) return true
     const canonical = canonicalizeAddressForIdentity(addressParam)
@@ -1461,7 +1480,7 @@ function StrategyContent() {
 
   /** Income Value marker + brackets — same economics as backend `estimate_income_value`, driven by live worksheet state. */
   const dealGapIncomeValue = (() => {
-    const live = computeDealGapIncomeValue(currentStrategyType, worksheetState)
+    const live = computeDealGapIncomeValue(currentStrategyType, worksheetState, dealGapOperatingOverrides)
     if (live > 0) return live
     const apiIv =
       (dealMakerOverrides as Record<string, unknown> | null)?.incomeValue ??

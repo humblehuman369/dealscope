@@ -143,13 +143,56 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
 }
 
 /**
+ * Admin-resolved operating defaults that affect Income Value.
+ *
+ * Lets callers (Strategy / Verdict pages) thread `useDefaults().defaults.operating`
+ * into `computeDealGapIncomeValue` so the live Deal Gap bar uses the same capex,
+ * utilities, and pest control values the admin has configured — instead of the
+ * compile-time `DEFAULT_OPERATING_*` fallbacks.
+ *
+ * All fields are optional; missing fields fall back to the schema defaults.
+ */
+export interface DealGapOperatingOverrides {
+  /** 0–1 — reserves/capex % of annual gross rent (mirrors `OPERATING.capex_pct`) */
+  capexPct?: number | null
+  /** Base monthly utilities cost (mirrors `OPERATING.utilities_monthly`) */
+  utilitiesMonthly?: number | null
+  /** Annual landscaping cost (mirrors `OPERATING.landscaping_annual`) */
+  landscapingAnnual?: number | null
+  /** Annual pest control cost (mirrors `OPERATING.pest_control_annual`) */
+  pestControlAnnual?: number | null
+}
+
+function pickFinite(value: number | null | undefined, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
+/**
  * Live Income Value for the Strategy Deal Gap graph — driven by the same worksheet
  * state as DealMaker sliders (not stale `data.income_value` between API round-trips).
+ *
+ * Pass `operatingOverrides` (typically `defaults.operating` from `useDefaults()`)
+ * to honor admin-configured capex / utilities / pest control. When omitted, the
+ * function falls back to the schema defaults that mirror `backend/app/core/defaults.py`.
  */
 export function computeDealGapIncomeValue(
   strategyType: StrategyType,
   ws: AnyStrategyState,
+  operatingOverrides?: DealGapOperatingOverrides | null,
 ): number {
+  const capexPct = pickFinite(operatingOverrides?.capexPct, DEFAULT_OPERATING_CAPEX_PCT)
+  const baseUtilitiesAnnual =
+    pickFinite(operatingOverrides?.utilitiesMonthly, DEFAULT_OPERATING_UTILITIES_MONTHLY) * 12
+  const landscapingAnnual = pickFinite(
+    operatingOverrides?.landscapingAnnual,
+    DEFAULT_OPERATING_LANDSCAPING_ANNUAL,
+  )
+  const pestControlAnnual = pickFinite(
+    operatingOverrides?.pestControlAnnual,
+    DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
+  )
+  const otherAnnualBase = landscapingAnnual + pestControlAnnual
+
   switch (strategyType) {
     case 'ltr': {
       const s = ws as LTRDealMakerState
@@ -168,9 +211,9 @@ export function computeDealGapIncomeValue(
         // deduct capex, utilities, and pest control from NOI. Keep these in
         // sync so the Deal Gap bar's Income Value matches the worksheet's
         // Cap Rate / Cash-on-Cash exactly.
-        capexPct: DEFAULT_OPERATING_CAPEX_PCT,
-        utilitiesAnnual: DEFAULT_OPERATING_UTILITIES_ANNUAL,
-        otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12 + DEFAULT_OPERATING_OTHER_ANNUAL,
+        capexPct,
+        utilitiesAnnual: baseUtilitiesAnnual,
+        otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12 + otherAnnualBase,
       })
     }
     case 'str': {
@@ -191,9 +234,8 @@ export function computeDealGapIncomeValue(
         // Backend `_calculate_str_strategy` deducts base utilities, capex,
         // platform fees, supplies, and HOA from STR revenue. Mirror that here
         // so the bar agrees with the worksheet's NOI / Cap Rate.
-        capexPct: DEFAULT_OPERATING_CAPEX_PCT,
-        utilitiesAnnual:
-          DEFAULT_OPERATING_UTILITIES_ANNUAL + (s.additionalUtilitiesMonthly ?? 0) * 12,
+        capexPct,
+        utilitiesAnnual: baseUtilitiesAnnual + (s.additionalUtilitiesMonthly ?? 0) * 12,
         otherAnnualExpenses:
           (s.monthlyHoa ?? 0) * 12 +
           platformAnnual +
@@ -216,15 +258,17 @@ export function computeDealGapIncomeValue(
         // Backend `_calculate_brrrr_strategy` (verdict response NOI) deducts
         // capex, utilities, and pest control. Match here so the bar's Income
         // Value lines up with the worksheet Cap Rate.
-        capexPct: DEFAULT_OPERATING_CAPEX_PCT,
-        utilitiesAnnual: DEFAULT_OPERATING_UTILITIES_ANNUAL,
-        otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12 + DEFAULT_OPERATING_OTHER_ANNUAL,
+        capexPct,
+        utilitiesAnnual: baseUtilitiesAnnual,
+        otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12 + otherAnnualBase,
       })
     }
     case 'house_hack': {
       const s = ws as HouseHackDealMakerState
       const rented = Math.max(0, s.totalUnits - s.ownerOccupiedUnits)
       const monthlyRentEq = s.avgRentPerUnit * rented
+      // House Hack pulls capex + utilities directly from worksheet state because
+      // those are user-editable sliders on this strategy (unlike LTR/STR/BRRRR).
       return estimateIncomeValue({
         monthlyRent: monthlyRentEq,
         propertyTaxesAnnual: s.annualPropertyTax,
