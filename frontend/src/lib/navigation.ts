@@ -65,7 +65,7 @@ export const ROUTES = {
   verdict: (ctx: NavContext) => {
     const params = new URLSearchParams({ address: ctx.address || '' });
     if (ctx.propertyId) params.set('propertyId', ctx.propertyId);
-    return `/verdict?${params.toString()}`;
+    return `/app/verdict?${params.toString()}`;
   },
   
   // DEPRECATED: analysis route now redirects to verdict
@@ -74,13 +74,13 @@ export const ROUTES = {
     // Redirect to verdict route (analysis-iq page now auto-redirects)
     const params = new URLSearchParams({ address: ctx.address || '' });
     if (ctx.propertyId) params.set('propertyId', ctx.propertyId);
-    return `/verdict?${params.toString()}`;
+    return `/app/verdict?${params.toString()}`;
   },
   
   strategy: (ctx: NavContext) => {
     const params = new URLSearchParams({ address: ctx.address || '' });
     if (ctx.propertyId) params.set('propertyId', ctx.propertyId);
-    return `/strategy?${params.toString()}`;
+    return `/app/strategy?${params.toString()}`;
   },
 
   dealMaker: (ctx: NavContext) => 

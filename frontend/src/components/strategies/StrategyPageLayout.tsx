@@ -92,7 +92,7 @@ function PropertyContextCard({
         {details ? `${details} · ` : ''}Listed at {price}
       </p>
       <Link
-        href={`/verdict?address=${addressEncoded}`}
+        href={`/app/verdict?address=${addressEncoded}`}
         style={{
           display: 'inline-flex',
           alignItems: 'center',

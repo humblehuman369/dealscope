@@ -182,5 +182,5 @@ export function buildStrategyUrlWithScenario(opts: {
   if (opts.condition) params.set('condition', opts.condition)
   if (opts.location) params.set('location', opts.location)
 
-  return `/strategy?${params.toString()}`
+  return `/app/strategy?${params.toString()}`
 }

@@ -18,7 +18,7 @@ function AnalyzingContent() {
   const queryString = searchParams.toString()
 
   useEffect(() => {
-    router.replace(queryString ? `/verdict?${queryString}` : '/verdict')
+    router.replace(queryString ? `/app/verdict?${queryString}` : '/app/verdict')
   }, [router, queryString])
 
   return <IQLoadingLogo />

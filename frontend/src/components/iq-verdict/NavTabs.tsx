@@ -46,8 +46,8 @@ export function NavTabs({
     switch (tabId) {
       case 'analyze':
         return propertyId 
-          ? `/verdict?propertyId=${propertyId}` 
-          : `/verdict?address=${encodedAddress}`
+          ? `/app/verdict?propertyId=${propertyId}` 
+          : `/app/verdict?address=${encodedAddress}`
       case 'details':
         return zpid 
           ? `/property/${zpid}` 

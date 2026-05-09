@@ -17,7 +17,7 @@ const POLL_MAX_ATTEMPTS = 20
 
 function isAddressDependentPath(path: string): boolean {
   const p = path.split('?')[0].toLowerCase()
-  return p === '/verdict' || p === '/property' || p === '/strategy' || p.startsWith('/property/')
+  return p === '/app/verdict' || p === '/property' || p === '/app/strategy' || p.startsWith('/property/')
 }
 
 export default function CheckoutSuccessPage() {

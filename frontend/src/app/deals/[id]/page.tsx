@@ -248,7 +248,7 @@ function DealHeader({ deal }: { deal: DealDetail }) {
             Deal Report
           </Link>
           <Link
-            href={`/strategy?address=${encodeURIComponent(buildVerdictAddress(deal))}`}
+            href={`/app/strategy?address=${encodeURIComponent(buildVerdictAddress(deal))}`}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] transition-colors no-underline"
           >
             <BarChart3 className="w-4 h-4" />
@@ -502,7 +502,7 @@ function FinancialsCard({
             No budget yet — seed one to track variance and projections.
           </p>
           <Link
-            href={`/strategy?address=${encodeURIComponent(buildVerdictAddress(deal))}`}
+            href={`/app/strategy?address=${encodeURIComponent(buildVerdictAddress(deal))}`}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-sky)] hover:underline"
           >
             <Receipt className="w-3.5 h-3.5" />

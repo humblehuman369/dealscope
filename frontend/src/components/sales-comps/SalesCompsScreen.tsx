@@ -216,7 +216,7 @@ export function SalesCompsScreen({
 
   const handleApplyArv = () => {
     // Could navigate to verdict with ARV or save it
-    router.push(`/verdict?address=${encodeURIComponent(fullAddress)}&arv=${arvEstimate}`)
+    router.push(`/app/verdict?address=${encodeURIComponent(fullAddress)}&arv=${arvEstimate}`)
   }
 
   const handleRefresh = () => {
@@ -245,7 +245,7 @@ export function SalesCompsScreen({
 
   // Handle analyze
   const handleAnalyze = () => {
-    router.push(`/verdict?address=${encodeURIComponent(fullAddress)}`)
+    router.push(`/app/verdict?address=${encodeURIComponent(fullAddress)}`)
   }
 
   const getMatchScoreColor = (score: number) => {

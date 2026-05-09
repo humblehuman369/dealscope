@@ -98,7 +98,7 @@ export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
 
   const handleVerdictClick = (presetAddress?: string) => {
     if (presetAddress) {
-      router.push(`/verdict?address=${encodeURIComponent(presetAddress)}`);
+      router.push(`/app/verdict?address=${encodeURIComponent(presetAddress)}`);
     } else {
       router.push('/search');
     }
@@ -717,68 +717,83 @@ function ComparisonSection() {
 }
 
 function ComparisonTable() {
-  const rowGrid =
-    'grid grid-cols-[2fr_1fr_1fr_1fr] md:grid-cols-[3fr_1fr_1fr_1.2fr]';
+  // Semantic <table> markup so AI Overviews and other crawlers can extract this comparison verbatim.
+  // Visual styling is preserved via Tailwind utilities + the existing homepage-compare-* tokens.
   const cellDivider = 'border-r homepage-compare-border';
 
   return (
     <div
       className="rounded-2xl overflow-hidden shadow-[var(--shadow-card)] border homepage-compare-border"
-      style={{
-        background: 'var(--surface-card)',
-      }}
+      style={{ background: 'var(--surface-card)' }}
     >
-      {/* Header row — tinted band + column dividers */}
-      <div
-        className={`${rowGrid} border-b homepage-compare-border bg-[var(--homepage-table-header-bg)]`}
-      >
-        <div
-          className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider text-[var(--text-label)] ${cellDivider}`}
-        >
-          Feature
-        </div>
-        <div className={`px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-heading)] ${cellDivider}`}>
-          <div>Listing Sites</div>
-          <div className="text-[10px] font-normal text-[var(--text-muted)] mt-0.5 italic">
-            Zillow, Redfin, Realtor.com
-          </div>
-        </div>
-        <div className={`px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-heading)] ${cellDivider}`}>
-          <div>Investor Calculators</div>
-          <div className="text-[10px] font-normal text-[var(--text-muted)] mt-0.5 italic">
-            DealCheck, BP Calc, Mashvisor
-          </div>
-        </div>
-        <div
-          className="px-2 md:px-4 py-4 text-center text-xs font-bold"
-          style={{
-            background: 'rgba(4, 101, 242, 0.08)',
-            color: 'var(--accent-sky)',
-          }}
-        >
-          <div>DealGapIQ</div>
-        </div>
-      </div>
-
-      {/* Rows */}
-      {COMPARISON_ROWS.map((row, idx) => (
-        <div
-          key={row.feature}
-          className={`${rowGrid} ${
-            idx < COMPARISON_ROWS.length - 1 ? 'border-b homepage-compare-border' : ''
-          }`}
-        >
-          <div className={`px-4 md:px-6 py-5 ${cellDivider}`}>
-            <div className="text-sm font-semibold text-[var(--text-heading)] leading-tight">{row.feature}</div>
-            {row.subline && (
-              <div className="text-[11px] text-[var(--text-muted)] italic mt-0.5">{row.subline}</div>
-            )}
-          </div>
-          <CompCell mark={row.listing} className={cellDivider} />
-          <CompCell mark={row.calc} className={cellDivider} />
-          <CompCell mark={row.iq} highlight />
-        </div>
-      ))}
+      <table className="w-full border-collapse table-fixed text-left">
+        <caption className="sr-only">
+          Feature comparison: DealGapIQ vs. listing sites (Zillow, Redfin, Realtor.com) and investor calculators
+          (DealCheck, BiggerPockets Calculator, Mashvisor).
+        </caption>
+        <colgroup>
+          <col className="w-[40%] md:w-[44%]" />
+          <col className="w-[20%] md:w-[18%]" />
+          <col className="w-[20%] md:w-[18%]" />
+          <col className="w-[20%] md:w-[20%]" />
+        </colgroup>
+        <thead className="bg-[var(--homepage-table-header-bg)]">
+          <tr className="border-b homepage-compare-border">
+            <th
+              scope="col"
+              className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider text-[var(--text-label)] ${cellDivider}`}
+            >
+              Feature
+            </th>
+            <th
+              scope="col"
+              className={`px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-heading)] ${cellDivider}`}
+            >
+              <div>Listing Sites</div>
+              <div className="text-[10px] font-normal text-[var(--text-muted)] mt-0.5 italic">
+                Zillow, Redfin, Realtor.com
+              </div>
+            </th>
+            <th
+              scope="col"
+              className={`px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-heading)] ${cellDivider}`}
+            >
+              <div>Investor Calculators</div>
+              <div className="text-[10px] font-normal text-[var(--text-muted)] mt-0.5 italic">
+                DealCheck, BP Calc, Mashvisor
+              </div>
+            </th>
+            <th
+              scope="col"
+              className="px-2 md:px-4 py-4 text-center text-xs font-bold"
+              style={{
+                background: 'rgba(4, 101, 242, 0.08)',
+                color: 'var(--accent-sky)',
+              }}
+            >
+              DealGapIQ
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {COMPARISON_ROWS.map((row, idx) => (
+            <tr
+              key={row.feature}
+              className={idx < COMPARISON_ROWS.length - 1 ? 'border-b homepage-compare-border' : ''}
+            >
+              <th scope="row" className={`px-4 md:px-6 py-5 align-middle font-normal text-left ${cellDivider}`}>
+                <div className="text-sm font-semibold text-[var(--text-heading)] leading-tight">{row.feature}</div>
+                {row.subline && (
+                  <div className="text-[11px] text-[var(--text-muted)] italic mt-0.5">{row.subline}</div>
+                )}
+              </th>
+              <CompCell mark={row.listing} className={cellDivider} />
+              <CompCell mark={row.calc} className={cellDivider} />
+              <CompCell mark={row.iq} highlight />
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -792,27 +807,30 @@ function CompCell({
   highlight?: boolean;
   className?: string;
 }) {
+  const ariaLabel = mark === 'yes' ? 'Yes' : mark === 'partial' ? 'Partial' : 'No';
   const display =
     mark === 'yes' ? (
       <Check
         className={`w-5 h-5 ${highlight ? 'text-[var(--accent-sky)]' : 'text-[var(--status-positive)]'}`}
         strokeWidth={3}
+        aria-hidden="true"
       />
     ) : mark === 'partial' ? (
-      <span className="homepage-compare-partial text-[11px] font-semibold uppercase tracking-wider">
+      <span className="homepage-compare-partial text-[11px] font-semibold uppercase tracking-wider" aria-hidden="true">
         partial
       </span>
     ) : (
-      <span className="text-[var(--text-muted)] text-lg font-light">—</span>
+      <span className="text-[var(--text-muted)] text-lg font-light" aria-hidden="true">—</span>
     );
 
   return (
-    <div
-      className={`px-2 md:px-4 py-5 flex items-center justify-center ${className}`.trim()}
+    <td
+      className={`px-2 md:px-4 py-5 text-center align-middle ${className}`.trim()}
       style={highlight ? { background: 'rgba(15,164,233,0.06)' } : undefined}
     >
-      {display}
-    </div>
+      <span className="sr-only">{ariaLabel}</span>
+      <span className="inline-flex items-center justify-center">{display}</span>
+    </td>
   );
 }
 

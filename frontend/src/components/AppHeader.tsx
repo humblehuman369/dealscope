@@ -138,13 +138,13 @@ const NO_PROPERTY_BAR_ROUTES = [
 function getActiveTabFromPath(pathname: string): AppTab | undefined {
   // Homepage: no tab selected
   if (pathname === '/' || pathname === '') return undefined
-  if (pathname.startsWith('/verdict')) return 'analyze'
-  if (pathname.startsWith('/strategy')) return 'strategy'
+  if (pathname.startsWith('/app/verdict')) return 'analyze'
+  if (pathname.startsWith('/app/strategy')) return 'strategy'
   if (pathname.startsWith('/property')) return undefined
   if (pathname.startsWith('/price-intel')) return 'price-checker'
   if (pathname.startsWith('/compare')) return 'price-checker'
   if (pathname.startsWith('/rental-comps')) return 'price-checker'
-  if (pathname.startsWith('/deal-maker')) return 'deal-maker'
+  if (pathname.startsWith('/app/deal-maker')) return 'deal-maker'
   if (pathname.startsWith('/rehab')) return 'estimator'
   if (pathname.startsWith('/about')) return undefined
   if (pathname.startsWith('/pricing')) return undefined
@@ -444,14 +444,14 @@ export function AppHeader({
     switch (tab) {
       case 'analyze':
         if (displayAddress) {
-          router.push(`/verdict?address=${encodedAddress}`)
+          router.push(`/app/verdict?address=${encodedAddress}`)
         } else {
           router.push('/search')
         }
         break
       case 'strategy':
         if (displayAddress) {
-          router.push(`/strategy?address=${encodedAddress}`)
+          router.push(`/app/strategy?address=${encodedAddress}`)
         } else {
           router.push('/search')
         }
@@ -469,9 +469,9 @@ export function AppHeader({
         break
       case 'deal-maker':
         if (displayAddress) {
-          router.push(`/deal-maker?address=${encodedAddress}`)
+          router.push(`/app/deal-maker?address=${encodedAddress}`)
         } else {
-          router.push('/deal-maker')
+          router.push('/app/deal-maker')
         }
         break
       case 'estimator':

@@ -52,7 +52,7 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
     if (listing.city) params.set('city', listing.city)
     if (listing.state) params.set('state', listing.state)
     if (listing.zip_code) params.set('zip_code', listing.zip_code)
-    router.push(`/verdict?${params.toString()}`)
+    router.push(`/app/verdict?${params.toString()}`)
   }
 
   return (

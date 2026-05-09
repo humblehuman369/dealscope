@@ -19,8 +19,8 @@ export function AnalysisNav() {
   const params = searchParams.toString()
   const address = searchParams.get('address') || ''
 
-  const isVerdict = pathname === '/verdict'
-  const isStrategy = pathname === '/strategy'
+  const isVerdict = pathname === '/app/verdict'
+  const isStrategy = pathname === '/app/strategy'
 
   // Resolve zpid and optional snapshot — check URL params first, then sessionStorage
   const zpidFromUrl = searchParams.get('zpid') || ''
@@ -70,8 +70,8 @@ export function AnalysisNav() {
   if (!isVerdict && !isStrategy) return null
 
   const primaryTabs = [
-    { label: 'Verdict', href: `/verdict?${params}`, active: isVerdict, icon: verdictIcon },
-    { label: 'Strategy', href: `/strategy?${params}`, active: isStrategy, icon: strategyIcon },
+    { label: 'Verdict', href: `/app/verdict?${params}`, active: isVerdict, icon: verdictIcon },
+    { label: 'Strategy', href: `/app/strategy?${params}`, active: isStrategy, icon: strategyIcon },
   ]
 
   // Build secondary nav links (Property Profile needs zpid)

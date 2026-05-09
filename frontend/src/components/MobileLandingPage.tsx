@@ -48,7 +48,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
     try {
       // Use new IQ Verdict flow
       const canonicalAddress = canonicalizeAddressForIdentity(searchAddress);
-      await router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
+      await router.push(`/app/verdict?address=${encodeURIComponent(canonicalAddress)}`);
     } catch {
       // Navigation failed - user can retry
     } finally {

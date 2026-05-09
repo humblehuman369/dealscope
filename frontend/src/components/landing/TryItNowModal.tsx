@@ -31,7 +31,7 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
       onClose();
       // Navigate to IQ Analyzing screen (new IQ Verdict flow)
       const canonicalAddress = canonicalizeAddressForIdentity(address);
-      router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
+      router.push(`/app/verdict?address=${encodeURIComponent(canonicalAddress)}`);
     }
   };
 

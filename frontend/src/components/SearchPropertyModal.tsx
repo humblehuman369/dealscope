@@ -138,7 +138,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
     if (components?.city) params.set('city', components.city);
     if (components?.state) params.set('state', components.state);
     if (components?.zipCode) params.set('zip_code', components.zipCode);
-    router.push(`/verdict?${params.toString()}`);
+    router.push(`/app/verdict?${params.toString()}`);
   };
 
   const handleAddressSubmit = async (e: React.FormEvent) => {

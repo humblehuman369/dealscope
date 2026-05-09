@@ -85,7 +85,7 @@ function pathCountWords(n: number): { lead: string; tail: string } {
 const SUMMARY_LINKS: Array<{ token: string; href: string }> = [
   { token: 'Appraiser page', href: '/price-intel' },
   { token: 'Appraiser', href: '/price-intel' },
-  { token: 'Strategy worksheet', href: '/strategy' },
+  { token: 'Strategy worksheet', href: '/app/strategy' },
 ]
 
 function renderSummaryWithLinks(summary: string): React.ReactNode {

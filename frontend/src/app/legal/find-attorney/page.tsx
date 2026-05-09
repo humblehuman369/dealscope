@@ -4,7 +4,7 @@ export default function FindAttorneyPage() {
   return (
     <div className="min-h-screen bg-[var(--surface-base)] text-slate-300">
       <div className="max-w-2xl mx-auto px-6 py-16">
-        <Link href="/verdict" className="text-sm font-medium text-sky-400 hover:text-sky-300 transition-colors">
+        <Link href="/app/verdict" className="text-sm font-medium text-sky-400 hover:text-sky-300 transition-colors">
           &larr; Back
         </Link>
         <h1 className="text-2xl font-bold text-white mt-6 mb-4">Find a creative-finance attorney</h1>

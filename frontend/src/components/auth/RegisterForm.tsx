@@ -63,7 +63,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
         queryClient.setQueryData(SESSION_QUERY_KEY, result.user)
         // Defer navigation to the parent (AuthModal) so the
         // `redirect` URL param is honored — e.g. user who registered
-        // from /strategy?address=… returns to that property page
+        // from /app/strategy?address=… returns to that property page
         // instead of being dropped on /billing. Fall back to /billing
         // only when no parent handler is provided.
         if (onSuccess) {

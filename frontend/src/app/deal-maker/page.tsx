@@ -1,348 +1,152 @@
-'use client'
+import type { Metadata } from 'next'
+import Link from 'next/link'
 
-import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
-import dynamic from 'next/dynamic'
-import { Search, Loader2, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react'
-import type { DealMakerPropertyData } from '@/components/deal-maker/DealMakerScreen'
-import { AddressAutocomplete } from '@/components/AddressAutocomplete'
-import { AuthGate } from '@/components/auth/AuthGate'
-import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
-import { usePropertyData } from '@/hooks/usePropertyData'
-import { parseAddressString } from '@/utils/formatters'
-import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
-import { trackEvent } from '@/lib/eventTracking'
-import type { AddressValidationResult } from '@/types/address'
-
-const DealMakerScreen = dynamic(
-  () => import('@/components/deal-maker/DealMakerScreen').then(m => ({ default: m.DealMakerScreen })),
-  {
-    loading: () => <IQLoadingLogo />,
+export const metadata: Metadata = {
+  title: 'DealMaker — Structure the Offer That Closes the Gap',
+  description:
+    'DealMaker is the offer-structuring workbench. Once the IQ Verdict tells you a property is off by 6%, DealMaker shows you how to close the gap with the right financing path: cash, conventional, subject-to, or seller-finance.',
+  alternates: { canonical: '/deal-maker' },
+  openGraph: {
+    title: 'DealMaker — Structure the Offer That Closes the Gap',
+    description:
+      'Four closing paths, side by side. Build the offer that turns a no-deal into a deal.',
+    url: '/deal-maker',
+    type: 'website',
   },
-)
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DealMaker — Structure the Offer',
+    description: 'Four closing paths, side by side. Turn a no-deal into a deal.',
+  },
+}
 
-type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable'
-
-export default function DealMakerIndexPage() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const { fetchProperty } = usePropertyData()
-
-  const addressParam = searchParams.get('address') || ''
-  const fromParam = searchParams.get('from') || ''
-  const initialStrategy = searchParams.get('strategy') || undefined
-
-  const [propertyData, setPropertyData] = useState<DealMakerPropertyData | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const [searchAddress, setSearchAddress] = useState('')
-  const [validationStatus, setValidationStatus] = useState<ValidationStatus>('idle')
-  const [validationResult, setValidationResult] = useState<AddressValidationResult | null>(null)
-
-  const loadProperty = useCallback(async (address: string) => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await fetchProperty(address)
-
-      const monthlyRent = data.rentals?.monthly_rent_ltr || 0
-
-      const isListed =
-        data.listing?.listing_status &&
-        data.listing.listing_status !== 'OFF_MARKET' &&
-        data.listing.listing_status !== 'SOLD' &&
-        data.listing.listing_status !== 'FOR_RENT' &&
-        data.listing.listing_status !== 'OTHER'
-      const zestimate = data.valuations?.zestimate ?? null
-      const currentAvm = data.valuations?.current_value_avm ?? null
-      const taxAssessed = data.valuations?.tax_assessed_value ?? null
-      const listPrice = data.listing?.list_price ?? null
-      const apiMarketPrice = data.valuations?.market_price ?? null
-
-      const price =
-        (isListed && listPrice != null && listPrice > 0 ? listPrice : null) ??
-        (apiMarketPrice != null && apiMarketPrice > 0 ? apiMarketPrice : null) ??
-        (zestimate != null && zestimate > 0 ? zestimate : null) ??
-        (currentAvm != null && currentAvm > 0 ? currentAvm : null) ??
-        (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
-        FALLBACK_PROPERTY.price
-
-      const propertyTaxes = data.market?.property_taxes_annual ?? null
-      const insurance = data.market?.insurance_annual ?? null
-
-      const parsedAddress = parseAddressString(address)
-
-      const property: DealMakerPropertyData = {
-        address: data.address?.street || parsedAddress.street || address,
-        city: data.address?.city || parsedAddress.city || '',
-        state: data.address?.state || parsedAddress.state || FALLBACK_PROPERTY.state,
-        zipCode: data.address?.zip_code || parsedAddress.zip || FALLBACK_PROPERTY.zipCode,
-        beds: data.details?.bedrooms || FALLBACK_PROPERTY.beds,
-        baths: data.details?.bathrooms || FALLBACK_PROPERTY.baths,
-        sqft: data.details?.square_footage || FALLBACK_PROPERTY.sqft,
-        yearBuilt: data.details?.year_built ?? undefined,
-        price: Math.round(price),
-        rent: monthlyRent || undefined,
-        zpid: data.zpid ? String(data.zpid) : undefined,
-        propertyTax: propertyTaxes ?? undefined,
-        insurance: insurance ?? undefined,
-      }
-
-      setPropertyData(property)
-    } catch (err) {
-      console.error('Error loading property for DealMaker:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load property data')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [fetchProperty])
-
-  useEffect(() => {
-    if (addressParam) {
-      loadProperty(addressParam)
-    }
-  }, [addressParam, loadProperty])
-
-  const proceedWithAddress = (addr: string) => {
-    trackEvent('property_searched', { source: 'deal_maker' })
-    router.push(`/deal-maker?address=${encodeURIComponent(addr)}`)
-  }
-
-  const handleAddressSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const raw = searchAddress.trim()
-    if (!raw) return
-
-    setValidationStatus('validating')
-    setValidationResult(null)
-
-    try {
-      const validateUrl = IS_CAPACITOR ? `${WEB_BASE_URL}/api/validate-address` : '/api/validate-address'
-      const res = await fetch(validateUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: raw }),
-      })
-      const data = await res.json()
-
-      if (res.status === 503 || (res.ok === false && data?.code === 'VALIDATION_UNAVAILABLE')) {
-        setValidationStatus('unavailable')
-        proceedWithAddress(raw)
-        return
-      }
-
-      if (!res.ok) {
-        setValidationStatus('error')
-        return
-      }
-
-      const result = data as AddressValidationResult
-      setValidationResult(result)
-
-      if (result.isValid) {
-        setValidationStatus('valid')
-        proceedWithAddress(result.formattedAddress || raw)
-        return
-      }
-
-      setValidationStatus('issues')
-    } catch {
-      setValidationStatus('error')
-    }
-  }
-
-  const acceptCorrection = () => {
-    const formatted = validationResult?.formattedAddress?.trim()
-    if (formatted) {
-      setSearchAddress(formatted)
-      setValidationStatus('idle')
-      setValidationResult(null)
-    }
-  }
-
-  const useAsEntered = () => {
-    proceedWithAddress(searchAddress.trim())
-  }
-
-  const backTo = fromParam
-    ? {
-        label: fromParam === 'verdict' ? 'Verdict' : fromParam === 'strategy' ? 'Strategy' : 'Property',
-        href: `/${fromParam}?address=${encodeURIComponent(addressParam)}`,
-      }
-    : undefined
-
-  if (addressParam && isLoading) {
-    return <IQLoadingLogo />
-  }
-
-  if (addressParam && error) {
-    return (
-      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center px-4 sm:px-6">
-        <div className="text-center w-full max-w-md">
-          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: 'var(--color-red-dim)' }}>
-            <AlertCircle className="w-7 h-7 text-[var(--status-negative)]" />
-          </div>
-          <h2 className="text-lg sm:text-xl font-semibold text-[var(--text-heading)] mb-2">Unable to Load Property</h2>
-          <p className="text-[var(--text-secondary)] text-sm sm:text-base mb-6">{error}</p>
-          <button
-            onClick={() => loadProperty(addressParam)}
-            className="px-8 py-3 rounded-lg text-[var(--text-inverse)] font-medium text-sm sm:text-base transition-all hover:scale-[1.02]"
-            style={{ background: 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)', boxShadow: 'var(--shadow-card)' }}
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (addressParam && propertyData) {
-    return (
-      <AuthGate feature="adjust deal inputs" mode="section">
-        <DealMakerScreen
-          property={propertyData}
-          listPrice={propertyData.price}
-          initialStrategy={initialStrategy}
-          backTo={backTo}
-        />
-      </AuthGate>
-    )
-  }
-
+export default function DealMakerMarketingPage() {
   return (
-    <AuthGate feature="deal maker" mode="section">
-      <div className="min-h-screen bg-[var(--surface-base)] px-4 sm:px-6 pt-6 sm:pt-10">
-        <div className="w-full max-w-lg mx-auto">
-          <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-heading)] mb-2">Deal Maker IQ</h1>
-            <p className="text-[var(--text-secondary)] text-sm sm:text-base">
-              Search for a property to start building your deal
+    <div className="min-h-screen bg-[var(--surface-base)] text-slate-300">
+      <div className="max-w-4xl mx-auto px-6 py-16">
+        <Link href="/" className="text-sm font-medium text-sky-400 hover:text-sky-300 transition-colors">
+          &larr; Back to DealGapIQ
+        </Link>
+
+        <header className="mt-10 mb-12">
+          <p className="text-sm font-semibold tracking-widest text-sky-400 uppercase">Feature</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mt-4 leading-tight">
+            DealMaker
+          </h1>
+          <p className="text-xl text-slate-400 mt-4 leading-relaxed max-w-2xl">
+            The Verdict tells you the gap. DealMaker tells you how to close it. Four closing paths
+            laid side by side — cash, conventional, subject-to, and seller-finance — so you know
+            exactly what to offer and how to structure it.
+          </p>
+          <div className="mt-8">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-6 py-3 text-sm font-semibold text-white hover:bg-sky-400 transition-colors"
+            >
+              Start with a Free Verdict
+            </Link>
+          </div>
+        </header>
+
+        <div className="space-y-12 text-[15px] leading-relaxed">
+          <section>
+            <h2 className="text-2xl font-semibold text-white mb-4">The four paths</h2>
+            <p className="mb-4">
+              DealMaker scores the same property across four ways to close, in parallel:
             </p>
-          </div>
+            <ul className="list-disc list-inside space-y-2 text-slate-400">
+              <li>
+                <strong className="text-slate-200">Cash.</strong> The simplest math — no financing, no debt service.
+                Lowest offer ceiling, highest certainty.
+              </li>
+              <li>
+                <strong className="text-slate-200">Conventional.</strong> 25% down, 30-year fixed, today&apos;s
+                investor rates. The default for most deals.
+              </li>
+              <li>
+                <strong className="text-slate-200">Subject-to.</strong> Take title with the seller&apos;s existing
+                mortgage in place. When the in-place rate is 3% and current rates are 7%, this can lift the offer
+                ceiling by 15-25%.
+              </li>
+              <li>
+                <strong className="text-slate-200">Seller-finance.</strong> The seller carries the note. When
+                the seller wants tax-deferred income or has a hard time selling at price, this can be the
+                offer that gets accepted.
+              </li>
+            </ul>
+          </section>
 
-          <div
-            className="rounded-xl p-5 sm:p-6"
-            style={{
-              background: 'var(--surface-base)',
-              border: '1px solid var(--border-default)',
-              boxShadow: 'var(--shadow-card-hover)',
-            }}
-          >
-            <form onSubmit={handleAddressSubmit} className="space-y-4">
-              <div className="relative">
-                <Search
-                  size={20}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--accent-sky)] pointer-events-none z-10"
-                />
-                <AddressAutocomplete
-                  placeholder="Enter property address..."
-                  value={searchAddress}
-                  onChange={setSearchAddress}
-                  onPlaceSelect={setSearchAddress}
-                  autoFocus
-                  className="w-full pl-12 pr-12 py-4 rounded-xl placeholder-[var(--text-label)] outline-none transition-colors text-sm sm:text-base"
-                  style={{
-                    background: 'var(--surface-input)',
-                    border: '1px solid var(--border-default)',
-                    color: 'var(--text-heading)',
-                  }}
-                />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
-                  {validationStatus === 'validating' && (
-                    <Loader2 size={20} className="text-[var(--text-label)] animate-spin" />
-                  )}
-                  {validationStatus === 'valid' && (
-                    <CheckCircle2 size={20} className="text-[var(--status-positive)]" />
-                  )}
-                  {validationStatus === 'issues' && (
-                    <AlertTriangle size={20} className="text-[var(--status-warning)]" />
-                  )}
-                  {validationStatus === 'error' && (
-                    <AlertCircle size={20} className="text-[var(--status-negative)]" />
-                  )}
-                </div>
-              </div>
+          <section>
+            <h2 className="text-2xl font-semibold text-white mb-4">What DealMaker shows you</h2>
+            <ul className="list-disc list-inside space-y-2 text-slate-400">
+              <li>
+                <strong className="text-slate-200">Maximum offer per path.</strong> The highest price you can
+                pay under each closing structure and still hit your target return.
+              </li>
+              <li>
+                <strong className="text-slate-200">Side-by-side P&amp;L.</strong> Year-1 cash flow, NOI, IRR,
+                cash-on-cash for each path, displayed simultaneously.
+              </li>
+              <li>
+                <strong className="text-slate-200">Pitch script generator.</strong> For subject-to and
+                seller-finance offers, DealMaker generates a script you can use with the seller — reframing the
+                offer in terms of monthly income, tax treatment, and certainty of close.
+              </li>
+              <li>
+                <strong className="text-slate-200">Sensitivity overlay.</strong> See how each path responds when
+                interest rates move, rents disappoint, or the seller asks for different terms.
+              </li>
+            </ul>
+          </section>
 
-              {validationStatus === 'error' && (
-                <p className="text-sm text-[var(--status-negative)]">
-                  Could not validate address. You can try again or use the address as entered.
-                </p>
-              )}
-              {validationStatus === 'issues' && validationResult && (
-                <div
-                  className="rounded-xl p-3 sm:p-4 space-y-3"
-                  style={{
-                    background: 'var(--color-sky-dim)',
-                    border: '1px solid var(--border-default)',
-                  }}
-                >
-                  {validationResult.issues.length > 0 && (
-                    <ul className="text-xs sm:text-sm text-[var(--status-warning)] space-y-1">
-                      {validationResult.issues.slice(0, 3).map((issue, i) => (
-                        <li key={i}>{issue.message}</li>
-                      ))}
-                    </ul>
-                  )}
-                  {validationResult.formattedAddress &&
-                    validationResult.formattedAddress.trim() !== searchAddress.trim() && (
-                      <p className="text-sm text-[var(--text-secondary)]">
-                        Did you mean:{' '}
-                        <span className="font-medium text-[var(--text-heading)]">
-                          {validationResult.formattedAddress}
-                        </span>
-                        ?
-                      </p>
-                    )}
-                  <div className="flex flex-wrap gap-2">
-                    {validationResult.formattedAddress &&
-                      validationResult.formattedAddress.trim() !== searchAddress.trim() && (
-                        <button
-                          type="button"
-                          onClick={acceptCorrection}
-                          className="text-sm py-2 px-4 rounded-lg font-medium transition-colors"
-                          style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
-                        >
-                          Accept correction
-                        </button>
-                      )}
-                    <button
-                      type="button"
-                      onClick={useAsEntered}
-                      className="text-sm py-2 px-4 rounded-lg font-medium text-[var(--text-secondary)] hover:text-[var(--text-heading)] transition-colors"
-                    >
-                      Use as entered
-                    </button>
-                  </div>
-                </div>
-              )}
+          <section>
+            <h2 className="text-2xl font-semibold text-white mb-4">Where it fits</h2>
+            <p>
+              DealMaker is the third step in the workflow:
+            </p>
+            <ol className="list-decimal list-inside mt-3 space-y-1 text-slate-400">
+              <li><Link href="/verdict" className="text-sky-400 hover:text-sky-300">Verdict</Link> &mdash; is this deal worth a serious look?</li>
+              <li><Link href="/strategy" className="text-sky-400 hover:text-sky-300">Strategy</Link> &mdash; does it actually work financially?</li>
+              <li><strong className="text-slate-200">DealMaker</strong> &mdash; what offer makes it close?</li>
+            </ol>
+          </section>
 
-              <button
-                type="submit"
-                disabled={!searchAddress.trim() || validationStatus === 'validating'}
-                className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
-                style={{
-                  color: 'var(--text-inverse)',
-                  background: 'var(--accent-sky)',
-                }}
+          <section>
+            <h2 className="text-2xl font-semibold text-white mb-4">Why creative finance matters</h2>
+            <p>
+              Most listings won&apos;t pencil at conventional financing in a high-rate environment. The deals
+              that work today are either underpriced enough to absorb 7% rates, or structured around the
+              seller&apos;s existing low-rate mortgage. DealMaker is the layer that lets you find both — and
+              walk into the listing-agent conversation knowing exactly what you&apos;d offer and why.
+            </p>
+          </section>
+
+          <section>
+            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">DealMaker is included with Pro Investor</h3>
+              <p className="text-slate-400 mb-4">
+                Unlimited DealMaker scenarios, full sensitivity analysis, pitch-script generator, Excel and PDF
+                export. $29.17/month annual. 7-day free trial, no credit card.
+              </p>
+              <Link
+                href="/pricing"
+                className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-400 transition-colors"
               >
-                {validationStatus === 'validating' ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin text-[var(--text-inverse)]" />
-                    Validating...
-                  </>
-                ) : (
-                  <>
-                    <Search size={18} className="text-[var(--text-inverse)]" />
-                    Search Property
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
+                See pricing
+              </Link>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-white mb-4">Related</h2>
+            <ul className="list-disc list-inside space-y-2 text-slate-400">
+              <li><Link href="/verdict" className="text-sky-400 hover:text-sky-300">IQ Verdict</Link> &mdash; start here</li>
+              <li><Link href="/strategy" className="text-sky-400 hover:text-sky-300">Strategy Analysis</Link> &mdash; financial deep-dive</li>
+              <li><Link href="/glossary" className="text-sky-400 hover:text-sky-300">Glossary</Link> &mdash; subject-to, seller-finance, and other creative-finance terms</li>
+            </ul>
+          </section>
         </div>
       </div>
-    </AuthGate>
+    </div>
   )
 }
