@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
@@ -10,6 +10,7 @@ import { ArrowLeft, Calculator } from 'lucide-react'
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_BUY_DISCOUNT_PCT } from '@/lib/iqTarget'
 import { useDealScore } from '@/hooks/useDealScore'
+import { useDefaults } from '@/hooks/useDefaults'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
 
 // Section components for tab navigation
@@ -135,6 +136,15 @@ export function FlipWorksheet({
   const zip = property.address_zip || ''
 
   // ============================================
+  // ADMIN DEFAULTS - resolved from /admin assumptions (system → market → user)
+  // ============================================
+  // Render-then-update pattern: state seeds with hardcoded fallbacks for an
+  // instant first paint, then re-seeds once `useDefaults` resolves (effect
+  // below). Tracked per-property so user slider edits are never clobbered by
+  // a late-arriving admin response.
+  const { defaults: adminDefaults } = useDefaults(zip || undefined)
+
+  // ============================================
   // STATE - Updated defaults per default_assumptions.csv
   // ============================================
   const listPrice = propertyData.listPrice || 300000
@@ -153,16 +163,46 @@ export function FlipWorksheet({
   
   const [purchasePrice, setPurchasePrice] = useState(initialPurchasePrice)
   const [rehabCosts, setRehabCosts] = useState(defaultRehabCosts)         // 5% of ARV
-  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)             // 3%
-  const [financingPct, setFinancingPct] = useState(80)                    // 80%
-  const [interestRate, setInterestRate] = useState(12)                    // 12% hard money
+  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)             // financing.closing_costs_pct
+  const [financingPct, setFinancingPct] = useState(80)                    // flip.hard_money_ltv
+  const [interestRate, setInterestRate] = useState(12)                    // flip.hard_money_rate
   const [loanPoints, setLoanPoints] = useState(2)
   const [arv, setArv] = useState(defaultArv)
-  const [holdingMonths, setHoldingMonths] = useState(6)
+  const [holdingMonths, setHoldingMonths] = useState(6)                   // flip.holding_period_months
   const [propertyTaxes, setPropertyTaxes] = useState(propertyData.propertyTaxes || 4000)
-  const [insurance, setInsurance] = useState(defaultInsurance)            // 1% of purchase price
-  const [utilities, setUtilities] = useState(100)                         // $100
-  const [sellingCostsPct, setSellingCostsPct] = useState(6)               // 6%
+  const [insurance, setInsurance] = useState(defaultInsurance)            // operating.insurance_pct × value
+  const [utilities, setUtilities] = useState(100)                         // operating.utilities_monthly
+  const [sellingCostsPct, setSellingCostsPct] = useState(6)               // flip.selling_costs_pct
+
+  // Re-seed admin-driven sliders once defaults resolve. Keyed by property
+  // identity so this fires exactly once per property and never overwrites
+  // edits the user has already made. Property-data inputs (purchase price,
+  // taxes, insurance dollar amount, ARV, rehab) are intentionally excluded —
+  // those come from the property snapshot, not admin assumptions.
+  const adminAppliedKeyRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!adminDefaults) return
+    const key = `${propertyId}|${listPrice}`
+    if (adminAppliedKeyRef.current === key) return
+    adminAppliedKeyRef.current = key
+
+    const f = adminDefaults.financing
+    const fl = adminDefaults.flip
+    const o = adminDefaults.operating
+
+    if (Number.isFinite(fl?.hard_money_rate)) setInterestRate(fl.hard_money_rate * 100)
+    if (Number.isFinite(fl?.hard_money_ltv)) setFinancingPct(fl.hard_money_ltv * 100)
+    if (Number.isFinite(fl?.holding_period_months)) setHoldingMonths(fl.holding_period_months)
+    if (Number.isFinite(fl?.selling_costs_pct)) setSellingCostsPct(fl.selling_costs_pct * 100)
+    if (Number.isFinite(f?.closing_costs_pct)) setPurchaseCostsPct(f.closing_costs_pct * 100)
+    if (Number.isFinite(o?.utilities_monthly)) setUtilities(o.utilities_monthly)
+
+    // Insurance dollar amount: only re-seed when the property has no insurance
+    // value of its own. If the snapshot provided one, that wins.
+    if (propertyData.insurance == null && Number.isFinite(o?.insurance_pct)) {
+      setInsurance(listPrice * o.insurance_pct)
+    }
+  }, [adminDefaults, propertyId, listPrice, propertyData.insurance])
   
   // Hybrid accordion mode
   const [currentSection, setCurrentSection] = useState<number | null>(0)
