@@ -14,7 +14,7 @@ from app.services.deal_structures.formatting import fmt_money_precise
 _OPENER_TEMPLATE = (
     "Right now, this house costs more than the rent can pay for. "
     "The shortage is about {gap_amount}. "
-    "That sounds bad, but it's normal. Most houses on Zillow start out this way. "
+    "That sounds bad, but it's normal. Most houses start out this way. "
     "Here are {count} ways people fix it to make the deal."
 )
 
