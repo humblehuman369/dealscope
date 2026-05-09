@@ -63,9 +63,12 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     elif gap_pct > 20:
         ranking -= 18  # CALIBRATION PLACEHOLDER — large gaps need unrealistic cash
 
-    sel_reason = "Shown because putting more cash down is often the fastest way to clear a modest gap"
+    sel_reason = "Putting more cash down is often the fastest way to clear a modest gap."
     if gap_pct < 10:
-        sel_reason = f"Shown because the gap is under {gap_pct:.0f}% — extra equity may be enough without renegotiating price"
+        sel_reason = (
+            f"The gap is under {gap_pct:.0f}% — extra equity may be enough "
+            "without renegotiating price."
+        )
 
     extra_cash = new_cash - ctx.baseline_cash_required
     cash_tradeoff_years = (extra_cash / (monthly_savings * 12)) if monthly_savings > 0 else 0
@@ -109,11 +112,9 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family=FAMILY,
         family_label=FAMILY_LABEL,
         realism_label="Capital-heavy path",
-        headline=f"Put {new_down * 100:.0f}% down ({fmt_money(new_cash)})",
-        bullets=[
-            f"Increase down payment to {new_down * 100:.0f}%",
-            f"Bring {fmt_money(new_cash)} to close",
-        ],
+        headline=f"Down Payment {new_down * 100:.0f}%",
+        # Single-bullet headline — the lever block carries the breakdown.
+        bullets=[f"Down Payment {new_down * 100:.0f}%"],
         summary=(
             f"Adds about {fmt_money(delta_cash)} cash vs baseline closing but saves "
             f"{fmt_money(monthly_savings)}/mo on the mortgage."
@@ -123,7 +124,9 @@ def solve(ctx: StructureContext) -> DealStructure | None:
                 label="Down payment",
                 before_label=f"{ctx.down_payment_pct * 100:.0f}%",
                 after_label=f"{new_down * 100:.0f}%",
-                delta_label=fmt_pct_delta(ctx.down_payment_pct * ctx.list_price, new_down * ctx.list_price),
+                # Show the dollar value of the new down payment as the trailing
+                # column so users see both the % and the cash on one row.
+                delta_label=fmt_money(new_down * ctx.list_price),
             ),
             StructureLever(
                 label="Monthly P&I",

@@ -244,13 +244,17 @@ def solve(
         f"Blend: {price_pct:.1f}% price cut + {fmt_money(chosen_second)} seller 2nd + "
         f"{bump_pct:.1f}% rent lift"
     )
+    # Bullets carry the full math for the blended card (no separate lever block on the card).
+    # Each bullet uses the "Label: before → after" pattern for at-a-glance scanning.
     bullets = [
-        f"Target price: {price_pct:.1f}% price cut",
-        f"Seller 2nd: {fmt_money(chosen_second)} seller 2nd",
-        f"Raise rent: {bump_pct:.1f}% rent lift",
+        f"Target price:\u00A0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
+        f"Seller 2nd:\u00A0{fmt_money(chosen_second)} → 0%, {DEFAULT_BALLOON_YEARS}yr balloon",
+        f"Target Rent:\u00A0${round(ctx.monthly_rent):,} → ${round(new_rent):,}  +{bump_pct:.1f}%",
     ]
+    # Combined selection-reason + savings so the card only renders one supporting paragraph.
     summary = (
-        f"Combines all three moves so no single ask carries the whole gap. "
+        "Real deals usually combine moves — a smaller price cut, a partial seller carry, "
+        "and a modest rent lift can clear the gap together when no single lever wants to do it alone. "
         f"Together they save about {fmt_monthly(monthly_savings)} vs the baseline."
     )
     if not closes_gap:
@@ -259,6 +263,9 @@ def solve(
             "a strategy switch, or a deeper concession on one lever."
         )
 
+    # Selection-reason is preserved for downstream consumers (PDF, Strategy,
+    # accessibility). The verdict card renderer suppresses it for blended plans
+    # because the summary below already carries the same thesis.
     sel_reason = (
         "Real deals usually combine moves — a smaller price cut, a partial seller carry, "
         "and a modest rent lift can clear the gap together when no single lever wants to do it alone."
