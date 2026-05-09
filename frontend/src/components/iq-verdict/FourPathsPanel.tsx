@@ -111,6 +111,81 @@ function renderSummaryWithLinks(summary: string): React.ReactNode {
   })
 }
 
+/**
+ * Renders a single math-carrying bullet line with inline accent coloring on the
+ * arrow ("→") and any trailing percentage delta ("+0.5%", "−4.4%"). The bullet
+ * marker dot is a separate flex child so the marker color tracks the family
+ * accent without relying on browser-specific `::marker` styling.
+ */
+function MathBullet({ text, accent }: { text: string; accent: string }): ReactNode {
+  // Split on tokens we want to color: the arrow and any signed % delta at the
+  // end of the string. Capturing groups keep the matched delimiters in the
+  // resulting array so we can render them as styled spans.
+  // Match either Unicode → / -> with surrounding whitespace, or a signed %
+  // with optional + / − / - prefix.
+  const PARTS_RE = /(\s+→\s+|\s+->\s+|\s[+−-]\d+(?:\.\d+)?%)/g
+  const segments = text.split(PARTS_RE).filter((s) => s !== '')
+  return (
+    <li
+      style={{
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: 10,
+        margin: 0,
+      }}
+    >
+      <span
+        aria-hidden="true"
+        style={{
+          flexShrink: 0,
+          color: accent,
+          fontSize: 16,
+          lineHeight: 1,
+          transform: 'translateY(1px)',
+        }}
+      >
+        ●
+      </span>
+      <span
+        className="tabular-nums"
+        style={{
+          fontSize: 14.5,
+          fontWeight: 600,
+          lineHeight: 1.45,
+          color: 'var(--text-heading)',
+          minWidth: 0,
+          flex: 1,
+        }}
+      >
+        {segments.map((seg, i) => {
+          if (/^\s+(→|->)\s+$/.test(seg)) {
+            return (
+              <span key={i} style={{ color: accent, fontWeight: 700 }}>
+                {' → '}
+              </span>
+            )
+          }
+          if (/^\s[+−-]\d+(?:\.\d+)?%$/.test(seg)) {
+            return (
+              <span key={i} style={{ color: accent, fontWeight: 700, marginLeft: 4 }}>
+                {seg.trim()}
+              </span>
+            )
+          }
+          return <span key={i}>{seg}</span>
+        })}
+      </span>
+    </li>
+  )
+}
+
+/** Format the savings KPI for the header pill (e.g. "Saves $562/mo"). */
+function formatSavings(monthlySavings: number): string | null {
+  if (!Number.isFinite(monthlySavings) || monthlySavings <= 0) return null
+  const rounded = Math.round(monthlySavings)
+  return `Saves $${rounded.toLocaleString('en-US')}/mo`
+}
+
 function PathCard({
   structure,
   index,
@@ -128,59 +203,84 @@ function PathCard({
 }) {
   const caveatOpenedRef = useRef(false)
   const accent = FAMILY_ACCENT[structure.family] || 'var(--accent-sky)'
+  const savingsLabel = formatSavings(structure.monthlySavings)
+  const showAttorneyLine =
+    structure.family === 'strategy_switch' || structure.family === 'blended'
+  const bullets = structure.bullets && structure.bullets.length > 0 ? structure.bullets : null
+
   return (
     <div
       role="article"
       aria-label={`Path ${index + 1}: ${structure.headline}`}
       className="rounded-xl h-full min-h-0"
       style={{
-        background: 'linear-gradient(0deg, var(--sky-tint-fill, transparent), var(--sky-tint-fill, transparent)), var(--surface-card)',
-        border: '1px solid var(--sky-tint-border, var(--border-default))',
-        padding: 16,
+        background: 'var(--surface-card)',
+        border: `1px solid ${accent}33`,
+        boxShadow: `inset 4px 0 0 0 ${accent}`,
+        padding: '18px 18px 16px',
         display: 'flex',
         flexDirection: 'column',
+        gap: 14,
         minHeight: 0,
       }}
     >
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
-      <div className="flex items-center gap-2 flex-wrap">
+      {/* HEADER ROW — Path # · TITLE on the left, Savings KPI pill on the right.
+          The KPI is the highest-impact at-a-glance number and earns the visual
+          weight on the right edge of the header. */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <span
           style={{
-            fontSize: 17,
+            fontSize: 16,
             fontWeight: 800,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
             lineHeight: 1.2,
+            minWidth: 0,
           }}
         >
           <span style={{ color: accent }}>{`Path ${index + 1}`}</span>
-          <span style={{ color: '#FFFFFF' }}>{` · ${structure.familyLabel}`}</span>
+          <span style={{ color: 'var(--text-heading)' }}>
+            {` · ${structure.familyLabel}`}
+          </span>
         </span>
+        {savingsLabel && (
+          <span
+            className="tabular-nums"
+            style={{
+              flexShrink: 0,
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              padding: '4px 10px',
+              borderRadius: 999,
+              color: accent,
+              background: `${accent}1A`,
+              border: `1px solid ${accent}40`,
+            }}
+          >
+            {savingsLabel}
+          </span>
+        )}
       </div>
 
-      {structure.bullets && structure.bullets.length > 0 ? (
+      {/* MATH BULLETS — primary content. Each bullet carries the full
+          before → after  delta math so the card tells the whole story without
+          a separate lever block. Falls back to the plain headline when the
+          template doesn't supply bullets. */}
+      {bullets ? (
         <ul
           style={{
             margin: 0,
-            paddingLeft: 18,
-            listStyleType: 'disc',
+            padding: 0,
+            listStyle: 'none',
             display: 'flex',
             flexDirection: 'column',
-            gap: 4,
+            gap: 6,
           }}
         >
-          {structure.bullets.map((b, i) => (
-            <li
-              key={i}
-              style={{
-                fontSize: 15,
-                fontWeight: 600,
-                lineHeight: 1.4,
-                color: 'var(--text-heading)',
-              }}
-            >
-              {b}
-            </li>
+          {bullets.map((b, i) => (
+            <MathBullet key={i} text={b} accent={accent} />
           ))}
         </ul>
       ) : (
@@ -197,167 +297,62 @@ function PathCard({
         </h4>
       )}
 
-      {/* Suppress selectionReason on blended-plan cards — the summary below
-          already carries the same thesis. The data is still on the structure
-          for downstream consumers (PDF, Strategy, accessibility). */}
-      {structure.selectionReason && structure.family !== 'blended' && (
-        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.45, color: 'var(--text-secondary)' }}>
-          {structure.selectionReason}
-        </p>
-      )}
-
-      {/* Blended-plan cards put the full math in the bullets above, so the
-          separate lever block is suppressed here to avoid repeating the same
-          numbers twice on the first view. The lever data is still on the
-          structure for downstream consumers (PDF, Strategy, etc.). */}
-      {structure.family !== 'blended' && structure.levers.length > 0 && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1fr) auto auto auto auto',
-            columnGap: 6,
-            rowGap: 4,
-            alignItems: 'baseline',
-            paddingTop: 8,
-            paddingBottom: 8,
-            borderTop: '1px solid var(--border-subtle, var(--border-default))',
-            borderBottom: '1px solid var(--border-subtle, var(--border-default))',
-            fontSize: 13,
-            lineHeight: 1.45,
-          }}
-        >
-          {structure.levers.map((lever, i) => {
-            // Treat an em-dash placeholder as "no before value" — hide the dash and arrow.
-            const hasBefore =
-              !!lever.beforeLabel && lever.beforeLabel.trim() !== '—' && lever.beforeLabel.trim() !== '-'
-            return (
-              <div key={i} style={{ display: 'contents' }}>
-                <span style={{ color: 'var(--text-secondary)', fontWeight: 500, minWidth: 0 }}>
-                  {lever.label}
-                </span>
-                <span
-                  className="tabular-nums"
-                  style={{
-                    color: 'var(--text-secondary)',
-                    fontWeight: 600,
-                    textAlign: 'right',
-                  }}
-                >
-                  {hasBefore ? lever.beforeLabel : ''}
-                </span>
-                <span
-                  className="tabular-nums"
-                  style={{ color: 'var(--text-secondary)', fontWeight: 600 }}
-                >
-                  {hasBefore ? '→' : ''}
-                </span>
-                <span
-                  className="tabular-nums"
-                  style={{
-                    color: 'var(--text-heading)',
-                    fontWeight: 600,
-                    textAlign: 'right',
-                  }}
-                >
-                  {lever.afterLabel}
-                </span>
-                <span
-                  className="tabular-nums"
-                  style={{
-                    color: accent,
-                    fontWeight: 700,
-                    textAlign: 'right',
-                    minWidth: lever.deltaLabel ? undefined : 0,
-                  }}
-                >
-                  {lever.deltaLabel ?? ''}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      <p
-        style={{
-          margin: 0,
-          fontSize: 13,
-          lineHeight: 1.55,
-          color: 'var(--text-body)',
-        }}
-      >
-        {renderSummaryWithLinks(structure.summary)}
-      </p>
-
-      {structure.caveat && (
-        <details
-          style={{ margin: 0 }}
-          onToggle={(e) => {
-            const open = (e.target as HTMLDetailsElement).open
-            if (open && !caveatOpenedRef.current) {
-              caveatOpenedRef.current = true
-              trackEvent('path_card_caveat_viewed', {
-                structure_id: structure.id,
-                state: propertyState ?? undefined,
-              })
-            }
-          }}
-        >
-          <summary
-            className="cursor-pointer select-none [&::-webkit-details-marker]:hidden"
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: 'var(--accent-sky)',
-            }}
-          >
-            Important caveat ▾
-          </summary>
-          <p
-            style={{
-              margin: '8px 0 0',
-              fontSize: 13,
-              lineHeight: 1.45,
-              color: 'var(--text-secondary)',
-              fontStyle: 'italic',
-            }}
-          >
-            {structure.caveat}
+      {/* CONTEXT — combines the selection rationale and the supporting
+          summary into a single muted paragraph block. Selection reason is
+          suppressed for blended-plan cards because the summary already
+          carries the same thesis (data still in the structure for downstream
+          consumers). */}
+      <div className="flex flex-1 min-h-0 flex-col gap-2">
+        {structure.selectionReason && structure.family !== 'blended' && (
+          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: 'var(--text-secondary)' }}>
+            {structure.selectionReason}
           </p>
-        </details>
-      )}
-
-      {/* T13: attorney disclaimer renders on strategy_switch and blended only.
-          Pure-financing cards (Creative Finance, Morby Method, Sub2, Assumable)
-          suppress the line on the first view to keep the card uncluttered —
-          the same legal context lives in the "How to pitch this" pitch script
-          and in the linked /legal/find-attorney page. */}
-      {(structure.family === 'strategy_switch' || structure.family === 'blended') && (
-        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.45, color: 'var(--text-secondary)' }}>
-          Get this contract reviewed by a creative-finance attorney —{' '}
-          <Link
-            href="/legal/find-attorney"
-            className="font-semibold underline-offset-2 hover:underline"
-            style={{ color: 'var(--accent-sky)' }}
-            onClick={() =>
-              trackEvent('path_attorney_link_clicked', {
-                structure_id: structure.id,
-                state: propertyState ?? undefined,
-              })
-            }
-          >
-            Find one
-          </Link>
+        )}
+        <p
+          style={{
+            margin: 0,
+            fontSize: 13,
+            lineHeight: 1.55,
+            color: 'var(--text-body)',
+          }}
+        >
+          {renderSummaryWithLinks(structure.summary)}
         </p>
-      )}
+        {showAttorneyLine && (
+          <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+            Get this contract reviewed by a creative-finance attorney —{' '}
+            <Link
+              href="/legal/find-attorney"
+              className="font-semibold underline-offset-2 hover:underline"
+              style={{ color: 'var(--accent-sky)' }}
+              onClick={() =>
+                trackEvent('path_attorney_link_clicked', {
+                  structure_id: structure.id,
+                  state: propertyState ?? undefined,
+                })
+              }
+            >
+              Find one
+            </Link>
+          </p>
+        )}
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-2 pt-3">
+      {/* ACTIONS ROW — primary CTA on the left, secondary CTA next to it,
+          Important caveat as a small inline disclosure (not a bulky block),
+          and the dismissal link tucked to the right edge. */}
+      <div
+        className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2"
+        style={{
+          paddingTop: 12,
+          borderTop: '1px solid var(--border-subtle, var(--border-default))',
+        }}
+      >
         {onOpenInStrategy && (
           <button
             type="button"
             onClick={() => onOpenInStrategy(structure, index)}
-            className="rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
+            className="rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors"
             style={{
               background: 'var(--accent-sky)',
               color: 'var(--surface-base, #fff)',
@@ -371,7 +366,7 @@ function PathCard({
           <button
             type="button"
             onClick={() => onShowPitch(structure)}
-            className="rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
+            className="rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors"
             style={{
               background: 'transparent',
               color: 'var(--accent-sky)',
@@ -381,15 +376,58 @@ function PathCard({
             How to pitch this
           </button>
         )}
+        {structure.caveat && (
+          <details
+            style={{ margin: 0 }}
+            onToggle={(e) => {
+              const open = (e.target as HTMLDetailsElement).open
+              if (open && !caveatOpenedRef.current) {
+                caveatOpenedRef.current = true
+                trackEvent('path_card_caveat_viewed', {
+                  structure_id: structure.id,
+                  state: propertyState ?? undefined,
+                })
+              }
+            }}
+          >
+            <summary
+              className="cursor-pointer select-none [&::-webkit-details-marker]:hidden"
+              style={{
+                fontSize: 12.5,
+                fontWeight: 600,
+                color: 'var(--accent-sky)',
+              }}
+            >
+              Important caveat ▾
+            </summary>
+            <p
+              style={{
+                margin: '8px 0 0',
+                fontSize: 12.5,
+                lineHeight: 1.5,
+                color: 'var(--text-secondary)',
+                fontStyle: 'italic',
+                maxWidth: '100%',
+              }}
+            >
+              {structure.caveat}
+            </p>
+          </details>
+        )}
         {onDismiss && (
           <button
             type="button"
             onClick={() => onDismiss(structure)}
             className="ml-auto cursor-pointer text-xs font-medium underline-offset-2 hover:underline"
-            style={{ color: 'var(--text-secondary)', background: 'transparent', border: 'none', padding: 0 }}
+            style={{
+              color: 'var(--text-secondary)',
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+            }}
             aria-label={`Hide ${structure.familyLabel} cards for 30 days`}
           >
-            Not interested in this kind of deal
+            Not interested
           </button>
         )}
       </div>
