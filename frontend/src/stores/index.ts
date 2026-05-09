@@ -67,6 +67,8 @@ export interface OperatingAssumptions {
   vacancy_rate: number
   property_management_pct: number
   maintenance_pct: number
+  /** Reserves / capital expenditures as % of annual gross rent. Mirrors backend `OPERATING.capex_pct`. */
+  capex_pct: number
   insurance_pct: number  // Percentage of purchase price (was fixed insurance_annual)
   utilities_monthly: number
   landscaping_annual: number
@@ -107,10 +109,14 @@ export interface FlipAssumptions {
   hard_money_rate: number
   selling_costs_pct: number
   holding_period_months: number
+  /** Target discount below ARV for the purchase-side offer. Mirrors backend `FLIP.purchase_discount_pct`. */
+  purchase_discount_pct: number
 }
 
 export interface HouseHackAssumptions {
   fha_down_payment_pct: number
+  /** FHA-specific interest rate (typically lower than conventional). Mirrors backend `HOUSE_HACK.fha_interest_rate`. */
+  fha_interest_rate: number
   fha_mip_rate: number
   units_rented_out: number
   buy_discount_pct: number  // Discount below Income Value (0.05 = 5% below Income Value)
@@ -159,6 +165,7 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
     vacancy_rate: 0.01,            // 1% (was 5%)
     property_management_pct: 0.00, // 0% (was 10%)
     maintenance_pct: 0.05,         // 5% (was 10%)
+    capex_pct: 0.05,               // 5% reserves / capital expenditures
     insurance_pct: 0.01,           // 1% of purchase price (was $500 fixed)
     utilities_monthly: 100,        // $100 (was $75)
     landscaping_annual: 0,         // $0 (was $500)
@@ -198,9 +205,11 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
     hard_money_rate: 0.12,         // 12%
     selling_costs_pct: 0.08,       // 8% (6% commission + 2% seller closing)
     holding_period_months: 6,      // 6 months
+    purchase_discount_pct: 0.20,   // 20% below ARV
   },
   house_hack: {
     fha_down_payment_pct: 0.035,   // 3.5%
+    fha_interest_rate: 0.065,      // 6.5%
     fha_mip_rate: 0.0085,          // 0.85%
     units_rented_out: 2,           // 2 units
     buy_discount_pct: 0.05,     // 5% below Income Value
@@ -284,9 +293,23 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
     }),
     {
       name: 'dealgapiq-assumptions',
-      version: 3, // v3: required_equity_yield on operating
+      version: 4, // v4: flip.purchase_discount_pct + house_hack.fha_interest_rate + operating.capex_pct
       migrate: (persistedState: unknown, version: number) => {
         const state = persistedState as AssumptionsStore
+
+        if (version < 4) {
+          const assumptions = { ...state.assumptions } as unknown as Record<string, Record<string, unknown>>
+          if (assumptions.flip && !('purchase_discount_pct' in assumptions.flip)) {
+            assumptions.flip.purchase_discount_pct = 0.20
+          }
+          if (assumptions.house_hack && !('fha_interest_rate' in assumptions.house_hack)) {
+            assumptions.house_hack.fha_interest_rate = 0.065
+          }
+          if (assumptions.operating && !('capex_pct' in assumptions.operating)) {
+            assumptions.operating.capex_pct = 0.05
+          }
+          state.assumptions = assumptions as unknown as AllAssumptions
+        }
 
         if (version < 3) {
           const assumptions = { ...state.assumptions } as unknown as Record<string, Record<string, unknown>>
@@ -385,6 +408,15 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
         const assumptionsFinal = { ...state.assumptions } as unknown as Record<string, Record<string, unknown>>
         if (assumptionsFinal.operating && assumptionsFinal.operating.required_equity_yield == null) {
           assumptionsFinal.operating.required_equity_yield = 0.08
+        }
+        if (assumptionsFinal.operating && assumptionsFinal.operating.capex_pct == null) {
+          assumptionsFinal.operating.capex_pct = 0.05
+        }
+        if (assumptionsFinal.flip && assumptionsFinal.flip.purchase_discount_pct == null) {
+          assumptionsFinal.flip.purchase_discount_pct = 0.20
+        }
+        if (assumptionsFinal.house_hack && assumptionsFinal.house_hack.fha_interest_rate == null) {
+          assumptionsFinal.house_hack.fha_interest_rate = 0.065
         }
         return { ...state, assumptions: assumptionsFinal as unknown as AllAssumptions }
       },

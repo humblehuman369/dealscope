@@ -10,7 +10,10 @@ from pydantic import BaseModel
 
 from app.core.defaults import get_all_defaults
 from app.core.deps import DbSession, OptionalUser
-from app.services.assumptions_service import get_market_adjustments
+from app.services.assumptions_service import (
+    get_default_assumptions,
+    get_market_adjustments,
+)
 from app.services.user_service import user_service
 
 logger = logging.getLogger(__name__)
@@ -51,16 +54,19 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
 
 
 @router.get("", response_model=dict[str, Any], summary="Get system defaults")
-async def get_system_defaults():
+async def get_system_defaults(db: DbSession = None):
     """
-    Get the system default assumptions.
+    Get the default assumptions used across the platform.
 
-    These are the base default values used across all calculations.
-    No authentication required.
+    Returns the admin-configured defaults (set via `/admin/assumptions`),
+    falling back to the hardcoded schema defaults in `app/core/defaults.py`
+    when no admin record exists or DB is unavailable. No authentication
+    required — this endpoint is the source the frontend uses to seed
+    Deal Maker sliders and analytics on initial load.
 
     Returns defaults for:
     - **financing**: Down payment, interest rate, loan terms
-    - **operating**: Vacancy, management, maintenance, insurance
+    - **operating**: Vacancy, management, maintenance, capex, insurance
     - **str**: Short-term rental specific (platform fees, cleaning, etc.)
     - **rehab**: Renovation budget, contingency, holding costs
     - **brrrr**: Refinance terms, buy discount
@@ -69,7 +75,14 @@ async def get_system_defaults():
     - **wholesale**: Assignment fee, marketing, closing timeline
     - **growth**: Appreciation, rent growth, expense growth
     """
-    return get_all_defaults()
+    if db is None:
+        return get_all_defaults()
+    try:
+        admin_assumptions = await get_default_assumptions(db)
+        return admin_assumptions.model_dump(by_alias=True)
+    except Exception as e:
+        logger.warning(f"Failed to load admin assumptions, using schema defaults: {e}")
+        return get_all_defaults()
 
 
 @router.get("/resolved", response_model=ResolvedDefaultsResponse, summary="Get resolved defaults for location")
@@ -82,11 +95,14 @@ async def get_resolved_defaults(
     Get fully resolved defaults for a specific location.
 
     Resolution order (later overrides earlier):
-    1. **System defaults** - Base values from the platform
-    2. **Market adjustments** - ZIP-code based adjustments (vacancy, appreciation, tax hints)
-    3. **User profile overrides** - User's saved preferences (if authenticated)
+    1. **Schema defaults** - Hardcoded base values from `app/core/defaults.py`
+    2. **Admin defaults** - Org-wide values saved via `/admin/assumptions` (DB-backed)
+    3. **Market adjustments** - ZIP-code based adjustments (vacancy, appreciation, tax hints)
+    4. **User profile overrides** - User's saved preferences (if authenticated)
 
-    Returns the merged defaults ready for use in calculations.
+    The `system_defaults` field in the response always reflects layers 1+2 (the
+    "starting line" before market and user customization), so the frontend can
+    reason about whether a value was tuned by the admin vs. is purely schema.
 
     **Example response:**
     ```json
@@ -105,8 +121,20 @@ async def get_resolved_defaults(
     }
     ```
     """
-    # Start with system defaults
-    system_defaults = get_all_defaults()
+    # Layer 1+2: schema defaults overlaid with admin's DB-backed customizations.
+    # `get_default_assumptions(db)` returns the latest admin record (or schema
+    # defaults if no admin row exists), so this single call captures both.
+    schema_defaults = get_all_defaults()
+    if db is not None:
+        try:
+            admin_assumptions = await get_default_assumptions(db)
+            system_defaults = admin_assumptions.model_dump(by_alias=True)
+        except Exception as e:
+            logger.warning(f"Failed to load admin assumptions, using schema defaults: {e}")
+            system_defaults = schema_defaults
+    else:
+        system_defaults = schema_defaults
+
     resolved = {**system_defaults}
 
     # Apply market adjustments if ZIP code provided
