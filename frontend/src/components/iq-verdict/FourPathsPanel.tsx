@@ -339,7 +339,7 @@ function PathCard({
           consumers). */}
       <div className="flex flex-1 min-h-0 flex-col gap-2">
         {structure.selectionReason && structure.family !== 'blended' && (
-          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: 'var(--text-secondary)' }}>
+          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: 'var(--text-heading)' }}>
             {structure.selectionReason}
           </p>
         )}
@@ -348,7 +348,7 @@ function PathCard({
             margin: 0,
             fontSize: 13,
             lineHeight: 1.55,
-            color: 'var(--text-body)',
+            color: 'var(--text-heading)',
           }}
         >
           {renderSummaryWithLinks(structure.summary)}
