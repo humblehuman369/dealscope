@@ -222,7 +222,7 @@ function buildPrintHtml(opts: {
   <hr class="divider">
   ${sectionsHtml}
   <footer>
-    Built from your DealScope Verdict analysis. This script is a starting point — adapt it to the
+    Built from your DealGapIQ Discovery analysis. This script is a starting point — adapt it to the
     seller's situation as you learn more on the call. Always have a creative-finance attorney review
     any non-traditional offer before signing.
   </footer>
@@ -256,7 +256,7 @@ function buildEmailBody(opts: {
   lines.push(pitch)
   lines.push('')
   lines.push('---')
-  lines.push('Built from your DealScope Verdict analysis (https://dealgapiq.com).')
+  lines.push('Built from your DealGapIQ Discovery analysis (https://dealgapiq.com).')
   return lines.join('\n')
 }
 

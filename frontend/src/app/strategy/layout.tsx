@@ -47,7 +47,7 @@ export default function StrategyLayout({
       {children}
       <PageExplainer
         title="What is Strategy Analysis?"
-        intro="Strategy Analysis is the financial deep-dive behind every IQ Verdict. Where the verdict tells you whether a deal works, Strategy Analysis shows you exactly why — line by line, assumption by assumption — across all six investment strategies."
+        intro="Strategy Analysis is the financial deep-dive behind every Discovery. Where Discovery tells you whether a deal works, Strategy Analysis shows you exactly why — line by line, assumption by assumption — across all six investment strategies."
         sections={[
           {
             heading: 'What you see',
@@ -59,11 +59,11 @@ export default function StrategyLayout({
           },
           {
             heading: 'When to use it',
-            body: 'Use Strategy Analysis after IQ Verdict flags a property worth investigating, when you want to understand why a strategy ranked the way it did, or when you need a defensible set of numbers to share with a lender, partner, or seller.',
+            body: 'Use Strategy Analysis after Discovery flags a property worth investigating, when you want to understand why a strategy ranked the way it did, or when you need a defensible set of numbers to share with a lender, partner, or seller.',
           },
         ]}
         relatedLinks={[
-          { href: '/verdict', label: 'Run an IQ Verdict' },
+          { href: '/discovery', label: 'Run Discovery' },
           { href: '/deal-maker', label: 'Adjust assumptions in DealMaker' },
           { href: '/strategies/brrrr', label: 'Strategy guide: BRRRR' },
           { href: '/strategies/long-term-rental', label: 'Strategy guide: Long-Term Rental' },

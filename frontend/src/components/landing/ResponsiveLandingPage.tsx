@@ -190,10 +190,10 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                       <p className="phone-breakeven-sub">Ceiling — don&apos;t cross it</p>
                     </div>
 
-                    {/* Verdict */}
+                    {/* Discovery */}
                     <div className="phone-verdict">
                       <p className="phone-verdict-label">
-                        Verdict<span style={{ color: 'white' }}>IQ</span>
+                        Discovery
                       </p>
                       <p className="phone-verdict-text font-display">✓ Strong Buy</p>
                       <p className="phone-verdict-desc">
@@ -410,7 +410,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                 </div>
               </div>
               <div className="modeliq-verdict">
-                <p className="modeliq-verdict-label">VerdictIQ</p>
+                <p className="modeliq-verdict-label">Discovery</p>
                 <p className="modeliq-verdict-value font-display">✓ Strong Buy</p>
               </div>
             </div>
@@ -424,18 +424,18 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
         </div>
       </section>
 
-      {/* VerdictIQ Section */}
+      {/* Discovery Section */}
       <section className="verdictiq-section">
         <div className="container">
           <div className="section-header">
             <p className="section-label">
-              Verdict<span className="iq">IQ</span> Output
+              Discovery Output
             </p>
             <h2 className="section-title font-display">
-              Get a Verdict, Not a Spreadsheet
+              Get a Discovery, Not a Spreadsheet
             </h2>
             <p className="section-subtitle">
-              Verdict<span className="iq">IQ</span> tells you what the numbers mean — based on where the asking price falls relative to your Price<span className="iq">IQ</span>.
+              Discovery tells you what the numbers mean — based on where the asking price falls relative to your Price<span className="iq">IQ</span>.
             </p>
           </div>
 

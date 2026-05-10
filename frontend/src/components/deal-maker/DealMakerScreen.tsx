@@ -358,7 +358,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       } finally {
         setIsSavingForNavigate(false)
       }
-      router.push(`/verdict?propertyId=${savedPropertyId}&strategy=${strategyType}`)
+      router.push(`/discovery?propertyId=${savedPropertyId}&strategy=${strategyType}`)
     } else {
       // For unsaved properties:
       // 1. Store values in sessionStorage so they survive toolbar navigation
@@ -634,7 +634,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         params.set('arv', String(arvValue))
       }
       
-      router.push(`/verdict?${params.toString()}`)
+      router.push(`/discovery?${params.toString()}`)
     }
   }, [router, property, state, isSavedPropertyMode, savedPropertyId, strategyType, dealMakerStore])
 

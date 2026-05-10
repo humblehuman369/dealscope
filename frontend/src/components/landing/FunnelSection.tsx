@@ -7,7 +7,7 @@ export function FunnelSection() {
     <section className="sec">
       <div className="label">How Pros Invest</div>
       <div className="sec-title">Experienced Investors Pass on 90% of Deals in Minutes.<br />Now So Can You.</div>
-      <div className="sec-sub">Most properties aren&apos;t worth your time. The Verdict screen tells you which ones are — so you only go deep when it matters.</div>
+      <div className="sec-sub">Most properties aren&apos;t worth your time. The Discovery screen tells you which ones are — so you only go deep when it matters.</div>
       <div className="funnel">
         <div className="funnel-step">
           <div className="funnel-num">100</div>

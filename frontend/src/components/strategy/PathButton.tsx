@@ -7,9 +7,9 @@
  * worksheet via `applyPathPatch` (in `app/strategy/page.tsx`).
  *
  * Visual contract:
- * - Always-visible label (`Path N`) so users can scan four cards at a glance.
+ * - Always-visible label (`Option N`) so users can scan four cards at a glance.
  * - Family color accent on the left edge so the button family is identifiable
- *   at a glance and matches the verdict-page Path cards.
+ *   at a glance and matches the verdict-page Option cards.
  * - Active state: filled accent background + "Applied" pill.
  */
 
@@ -42,7 +42,7 @@ export function PathButton({
   onClick,
 }: PathButtonProps) {
   const accent = PATH_FAMILY_ACCENT[structure.family] ?? 'var(--accent-sky)'
-  const label = `Path ${index + 1}`
+  const label = `Option ${index + 1}`
   const subtitle = structure.familyLabel || 'Strategy'
   const headline = structure.headline || ''
   const isDisabled = disabled || !structure.preLoadedRecord || Object.keys(structure.preLoadedRecord ?? {}).length === 0

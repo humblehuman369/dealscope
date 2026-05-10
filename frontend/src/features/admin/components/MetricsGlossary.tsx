@@ -54,7 +54,7 @@ const formatKeyLabel = (key: string) =>
     .replace(/\b\w/g, (char) => char.toUpperCase())
 
 const SECTION_LABELS: Record<string, string> = {
-  iq_verdict_score: 'IQ Verdict Score',
+  iq_verdict_score: 'Discovery Score',
   wholesale_price_target: 'Wholesale Price Target',
   market_price_off_market: 'Market Price (Off-Market)',
   market_statistics: 'Market Statistics',

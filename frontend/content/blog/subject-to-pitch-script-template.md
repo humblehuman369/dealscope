@@ -20,7 +20,7 @@ internal_links:
   - /glossary/subject-to-financing (G1)
   - /glossary/due-on-sale-clause-sub2 (G8)
   - /blog/lake-worth-teardown-four-offer-structures (F3)
-  - / (the verdict tool)
+  - /discovery (the Discovery tool)
 word_count_target: 1800
 ---
 
@@ -121,13 +121,13 @@ The pattern across all three: defending a position the seller hadn't questioned 
 
 Sub2 is one of four offer structures DealGapIQ surfaces per property. It fits a specific seller-and-loan profile (low or zero equity, existing rate well below market, motivated to move). For other sellers, the right pitch is a [seller carryback](/glossary/seller-carryback), a price negotiation, or a blended plan combining smaller asks. Pitching Sub2 to a seller with 50% equity and a 7% rate is a quick way to end the call with the wrong tool.
 
-The verdict on the property tells you which structure fits. The pitch script is downstream of that decision. We walk through the four-paths logic on a real listing in [The Lake Worth Teardown: One Listing, Four Ways to Close It](/blog/lake-worth-teardown-four-offer-structures).
+Discovery on the property tells you which structure fits. The pitch script is downstream of that decision. We walk through the four-paths logic on a real listing in [The Lake Worth Teardown: One Listing, Four Ways to Close It](/blog/lake-worth-teardown-four-offer-structures).
 
 ## Print, copy, or email
 
 DealGapIQ generates this pitch script auto-customized to every property — with the exact dollar numbers, seller-type variant, and structure pre-filled. Print it, email it as a draft to the seller's agent, or copy it to your clipboard before you dial.
 
-[Run a free verdict and get the pitch script for the property you've been watching →](https://dealgapiq.com)
+[Run a free Discovery and get the pitch script for the property you've been watching →](https://dealgapiq.com/discovery)
 
 The price tag isn't the deal. The structure is.
 

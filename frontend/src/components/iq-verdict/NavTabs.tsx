@@ -3,7 +3,7 @@
 /**
  * NavTabs Component - Decision-Grade UI
  * 
- * Edge-to-edge navigation tabs for VerdictIQ page.
+ * Edge-to-edge navigation tabs for the Discovery page.
  * Per DealMakerIQ Design System - high contrast, legibility-first.
  */
 
@@ -26,7 +26,7 @@ interface NavTabsProps {
 }
 
 const DEFAULT_TABS: NavTab[] = [
-  { id: 'analyze', label: 'VerdictIQ' },
+  { id: 'analyze', label: 'Discovery' },
   { id: 'details', label: 'Details' },
   { id: 'price-checker', label: 'PriceCheckerIQ' },
 ]
@@ -46,8 +46,8 @@ export function NavTabs({
     switch (tabId) {
       case 'analyze':
         return propertyId 
-          ? `/verdict?propertyId=${propertyId}` 
-          : `/verdict?address=${encodedAddress}`
+          ? `/discovery?propertyId=${propertyId}` 
+          : `/discovery?address=${encodedAddress}`
       case 'details':
         return zpid 
           ? `/property/${zpid}` 

@@ -12,7 +12,7 @@ type StaticEntry = {
 
 const STATIC_ROUTES: StaticEntry[] = [
   { path: '/', priority: 1.0, changeFrequency: 'weekly' },
-  { path: '/verdict', priority: 0.9, changeFrequency: 'weekly' },
+  { path: '/discovery', priority: 0.9, changeFrequency: 'weekly' },
   { path: '/strategy', priority: 0.9, changeFrequency: 'weekly' },
   { path: '/deal-maker', priority: 0.9, changeFrequency: 'weekly' },
   { path: '/pricing', priority: 0.9, changeFrequency: 'monthly' },

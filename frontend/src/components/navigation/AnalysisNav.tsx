@@ -9,7 +9,7 @@ import { readDealMakerOverrides } from '@/utils/addressIdentity'
 
 /**
  * AnalysisNav — Persistent top navigation bar for the analysis flow.
- * Primary tabs: VerdictIQ and StrategyIQ (pill toggle).
+ * Primary tabs: Discovery and Strategy (pill toggle).
  * Secondary tabs: Property Profile and Price (text links).
  * Preserves all search params when switching between pages.
  */
@@ -19,7 +19,7 @@ export function AnalysisNav() {
   const params = searchParams.toString()
   const address = searchParams.get('address') || ''
 
-  const isVerdict = pathname === '/verdict'
+  const isVerdict = pathname === '/discovery'
   const isStrategy = pathname === '/strategy'
 
   // Resolve zpid and optional snapshot — check URL params first, then sessionStorage
@@ -70,7 +70,7 @@ export function AnalysisNav() {
   if (!isVerdict && !isStrategy) return null
 
   const primaryTabs = [
-    { label: 'Verdict', href: `/verdict?${params}`, active: isVerdict, icon: verdictIcon },
+    { label: 'Discovery', href: `/discovery?${params}`, active: isVerdict, icon: verdictIcon },
     { label: 'Strategy', href: `/strategy?${params}`, active: isStrategy, icon: strategyIcon },
   ]
 

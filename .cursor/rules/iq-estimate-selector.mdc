@@ -1,6 +1,6 @@
 ---
 description: IQ Estimate multi-source selector — UI, state, and recalculation rules
-globs: frontend/src/components/iq-verdict/IQEstimateSelector.tsx, frontend/src/app/verdict/page.tsx, frontend/src/app/strategy/page.tsx
+globs: frontend/src/components/iq-verdict/IQEstimateSelector.tsx, frontend/src/app/discovery/page.tsx, frontend/src/app/strategy/page.tsx
 alwaysApply: false
 ---
 
@@ -52,7 +52,7 @@ return 'iq'
 
 When a user selects a different provider, calculations must update instantly (no API call).
 
-### Verdict Page
+### Discovery Page (formerly Verdict in code paths)
 
 ```typescript
 onSourceChange={(type, _sourceId, _value) => {
@@ -93,7 +93,7 @@ and must not fall through to the next source.
 | File | Role |
 |------|------|
 | `frontend/src/components/iq-verdict/IQEstimateSelector.tsx` | UI component + `useIQSourceSelection` hook |
-| `frontend/src/app/verdict/page.tsx` | Verdict page integration (lines ~860) |
+| `frontend/src/app/discovery/page.tsx` | Discovery page integration (lines ~860) |
 | `frontend/src/app/strategy/page.tsx` | Strategy page integration (lines ~575) |
 | `backend/app/services/api_clients.py` | `_compute_iq_estimates()` — backend computation |
 | `backend/app/schemas/property.py` | `RentalMarketStatistics`, `ValuationData` schemas |

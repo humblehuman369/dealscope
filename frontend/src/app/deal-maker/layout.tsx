@@ -47,7 +47,7 @@ export default function DealMakerLayout({
       {children}
       <PageExplainer
         title="What is DealMaker?"
-        intro="DealMaker is where IQ Verdict turns into a real offer. Every assumption that drives the score — purchase price, rent, vacancy, rehab, financing, exit — is editable, so you can stress-test the deal and structure an offer that actually closes."
+        intro="DealMaker is where Discovery turns into a real offer. Every assumption that drives the score — purchase price, rent, vacancy, rehab, financing, exit — is editable, so you can stress-test the deal and structure an offer that actually closes."
         sections={[
           {
             heading: 'Four pre-built offer structures',
@@ -63,7 +63,7 @@ export default function DealMakerLayout({
           },
         ]}
         relatedLinks={[
-          { href: '/verdict', label: 'Start with an IQ Verdict' },
+          { href: '/discovery', label: 'Start with Discovery' },
           { href: '/strategy', label: 'See the full Strategy breakdown' },
           { href: '/glossary/subject-to-financing', label: 'Glossary: Subject-To' },
           { href: '/pricing', label: 'Pricing & free trial' },

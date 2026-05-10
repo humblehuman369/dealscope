@@ -171,7 +171,7 @@ def _write_property_data_sheet(
 
 
 def _build_calculated_rows(verdict: dict[str, Any], property_data: dict[str, Any]) -> list[tuple[str, str]]:
-    """Build Calculated sheet: Verdict and Strategy metrics as Label, Value rows."""
+    """Build Calculated sheet: Discovery and Strategy metrics as Label, Value rows."""
     rows: list[tuple[str, str]] = []
     v = verdict
 
@@ -184,8 +184,8 @@ def _build_calculated_rows(verdict: dict[str, Any], property_data: dict[str, Any
 
     # Core verdict
     rows.append(("Deal Score", fmt(v.get("dealScore") or v.get("deal_score"))))
-    rows.append(("Deal Verdict", v.get("dealVerdict") or v.get("deal_verdict") or ""))
-    rows.append(("Verdict Description", v.get("verdictDescription") or v.get("verdict_description") or ""))
+    rows.append(("Deal Discovery", v.get("dealVerdict") or v.get("deal_verdict") or ""))
+    rows.append(("Discovery Description", v.get("verdictDescription") or v.get("verdict_description") or ""))
     rows.append(("List Price", fmt(v.get("listPrice") or v.get("list_price"))))
     rows.append(("Income Value", fmt(v.get("incomeValue") or v.get("income_value"))))
     rows.append(("Purchase Price (Target Buy)", fmt(v.get("purchasePrice") or v.get("purchase_price"))))
@@ -239,7 +239,7 @@ def generate_property_data_excel(export_data: dict[str, Any]) -> bytes:
     1. Property Data (RentCast & AXESSO) — all RentCast and all AXESSO API data
        used to calculate the values in sheet 2 (property, value_estimate, rent_estimate,
        market_statistics, search_by_address, property_details).
-    2. Calculated (Verdict & Strategy) — Verdict and Strategy metrics (deal score,
+    2. Calculated (Discovery & Strategy) — Discovery and Strategy metrics (deal score,
        list price, income value, target buy, strategies).
     """
     wb = Workbook()
@@ -255,8 +255,8 @@ def generate_property_data_excel(export_data: dict[str, Any]) -> bytes:
     axesso_rows = _build_axesso_rows(raw_axesso)
     _write_property_data_sheet(ws_prop, rentcast_rows, axesso_rows)
 
-    # Sheet 2: Calculated (Verdict + Strategy)
-    ws_calc = wb.create_sheet("Calculated (Verdict & Strategy)", 1)
+    # Sheet 2: Calculated (Discovery + Strategy)
+    ws_calc = wb.create_sheet("Calculated (Discovery & Strategy)", 1)
     calc_rows = _build_calculated_rows(verdict, property_data)
     ws_calc.append(["Label", "Value"])
     ws_calc.cell(row=1, column=1).font = Font(bold=True)

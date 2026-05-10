@@ -40,7 +40,7 @@
 - [ ] Deal scoring / grading
 - [ ] Strategy worksheets
 - [ ] Deal Maker
-- [ ] IQ Target / Verdict
+- [ ] IQ Target / Discovery
 - [ ] Design tokens / theme
 - [ ] Authentication / user profile
 - [ ] API services / data flow

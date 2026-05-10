@@ -272,7 +272,7 @@ export default function MethodologyPage() {
               down payment, interest rate, loan term, property taxes,
               insurance, vacancy, management fees, repairs, capex reserve,
               rehab budget, exit costs. Defaults are conservative. Sensitivity
-              analysis lets you see how the verdict shifts when an assumption
+              analysis lets you see how Discovery shifts when an assumption
               changes &mdash; so you can stress-test the deal before you
               stress-test it with real money.
             </p>
@@ -307,7 +307,7 @@ export default function MethodologyPage() {
                 <strong className="text-slate-200">Appreciation forecasts.</strong>{' '}
                 We do not project a specific price growth rate. Long-horizon
                 appreciation is too sensitive to macro conditions, local
-                supply, and policy to be useful in a per-deal verdict. You can
+                supply, and policy to be useful in a per-deal Discovery. You can
                 model your own appreciation assumption in DealMaker for the
                 10-year projection.
               </li>
@@ -339,7 +339,7 @@ export default function MethodologyPage() {
             <ul className="space-y-2 text-slate-400 list-disc list-inside">
               <li>
                 <strong className="text-slate-200">Numbers over narratives.</strong>{' '}
-                Listing copy is written to sell. The verdict is written to
+                Listing copy is written to sell. Discovery is written to
                 inform.
               </li>
               <li>
@@ -399,7 +399,7 @@ export default function MethodologyPage() {
             href="/"
             className="inline-block px-6 py-3 rounded-full font-semibold transition-opacity hover:opacity-90 bg-sky-500 text-slate-950"
           >
-            Run a free verdict on any property &rarr;
+            Run a free Discovery on any property &rarr;
           </Link>
         </div>
       </article>

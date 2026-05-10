@@ -12,7 +12,7 @@ The report is 11 pages covering:
   5. Year 1 Income Statement
   6. Operating Expense Breakdown
   7. Key Investment Metrics
-  8. Deal Score & Verdict
+  8. Deal Score & Discovery
   9. 10-Year Financial Projections
  10. Exit Strategy & Tax Implications
  11. Sensitivity Analysis & Disclaimer
@@ -755,7 +755,7 @@ class PropertyReportPDFExporter:
 </div>"""
 
     # -----------------------------------------------------------------------
-    # Page 8: Deal Score & Verdict
+    # Page 8: Deal Score & Discovery
     # -----------------------------------------------------------------------
 
     def _page_deal_score(self) -> str:
@@ -773,7 +773,7 @@ class PropertyReportPDFExporter:
         return f"""
 <div class="page">
   {self._page_header("Deal Score")}
-  {self._section_header("DEALGAPIQ VERDICT", "Deal Score & Verdict")}
+  {self._section_header("DEALGAPIQ DISCOVERY", "Deal Score & Discovery")}
 
   <div class="grid-2" style="margin-top:20px;">
     <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
@@ -1576,7 +1576,7 @@ body {{
     font-variant-numeric: tabular-nums;
 }}
 
-/* ===== VERDICT ===== */
+/* ===== DISCOVERY OUTCOME ===== */
 
 .verdict-label {{
     font-size: 13px;

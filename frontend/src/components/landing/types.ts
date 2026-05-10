@@ -24,7 +24,7 @@ export const iqStats: IQStat[] = [
   { name: 'Scan', desc: 'Point at any property', icon: 'M3 3h18v18H3V3zM3 9h18M9 21V9' },
   { name: 'Strategy', desc: '6 strategies analyzed', icon: 'M12 2L2 7l12 12l22 7l12 2zM2 17l10 5l10-5M2 12l10 5l10-5' },
   { name: 'Model', desc: '15+ variables you control', icon: 'M18 20V10M12 20V4M6 20v-6' },
-  { name: 'Verdict', desc: 'Clear recommendation', icon: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3' },
+  { name: 'Discovery', desc: 'Clear recommendation', icon: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3' },
 ];
 
 // PriceIQ Sample Data
@@ -157,7 +157,7 @@ export const iqFeatures: IQFeature[] = [
   { name: 'Scan', hasIQ: true, description: 'Point your camera at any property. Address, sign, or listing — we read it instantly.' },
   { name: 'Strategy', hasIQ: true, description: 'See how every property performs across all 6 investment strategies simultaneously.' },
   { name: 'Model', hasIQ: true, description: 'Adjust 15+ variables and watch your prices and returns update in real time.' },
-  { name: 'Verdict', hasIQ: true, description: 'Clear recommendation based on where asking price falls relative to your target prices.' },
+  { name: 'Discovery', hasIQ: true, description: 'Clear recommendation based on where asking price falls relative to your target prices.' },
   { name: 'Comp', hasIQ: true, description: 'See what similar properties sold for. Validate your analysis with real market data.' },
   { name: 'Report', hasIQ: true, description: 'Generate lender-ready PDF reports to share with partners or your investment team.' },
   { name: 'Pipeline', hasIQ: true, description: 'Save deals, build your pipeline, and compare opportunities side-by-side.' },

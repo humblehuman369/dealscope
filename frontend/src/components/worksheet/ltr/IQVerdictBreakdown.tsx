@@ -41,7 +41,7 @@ export function IQVerdictBreakdown({ score, factors, suggestions }: IQVerdictBre
   
   return (
     <div className="bg-white dark:bg-slate-800 border border-cyan-200 dark:border-cyan-500/30 rounded-2xl p-5 shadow-sm dark:shadow-none">
-      <h3 className="font-bold text-slate-900 dark:text-white mb-4">IQ Verdict Breakdown</h3>
+      <h3 className="font-bold text-slate-900 dark:text-white mb-4">Discovery Breakdown</h3>
       
       <div className="space-y-3 mb-4">
         {factors.map((factor) => (

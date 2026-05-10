@@ -37,7 +37,7 @@ export default function DisclosuresPage() {
             <p>
               DealGapIQ provides analytical estimates and decision-support
               tools for residential real-estate investors. Outputs from the
-              platform — including the IQ Verdict score, Target Buy, Income
+              platform — including the Discovery score, Target Buy, Income
               Value, Deal Gap, projected cash flow, and any negotiation script
               suggestions — are educational in nature and do not constitute
               investment advice, legal advice, tax advice, accounting advice,
@@ -112,7 +112,7 @@ export default function DisclosuresPage() {
               certain third-party providers linked from the platform
               (including, where applicable, lenders, insurance providers,
               service contractors, and data partners). Affiliate compensation
-              never influences the IQ Verdict score or any algorithmic output.
+              never influences the Discovery score or any algorithmic output.
               Where a link is affiliate-compensated, we disclose it at the
               point of recommendation.
             </p>

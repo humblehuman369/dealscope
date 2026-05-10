@@ -2,7 +2,7 @@
 
 > DealGapIQ is a residential real estate deal analysis platform that scores investment properties across six acquisition strategies (Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, Wholesale) and surfaces the Deal Gap — the distance between the asking price and the price an investor should actually offer.
 
-Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blends data from Zillow, RentCast, Redfin, Realtor.com, and Mashvisor with its own IQ Estimate model. The platform is built for active residential investors who want a fast, transparent verdict on any property.
+Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blends data from Zillow, RentCast, Redfin, Realtor.com, and Mashvisor with its own IQ Estimate model. The platform is built for active residential investors who want a fast, transparent Discovery on any property.
 
 ## Core entry points
 
@@ -13,7 +13,7 @@ Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blend
 
 ## Product
 
-- [IQ Verdict](https://dealgapiq.com/verdict): instant deal score (0–95) for any address with ranked strategy recommendations
+- [Discovery](https://dealgapiq.com/discovery): instant deal score (0–95) for any address with ranked strategy recommendations
 - [Strategy](https://dealgapiq.com/strategy): full financial deep-dive — cash flow, NOI, DSCR, sensitivity analysis, 10-year projections
 - [DealMaker](https://dealgapiq.com/deal-maker): editable assumptions, four pre-built offer structures, and AI-generated negotiation scripts
 

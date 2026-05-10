@@ -100,7 +100,7 @@ interface AppHeaderProps {
 // ===================
 
 const TABS: { id: AppTab; label: string }[] = [
-  { id: 'analyze', label: 'Verdict' },
+  { id: 'analyze', label: 'Discovery' },
   { id: 'strategy', label: 'Strategy' },
   { id: 'price-checker', label: 'Appraiser' },
   { id: 'deal-maker', label: 'DealMaker' },
@@ -138,7 +138,7 @@ const NO_PROPERTY_BAR_ROUTES = [
 function getActiveTabFromPath(pathname: string): AppTab | undefined {
   // Homepage: no tab selected
   if (pathname === '/' || pathname === '') return undefined
-  if (pathname.startsWith('/verdict')) return 'analyze'
+  if (pathname.startsWith('/discovery')) return 'analyze'
   if (pathname.startsWith('/strategy')) return 'strategy'
   if (pathname.startsWith('/property')) return undefined
   if (pathname.startsWith('/price-intel')) return 'price-checker'
@@ -474,7 +474,7 @@ export function AppHeader({
     switch (tab) {
       case 'analyze':
         if (displayAddress) {
-          router.push(`/verdict?address=${encodedAddress}`)
+          router.push(`/discovery?address=${encodedAddress}`)
         } else {
           router.push('/search')
         }

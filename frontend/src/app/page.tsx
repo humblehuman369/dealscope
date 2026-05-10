@@ -78,7 +78,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
     setIsSearching(true);
     try {
       const canonicalAddress = canonicalizeAddressForIdentity(addressInput);
-      router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
+      router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`);
     } catch (error) {
       console.error('Search error:', error);
       setIsSearching(false);
@@ -88,7 +88,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   const handlePlaceSelect = (selectedAddress: string) => {
     const canonicalAddress = canonicalizeAddressForIdentity(selectedAddress);
     setAddressInput(canonicalAddress);
-    router.push(`/verdict?address=${encodeURIComponent(canonicalAddress)}`);
+    router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`);
   };
   const { user, isAuthenticated } = useSession();
   const { openAuthModal } = useAuthModal();
@@ -122,7 +122,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         const address = canonicalizeAddressForIdentity(result.formatted_address);
         
         // Navigate to IQ Analyzing screen (new IQ Verdict flow)
-        router.push(`/verdict?address=${encodeURIComponent(address)}`);
+        router.push(`/discovery?address=${encodeURIComponent(address)}`);
       } else {
         throw new Error('Could not find an address at your location');
       }
@@ -219,7 +219,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
       ? `${prop.address}, ${prop.city}, ${prop.state} ${prop.zip}`
       : prop.formattedAddress || [prop.address, prop.city, prop.state, prop.zip].filter(Boolean).join(', ');
 
-    router.push(`/verdict?address=${encodeURIComponent(canonicalizeAddressForIdentity(address))}`);
+    router.push(`/discovery?address=${encodeURIComponent(canonicalizeAddressForIdentity(address))}`);
   };
 
   const handleViewDetails = () => {

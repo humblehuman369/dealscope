@@ -242,10 +242,10 @@ export default function DealGapPage() {
                 </div>
               </div>
 
-              {/* Verdict */}
+              {/* Discovery outcome */}
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-white/50">
-                  Verdict
+                  Discovery
                 </div>
                 <div className="text-sm font-bold text-slate-900 dark:text-white mt-1">
                   {result.dealVerdict}

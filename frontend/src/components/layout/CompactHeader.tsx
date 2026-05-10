@@ -115,7 +115,7 @@ const DealsMakerIcon = ({ active: _active }: { active?: boolean }) => (
 );
 
 const NAV_ITEMS: { id: NavItemId; label: string; icon: React.FC<{ active?: boolean }> }[] = [
-  { id: 'analysis', label: 'VerdictIQ', icon: VerdictIQIcon },
+  { id: 'analysis', label: 'Discovery', icon: VerdictIQIcon },
   { id: 'home', label: 'Property Details', icon: PropertyDetailsIcon },
   { id: 'compare', label: 'Sold Comps', icon: SoldCompsIcon },
   { id: 'rentals', label: 'Rent Comps', icon: RentCompsIcon },
@@ -124,7 +124,7 @@ const NAV_ITEMS: { id: NavItemId; label: string; icon: React.FC<{ active?: boole
 
 export function CompactHeader({
   property = DEFAULT_PROPERTY,
-  pageTitle = 'VERDICT',
+  pageTitle = 'DISCOVERY',
   pageTitleAccent = 'IQ',
   currentStrategy: _currentStrategy = 'Short-term',
   onStrategyChange: _onStrategyChange,

@@ -94,7 +94,7 @@ export function AboutPageRedesign() {
               <strong>This isn&apos;t a listing site. It&apos;s a decision engine.</strong> It takes
               any residential property in the country and runs the numbers the way a seasoned investor
               would &mdash; rental income, operating expenses, debt service coverage, market comparables
-              &mdash; then delivers a Verdict in seconds.
+              &mdash; then delivers a Discovery in seconds.
             </p>
             <p>
               No spin. No sales pitch. Just the math.
@@ -166,7 +166,7 @@ export function AboutPageRedesign() {
         <div className="what-inner">
           <h2>The Three Numbers Listing Sites Will Never Show You</h2>
           <p className="what-sub">
-            These are the proprietary thresholds that power every DealGapIQ Verdict &mdash;
+            These are the proprietary thresholds that power every DealGapIQ Discovery &mdash;
             the numbers that separate an investment decision from a marketing brochure.
           </p>
 

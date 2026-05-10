@@ -71,7 +71,7 @@ const graph = {
       creator: { '@id': PERSON_ID },
       image: `${SITE_URL}/DealGapIQ_Icon_Transparent_1024.png`,
       featureList: [
-        'IQ Verdict — instant deal score (0–95)',
+        'Discovery — instant deal score (0–95)',
         'Six-strategy analysis (LTR, STR, BRRRR, Flip, House Hack, Wholesale)',
         'Deal Gap, Target Buy, and Income Value metrics',
         'Multi-source IQ Estimate (Zillow, RentCast, Redfin, Realtor, Mashvisor)',

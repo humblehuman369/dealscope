@@ -104,11 +104,11 @@ The full annotated script with three seller-type variants: [The Subject-To Pitch
 
 ## How DealGapIQ models Subject-To
 
-Paste an address. The verdict checks whether Sub2 is one of the four paths that closes the gap on this property. If the seller's rate is low and equity is thin, Path 3 or Path 4 will surface a Sub2 structure with the exact cash-to-close, monthly payment, and seller-credit-impact numbers — and the pitch script that fits the seller type.
+Paste an address. Discovery checks whether Sub2 is one of the four paths that closes the gap on this property. If the seller's rate is low and equity is thin, Path 3 or Path 4 will surface a Sub2 structure with the exact cash-to-close, monthly payment, and seller-credit-impact numbers — and the pitch script that fits the seller type.
 
 DealGapIQ doesn't tell you to use Sub2. It tells you whether Sub2 is one of the structures the math supports on this specific property, with the dollar numbers laid out and the script ready to print.
 
-[Run a free verdict →](https://dealgapiq.com)
+[Run a free Discovery →](https://dealgapiq.com/discovery)
 
 ## FAQ
 
@@ -129,6 +129,6 @@ Yes. Most investors refinance the existing loan into their own name within 1–5
 
 ---
 
-*Subject-To is one structure of many. Every property has more leverage than the asking price suggests — but only if you know which structure fits. [Run a free verdict on the property you've been watching →](https://dealgapiq.com)*
+*Subject-To is one structure of many. Every property has more leverage than the asking price suggests — but only if you know which structure fits. [Run a free Discovery on the property you've been watching →](https://dealgapiq.com/discovery)*
 
 *We analyze. You decide. Not financial, legal, or investment advice.*

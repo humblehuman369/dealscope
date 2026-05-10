@@ -12,7 +12,7 @@ const FAQ_DATA: FAQItem[] = [
     category: 'Getting Started',
     question: 'What is DealGapIQ?',
     answer:
-      "DealGapIQ is a real estate investment analysis platform that evaluates properties across 6 investment strategies — Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale. It gives you a VerdictIQ score (0-95) that tells you whether a deal is worth pursuing, plus a full financial breakdown so you can see exactly what you'd pay and what you'd earn.",
+      "DealGapIQ is a real estate investment analysis platform that evaluates properties across 6 investment strategies — Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale. It gives you a Discovery score (0-95) that tells you whether a deal is worth pursuing, plus a full financial breakdown so you can see exactly what you'd pay and what you'd earn.",
   },
   {
     category: 'Getting Started',
@@ -34,9 +34,9 @@ const FAQ_DATA: FAQItem[] = [
   },
   {
     category: 'Analysis & Scoring',
-    question: 'What is the VerdictIQ score?',
+    question: 'What is the Discovery score?',
     answer:
-      "The VerdictIQ score (0-95) is a composite rating that evaluates a property's investment potential. It factors in cash flow potential, price-to-value opportunity, market conditions, and risk. A score above 65 is generally a strong deal worth deeper analysis; 40-65 needs a closer look; below 40 doesn't work at the asking price.",
+      "The Discovery score (0-95) is a composite rating that evaluates a property's investment potential. It factors in cash flow potential, price-to-value opportunity, market conditions, and risk. A score above 65 is generally a strong deal worth deeper analysis; 40-65 needs a closer look; below 40 doesn't work at the asking price.",
   },
   {
     category: 'Analysis & Scoring',
@@ -84,7 +84,7 @@ const FAQ_DATA: FAQItem[] = [
     category: 'Account & Data',
     question: 'How do I save a property to my portfolio?',
     answer:
-      'After running an analysis, tap/click the "Save" button on the VerdictIQ screen or the "Save to Portfolio" option on the StrategyIQ screen. The property will appear in your Portfolio tab with all the analysis data pre-filled.',
+      'After running an analysis, tap/click the "Save" button on the Discovery screen or the "Save to Portfolio" option on the Strategy screen. The property will appear in your Portfolio tab with all the analysis data pre-filled.',
   },
   {
     category: 'Account & Data',
@@ -105,7 +105,7 @@ const CATEGORIES = Array.from(new Set(FAQ_DATA.map((f) => f.category)))
 export const metadata: Metadata = {
   title: 'Help Center — DealGapIQ',
   description:
-    'Answers to common DealGapIQ questions: how to analyze a property, what the VerdictIQ score means, the six investment strategies, the property scanner, exports, account, and data security.',
+    'Answers to common DealGapIQ questions: how to analyze a property, what the Discovery score means, the six investment strategies, the property scanner, exports, account, and data security.',
   alternates: { canonical: '/help' },
   openGraph: {
     title: 'Help Center — DealGapIQ',
