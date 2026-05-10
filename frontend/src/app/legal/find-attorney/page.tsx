@@ -1,4 +1,25 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Find a Creative-Finance Attorney — DealGapIQ',
+  description:
+    'Why subject-to, seller financing, and loan assumptions need a licensed real-estate attorney in your state — and how to find one who has actually closed these structures.',
+  alternates: { canonical: '/legal/find-attorney' },
+  openGraph: {
+    title: 'Find a Creative-Finance Attorney',
+    description:
+      'How to find a real-estate attorney who has actually closed subject-to, seller financing, and loan-assumption deals.',
+    url: '/legal/find-attorney',
+    type: 'article',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Find a Creative-Finance Attorney',
+    description:
+      'Find a real-estate attorney who has closed subject-to and seller-financing deals.',
+  },
+}
 
 export default function FindAttorneyPage() {
   return (

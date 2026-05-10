@@ -1,4 +1,19 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Terms of Service — DealGapIQ',
+  description:
+    'Terms of Service for DealGapIQ — the agreement governing your use of our real-estate investment analysis platform.',
+  alternates: { canonical: '/terms' },
+  openGraph: {
+    title: 'Terms of Service — DealGapIQ',
+    description:
+      'Terms of Service for DealGapIQ — the agreement governing your use of our platform.',
+    url: '/terms',
+    type: 'article',
+  },
+}
 
 export default function TermsOfServicePage() {
   return (

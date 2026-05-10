@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { Home, DollarSign, TrendingUp, Shield } from 'lucide-react';
 import {
   StrategyPageLayout,
@@ -6,6 +7,26 @@ import {
   Prose,
   StepItem,
 } from '@/components/strategies/StrategyPageLayout';
+
+export const metadata: Metadata = {
+  title: 'Long-Term Rental Strategy — Cash Flow & Buy-and-Hold | DealGapIQ',
+  description:
+    'How to evaluate a long-term rental: cash flow math, target metrics (cash-on-cash, NOI, DSCR), market selection, financing, and the playbook for buy-and-hold residential investors.',
+  alternates: { canonical: '/strategies/long-term-rental' },
+  openGraph: {
+    title: 'Long-Term Rental Strategy — Cash Flow & Buy-and-Hold',
+    description:
+      'Cash flow math, target metrics, market selection, financing, and the playbook for buy-and-hold investors.',
+    url: '/strategies/long-term-rental',
+    type: 'article',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Long-Term Rental Strategy — Cash Flow & Buy-and-Hold',
+    description:
+      'Cash flow math, target metrics, market selection, and the buy-and-hold playbook.',
+  },
+};
 
 const ACCENT = '#34d399';
 

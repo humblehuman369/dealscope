@@ -1,10 +1,31 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { TrendingUp, DollarSign, Calendar, MapPin } from 'lucide-react';
 import {
   StrategyPageLayout,
   Callout,
   Prose,
 } from '@/components/strategies/StrategyPageLayout';
+
+export const metadata: Metadata = {
+  title: 'Short-Term Rental (Airbnb) Strategy — How to Underwrite an STR | DealGapIQ',
+  description:
+    'How to evaluate a short-term rental property: ADR, occupancy, RevPAR, regulatory risk, seasonality, and the financial model for Airbnb / VRBO investors.',
+  alternates: { canonical: '/strategies/short-term-rental' },
+  openGraph: {
+    title: 'Short-Term Rental (Airbnb) Strategy',
+    description:
+      'ADR, occupancy, RevPAR, regulatory risk, and the underwriting model for STR investors.',
+    url: '/strategies/short-term-rental',
+    type: 'article',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Short-Term Rental (Airbnb) Strategy',
+    description:
+      'ADR, occupancy, RevPAR, regulatory risk, and the STR underwriting model.',
+  },
+};
 
 const ACCENT = '#38bdf8';
 

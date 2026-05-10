@@ -1,10 +1,31 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { Users, Home, BookOpen, CreditCard } from 'lucide-react';
 import {
   StrategyPageLayout,
   Callout,
   Prose,
 } from '@/components/strategies/StrategyPageLayout';
+
+export const metadata: Metadata = {
+  title: 'House Hack Strategy — Live for Free with Multi-Unit & FHA | DealGapIQ',
+  description:
+    'How house hacking works: FHA / VA financing on 2-4 units, owner-occupant rules, rent offsets that cover (or beat) the mortgage, and why this is the highest-ROI first deal in real estate.',
+  alternates: { canonical: '/strategies/house-hack' },
+  openGraph: {
+    title: 'House Hack Strategy — Live for Free with Multi-Unit & FHA',
+    description:
+      'FHA/VA financing on 2-4 units, owner-occupant rules, and the math on rent offsets.',
+    url: '/strategies/house-hack',
+    type: 'article',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'House Hack Strategy — Live for Free with Multi-Unit & FHA',
+    description:
+      'FHA/VA on 2-4 units, owner-occupant rules, and rent-offset math.',
+  },
+};
 
 const ACCENT = 'var(--accent-sky)';
 

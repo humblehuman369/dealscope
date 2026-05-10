@@ -1,0 +1,43 @@
+# DealGapIQ
+
+> DealGapIQ is a residential real estate deal analysis platform that scores investment properties across six acquisition strategies (Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, Wholesale) and surfaces the Deal Gap — the distance between the asking price and the price an investor should actually offer.
+
+Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blends data from Zillow, RentCast, Redfin, Realtor.com, and Mashvisor with its own IQ Estimate model. The platform is built for active residential investors who want a fast, transparent verdict on any property.
+
+## Core entry points
+
+- [Homepage](https://dealgapiq.com/): product overview and instant property scanner
+- [About](https://dealgapiq.com/about): founder story, methodology philosophy, and the three proprietary metrics (Target Buy, Income Value, Deal Gap)
+- [Pricing](https://dealgapiq.com/pricing): Starter (free) and Pro ($29.17/mo billed annually, or $39.99/mo, with 7-day free trial)
+- [What is DealGapIQ](https://dealgapiq.com/what-is-dealgapiq): plain-English overview of the platform
+
+## Product
+
+- [IQ Verdict](https://dealgapiq.com/verdict): instant deal score (0–95) for any address with ranked strategy recommendations
+- [Strategy](https://dealgapiq.com/strategy): full financial deep-dive — cash flow, NOI, DSCR, sensitivity analysis, 10-year projections
+- [DealMaker](https://dealgapiq.com/deal-maker): editable assumptions, four pre-built offer structures, and AI-generated negotiation scripts
+
+## Strategy guides
+
+- [Long-Term Rental](https://dealgapiq.com/strategies/long-term-rental)
+- [Short-Term Rental](https://dealgapiq.com/strategies/short-term-rental)
+- [BRRRR](https://dealgapiq.com/strategies/brrrr)
+- [Fix & Flip](https://dealgapiq.com/strategies/fix-flip)
+- [House Hack](https://dealgapiq.com/strategies/house-hack)
+- [Wholesale](https://dealgapiq.com/strategies/wholesale)
+
+## Glossary
+
+- [Glossary index](https://dealgapiq.com/glossary): plain-English definitions of creative-finance structures used by active investors
+- [Subject-To Financing](https://dealgapiq.com/glossary/subject-to-financing): definition, worked numerical example, and risks
+
+## Reference
+
+- [Help Center](https://dealgapiq.com/help): FAQ on getting started, scoring, reports, and account
+- [Blog](https://dealgapiq.com/blog): articles on creative finance, offer scripts, and deal teardowns
+
+## Optional
+
+- [Privacy Policy](https://dealgapiq.com/privacy)
+- [Terms of Service](https://dealgapiq.com/terms)
+- [Disclosures](https://dealgapiq.com/disclosures)

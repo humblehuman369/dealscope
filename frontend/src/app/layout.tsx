@@ -7,6 +7,7 @@ import { Toaster } from '@/components/feedback'
 import { SentryInit } from '@/components/SentryInit'
 import { AnalyticsAndConsent } from '@/components/AnalyticsAndConsent'
 import { ThemeHydrationScript } from '@/components/theme/ThemeHydrationScript'
+import { SiteJsonLd } from '@/components/seo/SiteJsonLd'
 
 // ── Self-hosted fonts via next/font ────────────────
 // Eliminates render-blocking requests to fonts.googleapis.com.
@@ -54,8 +55,10 @@ const canonicalBase =
     : 'https://dealgapiq.com'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(canonicalBase),
   title: defaultTitle,
   description: defaultDescription,
+  alternates: { canonical: '/' },
   icons: {
     icon: '/favicon.png',
     apple: '/favicon.png',
@@ -77,7 +80,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: 'cover',
   themeColor: '#000000',
 }
@@ -95,6 +97,7 @@ export default function RootLayout({
     >
       <head>
         <ThemeHydrationScript />
+        <SiteJsonLd />
       </head>
       <body className="font-sans min-h-screen flex flex-col text-[var(--text-body)] transition-colors duration-300">
         <SentryInit />
