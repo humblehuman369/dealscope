@@ -75,8 +75,8 @@ const FAMILY_ACCENT: Record<StructureFamily, string> = {
 const PATH_COUNT_WORD = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six']
 function pathCountWords(n: number): { lead: string; tail: string } {
   const word = PATH_COUNT_WORD[n] ?? String(n)
-  const noun = n === 1 ? 'option' : 'options'
-  return { lead: `${word} ${noun}`, tail: 'to make this work' }
+  const noun = n === 1 ? 'Option' : 'Options'
+  return { lead: `${word} ${noun}`, tail: 'to Make This Work' }
 }
 
 // In-summary tokens that should be rendered as clickable links to the matching
@@ -539,8 +539,7 @@ export function FourPathsPanel({
                 margin: 0,
                 fontSize: 18,
                 fontWeight: 700,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
+                letterSpacing: '0.01em',
                 color: 'var(--text-heading)',
               }}
             >
