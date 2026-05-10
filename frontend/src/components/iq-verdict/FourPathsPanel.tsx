@@ -118,13 +118,22 @@ function renderSummaryWithLinks(summary: string): React.ReactNode {
  * accent without relying on browser-specific `::marker` styling.
  */
 function MathBullet({ text, accent }: { text: string; accent: string }): ReactNode {
+  // Detect a leading "Label:" prefix so we can render it with a lighter weight
+  // than the numeric value. This keeps the eye on the math (e.g. the price /
+  // rate / dollar amount) and makes the labels feel like supporting context
+  // rather than competing emphasis. Labels can include letters, digits, spaces
+  // and a few punctuation chars (e.g. "Monthly P&I", "1st mortgage").
+  const LABEL_RE = /^([A-Za-z0-9][A-Za-z0-9 &/.]*:)(\s*)([\s\S]*)$/
+  const labelMatch = text.match(LABEL_RE)
+  const labelPart = labelMatch ? labelMatch[1] : null
+  const remainder = labelMatch ? labelMatch[3] : text
   // Split on tokens we want to color: the arrow and any signed % delta at the
   // end of the string. Capturing groups keep the matched delimiters in the
   // resulting array so we can render them as styled spans.
   // Match either Unicode → / -> with surrounding whitespace, or a signed %
   // with optional + / − / - prefix.
   const PARTS_RE = /(\s+→\s+|\s+->\s+|\s[+−-]\d+(?:\.\d+)?%)/g
-  const segments = text.split(PARTS_RE).filter((s) => s !== '')
+  const segments = remainder.split(PARTS_RE).filter((s) => s !== '')
   return (
     <li
       style={{
@@ -157,6 +166,12 @@ function MathBullet({ text, accent }: { text: string; accent: string }): ReactNo
           flex: 1,
         }}
       >
+        {labelPart && (
+          <span style={{ fontWeight: 400 }}>
+            {labelPart}
+            {remainder ? ' ' : ''}
+          </span>
+        )}
         {segments.map((seg, i) => {
           if (/^\s+(→|->)\s+$/.test(seg)) {
             return (
@@ -257,21 +272,31 @@ function PathCard({
             {` · ${structure.familyLabel}`}
           </span>
         </span>
-        {savingsLabel && (
-          <span
-            className="tabular-nums"
-            style={{
-              flexShrink: 0,
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              color: 'var(--text-heading)',
-            }}
-          >
-            {savingsLabel}
-          </span>
-        )}
+        {savingsLabel && (() => {
+          // Split "Saves $147/mo" into the verb ("Saves") and the amount
+          // ("$147/mo") so the verb can render at a lighter weight while
+          // the dollar amount keeps the visual emphasis it deserves.
+          const firstSpace = savingsLabel.indexOf(' ')
+          const verb = firstSpace > 0 ? savingsLabel.slice(0, firstSpace) : savingsLabel
+          const amount = firstSpace > 0 ? savingsLabel.slice(firstSpace + 1) : ''
+          return (
+            <span
+              className="tabular-nums"
+              style={{
+                flexShrink: 0,
+                fontSize: 12,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                color: 'var(--text-heading)',
+              }}
+            >
+              <span style={{ fontWeight: 400 }}>{verb}</span>
+              {amount && (
+                <span style={{ fontWeight: 700 }}>{' '}{amount}</span>
+              )}
+            </span>
+          )
+        })()}
       </div>
 
       {/* MATH BULLETS — primary content. Each bullet carries the full
