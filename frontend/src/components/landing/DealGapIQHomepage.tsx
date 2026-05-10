@@ -449,7 +449,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
       <section className="final-cta">
         <h2>Stop Browsing Like a Buyer.<br />Start Thinking Like an Investor.</h2>
         <p className="final-cta-sub">
-          Search or paste any address. See the three price thresholds, the Verdict Score, and which strategy makes it work.
+          Search or paste any address. See the three price thresholds, the Discovery Score, and which strategy makes it work.
         </p>
         <button className="cta-primary" onClick={handleAnalyzeClick}>
           Analyze a Property Free →

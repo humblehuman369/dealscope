@@ -112,7 +112,7 @@ async def generate_financial_statements_report(
     Generate a comprehensive financial statements report for lenders/investors.
 
     This focused report includes:
-    - Executive Summary with investment verdict
+    - Executive Summary with investment Discovery
     - Property Cash Flow Statement (NOI format)
     - DSCR Qualification Analysis with lender requirements
     - 10-Year Pro Forma Projection

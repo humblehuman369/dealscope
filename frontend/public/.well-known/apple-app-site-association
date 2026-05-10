@@ -7,6 +7,7 @@
           "TEAM_ID.com.dealgapiq.mobile"
         ],
         "components": [
+          { "/": "/discovery*" },
           { "/": "/verdict*" },
           { "/": "/property*" },
           { "/": "/deal-gap*" },

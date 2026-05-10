@@ -33,7 +33,7 @@ interface PricingPlan {
 interface UpgradeModalProps {
   isOpen: boolean
   onClose: () => void
-  /** Optional path to return to after successful checkout (e.g. /verdict, /strategy). */
+  /** Optional path to return to after successful checkout (e.g. /discovery, /strategy). */
   returnTo?: string
   /**
    * Pre-select the billing period when the modal opens. Defaults to `true` (annual)

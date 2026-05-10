@@ -796,7 +796,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
       const rent = rentOverrideMarket ?? rentAppraisal.marketRent
       if (rent > 0) params.append('rent', String(rent))
     }
-    router.push(`/verdict?${params.toString()}`)
+    router.push(`/discovery?${params.toString()}`)
   }
 
   const handleDownloadReport = async () => {

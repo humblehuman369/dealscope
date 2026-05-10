@@ -73,7 +73,7 @@ export function DemoCard() {
         <div className="verdict-left">
           <div className="verdict-ring">53</div>
           <div>
-            <div className="verdict-title">Verdict: Possible</div>
+            <div className="verdict-title">Discovery: Possible</div>
             <div className="verdict-desc">Tight margins, but potential with negotiation.</div>
           </div>
         </div>

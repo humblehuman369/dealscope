@@ -54,7 +54,7 @@ export function DealScoreDisplay({ data, strengths = [], weaknesses = [] }: Deal
         )}
       </div>
 
-      {/* Verdict */}
+      {/* Discovery assessment */}
       <div className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-xl p-3.5">
         <h4 className="text-[0.68rem] font-bold text-[var(--text-secondary)] uppercase tracking-wide mb-2">
           Assessment

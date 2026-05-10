@@ -8,7 +8,7 @@
  *
  * Sections (top → bottom):
  *  1. Hero — "Stop Scrolling Listings. Start Spotting Real Deals. Know What to Offer."
- *  2. After-the-verdict demo — Lake Worth example with the four paths
+ *  2. After-the-Discovery demo — Lake Worth example with the four paths
  *  3. Negotiation Playbook — Subject-To. Seller carrybacks. 0% 2nds.
  *  4. How it compares — table vs Listing Sites and Investor Calculators
  *  5. Trust Layer — data sources + founder note + verify-it-yourself
@@ -98,7 +98,7 @@ export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
 
   const handleVerdictClick = (presetAddress?: string) => {
     if (presetAddress) {
-      router.push(`/verdict?address=${encodeURIComponent(presetAddress)}`);
+      router.push(`/discovery?address=${encodeURIComponent(presetAddress)}`);
     } else {
       router.push('/search');
     }
@@ -188,7 +188,7 @@ function HeroSection({
 
             <div className="flex flex-col sm:flex-row items-center justify-center xl:justify-start xl:items-start gap-5 sm:gap-6 mb-8">
               <PrimaryButtonLarge sublabel="on any property" onClick={() => onVerdict()}>
-                Run a Free Verdict <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
+                Run a Free Discovery <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
               </PrimaryButtonLarge>
               <button
                 onClick={onSeePaths}
@@ -297,7 +297,7 @@ function DemoSection({ onTry }: { onTry: () => void }) {
             What You Get
           </div>
           <h2 className="text-3xl md:text-5xl lg:text-6xl mb-6 text-[var(--text-heading)]" style={HEADLINE_STYLE}>
-            The Verdict tells you the gap.
+            The Discovery tells you the gap.
             <br />
             <span className="text-[var(--accent-sky)]">
               We tell you how to close it.
@@ -309,7 +309,7 @@ function DemoSection({ onTry }: { onTry: () => void }) {
           {/* Left: copy + bullets */}
           <div>
             <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed mb-7">
-              A verdict on this <span className="text-[var(--text-heading)] font-semibold">$457,100</span> listing came back at{' '}
+              A Discovery on this <span className="text-[var(--text-heading)] font-semibold">$457,100</span> listing came back at{' '}
               <span className="text-amber-400 font-semibold tabular-nums">−6.4% Deal Gap</span> — the math doesn't
               pencil at standard 20%-down financing.{' '}
               <span className="text-[var(--text-label)]">That's where most tools stop.</span>
@@ -358,7 +358,7 @@ function DemoSection({ onTry }: { onTry: () => void }) {
             </button>
           </div>
 
-          {/* Right: verdict screen mockup */}
+          {/* Right: Discovery screen mockup */}
           <div className="lg:sticky lg:top-8">
             <VerdictMockup />
             <p className="text-center text-xs text-[var(--text-muted)] mt-5 italic">
@@ -413,8 +413,8 @@ function PathBullet({
 }
 
 function VerdictMockup() {
-  // Component-based mockup of a Four Paths verdict screen.
-  // Mirrors what the real verdict page renders for the Lake Worth example.
+  // Component-based mockup of a Four Paths Discovery screen.
+  // Mirrors what the real Discovery page renders for the Lake Worth example.
   return (
     <div
       className="rounded-2xl overflow-hidden shadow-[var(--shadow-card)]"
@@ -660,7 +660,7 @@ const COMPARISON_ROWS: Array<{
 }> = [
   { feature: 'Multi-source valuation', subline: 'IQ, Zillow, RentCast, Redfin', listing: 'partial', calc: 'partial', iq: 'yes' },
   { feature: 'Cash-flow analysis', listing: 'no', calc: 'yes', iq: 'yes' },
-  { feature: 'Deal Gap verdict', subline: 'verified vs. asking', listing: 'no', calc: 'partial', iq: 'yes' },
+  { feature: 'Deal Gap Discovery', subline: 'verified vs. asking', listing: 'no', calc: 'partial', iq: 'yes' },
   { feature: 'Plain-English explanation', subline: '5th-grade narrative', listing: 'no', calc: 'no', iq: 'yes' },
   { feature: 'Pre-built offer structures', subline: 'four per property', listing: 'no', calc: 'no', iq: 'yes' },
   { feature: 'Creative-finance modeling', subline: 'Sub2, seller carry, 0% 2nds', listing: 'no', calc: 'no', iq: 'yes' },
@@ -994,7 +994,7 @@ function VerifyBlock({
         Don't take our word for it. Take ours and check it.
       </h3>
       <p className="text-base text-[var(--text-label)] leading-relaxed max-w-2xl mx-auto mb-8">
-        Run any property — yours, your neighbor's, the one you've been watching. Click any number on the verdict to
+        Run any property — yours, your neighbor's, the one you've been watching. Click any number on the Discovery to
         see where it came from. Switch data sources and watch the four paths recompute live.{' '}
         <span className="text-[var(--text-heading)] font-semibold">The methodology is the proof.</span>
       </p>
@@ -1078,14 +1078,14 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
           </span>
         </h2>
         <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto mb-12">
-          One free verdict. <span className="text-[var(--text-heading)] font-semibold">No signup. No credit card.</span> Just paste an
+          One free Discovery. <span className="text-[var(--text-heading)] font-semibold">No signup. No credit card.</span> Just paste an
           address.
         </p>
 
         <div className="space-y-5 text-base text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto mb-12 text-left">
           <p className="text-center">No tutorials. No 14-day trial. No credit card up front.</p>
           <p>
-            Paste a Zillow URL or street address. In 15 seconds you'll see the verdict, the four paths to close the
+            Paste a Zillow URL or street address. In 15 seconds you'll see the Discovery, the four paths to close the
             gap, and the negotiation script for each.
           </p>
           <p className="text-[var(--text-label)]">
@@ -1097,7 +1097,7 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
         {/* Primary CTA — routes to /search where the user picks address / scan / map */}
         <div className="mb-14">
           <PrimaryButtonLarge sublabel="on any property" onClick={() => onVerdict()}>
-            Run a Free Verdict <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
+            Run a Free Discovery <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
           </PrimaryButtonLarge>
         </div>
 
@@ -1197,7 +1197,7 @@ function SiteFooter() {
               Product
             </h4>
             <ul className="space-y-2 text-sm text-[var(--text-label)]">
-              <li><Link href="/verdict" className="hover:text-[var(--accent-sky)] transition-colors">Verdict</Link></li>
+              <li><Link href="/discovery" className="hover:text-[var(--accent-sky)] transition-colors">Discovery</Link></li>
               <li><Link href="/strategy" className="hover:text-[var(--accent-sky)] transition-colors">Strategy</Link></li>
               <li><Link href="/deal-maker" className="hover:text-[var(--accent-sky)] transition-colors">DealMaker</Link></li>
               <li><Link href="/pricing" className="hover:text-[var(--accent-sky)] transition-colors">Pricing</Link></li>

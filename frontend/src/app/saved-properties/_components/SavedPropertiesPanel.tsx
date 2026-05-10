@@ -82,7 +82,7 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
     const fullAddress = [property.address_street, property.address_city, stateZip]
       .filter(Boolean)
       .join(', ')
-    router.push(`/verdict?address=${encodeURIComponent(fullAddress)}`)
+    router.push(`/discovery?address=${encodeURIComponent(fullAddress)}`)
   }
 
   const hasActiveFilters = filterStatus !== 'all' || !!debouncedSearch

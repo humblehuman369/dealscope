@@ -473,7 +473,7 @@ def build_iap_pro_annual_v2() -> None:
         badge=("SAVE 40%", SAVINGS_AMBER),
         pro_label="DealGapIQ Pro \u2014 Annual",
         headline_lines=["Discover Deals", "Like an", "Investor."],
-        subhead_lines=["12 months of", "unlimited verdicts."],
+        subhead_lines=["12 months of", "unlimited Discoveries."],
     )
 
 

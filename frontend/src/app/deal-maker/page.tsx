@@ -168,7 +168,12 @@ export default function DealMakerIndexPage() {
 
   const backTo = fromParam
     ? {
-        label: fromParam === 'verdict' ? 'Verdict' : fromParam === 'strategy' ? 'Strategy' : 'Property',
+        label:
+          fromParam === 'discovery' || fromParam === 'verdict'
+            ? 'Discovery'
+            : fromParam === 'strategy'
+              ? 'Strategy'
+              : 'Property',
         href: `/${fromParam}?address=${encodeURIComponent(addressParam)}`,
       }
     : undefined

@@ -51,7 +51,7 @@ export function GeocodedPrompt({
     if (addressComponents?.city) params.set('city', addressComponents.city)
     if (addressComponents?.state) params.set('state', addressComponents.state)
     if (addressComponents?.zip_code) params.set('zip_code', addressComponents.zip_code)
-    router.push(`/verdict?${params.toString()}`)
+    router.push(`/discovery?${params.toString()}`)
   }
 
   const hasPreview = !!propertyPreview && !isLoadingPreview

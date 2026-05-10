@@ -788,7 +788,7 @@ function StrategyContent() {
   }, [addressParam, conditionParam, locationParam, initialOverrides, toPayloadBase, fetchProperty])
 
   const handleBack = useCallback(() => {
-    router.push(`/verdict?address=${encodeURIComponent(resolvedAddress)}`)
+    router.push(`/discovery?address=${encodeURIComponent(resolvedAddress)}`)
   }, [router, resolvedAddress])
 
   const handleStrategyChange = useCallback((strategyId: string) => {
@@ -1981,7 +1981,7 @@ function StrategyContent() {
                     className="text-sm font-bold uppercase tracking-wider"
                     style={{ color: 'var(--text-heading)' }}
                   >
-                    Apply a Path to the Worksheet
+                    Apply an Option to the Worksheet
                   </h3>
                   <p
                     className="text-[12px] mt-0.5"

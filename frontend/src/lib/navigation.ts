@@ -65,16 +65,16 @@ export const ROUTES = {
   verdict: (ctx: NavContext) => {
     const params = new URLSearchParams({ address: ctx.address || '' });
     if (ctx.propertyId) params.set('propertyId', ctx.propertyId);
-    return `/verdict?${params.toString()}`;
+    return `/discovery?${params.toString()}`;
   },
   
-  // DEPRECATED: analysis route now redirects to verdict
+  // DEPRECATED: analysis route now redirects to Discovery
   // Kept for backwards compatibility with any external links
   analysis: (ctx: NavContext) => {
-    // Redirect to verdict route (analysis-iq page now auto-redirects)
+    // Redirect to /discovery (legacy analysis-iq aliases handled in next.config.js)
     const params = new URLSearchParams({ address: ctx.address || '' });
     if (ctx.propertyId) params.set('propertyId', ctx.propertyId);
-    return `/verdict?${params.toString()}`;
+    return `/discovery?${params.toString()}`;
   },
   
   strategy: (ctx: NavContext) => {
@@ -148,7 +148,7 @@ export function getToolbarRoute(navId: ToolbarNavId, ctx: NavContext): string {
     case 'home':
       return ROUTES.property(ctx);
     case 'analysis':
-      // Analysis now redirects to verdict (combined page)
+      // Analysis route maps to Discovery (combined page)
       return ROUTES.verdict(ctx);
     case 'deals':
       return ROUTES.dealMaker(ctx);
@@ -157,7 +157,7 @@ export function getToolbarRoute(navId: ToolbarNavId, ctx: NavContext): string {
     case 'rentals':
       return ROUTES.rentalComps(ctx);
     case 'reports':
-      // Reports is disabled in the UI, but route to verdict as fallback
+      // Reports is disabled in the UI, but route to Discovery as fallback
       return ROUTES.verdict(ctx);
     default:
       return ROUTES.search;

@@ -276,7 +276,7 @@ async function login(page: Page): Promise<boolean> {
 
 async function navigateToVerdict(page: Page): Promise<boolean> {
   const encoded = encodeURIComponent(DEMO_ADDRESS);
-  const url = `${BASE_URL}/verdict?address=${encoded}`;
+  const url = `${BASE_URL}/discovery?address=${encoded}`;
   console.log(`   → Navigating to verdict: ${DEMO_ADDRESS}`);
 
   await page.goto(url, { waitUntil: 'domcontentloaded' });

@@ -73,7 +73,7 @@ function getPlans(isAnnual: boolean): PlanConfig[] {
       features: [
         { bold: 'Unlimited', text: 'property analyses', available: true },
         { text: 'Deal Gap + Income Value + Target Buy', available: true },
-        { text: 'Verdict score (Pass / Marginal / Buy)', available: true },
+        { text: 'Discovery score (Pass / Marginal / Buy)', available: true },
         { text: '6 strategy snapshots', available: true },
         { text: 'Seller Motivation indicator', available: true },
         { bold: 'Full calculation breakdown', text: '— see every assumption', available: true },
@@ -91,7 +91,7 @@ function getPlans(isAnnual: boolean): PlanConfig[] {
       features: [
         { text: '3 property analyses per month', available: true },
         { text: 'Deal Gap + Income Value + Target Buy', available: true },
-        { text: 'Verdict score (Pass / Marginal / Buy)', available: true },
+        { text: 'Discovery score (Pass / Marginal / Buy)', available: true },
         { text: '6 strategy snapshots', available: true },
         { text: 'Seller Motivation indicator', available: true },
         { text: 'Full calculation breakdown', available: false },

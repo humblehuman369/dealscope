@@ -864,7 +864,7 @@ class EmailService:
             <ul style="font-size: 14px; color: {self.TXT_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
                 <li>3 property analyses per month</li>
                 <li>Deal Gap, Income Value, and Target Buy metrics</li>
-                <li>IQ Verdict Score</li>
+                <li>Discovery Score</li>
                 <li>All 6 strategy snapshots</li>
             </ul>
         </td>
@@ -1374,7 +1374,7 @@ class EmailService:
             <p style="font-weight: 700; color: {self.INFO_HEADING}; margin: 0 0 8px 0;">What you'll unlock:</p>
             <ul style="font-size: 14px; color: {self.TXT_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
                 <li>Personalised deal analysis tuned to your goals</li>
-                <li>IQ Verdict Score calibrated to your risk tolerance</li>
+                <li>Discovery Score calibrated to your risk tolerance</li>
                 <li>Strategy recommendations for your experience level</li>
             </ul>
         </td>
@@ -1417,7 +1417,7 @@ class EmailService:
     Hi {user_name or "there"},
 </p>
 <p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
-    You just analyzed <strong style="color: {self.TXT_HEADING};">{property_address}</strong> — that's the hardest part done. Every serious investor starts by running the numbers, and now you have a data-backed verdict on your first deal.
+    You just analyzed <strong style="color: {self.TXT_HEADING};">{property_address}</strong> — that's the hardest part done. Every serious investor starts by running the numbers, and now you have a data-backed Discovery on your first deal.
 </p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">

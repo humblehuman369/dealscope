@@ -139,7 +139,7 @@ function MathBullet({ text, accent }: { text: string; accent: string }): ReactNo
         style={{
           flexShrink: 0,
           color: accent,
-          fontSize: 16,
+          fontSize: 11,
           lineHeight: 1,
           transform: 'translateY(1px)',
         }}
@@ -266,7 +266,7 @@ function PathCard({
               fontWeight: 700,
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
-              color: accent,
+              color: 'var(--text-heading)',
             }}
           >
             {savingsLabel}

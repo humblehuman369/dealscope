@@ -44,7 +44,7 @@ Apple's App Preview guidelines are stricter than Google Play's promo video:
 | 4 | 9.0 - 14.0s | Screen recording: tap into property detail, scroll smoothly to reveal the three financial cards: Target Buy → Income Value → Market Price. Each card animates in with a subtle slide. | "Target Buy. Income Value. Market Price." (single line, fades through at 10s, replaces with brand-line at 13s) | Music sustained, light snare hits matching card slide-ins |
 | 5 | 14.0 - 18.0s | Screen recording: switch to the off-MLS source filter. Map redraws with foreclosure / pre-foreclosure / auction pins appearing. | "Beyond the MLS." (at 14.5s) | Music swell |
 | 6 | 18.0 - 23.0s | Screen recording: open DealMaker / scenarios. User drags a slider (Purchase Price). Net Profit number recalculates live in big type. Deal Gap bar shifts color from yellow to green. | "Run any scenario, instantly." (at 19s) | Music peak; subtle "kachunk" SFX as DEAL pill turns green |
-| 7 | 23.0 - 27.0s | Quick montage: heatmap view of a city, then verdict card with checkmark, then map view zoom out showing many DEAL pins across America. | "Hunt deals through an investor's lens." (full headline, animates in word-by-word) | Music starts to wind down |
+| 7 | 23.0 - 27.0s | Quick montage: heatmap view of a city, then Discovery card with checkmark, then map view zoom out showing many DEAL pins across America. | "Hunt deals through an investor's lens." (full headline, animates in word-by-word) | Music starts to wind down |
 | 8 | 27.0 - 30.0s | DealGapIQ wordmark + "Available on iPhone & iPad" small line below. Soft cyan glow pulse. | DealGapIQ (logo, large) | Music outro / button hit |
 
 ---
@@ -57,7 +57,7 @@ If you want to add a voiceover, hire a male or female voice with a confident, sl
 >
 > _(3-7s)_ Every US listing — MLS, foreclosure, auction — pre-scored for profit.
 >
-> _(8-13s)_ See the verdict in seconds. Target Buy. Income Value. Market Price.
+> _(8-13s)_ See Discovery in seconds. Target Buy. Income Value. Market Price.
 >
 > _(14-18s)_ Coverage that goes beyond the MLS.
 >

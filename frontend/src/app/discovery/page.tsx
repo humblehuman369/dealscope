@@ -2,7 +2,7 @@
 
 /**
  * IQ Verdict Page
- * Route: /verdict?address=... OR /verdict?propertyId=...
+ * Route: /discovery?address=... OR /discovery?propertyId=...
  * 
  * Shows the IQ Verdict with ranked strategy recommendations after analysis.
  * Fetches real property data from the API including photos, beds, baths, sqft, and price.
@@ -840,7 +840,7 @@ function VerdictContent() {
     if (!isLoading && property && analysis && searchParams.get('openDealMaker') === '1') {
       const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
       const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-      router.replace(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=verdict`)
+      router.replace(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=discovery`)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, property, analysis])
@@ -871,7 +871,7 @@ function VerdictContent() {
     if (!property) return
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-    router.push(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=verdict`)
+    router.push(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=discovery`)
   }, [property, router])
 
   // Navigate to property details page - requires a Zillow zpid

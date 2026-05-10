@@ -8,13 +8,13 @@ Promotional text appears at the **very top of the App Description**, above the "
 
 ## Recommended (PRIMARY)
 
-> **See every US listing through an investor's lens. Pre-scored DEAL, MAYBE, or PASS. MLS + foreclosure + pre-foreclosure + auction. Verdict in seconds.** _(154 chars)_
+> **See every US listing through an investor's lens. Pre-scored DEAL, MAYBE, or PASS. MLS + foreclosure + pre-foreclosure + auction. Discovery in seconds.** _(154 chars)_
 
 **Why this wins**
 - Opens with the hero headline metaphor ("investor's lens") — same language as the #1 screenshot, reinforcing message cohesion
-- "Pre-scored DEAL, MAYBE, or PASS" introduces the verdict framework that screenshots #3 and #4 then visualize
+- "Pre-scored DEAL, MAYBE, or PASS" introduces the Discovery framework that screenshots #3 and #4 then visualize
 - Lists all four data sources explicitly — answers the most common qualifying question before users have to ask
-- "Verdict in seconds" closes with the speed promise
+- "Discovery in seconds" closes with the speed promise
 - Front-loads the differentiated value (lens + pre-scoring) before the table-stakes feature list
 
 ---
@@ -29,7 +29,7 @@ Strong if your install funnel data shows users come in already frustrated with Z
 ### Alt 2 — Feature-comprehensive _(160 chars)_
 > **DealGapIQ scores every US listing for profit before you tap. Search MLS + foreclosures + auctions. See Target Buy, Income Value, Market Price — instantly.**
 
-Strong if you want to surface specific financial outputs in the first impression. Names the three core verdict metrics.
+Strong if you want to surface specific financial outputs in the first impression. Names the three core Discovery metrics.
 
 ### Alt 3 — Time-sensitive (rotate during launch / promotions) _(168 chars)_
 > **NEW: Off-MLS coverage now live. Foreclosure, pre-foreclosure, and auction listings — pre-scored DEAL, MAYBE, or PASS alongside MLS. Find what other apps miss.**

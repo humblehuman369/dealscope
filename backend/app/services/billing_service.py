@@ -131,7 +131,7 @@ class BillingService:
                         name="Deal Gap + Income Value + Target Buy",
                         description="Core pricing metrics for every property",
                     ),
-                    PlanFeature(name="IQ Verdict Score", description="Pass / Marginal / Buy verdict"),
+                    PlanFeature(name="Discovery Score", description="Pass / Marginal / Buy grade"),
                     PlanFeature(
                         name="All 6 Strategy Snapshots", description="LTR, STR, BRRRR, Flip, House Hack, Wholesale"
                     ),
@@ -190,7 +190,7 @@ class BillingService:
                         name="Deal Gap + Income Value + Target Buy",
                         description="Core pricing metrics for every property",
                     ),
-                    PlanFeature(name="IQ Verdict Score", description="Pass / Marginal / Buy verdict"),
+                    PlanFeature(name="Discovery Score", description="Pass / Marginal / Buy grade"),
                     PlanFeature(name="All 6 Strategy Models — Full Detail", description="Complete strategy analysis"),
                     PlanFeature(name="Seller Motivation Indicator", description="Gauge negotiation likelihood"),
                     PlanFeature(

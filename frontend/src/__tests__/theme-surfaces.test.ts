@@ -33,7 +33,7 @@ const FORBIDDEN_DARK_RE = /dark:bg-\[#[0-9a-fA-F]{3,8}\]/
 const FORBIDDEN_BG_BLACK_RE = /\bbg-black\b(?!\/)/
 
 const HIGH_CHURN_PAGES = [
-  'app/verdict/page.tsx',
+  'app/discovery/page.tsx',
   'app/strategy/page.tsx',
   'app/property/[zpid]/page.tsx',
   'app/profile/page.tsx',

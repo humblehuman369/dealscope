@@ -64,7 +64,7 @@ const STATE_STYLES: Record<BarState, {
 }
 
 const HIDDEN_ON = [
-  '/verdict', '/strategy',
+  '/discovery', '/strategy',
   '/pricing', '/register', '/what-is-dealgapiq',
   '/billing',
 ]

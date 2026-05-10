@@ -1,6 +1,6 @@
 # DealGapIQ (dealscope)
 
-**Paste a US property address → a multi-source verdict, four pre-built offer structures to close the gap, and a negotiation script for each path.**  
+**Paste a US property address → a multi-source Discovery, four pre-built offer structures to close the gap, and a negotiation script for each path.**  
 Same product powers **web** ([dealgapiq.com](https://dealgapiq.com)) and **iOS / Android** via [Capacitor](https://capacitorjs.com/): one React app in `frontend/`, not a separate mobile codebase.
 
 ## Tech stack
@@ -15,7 +15,7 @@ Same product powers **web** ([dealgapiq.com](https://dealgapiq.com)) and **iOS /
 ## Repository layout
 
 ```
-backend/          # FastAPI app, calculators, property + verdict services
+backend/          # FastAPI app, calculators, property + analysis services
 frontend/         # Next.js app, shared with Capacitor WebView
 docs/             # Product, marketing, architecture, operations (see docs/README.md)
 content/assets/   # Marketing / content assets (e.g. screenshots)

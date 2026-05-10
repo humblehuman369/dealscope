@@ -22,7 +22,7 @@
 
 ## Trigger & format
 
-**Trigger:** Fires the first time the user lands on `/verdict` with a successful analysis result, regardless of entry path (camera scan, address search, or click-from-map). Replaces v1's `searchHistoryCount === 1` check, which was too tight for the Map-Search-then-click-pin flow.
+**Trigger:** Fires the first time the user lands on `/discovery` with a successful analysis result, regardless of entry path (camera scan, address search, or click-from-map). Replaces v1's `searchHistoryCount === 1` check, which was too tight for the Map-Search-then-click-pin flow.
 
 **Format:** Spotlighted tooltip overlay with subtle dim/blur on non-active areas. Bottom-anchored on mobile, side-anchored on desktop. Step counter top-right (X/6). Skip button top-right. "Don't show this again" checkbox on the close screen only.
 
@@ -147,10 +147,10 @@
 
 | Behavior | Updated spec |
 | --- | --- |
-| Trigger | Fires the first time the user lands on `/verdict` with a successful analysis result, regardless of entry path. Replace `searchHistoryCount === 1` with `firstVerdictView === true && hasSeenWorkbenchTour === false`. |
+| Trigger | Fires the first time the user lands on `/discovery` with a successful analysis result, regardless of entry path. Replace `searchHistoryCount === 1` with `firstVerdictView === true && hasSeenWorkbenchTour === false`. |
 | Step indicator | "Step X of 6" |
 | Replay | Two access points: (1) user menu → Profile → "Replay tour", (2) Map Search empty state → "New to the workbench? Take the 60-sec tour →" |
-| Cold-link variant | `/verdict` opened via shared link with no analysis result fires a different first-time modal — see below. |
+| Cold-link variant | `/discovery` opened via shared link with no analysis result fires a different first-time modal — see below. |
 | Skippable | Yes — "Skip" link top-right on every step. Skipping marks tour-complete (won't re-trigger). |
 | Don't-show-again | Only on close screen, defaults checked. If unchecked, tour fires once more on next session. |
 | Auto-advance | Yes, on the timing above. User can tap "Next →" to skip ahead. "← Back" returns to previous step. |
@@ -201,11 +201,11 @@ Tighter copy on the analysis-tool steps absorbs the new Map Search frame without
 | --- | --- |
 | Tour state (`hasSeenWorkbenchTour`) | DB user preferences (preferred) or localStorage fallback |
 | Tour engine | `react-joyride` recommended (already React, well-maintained, supports custom anchor types). Alternates: Shepherd.js, Driver.js. |
-| First-Verdict trigger | Hook into `/verdict` page mount: `if (!user.preferences.hasSeenWorkbenchTour && verdict.isLoaded) { startTour(); markSeen(); }` |
+| First-Verdict trigger | Hook into `/discovery` page mount: `if (!user.preferences.hasSeenWorkbenchTour && verdict.isLoaded) { startTour(); markSeen(); }` |
 | Map Search anchor logic | Anchor target depends on viewport — desktop sticky-nav `[data-tour="map-search-nav"]`, mobile floating-button `[data-tour="map-search-fab"]`. Add these data attrs in the existing nav components. |
 | Close-screen CTA wiring | "Save This Deal" → save mutation, "Scan Another" → camera, "Browse the Map" → `router.push('/map-search')` |
 | Replay link | User menu + Map Search empty state |
-| Cold-link variant | `/verdict` page detects missing analysis → renders 3-button modal |
+| Cold-link variant | `/discovery` page detects missing analysis → renders 3-button modal |
 | Analytics | `tour-shown`, `tour-step-reached:{1..6}`, `tour-skipped:{stepNumber}`, `tour-completed`, `save-from-close`, `scan-from-close`, **`mapsearch-from-close`** |
 
 ---
@@ -239,7 +239,7 @@ If Map-Search-from-close is <10%, the Step 6 copy isn't landing — A/B test rem
 
 ## Where to NOT trigger this tour
 
-- **Cold landing on /verdict via shared link** — they didn't analyze anything, the welcome copy doesn't apply. Show the cold-link first-time modal above instead.
+- **Cold landing on /discovery via shared link** — they didn't analyze anything, the welcome copy doesn't apply. Show the cold-link first-time modal above instead.
 - **Logged-in user re-analyzing their 2nd property** — already saw the tour, don't re-trigger.
 - **Mobile users on slow networks** — defer until tabs have rendered, or the spotlight will land on missing elements.
 

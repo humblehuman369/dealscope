@@ -45,7 +45,7 @@ const T = {
 // =============================================================================
 
 // DealGapIQ cohort tables — match backend REGIONAL_COHORT_PERCENTAGES + INVESTOR_DISCOUNT_BRACKETS (score ranges).
-// Mutually exclusive cohorts; each region sums to 100%. Verdict headline uses cumulative P(depth ≥ Deal Gap) within the cohort for the property state.
+// Mutually exclusive cohorts; each region sums to 100%. Discovery headline uses cumulative P(depth ≥ Deal Gap) within the cohort for the property state.
 type CohortKey = 'national' | 'sun_belt' | 'midwest_affordability' | 'coastal_northeast'
 
 const COHORT_TABS: { id: CohortKey; label: string }[] = [

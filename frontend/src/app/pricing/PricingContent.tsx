@@ -84,7 +84,7 @@ const COMPARISON_DATA: ComparisonCategory[] = [
     rows: [
       { name: "Property search", free: true, pro: true },
       { name: "Property analyses per month", free: "3", pro: "Unlimited" },
-      { name: "Verdict with deal score", free: true, pro: true },
+      { name: "Discovery with deal score", free: true, pro: true },
       { name: "Income Value, Target Buy & Deal Gap", free: true, pro: true },
       { name: "Multi-source IQ Estimates (Zillow, RentCast, Redfin, Realtor)", free: true, pro: true },
       { name: "Choose your preferred estimate source", free: true, pro: true },
@@ -176,7 +176,7 @@ export default function PricingContent() {
   const starterFeatures: string[] = [
     "Property search",
     "3 property analyses per month",
-    "Verdict with deal score & plain-language explanations",
+    "Discovery with deal score & plain-language explanations",
     "Income Value, Target Buy & Deal Gap on every property",
     "Multi-source IQ Estimates — Zillow, RentCast, Redfin, Realtor",
     "All 6 strategy snapshots — LTR, STR, BRRRR, Flip, House Hack, Wholesale",
@@ -186,7 +186,7 @@ export default function PricingContent() {
 
   const proFeatures: string[] = [
     "Unlimited property analyses",
-    "Full calculation breakdown — see every number behind the verdict",
+    "Full calculation breakdown — see every number behind Discovery",
     "Editable assumptions & stress testing — adjust rent, rates, and expenses",
     "Appraiser — professional appraisal tool with sale & rental comps",
     "Market Consensus engine — aggregate view across all data sources",
@@ -214,7 +214,7 @@ export default function PricingContent() {
     },
     {
       q: "How is this different from Zillow or PropStream?",
-      a: "Zillow shows you a Zestimate. PropStream gives you raw data. DealGapIQ calculates a specific buy price and investment verdict across 6 strategies — LTR, STR, BRRRR, Flip, House Hack, and Wholesale — then shows you the Deal Gap between asking price and what the numbers actually support.",
+      a: "Zillow shows you a Zestimate. PropStream gives you raw data. DealGapIQ calculates a specific buy price across 6 strategies — LTR, STR, BRRRR, Flip, House Hack, and Wholesale — then shows you the Deal Gap between asking price and what the numbers actually support.",
     },
     {
       q: "Is this a replacement for my own spreadsheets?",
@@ -783,7 +783,7 @@ export default function PricingContent() {
           Why Pro Matters
         </p>
         <h2 style={{ fontSize: "26px", fontWeight: 700, margin: "0 0 8px 0", lineHeight: 1.2 }}>
-          Free shows you the verdict.
+          Free shows you Discovery.
           <br />
           Pro gives you the tools to close the deal.
         </h2>

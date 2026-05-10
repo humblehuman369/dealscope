@@ -176,7 +176,7 @@ function HeroSection({
             </span>
           </h1>
           <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-xl mb-3">
-            One address. <span className="text-white font-semibold">15 seconds.</span> A verdict on whether it&rsquo;s a deal — backed by{' '}
+            One address. <span className="text-white font-semibold">15 seconds.</span> A Discovery on whether it&rsquo;s a deal — backed by{' '}
             <span className="text-white font-semibold">5 data sources</span> and explained in plain English.
           </p>
           <p className="text-base text-slate-400 mb-8">
@@ -185,7 +185,7 @@ function HeroSection({
 
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-4">
             <PrimaryButton onClick={onAnalyze}>
-              Run a Free Verdict <span>→</span>
+              Run a Free Discovery <span>→</span>
             </PrimaryButton>
             <SecondaryButton onClick={onMapSearch}>
               <MapIcon className="w-4 h-4 text-sky-400" strokeWidth={2.25} />
@@ -360,7 +360,7 @@ function ComparisonSection() {
                 'Full cash flow & DSCR breakdown',
                 <><span className="font-semibold">6 investment strategies</span> analyzed</>,
                 <>Map Search with <span className="text-sky-300 font-semibold">foreclosure, pre-foreclosure & auction</span> filters</>,
-                <><span className="text-white font-semibold">Pre-graded Verdict pins</span> — green / yellow / red on every parcel</>,
+                <><span className="text-white font-semibold">Pre-graded Discovery pins</span> — green / yellow / red on every parcel</>,
                 <>Shows you <span className="text-white font-semibold">what a property is worth</span></>,
               ].map((item, i) => (
                 <li key={i} className="flex gap-3 text-slate-200">
@@ -416,10 +416,10 @@ function WorkbenchSection() {
         mockup={<MapSearchMockup />}
       />
 
-      {/* MODULE 1: Verdict */}
+      {/* MODULE 1: Discovery */}
       <ModuleRow
         accent="sky"
-        pill="Verdict"
+        pill="Discovery"
         headline="One number tells you what to do."
         body={
           <>
@@ -785,7 +785,7 @@ function PricingSection({ onAnalyze }: { onAnalyze: () => void }) {
             Start Free. Upgrade <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">When You're Ready.</span>
           </h2>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-            Every plan includes the full workbench — Map Search, Verdict, Strategy, Appraiser, DealMaker, Estimator.
+            Every plan includes the full workbench — Map Search, Discovery, Strategy, Appraiser, DealMaker, Estimator.
           </p>
         </div>
 
@@ -802,7 +802,7 @@ function PricingSection({ onAnalyze }: { onAnalyze: () => void }) {
             </div>
             <ul className="space-y-3 text-sm flex-1 mb-6">
               <PricingRow text={<><span className="font-bold">3 scans</span> per month</>} />
-              <PricingRow text="Verdict page (Target Buy + Income + Market)" />
+              <PricingRow text="Discovery page (Target Buy + Income + Market)" />
               <PricingRow text="All 5 data sources visible" />
               <PricingRow text="Search History dashboard" />
               <PricingRow text="Map Search (preview only)" />
@@ -830,7 +830,7 @@ function PricingSection({ onAnalyze }: { onAnalyze: () => void }) {
             </div>
             <ul className="space-y-3 text-sm flex-1 mb-6">
               <PricingRow text={<span className="font-bold">Unlimited scans</span>} />
-              <PricingRow text={<>Full <span className="font-semibold text-white">Verdict + Strategy + Appraiser + DealMaker + Estimator</span></>} />
+              <PricingRow text={<>Full <span className="font-semibold text-white">Discovery + Strategy + Appraiser + DealMaker + Estimator</span></>} />
               <PricingRow text={<><span className="font-semibold text-white">Unlimited Map Search</span> across all 50 states</>} />
               <PricingRow text={<><span className="text-sky-300 font-semibold">Foreclosure, pre-foreclosure & auction</span> filters</>} />
               <PricingRow text="Stale listings (30 / 60 / 90 days on market)" />
@@ -1033,7 +1033,7 @@ function FinalCTASection({ onAnalyze }: { onAnalyze: () => void }) {
             <span className="bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">Investor.</span>
           </h2>
           <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Search or paste any address. See the three price thresholds, the Verdict score, and which strategy makes it work.
+            Search or paste any address. See the three price thresholds, the Discovery score, and which strategy makes it work.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
             <PrimaryButton onClick={onAnalyze}>Analyze a Property Free <span>→</span></PrimaryButton>
@@ -1442,7 +1442,7 @@ function MapSearchMockup() {
       <div className="relative rounded-lg overflow-hidden mb-4 border border-[#1E2530] bg-black">
         <Image
           src="/images/map-search-distressed-greenacres.png"
-          alt="DealGapIQ Map Search — distressed listings (foreclosure, pre-foreclosure, auction) across the Greenacres, FL area, each pre-graded with a red Verdict pin"
+          alt="DealGapIQ Map Search — distressed listings (foreclosure, pre-foreclosure, auction) across the Greenacres, FL area, each pre-graded with a red Discovery pin"
           width={700}
           height={520}
           className="w-full h-auto"

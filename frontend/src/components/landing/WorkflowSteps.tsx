@@ -8,8 +8,8 @@ const steps = [
   },
   {
     num: '02 — SCREEN',
-    title: 'Set your Buy Box, get an instant Verdict',
-    desc: 'Define your criteria once. Every property gets a PASS, MARGINAL, or BUY verdict in seconds.',
+    title: 'Set your Buy Box, get an instant Discovery',
+    desc: 'Define your criteria once. Every property gets a PASS, MARGINAL, or BUY grade in seconds.',
   },
   {
     num: '03 — STRESS TEST',

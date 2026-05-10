@@ -170,7 +170,7 @@ const DemoCard = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ width: 52, height: 52, borderRadius: '50%', border: `3px solid ${t.amber}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: t.fontMono, fontSize: '1.1rem', fontWeight: 700, color: t.amber, flexShrink: 0 }}>53</div>
           <div>
-            <div style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.15rem' }}>Verdict: Possible</div>
+            <div style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.15rem' }}>Discovery: Possible</div>
             <div style={{ fontSize: '0.8rem', color: t.textMuted }}>Tight margins, but potential with negotiation.</div>
           </div>
         </div>
@@ -226,7 +226,7 @@ const StrategyPill = ({ name }: { name: string }) => (
 
 const workflowSteps = [
   { num: '01', label: 'SCAN', title: 'Enter an address or scan a property with your phone', desc: 'Field-ready on your smartphone. Pull data on any property the moment it catches your eye.' },
-  { num: '02', label: 'SCREEN', title: 'Set your Buy Box, get an instant Verdict', desc: 'Define your criteria once. Every property gets a PASS, MARGINAL, or BUY verdict in 60 seconds.' },
+  { num: '02', label: 'SCREEN', title: 'Set your Buy Box, get an instant Discovery', desc: 'Define your criteria once. Every property gets a PASS, MARGINAL, or BUY grade in 60 seconds.' },
   { num: '03', label: 'STRESS TEST', title: 'Adjust variables and see the impact in real time', desc: 'Condition, rehab, location, terms — change any assumption and watch the numbers shift instantly.' },
   { num: '04', label: 'ACT', title: 'Generate reports, track deals, close with confidence', desc: 'Lender-ready PDFs, side-by-side comparisons, and a full pipeline from first look to closing.' },
 ]

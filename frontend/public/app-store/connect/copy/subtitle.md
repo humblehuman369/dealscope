@@ -23,8 +23,8 @@ The subtitle appears under the app name in search results, on the product page, 
 
 | # | Subtitle | Chars | Strength |
 |---|---|---|---|
-| 2 | `Hunt deals. Verdict in seconds.` | 30 | Verb-forward, action-driven, matches hero headline |
-| 3 | `DEAL. MAYBE. PASS. Decided.` | 27 | Borrows the verdict framework from screenshot #4 |
+| 2 | `Hunt deals. Discovery in seconds.` | 30 | Verb-forward, action-driven, matches hero headline |
+| 3 | `DEAL. MAYBE. PASS. Decided.` | 27 | Borrows the Discovery framework from screenshot #4 |
 | 4 | `Find the deal. Skip the rest.` | 29 | Speaks directly to the time-poor investor pain point |
 | 5 | `Investor lens on US listings.` | 29 | Reinforces the "Investor's Lens" hero metaphor |
 
@@ -44,4 +44,4 @@ The subtitle appears under the app name in search results, on the product page, 
 
 ## A/B test plan
 
-After launch, test the **PRIMARY against #2 (verdict-driven)** and **#3 (DEAL/MAYBE/PASS)** in 30-day cycles. Apple lets you change the subtitle on every app update, so cycle through with each release. Track install conversion rate (App Store Connect → Analytics → App Store → Conversion Rate) and pick the winner.
+After launch, test the **PRIMARY against #2 (Discovery-driven)** and **#3 (DEAL/MAYBE/PASS)** in 30-day cycles. Apple lets you change the subtitle on every app update, so cycle through with each release. Track install conversion rate (App Store Connect → Analytics → App Store → Conversion Rate) and pick the winner.

@@ -49,7 +49,7 @@ const PRICING_JSONLD = {
             '@id': `${SITE_URL}/pricing#starter`,
             name: 'Starter',
             description:
-              'Free plan: property search, 3 property analyses per month, IQ Verdict with deal score, all 6 strategy snapshots, save up to 3 properties.',
+              'Free plan: property search, 3 property analyses per month, Discovery with deal score, all 6 strategy snapshots, save up to 3 properties.',
             price: '0',
             priceCurrency: 'USD',
             availability: 'https://schema.org/InStock',
