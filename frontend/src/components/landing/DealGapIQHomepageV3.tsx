@@ -863,6 +863,15 @@ function TrustSection({
               Switch sources, see the math change.
             </span>
           </p>
+          <p className="text-center text-sm mt-4">
+            <Link
+              href="/methodology"
+              className="inline-flex items-center gap-1 font-semibold text-[var(--accent-sky)] hover:opacity-80 transition-opacity"
+            >
+              Read the full methodology
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </p>
         </div>
 
         {/* 5b — Founder note */}
