@@ -1,12 +1,13 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { trackEvent } from '@/lib/eventTracking'
 import type { DealGapTier } from '@/components/iq-verdict/types'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
 import { FourPathsPanel, type DealStructure, type DealStructuresPayload } from '@/components/iq-verdict/FourPathsPanel'
 import { DealStructuresNarrative } from '@/components/iq-verdict/DealStructuresNarrative'
+import { VideoModal } from '@/components/ui/VideoModal'
 
 export interface VerdictGapGuidanceProps {
   tier: DealGapTier
@@ -73,6 +74,7 @@ export function VerdictGapGuidance({
   const showFullLevers = dealGapPct > 5
   const hasStructures = !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
   const pathsSig = dealStructures?.paths.map((p) => p.id).join('|') ?? ''
+  const [showDealGapVideo, setShowDealGapVideo] = useState(false)
 
   useEffect(() => {
     if (effectiveDisplayPct > 0 || dealGapPct <= 0) return
@@ -106,6 +108,34 @@ export function VerdictGapGuidance({
       <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
         {tier.subHeadline}
       </p>
+      {/* "Watch: What is the Deal Gap?" link — opens the explainer video.
+          Reuses the same /videos/what-is-dealgapiq-v3.mp4 used on the
+          Strategy page and homepage so visual + behavior stay aligned. */}
+      <button
+        type="button"
+        onClick={() => setShowDealGapVideo(true)}
+        style={{
+          margin: '8px 0 0',
+          padding: 0,
+          background: 'transparent',
+          border: 'none',
+          color: 'var(--accent-sky)',
+          fontSize: 13,
+          fontWeight: 600,
+          textDecoration: 'underline',
+          textUnderlineOffset: 3,
+          cursor: 'pointer',
+          display: 'inline-block',
+        }}
+      >
+        Watch: What is the Deal Gap?
+      </button>
+      <VideoModal
+        open={showDealGapVideo}
+        onClose={() => setShowDealGapVideo(false)}
+        src="/videos/what-is-dealgapiq-v3.mp4"
+        title="What is Deal Gap?"
+      />
 
       {hasStructures && (
         <>
