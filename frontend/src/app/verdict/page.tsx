@@ -1728,34 +1728,12 @@ function VerdictContent() {
                 border: '1px solid var(--border-default)',
               }}
             >
-              {/* Motivating headline — every property gets a deal label */}
-              <div style={{ marginBottom: 10 }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif",
-                    fontSize: 'clamp(20px, 2.4vw, 28px)',
-                    fontWeight: 700,
-                    color: 'var(--text-heading)',
-                    letterSpacing: '-0.01em',
-                    lineHeight: 1.1,
-                  }}
-                >
-                  {tier.motivatingLabel}
-                </span>
-                <span
-                  style={{
-                    marginLeft: 10,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: 'var(--text-secondary)',
-                    fontStyle: 'italic',
-                  }}
-                >
-                  {tier.motivatingSubtitle}
-                </span>
-              </div>
-
-              {/* Headline metric + tier badge — precision/credibility line */}
+              {/* Headline metric + tier badge — precision/credibility line.
+                  For negative gaps, the badge swaps from the descriptive
+                  severity label ("Extreme Negative Gap") to the actionable
+                  "Options Below Close the Gap" so the user is steered to
+                  the four paths rendered directly below. The tier severity
+                  label is still used for grade/analytics strings elsewhere. */}
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-baseline gap-2">
                   <span style={{ fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif", fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 600, lineHeight: 1 }}>
@@ -1786,7 +1764,7 @@ function VerdictContent() {
                     background: 'var(--surface-card)',
                   }}
                 >
-                  {tier.label}
+                  {dealGapPct > 0 ? 'Options Below Close the Gap' : tier.label}
                 </span>
               </div>
 
