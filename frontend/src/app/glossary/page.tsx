@@ -28,11 +28,46 @@ export const metadata: Metadata = {
 export default async function GlossaryIndex() {
   const terms = await getAllContent('glossary')
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'DefinedTermSet',
+        '@id': `${SITE_URL}/glossary#termset`,
+        name: 'DealGapIQ Real Estate & Creative Finance Glossary',
+        description:
+          'Plain-English definitions of the creative-finance structures active residential investors use.',
+        url: `${SITE_URL}/glossary`,
+        publisher: { '@id': `${SITE_URL}/#organization` },
+        hasDefinedTerm: terms.map((t) => ({
+          '@type': 'DefinedTerm',
+          '@id': `${SITE_URL}/glossary/${t.slug}#term`,
+          name: t.frontmatter.title,
+          url: `${SITE_URL}/glossary/${t.slug}`,
+          ...(t.frontmatter.meta_description
+            ? { description: t.frontmatter.meta_description }
+            : {}),
+        })),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+          { '@type': 'ListItem', position: 2, name: 'Glossary', item: `${SITE_URL}/glossary` },
+        ],
+      },
+    ],
+  }
+
   return (
     <main
       className="min-h-screen px-4 py-10 sm:py-16"
       style={{ background: 'var(--surface-base)' }}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-3xl mx-auto">
         <header className="mb-12">
           <h1
