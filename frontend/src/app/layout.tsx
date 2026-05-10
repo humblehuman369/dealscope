@@ -54,6 +54,9 @@ const canonicalBase =
     ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
     : 'https://dealgapiq.com'
 
+const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+
 export const metadata: Metadata = {
   metadataBase: new URL(canonicalBase),
   title: defaultTitle,
@@ -74,6 +77,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: defaultTitle,
     description: defaultDescription,
+  },
+  verification: {
+    ...(googleVerification ? { google: googleVerification } : {}),
+    ...(bingVerification ? { other: { 'msvalidate.01': bingVerification } } : {}),
   },
 }
 
