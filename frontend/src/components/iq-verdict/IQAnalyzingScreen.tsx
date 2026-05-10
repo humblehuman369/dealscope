@@ -12,6 +12,7 @@
 import React, { useEffect, useState } from 'react'
 import { colors } from './verdict-design-tokens'
 import { IQProperty } from './types'
+import { useTheme } from '@/context/ThemeContext'
 
 // Use design system primary blue (var(--accent-sky)) per CURSOR-UNIFY-COLOR-SYSTEM
 const ACCENT = colors.brand.teal
@@ -44,6 +45,10 @@ export function IQAnalyzingScreen({
 }: IQAnalyzingScreenProps) {
   const [currentTipIndex, setCurrentTipIndex] = useState<number>(0)
   const [progress, setProgress] = useState(0)
+  const { theme } = useTheme()
+  const iconSrc = theme === 'dark'
+    ? '/images/dealgapiq-icon-dark.png'
+    : '/images/dealgapiq-icon.png'
 
   // Build full address
   const fullAddress = [
@@ -158,8 +163,8 @@ export function IQAnalyzingScreen({
               }}
             >
               <img
-                src="/images/iq-logo-icon.png"
-                alt="IQ"
+                src={iconSrc}
+                alt="DealGapIQ"
                 className="w-12 h-12 object-contain"
               />
             </div>
@@ -167,10 +172,10 @@ export function IQAnalyzingScreen({
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold mb-2" style={{ color: colors.text.white }}>
+        <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-heading)' }}>
           Analyzing Property
         </h1>
-        <p className="text-sm mb-8 text-center" style={{ color: colors.text.secondary }}>
+        <p className="text-sm mb-8 text-center" style={{ color: 'var(--text-secondary)' }}>
           Just a moment while IQ evaluates this deal...
         </p>
 
@@ -189,7 +194,7 @@ export function IQAnalyzingScreen({
 
         {/* Property Reference */}
         <div className="absolute bottom-10 left-0 right-0 text-center">
-          <p className="text-sm" style={{ color: colors.text.tertiary }}>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             {fullAddress}
           </p>
         </div>
