@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getAllContent } from '@/lib/content'
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
+
 export const metadata: Metadata = {
   title: 'Glossary of Creative Finance Terms — DealGapIQ',
   description:

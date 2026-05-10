@@ -18,6 +18,8 @@ export type Frontmatter = {
   schema?: string
   status?: string
   author?: string
+  date_published?: string
+  date_modified?: string
   word_count_target?: number
   internal_links?: string[]
 }
@@ -55,6 +57,8 @@ function parseFile(folder: ContentFolder, file: string, raw: string): ContentFil
       schema: data.schema,
       status: data.status,
       author: data.author,
+      date_published: data.date_published,
+      date_modified: data.date_modified,
       word_count_target: data.word_count_target,
       internal_links: data.internal_links,
     },

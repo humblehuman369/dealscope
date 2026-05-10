@@ -19,6 +19,8 @@ internal_links:
   - / (the verdict tool)
 word_count_target: 2000
 author: Brad Geisen
+date_published: "2026-05-10"
+date_modified: "2026-05-10"
 ---
 
 # The Lake Worth Teardown: One Property, Four Ways to Close It
