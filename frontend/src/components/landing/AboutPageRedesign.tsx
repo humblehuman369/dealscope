@@ -226,35 +226,58 @@ export function AboutPageRedesign() {
       <section className="about-founder">
         <div className="about-founder-inner">
           <div className="about-founder-photo">
-            <img src="/images/brad-geisen-about.png" alt="Brad Geisen" />
+            <img src="/images/brad-geisen-about.png" alt="Brad Geisen, founder of DealGapIQ and Foreclosure.com" />
           </div>
           <div className="about-founder-text">
             <h2>About the Founder</h2>
             <p>
-              Most real estate platforms are built to help you find properties.<br />
-              Very few are built by someone who understands how deals actually work.
+              DealGapIQ was built by <strong>Brad Geisen</strong> &mdash; founder of <strong>Foreclosure.com</strong>{' '}
+              and the technologist Fannie Mae and Freddie Mac trusted to build the public faces of their portfolios.
             </p>
             <p>
-              DealGapIQ was created by a founder who has spent a career on the side of the market where
-              properties are <strong>analyzed, structured, and executed</strong> &mdash; not just listed.
+              Over two decades ago, <strong>Fannie Mae</strong> discovered that Brad&apos;s proprietary data
+              platform knew more about their portfolio than their own internal infrastructure &mdash; and
+              commissioned him to build <strong>HomePath.com</strong>. He went on to build{' '}
+              <strong>HomeSteps.com</strong> for <strong>Freddie Mac</strong>, establishing a technology
+              partnership with both GSEs that has now lasted <strong>30+ years</strong>. Earlier work on the
+              1991 HUD public/private partnership shaped how distressed residential portfolios are evaluated,
+              priced, and sold at institutional scale.
             </p>
             <p>
-              Behind the scenes, he has worked on large-scale real estate disposition programs for major institutions
-              and government agencies, helping shape how properties are evaluated, priced, and sold at scale. At the
-              same time, he has personally invested in <strong>thousands of properties</strong>, gaining firsthand insight into
-              what separates a listing from a true opportunity.
+              Behind the scenes of those institutional programs, he has personally invested in{' '}
+              <strong>thousands of properties</strong> &mdash; the firsthand reps that separate a listing
+              from a true opportunity.
             </p>
             <p>
-              That combination &mdash; institutional perspective and real-world execution &mdash; is what powers DealGapIQ.
-              Because the reality is simple:
+              DealGapIQ takes that same institutional-grade analytical rigor &mdash; the kind previously
+              available only to large institutions and government agencies &mdash; and puts it in the hands
+              of every individual investor.
             </p>
             <p className="about-founder-emphasis">
               <em>Every property can be a deal.</em><br />
               <em>But only if you understand the numbers behind it.</em>
             </p>
             <p>
-              DealGapIQ was built to bring that level of clarity to every investor &mdash; turning complex analysis into a
-              simple, confident decision.
+              <a
+                href="https://www.linkedin.com/in/bradgeisen"
+                target="_blank"
+                rel="noopener noreferrer me"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 14,
+                  color: 'var(--accent-sky)',
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                  marginTop: 8,
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                </svg>
+                Brad Geisen on LinkedIn
+              </a>
             </p>
           </div>
         </div>

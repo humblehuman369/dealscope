@@ -41,13 +41,21 @@ const graph = {
       image: `${SITE_URL}/brad-geisen.png`,
       jobTitle: 'Founder',
       worksFor: { '@id': ORG_ID },
+      sameAs: [
+        'https://www.linkedin.com/in/bradgeisen',
+        'https://www.foreclosure.com',
+      ],
       knowsAbout: [
         'Residential real estate investing',
         'Foreclosure markets',
         'Creative financing',
         'Subject-To acquisitions',
         'Real estate SaaS',
+        'Government-sponsored enterprise real estate disposition',
       ],
+      alumniOf: 'Foreclosure.com',
+      description:
+        'Founder of DealGapIQ. Previously founded Foreclosure.com and built HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac, establishing a 30+ year technology partnership with the GSEs.',
     },
     {
       '@type': 'SoftwareApplication',

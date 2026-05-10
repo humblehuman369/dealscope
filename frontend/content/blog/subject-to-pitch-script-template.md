@@ -13,6 +13,9 @@ meta_title: "Subject-To Pitch Script: 5-Part Template (Free, Editable)"
 meta_description: "The 5-part Subject-To pitch script that lands. Annotated template, three seller-type variants, and the three lines that kill the deal. Free. Edit, print, or email."
 schema: BlogPosting
 status: draft
+author: Brad Geisen
+date_published: "2026-05-10"
+date_modified: "2026-05-10"
 internal_links:
   - /glossary/subject-to-financing (G1)
   - /glossary/due-on-sale-clause-sub2 (G8)

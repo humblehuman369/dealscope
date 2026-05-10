@@ -12,6 +12,9 @@ meta_title: "What Is Subject-To Financing? A Plain-English Guide (2026)"
 meta_description: "Subject-To lets you take title to a house while the seller's existing loan stays in place. The 30-second definition, a real-numbers example, the risks, and when it actually pencils."
 schema: DefinedTerm
 status: draft
+author: Brad Geisen
+date_published: "2026-05-10"
+date_modified: "2026-05-10"
 internal_links:
   - /glossary/seller-carryback (G2)
   - /glossary/morby-method (G4)
