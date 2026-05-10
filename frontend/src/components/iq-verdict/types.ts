@@ -301,7 +301,7 @@ export interface DealGapTier {
 
 const SUB_HEADLINE_POSITIVE = 'A positive DealGap indicates the asking price is below supported market value, creating measurable investor opportunity. Larger positive percentages generally indicate stronger pricing advantage.'
 const SUB_HEADLINE_NEUTRAL = 'A neutral DealGap means price and value are in balance — the deal may still work, but advantage must come from execution, financing, or future upside.'
-const SUB_HEADLINE_NEGATIVE = 'A negative DealGap indicates the asking price is above supported market value, where stronger negotiation, improved structure, or revised assumptions may be required to make the deal work. Larger negative percentages generally indicate reduced pricing advantage.'
+const SUB_HEADLINE_NEGATIVE = 'A negative DealGap means the current price and terms don\u2019t quite match the rental income yet. To close the gap and improve cash flow, you can adjust the deal structure in a way that works for you and the seller. Below are several options to consider\u2014and you can mix and match them during negotiations to create the right terms.'
 
 const MOTIVATING_SUBTITLES = {
   cashFlow: 'clears at standard terms',
