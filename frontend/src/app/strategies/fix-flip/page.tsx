@@ -1,10 +1,31 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { Hammer, Zap, DollarSign } from 'lucide-react';
 import {
   StrategyPageLayout,
   Callout,
   Prose,
 } from '@/components/strategies/StrategyPageLayout';
+
+export const metadata: Metadata = {
+  title: 'Fix & Flip Strategy — How to Underwrite a Flip Deal | DealGapIQ',
+  description:
+    'How to evaluate a fix-and-flip: max allowable offer (MAO), ARV math, the 70% rule, rehab budgeting, holding cost math, exit timeline, and the margin where flips actually pencil.',
+  alternates: { canonical: '/strategies/fix-flip' },
+  openGraph: {
+    title: 'Fix & Flip Strategy — How to Underwrite a Flip Deal',
+    description:
+      'MAO, ARV, the 70% rule, rehab budgeting, holding costs, and the math behind flips that actually pencil.',
+    url: '/strategies/fix-flip',
+    type: 'article',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Fix & Flip Strategy — How to Underwrite a Flip Deal',
+    description:
+      'MAO, ARV, the 70% rule, rehab budgets, and holding-cost math.',
+  },
+};
 
 const ACCENT = '#f87171';
 

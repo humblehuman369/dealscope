@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { RefreshCw, TrendingUp, Zap } from 'lucide-react';
 import {
   StrategyPageLayout,
@@ -6,6 +7,26 @@ import {
   Prose,
   StepItem,
 } from '@/components/strategies/StrategyPageLayout';
+
+export const metadata: Metadata = {
+  title: 'BRRRR Strategy — Buy, Rehab, Rent, Refinance, Repeat | DealGapIQ',
+  description:
+    'How to underwrite a BRRRR deal: ARV math, refinance cash-out target, rehab budgeting, the 70% rule (and when it lies), seasoning timelines, and the rinse-and-repeat playbook for scaling a rental portfolio with little money down.',
+  alternates: { canonical: '/strategies/brrrr' },
+  openGraph: {
+    title: 'BRRRR Strategy — Buy, Rehab, Rent, Refinance, Repeat',
+    description:
+      'ARV math, refinance cash-out targets, rehab budgeting, and the BRRRR scaling playbook.',
+    url: '/strategies/brrrr',
+    type: 'article',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BRRRR Strategy — Buy, Rehab, Rent, Refinance, Repeat',
+    description:
+      'ARV, refi cash-out targets, rehab budgeting, and the BRRRR scaling playbook.',
+  },
+};
 
 const ACCENT = '#fbbf24';
 

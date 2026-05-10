@@ -1204,7 +1204,7 @@ function SiteFooter() {
               <li><Link href="/about" className="hover:text-[var(--accent-sky)] transition-colors">About</Link></li>
               <li><Link href="/help" className="hover:text-[var(--accent-sky)] transition-colors">Help Center</Link></li>
               <li><span className="text-[var(--text-muted)]">Field Guide</span></li>
-              <li><span className="text-[var(--text-muted)]">Glossary</span></li>
+              <li><Link href="/glossary" className="hover:text-[var(--accent-sky)] transition-colors">Glossary</Link></li>
             </ul>
           </div>
 

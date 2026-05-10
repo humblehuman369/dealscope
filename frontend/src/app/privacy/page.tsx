@@ -1,4 +1,19 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy — DealGapIQ',
+  description:
+    'How DealGapIQ collects, uses, and protects your information when you use our real-estate investment analysis platform.',
+  alternates: { canonical: '/privacy' },
+  openGraph: {
+    title: 'Privacy Policy — DealGapIQ',
+    description:
+      'How DealGapIQ collects, uses, and protects your information.',
+    url: '/privacy',
+    type: 'article',
+  },
+}
 
 export default function PrivacyPolicyPage() {
   return (

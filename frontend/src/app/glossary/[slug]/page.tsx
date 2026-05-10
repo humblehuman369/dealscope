@@ -22,10 +22,17 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: { canonical: `/glossary/${slug}` },
     openGraph: {
       title,
       description,
+      url: `/glossary/${slug}`,
       type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
     },
   }
 }

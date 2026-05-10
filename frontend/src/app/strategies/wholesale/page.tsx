@@ -1,10 +1,31 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { Repeat, DollarSign, Clock, FileText } from 'lucide-react';
 import {
   StrategyPageLayout,
   Callout,
   Prose,
 } from '@/components/strategies/StrategyPageLayout';
+
+export const metadata: Metadata = {
+  title: 'Wholesale Strategy — Find Deals, Assign Contracts, Profit | DealGapIQ',
+  description:
+    'How wholesaling works: contract assignment vs. double-close, finding off-market deals, MAO math for the buyer, marketing channels, legal structure by state, and how to start with no capital.',
+  alternates: { canonical: '/strategies/wholesale' },
+  openGraph: {
+    title: 'Wholesale Strategy — Find Deals, Assign Contracts, Profit',
+    description:
+      'Assignment vs. double-close, off-market sourcing, MAO math, and the no-capital start.',
+    url: '/strategies/wholesale',
+    type: 'article',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Wholesale Strategy — Find Deals, Assign Contracts, Profit',
+    description:
+      'Assignment vs. double-close, off-market sourcing, and MAO math.',
+  },
+};
 
 const ACCENT = '#fbbf24';
 

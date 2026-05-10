@@ -6,7 +6,16 @@ export const metadata: Metadata = {
   title: 'Glossary of Creative Finance Terms — DealGapIQ',
   description:
     'Plain-English definitions of the creative-finance structures active investors use: Subject-To, seller carrybacks, 0% 2nds, the Morby Method, FHA house-hack, and more.',
+  alternates: { canonical: '/glossary' },
   openGraph: {
+    title: 'Glossary of Creative Finance Terms — DealGapIQ',
+    description:
+      'Plain-English definitions of the creative-finance structures active investors use.',
+    url: '/glossary',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
     title: 'Glossary of Creative Finance Terms — DealGapIQ',
     description:
       'Plain-English definitions of the creative-finance structures active investors use.',
