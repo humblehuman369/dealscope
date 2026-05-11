@@ -112,28 +112,51 @@ function renderSummaryWithLinks(summary: string): React.ReactNode {
 }
 
 /**
- * Renders a single math-carrying bullet line with inline accent coloring on the
- * arrow ("→") and any trailing percentage delta ("+0.5%", "−4.4%"). The bullet
- * marker dot is a separate flex child so the marker color tracks the family
- * accent without relying on browser-specific `::marker` styling.
+ * Renders a single bullet line as a clean "Label: value" pair, stripping any
+ * "before → after" formula and trailing signed-% delta the backend may emit.
+ * The bullet marker dot is a separate flex child so the marker color tracks
+ * the family accent without relying on browser-specific `::marker` styling.
+ *
+ * Examples of input → rendered remainder:
+ *   "Offer price: $577K → $577K"                     → "$577K"
+ *   "1st mortgage: $404K → $317K @ 6.0%"             → "$317K @ 6.0%"
+ *   "Target Rent: $3,510 + $555 → $4,065 +15.8%"     → "$4,065"
+ *   "Monthly P&I: $2,422 → $1,925"                   → "$1,925"
+ *   "Seller 2nd: $87K (0%, 5yr balloon)"             → "$87K (0%, 5yr balloon)"
+ *
+ * Rationale: option cards should communicate the resulting deal terms, not
+ * the underlying math. The before → after formula is useful for math-savvy
+ * users on the Strategy worksheet, but on the Discovery cards it adds noise.
  */
 function MathBullet({ text, accent }: { text: string; accent: string }): ReactNode {
   // Detect a leading "Label:" prefix so we can render it with a lighter weight
-  // than the numeric value. This keeps the eye on the math (e.g. the price /
-  // rate / dollar amount) and makes the labels feel like supporting context
-  // rather than competing emphasis. Labels can include letters, digits, spaces
-  // and a few punctuation chars (e.g. "Monthly P&I", "1st mortgage").
+  // than the numeric value. Keeps the eye on the dollar amount and makes the
+  // labels feel like supporting context rather than competing emphasis.
+  // Labels can include letters, digits, spaces and a few punctuation chars
+  // (e.g. "Monthly P&I", "1st mortgage").
   const LABEL_RE = /^([A-Za-z0-9][A-Za-z0-9 &/.]*:)(\s*)([\s\S]*)$/
   const labelMatch = text.match(LABEL_RE)
   const labelPart = labelMatch ? labelMatch[1] : null
-  const remainder = labelMatch ? labelMatch[3] : text
-  // Split on tokens we want to color: the arrow and any signed % delta at the
-  // end of the string. Capturing groups keep the matched delimiters in the
-  // resulting array so we can render them as styled spans.
-  // Match either Unicode → / -> with surrounding whitespace, or a signed %
-  // with optional + / − / - prefix.
-  const PARTS_RE = /(\s+→\s+|\s+->\s+|\s[+−-]\d+(?:\.\d+)?%)/g
-  const segments = remainder.split(PARTS_RE).filter((s) => s !== '')
+  let remainder = labelMatch ? labelMatch[3] : text
+
+  // Strip "before → after" formula: keep only the part after the LAST arrow.
+  // Using a stateful regex so multi-arrow inputs (rare but possible) collapse
+  // to the final value, which is always the rightmost segment.
+  const ARROW_RE = /\s+(→|->)\s+/g
+  let lastArrow: RegExpExecArray | null = null
+  let m: RegExpExecArray | null
+  while ((m = ARROW_RE.exec(remainder)) !== null) {
+    lastArrow = m
+  }
+  if (lastArrow) {
+    remainder = remainder.substring(lastArrow.index + lastArrow[0].length)
+  }
+
+  // Strip a trailing signed-% delta (e.g. " +15.8%", " −24.4%"). These are
+  // meaningful only when paired with a before-value; without the arrow they
+  // become orphaned noise.
+  remainder = remainder.replace(/\s[+−-]\d+(?:\.\d+)?%\s*$/, '').trim()
+
   return (
     <li
       style={{
@@ -178,23 +201,7 @@ function MathBullet({ text, accent }: { text: string; accent: string }): ReactNo
             {labelPart}
           </span>
         )}
-        {segments.map((seg, i) => {
-          if (/^\s+(→|->)\s+$/.test(seg)) {
-            return (
-              <span key={i} style={{ color: accent, fontWeight: 700 }}>
-                {' → '}
-              </span>
-            )
-          }
-          if (/^\s[+−-]\d+(?:\.\d+)?%$/.test(seg)) {
-            return (
-              <span key={i} style={{ color: accent, fontWeight: 700, marginLeft: 4 }}>
-                {seg.trim()}
-              </span>
-            )
-          }
-          return <span key={i}>{seg}</span>
-        })}
+        {remainder}
       </span>
     </li>
   )
@@ -280,7 +287,7 @@ function PathCard({
           style={{
             fontSize: 13,
             fontWeight: 800,
-            letterSpacing: '0.08em',
+            letterSpacing: '0.02em',
             textTransform: 'uppercase',
             lineHeight: 1.2,
             color: 'var(--text-heading)',
