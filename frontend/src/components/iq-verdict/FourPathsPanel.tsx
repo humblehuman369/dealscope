@@ -287,11 +287,13 @@ function PathCard({
       >
         {/* OPTION LINE — bold uppercase "OPTION N → SAVES $X/MO". The
             family accent appears only on the option label and the arrow,
-            providing per-card identity without a heavy band. */}
+            providing per-card identity without a heavy band. Sized just
+            below the family title (17px) so it reads as a clear card
+            header without competing with the strategy name. */}
         <span
           className="flex items-center flex-wrap gap-x-2 gap-y-1"
           style={{
-            fontSize: 13,
+            fontSize: 15,
             fontWeight: 800,
             letterSpacing: '0.02em',
             textTransform: 'uppercase',
@@ -304,7 +306,7 @@ function PathCard({
             <>
               <span
                 aria-hidden="true"
-                style={{ color: accent, fontWeight: 900, fontSize: 15 }}
+                style={{ color: accent, fontWeight: 900, fontSize: 17 }}
               >
                 →
               </span>
