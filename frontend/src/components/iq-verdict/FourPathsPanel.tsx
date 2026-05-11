@@ -293,7 +293,7 @@ function PathCard({
             color: 'var(--text-heading)',
           }}
         >
-          <span>{`Option ${index + 1}`}</span>
+          <span style={{ color: accent }}>{`Option ${index + 1}`}</span>
           {savingsParts && (
             <>
               <span
