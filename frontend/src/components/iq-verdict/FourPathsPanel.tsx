@@ -271,17 +271,23 @@ function PathCard({
         minHeight: 0,
       }}
     >
-      {/* RIBBON HEADER — Bold uppercase "OPTION N → SAVES $X/MO" on a
-          dark band that anchors the card identity. The arrow takes the
-          family accent so each option is instantly distinguishable across
-          the four-card row. */}
+      {/* CARD BODY — single padded column. The "OPTION N → SAVES $X/MO"
+          line is the first row (no separate ribbon band) so it shares the
+          same surface as the title and bullets, matching the reference
+          design where header chrome dissolves into the card. */}
       <div
         style={{
-          background: 'var(--surface-elevated)',
-          borderBottom: `2px solid ${accent}`,
-          padding: '10px 16px',
+          padding: '16px 18px 14px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+          flex: 1,
+          minHeight: 0,
         }}
       >
+        {/* OPTION LINE — bold uppercase "OPTION N → SAVES $X/MO". The
+            family accent appears only on the option label and the arrow,
+            providing per-card identity without a heavy band. */}
         <span
           className="flex items-center flex-wrap gap-x-2 gap-y-1"
           style={{
@@ -313,19 +319,7 @@ function PathCard({
             </>
           )}
         </span>
-      </div>
 
-      {/* BODY */}
-      <div
-        style={{
-          padding: '16px 18px 14px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 12,
-          flex: 1,
-          minHeight: 0,
-        }}
-      >
         {/* FAMILY TITLE — strategy name as the body heading
             (e.g. "Creative Finance", "Capital Stack"). */}
         <h4
@@ -373,11 +367,10 @@ function PathCard({
           </p>
         )}
 
-        {/* CONTEXT — selection rationale + summary, then italic asterisk
-            caveat (always visible, small/muted), then attorney CTA when
-            relevant. Caveat is no longer collapsible: it's important enough
-            to read at a glance, like the asterisked assumption note in the
-            reference design. */}
+        {/* CONTEXT — selection rationale + summary + asterisk caveat
+            (always visible, body weight, no italic — matches the reference
+            design where the assumption note reads at the same level as the
+            narrative line above it) + attorney CTA when relevant. */}
         <div className="flex flex-1 min-h-0 flex-col gap-2">
           {structure.selectionReason && structure.family !== 'blended' && (
             <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: 'var(--text-heading)' }}>
@@ -398,10 +391,9 @@ function PathCard({
             <p
               style={{
                 margin: 0,
-                fontSize: 12.5,
-                lineHeight: 1.5,
-                color: 'var(--text-secondary)',
-                fontStyle: 'italic',
+                fontSize: 13,
+                lineHeight: 1.55,
+                color: 'var(--text-body)',
               }}
             >
               <span aria-hidden="true">* </span>
