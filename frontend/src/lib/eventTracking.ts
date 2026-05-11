@@ -4,8 +4,9 @@
  * Respects cookie consent: events are only sent when user has accepted analytics.
  *
  * Three Paths (T0.5 / T14): `three_paths_rendered`, `path_pitch_opened`, `path_opened_in_strategy`,
- * `path_card_caveat_viewed`, `path_attorney_link_clicked`, `assumable_pv_displayed`,
- * `morby_method_substituted`.
+ * `path_attorney_link_clicked`, `assumable_pv_displayed`, `morby_method_substituted`.
+ * (Note: `path_card_caveat_viewed` was retired when the caveat became always-visible
+ * on path cards instead of an expandable disclosure.)
  * Three Paths (T17): `path_family_dismissed` — fires when the user dismisses a card's
  *   family from the Four Paths panel; the selector applies a ranking penalty on subsequent
  *   verdict requests via the `dismissed_families` payload field.

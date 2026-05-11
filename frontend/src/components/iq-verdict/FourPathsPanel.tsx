@@ -167,9 +167,15 @@ function MathBullet({ text, accent }: { text: string; accent: string }): ReactNo
         }}
       >
         {labelPart && (
-          <span style={{ fontWeight: 400 }}>
+          <span
+            style={{
+              fontWeight: 400,
+              display: 'inline-block',
+              minWidth: '11ch',
+              marginRight: 6,
+            }}
+          >
             {labelPart}
-            {remainder ? ' ' : ''}
           </span>
         )}
         {segments.map((seg, i) => {
@@ -216,7 +222,6 @@ function PathCard({
   onShowPitch?: (s: DealStructure) => void
   onDismiss?: (s: DealStructure) => void
 }) {
-  const caveatOpenedRef = useRef(false)
   const accent = FAMILY_ACCENT[structure.family] || 'var(--accent-sky)'
   const savingsLabel = formatSavings(structure.monthlySavings)
   const showAttorneyLine =
@@ -236,235 +241,240 @@ function PathCard({
     return raw
   })()
 
+  // Split "Saves $147/mo" into verb + amount so the dollar value carries
+  // the visual weight on the ribbon while "SAVES" reads as a soft label.
+  const savingsParts = (() => {
+    if (!savingsLabel) return null
+    const firstSpace = savingsLabel.indexOf(' ')
+    if (firstSpace <= 0) return { verb: savingsLabel, amount: '' }
+    return {
+      verb: savingsLabel.slice(0, firstSpace),
+      amount: savingsLabel.slice(firstSpace + 1),
+    }
+  })()
+
   return (
     <div
       role="article"
       aria-label={`Option ${index + 1}: ${structure.headline}`}
-      className="rounded-xl h-full min-h-0"
+      className="rounded-xl h-full min-h-0 overflow-hidden flex flex-col"
       style={{
         background: 'var(--surface-card)',
         border: `1px solid ${accent}33`,
-        boxShadow: `inset 4px 0 0 0 ${accent}`,
-        padding: '18px 18px 16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 14,
         minHeight: 0,
       }}
     >
-      {/* HEADER ROW — Path # · TITLE on the left, Savings KPI label on the right.
-          The KPI is the highest-impact at-a-glance number and earns the visual
-          weight on the right edge of the header. Rendered as plain accent text
-          (no pill background) so it reads consistently across accent colors. */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      {/* RIBBON HEADER — Bold uppercase "OPTION N → SAVES $X/MO" on a
+          dark band that anchors the card identity. The arrow takes the
+          family accent so each option is instantly distinguishable across
+          the four-card row. */}
+      <div
+        style={{
+          background: 'var(--surface-elevated)',
+          borderBottom: `2px solid ${accent}`,
+          padding: '10px 16px',
+        }}
+      >
         <span
+          className="flex items-center flex-wrap gap-x-2 gap-y-1"
           style={{
-            fontSize: 16,
+            fontSize: 13,
             fontWeight: 800,
-            letterSpacing: '0.06em',
+            letterSpacing: '0.08em',
             textTransform: 'uppercase',
             lineHeight: 1.2,
-            minWidth: 0,
+            color: 'var(--text-heading)',
           }}
         >
-          <span style={{ color: accent }}>{`Option ${index + 1}`}</span>
-          <span style={{ color: 'var(--text-heading)' }}>
-            {` · ${structure.familyLabel}`}
-          </span>
+          <span>{`Option ${index + 1}`}</span>
+          {savingsParts && (
+            <>
+              <span
+                aria-hidden="true"
+                style={{ color: accent, fontWeight: 900, fontSize: 15 }}
+              >
+                →
+              </span>
+              <span className="tabular-nums">
+                <span style={{ fontWeight: 600, opacity: 0.85 }}>
+                  {savingsParts.verb}
+                </span>
+                {savingsParts.amount && (
+                  <span style={{ fontWeight: 800 }}>{' '}{savingsParts.amount}</span>
+                )}
+              </span>
+            </>
+          )}
         </span>
-        {savingsLabel && (() => {
-          // Split "Saves $147/mo" into the verb ("Saves") and the amount
-          // ("$147/mo") so the verb can render at a lighter weight while
-          // the dollar amount keeps the visual emphasis it deserves.
-          const firstSpace = savingsLabel.indexOf(' ')
-          const verb = firstSpace > 0 ? savingsLabel.slice(0, firstSpace) : savingsLabel
-          const amount = firstSpace > 0 ? savingsLabel.slice(firstSpace + 1) : ''
-          return (
-            <span
-              className="tabular-nums"
-              style={{
-                flexShrink: 0,
-                fontSize: 12,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                color: 'var(--text-heading)',
-              }}
-            >
-              <span style={{ fontWeight: 400 }}>{verb}</span>
-              {amount && (
-                <span style={{ fontWeight: 700 }}>{' '}{amount}</span>
-              )}
-            </span>
-          )
-        })()}
       </div>
 
-      {/* MATH BULLETS — primary content. Each bullet carries the full
-          before → after  delta math so the card tells the whole story without
-          a separate lever block. Falls back to the plain headline when the
-          template doesn't supply bullets. */}
-      {bullets ? (
-        <ul
-          style={{
-            margin: 0,
-            padding: 0,
-            listStyle: 'none',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6,
-          }}
-        >
-          {bullets.map((b, i) => (
-            <MathBullet key={i} text={b} accent={accent} />
-          ))}
-        </ul>
-      ) : (
+      {/* BODY */}
+      <div
+        style={{
+          padding: '16px 18px 14px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
+        {/* FAMILY TITLE — strategy name as the body heading
+            (e.g. "Creative Finance", "Capital Stack"). */}
         <h4
           style={{
             margin: 0,
-            fontSize: 15,
-            fontWeight: 600,
-            lineHeight: 1.35,
+            fontSize: 17,
+            fontWeight: 800,
+            lineHeight: 1.2,
             color: 'var(--text-heading)',
           }}
         >
-          {structure.headline}
+          {structure.familyLabel}
         </h4>
-      )}
 
-      {/* CONTEXT — combines the selection rationale and the supporting
-          summary into a single muted paragraph block. Selection reason is
-          suppressed for blended-plan cards because the summary already
-          carries the same thesis (data still in the structure for downstream
-          consumers). */}
-      <div className="flex flex-1 min-h-0 flex-col gap-2">
-        {structure.selectionReason && structure.family !== 'blended' && (
-          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: 'var(--text-heading)' }}>
-            {structure.selectionReason}
+        {/* MATH BULLETS — primary content. Each bullet carries the full
+            before → after delta math so the card tells the whole story without
+            a separate lever block. Falls back to the plain headline when the
+            template doesn't supply bullets. */}
+        {bullets ? (
+          <ul
+            style={{
+              margin: 0,
+              padding: 0,
+              listStyle: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }}
+          >
+            {bullets.map((b, i) => (
+              <MathBullet key={i} text={b} accent={accent} />
+            ))}
+          </ul>
+        ) : (
+          <p
+            style={{
+              margin: 0,
+              fontSize: 14,
+              fontWeight: 600,
+              lineHeight: 1.4,
+              color: 'var(--text-heading)',
+            }}
+          >
+            {structure.headline}
           </p>
         )}
-        <p
-          style={{
-            margin: 0,
-            fontSize: 13,
-            lineHeight: 1.55,
-            color: 'var(--text-heading)',
-          }}
-        >
-          {renderSummaryWithLinks(structure.summary)}
-        </p>
-        {showAttorneyLine && (
-          <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
-            Get this contract reviewed by a creative-finance attorney —{' '}
-            <Link
-              href="/legal/find-attorney"
-              className="font-semibold underline-offset-2 hover:underline"
-              style={{ color: 'var(--accent-sky)' }}
-              onClick={() =>
-                trackEvent('path_attorney_link_clicked', {
-                  structure_id: structure.id,
-                  state: propertyState ?? undefined,
-                })
-              }
-            >
-              Find one
-            </Link>
-          </p>
-        )}
-      </div>
 
-      {/* ACTIONS ROW — primary CTA on the left, secondary CTA next to it,
-          Important caveat as a small inline disclosure (not a bulky block),
-          and the dismissal link tucked to the right edge. */}
-      <div
-        className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2"
-        style={{
-          paddingTop: 12,
-          borderTop: '1px solid var(--border-subtle, var(--border-default))',
-        }}
-      >
-        {onOpenInStrategy && (
-          <button
-            type="button"
-            onClick={() => onOpenInStrategy(structure, index)}
-            className="rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors"
+        {/* CONTEXT — selection rationale + summary, then italic asterisk
+            caveat (always visible, small/muted), then attorney CTA when
+            relevant. Caveat is no longer collapsible: it's important enough
+            to read at a glance, like the asterisked assumption note in the
+            reference design. */}
+        <div className="flex flex-1 min-h-0 flex-col gap-2">
+          {structure.selectionReason && structure.family !== 'blended' && (
+            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: 'var(--text-heading)' }}>
+              {structure.selectionReason}
+            </p>
+          )}
+          <p
             style={{
-              background: 'var(--accent-sky)',
-              color: 'var(--surface-base, #fff)',
-              border: 'none',
+              margin: 0,
+              fontSize: 13,
+              lineHeight: 1.55,
+              color: 'var(--text-heading)',
             }}
           >
-            Open in Strategy
-          </button>
-        )}
-        {structure.pitchScript && onShowPitch && (
-          <button
-            type="button"
-            onClick={() => onShowPitch(structure)}
-            className="rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors"
-            style={{
-              background: 'transparent',
-              color: 'var(--accent-sky)',
-              border: '1px solid var(--accent-sky)',
-            }}
-          >
-            How to pitch this
-          </button>
-        )}
-        {structure.caveat && (
-          <details
-            style={{ margin: 0 }}
-            onToggle={(e) => {
-              const open = (e.target as HTMLDetailsElement).open
-              if (open && !caveatOpenedRef.current) {
-                caveatOpenedRef.current = true
-                trackEvent('path_card_caveat_viewed', {
-                  structure_id: structure.id,
-                  state: propertyState ?? undefined,
-                })
-              }
-            }}
-          >
-            <summary
-              className="cursor-pointer select-none [&::-webkit-details-marker]:hidden"
-              style={{
-                fontSize: 12.5,
-                fontWeight: 600,
-                color: 'var(--accent-sky)',
-              }}
-            >
-              Important caveat ▾
-            </summary>
+            {renderSummaryWithLinks(structure.summary)}
+          </p>
+          {structure.caveat && (
             <p
               style={{
-                margin: '8px 0 0',
+                margin: 0,
                 fontSize: 12.5,
                 lineHeight: 1.5,
                 color: 'var(--text-secondary)',
                 fontStyle: 'italic',
-                maxWidth: '100%',
               }}
             >
+              <span aria-hidden="true">* </span>
               {structure.caveat}
             </p>
-          </details>
-        )}
-        {onDismiss && (
-          <button
-            type="button"
-            onClick={() => onDismiss(structure)}
-            className="ml-auto cursor-pointer text-xs font-medium underline-offset-2 hover:underline"
-            style={{
-              color: 'var(--text-secondary)',
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-            }}
-            aria-label={`Hide ${structure.familyLabel} cards for 30 days`}
-          >
-            Not interested
-          </button>
-        )}
+          )}
+          {showAttorneyLine && (
+            <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+              Get this contract reviewed by a creative-finance attorney —{' '}
+              <Link
+                href="/legal/find-attorney"
+                className="font-semibold underline-offset-2 hover:underline"
+                style={{ color: 'var(--accent-sky)' }}
+                onClick={() =>
+                  trackEvent('path_attorney_link_clicked', {
+                    structure_id: structure.id,
+                    state: propertyState ?? undefined,
+                  })
+                }
+              >
+                Find one
+              </Link>
+            </p>
+          )}
+        </div>
+
+        {/* ACTIONS ROW — primary CTA on the left, secondary CTA next to it,
+            and the dismissal link tucked to the right edge. */}
+        <div
+          className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2"
+          style={{
+            paddingTop: 12,
+            borderTop: '1px solid var(--border-subtle, var(--border-default))',
+          }}
+        >
+          {onOpenInStrategy && (
+            <button
+              type="button"
+              onClick={() => onOpenInStrategy(structure, index)}
+              className="rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors"
+              style={{
+                background: 'var(--accent-sky)',
+                color: 'var(--surface-base, #fff)',
+                border: 'none',
+              }}
+            >
+              Open in Strategy
+            </button>
+          )}
+          {structure.pitchScript && onShowPitch && (
+            <button
+              type="button"
+              onClick={() => onShowPitch(structure)}
+              className="rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors"
+              style={{
+                background: 'transparent',
+                color: 'var(--accent-sky)',
+                border: '1px solid var(--accent-sky)',
+              }}
+            >
+              How to pitch this
+            </button>
+          )}
+          {onDismiss && (
+            <button
+              type="button"
+              onClick={() => onDismiss(structure)}
+              className="ml-auto cursor-pointer text-xs font-medium underline-offset-2 hover:underline"
+              style={{
+                color: 'var(--text-secondary)',
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+              }}
+              aria-label={`Hide ${structure.familyLabel} cards for 30 days`}
+            >
+              Not interested
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

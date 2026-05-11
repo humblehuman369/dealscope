@@ -618,7 +618,7 @@ Until those are in place, the Sub2 card stands alone. See appendix: "Pending leg
 
 **Events to add (additive on top of T0.5):**
 - `path_family_dismissed` — already specified under T17. Listed here for cross-reference.
-- `path_card_caveat_viewed` — fires when the user expands the caveat on a card. Surfaces which structures generate the most uncertainty.
+- ~~`path_card_caveat_viewed`~~ — retired. Caveats are now rendered always-visible as italic asterisk text on each path card (no expand/collapse), so a "viewed" event is no longer meaningful.
 - `path_attorney_link_clicked` — fires from the T13 disclaimer link. Pre-T16 this is just a click counter; post-T16 it becomes the affiliate-conversion event.
 - `assumable_pv_displayed` — when T9's PV-of-rate-spread headline renders. Tracks whether this differentiator drives the conversion lift we expect.
 
