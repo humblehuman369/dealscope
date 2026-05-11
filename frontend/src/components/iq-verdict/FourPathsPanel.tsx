@@ -233,20 +233,12 @@ function PathCard({
   const savingsLabel = formatSavings(structure.monthlySavings)
   const showAttorneyLine =
     structure.family === 'strategy_switch' || structure.family === 'blended'
-  // For the Rent Increase ("income") card, split a combined "Target Rent: <formula>"
-  // bullet into two lines (label + formula) so the long arithmetic expression
-  // doesn't visually compete with the label. The backend template already emits
-  // the split form, but this normalizer keeps the UI working against older
-  // backend builds that still emit a single concatenated bullet.
-  const bullets = (() => {
-    const raw = structure.bullets && structure.bullets.length > 0 ? structure.bullets : null
-    if (!raw) return null
-    if (structure.family === 'income' && raw.length === 1) {
-      const match = raw[0].match(/^(Target Rent:)\s*\u00A0?\s*(\$.+)$/)
-      if (match) return [match[1], match[2]]
-    }
-    return raw
-  })()
+  // Bullets are passed through unmodified. (Older builds split a long "Target
+  // Rent: <arithmetic>" bullet across two lines for readability; that's no
+  // longer needed since MathBullet strips the formula and renders only the
+  // resulting amount, which fits on a single line.)
+  const bullets =
+    structure.bullets && structure.bullets.length > 0 ? structure.bullets : null
 
   // Split "Saves $147/mo" into verb + amount so the dollar value carries
   // the visual weight on the ribbon while "SAVES" reads as a soft label.
@@ -285,18 +277,16 @@ function PathCard({
           minHeight: 0,
         }}
       >
-        {/* OPTION LINE — bold uppercase "OPTION N → SAVES $X/MO". The
-            family accent appears only on the option label and the arrow,
-            providing per-card identity without a heavy band. Sized just
-            below the family title (17px) so it reads as a clear card
-            header without competing with the strategy name. */}
+        {/* OPTION LINE — "Option N → Saves $X/mo" rendered in the same
+            sans-serif rhythm as the body bullets (no uppercase, no extra
+            letter-spacing, weight pulled down from 800 to 700). The family
+            accent stays on the option label and the arrow so per-card
+            identity is preserved through color rather than chrome. */}
         <span
           className="flex items-center flex-wrap gap-x-2 gap-y-1"
           style={{
             fontSize: 15,
-            fontWeight: 800,
-            letterSpacing: '0.02em',
-            textTransform: 'uppercase',
+            fontWeight: 700,
             lineHeight: 1.2,
             color: 'var(--text-heading)',
           }}
@@ -306,16 +296,16 @@ function PathCard({
             <>
               <span
                 aria-hidden="true"
-                style={{ color: accent, fontWeight: 900, fontSize: 17 }}
+                style={{ color: accent, fontWeight: 800, fontSize: 17 }}
               >
                 →
               </span>
               <span className="tabular-nums">
-                <span style={{ fontWeight: 600, opacity: 0.85 }}>
+                <span style={{ fontWeight: 500, opacity: 0.85 }}>
                   {savingsParts.verb}
                 </span>
                 {savingsParts.amount && (
-                  <span style={{ fontWeight: 800 }}>{' '}{savingsParts.amount}</span>
+                  <span style={{ fontWeight: 700 }}>{' '}{savingsParts.amount}</span>
                 )}
               </span>
             </>

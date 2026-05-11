@@ -114,8 +114,11 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         realism_label="Capital-heavy path",
         headline=f"Down Payment {new_down * 100:.0f}%",
         # Math-carrying bullets — full breakdown so the card reads on its own
-        # without a separate lever block.
+        # without a separate lever block. Offer price is shown first so the
+        # cards in the row share a consistent leading anchor (every option
+        # implies a buy at this price; only the structure changes).
         bullets=[
+            f"Offer price:\u00A0{fmt_money(ctx.list_price)}",
             f"Down payment:\u00A0{ctx.down_payment_pct * 100:.0f}% → "
             f"{new_down * 100:.0f}%  ({fmt_money(new_down * ctx.list_price)})",
             f"Monthly P&I:\u00A0${round(ctx.baseline_monthly_pi):,} → ${round(new_pi):,}",
