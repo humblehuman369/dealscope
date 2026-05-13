@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DealGapIQ • Real Estate Investment Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --accent-sky: #0EA5E9;
+            --brand-blue: #0465f2;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+            background: #000000;
+            color: #F1F5F9;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .section-header {
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            color: #F1F5F9;
+        }
+
+        .path-card {
+            transition: all 0.2s ease;
+            background: #000000;
+            border: 1px solid #334155;
+        }
+
+        .path-card:hover {
+            border-color: #0EA5E9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+            background: #0C1220;
+        }
+
+        .cta-primary {
+            background: #0EA5E9;
+            color: #000000;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        
+        .cta-primary:hover {
+            background: #38bdf8;
+            box-shadow: 0 0 24px rgba(14,165,233,0.5);
+        }
+
+        .cta-secondary {
+            background: transparent;
+            color: #0EA5E9;
+            border: 1px solid #0EA5E9;
+            font-weight: 600;
+        }
+        
+        .cta-secondary:hover {
+            background: rgba(14,165,233,0.1);
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', system_ui, sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+        }
+
+        .logo-iq {
+            color: #0EA5E9;
+        }
+
+        .modern-shadow {
+            box-shadow: 0 0 20px rgba(14,165,233,0.15);
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="bg-black border-b border-[#334155] sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-x-3">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-2xl overflow-hidden" style="background: #000000; border: 1px solid #334155;">
+                        <span class="logo-text text-3xl font-bold tracking-tighter text-white">DealGap<span class="logo-iq">IQ</span></span>
+                    </div>
+                </div>
+
+                <div class="hidden md:flex items-center gap-x-10 text-sm">
+                    <a href="#how-it-works" class="font-medium text-[#94A3B8] hover:text-white transition-colors">How it Works</a>
+                    <a href="#features" class="font-medium text-[#94A3B8] hover:text-white transition-colors">Features</a>
+                    <a href="#pricing" class="font-medium text-[#94A3B8] hover:text-white transition-colors">Pricing</a>
+                    <a href="#trust" class="font-medium text-[#94A3B8] hover:text-white transition-colors">Trust</a>
+                </div>
+
+                <div class="flex items-center gap-x-4">
+                    <button onclick="showLoginModal()" class="hidden md:block px-5 py-2.5 text-sm font-semibold text-[#CBD5E1] hover:text-white transition-colors">Log in</button>
+                    <button onclick="startFreeDiscovery()" class="px-6 py-3 cta-primary text-sm font-semibold rounded-3xl flex items-center gap-x-2 transition-all active:scale-[0.985]">
+                        <span>Start Free Discovery</span>
+                        <i class="fa-solid fa-arrow-right text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="max-w-7xl mx-auto px-6 pt-16 pb-12">
+        <div class="grid lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-7 space-y-8">
+                <div class="inline-flex items-center gap-x-2 px-4 py-1.5 bg-[#0C1220] text-[#0EA5E9] rounded-3xl text-sm font-semibold border border-[#334155]">
+                    <div class="w-2 h-2 bg-[#0EA5E9] rounded-full animate-pulse"></div>
+                    <span>1,284 investors ran discoveries this week</span>
+                </div>
+
+                <div>
+                    <h1 class="font-display text-6xl lg:text-7xl leading-[1.05] tracking-tighter font-semibold text-white">
+                        Stop scrolling listings.<br>
+                        <span style="color: #0EA5E9;">Start spotting real deals.</span><br>
+                        Know what to offer.
+                    </h1>
+                    
+                    <div class="mt-6 max-w-xl">
+                        <p class="text-2xl font-medium text-[#CBD5E1] leading-tight">
+                            The Discovery tells you the gap.<br>
+                            We tell you how to close it.<br>
+                            Most tools stop at the numbers. We give you four complete offer paths — including creative finance structures most investors never consider.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 pt-2">
+                    <button onclick="startFreeDiscovery()" class="cta-primary group flex-1 sm:flex-none px-8 py-4 rounded-3xl font-semibold text-lg flex items-center justify-center gap-x-3 shadow-lg shadow-[#0EA5E9]/30">
+                        <span>Run Free Discovery</span>
+                        <i class="fa-solid fa-magnifying-glass group-active:rotate-12 transition-transform"></i>
+                    </button>
+                    
+                    <button onclick="watchDemo()" class="cta-secondary flex-1 sm:flex-none px-8 py-4 rounded-3xl font-semibold text-lg flex items-center justify-center gap-x-3">
+                        <i class="fa-solid fa-play" style="color: #0EA5E9;"></i>
+                        <span>Watch 60-second demo</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-x-8 pt-4">
+                    <div class="flex -space-x-3">
+                        <img src="https://i.pravatar.cc/32?img=28" class="w-8 h-8 rounded-full border-2 border-[#0C1220]" alt="">
+                        <img src="https://i.pravatar.cc/32?img=47" class="w-8 h-8 rounded-full border-2 border-[#0C1220]" alt="">
+                        <img src="https://i.pravatar.cc/32?img=12" class="w-8 h-8 rounded-full border-2 border-[#0C1220]" alt="">
+                        <img src="https://i.pravatar.cc/32?img=32" class="w-8 h-8 rounded-full border-2 border-[#0C1220]" alt="">
+                    </div>
+                    <div class="text-sm">
+                        <div class="font-semibold text-[#F1F5F9]">Joined by 2,847 investors this month</div>
+                        <div style="color: #34d399;" class="text-xs font-medium">47 deals closed using our scripts last week</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero visual - FRESH HOUSE IMAGE -->
+            <div class="lg:col-span-5 relative">
+                <div class="relative rounded-3xl overflow-hidden modern-shadow border border-[#334155]">
+                    <img src="imagine_images/hN5mA.jpg" 
+                         class="w-full aspect-[16/14] object-cover" 
+                         alt="Beautiful suburban house with hand holding DealGapIQ phone app showing property analysis">
+                    
+                    <div class="absolute top-6 right-6 bg-black/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow flex items-center gap-x-2 text-sm border border-[#334155]">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-check-circle mr-1.5" style="color: #34d399;"></i>
+                            <span class="font-semibold">−6.4% Deal Gap</span>
+                        </div>
+                    </div>
+                    
+                    <div class="absolute bottom-6 left-6 bg-black/90 backdrop-blur px-5 py-3 rounded-2xl text-xs shadow border border-[#334155] max-w-[200px]">
+                        <div class="font-mono text-[10px] text-[#94A3B8] mb-0.5">1014–16 N J ST, LAKE WORTH, FL</div>
+                        <div class="font-semibold">4 offer paths ready • 12s analysis</div>
+                    </div>
+                </div>
+                
+                <div class="absolute -bottom-5 -left-5 bg-black border border-[#334155] shadow-xl rounded-3xl px-5 py-4 flex items-center gap-x-4">
+                    <div>
+                        <div class="text-xs text-[#94A3B8]">Avg. improvement</div>
+                        <div class="text-3xl font-bold" style="color: #34d399;">+22%</div>
+                    </div>
+                    <div style="color: #34d399;">
+                        <i class="fa-solid fa-arrow-trend-up text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- QUICK STATS BAR -->
+    <div class="bg-[#060B14] py-5 border-y border-[#334155]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div class="flex items-center justify-center gap-x-3 text-white">
+                    <i class="fa-solid fa-database text-[#0EA5E9] text-xl"></i>
+                    <div class="text-left">
+                        <div class="text-xs text-[#94A3B8]">DATA SOURCES</div>
+                        <div class="font-mono text-xl font-semibold tracking-tighter">6 live</div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center gap-x-3 text-white">
+                    <i class="fa-solid fa-clock text-[#0EA5E9] text-xl"></i>
+                    <div class="text-left">
+                        <div class="text-xs text-[#94A3B8]">AVG ANALYSIS TIME</div>
+                        <div class="font-mono text-xl font-semibold tracking-tighter">15 seconds</div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center gap-x-3 text-white">
+                    <i class="fa-solid fa-users text-[#0EA5E9] text-xl"></i>
+                    <div class="text-left">
+                        <div class="text-xs text-[#94A3B8]">ACTIVE INVESTORS</div>
+                        <div class="font-mono text-xl font-semibold tracking-tighter">8,412</div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center gap-x-3 text-white">
+                    <i class="fa-solid fa-handshake text-[#0EA5E9] text-xl"></i>
+                    <div class="text-left">
+                        <div class="text-xs text-[#94A3B8]">DEALS STRUCTURED</div>
+                        <div class="font-mono text-xl font-semibold tracking-tighter">3,291</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TESTIMONIALS -->
+    <section id="trust" class="max-w-7xl mx-auto px-6 py-16">
+        <div class="text-center mb-12">
+            <div class="inline px-4 py-1.5 text-xs font-semibold tracking-widest bg-[#0C1220] text-[#0EA5E9] rounded-full border border-[#334155]">REAL RESULTS FROM REAL INVESTORS</div>
+            <h2 class="section-header mt-4">“DealGapIQ paid for itself on the first deal.”</h2>
+            <p class="mt-3 text-xl text-[#94A3B8] max-w-md mx-auto">Join investors who stopped guessing and started closing.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-black border border-[#334155] rounded-3xl p-7 modern-shadow">
+                <div class="flex gap-x-1 mb-4" style="color: #34d399;">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                </div>
+                <p class="text-[15px] leading-snug text-[#CBD5E1]">"The negotiation scripts are insane. I used the seller-carry template and got a 0% 2nd on a property the listing agent said was 'firm.' Closed 18 days later."</p>
+                <div class="mt-6 flex items-center gap-x-4">
+                    <img src="https://i.pravatar.cc/48?img=28" class="w-11 h-11 rounded-2xl" alt="">
+                    <div>
+                        <div class="font-semibold text-[#F1F5F9]">Marcus Rivera</div>
+                        <div class="text-xs text-[#64748B]">BRRRR Investor • Tampa, FL • 14 deals</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-black border border-[#334155] rounded-3xl p-7 modern-shadow">
+                <div class="flex gap-x-1 mb-4" style="color: #34d399;">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </div>
+                <p class="text-[15px] leading-snug text-[#CBD5E1]">"I was about to walk away from a $465k listing. DealGapIQ showed me a blended structure with rent verification + seller carry. My offer was accepted same day."</p>
+                <div class="mt-6 flex items-center gap-x-4">
+                    <img src="https://i.pravatar.cc/48?img=47" class="w-11 h-11 rounded-2xl" alt="">
+                    <div>
+                        <div class="font-semibold text-[#F1F5F9]">Priya Patel</div>
+                        <div class="text-xs text-[#64748B]">Creative Finance Investor • Austin, TX • 7 deals</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-black border border-[#334155] rounded-3xl p-7 modern-shadow">
+                <div class="flex gap-x-1 mb-4" style="color: #34d399;">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </div>
+                <p class="text-[15px] leading-snug text-[#CBD5E1]">"Finally a tool that doesn’t just tell me the numbers — it tells me what to say on the phone. I’ve used the scripts on 4 deals now. My win rate went from 11% to 41%."</p>
+                <div class="mt-6 flex items-center gap-x-4">
+                    <img src="https://i.pravatar.cc/48?img=12" class="w-11 h-11 rounded-2xl" alt="">
+                    <div>
+                        <div class="font-semibold text-[#F1F5F9]">Derek Thompson</div>
+                        <div class="text-xs text-[#64748B]">Wholesaler + Investor • Phoenix, AZ • 29 deals</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-black border border-[#334155] rounded-3xl p-7 modern-shadow">
+                <div class="flex gap-x-1 mb-4" style="color: #34d399;">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </div>
+                <p class="text-[15px] leading-snug text-[#CBD5E1]">"As a new investor I was terrified of creative finance. The 4-path system made it dead simple. Ran my first discovery on a Zillow lead and had a full strategy in under 2 minutes."</p>
+                <div class="mt-6 flex items-center gap-x-4">
+                    <img src="https://i.pravatar.cc/48?img=32" class="w-11 h-11 rounded-2xl" alt="">
+                    <div>
+                        <div class="font-semibold text-[#F1F5F9]">Aisha Khan</div>
+                        <div class="text-xs text-[#64748B]">New Investor • Orlando, FL • 3 deals</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section id="features" class="bg-[#060B14] border-y border-[#334155] py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="max-w-2xl mb-12">
+                <div class="uppercase tracking-[2px] text-xs font-semibold mb-3" style="color: #0EA5E9;">THE DEALGAPIQ DIFFERENCE</div>
+                <h2 class="section-header">Every property can be a deal — at the right price and terms.</h2>
+                <p class="mt-4 text-xl text-[#94A3B8]">We uncover the hidden ones others miss and give you the exact offer structures to win with almost no competition. Most tools stop at the numbers. We give you four complete offer paths — including creative finance structures most investors never consider.</p>
+            </div>
+
+            <div class="bg-black border border-[#334155] rounded-3xl modern-shadow overflow-hidden">
+                <div class="px-8 pt-8 pb-6 border-b border-[#334155] flex flex-col md:flex-row md:items-end md:justify-between gap-y-4">
+                    <div>
+                        <div class="flex items-center gap-x-3">
+                            <span class="px-4 py-1 bg-[#0C1220] text-[#0EA5E9] text-xs font-bold tracking-widest rounded-2xl border border-[#334155]">EXAMPLE</span>
+                            <span class="font-mono text-sm text-[#64748B]">1014–16 N J ST • LAKE WORTH, FL</span>
+                        </div>
+                        <div class="mt-3 flex items-baseline gap-x-4">
+                            <div>
+                                <span class="text-5xl font-semibold tabular-nums">$457,100</span>
+                                <span class="text-[#64748B] ml-1">list</span>
+                            </div>
+                            <div class="px-4 py-1.5 bg-red-950 text-red-400 rounded-2xl text-sm font-bold flex items-center gap-x-1.5 border border-red-900">
+                                <i class="fa-solid fa-exclamation-triangle"></i>
+                                <span>−6.4% Deal Gap</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-[#94A3B8] mt-1">Target buy price: <span class="font-semibold text-white">$428,000</span> at 20% down</div>
+                    </div>
+                    
+                    <button onclick="continueToStrategy()" class="px-7 py-3.5 bg-[#0EA5E9] text-black text-sm font-semibold rounded-3xl flex items-center gap-x-2 hover:bg-[#38bdf8] transition-all">
+                        <span>Continue to full strategy</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div class="p-8">
+                    <div class="text-xs uppercase tracking-widest font-semibold text-[#64748B] mb-4">4 PATHS TO CLOSE THE GAP</div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="path-card rounded-2xl p-5 flex gap-5">
+                            <div class="w-9 h-9 flex-shrink-0 bg-[#0C1220] text-[#0EA5E9] rounded-2xl flex items-center justify-center font-bold text-xl border border-[#334155]">1</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-[#F1F5F9]">Income Uplift</div>
+                                <div class="text-sm text-[#94A3B8] mt-1">Verify or raise rent to <span class="font-mono font-semibold text-white">$3,556</span></div>
+                                <div class="text-xs mt-3 flex items-center gap-x-1" style="color: #34d399;"><i class="fa-solid fa-check"></i> <span>Comp-based • No negotiation needed</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="path-card rounded-2xl p-5 flex gap-5">
+                            <div class="w-9 h-9 flex-shrink-0 bg-[#0C1220] text-[#0EA5E9] rounded-2xl flex items-center justify-center font-bold text-xl border border-[#334155]">2</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-[#F1F5F9]">Realistic Ask</div>
+                                <div class="text-sm text-[#94A3B8] mt-1">Negotiate to <span class="font-mono font-semibold text-white">$428K</span></div>
+                                <div class="text-xs mt-3 flex items-center gap-x-1" style="color: #34d399;"><i class="fa-solid fa-check"></i> <span>Best for motivated or long-DOM sellers</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="path-card rounded-2xl p-5 flex gap-5">
+                            <div class="w-9 h-9 flex-shrink-0 bg-[#0C1220] text-[#0EA5E9] rounded-2xl flex items-center justify-center font-bold text-xl border border-[#334155]">3</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-[#F1F5F9]">Capital-Heavy</div>
+                                <div class="text-sm text-[#94A3B8] mt-1">Put 31% down (<span class="font-mono font-semibold text-white">$156K</span>)</div>
+                                <div class="text-xs mt-3 flex items-center gap-x-1" style="color: #34d399;"><i class="fa-solid fa-check"></i> <span>When you have cash and want the asset fast</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="path-card border-2 rounded-2xl p-5 flex gap-5 relative" style="border-color: #0EA5E9; background: #0C1220;">
+                            <div class="absolute -top-2.5 -right-2.5 bg-[#0EA5E9] text-black text-[10px] font-bold px-3 py-0.5 rounded-full tracking-wider">MOST POPULAR</div>
+                            <div class="w-9 h-9 flex-shrink-0 bg-[#0EA5E9] text-black rounded-2xl flex items-center justify-center font-bold text-xl">4</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold flex items-center gap-x-2 text-[#F1F5F9]">Blended Creative Plan <span style="color: #0EA5E9;">★</span></div>
+                                <div class="text-sm text-[#94A3B8] mt-1">Small price cut + seller carries $2,719 2nd at 0% + 0.6% rent lift</div>
+                                <div class="text-xs mt-3 font-semibold" style="color: #34d399;">The structure no single lever could close</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 text-xs text-center text-[#64748B]">Each path includes an editable strategy worksheet + ready-to-send negotiation script</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="max-w-7xl mx-auto px-6 py-16">
+        <div class="text-center mb-12">
+            <h2 class="section-header">Three clicks. One clear path forward.</h2>
+            <p class="mt-3 text-xl max-w-md mx-auto text-[#94A3B8]">No spreadsheets. No 40-tab browser chaos. Just answers.</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div class="text-center px-6">
+                <div class="mx-auto w-16 h-16 bg-[#0C1220] text-[#0EA5E9] rounded-3xl flex items-center justify-center text-3xl mb-6 border border-[#334155]">1</div>
+                <div class="font-semibold text-xl mb-2 text-[#F1F5F9]">Paste any Zillow link or address</div>
+                <div class="text-[#94A3B8] text-[15px]">Works on active listings, expired, or even off-market comps. No login required for first discovery.</div>
+            </div>
+            <div class="text-center px-6">
+                <div class="mx-auto w-16 h-16 bg-[#0C1220] text-[#0EA5E9] rounded-3xl flex items-center justify-center text-3xl mb-6 border border-[#334155]">2</div>
+                <div class="font-semibold text-xl mb-2 text-[#F1F5F9]">See the Deal Gap instantly</div>
+                <div class="text-[#94A3B8] text-[15px]">Multi-source valuation + our proprietary gap calculation. Know exactly how far off the listing is from a real deal.</div>
+            </div>
+            <div class="text-center px-6">
+                <div class="mx-auto w-16 h-16 bg-[#0C1220] text-[#0EA5E9] rounded-3xl flex items-center justify-center text-3xl mb-6 border border-[#334155]">3</div>
+                <div class="font-semibold text-xl mb-2 text-[#F1F5F9]">Choose your path + get the script</div>
+                <div class="text-[#94A3B8] text-[15px]">Four pre-built offers. One click to open the full negotiation script, worksheet, and talking points tailored to the seller type.</div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-10">
+            <button onclick="startFreeDiscovery()" class="px-9 py-4 text-lg font-semibold border border-[#334155] hover:bg-[#0C1220] transition-colors rounded-3xl inline-flex items-center gap-x-3 text-[#F1F5F9]">
+                Try it on your next lead — it’s free
+                <i class="fa-solid fa-arrow-right-long" style="color: #0EA5E9;"></i>
+            </button>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing" class="bg-black border-y border-[#334155] py-12">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <div class="mx-auto max-w-md">
+                <div class="text-xs tracking-[2px] font-bold mb-2" style="color: #0EA5E9;">TRANSPARENT PRICING</div>
+                <h3 class="font-display text-4xl tracking-tight text-[#F1F5F9]">Start free. Upgrade when you’re ready.</h3>
+                <p class="mt-3 text-[#94A3B8]">No credit card for the free tier. Cancel Pro anytime.</p>
+            </div>
+            
+            <div class="mt-8 grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                <div class="border border-[#334155] rounded-3xl p-8 text-left bg-black">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-semibold text-2xl text-[#F1F5F9]">Free</div>
+                            <div class="text-sm text-[#64748B]">For serious explorers</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-mono text-4xl font-semibold text-[#F1F5F9]">$0</span>
+                        </div>
+                    </div>
+                    <ul class="mt-6 space-y-3 text-sm text-[#CBD5E1]">
+                        <li class="flex items-start gap-x-3"><i class="fa-solid fa-check mt-1" style="color: #34d399;"></i> <span>3 discoveries per month</span></li>
+                        <li class="flex items-start gap-x-3"><i class="fa-solid fa-check mt-1" style="color: #34d399;"></i> <span>Full 4-path analysis</span></li>
+                        <li class="flex items-start gap-x-3"><i class="fa-solid fa-check mt-1" style="color: #34d399;"></i> <span>Negotiation scripts</span></li>
+                        <li class="flex items-start gap-x-3"><i class="fa-solid fa-check mt-1" style="color: #34d399;"></i> <span>PDF export</span></li>
+                    </ul>
+                    <button onclick="startFreeDiscovery()" class="mt-8 w-full py-3 border border-[#334155] rounded-3xl font-semibold text-sm text-[#F1F5F9] hover:bg-[#0C1220]">Start free — no card needed</button>
+                </div>
+                
+                <div class="border-2 rounded-3xl p-8 text-left relative overflow-hidden" style="border-color: #0EA5E9; background: #0C1220;">
+                    <div class="absolute top-6 right-6 bg-[#0EA5E9] text-black text-xs px-4 py-1 rounded-full font-bold tracking-wider">MOST POPULAR</div>
+                    
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-semibold text-2xl text-[#F1F5F9]">Pro</div>
+                            <div class="text-sm" style="color: #0EA5E9;">For active deal makers</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-mono text-4xl font-semibold text-[#F1F5F9]">$39</span>
+                            <span class="text-xs text-[#64748B]">/mo</span><br>
+                            <span class="text-xs font-medium" style="color: #0EA5E9;">or $29/mo billed annually</span>
+                        </div>
+                    </div>
+                    
+                    <ul class="mt-6 space-y-3 text-sm text-[#CBD5E1]">
+                        <li class="flex items-start gap-x-3"><i class="fa-solid fa-check mt-1" style="color: #34d399;"></i> <span>Unlimited discoveries</span></li>
+                        <li class="flex items-start gap-x-3"><i class="fa-solid fa-check mt-1" style="color: #34d399;"></i> <span>Priority data sources + live MLS sync</span></li>
+                        <li class="flex items-start gap-x-3"><i class="fa-solid fa-check mt-1" style="color: #34d399;"></i> <span>Team collaboration &amp; shared workspaces</span></li>
+                        <li class="flex items-start gap-x-3"><i class="fa-solid fa-check mt-1" style="color: #34d399;"></i> <span>Advanced creative finance templates</span></li>
+                        <li class="flex items-start gap-x-3"><i class="fa-solid fa-check mt-1" style="color: #34d399;"></i> <span>Priority support + deal review calls</span></li>
+                    </ul>
+                    
+                    <button onclick="startProTrial()" class="mt-8 w-full py-3.5 bg-[#0EA5E9] text-black font-semibold rounded-3xl text-sm transition-all hover:bg-[#38bdf8]">Start 14-day Pro trial — no card required</button>
+                    <div class="text-center text-[10px] mt-3 font-medium" style="color: #0EA5E9;">Cancel anytime. 94% of triers convert.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMPARISON -->
+    <section class="max-w-7xl mx-auto px-6 py-16">
+        <div class="text-center mb-10">
+            <h2 class="section-header">Where most tools stop, DealGapIQ keeps going.</h2>
+        </div>
+        
+        <div class="bg-black border border-[#334155] rounded-3xl overflow-hidden">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-[#334155]" style="background: #060B14;">
+                        <th class="text-left px-8 py-5 font-semibold text-[#F1F5F9] w-1/3">Capability</th>
+                        <th class="px-6 py-5 font-semibold text-center text-[#64748B]">Listing Sites</th>
+                        <th class="px-6 py-5 font-semibold text-center text-[#64748B]">Investor Calculators</th>
+                        <th class="px-6 py-5 font-semibold text-center" style="background: rgba(14,165,233,0.1); color: #0EA5E9;">DealGapIQ</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#334155] text-sm">
+                    <tr><td class="px-8 py-5 font-medium text-[#CBD5E1]">Multi-source valuation</td><td class="px-6 py-5 text-center text-red-400">✕</td><td class="px-6 py-5 text-center text-amber-400">Partial</td><td class="px-6 py-5 text-center font-semibold" style="background: rgba(14,165,233,0.1); color: #0EA5E9;">✓ Full (6 sources)</td></tr>
+                    <tr><td class="px-8 py-5 font-medium text-[#CBD5E1]">Deal Gap detection</td><td class="px-6 py-5 text-center text-red-400">✕</td><td class="px-6 py-5 text-center text-red-400">✕</td><td class="px-6 py-5 text-center font-semibold" style="background: rgba(14,165,233,0.1); color: #0EA5E9;">✓ Yes — with target buy price</td></tr>
+                    <tr><td class="px-8 py-5 font-medium text-[#CBD5E1]">Pre-built offer structures</td><td class="px-6 py-5 text-center text-red-400">✕</td><td class="px-6 py-5 text-center text-red-400">✕</td><td class="px-6 py-5 text-center font-semibold" style="background: rgba(14,165,233,0.1); color: #0EA5E9;">✓ 4 paths including creative</td></tr>
+                    <tr><td class="px-8 py-5 font-medium text-[#CBD5E1]">Negotiation scripts</td><td class="px-6 py-5 text-center text-red-400">✕</td><td class="px-6 py-5 text-center text-red-400">✕</td><td class="px-6 py-5 text-center font-semibold" style="background: rgba(14,165,233,0.1); color: #0EA5E9;">✓ Yes — tailored to path &amp; seller</td></tr>
+                    <tr><td class="px-8 py-5 font-medium text-[#CBD5E1]">Creative finance modelling</td><td class="px-6 py-5 text-center text-red-400">✕</td><td class="px-6 py-5 text-center text-red-400">✕</td><td class="px-6 py-5 text-center font-semibold" style="background: rgba(14,165,233,0.1); color: #0EA5E9;">✓ Sub2 • Seller carry • 0% 2nds</td></tr>
+                    <tr><td class="px-8 py-5 font-medium text-[#CBD5E1]">No signup to try</td><td class="px-6 py-5 text-center" style="color: #34d399;">✓</td><td class="px-6 py-5 text-center text-red-400">✕</td><td class="px-6 py-5 text-center font-semibold" style="background: rgba(14,165,233,0.1); color: #0EA5E9;">✓ Yes — instant</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="bg-black text-white py-16 border-t border-[#334155]">
+        <div class="max-w-3xl mx-auto px-6 text-center">
+            <div class="mx-auto w-20 h-20 bg-[#0C1220] rounded-3xl flex items-center justify-center mb-8 border border-[#334155]">
+                <i class="fa-solid fa-shield-halved text-4xl" style="color: #0EA5E9;"></i>
+            </div>
+            
+            <h2 class="font-display text-5xl tracking-tight">Trust comes from seeing the work.</h2>
+            <p class="mt-4 text-xl text-[#94A3B8] max-w-md mx-auto">Every number, every source, every script is reviewable. No black boxes.</p>
+            
+            <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="startFreeDiscovery()" class="px-10 py-4 bg-[#0EA5E9] text-black font-semibold rounded-3xl text-lg flex items-center justify-center gap-x-3 hover:bg-[#38bdf8] transition-all">Run your first discovery — free</button>
+                <button onclick="document.getElementById('methodology-modal').showModal()" class="px-8 py-4 border border-[#334155] hover:bg-[#0C1220] font-semibold rounded-3xl text-lg flex items-center justify-center gap-x-3 transition-all text-[#F1F5F9]">Read the full methodology</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-black border-t border-[#334155] py-16 text-sm">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-12 gap-y-12">
+            <div class="md:col-span-5">
+                <div class="flex items-center gap-x-3 mb-6">
+                    <div class="flex items-center justify-center w-9 h-9 rounded-2xl overflow-hidden" style="background: #000000; border: 1px solid #334155;">
+                        <span class="logo-text text-3xl font-bold tracking-tighter text-white">DealGap<span class="logo-iq">IQ</span></span>
+                    </div>
+                </div>
+                <div class="max-w-xs text-[#94A3B8]">The only tool that turns “maybe” listings into signed contracts with clear offer structures and scripts.</div>
+                <div class="mt-8 text-xs text-[#64748B]">© 2026 DealGapIQ, Inc. Built by investors, for investors.</div>
+            </div>
+            
+            <div class="md:col-span-3">
+                <div class="font-semibold mb-4 text-xs tracking-widest text-[#64748B]">PRODUCT</div>
+                <div class="space-y-2.5 text-[#CBD5E1]">
+                    <a href="#" class="block hover:text-white">How it Works</a>
+                    <a href="#" class="block hover:text-white">Creative Finance Templates</a>
+                    <a href="#" class="block hover:text-white">Data Sources</a>
+                    <a href="#" class="block hover:text-white">API Access</a>
+                </div>
+            </div>
+            
+            <div class="md:col-span-4">
+                <div class="font-semibold mb-4 text-xs tracking-widest text-[#64748B]">COMPANY</div>
+                <div class="grid grid-cols-2 gap-y-2.5 text-[#CBD5E1] text-sm">
+                    <a href="#" class="hover:text-white">About &amp; Mission</a>
+                    <a href="#" class="hover:text-white">Founder Story</a>
+                    <a href="#" class="hover:text-white">Blog &amp; Case Studies</a>
+                    <a href="#" class="hover:text-white">Press</a>
+                    <a href="#" class="hover:text-white">Careers (we’re hiring)</a>
+                    <a href="#" class="hover:text-white">Contact</a>
+                    <a href="#" class="hover:text-white">Status</a>
+                    <a href="#" class="hover:text-white">Legal</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODALS (same as before, kept minimal for freshness) -->
+    <div id="discovery-modal" onclick="if (event.target.id === 'discovery-modal') hideDiscoveryModal()" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
+        <div onclick="event.stopImmediatePropagation()" class="bg-black border border-[#334155] rounded-3xl w-full max-w-lg modern-shadow overflow-hidden">
+            <div class="px-8 pt-8 pb-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="font-semibold text-3xl tracking-tight text-[#F1F5F9]">Run a Free Discovery</div>
+                        <div style="color: #0EA5E9;" class="text-sm mt-1">No signup • No credit card • 15 seconds</div>
+                    </div>
+                    <button onclick="hideDiscoveryModal()" class="text-3xl leading-none text-[#64748B] hover:text-white">×</button>
+                </div>
+                
+                <div class="mt-8">
+                    <div class="text-xs font-semibold tracking-widest text-[#64748B] mb-2">PASTE ZILLOW URL OR STREET ADDRESS</div>
+                    <input id="property-input" type="text" value="1014-16 N J St, Lake Worth, FL 33460" class="w-full border border-[#334155] focus:border-[#0EA5E9] transition-colors px-5 py-4 rounded-2xl text-lg placeholder:text-[#64748B] bg-[#0C1220] text-white">
+                    <div class="flex justify-center mt-3">
+                        <button onclick="analyzeProperty()" class="px-8 py-3.5 bg-[#0EA5E9] hover:bg-[#38bdf8] transition-colors text-black font-semibold rounded-3xl flex items-center gap-x-3 text-sm w-full justify-center">
+                            <span>ANALYZE THIS PROPERTY</span>
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="results-modal" onclick="if (event.target.id === 'results-modal') hideResultsModal()" class="hidden fixed inset-0 bg-black/90 backdrop-blur z-[110] flex items-center justify-center p-6">
+        <div onclick="event.stopImmediatePropagation()" class="bg-black border border-[#334155] rounded-3xl w-full max-w-3xl modern-shadow overflow-hidden max-h-[92vh] flex flex-col">
+            <div class="px-8 py-6 border-b border-[#334155] flex items-center justify-between flex-shrink-0">
+                <div>
+                    <div class="font-mono text-xs" style="color: #0EA5E9;">ANALYSIS COMPLETE • 12.4s</div>
+                    <div id="modal-address" class="font-semibold text-2xl tracking-tight text-[#F1F5F9]"></div>
+                </div>
+                <div class="flex items-center gap-x-4">
+                    <div class="px-4 py-1.5 bg-red-950 text-red-400 rounded-2xl text-sm font-bold flex items-center gap-x-2 border border-red-900">
+                        <i class="fa-solid fa-exclamation-triangle"></i> 
+                        <span id="modal-gap"></span>
+                    </div>
+                    <button onclick="hideResultsModal()" class="text-3xl text-[#64748B] hover:text-white">×</button>
+                </div>
+            </div>
+            
+            <div class="p-8 overflow-auto flex-1">
+                <div class="grid md:grid-cols-5 gap-6">
+                    <div class="md:col-span-2">
+                        <div class="text-xs uppercase font-semibold tracking-widest text-[#64748B] mb-3">DEAL SUMMARY</div>
+                        <div class="space-y-4">
+                            <div><div class="text-sm text-[#94A3B8]">List Price</div><div class="text-4xl font-semibold tabular-nums text-[#F1F5F9]">$457,100</div></div>
+                            <div><div class="text-sm text-[#94A3B8]">Our Target Buy Price</div><div class="text-4xl font-semibold tabular-nums" style="color: #34d399;">$428,000</div></div>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-3">
+                        <div class="text-xs uppercase font-semibold tracking-widest text-[#64748B] mb-3">RECOMMENDED OFFER PATHS</div>
+                        <div class="space-y-3 text-sm">
+                            <div onclick="selectPath(0)" class="cursor-pointer flex items-center justify-between border border-[#334155] hover:border-[#0EA5E9] rounded-2xl p-4 transition-colors bg-black">
+                                <div class="flex items-center gap-x-4"><div class="w-8 h-8 bg-[#0C1220] text-[#0EA5E9] rounded-xl flex items-center justify-center text-sm font-bold border border-[#334155]">1</div><div><div class="font-semibold text-[#F1F5F9]">Income Uplift Path</div><div class="text-xs text-[#64748B]">Verify rent to $3,556 • 0 negotiation</div></div></div>
+                                <div style="color: #0EA5E9;"><i class="fa-solid fa-arrow-right"></i></div>
+                            </div>
+                            <div onclick="selectPath(3)" class="cursor-pointer flex items-center justify-between border-2 rounded-2xl p-4 transition-colors" style="border-color: #0EA5E9; background: #0C1220;">
+                                <div class="flex items-center gap-x-4"><div class="w-8 h-8 bg-[#0EA5E9] text-black rounded-xl flex items-center justify-center text-sm font-bold">4</div><div><div class="font-semibold flex items-center gap-x-2 text-[#F1F5F9]">Blended Creative <span class="text-[10px] bg-black px-1.5 rounded font-mono text-[#0EA5E9]">BEST</span></div><div class="text-xs text-[#64748B]">Price cut + 0% seller 2nd + rent lift</div></div></div>
+                                <div style="color: #0EA5E9;"><i class="fa-solid fa-arrow-right"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-[#334155] px-8 py-5 flex-shrink-0 flex items-center gap-x-4 bg-[#060B14]">
+                <button onclick="downloadStrategy()" class="flex-1 py-3.5 border border-[#0EA5E9] text-[#0EA5E9] font-semibold rounded-3xl text-sm flex items-center justify-center gap-x-2 hover:bg-[#0EA5E9]/10">Download full strategy PDF</button>
+                <button onclick="copyScript()" class="flex-1 py-3.5 bg-[#0EA5E9] text-black font-semibold rounded-3xl text-sm flex items-center justify-center gap-x-2">Copy negotiation script</button>
+            </div>
+        </div>
+    </div>
+
+    <dialog id="methodology-modal" class="rounded-3xl max-w-2xl p-0 bg-black border border-[#334155]">
+        <div class="p-9">
+            <div class="flex justify-between items-start mb-6">
+                <div class="font-semibold text-3xl tracking-tight text-[#F1F5F9]">Our Methodology</div>
+                <button onclick="document.getElementById('methodology-modal').close()" class="text-4xl text-[#64748B] hover:text-white">×</button>
+            </div>
+            <div class="text-[#CBD5E1]">
+                <p>DealGapIQ combines six independent valuation sources with proprietary adjustments for condition, location micro-trends, and rental yield realism.</p>
+                <p class="mt-4">The Deal Gap is calculated as:</p>
+                <div class="bg-[#0C1220] text-[#0EA5E9] font-mono text-sm p-4 rounded-2xl my-4 border border-[#334155]">Gap = (Target Buy Price − Adjusted ARV) / Target Buy Price</div>
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+        function startFreeDiscovery() {
+            const modal = document.getElementById('discovery-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                document.getElementById('property-input').focus();
+                document.getElementById('property-input').select();
+            }, 150);
+        }
+        
+        function hideDiscoveryModal() {
+            const modal = document.getElementById('discovery-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+        
+        function analyzeProperty() {
+            const input = document.getElementById('property-input').value.trim();
+            hideDiscoveryModal();
+            
+            const loadingToast = document.createElement('div');
+            loadingToast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 bg-black border border-[#334155] text-white px-6 py-3 rounded-3xl flex items-center gap-x-3 shadow-2xl text-sm z-[200]';
+            loadingToast.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="color: #0EA5E9;"></i> <span>Analyzing <strong>${input}</strong> across 6 sources...</span>`;
+            document.body.appendChild(loadingToast);
+            
+            setTimeout(() => {
+                loadingToast.remove();
+                showResultsModal(input);
+            }, 1350);
+        }
+        
+        function showResultsModal(address) {
+            const modal = document.getElementById('results-modal');
+            document.getElementById('modal-address').innerHTML = address || "1014–16 N J St, Lake Worth, FL";
+            document.getElementById('modal-gap').innerHTML = "−6.4% Deal Gap";
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+        
+        function hideResultsModal() {
+            const modal = document.getElementById('results-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+        
+        function selectPath(pathIndex) {
+            hideResultsModal();
+            const strategyModal = document.createElement('div');
+            strategyModal.className = 'fixed inset-0 bg-black/90 backdrop-blur-sm z-[120] flex items-center justify-center p-6';
+            strategyModal.innerHTML = `
+                <div class="bg-black border border-[#334155] rounded-3xl w-full max-w-2xl modern-shadow overflow-hidden">
+                    <div class="px-9 py-7 border-b border-[#334155] flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-2xl text-[#F1F5F9]">Strategy Worksheet — Path ${pathIndex + 1}</div>
+                            <div style="color: #0EA5E9;" class="text-sm">Ready to present to seller or agent</div>
+                        </div>
+                        <button onclick="this.closest('.fixed').remove()" class="text-3xl text-[#64748B] hover:text-white">×</button>
+                    </div>
+                    <div class="p-9 space-y-6 text-sm text-[#CBD5E1]">
+                        <div>
+                            <div class="font-semibold mb-2 text-[#F1F5F9]">Recommended Opening Frame</div>
+                            <div class="bg-[#0C1220] text-[#0EA5E9] font-mono p-5 rounded-2xl text-xs leading-relaxed border border-[#334155]">"Hi [Name], I’ve been looking at your property on [Street]. I noticed it’s been on the market for [X] days. I ran the numbers and I think there might be a creative way to get you to your number while helping me with my down payment. Would you be open to a quick 12-minute call?"</div>
+                        </div>
+                    </div>
+                    <div class="px-9 py-5 bg-[#060B14] flex gap-4 border-t border-[#334155]">
+                        <button onclick="this.closest('.fixed').remove(); copyScript()" class="flex-1 py-3 border border-[#0EA5E9] text-[#0EA5E9] text-sm font-semibold rounded-3xl">Copy full script</button>
+                        <button onclick="this.closest('.fixed').remove()" class="flex-1 py-3 bg-[#0EA5E9] text-black text-sm font-semibold rounded-3xl">Save to my deals</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(strategyModal);
+        }
+        
+        function copyScript() {
+            navigator.clipboard.writeText("Hi [Seller Name], I ran the numbers on your property using 6 independent sources and found a creative structure that gets you to $428k net while letting me cover the gap with a 0% seller carry 2nd. The monthly payment works for both of us. Got 12 minutes this week?").then(() => {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 bg-black border border-[#0EA5E9] text-white px-8 py-3 rounded-3xl text-sm shadow-xl flex items-center gap-x-2 z-[200]';
+                toast.innerHTML = '✓ Negotiation script copied to clipboard';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2200);
+            });
+        }
+        
+        function downloadStrategy() {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 bg-black border border-[#334155] px-6 py-3 rounded-3xl text-sm flex items-center gap-x-2';
+            toast.innerHTML = 'PDF saved to Downloads. Check your email for the editable worksheet link.';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3800);
+        }
+        
+        function watchDemo() {
+            const demoModal = document.createElement('div');
+            demoModal.className = 'fixed inset-0 bg-black/95 z-[130] flex items-center justify-center p-6';
+            demoModal.innerHTML = `
+                <div class="max-w-4xl w-full">
+                    <div class="flex justify-end mb-3"><button onclick="this.closest('.fixed').remove()" class="text-white text-sm flex items-center gap-x-2">CLOSE DEMO <i class="fa-solid fa-times ml-1"></i></button></div>
+                    <div class="aspect-video bg-black rounded-3xl flex items-center justify-center relative overflow-hidden border border-[#334155]">
+                        <div class="text-center text-white">
+                            <div class="mx-auto w-20 h-20 border-4 border-[#0EA5E9]/30 border-t-[#0EA5E9] rounded-full animate-spin mb-8"></div>
+                            <div class="font-semibold text-2xl tracking-tight">60-Second Product Demo</div>
+                            <div style="color: #0EA5E9;" class="text-sm mt-2">Showing live analysis + script generation</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(demoModal);
+        }
+        
+        function startProTrial() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/90 backdrop-blur z-[120] flex items-center justify-center p-6';
+            modal.innerHTML = `
+                <div class="bg-black border border-[#334155] rounded-3xl max-w-md w-full p-9 text-center modern-shadow">
+                    <div class="mx-auto w-16 h-16 bg-[#0C1220] rounded-2xl flex items-center justify-center mb-6 border border-[#334155]"><i class="fa-solid fa-rocket text-3xl" style="color: #0EA5E9;"></i></div>
+                    <div class="font-semibold text-3xl tracking-tight text-[#F1F5F9]">Welcome to Pro trial</div>
+                    <div class="mt-2 text-sm text-[#94A3B8]">Your 14-day Pro access starts now. No card required.</div>
+                    <button onclick="this.closest('.fixed').remove(); startFreeDiscovery()" class="mt-8 w-full py-4 bg-[#0EA5E9] text-black font-semibold rounded-3xl">Start your first unlimited discovery</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function showLoginModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/90 backdrop-blur z-[100] flex items-center justify-center p-6';
+            modal.innerHTML = `
+                <div class="bg-black border border-[#334155] rounded-3xl max-w-sm w-full p-9 modern-shadow">
+                    <div class="text-center mb-8">
+                        <div class="font-display text-3xl tracking-tighter mb-1 text-[#F1F5F9]">Welcome back</div>
+                        <div class="text-sm text-[#94A3B8]">Sign in to access your saved deals &amp; team workspace</div>
+                    </div>
+                    <button onclick="this.closest('.fixed').remove(); showDashboardToast()" class="mt-6 w-full py-4 bg-[#0EA5E9] text-black font-semibold rounded-3xl text-sm">Sign in</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function showDashboardToast() {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 bg-black border border-[#0EA5E9] px-8 py-4 rounded-3xl flex items-center gap-x-4 z-[200]';
+            toast.innerHTML = `<div><div class="font-semibold text-[#F1F5F9]">Signed in successfully</div><div class="text-xs" style="color: #0EA5E9;">Redirecting to your dashboard...</div></div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2400);
+        }
+        
+        function continueToStrategy() {
+            const modal = document.getElementById('results-modal');
+            document.getElementById('modal-address').innerHTML = "1014–16 N J St, Lake Worth, FL";
+            document.getElementById('modal-gap').innerHTML = "−6.4% Deal Gap";
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+        
+        function hideResultsModal() {
+            const modal = document.getElementById('results-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+        
+        function copyScript() {
+            navigator.clipboard.writeText("Hi [Seller Name], I ran the numbers on your property using 6 independent sources and found a creative structure that gets you to $428k net while letting me cover the gap with a 0% seller carry 2nd. The monthly payment works for both of us. Got 12 minutes this week?").then(() => {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 bg-black border border-[#0EA5E9] text-white px-8 py-3 rounded-3xl text-sm shadow-xl flex items-center gap-x-2 z-[200]';
+                toast.innerHTML = '✓ Negotiation script copied to clipboard';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2200);
+            });
+        }
+        
+        function downloadStrategy() {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 bg-black border border-[#334155] px-6 py-3 rounded-3xl text-sm flex items-center gap-x-2';
+            toast.innerHTML = 'PDF saved to Downloads. Check your email for the editable worksheet link.';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3800);
+        }
+        
+        function startProTrial() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/90 backdrop-blur z-[120] flex items-center justify-center p-6';
+            modal.innerHTML = `
+                <div class="bg-black border border-[#334155] rounded-3xl max-w-md w-full p-9 text-center modern-shadow">
+                    <div class="mx-auto w-16 h-16 bg-[#0C1220] rounded-2xl flex items-center justify-center mb-6 border border-[#334155]"><i class="fa-solid fa-rocket text-3xl" style="color: #0EA5E9;"></i></div>
+                    <div class="font-semibold text-3xl tracking-tight text-[#F1F5F9]">Welcome to Pro trial</div>
+                    <button onclick="this.closest('.fixed').remove(); startFreeDiscovery()" class="mt-8 w-full py-4 bg-[#0EA5E9] text-black font-semibold rounded-3xl">Start your first unlimited discovery</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function showLoginModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/90 backdrop-blur z-[100] flex items-center justify-center p-6';
+            modal.innerHTML = `
+                <div class="bg-black border border-[#334155] rounded-3xl max-w-sm w-full p-9 modern-shadow">
+                    <div class="text-center mb-8">
+                        <div class="font-display text-3xl tracking-tighter mb-1 text-[#F1F5F9]">Welcome back</div>
+                    </div>
+                    <button onclick="this.closest('.fixed').remove(); showDashboardToast()" class="mt-6 w-full py-4 bg-[#0EA5E9] text-black font-semibold rounded-3xl text-sm">Sign in</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function showDashboardToast() {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 bg-black border border-[#0EA5E9] px-8 py-4 rounded-3xl flex items-center gap-x-4 z-[200]';
+            toast.innerHTML = `<div><div class="font-semibold text-[#F1F5F9]">Signed in successfully</div></div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2400);
+        }
+        
+        function continueToStrategy() {
+            const modal = document.getElementById('results-modal');
+            document.getElementById('modal-address').innerHTML = "1014–16 N J St, Lake Worth, FL";
+            document.getElementById('modal-gap').innerHTML = "−6.4% Deal Gap";
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+        
+        window.onload = function() {
+            console.log('%c[DealGapIQ] Fresh HTML loaded successfully with house hero image.', 'color:#0EA5E9');
+        };
+        
+        window.DealGapIQ = { startFreeDiscovery, watchDemo, startProTrial };
+    </script>
+</body>
+</html>
