@@ -23,7 +23,7 @@ import { CompassDisplay } from '@/components/scanner/CompassDisplay';
 import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
 import { MapPropertyPicker } from '@/components/scanner/MapPropertyPicker';
 import { getCardinalDirection } from '@/lib/geoCalculations';
-import { DealGapIQHomepageV2, DealGapIQHomepageV3 } from '@/components/landing';
+import { DealGapIQHomepageV2, DealGapIQHomepageV3, DealGapIQHomepageV4 } from '@/components/landing';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
 import type { GeocodedProperty } from '@/lib/reverseGeocode';
@@ -44,11 +44,17 @@ export default function HomePage() {
     return <MobileScannerView onSwitchMode={() => setMode('landing')} />;
   }
 
-  // V3 = Four Paths-centric homepage. V2 still imported and available for rollback if ?v=2 flag is set.
-  if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('v') === '2') {
-    return <DealGapIQHomepageV2 onPointAndScan={() => setMode('camera')} />;
+  // V4 = marketing-tuned homepage. V3 and V2 remain available via query flags for rollback.
+  if (typeof window !== 'undefined') {
+    const version = new URLSearchParams(window.location.search).get('v');
+    if (version === '2') {
+      return <DealGapIQHomepageV2 onPointAndScan={() => setMode('camera')} />;
+    }
+    if (version === '3') {
+      return <DealGapIQHomepageV3 onPointAndScan={() => setMode('camera')} />;
+    }
   }
-  return <DealGapIQHomepageV3 onPointAndScan={() => setMode('camera')} />;
+  return <DealGapIQHomepageV4 onPointAndScan={() => setMode('camera')} />;
 }
 
 /**

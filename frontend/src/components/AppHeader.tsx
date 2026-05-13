@@ -113,7 +113,7 @@ const TABS: { id: AppTab; label: string }[] = [
 
 // Pages where header should be completely hidden
 // Verdict & strategy now use the same AppHeader as the rest of the platform
-const HIDDEN_ROUTES = ['/register', '/what-is-dealgapiq']
+const HIDDEN_ROUTES = ['/', '/register', '/what-is-dealgapiq']
 
 // Pages where property bar should NOT be shown
 const NO_PROPERTY_BAR_ROUTES = [

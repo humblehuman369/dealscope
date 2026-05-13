@@ -2,6 +2,7 @@ export { ResponsiveLandingPage } from './ResponsiveLandingPage';
 export { DealGapIQHomepage } from './DealGapIQHomepage';
 export { DealGapIQHomepageV2 } from './DealGapIQHomepageV2';
 export { DealGapIQHomepageV3 } from './DealGapIQHomepageV3';
+export { DealGapIQHomepageV4 } from './DealGapIQHomepageV4';
 export { DealGapBar } from './DealGapBar';
 export { DealGapIQGateway } from './DealGapIQGateway';
 export { AnimatedPhoneMockup } from './AnimatedPhoneMockup';
