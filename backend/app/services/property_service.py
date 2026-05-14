@@ -845,10 +845,20 @@ class PropertyService:
         list_price_val = getattr(listing, "list_price", None) if listing is not None else None
         if list_price_val is None and listing is not None and isinstance(listing, dict):
             list_price_val = listing.get("list_price")
+
+        def _positive_float(value) -> float | None:
+            try:
+                parsed = float(value) if value is not None else None
+            except (TypeError, ValueError):
+                return None
+            return parsed if parsed is not None and parsed > 0 else None
+
         list_price = (
-            float(list_price_val)
-            if list_price_val is not None and list_price_val > 0
-            else float(valuations.zestimate or 0) or 1
+            _positive_float(list_price_val)
+            or _positive_float(valuations.value_iq_estimate)
+            or _positive_float(valuations.zestimate)
+            or _positive_float(valuations.current_value_avm)
+            or _positive_float(valuations.market_price)
         )
         monthly_rent = rentals.monthly_rent_ltr or 0
         listing_status_val = getattr(listing, "listing_status", None) if listing is not None else None
@@ -859,32 +869,34 @@ class PropertyService:
             and str(listing_status_val).upper() not in ("OFF_MARKET", "SOLD", "FOR_RENT", "OTHER")
             and (list_price_val or 0) > 0
         )
-        verdict_input = IQVerdictInput(
-            list_price=max(1, list_price),
-            monthly_rent=monthly_rent,
-            property_taxes=market.property_taxes_annual or (list_price * 0.012),
-            insurance=market.insurance_annual,
-            hoa_fees_monthly=market.hoa_fees_monthly,
-            bedrooms=details.bedrooms or 3,
-            bathrooms=float(details.bathrooms or 2),
-            sqft=details.square_footage,
-            arv=valuations.arv or (list_price * 1.15),
-            average_daily_rate=rentals.average_daily_rate,
-            occupancy_rate=rentals.occupancy_rate or 0.75,
-            is_listed=is_listed,
-            zestimate=valuations.zestimate,
-            current_value_avm=valuations.current_value_avm,
-            tax_assessed_value=valuations.tax_assessed_value,
-            listing_status=listing_status_val,
-        )
-        verdict_result = compute_iq_verdict(verdict_input)
+        verdict_result = None
+        if list_price is not None:
+            verdict_input = IQVerdictInput(
+                list_price=list_price,
+                monthly_rent=monthly_rent,
+                property_taxes=market.property_taxes_annual or (list_price * 0.012),
+                insurance=market.insurance_annual,
+                hoa_fees_monthly=market.hoa_fees_monthly,
+                bedrooms=details.bedrooms or 3,
+                bathrooms=float(details.bathrooms or 2),
+                sqft=details.square_footage,
+                arv=valuations.arv or (list_price * 1.15),
+                average_daily_rate=rentals.average_daily_rate,
+                occupancy_rate=rentals.occupancy_rate or 0.75,
+                is_listed=is_listed,
+                zestimate=valuations.zestimate,
+                current_value_avm=valuations.current_value_avm,
+                tax_assessed_value=valuations.tax_assessed_value,
+                listing_status=listing_status_val,
+            )
+            verdict_result = compute_iq_verdict(verdict_input)
         # Strip internal key from raw RentCast for export
         raw_rentcast_export = {k: v for k, v in rentcast_raw.items() if k != "_merged"}
         return {
             "raw_rentcast": raw_rentcast_export,
             "raw_axesso": axesso_export,
             "property": response.model_dump(mode="json"),
-            "verdict": verdict_result.model_dump(mode="json"),
+            "verdict": verdict_result.model_dump(mode="json") if verdict_result else None,
         }
 
     def _parse_address(self, address: str, data: dict | None = None) -> Address:

@@ -39,6 +39,14 @@ from app.services.calculators import (
 logger = logging.getLogger(__name__)
 
 
+def _coalesce_none(*values):
+    """Return the first value that is not None, preserving legitimate zeros."""
+    for value in values:
+        if value is not None:
+            return value
+    return None
+
+
 class DealMakerService:
     """
     Service for creating and managing DealMakerRecords.
@@ -246,8 +254,8 @@ class DealMakerService:
             # Property data (from API)
             list_price=data.list_price,
             rent_estimate=data.rent_estimate,
-            property_taxes=data.property_taxes or 0,
-            insurance=data.insurance or 0,
+            property_taxes=_coalesce_none(data.property_taxes, 0),
+            insurance=_coalesce_none(data.insurance, 0),
             arv_estimate=data.arv_estimate,
             sqft=data.sqft,
             bedrooms=data.bedrooms,
@@ -257,22 +265,22 @@ class DealMakerService:
             # Initial assumptions (locked)
             initial_assumptions=initial,
             # User adjustments (initialized from property data + defaults)
-            buy_price=data.buy_price or data.list_price,
+            buy_price=_coalesce_none(data.buy_price, data.list_price),
             down_payment_pct=initial.down_payment_pct,
             closing_costs_pct=initial.closing_costs_pct,
             interest_rate=initial.interest_rate,
             loan_term_years=initial.loan_term_years,
             rehab_budget=0,
-            arv=data.arv_estimate or data.list_price,
-            monthly_rent=data.monthly_rent or data.rent_estimate,
+            arv=_coalesce_none(data.arv_estimate, data.list_price),
+            monthly_rent=_coalesce_none(data.monthly_rent, data.rent_estimate),
             other_income=0,
             vacancy_rate=initial.vacancy_rate,
             maintenance_pct=initial.maintenance_pct,
             management_pct=initial.management_pct,
             capex_pct=initial.capex_pct,
             required_equity_yield=initial.required_equity_yield,
-            annual_property_tax=data.property_taxes or 0,
-            annual_insurance=data.insurance or (data.list_price * initial.insurance_pct),
+            annual_property_tax=_coalesce_none(data.property_taxes, 0),
+            annual_insurance=_coalesce_none(data.insurance, data.list_price * initial.insurance_pct),
             monthly_hoa=0,
             monthly_utilities=0,
             # Metadata

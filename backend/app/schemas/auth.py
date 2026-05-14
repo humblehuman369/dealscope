@@ -53,7 +53,7 @@ class UserRegister(BaseModel):
 
 class UserLogin(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=1, max_length=100)
     remember_me: bool = False
 
 
@@ -112,6 +112,10 @@ class TokenPayload(BaseModel):
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
+
+
+class OAuthMobileExchangeRequest(BaseModel):
+    code: str = Field(..., min_length=32, max_length=256)
 
 
 # -----------------------------------------------------------------------

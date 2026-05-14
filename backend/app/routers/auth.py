@@ -34,6 +34,7 @@ from app.schemas.auth import (
     MFAConfirmRequest,
     MFASetupResponse,
     MFAVerifyRequest,
+    OAuthMobileExchangeRequest,
     PasswordChange,
     PasswordReset,
     PasswordResetConfirm,
@@ -328,6 +329,85 @@ def _oauth_redirect_base(request: Request) -> str:
 
 
 _MOBILE_ALLOWED_SCHEMES = ("dealgapiq://", "exp://")
+_OAUTH_STATE_TTL_SECONDS = 600
+_MOBILE_AUTH_CODE_TTL_SECONDS = 120
+
+
+def _oauth_state_key(state: str) -> str:
+    return f"oauth_state:{state}"
+
+
+async def _create_oauth_state(mobile_redirect: str | None) -> str:
+    """Create a short-lived, one-time OAuth state value."""
+    import secrets
+
+    from app.services.cache_service import get_cache_service
+
+    state = secrets.token_urlsafe(32)
+    payload = {"mobile_redirect": mobile_redirect}
+    cache = get_cache_service()
+    stored = await cache.set(_oauth_state_key(state), payload, ttl_seconds=_OAUTH_STATE_TTL_SECONDS)
+    if not stored:
+        raise RuntimeError("Failed to store OAuth state")
+    return state
+
+
+async def _consume_oauth_state(state: str | None) -> dict[str, Any] | None:
+    if not state:
+        return None
+
+    from app.services.cache_service import get_cache_service
+
+    cache = get_cache_service()
+    key = _oauth_state_key(state)
+    payload = await cache.get(key)
+    if not payload:
+        return None
+    await cache.delete(key)
+    return payload
+
+
+def _mobile_auth_code_key(code: str) -> str:
+    return f"oauth_mobile_code:{code}"
+
+
+async def _create_mobile_auth_code(access_token: str, refresh_token: str) -> str:
+    """Store tokens behind a short-lived one-time code for native OAuth redirects."""
+    import secrets
+
+    from app.services.cache_service import get_cache_service
+
+    code = secrets.token_urlsafe(32)
+    cache = get_cache_service()
+    stored = await cache.set(
+        _mobile_auth_code_key(code),
+        {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        },
+        ttl_seconds=_MOBILE_AUTH_CODE_TTL_SECONDS,
+    )
+    if not stored:
+        raise RuntimeError("Failed to store mobile OAuth exchange code")
+    return code
+
+
+async def _consume_mobile_auth_code(code: str) -> dict[str, Any] | None:
+    from app.services.cache_service import get_cache_service
+
+    cache = get_cache_service()
+    key = _mobile_auth_code_key(code)
+    payload = await cache.get(key)
+    if not payload:
+        return None
+    await cache.delete(key)
+    return payload
+
+
+def _mobile_success_redirect(mobile_redirect: str, code: str) -> RedirectResponse:
+    return RedirectResponse(url=f"{mobile_redirect}?{urlencode({'code': code})}", status_code=302)
 
 
 @router.get("/google")
@@ -343,14 +423,14 @@ async def google_start(request: Request):
     base = _oauth_redirect_base(request)
     redirect_uri = f"{base}/api/v1/auth/google/callback"
 
-    import base64 as _b64
-    import json as _json
-
-    state_data: dict = {}
     mobile_redirect = request.query_params.get("mobile_redirect")
-    if mobile_redirect and any(mobile_redirect.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
-        state_data["mobile_redirect"] = mobile_redirect
-    state = _b64.urlsafe_b64encode(_json.dumps(state_data).encode()).decode()
+    if mobile_redirect and not any(mobile_redirect.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
+        mobile_redirect = None
+    try:
+        state = await _create_oauth_state(mobile_redirect)
+    except Exception:
+        logger.exception("Failed to create Google OAuth state")
+        raise HTTPException(status_code=503, detail="OAuth state storage unavailable")
 
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,
@@ -363,21 +443,26 @@ async def google_start(request: Request):
     return RedirectResponse(url=auth_url, status_code=302)
 
 
-def _extract_mobile_redirect(request: Request) -> str | None:
-    """Decode mobile_redirect from the OAuth state parameter, if present and valid."""
-    import base64 as _b64
-    import json as _json
+@router.post("/oauth/mobile/exchange", response_model=TokenResponse)
+async def exchange_mobile_oauth_code(body: OAuthMobileExchangeRequest):
+    """Exchange a short-lived native OAuth code for bearer tokens.
 
-    state_raw = request.query_params.get("state")
-    if not state_raw:
+    OAuth callbacks must not place bearer tokens in redirect URLs. Native clients
+    receive a one-time code and call this endpoint immediately from the app.
+    """
+    payload = await _consume_mobile_auth_code(body.code)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired OAuth exchange code")
+    return TokenResponse(**payload)
+
+
+def _mobile_redirect_from_state(state_data: dict[str, Any] | None) -> str | None:
+    """Extract an allowed native redirect from consumed OAuth state."""
+    if not state_data:
         return None
-    try:
-        state_data = _json.loads(_b64.urlsafe_b64decode(state_raw + "=="))
-        mr = state_data.get("mobile_redirect")
-        if mr and any(mr.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
-            return mr
-    except Exception:
-        pass
+    mobile_redirect = state_data.get("mobile_redirect")
+    if isinstance(mobile_redirect, str) and any(mobile_redirect.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
+        return mobile_redirect
     return None
 
 
@@ -397,7 +482,10 @@ def _google_error_redirect(error_code: str, mobile_redirect: str | None) -> Redi
 @router.get("/google/callback")
 async def google_callback(request: Request, response: Response, db: DbSession):
     """Handle Google OAuth callback: exchange code, get or create user, set session, redirect to frontend or mobile app."""
-    mobile_redirect = _extract_mobile_redirect(request)
+    state_data = await _consume_oauth_state(request.query_params.get("state"))
+    if state_data is None:
+        return _google_error_redirect("google_invalid_state", None)
+    mobile_redirect = _mobile_redirect_from_state(state_data)
 
     code = request.query_params.get("code")
     if not code:
@@ -446,10 +534,11 @@ async def google_callback(request: Request, response: Response, db: DbSession):
 
     google_id = idinfo.get("sub")
     email = idinfo.get("email")
+    email_verified = idinfo.get("email_verified")
     name = idinfo.get("name") or ""
     picture = idinfo.get("picture")
 
-    if not google_id or not email:
+    if not google_id or not email or email_verified is not True:
         return _google_error_redirect("google_invalid_userinfo", mobile_redirect)
 
     try:
@@ -486,13 +575,12 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         )
 
     if mobile_redirect:
-        token_params = urlencode(
-            {
-                "access_token": jwt_token,
-                "refresh_token": session_obj.refresh_token,
-            }
-        )
-        return RedirectResponse(url=f"{mobile_redirect}?{token_params}", status_code=302)
+        try:
+            mobile_code = await _create_mobile_auth_code(jwt_token, session_obj.refresh_token)
+        except Exception:
+            logger.exception("Failed to create Google mobile OAuth exchange code")
+            return _google_error_redirect("mobile_exchange_failed", mobile_redirect)
+        return _mobile_success_redirect(mobile_redirect, mobile_code)
 
     redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
     _set_auth_cookies(redirect_to, session_obj.session_token, session_obj.refresh_token, jwt_token)
@@ -540,14 +628,14 @@ async def apple_start(request: Request):
     base = _oauth_redirect_base(request)
     redirect_uri = f"{base}/api/v1/auth/apple/callback"
 
-    import base64 as _b64
-    import json as _json
-
-    state_data: dict = {}
     mobile_redirect = request.query_params.get("mobile_redirect")
-    if mobile_redirect and any(mobile_redirect.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
-        state_data["mobile_redirect"] = mobile_redirect
-    state = _b64.urlsafe_b64encode(_json.dumps(state_data).encode()).decode()
+    if mobile_redirect and not any(mobile_redirect.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
+        mobile_redirect = None
+    try:
+        state = await _create_oauth_state(mobile_redirect)
+    except Exception:
+        logger.exception("Failed to create Apple OAuth state")
+        raise HTTPException(status_code=503, detail="OAuth state storage unavailable")
 
     params = {
         "client_id": settings.APPLE_CLIENT_ID,
@@ -578,19 +666,10 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
     """Handle Apple Sign In callback (form_post). Verify id_token, create/login user."""
     form = await request.form()
 
-    state_raw = form.get("state", "")
-    mobile_redirect: str | None = None
-    if state_raw:
-        import base64 as _b64
-        import json as _json
-
-        try:
-            state_data = _json.loads(_b64.urlsafe_b64decode(str(state_raw) + "=="))
-            mr = state_data.get("mobile_redirect")
-            if mr and any(mr.startswith(s) for s in _MOBILE_ALLOWED_SCHEMES):
-                mobile_redirect = mr
-        except Exception:
-            pass
+    state_data = await _consume_oauth_state(str(form.get("state", "")))
+    if state_data is None:
+        return _apple_error_redirect("apple_invalid_state", None)
+    mobile_redirect = _mobile_redirect_from_state(state_data)
 
     code = form.get("code")
     raw_id_token = form.get("id_token")
@@ -698,13 +777,12 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
         )
 
     if mobile_redirect:
-        token_params = urlencode(
-            {
-                "access_token": jwt_token,
-                "refresh_token": session_obj.refresh_token,
-            }
-        )
-        return RedirectResponse(url=f"{mobile_redirect}?{token_params}", status_code=302)
+        try:
+            mobile_code = await _create_mobile_auth_code(jwt_token, session_obj.refresh_token)
+        except Exception:
+            logger.exception("Failed to create Apple mobile OAuth exchange code")
+            return _apple_error_redirect("mobile_exchange_failed", mobile_redirect)
+        return _mobile_success_redirect(mobile_redirect, mobile_code)
 
     redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
     _set_auth_cookies(redirect_to, session_obj.session_token, session_obj.refresh_token, jwt_token)

@@ -16,9 +16,12 @@ from __future__ import annotations
 
 import asyncio
 import os
+from pathlib import Path
 from typing import AsyncGenerator, Generator
 
 import pytest
+from alembic import command
+from alembic.config import Config
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
 os.environ.setdefault("ENVIRONMENT", "test")
@@ -45,25 +48,19 @@ def pg_url() -> Generator[str, None, None]:
         async_url = sync_url.replace("psycopg2", "psycopg", 1)
         if "postgresql://" in async_url and "+psycopg" not in async_url:
             async_url = async_url.replace("postgresql://", "postgresql+psycopg://", 1)
-        os.environ["DATABASE_URL"] = sync_url
+        os.environ["DATABASE_URL"] = async_url
         yield async_url
 
 
 @pytest.fixture(scope="session")
 async def pg_engine(pg_url: str):
-    """Create the async engine and initialise the schema once per session."""
+    """Create the async engine and initialise the schema via Alembic."""
+    backend_root = Path(__file__).resolve().parents[1]
+    alembic_cfg = Config(str(backend_root / "alembic.ini"))
+    await asyncio.to_thread(command.upgrade, alembic_cfg, "head")
+
     engine = create_async_engine(pg_url, echo=False)
-
-    from app.db.base import Base
-    import app.models  # noqa: F401 — register all models
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
     yield engine
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
 
     await engine.dispose()
 

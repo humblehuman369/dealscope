@@ -40,15 +40,22 @@ LEADER_LOCK_TTL = 300  # 5 minutes
 async def _try_acquire_leader_lock() -> bool:
     """Attempt to claim the scheduler leader lock via Redis SET NX.
 
-    Returns True if this worker should run the scheduler — either because
-    it acquired the Redis lock, or because Redis is unavailable (single-
-    worker fallback).
+    Returns True only when this worker acquired the Redis lock, or when local
+    development explicitly uses the single-worker fallback.
     """
     try:
+        from app.core.config import settings
         from app.services.cache_service import get_cache_service
 
         cache = get_cache_service()
         if not (cache.use_redis and cache.redis_client):
+            if settings.ENVIRONMENT != "development":
+                logger.error(
+                    "Scheduler not started: Redis leader lock is unavailable in %s",
+                    settings.ENVIRONMENT,
+                )
+                return False
+            logger.warning("Scheduler running without Redis leader lock in development")
             return True
 
         acquired = await cache.redis_client.set(
@@ -59,8 +66,17 @@ async def _try_acquire_leader_lock() -> bool:
         )
         return bool(acquired)
     except Exception as e:
-        logger.warning("Scheduler leader lock check failed, defaulting to run: %s", e)
-        return True
+        try:
+            from app.core.config import settings
+
+            if settings.ENVIRONMENT == "development":
+                logger.warning("Scheduler leader lock check failed in development; running anyway: %s", e)
+                return True
+        except Exception:
+            pass
+
+        logger.error("Scheduler leader lock check failed; scheduler will not start: %s", e)
+        return False
 
 
 async def _renew_leader_lock() -> None:

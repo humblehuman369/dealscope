@@ -75,6 +75,10 @@ class CacheService:
                 return None
         except Exception as e:
             logger.warning(f"Cache get error for {key}: {e}")
+            if self.use_redis:
+                self.use_redis = False
+                self.redis_client = None
+                return await self.get(key)
             return None
 
     async def set(self, key: str, value: Any, ttl_seconds: int = DEFAULT_TTL_SECONDS) -> bool:
@@ -100,6 +104,10 @@ class CacheService:
                 return True
         except Exception as e:
             logger.warning(f"Cache set error for {key}: {e}")
+            if self.use_redis:
+                self.use_redis = False
+                self.redis_client = None
+                return await self.set(key, value, ttl_seconds)
             return False
 
     async def delete(self, key: str) -> bool:
@@ -114,6 +122,10 @@ class CacheService:
                 return True
         except Exception as e:
             logger.warning(f"Cache delete error for {key}: {e}")
+            if self.use_redis:
+                self.use_redis = False
+                self.redis_client = None
+                return await self.delete(key)
             return False
 
     async def exists(self, key: str) -> bool:

@@ -57,12 +57,15 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._redis_available = None
 
         self.route_limits: dict[str, tuple] = {
-            "/api/v1/auth/login": (5, 60),
-            "/api/v1/auth/login/mfa": (10, 60),
-            "/api/v1/auth/register": (3, 60),
-            "/api/v1/auth/forgot-password": (3, 60),
-            "/api/v1/auth/reset-password": (5, 60),
-            "/api/v1/auth/refresh": (20, 60),
+            "/api/v1/auth/login": (settings.AUTH_RATE_LIMIT_REQUESTS, settings.AUTH_RATE_LIMIT_PERIOD),
+            "/api/v1/auth/login/mfa": (settings.AUTH_RATE_LIMIT_REQUESTS * 2, settings.AUTH_RATE_LIMIT_PERIOD),
+            "/api/v1/auth/register": (max(1, settings.AUTH_RATE_LIMIT_REQUESTS - 2), settings.AUTH_RATE_LIMIT_PERIOD),
+            "/api/v1/auth/forgot-password": (
+                max(1, settings.AUTH_RATE_LIMIT_REQUESTS - 2),
+                settings.AUTH_RATE_LIMIT_PERIOD,
+            ),
+            "/api/v1/auth/reset-password": (settings.AUTH_RATE_LIMIT_REQUESTS, settings.AUTH_RATE_LIMIT_PERIOD),
+            "/api/v1/auth/refresh": (settings.AUTH_RATE_LIMIT_REQUESTS * 4, settings.AUTH_RATE_LIMIT_PERIOD),
             "/api/v1/properties/search": (30, 60),
         }
 
