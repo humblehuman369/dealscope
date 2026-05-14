@@ -63,13 +63,6 @@ export const PATH_PATCH_FIELD_KEYS = [
  * - `inlineOverrides.interestRate` is stored as a **decimal** (e.g. 0.07).
  *   `sub2_heuristic_rate` is already decimal; pass through as-is.
  * - Seller-carry amount is dollars; rate is decimal; term is years.
- *
- * Semantic contract:
- * - `custom_purchase_price` is the path's **target buy / offer price**. It maps to
- *   `buyPrice` / `purchasePrice` only — never to `listPrice`. `listPrice` represents
- *   the market list price; overwriting it with the buy price collapses the Deal Gap
- *   bracket to 0% (target == market), breaks the chart, and feeds the wrong
- *   `list_price` back to the backend recalc.
  */
 export function preLoadedRecordToDealMakerPatch(levers: Record<string, unknown>): Record<string, unknown> {
   const patch: Record<string, unknown> = {}
@@ -78,6 +71,7 @@ export function preLoadedRecordToDealMakerPatch(levers: Record<string, unknown>)
   if (typeof cpp === 'number' && cpp > 0) {
     patch.buyPrice = cpp
     patch.purchasePrice = cpp
+    patch.listPrice = cpp
   }
   const cre = levers.custom_rent_estimate ?? levers.customRentEstimate
   if (typeof cre === 'number' && cre >= 0) {
