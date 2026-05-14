@@ -59,13 +59,13 @@ _PROMPT = (
     "You are extracting structured data from a single receipt or invoice image.\n"
     "Return ONLY a JSON object with these keys (use null when unsure):\n"
     "  vendor: string — merchant name as printed on the receipt\n"
-    "  amount: string — total paid, just the number (e.g. \"127.45\"). Prefer the "
+    '  amount: string — total paid, just the number (e.g. "127.45"). Prefer the '
     "grand total over subtotals. No currency symbols, no thousands separators.\n"
     "  spent_on: string in YYYY-MM-DD format — transaction date\n"
     "  suggested_line_id: string — best match from the AVAILABLE LINES list "
     "below, or null if nothing fits well\n"
     "  description: string — short summary of what was purchased (e.g. "
-    "\"Drywall and joint compound\"). Keep under 80 chars.\n"
+    '"Drywall and joint compound"). Keep under 80 chars.\n'
     "Do not include commentary or markdown — JSON only."
 )
 
@@ -87,10 +87,13 @@ class ReceiptParserService:
 
         # Build the line-context block. The model picks ``suggested_line_id``
         # from this list; an empty list means we just don't suggest a line.
-        lines_block = "\n".join(
-            f"- {line['id']}: {line['label']} (category {line.get('category_id', '?')})"
-            for line in (available_lines or [])
-        ) or "(none)"
+        lines_block = (
+            "\n".join(
+                f"- {line['id']}: {line['label']} (category {line.get('category_id', '?')})"
+                for line in (available_lines or [])
+            )
+            or "(none)"
+        )
 
         # Choose content shape based on mime type.
         if mime_type in _IMAGE_MIME_TYPES:
@@ -143,9 +146,7 @@ class ReceiptParserService:
         return _parse_model_output(text, available_lines or [])
 
 
-def _parse_model_output(
-    raw: str, available_lines: list[dict[str, Any]]
-) -> dict[str, Any] | None:
+def _parse_model_output(raw: str, available_lines: list[dict[str, Any]]) -> dict[str, Any] | None:
     """Parse Claude's response into the ParsedReceipt-shaped dict.
 
     Defensive against models that wrap JSON in code fences or trailing prose.
@@ -215,9 +216,7 @@ def _safe_date(value: Any) -> date | None:
         return None
 
 
-def _validate_line_id(
-    value: Any, available_lines: list[dict[str, Any]]
-) -> str | None:
+def _validate_line_id(value: Any, available_lines: list[dict[str, Any]]) -> str | None:
     """Only return the suggested id if it actually appears in the supplied
     list — guard against the model hallucinating IDs."""
     if not isinstance(value, str) or not available_lines:

@@ -25,7 +25,6 @@ from openpyxl.styles import (
 from openpyxl.utils import get_column_letter
 
 from app.core.defaults import OPERATING
-
 from app.schemas.proforma import FinancialProforma
 
 # ── Style tokens ─────────────────────────────────────────────────────────────
@@ -149,9 +148,7 @@ class HouseHackExcelExporter:
         self.d.expenses.insurance / 12 if self.d.expenses else 0
         # Simpler: calculate from known values
         taxes_annual = self.d.expenses.property_taxes if self.d.expenses else purchase * 0.012
-        insurance_annual = (
-            self.d.expenses.insurance if self.d.expenses else purchase * OPERATING.insurance_pct
-        )
+        insurance_annual = self.d.expenses.insurance if self.d.expenses else purchase * OPERATING.insurance_pct
 
         rows = [
             ("Loan Amount", loan, _CUR),

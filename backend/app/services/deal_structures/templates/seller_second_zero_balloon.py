@@ -96,14 +96,14 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         "OPEN — discover before you pitch\n"
         "\"Before I send a number, I want to understand the seller's situation. What's pushing the "
         "sale, and what would a perfect closing look like for them? Are they buying another "
-        "property, paying off debt, or is this more about timing?\"\n\n"
+        'property, paying off debt, or is this more about timing?"\n\n'
         "THE PITCH — full price, creative terms\n"
-        f"\"I can pay full asking — {fmt_money_precise(ctx.list_price)}, no haircut — if the "
+        f'"I can pay full asking — {fmt_money_precise(ctx.list_price)}, no haircut — if the '
         f"seller is open to carrying {fmt_money_precise(chosen_second)} of that as a second "
         f"mortgage at 0% interest with a {DEFAULT_BALLOON_YEARS}-year balloon. Bank takes the "
         "first, seller takes the second, and in "
         f"{DEFAULT_BALLOON_YEARS} years I refinance and the seller gets a single check for "
-        f"{fmt_money_precise(chosen_second)}.\"\n\n"
+        f'{fmt_money_precise(chosen_second)}."\n\n'
         "WHAT'S IN IT FOR THE SELLER (lead with this if there's hesitation)\n"
         "1. They get their number. The headline price is preserved — important for ego, taxes, "
         "and the comp record in the neighborhood.\n"
@@ -116,27 +116,27 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         "WHY YOU NEED IT (be honest)\n"
         "\"At full asking with a single bank loan, the property doesn't cash-flow. Your "
         "willingness to carry a portion is what makes this deal possible. Without it, my best "
-        "offer drops 10-15% below ask and I close in cash — which one nets you more?\"\n\n"
+        'offer drops 10-15% below ask and I close in cash — which one nets you more?"\n\n'
         "ANTICIPATE OBJECTIONS\n"
-        "\u2022 \"Why 0%?\" \u2192 \"0% keeps the structure simple and stays inside IRS imputed-"
+        '\u2022 "Why 0%?" \u2192 "0% keeps the structure simple and stays inside IRS imputed-'
         "interest safe harbor for owner-financed sales. I'm open to a small rate if it makes you "
         "more comfortable — let's discuss.\"\n"
-        f"\u2022 \"What if you don't refinance in {DEFAULT_BALLOON_YEARS} years?\" \u2192 \"Then "
+        f'\u2022 "What if you don\'t refinance in {DEFAULT_BALLOON_YEARS} years?" \u2192 "Then '
         "I sell or pay you off from another source. Your note is recorded against the property in "
         "second position, behind the bank — meaning if I default, you can foreclose just like the "
-        "bank could. Equity in the property protects you.\"\n"
-        "\u2022 \"Why would I carry?\" \u2192 \"Because you get your full price. A typical "
+        'bank could. Equity in the property protects you."\n'
+        '\u2022 "Why would I carry?" \u2192 "Because you get your full price. A typical '
         "investor offer is 10-20% below ask in cash. Yours is full ask, and you become a secured "
-        "lender on a property you know inside and out.\"\n"
-        "\u2022 \"What if I want all cash?\" \u2192 \"Then this isn't your deal. But if a portion "
-        "as a secured note works, we both get what we want.\"\n\n"
+        'lender on a property you know inside and out."\n'
+        '\u2022 "What if I want all cash?" \u2192 "Then this isn\'t your deal. But if a portion '
+        'as a secured note works, we both get what we want."\n\n'
         "TRIAL CLOSE — soft, optional\n"
         "\"Would the seller be open to a creative offer like this? I'll have a creative-finance "
         "attorney draft the note so we're both protected — clean paper, recorded properly.\"\n\n"
         "TACTICS\n"
         "\u2022 Always offer FULL PRICE when asking for terms. Never ask for both at once.\n"
-        "\u2022 Use the words \"creative offer\" early — they signal an unusual structure is coming so the agent isn't blindsided.\n"
-        "\u2022 Have a creative-finance attorney lined up before you pitch. \"My attorney will paper this\" instantly raises trust.\n"
+        '\u2022 Use the words "creative offer" early — they signal an unusual structure is coming so the agent isn\'t blindsided.\n'
+        '\u2022 Have a creative-finance attorney lined up before you pitch. "My attorney will paper this" instantly raises trust.\n'
         f"\u2022 The {DEFAULT_BALLOON_YEARS}-year balloon is non-negotiable on your side — shorter and you can't refi cleanly, longer and the seller balks.\n"
         "\u2022 If they say no to 0%, counter with 2-3% — still cheaper than a HELOC and gives the seller something to feel good about."
     )
@@ -148,15 +148,9 @@ def solve(ctx: StructureContext) -> DealStructure | None:
 
     dom = ctx.days_on_market or 0
     if dom > 60:
-        sel_reason = (
-            f"The property has been listed {dom} days. "
-            "Seller's price flexibility is more likely."
-        )
+        sel_reason = f"The property has been listed {dom} days. Seller's price flexibility is more likely."
     else:
-        sel_reason = (
-            "The seller's personal and financial situation will indicate "
-            "if price flexibility is more likely."
-        )
+        sel_reason = "The seller's personal and financial situation will indicate if price flexibility is more likely."
 
     return DealStructure(
         id=ID,
@@ -167,10 +161,9 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         # Math-carrying bullets — full breakdown in three lines so the card
         # tells the whole story without a separate lever block.
         bullets=[
-            f"Offer price:\u00A0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
-            f"1st mortgage:\u00A0{fmt_money(bank_loan)} → "
-            f"{fmt_money(new_bank_loan)} @ {ctx.interest_rate * 100:.1f}%",
-            f"Seller 2nd:\u00A0{fmt_money(chosen_second)} (0%, {DEFAULT_BALLOON_YEARS}yr balloon)",
+            f"Offer price:\u00a0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
+            f"1st mortgage:\u00a0{fmt_money(bank_loan)} → {fmt_money(new_bank_loan)} @ {ctx.interest_rate * 100:.1f}%",
+            f"Seller 2nd:\u00a0{fmt_money(chosen_second)} (0%, {DEFAULT_BALLOON_YEARS}yr balloon)",
         ],
         summary=(
             f"Saves {fmt_monthly(monthly_savings)}. Seller gets their price plus "

@@ -15,11 +15,11 @@ Updated for 2025 South Florida construction costs.
 
 import logging
 from dataclasses import dataclass, field
-
-from app.core.defaults import OPERATING
 from datetime import datetime
 from enum import StrEnum
 from typing import Any
+
+from app.core.defaults import OPERATING
 
 logger = logging.getLogger(__name__)
 
