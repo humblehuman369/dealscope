@@ -29,10 +29,8 @@ import {
   StickyNote,
   Users,
 } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { DataBoundary } from '@/components/ui/DataBoundary'
-import { api } from '@/lib/api-client'
 import { ActivityPanel } from '@/components/deal/ActivityPanel'
 import { BudgetPanel } from '@/components/deal/BudgetPanel'
 import { ContactsPanel } from '@/components/deal/ContactsPanel'
@@ -40,41 +38,20 @@ import { DocumentsPanel } from '@/components/deal/DocumentsPanel'
 import { TasksPanel } from '@/components/deal/TasksPanel'
 import { useTasks } from '@/hooks/useTasks'
 import { useTimeline } from '@/hooks/useTimeline'
-import { useRehabBudgetSummary } from '@/hooks/useSavedProperties'
+import { useRehabBudgetSummary, useSavedProperty } from '@/hooks/useSavedProperties'
 import { STATUS_CONFIG, STRATEGY_LABELS } from '@/lib/savedPropertyStatus'
 import { STAGE_LABELS } from '@/lib/lifecycleStages'
-import type { FlipStage, PropertyStatus } from '@/types/savedProperty'
+import type { SavedProperty } from '@/types/savedProperty'
 
 type Tab = 'overview' | 'tasks' | 'budget' | 'documents' | 'contacts' | 'activity'
 const TABS: Tab[] = ['overview', 'tasks', 'budget', 'documents', 'contacts', 'activity']
 
-interface DealDetail {
-  id: string
-  nickname: string | null
-  address_street: string
-  address_city: string | null
-  address_state: string | null
-  address_zip: string | null
-  full_address: string | null
-  status: PropertyStatus
-  flip_stage: FlipStage | null
-  flip_stage_entered_at: string | null
-  status_changed_at: string | null
-  best_strategy: string | null
-  best_cash_flow: number | null
-  best_coc_return: number | null
-  saved_at: string
-  updated_at: string
-}
-
-function useDeal(id: string) {
-  return useQuery({
-    queryKey: ['saved-properties', 'detail', id],
-    queryFn: () => api.get<DealDetail>(`/api/v1/properties/saved/${id}`),
-    enabled: !!id,
-    staleTime: 30_000,
-  })
-}
+/**
+ * The deal detail page consumes the canonical `SavedProperty` shape via the
+ * shared `useSavedProperty` hook (single source of truth for
+ * `GET /api/v1/properties/saved/:id` — same cache key as the worksheet).
+ */
+type DealDetail = SavedProperty
 
 const fmtCurrency = (n: number) =>
   new Intl.NumberFormat('en-US', {
@@ -115,7 +92,7 @@ function DealPageContent({ propertyId }: { propertyId: string }) {
   const tabParam = (searchParams.get('tab') ?? 'overview') as Tab
   const tab: Tab = TABS.includes(tabParam) ? tabParam : 'overview'
 
-  const deal = useDeal(propertyId)
+  const deal = useSavedProperty(propertyId)
 
   function setTab(next: Tab) {
     const sp = new URLSearchParams(searchParams.toString())
