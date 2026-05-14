@@ -100,7 +100,7 @@ def calculate_monthly_mortgage(principal: float, annual_rate: float, years: int)
 
 
 def conventional_first_lien_loan(purchase_price: float, down_payment_dollars: float) -> float:
-    """Bank loan = purchase price − down payment (seller carry does not change loan principal)."""
+    """Bank loan = purchase price - down payment (seller carry does not change loan principal)."""
     pp = float(purchase_price)
     dp = max(0.0, float(down_payment_dollars))
     return max(0.0, pp - dp)
@@ -112,7 +112,7 @@ def cash_needed_after_seller(
     extra_cash_costs: float,
     seller_carry_amount: float,
 ) -> float:
-    """Cash out of pocket = down + closing + extra (e.g. rehab, furniture) − seller financing."""
+    """Cash out of pocket = down + closing + extra (e.g. rehab, furniture) - seller financing."""
     dp = max(0.0, float(down_payment_dollars))
     cc = max(0.0, float(closing_costs))
     ex = max(0.0, float(extra_cash_costs))

@@ -65,8 +65,8 @@ def estimate_income_value(
 ) -> float:
     """Income Value — breakeven purchase price using a WACC-style hurdle.
 
-    NOI must cover weighted annual capital cost: debt (LTV × mortgage constant)
-    plus equity ((1−LTV) × required_equity_yield). Pure cash uses only the equity leg.
+    NOI must cover weighted annual capital cost: debt (LTV * mortgage constant)
+    plus equity ((1 - LTV) * required_equity_yield). Pure cash uses only the equity leg.
 
     Percentage-based expenses (maintenance, management, capex) are
     computed on annual_gross_rent (before vacancy), matching the LTR

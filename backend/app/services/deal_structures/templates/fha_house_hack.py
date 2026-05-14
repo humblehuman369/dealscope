@@ -127,7 +127,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         ranking_score=min(100.0, max(0.0, ranking)),
         pitch_script=(
             "WHO TO CALL\n"
-            "Yourself first — this is a strategy switch from \"investor\" to \"owner-occupant.\" "
+            'Yourself first — this is a strategy switch from "investor" to "owner-occupant." '
             "Then the listing agent, where this becomes your strongest offer-position lever.\n\n"
             "WHY YOU'RE CHANGING THE PLAY\n"
             "The deal can't work as a pure investor — but it CAN work as an owner-occupant using FHA. "
@@ -141,16 +141,16 @@ def solve(ctx: StructureContext) -> DealStructure | None:
             "than an investor. Use that. FHA also requires a stricter appraisal, which signals "
             "you're serious and can't easily walk during inspection.\n\n"
             "PITCH TO THE LISTING AGENT\n"
-            f"\"My offer is FHA financing, {FHA_DOWN_PCT * 100:.1f}% down, owner-occupant. My "
+            f'"My offer is FHA financing, {FHA_DOWN_PCT * 100:.1f}% down, owner-occupant. My '
             "family and I plan to live in the property and rent the other "
             f"{mode}. I'm pre-approved through an FHA-approved lender and ready to move on "
             "the inspection within a week. Could the seller's preference between an owner-occupant "
-            "and an investor help us get to terms?\"\n\n"
+            'and an investor help us get to terms?"\n\n'
             "OFFER COVER LETTER (when allowed by state/agent)\n"
-            "\"My family and I plan to live in the [unit/upstairs] and rent the rest while we "
+            '"My family and I plan to live in the [unit/upstairs] and rent the rest while we '
             "settle into the neighborhood. We've already been pre-approved for FHA financing and "
             "can close within 30 days. We love what you've done with the property and would be "
-            "honored to make it our home.\"\n\n"
+            'honored to make it our home."\n\n'
             "PROTECT YOURSELF — FHA APPRAISAL RED FLAGS\n"
             "FHA appraisers flag and require fixes for:\n"
             "\u2022 Peeling paint (especially on pre-1978 construction — lead paint concern)\n"
@@ -162,7 +162,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
             "If any are present, negotiate seller fixes or a credit at closing.\n\n"
             "TACTICS\n"
             "\u2022 You must occupy the property within 60 days of closing and live there at least 1 year — non-negotiable per FHA rules.\n"
-            "\u2022 After year 1, you can move out and keep the property as a rental — this is the classic \"house-hack\" wealth ladder.\n"
+            '\u2022 After year 1, you can move out and keep the property as a rental — this is the classic "house-hack" wealth ladder.\n'
             "\u2022 You can only have one FHA loan at a time (with rare exceptions). Plan accordingly.\n"
             "\u2022 FHA requires Mortgage Insurance Premium (MIP) for the life of the loan in most cases — refinance to conventional once you have 20% equity to drop it.\n"
             "\u2022 If the property is 2-4 units, your FHA loan limit is higher than for a single-family — confirm with your lender."

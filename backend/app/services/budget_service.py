@@ -17,9 +17,7 @@ from app.services.rehab_budget_math import compute_lines_from_selections, grand_
 
 
 class BudgetService:
-    async def get_budget_for_property(
-        self, db: AsyncSession, property_id: str, user_id: str
-    ) -> RehabBudget | None:
+    async def get_budget_for_property(self, db: AsyncSession, property_id: str, user_id: str) -> RehabBudget | None:
         result = await db.execute(
             select(RehabBudget)
             .join(SavedProperty, SavedProperty.id == RehabBudget.saved_property_id)
@@ -203,8 +201,7 @@ class BudgetService:
             "variance_pct": str(variance_pct),
             "lines": line_rows,
             "categories": {
-                k: {"estimate": str(v["estimate"]), "actual": str(v["actual"])}
-                for k, v in cat_rollups.items()
+                k: {"estimate": str(v["estimate"]), "actual": str(v["actual"])} for k, v in cat_rollups.items()
             },
         }
 

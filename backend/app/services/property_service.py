@@ -483,7 +483,9 @@ class PropertyService:
                 )
                 market_cached = cached_data.get("market") or {}
                 missing_insurance = market_cached.get("insurance_annual") is None
-                legacy_valuation_formula = cached_data.get("valuation_formula_version") != _PROPERTY_CACHE_FORMULA_VERSION
+                legacy_valuation_formula = (
+                    cached_data.get("valuation_formula_version") != _PROPERTY_CACHE_FORMULA_VERSION
+                )
                 # HOA / condo / co-op fees are mandatory for property types
                 # where they almost always apply (Condo, Townhouse, Co-op,
                 # Multi-Family). Cached entries pre-dating the AXESSO HOA
@@ -492,9 +494,7 @@ class PropertyService:
                 # Property pages — re-fetch so `monthlyHoaFee` is captured.
                 details_cached = cached_data.get("details") or {}
                 ptype = str(details_cached.get("property_type") or "").lower()
-                hoa_likely = any(
-                    tok in ptype for tok in ("condo", "town", "co-op", "coop", "multi", "apartment")
-                )
+                hoa_likely = any(tok in ptype for tok in ("condo", "town", "co-op", "coop", "multi", "apartment"))
                 missing_hoa = hoa_likely and market_cached.get("hoa_fees_monthly") in (None, 0)
                 # Zillow data completely absent — AXESSO likely had a transient
                 # failure.  Re-fetch after 4 hours to give the API time to
@@ -1177,7 +1177,7 @@ class PropertyService:
         return 4500  # Default fallback
 
     def _estimate_insurance(self, data: dict) -> float | None:
-        """Estimate annual insurance as property_value × default insurance_pct.
+        """Estimate annual insurance as property_value * default insurance_pct.
 
         Uses :data:`app.core.defaults.OPERATING.insurance_pct` (1% by default).
         Returns ``None`` when no property value is available (no fabrication).
@@ -1441,7 +1441,9 @@ class PropertyService:
 
                 # RentCast lotSize is in square feet; expose units explicitly.
                 lot_size_sqft = comp.get("lotSize")
-                lot_area_units = "Square Feet" if isinstance(lot_size_sqft, (int, float)) and lot_size_sqft > 0 else None
+                lot_area_units = (
+                    "Square Feet" if isinstance(lot_size_sqft, (int, float)) and lot_size_sqft > 0 else None
+                )
 
                 normalized_comps.append(
                     {
@@ -1644,7 +1646,9 @@ class PropertyService:
                 # transformer doesn't treat 21,344 sqft as 21,344 acres (which yields
                 # appraisal adjustments in the hundreds of millions).
                 lot_size_sqft = comp.get("lotSize")
-                lot_area_units = "Square Feet" if isinstance(lot_size_sqft, (int, float)) and lot_size_sqft > 0 else None
+                lot_area_units = (
+                    "Square Feet" if isinstance(lot_size_sqft, (int, float)) and lot_size_sqft > 0 else None
+                )
 
                 normalized_comps.append(
                     {

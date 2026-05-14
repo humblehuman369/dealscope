@@ -15,7 +15,6 @@ User-authored notes are stored as ``PropertyAdjustment`` rows with
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
 from typing import Any, Literal
 
 from sqlalchemy import select
@@ -26,7 +25,6 @@ from app.models.contact import PropertyContact
 from app.models.document import Document
 from app.models.saved_property import PropertyAdjustment, SavedProperty
 from app.models.task import PropertyTask
-
 
 TimelineEventKind = Literal[
     "status_change",
@@ -59,9 +57,7 @@ def _humanize_status_change(prev: Any, new: Any) -> str:
 
 
 class TimelineService:
-    async def _ensure_owns_property(
-        self, db: AsyncSession, property_id: str, user_id: str
-    ) -> SavedProperty | None:
+    async def _ensure_owns_property(self, db: AsyncSession, property_id: str, user_id: str) -> SavedProperty | None:
         result = await db.execute(
             select(SavedProperty).where(
                 SavedProperty.id == uuid.UUID(property_id),
@@ -88,13 +84,17 @@ class TimelineService:
 
         # 1) PropertyAdjustment — status / flip_stage / generic notes.
         adj_rows = (
-            await db.execute(
-                select(PropertyAdjustment)
-                .where(PropertyAdjustment.property_id == prop_uuid)
-                .order_by(PropertyAdjustment.created_at.desc())
-                .limit(limit)
+            (
+                await db.execute(
+                    select(PropertyAdjustment)
+                    .where(PropertyAdjustment.property_id == prop_uuid)
+                    .order_by(PropertyAdjustment.created_at.desc())
+                    .limit(limit)
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         for a in adj_rows:
             kind, title, body = self._classify_adjustment(a)
             if kind is None:
@@ -116,13 +116,17 @@ class TimelineService:
 
         # 2) PropertyTask — added (creation) and completed/reopened (state).
         task_rows = (
-            await db.execute(
-                select(PropertyTask)
-                .where(PropertyTask.saved_property_id == prop_uuid)
-                .order_by(PropertyTask.created_at.desc())
-                .limit(limit)
+            (
+                await db.execute(
+                    select(PropertyTask)
+                    .where(PropertyTask.saved_property_id == prop_uuid)
+                    .order_by(PropertyTask.created_at.desc())
+                    .limit(limit)
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         for t in task_rows:
             events.append(
                 {
@@ -148,14 +152,18 @@ class TimelineService:
 
         # 3) BudgetExpense — actual spend logged.
         exp_rows = (
-            await db.execute(
-                select(BudgetExpense)
-                .join(RehabBudget, RehabBudget.id == BudgetExpense.budget_id)
-                .where(RehabBudget.saved_property_id == prop_uuid)
-                .order_by(BudgetExpense.created_at.desc())
-                .limit(limit)
+            (
+                await db.execute(
+                    select(BudgetExpense)
+                    .join(RehabBudget, RehabBudget.id == BudgetExpense.budget_id)
+                    .where(RehabBudget.saved_property_id == prop_uuid)
+                    .order_by(BudgetExpense.created_at.desc())
+                    .limit(limit)
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         for ex in exp_rows:
             vendor = ex.vendor or "no vendor"
             events.append(
@@ -176,13 +184,17 @@ class TimelineService:
 
         # 4) PropertyContact — only "added" surfaces; updates are too noisy.
         contact_rows = (
-            await db.execute(
-                select(PropertyContact)
-                .where(PropertyContact.saved_property_id == prop_uuid)
-                .order_by(PropertyContact.created_at.desc())
-                .limit(limit)
+            (
+                await db.execute(
+                    select(PropertyContact)
+                    .where(PropertyContact.saved_property_id == prop_uuid)
+                    .order_by(PropertyContact.created_at.desc())
+                    .limit(limit)
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         for c in contact_rows:
             role_label = c.role.value.replace("_", " ").title() if c.role else "Contact"
             events.append(
@@ -202,19 +214,19 @@ class TimelineService:
         # 5) Document — uploaded files are deal-level events worth surfacing.
         try:
             doc_rows = (
-                await db.execute(
-                    select(Document)
-                    .where(Document.property_id == prop_uuid)
-                    .order_by(Document.uploaded_at.desc())
-                    .limit(limit)
+                (
+                    await db.execute(
+                        select(Document)
+                        .where(Document.property_id == prop_uuid)
+                        .order_by(Document.uploaded_at.desc())
+                        .limit(limit)
+                    )
                 )
-            ).scalars().all()
+                .scalars()
+                .all()
+            )
             for d in doc_rows:
-                doc_type_label = (
-                    d.document_type.value.replace("_", " ").title()
-                    if d.document_type
-                    else "Document"
-                )
+                doc_type_label = d.document_type.value.replace("_", " ").title() if d.document_type else "Document"
                 events.append(
                     {
                         "id": f"doc:{d.id}",
@@ -236,9 +248,7 @@ class TimelineService:
 
         # 6) RehabBudget.baseline_locked_at — single milestone.
         budget_row = (
-            await db.execute(
-                select(RehabBudget).where(RehabBudget.saved_property_id == prop_uuid)
-            )
+            await db.execute(select(RehabBudget).where(RehabBudget.saved_property_id == prop_uuid))
         ).scalar_one_or_none()
         if budget_row and budget_row.baseline_locked_at:
             events.append(
@@ -259,11 +269,8 @@ class TimelineService:
         events.sort(key=lambda e: e["occurred_at"], reverse=True)
         return events[:limit]
 
-    def _classify_adjustment(
-        self, a: PropertyAdjustment
-    ) -> tuple[TimelineEventKind | None, str, str | None]:
+    def _classify_adjustment(self, a: PropertyAdjustment) -> tuple[TimelineEventKind | None, str, str | None]:
         """Map a PropertyAdjustment row to (kind, title, body) or (None,...) to skip."""
-        kind: TimelineEventKind | None
         if a.adjustment_type == NOTE_ADJUSTMENT_TYPE:
             return ("note", a.reason or "Note", None)
         if a.adjustment_type == "status":

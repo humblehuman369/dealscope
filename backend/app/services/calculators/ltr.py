@@ -12,7 +12,6 @@ from .common import (
     calculate_cash_on_cash,
     calculate_dscr,
     calculate_grm,
-    calculate_monthly_mortgage,
     cash_needed_after_seller,
     combined_bank_and_seller_pi,
     conventional_first_lien_loan,

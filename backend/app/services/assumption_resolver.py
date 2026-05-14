@@ -30,7 +30,7 @@ def _coalesce_none(*values: Any) -> Any:
 
 
 def _resolve_insurance_annual(o: OperatingAssumptions, base_price: float) -> float:
-    """Annual insurance from explicit override or ``base_price × insurance_pct``.
+    """Annual insurance from explicit override or ``base_price * insurance_pct``.
 
     Uses ``is not None`` so a user-entered ``0`` is preserved.
     """
