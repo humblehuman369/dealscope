@@ -26,11 +26,11 @@ export interface AxessoResponse<T> {
 }
 
 // SECURITY: apiKey is intentionally always empty in the browser bundle.
-// Comps go through our backend (/api/v1/similar-*), which authenticates
-// to Axesso server-side using a secret env var. Reading
-// NEXT_PUBLIC_AXESSO_API_KEY here would expose the third-party subscription
-// key to anyone who downloads the JS bundle — see CI guard in
-// .github/workflows/ci.yml that fails if NEXT_PUBLIC_AXESSO* is reintroduced.
+// Comps go through our backend (/api/v1/similar-*), which authenticates to
+// the third-party comps provider server-side using a secret env var. Pulling
+// any provider key off `process.env` here would inline it into the JS bundle
+// (account / quota theft). The CI workflow has a grep guard that fails the
+// build if a forbidden public-prefix env name is reintroduced in src/.
 const DEFAULT_CONFIG: AxessoClientConfig = {
   baseUrl: API_BASE_URL,
   apiKey: '',
