@@ -541,11 +541,17 @@ async def revenuecat_webhook(
     The shared secret is sent as a Bearer token in the Authorization header.
     """
     expected_secret = settings.REVENUECAT_WEBHOOK_SECRET
-    if expected_secret:
-        token = (authorization or "").removeprefix("Bearer ").strip()
-        if token != expected_secret:
-            logger.warning("RevenueCat webhook: invalid authorization")
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid webhook secret")
+    if not expected_secret:
+        logger.error("RevenueCat webhook rejected: REVENUECAT_WEBHOOK_SECRET is not configured")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="RevenueCat webhook secret is not configured",
+        )
+
+    token = (authorization or "").removeprefix("Bearer ").strip()
+    if token != expected_secret:
+        logger.warning("RevenueCat webhook: invalid authorization")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid webhook secret")
 
     try:
         payload = await request.json()

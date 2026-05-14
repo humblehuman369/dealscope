@@ -21,6 +21,7 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.models.session import UserSession
 from app.repositories.session_repository import session_repo
 from app.services.token_service import token_service
@@ -31,8 +32,6 @@ logger = logging.getLogger(__name__)
 # Constants
 # -----------------------------------------------------------------------
 SESSION_TOKEN_BYTES = 64  # 64 url-safe bytes → ~86 chars
-DEFAULT_SESSION_DAYS = 7
-REMEMBER_ME_SESSION_DAYS = 30
 
 
 def _generate_opaque_token() -> str:
@@ -56,7 +55,8 @@ class SessionService:
 
         The caller is responsible for committing the transaction.
         """
-        lifetime = timedelta(days=REMEMBER_ME_SESSION_DAYS if remember_me else DEFAULT_SESSION_DAYS)
+        lifetime_days = settings.SESSION_REMEMBER_ME_DAYS if remember_me else settings.SESSION_DEFAULT_DAYS
+        lifetime = timedelta(days=lifetime_days)
 
         session_obj = await session_repo.create(
             db,

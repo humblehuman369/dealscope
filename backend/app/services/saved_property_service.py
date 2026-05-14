@@ -8,7 +8,7 @@ import uuid
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer, selectinload
 
@@ -112,10 +112,13 @@ def sanitize_for_json_storage(obj):
 
 async def _adjust_properties_count(db: AsyncSession, user_id: uuid.UUID, delta: int) -> None:
     """Atomically adjust the denormalized properties_count on the subscription."""
-    result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
-    sub = result.scalar_one_or_none()
-    if sub is not None:
-        sub.properties_count = sub.properties_count + delta
+    if delta == 0:
+        return
+    await db.execute(
+        update(Subscription)
+        .where(Subscription.user_id == user_id)
+        .values(properties_count=func.coalesce(Subscription.properties_count, 0) + delta)
+    )
 
 
 class SavedPropertyService:

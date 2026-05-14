@@ -334,6 +334,9 @@ def validate_settings(settings: Settings) -> None:
 
                 object.__setattr__(settings, "SECRET_KEY", _s.token_hex(32))
 
+    if settings.ALGORITHM not in {"HS256", "HS384", "HS512"}:
+        errors.append("ALGORITHM must be one of: HS256, HS384, HS512")
+
     # Production-specific validations
     if settings.is_production:
         if not settings.DATABASE_URL or "localhost" in settings.DATABASE_URL:
@@ -381,6 +384,12 @@ def validate_settings(settings: Settings) -> None:
         if not settings.STRIPE_WEBHOOK_SECRET:
             # Warning only - Stripe webhooks will fail but app will start
             warnings.warn("STRIPE_WEBHOOK_SECRET not set - Stripe webhooks will not work", stacklevel=2)
+
+        if not settings.REVENUECAT_WEBHOOK_SECRET:
+            errors.append(
+                "REVENUECAT_WEBHOOK_SECRET must be set in production. "
+                "RevenueCat webhooks fail closed without this shared secret."
+            )
     else:
         # Non-production: warn about missing keys without blocking startup
         _optional_keys = [

@@ -21,6 +21,14 @@ from app.services.assumptions_service import get_default_assumptions
 logger = logging.getLogger(__name__)
 
 
+def _coalesce_none(*values: Any) -> Any:
+    """Return the first value that is not None, preserving legitimate zeros."""
+    for value in values:
+        if value is not None:
+            return value
+    return None
+
+
 def _resolve_insurance_annual(o: OperatingAssumptions, base_price: float) -> float:
     """Annual insurance from explicit override or ``base_price × insurance_pct``.
 
@@ -155,16 +163,16 @@ def build_brrrr_params(
     o = assumptions.operating
     r = assumptions.rehab
     b = assumptions.brrrr
-    renovation_budget = r.renovation_budget if r.renovation_budget else arv * r.renovation_budget_pct
-    monthly_holding = r.monthly_holding_costs if r.monthly_holding_costs else (market_value * r.holding_costs_pct) / 12
-    refi_closing = b.refinance_closing_costs if b.refinance_closing_costs else arv * b.refinance_closing_costs_pct
+    renovation_budget = _coalesce_none(r.renovation_budget, arv * r.renovation_budget_pct)
+    monthly_holding = _coalesce_none(r.monthly_holding_costs, (market_value * r.holding_costs_pct) / 12)
+    refi_closing = _coalesce_none(b.refinance_closing_costs, arv * b.refinance_closing_costs_pct)
     insurance_annual = _resolve_insurance_annual(o, market_value)
     return dict(
         market_value=market_value,
         arv=arv,
         monthly_rent_post_rehab=monthly_rent_post_rehab,
         property_taxes_annual=property_taxes_annual,
-        purchase_discount_pct=b.purchase_discount_pct or b.buy_discount_pct,
+        purchase_discount_pct=_coalesce_none(b.purchase_discount_pct, b.buy_discount_pct),
         down_payment_pct=f.down_payment_pct,
         interest_rate=f.interest_rate,
         loan_term_years=f.loan_term_years,
@@ -193,7 +201,7 @@ def build_flip_params(
     o = assumptions.operating
     r = assumptions.rehab
     fl = assumptions.flip
-    renovation_budget = r.renovation_budget if r.renovation_budget else arv * r.renovation_budget_pct
+    renovation_budget = _coalesce_none(r.renovation_budget, arv * r.renovation_budget_pct)
     insurance_annual = _resolve_insurance_annual(o, market_value)
     return dict(
         market_value=market_value,
