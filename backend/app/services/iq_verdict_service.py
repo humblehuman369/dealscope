@@ -227,15 +227,7 @@ def _calculate_str_strategy(
     maintenance = annual_revenue * o.maintenance_pct
     capex = annual_revenue * o.capex_pct
     op_ex = (
-        property_taxes
-        + insurance
-        + mgmt_fee
-        + platform_fees
-        + utilities
-        + supplies
-        + maintenance
-        + capex
-        + hoa_annual
+        property_taxes + insurance + mgmt_fee + platform_fees + utilities + supplies + maintenance + capex + hoa_annual
     )
     noi = annual_revenue - op_ex
     annual_cash_flow = noi - annual_debt

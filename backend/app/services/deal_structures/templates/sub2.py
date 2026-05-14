@@ -75,15 +75,15 @@ def _build_sub2_pitch(
         "don't understand Sub2 and will discourage the seller from considering it. If the property "
         "is FSBO or off-market, even better.\n\n"
         "PREP — TWO QUESTIONS YOU MUST ASK FIRST\n"
-        "1. \"Do you have a mortgage on the property, and is the rate fixed?\" (Confirms the loan exists and is assumable in spirit.)\n"
-        "2. \"On closing day, do you need to walk away with a big check, or is debt relief and a clean exit more important?\"\n"
+        '1. "Do you have a mortgage on the property, and is the rate fixed?" (Confirms the loan exists and is assumable in spirit.)\n'
+        '2. "On closing day, do you need to walk away with a big check, or is debt relief and a clean exit more important?"\n'
         "   If they need a big cash check, Sub2 doesn't fit — pivot to a seller-second instead.\n\n"
         f"{confidence_line}\n\n"
         "THE OPEN — emotional discovery (Brent Daniels TTP style)\n"
         "Don't lead with the structure. Lead with their situation:\n"
         "\"Before I throw a number out, I want to understand what's going on. What's pushing the "
         "sale, and what would success look like for you on closing day? Are you trying to relocate, "
-        "downsize, get out from under the payment, or something else entirely?\"\n\n"
+        'downsize, get out from under the payment, or something else entirely?"\n\n'
         "(Listen for pain. Sub2 sells itself when you've heard the pain.)\n\n"
         "THE PITCH\n"
         "\"Here's a way I can help you that a normal buyer can't. I'd take over the existing "
@@ -106,25 +106,25 @@ def _build_sub2_pitch(
         "anyway: we put the property in a land trust before transfer (which doesn't trigger the "
         "clause), the bank receives the same payment from the same servicer it always has, and we "
         "set up a third-party servicing company so payments are documented. If I miss a payment, "
-        "you can take the property back. We both have an attorney review the docs.\"\n\n"
+        'you can take the property back. We both have an attorney review the docs."\n\n'
         "ANTICIPATE OBJECTIONS\n"
-        "\u2022 \"What if you stop paying?\" \u2192 \"You'd reclaim the property through the trust "
-        "agreement and any payments I made stay with you. The downside risk to you is small.\"\n"
-        "\u2022 \"What about the loan being in my name?\" \u2192 \"It stays on your credit report "
+        '\u2022 "What if you stop paying?" \u2192 "You\'d reclaim the property through the trust '
+        'agreement and any payments I made stay with you. The downside risk to you is small."\n'
+        '\u2022 "What about the loan being in my name?" \u2192 "It stays on your credit report '
         "as a mortgage in good standing — that's actually positive for your credit. I have on-time "
-        "payments documented through a third-party servicer.\"\n"
-        "\u2022 \"How long until the loan is paid off / refinanced?\" \u2192 \"My plan is to refinance "
+        'payments documented through a third-party servicer."\n'
+        '\u2022 "How long until the loan is paid off / refinanced?" \u2192 "My plan is to refinance '
         "in 5-7 years when rates come down or the property cash-flows enough to qualify. We can "
-        "agree to a maximum hold period in writing.\"\n\n"
+        'agree to a maximum hold period in writing."\n\n'
         "THE ASK — soft yes/no\n"
         "\"Would you be open to walking through what this would look like on paper? I'll have my "
         "creative-finance attorney draft the agreement so we both know we're protected. No "
         "commitment from you until you've seen the structure and your attorney has signed off.\"\n\n"
         "TRIAL CLOSE\n"
-        "\"What questions do you have about how this works for you?\"\n\n"
+        '"What questions do you have about how this works for you?"\n\n'
         "TACTICS\n"
         "\u2022 NEVER pitch Sub2 in the first 60 seconds. Build rapport, hear the pain, then offer the solution.\n"
-        "\u2022 Use \"would you be open to...\" framing — soft yes/no that doesn't trigger defensiveness (Pace Morby).\n"
+        '\u2022 Use "would you be open to..." framing — soft yes/no that doesn\'t trigger defensiveness (Pace Morby).\n'
         "\u2022 Always reference an attorney. Sellers fear creative deals less when professional paper is involved.\n"
         "\u2022 Pace Morby's rule: \"If they hesitate, ask 'what part doesn't sit right?' — then handle THAT specific objection.\"\n"
         "\u2022 Use a third-party loan servicer (e.g., Note Servicing Center). Documentation is your protection AND the seller's."

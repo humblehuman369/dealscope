@@ -137,7 +137,6 @@ async def lifespan(app: FastAPI):
     # migration constraints/indexes and mask failed deploy migrations.
     logger.info("Skipping runtime table creation; Alembic migrations are the schema authority")
 
-
     # Run cleanup tasks (expired sessions, tokens, old audit logs) once at startup.
     # In production, wire these into a cron schedule (e.g. Railway cron, APScheduler).
     try:

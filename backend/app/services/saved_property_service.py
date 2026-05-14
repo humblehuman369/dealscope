@@ -403,7 +403,9 @@ class SavedPropertyService:
 
         # Detect status change so we can stamp status_changed_at exactly when
         # it actually moves — model defaults only fire on insert, not update.
-        status_did_change = "status" in update_data and update_data["status"] is not None and update_data["status"] != previous_status
+        status_did_change = (
+            "status" in update_data and update_data["status"] is not None and update_data["status"] != previous_status
+        )
 
         for field, value in update_data.items():
             # Handle DealMakerRecord conversion to dict
@@ -442,6 +444,7 @@ class SavedPropertyService:
         # between saved_property_service and task_service.
         if status_did_change:
             from app.services.task_service import task_service as _ts
+
             try:
                 await _ts.seed_for_property(db, property_id, user_id)
             except Exception as e:
@@ -550,6 +553,7 @@ class SavedPropertyService:
         # Stabilized, Setup, etc.). Same dedup behavior as the status-change
         # path above.
         from app.services.task_service import task_service as _ts
+
         try:
             await _ts.seed_for_property(db, property_id, user_id)
         except Exception as e:

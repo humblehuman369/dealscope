@@ -36,6 +36,7 @@ ignore = [
     "S105",  # possible hardcoded password (false positive for enum/constant names)
     "RUF012",  # mutable class attribute (fix incrementally)
     "RUF003",  # comment ambiguous unicode (fix incrementally)
+    "RUF002",  # docstring ambiguous unicode (× / − used intentionally in math docstrings)
     "S608",  # possible SQL injection (false positive: logging path in f-string)
 ]
 
