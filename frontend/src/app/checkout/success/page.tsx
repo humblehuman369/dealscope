@@ -6,7 +6,7 @@
  * Address-dependent paths (verdict, property, strategy) redirect to /billing to avoid "No address provided".
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle, Loader2 } from 'lucide-react'
 import { api } from '@/lib/api-client'
@@ -20,7 +20,29 @@ function isAddressDependentPath(path: string): boolean {
   return p === '/discovery' || p === '/property' || p === '/strategy' || p.startsWith('/property/')
 }
 
+function CheckoutSuccessFallback() {
+  return (
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4"
+      style={{ background: '#0B1120', color: '#E2E8F0' }}
+    >
+      <Loader2 className="w-14 h-14 mx-auto mb-6 text-sky-500 animate-spin" />
+      <p className="text-sm text-slate-400">Loading…</p>
+    </div>
+  )
+}
+
 export default function CheckoutSuccessPage() {
+  // useSearchParams requires a Suspense boundary in Next 16+; the actual
+  // polling + redirect logic lives in CheckoutSuccessContent.
+  return (
+    <Suspense fallback={<CheckoutSuccessFallback />}>
+      <CheckoutSuccessContent />
+    </Suspense>
+  )
+}
+
+function CheckoutSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')

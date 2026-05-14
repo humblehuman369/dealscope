@@ -50,12 +50,51 @@ jobs:
         run: npm run theme:check:strict
         working-directory: frontend
 
+      # ────────────────────────────────────────────
+      # Source-side guard: forbid client-bundled
+      # references to third-party / privileged keys.
+      # If these env vars ever appear in src/, the
+      # `NEXT_PUBLIC_` prefix would inline them into
+      # the browser bundle (account takeover / quota
+      # abuse). Allow only test files.
+      # ────────────────────────────────────────────
+      - name: Forbid client-bundled secret env vars
+        run: |
+          set -e
+          PATTERN='NEXT_PUBLIC_(AXESSO|RENTCAST|ZILLOW|REDFIN|REALTOR|ADMIN|.*_SECRET|.*_PRIVATE_KEY|STRIPE_SECRET)'
+          if grep -RInE "$PATTERN" src/ \
+              --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
+              --exclude-dir='__tests__'; then
+            echo "::error::Forbidden NEXT_PUBLIC_* env reference found in src/. Move to backend or rename without the NEXT_PUBLIC_ prefix."
+            exit 1
+          fi
+          echo "✓ No forbidden NEXT_PUBLIC_* secret references in src/"
+        working-directory: frontend
+
       - name: TypeScript type check
         run: npx tsc --noEmit
         working-directory: frontend
 
       - name: Build
         run: npm run build
+        working-directory: frontend
+
+      # ────────────────────────────────────────────
+      # Bundle-side guard: scan the produced JS for
+      # forbidden env var names, in case a future
+      # change references them via a path the source
+      # grep above couldn't see (template strings,
+      # dynamic process.env access, etc.).
+      # ────────────────────────────────────────────
+      - name: Forbid forbidden env names in built bundle
+        run: |
+          set -e
+          if find .next/static -type f \( -name '*.js' -o -name '*.mjs' \) -print0 \
+              | xargs -0 grep -lE 'NEXT_PUBLIC_(AXESSO|RENTCAST|ZILLOW|REDFIN|REALTOR|ADMIN|.*_SECRET|.*_PRIVATE_KEY|STRIPE_SECRET)' 2>/dev/null; then
+            echo "::error::Forbidden NEXT_PUBLIC_* env name appears in built JS bundle."
+            exit 1
+          fi
+          echo "✓ No forbidden NEXT_PUBLIC_* env names in built bundle"
         working-directory: frontend
 
   # ────────────────────────────────────────────

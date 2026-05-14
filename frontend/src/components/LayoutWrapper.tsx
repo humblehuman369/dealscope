@@ -19,6 +19,7 @@ import React, { Suspense } from 'react'
 import { AppHeader } from './AppHeader'
 import { UsageBar } from './UsageBar'
 import { DashboardLandingGate } from './DashboardLandingGate'
+import { OfflineBanner } from './OfflineBanner'
 
 interface LayoutWrapperProps {
   children: React.ReactNode
@@ -34,6 +35,12 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
       >
         Skip to main content
       </a>
+
+      {/*
+        Network status banner — fixed position, sits above all chrome.
+        Self-hides when online; shows a brief "Back Online" confirmation on reconnect.
+      */}
+      <OfflineBanner />
 
       {/* 
         Universal AppHeader - wrapped in Suspense for useSearchParams compatibility.

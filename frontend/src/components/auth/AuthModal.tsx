@@ -96,18 +96,18 @@ export default function AuthModal() {
       aria-modal="true"
       aria-label={view === 'login' ? 'Sign in' : view === 'register' ? 'Create account' : 'Reset password'}
     >
-      <div className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden" style={{ backgroundColor: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.1)' }}>
+      <div className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden" style={{ backgroundColor: 'var(--surface-card)', border: '1px solid var(--border-default)' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-2">
-          <h2 className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--text-heading)' }}>
             {view === 'login' && 'Sign In'}
             {view === 'register' && 'Create Account'}
             {view === 'forgot-password' && 'Reset Password'}
           </h2>
           <button
             onClick={close}
-            className="p-1 rounded-full hover:bg-white/10 transition-colors"
-            style={{ color: '#94A3B8' }}
+            className="p-1 rounded-full hover:bg-[var(--surface-card-hover)] transition-colors"
+            style={{ color: 'var(--text-muted)' }}
             aria-label="Close"
           >
             <X className="w-5 h-5" />

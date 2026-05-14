@@ -35,127 +35,119 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
   const [property, setProperty] = useState<SavedProperty | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
-  // Use ref to avoid re-fetching when onLoaded changes (prevents infinite loop)
+
+  // Avoid retriggering the fetch effect when callers pass a fresh
+  // `onLoaded` reference each render.
   const onLoadedRef = useRef(onLoaded)
   onLoadedRef.current = onLoaded
-  
-  // Track if we've already fetched to prevent duplicate fetches
-  const hasFetchedRef = useRef(false)
+
+  // Snapshot worksheet store fields read inside the effect into refs so
+  // they can be consulted without becoming dependencies (which would
+  // otherwise refetch every store mutation).
+  const worksheetSnapshotRef = useRef(worksheetStore)
+  worksheetSnapshotRef.current = worksheetStore
 
   useEffect(() => {
-    // Don't do anything while auth is still loading
-    if (authLoading) {
-      console.log('[useWorksheetProperty] Auth still loading, waiting...')
-      return
-    }
-    
-    // Only redirect if auth is done loading AND user is not authenticated
+    // Don't do anything while auth is still loading.
+    if (authLoading) return
+
+    // Only redirect if auth is done loading AND user is not authenticated.
     if (!isAuthenticated) {
-      console.log('[useWorksheetProperty] Not authenticated, redirecting to home')
       router.push('/')
       return
     }
-    
-    // Handle temporary (unsaved) properties - use worksheetStore data instead of API
-    const isTemp = isTempPropertyId(propertyId)
-    if (isTemp) {
-      
-      if (worksheetStore.propertyId === propertyId && worksheetStore.propertyData) {
-        // WorksheetStore already has this property's data
-        const syntheticProperty = worksheetStore.propertyData as SavedProperty
-        setProperty(syntheticProperty)
-        setIsLoading(false)
-        setError(null)
-        onLoadedRef.current?.(syntheticProperty)
-        return
-      } else {
-        // worksheetStore doesn't have this property data - should have been initialized by Deal Maker
-        // Check if we at least have assumptions we can use
-        if (worksheetStore.assumptions?.purchasePrice > 0) {
-          // Build a minimal synthetic property from worksheetStore
-          const syntheticProperty = {
-            id: propertyId,
-            user_id: '',
-            address_street: extractAddressFromTempId(propertyId),
-            address_city: '',
-            address_state: '',
-            address_zip: '',
-            property_data_snapshot: {
-              listPrice: worksheetStore.assumptions.purchasePrice,
-              monthlyRent: worksheetStore.assumptions.monthlyRent,
-              propertyTaxes: worksheetStore.assumptions.propertyTaxes,
-              insurance: worksheetStore.assumptions.insurance,
-            },
-            worksheet_assumptions: worksheetStore.assumptions,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          } as unknown as SavedProperty
+
+    if (!propertyId) return
+
+    let cancelled = false
+
+    // Fully reset state at the top of every (propertyId, auth) change so
+    // navigating between properties never leaves stale data on screen.
+    setProperty(null)
+    setError(null)
+    setIsLoading(true)
+
+    // Temporary (unsaved) properties: hydrate from the worksheet store
+    // rather than calling the API.
+    if (isTempPropertyId(propertyId)) {
+      const ws = worksheetSnapshotRef.current
+
+      if (ws.propertyId === propertyId && ws.propertyData) {
+        const syntheticProperty = ws.propertyData as SavedProperty
+        if (!cancelled) {
           setProperty(syntheticProperty)
           setIsLoading(false)
-          setError(null)
           onLoadedRef.current?.(syntheticProperty)
-          return
         }
-        // No data available, show error
+        return () => {
+          cancelled = true
+        }
+      }
+
+      if (ws.assumptions?.purchasePrice > 0) {
+        const syntheticProperty = {
+          id: propertyId,
+          user_id: '',
+          address_street: extractAddressFromTempId(propertyId),
+          address_city: '',
+          address_state: '',
+          address_zip: '',
+          property_data_snapshot: {
+            listPrice: ws.assumptions.purchasePrice,
+            monthlyRent: ws.assumptions.monthlyRent,
+            propertyTaxes: ws.assumptions.propertyTaxes,
+            insurance: ws.assumptions.insurance,
+          },
+          worksheet_assumptions: ws.assumptions,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as unknown as SavedProperty
+        if (!cancelled) {
+          setProperty(syntheticProperty)
+          setIsLoading(false)
+          onLoadedRef.current?.(syntheticProperty)
+        }
+        return () => {
+          cancelled = true
+        }
+      }
+
+      if (!cancelled) {
         setError('Property data not found. Please go back to Deal Maker.')
         setIsLoading(false)
-        return
+      }
+      return () => {
+        cancelled = true
       }
     }
 
-    const fetchProperty = async () => {
-      if (!propertyId || hasFetchedRef.current) {
-        console.log('[useWorksheetProperty] Skipping fetch:', { propertyId, hasFetched: hasFetchedRef.current })
-        return
-      }
-      
-      hasFetchedRef.current = true
-      setIsLoading(true)
-      setError(null)
-      
-      console.log('[useWorksheetProperty] Fetching property:', propertyId)
-      
-      try {
-        const data = await apiRequest<SavedProperty>(
-          `/api/v1/properties/saved/${propertyId}`
-        )
-        console.log('[useWorksheetProperty] Property loaded:', data.id, data.address_street)
-        
+    // Saved property: fetch from API.
+    apiRequest<SavedProperty>(`/api/v1/properties/saved/${propertyId}`)
+      .then((data) => {
+        if (cancelled) return
         setProperty(data)
         onLoadedRef.current?.(data)
-      } catch (err) {
-        console.error('[useWorksheetProperty] Error fetching property:', err)
-        
-        // apiRequest handles 401 → refresh automatically.
-        // If we still get an error, it's a real failure.
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return
         const message = err instanceof Error ? err.message : 'Failed to load property'
-        
+
         if (message.includes('401') || message.includes('Unauthorized')) {
           setError('Session expired. Please log in again.')
           router.push('/')
           return
         }
-        
-        setError(message || 'Failed to load property. Please try again.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
 
-    fetchProperty()
-    // Note: worksheetStore values intentionally excluded from deps to prevent infinite loops
-    // The effect runs once per propertyId change, and worksheetStore data is read at that moment
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        setError(message || 'Failed to load property. Please try again.')
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [propertyId, isAuthenticated, authLoading, router])
-  
-  // Reset fetch flag when propertyId changes
-  useEffect(() => {
-    hasFetchedRef.current = false
-    setProperty(null)
-    setError(null)
-    setIsLoading(true)
-  }, [propertyId])
 
   return {
     property,

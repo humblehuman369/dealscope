@@ -25,9 +25,15 @@ export interface AxessoResponse<T> {
   durationMs: number
 }
 
+// SECURITY: apiKey is intentionally always empty in the browser bundle.
+// Comps go through our backend (/api/v1/similar-*), which authenticates
+// to Axesso server-side using a secret env var. Reading
+// NEXT_PUBLIC_AXESSO_API_KEY here would expose the third-party subscription
+// key to anyone who downloads the JS bundle — see CI guard in
+// .github/workflows/ci.yml that fails if NEXT_PUBLIC_AXESSO* is reintroduced.
 const DEFAULT_CONFIG: AxessoClientConfig = {
   baseUrl: API_BASE_URL,
-  apiKey: typeof process !== 'undefined' ? (process.env.NEXT_PUBLIC_AXESSO_API_KEY ?? '') : '',
+  apiKey: '',
   defaultTimeout: 15_000,
   maxRetries: 3,
   retryableStatuses: [502, 503, 504],

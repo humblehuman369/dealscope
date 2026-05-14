@@ -122,6 +122,9 @@ export function useDealScore(
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
+  // Tracks the very first effect run so `fetchOnMount: false` can suppress it
+  // without affecting subsequent input-change refetches.
+  const isFirstRunRef = useRef(true)
   
   const fetchDealScore = useCallback(async () => {
     // Cancel any pending request
@@ -221,8 +224,15 @@ export function useDealScore(
     input.daysOnMarket,
   ])
   
-  // Debounced fetch when inputs change
+  // Debounced fetch when inputs change.
+  // Skips the very first run when `fetchOnMount === false` so callers that
+  // want to defer the initial calculation (e.g. wait for user input) can.
   useEffect(() => {
+    if (isFirstRunRef.current) {
+      isFirstRunRef.current = false
+      if (!fetchOnMount) return
+    }
+
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
@@ -236,7 +246,7 @@ export function useDealScore(
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [fetchDealScore, debounceMs])
+  }, [fetchDealScore, debounceMs, fetchOnMount])
   
   // Cleanup on unmount
   useEffect(() => {

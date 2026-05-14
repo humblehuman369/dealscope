@@ -48,12 +48,13 @@ export default function BillingLoading() {
               <div className="h-9 w-24 rounded bg-[var(--surface-elevated)] animate-pulse mb-1" />
               <div className="h-3 w-52 rounded bg-[var(--surface-elevated)] animate-pulse mb-7" />
               <div className="space-y-3 mb-8">
-                {Array.from({ length: 9 }).map((_, j) => (
+                {/* Deterministic widths so SSR + CSR match (no hydration mismatch). */}
+                {[78, 64, 84, 70, 88, 62, 80, 74, 86].map((w, j) => (
                   <div key={j} className="flex items-center gap-2.5">
                     <div className="w-[18px] h-[18px] rounded bg-[var(--surface-elevated)] animate-pulse flex-shrink-0" />
                     <div
                       className="h-4 rounded bg-[var(--surface-elevated)] animate-pulse"
-                      style={{ width: `${60 + Math.random() * 30}%` }}
+                      style={{ width: `${w}%` }}
                     />
                   </div>
                 ))}

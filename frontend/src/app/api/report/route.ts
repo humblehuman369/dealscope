@@ -38,13 +38,41 @@ interface Proforma {
 }
 
 // ---------------------------------------------------------------------------
-// Formatting
+// Formatting / escaping
 // ---------------------------------------------------------------------------
 const fmt = (v: number, d = 0) => v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
 const $ = (v: number) => v >= 1_000_000 ? `$${(v/1_000_000).toFixed(2)}M` : `$${fmt(v)}`
 const pct = (v: number, d = 2) => `${v.toFixed(d)}%`
 const sign$ = (v: number) => v >= 0 ? $(v) : `-${$(Math.abs(v))}`
 const ptypeLabel = (t: string) => { const m: Record<string,string> = { 'single family':'single-family residence','singlefamily':'single-family residence','condo':'condominium','townhouse':'townhouse','duplex':'duplex' }; return m[t.toLowerCase()] || t.toLowerCase() }
+
+/**
+ * Escape a string for safe interpolation inside HTML text or attribute
+ * contexts. Used for every backend-supplied string that flows into the
+ * report HTML, since we intentionally do NOT trust upstream sanitization.
+ */
+function esc(v: string | number | null | undefined): string {
+  if (v == null) return ''
+  return String(v)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/**
+ * Render a constrained subset of inline markdown ( **bold** ) safely:
+ * 1) escape the entire input first,
+ * 2) then promote the *escaped* `**…**` markers to `<strong>` tags.
+ * Any HTML-significant characters in the source can never produce real tags.
+ */
+function renderInlineMd(v: string | null | undefined): string {
+  if (!v) return ''
+  return esc(v)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, ' ')
+}
 
 // ---------------------------------------------------------------------------
 // Theme palettes
@@ -78,8 +106,8 @@ function ring(score: number, grade: string, p: P, sz=160): string {
 // AI Narrative Engine (ported from Python pdf_narrative.py)
 // ---------------------------------------------------------------------------
 function narrativeCover(d: Proforma): string {
-  const pr = d.property, tp = ptypeLabel(pr.property_type), st = d.strategy_type.toUpperCase()
-  let t = `This comprehensive investment analysis provides detailed financial projections and property insights for a ${tp} located in ${pr.city}, ${pr.state}. `
+  const pr = d.property, tp = esc(ptypeLabel(pr.property_type)), st = esc(d.strategy_type.toUpperCase())
+  let t = `This comprehensive investment analysis provides detailed financial projections and property insights for a ${tp} located in ${esc(pr.city)}, ${esc(pr.state)}. `
   t += pr.year_built ? `Built in ${pr.year_built}, this property offers ` : 'This property offers '
   t += `${pr.bedrooms} bedrooms and ${pr.bathrooms} bathrooms across ${fmt(pr.square_feet)} square feet of living space`
   if (pr.lot_size > 0) { const ac = pr.lot_size / 43560; if (ac >= 0.1) t += ` on a ${fmt(pr.lot_size)}-square-foot lot (${ac.toFixed(2)} acres)` }
@@ -89,7 +117,7 @@ function narrativeCover(d: Proforma): string {
 function narrativeOverview(d: Proforma): string {
   const coc = d.metrics.cash_on_cash_return, pr = d.property, ac = d.acquisition, inc = d.income
   const assess = coc >= 8 ? 'a strong cash-flowing investment opportunity' : coc >= 0 ? 'a moderate investment opportunity with positive returns' : 'a wealth-building investment opportunity focused on long-term appreciation'
-  let t = `This ${ptypeLabel(pr.property_type)} represents ${assess} in ${pr.city}'s residential market. With a list price of ${$(ac.list_price)} and a projected monthly rent of ${$(inc.monthly_rent)}, the property `
+  let t = `This ${esc(ptypeLabel(pr.property_type))} represents ${assess} in ${esc(pr.city)}'s residential market. With a list price of ${$(ac.list_price)} and a projected monthly rent of ${$(inc.monthly_rent)}, the property `
   if (d.metrics.price_per_sqft > 0) t += `carries a price per square foot of $${fmt(d.metrics.price_per_sqft)}. `
   t += `The rent-to-price ratio and location fundamentals position this property for sustained investor interest.`
   return t
@@ -99,7 +127,7 @@ function narrativeFinancing(d: Proforma): string {
   const f = d.financing, ac = d.acquisition
   let t = `The investment requires a total acquisition cost of ${$(ac.total_acquisition_cost)}, including the purchase price and closing costs`
   if (ac.rehab_costs > 0) t += `, plus ${$(ac.rehab_costs)} in rehabilitation costs`
-  t += `. With a ${f.loan_type} financing structure utilizing a ${f.down_payment_percent.toFixed(0)}% down payment, investors can leverage ${$(f.loan_amount)} while maintaining strong equity positioning. `
+  t += `. With a ${esc(f.loan_type)} financing structure utilizing a ${f.down_payment_percent.toFixed(0)}% down payment, investors can leverage ${$(f.loan_amount)} while maintaining strong equity positioning. `
   t += `The ${f.loan_term_years}-year fixed mortgage at ${f.interest_rate.toFixed(2)}% interest provides payment stability throughout the hold period. Over the life of the loan, total interest payments will reach ${$(f.total_interest_over_life)}, making refinancing opportunities an important consideration.`
   return t
 }
@@ -146,7 +174,7 @@ function narrativeDealScore(d: Proforma): string {
   else if (ds.score >= 60) { assess = 'a moderate opportunity with upside potential'; action = 'Consider negotiating toward the breakeven price to improve returns.' }
   else if (ds.score >= 40) { assess = 'a marginal opportunity requiring careful evaluation'; action = 'Significant price negotiation would be needed to achieve target returns.' }
   else { assess = 'a challenging investment at current pricing'; action = 'The current pricing does not support the investment thesis. Look for substantial price reduction or alternative strategies.' }
-  let t = `The DealGapIQ Deal Score of ${ds.score} (${ds.grade}) indicates this is ${assess}. ${ds.verdict || ''}. `
+  let t = `The DealGapIQ Deal Score of ${ds.score} (${esc(ds.grade)}) indicates this is ${assess}. ${esc(ds.verdict || '')}. `
   const incomeVal = ds.income_value ?? ds.breakeven_price ?? 0
   if (incomeVal > 0 && ds.discount_required !== 0) t += `The income value is calculated at ${$(incomeVal)}, representing a ${Math.abs(ds.discount_required).toFixed(1)}% ${ds.discount_required > 0 ? 'discount' : 'premium'} from the current price. `
   return t + action
@@ -212,12 +240,17 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
     return `<div class="sens-block"><h4>${title}</h4><table class="tbl"><thead><tr><th>Change</th><th>Value</th><th>IRR</th><th>CoC Return</th><th>Net Profit</th></tr></thead><tbody>${rows.map(s => { const c = s.irr>=0?p.pos:p.neg; return `<tr><td>${s.change_percent>0?'+':''}${pct(s.change_percent,0)}</td><td>${$(s.absolute_value)}</td><td style="color:${c}">${pct(s.irr)}</td><td style="color:${c}">${pct(s.cash_on_cash)}</td><td style="color:${c}">${sign$(s.net_profit)}</td></tr>` }).join('')}</tbody></table></div>`
   }
 
-  // Photo grid HTML
-  const photoHTML = ph.length > 0 ? `<div class="photos photos-${Math.min(ph.length,5)}">${ph.map((u,i) => `<div class="ph${i===0?' ph-main':''}"><img src="${u}" alt=""/></div>`).join('')}</div>` : ''
+  // Photo grid HTML — only allow http(s) URLs (defends against `javascript:` /
+  // `data:` URIs being smuggled through the photo provider) and escape into
+  // the attribute context.
+  const safePhotos = ph.filter((u) => typeof u === 'string' && /^https?:\/\//i.test(u))
+  const photoHTML = safePhotos.length > 0
+    ? `<div class="photos photos-${Math.min(safePhotos.length,5)}">${safePhotos.map((u,i) => `<div class="ph${i===0?' ph-main':''}"><img src="${esc(u)}" alt=""/></div>`).join('')}</div>`
+    : ''
 
   const N = 6
-  const pgHdr = `<div class="pg-hdr"><div class="logo-sm">DealGap<span class="iq">IQ</span></div><div class="pg-hdr-title">${d.property_address}</div></div>`
-  const pgFt = (n: number) => `<div class="pg-foot"><span>DealGapIQ Property Report</span><span>${dateStr}</span><span>Page ${n} of ${N}</span></div>`
+  const pgHdr = `<div class="pg-hdr"><div class="logo-sm">DealGap<span class="iq">IQ</span></div><div class="pg-hdr-title">${esc(d.property_address)}</div></div>`
+  const pgFt = (n: number) => `<div class="pg-foot"><span>DealGapIQ Property Report</span><span>${esc(dateStr)}</span><span>Page ${n} of ${N}</span></div>`
 
   const pages = `
 <!-- ===== PAGE 1: COVER + PROPERTY DETAILS ===== -->
@@ -226,12 +259,12 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   <div class="cover-top">
     <div class="logo-lg">DealGap<span class="iq">IQ</span></div>
     <div class="cover-type">Property Investment Report</div>
-    <div class="cover-date">${dateStr} &bull; ${d.strategy_type.toUpperCase()} Strategy</div>
+    <div class="cover-date">${esc(dateStr)} &bull; ${esc(d.strategy_type.toUpperCase())} Strategy</div>
   </div>
   ${photoHTML}
   <div class="cover-divider"></div>
-  <h1 class="cover-addr">${d.property_address}</h1>
-  <p class="cover-meta">${d.property.property_type} &bull; ${d.property.bedrooms} BD / ${d.property.bathrooms} BA &bull; ${fmt(d.property.square_feet)} sqft &bull; Built ${d.property.year_built}</p>
+  <h1 class="cover-addr">${esc(d.property_address)}</h1>
+  <p class="cover-meta">${esc(d.property.property_type)} &bull; ${d.property.bedrooms} BD / ${d.property.bathrooms} BA &bull; ${fmt(d.property.square_feet)} sqft &bull; Built ${d.property.year_built}</p>
   <div class="hero">
     <div class="hero-item"><div class="hero-val">${$(d.acquisition.purchase_price)}</div><div class="hero-lbl">Purchase Price</div></div>
     <div class="hero-item"><div class="hero-val">${$(d.income.monthly_rent)}</div><div class="hero-lbl">Monthly Rent</div></div>
@@ -243,8 +276,8 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   <p class="narrative">${narrativeCover(d)}</p>
   ${d.strategy_methodology ? `
   <div class="card mt-14" style="border-left:3px solid ${p.brand}">
-    <div class="card-hd">Strategy Methodology: ${d.strategy_type.toUpperCase()}</div>
-    <p class="narrative" style="margin:8px 0 0">${d.strategy_methodology.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, ' ')}</p>
+    <div class="card-hd">Strategy Methodology: ${esc(d.strategy_type.toUpperCase())}</div>
+    <p class="narrative" style="margin:8px 0 0">${renderInlineMd(d.strategy_methodology)}</p>
   </div>` : ''}
   <div class="sec-divider"></div>
   <div class="sec-tag">01</div>
@@ -254,9 +287,9 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   <div class="grid3 mt-12">
     <div class="card">
       <div class="card-hd">Property Details</div>
-      ${kv('Address', d.property.address)}
-      ${kv('City / State', `${d.property.city}, ${d.property.state} ${d.property.zip}`)}
-      ${kv('Type', d.property.property_type)}
+      ${kv('Address', esc(d.property.address))}
+      ${kv('City / State', `${esc(d.property.city)}, ${esc(d.property.state)} ${esc(d.property.zip)}`)}
+      ${kv('Type', esc(d.property.property_type))}
       ${kv('Bedrooms', String(d.property.bedrooms))}
       ${kv('Bathrooms', String(d.property.bathrooms))}
       ${kv('Square Feet', fmt(d.property.square_feet))}
@@ -279,7 +312,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
       ${kv('Down Payment', `${$(d.financing.down_payment)} (${pct(d.financing.down_payment_percent,0)})`)}
       ${kv('Loan Amount', $(d.financing.loan_amount))}
       ${kv('Interest Rate', pct(d.financing.interest_rate))}
-      ${kv('Loan Term', `${d.financing.loan_term_years} yrs (${d.financing.loan_type})`)}
+      ${kv('Loan Term', `${d.financing.loan_term_years} yrs (${esc(d.financing.loan_type)})`)}
       ${kv('Monthly P&I', $(d.financing.monthly_payment))}
       ${kv('Monthly w/ Escrow', $(d.financing.monthly_payment_with_escrow))}
       ${kv('Total Interest', $(d.financing.total_interest_over_life))}
@@ -293,7 +326,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   ${pgHdr}
   <div class="sec-tag">02</div>
   <h2 class="sec-title">Market Position &amp; Location Analysis</h2>
-  <p class="narrative">Located in ${d.property.city}, ${d.property.state}, this property benefits from the area's residential market dynamics. With an assumed annual appreciation of ${pct(d.projections.appreciation_rate,1)}, the investment leverages both rental income and long-term value growth. Strong fundamentals in the local housing market support the projected appreciation trajectory.</p>
+  <p class="narrative">Located in ${esc(d.property.city)}, ${esc(d.property.state)}, this property benefits from the area's residential market dynamics. With an assumed annual appreciation of ${pct(d.projections.appreciation_rate,1)}, the investment leverages both rental income and long-term value growth. Strong fundamentals in the local housing market support the projected appreciation trajectory.</p>
   <div class="grid4 mt-14">
     <div class="stat-card"><div class="stat-val">${pct(d.projections.appreciation_rate,1)}</div><div class="stat-lbl">Annual Appreciation</div></div>
     <div class="stat-card"><div class="stat-val">${pct(d.projections.rent_growth_rate,1)}</div><div class="stat-lbl">Rent Growth Rate</div></div>
@@ -394,7 +427,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   <div class="score-section">
     <div class="score-ring-wrap">${ring(d.deal_score.score, d.deal_score.grade, p, 150)}</div>
     <div class="score-text">
-      <h3 class="verdict-hd" style="color:${gc(d.deal_score.grade,p)}">${d.deal_score.verdict || `Grade ${d.deal_score.grade}`}</h3>
+      <h3 class="verdict-hd" style="color:${gc(d.deal_score.grade,p)}">${esc(d.deal_score.verdict || `Grade ${d.deal_score.grade}`)}</h3>
       <p class="narrative">${narrativeDealScore(d)}</p>
     </div>
   </div>
@@ -419,7 +452,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   </div>
   ${d.strategy_breakdown && !d.strategy_breakdown.error ? `
   <div class="card mt-14">
-    <div class="card-hd">${d.strategy_type.toUpperCase()} Strategy Breakdown</div>
+    <div class="card-hd">${esc(d.strategy_type.toUpperCase())} Strategy Breakdown</div>
     <div class="grid2">
       ${(() => {
         const b = d.strategy_breakdown!
@@ -500,7 +533,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   </div>` : ''}
   <div class="disclaimer">
     <h4>Data Sources</h4>
-    <p>RentCast Estimate: ${d.sources.rent_estimate_source} &bull; Property Value: ${d.sources.property_value_source} &bull; Tax Data: ${d.sources.tax_data_source} &bull; Market Data: ${d.sources.market_data_source} &bull; Data Freshness: ${d.sources.data_freshness}</p>
+    <p>RentCast Estimate: ${esc(d.sources.rent_estimate_source)} &bull; Property Value: ${esc(d.sources.property_value_source)} &bull; Tax Data: ${esc(d.sources.tax_data_source)} &bull; Market Data: ${esc(d.sources.market_data_source)} &bull; Data Freshness: ${esc(d.sources.data_freshness)}</p>
     <h4 class="mt-6">Disclaimer</h4>
     <p>This report is for informational purposes only and does not constitute investment advice. All projections are based on assumptions that may not materialize. Past performance is not indicative of future results. Market conditions, interest rates, rental demand, and property values can change significantly. Always conduct independent due diligence, consult qualified professionals, and verify all data before making investment decisions.</p>
     <p class="mt-4">&copy; ${now.getFullYear()} DealGapIQ. All rights reserved.</p>
@@ -558,7 +591,7 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   ${pgFt(6)}
 </div>`
 
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DealGapIQ Property Report — ${d.property_address}</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"><style>${css(p,dk)}</style><script>document.fonts.ready.then(function(){setTimeout(function(){window.print()},500)});</script></head><body>${pages}</body></html>`
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DealGapIQ Property Report — ${esc(d.property_address)}</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"><style>${css(p,dk)}</style><script>document.fonts.ready.then(function(){setTimeout(function(){window.print()},500)});</script></head><body>${pages}</body></html>`
 }
 
 // ---------------------------------------------------------------------------
@@ -718,8 +751,21 @@ export async function GET(request: NextRequest) {
     ])
 
     if (!proformaRes.ok) {
-      const err = await proformaRes.text()
-      return new NextResponse(`<html><body style="font-family:sans-serif;padding:40px;text-align:center"><h2>Report generation failed</h2><p>Status: ${proformaRes.status}</p><p>${err}</p></body></html>`, { status: 502, headers: { 'Content-Type': 'text/html' } })
+      // Log the upstream body server-side for debugging, but never echo it
+      // back to the user — backend stack traces / SQL / internal messages
+      // would otherwise be reflected into the report HTML.
+      const upstream = await proformaRes.text().catch(() => '')
+      console.error(`[api/report] proforma backend error ${proformaRes.status}:`, upstream.slice(0, 500))
+      const status = proformaRes.status
+      const userMessage = status === 401 || status === 403
+        ? 'You need a Pro subscription to generate this report.'
+        : status === 404
+          ? 'We could not find data for this property.'
+          : 'We could not generate this report right now. Please try again in a moment.'
+      return new NextResponse(
+        `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Report unavailable</title></head><body style="font-family:system-ui,-apple-system,sans-serif;padding:40px;text-align:center;color:#0F172A"><h2 style="margin:0 0 8px">Report unavailable</h2><p style="color:#475569">${esc(userMessage)}</p></body></html>`,
+        { status: 502, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+      )
     }
 
     const proforma: Proforma = await proformaRes.json()
@@ -728,6 +774,11 @@ export async function GET(request: NextRequest) {
 
     return new NextResponse(buildReport(proforma, theme === 'dark' ? 'dark' : 'light', photos), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } })
   } catch (err) {
-    return new NextResponse(`<html><body style="font-family:sans-serif;padding:40px;text-align:center"><h2>Error</h2><p>${err instanceof Error ? err.message : String(err)}</p></body></html>`, { status: 500, headers: { 'Content-Type': 'text/html' } })
+    // Same policy as above: log internally, return a generic message.
+    console.error('[api/report] unhandled error:', err)
+    return new NextResponse(
+      `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Report unavailable</title></head><body style="font-family:system-ui,-apple-system,sans-serif;padding:40px;text-align:center;color:#0F172A"><h2 style="margin:0 0 8px">Something went wrong</h2><p style="color:#475569">We could not generate this report right now. Please try again in a moment.</p></body></html>`,
+      { status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+    )
   }
 }

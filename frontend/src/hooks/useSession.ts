@@ -27,6 +27,12 @@ import {
   type LoginResponse,
   type MFAChallengeResponse,
 } from '@/lib/api-client'
+import { SAVED_PROPERTIES_KEYS } from '@/hooks/useSavedProperties'
+import { SEARCH_HISTORY_KEYS } from '@/hooks/useSearchHistory'
+import { TIMELINE_KEYS } from '@/hooks/useTimeline'
+import { TASKS_KEYS } from '@/hooks/useTasks'
+import { CONTACTS_KEYS } from '@/hooks/useContacts'
+import { DOCUMENTS_KEYS } from '@/hooks/useDocuments'
 
 // ------------------------------------------------------------------
 // Query key
@@ -43,15 +49,21 @@ export const SESSION_QUERY_KEY = ['session', 'me'] as const
 const SESSION_STORAGE_KEY = 'dgiq_session'
 const SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000 // 8 hours — well within session TTL
 
+/**
+ * Persisted session snapshot.
+ *
+ * Intentionally OMITS `roles`, `permissions`, and `is_superuser` — those
+ * authority fields must never be sourced from localStorage because a local
+ * user can trivially edit them and trick the UI into showing admin chrome
+ * (or other gated UX) until /me resolves. They are populated only after
+ * the authoritative /me round-trip succeeds.
+ */
 interface PersistedSession {
   id: string
   email: string
   full_name: string | null
   subscription_tier: 'free' | 'pro'
   subscription_status: string
-  roles: string[]
-  permissions: string[]
-  is_superuser: boolean
   onboarding_completed: boolean
   /** Map-search default location — needed on first paint so the map can
       open at the saved ZIP without waiting for /me to resolve. */
@@ -67,9 +79,6 @@ function persistSession(user: UserResponse): void {
       full_name: user.full_name,
       subscription_tier: user.subscription_tier,
       subscription_status: user.subscription_status,
-      roles: user.roles ?? [],
-      permissions: user.permissions ?? [],
-      is_superuser: user.is_superuser,
       onboarding_completed: user.onboarding_completed,
       business_address_zip: user.business_address_zip ?? null,
       ts: Date.now(),
@@ -89,6 +98,10 @@ function readPersistedSession(): UserResponse | null {
       localStorage.removeItem(SESSION_STORAGE_KEY)
       return null
     }
+    // Authority fields default to "no privileges" — they will be replaced
+    // by the real values from /me as soon as it resolves. This guarantees
+    // the persisted snapshot can never grant a user privileges they don't
+    // actually have on the server.
     return {
       id: data.id,
       email: data.email,
@@ -96,14 +109,14 @@ function readPersistedSession(): UserResponse | null {
       avatar_url: null,
       is_active: true,
       is_verified: true,
-      is_superuser: data.is_superuser,
+      is_superuser: false,
       mfa_enabled: false,
       created_at: '',
       last_login: null,
       has_profile: true,
       onboarding_completed: data.onboarding_completed,
-      roles: data.roles,
-      permissions: data.permissions,
+      roles: [],
+      permissions: [],
       subscription_tier: data.subscription_tier,
       subscription_status: data.subscription_status,
       business_address_zip: data.business_address_zip ?? null,
@@ -319,8 +332,22 @@ export function useLogout() {
       _lastKnownUser = null
       clearPersistedSession()
       _lastTokenRefreshAt = 0
+
+      // Targeted invalidation: drop everything tied to the user's identity
+      // (saved properties, search history, timeline, tasks, contacts, documents,
+      // billing/subscription) but keep anonymous lookups (e.g. property-search
+      // by address) so the next visitor on this device doesn't pay a cold cache.
       queryClient.setQueryData(SESSION_QUERY_KEY, null)
-      queryClient.clear()
+      queryClient.removeQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
+      queryClient.removeQueries({ queryKey: SEARCH_HISTORY_KEYS.all })
+      queryClient.removeQueries({ queryKey: TIMELINE_KEYS.all })
+      queryClient.removeQueries({ queryKey: TASKS_KEYS.all })
+      queryClient.removeQueries({ queryKey: CONTACTS_KEYS.all })
+      queryClient.removeQueries({ queryKey: DOCUMENTS_KEYS.all })
+      queryClient.removeQueries({ queryKey: ['billing'] })
+      queryClient.removeQueries({ queryKey: ['subscription'] })
+      queryClient.removeQueries({ queryKey: ['rehab-budget'] })
+
       router.push('/')
     },
   })

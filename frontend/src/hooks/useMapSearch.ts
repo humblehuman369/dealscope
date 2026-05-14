@@ -160,6 +160,18 @@ export function useMapSearch() {
     }
   }, [fetchListings])
 
+  // Cancel any pending bounds-debounce on unmount so we never
+  // fire fetchListings (or its setState calls) after the consumer
+  // has navigated away from the map.
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+        debounceRef.current = null
+      }
+    }
+  }, [])
+
   const updateFilters = useCallback(
     (next: Partial<MapSearchFilters>) => {
       const needsRefetch = (

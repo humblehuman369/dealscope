@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { MapSearchView } from '@/components/map-search/MapSearchView'
 
 // SSR-safe layout effect — falls back to useEffect on the server.
@@ -53,7 +53,25 @@ export default function MapSearchPage() {
       className="w-full overflow-hidden"
       style={{ height, backgroundColor: 'var(--surface-base)' }}
     >
-      <MapSearchView />
+      {/*
+        MapSearchView calls useSearchParams() — wrap in Suspense per Next 16+
+        requirements so static rendering / partial prerendering doesn't bail.
+      */}
+      <Suspense
+        fallback={
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{ backgroundColor: 'var(--surface-base)' }}
+          >
+            <div
+              className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+              style={{ borderColor: 'var(--accent-sky)' }}
+            />
+          </div>
+        }
+      >
+        <MapSearchView />
+      </Suspense>
     </div>
   )
 }

@@ -28,14 +28,26 @@ import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
 import type { GeocodedProperty } from '@/lib/reverseGeocode';
 
+type HomepageVariant = '2' | '3' | '4';
+
 export default function HomePage() {
   const [mode, setMode] = useState<'landing' | 'camera'>('landing');
+  // Variant defaults to V4 on the server and on the first client paint so SSR
+  // and hydration agree. The `?v=2|3` query flag is an internal rollback
+  // escape hatch; we apply it after hydration to avoid React's hydration-
+  // mismatch warning and the flash of replaced subtree.
+  const [variant, setVariant] = useState<HomepageVariant>('4');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('scan') === 'true') {
       setMode('camera');
       window.history.replaceState({}, '', '/');
+      return;
+    }
+    const v = params.get('v');
+    if (v === '2' || v === '3') {
+      setVariant(v);
     }
   }, []);
 
@@ -44,15 +56,12 @@ export default function HomePage() {
     return <MobileScannerView onSwitchMode={() => setMode('landing')} />;
   }
 
-  // V4 = marketing-tuned homepage. V3 and V2 remain available via query flags for rollback.
-  if (typeof window !== 'undefined') {
-    const version = new URLSearchParams(window.location.search).get('v');
-    if (version === '2') {
-      return <DealGapIQHomepageV2 onPointAndScan={() => setMode('camera')} />;
-    }
-    if (version === '3') {
-      return <DealGapIQHomepageV3 onPointAndScan={() => setMode('camera')} />;
-    }
+  // V4 = marketing-tuned homepage. V3 and V2 remain available via ?v= for rollback.
+  if (variant === '2') {
+    return <DealGapIQHomepageV2 onPointAndScan={() => setMode('camera')} />;
+  }
+  if (variant === '3') {
+    return <DealGapIQHomepageV3 onPointAndScan={() => setMode('camera')} />;
   }
   return <DealGapIQHomepageV4 onPointAndScan={() => setMode('camera')} />;
 }
@@ -409,7 +418,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
             {isAuthenticated && user ? (
               <>
                 <button
-                  onClick={() => router.push('/search')}
+                  onClick={() => router.push('/dashboard')}
                   className="flex items-center gap-1 bg-brand-500/80 backdrop-blur-sm px-3 py-1.5 rounded-full"
                 >
                   <LayoutGrid className="w-3 h-3 text-white" />

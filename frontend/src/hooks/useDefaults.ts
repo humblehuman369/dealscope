@@ -21,7 +21,7 @@
  * ```
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { defaultsService, ResolvedDefaultsResponse } from '@/services/defaults'
 import type { AllAssumptions } from '@/stores/index'
 
@@ -55,10 +55,7 @@ export function useDefaults(zipCode?: string): UseDefaultsResult {
   const [fullResponse, setFullResponse] = useState<ResolvedDefaultsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  
-  // Track the ZIP code to detect changes
-  const prevZipCodeRef = useRef<string | undefined>(zipCode)
-  
+
   const fetchDefaults = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -82,19 +79,13 @@ export function useDefaults(zipCode?: string): UseDefaultsResult {
       setLoading(false)
     }
   }, [zipCode])
-  
-  // Fetch on mount and when ZIP code changes
+
+  // Single fetch effect keyed on `fetchDefaults`. Because `fetchDefaults`
+  // is itself memoized on `zipCode`, this fires exactly once per mount and
+  // exactly once per ZIP change — no double-fetch races.
   useEffect(() => {
     fetchDefaults()
   }, [fetchDefaults])
-  
-  // Refetch when ZIP code changes
-  useEffect(() => {
-    if (prevZipCodeRef.current !== zipCode) {
-      prevZipCodeRef.current = zipCode
-      fetchDefaults()
-    }
-  }, [zipCode, fetchDefaults])
   
   // Check if a specific field is from user override
   const isUserOverride = useCallback(

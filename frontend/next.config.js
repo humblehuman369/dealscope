@@ -48,13 +48,17 @@ if (!isCapacitor) {
     },
   ]
 
+  // NOTE: /compare is intentionally NOT redirected — it serves the
+  // saved-property side-by-side comparison UI (consumes ?ids=…) and
+  // is a different feature from /price-intel (single-address comps).
+  // A previous redirect to /price-intel?view=sale silently broke the
+  // comparison workflow because Price Intel ignores `ids`.
   nextConfig.redirects = async () => [
     { source: '/landing', destination: '/', permanent: true },
     { source: '/landing2', destination: '/', permanent: true },
     { source: '/verdict', destination: '/discovery', permanent: true },
     { source: '/analysis-iq', destination: '/discovery', permanent: true },
     { source: '/verdict-iq', destination: '/discovery', permanent: true },
-    { source: '/compare', destination: '/price-intel?view=sale', permanent: true },
     { source: '/rental-comps', destination: '/price-intel?view=rent', permanent: true },
   ]
 

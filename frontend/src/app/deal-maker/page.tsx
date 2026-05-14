@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import dynamic from 'next/dynamic'
@@ -25,6 +25,17 @@ const DealMakerScreen = dynamic(
 type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable'
 
 export default function DealMakerIndexPage() {
+  // useSearchParams must be inside a Suspense boundary in Next 16+ to avoid
+  // CSR-bailout / static-render breakage. The actual page body lives in
+  // `DealMakerIndexContent` below.
+  return (
+    <Suspense fallback={<IQLoadingLogo />}>
+      <DealMakerIndexContent />
+    </Suspense>
+  )
+}
+
+function DealMakerIndexContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { fetchProperty } = usePropertyData()
