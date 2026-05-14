@@ -1,24 +1,43 @@
-import { useEffect, useState, useRef } from 'react'
+'use client'
+
+/**
+ * useWorksheetProperty — load a property for the worksheet route.
+ *
+ * Two paths:
+ *   1. **Saved property** — delegates to `useSavedProperty(id)` (React Query).
+ *      The cache key is shared with the deal detail page and any other
+ *      consumer of the same endpoint, so navigating between worksheet ↔ deal
+ *      detail does not refetch and updates propagate instantly.
+ *   2. **Temporary (unsaved) property** — `propertyId` starts with `temp_`.
+ *      We synthesize a SavedProperty-shaped object from the worksheet store
+ *      (set by Deal Maker before the user saves), since the API has nothing
+ *      to fetch.
+ *
+ * Replaces the previous manual useState+useEffect+hasFetchedRef
+ * implementation, which had a race that could leave stale property data on
+ * screen when `propertyId` changed without remount.
+ */
+
+import { useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { SavedProperty } from '@/types/savedProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
-import { apiRequest } from '@/lib/api-client'
+import { useSavedProperty } from '@/hooks/useSavedProperties'
 
-// Re-export for backward compatibility
+// Re-export for backward compatibility.
 export type { SavedProperty } from '@/types/savedProperty'
 
 interface UseWorksheetPropertyOptions {
   onLoaded?: (property: SavedProperty) => void
 }
 
-// Helper to check if propertyId is a temporary (unsaved) ID
-// Matches: temp_<address> or temp_zpid_<zpid>
+/** Temporary (unsaved) property ids look like `temp_<address>` or `temp_zpid_<zpid>`. */
 function isTempPropertyId(id: string): boolean {
   return id.startsWith('temp_')
 }
 
-// Helper to extract address from temp ID for display
+/** Best-effort display address extracted from a temp id. */
 function extractAddressFromTempId(id: string): string {
   if (id.startsWith('temp_zpid_')) {
     return `Property ${id.replace('temp_zpid_', '')}`
@@ -35,134 +54,100 @@ export function useWorksheetProperty(
   const { isAuthenticated, isLoading: authLoading } = useSession()
   const worksheetStore = useWorksheetStore()
 
-  const [property, setProperty] = useState<SavedProperty | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // Use ref to avoid re-fetching when onLoaded changes (prevents infinite loop)
+  // Avoid retriggering the onLoaded callback when the caller passes a fresh
+  // function reference each render.
   const onLoadedRef = useRef(onLoaded)
   onLoadedRef.current = onLoaded
 
-  // Track if we've already fetched to prevent duplicate fetches
-  const hasFetchedRef = useRef(false)
+  const isTemp = propertyId ? isTempPropertyId(propertyId) : false
 
+  // Authoritative auth gate. If the user isn't logged in, send them home;
+  // worksheet pages require a session.
   useEffect(() => {
-    // Don't do anything while auth is still loading
-    if (authLoading) {
-      console.log('[useWorksheetProperty] Auth still loading, waiting...')
-      return
+    if (authLoading) return
+    if (!isAuthenticated) router.push('/')
+  }, [authLoading, isAuthenticated, router])
+
+  // ── Temp (unsaved) path ──────────────────────────────────────
+  // For temp properties, hydrate from the worksheet store. We synthesize a
+  // minimal SavedProperty so the rest of the worksheet UI doesn't have to
+  // care whether the property came from the API or from local state.
+  const tempProperty = useMemo<SavedProperty | null>(() => {
+    if (!isTemp) return null
+
+    if (worksheetStore.propertyId === propertyId && worksheetStore.propertyData) {
+      return worksheetStore.propertyData as SavedProperty
     }
 
-    // Only redirect if auth is done loading AND user is not authenticated
-    if (!isAuthenticated) {
-      console.log('[useWorksheetProperty] Not authenticated, redirecting to home')
-      router.push('/')
-      return
+    if ((worksheetStore.assumptions?.purchasePrice ?? 0) > 0) {
+      return {
+        id: propertyId,
+        user_id: '',
+        address_street: extractAddressFromTempId(propertyId),
+        address_city: '',
+        address_state: '',
+        address_zip: '',
+        property_data_snapshot: {
+          listPrice: worksheetStore.assumptions.purchasePrice,
+          monthlyRent: worksheetStore.assumptions.monthlyRent,
+          propertyTaxes: worksheetStore.assumptions.propertyTaxes,
+          insurance: worksheetStore.assumptions.insurance,
+        },
+        worksheet_assumptions: worksheetStore.assumptions,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as unknown as SavedProperty
     }
 
-    // Handle temporary (unsaved) properties - use worksheetStore data instead of API
-    const isTemp = isTempPropertyId(propertyId)
-    if (isTemp) {
-      if (worksheetStore.propertyId === propertyId && worksheetStore.propertyData) {
-        // WorksheetStore already has this property's data
-        const syntheticProperty = worksheetStore.propertyData as SavedProperty
-        setProperty(syntheticProperty)
-        setIsLoading(false)
-        setError(null)
-        onLoadedRef.current?.(syntheticProperty)
-        return
-      } else {
-        // worksheetStore doesn't have this property data - should have been initialized by Deal Maker
-        // Check if we at least have assumptions we can use
-        if (worksheetStore.assumptions?.purchasePrice > 0) {
-          // Build a minimal synthetic property from worksheetStore
-          const syntheticProperty = {
-            id: propertyId,
-            user_id: '',
-            address_street: extractAddressFromTempId(propertyId),
-            address_city: '',
-            address_state: '',
-            address_zip: '',
-            property_data_snapshot: {
-              listPrice: worksheetStore.assumptions.purchasePrice,
-              monthlyRent: worksheetStore.assumptions.monthlyRent,
-              propertyTaxes: worksheetStore.assumptions.propertyTaxes,
-              insurance: worksheetStore.assumptions.insurance,
-            },
-            worksheet_assumptions: worksheetStore.assumptions,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          } as unknown as SavedProperty
-          setProperty(syntheticProperty)
-          setIsLoading(false)
-          setError(null)
-          onLoadedRef.current?.(syntheticProperty)
-          return
-        }
-        // No data available, show error
-        setError('Property data not found. Please go back to Deal Maker.')
-        setIsLoading(false)
-        return
-      }
-    }
+    return null
+  }, [
+    isTemp,
+    propertyId,
+    worksheetStore.propertyId,
+    worksheetStore.propertyData,
+    worksheetStore.assumptions,
+  ])
 
-    const fetchProperty = async () => {
-      if (!propertyId || hasFetchedRef.current) {
-        console.log('[useWorksheetProperty] Skipping fetch:', {
-          propertyId,
-          hasFetched: hasFetchedRef.current,
-        })
-        return
-      }
+  // ── Saved-property path ──────────────────────────────────────
+  // React Query owns dedup/caching. `enabled` ensures we don't fire while
+  // auth is still loading, when the user is logged out, or for temp ids.
+  const savedQuery = useSavedProperty(
+    !isTemp && isAuthenticated && !authLoading && propertyId ? propertyId : null,
+  )
 
-      hasFetchedRef.current = true
-      setIsLoading(true)
-      setError(null)
+  // Resolve the active property + loading/error from whichever path is live.
+  const property: SavedProperty | null = isTemp ? tempProperty : (savedQuery.data ?? null)
 
-      console.log('[useWorksheetProperty] Fetching property:', propertyId)
+  const error: string | null = isTemp
+    ? tempProperty
+      ? null
+      : 'Property data not found. Please go back to Deal Maker.'
+    : savedQuery.error
+      ? savedQuery.error instanceof Error
+        ? savedQuery.error.message
+        : 'Failed to load property. Please try again.'
+      : null
 
-      try {
-        const data = await apiRequest<SavedProperty>(`/api/v1/properties/saved/${propertyId}`)
-        console.log('[useWorksheetProperty] Property loaded:', data.id, data.address_street)
+  const isLoading = authLoading
+    ? true
+    : isTemp
+      ? false
+      : savedQuery.isLoading || savedQuery.isFetching
 
-        setProperty(data)
-        onLoadedRef.current?.(data)
-      } catch (err) {
-        console.error('[useWorksheetProperty] Error fetching property:', err)
-
-        // apiRequest handles 401 → refresh automatically.
-        // If we still get an error, it's a real failure.
-        const message = err instanceof Error ? err.message : 'Failed to load property'
-
-        if (message.includes('401') || message.includes('Unauthorized')) {
-          setError('Session expired. Please log in again.')
-          router.push('/')
-          return
-        }
-
-        setError(message || 'Failed to load property. Please try again.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchProperty()
-    // Note: worksheetStore values intentionally excluded from deps to prevent infinite loops
-    // The effect runs once per propertyId change, and worksheetStore data is read at that moment
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propertyId, isAuthenticated, authLoading, router])
-
-  // Reset fetch flag when propertyId changes
+  // Fire onLoaded once per identity change. Using property.id (not the
+  // SavedProperty reference) prevents redundant calls from React Query
+  // returning the same cached object.
+  const lastLoadedIdRef = useRef<string | null>(null)
   useEffect(() => {
-    hasFetchedRef.current = false
-    setProperty(null)
-    setError(null)
-    setIsLoading(true)
-  }, [propertyId])
+    if (!property) return
+    if (lastLoadedIdRef.current === property.id) return
+    lastLoadedIdRef.current = property.id
+    onLoadedRef.current?.(property)
+  }, [property])
 
   return {
     property,
-    isLoading: authLoading || isLoading,
+    isLoading,
     error,
   }
 }

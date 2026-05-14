@@ -22,13 +22,14 @@ import type { RehabSelection } from '@/lib/analytics'
 import type { RehabBudgetSummary } from '@/types/rehabBudget'
 import type {
   ActiveFlipSummary,
+  SavedProperty,
   SavedPropertySummary,
   SavedPropertyStats,
   PropertyStatus,
 } from '@/types/savedProperty'
 
 // Re-export types for consumer convenience
-export type { SavedPropertySummary, SavedPropertyStats }
+export type { SavedProperty, SavedPropertySummary, SavedPropertyStats }
 
 // ─── Query keys ────────────────────────────────────────────
 
@@ -43,6 +44,16 @@ export const SAVED_PROPERTIES_KEYS = {
     [...SAVED_PROPERTIES_KEYS.lists(), params] as const,
   /** Stats query. */
   stats: () => [...SAVED_PROPERTIES_KEYS.all, 'stats'] as const,
+  /** All detail queries (used to invalidate every per-id detail at once). */
+  details: () => [...SAVED_PROPERTIES_KEYS.all, 'detail'] as const,
+  /** A specific saved property's full detail (GET /api/v1/properties/saved/:id). */
+  detail: (id: string | null | undefined) =>
+    [...SAVED_PROPERTIES_KEYS.details(), id ?? null] as const,
+  /** All rehab-budget queries. */
+  rehabBudgets: () => [...SAVED_PROPERTIES_KEYS.all, 'rehab-budget'] as const,
+  /** A specific saved property's rehab budget. */
+  rehabBudget: (propertyId: string | null | undefined) =>
+    [...SAVED_PROPERTIES_KEYS.rehabBudgets(), propertyId ?? null] as const,
 }
 
 // ─── Queries ───────────────────────────────────────────────
@@ -81,6 +92,26 @@ export function useSavedPropertyStats() {
   return useQuery({
     queryKey: SAVED_PROPERTIES_KEYS.stats(),
     queryFn: () => api.get<SavedPropertyStats>('/api/v1/properties/saved/stats'),
+    staleTime: 30_000,
+  })
+}
+
+/**
+ * Fetch a single saved property's full detail.
+ *
+ * Single source of truth for `GET /api/v1/properties/saved/:id` — every
+ * consumer that reads one saved property by id (deal detail page,
+ * worksheet, deal-maker hydration, etc.) MUST go through this hook so the
+ * cache is shared and invalidations land everywhere.
+ *
+ * Returns `useQuery`'s native shape so callers can leverage
+ * `isLoading` / `isError` / `error` / `data` / `refetch` directly.
+ */
+export function useSavedProperty(id: string | null | undefined) {
+  return useQuery({
+    queryKey: SAVED_PROPERTIES_KEYS.detail(id),
+    queryFn: () => api.get<SavedProperty>(`/api/v1/properties/saved/${id}`),
+    enabled: Boolean(id),
     staleTime: 30_000,
   })
 }
@@ -231,7 +262,7 @@ export function useUpdateFlipStage() {
 
 export function useRehabBudgetSummary(propertyId: string | null | undefined) {
   return useQuery({
-    queryKey: ['rehab-budget', propertyId],
+    queryKey: SAVED_PROPERTIES_KEYS.rehabBudget(propertyId),
     queryFn: () => api.get<RehabBudgetSummary>(`/api/v1/properties/saved/${propertyId}/budget`),
     enabled: Boolean(propertyId),
     staleTime: 15_000,
@@ -260,7 +291,9 @@ export function useSeedRehabBudget() {
       }),
 
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['rehab-budget', variables.propertyId] })
+      queryClient.invalidateQueries({
+        queryKey: SAVED_PROPERTIES_KEYS.rehabBudget(variables.propertyId),
+      })
       queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
     },
   })
@@ -297,7 +330,9 @@ export function useAddBudgetExpense() {
       }),
 
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['rehab-budget', variables.propertyId] })
+      queryClient.invalidateQueries({
+        queryKey: SAVED_PROPERTIES_KEYS.rehabBudget(variables.propertyId),
+      })
     },
   })
 }
@@ -348,7 +383,9 @@ export function useParseReceipt(propertyId: string) {
     onSuccess: () => {
       // Invalidate budget so the document count reflects the upload, even
       // if the user doesn't go on to save the expense.
-      queryClient.invalidateQueries({ queryKey: ['rehab-budget', propertyId] })
+      queryClient.invalidateQueries({
+        queryKey: SAVED_PROPERTIES_KEYS.rehabBudget(propertyId),
+      })
     },
   })
 }
@@ -361,7 +398,9 @@ export function useDeleteBudgetExpense() {
       api.delete(`/api/v1/properties/saved/${propertyId}/budget/expenses/${expenseId}`),
 
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['rehab-budget', variables.propertyId] })
+      queryClient.invalidateQueries({
+        queryKey: SAVED_PROPERTIES_KEYS.rehabBudget(variables.propertyId),
+      })
     },
   })
 }
@@ -389,7 +428,9 @@ export function useUpdateBudgetLinePctComplete() {
       ),
 
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['rehab-budget', variables.propertyId] })
+      queryClient.invalidateQueries({
+        queryKey: SAVED_PROPERTIES_KEYS.rehabBudget(variables.propertyId),
+      })
       queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.lists() })
     },
   })
