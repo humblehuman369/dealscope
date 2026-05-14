@@ -9,11 +9,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 import { TIMELINE_KEYS } from '@/hooks/useTimeline'
-import type {
-  DocumentList,
-  DocumentType,
-  PropertyDocument,
-} from '@/types/document'
+import type { DocumentList, DocumentType, PropertyDocument } from '@/types/document'
 
 export const DOCUMENTS_KEYS = {
   all: ['documents'] as const,
@@ -23,8 +19,7 @@ export const DOCUMENTS_KEYS = {
 export function useDocuments(propertyId: string | null) {
   return useQuery({
     queryKey: DOCUMENTS_KEYS.forProperty(propertyId ?? ''),
-    queryFn: () =>
-      api.get<DocumentList>(`/api/v1/documents?property_id=${propertyId}&limit=100`),
+    queryFn: () => api.get<DocumentList>(`/api/v1/documents?property_id=${propertyId}&limit=100`),
     enabled: !!propertyId,
     staleTime: 30_000,
   })
@@ -82,8 +77,7 @@ export function useUploadDocument(propertyId: string) {
 export function useDeleteDocument(propertyId: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (documentId: string) =>
-      api.delete<void>(`/api/v1/documents/${documentId}`),
+    mutationFn: (documentId: string) => api.delete<void>(`/api/v1/documents/${documentId}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: DOCUMENTS_KEYS.forProperty(propertyId) })
       qc.invalidateQueries({ queryKey: TIMELINE_KEYS.forProperty(propertyId) })

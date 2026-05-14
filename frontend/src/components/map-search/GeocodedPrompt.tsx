@@ -86,10 +86,18 @@ export function GeocodedPrompt({
             </p>
           ) : (
             <>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-secondary)' }}>
-                {hasPreview && propertyPreview.is_off_market ? 'Off Market' : 'Property at this location'}
+              <p
+                className="text-xs font-semibold uppercase tracking-wider mb-1"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {hasPreview && propertyPreview.is_off_market
+                  ? 'Off Market'
+                  : 'Property at this location'}
               </p>
-              <p className="text-sm font-medium leading-snug" style={{ color: 'var(--text-heading)' }}>
+              <p
+                className="text-sm font-medium leading-snug"
+                style={{ color: 'var(--text-heading)' }}
+              >
                 {address}
               </p>
             </>
@@ -97,7 +105,10 @@ export function GeocodedPrompt({
         </div>
 
         <button
-          onClick={(e) => { e.stopPropagation(); onClose() }}
+          onClick={(e) => {
+            e.stopPropagation()
+            onClose()
+          }}
           className="flex-shrink-0 p-1 rounded hover:opacity-70 transition-opacity"
         >
           <X size={14} style={{ color: 'var(--text-secondary)' }} />
@@ -108,7 +119,10 @@ export function GeocodedPrompt({
       {!isGeocoding && address && (
         <div className="px-3.5">
           {isLoadingPreview && (
-            <div className="flex items-center gap-2 py-2" style={{ color: 'var(--text-secondary)' }}>
+            <div
+              className="flex items-center gap-2 py-2"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <Loader2 size={14} className="animate-spin" />
               <span className="text-xs">Loading property details...</span>
             </div>
@@ -120,7 +134,10 @@ export function GeocodedPrompt({
               <div className="flex items-baseline gap-4">
                 {propertyPreview.estimated_value != null && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+                    <p
+                      className="text-[10px] uppercase tracking-wider"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
                       Est. Value
                     </p>
                     <p className="text-base font-bold" style={{ color: 'var(--text-heading)' }}>
@@ -130,7 +147,10 @@ export function GeocodedPrompt({
                 )}
                 {propertyPreview.monthly_rent != null && propertyPreview.monthly_rent > 0 && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+                    <p
+                      className="text-[10px] uppercase tracking-wider"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
                       Est. Rent
                     </p>
                     <p className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
@@ -143,22 +163,35 @@ export function GeocodedPrompt({
               {/* Property details */}
               <div className="flex items-center gap-3 flex-wrap">
                 {propertyPreview.bedrooms != null && (
-                  <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  <span
+                    className="flex items-center gap-1 text-xs"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
                     <Bed size={13} /> {propertyPreview.bedrooms} bd
                   </span>
                 )}
                 {propertyPreview.bathrooms != null && (
-                  <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  <span
+                    className="flex items-center gap-1 text-xs"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
                     <Bath size={13} /> {propertyPreview.bathrooms} ba
                   </span>
                 )}
                 {propertyPreview.sqft != null && (
-                  <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                    <Ruler size={13} /> {new Intl.NumberFormat('en-US').format(propertyPreview.sqft)} sqft
+                  <span
+                    className="flex items-center gap-1 text-xs"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    <Ruler size={13} />{' '}
+                    {new Intl.NumberFormat('en-US').format(propertyPreview.sqft)} sqft
                   </span>
                 )}
                 {propertyPreview.year_built != null && (
-                  <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  <span
+                    className="flex items-center gap-1 text-xs"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
                     <Calendar size={13} /> {propertyPreview.year_built}
                   </span>
                 )}
@@ -168,7 +201,10 @@ export function GeocodedPrompt({
               {propertyPreview.property_type && (
                 <span
                   className="inline-block px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider"
-                  style={{ backgroundColor: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}
+                  style={{
+                    backgroundColor: 'var(--surface-elevated)',
+                    color: 'var(--text-secondary)',
+                  }}
                 >
                   {propertyPreview.property_type}
                 </span>

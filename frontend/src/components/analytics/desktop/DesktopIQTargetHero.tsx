@@ -6,7 +6,7 @@ import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 /**
  * DesktopIQTargetHero Component
- * 
+ *
  * Enhanced desktop version of the IQ Target Hero with two-column layout:
  * - Left: Price info (title, price, savings, insight)
  * - Right: Assumptions card with editable inputs
@@ -49,9 +49,9 @@ export function DesktopIQTargetHero({
   badgeText = 'IQ Buy Price',
   labelText = 'Your profitable entry point',
   monthlyRent = 2500,
-  downPaymentPct = 0.20,
+  downPaymentPct = 0.2,
   interestRate = 0.0725,
-  onAssumptionsChange
+  onAssumptionsChange,
 }: DesktopIQTargetHeroProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedRent, setEditedRent] = useState(monthlyRent)
@@ -78,21 +78,16 @@ export function DesktopIQTargetHero({
     <div className="relative overflow-hidden rounded-2xl p-6 mb-5 border-2 border-teal/40 bg-white dark:bg-white/[0.02]">
       {/* Two-column layout */}
       <div className="flex gap-8 items-start">
-        
         {/* Left Side - Price Info */}
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Title Row */}
           <div className="flex items-center gap-2 mb-1">
             <Target className="w-5 h-5 text-teal" />
-            <span className="text-base font-semibold text-teal">
-              {badgeText}
-            </span>
+            <span className="text-base font-semibold text-teal">{badgeText}</span>
           </div>
-          
+
           {/* Subtitle */}
-          <div className="text-sm text-slate-500 dark:text-white/50 mb-5">
-            {labelText}
-          </div>
+          <div className="text-sm text-slate-500 dark:text-white/50 mb-5">{labelText}</div>
 
           {/* Buy Price */}
           <div className="text-[52px] font-extrabold text-slate-900 dark:text-white leading-none mb-2 tracking-[-2px]">
@@ -124,7 +119,9 @@ export function DesktopIQTargetHero({
         </div>
 
         {/* Right Side - Assumptions Card */}
-        <div className={`min-w-[220px] max-w-[300px] flex-shrink-0 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 transition-all duration-300 ${isEditing ? 'min-w-[280px]' : ''}`}>
+        <div
+          className={`min-w-[220px] max-w-[300px] flex-shrink-0 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 transition-all duration-300 ${isEditing ? 'min-w-[280px]' : ''}`}
+        >
           {/* Header */}
           <div className="text-xs font-medium text-slate-500 dark:text-white/40 mb-4 pb-3 border-b border-slate-200 dark:border-white/[0.06]">
             Buy Price based on these values
@@ -136,15 +133,21 @@ export function DesktopIQTargetHero({
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-500 dark:text-white/50">Monthly Rent</span>
-                  <span className="text-base font-semibold text-teal">{formatCurrency(monthlyRent)}</span>
+                  <span className="text-base font-semibold text-teal">
+                    {formatCurrency(monthlyRent)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-500 dark:text-white/50">Down Payment</span>
-                  <span className="text-base font-semibold text-teal">{Math.round(downPaymentPct * 100)}%</span>
+                  <span className="text-base font-semibold text-teal">
+                    {Math.round(downPaymentPct * 100)}%
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-500 dark:text-white/50">Interest Rate</span>
-                  <span className="text-base font-semibold text-teal">{(interestRate * 100).toFixed(2)}%</span>
+                  <span className="text-base font-semibold text-teal">
+                    {(interestRate * 100).toFixed(2)}%
+                  </span>
                 </div>
               </div>
 
@@ -164,7 +167,9 @@ export function DesktopIQTargetHero({
             <div className="flex flex-col gap-3">
               {/* Monthly Rent Input */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-slate-500 dark:text-white/40">Monthly Rent</label>
+                <label className="text-xs font-medium text-slate-500 dark:text-white/40">
+                  Monthly Rent
+                </label>
                 <input
                   type="text"
                   value={`$${editedRent.toLocaleString()}`}
@@ -178,7 +183,9 @@ export function DesktopIQTargetHero({
 
               {/* Down Payment Input */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-slate-500 dark:text-white/40">Down Payment</label>
+                <label className="text-xs font-medium text-slate-500 dark:text-white/40">
+                  Down Payment
+                </label>
                 <input
                   type="text"
                   value={`${editedDownPayment}%`}
@@ -192,7 +199,9 @@ export function DesktopIQTargetHero({
 
               {/* Interest Rate Input */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-slate-500 dark:text-white/40">Interest Rate</label>
+                <label className="text-xs font-medium text-slate-500 dark:text-white/40">
+                  Interest Rate
+                </label>
                 <input
                   type="text"
                   value={`${editedInterestRate.toFixed(2)}%`}

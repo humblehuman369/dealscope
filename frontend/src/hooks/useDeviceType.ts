@@ -36,21 +36,19 @@ const DEFAULT_BREAKPOINTS: DeviceBreakpoints = {
 
 /**
  * Comprehensive device detection hook for responsive rendering.
- * 
+ *
  * Features:
  * - SSR-safe with hydration detection
  * - Detects mobile, tablet, and desktop
  * - Provides simplified viewMode for mobile/desktop switching
  * - Detects touch capability
  * - Tracks orientation
- * 
+ *
  * @param breakpoints - Custom breakpoint thresholds
  */
-export function useDeviceType(
-  breakpoints: Partial<DeviceBreakpoints> = {}
-): DeviceInfo {
+export function useDeviceType(breakpoints: Partial<DeviceBreakpoints> = {}): DeviceInfo {
   const bp = { ...DEFAULT_BREAKPOINTS, ...breakpoints }
-  
+
   const [state, setState] = useState<{
     width: number
     height: number
@@ -103,8 +101,7 @@ export function useDeviceType(
 
     // Check for touch capability
     const isTouchDevice =
-      typeof window !== 'undefined' &&
-      ('ontouchstart' in window || navigator.maxTouchPoints > 0)
+      typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)
 
     return {
       deviceType,

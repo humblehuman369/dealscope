@@ -42,13 +42,10 @@ export function useCapacitorShell() {
       try {
         const url = new URL(href, window.location.origin)
         const isInternal =
-          url.hostname === window.location.hostname ||
-          url.hostname.endsWith('.dealgapiq.com')
+          url.hostname === window.location.hostname || url.hostname.endsWith('.dealgapiq.com')
         if (!isInternal && url.protocol.startsWith('http')) {
           e.preventDefault()
-          import('@capacitor/browser').then(({ Browser }) =>
-            Browser.open({ url: href }),
-          )
+          import('@capacitor/browser').then(({ Browser }) => Browser.open({ url: href }))
         }
       } catch {
         /* not a valid URL, let it pass through */

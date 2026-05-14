@@ -1,33 +1,20 @@
-'use client';
+'use client'
 
-import React, { useState, useCallback, useRef } from 'react';
-import {
-  APIProvider,
-  Map,
-  AdvancedMarker,
-  type MapMouseEvent,
-} from '@vis.gl/react-google-maps';
-import {
-  X,
-  MapPin,
-  Loader2,
-  Home,
-  ArrowRight,
-  Navigation,
-  LocateFixed,
-} from 'lucide-react';
-import { reverseGeocodeProperty, type GeocodedProperty } from '@/lib/reverseGeocode';
+import React, { useState, useCallback, useRef } from 'react'
+import { APIProvider, Map, AdvancedMarker, type MapMouseEvent } from '@vis.gl/react-google-maps'
+import { X, MapPin, Loader2, Home, ArrowRight, Navigation, LocateFixed } from 'lucide-react'
+import { reverseGeocodeProperty, type GeocodedProperty } from '@/lib/reverseGeocode'
 
-const MAP_ID = 'DEMO_MAP_ID';
-const PARCEL_ZOOM = 18;
+const MAP_ID = 'DEMO_MAP_ID'
+const PARCEL_ZOOM = 18
 
 interface MapPropertyPickerProps {
-  userLat: number;
-  userLng: number;
+  userLat: number
+  userLng: number
   /** The property the scanner originally matched (shown as a red pin) */
-  scannedProperty: GeocodedProperty;
-  onSelectProperty: (property: GeocodedProperty) => void;
-  onClose: () => void;
+  scannedProperty: GeocodedProperty
+  onSelectProperty: (property: GeocodedProperty) => void
+  onClose: () => void
 }
 
 /**
@@ -41,47 +28,50 @@ export function MapPropertyPicker({
   onSelectProperty,
   onClose,
 }: MapPropertyPickerProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
-  const [selectedProperty, setSelectedProperty] = useState<GeocodedProperty | null>(null);
-  const [isGeocoding, setIsGeocoding] = useState(false);
-  const [tapPin, setTapPin] = useState<{ lat: number; lng: number } | null>(null);
-  const mapRef = useRef<google.maps.Map | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<GeocodedProperty | null>(null)
+  const [isGeocoding, setIsGeocoding] = useState(false)
+  const [tapPin, setTapPin] = useState<{ lat: number; lng: number } | null>(null)
+  const mapRef = useRef<google.maps.Map | null>(null)
 
   const handleMapClick = useCallback(
     async (e: MapMouseEvent) => {
-      const latLng = e.detail.latLng;
-      if (!latLng || !apiKey) return;
+      const latLng = e.detail.latLng
+      if (!latLng || !apiKey) return
 
-      const lat = Number(latLng.lat);
-      const lng = Number(latLng.lng);
+      const lat = Number(latLng.lat)
+      const lng = Number(latLng.lng)
 
-      setTapPin({ lat, lng });
-      setSelectedProperty(null);
-      setIsGeocoding(true);
+      setTapPin({ lat, lng })
+      setSelectedProperty(null)
+      setIsGeocoding(true)
 
-      const result = await reverseGeocodeProperty(lat, lng, apiKey);
-      setSelectedProperty(result);
-      setIsGeocoding(false);
+      const result = await reverseGeocodeProperty(lat, lng, apiKey)
+      setSelectedProperty(result)
+      setIsGeocoding(false)
     },
     [apiKey],
-  );
+  )
 
   const handleConfirm = () => {
     if (selectedProperty) {
-      onSelectProperty(selectedProperty);
+      onSelectProperty(selectedProperty)
     }
-  };
+  }
 
   const handleRecenter = () => {
-    mapRef.current?.panTo({ lat: userLat, lng: userLng });
-    mapRef.current?.setZoom(PARCEL_ZOOM);
-  };
+    mapRef.current?.panTo({ lat: userLat, lng: userLng })
+    mapRef.current?.setZoom(PARCEL_ZOOM)
+  }
 
-  if (!apiKey) return null;
+  if (!apiKey) return null
 
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col" style={{ background: 'var(--surface-base)' }}>
+    <div
+      className="fixed inset-0 z-[60] flex flex-col"
+      style={{ background: 'var(--surface-base)' }}
+    >
       {/* Header */}
       <div
         className="relative z-10 flex items-center justify-between px-4 py-3 pt-safe-header shadow-md"
@@ -99,10 +89,7 @@ export function MapPropertyPicker({
           <X className="w-5 h-5" style={{ color: 'var(--text-label)' }} />
         </button>
 
-        <h2
-          className="text-sm font-semibold"
-          style={{ color: 'var(--text-heading)' }}
-        >
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
           Tap the correct property
         </h2>
 
@@ -124,7 +111,7 @@ export function MapPropertyPicker({
             clickableIcons={false}
             onClick={handleMapClick}
             onIdle={(e) => {
-              if (e.map) mapRef.current = e.map;
+              if (e.map) mapRef.current = e.map
             }}
           >
             {/* User location (blue pulse dot) */}
@@ -146,9 +133,7 @@ export function MapPropertyPicker({
             </AdvancedMarker>
 
             {/* Original scanned property (muted red pin) */}
-            <AdvancedMarker
-              position={{ lat: scannedProperty.lat, lng: scannedProperty.lng }}
-            >
+            <AdvancedMarker position={{ lat: scannedProperty.lat, lng: scannedProperty.lng }}>
               <div
                 className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold whitespace-nowrap shadow-md"
                 style={{
@@ -221,10 +206,7 @@ export function MapPropertyPicker({
         >
           {isGeocoding ? (
             <div className="flex items-center justify-center gap-2 py-4">
-              <Loader2
-                className="w-5 h-5 animate-spin"
-                style={{ color: 'var(--accent-sky)' }}
-              />
+              <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--accent-sky)' }} />
               <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 Looking up address...
               </span>
@@ -243,15 +225,11 @@ export function MapPropertyPicker({
                     <Home className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4
-                      className="font-semibold truncate"
-                      style={{ color: 'var(--text-heading)' }}
-                    >
+                    <h4 className="font-semibold truncate" style={{ color: 'var(--text-heading)' }}>
                       {selectedProperty.address}
                     </h4>
                     <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      {selectedProperty.city}, {selectedProperty.state}{' '}
-                      {selectedProperty.zip}
+                      {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip}
                     </p>
                   </div>
                 </div>
@@ -260,8 +238,8 @@ export function MapPropertyPicker({
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    setTapPin(null);
-                    setSelectedProperty(null);
+                    setTapPin(null)
+                    setSelectedProperty(null)
                   }}
                   className="flex-1 py-3 px-4 rounded-xl font-medium transition-colors"
                   style={{
@@ -292,5 +270,5 @@ export function MapPropertyPicker({
         </div>
       )}
     </div>
-  );
+  )
 }

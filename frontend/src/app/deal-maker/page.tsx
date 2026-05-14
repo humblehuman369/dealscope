@@ -16,7 +16,8 @@ import { trackEvent } from '@/lib/eventTracking'
 import type { AddressValidationResult } from '@/types/address'
 
 const DealMakerScreen = dynamic(
-  () => import('@/components/deal-maker/DealMakerScreen').then(m => ({ default: m.DealMakerScreen })),
+  () =>
+    import('@/components/deal-maker/DealMakerScreen').then((m) => ({ default: m.DealMakerScreen })),
   {
     loading: () => <IQLoadingLogo />,
   },
@@ -41,63 +42,66 @@ export default function DealMakerIndexPage() {
   const [validationStatus, setValidationStatus] = useState<ValidationStatus>('idle')
   const [validationResult, setValidationResult] = useState<AddressValidationResult | null>(null)
 
-  const loadProperty = useCallback(async (address: string) => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await fetchProperty(address)
+  const loadProperty = useCallback(
+    async (address: string) => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const data = await fetchProperty(address)
 
-      const monthlyRent = data.rentals?.monthly_rent_ltr || 0
+        const monthlyRent = data.rentals?.monthly_rent_ltr || 0
 
-      const isListed =
-        data.listing?.listing_status &&
-        data.listing.listing_status !== 'OFF_MARKET' &&
-        data.listing.listing_status !== 'SOLD' &&
-        data.listing.listing_status !== 'FOR_RENT' &&
-        data.listing.listing_status !== 'OTHER'
-      const zestimate = data.valuations?.zestimate ?? null
-      const currentAvm = data.valuations?.current_value_avm ?? null
-      const taxAssessed = data.valuations?.tax_assessed_value ?? null
-      const listPrice = data.listing?.list_price ?? null
-      const apiMarketPrice = data.valuations?.market_price ?? null
+        const isListed =
+          data.listing?.listing_status &&
+          data.listing.listing_status !== 'OFF_MARKET' &&
+          data.listing.listing_status !== 'SOLD' &&
+          data.listing.listing_status !== 'FOR_RENT' &&
+          data.listing.listing_status !== 'OTHER'
+        const zestimate = data.valuations?.zestimate ?? null
+        const currentAvm = data.valuations?.current_value_avm ?? null
+        const taxAssessed = data.valuations?.tax_assessed_value ?? null
+        const listPrice = data.listing?.list_price ?? null
+        const apiMarketPrice = data.valuations?.market_price ?? null
 
-      const price =
-        (isListed && listPrice != null && listPrice > 0 ? listPrice : null) ??
-        (apiMarketPrice != null && apiMarketPrice > 0 ? apiMarketPrice : null) ??
-        (zestimate != null && zestimate > 0 ? zestimate : null) ??
-        (currentAvm != null && currentAvm > 0 ? currentAvm : null) ??
-        (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
-        FALLBACK_PROPERTY.price
+        const price =
+          (isListed && listPrice != null && listPrice > 0 ? listPrice : null) ??
+          (apiMarketPrice != null && apiMarketPrice > 0 ? apiMarketPrice : null) ??
+          (zestimate != null && zestimate > 0 ? zestimate : null) ??
+          (currentAvm != null && currentAvm > 0 ? currentAvm : null) ??
+          (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
+          FALLBACK_PROPERTY.price
 
-      const propertyTaxes = data.market?.property_taxes_annual ?? null
-      const insurance = data.market?.insurance_annual ?? null
+        const propertyTaxes = data.market?.property_taxes_annual ?? null
+        const insurance = data.market?.insurance_annual ?? null
 
-      const parsedAddress = parseAddressString(address)
+        const parsedAddress = parseAddressString(address)
 
-      const property: DealMakerPropertyData = {
-        address: data.address?.street || parsedAddress.street || address,
-        city: data.address?.city || parsedAddress.city || '',
-        state: data.address?.state || parsedAddress.state || FALLBACK_PROPERTY.state,
-        zipCode: data.address?.zip_code || parsedAddress.zip || FALLBACK_PROPERTY.zipCode,
-        beds: data.details?.bedrooms || FALLBACK_PROPERTY.beds,
-        baths: data.details?.bathrooms || FALLBACK_PROPERTY.baths,
-        sqft: data.details?.square_footage || FALLBACK_PROPERTY.sqft,
-        yearBuilt: data.details?.year_built ?? undefined,
-        price: Math.round(price),
-        rent: monthlyRent || undefined,
-        zpid: data.zpid ? String(data.zpid) : undefined,
-        propertyTax: propertyTaxes ?? undefined,
-        insurance: insurance ?? undefined,
+        const property: DealMakerPropertyData = {
+          address: data.address?.street || parsedAddress.street || address,
+          city: data.address?.city || parsedAddress.city || '',
+          state: data.address?.state || parsedAddress.state || FALLBACK_PROPERTY.state,
+          zipCode: data.address?.zip_code || parsedAddress.zip || FALLBACK_PROPERTY.zipCode,
+          beds: data.details?.bedrooms || FALLBACK_PROPERTY.beds,
+          baths: data.details?.bathrooms || FALLBACK_PROPERTY.baths,
+          sqft: data.details?.square_footage || FALLBACK_PROPERTY.sqft,
+          yearBuilt: data.details?.year_built ?? undefined,
+          price: Math.round(price),
+          rent: monthlyRent || undefined,
+          zpid: data.zpid ? String(data.zpid) : undefined,
+          propertyTax: propertyTaxes ?? undefined,
+          insurance: insurance ?? undefined,
+        }
+
+        setPropertyData(property)
+      } catch (err) {
+        console.error('Error loading property for DealMaker:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load property data')
+      } finally {
+        setIsLoading(false)
       }
-
-      setPropertyData(property)
-    } catch (err) {
-      console.error('Error loading property for DealMaker:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load property data')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [fetchProperty])
+    },
+    [fetchProperty],
+  )
 
   useEffect(() => {
     if (addressParam) {
@@ -119,7 +123,9 @@ export default function DealMakerIndexPage() {
     setValidationResult(null)
 
     try {
-      const validateUrl = IS_CAPACITOR ? `${WEB_BASE_URL}/api/validate-address` : '/api/validate-address'
+      const validateUrl = IS_CAPACITOR
+        ? `${WEB_BASE_URL}/api/validate-address`
+        : '/api/validate-address'
       const res = await fetch(validateUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -186,15 +192,24 @@ export default function DealMakerIndexPage() {
     return (
       <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center px-4 sm:px-6">
         <div className="text-center w-full max-w-md">
-          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: 'var(--color-red-dim)' }}>
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
+            style={{ background: 'var(--color-red-dim)' }}
+          >
             <AlertCircle className="w-7 h-7 text-[var(--status-negative)]" />
           </div>
-          <h2 className="text-lg sm:text-xl font-semibold text-[var(--text-heading)] mb-2">Unable to Load Property</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-[var(--text-heading)] mb-2">
+            Unable to Load Property
+          </h2>
           <p className="text-[var(--text-secondary)] text-sm sm:text-base mb-6">{error}</p>
           <button
             onClick={() => loadProperty(addressParam)}
             className="px-8 py-3 rounded-lg text-[var(--text-inverse)] font-medium text-sm sm:text-base transition-all hover:scale-[1.02]"
-            style={{ background: 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)', boxShadow: 'var(--shadow-card)' }}
+            style={{
+              background:
+                'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)',
+              boxShadow: 'var(--shadow-card)',
+            }}
           >
             Retry
           </button>
@@ -221,7 +236,9 @@ export default function DealMakerIndexPage() {
       <div className="min-h-screen bg-[var(--surface-base)] px-4 sm:px-6 pt-6 sm:pt-10">
         <div className="w-full max-w-lg mx-auto">
           <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-heading)] mb-2">Deal Maker IQ</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-heading)] mb-2">
+              Deal Maker IQ
+            </h1>
             <p className="text-[var(--text-secondary)] text-sm sm:text-base">
               Search for a property to start building your deal
             </p>

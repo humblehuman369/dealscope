@@ -2,14 +2,38 @@
 
 /**
  * Generate Letter of Intent (LOI) Modal
- * 
+ *
  * This is DealGapIQ's competitive edge: Analysis → Action in one click.
  * Allows users to generate professional LOIs directly from wholesale analysis.
  */
 
 import { useState, useEffect } from 'react'
-import { X, FileText, Download, Copy, Check, ChevronDown, ChevronUp, Mail, AlertCircle, Loader2, Building2, User, Calendar, DollarSign, Shield, Sparkles } from 'lucide-react'
-import { api, GenerateLOIRequest, LOIDocument, LOIPropertyInfo, LOIBuyerInfo, LOITerms } from '@/lib/api'
+import {
+  X,
+  FileText,
+  Download,
+  Copy,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Mail,
+  AlertCircle,
+  Loader2,
+  Building2,
+  User,
+  Calendar,
+  DollarSign,
+  Shield,
+  Sparkles,
+} from 'lucide-react'
+import {
+  api,
+  GenerateLOIRequest,
+  LOIDocument,
+  LOIPropertyInfo,
+  LOIBuyerInfo,
+  LOITerms,
+} from '@/lib/api'
 
 interface PropertyData {
   address: string
@@ -42,21 +66,35 @@ interface GenerateLOIModalProps {
 }
 
 const CONTINGENCY_OPTIONS = [
-  { id: 'inspection', label: 'Property Inspection', description: 'Buyer can inspect and back out if unsatisfied' },
+  {
+    id: 'inspection',
+    label: 'Property Inspection',
+    description: 'Buyer can inspect and back out if unsatisfied',
+  },
   { id: 'title', label: 'Clear Title', description: 'Seller must provide marketable title' },
   { id: 'financing', label: 'Financing', description: 'Subject to obtaining financing' },
   { id: 'appraisal', label: 'Appraisal', description: 'Property must appraise at purchase price' },
-  { id: 'partner_approval', label: 'Partner Approval', description: 'Subject to partner/investor approval' },
+  {
+    id: 'partner_approval',
+    label: 'Partner Approval',
+    description: 'Subject to partner/investor approval',
+  },
   { id: 'attorney_review', label: 'Attorney Review', description: '3-day attorney review period' },
 ]
 
-export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc, purchasePrice }: GenerateLOIModalProps) {
+export function GenerateLOIModal({
+  isOpen,
+  onClose,
+  propertyData,
+  wholesaleCalc,
+  purchasePrice,
+}: GenerateLOIModalProps) {
   // Buyer info state
   const [buyerName, setBuyerName] = useState('')
   const [buyerCompany, setBuyerCompany] = useState('')
   const [buyerEmail, setBuyerEmail] = useState('')
   const [buyerPhone, setBuyerPhone] = useState('')
-  
+
   // Terms state
   const [offerPrice, setOfferPrice] = useState(wholesaleCalc.mao)
   const [earnestMoney, setEarnestMoney] = useState(1000)
@@ -66,14 +104,14 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
   const [includeAssignment, setIncludeAssignment] = useState(true)
   const [contingencies, setContingencies] = useState<string[]>(['inspection', 'title'])
   const [additionalTerms, setAdditionalTerms] = useState('')
-  
+
   // UI state
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedLOI, setGeneratedLOI] = useState<LOIDocument | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  
+
   // Load saved preferences on mount
   useEffect(() => {
     const savedBuyer = localStorage.getItem('dealgapiq_loi_buyer')
@@ -89,42 +127,41 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
       }
     }
   }, [])
-  
+
   // Update offer price when MAO changes
   useEffect(() => {
     setOfferPrice(wholesaleCalc.mao)
   }, [wholesaleCalc.mao])
-  
+
   const toggleContingency = (id: string) => {
-    setContingencies(prev => 
-      prev.includes(id) 
-        ? prev.filter(c => c !== id)
-        : [...prev, id]
-    )
+    setContingencies((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]))
   }
-  
+
   const handleGenerate = async () => {
     if (!buyerName.trim()) {
       setError('Please enter your name')
       return
     }
-    
+
     if (offerPrice <= 0) {
       setError('Please enter a valid offer price')
       return
     }
-    
+
     setError(null)
     setIsGenerating(true)
-    
+
     // Save buyer info for future use
-    localStorage.setItem('dealgapiq_loi_buyer', JSON.stringify({
-      name: buyerName,
-      company: buyerCompany,
-      email: buyerEmail,
-      phone: buyerPhone,
-    }))
-    
+    localStorage.setItem(
+      'dealgapiq_loi_buyer',
+      JSON.stringify({
+        name: buyerName,
+        company: buyerCompany,
+        email: buyerEmail,
+        phone: buyerPhone,
+      }),
+    )
+
     try {
       const request: GenerateLOIRequest = {
         buyer: {
@@ -170,10 +207,9 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
         professional_letterhead: true,
         include_signature_lines: true,
       }
-      
+
       const result = await api.loi.generate(request)
       setGeneratedLOI(result)
-      
     } catch (err) {
       console.error('LOI generation failed:', err)
       setError(err instanceof Error ? err.message : 'Failed to generate LOI')
@@ -181,10 +217,10 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
       setIsGenerating(false)
     }
   }
-  
+
   const handleDownloadPDF = () => {
     if (!generatedLOI?.pdf_base64) return
-    
+
     // Convert base64 to blob and download
     const byteCharacters = atob(generatedLOI.pdf_base64)
     const byteNumbers = new Array(byteCharacters.length)
@@ -193,7 +229,7 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
     }
     const byteArray = new Uint8Array(byteNumbers)
     const blob = new Blob([byteArray], { type: 'application/pdf' })
-    
+
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -203,10 +239,10 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
   }
-  
+
   const handleCopyText = async () => {
     if (!generatedLOI?.content_text) return
-    
+
     try {
       await navigator.clipboard.writeText(generatedLOI.content_text)
       setCopied(true)
@@ -223,13 +259,17 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
       setTimeout(() => setCopied(false), 2000)
     }
   }
-  
+
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value)
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0,
+    }).format(value)
   }
-  
+
   if (!isOpen) return null
-  
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--surface-base)]/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -244,14 +284,11 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
               <p className="text-sm text-cyan-100">Professional LOI for wholesale deal</p>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
             <X className="w-5 h-5 text-white" />
           </button>
         </div>
-        
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Property Summary */}
@@ -260,21 +297,27 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
               <Building2 className="w-5 h-5 text-slate-600 mt-0.5" />
               <div className="flex-1">
                 <h3 className="font-semibold text-slate-900">{propertyData.address}</h3>
-                <p className="text-sm text-slate-600">{propertyData.city}, {propertyData.state} {propertyData.zip_code}</p>
+                <p className="text-sm text-slate-600">
+                  {propertyData.city}, {propertyData.state} {propertyData.zip_code}
+                </p>
                 <div className="flex gap-4 mt-2 text-xs text-slate-500">
                   {propertyData.bedrooms && <span>{propertyData.bedrooms} bed</span>}
                   {propertyData.bathrooms && <span>{propertyData.bathrooms} bath</span>}
-                  {propertyData.square_footage && <span>{propertyData.square_footage.toLocaleString()} sqft</span>}
+                  {propertyData.square_footage && (
+                    <span>{propertyData.square_footage.toLocaleString()} sqft</span>
+                  )}
                   {propertyData.year_built && <span>Built {propertyData.year_built}</span>}
                 </div>
               </div>
               <div className="text-right">
                 <div className="text-xs text-slate-500">70% Rule MAO</div>
-                <div className="text-lg font-bold text-cyan-600">{formatCurrency(wholesaleCalc.mao)}</div>
+                <div className="text-lg font-bold text-cyan-600">
+                  {formatCurrency(wholesaleCalc.mao)}
+                </div>
               </div>
             </div>
           </div>
-          
+
           {!generatedLOI ? (
             <>
               {/* Buyer Information */}
@@ -285,7 +328,9 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Your Name *</label>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                      Your Name *
+                    </label>
                     <input
                       type="text"
                       value={buyerName}
@@ -295,7 +340,9 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                     />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Company / LLC</label>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                      Company / LLC
+                    </label>
                     <input
                       type="text"
                       value={buyerCompany}
@@ -326,7 +373,7 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                   </div>
                 </div>
               </div>
-              
+
               {/* Offer Terms */}
               <div>
                 <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3">
@@ -335,9 +382,13 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Offer Price *</label>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                      Offer Price *
+                    </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        $
+                      </span>
                       <input
                         type="number"
                         value={offerPrice}
@@ -348,9 +399,13 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                     <p className="text-[10px] text-slate-400 mt-1">Pre-filled from 70% rule MAO</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Earnest Money</label>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                      Earnest Money
+                    </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        $
+                      </span>
                       <input
                         type="number"
                         value={earnestMoney}
@@ -360,7 +415,9 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Inspection Period</label>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                      Inspection Period
+                    </label>
                     <div className="relative">
                       <input
                         type="number"
@@ -368,11 +425,15 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                         onChange={(e) => setInspectionDays(Number(e.target.value))}
                         className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">days</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+                        days
+                      </span>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Closing Period</label>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                      Closing Period
+                    </label>
                     <div className="relative">
                       <input
                         type="number"
@@ -380,14 +441,18 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                         onChange={(e) => setClosingDays(Number(e.target.value))}
                         className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">days</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+                        days
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               {/* Assignment Clause - Highlighted for Wholesale */}
-              <div className={`rounded-xl p-4 border-2 transition-colors ${includeAssignment ? 'bg-cyan-50 border-cyan-300' : 'bg-slate-50 border-slate-200'}`}>
+              <div
+                className={`rounded-xl p-4 border-2 transition-colors ${includeAssignment ? 'bg-cyan-50 border-cyan-300' : 'bg-slate-50 border-slate-200'}`}
+              >
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -397,26 +462,35 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-800">Include Assignment Clause</span>
-                      <span className="text-[10px] px-1.5 py-0.5 bg-cyan-600 text-white rounded-full font-medium">RECOMMENDED</span>
+                      <span className="font-semibold text-slate-800">
+                        Include Assignment Clause
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.5 bg-cyan-600 text-white rounded-full font-medium">
+                        RECOMMENDED
+                      </span>
                     </div>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      "Buyer and/or assigns" - Essential for wholesale deals. Allows you to assign the contract to an end buyer.
+                      "Buyer and/or assigns" - Essential for wholesale deals. Allows you to assign
+                      the contract to an end buyer.
                     </p>
                   </div>
                 </label>
               </div>
-              
+
               {/* Advanced Options */}
               <div>
                 <button
                   onClick={() => setShowAdvanced(!showAdvanced)}
                   className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
                 >
-                  {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  {showAdvanced ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
                   Advanced Options
                 </button>
-                
+
                 {showAdvanced && (
                   <div className="mt-4 space-y-4">
                     {/* Contingencies */}
@@ -426,12 +500,12 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                         Contingencies
                       </h5>
                       <div className="grid grid-cols-2 gap-2">
-                        {CONTINGENCY_OPTIONS.map(option => (
-                          <label 
+                        {CONTINGENCY_OPTIONS.map((option) => (
+                          <label
                             key={option.id}
                             className={`flex items-start gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${
-                              contingencies.includes(option.id) 
-                                ? 'bg-cyan-50 border-cyan-300' 
+                              contingencies.includes(option.id)
+                                ? 'bg-cyan-50 border-cyan-300'
                                 : 'bg-white border-slate-200 hover:border-slate-300'
                             }`}
                           >
@@ -442,17 +516,21 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                               className="mt-0.5 w-3.5 h-3.5 text-cyan-600 rounded border-slate-300 focus:ring-cyan-500"
                             />
                             <div>
-                              <div className="text-xs font-medium text-slate-700">{option.label}</div>
+                              <div className="text-xs font-medium text-slate-700">
+                                {option.label}
+                              </div>
                               <div className="text-[10px] text-slate-500">{option.description}</div>
                             </div>
                           </label>
                         ))}
                       </div>
                     </div>
-                    
+
                     {/* Offer Expiration */}
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Offer Valid For</label>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                        Offer Valid For
+                      </label>
                       <div className="relative w-32">
                         <input
                           type="number"
@@ -460,13 +538,17 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                           onChange={(e) => setExpirationDays(Number(e.target.value))}
                           className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">days</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+                          days
+                        </span>
                       </div>
                     </div>
-                    
+
                     {/* Additional Terms */}
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Additional Terms (optional)</label>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                        Additional Terms (optional)
+                      </label>
                       <textarea
                         value={additionalTerms}
                         onChange={(e) => setAdditionalTerms(e.target.value)}
@@ -478,7 +560,7 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                   </div>
                 )}
               </div>
-              
+
               {/* Error Message */}
               {error && (
                 <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -499,31 +581,41 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                   <p className="text-sm text-emerald-600">Reference: {generatedLOI.id}</p>
                 </div>
               </div>
-              
+
               {/* Quick Summary */}
               <div className="bg-slate-50 rounded-xl p-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">Property</span>
-                  <span className="font-medium text-slate-800">{generatedLOI.property_address}</span>
+                  <span className="font-medium text-slate-800">
+                    {generatedLOI.property_address}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">Offer Price</span>
-                  <span className="font-semibold text-cyan-600">{formatCurrency(generatedLOI.offer_price)}</span>
+                  <span className="font-semibold text-cyan-600">
+                    {formatCurrency(generatedLOI.offer_price)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">Earnest Money</span>
-                  <span className="font-medium text-slate-800">{formatCurrency(generatedLOI.earnest_money)}</span>
+                  <span className="font-medium text-slate-800">
+                    {formatCurrency(generatedLOI.earnest_money)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">Inspection Period</span>
-                  <span className="font-medium text-slate-800">{generatedLOI.inspection_days} days</span>
+                  <span className="font-medium text-slate-800">
+                    {generatedLOI.inspection_days} days
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">Offer Expires</span>
-                  <span className="font-medium text-slate-800">{new Date(generatedLOI.expiration_date).toLocaleDateString()}</span>
+                  <span className="font-medium text-slate-800">
+                    {new Date(generatedLOI.expiration_date).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -550,7 +642,7 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                   )}
                 </button>
               </div>
-              
+
               {/* Preview Text */}
               <div>
                 <h5 className="text-xs font-semibold text-slate-600 mb-2">Preview</h5>
@@ -561,7 +653,7 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
                   </pre>
                 </div>
               </div>
-              
+
               {/* Generate Another */}
               <button
                 onClick={() => setGeneratedLOI(null)}
@@ -572,7 +664,7 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
             </div>
           )}
         </div>
-        
+
         {/* Footer */}
         {!generatedLOI && (
           <div className="border-t border-slate-200 px-6 py-4 bg-slate-50 flex items-center justify-between">
@@ -607,4 +699,3 @@ export function GenerateLOIModal({ isOpen, onClose, propertyData, wholesaleCalc,
 }
 
 export default GenerateLOIModal
-

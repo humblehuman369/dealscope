@@ -40,13 +40,14 @@ export default function SearchHistoryError({ error, reset }: ErrorProps) {
           {/* Dev Error Details */}
           {process.env.NODE_ENV === 'development' && error.message && (
             <div className="mb-6 p-3 bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-lg text-left">
-              <p className="text-xs text-[var(--text-secondary)] break-all" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+              <p
+                className="text-xs text-[var(--text-secondary)] break-all"
+                style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+              >
                 {error.message}
               </p>
               {error.digest && (
-                <p className="text-xs text-[var(--text-label)] mt-1">
-                  Error ID: {error.digest}
-                </p>
+                <p className="text-xs text-[var(--text-label)] mt-1">Error ID: {error.digest}</p>
               )}
             </div>
           )}

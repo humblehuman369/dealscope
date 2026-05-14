@@ -11,7 +11,6 @@ export default function SearchHistoryLoading() {
       style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
     >
       <div className="max-w-5xl mx-auto">
-
         {/* Header Skeleton */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
@@ -34,7 +33,10 @@ export default function SearchHistoryLoading() {
             'bg-[rgba(251,191,36,0.10)]',
             'bg-[var(--surface-elevated)]',
           ].map((tint, i) => (
-            <div key={i} className="bg-[var(--surface-card)] rounded-xl p-4 border border-[var(--border-default)]">
+            <div
+              key={i}
+              className="bg-[var(--surface-card)] rounded-xl p-4 border border-[var(--border-default)]"
+            >
               <div className="flex items-center gap-3">
                 <div className={`w-9 h-9 ${tint} rounded-lg animate-pulse`} />
                 <div>
@@ -53,7 +55,7 @@ export default function SearchHistoryLoading() {
           </div>
 
           <div className="divide-y divide-[var(--border-subtle)]">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div key={i} className="px-6 py-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 bg-[var(--surface-elevated)] rounded-lg animate-pulse flex-shrink-0" />

@@ -9,7 +9,7 @@ import { authApi } from '@/lib/api-client'
 function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
-  
+
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [message, setMessage] = useState('')
   const [resendEmail, setResendEmail] = useState('')
@@ -98,9 +98,7 @@ function VerifyEmailContent() {
               <h1 className="text-2xl font-bold text-navy-900 dark:text-white mb-2">
                 Verification Failed
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
-                {message}
-              </p>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">{message}</p>
 
               {/* Resend verification form */}
               <div className="mt-4 mb-6 space-y-3">
@@ -134,7 +132,10 @@ function VerifyEmailContent() {
                 </Link>
                 <p className="text-sm text-gray-400">
                   Need help?{' '}
-                  <a href="mailto:support@dealgapiq.com" className="text-brand-500 hover:text-brand-600">
+                  <a
+                    href="mailto:support@dealgapiq.com"
+                    className="text-brand-500 hover:text-brand-600"
+                  >
                     Contact Support
                   </a>
                 </p>
@@ -149,13 +150,14 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-brand-500 animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-brand-500 animate-spin" />
+        </div>
+      }
+    >
       <VerifyEmailContent />
     </Suspense>
   )
 }
-

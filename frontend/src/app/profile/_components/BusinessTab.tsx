@@ -1,8 +1,16 @@
 'use client'
 
 import {
-  Building2, MapPin, Phone, Globe, Linkedin, Instagram, Twitter,
-  Plus, Trash2, Save,
+  Building2,
+  MapPin,
+  Phone,
+  Globe,
+  Linkedin,
+  Instagram,
+  Twitter,
+  Plus,
+  Trash2,
+  Save,
 } from 'lucide-react'
 import type { BusinessFormData, PhoneNumber } from './types'
 import { US_STATES } from './types'
@@ -56,7 +64,9 @@ export function BusinessTab({
           <input
             type="text"
             value={businessForm.business_name}
-            onChange={(e) => setBusinessForm(prev => ({ ...prev, business_name: e.target.value }))}
+            onChange={(e) =>
+              setBusinessForm((prev) => ({ ...prev, business_name: e.target.value }))
+            }
             className={inputClass}
             placeholder="e.g., ABC Investments LLC"
           />
@@ -67,7 +77,9 @@ export function BusinessTab({
           </label>
           <select
             value={businessForm.business_type}
-            onChange={(e) => setBusinessForm(prev => ({ ...prev, business_type: e.target.value }))}
+            onChange={(e) =>
+              setBusinessForm((prev) => ({ ...prev, business_type: e.target.value }))
+            }
             className={selectClass}
             style={{ colorScheme: 'light' }}
           >
@@ -92,7 +104,9 @@ export function BusinessTab({
             <input
               type="text"
               value={businessForm.business_address_street}
-              onChange={(e) => setBusinessForm(prev => ({ ...prev, business_address_street: e.target.value }))}
+              onChange={(e) =>
+                setBusinessForm((prev) => ({ ...prev, business_address_street: e.target.value }))
+              }
               className={inputClass}
               placeholder="Street Address"
             />
@@ -100,26 +114,34 @@ export function BusinessTab({
           <input
             type="text"
             value={businessForm.business_address_city}
-            onChange={(e) => setBusinessForm(prev => ({ ...prev, business_address_city: e.target.value }))}
+            onChange={(e) =>
+              setBusinessForm((prev) => ({ ...prev, business_address_city: e.target.value }))
+            }
             className={inputClass}
             placeholder="City"
           />
           <div className="grid grid-cols-2 gap-4">
             <select
               value={businessForm.business_address_state}
-              onChange={(e) => setBusinessForm(prev => ({ ...prev, business_address_state: e.target.value }))}
+              onChange={(e) =>
+                setBusinessForm((prev) => ({ ...prev, business_address_state: e.target.value }))
+              }
               className={selectClass}
               style={{ colorScheme: 'light' }}
             >
               <option value="">State</option>
-              {US_STATES.map(state => (
-                <option key={state} value={state}>{state}</option>
+              {US_STATES.map((state) => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
               ))}
             </select>
             <input
               type="text"
               value={businessForm.business_address_zip}
-              onChange={(e) => setBusinessForm(prev => ({ ...prev, business_address_zip: e.target.value }))}
+              onChange={(e) =>
+                setBusinessForm((prev) => ({ ...prev, business_address_zip: e.target.value }))
+              }
               className={inputClass}
               placeholder="ZIP"
             />
@@ -198,7 +220,12 @@ export function BusinessTab({
             <input
               type="url"
               value={businessForm.social_links.website || ''}
-              onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, website: e.target.value } }))}
+              onChange={(e) =>
+                setBusinessForm((prev) => ({
+                  ...prev,
+                  social_links: { ...prev.social_links, website: e.target.value },
+                }))
+              }
               className="flex-1 px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="https://yourwebsite.com"
             />
@@ -208,7 +235,12 @@ export function BusinessTab({
             <input
               type="url"
               value={businessForm.social_links.linkedin || ''}
-              onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, linkedin: e.target.value } }))}
+              onChange={(e) =>
+                setBusinessForm((prev) => ({
+                  ...prev,
+                  social_links: { ...prev.social_links, linkedin: e.target.value },
+                }))
+              }
               className="flex-1 px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="LinkedIn URL"
             />
@@ -218,7 +250,12 @@ export function BusinessTab({
             <input
               type="url"
               value={businessForm.social_links.instagram || ''}
-              onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, instagram: e.target.value } }))}
+              onChange={(e) =>
+                setBusinessForm((prev) => ({
+                  ...prev,
+                  social_links: { ...prev.social_links, instagram: e.target.value },
+                }))
+              }
               className="flex-1 px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="Instagram URL"
             />
@@ -228,7 +265,12 @@ export function BusinessTab({
             <input
               type="url"
               value={businessForm.social_links.twitter || ''}
-              onChange={(e) => setBusinessForm(prev => ({ ...prev, social_links: { ...prev.social_links, twitter: e.target.value } }))}
+              onChange={(e) =>
+                setBusinessForm((prev) => ({
+                  ...prev,
+                  social_links: { ...prev.social_links, twitter: e.target.value },
+                }))
+              }
               className="flex-1 px-4 py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
               placeholder="Twitter/X URL"
             />
@@ -245,7 +287,9 @@ export function BusinessTab({
           <input
             type="text"
             value={businessForm.license_number}
-            onChange={(e) => setBusinessForm(prev => ({ ...prev, license_number: e.target.value }))}
+            onChange={(e) =>
+              setBusinessForm((prev) => ({ ...prev, license_number: e.target.value }))
+            }
             className={inputClass}
             placeholder="License number"
           />
@@ -256,13 +300,17 @@ export function BusinessTab({
           </label>
           <select
             value={businessForm.license_state}
-            onChange={(e) => setBusinessForm(prev => ({ ...prev, license_state: e.target.value }))}
+            onChange={(e) =>
+              setBusinessForm((prev) => ({ ...prev, license_state: e.target.value }))
+            }
             className={selectClass}
             style={{ colorScheme: 'light' }}
           >
             <option value="">Select state...</option>
-            {US_STATES.map(state => (
-              <option key={state} value={state}>{state}</option>
+            {US_STATES.map((state) => (
+              <option key={state} value={state}>
+                {state}
+              </option>
             ))}
           </select>
         </div>
@@ -275,7 +323,7 @@ export function BusinessTab({
         </label>
         <textarea
           value={businessForm.bio}
-          onChange={(e) => setBusinessForm(prev => ({ ...prev, bio: e.target.value }))}
+          onChange={(e) => setBusinessForm((prev) => ({ ...prev, bio: e.target.value }))}
           rows={4}
           className="w-full px-4 py-2.5 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors resize-none"
           placeholder="Tell others about your investment experience and expertise..."
@@ -290,7 +338,11 @@ export function BusinessTab({
           className="px-6 py-2.5 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] rounded-lg font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:bg-[var(--accent-sky)]"
           style={{ boxShadow: 'var(--shadow-card)' }}
         >
-          {isSaving ? <div className="w-4 h-4 border-2 border-[var(--text-inverse)] border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+          {isSaving ? (
+            <div className="w-4 h-4 border-2 border-[var(--text-inverse)] border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Save className="w-4 h-4" />
+          )}
           Save Business Profile
         </button>
       </div>

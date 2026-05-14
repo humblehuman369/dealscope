@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
         error: 'Address validation is not configured',
         code: 'VALIDATION_UNAVAILABLE',
       },
-      { status: 503 }
+      { status: 503 },
     )
   }
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: 'Invalid JSON body', code: 'INVALID_REQUEST' },
-      { status: 400 }
+      { status: 400 },
     )
   }
 
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
   if (addressLines.length === 0 || !addressLines.some((s) => s.length > 0)) {
     return NextResponse.json(
       { error: 'Missing or empty address', code: 'INVALID_REQUEST' },
-      { status: 400 }
+      { status: 400 },
     )
   }
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       const code = data?.error?.code ?? res.status
       return NextResponse.json(
         { error: message, code: code === 429 ? 'RATE_LIMIT_EXCEEDED' : 'VALIDATION_ERROR' },
-        { status: res.status === 429 ? 429 : 502 }
+        { status: res.status === 429 ? 429 : 502 },
       )
     }
 
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     if (!parsed) {
       return NextResponse.json(
         { error: 'Invalid validation response', code: 'VALIDATION_ERROR' },
-        { status: 502 }
+        { status: 502 },
       )
     }
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     console.error('[validate-address]', err)
     return NextResponse.json(
       { error: 'Address validation request failed', code: 'NETWORK_ERROR' },
-      { status: 502 }
+      { status: 502 },
     )
   }
 }

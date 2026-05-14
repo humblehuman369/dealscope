@@ -1,9 +1,9 @@
 /**
  * useDealScore - Hook for calculating Deal Score via backend API
- * 
+ *
  * This hook ensures all worksheets use the centralized backend calculation
  * for Deal Score, providing consistency across the application.
- * 
+ *
  * NO FINANCIAL CALCULATIONS ARE DONE IN THIS HOOK - all math is on the backend.
  */
 
@@ -90,11 +90,11 @@ interface UseDealScoreReturn {
 
 /**
  * Hook to calculate Deal Score via the backend API.
- * 
+ *
  * @param input - The calculation inputs
  * @param options - Hook options
  * @returns Deal Score result, loading state, and error
- * 
+ *
  * @example
  * ```tsx
  * const { result, isLoading, error } = useDealScore({
@@ -104,7 +104,7 @@ interface UseDealScoreReturn {
  *   propertyTaxes: 6000,
  *   insurance: 2000,
  * })
- * 
+ *
  * if (result) {
  *   console.log(`Deal Score: ${result.dealScore} - ${result.dealVerdict}`)
  * }
@@ -112,32 +112,32 @@ interface UseDealScoreReturn {
  */
 export function useDealScore(
   input: DealScoreInput,
-  options: UseDealScoreOptions = {}
+  options: UseDealScoreOptions = {},
 ): UseDealScoreReturn {
   const { debounceMs = 300, fetchOnMount = true } = options
-  
+
   const [result, setResult] = useState<DealScoreResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
-  
+
   const fetchDealScore = useCallback(async () => {
     // Cancel any pending request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
     }
-    
+
     // Validate inputs
     if (!input.listPrice || !input.purchasePrice || !input.monthlyRent) {
       return
     }
-    
+
     abortControllerRef.current = new AbortController()
     setIsLoading(true)
     setError(null)
-    
+
     try {
       const data = await api.post<Record<string, any>>(
         '/api/v1/worksheet/deal-score',
@@ -165,7 +165,7 @@ export function useDealScore(
         },
         { signal: abortControllerRef.current.signal },
       )
-      
+
       setResult({
         dealScore: data.deal_score,
         dealVerdict: data.deal_verdict,
@@ -175,17 +175,19 @@ export function useDealScore(
         listPrice: data.list_price,
         grade: data.grade,
         color: data.color,
-        factors: data.factors ? {
-          dealGapScore: data.factors.deal_gap_score,
-          dealGapPercent: data.factors.deal_gap_percent,
-          availabilityScore: data.factors.availability_score,
-          availabilityStatus: data.factors.availability_status,
-          availabilityLabel: data.factors.availability_label,
-          availabilityMotivation: data.factors.availability_motivation,
-          domScore: data.factors.dom_score,
-          domLeverage: data.factors.dom_leverage,
-          daysOnMarket: data.factors.days_on_market,
-        } : undefined,
+        factors: data.factors
+          ? {
+              dealGapScore: data.factors.deal_gap_score,
+              dealGapPercent: data.factors.deal_gap_percent,
+              availabilityScore: data.factors.availability_score,
+              availabilityStatus: data.factors.availability_status,
+              availabilityLabel: data.factors.availability_label,
+              availabilityMotivation: data.factors.availability_motivation,
+              domScore: data.factors.dom_score,
+              domLeverage: data.factors.dom_leverage,
+              daysOnMarket: data.factors.days_on_market,
+            }
+          : undefined,
         calculationDetails: data.calculation_details,
       })
     } catch (err) {
@@ -220,24 +222,24 @@ export function useDealScore(
     input.priceReductions,
     input.daysOnMarket,
   ])
-  
+
   // Debounced fetch when inputs change
   useEffect(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
-    
+
     timeoutRef.current = setTimeout(() => {
       fetchDealScore()
     }, debounceMs)
-    
+
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
       }
     }
   }, [fetchDealScore, debounceMs])
-  
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -246,7 +248,7 @@ export function useDealScore(
       }
     }
   }, [])
-  
+
   return {
     result,
     isLoading,
@@ -272,14 +274,20 @@ export function getDealScoreColor(score: number): string {
  * This is a display utility - no calculation involved.
  */
 export function getDealScoreGaugeAngle(score: number): number {
-  return 180 - (score * 1.8)
+  return 180 - score * 1.8
 }
 
 /**
  * Grade labels for Deal Score display
  */
 export type DealScoreGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
-export type DealScoreLabel = 'STRONG OPPORTUNITY' | 'GOOD OPPORTUNITY' | 'MODERATE OPPORTUNITY' | 'MARGINAL OPPORTUNITY' | 'UNLIKELY OPPORTUNITY' | 'PASS'
+export type DealScoreLabel =
+  | 'STRONG OPPORTUNITY'
+  | 'GOOD OPPORTUNITY'
+  | 'MODERATE OPPORTUNITY'
+  | 'MARGINAL OPPORTUNITY'
+  | 'UNLIKELY OPPORTUNITY'
+  | 'PASS'
 
 export interface DealScoreGradeDisplay {
   grade: DealScoreGrade

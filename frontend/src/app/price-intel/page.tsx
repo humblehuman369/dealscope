@@ -9,7 +9,7 @@ import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 /**
  * PriceCheckerIQ Page
  * Route: /price-intel?address=...&view=sale|rent
- * 
+ *
  * Unified comparable analysis page combining Sale Comps and Rent Comps
  * with sub-tabs, dual valuation, and appraisal toolkit.
  */
@@ -24,7 +24,7 @@ function PriceIntelContent() {
   const lngParam = parseFloat(searchParams.get('lng') || '') || undefined
 
   // Parse address components from the full address
-  const addressParts = addressParam.split(',').map(s => s.trim())
+  const addressParts = addressParam.split(',').map((s) => s.trim())
   const streetAddress = addressParts[0] || ''
   const city = addressParts[1] || ''
   const stateZip = addressParts[2] || ''

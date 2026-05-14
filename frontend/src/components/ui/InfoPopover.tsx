@@ -82,12 +82,7 @@ export function InfoPopover({
       </button>
 
       {open && (
-        <div
-          id={panelId}
-          role="dialog"
-          aria-live="polite"
-          className={panelClassName}
-        >
+        <div id={panelId} role="dialog" aria-live="polite" className={panelClassName}>
           {content}
         </div>
       )}

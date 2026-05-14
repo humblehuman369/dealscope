@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import React, { Suspense, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { Suspense, useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   ArrowRight,
   Check,
@@ -17,61 +17,61 @@ import {
   TrendingUp,
   Users,
   X,
-} from 'lucide-react';
-import { useAuthModal } from '@/hooks/useAuthModal';
-import { VideoModal } from '@/components/ui/VideoModal';
+} from 'lucide-react'
+import { useAuthModal } from '@/hooks/useAuthModal'
+import { VideoModal } from '@/components/ui/VideoModal'
 
 interface Props {
-  onPointAndScan?: () => void;
+  onPointAndScan?: () => void
 }
 
-const DEMO_ADDRESS = '1014-16 N J St, Lake Worth, FL 33460';
+const DEMO_ADDRESS = '1014-16 N J St, Lake Worth, FL 33460'
 
 const HEADLINE_STYLE: React.CSSProperties = {
   fontFamily: 'var(--font-dm-sans), var(--font-inter), system-ui, sans-serif',
   fontWeight: 800,
   lineHeight: 1.04,
   letterSpacing: '-0.045em',
-};
+}
 
 const DISPLAY_STYLE: React.CSSProperties = {
   fontFamily: 'var(--font-dm-sans), var(--font-inter), system-ui, sans-serif',
   fontWeight: 800,
   letterSpacing: '-0.04em',
-};
+}
 
 const primaryButtonClass =
-  'inline-flex items-center justify-center gap-3 rounded-3xl px-8 py-4 text-base md:text-lg font-bold transition-all hover:brightness-110 active:scale-[0.985]';
+  'inline-flex items-center justify-center gap-3 rounded-3xl px-8 py-4 text-base md:text-lg font-bold transition-all hover:brightness-110 active:scale-[0.985]'
 
 const secondaryButtonClass =
-  'inline-flex items-center justify-center gap-3 rounded-3xl px-8 py-4 text-base md:text-lg font-bold transition-all active:scale-[0.985]';
+  'inline-flex items-center justify-center gap-3 rounded-3xl px-8 py-4 text-base md:text-lg font-bold transition-all active:scale-[0.985]'
 
 function AuthParamHandler() {
-  const { openAuthModal } = useAuthModal();
-  const searchParams = useSearchParams();
+  const { openAuthModal } = useAuthModal()
+  const searchParams = useSearchParams()
 
   React.useEffect(() => {
-    const authParam = searchParams.get('auth');
+    const authParam = searchParams.get('auth')
     if (authParam === 'login' || authParam === 'required') {
-      openAuthModal('login');
+      openAuthModal('login')
     } else if (authParam === 'register') {
-      openAuthModal('register');
+      openAuthModal('register')
     }
-  }, [searchParams, openAuthModal]);
+  }, [searchParams, openAuthModal])
 
-  return null;
+  return null
 }
 
 export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) {
-  const router = useRouter();
-  const [showDemoVideo, setShowDemoVideo] = useState(false);
-  const { openAuthModal } = useAuthModal();
+  const router = useRouter()
+  const [showDemoVideo, setShowDemoVideo] = useState(false)
+  const { openAuthModal } = useAuthModal()
 
-  const runDiscovery = () => router.push('/search');
-  const startFree = () => router.push('/register');
-  const startPro = () => router.push('/register?plan=pro&billing=annual');
+  const runDiscovery = () => router.push('/search')
+  const startFree = () => router.push('/register')
+  const startPro = () => router.push('/register?plan=pro&billing=annual')
   const openDemoProperty = () =>
-    router.push(`/discovery?address=${encodeURIComponent(DEMO_ADDRESS)}`);
+    router.push(`/discovery?address=${encodeURIComponent(DEMO_ADDRESS)}`)
 
   return (
     <div className="min-h-screen bg-[var(--surface-base)] text-[var(--text-body)] antialiased">
@@ -79,16 +79,10 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
         <AuthParamHandler />
       </Suspense>
 
-      <MarketingNav
-        onLogin={() => openAuthModal('login')}
-        onStart={runDiscovery}
-      />
+      <MarketingNav onLogin={() => openAuthModal('login')} onStart={runDiscovery} />
 
       <main>
-        <HeroSection
-          onStart={runDiscovery}
-          onDemo={() => setShowDemoVideo(true)}
-        />
+        <HeroSection onStart={runDiscovery} onDemo={() => setShowDemoVideo(true)} />
         <QuickStatsBar />
         <TestimonialsSection />
         <FeaturesSection onContinue={openDemoProperty} />
@@ -107,25 +101,19 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
         title="What is DealGapIQ?"
       />
     </div>
-  );
+  )
 }
 
-function MarketingNav({
-  onLogin,
-  onStart,
-}: {
-  onLogin: () => void;
-  onStart: () => void;
-}) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const closeMobile = () => setMobileOpen(false);
+function MarketingNav({ onLogin, onStart }: { onLogin: () => void; onStart: () => void }) {
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const closeMobile = () => setMobileOpen(false)
 
   const navLinks = [
     { href: '#how-it-works', label: 'How it Works' },
     { href: '#features', label: 'Features' },
     { href: '#pricing', label: 'Pricing' },
     { href: '#trust', label: 'Trust' },
-  ];
+  ]
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[var(--border-default)] bg-[var(--surface-base)]">
@@ -190,8 +178,8 @@ function MarketingNav({
               ))}
               <button
                 onClick={() => {
-                  closeMobile();
-                  onLogin();
+                  closeMobile()
+                  onLogin()
                 }}
                 className="rounded-xl px-3 py-2 text-left font-semibold text-[var(--text-body)] hover:bg-[var(--surface-elevated)]"
               >
@@ -199,8 +187,8 @@ function MarketingNav({
               </button>
               <PrimaryButton
                 onClick={() => {
-                  closeMobile();
-                  onStart();
+                  closeMobile()
+                  onStart()
                 }}
               >
                 Start Free Discovery
@@ -211,16 +199,10 @@ function MarketingNav({
         )}
       </div>
     </nav>
-  );
+  )
 }
 
-function HeroSection({
-  onStart,
-  onDemo,
-}: {
-  onStart: () => void;
-  onDemo: () => void;
-}) {
+function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => void }) {
   return (
     <section className="mx-auto max-w-7xl px-6 pb-14 pt-12 md:pt-16">
       <div className="grid items-center gap-12 lg:grid-cols-12">
@@ -342,7 +324,7 @@ function HeroSection({
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 function QuickStatsBar() {
@@ -351,7 +333,7 @@ function QuickStatsBar() {
     { icon: Clock, label: 'Avg Analysis Time', value: '15 seconds' },
     { icon: Users, label: 'Active Investors', value: '8,412' },
     { icon: ShieldCheck, label: 'Deals Structured', value: '3,291' },
-  ];
+  ]
 
   return (
     <div
@@ -362,20 +344,25 @@ function QuickStatsBar() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-2 gap-6 text-center md:grid-cols-4">
           {stats.map((stat) => (
-            <div key={stat.label} className="flex items-center justify-center gap-3 text-[var(--text-heading)]">
+            <div
+              key={stat.label}
+              className="flex items-center justify-center gap-3 text-[var(--text-heading)]"
+            >
               <stat.icon className="h-5 w-5 text-[var(--accent-sky)]" />
               <div className="text-left">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
                   {stat.label}
                 </div>
-                <div className="font-mono text-lg font-bold tracking-tight md:text-xl">{stat.value}</div>
+                <div className="font-mono text-lg font-bold tracking-tight md:text-xl">
+                  {stat.value}
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function TestimonialsSection() {
@@ -386,7 +373,7 @@ function TestimonialsSection() {
       role: 'BRRRR Investor - Tampa, FL - 14 deals',
       rating: 4.5,
       quote:
-        "The negotiation scripts are insane. I used the seller-carry template and got a 0% 2nd on a property the listing agent said was firm. Closed 18 days later.",
+        'The negotiation scripts are insane. I used the seller-carry template and got a 0% 2nd on a property the listing agent said was firm. Closed 18 days later.',
     },
     {
       initials: 'PP',
@@ -412,13 +399,16 @@ function TestimonialsSection() {
       quote:
         'As a new investor I was terrified of creative finance. The 4-path system made it dead simple. Ran my first discovery on a Zillow lead and had a full strategy in under 2 minutes.',
     },
-  ];
+  ]
 
   return (
     <section id="trust" className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-12 text-center">
         <SectionEyebrow>Real Results From Real Investors</SectionEyebrow>
-        <h2 className="mx-auto mt-4 max-w-4xl text-3xl text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
+        <h2
+          className="mx-auto mt-4 max-w-4xl text-3xl text-[var(--text-heading)] md:text-5xl"
+          style={DISPLAY_STYLE}
+        >
           &quot;DealGapIQ paid for itself on the first deal.&quot;
         </h2>
         <p className="mx-auto mt-3 max-w-md text-lg text-[var(--text-secondary)] md:text-xl">
@@ -450,7 +440,7 @@ function TestimonialsSection() {
         ))}
       </div>
     </section>
-  );
+  )
 }
 
 function FeaturesSection({ onContinue }: { onContinue: () => void }) {
@@ -484,14 +474,20 @@ function FeaturesSection({ onContinue }: { onContinue: () => void }) {
       note: 'The structure no single lever could close',
       highlight: true,
     },
-  ];
+  ]
 
   return (
-    <section id="features" className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16">
+    <section
+      id="features"
+      className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-16"
+    >
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-12 max-w-2xl">
           <SectionEyebrow>The DealGapIQ Difference</SectionEyebrow>
-          <h2 className="mt-3 text-3xl text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
+          <h2
+            className="mt-3 text-3xl text-[var(--text-heading)] md:text-5xl"
+            style={DISPLAY_STYLE}
+          >
             Every property can be a deal - at the right price and terms.
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
@@ -525,8 +521,8 @@ function FeaturesSection({ onContinue }: { onContinue: () => void }) {
                 </div>
               </div>
               <div className="mt-1 text-sm text-[var(--text-secondary)]">
-                Target buy price: <span className="font-bold text-[var(--text-heading)]">$428,000</span> at
-                20% down
+                Target buy price:{' '}
+                <span className="font-bold text-[var(--text-heading)]">$428,000</span> at 20% down
               </div>
             </div>
 
@@ -552,7 +548,7 @@ function FeaturesSection({ onContinue }: { onContinue: () => void }) {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 function HowItWorksSection({ onStart }: { onStart: () => void }) {
@@ -572,7 +568,7 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
       title: 'Choose your path + get the script',
       body: 'Four pre-built offers. One click opens the full negotiation script, worksheet, and talking points tailored to the seller type.',
     },
-  ];
+  ]
 
   return (
     <section id="how-it-works" className="mx-auto max-w-7xl px-6 py-16">
@@ -604,22 +600,22 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
         </SecondaryButton>
       </div>
     </section>
-  );
+  )
 }
 
-function PricingSection({
-  onFree,
-  onPro,
-}: {
-  onFree: () => void;
-  onPro: () => void;
-}) {
+function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => void }) {
   return (
-    <section id="pricing" className="border-y border-[var(--border-default)] bg-[var(--surface-card)] py-14">
+    <section
+      id="pricing"
+      className="border-y border-[var(--border-default)] bg-[var(--surface-card)] py-14"
+    >
       <div className="mx-auto max-w-4xl px-6 text-center">
         <div className="mx-auto max-w-md">
           <SectionEyebrow>Transparent Pricing</SectionEyebrow>
-          <h2 className="mt-2 text-3xl text-[var(--text-heading)] md:text-4xl" style={DISPLAY_STYLE}>
+          <h2
+            className="mt-2 text-3xl text-[var(--text-heading)] md:text-4xl"
+            style={DISPLAY_STYLE}
+          >
             Start free. Upgrade when you are ready.
           </h2>
           <p className="mt-3 text-[var(--text-secondary)]">
@@ -662,7 +658,7 @@ function PricingSection({
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 function ComparisonSection() {
@@ -673,7 +669,7 @@ function ComparisonSection() {
     ['Negotiation scripts', 'X', 'X', 'Yes - tailored to path & seller'],
     ['Creative finance modeling', 'X', 'X', 'Sub2 - Seller carry - 0% 2nds'],
     ['No signup to try', 'Yes', 'X', 'Yes - instant'],
-  ];
+  ]
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-16">
@@ -688,9 +684,15 @@ function ComparisonSection() {
           <table className="w-full min-w-[760px] text-sm">
             <thead>
               <tr className="border-b border-[var(--border-default)] bg-[var(--surface-section)]">
-                <th className="w-1/3 px-8 py-5 text-left font-bold text-[var(--text-heading)]">Capability</th>
-                <th className="px-6 py-5 text-center font-bold text-[var(--text-muted)]">Listing Sites</th>
-                <th className="px-6 py-5 text-center font-bold text-[var(--text-muted)]">Investor Calculators</th>
+                <th className="w-1/3 px-8 py-5 text-left font-bold text-[var(--text-heading)]">
+                  Capability
+                </th>
+                <th className="px-6 py-5 text-center font-bold text-[var(--text-muted)]">
+                  Listing Sites
+                </th>
+                <th className="px-6 py-5 text-center font-bold text-[var(--text-muted)]">
+                  Investor Calculators
+                </th>
                 <th className="bg-[var(--color-teal-dim)] px-6 py-5 text-center font-bold text-[var(--accent-sky)]">
                   DealGapIQ
                 </th>
@@ -712,7 +714,7 @@ function ComparisonSection() {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 function FinalCTASection({ onStart }: { onStart: () => void }) {
@@ -731,9 +733,7 @@ function FinalCTASection({ onStart }: { onStart: () => void }) {
         </p>
 
         <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-          <PrimaryButton onClick={onStart}>
-            Run your first discovery - free
-          </PrimaryButton>
+          <PrimaryButton onClick={onStart}>Run your first discovery - free</PrimaryButton>
           <Link
             href="/methodology"
             className={secondaryButtonClass}
@@ -748,7 +748,7 @@ function FinalCTASection({ onStart }: { onStart: () => void }) {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 function SiteFooter() {
@@ -797,7 +797,7 @@ function SiteFooter() {
         />
       </div>
     </footer>
-  );
+  )
 }
 
 function PrimaryButton({
@@ -805,9 +805,9 @@ function PrimaryButton({
   onClick,
   size = 'lg',
 }: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  size?: 'sm' | 'md' | 'lg';
+  children: React.ReactNode
+  onClick?: () => void
+  size?: 'sm' | 'md' | 'lg'
 }) {
   return (
     <button
@@ -824,15 +824,15 @@ function PrimaryButton({
     >
       {children}
     </button>
-  );
+  )
 }
 
 function SecondaryButton({
   children,
   onClick,
 }: {
-  children: React.ReactNode;
-  onClick?: () => void;
+  children: React.ReactNode
+  onClick?: () => void
 }) {
   return (
     <button
@@ -847,7 +847,7 @@ function SecondaryButton({
     >
       {children}
     </button>
-  );
+  )
 }
 
 function SectionEyebrow({ children }: { children: React.ReactNode }) {
@@ -855,7 +855,7 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
     <div className="inline-flex rounded-full border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-[var(--accent-sky)]">
       {children}
     </div>
-  );
+  )
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -869,7 +869,7 @@ function StarRating({ rating }: { rating: number }) {
         />
       ))}
     </div>
-  );
+  )
 }
 
 function PathCard({
@@ -880,12 +880,12 @@ function PathCard({
   note,
   highlight,
 }: {
-  num: string;
-  title: string;
-  body: string;
-  value: string;
-  note: string;
-  highlight?: boolean;
+  num: string
+  title: string
+  body: string
+  value: string
+  note: string
+  highlight?: boolean
 }) {
   return (
     <div
@@ -932,7 +932,7 @@ function PathCard({
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function PricingCard({
@@ -946,15 +946,15 @@ function PricingCard({
   featured,
   onClick,
 }: {
-  title: string;
-  subtitle: string;
-  price: string;
-  priceSuffix?: string;
-  subprice?: string;
-  features: string[];
-  cta: string;
-  featured?: boolean;
-  onClick: () => void;
+  title: string
+  subtitle: string
+  price: string
+  priceSuffix?: string
+  subprice?: string
+  features: string[]
+  cta: string
+  featured?: boolean
+  onClick: () => void
 }) {
   return (
     <div
@@ -976,7 +976,13 @@ function PricingCard({
       <div className="flex items-start justify-between gap-5">
         <div>
           <div className="text-2xl font-bold text-[var(--text-heading)]">{title}</div>
-          <div className={featured ? 'text-sm font-semibold text-[var(--accent-sky)]' : 'text-sm text-[var(--text-muted)]'}>
+          <div
+            className={
+              featured
+                ? 'text-sm font-semibold text-[var(--accent-sky)]'
+                : 'text-sm text-[var(--text-muted)]'
+            }
+          >
             {subtitle}
           </div>
         </div>
@@ -1021,12 +1027,12 @@ function PricingCard({
         </div>
       )}
     </div>
-  );
+  )
 }
 
 function CompareCell({ value }: { value: string }) {
-  const isNo = value === 'X';
-  const isPartial = value === 'Partial';
+  const isNo = value === 'X'
+  const isPartial = value === 'Partial'
 
   return (
     <td
@@ -1040,7 +1046,7 @@ function CompareCell({ value }: { value: string }) {
     >
       {value}
     </td>
-  );
+  )
 }
 
 function FooterColumn({
@@ -1049,21 +1055,29 @@ function FooterColumn({
   className,
   twoCols,
 }: {
-  title: string;
-  links: Array<{ href: string; label: string }>;
-  className?: string;
-  twoCols?: boolean;
+  title: string
+  links: Array<{ href: string; label: string }>
+  className?: string
+  twoCols?: boolean
 }) {
   return (
     <div className={className}>
-      <div className="mb-4 text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">{title}</div>
-      <div className={`gap-y-2.5 text-[var(--text-body)] ${twoCols ? 'grid grid-cols-2 gap-x-4' : 'space-y-2.5'}`}>
+      <div className="mb-4 text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">
+        {title}
+      </div>
+      <div
+        className={`gap-y-2.5 text-[var(--text-body)] ${twoCols ? 'grid grid-cols-2 gap-x-4' : 'space-y-2.5'}`}
+      >
         {links.map((link) => (
-          <Link key={`${link.href}-${link.label}`} href={link.href} className="block transition-colors hover:text-[var(--text-heading)]">
+          <Link
+            key={`${link.href}-${link.label}`}
+            href={link.href}
+            className="block transition-colors hover:text-[var(--text-heading)]"
+          >
             {link.label}
           </Link>
         ))}
       </div>
     </div>
-  );
+  )
 }

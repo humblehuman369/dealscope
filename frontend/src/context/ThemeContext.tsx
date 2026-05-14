@@ -1,6 +1,14 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  ReactNode,
+} from 'react'
 import { ThemeMode, ThemePreference } from '@/lib/theme/constants'
 import { readStoredThemePreference, writeStoredThemePreference } from '@/lib/theme/storage'
 import { resolveTheme } from '@/lib/theme/resolveTheme'
@@ -82,7 +90,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const tokens = useMemo(() => resolveThemeTokens(theme), [theme])
 
   return (
-    <ThemeContext.Provider value={{ theme, preference, toggleTheme, setPreference, setTheme: setPreference, mounted, tokens }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        preference,
+        toggleTheme,
+        setPreference,
+        setTheme: setPreference,
+        mounted,
+        tokens,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   )
@@ -95,5 +113,3 @@ export function useTheme() {
   }
   return context
 }
-
-

@@ -83,9 +83,7 @@ export function DataBoundary({
             {emptyIcon}
           </div>
         )}
-        <h4 className="mb-2 text-lg font-semibold text-[var(--text-heading)]">
-          {emptyTitle}
-        </h4>
+        <h4 className="mb-2 text-lg font-semibold text-[var(--text-heading)]">{emptyTitle}</h4>
         {emptyDescription && (
           <p className="mb-6 max-w-sm text-[var(--text-secondary)]">{emptyDescription}</p>
         )}

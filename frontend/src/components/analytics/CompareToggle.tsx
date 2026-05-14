@@ -6,10 +6,10 @@ import { formatCurrency } from '@/utils/formatters'
 
 /**
  * CompareToggle Component
- * 
+ *
  * A toggle switch for comparing "At IQ Target" vs "At List Price" views.
  * Shows metrics at different purchase price scenarios.
- * 
+ *
  * Features:
  * - Two-option toggle
  * - Animated background indicator
@@ -41,7 +41,10 @@ export function CompareToggle({
   isOffMarket = false,
   listingStatus,
 }: CompareToggleProps) {
-  const dynamicListLabel = useMemo(() => getAtPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
+  const dynamicListLabel = useMemo(
+    () => getAtPriceLabel(isOffMarket, listingStatus),
+    [isOffMarket, listingStatus],
+  )
   const effectiveLabels = labels || { target: 'At IQ Target', list: dynamicListLabel }
   return (
     <div className="flex justify-center mb-4">
@@ -73,7 +76,7 @@ interface ToggleButtonProps {
 function ToggleButton({ label, isActive, variant, onClick }: ToggleButtonProps) {
   const getActiveClasses = () => {
     if (!isActive) return 'text-white/50 hover:text-white/70'
-    
+
     if (variant === 'target') {
       return 'bg-green-500/20 text-green-500'
     }
@@ -92,7 +95,7 @@ function ToggleButton({ label, isActive, variant, onClick }: ToggleButtonProps) 
 
 /**
  * CompareToggleInline Component
- * 
+ *
  * A more compact inline version.
  */
 
@@ -127,7 +130,7 @@ export function CompareToggleInline({ activeView, onChange }: CompareToggleInlin
 
 /**
  * PriceComparisonHeader Component
- * 
+ *
  * Shows both prices with toggle indicator.
  */
 
@@ -142,7 +145,7 @@ export function PriceComparisonHeader({
   targetPrice,
   listPrice,
   activeView,
-  onChange
+  onChange,
 }: PriceComparisonHeaderProps) {
   return (
     <div className="flex items-center justify-between bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 mb-4">
@@ -153,24 +156,24 @@ export function PriceComparisonHeader({
         }`}
       >
         <div className="text-[0.55rem] text-green-500 uppercase tracking-wide">IQ Target</div>
-        <div className={`text-base font-bold ${activeView === 'target' ? 'text-green-500' : 'text-white/60'}`}>
+        <div
+          className={`text-base font-bold ${activeView === 'target' ? 'text-green-500' : 'text-white/60'}`}
+        >
           {formatCurrency(targetPrice)}
         </div>
       </button>
 
       {/* Toggle indicator */}
       <div className="px-3">
-        <div 
+        <div
           className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${
             activeView === 'target' ? 'bg-green-500/30' : 'bg-white/10'
           }`}
           onClick={() => onChange(activeView === 'target' ? 'list' : 'target')}
         >
-          <div 
+          <div
             className={`w-4 h-4 rounded-full transition-all ${
-              activeView === 'target' 
-                ? 'bg-green-500 translate-x-0' 
-                : 'bg-white translate-x-6'
+              activeView === 'target' ? 'bg-green-500 translate-x-0' : 'bg-white translate-x-6'
             }`}
           />
         </div>
@@ -183,7 +186,9 @@ export function PriceComparisonHeader({
         }`}
       >
         <div className="text-[0.55rem] text-white/50 uppercase tracking-wide">List Price</div>
-        <div className={`text-base font-bold ${activeView === 'list' ? 'text-white' : 'text-white/60'}`}>
+        <div
+          className={`text-base font-bold ${activeView === 'list' ? 'text-white' : 'text-white/60'}`}
+        >
           {formatCurrency(listPrice)}
         </div>
       </button>

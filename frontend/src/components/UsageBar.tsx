@@ -29,14 +29,17 @@ type BarState = 'normal' | 'warning' | 'critical'
 
 /* ── State-dependent visual styles ───────────────────────────── */
 
-const STATE_STYLES: Record<BarState, {
-  border: string
-  glow: string
-  fill: string
-  ctaBg: string
-  ctaBorder: string
-  ctaColor: string
-}> = {
+const STATE_STYLES: Record<
+  BarState,
+  {
+    border: string
+    glow: string
+    fill: string
+    ctaBg: string
+    ctaBorder: string
+    ctaColor: string
+  }
+> = {
   normal: {
     border: 'var(--border-subtle)',
     glow: 'var(--shadow-card)',
@@ -64,8 +67,11 @@ const STATE_STYLES: Record<BarState, {
 }
 
 const HIDDEN_ON = [
-  '/discovery', '/strategy',
-  '/pricing', '/register', '/what-is-dealgapiq',
+  '/discovery',
+  '/strategy',
+  '/pricing',
+  '/register',
+  '/what-is-dealgapiq',
   '/billing',
 ]
 
@@ -86,16 +92,16 @@ export function UsageBar() {
   })
 
   if (authLoading || !isAuthenticated || isPro) return null
-  if (HIDDEN_ON.some(r => pathname?.startsWith(r))) return null
+  if (HIDDEN_ON.some((r) => pathname?.startsWith(r))) return null
   if (!usage || usage.searches_limit <= 0) return null
 
   const analysesPct = Math.min(100, (usage.searches_used / usage.searches_limit) * 100)
-  const savedPct = usage.properties_limit > 0
-    ? Math.min(100, (usage.properties_saved / usage.properties_limit) * 100)
-    : 0
+  const savedPct =
+    usage.properties_limit > 0
+      ? Math.min(100, (usage.properties_saved / usage.properties_limit) * 100)
+      : 0
 
-  const state: BarState =
-    analysesPct > 80 ? 'critical' : analysesPct > 60 ? 'warning' : 'normal'
+  const state: BarState = analysesPct > 80 ? 'critical' : analysesPct > 60 ? 'warning' : 'normal'
   const s = STATE_STYLES[state]
 
   const remaining = usage.searches_remaining
@@ -119,7 +125,9 @@ export function UsageBar() {
     >
       {/* Plan badge */}
       <div className="flex items-center gap-2 w-full md:w-auto pr-0 md:pr-7 flex-shrink-0 border-r-0 md:border-r border-white/10">
-        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-heading)' }}>Starter</span>
+        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-heading)' }}>
+          Starter
+        </span>
         <span
           style={{
             fontSize: '0.55rem',
@@ -203,7 +211,7 @@ function Meter({
           width: 80,
           height: 4,
           borderRadius: 2,
-            background: 'var(--border-subtle)',
+          background: 'var(--border-subtle)',
           overflow: 'hidden',
         }}
       >

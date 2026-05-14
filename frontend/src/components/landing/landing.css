@@ -1,7 +1,7 @@
 /* DealMakerIQ Landing Page Styles */
 
 /* Google Fonts Import */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap");
 
 /* CSS Variables */
 .landing-page {
@@ -16,7 +16,7 @@
   --success-dark: #0354d1;
   --warning: #b7791f;
   --danger: #b42318;
-  
+
   /* Light Theme Colors */
   --bg-primary: color-mix(in srgb, #0fa4e9 8%, #ffffff);
   --bg-secondary: #ffffff;
@@ -30,8 +30,12 @@
   --shadow-color: rgba(24, 32, 28, 0.1);
   /* Align with global light chrome token when theme is on <html> */
   --header-bg: var(--surface-chrome, #ffffff);
-  
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  font-family:
+    "DM Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
@@ -45,7 +49,7 @@
 }
 
 .font-display {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
 }
 
 /* IQ Accent Colors */
@@ -169,7 +173,7 @@
 }
 
 .landing-page .logo-text {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--deep-navy);
@@ -307,7 +311,7 @@
 }
 
 .landing-page .hero::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   right: -20%;
@@ -355,8 +359,14 @@
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .landing-page .hero-badge {
@@ -383,12 +393,17 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .landing-page .hero h1 {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 700;
   color: var(--deep-navy);
@@ -465,7 +480,7 @@
 }
 
 .landing-page .phone-logo {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 0.875rem;
   font-weight: 700;
   color: white;
@@ -512,7 +527,7 @@
 }
 
 .landing-page .phone-scan-address {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
   color: white;
@@ -551,7 +566,7 @@
 }
 
 .landing-page .phone-price-value {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 0.875rem;
   font-weight: 700;
   color: white;
@@ -662,7 +677,7 @@
 }
 
 .landing-page .phone-verdict-text {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.25rem;
   font-weight: 700;
   color: white;
@@ -719,7 +734,7 @@
 }
 
 .landing-page .iq-stat-name {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 0.875rem;
   font-weight: 700;
   color: var(--deep-navy);
@@ -742,11 +757,12 @@
 }
 
 .landing-page .priceiq-section::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 30% 20%, rgba(4, 101, 242, 0.1) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 80%, rgba(13, 148, 136, 0.15) 0%, transparent 50%);
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(4, 101, 242, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(13, 148, 136, 0.15) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -768,7 +784,7 @@
 }
 
 .landing-page .priceiq-title {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: clamp(1.5rem, 4vw, 2.5rem);
   font-weight: 700;
   color: white;
@@ -812,7 +828,7 @@
 }
 
 .landing-page .priceiq-sample-address {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.5rem;
   font-weight: 600;
   color: white;
@@ -871,7 +887,7 @@
 }
 
 .landing-page .price-card-name {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 0.875rem;
   font-weight: 700;
   color: white;
@@ -879,7 +895,7 @@
 }
 
 .landing-page .price-card-value {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 2rem;
   font-weight: 700;
   color: white;
@@ -919,7 +935,7 @@
 }
 
 .landing-page .priceiq-difference-title {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--electric-cyan);
@@ -967,7 +983,7 @@
 }
 
 .landing-page .section-title {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: clamp(1.5rem, 4vw, 2.5rem);
   font-weight: 700;
   color: var(--deep-navy);
@@ -1026,7 +1042,7 @@
 }
 
 .landing-page .input-method-title {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--deep-navy);
@@ -1063,7 +1079,7 @@
 }
 
 .landing-page .modeliq-sliders h4 {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.125rem;
   font-weight: 600;
   color: white;
@@ -1086,7 +1102,7 @@
 }
 
 .landing-page .slider-value {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--electric-cyan);
@@ -1126,7 +1142,7 @@
 }
 
 .landing-page .modeliq-results h4 {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.125rem;
   font-weight: 600;
   color: white;
@@ -1166,7 +1182,7 @@
 }
 
 .landing-page .result-value {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.125rem;
   font-weight: 700;
   color: white;
@@ -1195,7 +1211,7 @@
 }
 
 .landing-page .metric-value {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.25rem;
   font-weight: 700;
   color: white;
@@ -1221,7 +1237,7 @@
 }
 
 .landing-page .modeliq-verdict-value {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
   color: white;
@@ -1284,7 +1300,7 @@
   display: inline-block;
   padding: 8px 20px;
   border-radius: 100px;
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1rem;
   font-weight: 700;
   color: white;
@@ -1304,7 +1320,7 @@
 }
 
 .landing-page .verdict-title {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--deep-navy);
@@ -1385,7 +1401,7 @@
 }
 
 .landing-page .strategy-name {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--deep-navy);
@@ -1502,7 +1518,7 @@
 }
 
 .landing-page .founder-name {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--deep-navy);
@@ -1558,7 +1574,7 @@
 }
 
 .landing-page .founder-stat-value {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.875rem;
   font-weight: 700;
   color: var(--deep-navy);
@@ -1628,7 +1644,7 @@
 }
 
 .landing-page .feature-name {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1rem;
   font-weight: 700;
   color: var(--deep-navy);
@@ -1652,7 +1668,7 @@
 }
 
 .landing-page .cta-section::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: radial-gradient(ellipse at 50% 0%, rgba(4, 101, 242, 0.15) 0%, transparent 60%);
@@ -1668,7 +1684,7 @@
 }
 
 .landing-page .cta-title {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: clamp(1.5rem, 5vw, 3rem);
   font-weight: 700;
   color: white;
@@ -1683,7 +1699,7 @@
 }
 
 .landing-page .cta-tagline {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--electric-cyan);
@@ -1728,7 +1744,7 @@
 }
 
 .landing-page .footer-links h4 {
-  font-family: 'Instrument Sans', sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
   color: white;
@@ -1816,7 +1832,9 @@
   max-width: 500px;
   width: 100%;
   position: relative;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15), 0 10px 40px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.15),
+    0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .try-modal-close {
@@ -1979,7 +1997,7 @@
 }
 
 .try-modal-form-actions .btn-primary:hover {
-  background: #0E7490 !important;
+  background: #0e7490 !important;
 }
 
 @media (max-width: 500px) {
@@ -1987,12 +2005,12 @@
     padding: 24px;
     border-radius: 20px;
   }
-  
+
   .try-modal-option {
     padding: 16px;
     gap: 16px;
   }
-  
+
   .try-modal-option-icon {
     width: 48px;
     height: 48px;

@@ -23,7 +23,9 @@ export default function ProfileError({ error, reset }: ErrorProps) {
           <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[rgba(248,113,113,0.10)] border border-[rgba(248,113,113,0.25)] flex items-center justify-center">
             <AlertTriangle className="w-8 h-8 text-[var(--status-negative)]" />
           </div>
-          <h1 className="text-2xl font-bold text-[var(--text-heading)] mb-2">Profile Unavailable</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-heading)] mb-2">
+            Profile Unavailable
+          </h1>
           <p className="text-[var(--text-secondary)] mb-6">
             We couldn&apos;t load your profile. Your data is not affected.
           </p>

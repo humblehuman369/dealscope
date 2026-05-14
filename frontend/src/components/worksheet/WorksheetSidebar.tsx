@@ -47,9 +47,7 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
   const sections: SidebarSection[] = [
     {
       title: '',
-      items: [
-        { id: 'back', label: 'Back to search', icon: ChevronLeft, href: '/search' },
-      ],
+      items: [{ id: 'back', label: 'Back to search', icon: ChevronLeft, href: '/search' }],
     },
     {
       title: 'Property Info',
@@ -64,14 +62,24 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
       title: 'Analysis',
       items: [
         { id: 'market-data', label: 'Market Data', icon: BarChart3, section: 'market-data' },
-        { id: 'projections', label: 'Buy & Hold Projections', icon: TrendingUp, section: 'projections' },
+        {
+          id: 'projections',
+          label: 'Buy & Hold Projections',
+          icon: TrendingUp,
+          section: 'projections',
+        },
       ],
     },
     {
       title: 'Research',
       items: [
         { id: 'sales-comps', label: 'Sales Comps & ARV', icon: Building2, section: 'sales-comps' },
-        { id: 'rental-comps', label: 'Rental Comps & Rent', icon: DollarSign, section: 'rental-comps' },
+        {
+          id: 'rental-comps',
+          label: 'Rental Comps & Rent',
+          icon: DollarSign,
+          section: 'rental-comps',
+        },
         { id: 'records', label: 'Records & Listings', icon: FileSearch, disabled: true },
         { id: 'owner', label: 'Owner Lookup', icon: Users, disabled: true },
       ],
@@ -104,20 +112,18 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
         >
           <X className="w-5 h-5 text-[var(--ws-text-secondary)]" />
         </button>
-        
+
         <div className="flex items-start gap-3">
           {/* Property thumbnail */}
           <div className="w-12 h-12 rounded-lg bg-[var(--ws-accent-light)] flex items-center justify-center flex-shrink-0">
             <Home className="w-6 h-6 text-[var(--ws-accent)]" />
           </div>
-          
+
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-[var(--ws-text-primary)] text-sm truncate">
               {getShortAddress(property)}
             </h3>
-            <p className="text-xs text-[var(--ws-text-secondary)]">
-              {getCityStateZip(property)}
-            </p>
+            <p className="text-xs text-[var(--ws-text-secondary)]">{getCityStateZip(property)}</p>
             <div className="flex items-center gap-2 mt-1 text-xs text-[var(--ws-text-muted)]">
               <span>{propertyData.bedrooms || 0} BR</span>
               <span>•</span>
@@ -127,7 +133,7 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
             </div>
           </div>
         </div>
-        
+
         {/* Price and cap rate */}
         <div className="mt-3 flex items-center justify-between text-sm">
           <span className="font-bold text-[var(--ws-text-primary)]">
@@ -138,32 +144,26 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
           </span>
         </div>
       </div>
-      
+
       {/* Navigation */}
       <nav className="py-2">
         {sections.map((section, sectionIndex) => (
           <div key={sectionIndex} className="sidebar-section">
-            {section.title && (
-              <div className="sidebar-section-title">{section.title}</div>
-            )}
-            
+            {section.title && <div className="sidebar-section-title">{section.title}</div>}
+
             {section.items.map((item) => {
               const Icon = item.icon
               const isActive = item.section === activeSection
-              
+
               if (item.href) {
                 return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className="sidebar-item"
-                  >
+                  <Link key={item.id} href={item.href} className="sidebar-item">
                     <Icon />
                     <span>{item.label}</span>
                   </Link>
                 )
               }
-              
+
               return (
                 <button
                   key={item.id}
@@ -187,4 +187,3 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
     </aside>
   )
 }
-

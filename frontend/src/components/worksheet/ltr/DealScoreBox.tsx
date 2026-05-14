@@ -1,7 +1,11 @@
 'use client'
 
 import React from 'react'
-import { scoreToGradeLabel, getGradeBgClass, getGradeTextClass } from '@/components/iq-verdict/types'
+import {
+  scoreToGradeLabel,
+  getGradeBgClass,
+  getGradeTextClass,
+} from '@/components/iq-verdict/types'
 
 interface DealScoreBoxProps {
   score: number
@@ -11,7 +15,7 @@ interface DealScoreBoxProps {
 
 /**
  * DealScoreBox - Displays deal score as a grade (A+, A, B, etc.) instead of numeric
- * 
+ *
  * This avoids confusion with percentages and provides clearer meaning:
  * - A+/STRONG: 85-100
  * - A/GOOD: 70-84
@@ -22,9 +26,11 @@ interface DealScoreBoxProps {
  */
 export function DealScoreBox({ score, compact = false }: DealScoreBoxProps) {
   const display = scoreToGradeLabel(score)
-  
+
   return (
-    <div className={`rounded-lg p-3 text-center flex-1 min-w-[90px] transition-all duration-300 border ${getGradeBgClass(display.grade)}`}>
+    <div
+      className={`rounded-lg p-3 text-center flex-1 min-w-[90px] transition-all duration-300 border ${getGradeBgClass(display.grade)}`}
+    >
       <div className="text-[8px] font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wide">
         Deal Score
       </div>

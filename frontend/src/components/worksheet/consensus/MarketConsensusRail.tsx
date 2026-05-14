@@ -2,7 +2,12 @@
 
 import { useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, AlertTriangle, TrendingUp } from 'lucide-react'
-import type { ConsensusResult, UnderwritingMode, DivergenceLevel, ConfidenceTier } from '@/utils/marketConsensus'
+import type {
+  ConsensusResult,
+  UnderwritingMode,
+  DivergenceLevel,
+  ConfidenceTier,
+} from '@/utils/marketConsensus'
 import type { SourceMarker } from '@/utils/marketConsensus'
 import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
@@ -23,7 +28,10 @@ const CONFIDENCE_CONFIG: Record<ConfidenceTier, { label: string; color: string }
 }
 
 const MODE_CONFIG: Record<UnderwritingMode, { label: string; description: string }> = {
-  conservative: { label: 'Conservative', description: 'Lower quartile — underwrite below most estimates' },
+  conservative: {
+    label: 'Conservative',
+    description: 'Lower quartile — underwrite below most estimates',
+  },
   balanced: { label: 'Balanced', description: 'Median consensus — center of available data' },
   upside: { label: 'Upside', description: 'Upper quartile — optimistic case with guardrails' },
 }
@@ -58,10 +66,16 @@ function RangeBar({ consensus }: { consensus: ConsensusResult }) {
       ))}
 
       {/* Scale labels */}
-      <div className="absolute top-[26px] left-0 text-[12px] tabular-nums" style={{ color: 'var(--text-heading)' }}>
+      <div
+        className="absolute top-[26px] left-0 text-[12px] tabular-nums"
+        style={{ color: 'var(--text-heading)' }}
+      >
         {formatCompactCurrency(min)}
       </div>
-      <div className="absolute top-[26px] right-0 text-[12px] tabular-nums" style={{ color: 'var(--text-heading)' }}>
+      <div
+        className="absolute top-[26px] right-0 text-[12px] tabular-nums"
+        style={{ color: 'var(--text-heading)' }}
+      >
         {formatCompactCurrency(max)}
       </div>
     </div>
@@ -112,15 +126,15 @@ function SourceLegend({ markers }: { markers: SourceMarker[] }) {
       {markers.map((m) => (
         <div key={m.id} className="flex flex-col items-center">
           <div className="flex items-center gap-1.5">
-            <div
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: m.color }}
-            />
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: m.color }} />
             <span className="text-[13px]" style={{ color: m.color }}>
               {m.label}
             </span>
           </div>
-          <span className="text-[13px] font-semibold tabular-nums" style={{ color: 'var(--text-body)' }}>
+          <span
+            className="text-[13px] font-semibold tabular-nums"
+            style={{ color: 'var(--text-body)' }}
+          >
             {formatCompactCurrency(m.value)}
           </span>
         </div>
@@ -172,10 +186,16 @@ function ModeButton({
       }}
       title={cfg.description}
     >
-      <div className="text-[13px] font-semibold uppercase tracking-wide" style={{ color: isActive ? modeColors[mode] : 'var(--text-label)' }}>
+      <div
+        className="text-[13px] font-semibold uppercase tracking-wide"
+        style={{ color: isActive ? modeColors[mode] : 'var(--text-label)' }}
+      >
         {cfg.label}
       </div>
-      <div className="text-[16px] font-bold tabular-nums mt-0.5" style={{ color: isActive ? modeColors[mode] : 'var(--text-body)' }}>
+      <div
+        className="text-[16px] font-bold tabular-nums mt-0.5"
+        style={{ color: isActive ? modeColors[mode] : 'var(--text-body)' }}
+      >
         {isCurrency ? formatCompactCurrency(value) : `${formatCurrency(value)}/mo`}
       </div>
     </button>
@@ -186,7 +206,13 @@ function ModeButton({
 // RECONCILIATION DETAILS
 // ============================================
 
-function ReconciliationDetails({ consensus, mode }: { consensus: ConsensusResult; mode: 'value' | 'rent' }) {
+function ReconciliationDetails({
+  consensus,
+  mode,
+}: {
+  consensus: ConsensusResult
+  mode: 'value' | 'rent'
+}) {
   const cfgConf = CONFIDENCE_CONFIG[consensus.confidenceTier]
   const availableSources = consensus.markers.filter((m) => m.id !== 'comps')
   const unavailableSources = (['iq', 'zillow', 'rentcast', 'redfin', 'realtor'] as const).filter(
@@ -197,17 +223,39 @@ function ReconciliationDetails({ consensus, mode }: { consensus: ConsensusResult
     <div className="space-y-3 pt-2">
       {/* Confidence and Spread */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg p-2 text-center" style={{ background: 'var(--surface-elevated)' }}>
-          <div className="text-[12px] uppercase" style={{ color: 'var(--text-heading)' }}>Confidence</div>
-          <div className="text-[16px] font-bold" style={{ color: cfgConf.color }}>{cfgConf.label}</div>
+        <div
+          className="rounded-lg p-2 text-center"
+          style={{ background: 'var(--surface-elevated)' }}
+        >
+          <div className="text-[12px] uppercase" style={{ color: 'var(--text-heading)' }}>
+            Confidence
+          </div>
+          <div className="text-[16px] font-bold" style={{ color: cfgConf.color }}>
+            {cfgConf.label}
+          </div>
         </div>
-        <div className="rounded-lg p-2 text-center" style={{ background: 'var(--surface-elevated)' }}>
-          <div className="text-[12px] uppercase" style={{ color: 'var(--text-heading)' }}>Sources Used</div>
-          <div className="text-[16px] font-bold" style={{ color: 'var(--text-heading)' }}>{consensus.sourceCount}</div>
+        <div
+          className="rounded-lg p-2 text-center"
+          style={{ background: 'var(--surface-elevated)' }}
+        >
+          <div className="text-[12px] uppercase" style={{ color: 'var(--text-heading)' }}>
+            Sources Used
+          </div>
+          <div className="text-[16px] font-bold" style={{ color: 'var(--text-heading)' }}>
+            {consensus.sourceCount}
+          </div>
         </div>
-        <div className="rounded-lg p-2 text-center" style={{ background: 'var(--surface-elevated)' }}>
-          <div className="text-[12px] uppercase" style={{ color: 'var(--text-heading)' }}>IQR Spread</div>
-          <div className="text-[16px] font-bold tabular-nums" style={{ color: 'var(--text-heading)' }}>
+        <div
+          className="rounded-lg p-2 text-center"
+          style={{ background: 'var(--surface-elevated)' }}
+        >
+          <div className="text-[12px] uppercase" style={{ color: 'var(--text-heading)' }}>
+            IQR Spread
+          </div>
+          <div
+            className="text-[16px] font-bold tabular-nums"
+            style={{ color: 'var(--text-heading)' }}
+          >
             {mode === 'value' ? formatCompactCurrency(consensus.iqr) : `$${consensus.iqr}`}
           </div>
         </div>
@@ -219,7 +267,14 @@ function ReconciliationDetails({ consensus, mode }: { consensus: ConsensusResult
           <span className="font-semibold">Unavailable:</span>{' '}
           {unavailableSources
             .map((id) => {
-              const labels: Record<string, string> = { iq: 'IQ Estimate', zillow: 'Zillow', rentcast: 'RentCast', redfin: 'Redfin', realtor: 'Realtor', mashvisor: 'Mashvisor' }
+              const labels: Record<string, string> = {
+                iq: 'IQ Estimate',
+                zillow: 'Zillow',
+                rentcast: 'RentCast',
+                redfin: 'Redfin',
+                realtor: 'Realtor',
+                mashvisor: 'Mashvisor',
+              }
               return labels[id]
             })
             .join(', ')}
@@ -227,22 +282,36 @@ function ReconciliationDetails({ consensus, mode }: { consensus: ConsensusResult
       )}
 
       {/* Comp vs source divergence callout */}
-      {consensus.compValue != null && availableSources.length > 0 && (() => {
-        const sourceAvg = availableSources.reduce((s, m) => s + m.value, 0) / availableSources.length
-        const diff = consensus.compValue! - sourceAvg
-        const pct = sourceAvg > 0 ? (diff / sourceAvg) * 100 : 0
-        if (Math.abs(pct) < 3) return null
-        const direction = diff > 0 ? 'above' : 'below'
-        return (
-          <div className="flex items-start gap-2 text-[13px] rounded-lg p-2" style={{ background: 'var(--surface-elevated)', color: 'var(--text-body)' }}>
-            <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: diff > 0 ? '#10B981' : '#F59E0B' }} />
-            <span>
-              Your comps {mode === 'value' ? 'value' : 'rent'} is <strong>{Math.abs(Math.round(pct))}% {direction}</strong> the average of external sources.
-              {Math.abs(pct) > 20 && ' Consider reviewing your comp selection or verifying source accuracy.'}
-            </span>
-          </div>
-        )
-      })()}
+      {consensus.compValue != null &&
+        availableSources.length > 0 &&
+        (() => {
+          const sourceAvg =
+            availableSources.reduce((s, m) => s + m.value, 0) / availableSources.length
+          const diff = consensus.compValue! - sourceAvg
+          const pct = sourceAvg > 0 ? (diff / sourceAvg) * 100 : 0
+          if (Math.abs(pct) < 3) return null
+          const direction = diff > 0 ? 'above' : 'below'
+          return (
+            <div
+              className="flex items-start gap-2 text-[13px] rounded-lg p-2"
+              style={{ background: 'var(--surface-elevated)', color: 'var(--text-body)' }}
+            >
+              <TrendingUp
+                className="w-3.5 h-3.5 mt-0.5 flex-shrink-0"
+                style={{ color: diff > 0 ? '#10B981' : '#F59E0B' }}
+              />
+              <span>
+                Your comps {mode === 'value' ? 'value' : 'rent'} is{' '}
+                <strong>
+                  {Math.abs(Math.round(pct))}% {direction}
+                </strong>{' '}
+                the average of external sources.
+                {Math.abs(pct) > 20 &&
+                  ' Consider reviewing your comp selection or verifying source accuracy.'}
+              </span>
+            </div>
+          )
+        })()}
     </div>
   )
 }
@@ -258,7 +327,12 @@ export interface MarketConsensusRailProps {
   activeMode?: UnderwritingMode | null
 }
 
-export function MarketConsensusRail({ consensus, mode, onApplyMode, activeMode = null }: MarketConsensusRailProps) {
+export function MarketConsensusRail({
+  consensus,
+  mode,
+  onApplyMode,
+  activeMode = null,
+}: MarketConsensusRailProps) {
   const [expanded, setExpanded] = useState(false)
   const isCurrency = mode === 'value'
 
@@ -277,8 +351,17 @@ export function MarketConsensusRail({ consensus, mode, onApplyMode, activeMode =
       {/* Header */}
       <div className="mb-1">
         <div className="flex items-center gap-2">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round">
-            <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
+          <svg
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--accent-sky)"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M12 20V10" />
+            <path d="M18 20V4" />
+            <path d="M6 20v-4" />
           </svg>
           <span className="text-[16px] sm:text-[18px] font-bold text-[var(--text-heading)]">
             Market Consensus
@@ -290,7 +373,8 @@ export function MarketConsensusRail({ consensus, mode, onApplyMode, activeMode =
       </div>
 
       <p className="text-[13px] mb-2" style={{ color: 'var(--text-heading)' }}>
-        {mode === 'value' ? 'Property value' : 'Monthly rent'} range across {consensus.sourceCount} data points
+        {mode === 'value' ? 'Property value' : 'Monthly rent'} range across {consensus.sourceCount}{' '}
+        data points
       </p>
 
       {/* Range Visualization */}

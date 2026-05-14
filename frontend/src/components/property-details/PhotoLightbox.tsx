@@ -25,10 +25,7 @@ export function PhotoLightbox({ images, initialIndex = 0, onClose }: PhotoLightb
     () => setIndex((i) => (i - 1 + images.length) % images.length),
     [images.length],
   )
-  const next = useCallback(
-    () => setIndex((i) => (i + 1) % images.length),
-    [images.length],
-  )
+  const next = useCallback(() => setIndex((i) => (i + 1) % images.length), [images.length])
   const handleImgError = useCallback(
     (idx: number) => setImgErrors((prev) => ({ ...prev, [idx]: true })),
     [],
@@ -46,13 +43,18 @@ export function PhotoLightbox({ images, initialIndex = 0, onClose }: PhotoLightb
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [])
 
   const currentFailed = imgErrors[index]
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: 'rgba(0,0,0,0.92)' }}>
+    <div
+      className="fixed inset-0 z-50 flex flex-col"
+      style={{ backgroundColor: 'rgba(0,0,0,0.92)' }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
         <div

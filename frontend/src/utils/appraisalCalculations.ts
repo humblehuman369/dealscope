@@ -1,6 +1,6 @@
 /**
  * Appraisal Calculations Utility
- * 
+ *
  * Provides weighted hybrid calculations for deriving property values from comps.
  * Implements professional appraisal methodology combining:
  * - Adjusted price method (accounts for property differences)
@@ -26,7 +26,7 @@ export interface CompProperty {
   id: string | number
   zpid?: string
   address: string
-  price: number  // Sale price or rent
+  price: number // Sale price or rent
   sqft: number
   beds: number
   baths: number
@@ -93,30 +93,30 @@ export interface RentAppraisalResult {
 
 export const SALE_ADJUSTMENT_FACTORS = {
   // Price adjustments per unit difference
-  sqftAdjustmentPerSqft: 100,  // $ per sqft difference
-  bedroomAdjustment: 15000,    // $ per bedroom difference
-  bathroomAdjustment: 10000,   // $ per bathroom difference
-  ageAdjustmentPerYear: 1500,  // $ per year age difference
+  sqftAdjustmentPerSqft: 100, // $ per sqft difference
+  bedroomAdjustment: 15000, // $ per bedroom difference
+  bathroomAdjustment: 10000, // $ per bathroom difference
+  ageAdjustmentPerYear: 1500, // $ per year age difference
   lotAdjustmentPerAcre: 25000, // $ per acre difference
-  
+
   // Method weights for hybrid calculation
-  adjustedPriceWeight: 0.40,
-  pricePerSqftWeight: 0.40,
-  hybridBlendWeight: 0.20,
-  
+  adjustedPriceWeight: 0.4,
+  pricePerSqftWeight: 0.4,
+  hybridBlendWeight: 0.2,
+
   // Similarity scoring weights
   locationWeight: 0.25,
   sizeWeight: 0.25,
-  bedBathWeight: 0.20,
+  bedBathWeight: 0.2,
   ageWeight: 0.15,
   lotWeight: 0.15,
 }
 
 export const RENT_ADJUSTMENT_FACTORS = {
   // Monthly rent adjustments per unit difference
-  sqftAdjustmentPerSqft: 0.50,  // $ per sqft difference per month
-  bedroomAdjustment: 150,       // $ per bedroom difference per month
-  bathroomAdjustment: 75,       // $ per bathroom difference per month
+  sqftAdjustmentPerSqft: 0.5, // $ per sqft difference per month
+  bedroomAdjustment: 150, // $ per bedroom difference per month
+  bathroomAdjustment: 75, // $ per bathroom difference per month
 }
 
 // ============================================
@@ -128,19 +128,18 @@ export const RENT_ADJUSTMENT_FACTORS = {
  */
 export function calculateSimilarityScore(
   subject: SubjectProperty,
-  comp: CompProperty
+  comp: CompProperty,
 ): SimilarityScores {
   const factors = SALE_ADJUSTMENT_FACTORS
-  
+
   // Location score (based on distance)
-  const locationScore = Math.max(0, Math.min(100, 100 - (comp.distance * 20)))
-  
+  const locationScore = Math.max(0, Math.min(100, 100 - comp.distance * 20))
+
   // Size score (based on sqft difference)
-  const sqftDiffPct = subject.sqft > 0 
-    ? Math.abs(subject.sqft - comp.sqft) / subject.sqft * 100
-    : 30
+  const sqftDiffPct =
+    subject.sqft > 0 ? (Math.abs(subject.sqft - comp.sqft) / subject.sqft) * 100 : 30
   const sizeScore = Math.max(0, 100 - sqftDiffPct)
-  
+
   // Bed/Bath score
   const bedDiff = Math.abs(subject.beds - comp.beds)
   const bathDiff = Math.abs(subject.baths - comp.baths)
@@ -150,17 +149,18 @@ export function calculateSimilarityScore(
   } else if (bedDiff <= 1 && bathDiff <= 1) {
     bedBathScore = 85
   } else {
-    bedBathScore = Math.max(50, 100 - (bedDiff * 15) - (bathDiff * 10))
+    bedBathScore = Math.max(50, 100 - bedDiff * 15 - bathDiff * 10)
   }
-  
+
   // Age score -- skip if either yearBuilt is missing/invalid
   const currentYear = new Date().getFullYear()
   const validYear = (y: number) => y >= 1800 && y <= currentYear
-  const yearDiff = (validYear(subject.yearBuilt) && validYear(comp.yearBuilt))
-    ? Math.abs(subject.yearBuilt - comp.yearBuilt)
-    : 0
-  const ageScore = Math.max(0, 100 - (yearDiff * 2))
-  
+  const yearDiff =
+    validYear(subject.yearBuilt) && validYear(comp.yearBuilt)
+      ? Math.abs(subject.yearBuilt - comp.yearBuilt)
+      : 0
+  const ageScore = Math.max(0, 100 - yearDiff * 2)
+
   // Lot score -- ignore implausible values (e.g. raw sqft leaking into an
   // `acres` field) so similarity can't be unfairly tanked by bad data.
   const subjectLotPlausible =
@@ -173,20 +173,20 @@ export function calculateSimilarityScore(
     Number.isFinite(comp.lotSize) &&
     comp.lotSize > 0 &&
     comp.lotSize <= MAX_PLAUSIBLE_LOT_ACRES
-  const lotDiffPct = (subjectLotPlausible && compLotPlausible)
-    ? Math.abs(subject.lotSize - comp.lotSize) / subject.lotSize * 100
-    : 20
+  const lotDiffPct =
+    subjectLotPlausible && compLotPlausible
+      ? (Math.abs(subject.lotSize - comp.lotSize) / subject.lotSize) * 100
+      : 20
   const lotScore = Math.max(0, 100 - lotDiffPct)
-  
+
   // Calculate overall weighted score
-  const overall = (
+  const overall =
     locationScore * factors.locationWeight +
     sizeScore * factors.sizeWeight +
     bedBathScore * factors.bedBathWeight +
     ageScore * factors.ageWeight +
     lotScore * factors.lotWeight
-  )
-  
+
   return {
     location: Math.round(locationScore),
     size: Math.round(sizeScore),
@@ -214,7 +214,7 @@ const MAX_PLAUSIBLE_LOT_ACRES = 50
  */
 export function calculateSaleAdjustments(
   subject: SubjectProperty,
-  comp: CompProperty
+  comp: CompProperty,
 ): { size: number; bedroom: number; bathroom: number; age: number; lot: number; total: number } {
   const f = SALE_ADJUSTMENT_FACTORS
 
@@ -228,12 +228,14 @@ export function calculateSaleAdjustments(
   const size = (subject.sqft - comp.sqft) * f.sqftAdjustmentPerSqft
   const bedroom = (subject.beds - comp.beds) * f.bedroomAdjustment
   const bathroom = (subject.baths - comp.baths) * f.bathroomAdjustment
-  const age = (validYear(subject.yearBuilt) && validYear(comp.yearBuilt))
-    ? (subject.yearBuilt - comp.yearBuilt) * f.ageAdjustmentPerYear
-    : 0
-  const lot = (plausibleAcres(subject.lotSize) && plausibleAcres(comp.lotSize))
-    ? (subject.lotSize - comp.lotSize) * f.lotAdjustmentPerAcre
-    : 0
+  const age =
+    validYear(subject.yearBuilt) && validYear(comp.yearBuilt)
+      ? (subject.yearBuilt - comp.yearBuilt) * f.ageAdjustmentPerYear
+      : 0
+  const lot =
+    plausibleAcres(subject.lotSize) && plausibleAcres(comp.lotSize)
+      ? (subject.lotSize - comp.lotSize) * f.lotAdjustmentPerAcre
+      : 0
   const total = size + bedroom + bathroom + age + lot
 
   return { size, bedroom, bathroom, age, lot, total }
@@ -244,15 +246,15 @@ export function calculateSaleAdjustments(
  */
 export function calculateRentAdjustments(
   subject: SubjectProperty,
-  comp: CompProperty
+  comp: CompProperty,
 ): { size: number; bedroom: number; bathroom: number; total: number } {
   const f = RENT_ADJUSTMENT_FACTORS
-  
+
   const size = (subject.sqft - comp.sqft) * f.sqftAdjustmentPerSqft
   const bedroom = (subject.beds - comp.beds) * f.bedroomAdjustment
   const bathroom = (subject.baths - comp.baths) * f.bathroomAdjustment
   const total = size + bedroom + bathroom
-  
+
   return { size, bedroom, bathroom, total }
 }
 
@@ -265,13 +267,13 @@ export function calculateRentAdjustments(
  */
 function weightedAverage(items: { value: number; weight: number }[]): number {
   if (items.length === 0) return 0
-  
+
   const totalWeight = items.reduce((sum, item) => sum + item.weight, 0)
   if (totalWeight === 0) {
     // Equal weights if no weights provided
     return items.reduce((sum, item) => sum + item.value, 0) / items.length
   }
-  
+
   return items.reduce((sum, item) => sum + item.value * item.weight, 0) / totalWeight
 }
 
@@ -281,7 +283,7 @@ function weightedAverage(items: { value: number; weight: number }[]): number {
 export function calculateAppraisalValues(
   subject: SubjectProperty,
   selectedComps: CompProperty[],
-  rehabPremiumPct: number = 0.15
+  rehabPremiumPct: number = 0.15,
 ): AppraisalResult {
   if (selectedComps.length === 0) {
     return {
@@ -298,16 +300,16 @@ export function calculateAppraisalValues(
       avgSimilarity: 0,
     }
   }
-  
+
   const f = SALE_ADJUSTMENT_FACTORS
   const compAdjustments: CompAdjustment[] = []
-  
+
   // Calculate adjustments and similarity for each comp
   for (const comp of selectedComps) {
     const similarity = calculateSimilarityScore(subject, comp)
     const adjustments = calculateSaleAdjustments(subject, comp)
     const pricePerSqft = comp.sqft > 0 ? comp.price / comp.sqft : 0
-    
+
     compAdjustments.push({
       compId: comp.id,
       compAddress: comp.address,
@@ -324,7 +326,7 @@ export function calculateAppraisalValues(
       weight: 0, // Will be calculated after all similarities are known
     })
   }
-  
+
   // Calculate weights based on similarity scores
   const totalSimilarity = compAdjustments.reduce((sum, ca) => sum + ca.similarityScore, 0)
   if (totalSimilarity > 0) {
@@ -337,45 +339,45 @@ export function calculateAppraisalValues(
       ca.weight = equalWeight
     }
   }
-  
+
   // Method 1: Weighted adjusted price average
   const weightedAdjustedAvg = weightedAverage(
-    compAdjustments.map(ca => ({ value: ca.adjustedPrice, weight: ca.weight }))
+    compAdjustments.map((ca) => ({ value: ca.adjustedPrice, weight: ca.weight })),
   )
-  
+
   // Method 2: Weighted price-per-sqft
   const weightedPpsf = weightedAverage(
-    compAdjustments.map(ca => ({ value: ca.pricePerSqft, weight: ca.weight }))
+    compAdjustments.map((ca) => ({ value: ca.pricePerSqft, weight: ca.weight })),
   )
   const sqftValue = weightedPpsf * subject.sqft
-  
+
   // Hybrid blend
-  const marketValue = (
+  const marketValue =
     weightedAdjustedAvg * f.adjustedPriceWeight +
     sqftValue * f.pricePerSqftWeight +
     ((weightedAdjustedAvg + sqftValue) / 2) * f.hybridBlendWeight
-  )
-  
+
   // Calculate range
-  const adjustedPrices = compAdjustments.map(ca => ca.adjustedPrice)
+  const adjustedPrices = compAdjustments.map((ca) => ca.adjustedPrice)
   const rangeLow = Math.min(...adjustedPrices)
   const rangeHigh = Math.max(...adjustedPrices)
-  
+
   // Calculate ARV
   let arv: number
   if (subject.rehabCost && subject.rehabCost > 0) {
-    arv = marketValue + (subject.rehabCost * (1 + rehabPremiumPct))
+    arv = marketValue + subject.rehabCost * (1 + rehabPremiumPct)
   } else {
     arv = marketValue * (1 + rehabPremiumPct)
   }
-  
+
   // Calculate confidence score
-  const avgSimilarity = compAdjustments.reduce((sum, ca) => sum + ca.similarityScore, 0) / compAdjustments.length
+  const avgSimilarity =
+    compAdjustments.reduce((sum, ca) => sum + ca.similarityScore, 0) / compAdjustments.length
   const compCountScore = Math.min(compAdjustments.length * 15, 40) // Max 40 points
   const similarityScore = (avgSimilarity / 100) * 40 // Max 40 points
   const baseScore = 20 // Base 20 points
   const confidence = Math.min(100, Math.round(compCountScore + similarityScore + baseScore))
-  
+
   return {
     marketValue: Math.round(marketValue),
     arv: Math.round(arv),
@@ -397,7 +399,7 @@ export function calculateAppraisalValues(
 export function calculateRentAppraisalValues(
   subject: SubjectProperty,
   selectedComps: CompProperty[],
-  improvementPremiumPct: number = 0.10
+  improvementPremiumPct: number = 0.1,
 ): RentAppraisalResult {
   if (selectedComps.length === 0) {
     return {
@@ -412,14 +414,14 @@ export function calculateRentAppraisalValues(
       avgSimilarity: 0,
     }
   }
-  
+
   const compAdjustments: CompAdjustment[] = []
-  
+
   for (const comp of selectedComps) {
     const similarity = calculateSimilarityScore(subject, comp)
     const adjustments = calculateRentAdjustments(subject, comp)
     const rentPerSqft = comp.sqft > 0 ? comp.price / comp.sqft : 0
-    
+
     compAdjustments.push({
       compId: comp.id,
       compAddress: comp.address,
@@ -436,7 +438,7 @@ export function calculateRentAppraisalValues(
       weight: 0,
     })
   }
-  
+
   // Calculate weights
   const totalSimilarity = compAdjustments.reduce((sum, ca) => sum + ca.similarityScore, 0)
   if (totalSimilarity > 0) {
@@ -449,33 +451,34 @@ export function calculateRentAppraisalValues(
       ca.weight = equalWeight
     }
   }
-  
+
   // Calculate weighted averages
   const weightedAdjustedRent = weightedAverage(
-    compAdjustments.map(ca => ({ value: ca.adjustedPrice, weight: ca.weight }))
+    compAdjustments.map((ca) => ({ value: ca.adjustedPrice, weight: ca.weight })),
   )
   const weightedRentPerSqft = weightedAverage(
-    compAdjustments.map(ca => ({ value: ca.pricePerSqft, weight: ca.weight }))
+    compAdjustments.map((ca) => ({ value: ca.pricePerSqft, weight: ca.weight })),
   )
   const sqftRent = weightedRentPerSqft * subject.sqft
-  
+
   // Hybrid blend (50/50 for rent)
-  const marketRent = (weightedAdjustedRent * 0.5) + (sqftRent * 0.5)
-  
+  const marketRent = weightedAdjustedRent * 0.5 + sqftRent * 0.5
+
   // Calculate range
-  const adjustedRents = compAdjustments.map(ca => ca.adjustedPrice)
+  const adjustedRents = compAdjustments.map((ca) => ca.adjustedPrice)
   const rangeLow = Math.min(...adjustedRents)
   const rangeHigh = Math.max(...adjustedRents)
-  
+
   // Improved rent
   const improvedRent = marketRent * (1 + improvementPremiumPct)
-  
+
   // Confidence
-  const avgSimilarity = compAdjustments.reduce((sum, ca) => sum + ca.similarityScore, 0) / compAdjustments.length
+  const avgSimilarity =
+    compAdjustments.reduce((sum, ca) => sum + ca.similarityScore, 0) / compAdjustments.length
   const compCountScore = Math.min(compAdjustments.length * 15, 40)
   const similarityScore = (avgSimilarity / 100) * 40
   const confidence = Math.min(100, Math.round(compCountScore + similarityScore + 20))
-  
+
   return {
     marketRent: Math.round(marketRent),
     improvedRent: Math.round(improvedRent),
@@ -499,17 +502,22 @@ export function parseCompFromApi(apiComp: Record<string, unknown>, index: number
   return {
     id: (apiComp.zpid as string) || (apiComp.id as string) || `comp-${index}`,
     zpid: apiComp.zpid as string,
-    address: (apiComp.address as string) || 
-             (apiComp.streetAddress as string) || 
-             `${apiComp.street || ''}, ${apiComp.city || ''}, ${apiComp.state || ''}`.trim(),
-    price: (apiComp.price as number) ?? 
-           (apiComp.salePrice as number) ?? 
-           (apiComp.soldPrice as number) ?? 
-           (apiComp.rent as number) ?? 
-           (apiComp.monthlyRent as number) ?? 0,
-    sqft: (apiComp.sqft as number) ?? 
-          (apiComp.squareFootage as number) ?? 
-          (apiComp.livingArea as number) ?? 1500,
+    address:
+      (apiComp.address as string) ||
+      (apiComp.streetAddress as string) ||
+      `${apiComp.street || ''}, ${apiComp.city || ''}, ${apiComp.state || ''}`.trim(),
+    price:
+      (apiComp.price as number) ??
+      (apiComp.salePrice as number) ??
+      (apiComp.soldPrice as number) ??
+      (apiComp.rent as number) ??
+      (apiComp.monthlyRent as number) ??
+      0,
+    sqft:
+      (apiComp.sqft as number) ??
+      (apiComp.squareFootage as number) ??
+      (apiComp.livingArea as number) ??
+      1500,
     beds: (apiComp.beds as number) ?? (apiComp.bedrooms as number) ?? 3,
     baths: (apiComp.baths as number) ?? (apiComp.bathrooms as number) ?? 2,
     yearBuilt: (apiComp.yearBuilt as number) ?? (apiComp.year_built as number) ?? 2000,

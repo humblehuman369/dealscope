@@ -13,47 +13,51 @@
   --iq-teal-light: var(--accent-sky-light);
   --iq-navy: var(--text-heading);
   --iq-navy-light: var(--text-body);
-  
+
   /* Background Colors - White */
   --ws-bg: var(--surface-base);
   --ws-bg-alt: var(--surface-section);
   --ws-card: var(--surface-card);
   --ws-card-hover: var(--surface-card-hover);
-  
+
   /* Border Colors */
   --ws-border: var(--border-default);
   --ws-border-light: var(--border-subtle);
   --ws-border-focus: var(--iq-teal);
-  
+
   /* Text Colors */
   --ws-text-primary: var(--text-heading);
   --ws-text-secondary: var(--text-secondary);
   --ws-text-muted: var(--text-label);
   --ws-text-label: var(--text-body);
-  
+
   /* Brand Colors */
   --ws-accent: var(--iq-teal);
   --ws-accent-hover: var(--iq-teal-dark);
   --ws-accent-light: var(--accent-sky-light);
   --ws-accent-bg: var(--color-teal-dim);
-  
+
   /* Status Colors - Pacific Teal for positive */
   --ws-positive: var(--status-positive);
-  --ws-positive-light: rgba(52,211,153,0.12);
+  --ws-positive-light: rgba(52, 211, 153, 0.12);
   --ws-negative: var(--status-negative);
-  --ws-negative-light: rgba(220,38,38,0.12);
+  --ws-negative-light: rgba(220, 38, 38, 0.12);
   --ws-warning: var(--status-warning);
-  --ws-warning-light: rgba(217,119,6,0.12);
-  
+  --ws-warning-light: rgba(217, 119, 6, 0.12);
+
   /* Section Colors */
-  --ws-section-header: linear-gradient(135deg, var(--color-teal-dim) 0%, var(--surface-section) 100%);
+  --ws-section-header: linear-gradient(
+    135deg,
+    var(--color-teal-dim) 0%,
+    var(--surface-section) 100%
+  );
   --ws-section-header-text: var(--text-body);
-  
+
   /* Shadows */
   --ws-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --ws-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --ws-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  
+
   /* Responsive Spacing */
   --ws-spacing-xs: 8px;
   --ws-spacing-sm: 12px;
@@ -79,7 +83,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   overflow-x: hidden;
   max-width: 100vw;
 }
@@ -302,14 +307,24 @@ html, body {
 
 .worksheet-tabs-fade.left {
   left: 0;
-  background: linear-gradient(to right, var(--surface-card) 0%, var(--surface-card) 40%, transparent 100%);
+  background: linear-gradient(
+    to right,
+    var(--surface-card) 0%,
+    var(--surface-card) 40%,
+    transparent 100%
+  );
   justify-content: flex-start;
   padding-left: 4px;
 }
 
 .worksheet-tabs-fade.right {
   right: 0;
-  background: linear-gradient(to left, var(--surface-card) 0%, var(--surface-card) 40%, transparent 100%);
+  background: linear-gradient(
+    to left,
+    var(--surface-card) 0%,
+    var(--surface-card) 40%,
+    transparent 100%
+  );
   justify-content: flex-end;
   padding-right: 4px;
 }
@@ -942,20 +957,20 @@ html, body {
     scrollbar-width: thin;
     scrollbar-color: var(--ws-border) transparent;
   }
-  
+
   .worksheet-left-column::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   .worksheet-left-column::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .worksheet-left-column::-webkit-scrollbar-thumb {
     background: var(--ws-border);
     border-radius: 3px;
   }
-  
+
   .worksheet-left-column::-webkit-scrollbar-thumb:hover {
     background: var(--ws-text-muted);
   }
@@ -992,20 +1007,20 @@ html, body {
     scrollbar-width: thin;
     scrollbar-color: var(--ws-border) transparent;
   }
-  
+
   .worksheet-right-column::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   .worksheet-right-column::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .worksheet-right-column::-webkit-scrollbar-thumb {
     background: var(--ws-border);
     border-radius: 3px;
   }
-  
+
   .worksheet-right-column::-webkit-scrollbar-thumb:hover {
     background: var(--ws-text-muted);
   }
@@ -1229,7 +1244,6 @@ html, body {
   border-left: 3px solid var(--iq-teal);
 }
 
-
 .data-label {
   display: flex;
   align-items: center;
@@ -1339,7 +1353,7 @@ html, body {
     gap: 12px;
     padding: 12px var(--ws-spacing-md);
   }
-  
+
   .data-row.has-slider .data-label {
     min-width: 100px;
     max-width: 160px;
@@ -1353,11 +1367,11 @@ html, body {
     align-items: stretch;
     gap: 8px;
   }
-  
+
   .data-row.has-slider .data-label {
     max-width: 100%;
   }
-  
+
   .data-row.has-slider .data-value-container {
     width: 100%;
   }
@@ -2043,13 +2057,29 @@ html, body {
   }
 }
 
-.pricing-ladder-marker.arv { background: var(--ws-positive); }
-.pricing-ladder-marker.refi { background: var(--iq-teal); }
-.pricing-ladder-marker.current { background: var(--strategy-accent, #7c3aed); }
-.pricing-ladder-marker.target { background: #f59e0b; }
-.pricing-ladder-marker.mao { background: var(--ws-negative); }
-.pricing-ladder-marker.list { border-color: #dc2626; background: white; }
-.pricing-ladder-marker.coc { border-color: #10b981; background: white; }
+.pricing-ladder-marker.arv {
+  background: var(--ws-positive);
+}
+.pricing-ladder-marker.refi {
+  background: var(--iq-teal);
+}
+.pricing-ladder-marker.current {
+  background: var(--strategy-accent, #7c3aed);
+}
+.pricing-ladder-marker.target {
+  background: #f59e0b;
+}
+.pricing-ladder-marker.mao {
+  background: var(--ws-negative);
+}
+.pricing-ladder-marker.list {
+  border-color: #dc2626;
+  background: white;
+}
+.pricing-ladder-marker.coc {
+  border-color: #10b981;
+  background: white;
+}
 
 .pricing-ladder-value {
   font-size: 12px;
@@ -2117,7 +2147,11 @@ html, body {
 }
 
 .pricing-discount-fill.str {
-  background: linear-gradient(90deg, var(--strategy-accent, #f97316), var(--strategy-accent-light, #fb923c));
+  background: linear-gradient(
+    90deg,
+    var(--strategy-accent, #f97316),
+    var(--strategy-accent-light, #fb923c)
+  );
 }
 
 .pricing-discount-label {
@@ -2225,8 +2259,12 @@ html, body {
   color: var(--ws-text-primary);
 }
 
-.revenue-item-value.positive { color: var(--ws-positive); }
-.revenue-item-value.negative { color: var(--ws-negative); }
+.revenue-item-value.positive {
+  color: var(--ws-positive);
+}
+.revenue-item-value.negative {
+  color: var(--ws-negative);
+}
 
 /* ==========================================
    SEASONALITY GRID - RESPONSIVE
@@ -2443,7 +2481,11 @@ html, body {
 }
 
 .comparison-bar.str {
-  background: linear-gradient(90deg, var(--strategy-accent, #f97316), var(--strategy-accent-light, #fb923c));
+  background: linear-gradient(
+    90deg,
+    var(--strategy-accent, #f97316),
+    var(--strategy-accent-light, #fb923c)
+  );
 }
 
 .comparison-bar.ltr {
@@ -2611,7 +2653,11 @@ html, body {
 
 .chart-card.brrrr-highlight {
   border-color: var(--strategy-accent-light, #a78bfa);
-  background: linear-gradient(180deg, var(--strategy-accent-bg, rgba(124, 58, 237, 0.1)) 0%, white 100%);
+  background: linear-gradient(
+    180deg,
+    var(--strategy-accent-bg, rgba(124, 58, 237, 0.1)) 0%,
+    white 100%
+  );
 }
 
 .chart-card-title.brrrr {
@@ -2633,12 +2679,12 @@ html, body {
   .worksheet-help-btn {
     display: none !important;
   }
-  
+
   .worksheet-two-column-layout,
   .worksheet-layout-2col {
     display: block;
   }
-  
+
   .worksheet-left-column,
   .worksheet-right-column,
   .worksheet-main-content,
@@ -2646,12 +2692,12 @@ html, body {
     max-height: none;
     overflow: visible;
   }
-  
+
   .section-card {
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  
+
   .chart-card {
     break-inside: avoid;
     page-break-inside: avoid;

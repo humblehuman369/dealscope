@@ -6,11 +6,11 @@ import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 /**
  * NegotiationPlan Component
- * 
+ *
  * Displays a game plan for negotiating the purchase price, including:
  * - Three offer cards: Opening Offer, Buy Price, Walk-Away
  * - Leverage points to use in negotiation
- * 
+ *
  * This component helps investors understand the negotiation range
  * and provides talking points for discussions with sellers.
  */
@@ -22,10 +22,7 @@ interface NegotiationPlanProps {
   data: NegotiationPlanData
 }
 
-export function NegotiationPlan({
-  title = 'Negotiation Game Plan',
-  data
-}: NegotiationPlanProps) {
+export function NegotiationPlan({ title = 'Negotiation Game Plan', data }: NegotiationPlanProps) {
   return (
     <div className="border-2 border-teal dark:border-accent-500 rounded-2xl p-4 mb-4 bg-white dark:bg-transparent">
       {/* Header */}
@@ -41,9 +38,7 @@ export function NegotiationPlan({
       </div>
 
       {/* Leverage Points */}
-      {data.leveragePoints.length > 0 && (
-        <LeverageSection points={data.leveragePoints} />
-      )}
+      {data.leveragePoints.length > 0 && <LeverageSection points={data.leveragePoints} />}
     </div>
   )
 }
@@ -54,18 +49,14 @@ interface OfferCardComponentProps {
 }
 
 function OfferCardComponent({ offer, isRecommended = false }: OfferCardComponentProps) {
-  const baseClasses = "flex-1 rounded-xl p-2.5 text-center"
+  const baseClasses = 'flex-1 rounded-xl p-2.5 text-center'
   const cardClasses = isRecommended
     ? `${baseClasses} bg-green-500/10 border border-green-500/30`
     : `${baseClasses} bg-gray-100 dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06]`
 
-  const labelClasses = isRecommended
-    ? "text-green-500"
-    : "text-gray-500 dark:text-white/50"
+  const labelClasses = isRecommended ? 'text-green-500' : 'text-gray-500 dark:text-white/50'
 
-  const valueClasses = isRecommended
-    ? "text-green-500"
-    : "text-gray-800 dark:text-white"
+  const valueClasses = isRecommended ? 'text-green-500' : 'text-gray-800 dark:text-white'
 
   return (
     <div className={cardClasses}>
@@ -94,7 +85,10 @@ function LeverageSection({ points }: LeverageSectionProps) {
       </h5>
       <div className="space-y-1.5">
         {points.map((point, index) => (
-          <div key={index} className="flex items-center gap-2 text-[0.72rem] text-gray-700 dark:text-white/70">
+          <div
+            key={index}
+            className="flex items-center gap-2 text-[0.72rem] text-gray-700 dark:text-white/70"
+          >
             <div className="w-[18px] h-[18px] bg-teal/15 rounded flex items-center justify-center text-[0.65rem] flex-shrink-0">
               {point.icon}
             </div>
@@ -112,33 +106,31 @@ function LeverageSection({ points }: LeverageSectionProps) {
 export function generateNegotiationPlan(
   listPrice: number,
   targetPrice: number,
-  openingOfferPercent: number = 0.70,
+  openingOfferPercent: number = 0.7,
   walkAwayPercent?: number,
-  leveragePoints: LeveragePoint[] = []
+  leveragePoints: LeveragePoint[] = [],
 ): NegotiationPlanData {
   const openingOffer = listPrice * openingOfferPercent
-  const walkAway = walkAwayPercent 
-    ? listPrice * walkAwayPercent 
-    : targetPrice * 1.08 // Default to 8% above target
+  const walkAway = walkAwayPercent ? listPrice * walkAwayPercent : targetPrice * 1.08 // Default to 8% above target
 
   return {
     openingOffer: {
       label: 'Opening Offer',
       price: openingOffer,
-      percentOfList: openingOfferPercent * 100
+      percentOfList: openingOfferPercent * 100,
     },
     targetPrice: {
       label: 'Buy Price',
       price: targetPrice,
       percentOfList: (targetPrice / listPrice) * 100,
-      isRecommended: true
+      isRecommended: true,
     },
     walkAway: {
       label: 'Walk-Away',
       price: walkAway,
-      percentOfList: (walkAway / listPrice) * 100
+      percentOfList: (walkAway / listPrice) * 100,
     },
-    leveragePoints
+    leveragePoints,
   }
 }
 
@@ -148,45 +140,45 @@ export function generateNegotiationPlan(
 export const LEVERAGE_POINTS = {
   daysOnMarket: (days: number, avgDays: number = 28): LeveragePoint => ({
     icon: '📅',
-    text: `${days} days on market (avg: ${avgDays} days)`
+    text: `${days} days on market (avg: ${avgDays} days)`,
   }),
   priceReduced: (times: number): LeveragePoint => ({
     icon: '📉',
-    text: `Price reduced ${times}x already`
+    text: `Price reduced ${times}x already`,
   }),
   comparables: (percentLess: number): LeveragePoint => ({
     icon: '🏘️',
-    text: `${Math.abs(percentLess).toFixed(0)} similar sold for ${percentLess}% less`
+    text: `${Math.abs(percentLess).toFixed(0)} similar sold for ${percentLess}% less`,
   }),
   cashOffer: (): LeveragePoint => ({
     icon: '💰',
-    text: 'Cash offer, quick close = seller appeal'
+    text: 'Cash offer, quick close = seller appeal',
   }),
   rehabNeeded: (amount: number): LeveragePoint => ({
     icon: '🔧',
-    text: `Property needs $${Math.round(amount / 1000)}K+ rehab — limits buyers`
+    text: `Property needs $${Math.round(amount / 1000)}K+ rehab — limits buyers`,
   }),
   noHOA: (): LeveragePoint => ({
     icon: '✓',
-    text: 'No HOA restrictions on strategy'
+    text: 'No HOA restrictions on strategy',
   }),
   touristArea: (): LeveragePoint => ({
     icon: '🏖️',
-    text: 'Strong STR demand — tourist area'
+    text: 'Strong STR demand — tourist area',
   }),
   activeBuyerList: (): LeveragePoint => ({
     icon: '👥',
-    text: 'Active buyer list ready to assign'
+    text: 'Active buyer list ready to assign',
   }),
   motivatedSeller: (): LeveragePoint => ({
     icon: '📅',
-    text: 'Extended time on market — motivated seller'
-  })
+    text: 'Extended time on market — motivated seller',
+  }),
 }
 
 /**
  * NegotiationPlanCompact Component
- * 
+ *
  * A compact inline version showing just the key offers.
  */
 
@@ -197,30 +189,40 @@ interface NegotiationPlanCompactProps {
   listPrice: number
 }
 
-export function NegotiationPlanCompact({ 
-  openingOffer, 
-  targetPrice, 
-  walkAway, 
-  listPrice 
+export function NegotiationPlanCompact({
+  openingOffer,
+  targetPrice,
+  walkAway,
+  listPrice,
 }: NegotiationPlanCompactProps) {
   return (
     <div className="flex items-center justify-between bg-blue-500/[0.06] border border-blue-500/15 rounded-xl p-3">
       <div className="text-center">
         <div className="text-[0.6rem] text-gray-500 dark:text-white/50 uppercase">Open</div>
-        <div className="text-sm font-semibold text-gray-800 dark:text-white">{formatCompactCurrency(openingOffer)}</div>
-        <div className="text-[0.55rem] text-gray-500 dark:text-white/40">{Math.round((openingOffer / listPrice) * 100)}%</div>
+        <div className="text-sm font-semibold text-gray-800 dark:text-white">
+          {formatCompactCurrency(openingOffer)}
+        </div>
+        <div className="text-[0.55rem] text-gray-500 dark:text-white/40">
+          {Math.round((openingOffer / listPrice) * 100)}%
+        </div>
       </div>
       <div className="text-gray-400 dark:text-white/30">→</div>
       <div className="text-center">
         <div className="text-[0.6rem] text-green-500 uppercase font-semibold">Target</div>
         <div className="text-sm font-bold text-green-500">{formatCompactCurrency(targetPrice)}</div>
-        <div className="text-[0.55rem] text-green-500/70">{Math.round((targetPrice / listPrice) * 100)}%</div>
+        <div className="text-[0.55rem] text-green-500/70">
+          {Math.round((targetPrice / listPrice) * 100)}%
+        </div>
       </div>
       <div className="text-gray-400 dark:text-white/30">→</div>
       <div className="text-center">
         <div className="text-[0.6rem] text-gray-500 dark:text-white/50 uppercase">Walk</div>
-        <div className="text-sm font-semibold text-gray-800 dark:text-white">{formatCompactCurrency(walkAway)}</div>
-        <div className="text-[0.55rem] text-gray-500 dark:text-white/40">{Math.round((walkAway / listPrice) * 100)}%</div>
+        <div className="text-sm font-semibold text-gray-800 dark:text-white">
+          {formatCompactCurrency(walkAway)}
+        </div>
+        <div className="text-[0.55rem] text-gray-500 dark:text-white/40">
+          {Math.round((walkAway / listPrice) * 100)}%
+        </div>
       </div>
     </div>
   )

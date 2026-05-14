@@ -56,7 +56,7 @@ export const SAVED_PROPERTIES_KEYS = {
 export function useSavedProperties(params: {
   page: number
   pageSize: number
-  status: string   // 'all' or a PropertyStatus value
+  status: string // 'all' or a PropertyStatus value
   search: string
 }) {
   return useQuery({
@@ -69,9 +69,7 @@ export function useSavedProperties(params: {
       if (params.status !== 'all') sp.set('status', params.status)
       if (params.search.trim()) sp.set('search', params.search.trim())
 
-      return api.get<SavedPropertySummary[]>(
-        `/api/v1/properties/saved?${sp.toString()}`,
-      )
+      return api.get<SavedPropertySummary[]>(`/api/v1/properties/saved?${sp.toString()}`)
     },
     placeholderData: keepPreviousData,
     staleTime: 30_000, // 30 s — saved properties don't change often
@@ -82,8 +80,7 @@ export function useSavedProperties(params: {
 export function useSavedPropertyStats() {
   return useQuery({
     queryKey: SAVED_PROPERTIES_KEYS.stats(),
-    queryFn: () =>
-      api.get<SavedPropertyStats>('/api/v1/properties/saved/stats'),
+    queryFn: () => api.get<SavedPropertyStats>('/api/v1/properties/saved/stats'),
     staleTime: 30_000,
   })
 }
@@ -101,8 +98,7 @@ export function useDeleteSavedProperty() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) =>
-      api.delete(`/api/v1/properties/saved/${id}`),
+    mutationFn: (id: string) => api.delete(`/api/v1/properties/saved/${id}`),
 
     onMutate: async (deletedId: string) => {
       // Cancel in-flight refetches so they don't overwrite optimistic data
@@ -131,9 +127,11 @@ export function useDeleteSavedProperty() {
       context: { previousLists: Array<[QueryKey, SavedPropertySummary[] | undefined]> } | undefined,
     ) => {
       // Roll back to the snapshots
-      context?.previousLists?.forEach(([key, data]: [QueryKey, SavedPropertySummary[] | undefined]) => {
-        queryClient.setQueryData(key, data)
-      })
+      context?.previousLists?.forEach(
+        ([key, data]: [QueryKey, SavedPropertySummary[] | undefined]) => {
+          queryClient.setQueryData(key, data)
+        },
+      )
     },
 
     onSettled: () => {
@@ -184,9 +182,11 @@ export function useUpdateSavedPropertyStatus() {
       _vars: { id: string; status: PropertyStatus },
       context: { previousLists: Array<[QueryKey, SavedPropertySummary[] | undefined]> } | undefined,
     ) => {
-      context?.previousLists?.forEach(([key, data]: [QueryKey, SavedPropertySummary[] | undefined]) => {
-        queryClient.setQueryData(key, data)
-      })
+      context?.previousLists?.forEach(
+        ([key, data]: [QueryKey, SavedPropertySummary[] | undefined]) => {
+          queryClient.setQueryData(key, data)
+        },
+      )
     },
 
     onSettled: () => {
@@ -221,8 +221,7 @@ export function useUpdateFlipStage() {
       id: string
       stage: string
       sold_price?: number | null
-    }) =>
-      api.patch(`/api/v1/properties/saved/${id}/flip-stage`, { stage, sold_price }),
+    }) => api.patch(`/api/v1/properties/saved/${id}/flip-stage`, { stage, sold_price }),
 
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
@@ -233,8 +232,7 @@ export function useUpdateFlipStage() {
 export function useRehabBudgetSummary(propertyId: string | null | undefined) {
   return useQuery({
     queryKey: ['rehab-budget', propertyId],
-    queryFn: () =>
-      api.get<RehabBudgetSummary>(`/api/v1/properties/saved/${propertyId}/budget`),
+    queryFn: () => api.get<RehabBudgetSummary>(`/api/v1/properties/saved/${propertyId}/budget`),
     enabled: Boolean(propertyId),
     staleTime: 15_000,
   })
@@ -325,10 +323,11 @@ export interface ReceiptUploadResponse {
 async function postReceipt(propertyId: string, file: File): Promise<ReceiptUploadResponse> {
   const fd = new FormData()
   fd.append('file', file)
-  const resp = await fetch(
-    `/api/v1/properties/saved/${propertyId}/budget/receipts/parse`,
-    { method: 'POST', body: fd, credentials: 'include' },
-  )
+  const resp = await fetch(`/api/v1/properties/saved/${propertyId}/budget/receipts/parse`, {
+    method: 'POST',
+    body: fd,
+    credentials: 'include',
+  })
   if (!resp.ok) {
     const text = await resp.text().catch(() => '')
     let detail = text
@@ -359,9 +358,7 @@ export function useDeleteBudgetExpense() {
 
   return useMutation({
     mutationFn: ({ propertyId, expenseId }: { propertyId: string; expenseId: string }) =>
-      api.delete(
-        `/api/v1/properties/saved/${propertyId}/budget/expenses/${expenseId}`,
-      ),
+      api.delete(`/api/v1/properties/saved/${propertyId}/budget/expenses/${expenseId}`),
 
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['rehab-budget', variables.propertyId] })

@@ -23,8 +23,7 @@ export const TASKS_KEYS = {
 export function useTasks(propertyId: string | null) {
   return useQuery({
     queryKey: TASKS_KEYS.forProperty(propertyId ?? ''),
-    queryFn: () =>
-      api.get<PropertyTask[]>(`/api/v1/properties/saved/${propertyId}/tasks`),
+    queryFn: () => api.get<PropertyTask[]>(`/api/v1/properties/saved/${propertyId}/tasks`),
     enabled: !!propertyId,
     staleTime: 15_000,
   })
@@ -46,10 +45,7 @@ export function useUpdateTask(propertyId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ taskId, body }: { taskId: string; body: PropertyTaskUpdate }) =>
-      api.patch<PropertyTask>(
-        `/api/v1/properties/saved/${propertyId}/tasks/${taskId}`,
-        body,
-      ),
+      api.patch<PropertyTask>(`/api/v1/properties/saved/${propertyId}/tasks/${taskId}`, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: TASKS_KEYS.forProperty(propertyId) })
       qc.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.lists() })
@@ -80,9 +76,7 @@ export function useUpcomingTasks(opts?: { days?: number; limit?: number }) {
     queryKey: [...TASKS_KEYS.all, 'upcoming', { days, limit }] as const,
     queryFn: () => {
       const sp = new URLSearchParams({ days: String(days), limit: String(limit) })
-      return api.get<UpcomingTask[]>(
-        `/api/v1/properties/saved/tasks/upcoming?${sp.toString()}`,
-      )
+      return api.get<UpcomingTask[]>(`/api/v1/properties/saved/tasks/upcoming?${sp.toString()}`)
     },
     staleTime: 30_000,
   })
@@ -98,17 +92,14 @@ export function useReorderTasks(propertyId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (taskIds: string[]) =>
-      api.post<PropertyTask[]>(
-        `/api/v1/properties/saved/${propertyId}/tasks/reorder`,
-        { task_ids: taskIds },
-      ),
+      api.post<PropertyTask[]>(`/api/v1/properties/saved/${propertyId}/tasks/reorder`, {
+        task_ids: taskIds,
+      }),
     // Optimistic: write the reordered list to cache immediately so the user
     // sees the new position even before the server round-trip.
     onMutate: async (taskIds) => {
       await qc.cancelQueries({ queryKey: TASKS_KEYS.forProperty(propertyId) })
-      const previous = qc.getQueryData<PropertyTask[]>(
-        TASKS_KEYS.forProperty(propertyId),
-      )
+      const previous = qc.getQueryData<PropertyTask[]>(TASKS_KEYS.forProperty(propertyId))
       if (previous) {
         const byId = new Map(previous.map((t) => [t.id, t]))
         const reordered = [
@@ -139,10 +130,7 @@ export function useSeedTasks(propertyId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: () =>
-      api.post<PropertyTask[]>(
-        `/api/v1/properties/saved/${propertyId}/tasks/seed`,
-        {},
-      ),
+      api.post<PropertyTask[]>(`/api/v1/properties/saved/${propertyId}/tasks/seed`, {}),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: TASKS_KEYS.forProperty(propertyId) })
       qc.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.lists() })

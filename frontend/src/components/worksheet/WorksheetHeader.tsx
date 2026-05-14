@@ -5,14 +5,13 @@ import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { WorksheetExport } from './WorksheetExport'
 import { ProGate } from '@/components/ProGate'
+import { Edit3, Share2, Loader2, Check, ArrowLeft } from 'lucide-react'
 import {
-  Edit3,
-  Share2,
-  Loader2,
-  Check,
-  ArrowLeft,
-} from 'lucide-react'
-import { SavedProperty, getDisplayAddress, type ListingStatus, type SellerType } from '@/types/savedProperty'
+  SavedProperty,
+  getDisplayAddress,
+  type ListingStatus,
+  type SellerType,
+} from '@/types/savedProperty'
 import { PropertyStatusPills } from './PropertyStatusPills'
 import { formatCurrency } from '@/utils/formatters'
 
@@ -33,14 +32,22 @@ const strategies = [
 
 export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) {
   const router = useRouter()
-  
-  const { isDirty, isSaving, lastSaved, viewMode, setViewMode, isCalculating, calculationError, worksheetMetrics } =
-    useWorksheetStore()
+
+  const {
+    isDirty,
+    isSaving,
+    lastSaved,
+    viewMode,
+    setViewMode,
+    isCalculating,
+    calculationError,
+    worksheetMetrics,
+  } = useWorksheetStore()
   const derived = useWorksheetDerived()
   const { activeStrategy } = useUIStore()
 
   // Get current strategy label
-  const currentStrategy = strategies.find(s => s.id === activeStrategy) || strategies[0]
+  const currentStrategy = strategies.find((s) => s.id === activeStrategy) || strategies[0]
 
   const formatLastSaved = () => {
     if (!lastSaved) return null
@@ -77,10 +84,23 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
   const kpiCards = [
     { label: 'LIST PRICE', value: formatCurrency(purchasePrice), color: 'teal' },
     { label: 'CASH NEEDED', value: formatCurrency(cashNeeded), color: 'default' },
-    { label: 'ANNUAL PROFIT', value: formatCurrency(cashFlow), color: getKpiColor('cashFlow', cashFlow), subtitle: `${formatCurrency(monthlyCashFlow)}/mo` },
+    {
+      label: 'ANNUAL PROFIT',
+      value: formatCurrency(cashFlow),
+      color: getKpiColor('cashFlow', cashFlow),
+      subtitle: `${formatCurrency(monthlyCashFlow)}/mo`,
+    },
     { label: 'CAP RATE', value: `${capRate.toFixed(1)}%`, color: 'default' },
-    { label: 'COC RETURN', value: `${cocReturn.toFixed(1)}%`, color: getKpiColor('cocReturn', cocReturn) },
-    { label: 'DEAL SCORE', value: String(Math.round(dealScore)), color: getKpiColor('dealScore', dealScore) },
+    {
+      label: 'COC RETURN',
+      value: `${cocReturn.toFixed(1)}%`,
+      color: getKpiColor('cocReturn', cocReturn),
+    },
+    {
+      label: 'DEAL SCORE',
+      value: String(Math.round(dealScore)),
+      color: getKpiColor('dealScore', dealScore),
+    },
   ]
 
   return (
@@ -90,7 +110,7 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
         <div className="flex items-center justify-between gap-4">
           {/* Left: Back Arrow + Page Title */}
           <div className="flex items-center gap-3 min-w-0">
-            <button 
+            <button
               onClick={() => router.back()}
               className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-[var(--ws-bg-alt)] transition-colors flex-shrink-0"
             >
@@ -105,11 +125,13 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
               </p>
             </div>
           </div>
-          
+
           {/* Center: Status Pills (hidden on small screens) */}
           <div className="hidden lg:flex flex-shrink-0">
             <PropertyStatusPills
-              listingStatus={property.property_data_snapshot?.listingStatus as ListingStatus | undefined}
+              listingStatus={
+                property.property_data_snapshot?.listingStatus as ListingStatus | undefined
+              }
               isOffMarket={property.property_data_snapshot?.isOffMarket}
               listPrice={property.property_data_snapshot?.listPrice}
               zestimate={property.property_data_snapshot?.zestimate}
@@ -121,7 +143,6 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
               daysOnMarket={property.property_data_snapshot?.daysOnMarket}
             />
           </div>
-          
         </div>
       </div>
 
@@ -129,26 +150,28 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
       <div className="px-4 sm:px-6 py-4">
         <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-1">
           {kpiCards.map((kpi, index) => (
-            <div 
+            <div
               key={index}
               className={`flex-1 min-w-[120px] rounded-lg px-3 sm:px-4 py-3 text-center ${
-                kpi.color === 'teal' 
-                  ? 'bg-[var(--ws-accent-bg)] border border-[var(--iq-teal-light)]' 
+                kpi.color === 'teal'
+                  ? 'bg-[var(--ws-accent-bg)] border border-[var(--iq-teal-light)]'
                   : kpi.color === 'red'
-                  ? 'bg-[var(--ws-negative-light)] border border-red-200'
-                  : 'bg-white border border-[var(--ws-border)]'
+                    ? 'bg-[var(--ws-negative-light)] border border-red-200'
+                    : 'bg-white border border-[var(--ws-border)]'
               }`}
             >
               <div className="text-[10px] sm:text-xs text-[var(--ws-text-muted)] font-medium tracking-wide">
                 {kpi.label}
               </div>
-              <div className={`text-base sm:text-lg font-semibold mt-0.5 ${
-                kpi.color === 'teal' 
-                  ? 'text-[var(--iq-teal)]' 
-                  : kpi.color === 'red'
-                  ? 'text-[var(--ws-negative)]'
-                  : 'text-[var(--ws-text-primary)]'
-              }`}>
+              <div
+                className={`text-base sm:text-lg font-semibold mt-0.5 ${
+                  kpi.color === 'teal'
+                    ? 'text-[var(--iq-teal)]'
+                    : kpi.color === 'red'
+                      ? 'text-[var(--ws-negative)]'
+                      : 'text-[var(--ws-text-primary)]'
+                }`}
+              >
                 {kpi.value}
               </div>
               {kpi.subtitle && (
@@ -171,25 +194,25 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
           Recalculating worksheet metrics...
         </div>
       )}
-      
+
       {/* Actions Row */}
       <div className="flex items-center justify-between px-4 sm:px-6 pb-4">
         {/* View Toggle */}
         <div className="toggle-group">
-          <button 
+          <button
             className={`toggle-btn ${viewMode === 'monthly' ? 'active' : ''}`}
             onClick={() => setViewMode('monthly')}
           >
             Monthly
           </button>
-          <button 
+          <button
             className={`toggle-btn ${viewMode === 'yearly' ? 'active' : ''}`}
             onClick={() => setViewMode('yearly')}
           >
             Yearly
           </button>
         </div>
-        
+
         {/* Right side actions */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Save indicator */}
@@ -211,21 +234,21 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
               </>
             ) : null}
           </div>
-          
+
           {/* Edit Property */}
           <button className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-[var(--ws-text-secondary)] bg-[var(--ws-bg-alt)] hover:bg-[var(--ws-border)] rounded-lg transition-colors">
             <Edit3 className="w-4 h-4" />
             <span className="hidden sm:inline">Edit Property</span>
           </button>
-          
+
           {/* Export — Pro only */}
           <ProGate feature="Export reports" mode="inline">
-            <WorksheetExport 
+            <WorksheetExport
               propertyId={propertyId}
               propertyAddress={getDisplayAddress(property)}
             />
           </ProGate>
-          
+
           {/* Share */}
           <button className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-[var(--ws-accent)] hover:bg-[var(--ws-accent-hover)] rounded-lg transition-colors">
             <Share2 className="w-4 h-4" />

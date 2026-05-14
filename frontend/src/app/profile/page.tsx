@@ -86,7 +86,6 @@ function ProfileContent() {
       style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
     >
       <div className="max-w-5xl mx-auto">
-
         {/* ── Page Header ───────────────────────── */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[var(--text-heading)] tracking-tight">
@@ -121,7 +120,11 @@ function ProfileContent() {
                 <div className="relative">
                   <div
                     className="w-24 h-24 rounded-2xl flex items-center justify-center text-[var(--text-inverse)] text-4xl font-bold border-4 border-[var(--surface-card)] shadow-lg"
-                    style={{ background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))', boxShadow: 'var(--shadow-card)' }}
+                    style={{
+                      background:
+                        'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
+                      boxShadow: 'var(--shadow-card)',
+                    }}
                   >
                     {avatarSrc ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -131,7 +134,8 @@ function ProfileContent() {
                         className="w-full h-full object-cover rounded-[12px]"
                       />
                     ) : (
-                      user?.full_name?.charAt(0).toUpperCase() || user?.email.charAt(0).toUpperCase()
+                      user?.full_name?.charAt(0).toUpperCase() ||
+                      user?.email.charAt(0).toUpperCase()
                     )}
                   </div>
                   <input
@@ -186,7 +190,7 @@ function ProfileContent() {
 
         {/* ── Tab Navigation ────────────────────── */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {tabs.map(tab => (
+          {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -216,9 +220,7 @@ function ProfileContent() {
             className="relative rounded-2xl border border-[var(--border-default)] p-6 sm:p-8 overflow-hidden"
             style={{
               background: 'var(--surface-card)',
-              boxShadow: activeTab === 'investor'
-                ? 'var(--shadow-card)'
-                : undefined,
+              boxShadow: activeTab === 'investor' ? 'var(--shadow-card)' : undefined,
             }}
           >
             {activeTab === 'investor' && (
@@ -231,42 +233,40 @@ function ProfileContent() {
               />
             )}
             <div className="relative z-10">
-            {activeTab === 'account' && (
-              <AccountTab
-                user={user}
-                accountForm={accountForm}
-                setAccountForm={setAccountForm}
-                isSaving={isSaving}
-                onSave={saveAccountInfo}
-              />
-            )}
+              {activeTab === 'account' && (
+                <AccountTab
+                  user={user}
+                  accountForm={accountForm}
+                  setAccountForm={setAccountForm}
+                  isSaving={isSaving}
+                  onSave={saveAccountInfo}
+                />
+              )}
 
-            {activeTab === 'business' && (
-              <BusinessTab
-                businessForm={businessForm}
-                setBusinessForm={setBusinessForm}
-                isSaving={isSaving}
-                onSave={saveBusinessProfile}
-                onAddPhone={addPhoneNumber}
-                onRemovePhone={removePhoneNumber}
-                onUpdatePhone={updatePhoneNumber}
-              />
-            )}
+              {activeTab === 'business' && (
+                <BusinessTab
+                  businessForm={businessForm}
+                  setBusinessForm={setBusinessForm}
+                  isSaving={isSaving}
+                  onSave={saveBusinessProfile}
+                  onAddPhone={addPhoneNumber}
+                  onRemovePhone={removePhoneNumber}
+                  onUpdatePhone={updatePhoneNumber}
+                />
+              )}
 
-            {activeTab === 'investor' && (
-              <InvestorTab
-                investorForm={investorForm}
-                setInvestorForm={setInvestorForm}
-                isSaving={isSaving}
-                onSave={saveInvestorProfile}
-                onToggleStrategy={toggleStrategy}
-                onToggleMarket={toggleMarket}
-              />
-            )}
+              {activeTab === 'investor' && (
+                <InvestorTab
+                  investorForm={investorForm}
+                  setInvestorForm={setInvestorForm}
+                  isSaving={isSaving}
+                  onSave={saveInvestorProfile}
+                  onToggleStrategy={toggleStrategy}
+                  onToggleMarket={toggleMarket}
+                />
+              )}
 
-            {activeTab === 'preferences' && (
-              <PreferencesTab />
-            )}
+              {activeTab === 'preferences' && <PreferencesTab />}
             </div>
           </div>
         </div>
@@ -277,11 +277,13 @@ function ProfileContent() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent-sky)]" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent-sky)]" />
+        </div>
+      }
+    >
       <AuthGuard>
         <ProfileContent />
       </AuthGuard>

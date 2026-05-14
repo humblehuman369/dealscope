@@ -5,10 +5,10 @@ import { BenchmarkStatus } from './types'
 
 /**
  * SpectrumBar Component
- * 
+ *
  * A visual spectrum/gauge showing where a value falls within Low/Average/High zones.
  * Used for performance benchmarks like Cash-on-Cash, Cap Rate, DSCR, etc.
- * 
+ *
  * Features:
  * - Three color-coded zones (red/yellow/green)
  * - Animated marker that slides to position
@@ -43,11 +43,11 @@ export function SpectrumBar({
   status,
   isInverted = false,
   zones,
-  size = 'default'
+  size = 'default',
 }: SpectrumBarProps) {
   // Clamp marker position between 2 and 98 to keep it visible
   const clampedPosition = Math.min(98, Math.max(2, markerPosition))
-  
+
   // Get marker color based on status
   const getMarkerClasses = () => {
     switch (status) {
@@ -64,7 +64,7 @@ export function SpectrumBar({
   const leftZoneColor = isInverted
     ? 'bg-green-500/[0.35] text-green-700 dark:text-green-500/70'
     : 'bg-red-500/[0.35] text-red-700 dark:text-red-500/70'
-  
+
   const rightZoneColor = isInverted
     ? 'bg-red-500/[0.35] text-red-700 dark:text-red-500/70'
     : 'bg-green-500/[0.35] text-green-700 dark:text-green-500/70'
@@ -74,19 +74,19 @@ export function SpectrumBar({
   return (
     <div className={`relative ${heightClass} rounded-xl overflow-visible`}>
       {/* Gradient Background - stronger colors for light mode visibility */}
-      <div 
+      <div
         className="absolute inset-0 rounded-xl spectrum-gradient"
         style={{
           background: isInverted
             ? 'linear-gradient(90deg, rgba(34,197,94,0.5) 0%, rgba(34,197,94,0.35) 25%, rgba(234,179,8,0.35) 35%, rgba(234,179,8,0.5) 50%, rgba(234,179,8,0.35) 65%, rgba(239,68,68,0.35) 75%, rgba(239,68,68,0.5) 100%)'
-            : 'linear-gradient(90deg, rgba(239,68,68,0.5) 0%, rgba(239,68,68,0.35) 25%, rgba(234,179,8,0.35) 35%, rgba(234,179,8,0.5) 50%, rgba(234,179,8,0.35) 65%, rgba(34,197,94,0.35) 75%, rgba(34,197,94,0.5) 100%)'
+            : 'linear-gradient(90deg, rgba(239,68,68,0.5) 0%, rgba(239,68,68,0.35) 25%, rgba(234,179,8,0.35) 35%, rgba(234,179,8,0.5) 50%, rgba(234,179,8,0.35) 65%, rgba(34,197,94,0.35) 75%, rgba(34,197,94,0.5) 100%)',
         }}
       />
 
       {/* Zone Labels */}
       <div className="absolute inset-0 flex rounded-xl overflow-hidden">
         {/* Low Zone (or High if inverted) */}
-        <div 
+        <div
           className={`flex-1 flex flex-col items-center justify-center border-r border-gray-300 dark:border-white/10 ${leftZoneColor}`}
         >
           <span className="text-[0.55rem] font-semibold uppercase tracking-wide leading-none">
@@ -98,9 +98,7 @@ export function SpectrumBar({
         </div>
 
         {/* Average Zone */}
-        <div 
-          className="flex-[1.2] flex flex-col items-center justify-center border-r border-gray-300 dark:border-white/10 bg-yellow-500/[0.35] text-yellow-700 dark:text-yellow-500/70"
-        >
+        <div className="flex-[1.2] flex flex-col items-center justify-center border-r border-gray-300 dark:border-white/10 bg-yellow-500/[0.35] text-yellow-700 dark:text-yellow-500/70">
           <span className="text-[0.55rem] font-semibold uppercase tracking-wide leading-none">
             {zones.average.label}
           </span>
@@ -110,9 +108,7 @@ export function SpectrumBar({
         </div>
 
         {/* High Zone (or Low if inverted) */}
-        <div 
-          className={`flex-1 flex flex-col items-center justify-center ${rightZoneColor}`}
-        >
+        <div className={`flex-1 flex flex-col items-center justify-center ${rightZoneColor}`}>
           <span className="text-[0.55rem] font-semibold uppercase tracking-wide leading-none">
             {isInverted ? zones.low.label : zones.high.label}
           </span>
@@ -125,9 +121,9 @@ export function SpectrumBar({
       {/* Animated Marker */}
       <div
         className={`absolute top-1/2 -translate-y-1/2 w-[3px] h-8 rounded-sm ${getMarkerClasses()} transition-all duration-500 ease-out z-10`}
-        style={{ 
+        style={{
           left: `${clampedPosition}%`,
-          transform: `translateX(-50%) translateY(-50%)`
+          transform: `translateX(-50%) translateY(-50%)`,
         }}
       />
     </div>
@@ -136,7 +132,7 @@ export function SpectrumBar({
 
 /**
  * MiniSpectrum Component
- * 
+ *
  * A compact version of the spectrum for grid layouts.
  * Shows just a thin bar with a circular marker.
  */
@@ -149,28 +145,32 @@ interface MiniSpectrumProps {
 
 export function MiniSpectrum({ markerPosition, status, isInverted = false }: MiniSpectrumProps) {
   const clampedPosition = Math.min(95, Math.max(5, markerPosition))
-  
+
   const getMarkerBorder = () => {
     switch (status) {
-      case 'high': return 'border-green-500'
-      case 'average': return 'border-yellow-500'
-      case 'low': return 'border-red-500'
+      case 'high':
+        return 'border-green-500'
+      case 'average':
+        return 'border-yellow-500'
+      case 'low':
+        return 'border-red-500'
     }
   }
 
   return (
-    <div className="h-1.5 rounded-full relative" 
+    <div
+      className="h-1.5 rounded-full relative"
       style={{
         background: isInverted
           ? 'linear-gradient(90deg, rgba(34,197,94,0.6) 0%, rgba(234,179,8,0.6) 50%, rgba(239,68,68,0.6) 100%)'
-          : 'linear-gradient(90deg, rgba(239,68,68,0.6) 0%, rgba(234,179,8,0.6) 50%, rgba(34,197,94,0.6) 100%)'
+          : 'linear-gradient(90deg, rgba(239,68,68,0.6) 0%, rgba(234,179,8,0.6) 50%, rgba(34,197,94,0.6) 100%)',
       }}
     >
-      <div 
+      <div
         className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 ${getMarkerBorder()} transition-all duration-500 ease-out`}
-        style={{ 
+        style={{
           left: `${clampedPosition}%`,
-          transform: `translateX(-50%) translateY(-50%)`
+          transform: `translateX(-50%) translateY(-50%)`,
         }}
       />
     </div>

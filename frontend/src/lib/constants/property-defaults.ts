@@ -1,10 +1,10 @@
 /**
  * Centralized fallback defaults for property data.
- * 
+ *
  * SINGLE SOURCE OF TRUTH — used across verdict, deal-maker, analyzing,
  * and any other page that needs fallback property values when API data
  * is unavailable or incomplete.
- * 
+ *
  * Do NOT hardcode property defaults elsewhere. Import from here.
  */
 
@@ -14,7 +14,9 @@ export const FALLBACK_PROPERTY = {
   sqft: 1500,
   price: 350_000,
   /** Derived: price * 0.012 */
-  get propertyTaxes() { return Math.round(this.price * 0.012) },
+  get propertyTaxes() {
+    return Math.round(this.price * 0.012)
+  },
   /** Empty string — do not hardcode a US state */
   state: '',
   zipCode: '',

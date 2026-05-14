@@ -2,8 +2,16 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import {
-  Plus, Minus, Trash2, ChevronDown, ChevronUp,
-  AlertTriangle, CheckCircle, ArrowLeft, Zap, Wrench
+  Plus,
+  Minus,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  CheckCircle,
+  ArrowLeft,
+  Zap,
+  Wrench,
 } from 'lucide-react'
 import {
   REHAB_CATEGORIES,
@@ -12,7 +20,7 @@ import {
   RehabItem,
   RehabSelection,
   calculateRehabEstimate,
-  RehabPreset
+  RehabPreset,
 } from '@/lib/analytics'
 import { generatePropertyPresets } from '@/lib/rehabPresetGenerator'
 import type { GeneratedPreset, RegionalCostContext } from '@/lib/estimatorTypes'
@@ -34,8 +42,10 @@ type EstimatorMode = 'quick' | 'detailed'
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD',
-    minimumFractionDigits: 0, maximumFractionDigits: 0,
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(value)
 }
 
@@ -46,7 +56,7 @@ const formatCurrency = (value: number): string => {
 function PresetCard({
   preset,
   onSelect,
-  isActive
+  isActive,
 }: {
   preset: RehabPreset
   onSelect: () => void
@@ -61,9 +71,15 @@ function PresetCard({
         border: isActive ? '2px solid var(--accent-sky)' : '2px solid var(--border-default)',
       }}
     >
-      <div className="text-base font-semibold mb-1" style={{ color: 'var(--accent-sky)' }}>{preset.name}</div>
-      <div className="text-sm mb-1 leading-tight" style={{ color: 'var(--text-heading)' }}>{preset.description}</div>
-      <div className="text-lg font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(preset.estimatedCost.mid)}</div>
+      <div className="text-base font-semibold mb-1" style={{ color: 'var(--accent-sky)' }}>
+        {preset.name}
+      </div>
+      <div className="text-sm mb-1 leading-tight" style={{ color: 'var(--text-heading)' }}>
+        {preset.description}
+      </div>
+      <div className="text-lg font-bold" style={{ color: 'var(--accent-sky)' }}>
+        {formatCurrency(preset.estimatedCost.mid)}
+      </div>
     </button>
   )
 }
@@ -74,7 +90,7 @@ function PresetCard({
 
 function QualityTabs({
   value,
-  onChange
+  onChange,
 }: {
   value: QualityTier
   onChange: (tier: QualityTier) => void
@@ -84,7 +100,7 @@ function QualityTabs({
     { id: 'mid' as QualityTier, label: 'Standard' },
     { id: 'high' as QualityTier, label: 'Premium' },
   ]
-  
+
   return (
     <div className="flex gap-1.5">
       {tiers.map((tier) => (
@@ -95,7 +111,8 @@ function QualityTabs({
           style={{
             backgroundColor: value === tier.id ? 'var(--accent-sky)' : 'var(--surface-card)',
             color: value === tier.id ? 'var(--text-inverse)' : 'var(--text-secondary)',
-            border: value === tier.id ? '1px solid var(--accent-sky)' : '1px solid var(--border-default)',
+            border:
+              value === tier.id ? '1px solid var(--accent-sky)' : '1px solid var(--border-default)',
           }}
         >
           {tier.label}
@@ -113,16 +130,19 @@ function RehabItemRow({
   item,
   selection,
   onUpdate,
-  onRemove
+  onRemove,
 }: {
   item: RehabItem
   selection: RehabSelection
   onUpdate: (sel: RehabSelection) => void
   onRemove: () => void
 }) {
-  const tierCost = selection.tier === 'low' ? item.lowCost :
-                   selection.tier === 'mid' ? item.midCost :
-                   item.highCost
+  const tierCost =
+    selection.tier === 'low'
+      ? item.lowCost
+      : selection.tier === 'mid'
+        ? item.midCost
+        : item.highCost
   const unitCost = selection.costOverride != null ? selection.costOverride : tierCost
   const total = unitCost * selection.quantity
   const hasOverride = selection.costOverride != null
@@ -135,7 +155,7 @@ function RehabItemRow({
       onUpdate({ ...selection, costOverride: Math.max(0, parsed) })
     }
   }
-  
+
   return (
     <div
       className="grid grid-cols-[2fr_auto_auto_auto_1fr_auto] sm:grid-cols-[2fr_0.8fr_0.8fr_0.8fr_auto_auto_auto_1fr_auto] gap-1.5 items-center py-1.5 px-2 text-sm transition-colors"
@@ -143,9 +163,13 @@ function RehabItemRow({
     >
       {/* Item Name + Editable Unit Cost */}
       <div>
-        <div className="font-medium" style={{ color: 'var(--text-heading)' }}>{item.name}</div>
+        <div className="font-medium" style={{ color: 'var(--text-heading)' }}>
+          {item.name}
+        </div>
         <div className="flex items-center gap-0.5 mt-0.5">
-          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>$</span>
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            $
+          </span>
           <input
             type="number"
             value={unitCost}
@@ -157,10 +181,12 @@ function RehabItemRow({
               border: hasOverride ? '1px solid var(--accent-sky)' : '1px solid transparent',
             }}
           />
-          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>/{item.unit}</span>
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            /{item.unit}
+          </span>
         </div>
       </div>
-      
+
       {/* Quality Badges — clickable per-item tier override */}
       {(['low', 'mid', 'high'] as const).map((tier) => (
         <button
@@ -168,20 +194,26 @@ function RehabItemRow({
           onClick={() => onUpdate({ ...selection, tier, costOverride: undefined })}
           className="hidden sm:block py-0.5 px-1.5 rounded text-xs font-semibold text-center cursor-pointer transition-all"
           style={{
-            backgroundColor: selection.tier === tier && !hasOverride ? 'var(--surface-elevated)' : 'transparent',
+            backgroundColor:
+              selection.tier === tier && !hasOverride ? 'var(--surface-elevated)' : 'transparent',
             color: 'var(--accent-sky)',
-            border: selection.tier === tier && !hasOverride ? '1px solid var(--accent-sky)' : '1px solid transparent',
+            border:
+              selection.tier === tier && !hasOverride
+                ? '1px solid var(--accent-sky)'
+                : '1px solid transparent',
           }}
         >
           {tier === 'low' ? 'Budget' : tier === 'mid' ? 'Standard' : 'Premium'}
         </button>
       ))}
-      
+
       {/* Quantity Input */}
       <input
         type="number"
         value={selection.quantity}
-        onChange={(e) => onUpdate({ ...selection, quantity: Math.max(0, parseInt(e.target.value) || 0) })}
+        onChange={(e) =>
+          onUpdate({ ...selection, quantity: Math.max(0, parseInt(e.target.value) || 0) })
+        }
         className="w-14 px-1.5 py-1 rounded-md text-[13px] text-center focus:outline-none"
         style={{
           backgroundColor: 'var(--surface-input)',
@@ -189,7 +221,7 @@ function RehabItemRow({
           border: '1px solid var(--border-default)',
         }}
       />
-      
+
       {/* Minus Button */}
       <button
         onClick={() => onUpdate({ ...selection, quantity: Math.max(0, selection.quantity - 1) })}
@@ -215,10 +247,12 @@ function RehabItemRow({
       >
         <Plus className="w-3 h-3" />
       </button>
-      
+
       {/* Total */}
-      <div className="font-bold text-right" style={{ color: 'var(--text-heading)' }}>{formatCurrency(total)}</div>
-      
+      <div className="font-bold text-right" style={{ color: 'var(--text-heading)' }}>
+        {formatCurrency(total)}
+      </div>
+
       {/* Delete */}
       <button
         onClick={onRemove}
@@ -239,7 +273,7 @@ function CategorySection({
   selections,
   onAddItem,
   onUpdateItem,
-  onRemoveItem
+  onRemoveItem,
 }: {
   category: RehabCategory
   selections: RehabSelection[]
@@ -249,50 +283,60 @@ function CategorySection({
 }) {
   const [expanded, setExpanded] = useState(true)
   const [showAddMenu, setShowAddMenu] = useState(false)
-  
-  const selectedItems = selections.filter(s => 
-    category.items.some(i => i.id === s.itemId)
-  )
-  
-  const availableItems = category.items.filter(i => 
-    !selections.some(s => s.itemId === i.id)
-  )
-  
+
+  const selectedItems = selections.filter((s) => category.items.some((i) => i.id === s.itemId))
+
+  const availableItems = category.items.filter((i) => !selections.some((s) => s.itemId === i.id))
+
   const categoryTotal = selectedItems.reduce((sum, sel) => {
-    const item = category.items.find(i => i.id === sel.itemId)
+    const item = category.items.find((i) => i.id === sel.itemId)
     if (!item) return sum
-    const unitCost = sel.costOverride != null ? sel.costOverride :
-                     sel.tier === 'low' ? item.lowCost :
-                     sel.tier === 'mid' ? item.midCost :
-                     item.highCost
+    const unitCost =
+      sel.costOverride != null
+        ? sel.costOverride
+        : sel.tier === 'low'
+          ? item.lowCost
+          : sel.tier === 'mid'
+            ? item.midCost
+            : item.highCost
     return sum + unitCost * sel.quantity
   }, 0)
-  
+
   return (
     <div className="mb-3">
       {/* Category Header */}
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex justify-between items-center p-2 rounded-lg mb-1.5 cursor-pointer transition-colors"
-        style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}
+        style={{
+          background:
+            'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
+        }}
       >
         <div className="text-left pl-2">
-          <h3 className="text-base font-semibold" style={{ color: 'var(--accent-sky)' }}>{category.name}</h3>
-          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{selectedItems.length} items selected</p>
+          <h3 className="text-base font-semibold" style={{ color: 'var(--accent-sky)' }}>
+            {category.name}
+          </h3>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            {selectedItems.length} items selected
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="text-lg font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(categoryTotal)}</div>
-          {expanded
-            ? <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
-            : <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
-          }
+          <div className="text-lg font-bold" style={{ color: 'var(--accent-sky)' }}>
+            {formatCurrency(categoryTotal)}
+          </div>
+          {expanded ? (
+            <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
+          ) : (
+            <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
+          )}
         </div>
       </button>
-      
+
       {expanded && (
         <div>
           {selectedItems.map((sel) => {
-            const item = category.items.find(i => i.id === sel.itemId)
+            const item = category.items.find((i) => i.id === sel.itemId)
             if (!item) return null
             return (
               <RehabItemRow
@@ -304,7 +348,7 @@ function CategorySection({
               />
             )
           })}
-          
+
           {availableItems.length > 0 && (
             <div className="relative">
               <button
@@ -318,7 +362,7 @@ function CategorySection({
               >
                 + Add Item
               </button>
-              
+
               {showAddMenu && (
                 <div
                   className="absolute top-full left-0 right-0 mt-1 rounded-lg shadow-xl z-10 max-h-48 overflow-auto"
@@ -337,8 +381,15 @@ function CategorySection({
                       className="w-full flex items-center justify-between px-3 py-2 last:border-0 text-left transition-colors"
                       style={{ borderBottom: '1px solid var(--border-subtle)' }}
                     >
-                      <span className="text-base font-medium" style={{ color: 'var(--text-heading)' }}>{item.name}</span>
-                      <span className="text-sm" style={{ color: 'var(--text-heading)' }}>{formatCurrency(item.midCost)}/{item.unit}</span>
+                      <span
+                        className="text-base font-medium"
+                        style={{ color: 'var(--text-heading)' }}
+                      >
+                        {item.name}
+                      </span>
+                      <span className="text-sm" style={{ color: 'var(--text-heading)' }}>
+                        {formatCurrency(item.midCost)}/{item.unit}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -357,13 +408,16 @@ function CategorySection({
 
 function ModeToggle({
   mode,
-  onModeChange
+  onModeChange,
 }: {
   mode: EstimatorMode
   onModeChange: (mode: EstimatorMode) => void
 }) {
   return (
-    <div className="flex gap-1 p-1 rounded-lg" style={{ backgroundColor: 'var(--surface-elevated)' }}>
+    <div
+      className="flex gap-1 p-1 rounded-lg"
+      style={{ backgroundColor: 'var(--surface-elevated)' }}
+    >
       <button
         onClick={() => onModeChange('quick')}
         className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold transition-all"
@@ -421,9 +475,9 @@ interface RehabEstimatorProps {
   savedPropertyId?: string
 }
 
-export default function RehabEstimator({ 
-  onEstimateChange, 
-  initialBudget = 40000, 
+export default function RehabEstimator({
+  onEstimateChange,
+  initialBudget = 40000,
   propertyAddress,
   propertyData,
   costContext,
@@ -432,19 +486,22 @@ export default function RehabEstimator({
 }: RehabEstimatorProps) {
   const [mode, setModeRaw] = useState<EstimatorMode>(propertyData ? initialMode : 'detailed')
   const setMode = useCallback((newMode: EstimatorMode) => {
-    setModeRaw(prev => {
+    setModeRaw((prev) => {
       if (prev !== newMode) trackModeSwitched(prev, newMode)
       return newMode
     })
   }, [])
   const [selections, setSelections] = useState<RehabSelection[]>([])
-  const [contingencyPct, setContingencyPctRaw] = useState(0.10)
-  const setContingencyPct = useCallback((pct: number) => {
-    setContingencyPctRaw(prev => {
-      if (prev !== pct) trackContingencyChanged(prev, pct, propertyData?.zip_code)
-      return pct
-    })
-  }, [propertyData?.zip_code])
+  const [contingencyPct, setContingencyPctRaw] = useState(0.1)
+  const setContingencyPct = useCallback(
+    (pct: number) => {
+      setContingencyPctRaw((prev) => {
+        if (prev !== pct) trackContingencyChanged(prev, pct, propertyData?.zip_code)
+        return pct
+      })
+    },
+    [propertyData?.zip_code],
+  )
   const [activePreset, setActivePreset] = useState<string | null>(null)
   const [globalTier, setGlobalTier] = useState<QualityTier>('mid')
   const [workspaceTab, setWorkspaceTab] = useState<'estimate' | 'budget'>('estimate')
@@ -460,29 +517,32 @@ export default function RehabEstimator({
   }, [propertyData, costContext])
 
   const isPropertyDriven = !!propertyData
-  
+
   const estimate = useMemo(
     () => calculateRehabEstimate(selections, contingencyPct),
-    [selections, contingencyPct]
+    [selections, contingencyPct],
   )
-  
+
   useMemo(() => {
     onEstimateChange?.(estimate.grandTotal)
   }, [estimate.grandTotal, onEstimateChange])
-  
+
   const zipCode = propertyData?.zip_code
 
-  const handleGlobalTierChange = useCallback((tier: QualityTier) => {
-    setGlobalTier(tier)
-    setSelections(prev => prev.map(s => ({ ...s, tier, costOverride: undefined })))
-    setActivePreset(null)
-    trackTierChanged(tier, zipCode)
-  }, [zipCode])
-  
+  const handleGlobalTierChange = useCallback(
+    (tier: QualityTier) => {
+      setGlobalTier(tier)
+      setSelections((prev) => prev.map((s) => ({ ...s, tier, costOverride: undefined })))
+      setActivePreset(null)
+      trackTierChanged(tier, zipCode)
+    },
+    [zipCode],
+  )
+
   const handleAddItem = (itemId: string) => {
     let defaultQty = 1
     for (const cat of REHAB_CATEGORIES) {
-      const item = cat.items.find(i => i.id === itemId)
+      const item = cat.items.find((i) => i.id === itemId)
       if (item) {
         defaultQty = item.defaultQuantity
         break
@@ -492,18 +552,18 @@ export default function RehabEstimator({
     setActivePreset(null)
     trackLineItemAdded(itemId, defaultQty, zipCode)
   }
-  
+
   const handleUpdateItem = (itemId: string, selection: RehabSelection) => {
-    setSelections(selections.map(s => s.itemId === itemId ? selection : s))
+    setSelections(selections.map((s) => (s.itemId === itemId ? selection : s)))
     setActivePreset(null)
   }
-  
+
   const handleRemoveItem = (itemId: string) => {
-    setSelections(selections.filter(s => s.itemId !== itemId))
+    setSelections(selections.filter((s) => s.itemId !== itemId))
     setActivePreset(null)
     trackLineItemRemoved(itemId, zipCode)
   }
-  
+
   const handlePresetSelect = (preset: RehabPreset) => {
     if (activePreset === preset.id) {
       setActivePreset(null)
@@ -514,47 +574,46 @@ export default function RehabEstimator({
     setGlobalTier('mid')
     trackPresetSelected(preset.id, isPropertyDriven, zipCode, propertyData?.square_footage)
   }
-  
+
   const handleClearAll = () => {
     setSelections([])
     setActivePreset(null)
     setGlobalTier('mid')
   }
-  
+
   const budgetDiff = estimate.grandTotal - initialBudget
   const isOverBudget = budgetDiff > 0
-  const budgetPct = initialBudget > 0 ? Math.abs(budgetDiff / initialBudget * 100).toFixed(0) : 0
-  
+  const budgetPct = initialBudget > 0 ? Math.abs((budgetDiff / initialBudget) * 100).toFixed(0) : 0
+
   if (mode === 'quick' && propertyData) {
-    const tabBar =
-      savedPropertyId ? (
-        <div className="flex rounded-xl border border-[var(--border-default)] p-1 gap-1 bg-[var(--surface-elevated)]">
-          <button
-            type="button"
-            className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
-            style={{
-              backgroundColor: workspaceTab === 'estimate' ? 'var(--surface-card)' : 'transparent',
-              color: 'var(--text-heading)',
-              boxShadow: workspaceTab === 'estimate' ? 'var(--shadow-card)' : undefined,
-            }}
-            onClick={() => setWorkspaceTab('estimate')}
-          >
-            Estimate
-          </button>
-          <button
-            type="button"
-            className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
-            style={{
-              backgroundColor: workspaceTab === 'budget' ? 'var(--surface-card)' : 'transparent',
-              color: 'var(--text-heading)',
-              boxShadow: workspaceTab === 'budget' ? 'var(--shadow-card)' : undefined,
-            }}
-            onClick={() => setWorkspaceTab('budget')}
-          >
-            Budget (actuals)
-          </button>
-        </div>
-      ) : null
+    const tabBar = savedPropertyId ? (
+      <div className="flex rounded-xl border border-[var(--border-default)] p-1 gap-1 bg-[var(--surface-elevated)]">
+        <button
+          type="button"
+          className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
+          style={{
+            backgroundColor: workspaceTab === 'estimate' ? 'var(--surface-card)' : 'transparent',
+            color: 'var(--text-heading)',
+            boxShadow: workspaceTab === 'estimate' ? 'var(--shadow-card)' : undefined,
+          }}
+          onClick={() => setWorkspaceTab('estimate')}
+        >
+          Estimate
+        </button>
+        <button
+          type="button"
+          className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
+          style={{
+            backgroundColor: workspaceTab === 'budget' ? 'var(--surface-card)' : 'transparent',
+            color: 'var(--text-heading)',
+            boxShadow: workspaceTab === 'budget' ? 'var(--shadow-card)' : undefined,
+          }}
+          onClick={() => setWorkspaceTab('budget')}
+        >
+          Budget (actuals)
+        </button>
+      </div>
+    ) : null
 
     return (
       <div className="space-y-4">
@@ -571,8 +630,9 @@ export default function RehabEstimator({
             />
           ) : (
             <p className="py-6 text-[var(--text-secondary)]">
-              No budget saved yet. Switch to <strong className="text-[var(--text-heading)]">Estimate</strong>, switch to
-              detailed mode, add line items, and tap <strong>Save as budget</strong>.
+              No budget saved yet. Switch to{' '}
+              <strong className="text-[var(--text-heading)]">Estimate</strong>, switch to detailed
+              mode, add line items, and tap <strong>Save as budget</strong>.
             </p>
           )
         ) : (
@@ -602,12 +662,10 @@ export default function RehabEstimator({
       </div>
     )
   }
-  
+
   return (
     <div className="space-y-3">
-      {propertyData && (
-        <ModeToggle mode={mode} onModeChange={setMode} />
-      )}
+      {propertyData && <ModeToggle mode={mode} onModeChange={setMode} />}
 
       {savedPropertyId ? (
         <div className="flex rounded-xl border border-[var(--border-default)] p-1 gap-1 bg-[var(--surface-elevated)]">
@@ -649,160 +707,200 @@ export default function RehabEstimator({
           />
         ) : (
           <p className="py-6 text-[var(--text-secondary)]">
-            Use <strong className="text-[var(--text-heading)]">Save as budget</strong> below after you’ve built your scope.
+            Use <strong className="text-[var(--text-heading)]">Save as budget</strong> below after
+            you’ve built your scope.
           </p>
         )
       ) : (
         <>
-      {/* Quick Start Presets */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <div className="text-lg font-semibold" style={{ color: 'var(--text-heading)' }}>Quick Start Presets</div>
-          {isPropertyDriven && (
-            <span
-              className="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
-              style={{ backgroundColor: 'rgba(56,189,248,0.15)', color: 'var(--accent-sky)' }}
-            >
-              Property-Specific
-            </span>
-          )}
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {presets.map((preset) => (
-            <PresetCard
-              key={preset.id}
-              preset={preset}
-              onSelect={() => handlePresetSelect(preset)}
-              isActive={activePreset === preset.id}
-            />
-          ))}
-        </div>
-      </div>
+          {/* Quick Start Presets */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="text-lg font-semibold" style={{ color: 'var(--text-heading)' }}>
+                Quick Start Presets
+              </div>
+              {isPropertyDriven && (
+                <span
+                  className="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ backgroundColor: 'rgba(56,189,248,0.15)', color: 'var(--accent-sky)' }}
+                >
+                  Property-Specific
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {presets.map((preset) => (
+                <PresetCard
+                  key={preset.id}
+                  preset={preset}
+                  onSelect={() => handlePresetSelect(preset)}
+                  isActive={activePreset === preset.id}
+                />
+              ))}
+            </div>
+          </div>
 
-      {/* Regional Cost Context */}
-      {costContext && <RegionalContextCard costContext={costContext} />}
+          {/* Regional Cost Context */}
+          {costContext && <RegionalContextCard costContext={costContext} />}
 
-      {/* Quality Level */}
-      <div className="rounded-lg p-2" style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
-        <div className="flex justify-between items-center">
-          <div className="text-lg font-semibold" style={{ color: 'var(--accent-sky)' }}>Quality Level</div>
-          <QualityTabs value={globalTier} onChange={handleGlobalTierChange} />
-        </div>
-      </div>
-
-      {/* Categories */}
-      <div>
-        {REHAB_CATEGORIES.map((category) => (
-          <CategorySection
-            key={category.id}
-            category={category}
-            selections={selections}
-            onAddItem={handleAddItem}
-            onUpdateItem={handleUpdateItem}
-            onRemoveItem={handleRemoveItem}
-          />
-        ))}
-      </div>
-
-      {/* Contingency Reserve */}
-      <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600 rounded-lg px-3 py-2 flex justify-between items-center">
-        <div>
-          <h4 className="text-base font-semibold text-amber-800 dark:text-amber-400">Contingency Reserve</h4>
-          <p className="text-sm text-amber-700 dark:text-amber-500">Buffer for unexpected costs</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <select
-            value={contingencyPct}
-            onChange={(e) => setContingencyPct(parseFloat(e.target.value))}
-            className="px-2 py-1 rounded-md text-sm"
+          {/* Quality Level */}
+          <div
+            className="rounded-lg p-2"
             style={{
-              backgroundColor: 'var(--surface-input)',
-              color: 'var(--text-heading)',
-              border: '1px solid var(--border-default)',
+              background:
+                'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
             }}
           >
-            <option value={0.05}>5%</option>
-            <option value={0.10}>10%</option>
-            <option value={0.15}>15%</option>
-            <option value={0.20}>20%</option>
-          </select>
-          <span className="text-lg font-bold text-amber-800 dark:text-amber-400">{formatCurrency(estimate.contingency)}</span>
-        </div>
-      </div>
-
-      {savedPropertyId && selections.length > 0 && (
-        <button
-          type="button"
-          disabled={seedBudget.isPending}
-          onClick={async () => {
-            await seedBudget.mutateAsync({
-              propertyId: savedPropertyId,
-              selections,
-              contingency_pct: contingencyPct,
-            })
-            setWorkspaceTab('budget')
-            await budgetQuery.refetch()
-          }}
-          className="w-full py-3 rounded-xl font-semibold text-[var(--text-inverse)] brand-gradient disabled:opacity-50"
-        >
-          {seedBudget.isPending ? 'Saving budget…' : 'Save as budget for this property'}
-        </button>
-      )}
-
-      {/* Total Estimate */}
-      <div className="rounded-xl px-4 py-3 flex justify-between items-center" style={{ background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)' }}>
-        <div>
-          <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--accent-sky)' }}>Total Estimate</h2>
-          <div className="flex gap-4 text-xs" style={{ color: 'var(--text-secondary)' }}>
-            <div>Base: <span className="font-semibold">{formatCurrency(estimate.totalCost)}</span></div>
-            <div>Contingency: <span className="font-semibold">{formatCurrency(estimate.contingency)}</span></div>
-          </div>
-          {initialBudget > 0 && (
-            <div className="mt-1.5 px-3 py-1.5 rounded-md flex items-center gap-2 text-[13px]" style={{ color: 'var(--text-secondary)', backgroundColor: 'var(--surface-elevated)', border: '1px solid var(--border-default)' }}>
-              {isOverBudget ? (
-                <AlertTriangle className="w-3.5 h-3.5" />
-              ) : (
-                <CheckCircle className="w-3.5 h-3.5" />
-              )}
-              {budgetPct}% {isOverBudget ? 'Over' : 'Under'} Budget ({formatCurrency(Math.abs(budgetDiff))})
+            <div className="flex justify-between items-center">
+              <div className="text-lg font-semibold" style={{ color: 'var(--accent-sky)' }}>
+                Quality Level
+              </div>
+              <QualityTabs value={globalTier} onChange={handleGlobalTierChange} />
             </div>
+          </div>
+
+          {/* Categories */}
+          <div>
+            {REHAB_CATEGORIES.map((category) => (
+              <CategorySection
+                key={category.id}
+                category={category}
+                selections={selections}
+                onAddItem={handleAddItem}
+                onUpdateItem={handleUpdateItem}
+                onRemoveItem={handleRemoveItem}
+              />
+            ))}
+          </div>
+
+          {/* Contingency Reserve */}
+          <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600 rounded-lg px-3 py-2 flex justify-between items-center">
+            <div>
+              <h4 className="text-base font-semibold text-amber-800 dark:text-amber-400">
+                Contingency Reserve
+              </h4>
+              <p className="text-sm text-amber-700 dark:text-amber-500">
+                Buffer for unexpected costs
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={contingencyPct}
+                onChange={(e) => setContingencyPct(parseFloat(e.target.value))}
+                className="px-2 py-1 rounded-md text-sm"
+                style={{
+                  backgroundColor: 'var(--surface-input)',
+                  color: 'var(--text-heading)',
+                  border: '1px solid var(--border-default)',
+                }}
+              >
+                <option value={0.05}>5%</option>
+                <option value={0.1}>10%</option>
+                <option value={0.15}>15%</option>
+                <option value={0.2}>20%</option>
+              </select>
+              <span className="text-lg font-bold text-amber-800 dark:text-amber-400">
+                {formatCurrency(estimate.contingency)}
+              </span>
+            </div>
+          </div>
+
+          {savedPropertyId && selections.length > 0 && (
+            <button
+              type="button"
+              disabled={seedBudget.isPending}
+              onClick={async () => {
+                await seedBudget.mutateAsync({
+                  propertyId: savedPropertyId,
+                  selections,
+                  contingency_pct: contingencyPct,
+                })
+                setWorkspaceTab('budget')
+                await budgetQuery.refetch()
+              }}
+              className="w-full py-3 rounded-xl font-semibold text-[var(--text-inverse)] brand-gradient disabled:opacity-50"
+            >
+              {seedBudget.isPending ? 'Saving budget…' : 'Save as budget for this property'}
+            </button>
           )}
-        </div>
-        <div className="text-3xl font-bold" style={{ color: 'var(--accent-sky)' }}>{formatCurrency(estimate.grandTotal)}</div>
-      </div>
 
-      {/* Why This Number */}
-      <CostExplanationPanel
-        propertyData={propertyData}
-        costContext={costContext}
-        totalEstimate={estimate.grandTotal}
-        breakdown={estimate.breakdown}
-      />
+          {/* Total Estimate */}
+          <div
+            className="rounded-xl px-4 py-3 flex justify-between items-center"
+            style={{
+              background:
+                'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
+            }}
+          >
+            <div>
+              <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--accent-sky)' }}>
+                Total Estimate
+              </h2>
+              <div className="flex gap-4 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                <div>
+                  Base: <span className="font-semibold">{formatCurrency(estimate.totalCost)}</span>
+                </div>
+                <div>
+                  Contingency:{' '}
+                  <span className="font-semibold">{formatCurrency(estimate.contingency)}</span>
+                </div>
+              </div>
+              {initialBudget > 0 && (
+                <div
+                  className="mt-1.5 px-3 py-1.5 rounded-md flex items-center gap-2 text-[13px]"
+                  style={{
+                    color: 'var(--text-secondary)',
+                    backgroundColor: 'var(--surface-elevated)',
+                    border: '1px solid var(--border-default)',
+                  }}
+                >
+                  {isOverBudget ? (
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                  ) : (
+                    <CheckCircle className="w-3.5 h-3.5" />
+                  )}
+                  {budgetPct}% {isOverBudget ? 'Over' : 'Under'} Budget (
+                  {formatCurrency(Math.abs(budgetDiff))})
+                </div>
+              )}
+            </div>
+            <div className="text-3xl font-bold" style={{ color: 'var(--accent-sky)' }}>
+              {formatCurrency(estimate.grandTotal)}
+            </div>
+          </div>
 
-      {/* Back Button */}
-      {propertyAddress && (
-        <a
-          href={`/property?address=${encodeURIComponent(propertyAddress)}`}
-          className="block w-full py-2.5 rounded-lg text-[13px] font-semibold text-center cursor-pointer transition-all"
-          style={{
-            backgroundColor: 'var(--surface-card)',
-            color: 'var(--text-secondary)',
-            border: '2px solid var(--border-default)',
-          }}
-        >
-          ← Back to Property Analytics
-        </a>
-      )}
+          {/* Why This Number */}
+          <CostExplanationPanel
+            propertyData={propertyData}
+            costContext={costContext}
+            totalEstimate={estimate.grandTotal}
+            breakdown={estimate.breakdown}
+          />
 
-      {/* Clear All Button */}
-      {selections.length > 0 && (
-        <button
-          onClick={handleClearAll}
-          className="w-full py-2 text-sm text-crimson-500 hover:text-crimson-600 font-medium"
-        >
-          Clear All Items
-        </button>
-      )}
+          {/* Back Button */}
+          {propertyAddress && (
+            <a
+              href={`/property?address=${encodeURIComponent(propertyAddress)}`}
+              className="block w-full py-2.5 rounded-lg text-[13px] font-semibold text-center cursor-pointer transition-all"
+              style={{
+                backgroundColor: 'var(--surface-card)',
+                color: 'var(--text-secondary)',
+                border: '2px solid var(--border-default)',
+              }}
+            >
+              ← Back to Property Analytics
+            </a>
+          )}
+
+          {/* Clear All Button */}
+          {selections.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              className="w-full py-2 text-sm text-crimson-500 hover:text-crimson-600 font-medium"
+            >
+              Clear All Items
+            </button>
+          )}
         </>
       )}
     </div>

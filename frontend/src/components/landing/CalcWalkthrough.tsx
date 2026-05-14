@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 const calcSteps = [
   {
@@ -33,14 +33,14 @@ const calcSteps = [
     value: '−17.4% Deal Gap',
     color: 'var(--coral)',
   },
-] as const;
+] as const
 
 const resultItems = [
   { label: 'Income Value', value: '$312K', color: 'var(--green)' },
   { label: 'Target Buy', value: '$289K', color: 'var(--teal)' },
   { label: 'List Price', value: '$349.9K', color: 'var(--coral)' },
   { label: 'Deal Gap', value: '−17.4%', color: 'var(--teal)' },
-] as const;
+] as const
 
 export function CalcWalkthrough() {
   return (
@@ -54,9 +54,8 @@ export function CalcWalkthrough() {
         calculates your three numbers.
       </div>
       <div className="section-subtitle">
-        Here&apos;s the exact logic behind a real analysis. No hidden formulas —
-        the same math a professional underwriter would use, automated and
-        instant.
+        Here&apos;s the exact logic behind a real analysis. No hidden formulas — the same math a
+        professional underwriter would use, automated and instant.
       </div>
 
       <div className="calc-walkthrough">
@@ -73,10 +72,7 @@ export function CalcWalkthrough() {
                 <div className="calc-step-num">{step.num}</div>
                 <div className="calc-step-title">{step.title}</div>
                 <div className="calc-step-detail">{step.detail}</div>
-                <div
-                  className="calc-step-value"
-                  style={{ color: step.color }}
-                >
+                <div className="calc-step-value" style={{ color: step.color }}>
                   {step.value}
                 </div>
               </div>
@@ -86,10 +82,7 @@ export function CalcWalkthrough() {
             {resultItems.map((item) => (
               <div key={item.label} className="calc-result-item">
                 <div className="calc-result-label">{item.label}</div>
-                <div
-                  className="calc-result-val"
-                  style={{ color: item.color }}
-                >
+                <div className="calc-result-val" style={{ color: item.color }}>
                   {item.value}
                 </div>
               </div>
@@ -98,5 +91,5 @@ export function CalcWalkthrough() {
         </div>
       </div>
     </section>
-  );
+  )
 }

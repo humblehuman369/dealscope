@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import { useEffect } from 'react';
-import { initSentry } from '../../sentry.client.config';
+import { useEffect } from 'react'
+import { initSentry } from '../../sentry.client.config'
 
 /**
  * Client component that initializes Sentry on mount.
@@ -9,8 +9,8 @@ import { initSentry } from '../../sentry.client.config';
  */
 export function SentryInit() {
   useEffect(() => {
-    initSentry();
-  }, []);
-  
-  return null;
+    initSentry()
+  }, [])
+
+  return null
 }

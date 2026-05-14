@@ -7,10 +7,13 @@ import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { API_BASE_URL } from '@/lib/env'
 import type { RegionalCostContext } from '@/lib/estimatorTypes'
 
-const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), { 
+const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), {
   loading: () => (
-    <div className="animate-pulse rounded-2xl h-96" style={{ backgroundColor: 'var(--surface-elevated)' }} />
-  )
+    <div
+      className="animate-pulse rounded-2xl h-96"
+      style={{ backgroundColor: 'var(--surface-elevated)' }}
+    />
+  ),
 })
 
 interface PropertyData {
@@ -34,7 +37,7 @@ function RehabPageContent() {
   const address = searchParams.get('address') || ''
   const savedPropertyId = searchParams.get('saved_property_id') || undefined
   const initialBudget = parseInt(searchParams.get('budget') || '25000', 10)
-  
+
   const [propertyData, setPropertyData] = useState<PropertyData | undefined>(undefined)
   const [costContext, setCostContext] = useState<RegionalCostContext | null>(null)
   const [loading, setLoading] = useState(!!address)
@@ -43,7 +46,7 @@ function RehabPageContent() {
     async function fetchCostContext(zipCode: string) {
       try {
         const res = await fetch(
-          `${API_BASE_URL}/api/v1/rehab/cost-context?zip_code=${encodeURIComponent(zipCode)}`
+          `${API_BASE_URL}/api/v1/rehab/cost-context?zip_code=${encodeURIComponent(zipCode)}`,
         )
         if (res.ok) {
           setCostContext(await res.json())
@@ -61,7 +64,7 @@ function RehabPageContent() {
     const bathrooms = searchParams.get('bathrooms')
     const hasPool = searchParams.get('has_pool')
     const stories = searchParams.get('stories')
-    
+
     if (sqft || yearBuilt || arv) {
       setPropertyData({
         square_footage: sqft ? parseInt(sqft, 10) : undefined,
@@ -79,9 +82,9 @@ function RehabPageContent() {
       const fetchPropertyData = async () => {
         try {
           const response = await fetch(
-            `${API_BASE_URL}/api/v1/property/search?address=${encodeURIComponent(address)}`
+            `${API_BASE_URL}/api/v1/property/search?address=${encodeURIComponent(address)}`,
           )
-          
+
           if (response.ok) {
             const data = await response.json()
             const zip = data.address?.zip_code
@@ -106,7 +109,7 @@ function RehabPageContent() {
           setLoading(false)
         }
       }
-      
+
       fetchPropertyData()
     } else {
       setLoading(false)
@@ -114,21 +117,27 @@ function RehabPageContent() {
   }, [address, searchParams])
 
   return (
-    <div className="min-h-screen px-1 sm:px-4 transition-colors" style={{ backgroundColor: 'var(--surface-base)' }}>
+    <div
+      className="min-h-screen px-1 sm:px-4 transition-colors"
+      style={{ backgroundColor: 'var(--surface-base)' }}
+    >
       <div className="w-full">
         <div style={{ backgroundColor: 'var(--surface-card)' }}>
           {/* Header */}
           <div
             className="px-1 sm:px-4 py-3 flex justify-between items-center"
             style={{
-              background: 'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
+              background:
+                'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
               borderBottom: '1px solid var(--border-subtle)',
             }}
           >
             <div>
-              <h1 className="text-xl font-bold" style={{ color: 'var(--accent-sky)' }}>Rehab Estimator</h1>
+              <h1 className="text-xl font-bold" style={{ color: 'var(--accent-sky)' }}>
+                Rehab Estimator
+              </h1>
             </div>
-            <a 
+            <a
               href={address ? `/property?address=${encodeURIComponent(address)}` : '/'}
               className="border-none px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-all"
               style={{
@@ -146,8 +155,8 @@ function RehabPageContent() {
             {loading ? (
               <IQLoadingLogo />
             ) : (
-              <RehabEstimator 
-                initialBudget={initialBudget} 
+              <RehabEstimator
+                initialBudget={initialBudget}
                 propertyAddress={address}
                 propertyData={propertyData}
                 costContext={costContext}

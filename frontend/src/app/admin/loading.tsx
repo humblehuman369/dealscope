@@ -31,25 +31,22 @@ export default function AdminLoading() {
 
         {/* Content skeleton — stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            'bg-sky-400/5',
-            'bg-emerald-400/5',
-            'bg-teal-400/5',
-            'bg-amber-400/5',
-          ].map((tint, i) => (
-            <div
-              key={i}
-              className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 ${tint} rounded-lg animate-pulse`} />
-                <div>
-                  <div className="h-7 w-12 bg-white/[0.05] rounded animate-pulse mb-1" />
-                  <div className="h-3 w-20 bg-white/[0.03] rounded animate-pulse" />
+          {['bg-sky-400/5', 'bg-emerald-400/5', 'bg-teal-400/5', 'bg-amber-400/5'].map(
+            (tint, i) => (
+              <div
+                key={i}
+                className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 ${tint} rounded-lg animate-pulse`} />
+                  <div>
+                    <div className="h-7 w-12 bg-white/[0.05] rounded animate-pulse mb-1" />
+                    <div className="h-3 w-20 bg-white/[0.03] rounded animate-pulse" />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ),
+          )}
         </div>
       </div>
     </div>

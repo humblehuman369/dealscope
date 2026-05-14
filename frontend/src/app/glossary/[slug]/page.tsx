@@ -4,8 +4,7 @@ import Link from 'next/link'
 import { getAllContent, getContent } from '@/lib/content'
 import { MarkdownArticle } from '@/components/blog/MarkdownArticle'
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
 export async function generateStaticParams() {
   const terms = await getAllContent('glossary')
@@ -51,11 +50,7 @@ function formatDate(iso?: string): string | null {
   })
 }
 
-export default async function GlossaryTerm({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default async function GlossaryTerm({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const term = await getContent('glossary', slug)
   if (!term) notFound()
@@ -69,8 +64,7 @@ export default async function GlossaryTerm({
 
   const url = `${SITE_URL}/glossary/${slug}`
   const description =
-    fm.meta_description ||
-    `Definition and worked example of ${fm.title} from DealGapIQ.`
+    fm.meta_description || `Definition and worked example of ${fm.title} from DealGapIQ.`
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -169,10 +163,7 @@ export default async function GlossaryTerm({
           </div>
         </article>
 
-        <div
-          className="mt-16 pt-8"
-          style={{ borderTop: '1px solid var(--border-subtle)' }}
-        >
+        <div className="mt-16 pt-8" style={{ borderTop: '1px solid var(--border-subtle)' }}>
           <Link
             href="/"
             className="inline-block px-6 py-3 rounded-full font-semibold transition-opacity hover:opacity-90"

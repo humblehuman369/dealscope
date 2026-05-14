@@ -19,10 +19,18 @@
 export const IS_CAPACITOR: boolean = (() => {
   if (typeof window === 'undefined') return false
   if ((window as any).Capacitor) {
-    try { localStorage.setItem('__cap_bridge', '1') } catch { /* noop */ }
+    try {
+      localStorage.setItem('__cap_bridge', '1')
+    } catch {
+      /* noop */
+    }
     return true
   }
-  try { return localStorage.getItem('__cap_bridge') === '1' } catch { return false }
+  try {
+    return localStorage.getItem('__cap_bridge') === '1'
+  } catch {
+    return false
+  }
 })()
 
 /**
@@ -68,5 +76,4 @@ export const API_BASE_URL = DIRECT_API_ENABLED ? PUBLIC_API_URL : ''
  * and other API routes always resolve to an absolute URL.
  */
 export const WEB_BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL ||
-  (IS_CAPACITOR ? 'https://dealgapiq.com' : '')
+  process.env.NEXT_PUBLIC_APP_URL || (IS_CAPACITOR ? 'https://dealgapiq.com' : '')

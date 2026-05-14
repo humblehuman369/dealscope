@@ -1,21 +1,21 @@
 /**
  * useDefaults Hook
- * 
+ *
  * React hook for accessing centralized investment calculation defaults.
  * This is the ONLY way to access default values in components.
- * 
+ *
  * NEVER hardcode default values - always use this hook.
- * 
+ *
  * Usage:
  * ```tsx
  * import { useDefaults } from '@/hooks/useDefaults'
- * 
+ *
  * function MyComponent({ zipCode }) {
  *   const { defaults, loading, error, refetch } = useDefaults(zipCode)
- *   
+ *
  *   if (loading) return <Spinner />
  *   if (error) return <Error message={error.message} />
- *   
+ *
  *   return <div>Interest Rate: {defaults.financing.interest_rate * 100}%</div>
  * }
  * ```
@@ -46,7 +46,7 @@ export interface UseDefaultsResult {
 
 /**
  * Hook for accessing centralized defaults.
- * 
+ *
  * @param zipCode - Optional ZIP code for market-specific adjustments
  * @returns Defaults and status
  */
@@ -55,14 +55,14 @@ export function useDefaults(zipCode?: string): UseDefaultsResult {
   const [fullResponse, setFullResponse] = useState<ResolvedDefaultsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  
+
   // Track the ZIP code to detect changes
   const prevZipCodeRef = useRef<string | undefined>(zipCode)
-  
+
   const fetchDefaults = useCallback(async () => {
     setLoading(true)
     setError(null)
-    
+
     try {
       const response = await defaultsService.getResolvedDefaults(zipCode)
       setFullResponse(response)
@@ -70,7 +70,7 @@ export function useDefaults(zipCode?: string): UseDefaultsResult {
     } catch (err) {
       console.error('Failed to fetch defaults:', err)
       setError(err instanceof Error ? err : new Error('Failed to fetch defaults'))
-      
+
       // Try to use basic system defaults as fallback
       try {
         const basicDefaults = await defaultsService.getDefaults()
@@ -82,12 +82,12 @@ export function useDefaults(zipCode?: string): UseDefaultsResult {
       setLoading(false)
     }
   }, [zipCode])
-  
+
   // Fetch on mount and when ZIP code changes
   useEffect(() => {
     fetchDefaults()
   }, [fetchDefaults])
-  
+
   // Refetch when ZIP code changes
   useEffect(() => {
     if (prevZipCodeRef.current !== zipCode) {
@@ -95,7 +95,7 @@ export function useDefaults(zipCode?: string): UseDefaultsResult {
       fetchDefaults()
     }
   }, [zipCode, fetchDefaults])
-  
+
   // Check if a specific field is from user override
   const isUserOverride = useCallback(
     (category: keyof AllAssumptions, field: string): boolean => {
@@ -104,9 +104,9 @@ export function useDefaults(zipCode?: string): UseDefaultsResult {
       if (!categoryOverrides || typeof categoryOverrides !== 'object') return false
       return Object.prototype.hasOwnProperty.call(categoryOverrides, field)
     },
-    [fullResponse]
+    [fullResponse],
   )
-  
+
   return {
     defaults,
     fullResponse,
@@ -131,7 +131,7 @@ export function useSystemDefaults(): {
   const [defaults, setDefaults] = useState<AllAssumptions | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  
+
   useEffect(() => {
     defaultsService
       .getDefaults()
@@ -139,7 +139,7 @@ export function useSystemDefaults(): {
       .catch((err) => setError(err instanceof Error ? err : new Error('Failed to fetch defaults')))
       .finally(() => setLoading(false))
   }, [])
-  
+
   return { defaults, loading, error }
 }
 
@@ -159,13 +159,13 @@ export function useUserAssumptions(): {
   const [hasCustomizations, setHasCustomizations] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  
+
   const fetchAssumptions = useCallback(async () => {
     if (!defaultsService.isAuthenticated()) {
       setLoading(false)
       return
     }
-    
+
     try {
       const response = await defaultsService.getUserAssumptions()
       setAssumptions(response.assumptions)
@@ -176,22 +176,22 @@ export function useUserAssumptions(): {
       setLoading(false)
     }
   }, [])
-  
+
   useEffect(() => {
     fetchAssumptions()
   }, [fetchAssumptions])
-  
+
   const updateAssumptions = useCallback(async (updates: Partial<AllAssumptions>) => {
     if (!defaultsService.isAuthenticated()) {
       throw new Error('Authentication required')
     }
-    
+
     setLoading(true)
     try {
       const response = await defaultsService.updateUserAssumptions(updates)
       setAssumptions(response.assumptions)
       setHasCustomizations(response.has_customizations)
-      
+
       // Clear the defaults cache so next fetch gets updated values
       defaultsService.clearCache()
     } catch (err) {
@@ -201,18 +201,18 @@ export function useUserAssumptions(): {
       setLoading(false)
     }
   }, [])
-  
+
   const resetToDefaults = useCallback(async () => {
     if (!defaultsService.isAuthenticated()) {
       throw new Error('Authentication required')
     }
-    
+
     setLoading(true)
     try {
       const response = await defaultsService.resetUserAssumptions()
       setAssumptions(response.assumptions)
       setHasCustomizations(response.has_customizations)
-      
+
       // Clear the defaults cache
       defaultsService.clearCache()
     } catch (err) {
@@ -222,7 +222,7 @@ export function useUserAssumptions(): {
       setLoading(false)
     }
   }, [])
-  
+
   return {
     assumptions,
     hasCustomizations,

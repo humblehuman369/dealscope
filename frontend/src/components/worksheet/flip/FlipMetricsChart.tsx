@@ -27,7 +27,7 @@ export interface FlipMetricsData {
   roi: number
   profitMargin: number
   meets70Rule: boolean
-  
+
   // Cost metrics
   totalAcquisitionCash: number
   totalRenovation: number
@@ -35,16 +35,16 @@ export interface FlipMetricsData {
   totalHoldingCosts: number
   totalSellingCosts: number
   hardMoneyInterest: number
-  
+
   // Valuation
   arv: number
   totalProjectCost: number
   netSaleProceeds: number
-  
+
   // Safety metrics
   mao70: number // 70% Rule Max Price
   minSaleBreakeven: number
-  
+
   // Score
   profitQualityScore: number
 }
@@ -80,9 +80,9 @@ export function buildFlipMetricsData(calc: {
   else if (calc.netProfit >= 20000) score += 10
   // Budget and timeline risk scoring
   score += 10 // baseline
-  
+
   const totalCashRequired = calc.downPayment + calc.purchaseCosts + calc.rehabCosts
-  
+
   return {
     netProfitAfterTax: calc.netProfit,
     roi: calc.roi,
@@ -119,54 +119,89 @@ export function FlipMetricsChart({ data }: FlipMetricsChartProps) {
   // Build verdict
   const verdict: VerdictData = useMemo(() => {
     const score = data.profitQualityScore
-    if (score >= 75) return { label: 'STRONG', detail: '(Meets 70% rule, healthy net spread)', status: 'good' }
-    if (score >= 50) return { label: 'MODERATE', detail: '(Marginal spread, watch timeline)', status: 'warn' }
+    if (score >= 75)
+      return { label: 'STRONG', detail: '(Meets 70% rule, healthy net spread)', status: 'good' }
+    if (score >= 50)
+      return { label: 'MODERATE', detail: '(Marginal spread, watch timeline)', status: 'warn' }
     return { label: 'WEAK', detail: '(Poor spread or fails 70% rule)', status: 'bad' }
   }, [data.profitQualityScore])
 
   // Primary KPIs
   const kpis: KPI[] = [
-    { label: 'Net Profit After Tax', value: fmt.currency(data.netProfitAfterTax), hint: 'Bottom-line outcome' },
+    {
+      label: 'Net Profit After Tax',
+      value: fmt.currency(data.netProfitAfterTax),
+      hint: 'Bottom-line outcome',
+    },
     { label: 'ROI', value: fmt.percent(data.roi), hint: 'Net profit ÷ total cash required' },
-    { label: 'Profit Margin', value: fmt.percent(data.profitMargin), hint: 'Net profit ÷ net sale proceeds' },
-    { label: 'Meets 70% Rule', value: data.meets70Rule ? 'Yes' : 'No', hint: 'Pass/fail acquisition filter' },
+    {
+      label: 'Profit Margin',
+      value: fmt.percent(data.profitMargin),
+      hint: 'Net profit ÷ net sale proceeds',
+    },
+    {
+      label: 'Meets 70% Rule',
+      value: data.meets70Rule ? 'Yes' : 'No',
+      hint: 'Pass/fail acquisition filter',
+    },
   ]
 
   // Factors
-  const factors: Factor[] = useMemo(() => [
-    {
-      name: 'Spread Strength',
-      desc: 'ARV minus total project cost and selling costs',
-      status: data.netProfitAfterTax >= 40000 ? 'good' : data.netProfitAfterTax >= 20000 ? 'warn' : 'bad',
-      tag: data.netProfitAfterTax >= 40000 ? 'Healthy' : data.netProfitAfterTax >= 20000 ? 'Marginal' : 'Thin',
-    },
-    {
-      name: 'Budget Control',
-      desc: 'Renovation + contingency vs scope risk',
-      status: 'warn', // Would need actual budget variance data
-      tag: 'Watch',
-    },
-    {
-      name: 'Timeline Risk',
-      desc: 'Hard money interest + holding costs sensitivity',
-      status: data.totalHoldingCosts / data.netProfitAfterTax < 0.3 ? 'good' : 
-              data.totalHoldingCosts / data.netProfitAfterTax < 0.5 ? 'warn' : 'bad',
-      tag: data.totalHoldingCosts / data.netProfitAfterTax < 0.3 ? 'Controlled' : 'Watch',
-    },
-    {
-      name: 'Exit Friction',
-      desc: 'Realtor commissions + seller closing costs',
-      status: 'good',
-      tag: 'Known',
-    },
-    {
-      name: 'Breakeven Safety',
-      desc: 'Min sale price for breakeven vs ARV',
-      status: data.minSaleBreakeven / data.arv < 0.85 ? 'good' : 
-              data.minSaleBreakeven / data.arv < 0.95 ? 'warn' : 'bad',
-      tag: data.minSaleBreakeven / data.arv < 0.85 ? 'Buffer' : 'Tight',
-    },
-  ], [data])
+  const factors: Factor[] = useMemo(
+    () => [
+      {
+        name: 'Spread Strength',
+        desc: 'ARV minus total project cost and selling costs',
+        status:
+          data.netProfitAfterTax >= 40000
+            ? 'good'
+            : data.netProfitAfterTax >= 20000
+              ? 'warn'
+              : 'bad',
+        tag:
+          data.netProfitAfterTax >= 40000
+            ? 'Healthy'
+            : data.netProfitAfterTax >= 20000
+              ? 'Marginal'
+              : 'Thin',
+      },
+      {
+        name: 'Budget Control',
+        desc: 'Renovation + contingency vs scope risk',
+        status: 'warn', // Would need actual budget variance data
+        tag: 'Watch',
+      },
+      {
+        name: 'Timeline Risk',
+        desc: 'Hard money interest + holding costs sensitivity',
+        status:
+          data.totalHoldingCosts / data.netProfitAfterTax < 0.3
+            ? 'good'
+            : data.totalHoldingCosts / data.netProfitAfterTax < 0.5
+              ? 'warn'
+              : 'bad',
+        tag: data.totalHoldingCosts / data.netProfitAfterTax < 0.3 ? 'Controlled' : 'Watch',
+      },
+      {
+        name: 'Exit Friction',
+        desc: 'Realtor commissions + seller closing costs',
+        status: 'good',
+        tag: 'Known',
+      },
+      {
+        name: 'Breakeven Safety',
+        desc: 'Min sale price for breakeven vs ARV',
+        status:
+          data.minSaleBreakeven / data.arv < 0.85
+            ? 'good'
+            : data.minSaleBreakeven / data.arv < 0.95
+              ? 'warn'
+              : 'bad',
+        tag: data.minSaleBreakeven / data.arv < 0.85 ? 'Buffer' : 'Tight',
+      },
+    ],
+    [data],
+  )
 
   // Meta items
   const leftMeta: MetaItem[] = [
@@ -193,7 +228,11 @@ export function FlipMetricsChart({ data }: FlipMetricsChartProps) {
     { label: 'ARV', value: fmt.currency(data.arv), meter: 88 },
     { label: 'Total Project Cost', value: fmt.currency(data.totalProjectCost), meter: 74 },
     { label: 'Net Sale Proceeds', value: fmt.currency(data.netSaleProceeds), meter: 62 },
-    { label: 'Net Profit After Tax', value: fmt.currency(data.netProfitAfterTax), meter: data.netProfitAfterTax > 0 ? 70 : 20 },
+    {
+      label: 'Net Profit After Tax',
+      value: fmt.currency(data.netProfitAfterTax),
+      meter: data.netProfitAfterTax > 0 ? 70 : 20,
+    },
   ]
 
   return (
@@ -203,20 +242,22 @@ export function FlipMetricsChart({ data }: FlipMetricsChartProps) {
       leftPanel={
         <>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-            <ProfitQualityRing 
-              score={data.profitQualityScore} 
-              subline="Weights: Spread + budget accuracy + time-to-sell + selling costs + rule compliance." 
+            <ProfitQualityRing
+              score={data.profitQualityScore}
+              subline="Weights: Spread + budget accuracy + time-to-sell + selling costs + rule compliance."
             />
             <VerdictBadge verdict={verdict} />
           </div>
-          
+
           <KPIGrid kpis={kpis} />
-          
+
           <div className="mt-6">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">What Investors Care About Most</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+              What Investors Care About Most
+            </div>
             <FactorList factors={factors} />
           </div>
-          
+
           <MetaGrid items={leftMeta} />
         </>
       }
@@ -226,9 +267,11 @@ export function FlipMetricsChart({ data }: FlipMetricsChartProps) {
             <BarPanel title="Cash Required" bars={cashRequiredPanel} />
             <BarPanel title="Holding & Selling" bars={holdingSellingPanel} />
           </div>
-          
+
           <div className="mt-6">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Profit Bridge</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+              Profit Bridge
+            </div>
             <div className="space-y-1">
               {profitBridge.map((bar) => (
                 <BarRow key={bar.label} {...bar} />

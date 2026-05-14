@@ -38,11 +38,11 @@ describe('comps API (sale-comps)', () => {
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining('/api/v1/similar-sold'),
-        expect.objectContaining({ method: 'GET' })
+        expect.objectContaining({ method: 'GET' }),
       )
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining('zpid=123'),
-        expect.any(Object)
+        expect.any(Object),
       )
     })
 
@@ -73,7 +73,7 @@ describe('comps API (sale-comps)', () => {
 
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining('address='),
-        expect.any(Object)
+        expect.any(Object),
       )
     })
 
@@ -131,7 +131,7 @@ describe('comps API (sale-comps)', () => {
       expect(result.data![0].salePrice).toBe(425000)
       expect(fetchMock).toHaveBeenCalledTimes(2)
       expect(fetchMock.mock.calls[1][0]).toEqual(
-        expect.stringContaining('/api/v1/rentcast/sale-comps')
+        expect.stringContaining('/api/v1/rentcast/sale-comps'),
       )
     })
 
@@ -154,7 +154,15 @@ describe('comps API (sale-comps)', () => {
           json: async () => ({
             success: true,
             results: [
-              { id: 'rc-1', formattedAddress: '1 Comp Ln', bedrooms: 3, bathrooms: 2, squareFootage: 1500, price: 510000, dateSold: '2025-08-15' },
+              {
+                id: 'rc-1',
+                formattedAddress: '1 Comp Ln',
+                bedrooms: 3,
+                bathrooms: 2,
+                squareFootage: 1500,
+                price: 510000,
+                dateSold: '2025-08-15',
+              },
             ],
           }),
         })
@@ -224,11 +232,11 @@ describe('comps API (rent-comps)', () => {
       expect(Array.isArray(result.data)).toBe(true)
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining('/api/v1/similar-rent'),
-        expect.objectContaining({ method: 'GET' })
+        expect.objectContaining({ method: 'GET' }),
       )
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining('zpid=456'),
-        expect.any(Object)
+        expect.any(Object),
       )
     })
 

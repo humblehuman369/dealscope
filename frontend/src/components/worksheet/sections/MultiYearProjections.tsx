@@ -19,18 +19,18 @@ interface ProjectionSection {
 export function MultiYearProjections() {
   const { projections, assumptions } = useWorksheetStore()
   const derived = useWorksheetDerived()
-  
+
   const [expandedSections, setExpandedSections] = useState<string[]>([
     'rental_income',
     'cash_flow',
     'investment_returns',
   ])
-  
+
   const [yearsToShow, setYearsToShow] = useState(10)
 
   const toggleSection = (id: string) => {
     setExpandedSections((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
     )
   }
 
@@ -77,23 +77,28 @@ export function MultiYearProjections() {
       rows: [
         {
           label: 'Property Taxes',
-          getValue: (year) => assumptions.propertyTaxes * Math.pow(1 + assumptions.propertyTaxGrowth, year - 1),
+          getValue: (year) =>
+            assumptions.propertyTaxes * Math.pow(1 + assumptions.propertyTaxGrowth, year - 1),
         },
         {
           label: 'Insurance',
-          getValue: (year) => assumptions.insurance * Math.pow(1 + assumptions.insuranceGrowth, year - 1),
+          getValue: (year) =>
+            assumptions.insurance * Math.pow(1 + assumptions.insuranceGrowth, year - 1),
         },
         {
           label: 'Property Management',
-          getValue: (year, proj) => (proj[year - 1]?.effectiveRent || 0) * assumptions.managementPct,
+          getValue: (year, proj) =>
+            (proj[year - 1]?.effectiveRent || 0) * assumptions.managementPct,
         },
         {
           label: 'Maintenance',
-          getValue: (year, proj) => (proj[year - 1]?.effectiveRent || 0) * assumptions.maintenancePct,
+          getValue: (year, proj) =>
+            (proj[year - 1]?.effectiveRent || 0) * assumptions.maintenancePct,
         },
         {
           label: 'Capital Expenditures',
-          getValue: (year, proj) => (proj[year - 1]?.effectiveRent || 0) * assumptions.capexReservePct,
+          getValue: (year, proj) =>
+            (proj[year - 1]?.effectiveRent || 0) * assumptions.capexReservePct,
         },
         {
           label: 'Total Operating Expenses',
@@ -171,7 +176,10 @@ export function MultiYearProjections() {
     },
   ]
 
-  const years = Array.from({ length: Math.min(yearsToShow, projections.length || 10) }, (_, i) => i + 1)
+  const years = Array.from(
+    { length: Math.min(yearsToShow, projections.length || 10) },
+    (_, i) => i + 1,
+  )
 
   return (
     <div className="section-card overflow-hidden">
@@ -198,18 +206,20 @@ export function MultiYearProjections() {
             <tr>
               <th className="min-w-[200px]"></th>
               {years.map((year) => (
-                <th key={year} className="min-w-[100px]">Year {year}</th>
+                <th key={year} className="min-w-[100px]">
+                  Year {year}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {sections.map((section) => {
               const isExpanded = expandedSections.includes(section.id)
-              
+
               return (
                 <>
                   {/* Section Header Row */}
-                  <tr 
+                  <tr
                     key={section.id}
                     className="section-row cursor-pointer"
                     onClick={() => toggleSection(section.id)}
@@ -226,36 +236,37 @@ export function MultiYearProjections() {
                       <td key={year}></td>
                     ))}
                   </tr>
-                  
+
                   {/* Section Data Rows */}
-                  {isExpanded && section.rows.map((row, rowIndex) => (
-                    <tr 
-                      key={`${section.id}-${rowIndex}`}
-                      className={row.isTotal ? 'total-row' : ''}
-                    >
-                      <td className="pl-8">{row.label}</td>
-                      {years.map((year) => {
-                        const value = row.getValue(year, projections, derived)
-                        const isReturnsSection = section.id === 'investment_returns'
-                        const isCoCRow = row.label === 'Cash on Cash'
-                        
-                        return (
-                          <td 
-                            key={year}
-                            className={`${
-                              row.isNegative || value < 0 
-                                ? 'text-[var(--ws-negative)]' 
-                                : row.isTotal && value > 0 
-                                  ? 'text-[var(--ws-positive)]' 
-                                  : ''
-                            }`}
-                          >
-                            {isCoCRow ? formatPercent(value) : formatCurrency(value)}
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  ))}
+                  {isExpanded &&
+                    section.rows.map((row, rowIndex) => (
+                      <tr
+                        key={`${section.id}-${rowIndex}`}
+                        className={row.isTotal ? 'total-row' : ''}
+                      >
+                        <td className="pl-8">{row.label}</td>
+                        {years.map((year) => {
+                          const value = row.getValue(year, projections, derived)
+                          const isReturnsSection = section.id === 'investment_returns'
+                          const isCoCRow = row.label === 'Cash on Cash'
+
+                          return (
+                            <td
+                              key={year}
+                              className={`${
+                                row.isNegative || value < 0
+                                  ? 'text-[var(--ws-negative)]'
+                                  : row.isTotal && value > 0
+                                    ? 'text-[var(--ws-positive)]'
+                                    : ''
+                              }`}
+                            >
+                              {isCoCRow ? formatPercent(value) : formatCurrency(value)}
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    ))}
                 </>
               )
             })}
@@ -265,4 +276,3 @@ export function MultiYearProjections() {
     </div>
   )
 }
-

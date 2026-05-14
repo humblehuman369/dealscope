@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import React from 'react';
+import React from 'react'
 
 interface ScanDemoSectionProps {
-  onTryItNow?: () => void;
+  onTryItNow?: () => void
 }
 
 export function ScanDemoSection({ onTryItNow }: ScanDemoSectionProps) {
@@ -14,7 +14,7 @@ export function ScanDemoSection({ onTryItNow }: ScanDemoSectionProps) {
           <div className="section-label">Instant Onsite Intelligence</div>
           <h2 className="section-title scan-technology-title teal">POINT & SCAN TECHNOLOGY</h2>
         </div>
-        
+
         {/* Scan Scene */}
         <div className="scan-scene">
           {/* Phone with App Screen */}
@@ -27,7 +27,7 @@ export function ScanDemoSection({ onTryItNow }: ScanDemoSectionProps) {
                   <div className="app-title">Property Analytics</div>
                   <div className="app-theme">⋯</div>
                 </div>
-                
+
                 {/* IQ Target Card */}
                 <div className="app-target-card">
                   <div className="app-target-badge">🎯 IQ BUY PRICE</div>
@@ -35,7 +35,7 @@ export function ScanDemoSection({ onTryItNow }: ScanDemoSectionProps) {
                   <div className="app-target-price">$280,000</div>
                   <div className="app-target-savings">$70K below list (20%)</div>
                 </div>
-                
+
                 {/* Price Ladder */}
                 <div className="app-ladder">
                   <div className="app-ladder-title">Price Position Ladder</div>
@@ -93,55 +93,189 @@ export function ScanDemoSection({ onTryItNow }: ScanDemoSectionProps) {
             <div className="house-container">
               <svg viewBox="0 0 300 350" fill="none" xmlns="http://www.w3.org/2000/svg">
                 {/* House body fill */}
-                <path d="M150 30 L270 120 L270 310 L30 310 L30 120 Z" fill="rgba(8, 145, 178, 0.08)" stroke="rgba(8, 145, 178, 0.5)" strokeWidth="1.5"/>
-                
+                <path
+                  d="M150 30 L270 120 L270 310 L30 310 L30 120 Z"
+                  fill="rgba(8, 145, 178, 0.08)"
+                  stroke="rgba(8, 145, 178, 0.5)"
+                  strokeWidth="1.5"
+                />
+
                 {/* Roof */}
-                <path d="M150 10 L10 110 L30 110 L30 120 L150 30 L270 120 L270 110 L290 110 Z" fill="rgba(8, 145, 178, 0.12)" stroke="rgba(8, 145, 178, 0.7)" strokeWidth="2"/>
-                
+                <path
+                  d="M150 10 L10 110 L30 110 L30 120 L150 30 L270 120 L270 110 L290 110 Z"
+                  fill="rgba(8, 145, 178, 0.12)"
+                  stroke="rgba(8, 145, 178, 0.7)"
+                  strokeWidth="2"
+                />
+
                 {/* Chimney */}
-                <rect x="200" y="50" width="30" height="55" fill="rgba(8, 145, 178, 0.08)" stroke="rgba(8, 145, 178, 0.6)" strokeWidth="1.5"/>
-                
+                <rect
+                  x="200"
+                  y="50"
+                  width="30"
+                  height="55"
+                  fill="rgba(8, 145, 178, 0.08)"
+                  stroke="rgba(8, 145, 178, 0.6)"
+                  strokeWidth="1.5"
+                />
+
                 {/* Front Door */}
-                <rect x="125" y="200" width="50" height="90" rx="3" fill="rgba(8, 145, 178, 0.15)" stroke="rgba(8, 145, 178, 0.7)" strokeWidth="2"/>
-                <circle cx="165" cy="250" r="4" fill="rgba(8, 145, 178, 0.9)"/>
-                
+                <rect
+                  x="125"
+                  y="200"
+                  width="50"
+                  height="90"
+                  rx="3"
+                  fill="rgba(8, 145, 178, 0.15)"
+                  stroke="rgba(8, 145, 178, 0.7)"
+                  strokeWidth="2"
+                />
+                <circle cx="165" cy="250" r="4" fill="rgba(8, 145, 178, 0.9)" />
+
                 {/* Door frame top */}
-                <path d="M120 200 L150 180 L180 200" stroke="rgba(8, 145, 178, 0.6)" strokeWidth="1.5" fill="none"/>
-                
+                <path
+                  d="M120 200 L150 180 L180 200"
+                  stroke="rgba(8, 145, 178, 0.6)"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+
                 {/* Left Window */}
-                <rect x="50" y="150" width="55" height="50" rx="2" fill="rgba(8, 145, 178, 0.1)" stroke="rgba(8, 145, 178, 0.7)" strokeWidth="1.5"/>
-                <line x1="77.5" y1="150" x2="77.5" y2="200" stroke="rgba(8, 145, 178, 0.5)" strokeWidth="1"/>
-                <line x1="50" y1="175" x2="105" y2="175" stroke="rgba(8, 145, 178, 0.5)" strokeWidth="1"/>
-                
+                <rect
+                  x="50"
+                  y="150"
+                  width="55"
+                  height="50"
+                  rx="2"
+                  fill="rgba(8, 145, 178, 0.1)"
+                  stroke="rgba(8, 145, 178, 0.7)"
+                  strokeWidth="1.5"
+                />
+                <line
+                  x1="77.5"
+                  y1="150"
+                  x2="77.5"
+                  y2="200"
+                  stroke="rgba(8, 145, 178, 0.5)"
+                  strokeWidth="1"
+                />
+                <line
+                  x1="50"
+                  y1="175"
+                  x2="105"
+                  y2="175"
+                  stroke="rgba(8, 145, 178, 0.5)"
+                  strokeWidth="1"
+                />
+
                 {/* Right Window */}
-                <rect x="195" y="150" width="55" height="50" rx="2" fill="rgba(8, 145, 178, 0.1)" stroke="rgba(8, 145, 178, 0.7)" strokeWidth="1.5"/>
-                <line x1="222.5" y1="150" x2="222.5" y2="200" stroke="rgba(8, 145, 178, 0.5)" strokeWidth="1"/>
-                <line x1="195" y1="175" x2="250" y2="175" stroke="rgba(8, 145, 178, 0.5)" strokeWidth="1"/>
-                
+                <rect
+                  x="195"
+                  y="150"
+                  width="55"
+                  height="50"
+                  rx="2"
+                  fill="rgba(8, 145, 178, 0.1)"
+                  stroke="rgba(8, 145, 178, 0.7)"
+                  strokeWidth="1.5"
+                />
+                <line
+                  x1="222.5"
+                  y1="150"
+                  x2="222.5"
+                  y2="200"
+                  stroke="rgba(8, 145, 178, 0.5)"
+                  strokeWidth="1"
+                />
+                <line
+                  x1="195"
+                  y1="175"
+                  x2="250"
+                  y2="175"
+                  stroke="rgba(8, 145, 178, 0.5)"
+                  strokeWidth="1"
+                />
+
                 {/* Garage Door */}
-                <rect x="50" y="240" width="60" height="50" rx="2" fill="rgba(8, 145, 178, 0.1)" stroke="rgba(8, 145, 178, 0.6)" strokeWidth="1.5"/>
-                <line x1="50" y1="255" x2="110" y2="255" stroke="rgba(8, 145, 178, 0.4)" strokeWidth="1"/>
-                <line x1="50" y1="270" x2="110" y2="270" stroke="rgba(8, 145, 178, 0.4)" strokeWidth="1"/>
-                
+                <rect
+                  x="50"
+                  y="240"
+                  width="60"
+                  height="50"
+                  rx="2"
+                  fill="rgba(8, 145, 178, 0.1)"
+                  stroke="rgba(8, 145, 178, 0.6)"
+                  strokeWidth="1.5"
+                />
+                <line
+                  x1="50"
+                  y1="255"
+                  x2="110"
+                  y2="255"
+                  stroke="rgba(8, 145, 178, 0.4)"
+                  strokeWidth="1"
+                />
+                <line
+                  x1="50"
+                  y1="270"
+                  x2="110"
+                  y2="270"
+                  stroke="rgba(8, 145, 178, 0.4)"
+                  strokeWidth="1"
+                />
+
                 {/* Driveway */}
-                <path d="M50 310 L50 290 L110 290 L110 310" stroke="rgba(8, 145, 178, 0.4)" strokeWidth="1" fill="none"/>
-                
+                <path
+                  d="M50 310 L50 290 L110 290 L110 310"
+                  stroke="rgba(8, 145, 178, 0.4)"
+                  strokeWidth="1"
+                  fill="none"
+                />
+
                 {/* Walkway */}
-                <path d="M140 310 L140 290 L160 290 L160 310" stroke="rgba(8, 145, 178, 0.4)" strokeWidth="1" fill="none"/>
-                
+                <path
+                  d="M140 310 L140 290 L160 290 L160 310"
+                  stroke="rgba(8, 145, 178, 0.4)"
+                  strokeWidth="1"
+                  fill="none"
+                />
+
                 {/* Ground line */}
-                <line x1="10" y1="310" x2="290" y2="310" stroke="rgba(8, 145, 178, 0.5)" strokeWidth="1"/>
-                
+                <line
+                  x1="10"
+                  y1="310"
+                  x2="290"
+                  y2="310"
+                  stroke="rgba(8, 145, 178, 0.5)"
+                  strokeWidth="1"
+                />
+
                 {/* Bushes/landscaping */}
-                <ellipse cx="35" cy="300" rx="20" ry="12" fill="rgba(8, 145, 178, 0.1)" stroke="rgba(8, 145, 178, 0.4)" strokeWidth="1"/>
-                <ellipse cx="265" cy="300" rx="20" ry="12" fill="rgba(8, 145, 178, 0.1)" stroke="rgba(8, 145, 178, 0.4)" strokeWidth="1"/>
+                <ellipse
+                  cx="35"
+                  cy="300"
+                  rx="20"
+                  ry="12"
+                  fill="rgba(8, 145, 178, 0.1)"
+                  stroke="rgba(8, 145, 178, 0.4)"
+                  strokeWidth="1"
+                />
+                <ellipse
+                  cx="265"
+                  cy="300"
+                  rx="20"
+                  ry="12"
+                  fill="rgba(8, 145, 178, 0.1)"
+                  stroke="rgba(8, 145, 178, 0.4)"
+                  strokeWidth="1"
+                />
               </svg>
-              
+
               {/* Scan line overlay */}
               <div className="scan-line-overlay">
                 <div className="scan-line"></div>
               </div>
-              
+
               {/* Corner brackets */}
               <div className="scan-brackets">
                 <div className="scan-bracket tl"></div>
@@ -184,12 +318,12 @@ export function ScanDemoSection({ onTryItNow }: ScanDemoSectionProps) {
             </div>
           </div>
         </div>
-        
+
         {/* Brand Line - Moved below scan scene */}
         <div className="brand-line demo-brand-line">
           Most investors guess. <span className="highlight">IQ Investors Know.</span>
         </div>
-        
+
         {/* Demo CTA */}
         <div className="demo-cta">
           <button onClick={onTryItNow} className="btn btn-primary btn-large">
@@ -198,5 +332,5 @@ export function ScanDemoSection({ onTryItNow }: ScanDemoSectionProps) {
         </div>
       </div>
     </section>
-  );
+  )
 }

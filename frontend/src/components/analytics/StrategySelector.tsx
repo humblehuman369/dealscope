@@ -6,10 +6,10 @@ import { Strategy, StrategyId, GradeLevel, StrategyGrade } from './types'
 
 /**
  * StrategySelector Component
- * 
+ *
  * REDESIGNED: Shows only selected strategy with back button when active.
  * When no strategy selected, shows horizontal pills.
- * 
+ *
  * Features:
  * - Single strategy view with "Back To Strategy Options" when selected
  * - Line above strategy title for visual continuity
@@ -35,7 +35,7 @@ export function StrategySelector({
   strategies,
   grades,
   onChange,
-  showCTA = true
+  showCTA = true,
 }: StrategySelectorProps) {
   const [ctaDismissed, setCtaDismissed] = useState(activeStrategy !== null)
 
@@ -49,19 +49,19 @@ export function StrategySelector({
   }
 
   const getGrade = (strategyId: StrategyId): GradeLevel | null => {
-    return grades?.find(g => g.strategyId === strategyId)?.grade ?? null
+    return grades?.find((g) => g.strategyId === strategyId)?.grade ?? null
   }
 
   // When a strategy is selected, show single strategy header with back button
   if (activeStrategy) {
-    const activeStrategyData = strategies.find(s => s.id === activeStrategy)
+    const activeStrategyData = strategies.find((s) => s.id === activeStrategy)
     const grade = getGrade(activeStrategy)
-    
+
     return (
       <div className="mb-4">
         {/* Top line indicator */}
         <div className="h-[3px] bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)] rounded-full mb-3" />
-        
+
         {/* Strategy header with back button */}
         <div className="flex items-center justify-between">
           {/* Left side: Strategy name + grade */}
@@ -91,14 +91,16 @@ export function StrategySelector({
       {/* CTA Banner - shows before first strategy selection */}
       {showCTA && !ctaDismissed && (
         <div className="bg-gradient-to-r from-[var(--accent-gradient-from)] to-[var(--accent-gradient-to)] text-[var(--text-inverse)] text-center p-2.5 rounded-xl mb-3.5 relative overflow-hidden">
-          <div 
+          <div
             className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] animate-pulse"
             style={{
-              background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)'
+              background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)',
             }}
           />
           <div className="relative flex items-center justify-center gap-2">
-            <span className="font-semibold text-[0.75rem]">👇 Pick a Strategy to Unlock Insights</span>
+            <span className="font-semibold text-[0.75rem]">
+              👇 Pick a Strategy to Unlock Insights
+            </span>
             <ChevronDown className="w-4 h-4 animate-bounce" />
           </div>
         </div>
@@ -176,7 +178,7 @@ export const DEFAULT_STRATEGIES: Strategy[] = [
     description: 'Buy and hold for steady monthly income',
     icon: '🏠',
     color: 'var(--strategy-ltr)',
-    gradient: 'from-sky-500 to-blue-600'
+    gradient: 'from-sky-500 to-blue-600',
   },
   {
     id: 'str',
@@ -185,7 +187,7 @@ export const DEFAULT_STRATEGIES: Strategy[] = [
     description: 'Vacation rental on Airbnb or VRBO',
     icon: '🏖️',
     color: 'var(--strategy-str)',
-    gradient: 'from-violet-500 to-purple-600'
+    gradient: 'from-violet-500 to-purple-600',
   },
   {
     id: 'brrrr',
@@ -194,7 +196,7 @@ export const DEFAULT_STRATEGIES: Strategy[] = [
     description: 'Buy, Rehab, Rent, Refinance, Repeat',
     icon: '🔄',
     color: 'var(--strategy-brrrr)',
-    gradient: 'from-orange-500 to-amber-600'
+    gradient: 'from-orange-500 to-amber-600',
   },
   {
     id: 'flip',
@@ -203,7 +205,7 @@ export const DEFAULT_STRATEGIES: Strategy[] = [
     description: 'Renovate and sell for profit',
     icon: '🔨',
     color: 'var(--strategy-flip)',
-    gradient: 'from-pink-500 to-rose-600'
+    gradient: 'from-pink-500 to-rose-600',
   },
   {
     id: 'house_hack',
@@ -212,7 +214,7 @@ export const DEFAULT_STRATEGIES: Strategy[] = [
     description: 'Live in one unit, rent the others',
     icon: '🏡',
     color: 'var(--strategy-house-hack)',
-    gradient: 'from-cyan-500 to-sky-600'
+    gradient: 'from-cyan-500 to-sky-600',
   },
   {
     id: 'wholesale',
@@ -221,13 +223,13 @@ export const DEFAULT_STRATEGIES: Strategy[] = [
     description: 'Assign contract to end buyer',
     icon: '📋',
     color: 'var(--strategy-wholesale)',
-    gradient: 'from-lime-500 to-green-600'
-  }
+    gradient: 'from-lime-500 to-green-600',
+  },
 ]
 
 /**
  * StrategySelectorCompact Component
- * 
+ *
  * A dropdown version for mobile headers.
  */
 
@@ -240,10 +242,10 @@ interface StrategySelectorCompactProps {
 export function StrategySelectorCompact({
   activeStrategy,
   strategies,
-  onChange
+  onChange,
 }: StrategySelectorCompactProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const active = strategies.find(s => s.id === activeStrategy)
+  const active = strategies.find((s) => s.id === activeStrategy)
 
   return (
     <div className="relative">
@@ -252,7 +254,9 @@ export function StrategySelectorCompact({
         className="flex items-center gap-2 px-3 py-1.5 bg-[var(--surface-elevated)] border border-[var(--border-subtle)] rounded-lg text-[0.75rem]"
       >
         <span className="text-[var(--text-heading)] font-medium">{active?.shortName}</span>
-        <ChevronDown className={`w-3.5 h-3.5 text-[var(--text-label)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-[var(--text-label)] transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {isOpen && (
@@ -265,7 +269,9 @@ export function StrategySelectorCompact({
                 setIsOpen(false)
               }}
               className={`w-full flex items-center gap-2 px-3 py-2 text-[0.72rem] hover:bg-[var(--surface-elevated)] transition-colors ${
-                strategy.id === activeStrategy ? 'bg-[var(--color-teal-dim)] text-[var(--accent-sky)]' : 'text-[var(--text-body)]'
+                strategy.id === activeStrategy
+                  ? 'bg-[var(--color-teal-dim)] text-[var(--accent-sky)]'
+                  : 'text-[var(--text-body)]'
               }`}
             >
               <span>{strategy.name}</span>

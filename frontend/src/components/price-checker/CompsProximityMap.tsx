@@ -57,18 +57,13 @@ function isFiniteCoord(lat: unknown, lng: unknown): boolean {
 
 const METERS_PER_MILE = 1609.34
 
-function haversineMi(
-  lat1: number, lng1: number,
-  lat2: number, lng2: number,
-): number {
+function haversineMi(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 3958.8
   const dLat = ((lat2 - lat1) * Math.PI) / 180
   const dLng = ((lng2 - lng1) * Math.PI) / 180
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
@@ -87,14 +82,16 @@ function inferSchoolLevel(name: string, types: string[]): string {
 function ZoomControls() {
   const map = useMap()
 
-  const zoom = useCallback((delta: number) => {
-    if (!map) return
-    const cur = map.getZoom() ?? 14
-    map.setZoom(cur + delta)
-  }, [map])
+  const zoom = useCallback(
+    (delta: number) => {
+      if (!map) return
+      const cur = map.getZoom() ?? 14
+      map.setZoom(cur + delta)
+    },
+    [map],
+  )
 
-  const btnClass =
-    'w-9 h-9 flex items-center justify-center transition-colors hover:brightness-125'
+  const btnClass = 'w-9 h-9 flex items-center justify-center transition-colors hover:brightness-125'
   const btnStyle: React.CSSProperties = {
     backgroundColor: 'var(--surface-card)',
     color: 'var(--text-heading)',
@@ -106,11 +103,23 @@ function ZoomControls() {
       className="absolute bottom-4 right-4 z-10 flex flex-col rounded-lg overflow-hidden shadow-lg"
       style={{ border: '1px solid var(--border-default)' }}
     >
-      <button type="button" onClick={() => zoom(1)} className={btnClass} style={btnStyle} aria-label="Zoom in">
+      <button
+        type="button"
+        onClick={() => zoom(1)}
+        className={btnClass}
+        style={btnStyle}
+        aria-label="Zoom in"
+      >
         <Plus size={16} />
       </button>
       <div style={{ height: 1, backgroundColor: 'var(--border-default)' }} />
-      <button type="button" onClick={() => zoom(-1)} className={btnClass} style={btnStyle} aria-label="Zoom out">
+      <button
+        type="button"
+        onClick={() => zoom(-1)}
+        className={btnClass}
+        style={btnStyle}
+        aria-label="Zoom out"
+      >
         <Minus size={16} />
       </button>
     </div>
@@ -146,9 +155,9 @@ function NearbyPropertiesLayer({
     svc.nearbySearch(request, (results, status) => {
       if (status !== google.maps.places.PlacesServiceStatus.OK || !results) return
       const mapped: NearbyProperty[] = results
-        .filter(r => r.geometry?.location && r.place_id)
+        .filter((r) => r.geometry?.location && r.place_id)
         .slice(0, 30)
-        .map(r => ({
+        .map((r) => ({
           placeId: r.place_id!,
           name: r.name ?? '',
           address: r.vicinity ?? r.name ?? '',
@@ -167,7 +176,7 @@ function NearbyPropertiesLayer({
 
   return (
     <>
-      {properties.map(p => (
+      {properties.map((p) => (
         <Marker
           key={p.placeId}
           position={{ lat: p.lat, lng: p.lng }}
@@ -185,9 +194,7 @@ function NearbyPropertiesLayer({
         />
       ))}
 
-      {selected && (
-        <PropertyInfoPopup property={selected} onClose={() => setSelected(null)} />
-      )}
+      {selected && <PropertyInfoPopup property={selected} onClose={() => setSelected(null)} />}
     </>
   )
 }
@@ -249,9 +256,9 @@ function SchoolsLayer({
     svc.nearbySearch(request, (results, status) => {
       if (status !== google.maps.places.PlacesServiceStatus.OK || !results) return
       const mapped: SchoolResult[] = results
-        .filter(r => r.geometry?.location && r.place_id)
+        .filter((r) => r.geometry?.location && r.place_id)
         .slice(0, 20)
-        .map(r => {
+        .map((r) => {
           const lat = r.geometry!.location!.lat()
           const lng = r.geometry!.location!.lng()
           return {
@@ -276,7 +283,7 @@ function SchoolsLayer({
 
   return (
     <>
-      {schools.map(s => (
+      {schools.map((s) => (
         <Marker
           key={s.placeId}
           position={{ lat: s.lat, lng: s.lng }}
@@ -301,13 +308,7 @@ function SchoolsLayer({
   )
 }
 
-function SchoolInfoPopup({
-  school,
-  onClose,
-}: {
-  school: SchoolResult
-  onClose: () => void
-}) {
+function SchoolInfoPopup({ school, onClose }: { school: SchoolResult; onClose: () => void }) {
   const map = useMap()
   const level = inferSchoolLevel(school.name, school.types)
 
@@ -377,25 +378,43 @@ function NeighborhoodStatsPanel({
         border: '1px solid var(--border-default)',
       }}
     >
-      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--border-default)' }}>
+      <div
+        className="flex items-center justify-between px-4 py-3"
+        style={{ borderBottom: '1px solid var(--border-default)' }}
+      >
         <div className="flex items-center gap-2">
           <BarChart3 size={14} style={{ color: 'var(--accent-sky)' }} />
-          <span className="text-xs font-semibold" style={{ color: 'var(--text-heading)' }}>Neighborhood Stats</span>
+          <span className="text-xs font-semibold" style={{ color: 'var(--text-heading)' }}>
+            Neighborhood Stats
+          </span>
         </div>
-        <button type="button" onClick={onClose} className="p-0.5 rounded hover:bg-white/10 transition-colors" aria-label="Close stats">
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-0.5 rounded hover:bg-white/10 transition-colors"
+          aria-label="Close stats"
+        >
           <X size={14} style={{ color: 'var(--text-secondary)' }} />
         </button>
       </div>
       <div className="px-4 py-3 space-y-3">
         {loading ? (
           <div className="flex items-center justify-center py-6">
-            <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--accent-sky)', borderTopColor: 'transparent' }} />
+            <div
+              className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
+              style={{ borderColor: 'var(--accent-sky)', borderTopColor: 'transparent' }}
+            />
           </div>
         ) : (
-          rows.map(r => (
+          rows.map((r) => (
             <div key={r.label} className="flex items-center justify-between">
-              <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>{r.label}</span>
-              <span className="text-xs font-semibold" style={{ color: r.value ? 'var(--text-heading)' : 'var(--text-secondary)' }}>
+              <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                {r.label}
+              </span>
+              <span
+                className="text-xs font-semibold"
+                style={{ color: r.value ? 'var(--text-heading)' : 'var(--text-secondary)' }}
+              >
                 {r.value ?? 'Unavailable'}
               </span>
             </div>
@@ -473,7 +492,7 @@ function MapMarkers({
   const [geocodedPos, setGeocodedPos] = useState<google.maps.LatLngLiteral | null>(null)
 
   const validComps = useMemo(
-    () => comps.filter(c => isFiniteCoord(c.latitude, c.longitude)),
+    () => comps.filter((c) => isFiniteCoord(c.latitude, c.longitude)),
     [comps],
   )
 
@@ -497,7 +516,7 @@ function MapMarkers({
     if (!map) return
     const points: google.maps.LatLngLiteral[] = []
     if (subjectPos) points.push(subjectPos)
-    validComps.forEach(c => points.push({ lat: c.latitude, lng: c.longitude }))
+    validComps.forEach((c) => points.push({ lat: c.latitude, lng: c.longitude }))
 
     if (points.length === 0) return
     if (points.length === 1) {
@@ -507,7 +526,7 @@ function MapMarkers({
     }
 
     const bounds = new google.maps.LatLngBounds()
-    points.forEach(p => bounds.extend(p))
+    points.forEach((p) => bounds.extend(p))
     map.fitBounds(bounds, { top: 60, right: 60, bottom: 60, left: 60 })
   }, [map, subjectPos, validComps])
 
@@ -585,7 +604,7 @@ function FullscreenMapModal({
 }) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!
   const validComps = useMemo(
-    () => comps.filter(c => isFiniteCoord(c.latitude, c.longitude)),
+    () => comps.filter((c) => isFiniteCoord(c.latitude, c.longitude)),
     [comps],
   )
   const compColor = activeView === 'sale' ? 'var(--accent-sky)' : '#38bdf8'
@@ -597,25 +616,37 @@ function FullscreenMapModal({
   useEffect(() => {
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
+    return () => {
+      document.body.style.overflow = prev
+    }
   }, [])
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex flex-col" style={{ backgroundColor: 'var(--surface-base)' }}>
+    <div
+      className="fixed inset-0 z-[9999] flex flex-col"
+      style={{ backgroundColor: 'var(--surface-base)' }}
+    >
       {/* Header */}
       <div
         className="flex items-center justify-between px-5 py-3 flex-shrink-0"
-        style={{ borderBottom: '1px solid var(--border-default)', backgroundColor: 'var(--surface-card)' }}
+        style={{
+          borderBottom: '1px solid var(--border-default)',
+          backgroundColor: 'var(--surface-card)',
+        }}
       >
         <div className="flex items-center gap-2">
           <MapPin className="w-4 h-4" style={{ color: 'var(--accent-sky)' }} />
-          <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>Proximity Map</span>
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
+            Proximity Map
+          </span>
         </div>
 
         <div className="flex items-center gap-4">
@@ -626,7 +657,10 @@ function FullscreenMapModal({
               <span style={{ color: 'var(--text-heading)' }}>Subject</span>
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: compColor }} />
+              <span
+                className="w-2.5 h-2.5 rounded-full inline-block"
+                style={{ backgroundColor: compColor }}
+              />
               <span style={{ color: 'var(--text-heading)' }}>
                 {activeView === 'sale' ? 'Sale' : 'Rent'} Comps ({validComps.length})
               </span>
@@ -635,9 +669,24 @@ function FullscreenMapModal({
 
           {/* Layer toggles */}
           <div className="flex items-center gap-1">
-            <LayerToggle active={showNearby} onClick={() => setShowNearby(v => !v)} label="Nearby Properties" icon={<Layers size={14} />} />
-            <LayerToggle active={showSchools} onClick={() => setShowSchools(v => !v)} label="Schools" icon={<School size={14} />} />
-            <LayerToggle active={showStats} onClick={() => setShowStats(v => !v)} label="Stats" icon={<BarChart3 size={14} />} />
+            <LayerToggle
+              active={showNearby}
+              onClick={() => setShowNearby((v) => !v)}
+              label="Nearby Properties"
+              icon={<Layers size={14} />}
+            />
+            <LayerToggle
+              active={showSchools}
+              onClick={() => setShowSchools((v) => !v)}
+              label="Schools"
+              icon={<School size={14} />}
+            />
+            <LayerToggle
+              active={showStats}
+              onClick={() => setShowStats((v) => !v)}
+              label="Stats"
+              icon={<BarChart3 size={14} />}
+            />
           </div>
 
           {/* Close */}
@@ -718,10 +767,16 @@ function LayerToggle({
 const cardBorderGlow =
   'border border-[rgba(15,164,233,0.25)] shadow-[0_0_30px_rgba(15,164,233,0.08),0_0_60px_rgba(15,164,233,0.04)]'
 
-export function CompsProximityMap({ subject, comps, activeView, hideHeader = false, className }: CompsProximityMapProps) {
+export function CompsProximityMap({
+  subject,
+  comps,
+  activeView,
+  hideHeader = false,
+  className,
+}: CompsProximityMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const hasSubject = isFiniteCoord(subject.latitude, subject.longitude)
-  const validComps = comps.filter(c => isFiniteCoord(c.latitude, c.longitude))
+  const validComps = comps.filter((c) => isFiniteCoord(c.latitude, c.longitude))
   const hasAnyPoints = hasSubject || validComps.length > 0
   const [modalOpen, setModalOpen] = useState(false)
 

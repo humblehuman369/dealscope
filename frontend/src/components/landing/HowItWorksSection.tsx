@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import React from 'react';
+import React from 'react'
 
 export function HowItWorksSection() {
   return (
@@ -9,8 +9,8 @@ export function HowItWorksSection() {
         <div className="section-label">How It Works</div>
         <h2>Two Steps. Zero Wasted Time.</h2>
         <p className="how-sub">
-          Most investors waste hours on properties that never pencil out.
-          DealGapIQ separates the filter from the toolkit — so you only go deep on deals worth pursuing.
+          Most investors waste hours on properties that never pencil out. DealGapIQ separates the
+          filter from the toolkit — so you only go deep on deals worth pursuing.
         </p>
 
         <div className="steps-layout">
@@ -102,7 +102,9 @@ export function HowItWorksSection() {
             <div className="tool-tiles">
               <div className="tool-tile">
                 <div className="tool-tile-name">STRATEGY</div>
-                <div className="tool-tile-desc">Run your numbers across 6 investment strategies</div>
+                <div className="tool-tile-desc">
+                  Run your numbers across 6 investment strategies
+                </div>
               </div>
               <div className="tool-tile">
                 <div className="tool-tile-name">APPRAISER</div>
@@ -121,7 +123,7 @@ export function HowItWorksSection() {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
-export default HowItWorksSection;
+export default HowItWorksSection

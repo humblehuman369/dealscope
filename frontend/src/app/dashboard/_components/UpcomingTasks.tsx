@@ -63,20 +63,16 @@ function UpcomingRow({
   task: UpcomingTask
   onOpen: (target: { id: string; title: string; stageLabel: string | null }) => void
 }) {
-  const propertyTitle =
-    task.property_nickname || task.property_address_street
+  const propertyTitle = task.property_nickname || task.property_address_street
   const cityState = [task.property_address_city, task.property_address_state]
     .filter(Boolean)
     .join(', ')
-  const stageLabel =
-    STATUS_CONFIG[task.property_status as PropertyStatus]?.label ?? null
+  const stageLabel = STATUS_CONFIG[task.property_status as PropertyStatus]?.label ?? null
 
   return (
     <button
       type="button"
-      onClick={() =>
-        onOpen({ id: task.saved_property_id, title: propertyTitle, stageLabel })
-      }
+      onClick={() => onOpen({ id: task.saved_property_id, title: propertyTitle, stageLabel })}
       className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-[var(--hover-overlay)] transition-colors"
     >
       <span
@@ -86,7 +82,11 @@ function UpcomingRow({
             : 'bg-[var(--color-sky-dim)] text-[var(--accent-sky)]'
         }`}
       >
-        {task.is_overdue ? <AlertCircle className="w-3.5 h-3.5" /> : <CalendarClock className="w-3.5 h-3.5" />}
+        {task.is_overdue ? (
+          <AlertCircle className="w-3.5 h-3.5" />
+        ) : (
+          <CalendarClock className="w-3.5 h-3.5" />
+        )}
       </span>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-[var(--text-heading)] font-medium truncate">{task.title}</p>
@@ -115,8 +115,8 @@ function DueChip({ iso, isOverdue }: { iso: string; isOverdue: boolean }) {
         isOverdue
           ? 'bg-[rgba(239,68,68,0.10)] text-[var(--status-negative)]'
           : days <= 1
-          ? 'bg-[var(--color-sky-dim)] text-[var(--accent-sky)]'
-          : 'bg-[var(--surface-elevated)] text-[var(--text-label)]'
+            ? 'bg-[var(--color-sky-dim)] text-[var(--accent-sky)]'
+            : 'bg-[var(--surface-elevated)] text-[var(--text-label)]'
       }`}
     >
       {label}

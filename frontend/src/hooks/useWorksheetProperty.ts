@@ -26,7 +26,10 @@ function extractAddressFromTempId(id: string): string {
   return decodeURIComponent(id.replace('temp_', ''))
 }
 
-export function useWorksheetProperty(propertyId: string, options: UseWorksheetPropertyOptions = {}) {
+export function useWorksheetProperty(
+  propertyId: string,
+  options: UseWorksheetPropertyOptions = {},
+) {
   const { onLoaded } = options
   const router = useRouter()
   const { isAuthenticated, isLoading: authLoading } = useSession()
@@ -35,11 +38,11 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
   const [property, setProperty] = useState<SavedProperty | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   // Use ref to avoid re-fetching when onLoaded changes (prevents infinite loop)
   const onLoadedRef = useRef(onLoaded)
   onLoadedRef.current = onLoaded
-  
+
   // Track if we've already fetched to prevent duplicate fetches
   const hasFetchedRef = useRef(false)
 
@@ -49,18 +52,17 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
       console.log('[useWorksheetProperty] Auth still loading, waiting...')
       return
     }
-    
+
     // Only redirect if auth is done loading AND user is not authenticated
     if (!isAuthenticated) {
       console.log('[useWorksheetProperty] Not authenticated, redirecting to home')
       router.push('/')
       return
     }
-    
+
     // Handle temporary (unsaved) properties - use worksheetStore data instead of API
     const isTemp = isTempPropertyId(propertyId)
     if (isTemp) {
-      
       if (worksheetStore.propertyId === propertyId && worksheetStore.propertyData) {
         // WorksheetStore already has this property's data
         const syntheticProperty = worksheetStore.propertyData as SavedProperty
@@ -106,37 +108,38 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
 
     const fetchProperty = async () => {
       if (!propertyId || hasFetchedRef.current) {
-        console.log('[useWorksheetProperty] Skipping fetch:', { propertyId, hasFetched: hasFetchedRef.current })
+        console.log('[useWorksheetProperty] Skipping fetch:', {
+          propertyId,
+          hasFetched: hasFetchedRef.current,
+        })
         return
       }
-      
+
       hasFetchedRef.current = true
       setIsLoading(true)
       setError(null)
-      
+
       console.log('[useWorksheetProperty] Fetching property:', propertyId)
-      
+
       try {
-        const data = await apiRequest<SavedProperty>(
-          `/api/v1/properties/saved/${propertyId}`
-        )
+        const data = await apiRequest<SavedProperty>(`/api/v1/properties/saved/${propertyId}`)
         console.log('[useWorksheetProperty] Property loaded:', data.id, data.address_street)
-        
+
         setProperty(data)
         onLoadedRef.current?.(data)
       } catch (err) {
         console.error('[useWorksheetProperty] Error fetching property:', err)
-        
+
         // apiRequest handles 401 → refresh automatically.
         // If we still get an error, it's a real failure.
         const message = err instanceof Error ? err.message : 'Failed to load property'
-        
+
         if (message.includes('401') || message.includes('Unauthorized')) {
           setError('Session expired. Please log in again.')
           router.push('/')
           return
         }
-        
+
         setError(message || 'Failed to load property. Please try again.')
       } finally {
         setIsLoading(false)
@@ -148,7 +151,7 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
     // The effect runs once per propertyId change, and worksheetStore data is read at that moment
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyId, isAuthenticated, authLoading, router])
-  
+
   // Reset fetch flag when propertyId changes
   useEffect(() => {
     hasFetchedRef.current = false

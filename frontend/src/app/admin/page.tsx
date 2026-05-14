@@ -1,13 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import {
-  BarChart3,
-  SlidersHorizontal,
-  BookOpen,
-  Users,
-  ShieldCheck,
-} from 'lucide-react'
+import { BarChart3, SlidersHorizontal, BookOpen, Users, ShieldCheck } from 'lucide-react'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { PlatformStatsSection } from '@/features/admin/components/PlatformStats'
 import { AdminAssumptionsSection } from '@/features/admin/components/AdminAssumptions'
@@ -39,7 +33,6 @@ function AdminDashboardContent() {
       style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
     >
       <div className="max-w-7xl mx-auto">
-
         {/* ── Header ────────────────────────────── */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -47,9 +40,7 @@ function AdminDashboardContent() {
               <ShieldCheck className="w-6 h-6 text-amber-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-100 tracking-tight">
-                Admin Dashboard
-              </h1>
+              <h1 className="text-3xl font-bold text-slate-100 tracking-tight">Admin Dashboard</h1>
               <p className="text-slate-400 text-sm">
                 Platform configuration, default assumptions, and formula reference
               </p>
@@ -93,11 +84,13 @@ function AdminDashboardContent() {
 
 export default function AdminDashboardPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400" />
+        </div>
+      }
+    >
       <AuthGuard requireAdmin>
         <AdminDashboardContent />
       </AuthGuard>

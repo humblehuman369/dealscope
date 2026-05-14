@@ -55,7 +55,12 @@ function pickRCPackage(packages: RCPackage[], annual: boolean): RCPackage | unde
   )
 }
 
-export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }: UpgradeModalProps) {
+export function UpgradeModal({
+  isOpen,
+  onClose,
+  returnTo,
+  initialAnnual = true,
+}: UpgradeModalProps) {
   const router = useRouter()
   const [annual, setAnnual] = useState(initialAnnual)
   const [loading, setLoading] = useState(false)
@@ -105,7 +110,11 @@ export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }
   const startCheckout = useCallback(async () => {
     if (IS_CAPACITOR) {
       if (!rcPkg) return
-      trackEvent('checkout_started', { source: 'upgrade_modal', plan: annual ? 'yearly' : 'monthly', platform: 'capacitor' })
+      trackEvent('checkout_started', {
+        source: 'upgrade_modal',
+        plan: annual ? 'yearly' : 'monthly',
+        platform: 'capacitor',
+      })
       const success = await rc.purchase(rcPkg.identifier)
       if (success) {
         onClose()
@@ -120,9 +129,7 @@ export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }
     }
 
     if (!proPlan) return
-    const priceId = annual
-      ? proPlan.stripe_price_id_yearly
-      : proPlan.stripe_price_id_monthly
+    const priceId = annual ? proPlan.stripe_price_id_yearly : proPlan.stripe_price_id_monthly
     if (!priceId) {
       setError('This plan is not available for checkout.')
       return
@@ -130,12 +137,9 @@ export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }
     setLoading(true)
     setError(null)
     try {
-      const origin =
-        typeof window !== 'undefined' ? window.location.origin : ''
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
       const successPath = '/checkout/success'
-      const successQuery = returnTo
-        ? `?returnTo=${encodeURIComponent(returnTo)}`
-        : ''
+      const successQuery = returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''
       const successUrl = `${origin}${successPath}${successQuery}`
       const cancelUrl = `${origin}/pricing`
       const { checkout_url } = await billingApi.createCheckoutSession({
@@ -144,11 +148,13 @@ export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }
         cancel_url: cancelUrl,
         return_to: returnTo ?? undefined,
       })
-      trackEvent('checkout_started', { source: 'upgrade_modal', plan: annual ? 'yearly' : 'monthly' })
+      trackEvent('checkout_started', {
+        source: 'upgrade_modal',
+        plan: annual ? 'yearly' : 'monthly',
+      })
       window.location.href = checkout_url
     } catch (e: unknown) {
-      const msg =
-        e instanceof Error ? e.message : 'Checkout could not be started.'
+      const msg = e instanceof Error ? e.message : 'Checkout could not be started.'
       setError(msg)
     } finally {
       setLoading(false)
@@ -248,9 +254,11 @@ export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }
               <span className="inline-block h-7 w-24 rounded bg-white/10 animate-pulse" />
             ) : (
               <span className="text-2xl font-bold text-white">
-                {IS_CAPACITOR
-                  ? <PriceCents>{annual ? displayPriceAnnual : displayPriceMonthly}</PriceCents>
-                  : <PriceCents>{`$${annual ? (proPlan ? ((proPlan.price_yearly / 100) / 12).toFixed(2) : '29.17') : (proPlan ? proPlan.price_monthly / 100 : 39.99)}`}</PriceCents>}
+                {IS_CAPACITOR ? (
+                  <PriceCents>{annual ? displayPriceAnnual : displayPriceMonthly}</PriceCents>
+                ) : (
+                  <PriceCents>{`$${annual ? (proPlan ? (proPlan.price_yearly / 100 / 12).toFixed(2) : '29.17') : proPlan ? proPlan.price_monthly / 100 : 39.99}`}</PriceCents>
+                )}
               </span>
             )}
             <span className="text-slate-400 text-sm">
@@ -296,7 +304,8 @@ export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }
               disabled={rcLoading}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-60 transition-opacity"
               style={{
-                background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
+                background:
+                  'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
               }}
             >
               {rcLoading ? (
@@ -315,7 +324,8 @@ export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }
               disabled={loading || rc.isPurchasing || (IS_CAPACITOR ? !rcPkg : !proPlan)}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-50 transition-opacity"
               style={{
-                background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
+                background:
+                  'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
               }}
             >
               {loading || rc.isPurchasing ? (
@@ -366,28 +376,29 @@ export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }
               Terms of Use
             </a>
           </div>
-          {IS_CAPACITOR && (() => {
-            const accountName = IS_IOS ? 'Apple ID' : 'Google Play'
-            const settingsName = IS_IOS ? 'App Store' : 'Google Play'
-            const cancelWindow = IS_IOS
-              ? ' at least 24\u00a0hours before'
-              : ' before'
-            const period = annual ? 'year' : 'month'
-            const fullPrice = annual ? displayPriceAnnual : displayPriceMonthly
-            return (
-              <p className="text-[10px] leading-snug text-center mt-1" style={{ color: '#64748b' }}>
-                After your 7-day free trial, your {accountName} account will be
-                charged {fullPrice}/{period}. Subscription automatically renews
-                each {period} at the same price unless canceled{cancelWindow} the
-                end of the current period. Manage or cancel anytime in your{' '}
-                {settingsName} subscription settings.
-              </p>
-            )
-          })()}
+          {IS_CAPACITOR &&
+            (() => {
+              const accountName = IS_IOS ? 'Apple ID' : 'Google Play'
+              const settingsName = IS_IOS ? 'App Store' : 'Google Play'
+              const cancelWindow = IS_IOS ? ' at least 24\u00a0hours before' : ' before'
+              const period = annual ? 'year' : 'month'
+              const fullPrice = annual ? displayPriceAnnual : displayPriceMonthly
+              return (
+                <p
+                  className="text-[10px] leading-snug text-center mt-1"
+                  style={{ color: '#64748b' }}
+                >
+                  After your 7-day free trial, your {accountName} account will be charged{' '}
+                  {fullPrice}/{period}. Subscription automatically renews each {period} at the same
+                  price unless canceled{cancelWindow} the end of the current period. Manage or
+                  cancel anytime in your {settingsName} subscription settings.
+                </p>
+              )
+            })()}
           {IS_ANDROID && (
             <p className="text-[10px] leading-snug text-center" style={{ color: '#64748b' }}>
-              Subscriptions are billed through Google Play. By tapping &ldquo;Start
-              7-day free trial&rdquo; you agree to the{' '}
+              Subscriptions are billed through Google Play. By tapping &ldquo;Start 7-day free
+              trial&rdquo; you agree to the{' '}
               <a
                 href="https://dealgapiq.com/terms"
                 target="_blank"
@@ -395,8 +406,8 @@ export function UpgradeModal({ isOpen, onClose, returnTo, initialAnnual = true }
                 className="underline hover:text-slate-400"
               >
                 Terms of Use
-              </a>
-              {' '}and{' '}
+              </a>{' '}
+              and{' '}
               <a
                 href="https://dealgapiq.com/privacy"
                 target="_blank"

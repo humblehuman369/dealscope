@@ -33,12 +33,20 @@ export function useCapacitorDeepLinks() {
 
         const parsed = new URL(url)
 
-        if (parsed.protocol === 'dealgapiq:' && parsed.hostname === 'auth' && parsed.pathname === '/callback') {
+        if (
+          parsed.protocol === 'dealgapiq:' &&
+          parsed.hostname === 'auth' &&
+          parsed.pathname === '/callback'
+        ) {
           const accessToken = parsed.searchParams.get('access_token')
           const refreshToken = parsed.searchParams.get('refresh_token')
           const error = parsed.searchParams.get('error')
 
-          try { await Browser.close() } catch { /* may already be closed */ }
+          try {
+            await Browser.close()
+          } catch {
+            /* may already be closed */
+          }
 
           if (error) {
             router.replace(`/login?error=${encodeURIComponent(error)}`)

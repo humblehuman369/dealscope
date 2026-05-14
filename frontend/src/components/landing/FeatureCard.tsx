@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { Feature } from './types';
+import React from 'react'
+import { Feature } from './types'
 
 interface FeatureCardProps {
-  feature: Feature;
+  feature: Feature
 }
 
 // Icon SVG elements for each feature type
@@ -72,16 +72,14 @@ const FeatureIcons: Record<string, React.ReactNode> = {
       <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
     </svg>
   ),
-};
+}
 
 export function FeatureCard({ feature }: FeatureCardProps) {
   return (
     <div className="feature-card">
-      <div className="feature-icon">
-        {FeatureIcons[feature.icon] || FeatureIcons.scan}
-      </div>
+      <div className="feature-icon">{FeatureIcons[feature.icon] || FeatureIcons.scan}</div>
       <h3 className="feature-title">{feature.title}</h3>
       <p className="feature-description">{feature.description}</p>
     </div>
-  );
+  )
 }

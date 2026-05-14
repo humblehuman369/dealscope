@@ -10,7 +10,7 @@ import type { CompsIdentifier, CompsState, SaleComp, SubjectProperty } from '@/l
 
 export function useSaleComps(
   identifier: CompsIdentifier | null,
-  subject?: SubjectProperty
+  subject?: SubjectProperty,
 ): CompsState<SaleComp> {
   const [data, setData] = useState<SaleComp[]>([])
   const [loading, setLoading] = useState(false)

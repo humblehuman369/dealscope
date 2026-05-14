@@ -3,11 +3,11 @@
 // ============================================
 
 // Types
-export * from './types/analytics';
+export * from './types/analytics'
 
 // Utils
-export * from './utils/calculations';
-export * from './utils/formatters';
+export * from './utils/calculations'
+export * from './utils/formatters'
 
 // Components (web versions in components folder)
-export { default as DealScoreCard } from './components/DealScoreCard';
+export { default as DealScoreCard } from './components/DealScoreCard'

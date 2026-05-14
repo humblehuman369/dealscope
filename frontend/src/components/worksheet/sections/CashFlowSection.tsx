@@ -4,7 +4,17 @@ import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
-import { Home, Shield, Users, Wrench, PiggyBank, Building2, Percent, DollarSign, Calendar } from 'lucide-react'
+import {
+  Home,
+  Shield,
+  Users,
+  Wrench,
+  PiggyBank,
+  Building2,
+  Percent,
+  DollarSign,
+  Calendar,
+} from 'lucide-react'
 
 export function CashFlowSection() {
   const { assumptions, updateAssumption, viewMode, propertyData } = useWorksheetStore()
@@ -17,14 +27,14 @@ export function CashFlowSection() {
   const snapshotInsurance = propertyData?.property_data_snapshot?.insurance
   const snapList = propertyData?.property_data_snapshot?.listPrice
 
-  const originalRent = (snapshotRent && snapshotRent > 0) ? snapshotRent : 3000
-  const originalTaxes = (snapshotTaxes && snapshotTaxes > 0) ? snapshotTaxes : 5000
+  const originalRent = snapshotRent && snapshotRent > 0 ? snapshotRent : 3000
+  const originalTaxes = snapshotTaxes && snapshotTaxes > 0 ? snapshotTaxes : 5000
   const originalInsurance =
     snapshotInsurance != null && snapshotInsurance > 0
       ? snapshotInsurance
       : Math.round((snapList && snapList > 0 ? snapList : 350_000) * OPERATING_INSURANCE_PCT)
 
-  const multiplier = viewMode === 'monthly' ? 1/12 : 1
+  const multiplier = viewMode === 'monthly' ? 1 / 12 : 1
 
   return (
     <SectionCard title={`Cash Flow (Year 1) - ${viewMode === 'monthly' ? 'Monthly' : 'Yearly'}`}>
@@ -32,7 +42,7 @@ export function CashFlowSection() {
       <div className="bg-[var(--ws-accent-bg)] px-4 py-2 text-xs font-semibold uppercase text-[var(--ws-accent)]">
         Income
       </div>
-      
+
       {/* Monthly Gross Rent - Editable with slider (monthly base) */}
       <DataRow label="Monthly Gross Rent" icon={<Home className="w-4 h-4" />} hasSlider>
         <EditableField
@@ -49,7 +59,7 @@ export function CashFlowSection() {
       <DataRow label="Annual Gross Rent" icon={<Calendar className="w-4 h-4" />}>
         <DisplayField value={derived.annualGrossRent} format="currency" />
       </DataRow>
-      
+
       {/* Vacancy % - Editable with slider */}
       <DataRow label="% Vacancy" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
@@ -57,7 +67,7 @@ export function CashFlowSection() {
           onChange={(val) => updateAssumption('vacancyRate', val)}
           format="percent"
           min={0}
-          max={0.20}
+          max={0.2}
           step={0.01}
           showSlider={true}
         />
@@ -66,16 +76,16 @@ export function CashFlowSection() {
       <DataRow label="$ Vacancy" icon={<DollarSign className="w-4 h-4" />}>
         <DisplayField value={-derived.vacancy * multiplier} format="currency" isNegative />
       </DataRow>
-      
+
       <DataRow label="Operating Income" isTotal>
         <DisplayField value={derived.effectiveGrossIncome * multiplier} format="currency" />
       </DataRow>
-      
+
       {/* Expenses Section */}
       <div className="bg-[var(--ws-negative-light)] px-4 py-2 text-xs font-semibold uppercase text-[var(--ws-negative)] mt-2">
         Operating Expenses
       </div>
-      
+
       <DataRow label="Property Taxes" icon={<Building2 className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.propertyTaxes}
@@ -87,7 +97,7 @@ export function CashFlowSection() {
           showSlider={true}
         />
       </DataRow>
-      
+
       <DataRow label="Insurance" icon={<Shield className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.insurance}
@@ -99,7 +109,7 @@ export function CashFlowSection() {
           showSlider={true}
         />
       </DataRow>
-      
+
       {/* Property Management % - Editable with slider */}
       <DataRow label="% Property Mgmt" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
@@ -116,7 +126,7 @@ export function CashFlowSection() {
       <DataRow label="$ Property Mgmt" icon={<DollarSign className="w-4 h-4" />}>
         <DisplayField value={derived.propertyManagement * multiplier} format="currency" />
       </DataRow>
-      
+
       {/* Maintenance % - Editable with slider */}
       <DataRow label="% Maintenance" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
@@ -124,7 +134,7 @@ export function CashFlowSection() {
           onChange={(val) => updateAssumption('maintenancePct', val)}
           format="percent"
           min={0}
-          max={0.10}
+          max={0.1}
           step={0.01}
           showSlider={true}
         />
@@ -133,7 +143,7 @@ export function CashFlowSection() {
       <DataRow label="$ Maintenance" icon={<DollarSign className="w-4 h-4" />}>
         <DisplayField value={derived.maintenance * multiplier} format="currency" />
       </DataRow>
-      
+
       {/* CapEx Reserve % - Editable with slider */}
       <DataRow label="% Capital Maintenance" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
@@ -141,7 +151,7 @@ export function CashFlowSection() {
           onChange={(val) => updateAssumption('capexReservePct', val)}
           format="percent"
           min={0}
-          max={0.10}
+          max={0.1}
           step={0.01}
           showSlider={true}
         />
@@ -150,7 +160,7 @@ export function CashFlowSection() {
       <DataRow label="$ Capital Maintenance" icon={<DollarSign className="w-4 h-4" />}>
         <DisplayField value={derived.capex * multiplier} format="currency" />
       </DataRow>
-      
+
       <DataRow label="HOA Fees" hasSlider>
         <EditableField
           value={assumptions.hoaFees}
@@ -162,40 +172,40 @@ export function CashFlowSection() {
           showSlider={true}
         />
       </DataRow>
-      
+
       <DataRow label="Operating Expenses" isTotal>
-        <DisplayField 
-          value={derived.totalOperatingExpenses * multiplier} 
+        <DisplayField
+          value={derived.totalOperatingExpenses * multiplier}
           format="currency"
           isNegative
         />
       </DataRow>
-      
+
       {/* Net Operating Income */}
       <div className="bg-[var(--ws-bg-alt)] px-4 py-2 text-xs font-semibold uppercase text-[var(--ws-text-primary)] mt-2">
         Net Operating Income
       </div>
-      
+
       <DataRow label="Net Operating Income" isHighlight>
-        <DisplayField 
-          value={derived.noi * multiplier} 
+        <DisplayField
+          value={derived.noi * multiplier}
           format="currency"
           isPositive={derived.noi > 0}
           isNegative={derived.noi < 0}
         />
       </DataRow>
-      
+
       <DataRow label="Loan Payments">
-        <DisplayField 
-          value={-derived.annualDebtService * multiplier} 
+        <DisplayField
+          value={-derived.annualDebtService * multiplier}
           format="currency"
           isNegative
         />
       </DataRow>
-      
+
       <DataRow label="Cash Flow" isTotal>
-        <DisplayField 
-          value={derived.annualCashFlow * multiplier} 
+        <DisplayField
+          value={derived.annualCashFlow * multiplier}
           format="currency"
           isPositive={derived.annualCashFlow > 0}
           isNegative={derived.annualCashFlow < 0}

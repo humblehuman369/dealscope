@@ -14,7 +14,11 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value)
 
-export function HousingCostGauge({ housingCost, rentingEquivalent, savings }: HousingCostGaugeProps) {
+export function HousingCostGauge({
+  housingCost,
+  rentingEquivalent,
+  savings,
+}: HousingCostGaugeProps) {
   const max = Math.max(housingCost, rentingEquivalent, 1)
   const housingPct = Math.min(100, (housingCost / max) * 100)
 

@@ -52,7 +52,7 @@ function logAttempt(
   attempt: number,
   status: number,
   durationMs: number,
-  error: string | null
+  error: string | null,
 ): void {
   const payload = {
     endpoint,
@@ -78,7 +78,7 @@ export async function axessoGet<T>(
   endpoint: string,
   params: Record<string, string>,
   config?: Partial<AxessoClientConfig>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<AxessoResponse<T>> {
   const cfg = { ...DEFAULT_CONFIG, ...config }
 
@@ -138,7 +138,7 @@ export async function axessoGet<T>(
       const durationMs = Math.round(performance.now() - start)
       lastStatus = res.status
 
-      const data = await res.json().catch(() => null) as T | null
+      const data = (await res.json().catch(() => null)) as T | null
 
       logAttempt(endpoint, params, attempt, res.status, durationMs, null)
 
@@ -154,7 +154,10 @@ export async function axessoGet<T>(
       }
 
       lastData = null
-      const errBody = data && typeof data === 'object' && 'error' in data ? (data as { error?: string }).error : null
+      const errBody =
+        data && typeof data === 'object' && 'error' in data
+          ? (data as { error?: string }).error
+          : null
       lastError = typeof errBody === 'string' ? errBody : res.statusText || `HTTP ${res.status}`
 
       if (res.status === 404 || res.status === 401 || res.status === 429) {
@@ -185,7 +188,11 @@ export async function axessoGet<T>(
       clearTimeout(timeoutId)
       const durationMs = Math.round(performance.now() - start)
       const isAbort = err instanceof Error && err.name === 'AbortError'
-      lastError = isAbort ? 'Request timed out or aborted' : (err instanceof Error ? err.message : String(err))
+      lastError = isAbort
+        ? 'Request timed out or aborted'
+        : err instanceof Error
+          ? err.message
+          : String(err)
       lastStatus = 0
       logAttempt(endpoint, params, attempt, 0, durationMs, lastError)
 

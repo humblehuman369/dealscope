@@ -22,20 +22,23 @@ interface EditableFieldProps {
   showSlider?: boolean
 }
 
-const formatValue = (value: number, format: FormatType, prefix?: string, suffix?: string): string => {
+const formatValue = (
+  value: number,
+  format: FormatType,
+  prefix?: string,
+  suffix?: string,
+): string => {
   // Guard against invalid numbers
   if (!Number.isFinite(value)) {
     return format === 'currency' ? '$0' : '0'
   }
-  
+
   // Clamp extremely large values to prevent display issues
   const maxValue = 1e12 // 1 trillion max
-  const clampedValue = Math.abs(value) > maxValue 
-    ? (value > 0 ? maxValue : -maxValue) 
-    : value
-  
+  const clampedValue = Math.abs(value) > maxValue ? (value > 0 ? maxValue : -maxValue) : value
+
   let formatted: string
-  
+
   switch (format) {
     case 'currency':
       formatted = new Intl.NumberFormat('en-US', {
@@ -55,14 +58,14 @@ const formatValue = (value: number, format: FormatType, prefix?: string, suffix?
     default:
       formatted = clampedValue.toLocaleString()
   }
-  
+
   if (prefix && format !== 'currency') {
     formatted = prefix + formatted
   }
   if (suffix) {
     formatted = formatted + suffix
   }
-  
+
   return formatted
 }
 
@@ -70,12 +73,12 @@ const parseValue = (input: string, format: FormatType): number => {
   // Remove all non-numeric characters except decimal point and minus
   const cleaned = input.replace(/[^0-9.-]/g, '')
   let value = parseFloat(cleaned) || 0
-  
+
   // Convert percent input back to decimal
   if (format === 'percent') {
     value = value / 100
   }
-  
+
   return value
 }
 
@@ -106,7 +109,10 @@ export function EditableField({
   const sliderStep = step ?? (format === 'percent' ? 0.01 : format === 'years' ? 1 : 1000)
 
   // Calculate fill percentage for slider
-  const fillPercent = Math.min(100, Math.max(0, ((value - sliderMin) / (sliderMax - sliderMin)) * 100))
+  const fillPercent = Math.min(
+    100,
+    Math.max(0, ((value - sliderMin) / (sliderMax - sliderMin)) * 100),
+  )
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -117,7 +123,7 @@ export function EditableField({
 
   const handleStartEdit = () => {
     if (disabled) return
-    
+
     // Set initial input value based on format
     if (format === 'percent') {
       setInputValue((value * 100).toFixed(1))
@@ -129,11 +135,11 @@ export function EditableField({
 
   const handleEndEdit = () => {
     let newValue = parseValue(inputValue, format)
-    
+
     // Clamp value
     if (min !== undefined) newValue = Math.max(min, newValue)
     if (max !== undefined) newValue = Math.min(max, newValue)
-    
+
     onChange(newValue)
     setIsEditing(false)
   }
@@ -146,17 +152,20 @@ export function EditableField({
     }
   }
 
-  const handleSliderChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseFloat(e.target.value)
-    onChange(newValue)
-  }, [onChange])
+  const handleSliderChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = parseFloat(e.target.value)
+      onChange(newValue)
+    },
+    [onChange],
+  )
 
   const displayValue = formatValue(value, format, prefix, suffix)
-  
-  const valueClass = isPositive 
-    ? 'text-[var(--ws-positive)]' 
-    : isNegative 
-      ? 'text-[var(--ws-negative)]' 
+
+  const valueClass = isPositive
+    ? 'text-[var(--ws-positive)]'
+    : isNegative
+      ? 'text-[var(--ws-negative)]'
       : 'text-[var(--ws-text-primary)]'
 
   // Slider-enabled layout - INLINE: slider then value (right-aligned)
@@ -175,12 +184,12 @@ export function EditableField({
             value={value}
             onChange={handleSliderChange}
             style={{
-              background: `linear-gradient(to right, var(--iq-teal) 0%, var(--iq-teal) ${fillPercent}%, #e2e8f0 ${fillPercent}%, #e2e8f0 100%)`
+              background: `linear-gradient(to right, var(--iq-teal) 0%, var(--iq-teal) ${fillPercent}%, #e2e8f0 ${fillPercent}%, #e2e8f0 100%)`,
             }}
             aria-label={`Adjust value`}
           />
         </div>
-        
+
         {/* Value display - RIGHT-ALIGNED with min-width for consistent alignment */}
         <div className="flex items-center justify-end gap-2 ml-auto text-right flex-shrink-0 min-w-[90px] md:min-w-[110px]">
           {isEditing ? (
@@ -194,15 +203,17 @@ export function EditableField({
               className="slider-value-input text-right w-full"
             />
           ) : (
-            <div 
+            <div
               className="flex items-center justify-end gap-2 cursor-pointer group w-full"
               onClick={handleStartEdit}
             >
               {/* Primary value - RIGHT-ALIGNED with exact required classes */}
-              <span className={`text-right min-w-[100px] flex-shrink-0 font-semibold tabular-nums whitespace-nowrap ${valueClass}`}>
+              <span
+                className={`text-right min-w-[100px] flex-shrink-0 font-semibold tabular-nums whitespace-nowrap ${valueClass}`}
+              >
                 {displayValue}
               </span>
-              
+
               <Pencil className="w-3 h-3 text-[var(--iq-teal)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
             </div>
           )}
@@ -229,15 +240,15 @@ export function EditableField({
   }
 
   return (
-    <div 
+    <div
       className={`editable-field group cursor-pointer ml-auto text-right ${className}`}
       onClick={handleStartEdit}
     >
-      <span className={`text-right min-w-[100px] flex-shrink-0 font-semibold tabular-nums whitespace-nowrap ${valueClass}`}>
+      <span
+        className={`text-right min-w-[100px] flex-shrink-0 font-semibold tabular-nums whitespace-nowrap ${valueClass}`}
+      >
         {displayValue}
-        {!disabled && (
-          <Pencil className="edit-icon opacity-0 group-hover:opacity-100 ml-2" />
-        )}
+        {!disabled && <Pencil className="edit-icon opacity-0 group-hover:opacity-100 ml-2" />}
       </span>
     </div>
   )
@@ -264,15 +275,17 @@ export function DisplayField({
   className = '',
 }: DisplayFieldProps) {
   const displayValue = formatValue(value, format, prefix, suffix)
-  
-  const valueClass = isPositive 
-    ? 'text-[var(--ws-positive)]' 
-    : isNegative 
-      ? 'text-[var(--ws-negative)]' 
+
+  const valueClass = isPositive
+    ? 'text-[var(--ws-positive)]'
+    : isNegative
+      ? 'text-[var(--ws-negative)]'
       : 'text-[var(--ws-text-primary)]'
 
   return (
-    <span className={`text-right min-w-[100px] flex-shrink-0 font-semibold tabular-nums whitespace-nowrap ${valueClass} ${className}`}>
+    <span
+      className={`text-right min-w-[100px] flex-shrink-0 font-semibold tabular-nums whitespace-nowrap ${valueClass} ${className}`}
+    >
       {displayValue}
     </span>
   )

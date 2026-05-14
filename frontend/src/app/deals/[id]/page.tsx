@@ -102,11 +102,7 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
   const { id } = use(params)
   return (
     <AuthGuard>
-      <Suspense
-        fallback={
-          <div className="min-h-screen bg-[var(--surface-base)] grid-fade" />
-        }
-      >
+      <Suspense fallback={<div className="min-h-screen bg-[var(--surface-base)] grid-fade" />}>
         <DealPageContent propertyId={id} />
       </Suspense>
     </AuthGuard>
@@ -180,7 +176,7 @@ function DealHeader({ deal }: { deal: DealDetail }) {
   const title = deal.nickname || deal.address_street
   const subtitle = [deal.address_city, deal.address_state].filter(Boolean).join(', ')
   const strategyLabel = deal.best_strategy
-    ? STRATEGY_LABELS[deal.best_strategy] ?? deal.best_strategy
+    ? (STRATEGY_LABELS[deal.best_strategy] ?? deal.best_strategy)
     : null
 
   // Stage label: combine status + flip_stage so the user always knows where
@@ -219,9 +215,7 @@ function DealHeader({ deal }: { deal: DealDetail }) {
           <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-heading)] truncate">
             {title}
           </h1>
-          {subtitle && (
-            <p className="text-sm text-[var(--text-label)] mt-0.5">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-sm text-[var(--text-label)] mt-0.5">{subtitle}</p>}
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className="inline-flex text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--color-sky-dim)] text-[var(--accent-sky)]">
               {stageLine}
@@ -262,10 +256,7 @@ function DealHeader({ deal }: { deal: DealDetail }) {
           otherwise so the user knows the slot is real, not a render bug. */}
       <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
         <HeaderStat label="Analysis" value={analysis !== null ? fmtCurrency(analysis) : '—'} />
-        <HeaderStat
-          label="Projected"
-          value={projected !== null ? fmtCurrency(projected) : '—'}
-        />
+        <HeaderStat label="Projected" value={projected !== null ? fmtCurrency(projected) : '—'} />
         <HeaderStat
           label="To Date"
           value={toDate !== null ? fmtCurrency(toDate) : '—'}
@@ -274,7 +265,13 @@ function DealHeader({ deal }: { deal: DealDetail }) {
         <HeaderStat
           label="Variance"
           value={variance !== null ? fmtCurrency(variance) : '—'}
-          accent={variance !== null && variance > 0 ? 'negative' : variance !== null && variance < 0 ? 'positive' : undefined}
+          accent={
+            variance !== null && variance > 0
+              ? 'negative'
+              : variance !== null && variance < 0
+                ? 'positive'
+                : undefined
+          }
         />
       </div>
     </header>
@@ -294,10 +291,10 @@ function HeaderStat({
     accent === 'sky'
       ? 'text-[var(--accent-sky)]'
       : accent === 'negative'
-      ? 'text-[var(--status-negative)]'
-      : accent === 'positive'
-      ? 'text-[var(--status-positive)]'
-      : 'text-[var(--text-heading)]'
+        ? 'text-[var(--status-negative)]'
+        : accent === 'positive'
+          ? 'text-[var(--status-positive)]'
+          : 'text-[var(--text-heading)]'
   return (
     <div>
       <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)]">
@@ -362,13 +359,7 @@ function TabNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
 // ───────────────────────────────────────────────────────
 // Overview tab — 2x2 grid of summary cards
 
-function OverviewTab({
-  deal,
-  onJumpTab,
-}: {
-  deal: DealDetail
-  onJumpTab: (t: Tab) => void
-}) {
+function OverviewTab({ deal, onJumpTab }: { deal: DealDetail; onJumpTab: (t: Tab) => void }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-5">
       <StatusReportCard deal={deal} onSeeTasks={() => onJumpTab('tasks')} />
@@ -421,7 +412,9 @@ function StatusReportCard({ deal, onSeeTasks }: { deal: DealDetail; onSeeTasks: 
   const tasksQuery = useTasks(deal.id)
   const upcoming = (tasksQuery.data ?? [])
     .filter((t) => t.completed_at === null && t.due_date)
-    .sort((a, b) => new Date(a.due_date as string).getTime() - new Date(b.due_date as string).getTime())
+    .sort(
+      (a, b) => new Date(a.due_date as string).getTime() - new Date(b.due_date as string).getTime(),
+    )
   const nextDue = upcoming[0]
   const overdueCount = upcoming.filter((t) => new Date(t.due_date as string) < new Date()).length
 
@@ -430,13 +423,9 @@ function StatusReportCard({ deal, onSeeTasks }: { deal: DealDetail; onSeeTasks: 
       <dl className="space-y-3 text-sm">
         <div>
           <dt className="text-[10px] uppercase tracking-wide text-[var(--text-label)]">Current</dt>
-          <dd className="text-base font-semibold text-[var(--text-heading)] mt-0.5">
-            {stageLine}
-          </dd>
+          <dd className="text-base font-semibold text-[var(--text-heading)] mt-0.5">{stageLine}</dd>
           {days !== null && (
-            <dd className="text-[11px] text-[var(--text-label)] mt-0.5">
-              {days}d in stage
-            </dd>
+            <dd className="text-[11px] text-[var(--text-label)] mt-0.5">{days}d in stage</dd>
           )}
         </div>
         <div>
@@ -453,7 +442,11 @@ function StatusReportCard({ deal, onSeeTasks }: { deal: DealDetail; onSeeTasks: 
                 {nextDue.title}
               </button>
               <p className="text-[11px] text-[var(--text-label)] mt-0.5">
-                Due {new Date(nextDue.due_date as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                Due{' '}
+                {new Date(nextDue.due_date as string).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                })}
                 {overdueCount > 0 && (
                   <span className="ml-2 text-[var(--status-negative)] font-semibold">
                     {overdueCount} overdue
@@ -470,13 +463,7 @@ function StatusReportCard({ deal, onSeeTasks }: { deal: DealDetail; onSeeTasks: 
   )
 }
 
-function FinancialsCard({
-  deal,
-  onSeeBudget,
-}: {
-  deal: DealDetail
-  onSeeBudget: () => void
-}) {
+function FinancialsCard({ deal, onSeeBudget }: { deal: DealDetail; onSeeBudget: () => void }) {
   const summary = useRehabBudgetSummary(deal.id)
   const data = summary.data
 
@@ -544,8 +531,8 @@ function FinancialsCard({
                 parseFloat(data.variance) > 0
                   ? 'text-[var(--status-negative)]'
                   : parseFloat(data.variance) < 0
-                  ? 'text-[var(--status-positive)]'
-                  : 'text-[var(--text-heading)]'
+                    ? 'text-[var(--status-positive)]'
+                    : 'text-[var(--text-heading)]'
               }`}
             >
               {parseFloat(data.variance) > 0 ? '+' : ''}
@@ -558,13 +545,7 @@ function FinancialsCard({
   )
 }
 
-function TopTasksCard({
-  propertyId,
-  onSeeAll,
-}: {
-  propertyId: string
-  onSeeAll: () => void
-}) {
+function TopTasksCard({ propertyId, onSeeAll }: { propertyId: string; onSeeAll: () => void }) {
   const tasks = useTasks(propertyId)
   const open = (tasks.data ?? []).filter((t) => t.completed_at === null)
   const next = open
@@ -664,7 +645,9 @@ function RecentActivityCard({
             <li key={e.id} className="flex items-start gap-2">
               <span className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full bg-[var(--accent-sky)]" />
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-[var(--text-heading)] leading-snug truncate">{e.title}</p>
+                <p className="text-sm text-[var(--text-heading)] leading-snug truncate">
+                  {e.title}
+                </p>
                 <p className="text-[11px] text-[var(--text-label)]">
                   {new Date(e.occurred_at).toLocaleDateString('en-US', {
                     month: 'short',

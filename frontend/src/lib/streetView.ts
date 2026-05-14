@@ -94,19 +94,12 @@ const toDeg = (rad: number): number => (rad * 180) / Math.PI
  * 0° = north, 90° = east. Used to point the Street View camera *toward* the
  * parcel from whichever panorama Google returns.
  */
-function bearingBetween(
-  fromLat: number,
-  fromLng: number,
-  toLat: number,
-  toLng: number,
-): number {
+function bearingBetween(fromLat: number, fromLng: number, toLat: number, toLng: number): number {
   const φ1 = toRad(fromLat)
   const φ2 = toRad(toLat)
   const Δλ = toRad(toLng - fromLng)
   const y = Math.sin(Δλ) * Math.cos(φ2)
-  const x =
-    Math.cos(φ1) * Math.sin(φ2) -
-    Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ)
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ)
   return (toDeg(Math.atan2(y, x)) + 360) % 360
 }
 
@@ -152,12 +145,7 @@ export async function resolveBestStreetView(
       const panoId = result?.data?.location?.pano
       const panoLatLng = result?.data?.location?.latLng
       if (!panoId || !panoLatLng) continue
-      const heading = bearingBetween(
-        panoLatLng.lat(),
-        panoLatLng.lng(),
-        parcelLat,
-        parcelLng,
-      )
+      const heading = bearingBetween(panoLatLng.lat(), panoLatLng.lng(), parcelLat, parcelLng)
       return { pano: panoId, heading, fov: DEFAULT_FOV, pitch: DEFAULT_PITCH }
     } catch {
       // ZERO_RESULTS at this radius — try the wider one.

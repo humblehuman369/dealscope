@@ -7,7 +7,7 @@ import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 /**
  * Property Not Found Page
- * 
+ *
  * Shown when a property with the given ZPID cannot be found.
  * Opens search modal instead of linking to old search page.
  */
@@ -29,8 +29,8 @@ export default function PropertyNotFound() {
 
         {/* Description */}
         <p className="text-slate-500 dark:text-slate-400 mb-8">
-          We couldn&apos;t find the property you&apos;re looking for. 
-          It may have been removed or the ID may be incorrect.
+          We couldn&apos;t find the property you&apos;re looking for. It may have been removed or
+          the ID may be incorrect.
         </p>
 
         {/* Actions */}
@@ -53,10 +53,7 @@ export default function PropertyNotFound() {
       </div>
 
       {/* Search Modal */}
-      <SearchPropertyModal 
-        isOpen={showSearchModal} 
-        onClose={() => setShowSearchModal(false)} 
-      />
+      <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
     </div>
   )
 }
