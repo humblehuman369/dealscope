@@ -564,7 +564,7 @@ function StrategyContent() {
       writeDealMakerOverrides(
         addressParam,
         { ...patch, threePathsLabel: decoded.label } as Record<string, unknown>,
-        { origin: 'verdict_sync', stripKeys: PATH_PATCH_FIELD_KEYS },
+        { origin: 'verdict_sync' },
       )
     } catch {
       /* ignore */
@@ -878,11 +878,7 @@ function StrategyContent() {
       }
       inlineOverridesRef.current = next as Record<string, any>
       try {
-        writeDealMakerOverrides(
-          resolvedAddressRef.current,
-          next,
-          { origin: 'verdict_sync', stripKeys: PATH_PATCH_FIELD_KEYS },
-        )
+        writeDealMakerOverrides(resolvedAddressRef.current, next, { origin: 'verdict_sync' })
       } catch { /* ignore */ }
       scheduleRecalc()
       return next as Record<string, any>
@@ -915,11 +911,7 @@ function StrategyContent() {
       }
       inlineOverridesRef.current = next as Record<string, any>
       try {
-        writeDealMakerOverrides(
-          resolvedAddressRef.current,
-          next,
-          { origin: 'dealmaker_edit', stripKeys: PATH_PATCH_FIELD_KEYS },
-        )
+        writeDealMakerOverrides(resolvedAddressRef.current, next, { origin: 'dealmaker_edit' })
       } catch { /* ignore */ }
       scheduleRecalc()
       return next as Record<string, any>
