@@ -106,7 +106,16 @@ export function readDealMakerOverrides(address?: string): DealMakerOverrideRecor
 export function writeDealMakerOverrides(
   address: string,
   patch: Record<string, unknown>,
-  options?: { origin?: DealMakerOverrideOrigin },
+  options?: {
+    origin?: DealMakerOverrideOrigin
+    /**
+     * Keys to remove from the existing record BEFORE merging the new patch.
+     * Use when a caller needs to reset a known-stale subset (e.g. path-apply
+     * stripping prior path-patch keys so a previously-buggy `listPrice` from
+     * an older session does not leak forward).
+     */
+    stripKeys?: readonly string[]
+  },
 ): DealMakerOverrideRecord | null {
   if (typeof window === 'undefined') return null
 
@@ -116,8 +125,16 @@ export function writeDealMakerOverrides(
   const sessionKey = buildDealMakerSessionKey(canonicalAddress)
   const existing = tryParseJson(sessionStorage.getItem(sessionKey)) ?? {}
   const origin = options?.origin ?? existing.origin ?? 'unknown'
+
+  const baseExisting: Record<string, unknown> = { ...existing }
+  if (options?.stripKeys && options.stripKeys.length > 0) {
+    for (const key of options.stripKeys) {
+      delete baseExisting[key]
+    }
+  }
+
   const merged: DealMakerOverrideRecord = {
-    ...existing,
+    ...baseExisting,
     ...patch,
     origin,
     canonicalAddress,
