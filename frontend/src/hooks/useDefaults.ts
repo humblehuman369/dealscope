@@ -120,30 +120,6 @@ export function useDefaults(zipCode?: string): UseDefaultsResult {
 }
 
 /**
- * Hook for accessing system defaults only (no market/user adjustments).
- * Use this when you need the base system defaults regardless of context.
- */
-export function useSystemDefaults(): {
-  defaults: AllAssumptions | null
-  loading: boolean
-  error: Error | null
-} {
-  const [defaults, setDefaults] = useState<AllAssumptions | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-
-  useEffect(() => {
-    defaultsService
-      .getDefaults()
-      .then(setDefaults)
-      .catch((err) => setError(err instanceof Error ? err : new Error('Failed to fetch defaults')))
-      .finally(() => setLoading(false))
-  }, [])
-
-  return { defaults, loading, error }
-}
-
-/**
  * Hook for managing user's default assumptions.
  * Requires authentication.
  */
