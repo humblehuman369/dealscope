@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
+import { Modal } from './Modal'
 
 export interface VideoModalProps {
   open: boolean
@@ -9,96 +10,85 @@ export interface VideoModalProps {
   title?: string
 }
 
+/**
+ * VideoModal — embedded video player in a modal shell.
+ *
+ * Built on top of <Modal> (P2.4 primitive), which provides backdrop click,
+ * Escape, focus trap, return-focus and body scroll lock. This component
+ * only owns the video-specific concerns:
+ *   - Pause + reset playback when the modal closes (so reopening starts fresh)
+ *   - Larger panel size (`xl` ≈ 800px max-width) appropriate for 16:9 video
+ *   - Letterbox background via the `--surface-media-letterbox` token
+ *   - The `<video>` element is the autofocus target so keyboard controls
+ *     work immediately
+ */
 export function VideoModal({ open, onClose, src, title }: VideoModalProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
 
+  // Reset playback when the modal closes so reopening doesn't resume
+  // mid-video at the previous timestamp.
   useEffect(() => {
-    if (!open) return
-
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [open, onClose])
-
-  useEffect(() => {
-    if (!open) {
-      const v = videoRef.current
-      if (v) {
-        v.pause()
-        v.currentTime = 0
-      }
+    if (open) return
+    const v = videoRef.current
+    if (v) {
+      v.pause()
+      v.currentTime = 0
     }
   }, [open])
 
-  const handleBackdrop = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) onClose()
-    },
-    [onClose],
-  )
-
-  if (!open) return null
-
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-      style={{ background: 'var(--surface-overlay)', backdropFilter: 'blur(6px)' }}
-      onClick={handleBackdrop}
-      role="dialog"
-      aria-modal="true"
+    <Modal
+      open={open}
+      onClose={onClose}
+      size="xl"
       aria-label={title ?? 'Video'}
+      hideCloseButton
+      fullBleed
+      initialFocusRef={videoRef as React.RefObject<HTMLElement | null>}
     >
-      <div
-        ref={panelRef}
-        className="relative w-full rounded-2xl overflow-hidden"
+      {/*
+        Custom close button overlaid on the video. Default Modal close button
+        is hidden because it sits inside a normal padded header — we want a
+        floating control over the video frame instead.
+      */}
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-3 right-3 z-10 flex items-center justify-center rounded-full transition-colors"
         style={{
-          maxWidth: 800,
-          background: 'var(--surface-card)',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-dropdown)',
+          width: 32,
+          height: 32,
+          background: 'rgba(0,0,0,0.55)',
+          border: 'none',
+          color: '#fff',
         }}
+        aria-label="Close video"
       >
-        <button
-          onClick={onClose}
-          autoFocus
-          className="absolute top-3 right-3 z-10 flex items-center justify-center rounded-full transition-colors"
-          style={{
-            width: 32,
-            height: 32,
-            background: 'rgba(0,0,0,0.55)',
-            border: 'none',
-            color: '#fff',
-          }}
-          aria-label="Close video"
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
 
-        <video
-          ref={videoRef}
-          src={src}
-          controls
-          autoPlay
-          playsInline
-          className="w-full block"
-          style={{ aspectRatio: '16/9', background: 'var(--surface-media-letterbox)' }}
-        />
-      </div>
-    </div>
+      <video
+        ref={videoRef}
+        src={src}
+        controls
+        autoPlay
+        playsInline
+        className="w-full block"
+        style={{ aspectRatio: '16/9', background: 'var(--surface-media-letterbox)' }}
+      />
+    </Modal>
   )
 }
