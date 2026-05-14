@@ -97,7 +97,7 @@ const NAV_ITEMS = [
 ]
 
 // Icon components
-const NavIcons: Record<string, (isActive: boolean) => JSX.Element> = {
+const NavIcons: Record<string, (isActive: boolean) => React.JSX.Element> = {
   search: (isActive) => (
     <svg
       width="18"
@@ -213,7 +213,7 @@ const NavIcons: Record<string, (isActive: boolean) => JSX.Element> = {
 }
 
 // Fact icons
-const FactIcons: Record<string, JSX.Element> = {
+const FactIcons: Record<string, React.JSX.Element> = {
   dollar: (
     <path
       strokeLinecap="round"

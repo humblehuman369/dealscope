@@ -49,7 +49,6 @@ import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologyS
 import { InfoPopover } from '@/components/ui/InfoPopover'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
-import { ProGate } from '@/components/ProGate'
 import { trackEvent } from '@/lib/eventTracking'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
