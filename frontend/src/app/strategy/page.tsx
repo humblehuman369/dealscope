@@ -349,16 +349,6 @@ function StrategyContent() {
   }, [inlineOverrides])
   // Currently applied Three Paths structure (so the matching button highlights).
   const [appliedPathId, setAppliedPathId] = useState<string | null>(null)
-  // Tracks the exact `inlineOverrides` keys the LAST applied Option wrote, so
-  // switching Option A → Option B can roll back only A's autofills (and leave
-  // any manual slider edits the user made in between untouched). An Option
-  // button's contract is "autofill the worksheet sliders for this Option's
-  // terms" — nothing more.
-  const lastPathSetKeysRef = useRef<string[]>([])
-  // Keys the user has manually edited via a slider since the last Option apply.
-  // We never roll those back when switching Options — the user's manual edit
-  // wins over an Option's autofill for the same key.
-  const userTouchedKeysRef = useRef<Set<string>>(new Set())
   // Worksheet state-field names whose value the most recently applied path
   // actually changed vs the prior baseline. Drives the soft glow on
   // SliderRow's via WorksheetHighlightContext.
@@ -369,8 +359,6 @@ function StrategyContent() {
   useEffect(() => {
     setHighlightedFields(new Set())
     setAppliedPathId(null)
-    lastPathSetKeysRef.current = []
-    userTouchedKeysRef.current = new Set()
   }, [addressParam])
   // Merged view used by all downstream calculations.
   const dealMakerOverrides = useMemo(() => {
@@ -840,9 +828,6 @@ function StrategyContent() {
     if (field === 'marketValue') {
       setSourceOverrides((prev) => ({ ...prev, price: value }))
     }
-    // Record this as a user-driven edit so the next Option click doesn't roll
-    // it back when stripping the prior Option's autofills.
-    userTouchedKeysRef.current.add(mapping.key)
     setInlineOverrides((prev) => {
       const next = { ...prev, [mapping.key]: overrideValue }
       inlineOverridesRef.current = next
@@ -865,61 +850,61 @@ function StrategyContent() {
   }, [scheduleRecalc])
 
   /**
-   * Apply an Option to the worksheet.
-   *
-   * Contract: an Option button autofills the worksheet sliders for the terms
-   * that Option specifies — nothing more. The slider changes then flow through
-   * the normal recalc path (`scheduleRecalc` → `/api/v1/analysis/verdict` →
-   * `setData`), so the Deal Gap bar, the key-metrics card, and the worksheet
-   * read from the same fresh backend response.
-   *
-   * Switching Option A → Option B rolls back ONLY the keys A wrote (tracked in
-   * `lastPathSetKeysRef`), so any manual slider edits the user made in between
-   * are preserved.
+   * Apply a Three Paths structure to the worksheet directly (bypasses the
+   * slider FIELD_MAP scaling because `preLoadedRecordToDealMakerPatch` already
+   * returns values in the canonical `inlineOverrides` shape). Persists to
+   * session so the DealMaker tab stays in sync, and triggers a debounced recalc.
    */
   const applyPathPatch = useCallback((structure: DealStructure, idx: number) => {
     const patch = preLoadedRecordToDealMakerPatch(structure.preLoadedRecord ?? {})
-    const prevPathKeys = lastPathSetKeysRef.current
-    const userTouched = userTouchedKeysRef.current
-    // The Option's autofill never overwrites a key the user manually edited.
-    const effectivePatch: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(patch)) {
-      if (!userTouched.has(k)) effectivePatch[k] = v
-    }
-    const nextPathKeys = Object.keys(effectivePatch)
-    lastPathSetKeysRef.current = nextPathKeys
-
     setInlineOverrides((prev) => {
-      const next: Record<string, unknown> = { ...prev }
-      // Roll back the prior Option's autofills, but never touch keys the user
-      // manually edited or keys the new Option is about to set.
-      for (const key of prevPathKeys) {
-        if (key in effectivePatch) continue
-        if (userTouched.has(key)) continue
-        delete next[key]
+      // Reset any prior path-applied fields back to baseline before layering
+      // the new patch — otherwise switching Path 1 → Path 2 leaves stale
+      // auto-fills (e.g. Path 1's purchasePrice) when Path 2 only touches
+      // a different subset of fields.
+      const cleared: Record<string, unknown> = { ...prev }
+      for (const key of PATH_PATCH_FIELD_KEYS) {
+        delete cleared[key as string]
       }
-      Object.assign(next, effectivePatch)
-      next.threePathsLabel = `Path ${idx + 1} — ${structure.familyLabel || structure.headline}`
+      const next = {
+        ...cleared,
+        ...patch,
+        threePathsLabel: `Path ${idx + 1} — ${structure.familyLabel || structure.headline}`,
+      }
       inlineOverridesRef.current = next as Record<string, any>
       try {
         writeDealMakerOverrides(
           resolvedAddressRef.current,
           next,
-          {
-            origin: 'verdict_sync',
-            stripKeys: prevPathKeys.filter(
-              (k) => !(k in effectivePatch) && !userTouched.has(k),
-            ),
-          },
+          { origin: 'verdict_sync', stripKeys: PATH_PATCH_FIELD_KEYS },
         )
       } catch { /* ignore */ }
       scheduleRecalc()
       return next as Record<string, any>
     })
+    // `initialOverrides` is loaded once from session at mount; if any path-patch
+    // fields are still in it (e.g. carried over from a prior session that hit
+    // the pre-fix `listPrice = cpp` bug, or a path that previously echoed
+    // `purchasePrice = listPrice`), the merged `dealMakerOverrides` keeps that
+    // stale value even after `inlineOverrides` is rewritten. Strip the same
+    // keys from `initialOverrides` so the chart/worksheet read the same numbers
+    // we just persisted.
+    setInitialOverrides((prev) => {
+      if (!prev) return prev
+      let mutated = false
+      const cleaned: Record<string, unknown> = { ...prev }
+      for (const key of PATH_PATCH_FIELD_KEYS) {
+        if (key in cleaned) {
+          delete cleaned[key as string]
+          mutated = true
+        }
+      }
+      return mutated ? cleaned : prev
+    })
     setAppliedPathId(structure.id)
     setHighlightedFields(
       computeHighlightedStateFields(
-        effectivePatch,
+        patch,
         worksheetStateRef.current,
         currentStrategyTypeRef.current,
       ),
@@ -932,35 +917,41 @@ function StrategyContent() {
   }, [scheduleRecalc])
 
   /**
-   * "Reset to baseline" — roll back only the autofills written by the currently
-   * applied Option, leaving any manual slider edits the user made in place.
+   * Strip every key the path mapper might have written from `inlineOverrides`,
+   * persist the cleared state, and trigger a recalc so the worksheet returns
+   * to its baseline (backend-derived) values.
    */
   const clearAppliedPath = useCallback(() => {
-    const prevPathKeys = lastPathSetKeysRef.current
-    const userTouched = userTouchedKeysRef.current
-    lastPathSetKeysRef.current = []
-    // "Reset to baseline" rolls back the Option's autofills but preserves
-    // manual slider edits the user has made since.
     setInlineOverrides((prev) => {
       const next: Record<string, unknown> = { ...prev }
-      const stripped: string[] = []
-      for (const key of prevPathKeys) {
-        if (userTouched.has(key)) continue
-        delete next[key]
-        stripped.push(key)
+      for (const key of PATH_PATCH_FIELD_KEYS) {
+        delete next[key as string]
       }
-      delete next.threePathsLabel
-      stripped.push('threePathsLabel')
       inlineOverridesRef.current = next as Record<string, any>
       try {
         writeDealMakerOverrides(
           resolvedAddressRef.current,
           next,
-          { origin: 'dealmaker_edit', stripKeys: stripped },
+          { origin: 'dealmaker_edit', stripKeys: PATH_PATCH_FIELD_KEYS },
         )
       } catch { /* ignore */ }
       scheduleRecalc()
       return next as Record<string, any>
+    })
+    // Mirror the in-memory strip on `initialOverrides` so a stale
+    // pre-fix `listPrice` / `purchasePrice` from session can't leak back into
+    // the merged `dealMakerOverrides` after "Reset to baseline".
+    setInitialOverrides((prev) => {
+      if (!prev) return prev
+      let mutated = false
+      const cleaned: Record<string, unknown> = { ...prev }
+      for (const key of PATH_PATCH_FIELD_KEYS) {
+        if (key in cleaned) {
+          delete cleaned[key as string]
+          mutated = true
+        }
+      }
+      return mutated ? cleaned : prev
     })
     setAppliedPathId(null)
     setHighlightedFields(new Set())
