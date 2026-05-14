@@ -89,12 +89,22 @@ apscheduler>=3.10,<4.0
 # ===========================================
 # Testing
 # ===========================================
-pytest==8.0.0
-pytest-asyncio==0.23.3
+# pytest-asyncio 0.23.3 + pytest 8.0.0 raise
+# `AttributeError: 'Package' object has no attribute 'obj'` at collection time.
+# Fixed in pytest-asyncio 0.24+; pytest 8.2+ is the matching baseline.
+pytest>=8.2,<9
+pytest-asyncio>=0.24,<1
 pytest-cov==4.1.0
 aiosqlite==0.19.0  # Async SQLite for testing
 testcontainers[postgres]>=4.0
 httpx==0.26.0      # TestClient async support
+
+# ===========================================
+# Lint (kept here so CI installs the same version we develop against;
+# the lint job currently does `pip install ruff` unpinned which causes
+# silent regressions on every ruff release).
+# ===========================================
+ruff==0.15.12
 
 # ===========================================
 # Load Testing (optional — install separately)
