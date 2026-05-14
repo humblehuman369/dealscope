@@ -1,41 +1,63 @@
-"""
-Comprehensive unit tests for all 6 strategy calculators + scoring.
+"""Comprehensive unit tests for all 6 strategy calculators + scoring.
 
-Covers: happy path, edge cases (zeros, negatives, boundaries),
-regression tests for Phase-1 bug fixes (LTR equity, flip profit).
+Covers: happy path, edge cases (zeros, negatives, boundaries), and
+regression tests for previous bug fixes (LTR equity, flip profit).
+
+Each calculator's `_BASE` dict mirrors the values an `assumption_resolver`
+caller would pass in production, sourced from `app.core.defaults` so the
+tests track the same defaults the rest of the app uses.
 """
+
 import pytest
+from app.core.defaults import BRRRR, FLIP, GROWTH, HOUSE_HACK, OPERATING, REHAB, STR, WHOLESALE
 from app.services.calculators import (
-    calculate_ltr,
-    calculate_str,
+    CalculationInputError,
     calculate_brrrr,
     calculate_flip,
     calculate_house_hack,
-    calculate_wholesale,
-    calculate_seller_motivation,
+    calculate_ltr,
     calculate_monthly_mortgage,
-    CalculationInputError,
+    calculate_seller_motivation,
+    calculate_str,
+    calculate_wholesale,
 )
-
 
 # =====================================================
 # LTR
 # =====================================================
 
-class TestLTRCalculator:
 
+class TestLTRCalculator:
     _BASE = dict(
-        purchase_price=300_000, monthly_rent=2500,
-        property_taxes_annual=3600, down_payment_pct=0.20,
-        interest_rate=0.06, loan_term_years=30, closing_costs_pct=0.03,
-        vacancy_rate=0.05, property_management_pct=0.10,
-        maintenance_pct=0.05, insurance_annual=1200,
+        purchase_price=300_000,
+        monthly_rent=2500,
+        property_taxes_annual=3600,
+        down_payment_pct=0.20,
+        interest_rate=0.06,
+        loan_term_years=30,
+        closing_costs_pct=0.03,
+        vacancy_rate=0.05,
+        property_management_pct=0.10,
+        maintenance_pct=0.05,
+        insurance_annual=1200,
+        utilities_monthly=OPERATING.utilities_monthly,
+        landscaping_annual=OPERATING.landscaping_annual,
+        pest_control_annual=OPERATING.pest_control_annual,
+        appreciation_rate=GROWTH.appreciation_rate,
+        rent_growth_rate=GROWTH.rent_growth_rate,
+        expense_growth_rate=GROWTH.expense_growth_rate,
     )
 
     def test_required_keys_present(self):
         result = calculate_ltr(**self._BASE)
-        for key in ("monthly_cash_flow", "annual_cash_flow", "cash_on_cash_return",
-                     "cap_rate", "total_investment", "equity_projection"):
+        for key in (
+            "monthly_cash_flow",
+            "annual_cash_flow",
+            "cash_on_cash_return",
+            "cap_rate",
+            "total_cash_required",
+            "ten_year_projection",
+        ):
             assert key in result
 
     def test_positive_cash_flow(self):
@@ -49,14 +71,15 @@ class TestLTRCalculator:
         assert zero_vac["monthly_cash_flow"] > base["monthly_cash_flow"]
 
     def test_equity_projection_uses_amortization(self):
-        """Phase-1 regression: equity must use proper remaining-balance formula."""
+        """Regression: year-1 equity must use the proper remaining-balance formula."""
         result = calculate_ltr(**self._BASE)
-        proj = result["equity_projection"]
+        proj = result["ten_year_projection"]
         assert len(proj) > 0
-        # Year-1 equity should be roughly equal to down payment + small principal paydown
         year1 = next(p for p in proj if p["year"] == 1)
         down = 300_000 * 0.20
-        assert year1["equity"] > down  # some appreciation / paydown
+        # Year-1 equity is purchase price * (1 + appreciation) - remaining loan balance.
+        # Should exceed the down payment by appreciation + small principal paydown.
+        assert year1["equity"] > down
 
     def test_zero_interest_rate(self):
         result = calculate_ltr(**{**self._BASE, "interest_rate": 0.0})
@@ -71,17 +94,41 @@ class TestLTRCalculator:
 # STR
 # =====================================================
 
-class TestSTRCalculator:
 
+class TestSTRCalculator:
     _BASE = dict(
-        purchase_price=350_000, average_daily_rate=200,
-        occupancy_rate=0.75, property_taxes_annual=4200,
+        purchase_price=350_000,
+        average_daily_rate=200,
+        occupancy_rate=0.75,
+        property_taxes_annual=4200,
+        down_payment_pct=0.20,
+        interest_rate=0.06,
+        loan_term_years=30,
+        closing_costs_pct=0.03,
+        furniture_setup_cost=STR.furniture_setup_cost,
+        platform_fees_pct=STR.platform_fees_pct,
+        str_management_pct=STR.str_management_pct,
+        cleaning_cost_per_turnover=STR.cleaning_cost_per_turnover,
+        cleaning_fee_revenue=STR.cleaning_fee_revenue,
+        avg_length_of_stay_days=STR.avg_length_of_stay_days,
+        supplies_monthly=STR.supplies_monthly,
+        additional_utilities_monthly=STR.additional_utilities_monthly,
+        insurance_annual=3500,  # ~1% of $350k purchase price
+        maintenance_annual=2500,
+        landscaping_annual=OPERATING.landscaping_annual,
+        pest_control_annual=OPERATING.pest_control_annual,
     )
 
     def test_required_keys_present(self):
         result = calculate_str(**self._BASE)
-        for key in ("total_gross_revenue", "noi", "monthly_cash_flow",
-                     "cap_rate", "cash_on_cash_return", "seasonality_analysis"):
+        for key in (
+            "total_gross_revenue",
+            "noi",
+            "monthly_cash_flow",
+            "cap_rate",
+            "cash_on_cash_return",
+            "seasonality_analysis",
+        ):
             assert key in result
 
     def test_higher_occupancy_improves_revenue(self):
@@ -107,104 +154,156 @@ class TestSTRCalculator:
 # BRRRR
 # =====================================================
 
-class TestBRRRRCalculator:
 
+class TestBRRRRCalculator:
     _BASE = dict(
-        market_value=200_000, arv=300_000, monthly_rent_post_rehab=2200,
-        property_taxes_annual=3000, purchase_discount_pct=0.15,
-        down_payment_pct=0.20, interest_rate=0.06, loan_term_years=30,
-        closing_costs_pct=0.03, renovation_budget=40_000,
-        contingency_pct=0.10, holding_period_months=4,
-        monthly_holding_costs=2000, refinance_ltv=0.75,
-        refinance_interest_rate=0.06, refinance_term_years=30,
+        market_value=200_000,
+        arv=300_000,
+        monthly_rent_post_rehab=2200,
+        property_taxes_annual=3000,
+        purchase_discount_pct=0.15,
+        down_payment_pct=0.20,
+        interest_rate=0.06,
+        loan_term_years=30,
+        closing_costs_pct=0.03,
+        renovation_budget=40_000,
+        contingency_pct=0.10,
+        holding_period_months=4,
+        monthly_holding_costs=2000,
+        refinance_ltv=BRRRR.refinance_ltv,
+        refinance_interest_rate=BRRRR.refinance_interest_rate,
+        refinance_term_years=BRRRR.refinance_term_years,
         refinance_closing_costs=3500,
+        vacancy_rate=OPERATING.vacancy_rate,
+        operating_expense_pct=OPERATING.maintenance_pct + OPERATING.capex_pct,
+        insurance_annual=2000,  # ~1% of $200k market value
     )
 
     def test_required_keys_present(self):
         result = calculate_brrrr(**self._BASE)
-        for key in ("cash_left_in_deal", "monthly_cash_flow_after_refi", "infinite_return"):
+        for key in (
+            "cash_left_in_deal",
+            "post_refi_monthly_cash_flow",
+            "infinite_roi_achieved",
+        ):
             assert key in result
 
     def test_strong_arv_reduces_cash_left(self):
-        result = calculate_brrrr(**{**self._BASE, "arv": 350_000})
-        assert result["cash_left_in_deal"] < result.get("total_investment", float("inf"))
+        """A higher ARV pulls more cash out at refi → less left in the deal."""
+        base = calculate_brrrr(**self._BASE)
+        strong = calculate_brrrr(**{**self._BASE, "arv": 350_000})
+        assert strong["cash_left_in_deal"] < base["cash_left_in_deal"]
 
     def test_no_discount_still_works(self):
         result = calculate_brrrr(**{**self._BASE, "purchase_discount_pct": 0})
-        assert "monthly_cash_flow_after_refi" in result
+        assert "post_refi_monthly_cash_flow" in result
 
 
 # =====================================================
 # Fix & Flip
 # =====================================================
 
-class TestFlipCalculator:
 
+class TestFlipCalculator:
     _BASE = dict(
-        market_value=250_000, arv=350_000, purchase_discount_pct=0.20,
-        hard_money_ltv=0.90, hard_money_rate=0.12, closing_costs_pct=0.03,
-        renovation_budget=50_000, contingency_pct=0.10,
-        holding_period_months=6, property_taxes_annual=3000,
-        selling_costs_pct=0.06,
+        market_value=250_000,
+        arv=350_000,
+        purchase_discount_pct=0.20,
+        hard_money_ltv=FLIP.hard_money_ltv,
+        hard_money_rate=FLIP.hard_money_rate,
+        closing_costs_pct=0.03,
+        renovation_budget=50_000,
+        contingency_pct=REHAB.contingency_pct,
+        holding_period_months=6,
+        property_taxes_annual=3000,
+        insurance_annual=2500,  # ~1% of $250k market value
+        utilities_monthly=OPERATING.utilities_monthly,
+        selling_costs_pct=FLIP.selling_costs_pct,
+        capital_gains_rate=0.15,
     )
 
     def test_required_keys_present(self):
         result = calculate_flip(**self._BASE)
-        for key in ("net_profit", "roi", "total_investment", "hold_time_months"):
+        for key in (
+            "net_profit_before_tax",
+            "net_profit_after_tax",
+            "roi",
+            "total_cash_required",
+            "total_holding_costs",
+        ):
             assert key in result
 
     def test_profit_with_good_arv(self):
         result = calculate_flip(**{**self._BASE, "arv": 400_000})
-        assert result["net_profit"] > 0
+        assert result["net_profit_before_tax"] > 0
         assert result["roi"] > 0
 
     def test_flip_profit_formula_correctness(self):
-        """Phase-1 regression: net_profit = net_sale_proceeds - total_project_cost."""
+        """Regression: net_profit_before_tax = net_sale_proceeds - total_project_cost."""
         result = calculate_flip(**self._BASE)
         expected = result["net_sale_proceeds"] - result["total_project_cost"]
-        assert abs(result["net_profit"] - expected) < 0.01
+        assert abs(result["net_profit_before_tax"] - expected) < 0.01
 
     def test_zero_renovation_budget(self):
         result = calculate_flip(**{**self._BASE, "renovation_budget": 0})
-        assert "net_profit" in result
+        assert "net_profit_before_tax" in result
 
 
 # =====================================================
 # House Hack
 # =====================================================
 
-class TestHouseHackCalculator:
 
+class TestHouseHackCalculator:
     _BASE = dict(
-        purchase_price=300_000, monthly_rent_per_room=800, rooms_rented=2,
-        property_taxes_annual=3600, owner_unit_market_rent=1500,
-        down_payment_pct=0.035, interest_rate=0.065, loan_term_years=30,
-        closing_costs_pct=0.03, fha_mip_rate=0.0085, insurance_annual=1200,
+        purchase_price=300_000,
+        monthly_rent_per_room=800,
+        rooms_rented=2,
+        property_taxes_annual=3600,
+        owner_unit_market_rent=1500,
+        down_payment_pct=HOUSE_HACK.fha_down_payment_pct,
+        interest_rate=HOUSE_HACK.fha_interest_rate,
+        loan_term_years=30,
+        closing_costs_pct=0.03,
+        fha_mip_rate=HOUSE_HACK.fha_mip_rate,
+        insurance_annual=3000,  # ~1% of $300k purchase price
     )
 
     def test_required_keys_present(self):
         result = calculate_house_hack(**self._BASE)
-        for key in ("monthly_savings", "net_housing_cost", "total_investment"):
+        for key in (
+            "savings_vs_renting_a",
+            "net_housing_cost_scenario_a",
+            "total_cash_required",
+        ):
             assert key in result
 
     def test_rent_reduces_housing_cost(self):
+        """Higher per-room rent should drive net housing cost lower than the
+        gross PITI (i.e. tenant income offsets some of the owner's payment)."""
         result = calculate_house_hack(**{**self._BASE, "monthly_rent_per_room": 1000})
-        assert result["net_housing_cost"] < result.get("monthly_payment", float("inf"))
+        assert result["net_housing_cost_scenario_a"] < result["monthly_piti"]
 
     def test_zero_rooms_rented(self):
+        """No rental income → no savings vs. renting a comparable unit."""
         result = calculate_house_hack(**{**self._BASE, "rooms_rented": 0})
-        assert result["monthly_savings"] <= 0
+        assert result["savings_vs_renting_a"] <= 0
 
 
 # =====================================================
 # Wholesale
 # =====================================================
 
-class TestWholesaleCalculator:
 
+class TestWholesaleCalculator:
     _BASE = dict(
-        arv=400_000, estimated_rehab_costs=50_000, assignment_fee=15_000,
-        marketing_costs=500, earnest_money_deposit=1000, days_to_close=45,
+        arv=400_000,
+        estimated_rehab_costs=50_000,
+        assignment_fee=15_000,
+        marketing_costs=500,
+        earnest_money_deposit=1000,
+        arv_discount_pct=WHOLESALE.target_purchase_discount_pct,  # 0.30
+        days_to_close=45,
     )
 
     def test_required_keys_present(self):
@@ -213,6 +312,7 @@ class TestWholesaleCalculator:
             assert key in result
 
     def test_70_percent_rule(self):
+        """At 30% ARV discount, MAO = ARV * 0.70 - rehab. (a.k.a. the 70% rule.)"""
         result = calculate_wholesale(**self._BASE)
         expected_mao = 400_000 * 0.70 - 50_000
         assert result["seventy_pct_max_offer"] == expected_mao
@@ -232,8 +332,8 @@ class TestWholesaleCalculator:
 # Seller Motivation
 # =====================================================
 
-class TestSellerMotivation:
 
+class TestSellerMotivation:
     def test_score_in_range(self):
         result = calculate_seller_motivation(days_on_market=30, price_reduction_count=1)
         assert 0 <= result["score"] <= 100
@@ -257,8 +357,8 @@ class TestSellerMotivation:
 # Common helpers
 # =====================================================
 
-class TestCommonHelpers:
 
+class TestCommonHelpers:
     def test_monthly_mortgage_zero_rate(self):
         pmt = calculate_monthly_mortgage(240_000, 0.0, 30)
         assert abs(pmt - 240_000 / 360) < 0.01
