@@ -37,11 +37,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function BlogPost({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default async function BlogPost({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const post = await getContent('blog', slug)
   if (!post) notFound()
@@ -64,10 +60,7 @@ export default async function BlogPost({
           <MarkdownArticle content={post.content} />
         </article>
 
-        <div
-          className="mt-16 pt-8"
-          style={{ borderTop: '1px solid var(--border-subtle)' }}
-        >
+        <div className="mt-16 pt-8" style={{ borderTop: '1px solid var(--border-subtle)' }}>
           <Link
             href="/"
             className="inline-block px-6 py-3 rounded-full font-semibold transition-opacity hover:opacity-90"

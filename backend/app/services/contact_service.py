@@ -14,9 +14,7 @@ from app.schemas.contact import ContactCreate, ContactUpdate
 
 
 class ContactService:
-    async def _ensure_owns_property(
-        self, db: AsyncSession, property_id: str, user_id: str
-    ) -> SavedProperty | None:
+    async def _ensure_owns_property(self, db: AsyncSession, property_id: str, user_id: str) -> SavedProperty | None:
         result = await db.execute(
             select(SavedProperty).where(
                 SavedProperty.id == uuid.UUID(property_id),
@@ -25,9 +23,7 @@ class ContactService:
         )
         return result.scalar_one_or_none()
 
-    async def list_for_property(
-        self, db: AsyncSession, property_id: str, user_id: str
-    ) -> list[PropertyContact] | None:
+    async def list_for_property(self, db: AsyncSession, property_id: str, user_id: str) -> list[PropertyContact] | None:
         if not await self._ensure_owns_property(db, property_id, user_id):
             return None
         result = await db.execute(

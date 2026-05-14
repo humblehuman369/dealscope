@@ -48,8 +48,7 @@ const RC_API_KEY_ANDROID = process.env.NEXT_PUBLIC_REVENUECAT_ANDROID_KEY ?? ''
 
 const INIT_TIMEOUT_MS = 8000
 
-const GENERIC_UNAVAILABLE_MSG =
-  'In-app purchases are temporarily unavailable. Please try again.'
+const GENERIC_UNAVAILABLE_MSG = 'In-app purchases are temporarily unavailable. Please try again.'
 
 export function useRevenueCat() {
   const { user } = useSession()
@@ -187,9 +186,7 @@ export function useRevenueCat() {
       try {
         const { Purchases } = await import('@revenuecat/purchases-capacitor')
         const offerings = await Purchases.getOfferings()
-        const pkg = offerings.current?.availablePackages?.find(
-          (p) => p.identifier === packageId,
-        )
+        const pkg = offerings.current?.availablePackages?.find((p) => p.identifier === packageId)
         if (!pkg) throw new Error('Package not found')
 
         await Purchases.purchasePackage({ aPackage: pkg })

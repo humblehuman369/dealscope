@@ -9,13 +9,16 @@ interface STRRegulatoryBadgeProps {
   className?: string
 }
 
-const RATING_CONFIG: Record<string, {
-  label: string
-  bg: string
-  text: string
-  icon: React.ComponentType<{ className?: string }>
-  description: string
-}> = {
+const RATING_CONFIG: Record<
+  string,
+  {
+    label: string
+    bg: string
+    text: string
+    icon: React.ComponentType<{ className?: string }>
+    description: string
+  }
+> = {
   Positive: {
     label: 'STR Legal',
     bg: 'bg-green-100 dark:bg-green-900/30',
@@ -76,9 +79,7 @@ export function STRRegulatoryBadge({ regulatory, className = '' }: STRRegulatory
           )}
 
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-gray-500 dark:text-gray-400">
-            {regulatory.permit_fee && (
-              <span>Permit: {regulatory.permit_fee}</span>
-            )}
+            {regulatory.permit_fee && <span>Permit: {regulatory.permit_fee}</span>}
             {regulatory.legal_for_occupied && (
               <span>Primary residence: {regulatory.legal_for_occupied}</span>
             )}

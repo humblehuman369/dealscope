@@ -2,14 +2,20 @@
 
 import { useMemo, useState } from 'react'
 import {
-  TrendingUp, TrendingDown, Percent, DollarSign, Home, AlertTriangle,
-  ArrowRight, Activity
+  TrendingUp,
+  TrendingDown,
+  Percent,
+  DollarSign,
+  Home,
+  AlertTriangle,
+  ArrowRight,
+  Activity,
 } from 'lucide-react'
 import {
   calculateSensitivityAnalysis,
   SensitivityAnalysis,
   SensitivityPoint,
-  BaseAssumptions
+  BaseAssumptions,
 } from '@/lib/analytics'
 import { formatCurrency, formatPercent, formatCompactCurrency } from '@/utils/formatters'
 
@@ -22,7 +28,7 @@ function MiniLineChart({
   valueKey,
   color = 'blue',
   currentIndex,
-  height = 60
+  height = 60,
 }: {
   data: SensitivityPoint[]
   valueKey: 'cashFlow' | 'cashOnCash' | 'capRate'
@@ -30,28 +36,30 @@ function MiniLineChart({
   currentIndex: number
   height?: number
 }) {
-  const values = data.map(d => d[valueKey])
+  const values = data.map((d) => d[valueKey])
   const min = Math.min(...values)
   const max = Math.max(...values)
   const range = max - min || 1
-  
+
   const width = 100
-  const points = data.map((d, i) => {
-    const x = (i / (data.length - 1)) * width
-    const y = height - ((d[valueKey] - min) / range) * (height - 10) - 5
-    return `${x},${y}`
-  }).join(' ')
-  
+  const points = data
+    .map((d, i) => {
+      const x = (i / (data.length - 1)) * width
+      const y = height - ((d[valueKey] - min) / range) * (height - 10) - 5
+      return `${x},${y}`
+    })
+    .join(' ')
+
   const colors: Record<string, string> = {
     blue: '#3b82f6',
     green: '#10b981',
     purple: '#8b5cf6',
     orange: '#f97316',
   }
-  
+
   const currentX = (currentIndex / (data.length - 1)) * width
   const currentY = height - ((values[currentIndex] - min) / range) * (height - 10) - 5
-  
+
   return (
     <svg viewBox={`0 0 ${width} ${height}`} className="w-full" style={{ height }}>
       {/* Zero line if applicable */}
@@ -66,7 +74,7 @@ function MiniLineChart({
           strokeDasharray="2,2"
         />
       )}
-      
+
       {/* Line */}
       <polyline
         points={points}
@@ -76,7 +84,7 @@ function MiniLineChart({
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      
+
       {/* Current point */}
       <circle
         cx={currentX}
@@ -101,7 +109,7 @@ function SensitivityCard({
   formatX,
   baseIndex,
   currentMetric,
-  metricLabel
+  metricLabel,
 }: {
   title: string
   color: string
@@ -112,21 +120,21 @@ function SensitivityCard({
   metricLabel: string
 }) {
   const baseValue = data[baseIndex][currentMetric]
-  const minValue = Math.min(...data.map(d => d[currentMetric]))
-  const maxValue = Math.max(...data.map(d => d[currentMetric]))
-  
+  const minValue = Math.min(...data.map((d) => d[currentMetric]))
+  const maxValue = Math.max(...data.map((d) => d[currentMetric]))
+
   const formatMetric = (v: number) => {
     if (currentMetric === 'cashFlow') return formatCurrency(v)
     return formatPercent(v * 100, { decimals: 2 })
   }
-  
+
   const deltaMin = minValue - baseValue
   const deltaMax = maxValue - baseValue
-  
+
   return (
     <div className="bg-white dark:bg-navy-700/50 rounded-lg border border-gray-100 dark:border-navy-600 p-3 hover:shadow-sm transition-shadow">
       <h4 className="text-[13px] font-bold text-gray-700 dark:text-white mb-2">{title}</h4>
-      
+
       <MiniLineChart
         data={data}
         valueKey={currentMetric}
@@ -134,12 +142,15 @@ function SensitivityCard({
         currentIndex={baseIndex}
         height={40}
       />
-      
+
       <div className="mt-2 grid grid-cols-3 gap-1 text-[13px]">
         <div className="text-left">
           <div className="font-bold text-gray-600 dark:text-white">{formatX(data[0].value)}</div>
           <div className={deltaMin < 0 ? 'text-red-600 font-bold' : 'text-emerald-600 font-bold'}>
-            {deltaMin >= 0 ? '+' : ''}{currentMetric === 'cashFlow' ? formatCompactCurrency(deltaMin) : formatPercent(deltaMin * 100, { decimals: 2 })}
+            {deltaMin >= 0 ? '+' : ''}
+            {currentMetric === 'cashFlow'
+              ? formatCompactCurrency(deltaMin)
+              : formatPercent(deltaMin * 100, { decimals: 2 })}
           </div>
         </div>
         <div className="text-center">
@@ -147,9 +158,14 @@ function SensitivityCard({
           <div className="font-bold text-gray-900 dark:text-white">{formatMetric(baseValue)}</div>
         </div>
         <div className="text-right">
-          <div className="font-bold text-gray-600 dark:text-white">{formatX(data[data.length - 1].value)}</div>
+          <div className="font-bold text-gray-600 dark:text-white">
+            {formatX(data[data.length - 1].value)}
+          </div>
           <div className={deltaMax >= 0 ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold'}>
-            {deltaMax >= 0 ? '+' : ''}{currentMetric === 'cashFlow' ? formatCompactCurrency(deltaMax) : formatPercent(deltaMax * 100, { decimals: 2 })}
+            {deltaMax >= 0 ? '+' : ''}
+            {currentMetric === 'cashFlow'
+              ? formatCompactCurrency(deltaMax)
+              : formatPercent(deltaMax * 100, { decimals: 2 })}
           </div>
         </div>
       </div>
@@ -170,7 +186,7 @@ function WhatIfSlider({
   format,
   onChange,
   impact,
-  impactLabel
+  impactLabel,
 }: {
   label: string
   value: number
@@ -183,17 +199,17 @@ function WhatIfSlider({
   impactLabel: string
 }) {
   const percentage = ((value - min) / (max - min)) * 100
-  
+
   return (
     <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-3">
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[13px] font-bold text-gray-700 dark:text-white">{label}</span>
         <span className="text-[14px] font-bold text-gray-900 dark:text-white">{format(value)}</span>
       </div>
-      
+
       <div className="relative h-1.5 mb-2">
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 dark:from-navy-600 via-teal-300 to-teal-500" />
-        <div 
+        <div
           className="absolute top-0 right-0 h-full bg-gray-100 dark:bg-navy-800 rounded-r-full transition-all"
           style={{ width: `${100 - percentage}%` }}
         />
@@ -207,11 +223,12 @@ function WhatIfSlider({
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
       </div>
-      
+
       <div className="flex items-center justify-between text-[13px]">
         <span className="font-bold text-gray-600 dark:text-white">{format(min)}</span>
         <div className={`font-bold ${impact >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-          {impactLabel}: {impact >= 0 ? '+' : ''}{formatCurrency(impact)}
+          {impactLabel}: {impact >= 0 ? '+' : ''}
+          {formatCurrency(impact)}
         </div>
         <span className="font-bold text-gray-600 dark:text-white">{format(max)}</span>
       </div>
@@ -231,63 +248,72 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
   const [whatIfRate, setWhatIfRate] = useState(assumptions.interestRate)
   const [whatIfPrice, setWhatIfPrice] = useState(assumptions.purchasePrice)
   const [whatIfRent, setWhatIfRent] = useState(assumptions.monthlyRent)
-  const [selectedMetric, setSelectedMetric] = useState<'cashFlow' | 'cashOnCash' | 'capRate'>('cashFlow')
-  
-  const analysis = useMemo(
-    () => calculateSensitivityAnalysis(assumptions),
-    [assumptions]
+  const [selectedMetric, setSelectedMetric] = useState<'cashFlow' | 'cashOnCash' | 'capRate'>(
+    'cashFlow',
   )
-  
+
+  const analysis = useMemo(() => calculateSensitivityAnalysis(assumptions), [assumptions])
+
   // Calculate what-if impacts
   const baseMetrics = useMemo(() => {
     const downPayment = assumptions.purchasePrice * assumptions.downPaymentPct
     const closingCosts = assumptions.purchasePrice * 0.03
     const loanAmount = assumptions.purchasePrice - downPayment
     const totalCash = downPayment + closingCosts
-    
+
     const monthlyRate = assumptions.interestRate / 12
     const numPayments = assumptions.loanTermYears * 12
-    const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+    const monthlyPI =
+      (loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments))) /
       (Math.pow(1 + monthlyRate, numPayments) - 1)
-    
+
     const annualRent = assumptions.monthlyRent * 12 * (1 - assumptions.vacancyRate)
-    const opEx = assumptions.propertyTaxes + assumptions.insurance + 
+    const opEx =
+      assumptions.propertyTaxes +
+      assumptions.insurance +
       assumptions.monthlyRent * 12 * (assumptions.managementPct + assumptions.maintenancePct)
     const noi = annualRent - opEx
     const annualCF = noi - monthlyPI * 12
-    
+
     return { cashFlow: annualCF / 12, totalCash }
   }, [assumptions])
-  
+
   const whatIfCashFlow = useMemo(() => {
     const downPayment = whatIfPrice * assumptions.downPaymentPct
     const closingCosts = whatIfPrice * 0.03
     const loanAmount = whatIfPrice - downPayment
-    
+
     const monthlyRate = whatIfRate / 12
     const numPayments = assumptions.loanTermYears * 12
-    const monthlyPI = monthlyRate > 0 
-      ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
-        (Math.pow(1 + monthlyRate, numPayments) - 1)
-      : loanAmount / numPayments
-    
+    const monthlyPI =
+      monthlyRate > 0
+        ? (loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments))) /
+          (Math.pow(1 + monthlyRate, numPayments) - 1)
+        : loanAmount / numPayments
+
     const annualRent = whatIfRent * 12 * (1 - assumptions.vacancyRate)
-    const opEx = assumptions.propertyTaxes + assumptions.insurance + 
+    const opEx =
+      assumptions.propertyTaxes +
+      assumptions.insurance +
       whatIfRent * 12 * (assumptions.managementPct + assumptions.maintenancePct)
     const noi = annualRent - opEx
     const annualCF = noi - monthlyPI * 12
-    
+
     return annualCF / 12
   }, [whatIfRate, whatIfPrice, whatIfRent, assumptions])
-  
+
   const cashFlowImpact = whatIfCashFlow - baseMetrics.cashFlow
-  
+
   return (
     <div className="space-y-4">
       {/* Header */}
       <div>
-        <h2 className="text-lg font-bold text-gray-800 dark:text-emerald-400">Sensitivity Analysis</h2>
-        <p className="text-[13px] font-bold text-gray-600 dark:text-white">See how changes impact your returns</p>
+        <h2 className="text-lg font-bold text-gray-800 dark:text-emerald-400">
+          Sensitivity Analysis
+        </h2>
+        <p className="text-[13px] font-bold text-gray-600 dark:text-white">
+          See how changes impact your returns
+        </p>
       </div>
 
       {/* Metric Selector */}
@@ -320,7 +346,13 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
           formatX={(v) => `${(v * 100).toFixed(1)}%`}
           baseIndex={3}
           currentMetric={selectedMetric}
-          metricLabel={selectedMetric === 'cashFlow' ? 'Cash Flow' : selectedMetric === 'cashOnCash' ? 'CoC' : 'Cap'}
+          metricLabel={
+            selectedMetric === 'cashFlow'
+              ? 'Cash Flow'
+              : selectedMetric === 'cashOnCash'
+                ? 'CoC'
+                : 'Cap'
+          }
         />
         <SensitivityCard
           title="Buy Price"
@@ -329,7 +361,13 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
           formatX={(v) => `$${(v / 1000).toFixed(0)}K`}
           baseIndex={3}
           currentMetric={selectedMetric}
-          metricLabel={selectedMetric === 'cashFlow' ? 'Cash Flow' : selectedMetric === 'cashOnCash' ? 'CoC' : 'Cap'}
+          metricLabel={
+            selectedMetric === 'cashFlow'
+              ? 'Cash Flow'
+              : selectedMetric === 'cashOnCash'
+                ? 'CoC'
+                : 'Cap'
+          }
         />
         <SensitivityCard
           title="Monthly Rent"
@@ -338,7 +376,13 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
           formatX={(v) => `$${v.toLocaleString()}`}
           baseIndex={3}
           currentMetric={selectedMetric}
-          metricLabel={selectedMetric === 'cashFlow' ? 'Cash Flow' : selectedMetric === 'cashOnCash' ? 'CoC' : 'Cap'}
+          metricLabel={
+            selectedMetric === 'cashFlow'
+              ? 'Cash Flow'
+              : selectedMetric === 'cashOnCash'
+                ? 'CoC'
+                : 'Cap'
+          }
         />
         <SensitivityCard
           title="Vacancy Rate"
@@ -347,14 +391,22 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
           formatX={(v) => `${(v * 100).toFixed(0)}%`}
           baseIndex={2}
           currentMetric={selectedMetric}
-          metricLabel={selectedMetric === 'cashFlow' ? 'Cash Flow' : selectedMetric === 'cashOnCash' ? 'CoC' : 'Cap'}
+          metricLabel={
+            selectedMetric === 'cashFlow'
+              ? 'Cash Flow'
+              : selectedMetric === 'cashOnCash'
+                ? 'CoC'
+                : 'Cap'
+          }
         />
       </div>
 
       {/* What-If Scenario Builder */}
       <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl p-4 border border-indigo-100 dark:border-indigo-800">
-        <h3 className="text-[14px] font-bold text-gray-700 dark:text-white mb-3">What-If Scenario Builder</h3>
-        
+        <h3 className="text-[14px] font-bold text-gray-700 dark:text-white mb-3">
+          What-If Scenario Builder
+        </h3>
+
         <div className="grid md:grid-cols-3 gap-3 mb-4">
           <WhatIfSlider
             label="Interest Rate"
@@ -390,25 +442,36 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
             impactLabel="Impact"
           />
         </div>
-        
+
         {/* Result */}
-        <div className={`p-3 rounded-lg flex items-center justify-between ${
-          cashFlowImpact >= 0 
-            ? 'bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700' 
-            : 'bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-700'
-        }`}>
+        <div
+          className={`p-3 rounded-lg flex items-center justify-between ${
+            cashFlowImpact >= 0
+              ? 'bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700'
+              : 'bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-700'
+          }`}
+        >
           <div>
-            <div className="text-[13px] font-bold uppercase tracking-wide text-gray-600 dark:text-white">Scenario Monthly Cash Flow</div>
-            <div className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(whatIfCashFlow)}</div>
+            <div className="text-[13px] font-bold uppercase tracking-wide text-gray-600 dark:text-white">
+              Scenario Monthly Cash Flow
+            </div>
+            <div className="text-lg font-bold text-gray-900 dark:text-white">
+              {formatCurrency(whatIfCashFlow)}
+            </div>
           </div>
           <div className="text-right">
-            <div className="text-[13px] font-bold uppercase tracking-wide text-gray-600 dark:text-white">vs. Base Scenario</div>
-            <div className={`text-base font-bold ${cashFlowImpact >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-              {cashFlowImpact >= 0 ? '+' : ''}{formatCurrency(cashFlowImpact)}/mo
+            <div className="text-[13px] font-bold uppercase tracking-wide text-gray-600 dark:text-white">
+              vs. Base Scenario
+            </div>
+            <div
+              className={`text-base font-bold ${cashFlowImpact >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
+            >
+              {cashFlowImpact >= 0 ? '+' : ''}
+              {formatCurrency(cashFlowImpact)}/mo
             </div>
           </div>
         </div>
-        
+
         <button
           onClick={() => {
             setWhatIfRate(assumptions.interestRate)
@@ -423,11 +486,26 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
 
       {/* Key Insights */}
       <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-100 dark:border-amber-800">
-        <h4 className="text-[13px] font-bold text-amber-800 dark:text-amber-400 mb-1.5">Key Insights</h4>
+        <h4 className="text-[13px] font-bold text-amber-800 dark:text-amber-400 mb-1.5">
+          Key Insights
+        </h4>
         <ul className="text-[13px] font-bold text-amber-700 dark:text-amber-300 space-y-0.5">
-          <li>• A 1% rate increase reduces cash flow by ~${Math.abs(analysis.interestRate[4].cashFlow - analysis.interestRate[3].cashFlow).toFixed(0)}/mo</li>
-          <li>• A 10% rent increase adds ~${Math.abs(analysis.rent[5].cashFlow - analysis.rent[3].cashFlow).toFixed(0)}/mo to cash flow</li>
-          <li>• Cash-flow-zero vacancy: ~{(analysis.vacancy.find(v => v.cashFlow <= 0)?.value ?? 0.15 * 100).toFixed(0)}%</li>
+          <li>
+            • A 1% rate increase reduces cash flow by ~$
+            {Math.abs(
+              analysis.interestRate[4].cashFlow - analysis.interestRate[3].cashFlow,
+            ).toFixed(0)}
+            /mo
+          </li>
+          <li>
+            • A 10% rent increase adds ~$
+            {Math.abs(analysis.rent[5].cashFlow - analysis.rent[3].cashFlow).toFixed(0)}/mo to cash
+            flow
+          </li>
+          <li>
+            • Cash-flow-zero vacancy: ~
+            {(analysis.vacancy.find((v) => v.cashFlow <= 0)?.value ?? 0.15 * 100).toFixed(0)}%
+          </li>
         </ul>
       </div>
     </div>

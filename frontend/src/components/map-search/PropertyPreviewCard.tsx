@@ -64,7 +64,10 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
       }}
     >
       {/* Photo / Street View fallback */}
-      <div className="relative h-36 overflow-hidden" style={{ backgroundColor: 'var(--surface-elevated)' }}>
+      <div
+        className="relative h-36 overflow-hidden"
+        style={{ backgroundColor: 'var(--surface-elevated)' }}
+      >
         {photoSrc ? (
           <img
             src={photoSrc}
@@ -100,7 +103,10 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
         )}
 
         <button
-          onClick={(e) => { e.stopPropagation(); onClose() }}
+          onClick={(e) => {
+            e.stopPropagation()
+            onClose()
+          }}
           className="absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-sm transition-opacity hover:opacity-80"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: '#fff' }}
         >
@@ -142,22 +148,34 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
         {/* Stats row */}
         <div className="flex items-center gap-3 flex-wrap">
           {listing.bedrooms != null && (
-            <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <span
+              className="flex items-center gap-1 text-xs"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <Bed size={13} /> {listing.bedrooms}
             </span>
           )}
           {listing.bathrooms != null && (
-            <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <span
+              className="flex items-center gap-1 text-xs"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <Bath size={13} /> {listing.bathrooms}
             </span>
           )}
           {listing.sqft != null && (
-            <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <span
+              className="flex items-center gap-1 text-xs"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <Ruler size={13} /> {formatSqft(listing.sqft)}
             </span>
           )}
           {listing.year_built != null && (
-            <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <span
+              className="flex items-center gap-1 text-xs"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <Calendar size={13} /> {listing.year_built}
             </span>
           )}

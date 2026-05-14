@@ -23,7 +23,13 @@ export interface StandardizedAddress {
 }
 
 export interface AddressIssue {
-  type: 'MISSING_UNIT' | 'UNCONFIRMED' | 'UNDELIVERABLE' | 'CORRECTED' | 'INFERRED' | 'SPELL_CORRECTED'
+  type:
+    | 'MISSING_UNIT'
+    | 'UNCONFIRMED'
+    | 'UNDELIVERABLE'
+    | 'CORRECTED'
+    | 'INFERRED'
+    | 'SPELL_CORRECTED'
   message: string
   field?: string
 }

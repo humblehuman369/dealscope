@@ -6,17 +6,29 @@ export function IncomeExpensesPie() {
   const { assumptions, viewMode, worksheetMetrics } = useWorksheetStore()
   const derived = useWorksheetDerived()
 
-  const multiplier = viewMode === 'monthly' ? 1/12 : 1
+  const multiplier = viewMode === 'monthly' ? 1 / 12 : 1
 
   // Calculate expense breakdown
   const expenseBreakdown = [
-    { label: 'Property Taxes', value: (worksheetMetrics?.property_taxes ?? assumptions.propertyTaxes) * multiplier, color: '#ef4444' },
-    { label: 'Insurance', value: (worksheetMetrics?.insurance ?? assumptions.insurance) * multiplier, color: '#f97316' },
+    {
+      label: 'Property Taxes',
+      value: (worksheetMetrics?.property_taxes ?? assumptions.propertyTaxes) * multiplier,
+      color: '#ef4444',
+    },
+    {
+      label: 'Insurance',
+      value: (worksheetMetrics?.insurance ?? assumptions.insurance) * multiplier,
+      color: '#f97316',
+    },
     { label: 'Management', value: derived.propertyManagement * multiplier, color: '#eab308' },
     { label: 'Maintenance', value: derived.maintenance * multiplier, color: '#22c55e' },
     { label: 'CapEx', value: derived.capex * multiplier, color: 'var(--accent-sky)' },
-    { label: 'HOA', value: (worksheetMetrics?.hoa_fees ?? assumptions.hoaFees) * multiplier, color: '#8b5cf6' },
-  ].filter(e => e.value > 0)
+    {
+      label: 'HOA',
+      value: (worksheetMetrics?.hoa_fees ?? assumptions.hoaFees) * multiplier,
+      color: '#8b5cf6',
+    },
+  ].filter((e) => e.value > 0)
 
   const totalExpenses = expenseBreakdown.reduce((sum, e) => sum + e.value, 0)
   const income = derived.effectiveGrossIncome * multiplier
@@ -69,16 +81,18 @@ export function IncomeExpensesPie() {
   }
 
   // Generate conic gradient for pie chart
-  const gradientStops = segments.map((seg) => {
-    return `${seg.color} ${seg.startPercent}% ${seg.startPercent + seg.percent}%`
-  }).join(', ')
+  const gradientStops = segments
+    .map((seg) => {
+      return `${seg.color} ${seg.startPercent}% ${seg.startPercent + seg.percent}%`
+    })
+    .join(', ')
 
   return (
     <div className="section-card h-full">
       <div className="section-header">
         <span className="section-title">Income vs Expenses</span>
       </div>
-      
+
       <div className="p-4">
         {/* Tabs */}
         <div className="flex gap-4 mb-4 text-sm">
@@ -86,10 +100,10 @@ export function IncomeExpensesPie() {
             Expenses
           </button>
         </div>
-        
+
         {/* Pie Chart */}
         <div className="flex justify-center mb-6">
-          <div 
+          <div
             className="w-40 h-40 rounded-full relative"
             style={{
               background: `conic-gradient(${gradientStops})`,
@@ -101,23 +115,22 @@ export function IncomeExpensesPie() {
                 <div className="text-xs text-[var(--ws-text-muted)]">
                   {cashFlow >= 0 ? 'Cash Flow' : 'Loss'}
                 </div>
-                <div className={`text-sm font-bold ${cashFlow >= 0 ? 'text-[var(--ws-positive)]' : 'text-[var(--ws-negative)]'}`}>
+                <div
+                  className={`text-sm font-bold ${cashFlow >= 0 ? 'text-[var(--ws-positive)]' : 'text-[var(--ws-negative)]'}`}
+                >
                   {formatCurrency(Math.abs(cashFlow))}
                 </div>
               </div>
             </div>
           </div>
         </div>
-        
+
         {/* Legend */}
         <div className="space-y-2">
           {segments.map((seg, index) => (
             <div key={index} className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-sm"
-                  style={{ backgroundColor: seg.color }}
-                />
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: seg.color }} />
                 <span className="text-[var(--ws-text-secondary)]">{seg.label}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -135,4 +148,3 @@ export function IncomeExpensesPie() {
     </div>
   )
 }
-

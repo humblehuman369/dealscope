@@ -3,18 +3,18 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { 
-  ArrowLeft, 
-  Sun, 
-  Moon, 
-  Camera, 
-  Bookmark, 
-  Share2, 
+import {
+  ArrowLeft,
+  Sun,
+  Moon,
+  Camera,
+  Bookmark,
+  Share2,
   FileText,
   ChevronRight,
   Home,
   Search,
-  Info
+  Info,
 } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
 import { StrategyId } from './types'
@@ -53,53 +53,53 @@ interface Strategy {
 }
 
 const STRATEGIES: Strategy[] = [
-  { 
+  {
     id: 'ltr',
     number: 1,
     name: 'Long-Term Rental',
     statValue: '8-12%',
     statLabel: 'Cash-on-Cash',
-    color: 'green'
+    color: 'green',
   },
-  { 
+  {
     id: 'str',
     number: 2,
     name: 'Short-Term Rental',
     statValue: '15-25%',
     statLabel: 'Cash-on-Cash',
-    color: 'pink'
+    color: 'pink',
   },
-  { 
+  {
     id: 'brrrr',
     number: 3,
     name: 'BRRRR',
     statValue: '∞',
     statLabel: 'Scale',
-    color: 'lime'
+    color: 'lime',
   },
-  { 
+  {
     id: 'flip',
     number: 4,
     name: 'Fix & Flip',
     statValue: '$50K+',
     statLabel: 'Profit',
-    color: 'yellow'
+    color: 'yellow',
   },
-  { 
+  {
     id: 'house_hack',
     number: 5,
     name: 'House Hack',
     statValue: '75%',
     statLabel: 'Savings',
-    color: 'purple'
+    color: 'purple',
   },
-  { 
+  {
     id: 'wholesale',
     number: 6,
     name: 'Wholesale',
     statValue: '$10K+',
     statLabel: 'Per Deal',
-    color: 'cyan'
+    color: 'cyan',
   },
 ]
 
@@ -118,7 +118,7 @@ interface PropertyPremiumPageProps {
 
 /**
  * PropertyPremiumPage - World-class property analysis landing page
- * 
+ *
  * Features:
  * - Immersive hero section with property imagery
  * - 6 strategy cards with rich hover effects
@@ -135,7 +135,7 @@ export function PropertyPremiumPage({
   onTryItNow,
   isSaved = false,
   isSaving = false,
-  saveMessage = null
+  saveMessage = null,
 }: PropertyPremiumPageProps) {
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
@@ -179,15 +179,15 @@ export function PropertyPremiumPage({
           DealGap<span>IQ</span>
         </Link>
         <div className="premium-header-actions">
-          <button 
+          <button
             className="premium-try-btn"
             onClick={onTryItNow || (() => setShowSearchModal(true))}
           >
             <Search className="w-4 h-4" />
             <span>Try It Now</span>
           </button>
-          <button 
-            className="premium-theme-btn" 
+          <button
+            className="premium-theme-btn"
             onClick={toggleTheme}
             aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
           >
@@ -206,11 +206,11 @@ export function PropertyPremiumPage({
         <div className="premium-photo-main">
           {photos[activePhotoIndex] ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img 
-              src={photos[activePhotoIndex]} 
+            <img
+              src={photos[activePhotoIndex]}
               alt={`Property photo ${activePhotoIndex + 1}`}
               onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none'
+                ;(e.target as HTMLImageElement).style.display = 'none'
               }}
             />
           ) : (
@@ -218,34 +218,34 @@ export function PropertyPremiumPage({
               <Home className="w-16 h-16 opacity-30" />
             </div>
           )}
-          
+
           {/* Photo Counter Badge — only when we have photos */}
           {totalPhotos > 0 && (
             <div className="premium-photo-counter">
               <Camera className="w-4 h-4" />
-              <span>{activePhotoIndex + 1}/{totalPhotos}</span>
+              <span>
+                {activePhotoIndex + 1}/{totalPhotos}
+              </span>
             </div>
           )}
         </div>
 
         {/* Thumbnail Strip */}
         {photos.length > 0 && (
-        <div className="premium-thumb-strip">
-          {photos.slice(0, 6).map((photo, idx) => (
-            <button
-              key={idx}
-              className={`premium-thumb ${idx === activePhotoIndex ? 'active' : ''}`}
-              onClick={() => setActivePhotoIndex(idx)}
-              aria-label={`View photo ${idx + 1}`}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photo} alt="" />
-            </button>
-          ))}
-          {totalPhotos > 6 && (
-            <div className="premium-thumb-more">+{totalPhotos - 6}</div>
-          )}
-        </div>
+          <div className="premium-thumb-strip">
+            {photos.slice(0, 6).map((photo, idx) => (
+              <button
+                key={idx}
+                className={`premium-thumb ${idx === activePhotoIndex ? 'active' : ''}`}
+                onClick={() => setActivePhotoIndex(idx)}
+                aria-label={`View photo ${idx + 1}`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo} alt="" />
+              </button>
+            ))}
+            {totalPhotos > 6 && <div className="premium-thumb-more">+{totalPhotos - 6}</div>}
+          </div>
         )}
       </div>
 
@@ -257,7 +257,7 @@ export function PropertyPremiumPage({
           <p className="premium-info-specs">{specs}</p>
           {/* View Full Property Details Button */}
           {property.zpid && (
-            <Link 
+            <Link
               href={`/property/${property.zpid}?address=${encodeURIComponent(`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`)}`}
               className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-lg bg-teal-500/10 text-sm text-teal-600 dark:text-teal-400 hover:bg-teal-500/20 transition-colors border border-teal-500/20"
             >
@@ -320,9 +320,9 @@ export function PropertyPremiumPage({
 
       {/* Bottom Action Bar */}
       <div className="premium-action-bar">
-        <button 
+        <button
           className={`premium-action-btn ${isSaved ? 'premium-action-btn-saved' : ''}`}
-          onClick={onSave} 
+          onClick={onSave}
           disabled={isSaving}
           aria-label={isSaved ? 'Property saved' : 'Save property'}
         >
@@ -340,7 +340,7 @@ export function PropertyPremiumPage({
           <span>Share</span>
         </button>
       </div>
-      
+
       {/* Search Property Modal */}
       <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
     </div>
@@ -348,4 +348,3 @@ export function PropertyPremiumPage({
 }
 
 export default PropertyPremiumPage
-

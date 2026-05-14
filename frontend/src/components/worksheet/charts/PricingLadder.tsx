@@ -35,30 +35,25 @@ export function PricingLadder({
     <div className="pricing-ladder-container">
       <div className="pricing-ladder">
         <div className="pricing-ladder-track"></div>
-        
+
         {items.map((item, index) => (
-          <div 
-            key={index} 
-            className={`pricing-ladder-item ${item.highlight ? 'highlight' : ''}`}
-          >
+          <div key={index} className={`pricing-ladder-item ${item.highlight ? 'highlight' : ''}`}>
             <div className="pricing-ladder-label">{item.label}</div>
             <div className={`pricing-ladder-marker ${item.type}`}>
               {item.type === 'current' && (
                 <svg width="8" height="8" viewBox="0 0 8 8">
-                  <circle cx="4" cy="4" r="4" fill="var(--strategy-accent, #7c3aed)"/>
+                  <circle cx="4" cy="4" r="4" fill="var(--strategy-accent, #7c3aed)" />
                 </svg>
               )}
             </div>
             <div className={`pricing-ladder-value ${item.type}`}>
               {formatCurrency(item.value)}
-              {item.hint && (
-                <span className="pricing-ladder-hint">{item.hint}</span>
-              )}
+              {item.hint && <span className="pricing-ladder-hint">{item.hint}</span>}
             </div>
           </div>
         ))}
       </div>
-      
+
       {recoveryPercent !== undefined && (
         <div className="pricing-discount-indicator">
           <div className="pricing-discount-bar">

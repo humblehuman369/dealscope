@@ -5,8 +5,11 @@ Comparison router — Strategy comparison and sensitivity analysis.
 import logging
 
 from fastapi import APIRouter, HTTPException
+from sqlalchemy import select
 
-from app.core.deps import DbSession
+from app.core.deps import CurrentUser, DbSession
+from app.models.saved_property import SavedProperty
+from app.models.search_history import SearchHistory
 from app.schemas.property import SensitivityRequest, SensitivityResponse
 from app.services.assumptions_service import get_default_assumptions as get_db_default_assumptions
 from app.services.property_service import property_service
@@ -16,15 +19,35 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Comparison"])
 
 
+async def _user_has_cached_property_access(db: DbSession, user_id, property_id: str) -> bool:
+    saved_result = await db.execute(
+        select(SavedProperty.id)
+        .where(SavedProperty.user_id == user_id, SavedProperty.external_property_id == property_id)
+        .limit(1)
+    )
+    if saved_result.scalar_one_or_none() is not None:
+        return True
+
+    search_result = await db.execute(
+        select(SearchHistory.id)
+        .where(SearchHistory.user_id == user_id, SearchHistory.property_cache_id == property_id)
+        .limit(1)
+    )
+    return search_result.scalar_one_or_none() is not None
+
+
 # ===========================================
 # Sensitivity Analysis
 # ===========================================
 
 
 @router.post("/api/v1/sensitivity/analyze")
-async def run_sensitivity_analysis(request: SensitivityRequest):
+async def run_sensitivity_analysis(request: SensitivityRequest, current_user: CurrentUser, db: DbSession):
     """Run sensitivity analysis on a key variable."""
     try:
+        if not await _user_has_cached_property_access(db, current_user.id, request.property_id):
+            raise HTTPException(status_code=404, detail="Property not found")
+
         property_data = await property_service.get_cached_property(request.property_id)
         if not property_data:
             raise HTTPException(status_code=404, detail="Property not found")
@@ -106,9 +129,12 @@ async def run_sensitivity_analysis(request: SensitivityRequest):
 
 
 @router.get("/api/v1/comparison/{property_id}")
-async def get_strategy_comparison(property_id: str, db: DbSession):
+async def get_strategy_comparison(property_id: str, current_user: CurrentUser, db: DbSession):
     """Get side-by-side comparison of all strategies."""
     try:
+        if not await _user_has_cached_property_access(db, current_user.id, property_id):
+            raise HTTPException(status_code=404, detail="Property not found")
+
         assumptions = await get_db_default_assumptions(db)
         analytics = await property_service.calculate_analytics(
             property_id=property_id,

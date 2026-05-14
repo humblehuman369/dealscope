@@ -16,7 +16,14 @@ export const VALUE_SOURCE_IDS: DataSourceId[] = ['iq', 'zillow', 'rentcast', 're
 export const RENT_SOURCE_IDS: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'mashvisor']
 // Kept for back-compat with consumers that don't care which column. Prefer
 // the column-specific lists above when iterating for value or rent UIs.
-export const ALL_SOURCE_IDS: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor', 'mashvisor']
+export const ALL_SOURCE_IDS: DataSourceId[] = [
+  'iq',
+  'zillow',
+  'rentcast',
+  'redfin',
+  'realtor',
+  'mashvisor',
+]
 
 /**
  * Maps a PropertyResponse from the shared React Query cache into the
@@ -65,11 +72,8 @@ export function toSourceEstimates(
   onlyAvailable = false,
   column?: 'value' | 'rent',
 ): SourceEstimate[] {
-  const ids = column === 'value'
-    ? VALUE_SOURCE_IDS
-    : column === 'rent'
-      ? RENT_SOURCE_IDS
-      : ALL_SOURCE_IDS
+  const ids =
+    column === 'value' ? VALUE_SOURCE_IDS : column === 'rent' ? RENT_SOURCE_IDS : ALL_SOURCE_IDS
   const results: SourceEstimate[] = ids.map((id) => ({
     id,
     label: SOURCE_META[id].label,

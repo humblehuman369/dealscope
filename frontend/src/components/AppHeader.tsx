@@ -2,13 +2,13 @@
 
 /**
  * AppHeader Component
- * 
+ *
  * Unified header for all pages in the DealMakerIQ app (except homepage).
  * Combines:
  * - Dark navy brand bar with DealMakerIQ logo and icons
  * - White tab bar with navigation tabs
  * - Optional property address bar (for property-specific pages)
- * 
+ *
  * Layout:
  * ┌─────────────────────────────────────────────────┐
  * │  DealMakerIQ          [🔍] [👤]                 │  ← Dark navy bar
@@ -24,7 +24,22 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, Menu, LogOut, UserCircle, ShieldCheck, History, Bookmark, CreditCard, Sun, Moon, X, Info, DollarSign, LayoutDashboard } from 'lucide-react'
+import {
+  Search,
+  Menu,
+  LogOut,
+  UserCircle,
+  ShieldCheck,
+  History,
+  Bookmark,
+  CreditCard,
+  Sun,
+  Moon,
+  X,
+  Info,
+  DollarSign,
+  LayoutDashboard,
+} from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useSession, useLogout } from '@/hooks/useSession'
@@ -113,7 +128,7 @@ const TABS: { id: AppTab; label: string }[] = [
 
 // Pages where header should be completely hidden
 // Verdict & strategy now use the same AppHeader as the rest of the platform
-const HIDDEN_ROUTES = ['/register', '/what-is-dealgapiq']
+const HIDDEN_ROUTES = ['/', '/register', '/what-is-dealgapiq']
 
 // Pages where property bar should NOT be shown
 const NO_PROPERTY_BAR_ROUTES = [
@@ -162,7 +177,10 @@ function parseDisplayAddress(fullAddress: string): {
   state: string
   zipCode: string
 } {
-  const parts = fullAddress.split(',').map(s => s.trim()).filter(Boolean)
+  const parts = fullAddress
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
   const streetAddress = parts[0] || ''
   const city = parts.length > 1 ? parts[1] : ''
   const lastPart = parts.length > 2 ? parts[parts.length - 1] : ''
@@ -200,7 +218,7 @@ export function AppHeader({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  
+
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -236,7 +254,7 @@ export function AppHeader({
     observer.observe(node)
     addressBarObserverRef.current = observer
   }, [])
-  
+
   // Auth context
   const { isAuthenticated, user, isAdmin } = useSession()
   const { isPro } = useSubscription()
@@ -297,13 +315,14 @@ export function AppHeader({
   // Decode explicitly to handle double-encoding issues
   const rawAddressFromUrl = searchParams?.get('address') || ''
   const addressFromUrl = fullyDecode(rawAddressFromUrl)
-  
+
   // Also decode propertyAddress prop in case it's passed encoded
   const decodedPropertyAddress = fullyDecode(propertyAddress || '')
-  
-  const displayAddress = (property
-    ? `${property.address}, ${property.city}, ${property.state} ${property.zip}`
-    : '') || decodedPropertyAddress || addressFromUrl
+
+  const displayAddress =
+    (property ? `${property.address}, ${property.city}, ${property.state} ${property.zip}` : '') ||
+    decodedPropertyAddress ||
+    addressFromUrl
 
   // Resolve property details — use prop if available, otherwise read from sessionStorage.
   // Uses multiple strategies to stay in sync:
@@ -346,11 +365,14 @@ export function AppHeader({
           sqft: toNumber(parsed.sqft),
           price: displayPrice,
           zpid: typeof parsed.zpid === 'string' ? parsed.zpid : undefined,
-          listingStatus: typeof parsed.listingStatus === 'string' ? parsed.listingStatus : undefined,
+          listingStatus:
+            typeof parsed.listingStatus === 'string' ? parsed.listingStatus : undefined,
         })
         return
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     setResolvedProperty(undefined)
   }, [property, displayAddress])
 
@@ -369,7 +391,6 @@ export function AppHeader({
     const interval = setInterval(readPropertyFromStorage, 2000)
     return () => clearInterval(interval)
   }, [resolvedProperty, displayAddress, readPropertyFromStorage])
-
 
   const savePropertySnapshot = React.useMemo(() => {
     if (!resolvedProperty || !displayAddress) return undefined
@@ -408,14 +429,17 @@ export function AppHeader({
   const isHomepage = !pathname || pathname === '/'
 
   // Determine if property bar should be shown
-  const shouldShowPropertyBar = showPropertyBarProp !== undefined 
-    ? showPropertyBarProp 
-    : !NO_PROPERTY_BAR_ROUTES.some(route => pathname?.startsWith(route))
+  const shouldShowPropertyBar =
+    showPropertyBarProp !== undefined
+      ? showPropertyBarProp
+      : !NO_PROPERTY_BAR_ROUTES.some((route) => pathname?.startsWith(route))
 
   const signInUrl = `${pathname || '/'}?${(() => {
     const p = new URLSearchParams(searchParams?.toString() ?? '')
     p.set('auth', 'required')
-    const fullPath = searchParams?.toString() ? `${pathname || '/'}?${searchParams.toString()}` : pathname || '/'
+    const fullPath = searchParams?.toString()
+      ? `${pathname || '/'}?${searchParams.toString()}`
+      : pathname || '/'
     p.set('redirect', fullPath)
     return p.toString()
   })()}`
@@ -443,14 +467,14 @@ export function AppHeader({
   const handleTabChange = (tab: AppTab) => {
     // Build address params for navigation
     const encodedAddress = encodeURIComponent(displayAddress)
-    
+
     // Check multiple possible sources for zpid
     // 1. From property prop
     // 2. From URL params (zpid only)
     // 3. From pathname (e.g., /property/12345)
     // 4. From sessionStorage (set by verdict page after API fetch)
     let zpid = property?.zpid || searchParams?.get('zpid') || ''
-    
+
     // Extract zpid from pathname if on property details page
     if (!zpid && pathname?.startsWith('/property/')) {
       const pathParts = pathname.split('/')
@@ -458,7 +482,7 @@ export function AppHeader({
         zpid = pathParts[2]
       }
     }
-    
+
     // Fallback: check sessionStorage for current property zpid
     if (!zpid && typeof window !== 'undefined') {
       try {
@@ -490,8 +514,10 @@ export function AppHeader({
         if (displayAddress) {
           const compsQuery = new URLSearchParams({ address: displayAddress })
           if (zpid) compsQuery.set('zpid', String(zpid))
-          if (resolvedProperty?.latitude != null) compsQuery.set('lat', String(resolvedProperty.latitude))
-          if (resolvedProperty?.longitude != null) compsQuery.set('lng', String(resolvedProperty.longitude))
+          if (resolvedProperty?.latitude != null)
+            compsQuery.set('lat', String(resolvedProperty.latitude))
+          if (resolvedProperty?.longitude != null)
+            compsQuery.set('lng', String(resolvedProperty.longitude))
           router.push(`/price-intel?${compsQuery.toString()}`)
         } else {
           router.push('/search')
@@ -525,379 +551,447 @@ export function AppHeader({
     <>
       {/* Top chrome: solid card surface; page canvas tint starts in LayoutWrapper below this stack */}
       <div className="relative z-50 bg-[var(--surface-chrome)]">
-      {/* Fixed safe-area cover — prevents scrolling content from showing behind the device notch/status bar */}
-      <div
-        className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"
-        style={{
-          height: 'env(safe-area-inset-top, 0px)',
-          background: 'var(--surface-chrome)',
-        }}
-        aria-hidden="true"
-      />
+        {/* Fixed safe-area cover — prevents scrolling content from showing behind the device notch/status bar */}
+        <div
+          className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"
+          style={{
+            height: 'env(safe-area-inset-top, 0px)',
+            background: 'var(--surface-chrome)',
+          }}
+          aria-hidden="true"
+        />
 
-      <header className="relative z-50">
-        {/* Brand Bar */}
-        <div 
-          className="flex items-center justify-between gap-3 px-4 py-3 pt-safe-header"
-        >
-          {/* Left: Logo — themed image (dark/light variants) */}
-          <button
-            onClick={handleLogoClick}
-            className="flex items-center cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity p-0"
-            aria-label="DealGapIQ home"
-          >
-            <Image
-              src={mounted && theme === 'light' ? '/DealGapIQ_Logo_Light.png' : '/DealGapIQ_Logo_Dark_Header.png'}
-              alt="DealGapIQ"
-              width={1024}
-              height={333}
-              priority
-              className="h-[39px] sm:h-[50px] w-auto select-none"
-              draggable={false}
-            />
-          </button>
-
-          {/* Right: About, Pricing, Search, Profile/Login */}
-          <div className="flex items-center gap-2 sm:gap-5">
-            {isHomepage && (
-              <>
-                <Link
-                  href="/about"
-                  className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                  style={{
-                    color: 'var(--text-heading)',
-                    borderBottom: pathname === '/about' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                    paddingBottom: 2,
-                  }}
-                >
-                  About
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                  style={{
-                    color: 'var(--text-heading)',
-                    borderBottom: pathname === '/pricing' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                    paddingBottom: 2,
-                  }}
-                >
-                  Pricing
-                </Link>
-                <Link
-                  href="/blog"
-                  className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                  style={{
-                    color: 'var(--text-heading)',
-                    borderBottom: pathname?.startsWith('/blog') ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                    paddingBottom: 2,
-                  }}
-                >
-                  Blog
-                </Link>
-              </>
-            )}
-            {/* Property search button opens modal */}
+        <header className="relative z-50">
+          {/* Brand Bar */}
+          <div className="flex items-center justify-between gap-3 px-4 py-3 pt-safe-header">
+            {/* Left: Logo — themed image (dark/light variants) */}
             <button
-              onClick={() => setSearchModalOpen(true)}
-              className="min-h-[36px] sm:min-h-[40px] px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full border transition-colors hover:opacity-90 flex items-center gap-2"
-              style={{
-                background: 'var(--surface-elevated)',
-                borderColor: 'var(--border-default)',
-                color: 'var(--text-heading)',
-              }}
-              aria-label="Search properties"
+              onClick={handleLogoClick}
+              className="flex items-center cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity p-0"
+              aria-label="DealGapIQ home"
             >
-              <Search
-                className="w-4 h-4 sm:w-5 sm:h-5"
-                style={{ color: 'var(--text-secondary)' }}
+              <Image
+                src={
+                  mounted && theme === 'light'
+                    ? '/DealGapIQ_Logo_Light.png'
+                    : '/DealGapIQ_Logo_Dark_Header.png'
+                }
+                alt="DealGapIQ"
+                width={1024}
+                height={333}
+                priority
+                className="h-[39px] sm:h-[50px] w-auto select-none"
+                draggable={false}
               />
-              <span className="hidden sm:inline text-sm font-medium whitespace-nowrap">Property Search</span>
             </button>
-            {/* Dashboard — visible primary nav for signed-in users. */}
-            {isAuthenticated && (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                  style={{
-                    color: 'var(--text-heading)',
-                    borderBottom: pathname === '/dashboard' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                    paddingBottom: 2,
-                  }}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/pipeline"
-                  className="hidden md:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                  style={{
-                    color: 'var(--text-heading)',
-                    borderBottom: pathname === '/pipeline' ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                    paddingBottom: 2,
-                  }}
-                >
-                  Pipeline
-                </Link>
-              </>
-            )}
-            {/* Theme toggle — always shown directly (no dropdown) */}
-            <button
-              onClick={toggleTheme}
-              className="hidden sm:flex min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] items-center justify-center"
-              aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {mounted && theme === 'dark' ? (
-                <Sun className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
-              ) : (
-                <Moon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
+
+            {/* Right: About, Pricing, Search, Profile/Login */}
+            <div className="flex items-center gap-2 sm:gap-5">
+              {isHomepage && (
+                <>
+                  <Link
+                    href="/about"
+                    className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                    style={{
+                      color: 'var(--text-heading)',
+                      borderBottom:
+                        pathname === '/about'
+                          ? `2px solid ${colors.brand.teal}`
+                          : '2px solid transparent',
+                      paddingBottom: 2,
+                    }}
+                  >
+                    About
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                    style={{
+                      color: 'var(--text-heading)',
+                      borderBottom:
+                        pathname === '/pricing'
+                          ? `2px solid ${colors.brand.teal}`
+                          : '2px solid transparent',
+                      paddingBottom: 2,
+                    }}
+                  >
+                    Pricing
+                  </Link>
+                  <Link
+                    href="/blog"
+                    className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                    style={{
+                      color: 'var(--text-heading)',
+                      borderBottom: pathname?.startsWith('/blog')
+                        ? `2px solid ${colors.brand.teal}`
+                        : '2px solid transparent',
+                      paddingBottom: 2,
+                    }}
+                  >
+                    Blog
+                  </Link>
+                </>
               )}
-            </button>
-            {isAuthenticated ? (
-              <div className="relative" ref={profileMenuRef}>
-                <button
-                  onClick={handleProfileClick}
-                  className="min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] p-1.5 sm:p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
-                  aria-label="Menu"
-                  aria-expanded={showProfileMenu}
-                  aria-haspopup="true"
-                >
-                  <Menu 
-                    className="w-5 h-5 sm:w-6 sm:h-6" 
+              {/* Property search button opens modal */}
+              <button
+                onClick={() => setSearchModalOpen(true)}
+                className="min-h-[36px] sm:min-h-[40px] px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full border transition-colors hover:opacity-90 flex items-center gap-2"
+                style={{
+                  background: 'var(--surface-elevated)',
+                  borderColor: 'var(--border-default)',
+                  color: 'var(--text-heading)',
+                }}
+                aria-label="Search properties"
+              >
+                <Search
+                  className="w-4 h-4 sm:w-5 sm:h-5"
+                  style={{ color: 'var(--text-secondary)' }}
+                />
+                <span className="hidden sm:inline text-sm font-medium whitespace-nowrap">
+                  Property Search
+                </span>
+              </button>
+              {/* Dashboard — visible primary nav for signed-in users. */}
+              {isAuthenticated && (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                    style={{
+                      color: 'var(--text-heading)',
+                      borderBottom:
+                        pathname === '/dashboard'
+                          ? `2px solid ${colors.brand.teal}`
+                          : '2px solid transparent',
+                      paddingBottom: 2,
+                    }}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/pipeline"
+                    className="hidden md:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                    style={{
+                      color: 'var(--text-heading)',
+                      borderBottom:
+                        pathname === '/pipeline'
+                          ? `2px solid ${colors.brand.teal}`
+                          : '2px solid transparent',
+                      paddingBottom: 2,
+                    }}
+                  >
+                    Pipeline
+                  </Link>
+                </>
+              )}
+              {/* Theme toggle — always shown directly (no dropdown) */}
+              <button
+                onClick={toggleTheme}
+                className="hidden sm:flex min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] items-center justify-center"
+                aria-label={
+                  mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+                }
+              >
+                {mounted && theme === 'dark' ? (
+                  <Sun className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
+                ) : (
+                  <Moon
+                    className="w-5 h-5 sm:w-6 sm:h-6"
                     style={{ color: 'var(--text-heading)' }}
                   />
-                </button>
+                )}
+              </button>
+              {isAuthenticated ? (
+                <div className="relative" ref={profileMenuRef}>
+                  <button
+                    onClick={handleProfileClick}
+                    className="min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] p-1.5 sm:p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
+                    aria-label="Menu"
+                    aria-expanded={showProfileMenu}
+                    aria-haspopup="true"
+                  >
+                    <Menu
+                      className="w-5 h-5 sm:w-6 sm:h-6"
+                      style={{ color: 'var(--text-heading)' }}
+                    />
+                  </button>
 
-                {showProfileMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-navy-900 rounded-lg shadow-lg border border-slate-200 dark:border-navy-700 py-1 z-50">
-                    {isHomepage && (
-                      <div className="sm:hidden">
-                        <Link
-                          href="/about"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                          style={{ color: 'var(--text-heading)' }}
-                        >
-                          <Info className="w-4 h-4" /> About
-                        </Link>
-                        <Link
-                          href="/pricing"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                          style={{ color: 'var(--text-heading)' }}
-                        >
-                          <DollarSign className="w-4 h-4" /> Pricing
-                        </Link>
-                        <Link
-                          href="/blog"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                          style={{ color: 'var(--text-heading)' }}
-                        >
-                          <Info className="w-4 h-4" /> Blog
-                        </Link>
-                        <button
-                          onClick={() => { toggleTheme(); setShowProfileMenu(false) }}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                          style={{ color: 'var(--text-heading)' }}
-                        >
-                          {mounted && theme === 'dark' ? (
-                            <><Sun className="w-4 h-4" /> Light Mode</>
-                          ) : (
-                            <><Moon className="w-4 h-4" /> Dark Mode</>
-                          )}
-                        </button>
-                        <div className="border-t border-slate-100 dark:border-navy-700 my-1" />
-                      </div>
-                    )}
-                    {user && (
-                      <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-700">
-                        <div className="flex items-center gap-2">
-                          <p className="text-[14px] sm:text-[18px] font-medium text-slate-700 dark:text-slate-300 truncate">{user.full_name || 'User'}</p>
-                          <span
-                            className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] sm:text-[14px] font-semibold uppercase tracking-wide"
-                            style={{
-                              background: isPro ? 'rgba(15,164,233,0.15)' : 'rgba(148,163,184,0.15)',
-                              color: isPro ? 'var(--accent-sky)' : 'var(--text-label)',
-                            }}
+                  {showProfileMenu && (
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-navy-900 rounded-lg shadow-lg border border-slate-200 dark:border-navy-700 py-1 z-50">
+                      {isHomepage && (
+                        <div className="sm:hidden">
+                          <Link
+                            href="/about"
+                            onClick={() => setShowProfileMenu(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                            style={{ color: 'var(--text-heading)' }}
                           >
-                            {isPro ? 'Pro' : 'Starter'}
-                          </span>
+                            <Info className="w-4 h-4" /> About
+                          </Link>
+                          <Link
+                            href="/pricing"
+                            onClick={() => setShowProfileMenu(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            <DollarSign className="w-4 h-4" /> Pricing
+                          </Link>
+                          <Link
+                            href="/blog"
+                            onClick={() => setShowProfileMenu(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            <Info className="w-4 h-4" /> Blog
+                          </Link>
+                          <button
+                            onClick={() => {
+                              toggleTheme()
+                              setShowProfileMenu(false)
+                            }}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            {mounted && theme === 'dark' ? (
+                              <>
+                                <Sun className="w-4 h-4" /> Light Mode
+                              </>
+                            ) : (
+                              <>
+                                <Moon className="w-4 h-4" /> Dark Mode
+                              </>
+                            )}
+                          </button>
+                          <div className="border-t border-slate-100 dark:border-navy-700 my-1" />
                         </div>
-                        <p className="text-[12px] sm:text-[16px] text-slate-400 truncate">{user.email}</p>
-                      </div>
-                    )}
-                    <button
-                      onClick={() => { setShowProfileMenu(false); router.push('/dashboard') }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                    >
-                      <LayoutDashboard className="w-4 h-4" /> Dashboard
-                    </button>
-                    <button
-                      onClick={() => { setShowProfileMenu(false); router.push('/profile') }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                    >
-                      <UserCircle className="w-4 h-4" /> Profile
-                    </button>
-                    <button
-                      onClick={() => { setShowProfileMenu(false); router.push('/search-history') }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                    >
-                      <History className="w-4 h-4" /> Search History
-                    </button>
-                    <button
-                      onClick={() => { setShowProfileMenu(false); router.push('/saved-properties') }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                    >
-                      <Bookmark className="w-4 h-4" /> Saved Properties
-                    </button>
-                    <button
-                      onClick={() => { setShowProfileMenu(false); router.push('/billing') }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                    >
-                      <CreditCard className="w-4 h-4" /> Billing
-                    </button>
-                    {isAdmin && (
-                      <button
-                        onClick={() => { setShowProfileMenu(false); router.push('/admin') }}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-                      >
-                        <ShieldCheck className="w-4 h-4" /> Admin Dashboard
-                      </button>
-                    )}
-                    <div className="border-t border-slate-100 dark:border-navy-700 mt-1 pt-1">
-                      <button
-                        onClick={handleLogout}
-                        disabled={logoutMutation.isPending}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" /> Sign Out
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className={`${isHomepage ? 'hidden sm:inline' : ''} text-[14px] sm:text-[18px] font-semibold transition-opacity hover:opacity-80 whitespace-nowrap`}
-                  style={{ color: colors.brand.teal }}
-                >
-                  Login / Register
-                </Link>
-                {isHomepage && (
-                  <div className="sm:hidden relative" ref={mobileNavRef}>
-                    <button
-                      onClick={() => setMobileNavOpen(prev => !prev)}
-                      className="min-w-[36px] min-h-[36px] p-1.5 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
-                      aria-label="Navigation menu"
-                      aria-expanded={mobileNavOpen}
-                      aria-haspopup="true"
-                    >
-                      {mobileNavOpen ? (
-                        <X className="w-5 h-5" style={{ color: 'var(--text-heading)' }} />
-                      ) : (
-                        <Menu className="w-5 h-5" style={{ color: 'var(--text-heading)' }} />
                       )}
-                    </button>
-                    {mobileNavOpen && (
-                      <div
-                        className="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-lg py-1 z-50"
-                        style={{
-                          background: 'var(--surface-card)',
-                          border: '1px solid var(--border-default)',
+                      {user && (
+                        <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-700">
+                          <div className="flex items-center gap-2">
+                            <p className="text-[14px] sm:text-[18px] font-medium text-slate-700 dark:text-slate-300 truncate">
+                              {user.full_name || 'User'}
+                            </p>
+                            <span
+                              className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] sm:text-[14px] font-semibold uppercase tracking-wide"
+                              style={{
+                                background: isPro
+                                  ? 'rgba(15,164,233,0.15)'
+                                  : 'rgba(148,163,184,0.15)',
+                                color: isPro ? 'var(--accent-sky)' : 'var(--text-label)',
+                              }}
+                            >
+                              {isPro ? 'Pro' : 'Starter'}
+                            </span>
+                          </div>
+                          <p className="text-[12px] sm:text-[16px] text-slate-400 truncate">
+                            {user.email}
+                          </p>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false)
+                          router.push('/dashboard')
                         }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
                       >
-                        <Link
-                          href="/about"
-                          onClick={() => setMobileNavOpen(false)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                          style={{ color: 'var(--text-heading)' }}
-                        >
-                          <Info className="w-4 h-4" /> About
-                        </Link>
-                        <Link
-                          href="/pricing"
-                          onClick={() => setMobileNavOpen(false)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                          style={{ color: 'var(--text-heading)' }}
-                        >
-                          <DollarSign className="w-4 h-4" /> Pricing
-                        </Link>
-                        <Link
-                          href="/blog"
-                          onClick={() => setMobileNavOpen(false)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                          style={{ color: 'var(--text-heading)' }}
-                        >
-                          <Info className="w-4 h-4" /> Blog
-                        </Link>
-                        <div style={{ borderTop: '1px solid var(--border-default)' }} className="my-1" />
+                        <LayoutDashboard className="w-4 h-4" /> Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false)
+                          router.push('/profile')
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                      >
+                        <UserCircle className="w-4 h-4" /> Profile
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false)
+                          router.push('/search-history')
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                      >
+                        <History className="w-4 h-4" /> Search History
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false)
+                          router.push('/saved-properties')
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                      >
+                        <Bookmark className="w-4 h-4" /> Saved Properties
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false)
+                          router.push('/billing')
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                      >
+                        <CreditCard className="w-4 h-4" /> Billing
+                      </button>
+                      {isAdmin && (
                         <button
-                          onClick={() => { toggleTheme(); setMobileNavOpen(false) }}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                          style={{ color: 'var(--text-heading)' }}
+                          onClick={() => {
+                            setShowProfileMenu(false)
+                            router.push('/admin')
+                          }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
                         >
-                          {mounted && theme === 'dark' ? (
-                            <><Sun className="w-4 h-4" /> Light Mode</>
-                          ) : (
-                            <><Moon className="w-4 h-4" /> Dark Mode</>
-                          )}
+                          <ShieldCheck className="w-4 h-4" /> Admin Dashboard
                         </button>
-                        <div style={{ borderTop: '1px solid var(--border-default)' }} className="my-1" />
-                        <Link
-                          href="/login"
-                          onClick={() => setMobileNavOpen(false)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm font-semibold transition-colors hover:bg-white/5"
-                          style={{ color: 'var(--accent-sky)' }}
+                      )}
+                      <div className="border-t border-slate-100 dark:border-navy-700 mt-1 pt-1">
+                        <button
+                          onClick={handleLogout}
+                          disabled={logoutMutation.isPending}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         >
-                          <UserCircle className="w-4 h-4" /> Login / Register
-                        </Link>
+                          <LogOut className="w-4 h-4" /> Sign Out
+                        </button>
                       </div>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className={`${isHomepage ? 'hidden sm:inline' : ''} text-[14px] sm:text-[18px] font-semibold transition-opacity hover:opacity-80 whitespace-nowrap`}
+                    style={{ color: colors.brand.teal }}
+                  >
+                    Login / Register
+                  </Link>
+                  {isHomepage && (
+                    <div className="sm:hidden relative" ref={mobileNavRef}>
+                      <button
+                        onClick={() => setMobileNavOpen((prev) => !prev)}
+                        className="min-w-[36px] min-h-[36px] p-1.5 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
+                        aria-label="Navigation menu"
+                        aria-expanded={mobileNavOpen}
+                        aria-haspopup="true"
+                      >
+                        {mobileNavOpen ? (
+                          <X className="w-5 h-5" style={{ color: 'var(--text-heading)' }} />
+                        ) : (
+                          <Menu className="w-5 h-5" style={{ color: 'var(--text-heading)' }} />
+                        )}
+                      </button>
+                      {mobileNavOpen && (
+                        <div
+                          className="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-lg py-1 z-50"
+                          style={{
+                            background: 'var(--surface-card)',
+                            border: '1px solid var(--border-default)',
+                          }}
+                        >
+                          <Link
+                            href="/about"
+                            onClick={() => setMobileNavOpen(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            <Info className="w-4 h-4" /> About
+                          </Link>
+                          <Link
+                            href="/pricing"
+                            onClick={() => setMobileNavOpen(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            <DollarSign className="w-4 h-4" /> Pricing
+                          </Link>
+                          <Link
+                            href="/blog"
+                            onClick={() => setMobileNavOpen(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            <Info className="w-4 h-4" /> Blog
+                          </Link>
+                          <div
+                            style={{ borderTop: '1px solid var(--border-default)' }}
+                            className="my-1"
+                          />
+                          <button
+                            onClick={() => {
+                              toggleTheme()
+                              setMobileNavOpen(false)
+                            }}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            {mounted && theme === 'dark' ? (
+                              <>
+                                <Sun className="w-4 h-4" /> Light Mode
+                              </>
+                            ) : (
+                              <>
+                                <Moon className="w-4 h-4" /> Dark Mode
+                              </>
+                            )}
+                          </button>
+                          <div
+                            style={{ borderTop: '1px solid var(--border-default)' }}
+                            className="my-1"
+                          />
+                          <Link
+                            href="/login"
+                            onClick={() => setMobileNavOpen(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm font-semibold transition-colors hover:bg-white/5"
+                            style={{ color: 'var(--accent-sky)' }}
+                          >
+                            <UserCircle className="w-4 h-4" /> Login / Register
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Tab Bar - pure black, hidden on info pages */}
-        {showTabs && !isInfoPage && !isHomepage && (
-          <div
-            className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
-            style={{
-              borderTop: '1px solid var(--border-chrome)',
-              borderBottom: '1px solid var(--border-chrome)',
-              WebkitOverflowScrolling: 'touch',
-            }}
-          >
-            {TABS.map((tab) => {
-              const isActive = tab.id === activeTab
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabChange(tab.id)}
-                  className={`
+          {/* Tab Bar - pure black, hidden on info pages */}
+          {showTabs && !isInfoPage && !isHomepage && (
+            <div
+              className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
+              style={{
+                borderTop: '1px solid var(--border-chrome)',
+                borderBottom: '1px solid var(--border-chrome)',
+                WebkitOverflowScrolling: 'touch',
+              }}
+            >
+              {TABS.map((tab) => {
+                const isActive = tab.id === activeTab
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleTabChange(tab.id)}
+                    className={`
                     flex-1 px-2 sm:px-4 py-[7px] text-[12px] sm:text-[18px] font-medium 
                     transition-all whitespace-nowrap border-r last:border-r-0
                   `}
-                  style={{
-                    backgroundColor: 'transparent',
-                    fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
-                    color: 'var(--text-link)',
-                    borderColor: colors.ui.border,
-                    borderBottom: isActive ? `2px solid ${colors.brand.teal}` : '2px solid transparent',
-                  }}
-                >
-                  {tab.label}
-                </button>
-              )
-            })}
-          </div>
-        )}
-
-      </header>
+                    style={{
+                      backgroundColor: 'transparent',
+                      fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
+                      color: 'var(--text-link)',
+                      borderColor: colors.ui.border,
+                      borderBottom: isActive
+                        ? `2px solid ${colors.brand.teal}`
+                        : '2px solid transparent',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </header>
       </div>
 
       {/*
@@ -906,36 +1000,41 @@ export function AppHeader({
         the entire page). Nested inside the brand+tabs wrapper, the bar would
         un-stick the moment the wrapper's bottom edge crossed the viewport top.
       */}
-      {shouldShowPropertyBar && displayAddress && (() => {
-        const addrParts = parseDisplayAddress(displayAddress)
-        const p = resolvedProperty
-        return (
-          <div
-            ref={addressBarRef}
-            className="sticky z-40"
-            style={{ top: 'env(safe-area-inset-top, 0px)' }}
-          >
-            <PropertyAddressBar
-              address={p?.address ?? addrParts.streetAddress}
-              city={p?.city ?? addrParts.city}
-              state={p?.state ?? addrParts.state}
-              zip={p?.zip ?? addrParts.zipCode}
-              beds={p?.beds ?? 0}
-              baths={p?.baths ?? 0}
-              sqft={p?.sqft ?? 0}
-              price={p?.price ?? 0}
-              listingStatus={p?.listingStatus ?? 'OFF_MARKET'}
-              zpid={p?.zpid}
-              bookmarked={isSaved}
-              onBookmarkClick={isAuthenticated
-                ? () => handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))
-                : () => router.push(signInUrl)}
-              detailsCollapsed={scrolledPast}
-              loading={!p}
-            />
-          </div>
-        )
-      })()}
+      {shouldShowPropertyBar &&
+        displayAddress &&
+        (() => {
+          const addrParts = parseDisplayAddress(displayAddress)
+          const p = resolvedProperty
+          return (
+            <div
+              ref={addressBarRef}
+              className="sticky z-40"
+              style={{ top: 'env(safe-area-inset-top, 0px)' }}
+            >
+              <PropertyAddressBar
+                address={p?.address ?? addrParts.streetAddress}
+                city={p?.city ?? addrParts.city}
+                state={p?.state ?? addrParts.state}
+                zip={p?.zip ?? addrParts.zipCode}
+                beds={p?.beds ?? 0}
+                baths={p?.baths ?? 0}
+                sqft={p?.sqft ?? 0}
+                price={p?.price ?? 0}
+                listingStatus={p?.listingStatus ?? 'OFF_MARKET'}
+                zpid={p?.zpid}
+                bookmarked={isSaved}
+                onBookmarkClick={
+                  isAuthenticated
+                    ? () =>
+                        handleSaveToggle().catch((err) => console.error('Save toggle failed:', err))
+                    : () => router.push(signInUrl)
+                }
+                detailsCollapsed={scrolledPast}
+                loading={!p}
+              />
+            </div>
+          )
+        })()}
 
       <SearchPropertyModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
     </>

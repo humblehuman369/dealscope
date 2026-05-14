@@ -8,8 +8,8 @@ import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 /**
  * PriceLadder Component
- * 
- * A visual "ladder" showing the price spectrum from List Price (high/red) 
+ *
+ * A visual "ladder" showing the price spectrum from List Price (high/red)
  * down to IQ Target (low/green) with a gradient arrow visualization.
  * Designed to fit in narrow card containers.
  */
@@ -21,11 +21,19 @@ interface PriceLadderProps {
   listingStatus?: string
 }
 
-export function PriceLadder({ title = 'PRICING SCALE', rungs, isOffMarket = false, listingStatus }: PriceLadderProps) {
-  const priceLabel = useMemo(() => getPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
-  const listRung = rungs.find(r => r.type === 'list')
-  const breakevenRung = rungs.find(r => r.type === 'breakeven')
-  const targetRung = rungs.find(r => r.type === 'target')
+export function PriceLadder({
+  title = 'PRICING SCALE',
+  rungs,
+  isOffMarket = false,
+  listingStatus,
+}: PriceLadderProps) {
+  const priceLabel = useMemo(
+    () => getPriceLabel(isOffMarket, listingStatus),
+    [isOffMarket, listingStatus],
+  )
+  const listRung = rungs.find((r) => r.type === 'list')
+  const breakevenRung = rungs.find((r) => r.type === 'breakeven')
+  const targetRung = rungs.find((r) => r.type === 'target')
 
   return (
     <div className="border-2 border-teal dark:border-accent-500 rounded-2xl p-3 mb-4 bg-white dark:bg-slate-900/50">
@@ -38,20 +46,28 @@ export function PriceLadder({ title = 'PRICING SCALE', rungs, isOffMarket = fals
       <div className="flex gap-2">
         {/* Left: Labels Column */}
         <div className="flex flex-col justify-between text-[9px] text-slate-400 dark:text-white/40 font-semibold w-12 shrink-0 py-1">
-          <span className="leading-tight">SELLER<br/>PRICING</span>
-          <span className="leading-tight">INVESTOR<br/>OPPORTUNITY</span>
+          <span className="leading-tight">
+            SELLER
+            <br />
+            PRICING
+          </span>
+          <span className="leading-tight">
+            INVESTOR
+            <br />
+            OPPORTUNITY
+          </span>
         </div>
 
         {/* Center: Gradient + Markers */}
         <div className="flex flex-col items-center shrink-0">
-          <div 
+          <div
             className="w-8 rounded-t-full relative"
-            style={{ 
+            style={{
               height: 200,
               background: `linear-gradient(to bottom,
                 #e53935 0%, #ff5722 15%, #ff9800 30%,
                 #ffc107 40%, #8bc34a 55%, #4caf50 65%,
-                #26a69a 75%, #00acc1 85%, #1e88e5 100%)`
+                #26a69a 75%, #00acc1 85%, #1e88e5 100%)`,
             }}
           >
             {/* List marker - top right */}
@@ -62,12 +78,15 @@ export function PriceLadder({ title = 'PRICING SCALE', rungs, isOffMarket = fals
             <div className="absolute w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)] top-[55%] left-[-5px]" />
           </div>
           {/* Arrow */}
-          <div style={{
-            width: 0, height: 0,
-            borderLeft: '16px solid transparent',
-            borderRight: '16px solid transparent',
-            borderTop: '28px solid #1565c0',
-          }} />
+          <div
+            style={{
+              width: 0,
+              height: 0,
+              borderLeft: '16px solid transparent',
+              borderRight: '16px solid transparent',
+              borderTop: '28px solid #1565c0',
+            }}
+          />
         </div>
 
         {/* Right: Price Info */}
@@ -80,7 +99,9 @@ export function PriceLadder({ title = 'PRICING SCALE', rungs, isOffMarket = fals
                 <span>Target</span>
               </div>
               <div className="text-[9px] text-green-500/80 truncate">{targetRung.description}</div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white">{formatCurrency(targetRung.price)}</div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">
+                {formatCurrency(targetRung.price)}
+              </div>
             </div>
           )}
 
@@ -89,8 +110,12 @@ export function PriceLadder({ title = 'PRICING SCALE', rungs, isOffMarket = fals
             <div>
               <div className="text-xs font-bold text-orange-500">Income Value</div>
               <div className="text-[9px] text-slate-500 dark:text-white/50">$0 Cash Flow</div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white">{formatCurrency(breakevenRung.price)}</div>
-              <div className="text-[9px] text-slate-500 dark:text-white/50">{Math.round(breakevenRung.percentOfList)}%</div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">
+                {formatCurrency(breakevenRung.price)}
+              </div>
+              <div className="text-[9px] text-slate-500 dark:text-white/50">
+                {Math.round(breakevenRung.percentOfList)}%
+              </div>
             </div>
           )}
 
@@ -98,8 +123,12 @@ export function PriceLadder({ title = 'PRICING SCALE', rungs, isOffMarket = fals
           {listRung && (
             <div>
               <div className="text-xs font-bold text-red-500">{priceLabel}</div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white">{formatCurrency(listRung.price)}</div>
-              <div className="text-[9px] text-slate-500 dark:text-white/50">{Math.round(listRung.percentOfList)}%</div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">
+                {formatCurrency(listRung.price)}
+              </div>
+              <div className="text-[9px] text-slate-500 dark:text-white/50">
+                {Math.round(listRung.percentOfList)}%
+              </div>
             </div>
           )}
         </div>
@@ -119,20 +148,51 @@ export function generatePriceLadder(
   incomeValue: number,
   incomeValueName: string = 'Income Value',
   incomeValueDescription: string = '$0 monthly cash flow',
-  openingOfferPercent: number = 0.70,
-  priceLabel: string = 'List Price'
+  openingOfferPercent: number = 0.7,
+  priceLabel: string = 'List Price',
 ): PriceRung[] {
-  const ninetyPercent = listPrice * 0.90
+  const ninetyPercent = listPrice * 0.9
   const openingOffer = listPrice * openingOfferPercent
 
   const rungs: PriceRung[] = [
-    { type: 'list', name: priceLabel, description: 'Current asking price', price: listPrice, percentOfList: 100 },
-    { type: 'ninety', name: '90% of List', description: 'Common investor threshold', price: ninetyPercent, percentOfList: 90 },
-    { type: 'breakeven', name: incomeValueName, description: incomeValueDescription, price: incomeValue, percentOfList: (incomeValue / listPrice) * 100 },
-    { type: 'target', name: `🎯 ${targetName}`, description: targetDescription, price: targetPrice, percentOfList: (targetPrice / listPrice) * 100, isHighlighted: true },
-    { type: 'offer', name: 'Offer', description: 'Initial offer starting point', price: openingOffer, percentOfList: openingOfferPercent * 100 }
+    {
+      type: 'list',
+      name: priceLabel,
+      description: 'Current asking price',
+      price: listPrice,
+      percentOfList: 100,
+    },
+    {
+      type: 'ninety',
+      name: '90% of List',
+      description: 'Common investor threshold',
+      price: ninetyPercent,
+      percentOfList: 90,
+    },
+    {
+      type: 'breakeven',
+      name: incomeValueName,
+      description: incomeValueDescription,
+      price: incomeValue,
+      percentOfList: (incomeValue / listPrice) * 100,
+    },
+    {
+      type: 'target',
+      name: `🎯 ${targetName}`,
+      description: targetDescription,
+      price: targetPrice,
+      percentOfList: (targetPrice / listPrice) * 100,
+      isHighlighted: true,
+    },
+    {
+      type: 'offer',
+      name: 'Offer',
+      description: 'Initial offer starting point',
+      price: openingOffer,
+      percentOfList: openingOfferPercent * 100,
+    },
   ]
-  
+
   return rungs.sort((a, b) => b.price - a.price)
 }
 
@@ -145,7 +205,11 @@ interface PriceLadderCompactProps {
   openingOffer: number
 }
 
-export function PriceLadderCompact({ listPrice, targetPrice, openingOffer }: PriceLadderCompactProps) {
+export function PriceLadderCompact({
+  listPrice,
+  targetPrice,
+  openingOffer,
+}: PriceLadderCompactProps) {
   const targetPercent = Math.round((targetPrice / listPrice) * 100)
 
   return (
@@ -163,7 +227,9 @@ export function PriceLadderCompact({ listPrice, targetPrice, openingOffer }: Pri
       <span className="text-gray-400 dark:text-white/30">→</span>
       <div className="flex items-center gap-1">
         <div className="w-2 h-2 rounded-full bg-teal" />
-        <span className="text-gray-600 dark:text-white/60">{formatCompactCurrency(openingOffer)}</span>
+        <span className="text-gray-600 dark:text-white/60">
+          {formatCompactCurrency(openingOffer)}
+        </span>
       </div>
     </div>
   )

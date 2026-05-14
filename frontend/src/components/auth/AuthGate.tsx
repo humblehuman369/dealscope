@@ -46,9 +46,7 @@ export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthG
 
   if (isLoading) {
     return (
-      <div className="opacity-30 pointer-events-none select-none animate-pulse">
-        {children}
-      </div>
+      <div className="opacity-30 pointer-events-none select-none animate-pulse">{children}</div>
     )
   }
 
@@ -75,11 +73,12 @@ export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthG
 
   return (
     <div className="relative overflow-hidden" style={{ maxHeight: 320 }}>
-      <div className="blur-sm pointer-events-none select-none opacity-40">
-        {children}
-      </div>
+      <div className="blur-sm pointer-events-none select-none opacity-40">{children}</div>
       {/* Gradient fade — reinforces "there's more behind the gate" */}
-      <div className="absolute inset-x-0 bottom-0 h-32 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, var(--surface-base))' }} />
+      <div
+        className="absolute inset-x-0 bottom-0 h-32 pointer-events-none"
+        style={{ background: 'linear-gradient(to bottom, transparent, var(--surface-base))' }}
+      />
       {/* CTA — pinned near top so it's immediately visible */}
       <div className="absolute inset-0 flex flex-col items-center pt-10">
         <Link
@@ -94,7 +93,9 @@ export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthG
           <LogIn size={15} />
           {label}
         </Link>
-        <p className="mt-3 text-xs" style={{ color: 'var(--text-label)' }}>Free account — no credit card required</p>
+        <p className="mt-3 text-xs" style={{ color: 'var(--text-label)' }}>
+          Free account — no credit card required
+        </p>
       </div>
     </div>
   )

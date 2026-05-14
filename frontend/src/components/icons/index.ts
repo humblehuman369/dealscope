@@ -1,1 +1,1 @@
-export { IQBrainIcon } from './IQBrainIcon';
+export { IQBrainIcon } from './IQBrainIcon'

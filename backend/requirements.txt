@@ -23,9 +23,17 @@ python-dotenv==1.0.0
 # ===========================================
 sqlalchemy[asyncio]==2.0.25
 alembic==1.13.1
-# Using psycopg3 instead of asyncpg - better SSL/connection handling
-# binary = bundled libpq, pool = async connection pooling
+# Using psycopg3 (psycopg) for the async runtime path —
+# better SSL / connection handling than asyncpg.
+#   binary = bundled libpq, pool = async connection pooling
 psycopg[binary,pool]==3.1.18
+# psycopg2-binary covers SQLAlchemy 2.0.x sync DBAPI fallback paths
+# (e.g. async_engine_from_config in alembic env.py creates a sync
+# engine internally for migrations; on this SQLAlchemy version the
+# `psycopg` dialect does not fully cover the sync side, so it imports
+# psycopg2). Production runtime uses psycopg3 only; this is test/migration
+# infrastructure only.
+psycopg2-binary>=2.9,<3
 
 # ===========================================
 # NEW: Authentication & Security
@@ -89,12 +97,22 @@ apscheduler>=3.10,<4.0
 # ===========================================
 # Testing
 # ===========================================
-pytest==8.0.0
-pytest-asyncio==0.23.3
+# pytest-asyncio 0.23.3 + pytest 8.0.0 raise
+# `AttributeError: 'Package' object has no attribute 'obj'` at collection time.
+# Fixed in pytest-asyncio 0.24+; pytest 8.2+ is the matching baseline.
+pytest>=8.2,<9
+pytest-asyncio>=0.24,<1
 pytest-cov==4.1.0
 aiosqlite==0.19.0  # Async SQLite for testing
 testcontainers[postgres]>=4.0
 httpx==0.26.0      # TestClient async support
+
+# ===========================================
+# Lint (kept here so CI installs the same version we develop against;
+# the lint job currently does `pip install ruff` unpinned which causes
+# silent regressions on every ruff release).
+# ===========================================
+ruff==0.15.12
 
 # ===========================================
 # Load Testing (optional — install separately)

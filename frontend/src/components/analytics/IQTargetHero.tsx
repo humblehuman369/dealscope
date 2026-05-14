@@ -6,12 +6,12 @@ import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 /**
  * IQTargetHero Component
- * 
+ *
  * The hero element displaying the IQ Buy Price - the recommended entry point
  * for a profitable investment. Features a two-column layout with:
  * - Left: Price info (title, price, savings, insight)
  * - Right: Assumptions card with editable inputs
- * 
+ *
  * This is the "crown jewel" of the analytics redesign, showing users exactly
  * what price they should target for their chosen strategy.
  */
@@ -53,9 +53,9 @@ export function IQTargetHero({
   badgeText = 'IQ Buy Price',
   labelText = 'Your profitable entry point',
   monthlyRent = 2500,
-  downPaymentPct = 0.20,
+  downPaymentPct = 0.2,
   interestRate = 0.0725,
-  onAssumptionsChange
+  onAssumptionsChange,
 }: IQTargetHeroProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedRent, setEditedRent] = useState(monthlyRent)
@@ -82,21 +82,16 @@ export function IQTargetHero({
     <div className="relative overflow-hidden rounded-2xl p-5 md:p-6 mb-4 border-2 border-teal/40 dark:border-accent-500/40 bg-white dark:bg-white/[0.02]">
       {/* Two-column layout on larger screens */}
       <div className="flex flex-col md:flex-row gap-6 items-start">
-        
         {/* Left Side - Price Info */}
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Title Row */}
           <div className="flex items-center gap-2 mb-1">
             <Target className="w-[18px] h-[18px] text-teal" />
-            <span className="text-sm font-semibold text-teal">
-              {badgeText}
-            </span>
+            <span className="text-sm font-semibold text-teal">{badgeText}</span>
           </div>
-          
+
           {/* Subtitle */}
-          <div className="text-[13px] text-slate-500 dark:text-white/50 mb-4">
-            {labelText}
-          </div>
+          <div className="text-[13px] text-slate-500 dark:text-white/50 mb-4">{labelText}</div>
 
           {/* Buy Price */}
           <div className="text-[44px] font-extrabold text-slate-900 dark:text-white leading-none mb-2 tracking-[-2px]">
@@ -128,7 +123,9 @@ export function IQTargetHero({
         </div>
 
         {/* Right Side - Assumptions Card */}
-        <div className={`w-full md:w-auto md:min-w-[200px] md:max-w-[280px] flex-shrink-0 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 transition-all duration-300 ${isEditing ? 'md:min-w-[260px]' : ''}`}>
+        <div
+          className={`w-full md:w-auto md:min-w-[200px] md:max-w-[280px] flex-shrink-0 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 transition-all duration-300 ${isEditing ? 'md:min-w-[260px]' : ''}`}
+        >
           {/* Header */}
           <div className="text-[11px] font-medium text-slate-500 dark:text-white/40 mb-3.5 pb-2.5 border-b border-slate-200 dark:border-white/[0.06]">
             Buy Price based on these values
@@ -140,15 +137,21 @@ export function IQTargetHero({
               <div className="flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-500 dark:text-white/50">Monthly Rent</span>
-                  <span className="text-sm font-semibold text-teal">{formatCurrency(monthlyRent)}</span>
+                  <span className="text-sm font-semibold text-teal">
+                    {formatCurrency(monthlyRent)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-500 dark:text-white/50">Down Payment</span>
-                  <span className="text-sm font-semibold text-teal">{Math.round(downPaymentPct * 100)}%</span>
+                  <span className="text-sm font-semibold text-teal">
+                    {Math.round(downPaymentPct * 100)}%
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-500 dark:text-white/50">Interest Rate</span>
-                  <span className="text-sm font-semibold text-teal">{(interestRate * 100).toFixed(2)}%</span>
+                  <span className="text-sm font-semibold text-teal">
+                    {(interestRate * 100).toFixed(2)}%
+                  </span>
                 </div>
               </div>
 
@@ -168,7 +171,9 @@ export function IQTargetHero({
             <div className="flex flex-col gap-3">
               {/* Monthly Rent Input */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium text-slate-500 dark:text-white/40">Monthly Rent</label>
+                <label className="text-[11px] font-medium text-slate-500 dark:text-white/40">
+                  Monthly Rent
+                </label>
                 <input
                   type="text"
                   value={`$${editedRent.toLocaleString()}`}
@@ -182,7 +187,9 @@ export function IQTargetHero({
 
               {/* Down Payment Input */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium text-slate-500 dark:text-white/40">Down Payment</label>
+                <label className="text-[11px] font-medium text-slate-500 dark:text-white/40">
+                  Down Payment
+                </label>
                 <input
                   type="text"
                   value={`${editedDownPayment}%`}
@@ -196,7 +203,9 @@ export function IQTargetHero({
 
               {/* Interest Rate Input */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium text-slate-500 dark:text-white/40">Interest Rate</label>
+                <label className="text-[11px] font-medium text-slate-500 dark:text-white/40">
+                  Interest Rate
+                </label>
                 <input
                   type="text"
                   value={`${editedInterestRate.toFixed(2)}%`}
@@ -233,7 +242,7 @@ export function IQTargetHero({
 
 /**
  * IQTargetHeroCompact Component
- * 
+ *
  * A more compact version for use in comparison views or smaller spaces.
  */
 
@@ -248,7 +257,7 @@ export function IQTargetHeroCompact({
   targetPrice,
   discountPercent,
   primaryMetric,
-  primaryLabel
+  primaryLabel,
 }: IQTargetHeroCompactProps) {
   return (
     <div className="relative overflow-hidden rounded-xl p-4 text-center border border-[rgba(0,212,255,0.25)] bg-white/[0.02]">
@@ -258,15 +267,13 @@ export function IQTargetHeroCompact({
           IQ Target
         </span>
       </div>
-      
-      <div className="text-xl font-bold text-white mb-0.5">
-        {formatCurrency(targetPrice)}
-      </div>
-      
+
+      <div className="text-xl font-bold text-white mb-0.5">{formatCurrency(targetPrice)}</div>
+
       <div className="text-[0.65rem] text-white/50 mb-2">
         {Math.round(discountPercent)}% below list
       </div>
-      
+
       <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
         <div>
           <div className="text-sm font-bold text-[#00D4AA]">{primaryMetric}</div>

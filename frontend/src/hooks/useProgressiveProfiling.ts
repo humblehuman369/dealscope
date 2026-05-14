@@ -2,7 +2,7 @@
 
 /**
  * useProgressiveProfiling Hook
- * 
+ *
  * Manages progressive profiling state and determines when to show profile prompts.
  * Shows one question after each analysis until profile is complete.
  */
@@ -39,7 +39,7 @@ export function useProgressiveProfiling() {
   // Load state from localStorage
   useEffect(() => {
     if (typeof window === 'undefined') return
-    
+
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
@@ -71,7 +71,7 @@ export function useProgressiveProfiling() {
 
   // Check if profile is complete
   const isProfileComplete = useCallback(() => {
-    return QUESTION_ORDER.every(q => state.completedQuestions.includes(q))
+    return QUESTION_ORDER.every((q) => state.completedQuestions.includes(q))
   }, [state.completedQuestions])
 
   // Track that an analysis was completed
@@ -85,7 +85,7 @@ export function useProgressiveProfiling() {
     // Determine if we should show a prompt
     // Show after 1st analysis, then after 2nd, then after 3rd
     const nextQuestion = getNextQuestion()
-    
+
     // Don't show if profile is complete
     if (!nextQuestion) return
 
@@ -101,24 +101,31 @@ export function useProgressiveProfiling() {
   }, [state, saveState, getNextQuestion])
 
   // Handle answer
-  const handleAnswer = useCallback((answer: any) => {
-    if (!currentQuestion) return
+  const handleAnswer = useCallback(
+    (answer: any) => {
+      if (!currentQuestion) return
 
-    const newState = {
-      ...state,
-      completedQuestions: [...state.completedQuestions, currentQuestion],
-      ...(answer.investment_experience && { experience: answer.investment_experience }),
-      ...(answer.preferred_strategies && { strategies: answer.preferred_strategies }),
-      ...(answer.investment_budget_min !== undefined && { budgetMin: answer.investment_budget_min }),
-      ...(answer.investment_budget_max !== undefined && { budgetMax: answer.investment_budget_max }),
-    }
-    saveState(newState)
-    setShowPrompt(false)
-    setCurrentQuestion(null)
+      const newState = {
+        ...state,
+        completedQuestions: [...state.completedQuestions, currentQuestion],
+        ...(answer.investment_experience && { experience: answer.investment_experience }),
+        ...(answer.preferred_strategies && { strategies: answer.preferred_strategies }),
+        ...(answer.investment_budget_min !== undefined && {
+          budgetMin: answer.investment_budget_min,
+        }),
+        ...(answer.investment_budget_max !== undefined && {
+          budgetMax: answer.investment_budget_max,
+        }),
+      }
+      saveState(newState)
+      setShowPrompt(false)
+      setCurrentQuestion(null)
 
-    // Sync with backend if user is logged in
-    syncWithBackend(answer)
-  }, [state, currentQuestion, saveState])
+      // Sync with backend if user is logged in
+      syncWithBackend(answer)
+    },
+    [state, currentQuestion, saveState],
+  )
 
   // Handle skip
   const handleSkip = useCallback(() => {
@@ -153,13 +160,13 @@ export function useProgressiveProfiling() {
     showPrompt,
     currentQuestion,
     isProfileComplete: isProfileComplete(),
-    
+
     // Profile data
     experience: state.experience,
     strategies: state.strategies,
     budgetMin: state.budgetMin,
     budgetMax: state.budgetMax,
-    
+
     // Actions
     trackAnalysis,
     handleAnswer,

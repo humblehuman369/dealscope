@@ -1,23 +1,23 @@
-'use client';
+'use client'
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { AddressAutocomplete } from '@/components/AddressAutocomplete';
-import { useTheme } from '@/context/ThemeContext';
-import './dealgapiq-gateway.css';
+import React, { useState, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { AddressAutocomplete } from '@/components/AddressAutocomplete'
+import { useTheme } from '@/context/ThemeContext'
+import './dealgapiq-gateway.css'
 
-type Step = 'start' | 'address' | 'scan';
+type Step = 'start' | 'address' | 'scan'
 
 interface DealGapIQGatewayProps {
   /** Which step to open to (skip "start" if user already chose) */
-  initialStep?: Step;
-  onClose: () => void;
-  onScanProperty?: () => void;
+  initialStep?: Step
+  onClose: () => void
+  onScanProperty?: () => void
 }
 
 const IQIcon: React.FC<{ size?: number; className?: string }> = ({ size = 64, className = '' }) => {
-  const { theme } = useTheme();
-  const src = theme === 'dark' ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png';
+  const { theme } = useTheme()
+  const src = theme === 'dark' ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png'
   return (
     <img
       src={src}
@@ -27,59 +27,63 @@ const IQIcon: React.FC<{ size?: number; className?: string }> = ({ size = 64, cl
       className={className}
       style={{ objectFit: 'contain' }}
     />
-  );
-};
+  )
+}
 
-export function DealGapIQGateway({ initialStep = 'start', onClose, onScanProperty }: DealGapIQGatewayProps) {
-  const router = useRouter();
-  const [activeStep, setActiveStep] = useState<Step>(initialStep);
-  const [addressInput, setAddressInput] = useState('');
-  const [condition, setCondition] = useState(30);
-  const [locationPremium, setLocationPremium] = useState(70);
+export function DealGapIQGateway({
+  initialStep = 'start',
+  onClose,
+  onScanProperty,
+}: DealGapIQGatewayProps) {
+  const router = useRouter()
+  const [activeStep, setActiveStep] = useState<Step>(initialStep)
+  const [addressInput, setAddressInput] = useState('')
+  const [condition, setCondition] = useState(30)
+  const [locationPremium, setLocationPremium] = useState(70)
 
   // Sync internal step when initialStep prop changes (e.g. reopening to a different step)
   useEffect(() => {
-    setActiveStep(initialStep);
-  }, [initialStep]);
+    setActiveStep(initialStep)
+  }, [initialStep])
 
   const stepClass = (step: Step): string =>
-    `gw-step-transition ${activeStep === step ? 'gw-active-step' : 'gw-hidden-step'}`;
+    `gw-step-transition ${activeStep === step ? 'gw-active-step' : 'gw-hidden-step'}`
 
   const getConditionLabel = useCallback((): string => {
-    if (condition < 33) return 'Needs Rehab (-$85k)';
-    if (condition < 66) return 'Average Condition';
-    return 'Turnkey (+$40k)';
-  }, [condition]);
+    if (condition < 33) return 'Needs Rehab (-$85k)'
+    if (condition < 66) return 'Average Condition'
+    return 'Turnkey (+$40k)'
+  }, [condition])
 
   const getLocationLabel = useCallback((): string => {
-    if (locationPremium < 33) return 'Below Average (-3%)';
-    if (locationPremium < 66) return 'Standard Market';
-    return 'High Demand (+5%)';
-  }, [locationPremium]);
+    if (locationPremium < 33) return 'Below Average (-3%)'
+    if (locationPremium < 66) return 'Standard Market'
+    return 'High Demand (+5%)'
+  }, [locationPremium])
 
   const handleGenerateBaseline = () => {
-    if (!addressInput.trim()) return;
+    if (!addressInput.trim()) return
     const params = new URLSearchParams({
       address: addressInput.trim(),
       condition: String(condition),
       location: String(locationPremium),
-    });
-    router.push(`/discovery?${params.toString()}`);
-  };
+    })
+    router.push(`/discovery?${params.toString()}`)
+  }
 
   const handleScanNow = () => {
     if (onScanProperty) {
-      onScanProperty();
+      onScanProperty()
     }
-    onClose();
-  };
+    onClose()
+  }
 
   // Close on backdrop click
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   return (
     <div className="gw-overlay" onClick={handleBackdropClick}>
@@ -88,7 +92,6 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
       <div className="gw-card">
         {/* Body */}
         <div className="gw-body" style={{ padding: '2rem' }}>
-
           {/* Step 1: Start */}
           <div className={stepClass('start')}>
             <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
@@ -103,7 +106,12 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
               <button className="gw-method-btn" onClick={() => setActiveStep('address')}>
                 <div className="gw-icon-circle">
                   <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -116,7 +124,12 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
               <button className="gw-method-btn" onClick={() => setActiveStep('scan')}>
                 <div className="gw-icon-circle">
                   <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -137,14 +150,22 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
                 </div>
                 <div>
                   <h3>Fine-Tune Your Scan.</h3>
-                  <p className="gw-subline">These two factors shift your Income Value the most. Set them before you scan for a sharper result.</p>
+                  <p className="gw-subline">
+                    These two factors shift your Income Value the most. Set them before you scan for
+                    a sharper result.
+                  </p>
                 </div>
               </div>
 
               <div className="gw-address-input-wrap">
                 <div className="gw-search-icon" style={{ left: 20 }}>
                   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
                   </svg>
                 </div>
                 <AddressAutocomplete
@@ -161,7 +182,9 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
               <div className="gw-slider-group">
                 <div className="gw-slider-header">
                   <label>Property Condition</label>
-                  <span className={`gw-slider-badge ${condition < 66 ? 'gw-warning' : 'gw-brand-badge'}`}>
+                  <span
+                    className={`gw-slider-badge ${condition < 66 ? 'gw-warning' : 'gw-brand-badge'}`}
+                  >
                     {getConditionLabel()}
                   </span>
                 </div>
@@ -173,14 +196,18 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
                   onChange={(e) => setCondition(Number(e.target.value))}
                 />
                 <div className="gw-slider-scale">
-                  <span>Distressed</span><span>Average</span><span>Turnkey</span>
+                  <span>Distressed</span>
+                  <span>Average</span>
+                  <span>Turnkey</span>
                 </div>
               </div>
 
               <div className="gw-slider-group">
                 <div className="gw-slider-header">
                   <label>Location Premium</label>
-                  <span className={`gw-slider-badge ${locationPremium >= 66 ? 'gw-brand-badge' : 'gw-warning'}`}>
+                  <span
+                    className={`gw-slider-badge ${locationPremium >= 66 ? 'gw-brand-badge' : 'gw-warning'}`}
+                  >
                     {getLocationLabel()}
                   </span>
                 </div>
@@ -192,12 +219,16 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
                   onChange={(e) => setLocationPremium(Number(e.target.value))}
                 />
                 <div className="gw-slider-scale">
-                  <span>Poor</span><span>Standard</span><span>Premium</span>
+                  <span>Poor</span>
+                  <span>Standard</span>
+                  <span>Premium</span>
                 </div>
               </div>
 
               <div className="gw-btn-row">
-                <button className="gw-btn-back" onClick={() => setActiveStep('start')}>Back</button>
+                <button className="gw-btn-back" onClick={() => setActiveStep('start')}>
+                  Back
+                </button>
                 <button
                   className="gw-btn-primary"
                   onClick={handleGenerateBaseline}
@@ -205,7 +236,12 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
                 >
                   <span>Generate Baseline</span>
                   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
                   </svg>
                 </button>
               </div>
@@ -221,14 +257,19 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
                 </div>
                 <div>
                   <h3>Fine-Tune Your Scan.</h3>
-                  <p className="gw-subline">These two factors shift your Income Value the most. Set them before you scan for a sharper result.</p>
+                  <p className="gw-subline">
+                    These two factors shift your Income Value the most. Set them before you scan for
+                    a sharper result.
+                  </p>
                 </div>
               </div>
 
               <div className="gw-slider-group">
                 <div className="gw-slider-header">
                   <label>Property Condition</label>
-                  <span className={`gw-slider-badge ${condition < 66 ? 'gw-warning' : 'gw-brand-badge'}`}>
+                  <span
+                    className={`gw-slider-badge ${condition < 66 ? 'gw-warning' : 'gw-brand-badge'}`}
+                  >
                     {getConditionLabel()}
                   </span>
                 </div>
@@ -240,14 +281,18 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
                   onChange={(e) => setCondition(Number(e.target.value))}
                 />
                 <div className="gw-slider-scale">
-                  <span>Distressed</span><span>Average</span><span>Turnkey</span>
+                  <span>Distressed</span>
+                  <span>Average</span>
+                  <span>Turnkey</span>
                 </div>
               </div>
 
               <div className="gw-slider-group">
                 <div className="gw-slider-header">
                   <label>Location Premium</label>
-                  <span className={`gw-slider-badge ${locationPremium >= 66 ? 'gw-brand-badge' : 'gw-warning'}`}>
+                  <span
+                    className={`gw-slider-badge ${locationPremium >= 66 ? 'gw-brand-badge' : 'gw-warning'}`}
+                  >
                     {getLocationLabel()}
                   </span>
                 </div>
@@ -259,26 +304,34 @@ export function DealGapIQGateway({ initialStep = 'start', onClose, onScanPropert
                   onChange={(e) => setLocationPremium(Number(e.target.value))}
                 />
                 <div className="gw-slider-scale">
-                  <span>Poor</span><span>Standard</span><span>Premium</span>
+                  <span>Poor</span>
+                  <span>Standard</span>
+                  <span>Premium</span>
                 </div>
               </div>
 
               <div className="gw-btn-row">
-                <button className="gw-btn-back" onClick={() => setActiveStep('start')}>Back</button>
+                <button className="gw-btn-back" onClick={() => setActiveStep('start')}>
+                  Back
+                </button>
                 <button className="gw-btn-primary" onClick={handleScanNow}>
                   <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
                   </svg>
                   <span>Scan Now</span>
                 </button>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default DealGapIQGateway;
+export default DealGapIQGateway

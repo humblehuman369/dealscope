@@ -34,9 +34,7 @@ function resolveBackendUrl(): string {
 
   if (publicApiUrl) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn(
-        '[server-env] BACKEND_URL is not set, falling back to NEXT_PUBLIC_API_URL.',
-      )
+      console.warn('[server-env] BACKEND_URL is not set, falling back to NEXT_PUBLIC_API_URL.')
     }
     return publicApiUrl
   }

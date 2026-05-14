@@ -45,11 +45,11 @@ class RehabBudget(Base):
         DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC)
     )
 
-    saved_property: Mapped["SavedProperty"] = relationship("SavedProperty", back_populates="rehab_budget")
-    lines: Mapped[list["BudgetLine"]] = relationship(
+    saved_property: Mapped[SavedProperty] = relationship("SavedProperty", back_populates="rehab_budget")
+    lines: Mapped[list[BudgetLine]] = relationship(
         "BudgetLine", back_populates="budget", cascade="all, delete-orphan", order_by="BudgetLine.sort_order"
     )
-    expenses: Mapped[list["BudgetExpense"]] = relationship(
+    expenses: Mapped[list[BudgetExpense]] = relationship(
         "BudgetExpense", back_populates="budget", cascade="all, delete-orphan"
     )
 
@@ -77,8 +77,8 @@ class BudgetLine(Base):
     pct_complete: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=Decimal("0"))
     sort_order: Mapped[int] = mapped_column(default=0)
 
-    budget: Mapped["RehabBudget"] = relationship("RehabBudget", back_populates="lines")
-    expenses: Mapped[list["BudgetExpense"]] = relationship("BudgetExpense", back_populates="budget_line")
+    budget: Mapped[RehabBudget] = relationship("RehabBudget", back_populates="lines")
+    expenses: Mapped[list[BudgetExpense]] = relationship("BudgetExpense", back_populates="budget_line")
 
 
 class BudgetExpense(Base):
@@ -108,7 +108,7 @@ class BudgetExpense(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
-    budget: Mapped["RehabBudget"] = relationship("RehabBudget", back_populates="expenses")
-    budget_line: Mapped["BudgetLine | None"] = relationship("BudgetLine", back_populates="expenses")
-    receipt_document: Mapped["Document | None"] = relationship("Document")
-    created_by: Mapped["User"] = relationship("User")
+    budget: Mapped[RehabBudget] = relationship("RehabBudget", back_populates="expenses")
+    budget_line: Mapped[BudgetLine | None] = relationship("BudgetLine", back_populates="expenses")
+    receipt_document: Mapped[Document | None] = relationship("Document")
+    created_by: Mapped[User] = relationship("User")

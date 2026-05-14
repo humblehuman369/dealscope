@@ -257,9 +257,7 @@ describe('API Client', () => {
 
       const { apiRequest } = await import('@/lib/api-client')
 
-      await expect(
-        apiRequest('/api/v1/test', { skipAuth: true }),
-      ).rejects.toThrow('Unauthorized')
+      await expect(apiRequest('/api/v1/test', { skipAuth: true })).rejects.toThrow('Unauthorized')
 
       // Only 1 call — no refresh attempt
       expect(fetchMock).toHaveBeenCalledTimes(1)

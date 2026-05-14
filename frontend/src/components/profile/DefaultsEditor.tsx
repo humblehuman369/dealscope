@@ -2,7 +2,7 @@
 
 /**
  * DefaultsEditor Component
- * 
+ *
  * Allows authenticated users to customize their default investment assumptions.
  * These preferences are saved to their profile and used across all calculations.
  */
@@ -36,7 +36,7 @@ const EDITABLE_DEFAULTS: SliderConfig[] = [
     label: 'Default Down Payment',
     description: 'Your typical down payment percentage',
     min: 0.05,
-    max: 0.50,
+    max: 0.5,
     step: 0.05,
     isPercentage: true,
   },
@@ -116,7 +116,7 @@ const EDITABLE_DEFAULTS: SliderConfig[] = [
     label: 'Property Appreciation',
     description: 'Expected annual appreciation',
     min: 0,
-    max: 0.10,
+    max: 0.1,
     step: 0.01,
     isPercentage: true,
   },
@@ -127,7 +127,7 @@ const EDITABLE_DEFAULTS: SliderConfig[] = [
     label: 'Rent Growth',
     description: 'Expected annual rent increase',
     min: 0,
-    max: 0.10,
+    max: 0.1,
     step: 0.01,
     isPercentage: true,
   },
@@ -150,11 +150,15 @@ function formatValue(value: number, config: SliderConfig): string {
 function getValue(
   assumptions: Partial<AllAssumptions> | null,
   systemDefaults: AllAssumptions | null,
-  config: SliderConfig
+  config: SliderConfig,
 ): number {
   // Check user overrides first
   if (assumptions) {
-    if (config.category === 'appreciation_rate' || config.category === 'rent_growth_rate' || config.category === 'expense_growth_rate') {
+    if (
+      config.category === 'appreciation_rate' ||
+      config.category === 'rent_growth_rate' ||
+      config.category === 'expense_growth_rate'
+    ) {
       const value = (assumptions as any)[config.category]
       if (value !== undefined) return value
     } else {
@@ -165,10 +169,14 @@ function getValue(
       }
     }
   }
-  
+
   // Fall back to system defaults
   if (systemDefaults) {
-    if (config.category === 'appreciation_rate' || config.category === 'rent_growth_rate' || config.category === 'expense_growth_rate') {
+    if (
+      config.category === 'appreciation_rate' ||
+      config.category === 'rent_growth_rate' ||
+      config.category === 'expense_growth_rate'
+    ) {
       return (systemDefaults as any)[config.category] ?? config.min
     } else {
       const categoryObj = systemDefaults[config.category]
@@ -177,7 +185,7 @@ function getValue(
       }
     }
   }
-  
+
   return config.min
 }
 
@@ -187,66 +195,68 @@ interface DefaultsEditorProps {
   showContainer?: boolean
 }
 
-export function DefaultsEditor({ onClose, showHeader = true, showContainer = true }: DefaultsEditorProps) {
-  const {
-    assumptions,
-    hasCustomizations,
-    loading,
-    error,
-    updateAssumptions,
-    resetToDefaults,
-  } = useUserAssumptions()
-  
+export function DefaultsEditor({
+  onClose,
+  showHeader = true,
+  showContainer = true,
+}: DefaultsEditorProps) {
+  const { assumptions, hasCustomizations, loading, error, updateAssumptions, resetToDefaults } =
+    useUserAssumptions()
+
   const [systemDefaults, setSystemDefaults] = useState<AllAssumptions | null>(null)
   const [localChanges, setLocalChanges] = useState<Partial<AllAssumptions>>({})
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
-  
+
   // Fetch system defaults for comparison
   useEffect(() => {
     defaultsService.getDefaults().then(setSystemDefaults).catch(console.error)
   }, [])
-  
+
   // Merge local changes with saved assumptions
   const mergedAssumptions = { ...assumptions, ...localChanges }
-  
+
   const hasUnsavedChanges = Object.keys(localChanges).length > 0
-  
+
   const handleSliderChange = useCallback((config: SliderConfig, value: number) => {
     setLocalChanges((prev) => {
       const newChanges = { ...prev }
-      
-      if (config.category === 'appreciation_rate' || config.category === 'rent_growth_rate' || config.category === 'expense_growth_rate') {
-        (newChanges as any)[config.category] = value
+
+      if (
+        config.category === 'appreciation_rate' ||
+        config.category === 'rent_growth_rate' ||
+        config.category === 'expense_growth_rate'
+      ) {
+        ;(newChanges as any)[config.category] = value
       } else {
         if (!newChanges[config.category]) {
           newChanges[config.category] = {} as any
         }
-        (newChanges[config.category] as any)[config.field] = value
+        ;(newChanges[config.category] as any)[config.field] = value
       }
-      
+
       return newChanges
     })
-    
+
     // Clear any previous save status
     setSaveSuccess(false)
     setSaveError(null)
   }, [])
-  
+
   const handleSave = useCallback(async () => {
     if (!hasUnsavedChanges) return
-    
+
     setIsSaving(true)
     setSaveError(null)
     setSaveSuccess(false)
-    
+
     try {
       await updateAssumptions(localChanges)
       setLocalChanges({})
       setSaveSuccess(true)
-      
+
       // Auto-dismiss success message
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (err) {
@@ -255,12 +265,12 @@ export function DefaultsEditor({ onClose, showHeader = true, showContainer = tru
       setIsSaving(false)
     }
   }, [localChanges, hasUnsavedChanges, updateAssumptions])
-  
+
   const handleReset = useCallback(async () => {
     setShowResetConfirm(false)
     setIsSaving(true)
     setSaveError(null)
-    
+
     try {
       await resetToDefaults()
       setLocalChanges({})
@@ -272,19 +282,19 @@ export function DefaultsEditor({ onClose, showHeader = true, showContainer = tru
       setIsSaving(false)
     }
   }, [resetToDefaults])
-  
+
   if (!defaultsService.isAuthenticated()) {
     return (
       <div className="p-6 bg-[var(--surface-card)] border border-[rgba(251,191,36,0.35)] rounded-lg">
         <h3 className="text-[var(--status-warning)] font-semibold mb-2">Sign in Required</h3>
         <p className="text-[var(--text-secondary)] text-sm">
-          Please sign in to customize your default investment assumptions.
-          Your preferences will be saved and applied to all calculations.
+          Please sign in to customize your default investment assumptions. Your preferences will be
+          saved and applied to all calculations.
         </p>
       </div>
     )
   }
-  
+
   if (loading && !systemDefaults) {
     return (
       <div className="p-6 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg animate-pulse">
@@ -297,13 +307,21 @@ export function DefaultsEditor({ onClose, showHeader = true, showContainer = tru
       </div>
     )
   }
-  
+
   return (
-    <div className={showContainer ? 'bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] overflow-hidden' : ''}>
+    <div
+      className={
+        showContainer
+          ? 'bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] overflow-hidden'
+          : ''
+      }
+    >
       {showHeader && (
         <div className="px-6 py-4 border-b border-[var(--border-default)] bg-[var(--surface-card)] flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-[var(--text-heading)]">Default Assumptions</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-heading)]">
+              Default Assumptions
+            </h2>
             <p className="text-sm text-[var(--text-secondary)]">
               Customize your investment calculation defaults
             </p>
@@ -314,13 +332,18 @@ export function DefaultsEditor({ onClose, showHeader = true, showContainer = tru
               className="text-[var(--text-label)] hover:text-[var(--text-secondary)] transition-colors"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           )}
         </div>
       )}
-      
+
       <div className={showContainer ? 'p-6' : ''}>
         {/* Status Messages */}
         {error && (
@@ -328,31 +351,41 @@ export function DefaultsEditor({ onClose, showHeader = true, showContainer = tru
             {error.message}
           </div>
         )}
-        
+
         {saveError && (
           <div className="mb-4 p-3 bg-[rgba(248,113,113,0.10)] border border-[rgba(248,113,113,0.25)] rounded-lg text-[var(--status-negative)] text-sm">
             {saveError}
           </div>
         )}
-        
+
         {saveSuccess && (
           <div className="mb-4 p-3 bg-[rgba(52,211,153,0.10)] border border-[rgba(52,211,153,0.25)] rounded-lg text-[var(--status-positive)] text-sm flex items-center gap-2">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             Preferences saved successfully
           </div>
         )}
-        
+
         {hasCustomizations && !hasUnsavedChanges && (
           <div className="mb-4 p-3 bg-[rgba(56,189,248,0.10)] border border-[rgba(56,189,248,0.25)] rounded-lg text-[var(--accent-sky)] text-sm flex items-center gap-2">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             Using your custom defaults
           </div>
         )}
-        
+
         {/* Sliders */}
         <div className="space-y-6">
           {/* Financing Section */}
@@ -361,7 +394,7 @@ export function DefaultsEditor({ onClose, showHeader = true, showContainer = tru
               Financing
             </h3>
             <div className="space-y-4">
-              {EDITABLE_DEFAULTS.filter(c => c.category === 'financing').map((config) => (
+              {EDITABLE_DEFAULTS.filter((c) => c.category === 'financing').map((config) => (
                 <SliderInput
                   key={config.key}
                   config={config}
@@ -372,14 +405,14 @@ export function DefaultsEditor({ onClose, showHeader = true, showContainer = tru
               ))}
             </div>
           </div>
-          
+
           {/* Operating Section */}
           <div>
             <h3 className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wider mb-3">
               Operating Expenses
             </h3>
             <div className="space-y-4">
-              {EDITABLE_DEFAULTS.filter(c => c.category === 'operating').map((config) => (
+              {EDITABLE_DEFAULTS.filter((c) => c.category === 'operating').map((config) => (
                 <SliderInput
                   key={config.key}
                   config={config}
@@ -390,15 +423,15 @@ export function DefaultsEditor({ onClose, showHeader = true, showContainer = tru
               ))}
             </div>
           </div>
-          
+
           {/* Growth Section */}
           <div>
             <h3 className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wider mb-3">
               Growth Rates
             </h3>
             <div className="space-y-4">
-              {EDITABLE_DEFAULTS.filter(c => 
-                c.category === 'appreciation_rate' || c.category === 'rent_growth_rate'
+              {EDITABLE_DEFAULTS.filter(
+                (c) => c.category === 'appreciation_rate' || c.category === 'rent_growth_rate',
               ).map((config) => (
                 <SliderInput
                   key={config.key}
@@ -411,7 +444,7 @@ export function DefaultsEditor({ onClose, showHeader = true, showContainer = tru
             </div>
           </div>
         </div>
-        
+
         {/* Action Buttons */}
         <div className="mt-8 flex items-center justify-between border-t border-[var(--border-default)] pt-6">
           <button
@@ -421,7 +454,7 @@ export function DefaultsEditor({ onClose, showHeader = true, showContainer = tru
           >
             Reset to Defaults
           </button>
-          
+
           <button
             onClick={handleSave}
             disabled={isSaving || !hasUnsavedChanges}
@@ -431,8 +464,20 @@ export function DefaultsEditor({ onClose, showHeader = true, showContainer = tru
             {isSaving ? (
               <>
                 <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
                 </svg>
                 Saving...
               </>
@@ -467,7 +512,7 @@ function SliderInput({ config, value, systemDefault, onChange }: SliderInputProp
   const isCustomized = Math.abs(value - systemDefault) > 0.001
   const rawProgressPct = ((value - config.min) / (config.max - config.min || 1)) * 100
   const progressPct = Math.min(100, Math.max(0, rawProgressPct))
-  
+
   return (
     <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg p-4">
       <div className="flex items-center justify-between mb-2">
@@ -476,7 +521,9 @@ function SliderInput({ config, value, systemDefault, onChange }: SliderInputProp
           <p className="text-xs text-[var(--text-label)]">{config.description}</p>
         </div>
         <div className="text-right">
-          <span className={`text-lg font-semibold ${isCustomized ? 'text-[var(--accent-sky)]' : 'text-[var(--text-heading)]'}`}>
+          <span
+            className={`text-lg font-semibold ${isCustomized ? 'text-[var(--accent-sky)]' : 'text-[var(--text-heading)]'}`}
+          >
             {formatValue(value, config)}
           </span>
           {isCustomized && (
@@ -486,7 +533,7 @@ function SliderInput({ config, value, systemDefault, onChange }: SliderInputProp
           )}
         </div>
       </div>
-      
+
       <input
         type="range"
         min={config.min}
@@ -500,7 +547,7 @@ function SliderInput({ config, value, systemDefault, onChange }: SliderInputProp
           background: `linear-gradient(to right, var(--accent-sky) 0%, var(--accent-sky) ${progressPct}%, var(--surface-elevated) ${progressPct}%, var(--surface-elevated) 100%)`,
         }}
       />
-      
+
       <div className="flex justify-between text-xs text-[var(--text-label)] mt-1">
         <span>{formatValue(config.min, config)}</span>
         <span>{formatValue(config.max, config)}</span>

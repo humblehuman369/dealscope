@@ -93,7 +93,10 @@ function renderSummaryWithLinks(summary: string): React.ReactNode {
   // Compile a single regex that matches any known token (longest first so
   // "Appraiser page" wins over "Appraiser").
   const sorted = [...SUMMARY_LINKS].sort((a, b) => b.token.length - a.token.length)
-  const pattern = new RegExp(`(${sorted.map((l) => l.token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g')
+  const pattern = new RegExp(
+    `(${sorted.map((l) => l.token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
+    'g',
+  )
   const parts = summary.split(pattern)
   return parts.map((part, idx) => {
     const link = sorted.find((l) => l.token === part)
@@ -112,28 +115,51 @@ function renderSummaryWithLinks(summary: string): React.ReactNode {
 }
 
 /**
- * Renders a single math-carrying bullet line with inline accent coloring on the
- * arrow ("→") and any trailing percentage delta ("+0.5%", "−4.4%"). The bullet
- * marker dot is a separate flex child so the marker color tracks the family
- * accent without relying on browser-specific `::marker` styling.
+ * Renders a single bullet line as a clean "Label: value" pair, stripping any
+ * "before → after" formula and trailing signed-% delta the backend may emit.
+ * The bullet marker dot is a separate flex child so the marker color tracks
+ * the family accent without relying on browser-specific `::marker` styling.
+ *
+ * Examples of input → rendered remainder:
+ *   "Offer price: $577K → $577K"                     → "$577K"
+ *   "1st mortgage: $404K → $317K @ 6.0%"             → "$317K @ 6.0%"
+ *   "Target Rent: $3,510 + $555 → $4,065 +15.8%"     → "$4,065"
+ *   "Monthly P&I: $2,422 → $1,925"                   → "$1,925"
+ *   "Seller 2nd: $87K (0%, 5yr balloon)"             → "$87K (0%, 5yr balloon)"
+ *
+ * Rationale: option cards should communicate the resulting deal terms, not
+ * the underlying math. The before → after formula is useful for math-savvy
+ * users on the Strategy worksheet, but on the Discovery cards it adds noise.
  */
 function MathBullet({ text, accent }: { text: string; accent: string }): ReactNode {
   // Detect a leading "Label:" prefix so we can render it with a lighter weight
-  // than the numeric value. This keeps the eye on the math (e.g. the price /
-  // rate / dollar amount) and makes the labels feel like supporting context
-  // rather than competing emphasis. Labels can include letters, digits, spaces
-  // and a few punctuation chars (e.g. "Monthly P&I", "1st mortgage").
+  // than the numeric value. Keeps the eye on the dollar amount and makes the
+  // labels feel like supporting context rather than competing emphasis.
+  // Labels can include letters, digits, spaces and a few punctuation chars
+  // (e.g. "Monthly P&I", "1st mortgage").
   const LABEL_RE = /^([A-Za-z0-9][A-Za-z0-9 &/.]*:)(\s*)([\s\S]*)$/
   const labelMatch = text.match(LABEL_RE)
   const labelPart = labelMatch ? labelMatch[1] : null
-  const remainder = labelMatch ? labelMatch[3] : text
-  // Split on tokens we want to color: the arrow and any signed % delta at the
-  // end of the string. Capturing groups keep the matched delimiters in the
-  // resulting array so we can render them as styled spans.
-  // Match either Unicode → / -> with surrounding whitespace, or a signed %
-  // with optional + / − / - prefix.
-  const PARTS_RE = /(\s+→\s+|\s+->\s+|\s[+−-]\d+(?:\.\d+)?%)/g
-  const segments = remainder.split(PARTS_RE).filter((s) => s !== '')
+  let remainder = labelMatch ? labelMatch[3] : text
+
+  // Strip "before → after" formula: keep only the part after the LAST arrow.
+  // Using a stateful regex so multi-arrow inputs (rare but possible) collapse
+  // to the final value, which is always the rightmost segment.
+  const ARROW_RE = /\s+(→|->)\s+/g
+  let lastArrow: RegExpExecArray | null = null
+  let m: RegExpExecArray | null
+  while ((m = ARROW_RE.exec(remainder)) !== null) {
+    lastArrow = m
+  }
+  if (lastArrow) {
+    remainder = remainder.substring(lastArrow.index + lastArrow[0].length)
+  }
+
+  // Strip a trailing signed-% delta (e.g. " +15.8%", " −24.4%"). These are
+  // meaningful only when paired with a before-value; without the arrow they
+  // become orphaned noise.
+  remainder = remainder.replace(/\s[+−-]\d+(?:\.\d+)?%\s*$/, '').trim()
+
   return (
     <li
       style={{
@@ -178,23 +204,7 @@ function MathBullet({ text, accent }: { text: string; accent: string }): ReactNo
             {labelPart}
           </span>
         )}
-        {segments.map((seg, i) => {
-          if (/^\s+(→|->)\s+$/.test(seg)) {
-            return (
-              <span key={i} style={{ color: accent, fontWeight: 700 }}>
-                {' → '}
-              </span>
-            )
-          }
-          if (/^\s[+−-]\d+(?:\.\d+)?%$/.test(seg)) {
-            return (
-              <span key={i} style={{ color: accent, fontWeight: 700, marginLeft: 4 }}>
-                {seg.trim()}
-              </span>
-            )
-          }
-          return <span key={i}>{seg}</span>
-        })}
+        {remainder}
       </span>
     </li>
   )
@@ -224,22 +234,12 @@ function PathCard({
 }) {
   const accent = FAMILY_ACCENT[structure.family] || 'var(--accent-sky)'
   const savingsLabel = formatSavings(structure.monthlySavings)
-  const showAttorneyLine =
-    structure.family === 'strategy_switch' || structure.family === 'blended'
-  // For the Rent Increase ("income") card, split a combined "Target Rent: <formula>"
-  // bullet into two lines (label + formula) so the long arithmetic expression
-  // doesn't visually compete with the label. The backend template already emits
-  // the split form, but this normalizer keeps the UI working against older
-  // backend builds that still emit a single concatenated bullet.
-  const bullets = (() => {
-    const raw = structure.bullets && structure.bullets.length > 0 ? structure.bullets : null
-    if (!raw) return null
-    if (structure.family === 'income' && raw.length === 1) {
-      const match = raw[0].match(/^(Target Rent:)\s*\u00A0?\s*(\$.+)$/)
-      if (match) return [match[1], match[2]]
-    }
-    return raw
-  })()
+  const showAttorneyLine = structure.family === 'strategy_switch' || structure.family === 'blended'
+  // Bullets are passed through unmodified. (Older builds split a long "Target
+  // Rent: <arithmetic>" bullet across two lines for readability; that's no
+  // longer needed since MathBullet strips the formula and renders only the
+  // resulting amount, which fits on a single line.)
+  const bullets = structure.bullets && structure.bullets.length > 0 ? structure.bullets : null
 
   // Split "Saves $147/mo" into verb + amount so the dollar value carries
   // the visual weight on the ribbon while "SAVES" reads as a soft label.
@@ -264,51 +264,10 @@ function PathCard({
         minHeight: 0,
       }}
     >
-      {/* RIBBON HEADER — Bold uppercase "OPTION N → SAVES $X/MO" on a
-          dark band that anchors the card identity. The arrow takes the
-          family accent so each option is instantly distinguishable across
-          the four-card row. */}
-      <div
-        style={{
-          background: 'var(--surface-elevated)',
-          borderBottom: `2px solid ${accent}`,
-          padding: '10px 16px',
-        }}
-      >
-        <span
-          className="flex items-center flex-wrap gap-x-2 gap-y-1"
-          style={{
-            fontSize: 13,
-            fontWeight: 800,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            lineHeight: 1.2,
-            color: 'var(--text-heading)',
-          }}
-        >
-          <span>{`Option ${index + 1}`}</span>
-          {savingsParts && (
-            <>
-              <span
-                aria-hidden="true"
-                style={{ color: accent, fontWeight: 900, fontSize: 15 }}
-              >
-                →
-              </span>
-              <span className="tabular-nums">
-                <span style={{ fontWeight: 600, opacity: 0.85 }}>
-                  {savingsParts.verb}
-                </span>
-                {savingsParts.amount && (
-                  <span style={{ fontWeight: 800 }}>{' '}{savingsParts.amount}</span>
-                )}
-              </span>
-            </>
-          )}
-        </span>
-      </div>
-
-      {/* BODY */}
+      {/* CARD BODY — single padded column. The "OPTION N → SAVES $X/MO"
+          line is the first row (no separate ribbon band) so it shares the
+          same surface as the title and bullets, matching the reference
+          design where header chrome dissolves into the card. */}
       <div
         style={{
           padding: '16px 18px 14px',
@@ -319,6 +278,36 @@ function PathCard({
           minHeight: 0,
         }}
       >
+        {/* OPTION LINE — "Option N → Saves $X/mo" rendered in the same
+            sans-serif rhythm as the body bullets (no uppercase, no extra
+            letter-spacing, weight pulled down from 800 to 700). The family
+            accent stays on the option label and the arrow so per-card
+            identity is preserved through color rather than chrome. */}
+        <span
+          className="flex items-center flex-wrap gap-x-2 gap-y-1"
+          style={{
+            fontSize: 15,
+            fontWeight: 700,
+            lineHeight: 1.2,
+            color: 'var(--text-heading)',
+          }}
+        >
+          <span style={{ color: accent }}>{`Option ${index + 1}`}</span>
+          {savingsParts && (
+            <>
+              <span aria-hidden="true" style={{ color: accent, fontWeight: 800, fontSize: 17 }}>
+                →
+              </span>
+              <span className="tabular-nums">
+                <span style={{ fontWeight: 500, opacity: 0.85 }}>{savingsParts.verb}</span>
+                {savingsParts.amount && (
+                  <span style={{ fontWeight: 700 }}> {savingsParts.amount}</span>
+                )}
+              </span>
+            </>
+          )}
+        </span>
+
         {/* FAMILY TITLE — strategy name as the body heading
             (e.g. "Creative Finance", "Capital Stack"). */}
         <h4
@@ -366,11 +355,10 @@ function PathCard({
           </p>
         )}
 
-        {/* CONTEXT — selection rationale + summary, then italic asterisk
-            caveat (always visible, small/muted), then attorney CTA when
-            relevant. Caveat is no longer collapsible: it's important enough
-            to read at a glance, like the asterisked assumption note in the
-            reference design. */}
+        {/* CONTEXT — selection rationale + summary + asterisk caveat
+            (always visible, body weight, no italic — matches the reference
+            design where the assumption note reads at the same level as the
+            narrative line above it) + attorney CTA when relevant. */}
         <div className="flex flex-1 min-h-0 flex-col gap-2">
           {structure.selectionReason && structure.family !== 'blended' && (
             <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: 'var(--text-heading)' }}>
@@ -391,10 +379,9 @@ function PathCard({
             <p
               style={{
                 margin: 0,
-                fontSize: 12.5,
-                lineHeight: 1.5,
-                color: 'var(--text-secondary)',
-                fontStyle: 'italic',
+                fontSize: 13,
+                lineHeight: 1.55,
+                color: 'var(--text-body)',
               }}
             >
               <span aria-hidden="true">* </span>
@@ -402,7 +389,9 @@ function PathCard({
             </p>
           )}
           {showAttorneyLine && (
-            <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+            <p
+              style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-secondary)' }}
+            >
               Get this contract reviewed by a creative-finance attorney —{' '}
               <Link
                 href="/legal/find-attorney"
@@ -578,8 +567,7 @@ export function FourPathsPanel({
                 color: 'var(--text-heading)',
               }}
             >
-              <span style={{ color: 'var(--accent-sky-light)' }}>{lead}</span>{' '}
-              {tail}
+              <span style={{ color: 'var(--accent-sky-light)' }}>{lead}</span> {tail}
             </p>
           )
         })()}
@@ -588,7 +576,12 @@ export function FourPathsPanel({
             type="button"
             onClick={handleReset}
             className="cursor-pointer text-xs font-medium underline-offset-2 hover:underline"
-            style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+            style={{
+              color: 'var(--accent-sky)',
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+            }}
           >
             Reset preferences ({sessionDismissed.length})
           </button>

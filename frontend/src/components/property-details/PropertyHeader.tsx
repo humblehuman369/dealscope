@@ -12,13 +12,16 @@ interface PropertyHeaderProps {
 
 /**
  * PropertyHeader Component
- * 
+ *
  * Displays the main property information including address,
  * price, and key stats (beds, baths, sqft, year built).
  * Dark fintech theme with radial gradient hero depth.
  */
 export function PropertyHeader({ property }: PropertyHeaderProps) {
-  const priceLabel = useMemo(() => getPriceLabel(property.isOffMarket, property.listingStatus), [property.isOffMarket, property.listingStatus])
+  const priceLabel = useMemo(
+    () => getPriceLabel(property.isOffMarket, property.listingStatus),
+    [property.isOffMarket, property.listingStatus],
+  )
   return (
     <div
       className="rounded-[14px] p-5 relative overflow-hidden bg-white dark:bg-black"
@@ -30,7 +33,8 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
       <div className="relative flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
         <div>
           <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-heading)' }}>
-            {property.address.streetAddress}, {property.address.city}, {property.address.state} {property.address.zipcode}
+            {property.address.streetAddress}, {property.address.city}, {property.address.state}{' '}
+            {property.address.zipcode}
           </h1>
           {property.address.neighborhood && (
             <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
@@ -58,27 +62,51 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
       >
         <div className="flex items-center gap-2">
           <Bed size={18} style={{ color: 'var(--text-secondary)' }} />
-          <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-heading)' }}>{property.bedrooms}</span>
-          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>beds</span>
+          <span
+            className="text-sm font-semibold tabular-nums"
+            style={{ color: 'var(--text-heading)' }}
+          >
+            {property.bedrooms}
+          </span>
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            beds
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <Bath size={18} style={{ color: 'var(--text-secondary)' }} />
-          <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-heading)' }}>{property.bathrooms}</span>
-          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>baths</span>
+          <span
+            className="text-sm font-semibold tabular-nums"
+            style={{ color: 'var(--text-heading)' }}
+          >
+            {property.bathrooms}
+          </span>
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            baths
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <Square size={18} style={{ color: 'var(--text-secondary)' }} />
-          <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-heading)' }}>
+          <span
+            className="text-sm font-semibold tabular-nums"
+            style={{ color: 'var(--text-heading)' }}
+          >
             {formatNumber(property.livingArea)}
           </span>
-          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>sqft</span>
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            sqft
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <Calendar size={18} style={{ color: 'var(--text-secondary)' }} />
-          <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-heading)' }}>
+          <span
+            className="text-sm font-semibold tabular-nums"
+            style={{ color: 'var(--text-heading)' }}
+          >
             {property.yearBuilt}
           </span>
-          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>built</span>
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            built
+          </span>
         </div>
         {property.daysOnZillow !== undefined && (
           <div
@@ -108,17 +136,36 @@ export function PropertyHeaderSkeleton() {
     >
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
         <div className="flex-1">
-          <div className="h-7 w-3/4 rounded animate-pulse mb-2" style={{ backgroundColor: 'var(--surface-elevated)' }} />
-          <div className="h-4 w-1/2 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+          <div
+            className="h-7 w-3/4 rounded animate-pulse mb-2"
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
+          />
+          <div
+            className="h-4 w-1/2 rounded animate-pulse"
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
+          />
         </div>
         <div className="text-left sm:text-right">
-          <div className="h-7 w-32 rounded animate-pulse mb-1" style={{ backgroundColor: 'var(--surface-elevated)' }} />
-          <div className="h-3 w-16 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+          <div
+            className="h-7 w-32 rounded animate-pulse mb-1"
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
+          />
+          <div
+            className="h-3 w-16 rounded animate-pulse"
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
+          />
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-4 sm:gap-6 py-3" style={{ borderTop: `1px solid var(--border-subtle)` }}>
+      <div
+        className="flex flex-wrap items-center gap-4 sm:gap-6 py-3"
+        style={{ borderTop: `1px solid var(--border-subtle)` }}
+      >
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-5 w-20 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+          <div
+            key={i}
+            className="h-5 w-20 rounded animate-pulse"
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
+          />
         ))}
       </div>
     </div>

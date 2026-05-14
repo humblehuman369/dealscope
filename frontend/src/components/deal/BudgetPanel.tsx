@@ -16,10 +16,7 @@ import {
   useRehabBudgetSummary,
   useUpdateBudgetLinePctComplete,
 } from '@/hooks/useSavedProperties'
-import type {
-  RehabBudgetLineSummary,
-  RehabBudgetSummary,
-} from '@/types/rehabBudget'
+import type { RehabBudgetLineSummary, RehabBudgetSummary } from '@/types/rehabBudget'
 
 const fmt = (n: string | number) =>
   new Intl.NumberFormat('en-US', {
@@ -59,8 +56,7 @@ function BudgetVsActualBoard({
   summary: RehabBudgetSummary
 }) {
   const analysis = parseFloat(summary.baseline_total) || 0
-  const budgeted =
-    parseFloat(summary.lines_subtotal) + parseFloat(summary.contingency_amount)
+  const budgeted = parseFloat(summary.lines_subtotal) + parseFloat(summary.contingency_amount)
   const toDate = parseFloat(summary.actual_total) || 0
   const projected = parseFloat(summary.projected_total ?? summary.actual_total) || 0
   const variance = parseFloat(summary.variance) || 0
@@ -124,10 +120,10 @@ function Stat({
     accent === 'sky'
       ? 'text-[var(--accent-sky)]'
       : accent === 'negative'
-      ? 'text-[var(--status-negative)]'
-      : accent === 'positive'
-      ? 'text-[var(--status-positive)]'
-      : 'text-[var(--text-heading)]'
+        ? 'text-[var(--status-negative)]'
+        : accent === 'positive'
+          ? 'text-[var(--status-positive)]'
+          : 'text-[var(--text-heading)]'
   return (
     <div>
       <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)]">
@@ -176,13 +172,7 @@ function CategorySection({
   )
 }
 
-function BudgetLineRow({
-  line,
-  propertyId,
-}: {
-  line: RehabBudgetLineSummary
-  propertyId: string
-}) {
+function BudgetLineRow({ line, propertyId }: { line: RehabBudgetLineSummary; propertyId: string }) {
   const update = useUpdateBudgetLinePctComplete()
   const [pct, setPct] = useState<string>(line.pct_complete ?? '0')
 

@@ -7,7 +7,7 @@ import { DesktopPropertyMiniCard } from './DesktopPropertyMiniCard'
 import { DesktopIQTargetHero } from './DesktopIQTargetHero'
 import { DesktopTuneSection } from './DesktopTuneSection'
 import { DesktopSpectrumBar } from './DesktopSpectrumBar'
-import { 
+import {
   StrategySelector,
   DEFAULT_STRATEGIES,
   SubTabNav,
@@ -33,25 +33,22 @@ import {
   StrategyGrid,
   StrategyPrompt,
   createSliderConfig,
-  formatters
+  formatters,
 } from '../index'
 import {
   STRMetricsContent,
   BRRRRMetricsContent,
   FlipMetricsContent,
   HouseHackMetricsContent,
-  WholesaleMetricsContent
+  WholesaleMetricsContent,
 } from '../StrategyMetricsContent'
 import { StrategyId, SubTabId, BenchmarkConfig, TuneGroup } from '../types'
-import { 
-  TargetAssumptions,
-  IQTargetResult 
-} from '@/lib/iqTarget'
+import { TargetAssumptions, IQTargetResult } from '@/lib/iqTarget'
 import { useIQAnalysis } from '@/hooks/useIQAnalysis'
-import { 
-  calculate10YearProjections, 
+import {
+  calculate10YearProjections,
   getDefaultProjectionAssumptions,
-  YearlyProjection 
+  YearlyProjection,
 } from '@/lib/projections'
 
 // Import desktop styles
@@ -128,20 +125,19 @@ interface DesktopStrategyAnalyticsContainerProps {
 function createDefaultAssumptions(property: PropertyData): TargetAssumptions {
   const arv = property.arv || property.listPrice * 1.15
   const rehabCost = arv * 0.05
-  
+
   return {
     listPrice: property.listPrice,
-    downPaymentPct: 0.20,
+    downPaymentPct: 0.2,
     interestRate: 0.0725,
     loanTermYears: 30,
     closingCostsPct: 0.03,
     monthlyRent: property.monthlyRent || 0,
     averageDailyRate: property.averageDailyRate || 150,
-    occupancyRate: property.occupancyRate || 0.70,
+    occupancyRate: property.occupancyRate || 0.7,
     vacancyRate: 0.05,
     propertyTaxes: property.propertyTaxes || property.listPrice * 0.012,
-    insurance:
-      property.insurance ?? property.listPrice * OPERATING_INSURANCE_PCT,
+    insurance: property.insurance ?? property.listPrice * OPERATING_INSURANCE_PCT,
     managementPct: 0.08,
     maintenancePct: 0.05,
     rehabCost,
@@ -150,7 +146,7 @@ function createDefaultAssumptions(property: PropertyData): TargetAssumptions {
     sellingCostsPct: 0.08,
     roomsRented: Math.max(1, (property.bedrooms || 3) - 1),
     totalBedrooms: property.bedrooms || 3,
-    wholesaleFeePct: 0.007
+    wholesaleFeePct: 0.007,
   }
 }
 
@@ -158,16 +154,16 @@ function createDefaultAssumptions(property: PropertyData): TargetAssumptions {
 // MAIN DESKTOP COMPONENT
 // ============================================
 
-export function DesktopStrategyAnalyticsContainer({ 
-  property, 
+export function DesktopStrategyAnalyticsContainer({
+  property,
   onBack,
-  initialStrategy 
+  initialStrategy,
 }: DesktopStrategyAnalyticsContainerProps) {
   const router = useRouter()
-  
+
   // Store the original list price - this never changes and is used for slider min/max
   const originalListPrice = useMemo(() => property.listPrice, [property.listPrice])
-  
+
   // State
   const [activeStrategy, setActiveStrategy] = useState<StrategyId | null>(initialStrategy || null)
   const [activeSubTab, setActiveSubTab] = useState<SubTabId>('metrics')
@@ -175,14 +171,14 @@ export function DesktopStrategyAnalyticsContainer({
   const [assumptions, setAssumptions] = useState(() => createDefaultAssumptions(property))
   const [isSaved, setIsSaved] = useState(false)
   const [showLOI, setShowLOI] = useState(false)
-  
+
   // Check sessionStorage to see if welcome modal has been shown this session
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
     if (typeof window === 'undefined') return false
     const hasSeenWelcome = sessionStorage.getItem('iq-welcome-shown')
     return !hasSeenWelcome
   })
-  
+
   // Handle closing the welcome modal and saving to sessionStorage
   const handleCloseWelcome = useCallback(() => {
     setShowWelcomeModal(false)
@@ -190,7 +186,7 @@ export function DesktopStrategyAnalyticsContainer({
       sessionStorage.setItem('iq-welcome-shown', 'true')
     }
   }, [])
-  
+
   // Compute IQ Target + metrics via backend (debounced)
   const {
     iqTarget,
@@ -200,30 +196,30 @@ export function DesktopStrategyAnalyticsContainer({
     isLoading: isCalculating,
     error: calcError,
   } = useIQAnalysis(activeStrategy, assumptions)
-  
+
   // Current metrics based on compare view
   const currentMetrics = compareView === 'target' ? metricsAtTarget : metricsAtList
   const currentPrice = compareView === 'target' ? iqTarget?.targetPrice : assumptions.listPrice
-  
+
   // Update assumption handler
   const updateAssumption = useCallback((key: keyof TargetAssumptions, value: number) => {
-    setAssumptions(prev => ({
+    setAssumptions((prev) => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }))
   }, [])
-  
+
   // Get tabs for current strategy
   const tabs = activeStrategy ? getStrategyTabs(activeStrategy) : []
-  
+
   // Calculate 10-year projections
   const projections = useMemo(() => {
     if (!activeStrategy || !currentPrice) return null
-    
+
     const projAssumptions = getDefaultProjectionAssumptions(
       currentPrice,
       assumptions.monthlyRent,
-      assumptions.propertyTaxes
+      assumptions.propertyTaxes,
     )
     projAssumptions.downPaymentPct = assumptions.downPaymentPct
     projAssumptions.interestRate = assumptions.interestRate
@@ -231,7 +227,7 @@ export function DesktopStrategyAnalyticsContainer({
     projAssumptions.managementPct = assumptions.managementPct
     projAssumptions.maintenancePct = assumptions.maintenancePct
     projAssumptions.insurance = assumptions.insurance
-    
+
     return calculate10YearProjections(projAssumptions)
   }, [activeStrategy, currentPrice, assumptions])
 
@@ -258,7 +254,7 @@ export function DesktopStrategyAnalyticsContainer({
       navigator.share({
         title: 'DealGapIQ Analysis',
         text: `Check out this property analysis for ${property.address}`,
-        url: window.location.href
+        url: window.location.href,
       })
     }
   }
@@ -266,7 +262,7 @@ export function DesktopStrategyAnalyticsContainer({
   return (
     <div className="desktop-analytics-container">
       {/* Note: Using main app Header from layout instead of DesktopHeader to avoid double header */}
-      
+
       {/* Main Content */}
       <main className="desktop-app-content">
         {/* Property Mini Card */}
@@ -289,10 +285,7 @@ export function DesktopStrategyAnalyticsContainer({
         />
 
         {/* IQ Welcome Modal - Only shows once per session */}
-        <IQWelcomeModal
-          isOpen={showWelcomeModal && !activeStrategy}
-          onClose={handleCloseWelcome}
-        />
+        <IQWelcomeModal isOpen={showWelcomeModal && !activeStrategy} onClose={handleCloseWelcome} />
 
         {/* Landing State - No Strategy Selected */}
         {!activeStrategy && !showWelcomeModal && (
@@ -339,7 +332,7 @@ export function DesktopStrategyAnalyticsContainer({
               tabs={tabs}
               activeTab={activeSubTab}
               onChange={setActiveSubTab}
-              strategy={DEFAULT_STRATEGIES.find(s => s.id === activeStrategy)}
+              strategy={DEFAULT_STRATEGIES.find((s) => s.id === activeStrategy)}
             />
 
             {/* Tab Content */}
@@ -359,10 +352,7 @@ export function DesktopStrategyAnalyticsContainer({
               )}
 
               {activeSubTab === 'funding' && currentPrice && (
-                <DesktopFundingTabContent
-                  purchasePrice={currentPrice}
-                  assumptions={assumptions}
-                />
+                <DesktopFundingTabContent purchasePrice={currentPrice} assumptions={assumptions} />
               )}
 
               {activeSubTab === '10year' && projections && iqTarget && (
@@ -443,8 +433,18 @@ interface DesktopStrategySpecificMetricsProps {
 }
 
 function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsProps) {
-  const { strategy, iqTarget, metricsAtTarget, metricsAtList, assumptions, compareView, setCompareView, updateAssumption, originalListPrice } = props
-  
+  const {
+    strategy,
+    iqTarget,
+    metricsAtTarget,
+    metricsAtList,
+    assumptions,
+    compareView,
+    setCompareView,
+    updateAssumption,
+    originalListPrice,
+  } = props
+
   // Generate price ladder
   const priceLadder = generatePriceLadder(
     assumptions.listPrice,
@@ -454,54 +454,59 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
     iqTarget.incomeValue,
     'Income Value',
     '$0 monthly cash flow',
-    0.70
+    0.7,
   )
-  
+
   // Generate negotiation plan
   const negotiationPlan = generateNegotiationPlan(
     assumptions.listPrice,
     iqTarget.targetPrice,
-    0.70,
+    0.7,
     undefined,
     [
       LEVERAGE_POINTS.daysOnMarket(45, 28),
       LEVERAGE_POINTS.priceReduced(2),
-      LEVERAGE_POINTS.cashOffer()
-    ]
+      LEVERAGE_POINTS.cashOffer(),
+    ],
   )
-  
+
   // Returns data based on strategy
   const returnsData = useMemo(() => {
     const m = compareView === 'target' ? metricsAtTarget : metricsAtList
     if (!m) return null
-    
+
     const hasRentalMetrics = 'monthlyCashFlow' in m
-    
+
     if (hasRentalMetrics) {
-      const rentalMetrics = m as { monthlyCashFlow: number; cashOnCash: number; capRate: number; dscr: number }
+      const rentalMetrics = m as {
+        monthlyCashFlow: number
+        cashOnCash: number
+        capRate: number
+        dscr: number
+      }
       return createLTRReturns(
         rentalMetrics.monthlyCashFlow || 0,
         rentalMetrics.cashOnCash || 0,
         rentalMetrics.capRate || 0,
-        rentalMetrics.dscr || 0
+        rentalMetrics.dscr || 0,
       )
     }
     return null
   }, [strategy, compareView, metricsAtTarget, metricsAtList])
-  
+
   // Benchmarks
   const benchmarks: BenchmarkConfig[] = useMemo(() => {
     const m = compareView === 'target' ? metricsAtTarget : metricsAtList
     if (!m) return []
-    
+
     const hasRentalMetrics = 'cashOnCash' in m && 'capRate' in m && 'dscr' in m
     if (!hasRentalMetrics) return []
-    
+
     const rentalMetrics = m as { cashOnCash: number; capRate: number; dscr: number }
     const coc = rentalMetrics.cashOnCash || 0
     const cap = rentalMetrics.capRate || 0
     const dscr = rentalMetrics.dscr || 0
-    
+
     return [
       {
         id: 'coc',
@@ -513,8 +518,8 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
         zones: {
           low: { label: 'Low', range: '<5%' },
           average: { label: 'Avg', range: '8-10%' },
-          high: { label: 'High', range: '12%+' }
-        }
+          high: { label: 'High', range: '12%+' },
+        },
       },
       {
         id: 'cap',
@@ -526,8 +531,8 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
         zones: {
           low: { label: 'Low', range: '<4%' },
           average: { label: 'Avg', range: '4.5-5.5%' },
-          high: { label: 'High', range: '5.5%+' }
-        }
+          high: { label: 'High', range: '5.5%+' },
+        },
       },
       {
         id: 'dscr',
@@ -539,63 +544,66 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
         zones: {
           low: { label: 'Low', range: '<1.0' },
           average: { label: 'Avg', range: '1.2-1.5' },
-          high: { label: 'High', range: '1.5+' }
-        }
-      }
+          high: { label: 'High', range: '1.5+' },
+        },
+      },
     ]
   }, [compareView, metricsAtTarget, metricsAtList])
-  
+
   // Tune groups
-  const tuneGroups: TuneGroup[] = useMemo(() => [
-    {
-      id: 'financing',
-      title: 'Financing',
-      sliders: [
-        createSliderConfig(
-          'downPaymentPct',
-          'Down Payment',
-          assumptions.downPaymentPct,
-          0.05,
-          0.50,
-          0.01,
-          (v: number) => formatPercent(v * 100, { decimals: 0 })
-        ),
-        createSliderConfig(
-          'interestRate',
-          'Interest Rate',
-          assumptions.interestRate,
-          0.04,
-          0.12,
-          0.001,
-          (v: number) => formatPercent(v * 100)
-        )
-      ]
-    },
-    {
-      id: 'rental',
-      title: 'Rental Income',
-      sliders: [
-        createSliderConfig(
-          'monthlyRent',
-          'Monthly Rent',
-          assumptions.monthlyRent,
-          500,
-          10000,
-          50,
-          formatCurrency
-        ),
-        createSliderConfig(
-          'vacancyRate',
-          'Vacancy Rate',
-          assumptions.vacancyRate,
-          0,
-          0.15,
-          0.01,
-          (v: number) => formatPercent(v * 100, { decimals: 0 })
-        )
-      ]
-    }
-  ], [assumptions])
+  const tuneGroups: TuneGroup[] = useMemo(
+    () => [
+      {
+        id: 'financing',
+        title: 'Financing',
+        sliders: [
+          createSliderConfig(
+            'downPaymentPct',
+            'Down Payment',
+            assumptions.downPaymentPct,
+            0.05,
+            0.5,
+            0.01,
+            (v: number) => formatPercent(v * 100, { decimals: 0 }),
+          ),
+          createSliderConfig(
+            'interestRate',
+            'Interest Rate',
+            assumptions.interestRate,
+            0.04,
+            0.12,
+            0.001,
+            (v: number) => formatPercent(v * 100),
+          ),
+        ],
+      },
+      {
+        id: 'rental',
+        title: 'Rental Income',
+        sliders: [
+          createSliderConfig(
+            'monthlyRent',
+            'Monthly Rent',
+            assumptions.monthlyRent,
+            500,
+            10000,
+            50,
+            formatCurrency,
+          ),
+          createSliderConfig(
+            'vacancyRate',
+            'Vacancy Rate',
+            assumptions.vacancyRate,
+            0,
+            0.15,
+            0.01,
+            (v: number) => formatPercent(v * 100, { decimals: 0 }),
+          ),
+        ],
+      },
+    ],
+    [assumptions],
+  )
 
   return (
     <div className="space-y-5">
@@ -610,17 +618,16 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
         monthlyRent={assumptions.monthlyRent}
         downPaymentPct={assumptions.downPaymentPct}
         interestRate={assumptions.interestRate}
-        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
+        onAssumptionsChange={(key, value) =>
+          updateAssumption(key as keyof TargetAssumptions, value)
+        }
       />
 
       {/* Price Ladder */}
       <PriceLadder rungs={priceLadder} />
 
       {/* Compare Toggle */}
-      <CompareToggle
-        activeView={compareView}
-        onChange={setCompareView}
-      />
+      <CompareToggle activeView={compareView} onChange={setCompareView} />
 
       {/* Returns Grid */}
       {returnsData && (
@@ -635,10 +642,12 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
         <div className="desktop-benchmarks-header">
           <div>
             <div className="desktop-benchmarks-title">Performance Benchmarks</div>
-            <div className="desktop-benchmarks-subtitle">How this deal compares to national averages</div>
+            <div className="desktop-benchmarks-subtitle">
+              How this deal compares to national averages
+            </div>
           </div>
         </div>
-        
+
         {benchmarks.map((benchmark) => (
           <div key={benchmark.id} className="desktop-benchmark-row">
             <div className="desktop-benchmark-header">
@@ -646,7 +655,11 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
               <div className="desktop-benchmark-value-group">
                 <span className="desktop-benchmark-value">{benchmark.formattedValue}</span>
                 <span className={`desktop-benchmark-status ${benchmark.status}`}>
-                  {benchmark.status === 'high' ? 'High' : benchmark.status === 'average' ? 'Avg' : 'Low'}
+                  {benchmark.status === 'high'
+                    ? 'High'
+                    : benchmark.status === 'average'
+                      ? 'Avg'
+                      : 'Low'}
                 </span>
               </div>
             </div>
@@ -670,11 +683,11 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
           'listPrice',
           'Buy Price',
           assumptions.listPrice,
-          originalListPrice * 0.60,  // Use original list price for stable min
-          originalListPrice * 1.10,  // Use original list price for stable max (expanded range)
+          originalListPrice * 0.6, // Use original list price for stable min
+          originalListPrice * 1.1, // Use original list price for stable max (expanded range)
           1000,
           formatCurrency,
-          originalListPrice  // Use original for change indicator comparison
+          originalListPrice, // Use original for change indicator comparison
         )}
         onSliderChange={(id, value) => updateAssumption(id as keyof TargetAssumptions, value)}
         defaultOpen={false}
@@ -686,7 +699,7 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
           compareView === 'target'
             ? `At the IQ Target price, this property generates strong returns with good risk coverage.`
             : `At list price, returns are compressed. Consider negotiating toward the IQ Target.`,
-          compareView === 'target' ? 'success' : 'warning'
+          compareView === 'target' ? 'success' : 'warning',
         )}
       />
     </div>
@@ -706,7 +719,7 @@ function DesktopFundingTabContent({ purchasePrice, assumptions }: DesktopFunding
   const downPayment = purchasePrice * assumptions.downPaymentPct
   const closingCosts = purchasePrice * assumptions.closingCostsPct
   const loanAmount = purchasePrice - downPayment
-  
+
   return (
     <div className="space-y-4">
       <FundingOverview
@@ -717,11 +730,11 @@ function DesktopFundingTabContent({ purchasePrice, assumptions }: DesktopFunding
         closingCosts={closingCosts}
         purchasePrice={purchasePrice}
       />
-      
+
       <InsightCard
         data={createIQInsight(
           `With ${formatPercent(assumptions.downPaymentPct * 100, { decimals: 0 })} down, you'll need ${formatCurrency(downPayment + closingCosts)} cash to close.`,
-          'info'
+          'info',
         )}
       />
     </div>
@@ -734,20 +747,24 @@ interface DesktopProjectionsTabContentProps {
   assumptions: TargetAssumptions
 }
 
-function DesktopProjectionsTabContent({ projections, iqTarget, assumptions }: DesktopProjectionsTabContentProps) {
+function DesktopProjectionsTabContent({
+  projections,
+  iqTarget,
+  assumptions,
+}: DesktopProjectionsTabContentProps) {
   const year10 = projections[9]
   const downPayment = iqTarget.targetPrice * assumptions.downPaymentPct
   const closingCosts = iqTarget.targetPrice * assumptions.closingCostsPct
   const totalCashInvested = downPayment + closingCosts
-  
+
   const projectionRows = create10YearProjection(
     year10.cumulativeCashFlow,
     year10.cumulativePrincipal,
     year10.equityFromAppreciation,
     year10.totalEquity,
-    (year10.totalWealth / totalCashInvested) * 100
+    (year10.totalWealth / totalCashInvested) * 100,
   )
-  
+
   return (
     <div className="space-y-4">
       <HeroMetric
@@ -756,19 +773,16 @@ function DesktopProjectionsTabContent({ projections, iqTarget, assumptions }: De
           value: `${Math.round((year10.totalWealth / totalCashInvested) * 100)}%`,
           subtitle: `On ${formatCurrency(totalCashInvested)} initial investment`,
           badge: `${formatCurrency(year10.totalWealth)} Total Wealth`,
-          variant: 'success'
+          variant: 'success',
         }}
       />
-      
-      <PerformanceSection
-        title="10-Year Projection Summary"
-        rows={projectionRows}
-      />
-      
+
+      <PerformanceSection title="10-Year Projection Summary" rows={projectionRows} />
+
       <InsightCard
         data={createIQInsight(
           `Over 10 years, this property could generate ${formatCurrency(year10.cumulativeCashFlow)} in cash flow and build ${formatCurrency(year10.totalEquity)} in equity.`,
-          'success'
+          'success',
         )}
       />
     </div>
@@ -783,9 +797,19 @@ interface DesktopScoreTabContentProps {
   assumptions: TargetAssumptions
 }
 
-function DesktopScoreTabContent({ strategy, metrics, iqTarget, verdictDealScore, assumptions }: DesktopScoreTabContentProps) {
-  const hasRentalMetrics = 'monthlyCashFlow' in metrics && 'cashOnCash' in metrics && 'capRate' in metrics && 'dscr' in metrics
-  
+function DesktopScoreTabContent({
+  strategy,
+  metrics,
+  iqTarget,
+  verdictDealScore,
+  assumptions,
+}: DesktopScoreTabContentProps) {
+  const hasRentalMetrics =
+    'monthlyCashFlow' in metrics &&
+    'cashOnCash' in metrics &&
+    'capRate' in metrics &&
+    'dscr' in metrics
+
   const scoreData = useMemo(() => {
     if (verdictDealScore) {
       return dealScoreDataFromApi({
@@ -808,11 +832,11 @@ function DesktopScoreTabContent({ strategy, metrics, iqTarget, verdictDealScore,
       grade: 'C',
     })
   }, [iqTarget, verdictDealScore, assumptions])
-  
+
   // Generate strengths and weaknesses based on opportunity score
   const strengths: string[] = []
   const weaknesses: string[] = []
-  
+
   // Opportunity-based insights
   const discountNeeded = scoreData.discountPercent || 0
   if (discountNeeded <= 5) {
@@ -820,29 +844,26 @@ function DesktopScoreTabContent({ strategy, metrics, iqTarget, verdictDealScore,
   } else if (discountNeeded <= 10) {
     strengths.push('Achievable with typical negotiation')
   }
-  
+
   if (hasRentalMetrics) {
     const rentalMetrics = metrics as { monthlyCashFlow: number; cashOnCash: number; dscr: number }
     if ((rentalMetrics.monthlyCashFlow || 0) >= 300) strengths.push('Strong cash flow potential')
     if ((rentalMetrics.dscr || 0) >= 1.25) strengths.push('Good debt coverage')
-    
-    if ((rentalMetrics.monthlyCashFlow || 0) < 0) weaknesses.push('Negative cash flow at list price')
+
+    if ((rentalMetrics.monthlyCashFlow || 0) < 0)
+      weaknesses.push('Negative cash flow at list price')
     if ((rentalMetrics.dscr || 0) < 1.0) weaknesses.push('Income may not cover debt service')
   }
-  
+
   if (discountNeeded > 25) {
     weaknesses.push(`Requires ${discountNeeded.toFixed(0)}% discount - may be unrealistic`)
   } else if (discountNeeded > 15) {
     weaknesses.push(`Needs significant negotiation (${discountNeeded.toFixed(0)}% off)`)
   }
-  
+
   return (
     <div className="space-y-4">
-      <DealScoreDisplay
-        data={scoreData}
-        strengths={strengths}
-        weaknesses={weaknesses}
-      />
+      <DealScoreDisplay data={scoreData} strengths={strengths} weaknesses={weaknesses} />
     </div>
   )
 }
@@ -854,23 +875,52 @@ interface DesktopGrowthTabContentProps {
   updateAssumption: (key: keyof TargetAssumptions, value: number) => void
 }
 
-function DesktopGrowthTabContent({ projections, iqTarget, assumptions, updateAssumption }: DesktopGrowthTabContentProps) {
+function DesktopGrowthTabContent({
+  projections,
+  iqTarget,
+  assumptions,
+  updateAssumption,
+}: DesktopGrowthTabContentProps) {
   const year5 = projections[4]
   const downPayment = iqTarget.targetPrice * assumptions.downPaymentPct
-  
+
   const growthSliders: TuneGroup[] = [
     {
       id: 'growth',
       title: 'Growth Assumptions',
       isOpen: true,
       sliders: [
-        createSliderConfig('rentGrowth', 'Annual Rent Increase', assumptions.rentGrowth || 0.03, 0, 0.08, 0.005, (v: number) => formatPercent(v * 100)),
-        createSliderConfig('appreciationRate', 'Property Appreciation', assumptions.appreciationRate || 0.03, 0, 0.08, 0.005, (v: number) => formatPercent(v * 100)),
-        createSliderConfig('expenseGrowth', 'Expense Growth', assumptions.expenseGrowth || 0.02, 0, 0.06, 0.005, (v: number) => formatPercent(v * 100))
-      ]
-    }
+        createSliderConfig(
+          'rentGrowth',
+          'Annual Rent Increase',
+          assumptions.rentGrowth || 0.03,
+          0,
+          0.08,
+          0.005,
+          (v: number) => formatPercent(v * 100),
+        ),
+        createSliderConfig(
+          'appreciationRate',
+          'Property Appreciation',
+          assumptions.appreciationRate || 0.03,
+          0,
+          0.08,
+          0.005,
+          (v: number) => formatPercent(v * 100),
+        ),
+        createSliderConfig(
+          'expenseGrowth',
+          'Expense Growth',
+          assumptions.expenseGrowth || 0.02,
+          0,
+          0.06,
+          0.005,
+          (v: number) => formatPercent(v * 100),
+        ),
+      ],
+    },
   ]
-  
+
   return (
     <div className="space-y-4">
       <DesktopTuneSection
@@ -879,14 +929,14 @@ function DesktopGrowthTabContent({ projections, iqTarget, assumptions, updateAss
         onSliderChange={(id, value) => updateAssumption(id as keyof TargetAssumptions, value)}
         defaultOpen={true}
       />
-      
+
       <HeroMetric
         data={{
           label: '10-Year Equity Growth',
           value: formatCurrency(projections[9].totalEquity),
           subtitle: `Starting equity: ${formatCurrency(downPayment)}`,
           badge: `${Math.round((projections[9].totalEquity / downPayment) * 100 - 100)}% Growth`,
-          variant: 'success'
+          variant: 'success',
         }}
       />
     </div>
@@ -899,7 +949,11 @@ interface DesktopWhatIfTabContentProps {
   originalListPrice: number
 }
 
-function DesktopWhatIfTabContent({ assumptions, updateAssumption, originalListPrice }: DesktopWhatIfTabContentProps) {
+function DesktopWhatIfTabContent({
+  assumptions,
+  updateAssumption,
+  originalListPrice,
+}: DesktopWhatIfTabContentProps) {
   const tuneGroups: TuneGroup[] = [
     {
       id: 'price',
@@ -910,31 +964,71 @@ function DesktopWhatIfTabContent({ assumptions, updateAssumption, originalListPr
           'listPrice',
           'Buy Price',
           assumptions.listPrice,
-          originalListPrice * 0.60,  // Use original list price for stable min
-          originalListPrice * 1.10,  // Use original list price for stable max
+          originalListPrice * 0.6, // Use original list price for stable min
+          originalListPrice * 1.1, // Use original list price for stable max
           1000,
           formatCurrency,
-          originalListPrice  // Use original for change indicator
-        )
-      ]
+          originalListPrice, // Use original for change indicator
+        ),
+      ],
     },
     {
       id: 'financing',
       title: 'Financing Scenarios',
       sliders: [
-        createSliderConfig('downPaymentPct', 'Down Payment', assumptions.downPaymentPct, 0.05, 0.50, 0.01, (v: number) => formatPercent(v * 100, { decimals: 0 })),
-        createSliderConfig('interestRate', 'Interest Rate', assumptions.interestRate, 0.04, 0.12, 0.001, (v: number) => formatPercent(v * 100)),
-        createSliderConfig('loanTermYears', 'Loan Term', assumptions.loanTermYears, 15, 30, 5, (v) => `${v} years`)
-      ]
+        createSliderConfig(
+          'downPaymentPct',
+          'Down Payment',
+          assumptions.downPaymentPct,
+          0.05,
+          0.5,
+          0.01,
+          (v: number) => formatPercent(v * 100, { decimals: 0 }),
+        ),
+        createSliderConfig(
+          'interestRate',
+          'Interest Rate',
+          assumptions.interestRate,
+          0.04,
+          0.12,
+          0.001,
+          (v: number) => formatPercent(v * 100),
+        ),
+        createSliderConfig(
+          'loanTermYears',
+          'Loan Term',
+          assumptions.loanTermYears,
+          15,
+          30,
+          5,
+          (v) => `${v} years`,
+        ),
+      ],
     },
     {
       id: 'income',
       title: 'Income Scenarios',
       sliders: [
-        createSliderConfig('monthlyRent', 'Monthly Rent', assumptions.monthlyRent, 500, 10000, 50, formatCurrency),
-        createSliderConfig('vacancyRate', 'Vacancy Rate', assumptions.vacancyRate, 0, 0.20, 0.01, (v: number) => formatPercent(v * 100, { decimals: 0 }))
-      ]
-    }
+        createSliderConfig(
+          'monthlyRent',
+          'Monthly Rent',
+          assumptions.monthlyRent,
+          500,
+          10000,
+          50,
+          formatCurrency,
+        ),
+        createSliderConfig(
+          'vacancyRate',
+          'Vacancy Rate',
+          assumptions.vacancyRate,
+          0,
+          0.2,
+          0.01,
+          (v: number) => formatPercent(v * 100, { decimals: 0 }),
+        ),
+      ],
+    },
   ]
 
   return (
@@ -943,8 +1037,8 @@ function DesktopWhatIfTabContent({ assumptions, updateAssumption, originalListPr
         <h3 className="text-xl font-bold text-white mb-2">Sensitivity Analysis</h3>
         <p className="text-white/60">Adjust assumptions to see how they impact your returns</p>
       </div>
-      
-      {tuneGroups.map(group => (
+
+      {tuneGroups.map((group) => (
         <DesktopTuneSection
           key={group.id}
           title={group.title}
@@ -953,11 +1047,11 @@ function DesktopWhatIfTabContent({ assumptions, updateAssumption, originalListPr
           defaultOpen={group.isOpen}
         />
       ))}
-      
+
       <InsightCard
         data={createIQInsight(
           'Use these sliders to stress-test the deal under different market conditions.',
-          'tip'
+          'tip',
         )}
       />
     </div>

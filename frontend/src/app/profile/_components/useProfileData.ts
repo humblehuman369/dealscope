@@ -224,8 +224,8 @@ export function useProfileData() {
         body: { avatar_url: avatarUrl },
       })
 
-      setAccountForm(prev => ({ ...prev, avatar_url: avatarUrl }))
-      setFullUserData(prev => (prev ? { ...prev, avatar_url: avatarUrl } : prev))
+      setAccountForm((prev) => ({ ...prev, avatar_url: avatarUrl }))
+      setFullUserData((prev) => (prev ? { ...prev, avatar_url: avatarUrl } : prev))
       await refreshUser()
       setSuccess('Profile image updated successfully!')
     } catch (err) {
@@ -238,7 +238,7 @@ export function useProfileData() {
   // ── Phone number management ──────────────────
 
   const addPhoneNumber = () => {
-    setBusinessForm(prev => ({
+    setBusinessForm((prev) => ({
       ...prev,
       phone_numbers: [
         ...prev.phone_numbers,
@@ -248,14 +248,14 @@ export function useProfileData() {
   }
 
   const removePhoneNumber = (index: number) => {
-    setBusinessForm(prev => ({
+    setBusinessForm((prev) => ({
       ...prev,
       phone_numbers: prev.phone_numbers.filter((_, i) => i !== index),
     }))
   }
 
   const updatePhoneNumber = (index: number, field: keyof PhoneNumber, value: string | boolean) => {
-    setBusinessForm(prev => ({
+    setBusinessForm((prev) => ({
       ...prev,
       phone_numbers: prev.phone_numbers.map((phone, i) =>
         i === index ? { ...phone, [field]: value } : phone,
@@ -266,19 +266,19 @@ export function useProfileData() {
   // ── Strategy & market toggles ────────────────
 
   const toggleStrategy = (strategyId: string) => {
-    setInvestorForm(prev => ({
+    setInvestorForm((prev) => ({
       ...prev,
       preferred_strategies: prev.preferred_strategies.includes(strategyId)
-        ? prev.preferred_strategies.filter(s => s !== strategyId)
+        ? prev.preferred_strategies.filter((s) => s !== strategyId)
         : [...prev.preferred_strategies, strategyId],
     }))
   }
 
   const toggleMarket = (state: string) => {
-    setInvestorForm(prev => ({
+    setInvestorForm((prev) => ({
       ...prev,
       target_markets: prev.target_markets.includes(state)
-        ? prev.target_markets.filter(s => s !== state)
+        ? prev.target_markets.filter((s) => s !== state)
         : [...prev.target_markets, state],
     }))
   }

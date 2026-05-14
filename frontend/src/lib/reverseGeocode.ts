@@ -1,13 +1,13 @@
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
 export interface GeocodedProperty {
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  formattedAddress: string;
-  lat: number;
-  lng: number;
+  address: string
+  city: string
+  state: string
+  zip: string
+  formattedAddress: string
+  lat: number
+  lng: number
 }
 
 /**
@@ -21,12 +21,12 @@ export async function reverseGeocodeProperty(
   apiKey: string = GOOGLE_MAPS_API_KEY,
 ): Promise<GeocodedProperty | null> {
   try {
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat.toFixed(6)},${lng.toFixed(6)}&key=${apiKey}`;
-    const response = await fetch(url);
-    const data = await response.json();
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat.toFixed(6)},${lng.toFixed(6)}&key=${apiKey}`
+    const response = await fetch(url)
+    const data = await response.json()
 
     if (data.status !== 'OK' || !data.results?.length) {
-      return null;
+      return null
     }
 
     const streetAddress =
@@ -35,20 +35,20 @@ export async function reverseGeocodeProperty(
           r.types.includes('street_address') ||
           r.types.includes('premise') ||
           r.types.includes('subpremise'),
-      ) || data.results[0];
+      ) || data.results[0]
 
-    if (!streetAddress) return null;
+    if (!streetAddress) return null
 
     const components: Array<{ types: string[]; long_name: string; short_name: string }> =
-      streetAddress.address_components;
+      streetAddress.address_components
 
     const get = (type: string, useShort = false) => {
-      const comp = components.find((c) => c.types.includes(type));
-      return (useShort ? comp?.short_name : comp?.long_name) || '';
-    };
+      const comp = components.find((c) => c.types.includes(type))
+      return (useShort ? comp?.short_name : comp?.long_name) || ''
+    }
 
-    const streetNumber = get('street_number');
-    const route = get('route');
+    const streetNumber = get('street_number')
+    const route = get('route')
 
     return {
       address: streetNumber ? `${streetNumber} ${route}` : route,
@@ -58,9 +58,9 @@ export async function reverseGeocodeProperty(
       formattedAddress: streetAddress.formatted_address || '',
       lat: streetAddress.geometry.location.lat,
       lng: streetAddress.geometry.location.lng,
-    };
+    }
   } catch (error) {
-    console.error('Reverse geocode error:', error);
-    return null;
+    console.error('Reverse geocode error:', error)
+    return null
   }
 }

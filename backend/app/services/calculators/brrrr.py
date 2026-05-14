@@ -7,7 +7,6 @@ No imports from app.core.defaults allowed.
 from typing import Any
 
 from .common import (
-    calculate_monthly_mortgage,
     cash_needed_after_seller,
     combined_bank_and_seller_pi,
     conventional_first_lien_loan,

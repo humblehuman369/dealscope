@@ -16,13 +16,41 @@ export interface StatusConfig {
 }
 
 export const STATUS_CONFIG: Record<PropertyStatus, StatusConfig> = {
-  prospecting:     { label: 'Analyzing',            color: 'text-[var(--accent-sky)]',      bg: 'bg-[var(--color-sky-dim)]' },
-  pursuing:        { label: 'Pursuing',              color: 'text-[var(--status-info)]',     bg: 'bg-[var(--surface-elevated)]' },
-  negotiating:     { label: 'Negotiating',          color: 'text-[var(--status-warning)]',  bg: 'bg-[rgba(251,191,36,0.10)]' },
-  under_contract:  { label: 'Under Contract',       color: 'text-[var(--status-warning)]',  bg: 'bg-[rgba(251,191,36,0.18)]' },
-  owned:           { label: 'Owned',                color: 'text-[var(--status-positive)]', bg: 'bg-[rgba(52,211,153,0.10)]' },
-  passed:          { label: 'Passed',               color: 'text-[var(--text-secondary)]',  bg: 'bg-[var(--surface-elevated)]' },
-  archived:        { label: 'Archived',             color: 'text-[var(--text-label)]',      bg: 'bg-[var(--surface-elevated)]' },
+  prospecting: {
+    label: 'Analyzing',
+    color: 'text-[var(--accent-sky)]',
+    bg: 'bg-[var(--color-sky-dim)]',
+  },
+  pursuing: {
+    label: 'Pursuing',
+    color: 'text-[var(--status-info)]',
+    bg: 'bg-[var(--surface-elevated)]',
+  },
+  negotiating: {
+    label: 'Negotiating',
+    color: 'text-[var(--status-warning)]',
+    bg: 'bg-[rgba(251,191,36,0.10)]',
+  },
+  under_contract: {
+    label: 'Under Contract',
+    color: 'text-[var(--status-warning)]',
+    bg: 'bg-[rgba(251,191,36,0.18)]',
+  },
+  owned: {
+    label: 'Owned',
+    color: 'text-[var(--status-positive)]',
+    bg: 'bg-[rgba(52,211,153,0.10)]',
+  },
+  passed: {
+    label: 'Passed',
+    color: 'text-[var(--text-secondary)]',
+    bg: 'bg-[var(--surface-elevated)]',
+  },
+  archived: {
+    label: 'Archived',
+    color: 'text-[var(--text-label)]',
+    bg: 'bg-[var(--surface-elevated)]',
+  },
 }
 
 /** Pipeline stages shown on the dashboard kanban (excludes passed/archived). */

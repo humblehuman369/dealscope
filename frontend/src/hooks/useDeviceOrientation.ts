@@ -1,15 +1,15 @@
-'use client';
+'use client'
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react'
 
 interface DeviceOrientationState {
-  heading: number | null;
-  alpha: number | null;
-  beta: number | null;
-  gamma: number | null;
-  isSupported: boolean;
-  isPermissionGranted: boolean;
-  error: string | null;
+  heading: number | null
+  alpha: number | null
+  beta: number | null
+  gamma: number | null
+  isSupported: boolean
+  isPermissionGranted: boolean
+  error: string | null
 }
 
 /**
@@ -25,36 +25,35 @@ export function useDeviceOrientation() {
     isSupported: false,
     isPermissionGranted: false,
     error: null,
-  });
+  })
 
-  const [permissionRequested, setPermissionRequested] = useState(false);
+  const [permissionRequested, setPermissionRequested] = useState(false)
 
   // Check if DeviceOrientationEvent is supported
   useEffect(() => {
-    const isSupported = typeof window !== 'undefined' && 
-      'DeviceOrientationEvent' in window;
-    setState(prev => ({ ...prev, isSupported }));
-  }, []);
+    const isSupported = typeof window !== 'undefined' && 'DeviceOrientationEvent' in window
+    setState((prev) => ({ ...prev, isSupported }))
+  }, [])
 
   // Handle orientation event
   const handleOrientation = useCallback((event: DeviceOrientationEvent) => {
     // Calculate compass heading
     // On iOS, webkitCompassHeading gives the heading directly
     // On Android, we use alpha (but it's relative to initial orientation)
-    let heading: number | null = null;
+    let heading: number | null = null
 
     // Check for iOS webkitCompassHeading
-    const iosEvent = event as DeviceOrientationEvent & { webkitCompassHeading?: number };
+    const iosEvent = event as DeviceOrientationEvent & { webkitCompassHeading?: number }
     if (iosEvent.webkitCompassHeading !== undefined) {
-      heading = iosEvent.webkitCompassHeading;
+      heading = iosEvent.webkitCompassHeading
     } else if (event.alpha !== null) {
       // Android: alpha is degrees from North, but we need to adjust
       // Alpha: 0-360 where 0 is initial device orientation
       // We approximate compass heading (may need calibration)
-      heading = (360 - event.alpha) % 360;
+      heading = (360 - event.alpha) % 360
     }
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       heading: heading !== null ? Math.round(heading) : null,
       alpha: event.alpha,
@@ -62,72 +61,74 @@ export function useDeviceOrientation() {
       gamma: event.gamma,
       isPermissionGranted: true,
       error: null,
-    }));
-  }, []);
+    }))
+  }, [])
 
   // Request permission (required on iOS 13+)
   const requestPermission = useCallback(async () => {
     // Check support at call time, not from potentially stale state
-    const isCurrentlySupported = typeof window !== 'undefined' && 'DeviceOrientationEvent' in window;
-    
+    const isCurrentlySupported = typeof window !== 'undefined' && 'DeviceOrientationEvent' in window
+
     if (!isCurrentlySupported) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: 'Device orientation not supported on this device',
-      }));
-      return false;
+      }))
+      return false
     }
 
-    setPermissionRequested(true);
+    setPermissionRequested(true)
 
     // Check if we need to request permission (iOS 13+)
-    const DeviceOrientationEventWithPermission = DeviceOrientationEvent as typeof DeviceOrientationEvent & {
-      requestPermission?: () => Promise<'granted' | 'denied' | 'default'>;
-    };
+    const DeviceOrientationEventWithPermission =
+      DeviceOrientationEvent as typeof DeviceOrientationEvent & {
+        requestPermission?: () => Promise<'granted' | 'denied' | 'default'>
+      }
 
-    const hasRequestPermission = typeof DeviceOrientationEventWithPermission.requestPermission === 'function';
+    const hasRequestPermission =
+      typeof DeviceOrientationEventWithPermission.requestPermission === 'function'
 
     if (hasRequestPermission) {
       try {
-        const permission = await DeviceOrientationEventWithPermission.requestPermission!();
+        const permission = await DeviceOrientationEventWithPermission.requestPermission!()
         if (permission === 'granted') {
-          window.addEventListener('deviceorientation', handleOrientation, true);
-          setState(prev => ({ ...prev, isSupported: true }));
-          return true;
+          window.addEventListener('deviceorientation', handleOrientation, true)
+          setState((prev) => ({ ...prev, isSupported: true }))
+          return true
         } else {
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             error: 'Permission denied for device orientation',
-          }));
-          return false;
+          }))
+          return false
         }
       } catch (error) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           error: 'Failed to request orientation permission',
-        }));
-        return false;
+        }))
+        return false
       }
     } else {
       // No permission needed (Android, older iOS, desktop with DeviceOrientation)
-      window.addEventListener('deviceorientation', handleOrientation, true);
-      setState(prev => ({ ...prev, isSupported: true }));
-      return true;
+      window.addEventListener('deviceorientation', handleOrientation, true)
+      setState((prev) => ({ ...prev, isSupported: true }))
+      return true
     }
-  }, [handleOrientation]);
+  }, [handleOrientation])
 
   // Cleanup
   useEffect(() => {
     return () => {
-      window.removeEventListener('deviceorientation', handleOrientation, true);
-    };
-  }, [handleOrientation]);
+      window.removeEventListener('deviceorientation', handleOrientation, true)
+    }
+  }, [handleOrientation])
 
   // Check if device likely has a compass (mobile detection)
-  const isMobileDevice = typeof window !== 'undefined' && (
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-    ('ontouchstart' in window)
-  );
+  const isMobileDevice =
+    typeof window !== 'undefined' &&
+    (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      'ontouchstart' in window)
 
   return {
     ...state,
@@ -135,5 +136,5 @@ export function useDeviceOrientation() {
     permissionRequested,
     isMobileDevice,
     hasCompass: state.isSupported && isMobileDevice,
-  };
+  }
 }

@@ -15,9 +15,7 @@ from app.services.task_templates import template_for, template_label_for
 
 
 class TaskService:
-    async def _ensure_owns_property(
-        self, db: AsyncSession, property_id: str, user_id: str
-    ) -> SavedProperty | None:
+    async def _ensure_owns_property(self, db: AsyncSession, property_id: str, user_id: str) -> SavedProperty | None:
         """Return the property if ``user_id`` owns it, else None."""
         result = await db.execute(
             select(SavedProperty).where(
@@ -27,9 +25,7 @@ class TaskService:
         )
         return result.scalar_one_or_none()
 
-    async def list_for_property(
-        self, db: AsyncSession, property_id: str, user_id: str
-    ) -> list[PropertyTask] | None:
+    async def list_for_property(self, db: AsyncSession, property_id: str, user_id: str) -> list[PropertyTask] | None:
         """Return tasks for a property, or None if the user doesn't own it."""
         if not await self._ensure_owns_property(db, property_id, user_id):
             return None
@@ -45,9 +41,7 @@ class TaskService:
         )
         return list(result.scalars().all())
 
-    async def create(
-        self, db: AsyncSession, property_id: str, user_id: str, data: TaskCreate
-    ) -> PropertyTask | None:
+    async def create(self, db: AsyncSession, property_id: str, user_id: str, data: TaskCreate) -> PropertyTask | None:
         if not await self._ensure_owns_property(db, property_id, user_id):
             return None
         # Default sort_order = max(existing) + 1 so new tasks land at the bottom
@@ -73,9 +67,7 @@ class TaskService:
         await db.refresh(task)
         return task
 
-    async def update(
-        self, db: AsyncSession, task_id: str, user_id: str, data: TaskUpdate
-    ) -> PropertyTask | None:
+    async def update(self, db: AsyncSession, task_id: str, user_id: str, data: TaskUpdate) -> PropertyTask | None:
         # Single query: fetch task and verify ownership via the join condition.
         result = await db.execute(
             select(PropertyTask)
@@ -133,9 +125,7 @@ class TaskService:
         await db.commit()
         return True
 
-    async def seed_for_property(
-        self, db: AsyncSession, property_id: str, user_id: str
-    ) -> list[PropertyTask] | None:
+    async def seed_for_property(self, db: AsyncSession, property_id: str, user_id: str) -> list[PropertyTask] | None:
         """Create stage-templated tasks for the property's current state.
 
         Idempotent in spirit: skips template items whose title already exists
@@ -153,17 +143,13 @@ class TaskService:
 
         # Pull existing titles to dedupe — single round-trip.
         existing = await db.execute(
-            select(PropertyTask.title).where(
-                PropertyTask.saved_property_id == uuid.UUID(property_id)
-            )
+            select(PropertyTask.title).where(PropertyTask.saved_property_id == uuid.UUID(property_id))
         )
         existing_titles_lower = {t.strip().lower() for (t,) in existing.all()}
 
         # Pick a starting sort_order beyond any existing tasks.
         current_max = await db.scalar(
-            select(func.max(PropertyTask.sort_order)).where(
-                PropertyTask.saved_property_id == uuid.UUID(property_id)
-            )
+            select(func.max(PropertyTask.sort_order)).where(PropertyTask.saved_property_id == uuid.UUID(property_id))
         )
         next_order = (current_max or 0) + 1
 
@@ -300,9 +286,7 @@ class TaskService:
             )
         return out
 
-    async def summary_for_property(
-        self, db: AsyncSession, property_id: str, user_id: str
-    ) -> dict[str, int] | None:
+    async def summary_for_property(self, db: AsyncSession, property_id: str, user_id: str) -> dict[str, int] | None:
         """Return {total, open, overdue} counts in a single round-trip."""
         if not await self._ensure_owns_property(db, property_id, user_id):
             return None

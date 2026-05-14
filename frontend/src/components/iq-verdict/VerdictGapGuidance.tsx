@@ -5,7 +5,11 @@ import { useEffect, useState } from 'react'
 import { trackEvent } from '@/lib/eventTracking'
 import type { DealGapTier } from '@/components/iq-verdict/types'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
-import { FourPathsPanel, type DealStructure, type DealStructuresPayload } from '@/components/iq-verdict/FourPathsPanel'
+import {
+  FourPathsPanel,
+  type DealStructure,
+  type DealStructuresPayload,
+} from '@/components/iq-verdict/FourPathsPanel'
 import { DealStructuresNarrative } from '@/components/iq-verdict/DealStructuresNarrative'
 import { VideoModal } from '@/components/ui/VideoModal'
 
@@ -27,13 +31,7 @@ export interface VerdictGapGuidanceProps {
   propertyState?: string | null
 }
 
-function LeverButton({
-  children,
-  onClick,
-}: {
-  children: ReactNode
-  onClick: () => void
-}) {
+function LeverButton({ children, onClick }: { children: ReactNode; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -72,7 +70,8 @@ export function VerdictGapGuidance({
 }: VerdictGapGuidanceProps) {
   const anchorWord = isListed ? 'asking price' : 'estimated market value'
   const showFullLevers = dealGapPct > 5
-  const hasStructures = !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
+  const hasStructures =
+    !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
   const pathsSig = dealStructures?.paths.map((p) => p.id).join('|') ?? ''
   const [showDealGapVideo, setShowDealGapVideo] = useState(false)
 
@@ -87,14 +86,7 @@ export function VerdictGapGuidance({
       deal_gap_pct: dealGapPct,
       state: propertyState ?? '',
     })
-  }, [
-    effectiveDisplayPct,
-    dealGapPct,
-    hasStructures,
-    dealStructures,
-    pathsSig,
-    propertyState,
-  ])
+  }, [effectiveDisplayPct, dealGapPct, hasStructures, dealStructures, pathsSig, propertyState])
 
   if (effectiveDisplayPct > 0 || dealGapPct <= 0) {
     return null
@@ -150,12 +142,17 @@ export function VerdictGapGuidance({
       )}
 
       {!hasStructures && (
-        <p style={{ margin: '10px 0 0', fontSize: 13, lineHeight: 1.55, color: 'var(--text-body)' }}>
-          Your <strong style={{ color: 'var(--text-heading)' }}>Target Buy</strong> is what the model needs for cash flow
-          at <strong style={{ color: 'var(--text-heading)' }}>20% down, ~6% interest, 30-year</strong> financing. The gap
-          to <strong style={{ color: 'var(--text-heading)' }}>{anchorWord}</strong> does not mean the deal is dead—it
-          means the <strong style={{ color: 'var(--text-heading)' }}>price, income, or structure</strong> has to change for
-          the math to work.
+        <p
+          style={{ margin: '10px 0 0', fontSize: 13, lineHeight: 1.55, color: 'var(--text-body)' }}
+        >
+          Your <strong style={{ color: 'var(--text-heading)' }}>Target Buy</strong> is what the
+          model needs for cash flow at{' '}
+          <strong style={{ color: 'var(--text-heading)' }}>20% down, ~6% interest, 30-year</strong>{' '}
+          financing. The gap to{' '}
+          <strong style={{ color: 'var(--text-heading)' }}>{anchorWord}</strong> does not mean the
+          deal is dead—it means the{' '}
+          <strong style={{ color: 'var(--text-heading)' }}>price, income, or structure</strong> has
+          to change for the math to work.
         </p>
       )}
 
@@ -176,47 +173,49 @@ export function VerdictGapGuidance({
           <ul className="list-none p-0 m-0 flex flex-col gap-2">
             <li>
               <LeverButton onClick={() => onNavigateStrategy('purchase')}>
-                <strong style={{ color: 'var(--text-heading)' }}>Lower the buy price</strong> (negotiation, credits, or a
-                lower offer)—model it under Purchase in Strategy.
+                <strong style={{ color: 'var(--text-heading)' }}>Lower the buy price</strong>{' '}
+                (negotiation, credits, or a lower offer)—model it under Purchase in Strategy.
               </LeverButton>
             </li>
             <li>
               <LeverButton onClick={() => onNavigateStrategy('financing')}>
-                <strong style={{ color: 'var(--text-heading)' }}>Improve structure:</strong> lower rate, shorter term,
-                larger down payment, paying cash, or seller financing (e.g. 0% carry)—adjust under Loan Payment in
-                Strategy.
+                <strong style={{ color: 'var(--text-heading)' }}>Improve structure:</strong> lower
+                rate, shorter term, larger down payment, paying cash, or seller financing (e.g. 0%
+                carry)—adjust under Loan Payment in Strategy.
               </LeverButton>
             </li>
             <li>
               <LeverButton onClick={() => onNavigateStrategy('income')}>
-                <strong style={{ color: 'var(--text-heading)' }}>Raise or verify rent</strong> (long-term, STR, or
-                house-hack scenarios)—tune income in Strategy.
+                <strong style={{ color: 'var(--text-heading)' }}>Raise or verify rent</strong>{' '}
+                (long-term, STR, or house-hack scenarios)—tune income in Strategy.
               </LeverButton>
             </li>
             <li>
               <LeverButton onClick={() => onNavigateStrategy('costs')}>
-                <strong style={{ color: 'var(--text-heading)' }}>Tighten operating costs</strong> (taxes, insurance,
-                management, vacancy)—under What It Costs in Strategy.
+                <strong style={{ color: 'var(--text-heading)' }}>Tighten operating costs</strong>{' '}
+                (taxes, insurance, management, vacancy)—under What It Costs in Strategy.
               </LeverButton>
             </li>
             <li>
               <LeverButton onClick={() => onNavigateStrategy('rehab')}>
-                <strong style={{ color: 'var(--text-heading)' }}>Account for rehab</strong> if the property needs work—add
-                a rehab budget under Purchase in Strategy.
+                <strong style={{ color: 'var(--text-heading)' }}>Account for rehab</strong> if the
+                property needs work—add a rehab budget under Purchase in Strategy.
               </LeverButton>
             </li>
             {hasDataSources && (
               <li>
                 <LeverButton onClick={onOpenDataSources}>
-                  <strong style={{ color: 'var(--text-heading)' }}>Wrong value or rent from the data?</strong> Open Data
-                  Sources to pick another estimate (IQ, Zillow, RentCast, etc.).
+                  <strong style={{ color: 'var(--text-heading)' }}>
+                    Wrong value or rent from the data?
+                  </strong>{' '}
+                  Open Data Sources to pick another estimate (IQ, Zillow, RentCast, etc.).
                 </LeverButton>
               </li>
             )}
             <li>
               <LeverButton onClick={onDealMaker}>
-                <strong style={{ color: 'var(--text-heading)' }}>Change Terms</strong> here for a quick pass, or use
-                Strategy after sign-in for the full interactive worksheet.
+                <strong style={{ color: 'var(--text-heading)' }}>Change Terms</strong> here for a
+                quick pass, or use Strategy after sign-in for the full interactive worksheet.
               </LeverButton>
             </li>
           </ul>
@@ -224,12 +223,25 @@ export function VerdictGapGuidance({
       )}
 
       {!isAuthenticated && (
-        <p style={{ margin: '14px 0 0', fontSize: 12, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+        <p
+          style={{
+            margin: '14px 0 0',
+            fontSize: 12,
+            lineHeight: 1.5,
+            color: 'var(--text-secondary)',
+          }}
+        >
           <button
             type="button"
             onClick={onSignIn}
             className="font-semibold underline-offset-2 hover:underline"
-            style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            style={{
+              color: 'var(--accent-sky)',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+            }}
           >
             Sign in
           </button>{' '}
@@ -292,7 +304,8 @@ export function VerdictPositiveGuidance({
   propertyState,
 }: VerdictPositiveGuidanceProps) {
   const isPositive = effectiveDisplayPct > 0
-  const hasStructures = !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
+  const hasStructures =
+    !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
 
   return (
     <div style={{ marginTop: 12, maxWidth: 560 }}>
@@ -327,8 +340,8 @@ export function VerdictPositiveGuidance({
       <ul className="list-none p-0 m-0 flex flex-col gap-2">
         <li>
           <LeverButton onClick={onNavigateAppraiser}>
-            <strong style={{ color: 'var(--text-heading)' }}>Verify rental values</strong> — use
-            the Appraiser tab to review local rental and sales comps in the neighborhood.
+            <strong style={{ color: 'var(--text-heading)' }}>Verify rental values</strong> — use the
+            Appraiser tab to review local rental and sales comps in the neighborhood.
           </LeverButton>
         </li>
         <li>
@@ -362,12 +375,25 @@ export function VerdictPositiveGuidance({
       </ul>
 
       {!isAuthenticated && (
-        <p style={{ margin: '14px 0 0', fontSize: 12, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+        <p
+          style={{
+            margin: '14px 0 0',
+            fontSize: 12,
+            lineHeight: 1.5,
+            color: 'var(--text-secondary)',
+          }}
+        >
           <button
             type="button"
             onClick={onSignIn}
             className="font-semibold underline-offset-2 hover:underline"
-            style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            style={{
+              color: 'var(--accent-sky)',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+            }}
           >
             Sign in
           </button>{' '}

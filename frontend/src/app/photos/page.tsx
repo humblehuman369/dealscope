@@ -2,10 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { usePropertyStore } from '@/stores'
-import { 
-  Search, Image as ImageIcon, Download, Grid3X3, 
-  LayoutGrid, X, ChevronLeft, ChevronRight, Loader2,
-  ExternalLink, AlertCircle, Camera
+import {
+  Search,
+  Image as ImageIcon,
+  Download,
+  Grid3X3,
+  LayoutGrid,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  ExternalLink,
+  AlertCircle,
+  Camera,
 } from 'lucide-react'
 import { api } from '@/lib/api-client'
 
@@ -29,7 +38,7 @@ interface PhotosResponse {
 
 export default function PhotosPage() {
   const { currentProperty } = usePropertyStore()
-  
+
   const [zpid, setZpid] = useState('')
   const [propertyUrl, setPropertyUrl] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
@@ -133,7 +142,7 @@ export default function PhotosPage() {
 
   const navigateLightbox = (direction: 'prev' | 'next') => {
     if (selectedPhoto === null) return
-    
+
     if (direction === 'prev') {
       setSelectedPhoto(selectedPhoto === 0 ? photos.length - 1 : selectedPhoto - 1)
     } else {
@@ -150,7 +159,8 @@ export default function PhotosPage() {
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-navy-900">Manual Photo Lookup</h2>
               <p className="text-sm text-neutral-500">
-                No property selected. Search for a property on the Dashboard first, or enter a ZPID/URL below.
+                No property selected. Search for a property on the Dashboard first, or enter a
+                ZPID/URL below.
               </p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -182,7 +192,7 @@ export default function PhotosPage() {
                   />
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-end">
                 <button
                   type="submit"
@@ -247,8 +257,8 @@ export default function PhotosPage() {
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'grid' 
-                      ? 'bg-indigo-100 text-indigo-600' 
+                    viewMode === 'grid'
+                      ? 'bg-indigo-100 text-indigo-600'
                       : 'bg-neutral-100 text-neutral-500 hover:bg-gray-200'
                   }`}
                   title="Grid view"
@@ -258,8 +268,8 @@ export default function PhotosPage() {
                 <button
                   onClick={() => setViewMode('masonry')}
                   className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'masonry' 
-                      ? 'bg-indigo-100 text-indigo-600' 
+                    viewMode === 'masonry'
+                      ? 'bg-indigo-100 text-indigo-600'
                       : 'bg-neutral-100 text-neutral-500 hover:bg-gray-200'
                   }`}
                   title="Masonry view"
@@ -270,11 +280,13 @@ export default function PhotosPage() {
             </div>
 
             {/* Photos */}
-            <div className={`grid gap-4 ${
-              viewMode === 'grid' 
-                ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' 
-                : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
-            }`}>
+            <div
+              className={`grid gap-4 ${
+                viewMode === 'grid'
+                  ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+                  : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+              }`}
+            >
               {photos.map((photo, index) => (
                 <div
                   key={index}
@@ -287,10 +299,11 @@ export default function PhotosPage() {
                     alt={photo.caption || `Property photo ${index + 1}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23e5e7eb" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%239ca3af" font-size="12">No Image</text></svg>'
+                      ;(e.target as HTMLImageElement).src =
+                        'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23e5e7eb" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%239ca3af" font-size="12">No Image</text></svg>'
                     }}
                   />
-                  
+
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-[var(--surface-base)]/0 group-hover:bg-[var(--surface-base)]/20 transition-colors flex items-center justify-center">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -299,7 +312,7 @@ export default function PhotosPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Caption */}
                   {photo.caption && (
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
@@ -320,7 +333,8 @@ export default function PhotosPage() {
             </div>
             <h3 className="text-lg font-medium text-navy-900 mb-2">No Photos Yet</h3>
             <p className="text-neutral-500 max-w-md mx-auto">
-              Search for a property on the Dashboard to automatically load photos, or enter a ZPID above.
+              Search for a property on the Dashboard to automatically load photos, or enter a ZPID
+              above.
             </p>
           </div>
         )}
@@ -328,7 +342,7 @@ export default function PhotosPage() {
 
       {/* Lightbox */}
       {selectedPhoto !== null && (
-        <div 
+        <div
           className="fixed inset-0 z-50 bg-[var(--surface-base)]/95 flex items-center justify-center"
           onClick={closeLightbox}
         >
@@ -342,30 +356,33 @@ export default function PhotosPage() {
 
           {/* Navigation */}
           <button
-            onClick={(e) => { e.stopPropagation(); navigateLightbox('prev') }}
+            onClick={(e) => {
+              e.stopPropagation()
+              navigateLightbox('prev')
+            }}
             className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
           >
             <ChevronLeft className="w-6 h-6 text-white" />
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); navigateLightbox('next') }}
+            onClick={(e) => {
+              e.stopPropagation()
+              navigateLightbox('next')
+            }}
             className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
           >
             <ChevronRight className="w-6 h-6 text-white" />
           </button>
 
           {/* Image */}
-          <div 
-            className="max-w-5xl max-h-[85vh] relative"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="max-w-5xl max-h-[85vh] relative" onClick={(e) => e.stopPropagation()}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={photos[selectedPhoto].url}
               alt={photos[selectedPhoto].caption || `Property photo ${selectedPhoto + 1}`}
               className="max-w-full max-h-[85vh] object-contain rounded-lg"
             />
-            
+
             {/* Photo Info */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
               <div className="flex items-center justify-between">

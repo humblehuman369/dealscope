@@ -20,7 +20,6 @@ from __future__ import annotations
 
 from app.models.saved_property import FlipStage, PropertyStatus, SavedProperty
 
-
 # Each template item is (title, notes, due_offset_days). Notes are reserved
 # for non-obvious clarifications. due_offset_days is the number of days from
 # stage-entry the user should plan to finish the task — we set it only where
@@ -75,7 +74,8 @@ _OWNED_BASE_TEMPLATE: list[TaskTemplateItem] = [
 
 _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
     # Flip — Rehab is the entry stage; the first-time-owned base tasks fold in.
-    f"flip_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
+    f"flip_{FlipStage.REHAB.value.lower()}": [
+        *_OWNED_BASE_TEMPLATE,
         ("Get 3 contractor bids", None, 7),
         ("Pull permits if required", None, 14),
         ("Order materials", None, 14),
@@ -88,7 +88,8 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Review price vs. market every week", None, 7),
     ],
     # BRRRR — diverges from flip after rehab.
-    f"brrrr_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
+    f"brrrr_{FlipStage.REHAB.value.lower()}": [
+        *_OWNED_BASE_TEMPLATE,
         ("Get 3 contractor bids", None, 7),
         ("Pull permits if required", None, 14),
         ("Track rehab spend against estimator", None, 7),
@@ -105,7 +106,8 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Set up DSCR-loan payment auto-pay", None, 30),
     ],
     # Long-term rental — Rehab is now the entry stage; Make Ready follows.
-    f"ltr_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
+    f"ltr_{FlipStage.REHAB.value.lower()}": [
+        *_OWNED_BASE_TEMPLATE,
         ("Get 3 contractor bids", None, 7),
         ("Pull permits if required", None, 14),
         ("Choose tenant-grade durable finishes", None, 14),
@@ -123,7 +125,8 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Set up rent collection (auto-pay if possible)", None, 7),
     ],
     # Short-term rental — Rehab is the entry stage; Setup follows.
-    f"str_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
+    f"str_{FlipStage.REHAB.value.lower()}": [
+        *_OWNED_BASE_TEMPLATE,
         ("Get 3 contractor bids", None, 7),
         ("Pull permits if required", None, 14),
         ("Plan rehab around guest experience (lighting, comfort, photos)", None, 14),
@@ -142,7 +145,8 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Track occupancy + ADR weekly", None, 7),
     ],
     # House Hack — same shape as LTR but with owner-occupancy considerations.
-    f"house_hack_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
+    f"house_hack_{FlipStage.REHAB.value.lower()}": [
+        *_OWNED_BASE_TEMPLATE,
         ("Get 3 contractor bids", None, 7),
         ("Pull permits if required", None, 14),
         ("Plan owner-unit + rental-unit improvements", None, 14),
@@ -160,7 +164,8 @@ _OWNED_TEMPLATES: dict[str, list[TaskTemplateItem]] = {
         ("Set up rent collection (auto-pay if possible)", None, 14),
     ],
     # Wholesale — minimal-cleanup quick exit (a.k.a. wholetail).
-    f"wholesale_{FlipStage.REHAB.value.lower()}": _OWNED_BASE_TEMPLATE + [
+    f"wholesale_{FlipStage.REHAB.value.lower()}": [
+        *_OWNED_BASE_TEMPLATE,
         ("Identify minimum-viable cleanup scope", None, 7),
         ("Get a quick contractor quote", None, 7),
         ("Set target list price + timeline", None, 14),

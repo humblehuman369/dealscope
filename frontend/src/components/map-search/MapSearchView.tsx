@@ -17,7 +17,17 @@ import {
   AdvancedMarkerAnchorPoint,
   type MapMouseEvent,
 } from '@vis.gl/react-google-maps'
-import { Loader2, Home, MousePointerClick, List, MapIcon, Check, Sun, Moon, ChevronDown } from 'lucide-react'
+import {
+  Loader2,
+  Home,
+  MousePointerClick,
+  List,
+  MapIcon,
+  Check,
+  Sun,
+  Moon,
+  ChevronDown,
+} from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import type { MapListing } from '@/lib/api'
@@ -28,11 +38,7 @@ import { PropertyCardList } from './PropertyCardList'
 import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
 import { NeighborhoodCard } from './NeighborhoodCard'
 import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
-import {
-  readMapSnapshot,
-  writeMapSnapshot,
-  clearMapSnapshot,
-} from './mapSearchSnapshot'
+import { readMapSnapshot, writeMapSnapshot, clearMapSnapshot } from './mapSearchSnapshot'
 import { getMapOverlaySurface } from './mapOverlayChrome'
 import type { NeighborhoodOverview } from '@/lib/api'
 
@@ -91,7 +97,9 @@ function writePersistedMapThemeOverride(value: PersistedMapThemeOverride | null)
     } else {
       localStorage.removeItem(MAP_THEME_OVERRIDE_KEY)
     }
-  } catch { /* private browsing */ }
+  } catch {
+    /* private browsing */
+  }
 }
 // Zoom used when centering on the user's saved ZIP (ZIP-level framing).
 const ACCOUNT_ZIP_INITIAL_ZOOM = 13
@@ -107,12 +115,18 @@ function readZipCache(zip: string): ZipCacheEntry | null {
     if (!raw) return null
     const parsed = JSON.parse(raw) as ZipCacheEntry
     if (typeof parsed?.lat === 'number' && typeof parsed?.lng === 'number') return parsed
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return null
 }
 
 function writeZipCache(zip: string, entry: ZipCacheEntry): void {
-  try { localStorage.setItem(ZIP_CACHE_PREFIX + zip, JSON.stringify(entry)) } catch { /* ignore */ }
+  try {
+    localStorage.setItem(ZIP_CACHE_PREFIX + zip, JSON.stringify(entry))
+  } catch {
+    /* ignore */
+  }
 }
 
 const US_BOUNDS = {
@@ -241,10 +255,8 @@ async function reverseGeocode(
 
     const components: Array<{ types: string[]; long_name: string; short_name: string }> =
       result.address_components || []
-    const long = (type: string) =>
-      components.find((c) => c.types.includes(type))?.long_name
-    const short = (type: string) =>
-      components.find((c) => c.types.includes(type))?.short_name
+    const long = (type: string) => components.find((c) => c.types.includes(type))?.long_name
+    const short = (type: string) => components.find((c) => c.types.includes(type))?.short_name
 
     return {
       formatted_address: result.formatted_address,
@@ -264,7 +276,8 @@ async function forwardGeocode(
   // Prefer the in-browser Geocoder (same auth as Maps JS API). Falls back to the
   // REST Geocoding API only if the in-browser geocoder isn't available — many
   // production keys restrict the REST endpoint while allowing the JS Geocoder.
-  const w = typeof window !== 'undefined' ? (window as Window & { google?: typeof google }) : undefined
+  const w =
+    typeof window !== 'undefined' ? (window as Window & { google?: typeof google }) : undefined
   const Geocoder = w?.google?.maps?.Geocoder
   if (Geocoder) {
     try {
@@ -467,7 +480,9 @@ function MapContent({
   useEffect(() => {
     if (!mapInstanceRef) return
     mapInstanceRef.current = map ?? null
-    return () => { if (mapInstanceRef) mapInstanceRef.current = null }
+    return () => {
+      if (mapInstanceRef) mapInstanceRef.current = null
+    }
   }, [map, mapInstanceRef])
   // Markers are intentionally NOT clustered — each listing renders as its
   // own price pill at all zoom levels. The <AdvancedMarker> components
@@ -502,7 +517,9 @@ function MapContent({
         })
       }, 150)
     }
-    return () => { panToRef.current = null }
+    return () => {
+      panToRef.current = null
+    }
   }, [map, panToRef, onBoundsChanged])
 
   useEffect(() => {
@@ -655,11 +672,15 @@ function MapContent({
           markerBorder = isSelected ? 'var(--accent-sky)' : 'rgba(255,255,255,0.7)'
           displayLabel = listing.night_price != null ? `$${listing.night_price}/n` : 'Airbnb'
         } else {
-          markerBg = signal ? markerColorForCategory(signal.category, isDarkMap) : 'var(--surface-card)'
+          markerBg = signal
+            ? markerColorForCategory(signal.category, isDarkMap)
+            : 'var(--surface-card)'
           markerText = signal ? '#fff' : 'var(--text-heading)'
           markerBorder = isSelected
             ? 'var(--accent-sky)'
-            : signal ? 'rgba(255,255,255,0.7)' : 'var(--border-default)'
+            : signal
+              ? 'rgba(255,255,255,0.7)'
+              : 'var(--border-default)'
           displayLabel = formatCompactPrice(listing.price)
         }
 
@@ -784,7 +805,9 @@ export function MapSearchView() {
   const accountZip = user?.business_address_zip?.trim() || null
 
   const [geoCenter, setGeoCenter] = useState<{ lat: number; lng: number } | null>(null)
-  const [accountZipCenter, setAccountZipCenter] = useState<{ lat: number; lng: number } | null>(null)
+  const [accountZipCenter, setAccountZipCenter] = useState<{ lat: number; lng: number } | null>(
+    null,
+  )
   const [geoResolved, setGeoResolved] = useState(hasExplicitLocation)
 
   // Resolve the user's saved ZIP synchronously from cache so the map can mount
@@ -811,7 +834,9 @@ export function MapSearchView() {
       writeZipCache(accountZip, entry)
       setGeoResolved(true)
     })
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [hasExplicitLocation, accountZip, accountZipCenter, apiKey])
 
   useEffect(() => {
@@ -844,16 +869,20 @@ export function MapSearchView() {
     )
   }, [hasExplicitLocation, authLoading, accountZip])
 
-  const initialCenter = paramCenter
-    ?? (snapshotViewport ? { lat: snapshotViewport.lat, lng: snapshotViewport.lng } : null)
-    ?? accountZipCenter
-    ?? geoCenter
-    ?? DEFAULT_CENTER
-  const initialZoom = paramZoom
-    ?? snapshotViewport?.zoom
-    ?? (accountZipCenter
+  const initialCenter =
+    paramCenter ??
+    (snapshotViewport ? { lat: snapshotViewport.lat, lng: snapshotViewport.lng } : null) ??
+    accountZipCenter ??
+    geoCenter ??
+    DEFAULT_CENTER
+  const initialZoom =
+    paramZoom ??
+    snapshotViewport?.zoom ??
+    (accountZipCenter
       ? ACCOUNT_ZIP_INITIAL_ZOOM
-      : geoCenter ? GEOLOCATION_INITIAL_ZOOM : DEFAULT_ZOOM)
+      : geoCenter
+        ? GEOLOCATION_INITIAL_ZOOM
+        : DEFAULT_ZOOM)
 
   // Only fit-to-radius and show the "you are here" pin when the location came
   // from the user's actual GPS — never for URL params, snapshot-restored
@@ -893,9 +922,7 @@ export function MapSearchView() {
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
   // Mobile view tab — restored from the tab-session snapshot when present so
   // the user lands back on whichever view they were last using.
-  const [mobileView, setMobileView] = useState<'map' | 'list'>(
-    initialSnapshot?.mobileView ?? 'map',
-  )
+  const [mobileView, setMobileView] = useState<'map' | 'list'>(initialSnapshot?.mobileView ?? 'map')
 
   // Persist mobile view changes to the snapshot. Fires on mount with the
   // current value (no-op write when the snapshot already matches) and on
@@ -933,12 +960,18 @@ export function MapSearchView() {
   const [showClickHint, setShowClickHint] = useState(false)
   const hintShownRef = useRef(false)
 
-  const [selectedNeighborhood, setSelectedNeighborhood] = useState<NeighborhoodOverview | null>(null)
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState<NeighborhoodOverview | null>(
+    null,
+  )
   const [isLoadingNeighborhood, setIsLoadingNeighborhood] = useState(false)
 
   const dismissClickHint = useCallback(() => {
     setShowClickHint(false)
-    try { localStorage.setItem(HINT_DISMISSED_KEY, '1') } catch { /* private browsing */ }
+    try {
+      localStorage.setItem(HINT_DISMISSED_KEY, '1')
+    } catch {
+      /* private browsing */
+    }
   }, [])
 
   useEffect(() => {
@@ -948,7 +981,9 @@ export function MapSearchView() {
     }
     try {
       if (localStorage.getItem(HINT_DISMISSED_KEY)) return
-    } catch { /* private browsing */ }
+    } catch {
+      /* private browsing */
+    }
     hintShownRef.current = true
     setShowClickHint(true)
     const timer = setTimeout(dismissClickHint, 8000)
@@ -1014,10 +1049,10 @@ export function MapSearchView() {
           sqft: data.details?.square_footage ?? null,
           year_built: data.details?.year_built ?? null,
           estimated_value:
-            data.valuations?.value_iq_estimate
-            ?? data.valuations?.zestimate
-            ?? data.valuations?.market_price
-            ?? null,
+            data.valuations?.value_iq_estimate ??
+            data.valuations?.zestimate ??
+            data.valuations?.market_price ??
+            null,
           property_type: data.details?.property_type ?? null,
           is_off_market: data.listing?.is_off_market ?? null,
           monthly_rent: data.rentals?.monthly_rent_ltr ?? null,
@@ -1029,7 +1064,9 @@ export function MapSearchView() {
         setIsLoadingPreview(false)
       })
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [geocodeResult, fetchProperty])
 
   const handleClearPolygon = useCallback(() => {
@@ -1050,19 +1087,25 @@ export function MapSearchView() {
     }
   }, [isDrawing, handleClearPolygon])
 
-  const handleCardSelect = useCallback((listing: MapListing) => {
-    setSelectedListing(listing)
-    clearGeocode()
-    if (panToRef.current) {
-      panToRef.current(listing.latitude, listing.longitude)
-    }
-    setMobileView('map')
-  }, [clearGeocode])
+  const handleCardSelect = useCallback(
+    (listing: MapListing) => {
+      setSelectedListing(listing)
+      clearGeocode()
+      if (panToRef.current) {
+        panToRef.current(listing.latitude, listing.longitude)
+      }
+      setMobileView('map')
+    },
+    [clearGeocode],
+  )
 
-  const handleMarkerSelect = useCallback((listing: MapListing | null) => {
-    clearGeocode()
-    setSelectedListing(listing)
-  }, [clearGeocode])
+  const handleMarkerSelect = useCallback(
+    (listing: MapListing | null) => {
+      clearGeocode()
+      setSelectedListing(listing)
+    },
+    [clearGeocode],
+  )
 
   const queryClient = useQueryClient()
 
@@ -1087,8 +1130,7 @@ export function MapSearchView() {
       // mount of /map-search:
       //   1. React Query cache → client-side navigations see fresh `user`
       //   2. In-memory + localStorage session → survives hard reloads
-      const previousUser =
-        queryClient.getQueryData<UserResponse | null>(SESSION_QUERY_KEY)
+      const previousUser = queryClient.getQueryData<UserResponse | null>(SESSION_QUERY_KEY)
       if (previousUser) {
         const updatedUser: UserResponse = {
           ...previousUser,
@@ -1107,39 +1149,42 @@ export function MapSearchView() {
     }
   }, [apiKey, savingDefault, queryClient])
 
-  const handleSearchSelect = useCallback((selection: MapSearchSelection) => {
-    if (!selection.location) return
-    const { lat, lng } = selection.location
+  const handleSearchSelect = useCallback(
+    (selection: MapSearchSelection) => {
+      if (!selection.location) return
+      const { lat, lng } = selection.location
 
-    // Pan + zoom to the result. Existing panToRef handles bounds refresh.
-    if (panToRef.current) {
-      panToRef.current(lat, lng, selection.zoom)
-    }
+      // Pan + zoom to the result. Existing panToRef handles bounds refresh.
+      if (panToRef.current) {
+        panToRef.current(lat, lng, selection.zoom)
+      }
 
-    setSelectedListing(null)
+      setSelectedListing(null)
 
-    if (selection.isStreetAddress) {
-      // Drop a pin and seed the geocode/property-preview flow directly — we
-      // already have a formatted address from Places, no need to reverse-geocode.
-      setDropPin({ lat, lng })
-      setGeocodeResult({
-        formatted_address: selection.formatted_address,
-        city: selection.components?.city || undefined,
-        state: selection.components?.state || undefined,
-        zip_code: selection.components?.zipCode || undefined,
-      })
-      setPropertyPreview(null)
-      setIsGeocoding(false)
-    } else {
-      // Region (city/state/zip) — clear any active drop pin so the user just
-      // sees the new viewport with its listings.
-      clearGeocode()
-    }
+      if (selection.isStreetAddress) {
+        // Drop a pin and seed the geocode/property-preview flow directly — we
+        // already have a formatted address from Places, no need to reverse-geocode.
+        setDropPin({ lat, lng })
+        setGeocodeResult({
+          formatted_address: selection.formatted_address,
+          city: selection.components?.city || undefined,
+          state: selection.components?.state || undefined,
+          zip_code: selection.components?.zipCode || undefined,
+        })
+        setPropertyPreview(null)
+        setIsGeocoding(false)
+      } else {
+        // Region (city/state/zip) — clear any active drop pin so the user just
+        // sees the new viewport with its listings.
+        clearGeocode()
+      }
 
-    // Update the location-confirmation toast so the user sees a quick
-    // "Showing {label}" pill, mirroring URL-driven navigations.
-    setMobileView('map')
-  }, [clearGeocode])
+      // Update the location-confirmation toast so the user sees a quick
+      // "Showing {label}" pill, mirroring URL-driven navigations.
+      setMobileView('map')
+    },
+    [clearGeocode],
+  )
 
   if (!apiKey) {
     return (
@@ -1281,11 +1326,15 @@ export function MapSearchView() {
               >
                 <GeocodedPrompt
                   address={geocodeResult?.formatted_address ?? null}
-                  addressComponents={geocodeResult ? {
-                    city: geocodeResult.city,
-                    state: geocodeResult.state,
-                    zip_code: geocodeResult.zip_code,
-                  } : undefined}
+                  addressComponents={
+                    geocodeResult
+                      ? {
+                          city: geocodeResult.city,
+                          state: geocodeResult.state,
+                          zip_code: geocodeResult.zip_code,
+                        }
+                      : undefined
+                  }
                   isGeocoding={isGeocoding}
                   onClose={clearGeocode}
                   propertyPreview={propertyPreview}
@@ -1327,11 +1376,7 @@ export function MapSearchView() {
           )}
 
           {needsGeocode && apiKey && (
-            <LabelGeocoder
-              label={locationLabel!}
-              apiKey={apiKey}
-              onResolved={onBoundsChanged}
-            />
+            <LabelGeocoder label={locationLabel!} apiKey={apiKey} onResolved={onBoundsChanged} />
           )}
         </Map>
       </APIProvider>
@@ -1474,9 +1519,7 @@ export function MapSearchView() {
           <div
             className="flex items-center gap-1.5 px-2.5 py-1 rounded shadow-lg"
             style={{
-              backgroundColor: isDarkMap
-                ? 'rgba(12, 18, 32, 0.78)'
-                : 'rgba(255, 255, 255, 0.9)',
+              backgroundColor: isDarkMap ? 'rgba(12, 18, 32, 0.78)' : 'rgba(255, 255, 255, 0.9)',
               color: overlaySurface.primaryText,
               border: `1px solid ${overlaySurface.borderColor}`,
               fontSize: '11px',

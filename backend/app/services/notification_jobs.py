@@ -29,9 +29,7 @@ logger = logging.getLogger(__name__)
 def _format_message(overdue: int, properties: int) -> tuple[str, str]:
     """Title + body for the digest push."""
     title = f"{overdue} overdue task{'s' if overdue != 1 else ''}"
-    body = (
-        f"Across {properties} propert{'ies' if properties != 1 else 'y'} in your pipeline"
-    )
+    body = f"Across {properties} propert{'ies' if properties != 1 else 'y'} in your pipeline"
     return title, body
 
 

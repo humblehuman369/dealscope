@@ -80,7 +80,11 @@ export function useMapSearch() {
   }, [])
 
   const fetchListings = useCallback(
-    async (bounds: MapBounds, activePolygon?: number[][] | null, filterOverride?: MapSearchFilters) => {
+    async (
+      bounds: MapBounds,
+      activePolygon?: number[][] | null,
+      filterOverride?: MapSearchFilters,
+    ) => {
       const activeFilters = filterOverride ?? filtersRef.current
       setIsLoading(true)
       setError(null)
@@ -162,7 +166,7 @@ export function useMapSearch() {
 
   const updateFilters = useCallback(
     (next: Partial<MapSearchFilters>) => {
-      const needsRefetch = (
+      const needsRefetch =
         'listing_type' in next ||
         'property_type' in next ||
         'min_price' in next ||
@@ -171,7 +175,6 @@ export function useMapSearch() {
         'bathrooms' in next ||
         'listing_statuses' in next ||
         'include_str_listings' in next
-      )
 
       setFilters((prev) => {
         const merged = { ...prev, ...next }

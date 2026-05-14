@@ -2,7 +2,7 @@
 
 from app.schemas.deal_structures import DealStructure, StructureLever
 from app.services.deal_structures.context import StructureContext
-from app.services.deal_structures.formatting import fmt_money_precise, fmt_monthly, fmt_pct_delta
+from app.services.deal_structures.formatting import fmt_money_precise, fmt_pct_delta
 
 FAMILY = "income"
 FAMILY_LABEL = "Rent increase"
@@ -58,20 +58,20 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         "1. Rentometer / Zillow Rental Manager — pull comps within 1 mile, same beds/baths, same "
         "condition tier. Note the median, not the high.\n"
         "2. Call 2 local property managers. Script: \"I'm under contract on [address] and weighing "
-        "what to charge. If I asked you to manage it, what would you list it at?\" PMs underwrite "
+        'what to charge. If I asked you to manage it, what would you list it at?" PMs underwrite '
         "rent for a living and tell you the truth — they want the listing.\n"
         "3. Walk 3 active rental listings nearby. Take photos. Honestly assess condition gap.\n"
         "4. If rehab is required to hit the higher rent, model the rehab cost AND the months of "
         "lost rent in Strategy before committing.\n\n"
         "IF VERIFIED \u2014 SEND THE OFFER AT ASKING\n"
-        f"\"My offer is at the asking price of {fmt_money_precise(ctx.list_price)}. My numbers "
+        f'"My offer is at the asking price of {fmt_money_precise(ctx.list_price)}. My numbers '
         "work because I've verified market rent at "
         f"${round(new_rent):,}/mo with two local property managers and three active comps. Clean "
-        "offer in your inbox today.\"\n\n"
+        'offer in your inbox today."\n\n'
         "IF NOT VERIFIED \u2014 PIVOT TO PRICE\n"
         f"\"Comps came in lighter than I'd hoped — closer to ${round(ctx.monthly_rent):,}/mo. To "
         "make the math work at that rent level, my number has to come down. What's the lowest the "
-        "seller would entertain?\"\n\n"
+        'seller would entertain?"\n\n'
         "TACTICS\n"
         "\u2022 NEVER raise your offer based on a rent estimate from anyone who isn't willing to "
         "manage the unit themselves. Online estimates are starting points, not truth.\n"
@@ -101,8 +101,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         # for visual weight on the Rent Increase card.
         bullets=[
             "Target Rent:",
-            f"${round(ctx.monthly_rent):,} + ${bump_dollars:,} → "
-            f"${round(new_rent):,}  {pct_label}",
+            f"${round(ctx.monthly_rent):,} + ${bump_dollars:,} → ${round(new_rent):,}  {pct_label}",
         ],
         # Compact closing line — points the user to the deeper tool instead of
         # restating the math already shown above.

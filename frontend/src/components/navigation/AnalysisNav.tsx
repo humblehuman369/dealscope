@@ -63,7 +63,9 @@ export function AnalysisNav() {
       } else {
         setPropertySnapshot(null)
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [zpidFromUrl, address])
 
   // Only show on analysis pages
@@ -78,7 +80,9 @@ export function AnalysisNav() {
   const encodedAddress = encodeURIComponent(address)
   const propertyHref = zpid
     ? `/property/${zpid}?address=${encodedAddress}`
-    : address ? `/search?q=${encodedAddress}` : '/search'
+    : address
+      ? `/search?q=${encodedAddress}`
+      : '/search'
   const priceHref = address
     ? (() => {
         const q = new URLSearchParams({ address })
@@ -101,7 +105,11 @@ export function AnalysisNav() {
     >
       <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-12">
         {/* Logo / home link */}
-        <Link href="/" className="flex items-center gap-0.5 text-sm font-bold shrink-0" style={{ color: 'var(--text-heading)' }}>
+        <Link
+          href="/"
+          className="flex items-center gap-0.5 text-sm font-bold shrink-0"
+          style={{ color: 'var(--text-heading)' }}
+        >
           <span style={{ color: 'var(--text-body)' }}>DealGap</span>
           <span style={{ color: 'var(--accent-sky)' }}>IQ</span>
         </Link>
@@ -109,7 +117,10 @@ export function AnalysisNav() {
         {/* Center: pill toggle + secondary text links */}
         <div className="flex items-center gap-5">
           {/* Primary pill toggle */}
-          <div className="flex items-center gap-0.5 rounded-full p-0.5" style={{ background: 'var(--surface-card)' }}>
+          <div
+            className="flex items-center gap-0.5 rounded-full p-0.5"
+            style={{ background: 'var(--surface-card)' }}
+          >
             {primaryTabs.map((tab) => (
               <Link
                 key={tab.label}
@@ -158,7 +169,15 @@ export function AnalysisNav() {
             style={{ color: 'var(--text-label)' }}
             aria-label="Search"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -170,14 +189,30 @@ export function AnalysisNav() {
 }
 
 const verdictIcon = (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+  >
     <circle cx="12" cy="12" r="10" />
     <polyline points="12 6 12 12 16 14" />
   </svg>
 )
 
 const strategyIcon = (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+  >
     <line x1="18" y1="20" x2="18" y2="10" />
     <line x1="12" y1="20" x2="12" y2="4" />
     <line x1="6" y1="20" x2="6" y2="14" />

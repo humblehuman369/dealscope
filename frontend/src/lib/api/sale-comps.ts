@@ -50,34 +50,53 @@ function extractCompsArray(raw: BackendCompsResponse): unknown[] {
  */
 export function transformSaleComps(
   raw: BackendCompsResponse,
-  subject?: SubjectProperty
+  subject?: SubjectProperty,
 ): SaleComp[] {
   const list = extractCompsArray(raw)
   const subjectLat = subject?.latitude ?? null
   const subjectLon = subject?.longitude ?? null
-  const hasSubjectCoords =
-    hasFiniteNumber(subjectLat) && hasFiniteNumber(subjectLon)
+  const hasSubjectCoords = hasFiniteNumber(subjectLat) && hasFiniteNumber(subjectLon)
   const subjectSqft = subject?.sqft ?? 1
   const subjectBeds = subject?.beds ?? 0
   const subjectBaths = subject?.baths ?? 0
   const subjectYear = subject?.yearBuilt ?? 0
 
   const comps: SaleComp[] = list.map((item: unknown, index: number) => {
-    const wrapper = (item && typeof item === 'object')
-      ? (item as Record<string, unknown>)
-      : null
+    const wrapper = item && typeof item === 'object' ? (item as Record<string, unknown>) : null
     const wrapperDistance = wrapper?.distance ?? wrapper?.distanceMiles
-    const comp = (item && typeof item === 'object' && 'property' in item
-      ? (item as { property: unknown }).property
-      : item) as Record<string, unknown>
+    const comp = (
+      item && typeof item === 'object' && 'property' in item
+        ? (item as { property: unknown }).property
+        : item
+    ) as Record<string, unknown>
     const addr = (comp?.address as Record<string, unknown>) ?? {}
-    const address = toStr(addr.streetAddress ?? addr.street ?? comp?.formattedAddress ?? comp?.addressLine1 ?? comp?.address ?? comp?.fullAddress ?? comp?.streetAddress ?? '')
+    const address = toStr(
+      addr.streetAddress ??
+        addr.street ??
+        comp?.formattedAddress ??
+        comp?.addressLine1 ??
+        comp?.address ??
+        comp?.fullAddress ??
+        comp?.streetAddress ??
+        '',
+    )
     const city = toStr(addr.city ?? comp?.city ?? '')
     const state = toStr(addr.state ?? comp?.state ?? '')
     const zip = toStr(addr.zipcode ?? addr.zip ?? comp?.zipCode ?? comp?.zip ?? comp?.zipcode ?? '')
-    const salePrice = toNum(comp?.lastSoldPrice ?? comp?.soldPrice ?? comp?.salePrice ?? comp?.price ?? 0)
-    const sqft = toNum(comp?.livingAreaValue ?? comp?.livingArea ?? comp?.squareFootage ?? comp?.sqft ?? comp?.squareFeet ?? comp?.finishedSqFt ?? 0)
-    const saleDateRaw = comp?.dateSold ?? comp?.saleDate ?? comp?.soldDate ?? comp?.lastSoldDate ?? ''
+    const salePrice = toNum(
+      comp?.lastSoldPrice ?? comp?.soldPrice ?? comp?.salePrice ?? comp?.price ?? 0,
+    )
+    const sqft = toNum(
+      comp?.livingAreaValue ??
+        comp?.livingArea ??
+        comp?.squareFootage ??
+        comp?.sqft ??
+        comp?.squareFeet ??
+        comp?.finishedSqFt ??
+        0,
+    )
+    const saleDateRaw =
+      comp?.dateSold ?? comp?.saleDate ?? comp?.soldDate ?? comp?.lastSoldDate ?? ''
     const saleDate = saleDateRaw ? new Date(saleDateRaw as string).toISOString().split('T')[0] : ''
     const daysAgo = saleDate
       ? Math.floor((Date.now() - new Date(saleDate).getTime()) / 86400000)
@@ -113,7 +132,8 @@ export function transformSaleComps(
     } else if (lotRaw > 0) {
       lotSize = Math.round(lotRaw * 100) / 100
     }
-    const zpid = toStr(comp?.zpid ?? comp?.id ?? comp?.propertyId ?? '').trim() || `sale-${index + 1}`
+    const zpid =
+      toStr(comp?.zpid ?? comp?.id ?? comp?.propertyId ?? '').trim() || `sale-${index + 1}`
     let imageUrl: string | null = null
     const photos = comp?.compsCarouselPropertyPhotos as unknown[] | undefined
     if (Array.isArray(photos) && photos.length > 0) {
@@ -135,7 +155,11 @@ export function transformSaleComps(
         if (hasCompCoords) {
           imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=400x300&location=${lat},${lon}&key=${key}`
         } else if (address) {
-          const fullAddr = address + (city ? `, ${city}` : '') + (state ? `, ${state}` : '') + (zip ? ` ${zip}` : '')
+          const fullAddr =
+            address +
+            (city ? `, ${city}` : '') +
+            (state ? `, ${state}` : '') +
+            (zip ? ` ${zip}` : '')
           imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=400x300&location=${encodeURIComponent(fullAddr)}&key=${key}`
         }
       }
@@ -179,7 +203,7 @@ export function transformSaleComps(
 export async function fetchSaleComps(
   identifier: CompsIdentifier,
   subject?: SubjectProperty,
-  options?: { signal?: AbortSignal }
+  options?: { signal?: AbortSignal },
 ): Promise<AxessoResponse<SaleComp[]>> {
   const params: Record<string, string> = {}
   if (identifier.zpid) params.zpid = identifier.zpid
@@ -207,7 +231,7 @@ export async function fetchSaleComps(
     SIMILAR_SOLD_ENDPOINT,
     params,
     undefined,
-    options?.signal
+    options?.signal,
   )
 
   if (axessoRes.ok && axessoRes.data) {
@@ -225,10 +249,13 @@ export async function fetchSaleComps(
         return { ...axessoRes, data: transformed }
       }
       if (process.env.NODE_ENV !== 'production') {
-        console.log('[comps_api] AXESSO similar-sold has no priced comps, falling back to RentCast', {
-          count: transformed.length,
-          hasUsablePrices,
-        })
+        console.log(
+          '[comps_api] AXESSO similar-sold has no priced comps, falling back to RentCast',
+          {
+            count: transformed.length,
+            hasUsablePrices,
+          },
+        )
       }
     }
   }
@@ -246,7 +273,7 @@ export async function fetchSaleComps(
     RENTCAST_SALE_ENDPOINT,
     rcParams,
     undefined,
-    options?.signal
+    options?.signal,
   )
 
   if (!rcRes.ok || !rcRes.data) {
@@ -269,7 +296,9 @@ export async function fetchSaleComps(
 
   const transformed = transformSaleComps(rcRes.data, subject)
   if (process.env.NODE_ENV !== 'production') {
-    console.log('[comps_api] sale-comps (rentcast fallback) transformed', { count: transformed.length })
+    console.log('[comps_api] sale-comps (rentcast fallback) transformed', {
+      count: transformed.length,
+    })
   }
   return { ...rcRes, data: transformed }
 }

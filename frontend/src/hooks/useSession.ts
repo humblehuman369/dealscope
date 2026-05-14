@@ -214,7 +214,11 @@ export function useSession() {
     permissions: effectiveUser?.permissions ?? [],
     roles: effectiveUser?.roles ?? [],
     hasPermission: (perm: string) => effectiveUser?.permissions?.includes(perm) ?? false,
-    isAdmin: effectiveUser?.roles?.includes('admin') || effectiveUser?.roles?.includes('owner') || effectiveUser?.is_superuser || false,
+    isAdmin:
+      effectiveUser?.roles?.includes('admin') ||
+      effectiveUser?.roles?.includes('owner') ||
+      effectiveUser?.is_superuser ||
+      false,
   }
 }
 

@@ -35,7 +35,11 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     rate = ctx.estimated_existing_loan_rate
     if bal is None or bal <= 0 or rate is None or rate <= 0:
         # Fall back to Sub2-style balance if we at least have a last sale
-        if ctx.estimated_purchase_year is None or ctx.estimated_purchase_price is None or ctx.estimated_purchase_price <= 0:
+        if (
+            ctx.estimated_purchase_year is None
+            or ctx.estimated_purchase_price is None
+            or ctx.estimated_purchase_price <= 0
+        ):
             return None
         assumed_rate = sub2_mod._rate_for_purchase_year(ctx.estimated_purchase_year)
         if assumed_rate is None:
@@ -101,7 +105,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         "EDUCATE FIRST — most agents miss this\n"
         f"\"The seller's existing loan is {lt} — those are formally assumable by a qualified "
         "buyer. Has the seller looked into letting a buyer assume the loan instead of paying it "
-        "off at closing? It changes the numbers significantly for both sides.\"\n\n"
+        'off at closing? It changes the numbers significantly for both sides."\n\n'
         "WHY IT'S A WIN FOR THE SELLER (lead with this)\n"
         f"1. The property becomes attractive to a much larger buyer pool — buyers can take a "
         f"{note_rate * 100:.2f}% loan vs. originating new at {ctx.interest_rate * 100:.2f}%.\n"
@@ -117,31 +121,31 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         f"{fmt_money_precise(pv)} in present value. Some of that savings can be passed back to the "
         "seller through stronger price or terms — don't be greedy.\n\n"
         "THE STRUCTURE OF THE OFFER\n"
-        f"\"My offer is to formally assume the existing {lt} loan at the current balance of "
+        f'"My offer is to formally assume the existing {lt} loan at the current balance of '
         f"approximately {fmt_money(balance)}, plus a cash payment to the seller for their equity. "
         f"That equity check would be approximately {fmt_money(equity_check)} — call it gross "
         "equity less my standard closing costs and reserves. I'd close in 60-90 days to "
         "accommodate the lender's assumption underwriting.\"\n\n"
         "ANTICIPATE OBJECTIONS\n"
-        "\u2022 \"60-90 days is too long\" \u2192 \"It's slower than a regular sale, true. In "
+        '\u2022 "60-90 days is too long" \u2192 "It\'s slower than a regular sale, true. In '
         "exchange, you get a buyer who is fully qualified through the existing lender — almost no "
         "risk of falling out. And the seller's headline price stays whole because I'm not asking "
-        "for a discount on price.\"\n"
-        "\u2022 \"Why should the seller bother?\" \u2192 \"Because most buyers can't bring this much "
+        'for a discount on price."\n'
+        '\u2022 "Why should the seller bother?" \u2192 "Because most buyers can\'t bring this much '
         "cash AND get a loan at this rate. The seller is selling into a buyer pool of one — me. "
         "That's leverage for the seller, not for me.\"\n"
-        "\u2022 \"Will the lender approve you?\" \u2192 \"I'll submit my full credit and income "
+        '\u2022 "Will the lender approve you?" \u2192 "I\'ll submit my full credit and income '
         "package the day you accept the offer. The lender's underwriting is similar to a regular "
         "FHA approval — I've already been pre-qualified.\"\n\n"
         "TRIAL CLOSE\n"
-        "\"If the seller is open to letting me assume the loan, I can have a clean offer with proof "
+        '"If the seller is open to letting me assume the loan, I can have a clean offer with proof '
         "of funds in your inbox within 24 hours. Should I get the assumption package started with "
-        "the servicer in parallel?\"\n\n"
+        'the servicer in parallel?"\n\n'
         "TACTICS\n"
         "\u2022 Confirm the loan is currently assumable — call the servicer; some FHA loans pre-1989 are unrestricted, post-1989 require credit qualification.\n"
         "\u2022 Lock the property up early — 30-day inspection, then 60-90 day close to accommodate underwriting.\n"
         "\u2022 If the seller wants to buy again with another FHA, they may not want to let go of the loan — discuss timing of their next purchase.\n"
-        f"\u2022 Get pre-qualified through an FHA-approved lender BEFORE you make the offer. \"I'm already pre-approved\" is the strongest trust signal you can offer."
+        f'\u2022 Get pre-qualified through an FHA-approved lender BEFORE you make the offer. "I\'m already pre-approved" is the strongest trust signal you can offer.'
         f"{va_warning}"
     )
 

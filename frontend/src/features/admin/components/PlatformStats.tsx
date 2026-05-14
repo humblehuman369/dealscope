@@ -40,7 +40,10 @@ export function PlatformStatsSection() {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {['bg-sky-400/5', 'bg-emerald-400/5', 'bg-teal-400/5', 'bg-amber-400/5'].map((tint, i) => (
-          <div key={i} className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-4">
+          <div
+            key={i}
+            className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-4"
+          >
             <div className="flex items-center gap-3">
               <div className={`w-9 h-9 ${tint} rounded-lg animate-pulse`} />
               <div>
@@ -55,16 +58,43 @@ export function PlatformStatsSection() {
   }
 
   const platformStats = [
-    { label: 'Total Users',       value: stats?.total_users || 0,             icon: Users,     iconBg: 'bg-sky-400/10',     iconColor: 'text-sky-400'     },
-    { label: 'Active Users',      value: stats?.active_users || 0,            icon: Activity,  iconBg: 'bg-emerald-400/10', iconColor: 'text-emerald-400' },
-    { label: 'Properties Saved',  value: stats?.total_properties_saved || 0,  icon: Building2, iconBg: 'bg-teal-400/10',    iconColor: 'text-teal-400'    },
-    { label: 'New Users (30d)',   value: stats?.new_users_30d || 0,           icon: TrendingUp,iconBg: 'bg-amber-400/10',   iconColor: 'text-amber-400'   },
+    {
+      label: 'Total Users',
+      value: stats?.total_users || 0,
+      icon: Users,
+      iconBg: 'bg-sky-400/10',
+      iconColor: 'text-sky-400',
+    },
+    {
+      label: 'Active Users',
+      value: stats?.active_users || 0,
+      icon: Activity,
+      iconBg: 'bg-emerald-400/10',
+      iconColor: 'text-emerald-400',
+    },
+    {
+      label: 'Properties Saved',
+      value: stats?.total_properties_saved || 0,
+      icon: Building2,
+      iconBg: 'bg-teal-400/10',
+      iconColor: 'text-teal-400',
+    },
+    {
+      label: 'New Users (30d)',
+      value: stats?.new_users_30d || 0,
+      icon: TrendingUp,
+      iconBg: 'bg-amber-400/10',
+      iconColor: 'text-amber-400',
+    },
   ]
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {platformStats.map((stat, index) => (
-        <div key={index} className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-4">
+        <div
+          key={index}
+          className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-4"
+        >
           <div className="flex items-center gap-3">
             <div className={`p-2 ${stat.iconBg} rounded-lg`}>
               <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />

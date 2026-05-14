@@ -1,8 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getAllContent } from '@/lib/content'
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
 type StaticEntry = {
   path: string

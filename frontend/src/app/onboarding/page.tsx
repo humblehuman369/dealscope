@@ -108,7 +108,9 @@ export default function OnboardingPage() {
               />
             ))}
           </div>
-          <p className="text-sm text-gray-400 mt-2">Step {currentStep + 1} of {totalSteps}</p>
+          <p className="text-sm text-gray-400 mt-2">
+            Step {currentStep + 1} of {totalSteps}
+          </p>
         </div>
       </div>
 
@@ -147,9 +149,7 @@ export default function OnboardingPage() {
               selectBudgetRange={selectBudgetRange}
             />
           )}
-          {currentStep === 4 && (
-            <MarketsStep formData={formData} toggleMarket={toggleMarket} />
-          )}
+          {currentStep === 4 && <MarketsStep formData={formData} toggleMarket={toggleMarket} />}
         </div>
       </div>
 
@@ -169,9 +169,7 @@ export default function OnboardingPage() {
             Back
           </button>
 
-          {error && (
-            <p className="text-red-400 text-sm">{error}</p>
-          )}
+          {error && <p className="text-red-400 text-sm">{error}</p>}
 
           <button
             onClick={nextStep}
@@ -204,8 +202,14 @@ export default function OnboardingPage() {
 
       <style jsx>{`
         @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         .animate-fade-in {
           animation: fade-in 0.4s ease-out;

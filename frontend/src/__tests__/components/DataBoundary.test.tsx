@@ -79,11 +79,7 @@ describe('DataBoundary', () => {
 
     it('renders empty action when provided', () => {
       render(
-        <DataBoundary
-          isLoading={false}
-          isEmpty={true}
-          emptyAction={<button>Search Now</button>}
-        >
+        <DataBoundary isLoading={false} isEmpty={true} emptyAction={<button>Search Now</button>}>
           <div>content</div>
         </DataBoundary>,
       )

@@ -22,7 +22,7 @@ export function StrategiesStep({ formData, toggleStrategy }: StrategiesStepProps
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {STRATEGIES.map(strategy => {
+        {STRATEGIES.map((strategy) => {
           const Icon = strategy.icon
           const isSelected = formData.preferred_strategies.includes(strategy.id)
 
@@ -42,9 +42,7 @@ export function StrategiesStep({ formData, toggleStrategy }: StrategiesStepProps
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <p className="font-semibold text-white">{strategy.label}</p>
-                  {isSelected && (
-                    <Check className="w-4 h-4 text-brand-400" />
-                  )}
+                  {isSelected && <Check className="w-4 h-4 text-brand-400" />}
                 </div>
                 <p className="text-sm text-gray-400">{strategy.desc}</p>
               </div>

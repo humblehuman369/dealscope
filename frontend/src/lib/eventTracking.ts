@@ -25,9 +25,10 @@ export function trackEvent(
     const filtered =
       props && Object.keys(props).length > 0
         ? Object.fromEntries(
-            Object.entries(props).filter(
-              ([, v]) => v !== undefined && v !== null,
-            ) as [string, string | number | boolean][],
+            Object.entries(props).filter(([, v]) => v !== undefined && v !== null) as [
+              string,
+              string | number | boolean,
+            ][],
           )
         : undefined
     vercelTrack(name, filtered)

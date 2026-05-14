@@ -33,11 +33,7 @@ const DEALMAKER_JSONLD = {
   about: { '@id': 'https://dealgapiq.com/#software' },
 }
 
-export default function DealMakerLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function DealMakerLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <script
@@ -55,7 +51,7 @@ export default function DealMakerLayout({
           },
           {
             heading: 'Creative-finance modeling',
-            body: 'Subject-To, seller carrybacks, 0% seconds, and the Morby Method are first-class structures in DealMaker — not footnotes. Plug in the seller\'s loan balance and rate and we model the full P&L, the cash-to-close difference, and the risk profile.',
+            body: "Subject-To, seller carrybacks, 0% seconds, and the Morby Method are first-class structures in DealMaker — not footnotes. Plug in the seller's loan balance and rate and we model the full P&L, the cash-to-close difference, and the risk profile.",
           },
           {
             heading: 'Negotiation scripts',

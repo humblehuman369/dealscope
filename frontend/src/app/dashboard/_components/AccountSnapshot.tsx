@@ -25,7 +25,15 @@ interface AccountCardProps {
   destructive?: boolean
 }
 
-function AccountCard({ href, onClick, icon, title, description, badge, destructive }: AccountCardProps) {
+function AccountCard({
+  href,
+  onClick,
+  icon,
+  title,
+  description,
+  badge,
+  destructive,
+}: AccountCardProps) {
   const inner = (
     <div className="h-full flex items-start gap-3 p-4 rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] hover:border-[var(--border-focus)] transition-all">
       <div
@@ -39,7 +47,9 @@ function AccountCard({ href, onClick, icon, title, description, badge, destructi
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h3 className={`text-sm font-bold ${destructive ? 'text-[var(--status-negative)]' : 'text-[var(--text-heading)]'}`}>
+          <h3
+            className={`text-sm font-bold ${destructive ? 'text-[var(--status-negative)]' : 'text-[var(--text-heading)]'}`}
+          >
             {title}
           </h3>
           {badge && (

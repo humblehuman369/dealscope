@@ -1,47 +1,47 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Camera, Search, X } from 'lucide-react';
-import { AddressAutocomplete } from '@/components/AddressAutocomplete';
-import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Camera, Search, X } from 'lucide-react'
+import { AddressAutocomplete } from '@/components/AddressAutocomplete'
+import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity'
 
 interface TryItNowModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onScanProperty: () => void;
+  isOpen: boolean
+  onClose: () => void
+  onScanProperty: () => void
 }
 
 export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModalProps) {
-  const router = useRouter();
-  const [address, setAddress] = useState('');
-  const [showAddressInput, setShowAddressInput] = useState(false);
-  const hasValidAddress = isLikelyFullAddress(address);
+  const router = useRouter()
+  const [address, setAddress] = useState('')
+  const [showAddressInput, setShowAddressInput] = useState(false)
+  const hasValidAddress = isLikelyFullAddress(address)
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const handleScanProperty = () => {
-    onClose();
-    onScanProperty();
-  };
+    onClose()
+    onScanProperty()
+  }
 
   const handleAddressSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (hasValidAddress) {
-      onClose();
+      onClose()
       // Navigate to IQ Analyzing screen (new IQ Verdict flow)
-      const canonicalAddress = canonicalizeAddressForIdentity(address);
-      router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`);
+      const canonicalAddress = canonicalizeAddressForIdentity(address)
+      router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`)
     }
-  };
+  }
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      onClose();
-      setShowAddressInput(false);
-      setAddress('');
+      onClose()
+      setShowAddressInput(false)
+      setAddress('')
     }
-  };
+  }
 
   return (
     <div className="try-modal-backdrop" onClick={handleBackdropClick}>
@@ -59,7 +59,9 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
             </div>
             <div>
               <h2 className="try-modal-title leading-tight">
-                How would you like to<br />analyze a property?
+                How would you like to
+                <br />
+                analyze a property?
               </h2>
               <p className="try-modal-subtitle mt-1">Choose your preferred method to get started</p>
             </div>
@@ -114,17 +116,13 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
                 type="button"
                 className="btn btn-secondary"
                 onClick={() => {
-                  setShowAddressInput(false);
-                  setAddress('');
+                  setShowAddressInput(false)
+                  setAddress('')
                 }}
               >
                 Back
               </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={!hasValidAddress}
-              >
+              <button type="submit" className="btn btn-primary" disabled={!hasValidAddress}>
                 Analyze Property
               </button>
             </div>
@@ -132,5 +130,5 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
         )}
       </div>
     </div>
-  );
+  )
 }

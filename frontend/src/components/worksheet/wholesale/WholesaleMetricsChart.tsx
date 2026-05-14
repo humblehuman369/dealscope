@@ -28,26 +28,26 @@ export interface WholesaleMetricsData {
   cashAtRisk: number
   effectiveHourly: number
   timeInvestmentHours: number
-  
+
   // Deal math
   arv: number
   estimatedRehab: number
   mao70: number // 70% Max Offer
   contractPrice: number
-  
+
   // Your side
   marketingCosts: number
   earnestMoney: number
-  
+
   // Exit
   endBuyerPrice: number
-  
+
   // Safety
   meets70Rule: boolean
   buyerRoi: number
   breakevenAssignmentFee: number
   timelineDays: number
-  
+
   // Score
   profitQualityScore: number
 }
@@ -55,26 +55,30 @@ export interface WholesaleMetricsData {
 // ============================================
 // HELPER: Build Wholesale metrics from worksheet
 // ============================================
-export function buildWholesaleMetricsData(calc: {
-  assignmentFee: number
-  yourNetProfit: number
-  yourCosts: number
-  earnestMoney: number
-  marketingCosts: number
-  arv: number
-  rehabCosts: number
-  mao: number
-  contractPrice: number
-  assignmentSalePrice: number
-  meets70Rule: boolean
-  buyerRoi: number
-}, timelineDays?: number, timeInvestmentHours?: number): WholesaleMetricsData {
+export function buildWholesaleMetricsData(
+  calc: {
+    assignmentFee: number
+    yourNetProfit: number
+    yourCosts: number
+    earnestMoney: number
+    marketingCosts: number
+    arv: number
+    rehabCosts: number
+    mao: number
+    contractPrice: number
+    assignmentSalePrice: number
+    meets70Rule: boolean
+    buyerRoi: number
+  },
+  timelineDays?: number,
+  timeInvestmentHours?: number,
+): WholesaleMetricsData {
   const hours = timeInvestmentHours || 60
   const effectiveHourly = calc.yourNetProfit / Math.max(1, hours)
-  
+
   // Calculate breakeven assignment fee
   const breakevenAssignmentFee = calc.marketingCosts + calc.earnestMoney + 500 // Buffer
-  
+
   // Calculate profit quality score
   let score = 0
   if (calc.yourNetProfit >= 10000) score += 25
@@ -87,7 +91,7 @@ export function buildWholesaleMetricsData(calc: {
   else if (effectiveHourly >= 100) score += 10
   if (calc.yourCosts <= 3000) score += 15
   else if (calc.yourCosts <= 5000) score += 10
-  
+
   return {
     assignmentFee: calc.assignmentFee,
     netProfit: calc.yourNetProfit,
@@ -127,8 +131,10 @@ export function WholesaleMetricsChart({ data }: WholesaleMetricsChartProps) {
   // Build verdict
   const verdict: VerdictData = useMemo(() => {
     const score = data.profitQualityScore
-    if (score >= 75) return { label: 'STRONG', detail: '(Good spread for you and buyer)', status: 'good' }
-    if (score >= 50) return { label: 'WATCH', detail: '(Spread is workable but tight)', status: 'warn' }
+    if (score >= 75)
+      return { label: 'STRONG', detail: '(Good spread for you and buyer)', status: 'good' }
+    if (score >= 50)
+      return { label: 'WATCH', detail: '(Spread is workable but tight)', status: 'warn' }
     return { label: 'WEAK', detail: '(Thin margins, high risk)', status: 'bad' }
   }, [data.profitQualityScore])
 
@@ -137,43 +143,55 @@ export function WholesaleMetricsChart({ data }: WholesaleMetricsChartProps) {
     { label: 'Assignment Fee', value: fmt.currency(data.assignmentFee), hint: 'Your payday' },
     { label: 'Net Profit', value: fmt.currency(data.netProfit), hint: 'After marketing + costs' },
     { label: 'Cash at Risk', value: fmt.currency(data.cashAtRisk), hint: 'Earnest + marketing' },
-    { label: 'Effective Hourly', value: fmt.currencyHr(data.effectiveHourly), hint: 'Net profit ÷ hours' },
+    {
+      label: 'Effective Hourly',
+      value: fmt.currencyHr(data.effectiveHourly),
+      hint: 'Net profit ÷ hours',
+    },
   ]
 
   // Factors
-  const factors: Factor[] = useMemo(() => [
-    {
-      name: 'Spread Available',
-      desc: 'ARV − rehab − end buyer target − your fee',
-      status: data.netProfit >= 10000 ? 'good' : data.netProfit >= 5000 ? 'warn' : 'bad',
-      tag: data.netProfit >= 10000 ? 'Healthy' : data.netProfit >= 5000 ? 'Tight' : 'Thin',
-    },
-    {
-      name: 'End Buyer Price Fit',
-      desc: 'Does it still meet 70% rule for a flipper/landlord?',
-      status: data.meets70Rule ? 'good' : 'warn',
-      tag: data.meets70Rule ? 'OK' : 'Stretch',
-    },
-    {
-      name: 'Fee Viability',
-      desc: 'Breakeven assignment fee vs expected assignment',
-      status: data.assignmentFee >= data.breakevenAssignmentFee * 1.5 ? 'good' : 
-              data.assignmentFee >= data.breakevenAssignmentFee ? 'warn' : 'bad',
-      tag: data.assignmentFee >= data.breakevenAssignmentFee * 1.5 ? 'Pass' : 'Tight',
-    },
-    {
-      name: 'Timeline Risk',
-      desc: 'Days to close affects fallout risk and marketing burn',
-      status: data.timelineDays <= 21 ? 'good' : data.timelineDays <= 30 ? 'warn' : 'bad',
-      tag: data.timelineDays <= 21 ? 'Quick' : 'Watch',
-    },
-    {
-      name: 'Deal Viability',
-      desc: 'Simple yes/no indicator after checks',
-      status: data.profitQualityScore >= 60 ? 'good' : data.profitQualityScore >= 40 ? 'warn' : 'bad',
-      tag: data.profitQualityScore >= 60 ? 'Yes' : 'Maybe',
-    },
-  ], [data])
+  const factors: Factor[] = useMemo(
+    () => [
+      {
+        name: 'Spread Available',
+        desc: 'ARV − rehab − end buyer target − your fee',
+        status: data.netProfit >= 10000 ? 'good' : data.netProfit >= 5000 ? 'warn' : 'bad',
+        tag: data.netProfit >= 10000 ? 'Healthy' : data.netProfit >= 5000 ? 'Tight' : 'Thin',
+      },
+      {
+        name: 'End Buyer Price Fit',
+        desc: 'Does it still meet 70% rule for a flipper/landlord?',
+        status: data.meets70Rule ? 'good' : 'warn',
+        tag: data.meets70Rule ? 'OK' : 'Stretch',
+      },
+      {
+        name: 'Fee Viability',
+        desc: 'Breakeven assignment fee vs expected assignment',
+        status:
+          data.assignmentFee >= data.breakevenAssignmentFee * 1.5
+            ? 'good'
+            : data.assignmentFee >= data.breakevenAssignmentFee
+              ? 'warn'
+              : 'bad',
+        tag: data.assignmentFee >= data.breakevenAssignmentFee * 1.5 ? 'Pass' : 'Tight',
+      },
+      {
+        name: 'Timeline Risk',
+        desc: 'Days to close affects fallout risk and marketing burn',
+        status: data.timelineDays <= 21 ? 'good' : data.timelineDays <= 30 ? 'warn' : 'bad',
+        tag: data.timelineDays <= 21 ? 'Quick' : 'Watch',
+      },
+      {
+        name: 'Deal Viability',
+        desc: 'Simple yes/no indicator after checks',
+        status:
+          data.profitQualityScore >= 60 ? 'good' : data.profitQualityScore >= 40 ? 'warn' : 'bad',
+        tag: data.profitQualityScore >= 60 ? 'Yes' : 'Maybe',
+      },
+    ],
+    [data],
+  )
 
   // Meta items
   const leftMeta: MetaItem[] = [
@@ -199,14 +217,24 @@ export function WholesaleMetricsChart({ data }: WholesaleMetricsChartProps) {
   const exitProfit: BarItem[] = [
     { label: 'End Buyer Price', value: fmt.currency(data.endBuyerPrice), meter: 72 },
     { label: 'Assignment Fee', value: fmt.currency(data.assignmentFee), meter: 66 },
-    { label: 'Net Profit', value: fmt.currency(data.netProfit), meter: data.netProfit > 0 ? 62 : 20 },
+    {
+      label: 'Net Profit',
+      value: fmt.currency(data.netProfit),
+      meter: data.netProfit > 0 ? 62 : 20,
+    },
     { label: 'Time Investment (hrs)', value: String(data.timeInvestmentHours), meter: 58 },
   ]
 
   // Right meta
   const rightMeta: MetaItem[] = [
-    { label: 'Deals for $50K', value: `~${Math.ceil(50000 / Math.max(1, data.netProfit))} deals at $${Math.round(data.netProfit / 1000)}k net` },
-    { label: 'Deals for $100K', value: `~${Math.ceil(100000 / Math.max(1, data.netProfit))} deals at $${Math.round(data.netProfit / 1000)}k net` },
+    {
+      label: 'Deals for $50K',
+      value: `~${Math.ceil(50000 / Math.max(1, data.netProfit))} deals at $${Math.round(data.netProfit / 1000)}k net`,
+    },
+    {
+      label: 'Deals for $100K',
+      value: `~${Math.ceil(100000 / Math.max(1, data.netProfit))} deals at $${Math.round(data.netProfit / 1000)}k net`,
+    },
   ]
 
   return (
@@ -216,20 +244,22 @@ export function WholesaleMetricsChart({ data }: WholesaleMetricsChartProps) {
       leftPanel={
         <>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-            <ProfitQualityRing 
-              score={data.profitQualityScore} 
-              subline="Weights: Spread available + fee viability + cash at risk + timeline + hourly rate." 
+            <ProfitQualityRing
+              score={data.profitQualityScore}
+              subline="Weights: Spread available + fee viability + cash at risk + timeline + hourly rate."
             />
             <VerdictBadge verdict={verdict} />
           </div>
-          
+
           <KPIGrid kpis={kpis} />
-          
+
           <div className="mt-6">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">What Investors Care About Most</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+              What Investors Care About Most
+            </div>
             <FactorList factors={factors} />
           </div>
-          
+
           <MetaGrid items={leftMeta} />
         </>
       }
@@ -239,16 +269,18 @@ export function WholesaleMetricsChart({ data }: WholesaleMetricsChartProps) {
             <BarPanel title="Deal Math" bars={dealMath} />
             <BarPanel title="Your Side" bars={yourSide} />
           </div>
-          
+
           <div className="mt-6">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Exit & Profit</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+              Exit & Profit
+            </div>
             <div className="space-y-1">
               {exitProfit.map((bar) => (
                 <BarRow key={bar.label} {...bar} />
               ))}
             </div>
           </div>
-          
+
           <MetaGrid items={rightMeta} />
         </>
       }

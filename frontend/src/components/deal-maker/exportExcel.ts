@@ -58,7 +58,11 @@ type SellerFinExport = Pick<
   'sellerFinancingAmount' | 'sellerInterestRate' | 'sellerTermYears'
 >
 
-function appendSellerFinancingRows(ws: ExcelJS.Worksheet, row: number, state: SellerFinExport): number {
+function appendSellerFinancingRows(
+  ws: ExcelJS.Worksheet,
+  row: number,
+  state: SellerFinExport,
+): number {
   addRow(ws, row++, 'Seller Financing', state.sellerFinancingAmount, CUR)
   addRow(ws, row++, 'Seller Interest', state.sellerInterestRate, PCT2)
   addRow(ws, row++, 'Seller Term', state.sellerTermYears, '#,##0 "years"')
@@ -87,7 +91,14 @@ function applySectionHeader(ws: ExcelJS.Worksheet, row: number, text: string) {
   r.height = 20
 }
 
-function addRow(ws: ExcelJS.Worksheet, row: number, label: string, value: number | string, fmt?: string, note?: string) {
+function addRow(
+  ws: ExcelJS.Worksheet,
+  row: number,
+  label: string,
+  value: number | string,
+  fmt?: string,
+  note?: string,
+) {
   const labelCell = ws.getCell(row, 1)
   labelCell.value = label
   labelCell.font = { size: 10, name: 'Calibri' }
@@ -105,7 +116,13 @@ function addRow(ws: ExcelJS.Worksheet, row: number, label: string, value: number
   }
 }
 
-function addTotalRow(ws: ExcelJS.Worksheet, row: number, label: string, value: number | string, fmt?: string) {
+function addTotalRow(
+  ws: ExcelJS.Worksheet,
+  row: number,
+  label: string,
+  value: number | string,
+  fmt?: string,
+) {
   const labelCell = ws.getCell(row, 1)
   labelCell.value = label
   labelCell.font = { bold: true, size: 10, name: 'Calibri' }
@@ -125,7 +142,14 @@ function addTotalRow(ws: ExcelJS.Worksheet, row: number, label: string, value: n
   }
 }
 
-function addSummaryRow(ws: ExcelJS.Worksheet, row: number, label: string, value: number | string, fmt?: string, highlight?: 'good' | 'bad') {
+function addSummaryRow(
+  ws: ExcelJS.Worksheet,
+  row: number,
+  label: string,
+  value: number | string,
+  fmt?: string,
+  highlight?: 'good' | 'bad',
+) {
   const labelCell = ws.getCell(row, 1)
   labelCell.value = label
   labelCell.font = { bold: true, size: 10, name: 'Calibri' }
@@ -147,7 +171,12 @@ function addSummaryRow(ws: ExcelJS.Worksheet, row: number, label: string, value:
   }
 }
 
-function setupSheet(wb: ExcelJS.Workbook, title: string, address: string, strategyLabel: string): ExcelJS.Worksheet {
+function setupSheet(
+  wb: ExcelJS.Workbook,
+  title: string,
+  address: string,
+  strategyLabel: string,
+): ExcelJS.Worksheet {
   const ws = wb.addWorksheet(title)
   ws.getColumn(1).width = 35
   ws.getColumn(2).width = 22
@@ -169,7 +198,9 @@ function setupSheet(wb: ExcelJS.Workbook, title: string, address: string, strate
 }
 
 function triggerDownload(buffer: ArrayBuffer, filename: string) {
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -182,28 +213,48 @@ function triggerDownload(buffer: ArrayBuffer, filename: string) {
 
 // ── Strategy builders ───────────────────────────────────────────────────────
 
-function buildLTRSheet(wb: ExcelJS.Workbook, state: LTRDealMakerState, metrics: LTRDealMakerMetrics, address: string, listPrice: number) {
+function buildLTRSheet(
+  wb: ExcelJS.Workbook,
+  state: LTRDealMakerState,
+  metrics: LTRDealMakerMetrics,
+  address: string,
+  listPrice: number,
+) {
   const ws = setupSheet(wb, 'LTR Analysis', address, STRATEGY_LABELS.ltr)
   const m = metrics as unknown as Record<string, unknown>
 
   const downPayment = state.buyPrice * state.downPaymentPercent
   const closingCosts = state.buyPrice * state.closingCostsPercent
-  const loanAmount = num(m, 'loanAmount') || (state.buyPrice - downPayment)
+  const loanAmount = num(m, 'loanAmount') || state.buyPrice - downPayment
   const monthlyPayment = num(m, 'monthlyPayment')
-  const grossMonthly = num(m, 'grossMonthlyIncome') || (state.monthlyRent + state.otherIncome)
+  const grossMonthly = num(m, 'grossMonthlyIncome') || state.monthlyRent + state.otherIncome
   const totalMonthlyExp = num(m, 'totalMonthlyExpenses')
   const annualProfit = num(m, 'annualProfit')
   const capRate = num(m, 'capRate')
   const cocReturn = num(m, 'cocReturn')
-  const cashNeeded = num(m, 'cashNeeded') || (downPayment + closingCosts + state.rehabBudget)
+  const cashNeeded = num(m, 'cashNeeded') || downPayment + closingCosts + state.rehabBudget
   const noi = annualProfit + monthlyPayment * 12
 
   let r = 5
   applySectionHeader(ws, r++, 'ACQUISITION')
   addRow(ws, r++, 'Market Price', listPrice || state.buyPrice, CUR)
   addRow(ws, r++, 'Buy Price', state.buyPrice, CUR)
-  addRow(ws, r++, 'Down Payment', downPayment, CUR, `${(state.downPaymentPercent * 100).toFixed(1)}%`)
-  addRow(ws, r++, 'Closing Costs', closingCosts, CUR, `${(state.closingCostsPercent * 100).toFixed(1)}%`)
+  addRow(
+    ws,
+    r++,
+    'Down Payment',
+    downPayment,
+    CUR,
+    `${(state.downPaymentPercent * 100).toFixed(1)}%`,
+  )
+  addRow(
+    ws,
+    r++,
+    'Closing Costs',
+    closingCosts,
+    CUR,
+    `${(state.closingCostsPercent * 100).toFixed(1)}%`,
+  )
   addRow(ws, r++, 'Rehab Budget', state.rehabBudget, CUR)
   addTotalRow(ws, r++, 'Total Cash Needed', cashNeeded, CUR)
 
@@ -220,9 +271,30 @@ function buildLTRSheet(wb: ExcelJS.Workbook, state: LTRDealMakerState, metrics: 
   applySectionHeader(ws, r++, 'OPERATING EXPENSES (Annual)')
   addRow(ws, r++, 'Property Tax', state.annualPropertyTax, CUR)
   addRow(ws, r++, 'Insurance', state.annualInsurance, CUR)
-  addRow(ws, r++, 'Management', grossMonthly * (state.managementRate ?? 0) * 12, CUR, `${((state.managementRate ?? 0) * 100).toFixed(0)}%`)
-  addRow(ws, r++, 'Maintenance', grossMonthly * state.maintenanceRate * 12, CUR, `${(state.maintenanceRate * 100).toFixed(0)}%`)
-  addRow(ws, r++, 'Vacancy', grossMonthly * state.vacancyRate * 12, CUR, `${(state.vacancyRate * 100).toFixed(0)}%`)
+  addRow(
+    ws,
+    r++,
+    'Management',
+    grossMonthly * (state.managementRate ?? 0) * 12,
+    CUR,
+    `${((state.managementRate ?? 0) * 100).toFixed(0)}%`,
+  )
+  addRow(
+    ws,
+    r++,
+    'Maintenance',
+    grossMonthly * state.maintenanceRate * 12,
+    CUR,
+    `${(state.maintenanceRate * 100).toFixed(0)}%`,
+  )
+  addRow(
+    ws,
+    r++,
+    'Vacancy',
+    grossMonthly * state.vacancyRate * 12,
+    CUR,
+    `${(state.vacancyRate * 100).toFixed(0)}%`,
+  )
   if (state.monthlyHoa > 0) addRow(ws, r++, 'HOA', state.monthlyHoa * 12, CUR)
   addTotalRow(ws, r++, 'Total Operating Expenses', totalMonthlyExp * 12 - monthlyPayment * 12, CUR)
 
@@ -236,26 +308,53 @@ function buildLTRSheet(wb: ExcelJS.Workbook, state: LTRDealMakerState, metrics: 
   r++
   applySectionHeader(ws, r++, 'SUMMARY')
   addSummaryRow(ws, r++, 'NOI (Before Mortgage)', noi, CUR, noi >= 0 ? 'good' : 'bad')
-  addSummaryRow(ws, r++, 'Net Cash Flow (After Mortgage)', annualProfit, CUR, annualProfit >= 0 ? 'good' : 'bad')
-  addSummaryRow(ws, r++, 'Monthly Cash Flow', annualProfit / 12, CUR, annualProfit >= 0 ? 'good' : 'bad')
+  addSummaryRow(
+    ws,
+    r++,
+    'Net Cash Flow (After Mortgage)',
+    annualProfit,
+    CUR,
+    annualProfit >= 0 ? 'good' : 'bad',
+  )
+  addSummaryRow(
+    ws,
+    r++,
+    'Monthly Cash Flow',
+    annualProfit / 12,
+    CUR,
+    annualProfit >= 0 ? 'good' : 'bad',
+  )
   addSummaryRow(ws, r++, 'Cap Rate', capRate / 100, PCT, capRate >= 6 ? 'good' : 'bad')
-  addSummaryRow(ws, r++, 'Cash-on-Cash Return', cocReturn / 100, PCT, cocReturn >= 8 ? 'good' : 'bad')
+  addSummaryRow(
+    ws,
+    r++,
+    'Cash-on-Cash Return',
+    cocReturn / 100,
+    PCT,
+    cocReturn >= 8 ? 'good' : 'bad',
+  )
 }
 
-function buildSTRSheet(wb: ExcelJS.Workbook, state: STRDealMakerState, metrics: STRMetrics, address: string, listPrice: number) {
+function buildSTRSheet(
+  wb: ExcelJS.Workbook,
+  state: STRDealMakerState,
+  metrics: STRMetrics,
+  address: string,
+  listPrice: number,
+) {
   const ws = setupSheet(wb, 'STR Analysis', address, STRATEGY_LABELS.str)
   const m = metrics as unknown as Record<string, unknown>
 
-  const downPayment = num(m, 'downPaymentAmount') || (state.buyPrice * state.downPaymentPercent)
-  const closingCosts = num(m, 'closingCostsAmount') || (state.buyPrice * state.closingCostsPercent)
-  const loanAmount = num(m, 'loanAmount') || (state.buyPrice - downPayment)
+  const downPayment = num(m, 'downPaymentAmount') || state.buyPrice * state.downPaymentPercent
+  const closingCosts = num(m, 'closingCostsAmount') || state.buyPrice * state.closingCostsPercent
+  const loanAmount = num(m, 'loanAmount') || state.buyPrice - downPayment
   const monthlyPayment = num(m, 'monthlyPayment')
-  const cashNeeded = num(m, 'cashNeeded') || (downPayment + closingCosts + state.furnitureSetupCost)
+  const cashNeeded = num(m, 'cashNeeded') || downPayment + closingCosts + state.furnitureSetupCost
   const nightsOccupied = num(m, 'nightsOccupied')
   const annualGross = num(m, 'annualGrossRevenue')
   const totalMonthlyExp = num(m, 'totalMonthlyExpenses')
   const annualCF = num(m, 'annualCashFlow')
-  const noi = num(m, 'noi') || (annualCF + monthlyPayment * 12)
+  const noi = num(m, 'noi') || annualCF + monthlyPayment * 12
   const capRate = num(m, 'capRate')
   const cocReturn = num(m, 'cocReturn')
 
@@ -263,8 +362,22 @@ function buildSTRSheet(wb: ExcelJS.Workbook, state: STRDealMakerState, metrics: 
   applySectionHeader(ws, r++, 'ACQUISITION')
   addRow(ws, r++, 'Market Price', listPrice || state.buyPrice, CUR)
   addRow(ws, r++, 'Buy Price', state.buyPrice, CUR)
-  addRow(ws, r++, 'Down Payment', downPayment, CUR, `${(state.downPaymentPercent * 100).toFixed(1)}%`)
-  addRow(ws, r++, 'Closing Costs', closingCosts, CUR, `${(state.closingCostsPercent * 100).toFixed(1)}%`)
+  addRow(
+    ws,
+    r++,
+    'Down Payment',
+    downPayment,
+    CUR,
+    `${(state.downPaymentPercent * 100).toFixed(1)}%`,
+  )
+  addRow(
+    ws,
+    r++,
+    'Closing Costs',
+    closingCosts,
+    CUR,
+    `${(state.closingCostsPercent * 100).toFixed(1)}%`,
+  )
   addRow(ws, r++, 'Rehab Budget', state.rehabBudget, CUR)
   addRow(ws, r++, 'Furniture & Setup', state.furnitureSetupCost, CUR)
   addTotalRow(ws, r++, 'Total Cash Needed', cashNeeded, CUR)
@@ -290,11 +403,32 @@ function buildSTRSheet(wb: ExcelJS.Workbook, state: STRDealMakerState, metrics: 
 
   r++
   applySectionHeader(ws, r++, 'EXPENSES (Annual)')
-  addRow(ws, r++, 'Platform Fees', state.platformFeeRate, PCT, `${(state.platformFeeRate * 100).toFixed(0)}%`)
-  addRow(ws, r++, 'STR Management', state.strManagementRate, PCT, `${(state.strManagementRate * 100).toFixed(0)}%`)
+  addRow(
+    ws,
+    r++,
+    'Platform Fees',
+    state.platformFeeRate,
+    PCT,
+    `${(state.platformFeeRate * 100).toFixed(0)}%`,
+  )
+  addRow(
+    ws,
+    r++,
+    'STR Management',
+    state.strManagementRate,
+    PCT,
+    `${(state.strManagementRate * 100).toFixed(0)}%`,
+  )
   addRow(ws, r++, 'Cleaning / Turnover', state.cleaningCostPerTurnover, CUR)
   addRow(ws, r++, 'Supplies', state.suppliesMonthly * 12, CUR, `${state.suppliesMonthly}/mo`)
-  addRow(ws, r++, 'Utilities', state.additionalUtilitiesMonthly * 12, CUR, `${state.additionalUtilitiesMonthly}/mo`)
+  addRow(
+    ws,
+    r++,
+    'Utilities',
+    state.additionalUtilitiesMonthly * 12,
+    CUR,
+    `${state.additionalUtilitiesMonthly}/mo`,
+  )
   addRow(ws, r++, 'Property Tax', state.annualPropertyTax, CUR)
   addRow(ws, r++, 'Insurance', state.annualInsurance, CUR)
   addTotalRow(ws, r++, 'Total Monthly Expenses', totalMonthlyExp, CUR)
@@ -302,13 +436,32 @@ function buildSTRSheet(wb: ExcelJS.Workbook, state: STRDealMakerState, metrics: 
   r++
   applySectionHeader(ws, r++, 'SUMMARY')
   addSummaryRow(ws, r++, 'NOI (Before Mortgage)', noi, CUR, noi >= 0 ? 'good' : 'bad')
-  addSummaryRow(ws, r++, 'Net Cash Flow (After Mortgage)', annualCF, CUR, annualCF >= 0 ? 'good' : 'bad')
+  addSummaryRow(
+    ws,
+    r++,
+    'Net Cash Flow (After Mortgage)',
+    annualCF,
+    CUR,
+    annualCF >= 0 ? 'good' : 'bad',
+  )
   addSummaryRow(ws, r++, 'Monthly Cash Flow', annualCF / 12, CUR, annualCF >= 0 ? 'good' : 'bad')
   addSummaryRow(ws, r++, 'Cap Rate', capRate / 100, PCT, capRate >= 6 ? 'good' : 'bad')
-  addSummaryRow(ws, r++, 'Cash-on-Cash Return', cocReturn / 100, PCT, cocReturn >= 8 ? 'good' : 'bad')
+  addSummaryRow(
+    ws,
+    r++,
+    'Cash-on-Cash Return',
+    cocReturn / 100,
+    PCT,
+    cocReturn >= 8 ? 'good' : 'bad',
+  )
 }
 
-function buildBRRRRSheet(wb: ExcelJS.Workbook, state: BRRRRDealMakerState, metrics: BRRRRMetrics, address: string) {
+function buildBRRRRSheet(
+  wb: ExcelJS.Workbook,
+  state: BRRRRDealMakerState,
+  metrics: BRRRRMetrics,
+  address: string,
+) {
   const ws = setupSheet(wb, 'BRRRR Analysis', address, STRATEGY_LABELS.brrrr)
   const m = metrics as unknown as Record<string, unknown>
 
@@ -327,13 +480,20 @@ function buildBRRRRSheet(wb: ExcelJS.Workbook, state: BRRRRDealMakerState, metri
   const coc = num(m, 'postRefiCashOnCash')
   const estimatedNoi = num(m, 'estimatedNoi')
   const capRate = num(m, 'estimatedCapRate')
-  const noi = estimatedNoi || (annualCF + newPayment * 12)
+  const noi = estimatedNoi || annualCF + newPayment * 12
 
   let r = 5
   applySectionHeader(ws, r++, 'PHASE 1 — BUY')
   addRow(ws, r++, 'Purchase Price', state.purchasePrice, CUR)
   addRow(ws, r++, 'Discount from Market', state.buyDiscountPct, PCT)
-  addRow(ws, r++, 'Down Payment', initialDown, CUR, `${(state.downPaymentPercent * 100).toFixed(0)}%`)
+  addRow(
+    ws,
+    r++,
+    'Down Payment',
+    initialDown,
+    CUR,
+    `${(state.downPaymentPercent * 100).toFixed(0)}%`,
+  )
   addRow(ws, r++, 'Hard Money Rate', state.hardMoneyRate, PCT2)
   r = appendSellerFinancingRows(ws, r, state)
   addRow(ws, r++, 'Closing Costs', initialClosing, CUR)
@@ -342,7 +502,14 @@ function buildBRRRRSheet(wb: ExcelJS.Workbook, state: BRRRRDealMakerState, metri
   r++
   applySectionHeader(ws, r++, 'PHASE 2 — REHAB')
   addRow(ws, r++, 'Rehab Budget', state.rehabBudget, CUR)
-  addRow(ws, r++, 'Contingency', state.rehabBudget * state.contingencyPct, CUR, `${(state.contingencyPct * 100).toFixed(0)}%`)
+  addRow(
+    ws,
+    r++,
+    'Contingency',
+    state.rehabBudget * state.contingencyPct,
+    CUR,
+    `${(state.contingencyPct * 100).toFixed(0)}%`,
+  )
   addRow(ws, r++, 'Holding Period', state.holdingPeriodMonths, '#,##0 "months"')
   addRow(ws, r++, 'Holding Costs', state.holdingCostsMonthly, CUR, '/month')
   addRow(ws, r++, 'After Repair Value (ARV)', state.arv, CUR)
@@ -372,13 +539,32 @@ function buildBRRRRSheet(wb: ExcelJS.Workbook, state: BRRRRDealMakerState, metri
   r++
   applySectionHeader(ws, r++, 'SUMMARY')
   addSummaryRow(ws, r++, 'NOI (Before Mortgage)', noi, CUR, noi >= 0 ? 'good' : 'bad')
-  addSummaryRow(ws, r++, 'Annual Cash Flow (Post-Refi)', annualCF, CUR, annualCF >= 0 ? 'good' : 'bad')
+  addSummaryRow(
+    ws,
+    r++,
+    'Annual Cash Flow (Post-Refi)',
+    annualCF,
+    CUR,
+    annualCF >= 0 ? 'good' : 'bad',
+  )
   addSummaryRow(ws, r++, 'Monthly Cash Flow', annualCF / 12, CUR, annualCF >= 0 ? 'good' : 'bad')
   addSummaryRow(ws, r++, 'Cap Rate', capRate / 100, PCT, capRate >= 6 ? 'good' : 'bad')
-  addSummaryRow(ws, r++, 'Cash-on-Cash Return', coc > 999 ? 'Infinite' : coc / 100, coc > 999 ? undefined : PCT, coc >= 8 ? 'good' : 'bad')
+  addSummaryRow(
+    ws,
+    r++,
+    'Cash-on-Cash Return',
+    coc > 999 ? 'Infinite' : coc / 100,
+    coc > 999 ? undefined : PCT,
+    coc >= 8 ? 'good' : 'bad',
+  )
 }
 
-function buildFlipSheet(wb: ExcelJS.Workbook, state: FlipDealMakerState, metrics: FlipMetrics, address: string) {
+function buildFlipSheet(
+  wb: ExcelJS.Workbook,
+  state: FlipDealMakerState,
+  metrics: FlipMetrics,
+  address: string,
+) {
   const ws = setupSheet(wb, 'Flip Analysis', address, STRATEGY_LABELS.flip)
   const m = metrics as unknown as Record<string, unknown>
 
@@ -405,7 +591,14 @@ function buildFlipSheet(wb: ExcelJS.Workbook, state: FlipDealMakerState, metrics
   applySectionHeader(ws, r++, 'ACQUISITION')
   addRow(ws, r++, 'Purchase Price', state.purchasePrice, CUR)
   addRow(ws, r++, 'Discount from ARV', state.purchaseDiscountPct, PCT)
-  addRow(ws, r++, 'Closing Costs', closingCosts, CUR, `${(state.closingCostsPercent * 100).toFixed(1)}%`)
+  addRow(
+    ws,
+    r++,
+    'Closing Costs',
+    closingCosts,
+    CUR,
+    `${(state.closingCostsPercent * 100).toFixed(1)}%`,
+  )
   addRow(ws, r++, 'Financing Type', state.financingType === 'cash' ? 'Cash' : 'Hard Money')
   if (state.financingType !== 'cash') {
     addRow(ws, r++, 'Loan-to-Value', state.hardMoneyLtv, PCT)
@@ -419,7 +612,14 @@ function buildFlipSheet(wb: ExcelJS.Workbook, state: FlipDealMakerState, metrics
   r++
   applySectionHeader(ws, r++, 'REHAB & HOLDING')
   addRow(ws, r++, 'Rehab Budget', state.rehabBudget, CUR)
-  addRow(ws, r++, 'Contingency', state.rehabBudget * state.contingencyPct, CUR, `${(state.contingencyPct * 100).toFixed(0)}%`)
+  addRow(
+    ws,
+    r++,
+    'Contingency',
+    state.rehabBudget * state.contingencyPct,
+    CUR,
+    `${(state.contingencyPct * 100).toFixed(0)}%`,
+  )
   addRow(ws, r++, 'Rehab Time', state.rehabTimeMonths, '#,##0 "months"')
   addRow(ws, r++, 'After Repair Value (ARV)', state.arv, CUR)
   addRow(ws, r++, 'Monthly Holding Costs', state.holdingCostsMonthly, CUR)
@@ -432,24 +632,57 @@ function buildFlipSheet(wb: ExcelJS.Workbook, state: FlipDealMakerState, metrics
   r++
   applySectionHeader(ws, r++, 'SALE')
   addRow(ws, r++, 'ARV / Sale Price', grossProceeds || state.arv, CUR)
-  addRow(ws, r++, 'Selling Costs', sellingCosts, CUR, `${(state.sellingCostsPct * 100).toFixed(0)}%`)
+  addRow(
+    ws,
+    r++,
+    'Selling Costs',
+    sellingCosts,
+    CUR,
+    `${(state.sellingCostsPct * 100).toFixed(0)}%`,
+  )
   addTotalRow(ws, r++, 'Net Proceeds', netProceeds, CUR)
 
   r++
   applySectionHeader(ws, r++, 'PROFIT ANALYSIS')
   addRow(ws, r++, 'Gross Profit', grossProfit, CUR)
-  addRow(ws, r++, 'Capital Gains Tax', capGains, CUR, `${(state.capitalGainsRate * 100).toFixed(0)}%`)
+  addRow(
+    ws,
+    r++,
+    'Capital Gains Tax',
+    capGains,
+    CUR,
+    `${(state.capitalGainsRate * 100).toFixed(0)}%`,
+  )
   addTotalRow(ws, r++, 'Net Profit', netProfit, CUR)
 
   r++
   applySectionHeader(ws, r++, 'SUMMARY')
   addSummaryRow(ws, r++, 'Net Profit', netProfit, CUR, netProfit >= 0 ? 'good' : 'bad')
   addSummaryRow(ws, r++, 'ROI', roi / 100, PCT, roi >= 20 ? 'good' : 'bad')
-  addSummaryRow(ws, r++, 'Annualized ROI', annualizedRoi / 100, PCT, annualizedRoi >= 30 ? 'good' : 'bad')
-  addSummaryRow(ws, r++, '70% Rule', metrics.meets70PercentRule ? 'PASS' : 'FAIL', undefined, metrics.meets70PercentRule ? 'good' : 'bad')
+  addSummaryRow(
+    ws,
+    r++,
+    'Annualized ROI',
+    annualizedRoi / 100,
+    PCT,
+    annualizedRoi >= 30 ? 'good' : 'bad',
+  )
+  addSummaryRow(
+    ws,
+    r++,
+    '70% Rule',
+    metrics.meets70PercentRule ? 'PASS' : 'FAIL',
+    undefined,
+    metrics.meets70PercentRule ? 'good' : 'bad',
+  )
 }
 
-function buildHouseHackSheet(wb: ExcelJS.Workbook, state: HouseHackDealMakerState, metrics: HouseHackMetrics, address: string) {
+function buildHouseHackSheet(
+  wb: ExcelJS.Workbook,
+  state: HouseHackDealMakerState,
+  metrics: HouseHackMetrics,
+  address: string,
+) {
   const ws = setupSheet(wb, 'House Hack Analysis', address, STRATEGY_LABELS.house_hack)
   const m = metrics as unknown as Record<string, unknown>
 
@@ -476,10 +709,24 @@ function buildHouseHackSheet(wb: ExcelJS.Workbook, state: HouseHackDealMakerStat
   addRow(ws, r++, 'Total Units', state.totalUnits, INT)
   addRow(ws, r++, 'Owner-Occupied Units', state.ownerOccupiedUnits, INT)
   addRow(ws, r++, 'Loan Type', state.loanType.toUpperCase())
-  addRow(ws, r++, 'Down Payment', downPayment, CUR, `${(state.downPaymentPercent * 100).toFixed(1)}%`)
+  addRow(
+    ws,
+    r++,
+    'Down Payment',
+    downPayment,
+    CUR,
+    `${(state.downPaymentPercent * 100).toFixed(1)}%`,
+  )
   addRow(ws, r++, 'Interest Rate', state.interestRate, PCT2)
   addRow(ws, r++, 'PMI/MIP Rate', state.pmiRate, PCT2)
-  addRow(ws, r++, 'Closing Costs', closingCosts, CUR, `${(state.closingCostsPercent * 100).toFixed(1)}%`)
+  addRow(
+    ws,
+    r++,
+    'Closing Costs',
+    closingCosts,
+    CUR,
+    `${(state.closingCostsPercent * 100).toFixed(1)}%`,
+  )
   r = appendSellerFinancingRows(ws, r, state)
   addTotalRow(ws, r++, 'Cash to Close', cashToClose, CUR)
 
@@ -513,19 +760,31 @@ function buildHouseHackSheet(wb: ExcelJS.Workbook, state: HouseHackDealMakerStat
 
   r++
   applySectionHeader(ws, r++, 'SUMMARY')
-  addSummaryRow(ws, r++, 'Effective Housing Cost', effectiveCost, CUR, effectiveCost <= 0 ? 'good' : 'bad')
+  addSummaryRow(
+    ws,
+    r++,
+    'Effective Housing Cost',
+    effectiveCost,
+    CUR,
+    effectiveCost <= 0 ? 'good' : 'bad',
+  )
   addSummaryRow(ws, r++, 'Net Rental Income', netRental, CUR, netRental >= 0 ? 'good' : 'bad')
   addSummaryRow(ws, r++, 'vs Current Housing', savings, CUR, savings >= 0 ? 'good' : 'bad')
   addSummaryRow(ws, r++, 'Housing Offset', offset / 100, PCT, offset >= 100 ? 'good' : 'bad')
   addSummaryRow(ws, r++, 'Cash-on-Cash Return', coc / 100, PCT, coc >= 8 ? 'good' : 'bad')
 }
 
-function buildWholesaleSheet(wb: ExcelJS.Workbook, state: WholesaleDealMakerState, metrics: WholesaleMetrics, address: string) {
+function buildWholesaleSheet(
+  wb: ExcelJS.Workbook,
+  state: WholesaleDealMakerState,
+  metrics: WholesaleMetrics,
+  address: string,
+) {
   const ws = setupSheet(wb, 'Wholesale Analysis', address, STRATEGY_LABELS.wholesale)
   const m = metrics as unknown as Record<string, unknown>
 
   const mao = num(m, 'maxAllowableOffer')
-  const meets70 = !!(m.meets70PercentRule)
+  const meets70 = !!m.meets70PercentRule
   const endBuyerPrice = num(m, 'endBuyerPrice')
   const endBuyerAllIn = num(m, 'endBuyerAllIn')
   const endBuyerProfit = num(m, 'endBuyerProfit')
@@ -589,10 +848,22 @@ export async function exportDealMakerExcel(
 
   switch (strategyType) {
     case 'ltr':
-      buildLTRSheet(wb, state as LTRDealMakerState, metrics as LTRDealMakerMetrics, propertyAddress, listPrice)
+      buildLTRSheet(
+        wb,
+        state as LTRDealMakerState,
+        metrics as LTRDealMakerMetrics,
+        propertyAddress,
+        listPrice,
+      )
       break
     case 'str':
-      buildSTRSheet(wb, state as STRDealMakerState, metrics as STRMetrics, propertyAddress, listPrice)
+      buildSTRSheet(
+        wb,
+        state as STRDealMakerState,
+        metrics as STRMetrics,
+        propertyAddress,
+        listPrice,
+      )
       break
     case 'brrrr':
       buildBRRRRSheet(wb, state as BRRRRDealMakerState, metrics as BRRRRMetrics, propertyAddress)
@@ -601,10 +872,20 @@ export async function exportDealMakerExcel(
       buildFlipSheet(wb, state as FlipDealMakerState, metrics as FlipMetrics, propertyAddress)
       break
     case 'house_hack':
-      buildHouseHackSheet(wb, state as HouseHackDealMakerState, metrics as HouseHackMetrics, propertyAddress)
+      buildHouseHackSheet(
+        wb,
+        state as HouseHackDealMakerState,
+        metrics as HouseHackMetrics,
+        propertyAddress,
+      )
       break
     case 'wholesale':
-      buildWholesaleSheet(wb, state as WholesaleDealMakerState, metrics as WholesaleMetrics, propertyAddress)
+      buildWholesaleSheet(
+        wb,
+        state as WholesaleDealMakerState,
+        metrics as WholesaleMetrics,
+        propertyAddress,
+      )
       break
   }
 

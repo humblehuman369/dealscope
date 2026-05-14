@@ -130,30 +130,12 @@ async def lifespan(app: FastAPI):
             logger.info(f"Is Railway URL: {'railway' in db_url.lower()}")
             logger.info(f"Is production: {settings.is_production}")
 
-    # Create database tables if they don't exist.
-    # Wrapped in asyncio.wait_for so a slow/unreachable DB doesn't block
-    # the entire lifespan — uvicorn can't accept connections until yield.
     import asyncio
 
-    if settings.DATABASE_URL:
-        try:
-
-            async def _init_db():
-                from app.db.base import Base
-                from app.db.session import get_engine
-
-                engine = get_engine()
-                async with engine.begin() as conn:
-                    import app.models  # noqa: F401 — register ALL models
-
-                    await conn.run_sync(Base.metadata.create_all)
-                logger.info("Database tables created/verified successfully")
-
-            await asyncio.wait_for(_init_db(), timeout=15)
-        except TimeoutError:
-            logger.error("Database table init timed out after 15s — continuing without DB verification")
-        except Exception as e:
-            logger.error(f"Failed to create database tables: {e}")
+    # Database schema is owned exclusively by Alembic. Do not run
+    # Base.metadata.create_all here; it can create tables that lack later
+    # migration constraints/indexes and mask failed deploy migrations.
+    logger.info("Skipping runtime table creation; Alembic migrations are the schema authority")
 
     # Run cleanup tasks (expired sessions, tokens, old audit logs) once at startup.
     # In production, wire these into a cron schedule (e.g. Railway cron, APScheduler).

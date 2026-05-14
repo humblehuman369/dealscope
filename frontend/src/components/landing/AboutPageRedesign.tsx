@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import './about-page.css';
+import React from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import './about-page.css'
 
 const STRATEGIES = [
   { label: 'Long-Term Rental', cls: 'tag-ltr' },
@@ -12,20 +12,36 @@ const STRATEGIES = [
   { label: 'Fix & Flip', cls: 'tag-flip' },
   { label: 'House Hack', cls: 'tag-hack' },
   { label: 'Wholesale', cls: 'tag-wholesale' },
-];
+]
 
 const PRINCIPLES = [
-  { num: '01', title: 'Numbers Over Narratives', desc: 'Every property has a story someone wants to sell you. We strip away the story and show you the math. If the numbers work, pursue it. If they don\u2019t, move on.' },
-  { num: '02', title: 'Transparency Over Black Boxes', desc: 'Every assumption in every analysis is visible and editable. We don\u2019t hide our methodology behind a proprietary wall \u2014 we show you exactly how we arrived at every number.' },
-  { num: '03', title: 'Decisions Over Browsing', desc: 'We\u2019re not here to help you browse listings. We\u2019re here to help you make investment decisions with confidence \u2014 backed by cross-referenced data and professional-grade analytics.' },
-  { num: '04', title: 'Speed Over Spreadsheets', desc: 'The average investor spends 45 minutes per property on a spreadsheet. DealGapIQ gives you a better answer in seconds \u2014 so you can analyze more deals and find the ones worth pursuing.' },
-];
+  {
+    num: '01',
+    title: 'Numbers Over Narratives',
+    desc: 'Every property has a story someone wants to sell you. We strip away the story and show you the math. If the numbers work, pursue it. If they don\u2019t, move on.',
+  },
+  {
+    num: '02',
+    title: 'Transparency Over Black Boxes',
+    desc: 'Every assumption in every analysis is visible and editable. We don\u2019t hide our methodology behind a proprietary wall \u2014 we show you exactly how we arrived at every number.',
+  },
+  {
+    num: '03',
+    title: 'Decisions Over Browsing',
+    desc: 'We\u2019re not here to help you browse listings. We\u2019re here to help you make investment decisions with confidence \u2014 backed by cross-referenced data and professional-grade analytics.',
+  },
+  {
+    num: '04',
+    title: 'Speed Over Spreadsheets',
+    desc: 'The average investor spends 45 minutes per property on a spreadsheet. DealGapIQ gives you a better answer in seconds \u2014 so you can analyze more deals and find the ones worth pursuing.',
+  },
+]
 
 const CREDS = [
   { value: '35+ Years', label: 'Real Estate Data' },
   { value: '30+ Years', label: 'GSE Partnerships' },
   { value: '35+ Years', label: 'Real Estate Investor' },
-];
+]
 
 const MARKETING_ITEMS = [
   'Curated photos designed to sell an emotion',
@@ -35,7 +51,7 @@ const MARKETING_ITEMS = [
   'No cash flow or debt service analysis',
   'No concept of what a property is worth as an investment',
   'Designed to help you fall in love with a property',
-];
+]
 
 const INVESTOR_ITEMS = [
   'Numbers from 5 cross-referenced data sources',
@@ -45,28 +61,36 @@ const INVESTOR_ITEMS = [
   'Target Buy price for confident offer negotiations',
   'Income Value to know your breakeven ceiling',
   'Designed to help you make a decision, not a feeling',
-];
+]
 
 export function AboutPageRedesign() {
-  const router = useRouter();
+  const router = useRouter()
   const handleAnalyzeClick = () => {
-    router.push('/search');
-  };
+    router.push('/search')
+  }
 
   return (
-    <div style={{ background: 'var(--surface-base)', color: 'var(--text-body)', lineHeight: 1.6, overflowX: 'hidden' }}>
-
+    <div
+      style={{
+        background: 'var(--surface-base)',
+        color: 'var(--text-body)',
+        lineHeight: 1.6,
+        overflowX: 'hidden',
+      }}
+    >
       {/* HERO */}
       <section className="about-hero">
         <div className="section-label">About DealGapIQ</div>
         <h1>
-          Built for Investors.<br />
+          Built for Investors.
+          <br />
           <span className="line2">Not Browsers.</span>
         </h1>
         <p className="about-hero-sub">
-          Every property listing you&apos;ve ever seen was designed to do one thing: sell you on that property.
-          The photos, the descriptions, the agent remarks &mdash; it&apos;s all marketing.
-          DealGapIQ was built for a completely different person with a completely different question.
+          Every property listing you&apos;ve ever seen was designed to do one thing: sell you on
+          that property. The photos, the descriptions, the agent remarks &mdash; it&apos;s all
+          marketing. DealGapIQ was built for a completely different person with a completely
+          different question.
         </p>
       </section>
 
@@ -82,9 +106,9 @@ export function AboutPageRedesign() {
               &mdash; and it&apos;s very good at what it does.
             </p>
             <p>
-              But if you&apos;re a residential real estate investor, marketing is noise. You don&apos;t
-              need to know that the kitchen has &ldquo;stunning granite countertops.&rdquo; You need to
-              know whether this property{' '}
+              But if you&apos;re a residential real estate investor, marketing is noise. You
+              don&apos;t need to know that the kitchen has &ldquo;stunning granite
+              countertops.&rdquo; You need to know whether this property{' '}
               <span className="sky">cash flows at the asking price</span>. You need to know how far
               that asking price is from what the deal is actually worth as an investment. You need
               numbers, not narratives.
@@ -92,13 +116,11 @@ export function AboutPageRedesign() {
             <p>
               That&apos;s the gap DealGapIQ was built to fill.{' '}
               <strong>This isn&apos;t a listing site. It&apos;s a decision engine.</strong> It takes
-              any residential property in the country and runs the numbers the way a seasoned investor
-              would &mdash; rental income, operating expenses, debt service coverage, market comparables
-              &mdash; then delivers a Discovery in seconds.
+              any residential property in the country and runs the numbers the way a seasoned
+              investor would &mdash; rental income, operating expenses, debt service coverage,
+              market comparables &mdash; then delivers a Discovery in seconds.
             </p>
-            <p>
-              No spin. No sales pitch. Just the math.
-            </p>
+            <p>No spin. No sales pitch. Just the math.</p>
           </div>
         </div>
       </section>
@@ -117,7 +139,16 @@ export function AboutPageRedesign() {
             <div className="lens-card lens-marketing">
               <div className="lens-header">
                 <div className="lens-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C8CA0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#7C8CA0"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                     <polyline points="9 22 9 12 15 12 15 22" />
                   </svg>
@@ -139,7 +170,16 @@ export function AboutPageRedesign() {
             <div className="lens-card lens-investor">
               <div className="lens-header">
                 <div className="lens-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-sky)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--accent-sky)"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <line x1="18" y1="20" x2="18" y2="10" />
                     <line x1="12" y1="20" x2="12" y2="4" />
                     <line x1="6" y1="20" x2="6" y2="14" />
@@ -166,42 +206,84 @@ export function AboutPageRedesign() {
         <div className="what-inner">
           <h2>The Three Numbers Listing Sites Will Never Show You</h2>
           <p className="what-sub">
-            These are the proprietary thresholds that power every DealGapIQ Discovery &mdash;
-            the numbers that separate an investment decision from a marketing brochure.
+            These are the proprietary thresholds that power every DealGapIQ Discovery &mdash; the
+            numbers that separate an investment decision from a marketing brochure.
           </p>
 
           <div className="pillars">
             <div className="pillar">
               <div className="pillar-icon">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
-                  <line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" />
-                  <line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" />
+                <svg
+                  width="26"
+                  height="26"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#34d399"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" />
+                  <line x1="12" y1="2" x2="12" y2="6" />
+                  <line x1="12" y1="18" x2="12" y2="22" />
+                  <line x1="2" y1="12" x2="6" y2="12" />
+                  <line x1="18" y1="12" x2="22" y2="12" />
                 </svg>
               </div>
               <h3>Target Buy</h3>
-              <p>The recommended offer price &mdash; what you should actually pay based on investment returns, not what the seller hopes to get based on market hype.</p>
+              <p>
+                The recommended offer price &mdash; what you should actually pay based on investment
+                returns, not what the seller hopes to get based on market hype.
+              </p>
             </div>
             <div className="pillar">
               <div className="pillar-icon">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FACC15" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 3v18" /><path d="M4 7h16" />
-                  <circle cx="4" cy="14" r="3" /><circle cx="20" cy="14" r="3" />
+                <svg
+                  width="26"
+                  height="26"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#FACC15"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 3v18" />
+                  <path d="M4 7h16" />
+                  <circle cx="4" cy="14" r="3" />
+                  <circle cx="20" cy="14" r="3" />
                   <path d="M8 21H16" />
                 </svg>
               </div>
               <h3>Income Value</h3>
-              <p>The maximum price where cash flow stays positive. Your breakeven ceiling. Go above it, and the property costs you money every month.</p>
+              <p>
+                The maximum price where cash flow stays positive. Your breakeven ceiling. Go above
+                it, and the property costs you money every month.
+              </p>
             </div>
             <div className="pillar">
               <div className="pillar-icon">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent-sky)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="26"
+                  height="26"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--accent-sky)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                   <polyline points="16 7 22 7 22 13" />
                 </svg>
               </div>
               <h3>Deal Gap</h3>
-              <p>The percentage distance between the asking price and your Target Buy. This single number tells you whether there&apos;s a deal here &mdash; or a trap.</p>
+              <p>
+                The percentage distance between the asking price and your Target Buy. This single
+                number tells you whether there&apos;s a deal here &mdash; or a trap.
+              </p>
             </div>
           </div>
         </div>
@@ -212,11 +294,14 @@ export function AboutPageRedesign() {
         <div className="about-strategies-inner">
           <h2>Six Strategies. One Platform.</h2>
           <p className="about-strategies-sub">
-            Every property is analyzed against six investment strategies, because the right deal depends on how you plan to execute.
+            Every property is analyzed against six investment strategies, because the right deal
+            depends on how you plan to execute.
           </p>
           <div className="strategy-tags">
             {STRATEGIES.map((s) => (
-              <span className={`strategy-tag ${s.cls}`} key={s.cls}>{s.label}</span>
+              <span className={`strategy-tag ${s.cls}`} key={s.cls}>
+                {s.label}
+              </span>
             ))}
           </div>
         </div>
@@ -226,35 +311,41 @@ export function AboutPageRedesign() {
       <section className="about-founder">
         <div className="about-founder-inner">
           <div className="about-founder-photo">
-            <img src="/images/brad-geisen-about.png" alt="Brad Geisen, founder of DealGapIQ and Foreclosure.com" />
+            <img
+              src="/images/brad-geisen-about.png"
+              alt="Brad Geisen, founder of DealGapIQ and Foreclosure.com"
+            />
           </div>
           <div className="about-founder-text">
             <h2>About the Founder</h2>
             <p>
-              DealGapIQ was built by <strong>Brad Geisen</strong> &mdash; founder of <strong>Foreclosure.com</strong>{' '}
-              and the technologist Fannie Mae and Freddie Mac trusted to build the public faces of their portfolios.
+              DealGapIQ was built by <strong>Brad Geisen</strong> &mdash; founder of{' '}
+              <strong>Foreclosure.com</strong> and the technologist Fannie Mae and Freddie Mac
+              trusted to build the public faces of their portfolios.
             </p>
             <p>
-              Over two decades ago, <strong>Fannie Mae</strong> discovered that Brad&apos;s proprietary data
-              platform knew more about their portfolio than their own internal infrastructure &mdash; and
-              commissioned him to build <strong>HomePath.com</strong>. He went on to build{' '}
-              <strong>HomeSteps.com</strong> for <strong>Freddie Mac</strong>, establishing a technology
-              partnership with both GSEs that has now lasted <strong>30+ years</strong>. Earlier work on the
-              1991 HUD public/private partnership shaped how distressed residential portfolios are evaluated,
-              priced, and sold at institutional scale.
+              Over two decades ago, <strong>Fannie Mae</strong> discovered that Brad&apos;s
+              proprietary data platform knew more about their portfolio than their own internal
+              infrastructure &mdash; and commissioned him to build <strong>HomePath.com</strong>. He
+              went on to build <strong>HomeSteps.com</strong> for <strong>Freddie Mac</strong>,
+              establishing a technology partnership with both GSEs that has now lasted{' '}
+              <strong>30+ years</strong>. Earlier work on the 1991 HUD public/private partnership
+              shaped how distressed residential portfolios are evaluated, priced, and sold at
+              institutional scale.
             </p>
             <p>
               Behind the scenes of those institutional programs, he has personally invested in{' '}
-              <strong>thousands of properties</strong> &mdash; the firsthand reps that separate a listing
-              from a true opportunity.
+              <strong>thousands of properties</strong> &mdash; the firsthand reps that separate a
+              listing from a true opportunity.
             </p>
             <p>
-              DealGapIQ takes that same institutional-grade analytical rigor &mdash; the kind previously
-              available only to large institutions and government agencies &mdash; and puts it in the hands
-              of every individual investor.
+              DealGapIQ takes that same institutional-grade analytical rigor &mdash; the kind
+              previously available only to large institutions and government agencies &mdash; and
+              puts it in the hands of every individual investor.
             </p>
             <p className="about-founder-emphasis">
-              <em>Every property can be a deal.</em><br />
+              <em>Every property can be a deal.</em>
+              <br />
               <em>But only if you understand the numbers behind it.</em>
             </p>
             <p>
@@ -273,7 +364,13 @@ export function AboutPageRedesign() {
                   marginTop: 8,
                 }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
                   <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                 </svg>
                 Brad Geisen on LinkedIn
@@ -304,17 +401,19 @@ export function AboutPageRedesign() {
 
       {/* FINAL CTA */}
       <section className="about-cta">
-        <h2>Ready to See a Property Through<br />an Investor&apos;s Eyes?</h2>
+        <h2>
+          Ready to See a Property Through
+          <br />
+          an Investor&apos;s Eyes?
+        </h2>
         <p className="about-cta-sub">
-          Paste any address. Get your Target Buy, Income Value, and Deal Gap &mdash;
-          the three numbers no listing site will ever show you.
+          Paste any address. Get your Target Buy, Income Value, and Deal Gap &mdash; the three
+          numbers no listing site will ever show you.
         </p>
         <button className="cta-primary" onClick={handleAnalyzeClick}>
           Analyze Your First Property Free →
         </button>
-        <p className="about-cta-meta">
-          No credit card · No account needed · Results in seconds
-        </p>
+        <p className="about-cta-meta">No credit card · No account needed · Results in seconds</p>
       </section>
 
       {/* FOOTER */}
@@ -334,7 +433,7 @@ export function AboutPageRedesign() {
         </div>
       </footer>
     </div>
-  );
+  )
 }
 
-export default AboutPageRedesign;
+export default AboutPageRedesign

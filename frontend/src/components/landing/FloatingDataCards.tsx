@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import React from 'react';
+import React from 'react'
 
 export function FloatingDataCards() {
   return (
@@ -18,5 +18,5 @@ export function FloatingDataCards() {
         <div className="float-card-label">Deal Grade</div>
       </div>
     </div>
-  );
+  )
 }

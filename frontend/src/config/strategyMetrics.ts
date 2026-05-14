@@ -1,6 +1,6 @@
 /**
  * Strategy Metrics Configuration
- * 
+ *
  * Defines which 3 metrics to display per strategy and price target combination.
  * Used by InvestmentAnalysis and VerdictIQCombined to dynamically show
  * the most relevant metrics based on user's current selection.
@@ -14,7 +14,7 @@ import { PriceTarget } from '@/lib/priceUtils'
 
 export type StrategyType = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
 
-export type MetricId = 
+export type MetricId =
   // LTR/STR Metrics
   | 'cashFlow'
   | 'cashNeeded'
@@ -86,7 +86,7 @@ export const METRIC_DEFINITIONS: Record<MetricId, MetricDefinition> = {
     format: 'currency',
     description: 'Revenue per available room',
   },
-  
+
   // BRRRR Metrics
   cashRecoup: {
     id: 'cashRecoup',
@@ -112,7 +112,7 @@ export const METRIC_DEFINITIONS: Record<MetricId, MetricDefinition> = {
     format: 'currency',
     description: 'Cash remaining after refinance',
   },
-  
+
   // Flip Metrics
   netProfit: {
     id: 'netProfit',
@@ -144,7 +144,7 @@ export const METRIC_DEFINITIONS: Record<MetricId, MetricDefinition> = {
     format: 'percent',
     description: 'Profit as percentage of ARV',
   },
-  
+
   // House Hack Metrics
   effectiveHousingCost: {
     id: 'effectiveHousingCost',
@@ -170,7 +170,7 @@ export const METRIC_DEFINITIONS: Record<MetricId, MetricDefinition> = {
     format: 'text',
     description: 'Whether rental income covers all costs',
   },
-  
+
   // Wholesale Metrics
   assignmentFee: {
     id: 'assignmentFee',
@@ -247,10 +247,10 @@ export const STRATEGY_METRICS: Record<StrategyType, Record<PriceTarget, MetricId
  */
 export function getMetricsForStrategy(
   strategy: StrategyType,
-  priceTarget: PriceTarget
+  priceTarget: PriceTarget,
 ): MetricDefinition[] {
   const metricIds = STRATEGY_METRICS[strategy]?.[priceTarget] || STRATEGY_METRICS.ltr.targetBuy
-  return metricIds.map(id => METRIC_DEFINITIONS[id])
+  return metricIds.map((id) => METRIC_DEFINITIONS[id])
 }
 
 /**
@@ -258,12 +258,18 @@ export function getMetricsForStrategy(
  */
 export function headerStrategyToType(headerStrategy: string): StrategyType {
   switch (headerStrategy) {
-    case 'Short-term': return 'str'
-    case 'BRRRR': return 'brrrr'
-    case 'Fix & Flip': return 'flip'
-    case 'House Hack': return 'house_hack'
-    case 'Wholesale': return 'wholesale'
-    default: return 'ltr'
+    case 'Short-term':
+      return 'str'
+    case 'BRRRR':
+      return 'brrrr'
+    case 'Fix & Flip':
+      return 'flip'
+    case 'House Hack':
+      return 'house_hack'
+    case 'Wholesale':
+      return 'wholesale'
+    default:
+      return 'ltr'
   }
 }
 
@@ -272,23 +278,32 @@ export function headerStrategyToType(headerStrategy: string): StrategyType {
  */
 export function strategyTypeToHeader(strategyType: StrategyType): string {
   switch (strategyType) {
-    case 'str': return 'Short-term'
-    case 'brrrr': return 'BRRRR'
-    case 'flip': return 'Fix & Flip'
-    case 'house_hack': return 'House Hack'
-    case 'wholesale': return 'Wholesale'
-    default: return 'Long-term'
+    case 'str':
+      return 'Short-term'
+    case 'brrrr':
+      return 'BRRRR'
+    case 'flip':
+      return 'Fix & Flip'
+    case 'house_hack':
+      return 'House Hack'
+    case 'wholesale':
+      return 'Wholesale'
+    default:
+      return 'Long-term'
   }
 }
 
 /**
  * Format a metric value based on its format type
  */
-export function formatMetricValue(value: number | string | null, format: MetricDefinition['format']): string {
+export function formatMetricValue(
+  value: number | string | null,
+  format: MetricDefinition['format'],
+): string {
   if (value === null || value === undefined) return '—'
-  
+
   if (typeof value === 'string') return value
-  
+
   switch (format) {
     case 'currency':
       return `$${Math.abs(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}`

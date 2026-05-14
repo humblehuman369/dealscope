@@ -52,9 +52,7 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
 
   if (isLoading) {
     return (
-      <div className="opacity-30 pointer-events-none select-none animate-pulse">
-        {children}
-      </div>
+      <div className="opacity-30 pointer-events-none select-none animate-pulse">{children}</div>
     )
   }
 
@@ -89,9 +87,7 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
 
     return (
       <div className="relative">
-        <div className="blur-sm pointer-events-none select-none opacity-50">
-          {children}
-        </div>
+        <div className="blur-sm pointer-events-none select-none opacity-50">{children}</div>
         <div className="absolute inset-0 flex items-center justify-center">
           <Link
             href={signInUrl}
@@ -141,16 +137,15 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
   return (
     <>
       <div className="relative">
-        <div className="blur-sm pointer-events-none select-none opacity-50">
-          {children}
-        </div>
+        <div className="blur-sm pointer-events-none select-none opacity-50">{children}</div>
         <div className="absolute inset-0 flex items-center justify-center">
           <button
             type="button"
             onClick={openUpgrade}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
             style={{
-              background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
+              background:
+                'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
               color: '#fff',
             }}
           >

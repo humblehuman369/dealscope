@@ -11,9 +11,12 @@ from io import BytesIO
 
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
+from sqlalchemy import select
 
-from app.core.deps import DbSession, OptionalUser
+from app.core.deps import CurrentUser, DbSession, OptionalUser
 from app.core.exceptions import ExternalAPIError
+from app.models.saved_property import SavedProperty
+from app.models.search_history import SearchHistory
 from app.schemas.property import (
     PropertyResponse,
     PropertySearchRequest,
@@ -25,6 +28,24 @@ from app.services.search_history_service import search_history_service
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["Properties"])
+
+
+async def _user_has_cached_property_access(db: DbSession, user_id, property_id: str) -> bool:
+    """Allow cached-property reads only for users who searched or saved it."""
+    saved_result = await db.execute(
+        select(SavedProperty.id)
+        .where(SavedProperty.user_id == user_id, SavedProperty.external_property_id == property_id)
+        .limit(1)
+    )
+    if saved_result.scalar_one_or_none() is not None:
+        return True
+
+    search_result = await db.execute(
+        select(SearchHistory.id)
+        .where(SearchHistory.user_id == user_id, SearchHistory.property_cache_id == property_id)
+        .limit(1)
+    )
+    return search_result.scalar_one_or_none() is not None
 
 
 def _normalize_address_part(value: str | None) -> str:
@@ -217,11 +238,14 @@ async def get_demo_property():
 
 
 @router.get("/properties/{property_id}", response_model=PropertyResponse)
-async def get_property(property_id: str):
+async def get_property(property_id: str, current_user: CurrentUser, db: DbSession):
     """
     Get cached property data by ID.
     """
     try:
+        if not await _user_has_cached_property_access(db, current_user.id, property_id):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+
         cached = await property_service.get_cached_property(property_id)
         if not cached:
             raise HTTPException(

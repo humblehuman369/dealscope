@@ -13,7 +13,10 @@ interface ListingInfoProps {
 export function ListingInfo({ property }: ListingInfoProps) {
   const rows = [
     property.listingAgent?.name && { label: 'Listed By', value: property.listingAgent.name },
-    property.listingAgent?.brokerage && { label: 'Brokerage', value: property.listingAgent.brokerage },
+    property.listingAgent?.brokerage && {
+      label: 'Brokerage',
+      value: property.listingAgent.brokerage,
+    },
     property.listDate && { label: 'List Date', value: formatDate(property.listDate) },
     property.mlsId && { label: 'MLS #', value: property.mlsId },
   ].filter(Boolean) as { label: string; value: string }[]
@@ -34,10 +37,7 @@ export function ListingInfo({ property }: ListingInfoProps) {
             <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
               {row.label}
             </span>
-            <span
-              className="text-sm font-semibold"
-              style={{ color: 'var(--text-heading)' }}
-            >
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
               {row.value}
             </span>
           </div>

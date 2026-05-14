@@ -1,7 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Eye, Camera, ImageOff, GalleryHorizontalEnd } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Camera,
+  ImageOff,
+  GalleryHorizontalEnd,
+} from 'lucide-react'
 import { formatNumber } from './utils'
 
 interface ImageGalleryProps {
@@ -46,21 +53,24 @@ export function ImageGallery({
   const currentVisible = hasImages && rawImages[currentIndex] && !currentFailed
 
   const nextImage = () => setCurrentIndex((prev) => (prev + 1) % rawImages.length)
-  const prevImage = () => setCurrentIndex((prev) => (prev - 1 + rawImages.length) % rawImages.length)
+  const prevImage = () =>
+    setCurrentIndex((prev) => (prev - 1 + rawImages.length) % rawImages.length)
 
   const handleImageError = (index: number) => {
     setImageError((prev) => ({ ...prev, [index]: true }))
   }
 
   if (isDesktop) {
-    return <DesktopMosaic
-      images={rawImages}
-      totalPhotos={totalPhotos}
-      views={views}
-      imageError={imageError}
-      onImageError={handleImageError}
-      onImageClick={onImageClick}
-    />
+    return (
+      <DesktopMosaic
+        images={rawImages}
+        totalPhotos={totalPhotos}
+        views={views}
+        imageError={imageError}
+        onImageError={handleImageError}
+        onImageClick={onImageClick}
+      />
+    )
   }
 
   return (
@@ -124,7 +134,10 @@ export function ImageGallery({
         {rawImages.length > 1 && (
           <>
             <button
-              onClick={(e) => { e.stopPropagation(); prevImage() }}
+              onClick={(e) => {
+                e.stopPropagation()
+                prevImage()
+              }}
               className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-colors hover:bg-[var(--surface-card-hover)]"
               style={{ backgroundColor: 'var(--surface-overlay)' }}
               aria-label="Previous image"
@@ -132,7 +145,10 @@ export function ImageGallery({
               <ChevronLeft size={20} style={{ color: 'var(--text-heading)' }} />
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); nextImage() }}
+              onClick={(e) => {
+                e.stopPropagation()
+                nextImage()
+              }}
               className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-colors hover:bg-[var(--surface-card-hover)]"
               style={{ backgroundColor: 'var(--surface-overlay)' }}
               aria-label="Next image"
@@ -185,7 +201,6 @@ export function ImageGallery({
     </div>
   )
 }
-
 
 /* ------------------------------------------------------------------ */
 /*  Desktop Mosaic                                                     */
@@ -284,10 +299,7 @@ function DesktopMosaic({
 
   if (images.length === 2) {
     return (
-      <div
-        className={containerClass}
-        style={{ ...containerStyle, gridTemplateColumns: '2fr 1fr' }}
-      >
+      <div className={containerClass} style={{ ...containerStyle, gridTemplateColumns: '2fr 1fr' }}>
         <MosaicCell
           image={images[0]}
           index={0}
@@ -428,7 +440,6 @@ function DesktopMosaic({
   )
 }
 
-
 /* ------------------------------------------------------------------ */
 /*  MosaicCell                                                         */
 /* ------------------------------------------------------------------ */
@@ -443,7 +454,15 @@ interface MosaicCellProps {
   children?: React.ReactNode
 }
 
-function MosaicCell({ image, index, failed, onError, onClick, className = '', children }: MosaicCellProps) {
+function MosaicCell({
+  image,
+  index,
+  failed,
+  onError,
+  onClick,
+  className = '',
+  children,
+}: MosaicCellProps) {
   return (
     <button
       type="button"
@@ -473,7 +492,6 @@ function MosaicCell({ image, index, failed, onError, onClick, className = '', ch
     </button>
   )
 }
-
 
 /**
  * ImageGallerySkeleton
@@ -509,7 +527,11 @@ export function ImageGallerySkeleton() {
       {/* Desktop skeleton (hidden below md) */}
       <div
         className="hidden md:grid grid-rows-2 gap-1.5 rounded-[14px] overflow-hidden animate-pulse"
-        style={{ height: 400, backgroundColor: 'var(--surface-elevated)', gridTemplateColumns: '3fr 1fr 1fr' }}
+        style={{
+          height: 400,
+          backgroundColor: 'var(--surface-elevated)',
+          gridTemplateColumns: '3fr 1fr 1fr',
+        }}
       >
         <div className="row-span-2" style={{ backgroundColor: 'var(--surface-elevated)' }}>
           <div className="w-full h-full flex flex-col items-center justify-center gap-3">

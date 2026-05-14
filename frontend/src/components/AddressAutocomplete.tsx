@@ -84,8 +84,8 @@ export function AddressAutocomplete({
     if (apiKey) return
     console.warn(
       '[AddressAutocomplete] NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not set. ' +
-      'Add it to .env.local (local) or Vercel env vars, then restart the dev server or redeploy. ' +
-      'Address suggestions will not appear until the key is available at build time.'
+        'Add it to .env.local (local) or Vercel env vars, then restart the dev server or redeploy. ' +
+        'Address suggestions will not appear until the key is available at build time.',
     )
   }, [apiKey])
 
@@ -119,7 +119,7 @@ export function AddressAutocomplete({
             console.error(
               '[AddressAutocomplete] Failed to load Places library via importLibrary(). ' +
                 'Ensure the Places API is enabled for this key.',
-              err
+              err,
             )
           })
         return
@@ -127,7 +127,7 @@ export function AddressAutocomplete({
 
       console.error(
         '[AddressAutocomplete] Google Maps JS API is already loaded without the Places library. ' +
-          'Load the initial script with libraries=places to enable address suggestions.'
+          'Load the initial script with libraries=places to enable address suggestions.',
       )
       return
     }
@@ -164,8 +164,8 @@ export function AddressAutocomplete({
     script.onerror = () => {
       console.error(
         '[AddressAutocomplete] Google Places script failed to load. ' +
-        'Check that Maps JavaScript API and Places API are enabled for this key in Google Cloud Console, ' +
-        'and that the key is restricted to your domain (or localhost) if needed.'
+          'Check that Maps JavaScript API and Places API are enabled for this key in Google Cloud Console, ' +
+          'and that the key is restricted to your domain (or localhost) if needed.',
       )
     }
     document.head.appendChild(script)
@@ -201,8 +201,8 @@ export function AddressAutocomplete({
     } catch (err) {
       console.error(
         '[AddressAutocomplete] Failed to create Places Autocomplete. ' +
-        'Ensure Maps JavaScript API and Places API (or Places API (New)) are enabled for your key in Google Cloud Console.',
-        err
+          'Ensure Maps JavaScript API and Places API (or Places API (New)) are enabled for your key in Google Cloud Console.',
+        err,
       )
       return
     }

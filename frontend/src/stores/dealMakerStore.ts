@@ -4,13 +4,13 @@ import { apiRequest } from '@/lib/api-client'
 
 /**
  * Deal Maker Store
- * 
+ *
  * The central store for Deal Maker data. This is the single source of truth for:
  * - Deal Maker screen
  * - IQ Verdict
  * - Strategy worksheets
  * - Dashboard cards
- * 
+ *
  * Key principles:
  * - Loads from backend (never computes defaults locally)
  * - All changes persist immediately to backend
@@ -69,8 +69,8 @@ export interface CachedMetrics {
   equity: number | null
   equity_after_rehab: number | null
   deal_gap_pct: number | null
-  income_value: number | null  // Max price where cash flow = $0 (Income Value)
-  breakeven_price?: number | null  // deprecated, use income_value
+  income_value: number | null // Max price where cash flow = $0 (Income Value)
+  breakeven_price?: number | null // deprecated, use income_value
   calculated_at?: string
 }
 
@@ -86,10 +86,10 @@ export interface DealMakerRecord {
   bathrooms: number | null
   year_built: number | null
   property_type: string | null
-  
+
   // Initial assumptions (locked at creation)
   initial_assumptions: InitialAssumptions
-  
+
   // User adjustments (editable via Deal Maker) - Shared fields
   buy_price: number
   down_payment_pct: number
@@ -104,13 +104,13 @@ export interface DealMakerRecord {
   annual_insurance: number
   monthly_hoa: number
   monthly_utilities: number
-  
+
   // LTR-specific adjustments
   monthly_rent: number
   other_income: number
   vacancy_rate: number
   management_pct: number
-  
+
   // STR-specific adjustments (optional - only present for STR strategy)
   furniture_setup_cost?: number
   average_daily_rate?: number
@@ -122,7 +122,7 @@ export interface DealMakerRecord {
   cleaning_cost_per_turnover?: number
   supplies_monthly?: number
   additional_utilities_monthly?: number
-  
+
   // BRRRR-specific adjustments (optional - only present for BRRRR strategy)
   buy_discount_pct?: number
   hard_money_rate?: number
@@ -135,7 +135,7 @@ export interface DealMakerRecord {
   refinance_interest_rate?: number
   refinance_term_years?: number
   refinance_closing_costs_pct?: number
-  
+
   // Flip-specific adjustments (optional - only present for Flip strategy)
   purchase_discount_pct?: number
   financing_type?: string
@@ -145,7 +145,7 @@ export interface DealMakerRecord {
   days_on_market?: number
   selling_costs_pct?: number
   capital_gains_rate?: number
-  
+
   // HouseHack-specific adjustments (optional - only present for HouseHack strategy)
   total_units?: number
   owner_occupied_units?: number
@@ -156,7 +156,7 @@ export interface DealMakerRecord {
   current_housing_payment?: number
   utilities_monthly?: number
   capex_rate?: number
-  
+
   // Wholesale-specific adjustments (optional - only present for Wholesale strategy)
   estimated_repairs?: number
   contract_price?: number
@@ -166,7 +166,7 @@ export interface DealMakerRecord {
   assignment_fee?: number
   marketing_costs?: number
   wholesale_closing_costs?: number
-  
+
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
 
@@ -174,10 +174,10 @@ export interface DealMakerRecord {
   seller_carry_amount?: number | null
   seller_carry_rate?: number | null
   seller_carry_term_years?: number | null
-  
+
   // Cached metrics
   cached_metrics: CachedMetrics | null
-  
+
   // Metadata
   created_at?: string
   updated_at?: string
@@ -210,13 +210,13 @@ export interface DealMakerUpdate {
   annual_insurance?: number
   monthly_hoa?: number
   monthly_utilities?: number
-  
+
   // LTR-specific fields
   monthly_rent?: number
   other_income?: number
   vacancy_rate?: number
   management_pct?: number
-  
+
   // STR-specific fields
   furniture_setup_cost?: number
   average_daily_rate?: number
@@ -228,7 +228,7 @@ export interface DealMakerUpdate {
   cleaning_cost_per_turnover?: number
   supplies_monthly?: number
   additional_utilities_monthly?: number
-  
+
   // BRRRR-specific fields
   buy_discount_pct?: number
   hard_money_rate?: number
@@ -241,7 +241,7 @@ export interface DealMakerUpdate {
   refinance_interest_rate?: number
   refinance_term_years?: number
   refinance_closing_costs_pct?: number
-  
+
   // Flip-specific fields
   purchase_discount_pct?: number
   financing_type?: string
@@ -251,7 +251,7 @@ export interface DealMakerUpdate {
   days_on_market?: number
   selling_costs_pct?: number
   capital_gains_rate?: number
-  
+
   // HouseHack-specific fields
   total_units?: number
   owner_occupied_units?: number
@@ -262,7 +262,7 @@ export interface DealMakerUpdate {
   current_housing_payment?: number
   utilities_monthly?: number
   capex_rate?: number
-  
+
   // Wholesale-specific fields
   estimated_repairs?: number
   contract_price?: number
@@ -272,7 +272,7 @@ export interface DealMakerUpdate {
   assignment_fee?: number
   marketing_costs?: number
   wholesale_closing_costs?: number
-  
+
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
 
@@ -289,19 +289,19 @@ export interface DealMakerState {
   // Current property
   propertyId: string | null
   record: DealMakerRecord | null
-  
+
   // Active price target for dynamic recalculation
   activePriceTarget: PriceTarget
-  
+
   // Loading states
   isLoading: boolean
   isSaving: boolean
   error: string | null
-  
+
   // Dirty tracking
   isDirty: boolean
   pendingUpdates: DealMakerUpdate
-  
+
   // Actions
   loadRecord: (propertyId: string) => Promise<void>
   updateField: <K extends keyof DealMakerUpdate>(field: K, value: DealMakerUpdate[K]) => void
@@ -312,7 +312,7 @@ export interface DealMakerState {
   debouncedSave: () => void
   reset: () => void
   setActivePriceTarget: (target: PriceTarget) => void
-  
+
   // Computed helpers
   getMetrics: () => CachedMetrics | null
   getCashNeeded: () => number
@@ -340,12 +340,12 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
 
   loadRecord: async (propertyId: string) => {
     set({ isLoading: true, error: null })
-    
+
     try {
       const data = await apiRequest<DealMakerResponse>(
-        `/api/v1/properties/saved/${propertyId}/deal-maker`
+        `/api/v1/properties/saved/${propertyId}/deal-maker`,
       )
-      
+
       set({
         propertyId,
         record: data.record,
@@ -366,76 +366,76 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
 
   updateField: (field, value) => {
     const { record, pendingUpdates } = get()
-    
+
     if (!record) return
-    
+
     // Update local state immediately for responsive UI
     const updatedRecord = {
       ...record,
       [field]: value,
     }
-    
+
     // Track pending updates for debounced save
     const newPendingUpdates = {
       ...pendingUpdates,
       [field]: value,
     }
-    
+
     set({
       record: updatedRecord,
       isDirty: true,
       pendingUpdates: newPendingUpdates,
     })
-    
+
     // Trigger debounced save
     get().debouncedSave()
   },
 
   updateMultipleFields: (updates) => {
     const { record, pendingUpdates } = get()
-    
+
     if (!record) return
-    
+
     // Update local state immediately
     const updatedRecord = {
       ...record,
       ...updates,
     }
-    
+
     // Track pending updates
     const newPendingUpdates = {
       ...pendingUpdates,
       ...updates,
     }
-    
+
     set({
       record: updatedRecord,
       isDirty: true,
       pendingUpdates: newPendingUpdates,
     })
-    
+
     // Trigger debounced save
     get().debouncedSave()
   },
 
   saveToBackend: async () => {
     const { propertyId, pendingUpdates, isDirty } = get()
-    
+
     if (!propertyId || !isDirty || Object.keys(pendingUpdates).length === 0) {
       return
     }
-    
+
     set({ isSaving: true })
-    
+
     try {
       const data = await apiRequest<DealMakerResponse>(
         `/api/v1/properties/saved/${propertyId}/deal-maker`,
         {
           method: 'PATCH',
           body: pendingUpdates,
-        }
+        },
       )
-      
+
       // Update with server response (includes recalculated metrics)
       set({
         record: data.record,
@@ -529,16 +529,16 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
   getActivePriceValue: () => {
     const { activePriceTarget, record } = get()
     const metrics = record?.cached_metrics
-    
+
     if (!record || !metrics) return 0
-    
+
     switch (activePriceTarget) {
       case 'breakeven':
         return metrics.income_value ?? metrics.breakeven_price ?? 0
       case 'targetBuy':
         return record.buy_price ?? 0
       case 'wholesale':
-        return Math.round((metrics.income_value ?? 0) * 0.70)
+        return Math.round((metrics.income_value ?? 0) * 0.7)
       default:
         return record.buy_price ?? 0
     }
@@ -555,61 +555,61 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
 export const useDealMakerDerived = () => {
   const record = useDealMakerStore((state) => state.record)
   const metrics = record?.cached_metrics
-  
+
   // Safe number function that handles NaN, Infinity, and extremely large values
   const safeNumber = (value?: number | null, maxAbs: number = 1e12): number => {
     if (typeof value !== 'number' || !Number.isFinite(value)) return 0
     if (Math.abs(value) > maxAbs) return value > 0 ? maxAbs : -maxAbs
     return value
   }
-  
+
   return {
     // Property data
     listPrice: safeNumber(record?.list_price),
     rentEstimate: safeNumber(record?.rent_estimate),
-    
+
     // User adjustments
     buyPrice: safeNumber(record?.buy_price),
     monthlyRent: safeNumber(record?.monthly_rent),
     arv: safeNumber(record?.arv),
     rehabBudget: safeNumber(record?.rehab_budget),
-    
+
     // Financing
     loanAmount: safeNumber(metrics?.loan_amount),
     downPayment: safeNumber(metrics?.down_payment),
     totalCashNeeded: safeNumber(metrics?.total_cash_needed),
     monthlyPayment: safeNumber(metrics?.monthly_payment),
     ltv: safeNumber(metrics?.ltv),
-    
+
     // Income
     grossIncome: safeNumber(metrics?.gross_income),
     vacancyLoss: safeNumber(metrics?.vacancy_loss),
-    
+
     // Expenses
     totalExpenses: safeNumber(metrics?.total_expenses),
-    
+
     // Cash Flow
     noi: safeNumber(metrics?.noi),
     annualCashFlow: safeNumber(metrics?.annual_cash_flow),
     monthlyCashFlow: safeNumber(metrics?.monthly_cash_flow),
-    
+
     // Returns
     capRate: safeNumber(metrics?.cap_rate),
     cashOnCash: safeNumber(metrics?.cash_on_cash),
-    
+
     // Ratios
     dscr: safeNumber(metrics?.dscr),
     onePercentRule: safeNumber(metrics?.one_percent_rule),
     grm: safeNumber(metrics?.grm),
-    
+
     // Equity
     equity: safeNumber(metrics?.equity),
     equityAfterRehab: safeNumber(metrics?.equity_after_rehab),
-    
+
     // Deal Analysis
     dealGapPct: safeNumber(metrics?.deal_gap_pct),
     incomeValue: safeNumber(metrics?.income_value ?? metrics?.breakeven_price),
-    
+
     // Has record loaded?
     hasRecord: record !== null,
   }

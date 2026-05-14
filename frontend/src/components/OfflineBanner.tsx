@@ -52,11 +52,7 @@ export function OfflineBanner() {
       role="alert"
       aria-live="assertive"
     >
-      {isReconnected ? (
-        <CheckCircle className="w-4 h-4" />
-      ) : (
-        <WifiOff className="w-4 h-4" />
-      )}
+      {isReconnected ? <CheckCircle className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
       <span>{isReconnected ? 'Back Online' : 'No Internet Connection'}</span>
       {!isReconnected && (
         <span className="text-xs text-white/75 ml-1">— Showing cached data where available</span>

@@ -1,22 +1,41 @@
-'use client';
+'use client'
 
-import React from 'react';
+import React from 'react'
 
 interface MiniStrategy {
-  name: string;
-  tag: string;
-  value: string;
-  valueLabel: string;
-  color: string;
-  active?: boolean;
+  name: string
+  tag: string
+  value: string
+  valueLabel: string
+  color: string
+  active?: boolean
 }
 
 const miniStrategies: MiniStrategy[] = [
-  { name: 'Long-Term Rental', tag: 'Best for this property', value: '12.4%', valueLabel: 'ROI', color: '#0465f2', active: true },
-  { name: 'Short-Term Rental', tag: 'High seasonal demand', value: '18.2%', valueLabel: 'ROI', color: '#8b5cf6' },
+  {
+    name: 'Long-Term Rental',
+    tag: 'Best for this property',
+    value: '12.4%',
+    valueLabel: 'ROI',
+    color: '#0465f2',
+    active: true,
+  },
+  {
+    name: 'Short-Term Rental',
+    tag: 'High seasonal demand',
+    value: '18.2%',
+    valueLabel: 'ROI',
+    color: '#8b5cf6',
+  },
   { name: 'BRRRR', tag: 'Scale potential', value: '∞', valueLabel: 'ROI', color: '#f97316' },
-  { name: 'Fix & Flip', tag: 'Quick turnaround', value: '$62K', valueLabel: 'Profit', color: '#ec4899' },
-];
+  {
+    name: 'Fix & Flip',
+    tag: 'Quick turnaround',
+    value: '$62K',
+    valueLabel: 'Profit',
+    color: '#ec4899',
+  },
+]
 
 export function AnimatedPhoneMockup() {
   return (
@@ -39,8 +58,11 @@ export function AnimatedPhoneMockup() {
               <div className="property-scan-line" />
             </div>
             <div className="property-image-house">
-              <svg viewBox="0 0 24 24" className="w-12 h-12 stroke-electric-cyan/60 stroke-[1.5] fill-none">
-                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+              <svg
+                viewBox="0 0 24 24"
+                className="w-12 h-12 stroke-electric-cyan/60 stroke-[1.5] fill-none"
+              >
+                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
             </div>
           </div>
@@ -63,7 +85,7 @@ export function AnimatedPhoneMockup() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function MetricCard({ value, label }: { value: string; label: string }) {
@@ -72,28 +94,29 @@ function MetricCard({ value, label }: { value: string; label: string }) {
       <div className="text-[0.85rem] font-extrabold text-electric-cyan mb-0.5">{value}</div>
       <div className="text-[0.55rem] text-gray-600 uppercase tracking-[0.3px]">{label}</div>
     </div>
-  );
+  )
 }
 
 function MiniStrategyCard({ name, tag, value, valueLabel, color, active }: MiniStrategy) {
   return (
-    <div className={`flex items-center gap-2.5 p-2.5 rounded-[10px] border transition-all ${
-      active 
-        ? 'bg-electric-cyan/[0.08] border-electric-cyan/25' 
-        : 'bg-white/[0.03] border-white/[0.06]'
-    }`}>
-      <div 
-        className="w-1 h-7 rounded-sm"
-        style={{ background: color }}
-      />
+    <div
+      className={`flex items-center gap-2.5 p-2.5 rounded-[10px] border transition-all ${
+        active
+          ? 'bg-electric-cyan/[0.08] border-electric-cyan/25'
+          : 'bg-white/[0.03] border-white/[0.06]'
+      }`}
+    >
+      <div className="w-1 h-7 rounded-sm" style={{ background: color }} />
       <div className="flex-1">
         <div className="text-[0.7rem] font-semibold text-white">{name}</div>
         <div className="text-[0.55rem] text-gray-600">{tag}</div>
       </div>
       <div className="text-right">
-        <div className="text-[0.75rem] font-bold" style={{ color }}>{value}</div>
+        <div className="text-[0.75rem] font-bold" style={{ color }}>
+          {value}
+        </div>
         <div className="text-[0.5rem] text-gray-600">{valueLabel}</div>
       </div>
     </div>
-  );
+  )
 }

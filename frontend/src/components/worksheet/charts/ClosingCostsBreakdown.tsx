@@ -8,7 +8,11 @@ interface ClosingCostsBreakdownProps {
   other: number
 }
 
-export function ClosingCostsBreakdown({ titleEscrow, transferTax, other }: ClosingCostsBreakdownProps) {
+export function ClosingCostsBreakdown({
+  titleEscrow,
+  transferTax,
+  other,
+}: ClosingCostsBreakdownProps) {
   const total = titleEscrow + transferTax + other
   const titlePct = total > 0 ? (titleEscrow / total) * 100 : 0
   const transferPct = total > 0 ? (transferTax / total) * 100 : 0

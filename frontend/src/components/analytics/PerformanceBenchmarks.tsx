@@ -6,10 +6,10 @@ import { BenchmarkConfig, BenchmarkStatus } from './types'
 
 /**
  * PerformanceBenchmarks Component
- * 
+ *
  * Container component that displays multiple benchmark metrics with spectrum bars.
  * Shows how the deal compares to national/market averages for key metrics.
- * 
+ *
  * Each benchmark includes:
  * - Metric name and current value
  * - Status badge (High/Average/Low)
@@ -31,12 +31,10 @@ export function PerformanceBenchmarks({
   title = 'Performance Benchmarks',
   subtitle = 'How this deal compares to national averages',
   benchmarks,
-  variant = 'full'
+  variant = 'full',
 }: PerformanceBenchmarksProps) {
   if (variant === 'compact') {
-    return (
-      <BenchmarksCompact benchmarks={benchmarks} />
-    )
+    return <BenchmarksCompact benchmarks={benchmarks} />
   }
 
   return (
@@ -110,14 +108,19 @@ function StatusBadge({ status }: StatusBadgeProps) {
 
   const getLabel = () => {
     switch (status) {
-      case 'high': return 'High'
-      case 'average': return 'Avg'
-      case 'low': return 'Low'
+      case 'high':
+        return 'High'
+      case 'average':
+        return 'Avg'
+      case 'low':
+        return 'Low'
     }
   }
 
   return (
-    <span className={`text-[0.55rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${getClasses()}`}>
+    <span
+      className={`text-[0.55rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${getClasses()}`}
+    >
       {getLabel()}
     </span>
   )
@@ -125,7 +128,7 @@ function StatusBadge({ status }: StatusBadgeProps) {
 
 /**
  * BenchmarksCompact Component
- * 
+ *
  * A 2-column grid version for smaller spaces.
  */
 
@@ -137,7 +140,7 @@ function BenchmarksCompact({ benchmarks }: BenchmarksCompactProps) {
   return (
     <div className="grid grid-cols-2 gap-3">
       {benchmarks.slice(0, 4).map((benchmark) => (
-        <div 
+        <div
           key={benchmark.id}
           className="bg-white dark:bg-white/[0.02] border-2 border-[var(--accent-sky)] dark:border-[var(--accent-sky)] rounded-xl p-3"
         >
@@ -168,7 +171,7 @@ function BenchmarksCompact({ benchmarks }: BenchmarksCompactProps) {
 export function calculateBenchmarkStatus(
   value: number,
   thresholds: { low: number; high: number },
-  isInverted: boolean = false
+  isInverted: boolean = false,
 ): BenchmarkStatus {
   if (isInverted) {
     // Lower is better (e.g., GRM, Vacancy)
@@ -187,7 +190,7 @@ export function calculateMarkerPosition(
   value: number,
   min: number,
   max: number,
-  isInverted: boolean = false
+  isInverted: boolean = false,
 ): number {
   // Clamp value within range
   const clampedValue = Math.min(max, Math.max(min, value))
@@ -207,21 +210,21 @@ export function calculateMarkerPosition(
 export const LTR_BENCHMARKS = {
   cashOnCash: {
     thresholds: { low: 0.05, high: 0.12 },
-    range: { min: 0, max: 0.20 },
+    range: { min: 0, max: 0.2 },
     zones: {
       low: { label: 'Low', range: '<5%' },
       average: { label: 'Average', range: '8-10%' },
-      high: { label: 'High', range: '12%+' }
-    }
+      high: { label: 'High', range: '12%+' },
+    },
   },
   capRate: {
     thresholds: { low: 0.04, high: 0.055 },
-    range: { min: 0, max: 0.10 },
+    range: { min: 0, max: 0.1 },
     zones: {
       low: { label: 'Low', range: '<4%' },
       average: { label: 'Average', range: '4.5-5.5%' },
-      high: { label: 'High', range: '5.5%+' }
-    }
+      high: { label: 'High', range: '5.5%+' },
+    },
   },
   dscr: {
     thresholds: { low: 1.0, high: 1.5 },
@@ -229,8 +232,8 @@ export const LTR_BENCHMARKS = {
     zones: {
       low: { label: 'Low', range: '<1.0' },
       average: { label: 'Average', range: '1.2-1.5' },
-      high: { label: 'High', range: '1.5+' }
-    }
+      high: { label: 'High', range: '1.5+' },
+    },
   },
   grm: {
     thresholds: { low: 8, high: 15 },
@@ -239,8 +242,8 @@ export const LTR_BENCHMARKS = {
     zones: {
       low: { label: 'High', range: '<8' },
       average: { label: 'Average', range: '8-12' },
-      high: { label: 'Low', range: '20+' }
-    }
+      high: { label: 'Low', range: '20+' },
+    },
   },
   vacancy: {
     thresholds: { low: 5, high: 10 },
@@ -249,8 +252,8 @@ export const LTR_BENCHMARKS = {
     zones: {
       low: { label: 'Good', range: '1-5%' },
       average: { label: 'Average', range: '5-8%' },
-      high: { label: 'High', range: '15%+' }
-    }
+      high: { label: 'High', range: '15%+' },
+    },
   },
   expenseRatio: {
     thresholds: { low: 35, high: 55 },
@@ -259,20 +262,20 @@ export const LTR_BENCHMARKS = {
     zones: {
       low: { label: 'Good', range: '<30%' },
       average: { label: 'Average', range: '45-55%' },
-      high: { label: 'High', range: '60%+' }
-    }
-  }
+      high: { label: 'High', range: '60%+' },
+    },
+  },
 }
 
 export const STR_BENCHMARKS = {
   cashOnCash: {
     thresholds: { low: 0.08, high: 0.15 },
-    range: { min: 0, max: 0.30 },
+    range: { min: 0, max: 0.3 },
     zones: {
       low: { label: 'Low', range: '<8%' },
       average: { label: 'Average', range: '10-15%' },
-      high: { label: 'High', range: '15%+' }
-    }
+      high: { label: 'High', range: '15%+' },
+    },
   },
   occupancy: {
     thresholds: { low: 50, high: 80 },
@@ -280,8 +283,8 @@ export const STR_BENCHMARKS = {
     zones: {
       low: { label: 'Low', range: '<50%' },
       average: { label: 'Average', range: '65-80%' },
-      high: { label: 'High', range: '85%+' }
-    }
+      high: { label: 'High', range: '85%+' },
+    },
   },
   adr: {
     thresholds: { low: 100, high: 250 },
@@ -289,9 +292,9 @@ export const STR_BENCHMARKS = {
     zones: {
       low: { label: 'Low', range: '<$100' },
       average: { label: 'Average', range: '$150-250' },
-      high: { label: 'High', range: '$300+' }
-    }
-  }
+      high: { label: 'High', range: '$300+' },
+    },
+  },
 }
 
 export const BRRRR_BENCHMARKS = {
@@ -301,8 +304,8 @@ export const BRRRR_BENCHMARKS = {
     zones: {
       low: { label: 'Low', range: '<70%' },
       average: { label: 'Average', range: '70-90%' },
-      high: { label: 'High', range: '100%+' }
-    }
+      high: { label: 'High', range: '100%+' },
+    },
   },
   purchaseToArv: {
     thresholds: { low: 65, high: 75 },
@@ -311,9 +314,9 @@ export const BRRRR_BENCHMARKS = {
     zones: {
       low: { label: 'Good', range: '<65%' },
       average: { label: 'Average', range: '65-75%' },
-      high: { label: 'Risky', range: '80%+' }
-    }
-  }
+      high: { label: 'Risky', range: '80%+' },
+    },
+  },
 }
 
 export default PerformanceBenchmarks

@@ -25,4 +25,3 @@ export function writeStoredThemePreference(preference: ThemePreference): void {
     // Ignore storage failures (privacy mode, quota, etc.).
   }
 }
-

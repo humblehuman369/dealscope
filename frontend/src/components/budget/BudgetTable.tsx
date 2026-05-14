@@ -9,9 +9,11 @@ import type { RehabBudgetSummary } from '@/types/rehabBudget'
 import { useAddBudgetExpense } from '@/hooks/useSavedProperties'
 
 const fmt = (n: string | number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(
-    typeof n === 'string' ? parseFloat(n) : n,
-  )
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(typeof n === 'string' ? parseFloat(n) : n)
 
 function statusPill(status: string) {
   const map = {
@@ -21,7 +23,9 @@ function statusPill(status: string) {
   }
   const cls = map[status as keyof typeof map] ?? map.warn
   return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${cls}`}>
+    <span
+      className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${cls}`}
+    >
       {status === 'good' ? 'On track' : status === 'warn' ? 'Watch' : 'Over'}
     </span>
   )
@@ -85,15 +89,25 @@ export function BudgetTable({
         }}
       >
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-label)]">Baseline (est. + contingency)</p>
-          <p className="text-2xl font-bold tabular-nums text-[var(--text-heading)]">{fmt(summary.baseline_total)}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-label)]">
+            Baseline (est. + contingency)
+          </p>
+          <p className="text-2xl font-bold tabular-nums text-[var(--text-heading)]">
+            {fmt(summary.baseline_total)}
+          </p>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-label)]">Actual spend</p>
-          <p className="text-2xl font-bold tabular-nums text-[var(--accent-sky)]">{fmt(summary.actual_total)}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-label)]">
+            Actual spend
+          </p>
+          <p className="text-2xl font-bold tabular-nums text-[var(--accent-sky)]">
+            {fmt(summary.actual_total)}
+          </p>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-label)]">Variance</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-label)]">
+            Variance
+          </p>
           <p
             className="text-2xl font-bold tabular-nums"
             style={{
@@ -109,7 +123,9 @@ export function BudgetTable({
           </p>
         </div>
         <div className="min-w-[140px]">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-label)] mb-1">Spend vs baseline</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-label)] mb-1">
+            Spend vs baseline
+          </p>
           <div className="h-2 rounded-full bg-[var(--surface-elevated)] overflow-hidden">
             <div
               className="h-full rounded-full brand-gradient"
@@ -139,7 +155,9 @@ export function BudgetTable({
               <tbody>
                 {lines.map((line) => (
                   <tr key={line.id} className="border-t border-[var(--border-subtle)]">
-                    <td className="px-3 py-2 text-[var(--text-heading)] font-medium">{line.label}</td>
+                    <td className="px-3 py-2 text-[var(--text-heading)] font-medium">
+                      {line.label}
+                    </td>
                     <td className="px-3 py-2 tabular-nums">{fmt(line.estimate_amount)}</td>
                     <td className="px-3 py-2 tabular-nums">{fmt(line.actual_amount)}</td>
                     <td className="px-3 py-2 tabular-nums text-[var(--text-secondary)]">
@@ -168,9 +186,14 @@ export function BudgetTable({
       {openLineId && (
         <div
           className="flex flex-wrap gap-2 items-end p-4 rounded-xl"
-          style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-subtle)' }}
+          style={{
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border-subtle)',
+          }}
         >
-          <p className="w-full text-xs font-semibold text-[var(--text-label)]">Add expense for selected line</p>
+          <p className="w-full text-xs font-semibold text-[var(--text-label)]">
+            Add expense for selected line
+          </p>
           <label className="text-xs text-[var(--text-label)]">
             Amount
             <input
@@ -209,8 +232,8 @@ export function BudgetTable({
       )}
 
       <div className="rounded-xl p-3 text-sm text-[var(--text-secondary)]">
-        Upload receipts from the property Documents tab and link document IDs in a future update; for now, vendor + date
-        keeps your actuals auditable.
+        Upload receipts from the property Documents tab and link document IDs in a future update;
+        for now, vendor + date keeps your actuals auditable.
       </div>
     </div>
   )

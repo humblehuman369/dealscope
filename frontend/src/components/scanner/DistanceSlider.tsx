@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import React from 'react';
+import React from 'react'
 
 interface DistanceSliderProps {
-  value: number;
-  onChange: (value: number) => void;
-  min?: number;
-  max?: number;
+  value: number
+  onChange: (value: number) => void
+  min?: number
+  max?: number
 }
 
 /**
  * Distance slider for adjusting scan range.
  */
 export function DistanceSlider({ value, onChange, min = 10, max = 200 }: DistanceSliderProps) {
-  const percentage = ((value - min) / (max - min)) * 100;
+  const percentage = ((value - min) / (max - min)) * 100
 
   return (
     <div className="w-full">
@@ -21,7 +21,7 @@ export function DistanceSlider({ value, onChange, min = 10, max = 200 }: Distanc
         <span className="text-xs font-medium text-white/70">Distance</span>
         <span className="text-sm font-bold text-white">{value}m</span>
       </div>
-      
+
       <div className="relative">
         <input
           type="range"
@@ -37,7 +37,7 @@ export function DistanceSlider({ value, onChange, min = 10, max = 200 }: Distanc
           }}
         />
       </div>
-      
+
       <div className="flex justify-between mt-1">
         <span className="text-[10px] text-white/50">{min}m</span>
         <span className="text-[10px] text-white/50">{max}m</span>
@@ -65,6 +65,5 @@ export function DistanceSlider({ value, onChange, min = 10, max = 200 }: Distanc
         }
       `}</style>
     </div>
-  );
+  )
 }
-

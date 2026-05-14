@@ -540,9 +540,7 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
         holding_utilities = input_data.utilities_monthly * input_data.holding_months
         total_holding_costs = holding_interest + holding_taxes + holding_insurance + holding_utilities
         cash_out_at_refi = result["cash_out_at_refinance"]
-        total_cash_invested = (
-            ce + input_data.purchase_costs + points_cost + total_rehab + total_holding_costs
-        )
+        total_cash_invested = ce + input_data.purchase_costs + points_cost + total_rehab + total_holding_costs
         cash_left_in_deal = total_cash_invested - cash_out_at_refi
         annual_gross_rent = result["annual_gross_rent"]
         vacancy_loss = annual_gross_rent * input_data.vacancy_rate
@@ -551,9 +549,7 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
         maintenance = effective_income * input_data.maintenance_pct
         capex = effective_income * input_data.capex_pct
         hoa_annual = input_data.hoa_monthly * 12
-        total_expenses = (
-            input_data.property_taxes_annual + ia + property_management + maintenance + capex + hoa_annual
-        )
+        total_expenses = input_data.property_taxes_annual + ia + property_management + maintenance + capex + hoa_annual
         noi = effective_income - total_expenses
         annual_debt_service = result["new_monthly_pi"] * 12
         annual_cash_flow = noi - annual_debt_service

@@ -14,7 +14,11 @@ interface LoginFormProps {
   onSwitchToRegister?: () => void
 }
 
-export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegister }: LoginFormProps) {
+export default function LoginForm({
+  onSuccess,
+  onForgotPassword,
+  onSwitchToRegister,
+}: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [mfaChallenge, setMfaChallenge] = useState<string | null>(null)
@@ -24,7 +28,11 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
   const loginMutation = useLogin()
   const mfaMutation = useLoginMfa()
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   })
@@ -76,14 +84,19 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-900/20 rounded-xl" role="alert">
+          <div
+            className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-900/20 rounded-xl"
+            role="alert"
+          >
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             {error}
           </div>
         )}
 
         <div>
-          <label htmlFor="mfa-code" className="sr-only">MFA Code</label>
+          <label htmlFor="mfa-code" className="sr-only">
+            MFA Code
+          </label>
           <input
             id="mfa-code"
             type="text"
@@ -111,7 +124,11 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
         </button>
 
         <button
-          onClick={() => { setMfaChallenge(null); setMfaCode(''); setError('') }}
+          onClick={() => {
+            setMfaChallenge(null)
+            setMfaCode('')
+            setError('')
+          }}
           className="w-full text-sm text-gray-400 hover:text-white hover:underline transition-colors"
         >
           Back to login
@@ -124,7 +141,10 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {error && (
-        <div className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-900/20 rounded-xl" role="alert">
+        <div
+          className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-900/20 rounded-xl"
+          role="alert"
+        >
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {error}
         </div>
@@ -132,11 +152,18 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
 
       {/* Email */}
       <div>
-        <label htmlFor="login-email" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
+        <label
+          htmlFor="login-email"
+          className="block text-sm font-medium mb-1"
+          style={{ color: '#CBD5E1' }}
+        >
           Email
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
+          <Mail
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: '#94A3B8' }}
+          />
           <input
             id="login-email"
             type="email"
@@ -150,17 +177,26 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
           />
         </div>
         {errors.email && (
-          <p id="login-email-error" className="mt-1 text-xs text-red-400">{errors.email.message}</p>
+          <p id="login-email-error" className="mt-1 text-xs text-red-400">
+            {errors.email.message}
+          </p>
         )}
       </div>
 
       {/* Password */}
       <div>
-        <label htmlFor="login-password" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
+        <label
+          htmlFor="login-password"
+          className="block text-sm font-medium mb-1"
+          style={{ color: '#CBD5E1' }}
+        >
           Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
+          <Lock
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: '#94A3B8' }}
+          />
           <input
             id="login-password"
             type={showPassword ? 'text' : 'password'}
@@ -181,9 +217,7 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>
-        {errors.password && (
-          <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>
-        )}
+        {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>}
       </div>
 
       {/* Remember me + Forgot password */}
@@ -196,7 +230,9 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
             className="w-4 h-4 rounded text-brand-500 focus:ring-brand-500"
             style={{ backgroundColor: '#103351', borderColor: '#15446c' }}
           />
-          <span className="text-sm" style={{ color: '#94A3B8' }}>Remember me</span>
+          <span className="text-sm" style={{ color: '#94A3B8' }}>
+            Remember me
+          </span>
         </label>
         {onForgotPassword && (
           <button
@@ -225,7 +261,12 @@ export default function LoginForm({ onSuccess, onForgotPassword, onSwitchToRegis
       {onSwitchToRegister && (
         <p className="text-center text-sm" style={{ color: '#94A3B8' }}>
           Don&apos;t have an account?{' '}
-          <button type="button" onClick={onSwitchToRegister} className="font-medium" style={{ color: 'var(--accent-sky)' }}>
+          <button
+            type="button"
+            onClick={onSwitchToRegister}
+            className="font-medium"
+            style={{ color: 'var(--accent-sky)' }}
+          >
             Sign up
           </button>
         </p>

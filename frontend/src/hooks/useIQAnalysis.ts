@@ -28,29 +28,44 @@ const WORKSHEET_ENDPOINTS: Record<string, string> = {
 
 // Backend verdict response shape — supports both snake_case and camelCase from Pydantic
 interface VerdictResponse {
-  deal_score?: number; dealScore?: number
-  deal_verdict?: string; dealVerdict?: string
-  discount_percent?: number; discountPercent?: number
-  purchase_price?: number; purchasePrice?: number
-  income_value?: number; incomeValue?: number
-  breakeven_price?: number; breakevenPrice?: number  // deprecated, use income_value
-  wholesale_mao?: number; wholesaleMao?: number
-  list_price?: number; listPrice?: number
+  deal_score?: number
+  dealScore?: number
+  deal_verdict?: string
+  dealVerdict?: string
+  discount_percent?: number
+  discountPercent?: number
+  purchase_price?: number
+  purchasePrice?: number
+  income_value?: number
+  incomeValue?: number
+  breakeven_price?: number
+  breakevenPrice?: number // deprecated, use income_value
+  wholesale_mao?: number
+  wholesaleMao?: number
+  list_price?: number
+  listPrice?: number
   opportunity?: { score?: number; grade?: string; label?: string; color?: string }
   strategies: Array<{
     id: string
     name: string
     score: number
     badge: string | null
-    cap_rate?: number; capRate?: number
-    cash_on_cash?: number; cashOnCash?: number
+    cap_rate?: number
+    capRate?: number
+    cash_on_cash?: number
+    cashOnCash?: number
     dscr?: number
-    annual_cash_flow?: number; annualCashFlow?: number
-    monthly_cash_flow?: number; monthlyCashFlow?: number
-    metric_label?: string; metricLabel?: string
-    metric_value?: string | number; metricValue?: string | number
+    annual_cash_flow?: number
+    annualCashFlow?: number
+    monthly_cash_flow?: number
+    monthlyCashFlow?: number
+    metric_label?: string
+    metricLabel?: string
+    metric_value?: string | number
+    metricValue?: string | number
   }>
-  inputs_used?: Record<string, unknown>; inputsUsed?: Record<string, unknown>
+  inputs_used?: Record<string, unknown>
+  inputsUsed?: Record<string, unknown>
 }
 
 /**
@@ -73,7 +88,12 @@ function mapVerdictToIQTarget(
   )
 
   const targetPrice = verdict.purchase_price ?? verdict.purchasePrice ?? 0
-  const incomeValue = verdict.income_value ?? verdict.incomeValue ?? verdict.breakeven_price ?? verdict.breakevenPrice ?? 0
+  const incomeValue =
+    verdict.income_value ??
+    verdict.incomeValue ??
+    verdict.breakeven_price ??
+    verdict.breakevenPrice ??
+    0
   const wholesaleMao = verdict.wholesale_mao ?? verdict.wholesaleMao
   const listPrice = assumptions.listPrice
   const discount = listPrice - targetPrice
@@ -85,10 +105,7 @@ function mapVerdictToIQTarget(
     discountPercent: discountPct * 100,
     incomeValue,
     wholesaleMao: wholesaleMao ?? undefined,
-    incomeValuePercent:
-      listPrice > 0
-        ? ((listPrice - incomeValue) / listPrice) * 100
-        : 0,
+    incomeValuePercent: listPrice > 0 ? ((listPrice - incomeValue) / listPrice) * 100 : 0,
     rationale: `Buy at $${Math.round(targetPrice).toLocaleString()} for optimal returns`,
     highlightedMetric: String(strat?.metric_value ?? strat?.metricValue ?? ''),
     secondaryMetric: String(strat?.metric_label ?? strat?.metricLabel ?? ''),
@@ -293,10 +310,7 @@ export function useIQAnalysis(
         }
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return
-        const message =
-          err instanceof Error
-            ? err.message
-            : 'Failed to calculate IQ analytics'
+        const message = err instanceof Error ? err.message : 'Failed to calculate IQ analytics'
         setError(message)
       } finally {
         setIsLoading(false)

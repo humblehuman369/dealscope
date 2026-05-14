@@ -29,8 +29,6 @@ logger = logging.getLogger(__name__)
 # -----------------------------------------------------------------------
 # Constants
 # -----------------------------------------------------------------------
-JWT_ACCESS_LIFETIME_MINUTES = 5  # Short-lived — rely on session for validity
-JWT_ALGORITHM = "HS256"
 
 
 class TokenService:
@@ -54,7 +52,7 @@ class TokenService:
     ) -> str:
         """Create a short-lived JWT access token bound to a session."""
         now = datetime.now(UTC)
-        expire = now + (expires_delta or timedelta(minutes=JWT_ACCESS_LIFETIME_MINUTES))
+        expire = now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
         payload = {
             "sub": str(user_id),
             "sid": str(session_id),
@@ -64,7 +62,7 @@ class TokenService:
             "aud": settings.APP_NAME,
             "iss": settings.APP_NAME,
         }
-        return jwt.encode(payload, self._jwt_key(), algorithm=JWT_ALGORITHM)
+        return jwt.encode(payload, self._jwt_key(), algorithm=settings.ALGORITHM)
 
     def verify_jwt(self, token: str) -> dict | None:
         """Decode and verify a JWT.  Returns the payload dict or None."""
@@ -72,7 +70,7 @@ class TokenService:
             payload = jwt.decode(
                 token,
                 self._jwt_key(),
-                algorithms=[JWT_ALGORITHM],
+                algorithms=[settings.ALGORITHM],
                 audience=settings.APP_NAME,
                 issuer=settings.APP_NAME,
             )

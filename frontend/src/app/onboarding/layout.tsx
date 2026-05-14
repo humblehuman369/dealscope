@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   description: 'Set up your investment preferences and get the most out of DealGapIQ.',
 }
 
-export default function OnboardingLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
   return children
 }

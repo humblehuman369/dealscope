@@ -87,7 +87,10 @@ function extractComponentsFromPostalAddress(pa: {
 /**
  * Build issues list from verdict and address metadata.
  */
-function buildIssues(verdict: GoogleVerdict | undefined, address: GoogleAddress | undefined): AddressIssue[] {
+function buildIssues(
+  verdict: GoogleVerdict | undefined,
+  address: GoogleAddress | undefined,
+): AddressIssue[] {
   const issues: AddressIssue[] = []
   if (verdict?.hasUnconfirmedComponents) {
     issues.push({
@@ -114,7 +117,11 @@ function buildIssues(verdict: GoogleVerdict | undefined, address: GoogleAddress 
     })
   }
   const missing = address?.missingComponentTypes ?? []
-  if (missing.some((t) => t?.toLowerCase().includes('subpremise') || t?.toLowerCase().includes('sub_premise'))) {
+  if (
+    missing.some(
+      (t) => t?.toLowerCase().includes('subpremise') || t?.toLowerCase().includes('sub_premise'),
+    )
+  ) {
     issues.push({
       type: 'MISSING_UNIT',
       message: 'Apartment or unit number may be missing.',
@@ -127,9 +134,7 @@ function buildIssues(verdict: GoogleVerdict | undefined, address: GoogleAddress 
 /**
  * Parse a Google Address Validation API response into our AddressValidationResult.
  */
-export function parseGoogleValidationResponse(
-  data: unknown
-): AddressValidationResult | null {
+export function parseGoogleValidationResponse(data: unknown): AddressValidationResult | null {
   const raw = data as GoogleValidationResult
   const result = raw?.result
   if (!result) return null
@@ -150,8 +155,7 @@ export function parseGoogleValidationResponse(
   const isValid = addressComplete && isDeliverable
 
   const standardizedAddress = extractComponentsFromPostalAddress(postal)
-  const formattedAddress =
-    (addr.formattedAddress ?? (postal.addressLines ?? []).join(', ')) || ''
+  const formattedAddress = (addr.formattedAddress ?? (postal.addressLines ?? []).join(', ')) || ''
 
   const issues = buildIssues(verdict, addr)
 

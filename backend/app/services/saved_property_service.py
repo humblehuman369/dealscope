@@ -8,7 +8,7 @@ import uuid
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer, selectinload
 
@@ -112,10 +112,13 @@ def sanitize_for_json_storage(obj):
 
 async def _adjust_properties_count(db: AsyncSession, user_id: uuid.UUID, delta: int) -> None:
     """Atomically adjust the denormalized properties_count on the subscription."""
-    result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
-    sub = result.scalar_one_or_none()
-    if sub is not None:
-        sub.properties_count = sub.properties_count + delta
+    if delta == 0:
+        return
+    await db.execute(
+        update(Subscription)
+        .where(Subscription.user_id == user_id)
+        .values(properties_count=func.coalesce(Subscription.properties_count, 0) + delta)
+    )
 
 
 class SavedPropertyService:
@@ -400,7 +403,9 @@ class SavedPropertyService:
 
         # Detect status change so we can stamp status_changed_at exactly when
         # it actually moves — model defaults only fire on insert, not update.
-        status_did_change = "status" in update_data and update_data["status"] is not None and update_data["status"] != previous_status
+        status_did_change = (
+            "status" in update_data and update_data["status"] is not None and update_data["status"] != previous_status
+        )
 
         for field, value in update_data.items():
             # Handle DealMakerRecord conversion to dict
@@ -439,6 +444,7 @@ class SavedPropertyService:
         # between saved_property_service and task_service.
         if status_did_change:
             from app.services.task_service import task_service as _ts
+
             try:
                 await _ts.seed_for_property(db, property_id, user_id)
             except Exception as e:
@@ -547,6 +553,7 @@ class SavedPropertyService:
         # Stabilized, Setup, etc.). Same dedup behavior as the status-change
         # path above.
         from app.services.task_service import task_service as _ts
+
         try:
             await _ts.seed_for_property(db, property_id, user_id)
         except Exception as e:

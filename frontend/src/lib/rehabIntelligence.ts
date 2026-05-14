@@ -2,14 +2,14 @@ import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 
 /**
  * RehabIntelligence - Intelligent Rehab Cost Estimation Engine
- * 
+ *
  * A sophisticated rehab estimation system that accounts for:
  * - Asset class detection (prevents the "Luxury Trap")
  * - Location-based labor cost adjustments (Florida markets)
  * - Age-based CapEx warnings with permit awareness
  * - Property condition assessment
  * - Holding cost calculations ("the silent killer")
- * 
+ *
  * Updated for 2025 South Florida construction costs.
  */
 
@@ -106,93 +106,93 @@ interface LocationData {
 
 const LOCATION_FACTORS: Record<string, LocationData> = {
   // Palm Beach County - Premium Markets
-  "33480": { factor: 1.45, market: "Palm Beach Island" },
-  "33483": { factor: 1.40, market: "Delray Beach (Beach)" },
-  "33444": { factor: 1.35, market: "Delray Beach" },
-  "33445": { factor: 1.30, market: "Delray Beach (West)" },
-  "33446": { factor: 1.30, market: "Delray Beach (West)" },
-  "33484": { factor: 1.35, market: "Delray Beach (Linton)" },
-  "33432": { factor: 1.40, market: "Boca Raton (Beach)" },
-  "33431": { factor: 1.35, market: "Boca Raton" },
-  "33433": { factor: 1.30, market: "Boca Raton (West)" },
-  "33434": { factor: 1.30, market: "Boca Raton (West)" },
-  "33487": { factor: 1.35, market: "Boca Raton (Highland Beach)" },
-  "33486": { factor: 1.35, market: "Boca Raton" },
-  "33496": { factor: 1.35, market: "Boca Raton (West)" },
-  "33498": { factor: 1.30, market: "Boca Raton (West)" },
-  "33460": { factor: 1.30, market: "Lake Worth Beach" },
-  "33461": { factor: 1.25, market: "Lake Worth" },
-  "33462": { factor: 1.25, market: "Lake Worth" },
-  "33463": { factor: 1.25, market: "Lake Worth (West)" },
-  "33401": { factor: 1.35, market: "West Palm Beach (Downtown)" },
-  "33405": { factor: 1.35, market: "West Palm Beach (South)" },
-  "33407": { factor: 1.25, market: "West Palm Beach (North)" },
-  "33409": { factor: 1.25, market: "West Palm Beach" },
-  "33411": { factor: 1.20, market: "West Palm Beach (Royal Palm)" },
-  "33412": { factor: 1.20, market: "West Palm Beach (Loxahatchee)" },
-  "33413": { factor: 1.20, market: "West Palm Beach (West)" },
-  "33414": { factor: 1.30, market: "Wellington" },
-  "33415": { factor: 1.20, market: "West Palm Beach (West)" },
-  "33417": { factor: 1.25, market: "West Palm Beach" },
-  "33418": { factor: 1.35, market: "Palm Beach Gardens (North)" },
-  "33410": { factor: 1.35, market: "Palm Beach Gardens" },
-  "33408": { factor: 1.30, market: "North Palm Beach" },
-  "33403": { factor: 1.30, market: "Palm Beach Gardens" },
-  "33404": { factor: 1.25, market: "West Palm Beach (Riviera Beach)" },
-  "33458": { factor: 1.35, market: "Jupiter" },
-  "33469": { factor: 1.40, market: "Jupiter (Beach)" },
-  "33477": { factor: 1.40, market: "Jupiter (Inlet)" },
-  "33478": { factor: 1.25, market: "Jupiter (West)" },
-  
+  '33480': { factor: 1.45, market: 'Palm Beach Island' },
+  '33483': { factor: 1.4, market: 'Delray Beach (Beach)' },
+  '33444': { factor: 1.35, market: 'Delray Beach' },
+  '33445': { factor: 1.3, market: 'Delray Beach (West)' },
+  '33446': { factor: 1.3, market: 'Delray Beach (West)' },
+  '33484': { factor: 1.35, market: 'Delray Beach (Linton)' },
+  '33432': { factor: 1.4, market: 'Boca Raton (Beach)' },
+  '33431': { factor: 1.35, market: 'Boca Raton' },
+  '33433': { factor: 1.3, market: 'Boca Raton (West)' },
+  '33434': { factor: 1.3, market: 'Boca Raton (West)' },
+  '33487': { factor: 1.35, market: 'Boca Raton (Highland Beach)' },
+  '33486': { factor: 1.35, market: 'Boca Raton' },
+  '33496': { factor: 1.35, market: 'Boca Raton (West)' },
+  '33498': { factor: 1.3, market: 'Boca Raton (West)' },
+  '33460': { factor: 1.3, market: 'Lake Worth Beach' },
+  '33461': { factor: 1.25, market: 'Lake Worth' },
+  '33462': { factor: 1.25, market: 'Lake Worth' },
+  '33463': { factor: 1.25, market: 'Lake Worth (West)' },
+  '33401': { factor: 1.35, market: 'West Palm Beach (Downtown)' },
+  '33405': { factor: 1.35, market: 'West Palm Beach (South)' },
+  '33407': { factor: 1.25, market: 'West Palm Beach (North)' },
+  '33409': { factor: 1.25, market: 'West Palm Beach' },
+  '33411': { factor: 1.2, market: 'West Palm Beach (Royal Palm)' },
+  '33412': { factor: 1.2, market: 'West Palm Beach (Loxahatchee)' },
+  '33413': { factor: 1.2, market: 'West Palm Beach (West)' },
+  '33414': { factor: 1.3, market: 'Wellington' },
+  '33415': { factor: 1.2, market: 'West Palm Beach (West)' },
+  '33417': { factor: 1.25, market: 'West Palm Beach' },
+  '33418': { factor: 1.35, market: 'Palm Beach Gardens (North)' },
+  '33410': { factor: 1.35, market: 'Palm Beach Gardens' },
+  '33408': { factor: 1.3, market: 'North Palm Beach' },
+  '33403': { factor: 1.3, market: 'Palm Beach Gardens' },
+  '33404': { factor: 1.25, market: 'West Palm Beach (Riviera Beach)' },
+  '33458': { factor: 1.35, market: 'Jupiter' },
+  '33469': { factor: 1.4, market: 'Jupiter (Beach)' },
+  '33477': { factor: 1.4, market: 'Jupiter (Inlet)' },
+  '33478': { factor: 1.25, market: 'Jupiter (West)' },
+
   // Broward County
-  "33301": { factor: 1.35, market: "Fort Lauderdale (Downtown)" },
-  "33304": { factor: 1.40, market: "Fort Lauderdale (Beach)" },
-  "33305": { factor: 1.35, market: "Fort Lauderdale (Victoria Park)" },
-  "33306": { factor: 1.35, market: "Fort Lauderdale (Coral Ridge)" },
-  "33308": { factor: 1.40, market: "Fort Lauderdale (Lauderdale-by-the-Sea)" },
-  "33062": { factor: 1.40, market: "Pompano Beach (Beach)" },
-  "33060": { factor: 1.25, market: "Pompano Beach" },
-  "33064": { factor: 1.25, market: "Pompano Beach (West)" },
-  "33309": { factor: 1.25, market: "Fort Lauderdale (West)" },
-  "33311": { factor: 1.15, market: "Fort Lauderdale (Northwest)" },
-  "33313": { factor: 1.20, market: "Fort Lauderdale (Lauderhill)" },
-  "33314": { factor: 1.20, market: "Fort Lauderdale (Davie)" },
-  "33316": { factor: 1.35, market: "Fort Lauderdale (Las Olas)" },
-  "33317": { factor: 1.25, market: "Plantation" },
-  "33322": { factor: 1.20, market: "Plantation (West)" },
-  "33324": { factor: 1.25, market: "Plantation" },
-  "33325": { factor: 1.25, market: "Weston" },
-  "33326": { factor: 1.30, market: "Weston" },
-  "33327": { factor: 1.30, market: "Weston" },
-  "33328": { factor: 1.25, market: "Davie" },
-  "33330": { factor: 1.30, market: "Cooper City" },
-  "33331": { factor: 1.30, market: "Weston" },
-  "33332": { factor: 1.30, market: "Southwest Ranches" },
-  "33334": { factor: 1.30, market: "Oakland Park" },
-  "33351": { factor: 1.20, market: "Sunrise" },
-  
+  '33301': { factor: 1.35, market: 'Fort Lauderdale (Downtown)' },
+  '33304': { factor: 1.4, market: 'Fort Lauderdale (Beach)' },
+  '33305': { factor: 1.35, market: 'Fort Lauderdale (Victoria Park)' },
+  '33306': { factor: 1.35, market: 'Fort Lauderdale (Coral Ridge)' },
+  '33308': { factor: 1.4, market: 'Fort Lauderdale (Lauderdale-by-the-Sea)' },
+  '33062': { factor: 1.4, market: 'Pompano Beach (Beach)' },
+  '33060': { factor: 1.25, market: 'Pompano Beach' },
+  '33064': { factor: 1.25, market: 'Pompano Beach (West)' },
+  '33309': { factor: 1.25, market: 'Fort Lauderdale (West)' },
+  '33311': { factor: 1.15, market: 'Fort Lauderdale (Northwest)' },
+  '33313': { factor: 1.2, market: 'Fort Lauderdale (Lauderhill)' },
+  '33314': { factor: 1.2, market: 'Fort Lauderdale (Davie)' },
+  '33316': { factor: 1.35, market: 'Fort Lauderdale (Las Olas)' },
+  '33317': { factor: 1.25, market: 'Plantation' },
+  '33322': { factor: 1.2, market: 'Plantation (West)' },
+  '33324': { factor: 1.25, market: 'Plantation' },
+  '33325': { factor: 1.25, market: 'Weston' },
+  '33326': { factor: 1.3, market: 'Weston' },
+  '33327': { factor: 1.3, market: 'Weston' },
+  '33328': { factor: 1.25, market: 'Davie' },
+  '33330': { factor: 1.3, market: 'Cooper City' },
+  '33331': { factor: 1.3, market: 'Weston' },
+  '33332': { factor: 1.3, market: 'Southwest Ranches' },
+  '33334': { factor: 1.3, market: 'Oakland Park' },
+  '33351': { factor: 1.2, market: 'Sunrise' },
+
   // Miami-Dade County
-  "33139": { factor: 1.50, market: "Miami Beach (South Beach)" },
-  "33140": { factor: 1.45, market: "Miami Beach (Mid-Beach)" },
-  "33141": { factor: 1.40, market: "Miami Beach (North Beach)" },
-  "33154": { factor: 1.45, market: "Bay Harbor Islands" },
-  "33160": { factor: 1.40, market: "Sunny Isles Beach" },
-  "33180": { factor: 1.35, market: "Aventura" },
-  "33131": { factor: 1.45, market: "Miami (Brickell)" },
-  "33129": { factor: 1.40, market: "Miami (Coconut Grove)" },
-  "33133": { factor: 1.40, market: "Miami (Coconut Grove)" },
-  "33134": { factor: 1.40, market: "Coral Gables" },
-  "33143": { factor: 1.35, market: "Coral Gables (South)" },
-  "33146": { factor: 1.40, market: "Coral Gables" },
-  "33156": { factor: 1.35, market: "Pinecrest" },
-  "33157": { factor: 1.30, market: "Palmetto Bay" },
-  "33158": { factor: 1.35, market: "Palmetto Bay" },
-  "33176": { factor: 1.25, market: "Kendall" },
-  "33183": { factor: 1.20, market: "Kendall (West)" },
-  "33186": { factor: 1.20, market: "Kendall (South)" },
-  
+  '33139': { factor: 1.5, market: 'Miami Beach (South Beach)' },
+  '33140': { factor: 1.45, market: 'Miami Beach (Mid-Beach)' },
+  '33141': { factor: 1.4, market: 'Miami Beach (North Beach)' },
+  '33154': { factor: 1.45, market: 'Bay Harbor Islands' },
+  '33160': { factor: 1.4, market: 'Sunny Isles Beach' },
+  '33180': { factor: 1.35, market: 'Aventura' },
+  '33131': { factor: 1.45, market: 'Miami (Brickell)' },
+  '33129': { factor: 1.4, market: 'Miami (Coconut Grove)' },
+  '33133': { factor: 1.4, market: 'Miami (Coconut Grove)' },
+  '33134': { factor: 1.4, market: 'Coral Gables' },
+  '33143': { factor: 1.35, market: 'Coral Gables (South)' },
+  '33146': { factor: 1.4, market: 'Coral Gables' },
+  '33156': { factor: 1.35, market: 'Pinecrest' },
+  '33157': { factor: 1.3, market: 'Palmetto Bay' },
+  '33158': { factor: 1.35, market: 'Palmetto Bay' },
+  '33176': { factor: 1.25, market: 'Kendall' },
+  '33183': { factor: 1.2, market: 'Kendall (West)' },
+  '33186': { factor: 1.2, market: 'Kendall (South)' },
+
   // Default
-  "default": { factor: 1.15, market: "Florida Average" },
+  default: { factor: 1.15, market: 'Florida Average' },
 }
 
 // ============================================
@@ -208,7 +208,7 @@ const BASE_COSTS = {
   appliances_package: 5500,
   backsplash: 1500,
   kitchen_sink_faucet: 1200,
-  
+
   // WET ROOMS - Bathrooms
   full_bath_remodel: 14000,
   full_bath_cosmetic: 6000,
@@ -218,25 +218,25 @@ const BASE_COSTS = {
   toilet: 450,
   tub_shower: 3500,
   shower_glass: 2000,
-  
+
   // DRY ROOMS - Flooring (per sqft)
-  flooring_lvp: 7.50,
-  flooring_tile: 12.00,
-  flooring_hardwood: 14.00,
-  flooring_carpet: 5.00,
-  
+  flooring_lvp: 7.5,
+  flooring_tile: 12.0,
+  flooring_hardwood: 14.0,
+  flooring_carpet: 5.0,
+
   // DRY ROOMS - Walls (per sqft)
-  interior_paint: 3.50,
+  interior_paint: 3.5,
   drywall_repair: 650,
-  texture_removal: 4.00,
-  
+  texture_removal: 4.0,
+
   // EXTERIOR
   exterior_paint: 6500,
-  roof_shingle_sqft: 6.00,
-  roof_tile_sqft: 14.00,
-  roof_metal_sqft: 16.00,
-  roof_flat_sqft: 10.00,
-  siding_sqft: 12.00,
+  roof_shingle_sqft: 6.0,
+  roof_tile_sqft: 14.0,
+  roof_metal_sqft: 16.0,
+  roof_flat_sqft: 10.0,
+  siding_sqft: 12.0,
   windows_each: 750,
   front_door: 2500,
   garage_door: 2800,
@@ -244,32 +244,32 @@ const BASE_COSTS = {
   pool_resurface: 8500,
   pool_equipment: 5500,
   fence_linear_ft: 45,
-  driveway_sqft: 8.00,
-  
+  driveway_sqft: 8.0,
+
   // MAJOR SYSTEMS - HVAC
   hvac_ton: 3800,
   hvac_ductwork: 2500,
   water_heater_tank: 1800,
   water_heater_tankless: 3500,
-  
+
   // MAJOR SYSTEMS - Electrical
   electrical_panel: 3500,
-  electrical_rewire_sqft: 6.50,
+  electrical_rewire_sqft: 6.5,
   gfci_outlets: 180,
   ceiling_fan: 350,
   recessed_lights: 225,
-  
+
   // MAJOR SYSTEMS - Plumbing
-  plumbing_repipe_sqft: 8.00,
+  plumbing_repipe_sqft: 8.0,
   water_line: 3500,
   sewer_line: 6500,
   water_softener: 2500,
-  
+
   // STRUCTURAL
   foundation_repair: 8500,
   termite_treatment: 1800,
-  mold_remediation_sqft: 25.00,
-  
+  mold_remediation_sqft: 25.0,
+
   // PERMITS & SOFT COSTS
   permit_minor: 800,
   permit_major: 3500,
@@ -362,7 +362,7 @@ export class RehabIntelligence {
   private lotSqft: number
   private hoaMonthly: number
   private recentPermits: string[]
-  
+
   private currentYear: number
   private propertyAge: number
   private assetClass: AssetClass
@@ -370,7 +370,7 @@ export class RehabIntelligence {
   private locationFactor: number
   private locationMarket: string
   private conditionFactors: ConditionFactors
-  
+
   constructor(input: PropertyInput) {
     this.sqFt = input.sq_ft
     this.yearBuilt = input.year_built
@@ -385,28 +385,28 @@ export class RehabIntelligence {
     this.garageSpaces = input.garage_spaces ?? 0
     this.lotSqft = input.lot_sqft ?? this.sqFt * 3
     this.hoaMonthly = input.hoa_monthly ?? 0
-    this.recentPermits = (input.recent_permits ?? []).map(p => p.toLowerCase())
-    
+    this.recentPermits = (input.recent_permits ?? []).map((p) => p.toLowerCase())
+
     this.currentYear = new Date().getFullYear()
     this.propertyAge = this.currentYear - this.yearBuilt
-    
+
     // Determine asset class
     const { assetClass, multiplier } = this.determineAssetClass()
     this.assetClass = assetClass
     this.gradeMultiplier = multiplier
-    
+
     // Determine location factor
     const locData = LOCATION_FACTORS[this.zipCode] ?? LOCATION_FACTORS['default']
     this.locationFactor = locData.factor
     this.locationMarket = locData.market
-    
+
     // Get condition factors
     this.conditionFactors = CONDITION_INTENSITY[this.condition]
   }
-  
+
   private determineAssetClass(): { assetClass: AssetClass; multiplier: number } {
     const pricePerSqft = this.sqFt > 0 ? this.arv / this.sqFt : 0
-    
+
     if (this.arv > 2_000_000 || pricePerSqft > 700) {
       return { assetClass: 'ultra_luxury', multiplier: ASSET_CLASS_MULTIPLIERS.ultra_luxury }
     } else if (this.arv > 750_000 || pricePerSqft > 400) {
@@ -415,11 +415,11 @@ export class RehabIntelligence {
       return { assetClass: 'standard', multiplier: ASSET_CLASS_MULTIPLIERS.standard }
     }
   }
-  
+
   private applyMultipliers(baseCost: number): number {
     return baseCost * this.gradeMultiplier * this.locationFactor
   }
-  
+
   calculate(options?: {
     contingencyPct?: number
     includeHoldingCosts?: boolean
@@ -427,12 +427,12 @@ export class RehabIntelligence {
     holdingLtv?: number
   }): RehabEstimate {
     const {
-      contingencyPct = 0.10,
+      contingencyPct = 0.1,
       includeHoldingCosts = true,
-      holdingLoanRate = 0.10,
-      holdingLtv = 0.70,
+      holdingLoanRate = 0.1,
+      holdingLtv = 0.7,
     } = options ?? {}
-    
+
     const breakdown: RehabBreakdown = {
       kitchen: 0,
       bathrooms: 0,
@@ -450,13 +450,13 @@ export class RehabIntelligence {
       construction_total: 0,
       total: 0,
     }
-    
+
     const warnings: CapExWarning[] = []
     const wetFactor = this.conditionFactors.wet_room_factor
     const dryFactor = this.conditionFactors.dry_room_factor
     const checkSystems = this.conditionFactors.systems_check
     const permitTier = this.conditionFactors.permit_tier
-    
+
     // ============================================
     // KITCHEN
     // ============================================
@@ -465,62 +465,63 @@ export class RehabIntelligence {
     } else {
       breakdown.kitchen = this.applyMultipliers(BASE_COSTS.kitchen_cosmetic) * wetFactor
     }
-    
+
     // ============================================
     // BATHROOMS
     // ============================================
     const fullBaths = Math.max(1, Math.floor(this.bathrooms * 0.67))
     const halfBaths = Math.max(0, this.bathrooms - fullBaths)
-    
+
     if (wetFactor >= 0.8) {
-      breakdown.bathrooms = 
-        (fullBaths * this.applyMultipliers(BASE_COSTS.full_bath_remodel)) +
-        (halfBaths * this.applyMultipliers(BASE_COSTS.half_bath_remodel))
+      breakdown.bathrooms =
+        fullBaths * this.applyMultipliers(BASE_COSTS.full_bath_remodel) +
+        halfBaths * this.applyMultipliers(BASE_COSTS.half_bath_remodel)
     } else {
-      breakdown.bathrooms = 
-        (fullBaths * this.applyMultipliers(BASE_COSTS.full_bath_cosmetic) * wetFactor) +
-        (halfBaths * this.applyMultipliers(BASE_COSTS.half_bath_cosmetic) * wetFactor)
+      breakdown.bathrooms =
+        fullBaths * this.applyMultipliers(BASE_COSTS.full_bath_cosmetic) * wetFactor +
+        halfBaths * this.applyMultipliers(BASE_COSTS.half_bath_cosmetic) * wetFactor
     }
-    
+
     // ============================================
     // FLOORING
     // ============================================
     const flooringSqft = this.sqFt * 0.85 * dryFactor
-    
+
     if (this.assetClass === 'ultra_luxury') {
       breakdown.flooring = flooringSqft * BASE_COSTS.flooring_hardwood * this.locationFactor
     } else if (this.assetClass === 'luxury') {
-      breakdown.flooring = flooringSqft * 
-        ((BASE_COSTS.flooring_tile + BASE_COSTS.flooring_hardwood) / 2) * 
+      breakdown.flooring =
+        flooringSqft *
+        ((BASE_COSTS.flooring_tile + BASE_COSTS.flooring_hardwood) / 2) *
         this.locationFactor
     } else {
       breakdown.flooring = flooringSqft * BASE_COSTS.flooring_lvp * this.locationFactor
     }
-    
+
     // ============================================
     // PAINT & WALLS
     // ============================================
     const wallSqft = this.sqFt * 3.5 * dryFactor
     breakdown.paint_walls = wallSqft * BASE_COSTS.interior_paint * this.locationFactor
-    
+
     if (this.condition === 'distressed' || this.condition === 'fair') {
       const rooms = this.bedrooms + 3
       breakdown.paint_walls += rooms * BASE_COSTS.drywall_repair * this.locationFactor
     }
-    
+
     // ============================================
     // EXTERIOR
     // ============================================
     let exteriorCost = 0
-    
+
     if (dryFactor >= 0.5) {
       exteriorCost += this.applyMultipliers(BASE_COSTS.exterior_paint)
     }
-    
+
     if (this.condition === 'distressed' || this.condition === 'fair') {
       exteriorCost += this.applyMultipliers(BASE_COSTS.landscaping)
     }
-    
+
     if (this.hasPool && this.propertyAge > 15 && !this.recentPermits.includes('pool')) {
       const poolCost = this.applyMultipliers(BASE_COSTS.pool_resurface)
       exteriorCost += poolCost
@@ -533,18 +534,18 @@ export class RehabIntelligence {
         notes: 'Pool may need resurfacing. Included in estimate.',
       })
     }
-    
+
     breakdown.exterior = exteriorCost
-    
+
     // ============================================
     // ROOF (CAPEX)
     // ============================================
     const roofThreshold = CAPEX_AGE_THRESHOLDS[`roof_${this.roofType}`] ?? 18
-    
+
     if (this.propertyAge > roofThreshold && !this.recentPermits.includes('roof')) {
       const roofSqft = this.sqFt * 1.2 * this.stories
       let roofCostPerSqft = BASE_COSTS.roof_shingle_sqft
-      
+
       if (this.roofType === 'tile') {
         roofCostPerSqft = BASE_COSTS.roof_tile_sqft
       } else if (this.roofType === 'metal') {
@@ -554,9 +555,9 @@ export class RehabIntelligence {
       } else if (this.assetClass === 'luxury' || this.assetClass === 'ultra_luxury') {
         roofCostPerSqft = BASE_COSTS.roof_tile_sqft
       }
-      
+
       breakdown.roof = roofSqft * roofCostPerSqft * this.locationFactor
-      
+
       warnings.push({
         item: 'Roof',
         age: this.propertyAge,
@@ -566,16 +567,19 @@ export class RehabIntelligence {
         notes: `Roof is ${this.propertyAge} years old (${this.roofType}). Replacement budgeted.`,
       })
     }
-    
+
     // ============================================
     // HVAC (CAPEX)
     // ============================================
     const hvacThreshold = CAPEX_AGE_THRESHOLDS.hvac
-    
-    if ((this.propertyAge > hvacThreshold || checkSystems) && !this.recentPermits.includes('hvac')) {
+
+    if (
+      (this.propertyAge > hvacThreshold || checkSystems) &&
+      !this.recentPermits.includes('hvac')
+    ) {
       const tons = Math.max(2, this.sqFt / 450)
       breakdown.hvac = tons * BASE_COSTS.hvac_ton * this.locationFactor
-      
+
       warnings.push({
         item: 'HVAC',
         age: this.propertyAge,
@@ -585,13 +589,16 @@ export class RehabIntelligence {
         notes: `HVAC system is ${this.propertyAge} years old. ${tons.toFixed(1)} ton system budgeted.`,
       })
     }
-    
+
     // ============================================
     // ELECTRICAL
     // ============================================
     let electricalCost = 0
-    
-    if (this.propertyAge > CAPEX_AGE_THRESHOLDS.electrical_panel || (checkSystems && this.propertyAge > 25)) {
+
+    if (
+      this.propertyAge > CAPEX_AGE_THRESHOLDS.electrical_panel ||
+      (checkSystems && this.propertyAge > 25)
+    ) {
       electricalCost += BASE_COSTS.electrical_panel * this.locationFactor
       warnings.push({
         item: 'Electrical Panel',
@@ -602,20 +609,20 @@ export class RehabIntelligence {
         notes: 'Electrical panel may need upgrade. Verify if fuse box or undersized.',
       })
     }
-    
+
     if (this.condition === 'distressed' || this.condition === 'fair') {
       electricalCost += 6 * BASE_COSTS.gfci_outlets * this.locationFactor
       electricalCost += this.bedrooms * BASE_COSTS.ceiling_fan * this.locationFactor
       electricalCost += 12 * BASE_COSTS.recessed_lights * this.locationFactor
     }
-    
+
     breakdown.electrical = electricalCost
-    
+
     // ============================================
     // PLUMBING
     // ============================================
     let plumbingCost = 0
-    
+
     if (this.yearBuilt < 1975 && !this.recentPermits.includes('plumbing')) {
       plumbingCost = this.sqFt * BASE_COSTS.plumbing_repipe_sqft * this.locationFactor
       warnings.push({
@@ -637,12 +644,16 @@ export class RehabIntelligence {
         notes: '1978-1995 build - verify if polybutylene pipes. Repipe may be needed.',
       })
     }
-    
+
     // Water heater
-    if (this.propertyAge > CAPEX_AGE_THRESHOLDS.water_heater && !this.recentPermits.includes('water_heater')) {
-      const whCost = this.assetClass !== 'standard' 
-        ? BASE_COSTS.water_heater_tankless 
-        : BASE_COSTS.water_heater_tank
+    if (
+      this.propertyAge > CAPEX_AGE_THRESHOLDS.water_heater &&
+      !this.recentPermits.includes('water_heater')
+    ) {
+      const whCost =
+        this.assetClass !== 'standard'
+          ? BASE_COSTS.water_heater_tankless
+          : BASE_COSTS.water_heater_tank
       plumbingCost += whCost * this.locationFactor
       warnings.push({
         item: 'Water Heater',
@@ -653,19 +664,22 @@ export class RehabIntelligence {
         notes: 'Water heater likely needs replacement.',
       })
     }
-    
+
     breakdown.plumbing = plumbingCost
-    
+
     // ============================================
     // WINDOWS & DOORS
     // ============================================
     let windowsDoorsCost = 0
-    
-    if (this.propertyAge > CAPEX_AGE_THRESHOLDS.windows && !this.recentPermits.includes('windows')) {
+
+    if (
+      this.propertyAge > CAPEX_AGE_THRESHOLDS.windows &&
+      !this.recentPermits.includes('windows')
+    ) {
       const windowCount = Math.max(8, Math.floor(this.sqFt / 150))
       const windowsCost = windowCount * this.applyMultipliers(BASE_COSTS.windows_each)
       windowsDoorsCost += windowsCost
-      
+
       warnings.push({
         item: 'Windows',
         age: this.propertyAge,
@@ -675,43 +689,41 @@ export class RehabIntelligence {
         notes: `Windows are ${this.propertyAge} years old. ${windowCount} impact windows budgeted.`,
       })
     }
-    
+
     if (this.condition === 'distressed' || this.condition === 'fair') {
       windowsDoorsCost += this.applyMultipliers(BASE_COSTS.front_door)
-      
+
       if (this.garageSpaces > 0) {
         windowsDoorsCost += this.garageSpaces * this.applyMultipliers(BASE_COSTS.garage_door)
       }
     }
-    
+
     breakdown.windows_doors = windowsDoorsCost
-    
+
     // ============================================
     // OTHER COSTS
     // ============================================
     let otherCost = 0
-    
+
     const dumpsterCount = dryFactor < 0.5 ? 2 : dryFactor < 0.8 ? 4 : 6
     otherCost += dumpsterCount * BASE_COSTS.dumpster_load
     otherCost += BASE_COSTS.deep_cleaning * this.locationFactor
-    
+
     if (this.propertyAge > 20) {
       otherCost += BASE_COSTS.termite_treatment
     }
-    
+
     breakdown.other = otherCost
-    
+
     // ============================================
     // PERMITS
     // ============================================
-    breakdown.permits = permitTier === 'major' 
-      ? BASE_COSTS.permit_major 
-      : BASE_COSTS.permit_minor
-    
+    breakdown.permits = permitTier === 'major' ? BASE_COSTS.permit_major : BASE_COSTS.permit_minor
+
     // ============================================
     // CALCULATE TOTALS
     // ============================================
-    breakdown.construction_total = 
+    breakdown.construction_total =
       breakdown.kitchen +
       breakdown.bathrooms +
       breakdown.flooring +
@@ -724,26 +736,22 @@ export class RehabIntelligence {
       breakdown.windows_doors +
       breakdown.other +
       breakdown.permits
-    
+
     breakdown.contingency = breakdown.construction_total * contingencyPct
     breakdown.total = breakdown.construction_total + breakdown.contingency
-    
+
     // ============================================
     // HOLDING COSTS
     // ============================================
     let holdingCosts: HoldingCosts | null = null
-    
+
     if (includeHoldingCosts) {
-      holdingCosts = this.calculateHoldingCosts(
-        breakdown.total,
-        holdingLoanRate,
-        holdingLtv
-      )
+      holdingCosts = this.calculateHoldingCosts(breakdown.total, holdingLoanRate, holdingLtv)
     }
-    
+
     const totalRehab = breakdown.total
     const totalProjectCost = totalRehab + (holdingCosts?.total_holding ?? 0)
-    
+
     return {
       asset_class: this.assetClass,
       location_factor: this.locationFactor,
@@ -756,12 +764,8 @@ export class RehabIntelligence {
       total_project_cost: Math.round(totalProjectCost),
     }
   }
-  
-  private calculateHoldingCosts(
-    rehabBudget: number,
-    loanRate: number,
-    ltv: number
-  ): HoldingCosts {
+
+  private calculateHoldingCosts(rehabBudget: number, loanRate: number, ltv: number): HoldingCosts {
     // Timeline based on budget size
     let months: number
     if (rehabBudget > 250_000) {
@@ -775,12 +779,12 @@ export class RehabIntelligence {
     } else {
       months = 3
     }
-    
+
     const loanAmount = this.arv * ltv
     const monthlyInterest = (loanAmount * loanRate) / 12
     const monthlyTaxes = (this.arv * 0.018) / 12
     const monthlyInsurance = (this.arv * OPERATING_INSURANCE_PCT) / 12
-    
+
     let monthlyUtilities: number
     if (this.sqFt > 4000) {
       monthlyUtilities = 900
@@ -791,9 +795,10 @@ export class RehabIntelligence {
     } else {
       monthlyUtilities = 300
     }
-    
-    const monthlyTotal = monthlyInterest + monthlyTaxes + monthlyInsurance + monthlyUtilities + this.hoaMonthly
-    
+
+    const monthlyTotal =
+      monthlyInterest + monthlyTaxes + monthlyInsurance + monthlyUtilities + this.hoaMonthly
+
     return {
       duration_months: months,
       monthly_interest: Math.round(monthlyInterest),
@@ -805,7 +810,7 @@ export class RehabIntelligence {
       total_holding: Math.round(monthlyTotal * months),
     }
   }
-  
+
   /**
    * Generate line items compatible with the RehabEstimator component
    */
@@ -813,98 +818,182 @@ export class RehabIntelligence {
     const estimate = this.calculate({ contingencyPct: 0, includeHoldingCosts: false })
     const breakdown = estimate.breakdown
     const items: LineItem[] = []
-    
-    const tier: 'low' | 'mid' | 'high' = 
-      this.assetClass === 'ultra_luxury' ? 'high' :
-      this.assetClass === 'luxury' ? 'mid' : 'low'
-    
+
+    const tier: 'low' | 'mid' | 'high' =
+      this.assetClass === 'ultra_luxury' ? 'high' : this.assetClass === 'luxury' ? 'mid' : 'low'
+
     // Kitchen
     if (breakdown.kitchen > 0) {
-      items.push({ itemId: 'cabinets', quantity: 1, tier, cost: Math.round(breakdown.kitchen * 0.4) })
-      items.push({ itemId: 'countertops', quantity: 1, tier, cost: Math.round(breakdown.kitchen * 0.25) })
-      items.push({ itemId: 'appliances', quantity: 1, tier, cost: Math.round(breakdown.kitchen * 0.25) })
-      items.push({ itemId: 'backsplash', quantity: 1, tier, cost: Math.round(breakdown.kitchen * 0.1) })
+      items.push({
+        itemId: 'cabinets',
+        quantity: 1,
+        tier,
+        cost: Math.round(breakdown.kitchen * 0.4),
+      })
+      items.push({
+        itemId: 'countertops',
+        quantity: 1,
+        tier,
+        cost: Math.round(breakdown.kitchen * 0.25),
+      })
+      items.push({
+        itemId: 'appliances',
+        quantity: 1,
+        tier,
+        cost: Math.round(breakdown.kitchen * 0.25),
+      })
+      items.push({
+        itemId: 'backsplash',
+        quantity: 1,
+        tier,
+        cost: Math.round(breakdown.kitchen * 0.1),
+      })
     }
-    
+
     // Bathrooms
     if (breakdown.bathrooms > 0) {
       const fullBaths = Math.max(1, Math.floor(this.bathrooms * 0.67))
-      items.push({ itemId: 'full_bath', quantity: fullBaths, tier, cost: Math.round(breakdown.bathrooms * 0.8) })
+      items.push({
+        itemId: 'full_bath',
+        quantity: fullBaths,
+        tier,
+        cost: Math.round(breakdown.bathrooms * 0.8),
+      })
       if (this.bathrooms > 2) {
-        items.push({ itemId: 'half_bath', quantity: 1, tier, cost: Math.round(breakdown.bathrooms * 0.2) })
+        items.push({
+          itemId: 'half_bath',
+          quantity: 1,
+          tier,
+          cost: Math.round(breakdown.bathrooms * 0.2),
+        })
       }
     }
-    
+
     // Flooring
     if (breakdown.flooring > 0) {
       const flooringSqft = Math.floor(this.sqFt * 0.85 * this.conditionFactors.dry_room_factor)
       const flooringId = this.assetClass === 'standard' ? 'lvp' : 'hardwood'
-      items.push({ itemId: flooringId, quantity: flooringSqft, tier, cost: Math.round(breakdown.flooring) })
+      items.push({
+        itemId: flooringId,
+        quantity: flooringSqft,
+        tier,
+        cost: Math.round(breakdown.flooring),
+      })
     }
-    
+
     // Paint
     if (breakdown.paint_walls > 0) {
       const wallSqft = Math.floor(this.sqFt * 3.5 * this.conditionFactors.dry_room_factor)
-      items.push({ itemId: 'interior_paint', quantity: wallSqft, tier, cost: Math.round(breakdown.paint_walls * 0.8) })
+      items.push({
+        itemId: 'interior_paint',
+        quantity: wallSqft,
+        tier,
+        cost: Math.round(breakdown.paint_walls * 0.8),
+      })
       if (this.condition === 'distressed' || this.condition === 'fair') {
-        items.push({ itemId: 'drywall_repair', quantity: this.bedrooms + 3, tier, cost: Math.round(breakdown.paint_walls * 0.2) })
+        items.push({
+          itemId: 'drywall_repair',
+          quantity: this.bedrooms + 3,
+          tier,
+          cost: Math.round(breakdown.paint_walls * 0.2),
+        })
       }
     }
-    
+
     // Exterior
     if (breakdown.exterior > 0) {
-      items.push({ itemId: 'exterior_paint', quantity: 1, tier, cost: Math.round(breakdown.exterior * 0.6) })
-      items.push({ itemId: 'landscaping', quantity: 1, tier, cost: Math.round(breakdown.exterior * 0.4) })
+      items.push({
+        itemId: 'exterior_paint',
+        quantity: 1,
+        tier,
+        cost: Math.round(breakdown.exterior * 0.6),
+      })
+      items.push({
+        itemId: 'landscaping',
+        quantity: 1,
+        tier,
+        cost: Math.round(breakdown.exterior * 0.4),
+      })
     }
-    
+
     // Roof
     if (breakdown.roof > 0) {
       items.push({ itemId: 'roof', quantity: 1, tier, cost: Math.round(breakdown.roof) })
     }
-    
+
     // HVAC
     if (breakdown.hvac > 0) {
       items.push({ itemId: 'hvac', quantity: 1, tier, cost: Math.round(breakdown.hvac) })
     }
-    
+
     // Water heater
-    const whWarning = estimate.capex_warnings.find(w => w.item === 'Water Heater')
+    const whWarning = estimate.capex_warnings.find((w) => w.item === 'Water Heater')
     if (whWarning) {
-      items.push({ itemId: 'water_heater', quantity: 1, tier, cost: Math.round(whWarning.estimated_cost) })
+      items.push({
+        itemId: 'water_heater',
+        quantity: 1,
+        tier,
+        cost: Math.round(whWarning.estimated_cost),
+      })
     }
-    
+
     // Electrical
     if (breakdown.electrical > 0) {
-      items.push({ itemId: 'electrical_panel', quantity: 1, tier, cost: Math.round(breakdown.electrical) })
+      items.push({
+        itemId: 'electrical_panel',
+        quantity: 1,
+        tier,
+        cost: Math.round(breakdown.electrical),
+      })
     }
-    
+
     // Plumbing
     const plumbingNonWh = breakdown.plumbing - (whWarning?.estimated_cost ?? 0)
     if (plumbingNonWh > 5000) {
       items.push({ itemId: 'plumbing_repipe', quantity: 1, tier, cost: Math.round(plumbingNonWh) })
     }
-    
+
     // Windows
-    const windowsWarning = estimate.capex_warnings.find(w => w.item === 'Windows')
+    const windowsWarning = estimate.capex_warnings.find((w) => w.item === 'Windows')
     if (windowsWarning) {
       const windowCount = Math.max(8, Math.floor(this.sqFt / 150))
-      items.push({ itemId: 'windows', quantity: windowCount, tier, cost: Math.round(windowsWarning.estimated_cost) })
+      items.push({
+        itemId: 'windows',
+        quantity: windowCount,
+        tier,
+        cost: Math.round(windowsWarning.estimated_cost),
+      })
     }
-    
+
     // Front door
     if (breakdown.windows_doors > 0 && breakdown.roof === 0) {
-      items.push({ itemId: 'front_door', quantity: 1, tier, cost: Math.round(this.applyMultipliers(BASE_COSTS.front_door)) })
+      items.push({
+        itemId: 'front_door',
+        quantity: 1,
+        tier,
+        cost: Math.round(this.applyMultipliers(BASE_COSTS.front_door)),
+      })
     }
-    
+
     // Permits
     if (breakdown.permits > 0) {
       items.push({ itemId: 'permits', quantity: 1, tier, cost: Math.round(breakdown.permits) })
     }
-    
+
     // Dumpster & cleaning
-    items.push({ itemId: 'dumpster', quantity: 4, tier: 'mid', cost: Math.round(BASE_COSTS.dumpster_load * 4) })
-    items.push({ itemId: 'cleaning', quantity: 1, tier, cost: Math.round(BASE_COSTS.deep_cleaning * this.locationFactor) })
-    
+    items.push({
+      itemId: 'dumpster',
+      quantity: 4,
+      tier: 'mid',
+      cost: Math.round(BASE_COSTS.dumpster_load * 4),
+    })
+    items.push({
+      itemId: 'cleaning',
+      quantity: 1,
+      tier,
+      cost: Math.round(BASE_COSTS.deep_cleaning * this.locationFactor),
+    })
+
     return items
   }
 }
@@ -934,7 +1023,7 @@ export function createRehabEstimate(
   },
   condition: PropertyCondition = 'fair',
   recentPermits: string[] = [],
-  contingencyPct: number = 0.10
+  contingencyPct: number = 0.1,
 ): RehabEstimate {
   const ri = new RehabIntelligence({
     sq_ft: propertyData.square_footage ?? 1500,
@@ -952,7 +1041,7 @@ export function createRehabEstimate(
     hoa_monthly: propertyData.hoa_monthly,
     recent_permits: recentPermits,
   })
-  
+
   return ri.calculate({ contingencyPct })
 }
 
@@ -969,4 +1058,3 @@ export function getLocationFactor(zipCode: string): LocationData {
 export function getAllLocationFactors(): Record<string, LocationData> {
   return { ...LOCATION_FACTORS }
 }
-

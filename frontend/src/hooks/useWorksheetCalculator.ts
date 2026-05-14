@@ -29,10 +29,7 @@ import type { AllAssumptions } from '@/stores/index'
 // Configuration interface — each strategy implements this
 // ---------------------------------------------------------------------------
 
-export interface WorksheetStrategyConfig<
-  TInputs extends object,
-  TResult,
-> {
+export interface WorksheetStrategyConfig<TInputs extends object, TResult> {
   /** POST endpoint, e.g. '/api/v1/worksheet/str/calculate' */
   apiUrl: string
 
@@ -67,21 +64,14 @@ export interface WorksheetStrategyConfig<
    * should sync down_payment_pct). Return a full new inputs object to apply,
    * or `null` to fall through to the default simple key-value set.
    */
-  onUpdateInput?: (
-    key: keyof TInputs,
-    value: unknown,
-    prev: TInputs,
-  ) => TInputs | null
+  onUpdateInput?: (key: keyof TInputs, value: unknown, prev: TInputs) => TInputs | null
 }
 
 // ---------------------------------------------------------------------------
 // Return type
 // ---------------------------------------------------------------------------
 
-export interface UseWorksheetCalculatorReturn<
-  TInputs extends object,
-  TResult,
-> {
+export interface UseWorksheetCalculatorReturn<TInputs extends object, TResult> {
   inputs: TInputs
   updateInput: <K extends keyof TInputs>(key: K, value: TInputs[K]) => void
   result: TResult | null
@@ -99,10 +89,7 @@ const CALC_DEBOUNCE_MS = 150
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useWorksheetCalculator<
-  TInputs extends object,
-  TResult,
->(
+export function useWorksheetCalculator<TInputs extends object, TResult>(
   property: SavedProperty | null,
   config: WorksheetStrategyConfig<TInputs, TResult>,
 ): UseWorksheetCalculatorReturn<TInputs, TResult> {
@@ -212,18 +199,15 @@ export function useWorksheetCalculator<
   }, [inputs])
 
   // -- Input updater --------------------------------------------------------
-  const updateInput = useCallback(
-    <K extends keyof TInputs>(key: K, value: TInputs[K]) => {
-      setInputs((prev) => {
-        if (configRef.current.onUpdateInput) {
-          const overridden = configRef.current.onUpdateInput(key, value, prev)
-          if (overridden) return overridden
-        }
-        return { ...prev, [key]: value }
-      })
-    },
-    [],
-  )
+  const updateInput = useCallback(<K extends keyof TInputs>(key: K, value: TInputs[K]) => {
+    setInputs((prev) => {
+      if (configRef.current.onUpdateInput) {
+        const overridden = configRef.current.onUpdateInput(key, value, prev)
+        if (overridden) return overridden
+      }
+      return { ...prev, [key]: value }
+    })
+  }, [])
 
   return { inputs, updateInput, result, isCalculating, error }
 }

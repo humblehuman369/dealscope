@@ -1,6 +1,6 @@
 /**
  * Property Details Utility Functions
- * 
+ *
  * Formatting and helper functions for property data display.
  */
 
@@ -15,10 +15,10 @@ export const formatNumber = formatNumberSafe
  */
 export function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric', 
-    year: 'numeric' 
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   })
 }
 
@@ -27,7 +27,7 @@ export function formatDate(dateString: string | null | undefined): string {
  */
 export function formatPropertyType(type: string | null | undefined): string {
   if (!type) return 'N/A'
-  return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  return type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 const LISTING_TYPE_LABELS: Record<string, string> = {

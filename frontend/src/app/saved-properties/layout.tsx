@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   description: 'Your saved properties and analyses in DealGapIQ.',
 }
 
-export default function SavedPropertiesLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function SavedPropertiesLayout({ children }: { children: React.ReactNode }) {
   return children
 }

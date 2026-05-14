@@ -2,7 +2,7 @@
 
 /**
  * PropertyContextBar Component - Decision-Grade UI
- * 
+ *
  * Displays property photo, address, status, and key details.
  * Per DealMakerIQ Design System - high contrast, legibility-first.
  */
@@ -38,14 +38,15 @@ export function PropertyContextBar({
   imageUrl,
 }: PropertyContextBarProps) {
   const cityStateZip = [city, [state, zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')
-  
-  const statusLabel = {
-    'active': 'Active',
-    'pending': 'Pending',
-    'off-market': 'Off-Market',
-    'sold': 'Sold',
-  }[status] || 'Off-Market'
-  
+
+  const statusLabel =
+    {
+      active: 'Active',
+      pending: 'Pending',
+      'off-market': 'Off-Market',
+      sold: 'Sold',
+    }[status] || 'Off-Market'
+
   return (
     <div className="dg-property-context">
       {/* Property Photo */}
@@ -63,7 +64,7 @@ export function PropertyContextBar({
           <Home className="w-6 h-6" style={{ color: 'var(--dg-border-strong)' }} />
         )}
       </div>
-      
+
       {/* Property Info */}
       <div className="dg-property-info">
         <div className="dg-property-address-row">

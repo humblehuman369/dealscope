@@ -35,12 +35,7 @@ function isMapPlaceholderUrl(url: string): boolean {
   )
 }
 
-function logPhotoFetch(
-  zpid: string,
-  result: PhotoResult,
-  durationMs: number,
-  attempt?: number
-) {
+function logPhotoFetch(zpid: string, result: PhotoResult, durationMs: number, attempt?: number) {
   const payload = {
     event: 'photo_fetch',
     zpid,
@@ -68,7 +63,7 @@ function logPhotoFetch(
  */
 export async function fetchPropertyPhotos(
   zpid: string,
-  options?: { timeout?: number; maxRetries?: number; propertyId?: string }
+  options?: { timeout?: number; maxRetries?: number; propertyId?: string },
 ): Promise<PhotoResult> {
   const timeoutMs = options?.timeout ?? DEFAULT_TIMEOUT_MS
   const maxRetries = options?.maxRetries ?? DEFAULT_MAX_RETRIES
@@ -129,7 +124,7 @@ export async function fetchPropertyPhotos(
       const result: PhotoResult = {
         status: isTimeout ? 'timeout' : 'failed',
         photos: [],
-        error: isTimeout ? 'Request timed out' : (err instanceof Error ? err.message : String(err)),
+        error: isTimeout ? 'Request timed out' : err instanceof Error ? err.message : String(err),
       }
       logPhotoFetch(zpid, result, durationMs, attempt)
       if (attempt < maxRetries) {
