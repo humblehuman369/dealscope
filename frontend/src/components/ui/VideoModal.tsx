@@ -96,7 +96,7 @@ export function VideoModal({ open, onClose, src, title }: VideoModalProps) {
           autoPlay
           playsInline
           className="w-full block"
-          style={{ aspectRatio: '16/9', background: '#000' }}
+          style={{ aspectRatio: '16/9', background: 'var(--surface-media-letterbox)' }}
         />
       </div>
     </div>
