@@ -569,6 +569,22 @@ function StrategyContent() {
     } catch {
       /* ignore */
     }
+    // Strip path-patch fields from the in-memory `initialOverrides` too so a
+    // previously-loaded eligible session record (origin `dealmaker_edit` or
+    // `saved_property`) can't keep a stale `listPrice` / `purchasePrice`
+    // alive after this scenario apply.
+    setInitialOverrides((prev) => {
+      if (!prev) return prev
+      let mutated = false
+      const cleaned: Record<string, unknown> = { ...prev }
+      for (const key of PATH_PATCH_FIELD_KEYS) {
+        if (key in cleaned) {
+          delete cleaned[key as string]
+          mutated = true
+        }
+      }
+      return mutated ? cleaned : prev
+    })
     appendSavedThreePathScenario({
       label: decoded.label,
       structureId: decoded.structureId,
@@ -887,6 +903,25 @@ function StrategyContent() {
       scheduleRecalc()
       return next as Record<string, any>
     })
+    // `initialOverrides` is loaded once from session at mount; if any path-patch
+    // fields are still in it (e.g. carried over from a prior session that hit
+    // the pre-fix `listPrice = cpp` bug, or a path that previously echoed
+    // `purchasePrice = listPrice`), the merged `dealMakerOverrides` keeps that
+    // stale value even after `inlineOverrides` is rewritten. Strip the same
+    // keys from `initialOverrides` so the chart/worksheet read the same numbers
+    // we just persisted.
+    setInitialOverrides((prev) => {
+      if (!prev) return prev
+      let mutated = false
+      const cleaned: Record<string, unknown> = { ...prev }
+      for (const key of PATH_PATCH_FIELD_KEYS) {
+        if (key in cleaned) {
+          delete cleaned[key as string]
+          mutated = true
+        }
+      }
+      return mutated ? cleaned : prev
+    })
     setAppliedPathId(structure.id)
     setHighlightedFields(
       computeHighlightedStateFields(
@@ -923,6 +958,21 @@ function StrategyContent() {
       } catch { /* ignore */ }
       scheduleRecalc()
       return next as Record<string, any>
+    })
+    // Mirror the in-memory strip on `initialOverrides` so a stale
+    // pre-fix `listPrice` / `purchasePrice` from session can't leak back into
+    // the merged `dealMakerOverrides` after "Reset to baseline".
+    setInitialOverrides((prev) => {
+      if (!prev) return prev
+      let mutated = false
+      const cleaned: Record<string, unknown> = { ...prev }
+      for (const key of PATH_PATCH_FIELD_KEYS) {
+        if (key in cleaned) {
+          delete cleaned[key as string]
+          mutated = true
+        }
+      }
+      return mutated ? cleaned : prev
     })
     setAppliedPathId(null)
     setHighlightedFields(new Set())
