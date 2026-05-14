@@ -49,9 +49,7 @@ interface GlossaryData {
 // ===========================================
 
 const formatKeyLabel = (key: string) =>
-  key
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase())
+  key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 
 const SECTION_LABELS: Record<string, string> = {
   iq_verdict_score: 'Discovery Score',
@@ -84,9 +82,7 @@ function matchesSearch(metricId: string, metric: MetricEntry, query: string): bo
 function MetricCard({ metricId, metric }: { metricId: string; metric: MetricEntry }) {
   return (
     <div className="rounded-lg bg-white/[0.03] p-3 border border-white/[0.07]">
-      <div className="text-xs font-semibold text-slate-200 mb-1.5">
-        {formatKeyLabel(metricId)}
-      </div>
+      <div className="text-xs font-semibold text-slate-200 mb-1.5">{formatKeyLabel(metricId)}</div>
 
       {metric.formula && (
         <div className="mb-1.5">
@@ -97,9 +93,7 @@ function MetricCard({ metricId, metric }: { metricId: string; metric: MetricEntr
       )}
 
       {metric.description && (
-        <p className="text-[11px] text-slate-400 mb-1.5 leading-relaxed">
-          {metric.description}
-        </p>
+        <p className="text-[11px] text-slate-400 mb-1.5 leading-relaxed">{metric.description}</p>
       )}
 
       {metric.inputs && metric.inputs.length > 0 && (
@@ -116,15 +110,11 @@ function MetricCard({ metricId, metric }: { metricId: string; metric: MetricEntr
       )}
 
       {metric.notes && (
-        <p className="text-[10px] text-amber-400 mt-1 leading-relaxed">
-          {metric.notes}
-        </p>
+        <p className="text-[10px] text-amber-400 mt-1 leading-relaxed">{metric.notes}</p>
       )}
 
       {metric.interpretation && typeof metric.interpretation === 'string' && (
-        <p className="text-[10px] text-sky-400 mt-1 leading-relaxed">
-          {metric.interpretation}
-        </p>
+        <p className="text-[10px] text-sky-400 mt-1 leading-relaxed">{metric.interpretation}</p>
       )}
 
       {metric.interpretation && typeof metric.interpretation === 'object' && (
@@ -175,13 +165,9 @@ function CollapsibleSection({
             <ChevronRight className="w-4 h-4 text-slate-500" />
           )}
           <div>
-            <h4 className="text-sm font-semibold text-slate-200">
-              {title}
-            </h4>
+            <h4 className="text-sm font-semibold text-slate-200">{title}</h4>
             {description && !isOpen && (
-              <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">
-                {description}
-              </p>
+              <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">{description}</p>
             )}
           </div>
         </div>
@@ -194,9 +180,7 @@ function CollapsibleSection({
       {isOpen && (
         <div className="px-4 pb-4">
           {description && (
-            <p className="text-xs text-slate-400 mb-3 leading-relaxed">
-              {description}
-            </p>
+            <p className="text-xs text-slate-400 mb-3 leading-relaxed">{description}</p>
           )}
           {children}
         </div>
@@ -253,7 +237,7 @@ export function MetricsGlossarySection() {
       .map((section) => ({
         ...section,
         metrics: Object.fromEntries(
-          Object.entries(section.metrics).filter(([id, m]) => matchesSearch(id, m, searchQuery))
+          Object.entries(section.metrics).filter(([id, m]) => matchesSearch(id, m, searchQuery)),
         ),
       }))
       .filter((section) => Object.keys(section.metrics).length > 0)
@@ -266,7 +250,7 @@ export function MetricsGlossarySection() {
       .map((strategy) => ({
         ...strategy,
         metrics: Object.fromEntries(
-          Object.entries(strategy.metrics).filter(([id, m]) => matchesSearch(id, m, searchQuery))
+          Object.entries(strategy.metrics).filter(([id, m]) => matchesSearch(id, m, searchQuery)),
         ),
       }))
       .filter((strategy) => Object.keys(strategy.metrics).length > 0)

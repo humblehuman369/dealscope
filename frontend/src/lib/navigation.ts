@@ -1,55 +1,58 @@
 /**
  * Centralized Navigation Configuration
- * 
+ *
  * SINGLE SOURCE OF TRUTH for all app navigation.
  * All toolbar icons and screen transitions use this config.
  */
 
 export interface NavContext {
-  address?: string;
-  zpid?: string;
-  propertyId?: string;
-  latitude?: number;
-  longitude?: number;
+  address?: string
+  zpid?: string
+  propertyId?: string
+  latitude?: number
+  longitude?: number
 }
 
 /**
  * Validates that a navigation context has the required fields for navigation.
  * Returns true if the context has a valid address (non-empty string).
- * 
+ *
  * @param ctx - The navigation context to validate
  * @returns true if the context is valid for navigation
  */
 export function isValidNavContext(ctx: NavContext | undefined | null): boolean {
-  if (!ctx) return false;
-  
+  if (!ctx) return false
+
   // Address is required for most routes
-  const hasValidAddress = typeof ctx.address === 'string' && ctx.address.trim().length > 0;
-  
-  return hasValidAddress;
+  const hasValidAddress = typeof ctx.address === 'string' && ctx.address.trim().length > 0
+
+  return hasValidAddress
 }
 
 /**
  * Validates that a navigation context has required fields and logs warnings if invalid.
  * This is a development helper that also returns the validation result.
- * 
+ *
  * @param ctx - The navigation context to validate
  * @param navId - Optional navigation ID for better error messages
  * @returns true if the context is valid for navigation
  */
-export function validateNavContextWithWarning(ctx: NavContext | undefined | null, navId?: string): boolean {
-  const isValid = isValidNavContext(ctx);
-  
+export function validateNavContextWithWarning(
+  ctx: NavContext | undefined | null,
+  navId?: string,
+): boolean {
+  const isValid = isValidNavContext(ctx)
+
   if (!isValid && process.env.NODE_ENV === 'development') {
     console.warn(
       `[Navigation] Invalid navigation context${navId ? ` for "${navId}"` : ''}.`,
       'Expected address to be a non-empty string.',
       'Context:',
-      ctx
-    );
+      ctx,
+    )
   }
-  
-  return isValid;
+
+  return isValid
 }
 
 /**
@@ -58,65 +61,63 @@ export function validateNavContextWithWarning(ctx: NavContext | undefined | null
 export const ROUTES = {
   // Core screens
   search: '/search',
-  
-  property: (ctx: NavContext) => 
+
+  property: (ctx: NavContext) =>
     `/property/${ctx.zpid || 'unknown'}?address=${encodeURIComponent(ctx.address || '')}`,
-  
+
   verdict: (ctx: NavContext) => {
-    const params = new URLSearchParams({ address: ctx.address || '' });
-    if (ctx.propertyId) params.set('propertyId', ctx.propertyId);
-    return `/discovery?${params.toString()}`;
+    const params = new URLSearchParams({ address: ctx.address || '' })
+    if (ctx.propertyId) params.set('propertyId', ctx.propertyId)
+    return `/discovery?${params.toString()}`
   },
-  
+
   // DEPRECATED: analysis route now redirects to Discovery
   // Kept for backwards compatibility with any external links
   analysis: (ctx: NavContext) => {
     // Redirect to /discovery (legacy analysis-iq aliases handled in next.config.js)
-    const params = new URLSearchParams({ address: ctx.address || '' });
-    if (ctx.propertyId) params.set('propertyId', ctx.propertyId);
-    return `/discovery?${params.toString()}`;
-  },
-  
-  strategy: (ctx: NavContext) => {
-    const params = new URLSearchParams({ address: ctx.address || '' });
-    if (ctx.propertyId) params.set('propertyId', ctx.propertyId);
-    return `/strategy?${params.toString()}`;
+    const params = new URLSearchParams({ address: ctx.address || '' })
+    if (ctx.propertyId) params.set('propertyId', ctx.propertyId)
+    return `/discovery?${params.toString()}`
   },
 
-  dealMaker: (ctx: NavContext) => 
-    `/deal-maker/${encodeURIComponent(ctx.address || '')}`,
-  
+  strategy: (ctx: NavContext) => {
+    const params = new URLSearchParams({ address: ctx.address || '' })
+    if (ctx.propertyId) params.set('propertyId', ctx.propertyId)
+    return `/strategy?${params.toString()}`
+  },
+
+  dealMaker: (ctx: NavContext) => `/deal-maker/${encodeURIComponent(ctx.address || '')}`,
+
   compare: (ctx: NavContext) => {
-    const q = new URLSearchParams({ view: 'sale', address: ctx.address || '' });
-    if (ctx.latitude != null) q.set('lat', String(ctx.latitude));
-    if (ctx.longitude != null) q.set('lng', String(ctx.longitude));
-    return `/price-intel?${q.toString()}`;
+    const q = new URLSearchParams({ view: 'sale', address: ctx.address || '' })
+    if (ctx.latitude != null) q.set('lat', String(ctx.latitude))
+    if (ctx.longitude != null) q.set('lng', String(ctx.longitude))
+    return `/price-intel?${q.toString()}`
   },
-  
+
   rentalComps: (ctx: NavContext) => {
-    const q = new URLSearchParams({ view: 'rent', address: ctx.address || '' });
-    if (ctx.latitude != null) q.set('lat', String(ctx.latitude));
-    if (ctx.longitude != null) q.set('lng', String(ctx.longitude));
-    return `/price-intel?${q.toString()}`;
+    const q = new URLSearchParams({ view: 'rent', address: ctx.address || '' })
+    if (ctx.latitude != null) q.set('lat', String(ctx.latitude))
+    if (ctx.longitude != null) q.set('lng', String(ctx.longitude))
+    return `/price-intel?${q.toString()}`
   },
-  
+
   priceChecker: (ctx: NavContext) => {
-    const q = new URLSearchParams({ address: ctx.address || '' });
-    if (ctx.latitude != null) q.set('lat', String(ctx.latitude));
-    if (ctx.longitude != null) q.set('lng', String(ctx.longitude));
-    return `/price-intel?${q.toString()}`;
+    const q = new URLSearchParams({ address: ctx.address || '' })
+    if (ctx.latitude != null) q.set('lat', String(ctx.latitude))
+    if (ctx.longitude != null) q.set('lng', String(ctx.longitude))
+    return `/price-intel?${q.toString()}`
   },
-  
+
   // Worksheets
-  worksheet: (propertyId: string, strategy: string) => 
-    `/worksheet/${propertyId}/${strategy}`,
-  
+  worksheet: (propertyId: string, strategy: string) => `/worksheet/${propertyId}/${strategy}`,
+
   // Auth
   login: '/auth/login',
   register: '/auth/register',
-  
+
   // User
-  dashboard: '/search',  // Dashboard removed — redirect to search
+  dashboard: '/search', // Dashboard removed — redirect to search
   profile: '/profile',
   billing: '/billing',
   searchHistory: '/search-history',
@@ -124,16 +125,16 @@ export const ROUTES = {
 
   // Admin
   admin: '/admin',
-} as const;
+} as const
 
 /**
  * Toolbar navigation item IDs
  */
-export type ToolbarNavId = 'home' | 'analysis' | 'compare' | 'rentals' | 'reports' | 'deals';
+export type ToolbarNavId = 'home' | 'analysis' | 'compare' | 'rentals' | 'reports' | 'deals'
 
 /**
  * Get the route for a toolbar navigation item
- * 
+ *
  * @param navId - The toolbar item ID
  * @param ctx - Navigation context with address/zpid
  * @returns The route to navigate to, or search page if context is invalid
@@ -141,26 +142,26 @@ export type ToolbarNavId = 'home' | 'analysis' | 'compare' | 'rentals' | 'report
 export function getToolbarRoute(navId: ToolbarNavId, ctx: NavContext): string {
   // Validate context - return to search if invalid
   if (!validateNavContextWithWarning(ctx, navId)) {
-    return ROUTES.search;
+    return ROUTES.search
   }
-  
+
   switch (navId) {
     case 'home':
-      return ROUTES.property(ctx);
+      return ROUTES.property(ctx)
     case 'analysis':
       // Analysis route maps to Discovery (combined page)
-      return ROUTES.verdict(ctx);
+      return ROUTES.verdict(ctx)
     case 'deals':
-      return ROUTES.dealMaker(ctx);
+      return ROUTES.dealMaker(ctx)
     case 'compare':
-      return ROUTES.compare(ctx);
+      return ROUTES.compare(ctx)
     case 'rentals':
-      return ROUTES.rentalComps(ctx);
+      return ROUTES.rentalComps(ctx)
     case 'reports':
       // Reports is disabled in the UI, but route to Discovery as fallback
-      return ROUTES.verdict(ctx);
+      return ROUTES.verdict(ctx)
     default:
-      return ROUTES.search;
+      return ROUTES.search
   }
 }
 
@@ -168,16 +169,16 @@ export function getToolbarRoute(navId: ToolbarNavId, ctx: NavContext): string {
  * Build a full address string from property data
  */
 export function buildFullAddress(property: {
-  address: string;
-  city?: string;
-  state?: string;
-  zip?: string;
+  address: string
+  city?: string
+  state?: string
+  zip?: string
 }): string {
-  const parts = [property.address];
-  if (property.city) parts.push(property.city);
-  
-  const stateZip = [property.state, property.zip].filter(Boolean).join(' ');
-  if (stateZip) parts.push(stateZip);
-  
-  return parts.join(', ');
+  const parts = [property.address]
+  if (property.city) parts.push(property.city)
+
+  const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+  if (stateZip) parts.push(stateZip)
+
+  return parts.join(', ')
 }

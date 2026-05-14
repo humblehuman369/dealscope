@@ -2,10 +2,17 @@
 
 import { useState } from 'react'
 import {
-  Shield, ShieldCheck, ShieldAlert,
-  ChevronDown, ChevronUp,
-  MapPin, Ruler, Calendar, Bath,
-  TrendingUp, HelpCircle,
+  Shield,
+  ShieldCheck,
+  ShieldAlert,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  Ruler,
+  Calendar,
+  Bath,
+  TrendingUp,
+  HelpCircle,
 } from 'lucide-react'
 import type {
   RegionalCostContext,
@@ -16,8 +23,10 @@ import type {
 
 const formatCurrency = (value: number): string =>
   new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD',
-    minimumFractionDigits: 0, maximumFractionDigits: 0,
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(value)
 
 // ============================================
@@ -61,7 +70,11 @@ export function ConfidenceBadge({ costContext, compact }: ConfidenceBadgeProps) 
     return (
       <span
         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
-        style={{ backgroundColor: config.bg, color: config.color, border: `1px solid ${config.border}` }}
+        style={{
+          backgroundColor: config.bg,
+          color: config.color,
+          border: `1px solid ${config.border}`,
+        }}
       >
         {config.icon}
         {config.label}
@@ -77,7 +90,9 @@ export function ConfidenceBadge({ costContext, compact }: ConfidenceBadgeProps) 
       <div className="flex items-center gap-2">
         <span style={{ color: config.color }}>{config.icon}</span>
         <div>
-          <span className="text-sm font-semibold" style={{ color: config.color }}>{config.label}</span>
+          <span className="text-sm font-semibold" style={{ color: config.color }}>
+            {config.label}
+          </span>
           <span className="text-xs ml-2" style={{ color: 'var(--text-secondary)' }}>
             {costContext.market_label}
           </span>
@@ -99,7 +114,7 @@ interface RegionalContextCardProps {
 }
 
 export function RegionalContextCard({ costContext }: RegionalContextCardProps) {
-  const premium = ((costContext.combined_factor - 1) * 100)
+  const premium = (costContext.combined_factor - 1) * 100
   const isPremium = premium > 0
 
   return (
@@ -126,14 +141,16 @@ export function RegionalContextCard({ costContext }: RegionalContextCardProps) {
           { label: 'Materials', value: costContext.material_factor },
           { label: 'Permits', value: costContext.permit_factor },
         ].map(({ label, value }) => {
-          const pct = ((value - 1) * 100)
+          const pct = (value - 1) * 100
           return (
             <div
               key={label}
               className="rounded-lg p-2 text-center"
               style={{ backgroundColor: 'var(--surface-card)' }}
             >
-              <div className="text-xs mb-0.5" style={{ color: 'var(--text-secondary)' }}>{label}</div>
+              <div className="text-xs mb-0.5" style={{ color: 'var(--text-secondary)' }}>
+                {label}
+              </div>
               <div className="text-sm font-bold" style={{ color: 'var(--text-heading)' }}>
                 {value.toFixed(2)}x
               </div>
@@ -143,7 +160,8 @@ export function RegionalContextCard({ costContext }: RegionalContextCardProps) {
                   color: pct > 10 ? '#ef4444' : pct > 0 ? '#f59e0b' : '#22c55e',
                 }}
               >
-                {pct > 0 ? '+' : ''}{pct.toFixed(0)}%
+                {pct > 0 ? '+' : ''}
+                {pct.toFixed(0)}%
               </div>
             </div>
           )
@@ -168,7 +186,8 @@ export function RegionalContextCard({ costContext }: RegionalContextCardProps) {
               color: isPremium ? '#ef4444' : '#22c55e',
             }}
           >
-            {isPremium ? '+' : ''}{premium.toFixed(0)}% vs national avg
+            {isPremium ? '+' : ''}
+            {premium.toFixed(0)}% vs national avg
           </span>
         </div>
       </div>
@@ -197,9 +216,7 @@ export function CostExplanationPanel({
 
   if (!propertyData) return null
 
-  const age = propertyData.year_built
-    ? new Date().getFullYear() - propertyData.year_built
-    : null
+  const age = propertyData.year_built ? new Date().getFullYear() - propertyData.year_built : null
 
   const drivers: { icon: React.ReactNode; label: string; value: string; effect: string }[] = []
 
@@ -209,11 +226,12 @@ export function CostExplanationPanel({
       icon: <Ruler className="w-3 h-3" />,
       label: 'Size',
       value: `${sqft.toLocaleString()} sqft`,
-      effect: sqft > 2500
-        ? 'Increases flooring, paint, and material quantities'
-        : sqft < 1200
-        ? 'Reduces material quantities'
-        : 'Standard material quantities',
+      effect:
+        sqft > 2500
+          ? 'Increases flooring, paint, and material quantities'
+          : sqft < 1200
+            ? 'Reduces material quantities'
+            : 'Standard material quantities',
     })
   }
 
@@ -222,11 +240,12 @@ export function CostExplanationPanel({
       icon: <Calendar className="w-3 h-3" />,
       label: 'Age',
       value: `${age} years (built ${propertyData.year_built})`,
-      effect: age > 30
-        ? 'Major systems likely need replacement'
-        : age > 15
-        ? 'Some systems may need updating'
-        : 'Systems likely in serviceable condition',
+      effect:
+        age > 30
+          ? 'Major systems likely need replacement'
+          : age > 15
+            ? 'Some systems may need updating'
+            : 'Systems likely in serviceable condition',
     })
   }
 
@@ -235,9 +254,10 @@ export function CostExplanationPanel({
       icon: <Bath className="w-3 h-3" />,
       label: 'Bathrooms',
       value: `${propertyData.bathrooms}`,
-      effect: propertyData.bathrooms > 2
-        ? 'Multiple baths increase wet-room renovation costs'
-        : 'Standard bathroom scope',
+      effect:
+        propertyData.bathrooms > 2
+          ? 'Multiple baths increase wet-room renovation costs'
+          : 'Standard bathroom scope',
     })
   }
 
@@ -252,10 +272,10 @@ export function CostExplanationPanel({
   }
 
   const topContributors: CostContributor[] = (breakdown ?? [])
-    .filter(b => b.cost > 0)
+    .filter((b) => b.cost > 0)
     .sort((a, b) => b.cost - a.cost)
     .slice(0, 4)
-    .map(b => ({
+    .map((b) => ({
       category: b.category,
       amount: b.cost,
       pct_of_total: totalEstimate > 0 ? Math.round((b.cost / totalEstimate) * 100) : 0,
@@ -265,8 +285,8 @@ export function CostExplanationPanel({
     ? costContext.confidence === 'high'
       ? 'Use as underwriting base'
       : costContext.confidence === 'medium'
-      ? 'Good starting point — validate key line items'
-      : 'Broad estimate — manual adjustment recommended'
+        ? 'Good starting point — validate key line items'
+        : 'Broad estimate — manual adjustment recommended'
     : 'No regional data — using national averages'
 
   return (
@@ -289,10 +309,11 @@ export function CostExplanationPanel({
         </div>
         <div className="flex items-center gap-2">
           {costContext && <ConfidenceBadge costContext={costContext} compact />}
-          {expanded
-            ? <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
-            : <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
-          }
+          {expanded ? (
+            <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
+          ) : (
+            <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-heading)' }} />
+          )}
         </div>
       </button>
 
@@ -300,7 +321,10 @@ export function CostExplanationPanel({
         <div className="px-3 pb-3 space-y-3">
           {/* Property Drivers */}
           <div>
-            <div className="text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+            <div
+              className="text-xs font-semibold mb-1.5 uppercase tracking-wider"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               Property Drivers
             </div>
             <div className="space-y-1.5">
@@ -310,13 +334,27 @@ export function CostExplanationPanel({
                   className="flex items-start gap-2 p-2 rounded-lg"
                   style={{ backgroundColor: 'var(--surface-elevated)' }}
                 >
-                  <span className="mt-0.5" style={{ color: 'var(--accent-sky)' }}>{d.icon}</span>
+                  <span className="mt-0.5" style={{ color: 'var(--accent-sky)' }}>
+                    {d.icon}
+                  </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold" style={{ color: 'var(--text-heading)' }}>{d.label}</span>
-                      <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{d.value}</span>
+                      <span
+                        className="text-xs font-semibold"
+                        style={{ color: 'var(--text-heading)' }}
+                      >
+                        {d.label}
+                      </span>
+                      <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                        {d.value}
+                      </span>
                     </div>
-                    <div className="text-[11px] leading-tight" style={{ color: 'var(--text-secondary)' }}>{d.effect}</div>
+                    <div
+                      className="text-[11px] leading-tight"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      {d.effect}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -326,7 +364,10 @@ export function CostExplanationPanel({
           {/* Top Cost Contributors */}
           {topContributors.length > 0 && (
             <div>
-              <div className="text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+              <div
+                className="text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                style={{ color: 'var(--text-secondary)' }}
+              >
                 Top Cost Drivers
               </div>
               <div className="space-y-1">
@@ -337,13 +378,24 @@ export function CostExplanationPanel({
                         className="w-1.5 h-1.5 rounded-full"
                         style={{ backgroundColor: 'var(--accent-sky)', opacity: 1 - i * 0.2 }}
                       />
-                      <span className="text-xs" style={{ color: 'var(--text-heading)' }}>{c.category}</span>
+                      <span className="text-xs" style={{ color: 'var(--text-heading)' }}>
+                        {c.category}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold" style={{ color: 'var(--text-heading)' }}>
+                      <span
+                        className="text-xs font-semibold"
+                        style={{ color: 'var(--text-heading)' }}
+                      >
                         {formatCurrency(c.amount)}
                       </span>
-                      <span className="text-[10px] px-1 rounded" style={{ backgroundColor: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}>
+                      <span
+                        className="text-[10px] px-1 rounded"
+                        style={{
+                          backgroundColor: 'var(--surface-elevated)',
+                          color: 'var(--text-secondary)',
+                        }}
+                      >
                         {c.pct_of_total}%
                       </span>
                     </div>
@@ -361,7 +413,10 @@ export function CostExplanationPanel({
               border: '1px solid rgba(56,189,248,0.2)',
             }}
           >
-            <TrendingUp className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--accent-sky)' }} />
+            <TrendingUp
+              className="w-3.5 h-3.5 flex-shrink-0"
+              style={{ color: 'var(--accent-sky)' }}
+            />
             <span className="text-xs" style={{ color: 'var(--text-heading)' }}>
               {recommendation}
             </span>

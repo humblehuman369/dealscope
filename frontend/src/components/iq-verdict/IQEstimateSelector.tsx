@@ -60,7 +60,9 @@ function getStoredSelections(sessionKey: string): { value: DataSourceId; rent: D
         rent: parsed.rent || 'iq',
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return { value: 'iq', rent: 'iq' }
 }
 
@@ -68,7 +70,9 @@ function persistSelections(sessionKey: string, value: DataSourceId, rent: DataSo
   if (typeof window === 'undefined') return
   try {
     sessionStorage.setItem(sessionKey, JSON.stringify({ value, rent }))
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 const INTRO_SEEN_KEY = (sessionKey: string) => `${sessionKey}_intro_seen`
@@ -77,7 +81,9 @@ function getIntroSeen(sessionKey: string): boolean {
   if (typeof window === 'undefined') return false
   try {
     return sessionStorage.getItem(INTRO_SEEN_KEY(sessionKey)) === '1'
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return false
 }
 
@@ -85,7 +91,9 @@ function setIntroSeen(sessionKey: string) {
   if (typeof window === 'undefined') return
   try {
     sessionStorage.setItem(INTRO_SEEN_KEY(sessionKey), '1')
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 const fmt = (v: number | null) => {
@@ -112,18 +120,22 @@ function SourceRow({
   const [hovered, setHovered] = useState(false)
   const showHover = hovered && !isSelected && available
 
-  const buttonStyle = useMemo(() => ({
-    background: isSelected
-      ? 'var(--surface-base)'
-      : showHover ? 'var(--surface-card-hover)' : 'transparent',
-    border: `1px solid ${
-      isSelected ? 'var(--border-focus)'
-      : showHover ? 'var(--border-default)' : 'transparent'
-    }`,
-    boxShadow: showHover ? 'var(--shadow-card)' : 'none',
-    cursor: available ? 'pointer' : 'default',
-    opacity: available ? 1 : 0.45,
-  }), [isSelected, showHover, available, meta.color])
+  const buttonStyle = useMemo(
+    () => ({
+      background: isSelected
+        ? 'var(--surface-base)'
+        : showHover
+          ? 'var(--surface-card-hover)'
+          : 'transparent',
+      border: `1px solid ${
+        isSelected ? 'var(--border-focus)' : showHover ? 'var(--border-default)' : 'transparent'
+      }`,
+      boxShadow: showHover ? 'var(--shadow-card)' : 'none',
+      cursor: available ? 'pointer' : 'default',
+      opacity: available ? 1 : 0.45,
+    }),
+    [isSelected, showHover, available, meta.color],
+  )
 
   return (
     <button
@@ -142,12 +154,17 @@ function SourceRow({
           <div className="w-1.5 h-1.5 rounded-full" style={{ background: meta.color }} />
         )}
       </div>
-      <span className="text-[12px] sm:text-[16px] font-semibold flex-1" style={{ color: isSelected ? 'var(--text-heading)' : 'var(--text-body)' }}>
+      <span
+        className="text-[12px] sm:text-[16px] font-semibold flex-1"
+        style={{ color: isSelected ? 'var(--text-heading)' : 'var(--text-body)' }}
+      >
         {meta.label}
       </span>
       <span
         className="text-[13px] sm:text-[17px] font-bold tabular-nums"
-        style={{ color: available ? (isSelected ? meta.color : 'var(--text-body)') : 'var(--text-label)' }}
+        style={{
+          color: available ? (isSelected ? meta.color : 'var(--text-body)') : 'var(--text-label)',
+        }}
       >
         {available ? fmt(sourceValue) : 'Unavailable'}
       </span>
@@ -247,10 +264,22 @@ export function IQEstimateSelector({
     >
       {showHeader && (
         <div className="flex items-center gap-2 mb-1.5">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="var(--accent-sky)" strokeWidth="2" strokeLinecap="round">
-            <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
+          <svg
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--accent-sky)"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M12 20V10" />
+            <path d="M18 20V4" />
+            <path d="M6 20v-4" />
           </svg>
-          <span className="text-[12px] sm:text-[16px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-sky)' }}>
+          <span
+            className="text-[12px] sm:text-[16px] font-bold uppercase tracking-wider"
+            style={{ color: 'var(--accent-sky)' }}
+          >
             Data Sources
           </span>
         </div>
@@ -259,7 +288,10 @@ export function IQEstimateSelector({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Property Value column (5 sources: IQ, Zillow, RentCast, Redfin, Realtor.com) */}
         <div>
-          <p className={`text-[12px] sm:text-[16px] font-bold uppercase tracking-wide pl-1 ${compact ? 'mb-1' : 'mb-1.5'}`} style={{ color: 'var(--text-secondary)' }}>
+          <p
+            className={`text-[12px] sm:text-[16px] font-bold uppercase tracking-wide pl-1 ${compact ? 'mb-1' : 'mb-1.5'}`}
+            style={{ color: 'var(--text-secondary)' }}
+          >
             Property Value
           </p>
           <div className="flex flex-col gap-0">
@@ -279,7 +311,10 @@ export function IQEstimateSelector({
 
         {/* Monthly Rent column (5 sources: IQ, Zillow, RentCast, Redfin, Mashvisor) */}
         <div>
-          <p className={`text-[12px] sm:text-[16px] font-bold uppercase tracking-wide pl-1 ${compact ? 'mb-1' : 'mb-1.5'}`} style={{ color: 'var(--text-secondary)' }}>
+          <p
+            className={`text-[12px] sm:text-[16px] font-bold uppercase tracking-wide pl-1 ${compact ? 'mb-1' : 'mb-1.5'}`}
+            style={{ color: 'var(--text-secondary)' }}
+          >
             Monthly Rent
           </p>
           <div className="flex flex-col gap-0">

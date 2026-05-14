@@ -40,20 +40,23 @@ export default function VerdictError({ error, reset }: ErrorProps) {
           </h1>
 
           <p className="mb-4 text-[0.95rem] leading-relaxed" style={{ color: 'var(--text-body)' }}>
-            The verdict step didn&apos;t complete. That&apos;s usually temporary—a busy server, a network blip, or a
-            hiccup with the property lookup.
+            The verdict step didn&apos;t complete. That&apos;s usually temporary—a busy server, a
+            network blip, or a hiccup with the property lookup.
           </p>
 
           <p className="mb-6 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            <strong style={{ color: 'var(--text-heading)' }}>What to try:</strong> Retry once or twice. If it keeps
-            failing, search again with the full street address (including unit if any), or check your connection. Your
-            work isn&apos;t lost until you leave this flow.
+            <strong style={{ color: 'var(--text-heading)' }}>What to try:</strong> Retry once or
+            twice. If it keeps failing, search again with the full street address (including unit if
+            any), or check your connection. Your work isn&apos;t lost until you leave this flow.
           </p>
 
           {process.env.NODE_ENV === 'development' && error.message && (
             <div
               className="mb-6 p-3 rounded-lg text-left"
-              style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-subtle)' }}
+              style={{
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--border-subtle)',
+              }}
             >
               <p className="text-xs font-mono break-all" style={{ color: 'var(--text-secondary)' }}>
                 {error.message}
@@ -97,7 +100,12 @@ export default function VerdictError({ error, reset }: ErrorProps) {
             type="button"
             onClick={() => window.history.back()}
             className="mt-6 inline-flex items-center gap-1 text-sm transition-colors"
-            style={{ color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{
+              color: 'var(--text-secondary)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
           >
             <ArrowLeft className="w-4 h-4" />
             Go back

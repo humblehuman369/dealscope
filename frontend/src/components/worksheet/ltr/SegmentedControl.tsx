@@ -22,12 +22,12 @@ export function SegmentedControl({ options, value, onChange, label }: SegmentedC
       )}
       <div className="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1 border border-slate-200 dark:border-slate-600">
         {options.map((opt) => (
-          <button 
-            key={opt.value} 
-            onClick={() => onChange(opt.value)} 
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
             className={`flex-1 py-2 px-3 text-xs font-semibold rounded-md transition-all ${
-              value === opt.value 
-                ? 'bg-cyan-500 text-white shadow-lg' 
+              value === opt.value
+                ? 'bg-cyan-500 text-white shadow-lg'
                 : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-600'
             }`}
           >

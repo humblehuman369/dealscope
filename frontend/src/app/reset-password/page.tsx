@@ -3,14 +3,23 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Lock, Eye, EyeOff, CheckCircle, XCircle, Loader2, ArrowRight, ArrowLeft } from 'lucide-react'
+import {
+  Lock,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+  Loader2,
+  ArrowRight,
+  ArrowLeft,
+} from 'lucide-react'
 import { authApi } from '@/lib/api-client'
 
 function ResetPasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
-  
+
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -33,9 +42,9 @@ function ResetPasswordContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!isValid || !token) return
-    
+
     setStatus('loading')
     setMessage('')
 
@@ -100,9 +109,7 @@ function ResetPasswordContent() {
               <h1 className="text-2xl font-bold text-navy-900 dark:text-white mb-2">
                 Password Reset! 🎉
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">
-                {message}
-              </p>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">{message}</p>
               <Link
                 href="/"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-semibold transition-colors"
@@ -120,9 +127,7 @@ function ResetPasswordContent() {
                 <h1 className="text-2xl font-bold text-navy-900 dark:text-white mb-2">
                   Reset Password
                 </h1>
-                <p className="text-gray-500 dark:text-gray-400">
-                  Enter your new password below.
-                </p>
+                <p className="text-gray-500 dark:text-gray-400">Enter your new password below.</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -147,15 +152,28 @@ function ResetPasswordContent() {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  
+
                   {/* Password requirements */}
                   {password && (
                     <div className="mt-2 space-y-1">
-                      {['At least 8 characters', 'One uppercase letter', 'One lowercase letter', 'One number', 'One special character'].map((req, i) => {
+                      {[
+                        'At least 8 characters',
+                        'One uppercase letter',
+                        'One lowercase letter',
+                        'One number',
+                        'One special character',
+                      ].map((req, i) => {
                         const passed = !passwordErrors.includes(req)
                         return (
-                          <p key={i} className={`text-xs flex items-center gap-1 ${passed ? 'text-green-500' : 'text-gray-400'}`}>
-                            {passed ? <CheckCircle className="w-3 h-3" /> : <span className="w-3 h-3 rounded-full border border-gray-300" />}
+                          <p
+                            key={i}
+                            className={`text-xs flex items-center gap-1 ${passed ? 'text-green-500' : 'text-gray-400'}`}
+                          >
+                            {passed ? (
+                              <CheckCircle className="w-3 h-3" />
+                            ) : (
+                              <span className="w-3 h-3 rounded-full border border-gray-300" />
+                            )}
                             {req}
                           </p>
                         )
@@ -216,13 +234,14 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-brand-500 animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-brand-500 animate-spin" />
+        </div>
+      }
+    >
       <ResetPasswordContent />
     </Suspense>
   )
 }
-

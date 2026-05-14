@@ -15,23 +15,17 @@
 
 import type { FlipStage } from '@/types/savedProperty'
 
-export type LifecycleStrategy =
-  | 'flip'
-  | 'brrrr'
-  | 'ltr'
-  | 'str'
-  | 'house_hack'
-  | 'wholesale'
+export type LifecycleStrategy = 'flip' | 'brrrr' | 'ltr' | 'str' | 'house_hack' | 'wholesale'
 
 /** Ordered stage progression for each strategy. First = entry (the moment a
  *  deal hits Owned), last = terminal. */
 export const STAGES_BY_STRATEGY: Record<LifecycleStrategy, FlipStage[]> = {
-  flip:       ['Rehab', 'Listed', 'Sold'],
-  brrrr:      ['Rehab', 'Stabilized', 'Refinanced', 'Held'],
-  ltr:        ['Rehab', 'MakeReady', 'Leased', 'Held'],
-  str:        ['Rehab', 'Setup', 'Live', 'Held'],
+  flip: ['Rehab', 'Listed', 'Sold'],
+  brrrr: ['Rehab', 'Stabilized', 'Refinanced', 'Held'],
+  ltr: ['Rehab', 'MakeReady', 'Leased', 'Held'],
+  str: ['Rehab', 'Setup', 'Live', 'Held'],
   house_hack: ['Rehab', 'MakeReady', 'Leased', 'Held'],
-  wholesale:  ['Rehab', 'Sold'],
+  wholesale: ['Rehab', 'Sold'],
 }
 
 /** Display labels — what shows in the column header. ``Acquisition`` is
@@ -53,12 +47,12 @@ export const STAGE_LABELS: Record<FlipStage, string> = {
 
 /** Strategy display labels for section headers. */
 export const STRATEGY_HEADER: Record<LifecycleStrategy, string> = {
-  flip:       'Fix & Flip',
-  brrrr:      'BRRRR',
-  ltr:        'Long-Term Rental',
-  str:        'Short-Term Rental',
+  flip: 'Fix & Flip',
+  brrrr: 'BRRRR',
+  ltr: 'Long-Term Rental',
+  str: 'Short-Term Rental',
   house_hack: 'House Hack',
-  wholesale:  'Wholesale',
+  wholesale: 'Wholesale',
 }
 
 /** Resolve a property's strategy. Falls back to flip when unknown. */

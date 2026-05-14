@@ -36,46 +36,46 @@ export type CanonicalStatus =
 
 const STATUS_MAP: Record<string, CanonicalStatus> = {
   // Zillow homeStatus values
-  'for_sale': 'active',
-  'for_rent': 'active',
-  'pre_foreclosure': 'pre-foreclosure',
+  for_sale: 'active',
+  for_rent: 'active',
+  pre_foreclosure: 'pre-foreclosure',
   'pre-foreclosure': 'pre-foreclosure',
-  'preforeclosure': 'pre-foreclosure',
-  'recently_sold': 'sold',
-  'sold': 'sold',
-  'off_market': 'off-market',
-  'closed': 'sold',
+  preforeclosure: 'pre-foreclosure',
+  recently_sold: 'sold',
+  sold: 'sold',
+  off_market: 'off-market',
+  closed: 'sold',
 
   // RentCast status values
-  'active': 'active',
-  'inactive': 'off-market',
+  active: 'active',
+  inactive: 'off-market',
 
   // Distressed / special statuses
-  'foreclosure': 'foreclosure',
-  'foreclosed': 'foreclosure',
-  'auction': 'auction',
+  foreclosure: 'foreclosure',
+  foreclosed: 'foreclosure',
+  auction: 'auction',
   'bank owned': 'foreclosure',
-  'bank_owned': 'foreclosure',
-  'bankowned': 'foreclosure',
-  'reo': 'foreclosure',
+  bank_owned: 'foreclosure',
+  bankowned: 'foreclosure',
+  reo: 'foreclosure',
   'short sale': 'pre-foreclosure',
-  'short_sale': 'pre-foreclosure',
-  'shortsale': 'pre-foreclosure',
+  short_sale: 'pre-foreclosure',
+  shortsale: 'pre-foreclosure',
 
   // Owner-listed (FSBO). Backend emits "Owner Listed" when
   // listingSubType.isFSBO is true; the others are defensive coverage for
   // any provider that uses raw string values.
   'owner listed': 'owner_listed',
-  'owner_listed': 'owner_listed',
+  owner_listed: 'owner_listed',
   'for sale by owner': 'owner_listed',
-  'for_sale_by_owner': 'owner_listed',
-  'fsbo': 'owner_listed',
+  for_sale_by_owner: 'owner_listed',
+  fsbo: 'owner_listed',
   'by owner': 'owner_listed',
-  'by_owner': 'owner_listed',
+  by_owner: 'owner_listed',
 
   // Misc
   'price reduced': 'active',
-  'price_reduced': 'active',
+  price_reduced: 'active',
 }
 
 export function normalizeListingStatus(raw: string | null): CanonicalStatus {
@@ -86,14 +86,22 @@ export function normalizeListingStatus(raw: string | null): CanonicalStatus {
 
 export function displayListingStatus(raw: string | null): string {
   switch (normalizeListingStatus(raw)) {
-    case 'active': return 'Active'
-    case 'owner_listed': return 'Owner Listed'
-    case 'foreclosure': return 'Foreclosure'
-    case 'pre-foreclosure': return 'Pre-Foreclosure'
-    case 'auction': return 'Auction'
-    case 'sold': return 'Sold'
-    case 'off-market': return 'Off-Market'
-    case 'other': return raw?.trim() || 'Unknown'
+    case 'active':
+      return 'Active'
+    case 'owner_listed':
+      return 'Owner Listed'
+    case 'foreclosure':
+      return 'Foreclosure'
+    case 'pre-foreclosure':
+      return 'Pre-Foreclosure'
+    case 'auction':
+      return 'Auction'
+    case 'sold':
+      return 'Sold'
+    case 'off-market':
+      return 'Off-Market'
+    case 'other':
+      return raw?.trim() || 'Unknown'
   }
 }
 
@@ -293,9 +301,10 @@ function fillMissingFromLoser(winner: MapListing, loser: MapListing): MapListing
   let merged: MapListing | null = null
   for (const key of PRESERVE_FROM_LOSER) {
     if (winner[key] == null && loser[key] != null) {
-      if (!merged) merged = { ...winner }
-      // Each preserved key shares the same nullable type on both sides, but
-      // TS can't narrow that across the loop, so we widen via unknown.
+      if (!merged)
+        merged = { ...winner }
+        // Each preserved key shares the same nullable type on both sides, but
+        // TS can't narrow that across the loop, so we widen via unknown.
       ;(merged as unknown as Record<string, unknown>)[key] = loser[key]
     }
   }
@@ -348,10 +357,7 @@ export function sortListings(
   return sorted
 }
 
-export function filterByListingStatus(
-  listings: MapListing[],
-  statuses: string[],
-): MapListing[] {
+export function filterByListingStatus(listings: MapListing[], statuses: string[]): MapListing[] {
   if (statuses.length === 0) return listings
   const allowed = new Set(statuses as CanonicalStatus[])
   return listings.filter((l) => allowed.has(normalizeListingStatus(l.listing_status)))
@@ -378,7 +384,9 @@ export function filterByMinDom(
     if (!sig) return false
 
     if (minDom <= 30) {
-      return sig.category === 'stale_30' || sig.category === 'stale_60' || sig.category === 'distressed'
+      return (
+        sig.category === 'stale_30' || sig.category === 'stale_60' || sig.category === 'distressed'
+      )
     }
     if (minDom <= 60) {
       return sig.category === 'stale_60' || sig.category === 'distressed'

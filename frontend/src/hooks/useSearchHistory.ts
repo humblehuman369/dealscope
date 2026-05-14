@@ -97,8 +97,7 @@ export function useSearchHistory(params: {
 export function useSearchHistoryStats() {
   return useQuery({
     queryKey: SEARCH_HISTORY_KEYS.stats(),
-    queryFn: () =>
-      api.get<SearchHistoryStats>('/api/v1/search-history/stats'),
+    queryFn: () => api.get<SearchHistoryStats>('/api/v1/search-history/stats'),
     staleTime: 30_000,
   })
 }
@@ -110,8 +109,7 @@ export function useDeleteSearchHistoryEntry() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) =>
-      api.delete(`/api/v1/search-history/${id}`),
+    mutationFn: (id: string) => api.delete(`/api/v1/search-history/${id}`),
 
     onMutate: async (deletedId: string) => {
       await queryClient.cancelQueries({
@@ -136,9 +134,11 @@ export function useDeleteSearchHistoryEntry() {
       _id: string,
       context: { previousLists: Array<[QueryKey, SearchHistoryItem[] | undefined]> } | undefined,
     ) => {
-      context?.previousLists?.forEach(([key, data]: [QueryKey, SearchHistoryItem[] | undefined]) => {
-        queryClient.setQueryData(key, data)
-      })
+      context?.previousLists?.forEach(
+        ([key, data]: [QueryKey, SearchHistoryItem[] | undefined]) => {
+          queryClient.setQueryData(key, data)
+        },
+      )
     },
 
     onSettled: () => {

@@ -5,7 +5,7 @@ import { LoanStat, PieSlice, AmortizationRow } from './types'
 
 /**
  * LoanSummary Component
- * 
+ *
  * Displays key loan statistics in a 4-cell grid.
  * Shows loan amount, monthly payment, total interest, and total payments.
  */
@@ -25,7 +25,7 @@ export function LoanSummary({ stats, title }: LoanSummaryProps) {
       )}
       <div className="grid grid-cols-2 gap-2">
         {stats.map((stat, index) => (
-          <div 
+          <div
             key={index}
             className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 text-center"
           >
@@ -45,27 +45,27 @@ export function createLoanStats(
   loanAmount: number,
   monthlyPayment: number,
   totalInterest: number,
-  totalPayments: number
+  totalPayments: number,
 ): LoanStat[] {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(value)
 
   return [
     { value: formatCurrency(loanAmount), label: 'Loan Amount' },
     { value: formatCurrency(monthlyPayment), label: 'Monthly P&I' },
     { value: formatCurrency(totalInterest), label: 'Total Interest' },
-    { value: formatCurrency(totalPayments), label: 'Total Payments' }
+    { value: formatCurrency(totalPayments), label: 'Total Payments' },
   ]
 }
 
 /**
  * PieChartBreakdown Component
- * 
+ *
  * Visual pie chart showing principal vs interest breakdown.
  */
 
@@ -76,19 +76,19 @@ interface PieChartBreakdownProps {
   centerValue?: string
 }
 
-export function PieChartBreakdown({ 
-  slices, 
+export function PieChartBreakdown({
+  slices,
   title,
   centerLabel,
-  centerValue 
+  centerValue,
 }: PieChartBreakdownProps) {
-  const principalSlice = slices.find(s => s.color === 'principal')
-  const interestSlice = slices.find(s => s.color === 'interest')
+  const principalSlice = slices.find((s) => s.color === 'principal')
+  const interestSlice = slices.find((s) => s.color === 'interest')
 
   // Calculate SVG arc paths
   const principalPercent = principalSlice?.percent || 50
   const interestPercent = interestSlice?.percent || 50
-  
+
   // Convert percentage to degrees for the conic gradient
   const principalDegrees = (principalPercent / 100) * 360
 
@@ -99,17 +99,17 @@ export function PieChartBreakdown({
           {title}
         </h4>
       )}
-      
+
       <div className="flex items-center justify-center gap-4">
         {/* Pie Chart */}
         <div className="relative w-28 h-28">
-          <div 
+          <div
             className="w-full h-full rounded-full"
             style={{
               background: `conic-gradient(
                 var(--status-positive) 0deg ${principalDegrees}deg,
                 var(--color-navy) ${principalDegrees}deg 360deg
-              )`
+              )`,
             }}
           />
           {/* Center hole */}
@@ -127,14 +127,18 @@ export function PieChartBreakdown({
         <div className="space-y-2.5">
           {slices.map((slice, index) => (
             <div key={index} className="flex items-center gap-2">
-              <div 
+              <div
                 className={`w-3 h-3 rounded-sm ${
                   slice.color === 'principal' ? 'bg-teal' : 'bg-red-500/70'
                 }`}
               />
               <div>
-                <div className="text-[0.7rem] font-semibold text-white">{slice.formattedAmount}</div>
-                <div className="text-[0.55rem] text-white/50">{slice.label} ({slice.percent}%)</div>
+                <div className="text-[0.7rem] font-semibold text-white">
+                  {slice.formattedAmount}
+                </div>
+                <div className="text-[0.55rem] text-white/50">
+                  {slice.label} ({slice.percent}%)
+                </div>
               </div>
             </div>
           ))}
@@ -147,16 +151,13 @@ export function PieChartBreakdown({
 /**
  * Helper function to create pie slices
  */
-export function createPieSlices(
-  principalAmount: number,
-  interestAmount: number
-): PieSlice[] {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
+export function createPieSlices(principalAmount: number, interestAmount: number): PieSlice[] {
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(value)
 
   const total = principalAmount + interestAmount
@@ -169,21 +170,21 @@ export function createPieSlices(
       amount: principalAmount,
       formattedAmount: formatCurrency(principalAmount),
       percent: principalPercent,
-      color: 'principal'
+      color: 'principal',
     },
     {
       label: 'Interest',
       amount: interestAmount,
       formattedAmount: formatCurrency(interestAmount),
       percent: interestPercent,
-      color: 'interest'
-    }
+      color: 'interest',
+    },
   ]
 }
 
 /**
  * AmortizationTable Component
- * 
+ *
  * Displays a yearly amortization schedule.
  */
 
@@ -193,10 +194,10 @@ interface AmortizationTableProps {
   maxRows?: number
 }
 
-export function AmortizationTable({ 
-  rows, 
+export function AmortizationTable({
+  rows,
   title = '10-Year Amortization',
-  maxRows = 10 
+  maxRows = 10,
 }: AmortizationTableProps) {
   const displayRows = rows.slice(0, maxRows)
 
@@ -205,7 +206,7 @@ export function AmortizationTable({
       <h4 className="text-[0.72rem] font-bold text-white/60 uppercase tracking-wide mb-2.5">
         {title}
       </h4>
-      
+
       <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
         {/* Header */}
         <div className="grid grid-cols-4 text-[0.6rem] font-bold text-white/50 uppercase tracking-wide px-3 py-2 bg-white/[0.03]">
@@ -214,10 +215,10 @@ export function AmortizationTable({
           <span className="text-right">Interest</span>
           <span className="text-right">Balance</span>
         </div>
-        
+
         {/* Rows */}
         {displayRows.map((row, index) => (
-          <div 
+          <div
             key={row.year}
             className={`grid grid-cols-4 text-[0.72rem] px-3 py-2 ${
               index % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'
@@ -240,19 +241,20 @@ export function AmortizationTable({
 export function generateAmortizationSchedule(
   loanAmount: number,
   interestRate: number,
-  loanTermYears: number = 30
+  loanTermYears: number = 30,
 ): AmortizationRow[] {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(value)
 
   const monthlyRate = interestRate / 12
   const totalPayments = loanTermYears * 12
-  const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) / 
+  const monthlyPayment =
+    (loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments))) /
     (Math.pow(1 + monthlyRate, totalPayments) - 1)
 
   const rows: AmortizationRow[] = []
@@ -265,7 +267,7 @@ export function generateAmortizationSchedule(
     for (let month = 1; month <= 12; month++) {
       const interestPayment = balance * monthlyRate
       const principalPayment = monthlyPayment - interestPayment
-      
+
       yearlyPrincipal += principalPayment
       yearlyInterest += interestPayment
       balance -= principalPayment
@@ -275,7 +277,7 @@ export function generateAmortizationSchedule(
       year,
       principal: formatCurrency(yearlyPrincipal),
       interest: formatCurrency(yearlyInterest),
-      balance: formatCurrency(Math.max(0, balance))
+      balance: formatCurrency(Math.max(0, balance)),
     })
   }
 
@@ -284,7 +286,7 @@ export function generateAmortizationSchedule(
 
 /**
  * FundingOverview Component
- * 
+ *
  * Combines loan summary, pie chart, and amortization in one view.
  */
 
@@ -303,38 +305,39 @@ export function FundingOverview({
   loanTermYears = 30,
   downPayment,
   closingCosts,
-  purchasePrice
+  purchasePrice,
 }: FundingOverviewProps) {
   const monthlyRate = interestRate / 12
   const totalPayments = loanTermYears * 12
-  const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) / 
+  const monthlyPayment =
+    (loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments))) /
     (Math.pow(1 + monthlyRate, totalPayments) - 1)
-  const totalInterest = (monthlyPayment * totalPayments) - loanAmount
+  const totalInterest = monthlyPayment * totalPayments - loanAmount
   const totalPaid = monthlyPayment * totalPayments
 
   const stats = createLoanStats(loanAmount, monthlyPayment, totalInterest, totalPaid)
   const pieSlices = createPieSlices(loanAmount, totalInterest)
   const amortRows = generateAmortizationSchedule(loanAmount, interestRate, loanTermYears)
 
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(value)
 
   return (
     <div className="space-y-4">
       <LoanSummary stats={stats} title="Loan Overview" />
-      
-      <PieChartBreakdown 
-        slices={pieSlices} 
+
+      <PieChartBreakdown
+        slices={pieSlices}
         title="Principal vs Interest"
         centerLabel="Total"
         centerValue={formatCurrency(totalPaid)}
       />
-      
+
       <AmortizationTable rows={amortRows} maxRows={10} />
 
       {/* Cash to Close */}

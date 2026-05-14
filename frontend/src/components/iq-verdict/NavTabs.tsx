@@ -2,7 +2,7 @@
 
 /**
  * NavTabs Component - Decision-Grade UI
- * 
+ *
  * Edge-to-edge navigation tabs for the Discovery page.
  * Per DealMakerIQ Design System - high contrast, legibility-first.
  */
@@ -39,26 +39,24 @@ export function NavTabs({
   zpid,
 }: NavTabsProps) {
   const router = useRouter()
-  
+
   const encodedAddress = address ? encodeURIComponent(address) : ''
-  
+
   const getHref = (tabId: string): string => {
     switch (tabId) {
       case 'analyze':
-        return propertyId 
-          ? `/discovery?propertyId=${propertyId}` 
+        return propertyId
+          ? `/discovery?propertyId=${propertyId}`
           : `/discovery?address=${encodedAddress}`
       case 'details':
-        return zpid 
-          ? `/property/${zpid}` 
-          : `/property?address=${encodedAddress}`
+        return zpid ? `/property/${zpid}` : `/property?address=${encodedAddress}`
       case 'price-checker':
         return `/price-intel?address=${encodedAddress}`
       default:
         return '#'
     }
   }
-  
+
   const handleTabClick = (tabId: string) => {
     const href = getHref(tabId)
     if (href !== '#') {

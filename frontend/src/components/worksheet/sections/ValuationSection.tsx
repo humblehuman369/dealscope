@@ -16,9 +16,9 @@ export function ValuationSection() {
   // CRITICAL: Only use snapshot values if valid - never fall back to assumptions (creates feedback loop)
   const snapshotPrice = propertyData?.property_data_snapshot?.listPrice
   const snapshotArv = propertyData?.property_data_snapshot?.arv
-  
-  const originalPrice = (snapshotPrice && snapshotPrice > 0) ? snapshotPrice : 500000
-  const originalArv = (snapshotArv && snapshotArv > 0) ? snapshotArv : originalPrice
+
+  const originalPrice = snapshotPrice && snapshotPrice > 0 ? snapshotPrice : 500000
+  const originalArv = snapshotArv && snapshotArv > 0 ? snapshotArv : originalPrice
 
   // Fixed ARV range based on original values
   const arvMin = Math.round(originalArv * 0.7)
@@ -37,21 +37,21 @@ export function ValuationSection() {
           showSlider={true}
         />
       </DataRow>
-      
+
       <DataRow label="ARV Per Square Foot" icon={<Ruler className="w-4 h-4" />}>
         <DisplayField value={arvPerSqft} format="currency" />
       </DataRow>
-      
+
       <DataRow label="Price Per Square Foot">
         <DisplayField value={pricePerSqft} format="currency" />
       </DataRow>
-      
+
       <DataRow label="Rehab Per Square Foot" icon={<Wrench className="w-4 h-4" />}>
         <DisplayField value={rehabPerSqft} format="currency" />
       </DataRow>
-      
+
       <DataRow label="Equity at Purchase" isHighlight>
-        <DisplayField 
+        <DisplayField
           value={equityAfterRehab}
           format="currency"
           isPositive={equityAfterRehab > 0}

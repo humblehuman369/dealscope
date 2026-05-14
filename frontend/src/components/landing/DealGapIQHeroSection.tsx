@@ -1,25 +1,29 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 export interface DealGapIQHeroSectionProps {
-  onAnalyzeAddress: (address: string) => void;
-  onOpenGateway?: () => void;
-  onScanProperty?: () => void;
+  onAnalyzeAddress: (address: string) => void
+  onOpenGateway?: () => void
+  onScanProperty?: () => void
 }
 
-export function DealGapIQHeroSection({ onAnalyzeAddress, onOpenGateway, onScanProperty }: DealGapIQHeroSectionProps) {
-  const [address, setAddress] = useState('');
+export function DealGapIQHeroSection({
+  onAnalyzeAddress,
+  onOpenGateway,
+  onScanProperty,
+}: DealGapIQHeroSectionProps) {
+  const [address, setAddress] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = address.trim();
+    e.preventDefault()
+    const trimmed = address.trim()
     if (trimmed) {
-      onAnalyzeAddress(trimmed);
+      onAnalyzeAddress(trimmed)
     } else if (onOpenGateway) {
-      onOpenGateway();
+      onOpenGateway()
     }
-  };
+  }
 
   return (
     <section className="hero-prominent">
@@ -31,17 +35,26 @@ export function DealGapIQHeroSection({ onAnalyzeAddress, onOpenGateway, onScanPr
           <span className="accent">Find Out in 60 Seconds.</span>
         </h1>
         <p className="hero-sub">
-          Enter any address. DealGapIQ instantly calculates the{' '}
-          <strong>Income Value</strong> &mdash; the maximum price where cash flow stays
-          positive &mdash; your <strong>Target Buy</strong>, and the{' '}
-          <strong>Deal Gap</strong> between the asking price and the price that actually
-          works. Six strategies. One scan. Your answer.
+          Enter any address. DealGapIQ instantly calculates the <strong>Income Value</strong>{' '}
+          &mdash; the maximum price where cash flow stays positive &mdash; your{' '}
+          <strong>Target Buy</strong>, and the <strong>Deal Gap</strong> between the asking price
+          and the price that actually works. Six strategies. One scan. Your answer.
         </p>
 
         <form onSubmit={handleSubmit}>
           <div className="input-area">
             <div className="address-bar">
-              <svg className="search-icon" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <svg
+                className="search-icon"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                viewBox="0 0 24 24"
+              >
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
@@ -52,8 +65,22 @@ export function DealGapIQHeroSection({ onAnalyzeAddress, onOpenGateway, onScanPr
                 placeholder="Enter any property address..."
               />
               {onScanProperty && (
-                <button type="button" className="camera-btn" title="Scan a For Sale sign" onClick={onScanProperty}>
-                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <button
+                  type="button"
+                  className="camera-btn"
+                  title="Scan a For Sale sign"
+                  onClick={onScanProperty}
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
                     <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
                     <circle cx="12" cy="13" r="3" />
                   </svg>
@@ -61,7 +88,16 @@ export function DealGapIQHeroSection({ onAnalyzeAddress, onOpenGateway, onScanPr
               )}
               <button type="submit" className="analyze-btn">
                 Analyze
-                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <svg
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </button>
@@ -76,7 +112,17 @@ export function DealGapIQHeroSection({ onAnalyzeAddress, onOpenGateway, onScanPr
                 </div>
 
                 <button type="button" className="scan-btn" onClick={onScanProperty}>
-                  <svg className="scan-icon" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <svg
+                    className="scan-icon"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
                     <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
                     <circle cx="12" cy="13" r="3" />
                   </svg>
@@ -99,7 +145,17 @@ export function DealGapIQHeroSection({ onAnalyzeAddress, onOpenGateway, onScanPr
 
       <div className="stats-bar">
         <div className="stat-card">
-          <svg className="stat-icon" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <svg
+            className="stat-icon"
+            width="22"
+            height="22"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            viewBox="0 0 24 24"
+          >
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
@@ -108,7 +164,17 @@ export function DealGapIQHeroSection({ onAnalyzeAddress, onOpenGateway, onScanPr
           <div className="stat-detail">for any address</div>
         </div>
         <div className="stat-card">
-          <svg className="stat-icon" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <svg
+            className="stat-icon"
+            width="22"
+            height="22"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            viewBox="0 0 24 24"
+          >
             <circle cx="12" cy="12" r="3" />
             <circle cx="12" cy="12" r="8" />
             <line x1="12" y1="2" x2="12" y2="4" />
@@ -121,16 +187,28 @@ export function DealGapIQHeroSection({ onAnalyzeAddress, onOpenGateway, onScanPr
           <div className="stat-detail">Income Value &middot; Target Buy &middot; Deal Gap</div>
         </div>
         <div className="stat-card">
-          <svg className="stat-icon" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <svg
+            className="stat-icon"
+            width="22"
+            height="22"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            viewBox="0 0 24 24"
+          >
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
           </svg>
           <div className="stat-number">6</div>
           <div className="stat-label">Strategy Models</div>
-          <div className="stat-detail">Rental &middot; STR &middot; BRRRR &middot; Flip &middot; Hack &middot; Wholesale</div>
+          <div className="stat-detail">
+            Rental &middot; STR &middot; BRRRR &middot; Flip &middot; Hack &middot; Wholesale
+          </div>
         </div>
       </div>
     </section>
-  );
+  )
 }
 
-export default DealGapIQHeroSection;
+export default DealGapIQHeroSection

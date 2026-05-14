@@ -13,9 +13,10 @@ export function FinancialRatios() {
   const debtYield = derived.loanAmount > 0 ? (derived.noi / derived.loanAmount) * 100 : 0
 
   // Equity Multiple (from summary if available)
-  const equityMultiple = summary?.equityMultiple || 
-    (derived.totalCashNeeded > 0 
-      ? (derived.totalCashNeeded + derived.annualCashFlow * 10) / derived.totalCashNeeded 
+  const equityMultiple =
+    summary?.equityMultiple ||
+    (derived.totalCashNeeded > 0
+      ? (derived.totalCashNeeded + derived.annualCashFlow * 10) / derived.totalCashNeeded
       : 0)
 
   const ratios = [
@@ -74,7 +75,11 @@ export function FinancialRatios() {
     },
   ]
 
-  const getStatus = (value: number, threshold: { good: number; warning: number }, invert?: boolean) => {
+  const getStatus = (
+    value: number,
+    threshold: { good: number; warning: number },
+    invert?: boolean,
+  ) => {
     if (invert) {
       if (value <= threshold.good) return 'positive'
       if (value >= threshold.warning) return 'negative'
@@ -101,21 +106,19 @@ export function FinancialRatios() {
       {ratios.map((ratio, index) => {
         const Icon = ratio.icon
         const status = getStatus(ratio.value, ratio.threshold, ratio.invertThreshold)
-        
+
         return (
-          <DataRow 
-            key={index} 
-            label={ratio.label} 
-            icon={<Icon className="w-4 h-4" />}
-          >
+          <DataRow key={index} label={ratio.label} icon={<Icon className="w-4 h-4" />}>
             <div className="flex items-center gap-2">
-              <span className={`font-medium ${
-                status === 'positive' 
-                  ? 'text-[var(--ws-positive)]' 
-                  : status === 'negative' 
-                    ? 'text-[var(--ws-negative)]' 
-                    : 'text-[var(--ws-text-primary)]'
-              }`}>
+              <span
+                className={`font-medium ${
+                  status === 'positive'
+                    ? 'text-[var(--ws-positive)]'
+                    : status === 'negative'
+                      ? 'text-[var(--ws-negative)]'
+                      : 'text-[var(--ws-text-primary)]'
+                }`}
+              >
                 {formatRatioValue(ratio.value, ratio.format, ratio.suffix)}
               </span>
               {status === 'positive' && (
@@ -131,4 +134,3 @@ export function FinancialRatios() {
     </SectionCard>
   )
 }
-

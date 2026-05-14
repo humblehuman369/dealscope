@@ -21,8 +21,7 @@ export const metadata: Metadata = {
   },
 }
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
 const PRICING_JSONLD = {
   '@context': 'https://schema.org',

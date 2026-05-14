@@ -31,7 +31,7 @@ interface ListingStatusBadgeProps {
 
 /**
  * ListingStatusBadge - Displays property listing status and seller type
- * 
+ *
  * Shows status badges like:
  * - FOR_SALE (green), FOR_RENT (blue), PENDING (yellow), OFF_MARKET/SOLD (gray)
  * - Special flags: Foreclosure (red), Bank Owned (orange), Auction (purple), New Construction (cyan)
@@ -46,11 +46,11 @@ export function ListingStatusBadge({
   isAuction,
   isNewConstruction,
   daysOnMarket,
-  className = ''
+  className = '',
 }: ListingStatusBadgeProps) {
   // Determine the effective status to display
-  const effectiveStatus = isOffMarket ? 'OFF_MARKET' : (listingStatus || 'OFF_MARKET')
-  
+  const effectiveStatus = isOffMarket ? 'OFF_MARKET' : listingStatus || 'OFF_MARKET'
+
   // Get status badge configuration
   const getStatusConfig = (status: ListingStatus) => {
     switch (status) {
@@ -59,28 +59,28 @@ export function ListingStatusBadge({
           label: 'For Sale',
           bgColor: 'bg-green-500',
           textColor: 'text-white',
-          icon: Home
+          icon: Home,
         }
       case 'FOR_RENT':
         return {
           label: 'For Rent',
           bgColor: 'bg-blue-500',
           textColor: 'text-white',
-          icon: Key
+          icon: Key,
         }
       case 'PENDING':
         return {
           label: 'Pending',
           bgColor: 'bg-yellow-500',
           textColor: 'text-gray-900',
-          icon: Clock
+          icon: Clock,
         }
       case 'SOLD':
         return {
           label: 'Sold',
           bgColor: 'bg-gray-500',
           textColor: 'text-white',
-          icon: Home
+          icon: Home,
         }
       case 'OFF_MARKET':
       default:
@@ -88,77 +88,82 @@ export function ListingStatusBadge({
           label: 'Off Market',
           bgColor: 'bg-gray-400',
           textColor: 'text-white',
-          icon: Home
+          icon: Home,
         }
     }
   }
-  
+
   const statusConfig = getStatusConfig(effectiveStatus)
   const StatusIcon = statusConfig.icon
 
   // Determine special seller type badges
-  const specialBadges: { label: string; bgColor: string; textColor: string; icon: React.ComponentType<{ className?: string }> }[] = []
-  
+  const specialBadges: {
+    label: string
+    bgColor: string
+    textColor: string
+    icon: React.ComponentType<{ className?: string }>
+  }[] = []
+
   if (isForeclosure || sellerType === 'Foreclosure') {
     specialBadges.push({
       label: 'Foreclosure',
       bgColor: 'bg-red-600',
       textColor: 'text-white',
-      icon: AlertTriangle
+      icon: AlertTriangle,
     })
   }
-  
+
   if (isBankOwned || sellerType === 'BankOwned') {
     specialBadges.push({
       label: 'Bank Owned',
       bgColor: 'bg-orange-500',
       textColor: 'text-white',
-      icon: Building2
+      icon: Building2,
     })
   }
-  
+
   if (isAuction || sellerType === 'Auction') {
     specialBadges.push({
       label: 'Auction',
       bgColor: 'bg-purple-500',
       textColor: 'text-white',
-      icon: Gavel
+      icon: Gavel,
     })
   }
-  
+
   if (isNewConstruction || sellerType === 'NewConstruction' || sellerType === 'NewHome') {
     specialBadges.push({
       label: 'New Home',
       bgColor: 'bg-cyan-500',
       textColor: 'text-white',
-      icon: Sparkles
+      icon: Sparkles,
     })
   }
-  
+
   if (sellerType === 'FSBO') {
     specialBadges.push({
       label: 'FSBO',
       bgColor: 'bg-indigo-500',
       textColor: 'text-white',
-      icon: User
+      icon: User,
     })
   }
 
   return (
     <div className={`flex flex-wrap items-center gap-2 ${className}`}>
       {/* Primary Listing Status Badge */}
-      <span 
+      <span
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${statusConfig.bgColor} ${statusConfig.textColor}`}
       >
         <StatusIcon className="w-3.5 h-3.5" />
         {statusConfig.label}
       </span>
-      
+
       {/* Special Seller Type Badges */}
       {specialBadges.map((badge, index) => {
         const BadgeIcon = badge.icon
         return (
-          <span 
+          <span
             key={index}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${badge.bgColor} ${badge.textColor}`}
           >
@@ -167,7 +172,7 @@ export function ListingStatusBadge({
           </span>
         )
       })}
-      
+
       {/* Days on Market - only show for active listings */}
       {!isOffMarket && daysOnMarket !== undefined && daysOnMarket > 0 && (
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
@@ -187,27 +192,40 @@ export function ListingStatusBadgeCompact({
   isOffMarket,
   sellerType,
   isForeclosure,
-  className = ''
-}: Pick<ListingStatusBadgeProps, 'listingStatus' | 'isOffMarket' | 'sellerType' | 'isForeclosure' | 'className'>) {
-  const effectiveStatus = isOffMarket ? 'OFF_MARKET' : (listingStatus || 'OFF_MARKET')
-  
+  className = '',
+}: Pick<
+  ListingStatusBadgeProps,
+  'listingStatus' | 'isOffMarket' | 'sellerType' | 'isForeclosure' | 'className'
+>) {
+  const effectiveStatus = isOffMarket ? 'OFF_MARKET' : listingStatus || 'OFF_MARKET'
+
   const getStatusDot = (status: ListingStatus) => {
     switch (status) {
-      case 'FOR_SALE': return 'bg-green-500'
-      case 'FOR_RENT': return 'bg-blue-500'
-      case 'PENDING': return 'bg-yellow-500'
-      case 'SOLD': return 'bg-gray-500'
-      default: return 'bg-gray-400'
+      case 'FOR_SALE':
+        return 'bg-green-500'
+      case 'FOR_RENT':
+        return 'bg-blue-500'
+      case 'PENDING':
+        return 'bg-yellow-500'
+      case 'SOLD':
+        return 'bg-gray-500'
+      default:
+        return 'bg-gray-400'
     }
   }
-  
+
   const getStatusLabel = (status: ListingStatus) => {
     switch (status) {
-      case 'FOR_SALE': return 'For Sale'
-      case 'FOR_RENT': return 'For Rent'
-      case 'PENDING': return 'Pending'
-      case 'SOLD': return 'Sold'
-      default: return 'Off Market'
+      case 'FOR_SALE':
+        return 'For Sale'
+      case 'FOR_RENT':
+        return 'For Rent'
+      case 'PENDING':
+        return 'Pending'
+      case 'SOLD':
+        return 'Sold'
+      default:
+        return 'Off Market'
     }
   }
 
@@ -218,9 +236,7 @@ export function ListingStatusBadgeCompact({
         {getStatusLabel(effectiveStatus)}
       </span>
       {(isForeclosure || sellerType === 'Foreclosure') && (
-        <span className="text-xs font-medium text-red-600 dark:text-red-400">
-          Foreclosure
-        </span>
+        <span className="text-xs font-medium text-red-600 dark:text-red-400">Foreclosure</span>
       )}
     </div>
   )

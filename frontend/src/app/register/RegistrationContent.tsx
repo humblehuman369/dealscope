@@ -1,89 +1,117 @@
-"use client"
+'use client'
 
-import React, { useState, useMemo, Suspense } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useRegister, useLogin } from "@/hooks/useSession";
-import { IS_CAPACITOR } from "@/lib/env";
-import { authApi } from "@/lib/api-client";
-import { PriceCents } from "@/components/ui/PriceCents";
+import React, { useState, useMemo, Suspense } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useRegister, useLogin } from '@/hooks/useSession'
+import { IS_CAPACITOR } from '@/lib/env'
+import { authApi } from '@/lib/api-client'
+import { PriceCents } from '@/components/ui/PriceCents'
 
 // ─── Icons ───
-const CheckIcon: React.FC<{ color?: string }> = ({ color = "var(--accent-sky)" }) => (
+const CheckIcon: React.FC<{ color?: string }> = ({ color = 'var(--accent-sky)' }) => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <circle cx="8" cy="8" r="8" fill={color} fillOpacity="0.12" />
-    <path d="M5 8.5L7 10.5L11 6.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path
+      d="M5 8.5L7 10.5L11 6.5"
+      stroke={color}
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
-);
+)
 
 const EyeIcon: React.FC<{ open: boolean }> = ({ open }) => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
     {open ? (
       <>
-        <path d="M1.5 9C1.5 9 4 4 9 4C14 4 16.5 9 16.5 9C16.5 9 14 14 9 14C4 14 1.5 9 1.5 9Z" stroke="#475569" strokeWidth="1.3" strokeLinecap="round" />
+        <path
+          d="M1.5 9C1.5 9 4 4 9 4C14 4 16.5 9 16.5 9C16.5 9 14 14 9 14C4 14 1.5 9 1.5 9Z"
+          stroke="#475569"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+        />
         <circle cx="9" cy="9" r="2.5" stroke="#475569" strokeWidth="1.3" />
       </>
     ) : (
       <>
-        <path d="M1.5 9C1.5 9 4 4 9 4C14 4 16.5 9 16.5 9" stroke="#475569" strokeWidth="1.3" strokeLinecap="round" />
+        <path
+          d="M1.5 9C1.5 9 4 4 9 4C14 4 16.5 9 16.5 9"
+          stroke="#475569"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+        />
         <path d="M3 15L15 3" stroke="#475569" strokeWidth="1.3" strokeLinecap="round" />
       </>
     )}
   </svg>
-);
+)
 
 const ArrowIcon: React.FC = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path
+      d="M3 8H13M13 8L9 4M13 8L9 12"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
-);
+)
 
 const SpinnerIcon: React.FC = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ animation: "spin 0.8s linear infinite" }}>
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 18 18"
+    fill="none"
+    style={{ animation: 'spin 0.8s linear infinite' }}
+  >
     <circle cx="9" cy="9" r="7" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
     <path d="M9 2a7 7 0 016.9 5.8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
     <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
   </svg>
-);
+)
 
 // ─── Types ───
-type PlanType = "starter" | "pro";
-type Step = "form" | "success";
+type PlanType = 'starter' | 'pro'
+type Step = 'form' | 'success'
 
 interface FormState {
-  email: string;
-  password: string;
-  firstName: string;
+  email: string
+  password: string
+  firstName: string
 }
 
 // ─── Input Field ───
 const InputField: React.FC<{
-  label: string;
-  type?: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  autoFocus?: boolean;
-  rightElement?: React.ReactNode;
-}> = ({ label, type = "text", value, onChange, placeholder, autoFocus, rightElement }) => {
-  const [focused, setFocused] = useState(false);
+  label: string
+  type?: string
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  autoFocus?: boolean
+  rightElement?: React.ReactNode
+}> = ({ label, type = 'text', value, onChange, placeholder, autoFocus, rightElement }) => {
+  const [focused, setFocused] = useState(false)
 
   return (
-    <div style={{ marginBottom: "16px" }}>
+    <div style={{ marginBottom: '16px' }}>
       <label
         style={{
-          display: "block",
-          fontSize: "12px",
+          display: 'block',
+          fontSize: '12px',
           fontWeight: 600,
-          color: "#94A3B8",
-          marginBottom: "6px",
-          letterSpacing: "0.03em",
-          fontFamily: "inherit",
+          color: '#94A3B8',
+          marginBottom: '6px',
+          letterSpacing: '0.03em',
+          fontFamily: 'inherit',
         }}
       >
         {label}
       </label>
-      <div style={{ position: "relative" }}>
+      <div style={{ position: 'relative' }}>
         <input
           type={type}
           value={value}
@@ -93,32 +121,32 @@ const InputField: React.FC<{
           placeholder={placeholder}
           autoFocus={autoFocus}
           style={{
-            width: "100%",
-            minHeight: "48px",
-            padding: "12px 14px",
-            paddingRight: rightElement ? "42px" : "14px",
-            background: "#0B1120",
-            border: `1px solid ${focused ? "rgba(15,164,233,0.4)" : "rgba(148,163,184,0.1)"}`,
-            borderRadius: "8px",
-            color: "#E2E8F0",
-            fontSize: "14px",
-            fontFamily: "inherit",
-            outline: "none",
-            transition: "border-color 0.2s, box-shadow 0.2s",
-            boxShadow: focused ? "0 0 0 3px rgba(15,164,233,0.08)" : "none",
-            boxSizing: "border-box",
+            width: '100%',
+            minHeight: '48px',
+            padding: '12px 14px',
+            paddingRight: rightElement ? '42px' : '14px',
+            background: '#0B1120',
+            border: `1px solid ${focused ? 'rgba(15,164,233,0.4)' : 'rgba(148,163,184,0.1)'}`,
+            borderRadius: '8px',
+            color: '#E2E8F0',
+            fontSize: '14px',
+            fontFamily: 'inherit',
+            outline: 'none',
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+            boxShadow: focused ? '0 0 0 3px rgba(15,164,233,0.08)' : 'none',
+            boxSizing: 'border-box',
           }}
         />
         {rightElement && (
           <div
             style={{
-              position: "absolute",
-              right: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
+              position: 'absolute',
+              right: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
             {rightElement}
@@ -126,8 +154,8 @@ const InputField: React.FC<{
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
 // ─── Plan Summary Sidebar ───
 const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boolean }> = ({
@@ -135,89 +163,89 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
   trialEndDate,
   annual = true,
 }) => {
-  const isPro = plan === "pro";
-  const proPrice = annual ? "$29.17" : "$39.99";
-  const proBillingNote = annual ? "Billed annually at $349.99 · Cancel anytime" : "Billed monthly · Cancel anytime";
+  const isPro = plan === 'pro'
+  const proPrice = annual ? '$29.17' : '$39.99'
+  const proBillingNote = annual
+    ? 'Billed annually at $349.99 · Cancel anytime'
+    : 'Billed monthly · Cancel anytime'
 
   const features = isPro
     ? [
-        "Unlimited property analyses",
-        "Full calculation breakdown",
-        "Editable inputs & stress testing",
-        "Comparable rental data sources",
-        "Downloadable Excel proforma",
-        "DealVaultIQ pipeline & tracking",
-        "Lender-ready PDF reports",
-        "Side-by-side deal comparison",
+        'Unlimited property analyses',
+        'Full calculation breakdown',
+        'Editable inputs & stress testing',
+        'Comparable rental data sources',
+        'Downloadable Excel proforma',
+        'DealVaultIQ pipeline & tracking',
+        'Lender-ready PDF reports',
+        'Side-by-side deal comparison',
       ]
     : [
-        "3 property analyses per month",
-        "Deal Gap + Income Value + Target Buy",
-        "Discovery score",
-        "All 6 strategy snapshots",
-        "Seller Motivation indicator",
-      ];
+        '3 property analyses per month',
+        'Deal Gap + Income Value + Target Buy',
+        'Discovery score',
+        'All 6 strategy snapshots',
+        'Seller Motivation indicator',
+      ]
 
   return (
     <div
       style={{
-        background: "#0D1424",
-        border: "1px solid rgba(148,163,184,0.06)",
-        borderRadius: "12px",
-        padding: "28px",
-        width: "100%",
-        maxWidth: "320px",
-        height: "fit-content",
+        background: '#0D1424',
+        border: '1px solid rgba(148,163,184,0.06)',
+        borderRadius: '12px',
+        padding: '28px',
+        width: '100%',
+        maxWidth: '320px',
+        height: 'fit-content',
       }}
     >
       {/* Plan badge */}
       <div
         style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "6px",
-          background: isPro ? "rgba(15,164,233,0.08)" : "rgba(148,163,184,0.06)",
-          border: `1px solid ${isPro ? "rgba(15,164,233,0.15)" : "rgba(148,163,184,0.08)"}`,
-          borderRadius: "6px",
-          padding: "4px 12px",
-          marginBottom: "16px",
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          background: isPro ? 'rgba(15,164,233,0.08)' : 'rgba(148,163,184,0.06)',
+          border: `1px solid ${isPro ? 'rgba(15,164,233,0.15)' : 'rgba(148,163,184,0.08)'}`,
+          borderRadius: '6px',
+          padding: '4px 12px',
+          marginBottom: '16px',
         }}
       >
         <span
           style={{
-            fontSize: "11px",
+            fontSize: '11px',
             fontWeight: 700,
-            color: isPro ? "var(--accent-sky)" : "#94A3B8",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase" as const,
+            color: isPro ? 'var(--accent-sky)' : '#94A3B8',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase' as const,
           }}
         >
-          {isPro ? "Pro Investor" : "Starter"}
+          {isPro ? 'Pro Investor' : 'Starter'}
         </span>
       </div>
 
       {/* Price */}
-      <div style={{ marginBottom: "16px" }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
+      <div style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
           <span
             style={{
-              fontSize: "36px",
+              fontSize: '36px',
               fontWeight: 800,
-              color: "#F1F5F9",
-              letterSpacing: "-0.04em",
+              color: '#F1F5F9',
+              letterSpacing: '-0.04em',
               lineHeight: 1,
             }}
           >
-            {isPro ? <PriceCents>{proPrice}</PriceCents> : "Free"}
+            {isPro ? <PriceCents>{proPrice}</PriceCents> : 'Free'}
           </span>
           {isPro && (
-            <span style={{ fontSize: "14px", color: "#64748B", fontWeight: 500 }}>
-              /mo
-            </span>
+            <span style={{ fontSize: '14px', color: '#64748B', fontWeight: 500 }}>/mo</span>
           )}
         </div>
         {isPro && (
-          <div style={{ fontSize: "12px", color: "#64748B", marginTop: "4px" }}>
+          <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>
             {proBillingNote}
           </div>
         )}
@@ -227,19 +255,26 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
       {isPro && (
         <div
           style={{
-            background: "rgba(15,164,233,0.04)",
-            border: "1px solid rgba(15,164,233,0.1)",
-            borderRadius: "8px",
-            padding: "12px",
-            marginBottom: "18px",
+            background: 'rgba(15,164,233,0.04)',
+            border: '1px solid rgba(15,164,233,0.1)',
+            borderRadius: '8px',
+            padding: '12px',
+            marginBottom: '18px',
           }}
         >
-          <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--accent-sky)", marginBottom: "4px" }}>
+          <div
+            style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: 'var(--accent-sky)',
+              marginBottom: '4px',
+            }}
+          >
             7-day free trial
           </div>
-          <div style={{ fontSize: "12px", color: "#94A3B8", lineHeight: 1.5 }}>
-            Full Pro access until <strong style={{ color: "#CBD5E1" }}>{trialEndDate}</strong>.
-            You won&apos;t be charged until then. Cancel anytime before.
+          <div style={{ fontSize: '12px', color: '#94A3B8', lineHeight: 1.5 }}>
+            Full Pro access until <strong style={{ color: '#CBD5E1' }}>{trialEndDate}</strong>. You
+            won&apos;t be charged until then. Cancel anytime before.
           </div>
         </div>
       )}
@@ -247,112 +282,123 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
       {/* Divider */}
       <div
         style={{
-          height: "1px",
-          background: "linear-gradient(90deg, transparent, rgba(148,163,184,0.08), transparent)",
-          margin: "0 -4px 16px",
+          height: '1px',
+          background: 'linear-gradient(90deg, transparent, rgba(148,163,184,0.08), transparent)',
+          margin: '0 -4px 16px',
         }}
       />
 
       {/* Features */}
-      <div style={{ fontSize: "12px", color: "#64748B", fontWeight: 600, marginBottom: "10px", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
+      <div
+        style={{
+          fontSize: '12px',
+          color: '#64748B',
+          fontWeight: 600,
+          marginBottom: '10px',
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase' as const,
+        }}
+      >
         What&apos;s included
       </div>
       {features.map((f, i) => (
         <div
           key={i}
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "5px 0",
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '5px 0',
           }}
         >
           <CheckIcon />
-          <span style={{ fontSize: "12.5px", color: "#CBD5E1", lineHeight: 1.4 }}>
-            {f}
-          </span>
+          <span style={{ fontSize: '12.5px', color: '#CBD5E1', lineHeight: 1.4 }}>{f}</span>
         </div>
       ))}
     </div>
-  );
-};
+  )
+}
 
 // ═══════════════════════════════════════════════
 // INNER COMPONENT (needs useSearchParams inside Suspense)
 // ═══════════════════════════════════════════════
 function RegistrationInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const registerMutation = useRegister();
-  const loginMutation = useLogin();
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const registerMutation = useRegister()
+  const loginMutation = useLogin()
 
-  const planParam = searchParams.get("plan");
-  const billingParam = searchParams.get("billing");
-  const returnToParam = searchParams.get("returnTo") || searchParams.get("redirect");
-  const initialPlan: PlanType = planParam === "starter" ? "starter" : "pro";
-  const [isAnnual, setIsAnnual] = useState(billingParam !== "monthly");
+  const planParam = searchParams.get('plan')
+  const billingParam = searchParams.get('billing')
+  const returnToParam = searchParams.get('returnTo') || searchParams.get('redirect')
+  const initialPlan: PlanType = planParam === 'starter' ? 'starter' : 'pro'
+  const [isAnnual, setIsAnnual] = useState(billingParam !== 'monthly')
 
   const getPostRegisterPath = () => {
-    if (!returnToParam) return "/search";
+    if (!returnToParam) return '/search'
     try {
-      const decoded = decodeURIComponent(returnToParam);
-      if (decoded.startsWith("/") && !decoded.startsWith("//")) return decoded;
+      const decoded = decodeURIComponent(returnToParam)
+      if (decoded.startsWith('/') && !decoded.startsWith('//')) return decoded
     } catch {
       /* ignore */
     }
-    return "/search";
-  };
+    return '/search'
+  }
 
-  const [plan, setPlan] = useState<PlanType>(initialPlan);
-  const [step, setStep] = useState<Step>("form");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [requiresVerification, setRequiresVerification] = useState(false);
-  const [verificationEmailSent, setVerificationEmailSent] = useState(true);
-  const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [plan, setPlan] = useState<PlanType>(initialPlan)
+  const [step, setStep] = useState<Step>('form')
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [requiresVerification, setRequiresVerification] = useState(false)
+  const [verificationEmailSent, setVerificationEmailSent] = useState(true)
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [form, setForm] = useState<FormState>({
-    email: "",
-    password: "",
-    firstName: "",
-  });
+    email: '',
+    password: '',
+    firstName: '',
+  })
 
   const trialEndDate = useMemo(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 7);
-    return d.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  }, []);
+    const d = new Date()
+    d.setDate(d.getDate() + 7)
+    return d.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }, [])
 
   const handlePlanSwitch = (p: PlanType) => {
-    setPlan(p);
-    router.replace(`/register?plan=${p}&billing=${isAnnual ? "annual" : "monthly"}`, { scroll: false });
-  };
+    setPlan(p)
+    router.replace(`/register?plan=${p}&billing=${isAnnual ? 'annual' : 'monthly'}`, {
+      scroll: false,
+    })
+  }
 
   const handleBillingToggle = (annual: boolean) => {
-    setIsAnnual(annual);
-    router.replace(`/register?plan=${plan}&billing=${annual ? "annual" : "monthly"}`, { scroll: false });
-  };
+    setIsAnnual(annual)
+    router.replace(`/register?plan=${plan}&billing=${annual ? 'annual' : 'monthly'}`, {
+      scroll: false,
+    })
+  }
 
   const handleCreateAccount = async () => {
-    setLoading(true);
-    setError("");
+    setLoading(true)
+    setError('')
     try {
       const result = await registerMutation.mutateAsync({
         email: form.email,
         password: form.password,
         fullName: form.firstName,
-      });
+      })
 
       if (result.requires_verification) {
-        setRequiresVerification(true);
-        setVerificationEmailSent(result.verification_email_sent !== false);
-        setStep("success");
-        return;
+        setRequiresVerification(true)
+        setVerificationEmailSent(result.verification_email_sent !== false)
+        setStep('success')
+        return
       }
 
       // Auto-login after registration (verification disabled)
@@ -360,72 +406,72 @@ function RegistrationInner() {
         await loginMutation.mutateAsync({
           email: form.email,
           password: form.password,
-        });
+        })
       } catch {
         // If auto-login fails, we still advance — the user can log in later.
       }
 
-      setStep("success");
+      setStep('success')
     } catch (err: unknown) {
-      const message = (err instanceof Error ? err.message : "Registration failed. Please try again.") ?? "Unknown error";
-      const safeMessage = String(message);
-      setError(safeMessage);
+      const message =
+        (err instanceof Error ? err.message : 'Registration failed. Please try again.') ??
+        'Unknown error'
+      const safeMessage = String(message)
+      setError(safeMessage)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleResendVerification = async () => {
-    setResendStatus("sending");
+    setResendStatus('sending')
     try {
-      await authApi.resendVerification(form.email);
-      setResendStatus("sent");
-      setVerificationEmailSent(true);
+      await authApi.resendVerification(form.email)
+      setResendStatus('sent')
+      setVerificationEmailSent(true)
     } catch {
-      setResendStatus("error");
+      setResendStatus('error')
     }
-  };
+  }
 
   const isFormValid =
-    form.email.includes("@") &&
-    form.password.length >= 8 &&
-    form.firstName.trim().length >= 2;
+    form.email.includes('@') && form.password.length >= 8 && form.firstName.trim().length >= 2
 
   // ─── Render Steps ───
 
   const renderForm = () => (
     <div
       style={{
-        background: "linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)",
-        border: "1px solid rgba(148,163,184,0.06)",
-        borderRadius: "12px",
-        padding: "36px",
-        width: "100%",
-        maxWidth: "420px",
+        background: 'linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)',
+        border: '1px solid rgba(148,163,184,0.06)',
+        borderRadius: '12px',
+        padding: '36px',
+        width: '100%',
+        maxWidth: '420px',
       }}
     >
       <h2
         style={{
-          fontSize: "22px",
+          fontSize: '22px',
           fontWeight: 800,
-          color: "#F1F5F9",
-          letterSpacing: "-0.025em",
-          margin: "0 0 6px",
+          color: '#F1F5F9',
+          letterSpacing: '-0.025em',
+          margin: '0 0 6px',
         }}
       >
-        {plan === "pro" ? "Start your free trial" : "Create your account"}
+        {plan === 'pro' ? 'Start your free trial' : 'Create your account'}
       </h2>
       <p
         style={{
-          fontSize: "13px",
-          color: "#94A3B8",
-          margin: "0 0 28px",
+          fontSize: '13px',
+          color: '#94A3B8',
+          margin: '0 0 28px',
           lineHeight: 1.5,
         }}
       >
-        {plan === "pro"
+        {plan === 'pro'
           ? `Full Pro access free until ${trialEndDate}.`
-          : "Get started with 3 free analyses per month."}
+          : 'Get started with 3 free analyses per month.'}
       </p>
 
       {/* Sign in with Apple */}
@@ -433,36 +479,38 @@ function RegistrationInner() {
         type="button"
         onClick={async () => {
           if (IS_CAPACITOR) {
-            const base = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
-            const { Browser } = await import("@capacitor/browser");
-            const mobileRedirect = encodeURIComponent("dealgapiq://auth/callback");
-            await Browser.open({ url: `${base}/api/v1/auth/apple?mobile_redirect=${mobileRedirect}` });
+            const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')
+            const { Browser } = await import('@capacitor/browser')
+            const mobileRedirect = encodeURIComponent('dealgapiq://auth/callback')
+            await Browser.open({
+              url: `${base}/api/v1/auth/apple?mobile_redirect=${mobileRedirect}`,
+            })
           } else {
-            window.location.href = "/api/v1/auth/apple";
+            window.location.href = '/api/v1/auth/apple'
           }
         }}
         style={{
-          width: "100%",
-          minHeight: "48px",
-          padding: "11px",
-          background: "#FFFFFF",
-          border: "1px solid rgba(148,163,184,0.15)",
-          borderRadius: "8px",
-          color: "#000000",
-          fontSize: "13px",
+          width: '100%',
+          minHeight: '48px',
+          padding: '11px',
+          background: '#FFFFFF',
+          border: '1px solid rgba(148,163,184,0.15)',
+          borderRadius: '8px',
+          color: '#000000',
+          fontSize: '13px',
           fontWeight: 600,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "10px",
-          fontFamily: "inherit",
-          marginBottom: "10px",
-          transition: "background 0.2s",
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+          fontFamily: 'inherit',
+          marginBottom: '10px',
+          transition: 'background 0.2s',
         }}
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="#000000">
-          <path d="M11.182 0c.223 1.05-.304 2.1-.96 2.852-.66.753-1.732 1.332-2.79 1.256-.255-1.014.374-2.08.994-2.738C9.073.666 10.228.112 11.182 0zm2.725 5.348c-.147.09-2.187 1.272-2.164 3.793.027 3.013 2.647 4.013 2.68 4.026-.022.065-.418 1.432-1.38 2.836-.83 1.213-1.69 2.424-3.047 2.448-1.332.024-1.762-.79-3.286-.79-1.525 0-2 .766-3.264.814-1.31.048-2.308-1.312-3.147-2.52C1.82 13.51.39 9.912.39 6.498.39 3.555 2.312 1.985 4.196 1.958c1.285-.024 2.498.867 3.283.867.784 0 2.256-1.073 3.803-.915.648.027 2.468.262 3.637 1.97-.094.058-.012.007-.012.007l-.001-.001.001.462z"/>
+          <path d="M11.182 0c.223 1.05-.304 2.1-.96 2.852-.66.753-1.732 1.332-2.79 1.256-.255-1.014.374-2.08.994-2.738C9.073.666 10.228.112 11.182 0zm2.725 5.348c-.147.09-2.187 1.272-2.164 3.793.027 3.013 2.647 4.013 2.68 4.026-.022.065-.418 1.432-1.38 2.836-.83 1.213-1.69 2.424-3.047 2.448-1.332.024-1.762-.79-3.286-.79-1.525 0-2 .766-3.264.814-1.31.048-2.308-1.312-3.147-2.52C1.82 13.51.39 9.912.39 6.498.39 3.555 2.312 1.985 4.196 1.958c1.285-.024 2.498.867 3.283.867.784 0 2.256-1.073 3.803-.915.648.027 2.468.262 3.637 1.97-.094.058-.012.007-.012.007l-.001-.001.001.462z" />
         </svg>
         Sign up with Apple
       </button>
@@ -472,39 +520,53 @@ function RegistrationInner() {
         type="button"
         onClick={async () => {
           if (IS_CAPACITOR) {
-            const base = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
-            const { Browser } = await import("@capacitor/browser");
-            const mobileRedirect = encodeURIComponent("dealgapiq://auth/callback");
-            await Browser.open({ url: `${base}/api/v1/auth/google?mobile_redirect=${mobileRedirect}` });
+            const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')
+            const { Browser } = await import('@capacitor/browser')
+            const mobileRedirect = encodeURIComponent('dealgapiq://auth/callback')
+            await Browser.open({
+              url: `${base}/api/v1/auth/google?mobile_redirect=${mobileRedirect}`,
+            })
           } else {
-            window.location.href = "/api/v1/auth/google";
+            window.location.href = '/api/v1/auth/google'
           }
         }}
         style={{
-          width: "100%",
-          minHeight: "48px",
-          padding: "11px",
-          background: "rgba(148,163,184,0.06)",
-          border: "1px solid rgba(148,163,184,0.1)",
-          borderRadius: "8px",
-          color: "#CBD5E1",
-          fontSize: "13px",
+          width: '100%',
+          minHeight: '48px',
+          padding: '11px',
+          background: 'rgba(148,163,184,0.06)',
+          border: '1px solid rgba(148,163,184,0.1)',
+          borderRadius: '8px',
+          color: '#CBD5E1',
+          fontSize: '13px',
           fontWeight: 600,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "10px",
-          fontFamily: "inherit",
-          marginBottom: "20px",
-          transition: "background 0.2s",
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+          fontFamily: 'inherit',
+          marginBottom: '20px',
+          transition: 'background 0.2s',
         }}
       >
         <svg width="16" height="16" viewBox="0 0 16 16">
-          <path d="M15.68 8.18c0-.57-.05-1.12-.15-1.64H8v3.1h4.3a3.68 3.68 0 01-1.6 2.42v2h2.58c1.51-1.4 2.38-3.45 2.38-5.88z" fill="#4285F4" />
-          <path d="M8 16c2.16 0 3.97-.72 5.3-1.94l-2.59-2a4.84 4.84 0 01-7.22-2.54H.88v2.06A8 8 0 008 16z" fill="#34A853" />
-          <path d="M3.49 9.52a4.8 4.8 0 010-3.04V4.42H.88a8 8 0 000 7.16l2.6-2.06z" fill="#FBBC05" />
-          <path d="M8 3.16a4.33 4.33 0 013.07 1.2l2.3-2.3A7.72 7.72 0 008 0 8 8 0 00.88 4.42l2.6 2.06A4.77 4.77 0 018 3.16z" fill="#EA4335" />
+          <path
+            d="M15.68 8.18c0-.57-.05-1.12-.15-1.64H8v3.1h4.3a3.68 3.68 0 01-1.6 2.42v2h2.58c1.51-1.4 2.38-3.45 2.38-5.88z"
+            fill="#4285F4"
+          />
+          <path
+            d="M8 16c2.16 0 3.97-.72 5.3-1.94l-2.59-2a4.84 4.84 0 01-7.22-2.54H.88v2.06A8 8 0 008 16z"
+            fill="#34A853"
+          />
+          <path
+            d="M3.49 9.52a4.8 4.8 0 010-3.04V4.42H.88a8 8 0 000 7.16l2.6-2.06z"
+            fill="#FBBC05"
+          />
+          <path
+            d="M8 3.16a4.33 4.33 0 013.07 1.2l2.3-2.3A7.72 7.72 0 008 0 8 8 0 00.88 4.42l2.6 2.06A4.77 4.77 0 018 3.16z"
+            fill="#EA4335"
+          />
         </svg>
         Continue with Google
       </button>
@@ -512,28 +574,28 @@ function RegistrationInner() {
       {/* Divider */}
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          margin: "0 0 20px",
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          margin: '0 0 20px',
         }}
       >
-        <div style={{ flex: 1, height: "1px", background: "rgba(148,163,184,0.08)" }} />
-        <span style={{ fontSize: "11px", color: "#475569", fontWeight: 500 }}>or</span>
-        <div style={{ flex: 1, height: "1px", background: "rgba(148,163,184,0.08)" }} />
+        <div style={{ flex: 1, height: '1px', background: 'rgba(148,163,184,0.08)' }} />
+        <span style={{ fontSize: '11px', color: '#475569', fontWeight: 500 }}>or</span>
+        <div style={{ flex: 1, height: '1px', background: 'rgba(148,163,184,0.08)' }} />
       </div>
 
       {/* Error message */}
       {error && (
         <div
           style={{
-            background: "rgba(239,68,68,0.06)",
-            border: "1px solid rgba(239,68,68,0.15)",
-            borderRadius: "8px",
-            padding: "10px 14px",
-            marginBottom: "16px",
-            fontSize: "13px",
-            color: "#F87171",
+            background: 'rgba(239,68,68,0.06)',
+            border: '1px solid rgba(239,68,68,0.15)',
+            borderRadius: '8px',
+            padding: '10px 14px',
+            marginBottom: '16px',
+            fontSize: '13px',
+            color: '#F87171',
           }}
         >
           {error}
@@ -559,7 +621,7 @@ function RegistrationInner() {
 
       <InputField
         label="Password"
-        type={showPassword ? "text" : "password"}
+        type={showPassword ? 'text' : 'password'}
         value={form.password}
         onChange={(v) => setForm({ ...form, password: v })}
         placeholder="8+ characters"
@@ -575,25 +637,25 @@ function RegistrationInner() {
         onClick={handleCreateAccount}
         disabled={!isFormValid || loading}
         style={{
-          width: "100%",
-          minHeight: "48px",
-          padding: "13px",
-          border: "none",
-          borderRadius: "8px",
-          fontSize: "14px",
+          width: '100%',
+          minHeight: '48px',
+          padding: '13px',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '14px',
           fontWeight: 700,
-          cursor: isFormValid && !loading ? "pointer" : "not-allowed",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          fontFamily: "inherit",
-          marginTop: "8px",
-          transition: "all 0.3s",
+          cursor: isFormValid && !loading ? 'pointer' : 'not-allowed',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          fontFamily: 'inherit',
+          marginTop: '8px',
+          transition: 'all 0.3s',
           background: isFormValid
-            ? "linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))"
-            : "rgba(148,163,184,0.08)",
-          color: isFormValid ? "#fff" : "#475569",
+            ? 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))'
+            : 'rgba(148,163,184,0.08)',
+          color: isFormValid ? '#fff' : '#475569',
           opacity: loading ? 0.8 : 1,
         }}
       >
@@ -601,7 +663,7 @@ function RegistrationInner() {
           <SpinnerIcon />
         ) : (
           <>
-            {plan === "pro" ? "Continue" : "Create Account"} <ArrowIcon />
+            {plan === 'pro' ? 'Continue' : 'Create Account'} <ArrowIcon />
           </>
         )}
       </button>
@@ -609,19 +671,19 @@ function RegistrationInner() {
       {/* Terms */}
       <p
         style={{
-          fontSize: "11px",
-          color: "#475569",
-          textAlign: "center",
-          marginTop: "16px",
+          fontSize: '11px',
+          color: '#475569',
+          textAlign: 'center',
+          marginTop: '16px',
           lineHeight: 1.5,
         }}
       >
-        By creating an account, you agree to our{" "}
-        <Link href="/terms" style={{ color: "#64748B", textDecoration: "underline" }}>
+        By creating an account, you agree to our{' '}
+        <Link href="/terms" style={{ color: '#64748B', textDecoration: 'underline' }}>
           Terms of Service
-        </Link>{" "}
-        and{" "}
-        <Link href="/privacy" style={{ color: "#64748B", textDecoration: "underline" }}>
+        </Link>{' '}
+        and{' '}
+        <Link href="/privacy" style={{ color: '#64748B', textDecoration: 'underline' }}>
           Privacy Policy
         </Link>
         .
@@ -630,52 +692,55 @@ function RegistrationInner() {
       {/* Login link */}
       <p
         style={{
-          fontSize: "13px",
-          color: "#64748B",
-          textAlign: "center",
-          marginTop: "20px",
+          fontSize: '13px',
+          color: '#64748B',
+          textAlign: 'center',
+          marginTop: '20px',
         }}
       >
-        Already have an account?{" "}
-        <Link href="/login" style={{ color: "var(--accent-sky)", textDecoration: "none", fontWeight: 600 }}>
+        Already have an account?{' '}
+        <Link
+          href="/login"
+          style={{ color: 'var(--accent-sky)', textDecoration: 'none', fontWeight: 600 }}
+        >
           Log in
         </Link>
       </p>
     </div>
-  );
+  )
 
   const renderSuccess = () => {
     if (requiresVerification) {
-      const failed = !verificationEmailSent;
-      const accentColor = failed ? "#F87171" : "var(--accent-sky)";
-      const accentBg = failed ? "rgba(239,68,68,0.10)" : "rgba(15,164,233,0.1)";
-      const accentBorder = failed ? "rgba(239,68,68,0.30)" : "rgba(15,164,233,0.3)";
-      const cardBorder = failed ? "rgba(239,68,68,0.20)" : "rgba(15,164,233,0.15)";
+      const failed = !verificationEmailSent
+      const accentColor = failed ? '#F87171' : 'var(--accent-sky)'
+      const accentBg = failed ? 'rgba(239,68,68,0.10)' : 'rgba(15,164,233,0.1)'
+      const accentBorder = failed ? 'rgba(239,68,68,0.30)' : 'rgba(15,164,233,0.3)'
+      const cardBorder = failed ? 'rgba(239,68,68,0.20)' : 'rgba(15,164,233,0.15)'
       return (
         <div
           style={{
             background: failed
-              ? "linear-gradient(168deg, rgba(239,68,68,0.04) 0%, #0D1424 100%)"
-              : "linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)",
+              ? 'linear-gradient(168deg, rgba(239,68,68,0.04) 0%, #0D1424 100%)'
+              : 'linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)',
             border: `1px solid ${cardBorder}`,
-            borderRadius: "12px",
-            padding: "48px 36px",
-            width: "100%",
-            maxWidth: "420px",
-            textAlign: "center",
+            borderRadius: '12px',
+            padding: '48px 36px',
+            width: '100%',
+            maxWidth: '420px',
+            textAlign: 'center',
           }}
         >
           <div
             style={{
-              width: "64px",
-              height: "64px",
-              borderRadius: "50%",
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
               background: accentBg,
               border: `2px solid ${accentBorder}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 24px",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px',
             }}
           >
             {failed ? (
@@ -686,43 +751,60 @@ function RegistrationInner() {
               </svg>
             ) : (
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <rect x="4" y="7" width="20" height="14" rx="2" stroke={accentColor} strokeWidth="2" fill="none" />
-                <path d="M4 9l10 7 10-7" stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <rect
+                  x="4"
+                  y="7"
+                  width="20"
+                  height="14"
+                  rx="2"
+                  stroke={accentColor}
+                  strokeWidth="2"
+                  fill="none"
+                />
+                <path
+                  d="M4 9l10 7 10-7"
+                  stroke={accentColor}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             )}
           </div>
 
           <h2
             style={{
-              fontSize: "24px",
+              fontSize: '24px',
               fontWeight: 800,
-              color: "#F1F5F9",
-              letterSpacing: "-0.025em",
-              margin: "0 0 8px",
+              color: '#F1F5F9',
+              letterSpacing: '-0.025em',
+              margin: '0 0 8px',
             }}
           >
-            {failed ? "We couldn\u2019t send your email" : "Check your email"}
+            {failed ? 'We couldn\u2019t send your email' : 'Check your email'}
           </h2>
 
           <p
             style={{
-              fontSize: "14px",
-              color: "#94A3B8",
+              fontSize: '14px',
+              color: '#94A3B8',
               lineHeight: 1.6,
-              margin: "0 0 8px",
-              maxWidth: "320px",
-              marginLeft: "auto",
-              marginRight: "auto",
+              margin: '0 0 8px',
+              maxWidth: '320px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
             }}
           >
-            {failed ? "Your account was created, but the verification email to" : "We sent a verification link to"}
+            {failed
+              ? 'Your account was created, but the verification email to'
+              : 'We sent a verification link to'}
           </p>
           <p
             style={{
-              fontSize: "15px",
+              fontSize: '15px',
               fontWeight: 600,
-              color: "#CBD5E1",
-              margin: "0 0 24px",
+              color: '#CBD5E1',
+              margin: '0 0 24px',
             }}
           >
             {form.email}
@@ -730,62 +812,66 @@ function RegistrationInner() {
 
           <p
             style={{
-              fontSize: "13px",
-              color: "#64748B",
+              fontSize: '13px',
+              color: '#64748B',
               lineHeight: 1.6,
-              margin: "0 0 32px",
-              maxWidth: "320px",
-              marginLeft: "auto",
-              marginRight: "auto",
+              margin: '0 0 32px',
+              maxWidth: '320px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
             }}
           >
             {failed
-              ? "didn\u2019t go through. Tap Resend below to try again. If that fails, double-check your email address or contact support."
-              : "Click the link in the email to verify your account and start analyzing deals. The link expires in 48 hours."}
+              ? 'didn\u2019t go through. Tap Resend below to try again. If that fails, double-check your email address or contact support.'
+              : 'Click the link in the email to verify your account and start analyzing deals. The link expires in 48 hours.'}
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}
+          >
             {failed ? (
               <button
                 onClick={handleResendVerification}
-                disabled={resendStatus === "sending"}
+                disabled={resendStatus === 'sending'}
                 style={{
-                  minHeight: "48px",
-                  padding: "14px 32px",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "15px",
+                  minHeight: '48px',
+                  padding: '14px 32px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '15px',
                   fontWeight: 700,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontFamily: "inherit",
-                  background: "linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))",
-                  color: "#fff",
-                  cursor: resendStatus === "sending" ? "default" : "pointer",
-                  opacity: resendStatus === "sending" ? 0.7 : 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontFamily: 'inherit',
+                  background:
+                    'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
+                  color: '#fff',
+                  cursor: resendStatus === 'sending' ? 'default' : 'pointer',
+                  opacity: resendStatus === 'sending' ? 0.7 : 1,
                 }}
               >
-                {resendStatus === "sending" ? "Sending\u2026" : "Resend Verification Email"}
-                {resendStatus !== "sending" && <ArrowIcon />}
+                {resendStatus === 'sending' ? 'Sending\u2026' : 'Resend Verification Email'}
+                {resendStatus !== 'sending' && <ArrowIcon />}
               </button>
             ) : (
               <Link
                 href="/?auth=login"
                 style={{
-                  minHeight: "48px",
-                  padding: "14px 32px",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "15px",
+                  minHeight: '48px',
+                  padding: '14px 32px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '15px',
                   fontWeight: 700,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontFamily: "inherit",
-                  background: "linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))",
-                  color: "#fff",
-                  textDecoration: "none",
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontFamily: 'inherit',
+                  background:
+                    'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
+                  color: '#fff',
+                  textDecoration: 'none',
                 }}
               >
                 Go to Sign In <ArrowIcon />
@@ -795,73 +881,88 @@ function RegistrationInner() {
             {!failed && (
               <button
                 onClick={handleResendVerification}
-                disabled={resendStatus !== "idle"}
+                disabled={resendStatus !== 'idle'}
                 style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: "13px",
-                  color: resendStatus === "sent" ? "#22C55E" : resendStatus === "error" ? "#F87171" : "var(--accent-sky)",
-                  cursor: resendStatus === "idle" ? "pointer" : "default",
-                  fontFamily: "inherit",
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '13px',
+                  color:
+                    resendStatus === 'sent'
+                      ? '#22C55E'
+                      : resendStatus === 'error'
+                        ? '#F87171'
+                        : 'var(--accent-sky)',
+                  cursor: resendStatus === 'idle' ? 'pointer' : 'default',
+                  fontFamily: 'inherit',
                   fontWeight: 500,
-                  opacity: resendStatus === "sending" ? 0.6 : 1,
+                  opacity: resendStatus === 'sending' ? 0.6 : 1,
                 }}
               >
-                {resendStatus === "idle" && "Didn\u2019t get the email? Resend"}
-                {resendStatus === "sending" && "Sending\u2026"}
-                {resendStatus === "sent" && "Verification email resent"}
-                {resendStatus === "error" && "Couldn\u2019t resend \u2014 try again"}
+                {resendStatus === 'idle' && 'Didn\u2019t get the email? Resend'}
+                {resendStatus === 'sending' && 'Sending\u2026'}
+                {resendStatus === 'sent' && 'Verification email resent'}
+                {resendStatus === 'error' && 'Couldn\u2019t resend \u2014 try again'}
               </button>
             )}
 
-            {failed && resendStatus === "sent" && (
-              <p style={{ fontSize: "13px", color: "#22C55E", margin: 0 }}>Verification email resent. Check your inbox.</p>
+            {failed && resendStatus === 'sent' && (
+              <p style={{ fontSize: '13px', color: '#22C55E', margin: 0 }}>
+                Verification email resent. Check your inbox.
+              </p>
             )}
-            {failed && resendStatus === "error" && (
-              <p style={{ fontSize: "13px", color: "#F87171", margin: 0 }}>{"Still couldn\u2019t send. Please contact support."}</p>
+            {failed && resendStatus === 'error' && (
+              <p style={{ fontSize: '13px', color: '#F87171', margin: 0 }}>
+                {'Still couldn\u2019t send. Please contact support.'}
+              </p>
             )}
           </div>
         </div>
-      );
+      )
     }
 
     return (
       <div
         style={{
-          background: "linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)",
-          border: "1px solid rgba(15,164,233,0.15)",
-          borderRadius: "12px",
-          padding: "48px 36px",
-          width: "100%",
-          maxWidth: "420px",
-          textAlign: "center",
+          background: 'linear-gradient(168deg, rgba(15,164,233,0.02) 0%, #0D1424 100%)',
+          border: '1px solid rgba(15,164,233,0.15)',
+          borderRadius: '12px',
+          padding: '48px 36px',
+          width: '100%',
+          maxWidth: '420px',
+          textAlign: 'center',
         }}
       >
         <div
           style={{
-            width: "64px",
-            height: "64px",
-            borderRadius: "50%",
-            background: "rgba(15,164,233,0.1)",
-            border: "2px solid rgba(15,164,233,0.3)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 24px",
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            background: 'rgba(15,164,233,0.1)',
+            border: '2px solid rgba(15,164,233,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px',
           }}
         >
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <path d="M8 15l4 4 8-8" stroke="var(--accent-sky)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M8 15l4 4 8-8"
+              stroke="var(--accent-sky)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </div>
 
         <h2
           style={{
-            fontSize: "24px",
+            fontSize: '24px',
             fontWeight: 800,
-            color: "#F1F5F9",
-            letterSpacing: "-0.025em",
-            margin: "0 0 8px",
+            color: '#F1F5F9',
+            letterSpacing: '-0.025em',
+            margin: '0 0 8px',
           }}
         >
           You&apos;re in, {form.firstName}.
@@ -869,117 +970,118 @@ function RegistrationInner() {
 
         <p
           style={{
-            fontSize: "14px",
-            color: "#94A3B8",
+            fontSize: '14px',
+            color: '#94A3B8',
             lineHeight: 1.6,
-            margin: "0 0 32px",
-            maxWidth: "320px",
-            marginLeft: "auto",
-            marginRight: "auto",
+            margin: '0 0 32px',
+            maxWidth: '320px',
+            marginLeft: 'auto',
+            marginRight: 'auto',
           }}
         >
-          {plan === "pro" ? (
+          {plan === 'pro' ? (
             <>
-              Your Pro trial is active until{" "}
-              <strong style={{ color: "#CBD5E1" }}>{trialEndDate}</strong>.
-              Time to find your first Deal Gap.
+              Your Pro trial is active until{' '}
+              <strong style={{ color: '#CBD5E1' }}>{trialEndDate}</strong>. Time to find your first
+              Deal Gap.
             </>
           ) : (
-            "Your Starter account is ready. Time to find your first Deal Gap."
+            'Your Starter account is ready. Time to find your first Deal Gap.'
           )}
         </p>
 
         <button
           onClick={() => router.replace(getPostRegisterPath())}
           style={{
-            minHeight: "48px",
-            padding: "14px 32px",
-            border: "none",
-            borderRadius: "8px",
-            fontSize: "15px",
+            minHeight: '48px',
+            padding: '14px 32px',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '15px',
             fontWeight: 700,
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            fontFamily: "inherit",
-            background: "linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))",
-            color: "#fff",
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontFamily: 'inherit',
+            background:
+              'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
+            color: '#fff',
           }}
         >
-          {returnToParam ? "Continue" : "Analyze Your First Property"} <ArrowIcon />
+          {returnToParam ? 'Continue' : 'Analyze Your First Property'} <ArrowIcon />
         </button>
 
-        <p style={{ fontSize: "12px", color: "#475569", marginTop: "16px" }}>
+        <p style={{ fontSize: '12px', color: '#475569', marginTop: '16px' }}>
           Enter any address · 60-second analysis
         </p>
       </div>
-    );
-  };
+    )
+  }
 
   const stepRenderers: Record<Step, () => React.ReactNode> = {
     form: renderForm,
     success: renderSuccess,
-  };
+  }
 
   return (
     <div
       style={{
-        minHeight: "100vh",
-        background: "#0B1120",
-        color: "#E2E8F0",
+        minHeight: '100vh',
+        background: '#0B1120',
+        color: '#E2E8F0',
         fontFamily: "var(--font-dm-sans), 'DM Sans', system-ui, sans-serif",
-        overflowX: "hidden",
+        overflowX: 'hidden',
       }}
     >
       {/* Grid background */}
       <div
         style={{
-          position: "fixed",
+          position: 'fixed',
           inset: 0,
           zIndex: 0,
-          pointerEvents: "none",
+          pointerEvents: 'none',
           backgroundImage: `
             linear-gradient(rgba(148,163,184,0.02) 1px, transparent 1px),
             linear-gradient(90deg, rgba(148,163,184,0.02) 1px, transparent 1px)
           `,
-          backgroundSize: "48px 48px",
+          backgroundSize: '48px 48px',
         }}
       />
 
-      <div style={{ position: "relative", zIndex: 1 }}>
+      <div style={{ position: 'relative', zIndex: 1 }}>
         {/* ─── NAV ─── */}
         <nav
           className="px-4 sm:px-10 py-4"
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            maxWidth: "1200px",
-            margin: "0 auto",
-            borderBottom: "1px solid rgba(148,163,184,0.06)",
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            borderBottom: '1px solid rgba(148,163,184,0.06)',
           }}
         >
           <Link
             href="/"
             style={{
-              fontSize: "17px",
+              fontSize: '17px',
               fontWeight: 800,
-              letterSpacing: "-0.02em",
-              color: "#F1F5F9",
-              cursor: "pointer",
-              textDecoration: "none",
+              letterSpacing: '-0.02em',
+              color: '#F1F5F9',
+              cursor: 'pointer',
+              textDecoration: 'none',
             }}
           >
-            DealGap<span style={{ color: "var(--accent-sky)" }}>IQ</span>
+            DealGap<span style={{ color: 'var(--accent-sky)' }}>IQ</span>
           </Link>
 
           <Link
             href="/pricing"
             style={{
-              fontSize: "12px",
-              color: "#94A3B8",
-              textDecoration: "none",
+              fontSize: '12px',
+              color: '#94A3B8',
+              textDecoration: 'none',
               fontWeight: 500,
             }}
           >
@@ -988,41 +1090,41 @@ function RegistrationInner() {
         </nav>
 
         {/* ─── BILLING TOGGLE + PLAN SWITCHER (form step only) ─── */}
-        {step === "form" && (
+        {step === 'form' && (
           <div
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "16px",
-              padding: "32px 24px 0",
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+              padding: '32px 24px 0',
             }}
           >
             {/* Monthly / Annual toggle */}
             <div
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0",
-                background: "#0D1424",
-                borderRadius: "40px",
-                padding: "4px",
-                border: "1px solid rgba(148,163,184,0.08)",
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0',
+                background: '#0D1424',
+                borderRadius: '40px',
+                padding: '4px',
+                border: '1px solid rgba(148,163,184,0.08)',
               }}
             >
               <button
                 onClick={() => handleBillingToggle(false)}
                 style={{
-                  padding: "8px 20px",
-                  borderRadius: "36px",
-                  border: "none",
-                  fontSize: "13px",
+                  padding: '8px 20px',
+                  borderRadius: '36px',
+                  border: 'none',
+                  fontSize: '13px',
                   fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  fontFamily: "inherit",
-                  background: !isAnnual ? "var(--accent-sky)" : "transparent",
-                  color: !isAnnual ? "#fff" : "#64748B",
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontFamily: 'inherit',
+                  background: !isAnnual ? 'var(--accent-sky)' : 'transparent',
+                  color: !isAnnual ? '#fff' : '#64748B',
                 }}
               >
                 Monthly
@@ -1030,30 +1132,30 @@ function RegistrationInner() {
               <button
                 onClick={() => handleBillingToggle(true)}
                 style={{
-                  padding: "8px 20px",
-                  borderRadius: "36px",
-                  border: "none",
-                  fontSize: "13px",
+                  padding: '8px 20px',
+                  borderRadius: '36px',
+                  border: 'none',
+                  fontSize: '13px',
                   fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  fontFamily: "inherit",
-                  background: isAnnual ? "var(--accent-sky)" : "transparent",
-                  color: isAnnual ? "#fff" : "#64748B",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontFamily: 'inherit',
+                  background: isAnnual ? 'var(--accent-sky)' : 'transparent',
+                  color: isAnnual ? '#fff' : '#64748B',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
                 }}
               >
                 Annual
                 <span
                   style={{
-                    fontSize: "10px",
+                    fontSize: '10px',
                     fontWeight: 700,
-                    background: isAnnual ? "rgba(255,255,255,0.22)" : "rgba(15,164,233,0.15)",
-                    color: isAnnual ? "#fff" : "var(--accent-sky)",
-                    padding: "2px 6px",
-                    borderRadius: "6px",
+                    background: isAnnual ? 'rgba(255,255,255,0.22)' : 'rgba(15,164,233,0.15)',
+                    color: isAnnual ? '#fff' : 'var(--accent-sky)',
+                    padding: '2px 6px',
+                    borderRadius: '6px',
                   }}
                 >
                   SAVE 27%
@@ -1062,27 +1164,29 @@ function RegistrationInner() {
             </div>
 
             {/* Plan switcher */}
-            <div style={{ display: "flex", gap: "8px" }}>
-              {(["starter", "pro"] as PlanType[]).map((p) => (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {(['starter', 'pro'] as PlanType[]).map((p) => (
                 <button
                   key={p}
                   onClick={() => handlePlanSwitch(p)}
                   style={{
-                    padding: "8px 20px",
-                    borderRadius: "6px",
-                    border: `1px solid ${plan === p ? "rgba(15,164,233,0.25)" : "rgba(148,163,184,0.08)"}`,
-                    background: plan === p ? "rgba(15,164,233,0.06)" : "transparent",
-                    color: plan === p ? "var(--accent-sky)" : "#64748B",
-                    fontSize: "12px",
+                    padding: '8px 20px',
+                    borderRadius: '6px',
+                    border: `1px solid ${plan === p ? 'rgba(15,164,233,0.25)' : 'rgba(148,163,184,0.08)'}`,
+                    background: plan === p ? 'rgba(15,164,233,0.06)' : 'transparent',
+                    color: plan === p ? 'var(--accent-sky)' : '#64748B',
+                    fontSize: '12px',
                     fontWeight: 700,
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                    letterSpacing: "0.04em",
-                    textTransform: "uppercase" as const,
-                    transition: "all 0.2s",
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase' as const,
+                    transition: 'all 0.2s',
                   }}
                 >
-                  {p === "starter" ? "Starter \u00B7 Free" : `Pro \u00B7 ${isAnnual ? "$29.17" : "$39.99"}/mo`}
+                  {p === 'starter'
+                    ? 'Starter \u00B7 Free'
+                    : `Pro \u00B7 ${isAnnual ? '$29.17' : '$39.99'}/mo`}
                 </button>
               ))}
             </div>
@@ -1092,53 +1196,64 @@ function RegistrationInner() {
         {/* ─── MAIN CONTENT ─── */}
         <section
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "flex-start",
-            gap: "32px",
-            padding: "40px 24px 80px",
-            maxWidth: "820px",
-            margin: "0 auto",
-            flexWrap: "wrap",
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+            gap: '32px',
+            padding: '40px 24px 80px',
+            maxWidth: '820px',
+            margin: '0 auto',
+            flexWrap: 'wrap',
           }}
         >
           {/* Left: Form / Step content */}
           {stepRenderers[step]()}
 
           {/* Right: Plan summary (not on success) */}
-          {step !== "success" && <PlanSummary plan={plan} trialEndDate={trialEndDate} annual={isAnnual} />}
+          {step !== 'success' && (
+            <PlanSummary plan={plan} trialEndDate={trialEndDate} annual={isAnnual} />
+          )}
         </section>
 
         {/* ─── FOOTER ─── */}
         <footer
           className="px-4 sm:px-10 py-6"
           style={{
-            borderTop: "1px solid rgba(148,163,184,0.06)",
-            maxWidth: "1200px",
-            margin: "0 auto",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            borderTop: '1px solid rgba(148,163,184,0.06)',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}
         >
-          <div style={{ fontSize: "11px", color: "#475569" }}>
+          <div style={{ fontSize: '11px', color: '#475569' }}>
             &copy; 2026 DealGapIQ. Professional use only. Not a lender.
           </div>
-          <div style={{ display: "flex", gap: "16px" }}>
-            <Link href="/privacy" style={{ fontSize: "11px", color: "#475569", textDecoration: "none" }}>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <Link
+              href="/privacy"
+              style={{ fontSize: '11px', color: '#475569', textDecoration: 'none' }}
+            >
               Privacy
             </Link>
-            <Link href="/terms" style={{ fontSize: "11px", color: "#475569", textDecoration: "none" }}>
+            <Link
+              href="/terms"
+              style={{ fontSize: '11px', color: '#475569', textDecoration: 'none' }}
+            >
               Terms
             </Link>
-            <Link href="/help" style={{ fontSize: "11px", color: "#475569", textDecoration: "none" }}>
+            <Link
+              href="/help"
+              style={{ fontSize: '11px', color: '#475569', textDecoration: 'none' }}
+            >
               Support
             </Link>
           </div>
         </footer>
       </div>
     </div>
-  );
+  )
 }
 
 // ═══════════════════════════════════════════════
@@ -1149,5 +1264,5 @@ export default function RegistrationContent() {
     <Suspense fallback={null}>
       <RegistrationInner />
     </Suspense>
-  );
+  )
 }

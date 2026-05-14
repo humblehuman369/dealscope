@@ -1,11 +1,7 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import { TrendingUp, DollarSign, Calendar, MapPin } from 'lucide-react';
-import {
-  StrategyPageLayout,
-  Callout,
-  Prose,
-} from '@/components/strategies/StrategyPageLayout';
+import React from 'react'
+import type { Metadata } from 'next'
+import { TrendingUp, DollarSign, Calendar, MapPin } from 'lucide-react'
+import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
 
 export const metadata: Metadata = {
   title: 'Short-Term Rental (Airbnb) Strategy — How to Underwrite an STR | DealGapIQ',
@@ -22,12 +18,11 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Short-Term Rental (Airbnb) Strategy',
-    description:
-      'ADR, occupancy, RevPAR, regulatory risk, and the STR underwriting model.',
+    description: 'ADR, occupancy, RevPAR, regulatory risk, and the STR underwriting model.',
   },
-};
+}
 
-const ACCENT = '#38bdf8';
+const ACCENT = '#38bdf8'
 
 export default function ShortTermRentalPage() {
   return (
@@ -77,5 +72,5 @@ export default function ShortTermRentalPage() {
         handle operations while they focus on acquisition.
       </Prose>
     </StrategyPageLayout>
-  );
+  )
 }

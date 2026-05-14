@@ -29,7 +29,7 @@ import {
   createFlipPLFormula,
   PerformanceSection,
   createMonthlyBreakdown,
-  createSTRIncomeBreakdown
+  createSTRIncomeBreakdown,
 } from './index'
 import { StrategyId, BenchmarkConfig, TuneGroup, LeveragePoint } from './types'
 import { getReturnsAtPriceLabel } from '@/lib/priceUtils'
@@ -48,7 +48,7 @@ interface BaseMetricsProps {
   compareView: 'target' | 'list'
   setCompareView: (view: 'target' | 'list') => void
   updateAssumption: (key: keyof TargetAssumptions, value: number) => void
-  originalListPrice?: number  // Original list price for stable slider min/max
+  originalListPrice?: number // Original list price for stable slider min/max
 }
 
 // ============================================
@@ -62,10 +62,10 @@ export function STRMetricsContent({
   assumptions,
   compareView,
   setCompareView,
-  updateAssumption
+  updateAssumption,
 }: BaseMetricsProps) {
   const currentMetrics = compareView === 'target' ? metricsAtTarget : metricsAtList
-  
+
   const priceLadder = generatePriceLadder(
     assumptions.listPrice,
     iqTarget.targetPrice,
@@ -74,139 +74,151 @@ export function STRMetricsContent({
     iqTarget.incomeValue,
     'Income Value',
     '$0 monthly cash flow',
-    0.70
+    0.7,
   )
-  
+
   const negotiationPlan = generateNegotiationPlan(
     assumptions.listPrice,
     iqTarget.targetPrice,
-    0.70,
+    0.7,
     undefined,
     [
       LEVERAGE_POINTS.touristArea(),
       LEVERAGE_POINTS.daysOnMarket(45, 28),
-      LEVERAGE_POINTS.priceReduced(2)
-    ]
+      LEVERAGE_POINTS.priceReduced(2),
+    ],
   )
-  
+
   const returnsData = useMemo(() => {
     const m = currentMetrics
     if (!m) return null
-    
+
     // Type guard for STR metrics
     if (!('monthlyCashFlow' in m)) return null
-    const strMetrics = m as { monthlyCashFlow: number; cashOnCash: number; annualGrossRent?: number }
-    
+    const strMetrics = m as {
+      monthlyCashFlow: number
+      cashOnCash: number
+      annualGrossRent?: number
+    }
+
     return createSTRReturns(
       strMetrics.monthlyCashFlow || 0,
       strMetrics.cashOnCash || 0,
       strMetrics.annualGrossRent || 0,
-      assumptions.occupancyRate
+      assumptions.occupancyRate,
     )
   }, [currentMetrics, assumptions.occupancyRate])
-  
+
   const benchmarks: BenchmarkConfig[] = useMemo(() => {
     const m = currentMetrics
     if (!m) return []
-    
+
     // Type guard for rental metrics
     if (!('cashOnCash' in m)) return []
     const coc = (m as { cashOnCash: number }).cashOnCash || 0
     const occ = assumptions.occupancyRate
-    
+
     return [
       {
         id: 'coc',
         label: 'Cash-on-Cash Return',
         value: coc,
         formattedValue: formatPercent(coc * 100),
-        status: coc >= 0.15 ? 'high' : coc >= 0.10 ? 'average' : 'low',
+        status: coc >= 0.15 ? 'high' : coc >= 0.1 ? 'average' : 'low',
         markerPosition: Math.min(95, Math.max(5, coc * 400)),
         zones: {
           low: { label: 'Low', range: '<8%' },
           average: { label: 'Avg', range: '10-15%' },
-          high: { label: 'High', range: '15%+' }
-        }
+          high: { label: 'High', range: '15%+' },
+        },
       },
       {
         id: 'occupancy',
         label: 'Occupancy Rate',
         value: occ,
         formattedValue: formatPercent(occ * 100, { decimals: 0 }),
-        status: occ >= 0.80 ? 'high' : occ >= 0.65 ? 'average' : 'low',
+        status: occ >= 0.8 ? 'high' : occ >= 0.65 ? 'average' : 'low',
         markerPosition: Math.min(95, Math.max(5, occ * 100)),
         zones: {
           low: { label: 'Low', range: '<50%' },
           average: { label: 'Avg', range: '65-80%' },
-          high: { label: 'High', range: '85%+' }
-        }
+          high: { label: 'High', range: '85%+' },
+        },
       },
       {
         id: 'adr',
         label: 'Avg Daily Rate',
         value: assumptions.averageDailyRate,
         formattedValue: formatCurrency(assumptions.averageDailyRate),
-        status: assumptions.averageDailyRate >= 250 ? 'high' : assumptions.averageDailyRate >= 150 ? 'average' : 'low',
+        status:
+          assumptions.averageDailyRate >= 250
+            ? 'high'
+            : assumptions.averageDailyRate >= 150
+              ? 'average'
+              : 'low',
         markerPosition: Math.min(95, Math.max(5, (assumptions.averageDailyRate / 400) * 100)),
         zones: {
           low: { label: 'Low', range: '<$100' },
           average: { label: 'Avg', range: '$150-250' },
-          high: { label: 'High', range: '$300+' }
-        }
-      }
+          high: { label: 'High', range: '$300+' },
+        },
+      },
     ]
   }, [currentMetrics, assumptions])
-  
-  const tuneGroups: TuneGroup[] = useMemo(() => [
-    {
-      id: 'str_income',
-      title: 'STR Revenue',
-      sliders: [
-        createSliderConfig(
-          'averageDailyRate',
-          'Average Daily Rate',
-          assumptions.averageDailyRate,
-          50,
-          500,
-          5,
-          formatCurrency
-        ),
-        createSliderConfig(
-          'occupancyRate',
-          'Occupancy Rate',
-          assumptions.occupancyRate,
-          0.30,
-          0.95,
-          0.01,
-          (v: number) => formatPercent(v * 100, { decimals: 0 })
-        )
-      ]
-    },
-    {
-      id: 'financing',
-      title: 'Financing',
-      sliders: [
-        createSliderConfig(
-          'downPaymentPct',
-          'Down Payment',
-          assumptions.downPaymentPct,
-          0.10,
-          0.50,
-          0.01,
-          (v: number) => formatPercent(v * 100, { decimals: 0 })
-        ),
-        createSliderConfig(
-          'interestRate',
-          'Interest Rate',
-          assumptions.interestRate,
-          0.04,
-          0.12,
-          0.001,
-          (v: number) => formatPercent(v * 100)
-        )
-      ]
-    }
-  ], [assumptions])
+
+  const tuneGroups: TuneGroup[] = useMemo(
+    () => [
+      {
+        id: 'str_income',
+        title: 'STR Revenue',
+        sliders: [
+          createSliderConfig(
+            'averageDailyRate',
+            'Average Daily Rate',
+            assumptions.averageDailyRate,
+            50,
+            500,
+            5,
+            formatCurrency,
+          ),
+          createSliderConfig(
+            'occupancyRate',
+            'Occupancy Rate',
+            assumptions.occupancyRate,
+            0.3,
+            0.95,
+            0.01,
+            (v: number) => formatPercent(v * 100, { decimals: 0 }),
+          ),
+        ],
+      },
+      {
+        id: 'financing',
+        title: 'Financing',
+        sliders: [
+          createSliderConfig(
+            'downPaymentPct',
+            'Down Payment',
+            assumptions.downPaymentPct,
+            0.1,
+            0.5,
+            0.01,
+            (v: number) => formatPercent(v * 100, { decimals: 0 }),
+          ),
+          createSliderConfig(
+            'interestRate',
+            'Interest Rate',
+            assumptions.interestRate,
+            0.04,
+            0.12,
+            0.001,
+            (v: number) => formatPercent(v * 100),
+          ),
+        ],
+      },
+    ],
+    [assumptions],
+  )
 
   return (
     <div className="space-y-4">
@@ -220,7 +232,9 @@ export function STRMetricsContent({
         monthlyRent={assumptions.averageDailyRate * 30 * assumptions.occupancyRate}
         downPaymentPct={assumptions.downPaymentPct}
         interestRate={assumptions.interestRate}
-        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
+        onAssumptionsChange={(key, value) =>
+          updateAssumption(key as keyof TargetAssumptions, value)
+        }
       />
 
       <PriceLadder rungs={priceLadder} />
@@ -251,7 +265,7 @@ export function STRMetricsContent({
       <InsightCard
         data={createIQInsight(
           'STR properties can generate 2-3x more revenue than long-term rentals in tourist areas. Consider management fees of 15-25%.',
-          'tip'
+          'tip',
         )}
       />
     </div>
@@ -270,12 +284,12 @@ export function BRRRRMetricsContent({
   compareView,
   setCompareView,
   updateAssumption,
-  originalListPrice
+  originalListPrice,
 }: BaseMetricsProps) {
   // Use original list price for stable slider ranges, fallback to assumptions.listPrice
   const stableListPrice = originalListPrice || assumptions.listPrice
   const currentMetrics = compareView === 'target' ? metricsAtTarget : metricsAtList
-  
+
   const priceLadder = generatePriceLadder(
     assumptions.listPrice,
     iqTarget.targetPrice,
@@ -284,50 +298,52 @@ export function BRRRRMetricsContent({
     iqTarget.incomeValue,
     '80% Recovery',
     'Minimum acceptable cash back',
-    0.60
+    0.6,
   )
-  
+
   const negotiationPlan = generateNegotiationPlan(
     assumptions.listPrice,
     iqTarget.targetPrice,
-    0.60,
+    0.6,
     undefined,
     [
       LEVERAGE_POINTS.rehabNeeded(assumptions.rehabCost),
       LEVERAGE_POINTS.motivatedSeller(),
-      LEVERAGE_POINTS.cashOffer()
-    ]
+      LEVERAGE_POINTS.cashOffer(),
+    ],
   )
-  
+
   // BRRRR-specific formula cards
   const capitalStackFormula = createCapitalStackFormula(
     iqTarget.targetPrice,
     assumptions.rehabCost,
-    iqTarget.targetPrice * assumptions.closingCostsPct
+    iqTarget.targetPrice * assumptions.closingCostsPct,
   )
-  
+
   const refinanceFormula = createRefinanceFormula(
     assumptions.arv,
     0.75,
-    iqTarget.targetPrice + assumptions.rehabCost + (iqTarget.targetPrice * assumptions.closingCostsPct)
+    iqTarget.targetPrice +
+      assumptions.rehabCost +
+      iqTarget.targetPrice * assumptions.closingCostsPct,
   )
-  
+
   const returnsData = useMemo(() => {
     if (!iqTarget) return null
     return createBRRRRReturns(
       iqTarget.cashLeftInDeal || 0,
       iqTarget.equityCreated || 0,
       iqTarget.monthlyCashFlow,
-      (iqTarget.cashRecoveryPercent || 0) >= 100
+      (iqTarget.cashRecoveryPercent || 0) >= 100,
     )
   }, [iqTarget])
-  
+
   const benchmarks: BenchmarkConfig[] = useMemo(() => {
     if (!iqTarget) return []
-    
+
     const recovery = iqTarget.cashRecoveryPercent || 0
     const purchaseToArv = (iqTarget.targetPrice / assumptions.arv) * 100
-    
+
     return [
       {
         id: 'recovery',
@@ -339,8 +355,8 @@ export function BRRRRMetricsContent({
         zones: {
           low: { label: 'Low', range: '<70%' },
           average: { label: 'Avg', range: '80-95%' },
-          high: { label: 'High', range: '100%+' }
-        }
+          high: { label: 'High', range: '100%+' },
+        },
       },
       {
         id: 'purchaseArv',
@@ -353,62 +369,65 @@ export function BRRRRMetricsContent({
         zones: {
           low: { label: 'Good', range: '<65%' },
           average: { label: 'Avg', range: '65-75%' },
-          high: { label: 'Risky', range: '80%+' }
-        }
-      }
+          high: { label: 'Risky', range: '80%+' },
+        },
+      },
     ]
   }, [iqTarget, assumptions.arv])
-  
-  const tuneGroups: TuneGroup[] = useMemo(() => [
-    {
-      id: 'brrrr',
-      title: 'BRRRR Parameters',
-      sliders: [
-        createSliderConfig(
-          'rehabCost',
-          'Rehab Budget',
-          assumptions.rehabCost,
-          5000,
-          100000,
-          1000,
-          formatCurrency
-        ),
-        createSliderConfig(
-          'arv',
-          'After Repair Value',
-          assumptions.arv,
-          stableListPrice * 0.8,   // Use stable base for min
-          stableListPrice * 1.8,   // Use stable base for max (wider range)
-          5000,
-          formatCurrency
-        )
-      ]
-    },
-    {
-      id: 'rental',
-      title: 'Rental Income',
-      sliders: [
-        createSliderConfig(
-          'monthlyRent',
-          'Monthly Rent (Post-Rehab)',
-          assumptions.monthlyRent,
-          500,
-          5000,
-          50,
-          formatCurrency
-        ),
-        createSliderConfig(
-          'vacancyRate',
-          'Vacancy Rate',
-          assumptions.vacancyRate,
-          0,
-          0.15,
-          0.01,
-          (v: number) => formatPercent(v * 100, { decimals: 0 })
-        )
-      ]
-    }
-  ], [assumptions, stableListPrice])
+
+  const tuneGroups: TuneGroup[] = useMemo(
+    () => [
+      {
+        id: 'brrrr',
+        title: 'BRRRR Parameters',
+        sliders: [
+          createSliderConfig(
+            'rehabCost',
+            'Rehab Budget',
+            assumptions.rehabCost,
+            5000,
+            100000,
+            1000,
+            formatCurrency,
+          ),
+          createSliderConfig(
+            'arv',
+            'After Repair Value',
+            assumptions.arv,
+            stableListPrice * 0.8, // Use stable base for min
+            stableListPrice * 1.8, // Use stable base for max (wider range)
+            5000,
+            formatCurrency,
+          ),
+        ],
+      },
+      {
+        id: 'rental',
+        title: 'Rental Income',
+        sliders: [
+          createSliderConfig(
+            'monthlyRent',
+            'Monthly Rent (Post-Rehab)',
+            assumptions.monthlyRent,
+            500,
+            5000,
+            50,
+            formatCurrency,
+          ),
+          createSliderConfig(
+            'vacancyRate',
+            'Vacancy Rate',
+            assumptions.vacancyRate,
+            0,
+            0.15,
+            0.01,
+            (v: number) => formatPercent(v * 100, { decimals: 0 }),
+          ),
+        ],
+      },
+    ],
+    [assumptions, stableListPrice],
+  )
 
   return (
     <div className="space-y-4">
@@ -423,7 +442,9 @@ export function BRRRRMetricsContent({
         monthlyRent={assumptions.monthlyRent}
         downPaymentPct={assumptions.downPaymentPct}
         interestRate={assumptions.interestRate}
-        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
+        onAssumptionsChange={(key, value) =>
+          updateAssumption(key as keyof TargetAssumptions, value)
+        }
       />
 
       {/* Cash Recovery Hero */}
@@ -433,7 +454,7 @@ export function BRRRRMetricsContent({
           value: `${Math.round(iqTarget.cashRecoveryPercent || 0)}%`,
           subtitle: `${formatCurrency(iqTarget.cashLeftInDeal || 0)} left in deal`,
           badge: (iqTarget.cashRecoveryPercent || 0) >= 100 ? '∞ RETURNS' : undefined,
-          variant: (iqTarget.cashRecoveryPercent || 0) >= 100 ? 'success' : 'default'
+          variant: (iqTarget.cashRecoveryPercent || 0) >= 100 ? 'success' : 'default',
         }}
       />
 
@@ -460,7 +481,7 @@ export function BRRRRMetricsContent({
           (iqTarget.cashRecoveryPercent || 0) >= 100
             ? 'This BRRRR achieves infinite returns! You recover 100%+ of your cash at refinance.'
             : 'Aim for deals where you recover 100% of your cash to achieve infinite returns.',
-          (iqTarget.cashRecoveryPercent || 0) >= 100 ? 'success' : 'tip'
+          (iqTarget.cashRecoveryPercent || 0) >= 100 ? 'success' : 'tip',
         )}
       />
     </div>
@@ -479,7 +500,7 @@ export function FlipMetricsContent({
   compareView,
   setCompareView,
   updateAssumption,
-  originalListPrice
+  originalListPrice,
 }: BaseMetricsProps) {
   // Use original list price for stable slider ranges, fallback to assumptions.listPrice
   const stableListPrice = originalListPrice || assumptions.listPrice
@@ -491,96 +512,99 @@ export function FlipMetricsContent({
     iqTarget.incomeValue,
     'Income Value',
     '$0 profit',
-    0.60
+    0.6,
   )
-  
+
   const negotiationPlan = generateNegotiationPlan(
     assumptions.listPrice,
     iqTarget.targetPrice,
-    0.60,
+    0.6,
     undefined,
     [
       LEVERAGE_POINTS.rehabNeeded(assumptions.rehabCost),
       LEVERAGE_POINTS.daysOnMarket(60, 28),
-      LEVERAGE_POINTS.comparables(-8)
-    ]
+      LEVERAGE_POINTS.comparables(-8),
+    ],
   )
-  
+
   // Flip P&L formula
   const flipPLFormula = createFlipPLFormula(
     assumptions.arv,
     iqTarget.targetPrice,
     assumptions.rehabCost,
     iqTarget.targetPrice * (assumptions.interestRate / 12) * assumptions.holdingPeriodMonths,
-    assumptions.arv * assumptions.sellingCostsPct
+    assumptions.arv * assumptions.sellingCostsPct,
   )
-  
+
   // 70% Rule formula
   const seventyRuleFormula = create70PercentRuleFormula(
     assumptions.arv,
     assumptions.rehabCost,
-    30000 // Standard investor profit expectation
+    30000, // Standard investor profit expectation
   )
-  
-  const tuneGroups: TuneGroup[] = useMemo(() => [
-    {
-      id: 'flip',
-      title: 'Flip Parameters',
-      sliders: [
-        createSliderConfig(
-          'rehabCost',
-          'Rehab Budget',
-          assumptions.rehabCost,
-          5000,
-          150000,
-          1000,
-          formatCurrency
-        ),
-        createSliderConfig(
-          'arv',
-          'After Repair Value',
-          assumptions.arv,
-          stableListPrice * 0.8,   // Use stable base for min
-          stableListPrice * 1.8,   // Use stable base for max (wider range)
-          5000,
-          formatCurrency
-        ),
-        createSliderConfig(
-          'holdingPeriodMonths',
-          'Holding Period',
-          assumptions.holdingPeriodMonths,
-          3,
-          12,
-          1,
-          (v) => `${v} months`
-        )
-      ]
-    },
-    {
-      id: 'costs',
-      title: 'Transaction Costs',
-      sliders: [
-        createSliderConfig(
-          'closingCostsPct',
-          'Closing Costs',
-          assumptions.closingCostsPct,
-          0.02,
-          0.05,
-          0.005,
-          (v: number) => formatPercent(v * 100)
-        ),
-        createSliderConfig(
-          'sellingCostsPct',
-          'Selling Costs',
-          assumptions.sellingCostsPct,
-          0.06,
-          0.10,
-          0.005,
-          (v: number) => formatPercent(v * 100)
-        )
-      ]
-    }
-  ], [assumptions, stableListPrice])
+
+  const tuneGroups: TuneGroup[] = useMemo(
+    () => [
+      {
+        id: 'flip',
+        title: 'Flip Parameters',
+        sliders: [
+          createSliderConfig(
+            'rehabCost',
+            'Rehab Budget',
+            assumptions.rehabCost,
+            5000,
+            150000,
+            1000,
+            formatCurrency,
+          ),
+          createSliderConfig(
+            'arv',
+            'After Repair Value',
+            assumptions.arv,
+            stableListPrice * 0.8, // Use stable base for min
+            stableListPrice * 1.8, // Use stable base for max (wider range)
+            5000,
+            formatCurrency,
+          ),
+          createSliderConfig(
+            'holdingPeriodMonths',
+            'Holding Period',
+            assumptions.holdingPeriodMonths,
+            3,
+            12,
+            1,
+            (v) => `${v} months`,
+          ),
+        ],
+      },
+      {
+        id: 'costs',
+        title: 'Transaction Costs',
+        sliders: [
+          createSliderConfig(
+            'closingCostsPct',
+            'Closing Costs',
+            assumptions.closingCostsPct,
+            0.02,
+            0.05,
+            0.005,
+            (v: number) => formatPercent(v * 100),
+          ),
+          createSliderConfig(
+            'sellingCostsPct',
+            'Selling Costs',
+            assumptions.sellingCostsPct,
+            0.06,
+            0.1,
+            0.005,
+            (v: number) => formatPercent(v * 100),
+          ),
+        ],
+      },
+    ],
+    [assumptions, stableListPrice],
+  )
 
   return (
     <div className="space-y-4">
@@ -595,7 +619,9 @@ export function FlipMetricsContent({
         monthlyRent={assumptions.monthlyRent}
         downPaymentPct={assumptions.downPaymentPct}
         interestRate={assumptions.interestRate}
-        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
+        onAssumptionsChange={(key, value) =>
+          updateAssumption(key as keyof TargetAssumptions, value)
+        }
       />
 
       {/* Net Profit Hero */}
@@ -604,7 +630,12 @@ export function FlipMetricsContent({
           label: 'Net Profit',
           value: formatCurrency(iqTarget.netProfit || 0),
           subtitle: `${Math.round((iqTarget.roi || 0) * 100)}% ROI in ${assumptions.holdingPeriodMonths} months`,
-          variant: (iqTarget.netProfit || 0) >= 30000 ? 'success' : (iqTarget.netProfit || 0) >= 15000 ? 'default' : 'warning'
+          variant:
+            (iqTarget.netProfit || 0) >= 30000
+              ? 'success'
+              : (iqTarget.netProfit || 0) >= 15000
+                ? 'default'
+                : 'warning',
         }}
       />
 
@@ -626,7 +657,7 @@ export function FlipMetricsContent({
           (iqTarget.netProfit || 0) >= 30000
             ? 'This flip meets the $30K minimum profit threshold. Solid deal!'
             : 'Consider negotiating lower to achieve the standard $30K+ profit target.',
-          (iqTarget.netProfit || 0) >= 30000 ? 'success' : 'warning'
+          (iqTarget.netProfit || 0) >= 30000 ? 'success' : 'warning',
         )}
       />
     </div>
@@ -644,7 +675,7 @@ export function HouseHackMetricsContent({
   assumptions,
   compareView,
   setCompareView,
-  updateAssumption
+  updateAssumption,
 }: BaseMetricsProps) {
   const priceLadder = generatePriceLadder(
     assumptions.listPrice,
@@ -654,62 +685,67 @@ export function HouseHackMetricsContent({
     iqTarget.incomeValue,
     'Market Rent',
     'Break even vs. renting',
-    0.75
+    0.75,
   )
-  
+
   const isFreeHousing = (iqTarget.effectiveHousingCost || 0) <= 0
-  
+
   const returnsData = useMemo(() => {
     return createHouseHackReturns(
       iqTarget.effectiveHousingCost || 0,
       iqTarget.monthlySavings || 0,
-      assumptions.monthlyRent / assumptions.totalBedrooms * assumptions.roomsRented,
-      (assumptions.monthlyRent / assumptions.totalBedrooms * assumptions.roomsRented) / 
-        ((iqTarget.targetPrice * 0.035 * (assumptions.interestRate / 12)) + assumptions.propertyTaxes / 12 + assumptions.insurance / 12)
+      (assumptions.monthlyRent / assumptions.totalBedrooms) * assumptions.roomsRented,
+      ((assumptions.monthlyRent / assumptions.totalBedrooms) * assumptions.roomsRented) /
+        (iqTarget.targetPrice * 0.035 * (assumptions.interestRate / 12) +
+          assumptions.propertyTaxes / 12 +
+          assumptions.insurance / 12),
     )
   }, [iqTarget, assumptions])
-  
-  const tuneGroups: TuneGroup[] = useMemo(() => [
-    {
-      id: 'househack',
-      title: 'House Hack Setup',
-      sliders: [
-        createSliderConfig(
-          'roomsRented',
-          'Rooms Rented',
-          assumptions.roomsRented,
-          1,
-          Math.max(1, assumptions.totalBedrooms - 1),
-          1,
-          (v) => `${v} of ${assumptions.totalBedrooms}`
-        ),
-        createSliderConfig(
-          'monthlyRent',
-          'Total Market Rent',
-          assumptions.monthlyRent,
-          500,
-          5000,
-          50,
-          formatCurrency
-        )
-      ]
-    },
-    {
-      id: 'financing',
-      title: 'FHA Financing',
-      sliders: [
-        createSliderConfig(
-          'interestRate',
-          'Interest Rate',
-          assumptions.interestRate,
-          0.05,
-          0.10,
-          0.001,
-          (v: number) => formatPercent(v * 100)
-        )
-      ]
-    }
-  ], [assumptions])
+
+  const tuneGroups: TuneGroup[] = useMemo(
+    () => [
+      {
+        id: 'househack',
+        title: 'House Hack Setup',
+        sliders: [
+          createSliderConfig(
+            'roomsRented',
+            'Rooms Rented',
+            assumptions.roomsRented,
+            1,
+            Math.max(1, assumptions.totalBedrooms - 1),
+            1,
+            (v) => `${v} of ${assumptions.totalBedrooms}`,
+          ),
+          createSliderConfig(
+            'monthlyRent',
+            'Total Market Rent',
+            assumptions.monthlyRent,
+            500,
+            5000,
+            50,
+            formatCurrency,
+          ),
+        ],
+      },
+      {
+        id: 'financing',
+        title: 'FHA Financing',
+        sliders: [
+          createSliderConfig(
+            'interestRate',
+            'Interest Rate',
+            assumptions.interestRate,
+            0.05,
+            0.1,
+            0.001,
+            (v: number) => formatPercent(v * 100),
+          ),
+        ],
+      },
+    ],
+    [assumptions],
+  )
 
   return (
     <div className="space-y-4">
@@ -724,17 +760,21 @@ export function HouseHackMetricsContent({
         monthlyRent={assumptions.monthlyRent}
         downPaymentPct={0.035}
         interestRate={assumptions.interestRate}
-        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
+        onAssumptionsChange={(key, value) =>
+          updateAssumption(key as keyof TargetAssumptions, value)
+        }
       />
 
       {/* Housing Cost Hero */}
       <HeroMetric
         data={{
           label: 'Your Housing Cost',
-          value: isFreeHousing ? '$0/mo' : formatCurrency(iqTarget.effectiveHousingCost || 0) + '/mo',
+          value: isFreeHousing
+            ? '$0/mo'
+            : formatCurrency(iqTarget.effectiveHousingCost || 0) + '/mo',
           subtitle: `Save ${formatCurrency(iqTarget.monthlySavings || 0)}/mo vs. renting`,
           badge: isFreeHousing ? 'FREE HOUSING 🎉' : undefined,
-          variant: isFreeHousing ? 'success' : 'default'
+          variant: isFreeHousing ? 'success' : 'default',
         }}
       />
 
@@ -753,7 +793,7 @@ export function HouseHackMetricsContent({
           isFreeHousing
             ? 'Congrats! At this price, your rental income covers all housing costs. You live for FREE!'
             : `Renting ${assumptions.roomsRented} rooms at ${formatCurrency(assumptions.monthlyRent / assumptions.totalBedrooms)}/room dramatically reduces your housing cost.`,
-          isFreeHousing ? 'success' : 'tip'
+          isFreeHousing ? 'success' : 'tip',
         )}
       />
 
@@ -761,7 +801,7 @@ export function HouseHackMetricsContent({
         data={{
           type: 'info',
           icon: '🏠',
-          content: `After ${Math.ceil(12 / (assumptions.roomsRented || 1))} years, move out and convert to a full rental for **${formatCurrency(assumptions.monthlyRent * 0.7)}/mo** cash flow.`
+          content: `After ${Math.ceil(12 / (assumptions.roomsRented || 1))} years, move out and convert to a full rental for **${formatCurrency(assumptions.monthlyRent * 0.7)}/mo** cash flow.`,
         }}
       />
     </div>
@@ -780,7 +820,7 @@ export function WholesaleMetricsContent({
   compareView,
   setCompareView,
   updateAssumption,
-  originalListPrice
+  originalListPrice,
 }: BaseMetricsProps) {
   // Use original list price for stable slider ranges, fallback to assumptions.listPrice
   const stableListPrice = originalListPrice || assumptions.listPrice
@@ -792,67 +832,67 @@ export function WholesaleMetricsContent({
     [
       LEVERAGE_POINTS.motivatedSeller(),
       LEVERAGE_POINTS.rehabNeeded(assumptions.rehabCost),
-      LEVERAGE_POINTS.activeBuyerList()
-    ]
+      LEVERAGE_POINTS.activeBuyerList(),
+    ],
   )
-  
+
   // 70% Rule formula
   const seventyRuleFormula = create70PercentRuleFormula(
     assumptions.arv,
     assumptions.rehabCost,
-    30000
+    30000,
   )
-  
+
   // Wholesale math formula
-  const wholesaleMathFormula = createWholesaleMathFormula(
-    iqTarget.mao || 0,
-    iqTarget.targetPrice
-  )
-  
+  const wholesaleMathFormula = createWholesaleMathFormula(iqTarget.mao || 0, iqTarget.targetPrice)
+
   const returnsData = useMemo(() => {
     return createWholesaleReturns(
       iqTarget.assignmentFee || 0,
       ((iqTarget.assignmentFee || 0) / 5000) * 100, // ROI on $5K EMD
       5000, // Standard EMD
-      30 // Timeline
+      30, // Timeline
     )
   }, [iqTarget])
-  
-  const tuneGroups: TuneGroup[] = useMemo(() => [
-    {
-      id: 'wholesale',
-      title: 'Wholesale Parameters',
-      sliders: [
-        createSliderConfig(
-          'arv',
-          'After Repair Value',
-          assumptions.arv,
-          stableListPrice * 0.8,   // Use stable base for min
-          stableListPrice * 1.8,   // Use stable base for max (wider range)
-          5000,
-          formatCurrency
-        ),
-        createSliderConfig(
-          'rehabCost',
-          'Estimated Repairs',
-          assumptions.rehabCost,
-          5000,
-          100000,
-          1000,
-          formatCurrency
-        ),
-        createSliderConfig(
-          'wholesaleFeePct',
-          'Assignment Fee %',
-          assumptions.wholesaleFeePct,
-          0.003,
-          0.015,
-          0.001,
-          (v: number) => formatPercent(v * 100)
-        )
-      ]
-    }
-  ], [assumptions, stableListPrice])
+
+  const tuneGroups: TuneGroup[] = useMemo(
+    () => [
+      {
+        id: 'wholesale',
+        title: 'Wholesale Parameters',
+        sliders: [
+          createSliderConfig(
+            'arv',
+            'After Repair Value',
+            assumptions.arv,
+            stableListPrice * 0.8, // Use stable base for min
+            stableListPrice * 1.8, // Use stable base for max (wider range)
+            5000,
+            formatCurrency,
+          ),
+          createSliderConfig(
+            'rehabCost',
+            'Estimated Repairs',
+            assumptions.rehabCost,
+            5000,
+            100000,
+            1000,
+            formatCurrency,
+          ),
+          createSliderConfig(
+            'wholesaleFeePct',
+            'Assignment Fee %',
+            assumptions.wholesaleFeePct,
+            0.003,
+            0.015,
+            0.001,
+            (v: number) => formatPercent(v * 100),
+          ),
+        ],
+      },
+    ],
+    [assumptions, stableListPrice],
+  )
 
   return (
     <div className="space-y-4">
@@ -868,7 +908,9 @@ export function WholesaleMetricsContent({
         monthlyRent={assumptions.monthlyRent}
         downPaymentPct={assumptions.downPaymentPct}
         interestRate={assumptions.interestRate}
-        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
+        onAssumptionsChange={(key, value) =>
+          updateAssumption(key as keyof TargetAssumptions, value)
+        }
       />
 
       {/* Assignment Fee Hero */}
@@ -878,7 +920,7 @@ export function WholesaleMetricsContent({
           value: formatCurrency(iqTarget.assignmentFee || 0),
           subtitle: `${Math.round(((iqTarget.assignmentFee || 0) / 5000) * 100)}% ROI on $5K earnest money`,
           badge: (iqTarget.assignmentFee || 0) >= 10000 ? 'SOLID DEAL' : undefined,
-          variant: (iqTarget.assignmentFee || 0) >= 10000 ? 'success' : 'default'
+          variant: (iqTarget.assignmentFee || 0) >= 10000 ? 'success' : 'default',
         }}
       />
 
@@ -900,7 +942,7 @@ export function WholesaleMetricsContent({
           (iqTarget.assignmentFee || 0) >= 10000
             ? 'This deal has strong wholesale margins. End buyers will love the 70% rule compliance.'
             : 'Consider negotiating lower to increase your assignment fee to $10K+.',
-          (iqTarget.assignmentFee || 0) >= 10000 ? 'success' : 'tip'
+          (iqTarget.assignmentFee || 0) >= 10000 ? 'success' : 'tip',
         )}
       />
     </div>

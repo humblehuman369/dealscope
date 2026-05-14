@@ -47,7 +47,9 @@ export function AuthGuard({
       const params = new URLSearchParams(searchParams.toString())
       if (!params.has('auth')) {
         params.set('auth', 'required')
-        const fullPath = searchParams.toString() ? `${pathname}?${searchParams.toString()}` : pathname
+        const fullPath = searchParams.toString()
+          ? `${pathname}?${searchParams.toString()}`
+          : pathname
         params.set('redirect', fullPath)
         router.replace(`${pathname}?${params.toString()}`, { scroll: false })
       }
@@ -58,7 +60,16 @@ export function AuthGuard({
     if (requireAdmin && !isAdmin) {
       router.replace(adminFallback)
     }
-  }, [isLoading, isAuthenticated, isAdmin, requireAdmin, adminFallback, router, pathname, searchParams])
+  }, [
+    isLoading,
+    isAuthenticated,
+    isAdmin,
+    requireAdmin,
+    adminFallback,
+    router,
+    pathname,
+    searchParams,
+  ])
 
   // ── Loading state ──────────────────────────────────────────────
   if (isLoading) {

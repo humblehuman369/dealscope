@@ -22,7 +22,7 @@ export function WorksheetExport({ propertyId, propertyAddress }: WorksheetExport
 
     try {
       const headers: Record<string, string> = {}
-      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      const csrfMatch = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
       if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
 
       let url: string
@@ -32,13 +32,18 @@ export function WorksheetExport({ propertyId, propertyAddress }: WorksheetExport
           address: propertyAddress,
           strategy: 'ltr',
         })
-        if (assumptions.purchasePrice > 0) params.set('purchase_price', String(assumptions.purchasePrice))
+        if (assumptions.purchasePrice > 0)
+          params.set('purchase_price', String(assumptions.purchasePrice))
         if (assumptions.monthlyRent > 0) params.set('monthly_rent', String(assumptions.monthlyRent))
-        if (assumptions.interestRate > 0) params.set('interest_rate', String(assumptions.interestRate * 100))
-        if (assumptions.downPaymentPct > 0) params.set('down_payment_pct', String(assumptions.downPaymentPct * 100))
-        if (assumptions.propertyTaxes > 0) params.set('property_taxes', String(assumptions.propertyTaxes))
+        if (assumptions.interestRate > 0)
+          params.set('interest_rate', String(assumptions.interestRate * 100))
+        if (assumptions.downPaymentPct > 0)
+          params.set('down_payment_pct', String(assumptions.downPaymentPct * 100))
+        if (assumptions.propertyTaxes > 0)
+          params.set('property_taxes', String(assumptions.propertyTaxes))
         if (assumptions.insurance > 0) params.set('insurance', String(assumptions.insurance))
-        if (assumptions.landValuePercent > 0) params.set('land_value_percent', String(assumptions.landValuePercent))
+        if (assumptions.landValuePercent > 0)
+          params.set('land_value_percent', String(assumptions.landValuePercent))
         url = `${API_BASE_URL}/api/v1/proforma/property/${propertyId}/excel?${params}`
       } else {
         url = `${API_BASE_URL}/api/v1/reports/property/${propertyId}/csv`
@@ -97,7 +102,7 @@ export function WorksheetExport({ propertyId, propertyAddress }: WorksheetExport
           )}
           <span className="hidden sm:inline">Excel</span>
         </button>
-        
+
         <button
           onClick={() => handleExport('csv')}
           disabled={isExporting !== null}
@@ -133,4 +138,3 @@ export function WorksheetExport({ propertyId, propertyAddress }: WorksheetExport
     </div>
   )
 }
-

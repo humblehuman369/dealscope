@@ -1,7 +1,17 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ChevronUp, ChevronDown, Home, Landmark, Wrench, DollarSign, FileText, TrendingUp, Target } from 'lucide-react'
+import {
+  ChevronUp,
+  ChevronDown,
+  Home,
+  Landmark,
+  Wrench,
+  DollarSign,
+  FileText,
+  TrendingUp,
+  Target,
+} from 'lucide-react'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
 
 // ============================================
@@ -71,11 +81,7 @@ function AccordionSection({ title, icon, children, isExpanded, onToggle }: Accor
           <ChevronDown className="w-4 h-4 text-slate-400" />
         )}
       </button>
-      {isExpanded && (
-        <div className="px-3 pb-3 border-t border-slate-100">
-          {children}
-        </div>
-      )}
+      {isExpanded && <div className="px-3 pb-3 border-t border-slate-100">{children}</div>}
     </div>
   )
 }
@@ -99,7 +105,7 @@ export function MobileCompressedView({
   })
 
   const toggleSection = (id: string) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
       [id]: !prev[id],
     }))
@@ -118,7 +124,11 @@ export function MobileCompressedView({
 
   // Return benchmarks status
   const getReturnStatus = (value: number, target: number) => {
-    return value >= target ? 'text-green-600' : value >= target * 0.8 ? 'text-amber-500' : 'text-red-500'
+    return value >= target
+      ? 'text-green-600'
+      : value >= target * 0.8
+        ? 'text-amber-500'
+        : 'text-red-500'
   }
 
   return (
@@ -149,33 +159,43 @@ export function MobileCompressedView({
               <div className="space-y-1 text-[10px]">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Price</span>
-                  <span className="font-semibold text-slate-900 truncate ml-1">{fmt.currencyCompact(purchasePrice)}</span>
+                  <span className="font-semibold text-slate-900 truncate ml-1">
+                    {fmt.currencyCompact(purchasePrice)}
+                  </span>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Loan</span>
-                  <span className="font-semibold text-slate-900 truncate ml-1">{fmt.currencyCompact(calc.loanAmount)}</span>
+                  <span className="font-semibold text-slate-900 truncate ml-1">
+                    {fmt.currencyCompact(calc.loanAmount)}
+                  </span>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Down</span>
-                  <span className="font-semibold text-slate-900 truncate ml-1">{fmt.currencyCompact(calc.downPayment)}</span>
+                  <span className="font-semibold text-slate-900 truncate ml-1">
+                    {fmt.currencyCompact(calc.downPayment)}
+                  </span>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Closing</span>
-                  <span className="font-semibold text-slate-900 truncate ml-1">{fmt.currencyCompact(calc.purchaseCosts)}</span>
+                  <span className="font-semibold text-slate-900 truncate ml-1">
+                    {fmt.currencyCompact(calc.purchaseCosts)}
+                  </span>
                 </div>
               </div>
 
               {/* Total Cash Required */}
               <div className="mt-2 bg-teal/10 rounded-lg px-2 py-1.5">
                 <div className="text-[8px] text-teal font-medium uppercase">Cash Needed</div>
-                <div className="text-sm font-bold text-teal">{fmt.currencyCompact(calc.totalCashNeeded)}</div>
+                <div className="text-sm font-bold text-teal">
+                  {fmt.currencyCompact(calc.totalCashNeeded)}
+                </div>
               </div>
 
               {/* CTA Button - Compact */}
-              <button 
+              <button
                 onClick={() => onNavigateToSection?.('financing')}
                 className="w-full mt-1.5 bg-slate-100 text-slate-600 text-[9px] font-medium py-1.5 rounded-lg hover:bg-slate-200 transition-colors"
               >
@@ -190,17 +210,17 @@ export function MobileCompressedView({
           <div className="text-[8px] text-teal font-semibold uppercase tracking-wide mb-1.5">
             Verdict
           </div>
-          
+
           {/* Score Display - Grade Based */}
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span 
+            <span
               className="text-2xl font-bold"
               style={{ color: scoreToGradeLabel(dealScore).color }}
             >
               {scoreToGradeLabel(dealScore).grade}
             </span>
             <div className="min-w-0">
-              <div 
+              <div
                 className="text-[10px] font-semibold leading-tight truncate"
                 style={{ color: scoreToGradeLabel(dealScore).color }}
               >
@@ -239,9 +259,11 @@ export function MobileCompressedView({
           </div>
 
           {/* Simplified Status Indicator */}
-          <div className={`mt-2 py-1.5 px-2 rounded-lg text-center text-[9px] font-medium ${
-            isProfit ? 'bg-teal/10 text-teal' : 'bg-red-500/10 text-red-500'
-          }`}>
+          <div
+            className={`mt-2 py-1.5 px-2 rounded-lg text-center text-[9px] font-medium ${
+              isProfit ? 'bg-teal/10 text-teal' : 'bg-red-500/10 text-red-500'
+            }`}
+          >
             {isProfit ? 'Positive Cash Flow' : 'Negative Cash Flow'}
           </div>
         </div>
@@ -265,7 +287,9 @@ export function MobileCompressedView({
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Monthly P&I</span>
-              <span className="font-semibold text-slate-900">{fmt.currency(calc.monthlyPayment)}</span>
+              <span className="font-semibold text-slate-900">
+                {fmt.currency(calc.monthlyPayment)}
+              </span>
             </div>
           </div>
         </AccordionSection>
@@ -318,11 +342,15 @@ export function MobileCompressedView({
           <div className="pt-2 space-y-2 text-[11px]">
             <div className="flex justify-between">
               <span className="text-slate-500">Total Expenses</span>
-              <span className="font-semibold text-slate-900">{fmt.currency(calc.grossExpenses)}</span>
+              <span className="font-semibold text-slate-900">
+                {fmt.currency(calc.grossExpenses)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Debt Service</span>
-              <span className="font-semibold text-slate-900">{fmt.currency(calc.monthlyPayment * 12)}</span>
+              <span className="font-semibold text-slate-900">
+                {fmt.currency(calc.monthlyPayment * 12)}
+              </span>
             </div>
           </div>
         </AccordionSection>
@@ -338,13 +366,15 @@ export function MobileCompressedView({
             <div className="flex justify-between">
               <span className="text-slate-500">Monthly Cash Flow</span>
               <span className={`font-semibold ${isProfit ? 'text-green-600' : 'text-red-500'}`}>
-                {isProfit ? '+' : ''}{fmt.currency(calc.monthlyCashFlow)}
+                {isProfit ? '+' : ''}
+                {fmt.currency(calc.monthlyCashFlow)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Annual Cash Flow</span>
               <span className={`font-semibold ${isProfit ? 'text-green-600' : 'text-red-500'}`}>
-                {isProfit ? '+' : ''}{fmt.currency(calc.annualCashFlow)}
+                {isProfit ? '+' : ''}
+                {fmt.currency(calc.annualCashFlow)}
               </span>
             </div>
           </div>
@@ -360,7 +390,9 @@ export function MobileCompressedView({
           <div className="pt-2 space-y-2 text-[11px]">
             <div className="flex justify-between">
               <span className="text-slate-500">Cap Rate</span>
-              <span className="font-semibold text-slate-900">{fmt.percent(calc.capRatePurchase)}</span>
+              <span className="font-semibold text-slate-900">
+                {fmt.percent(calc.capRatePurchase)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Cash-on-Cash</span>

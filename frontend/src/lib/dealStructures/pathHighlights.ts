@@ -150,10 +150,7 @@ export function computeHighlightedStateFields(
  * worksheet state-field name a path-highlight glow would be tracked under.
  * Used to drop a single glow when the user manually edits that slider.
  */
-export function inlineOverrideKeyToStateField(
-  key: string,
-  strategy: StrategyType,
-): string | null {
+export function inlineOverrideKeyToStateField(key: string, strategy: StrategyType): string | null {
   switch (key) {
     case 'purchasePrice':
       return strategy === 'ltr' || strategy === 'str'
@@ -169,10 +166,12 @@ export function inlineOverrideKeyToStateField(
       if (strategy === 'flip' || strategy === 'wholesale') return null
       return 'downPaymentPercent'
     case 'interestRate':
-      if (strategy === 'ltr' || strategy === 'str' || strategy === 'house_hack') return 'interestRate'
+      if (strategy === 'ltr' || strategy === 'str' || strategy === 'house_hack')
+        return 'interestRate'
       return null
     case 'loanTerm':
-      if (strategy === 'ltr' || strategy === 'str' || strategy === 'house_hack') return 'loanTermYears'
+      if (strategy === 'ltr' || strategy === 'str' || strategy === 'house_hack')
+        return 'loanTermYears'
       return null
     case 'sellerFinancingAmount':
     case 'sellerInterestRate':

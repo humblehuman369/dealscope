@@ -14,7 +14,11 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value)
 
-export function ProfitTimeline({ baseProfit, monthlyHoldingCost, maxMonths = 6 }: ProfitTimelineProps) {
+export function ProfitTimeline({
+  baseProfit,
+  monthlyHoldingCost,
+  maxMonths = 6,
+}: ProfitTimelineProps) {
   const rows = Array.from({ length: maxMonths }, (_, idx) => {
     const month = idx + 1
     const profit = baseProfit - monthlyHoldingCost * (month - 1)

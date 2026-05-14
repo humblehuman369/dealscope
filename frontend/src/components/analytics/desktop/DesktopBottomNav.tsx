@@ -27,7 +27,7 @@ export function DesktopBottomNav({
   return (
     <nav className="desktop-bottom-nav">
       {/* Save Button */}
-      <button 
+      <button
         className={`desktop-nav-item ${isSaved ? 'active' : ''}`}
         onClick={onSave}
         disabled={isLoading}
@@ -38,17 +38,13 @@ export function DesktopBottomNav({
       </button>
 
       {/* Primary CTA - Generate LOI */}
-      <button 
-        className="desktop-nav-btn-primary"
-        onClick={onGenerateLOI}
-        disabled={isLoading}
-      >
+      <button className="desktop-nav-btn-primary" onClick={onGenerateLOI} disabled={isLoading}>
         <span>📝</span>
         <span>Generate LOI</span>
       </button>
 
       {/* Share Button */}
-      <button 
+      <button
         className="desktop-nav-item"
         onClick={onShare}
         disabled={isLoading}

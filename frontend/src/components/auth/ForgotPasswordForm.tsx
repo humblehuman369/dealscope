@@ -16,7 +16,11 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
   const [sent, setSent] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const { register, handleSubmit, formState: { errors } } = useForm<ForgotPasswordFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
   })
@@ -40,12 +44,18 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
         <div className="w-16 h-16 mx-auto bg-green-900/30 rounded-full flex items-center justify-center">
           <CheckCircle className="w-8 h-8 text-green-400" />
         </div>
-        <h3 className="text-lg font-semibold" style={{ color: '#FFFFFF' }}>Check your email</h3>
+        <h3 className="text-lg font-semibold" style={{ color: '#FFFFFF' }}>
+          Check your email
+        </h3>
         <p className="text-sm" style={{ color: '#94A3B8' }}>
           If an account exists with that email, we&apos;ve sent a password reset link.
         </p>
         {onBack && (
-          <button onClick={onBack} className="font-medium text-sm" style={{ color: 'var(--accent-sky)' }}>
+          <button
+            onClick={onBack}
+            className="font-medium text-sm"
+            style={{ color: 'var(--accent-sky)' }}
+          >
             Back to sign in
           </button>
         )}
@@ -56,7 +66,12 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {onBack && (
-        <button type="button" onClick={onBack} className="flex items-center gap-1 text-sm hover:text-white transition-colors" style={{ color: '#94A3B8' }}>
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex items-center gap-1 text-sm hover:text-white transition-colors"
+          style={{ color: '#94A3B8' }}
+        >
           <ArrowLeft className="w-4 h-4" /> Back to sign in
         </button>
       )}
@@ -66,18 +81,28 @@ export default function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) 
       </p>
 
       {error && (
-        <div className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-900/20 rounded-xl" role="alert">
+        <div
+          className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-900/20 rounded-xl"
+          role="alert"
+        >
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="forgot-email" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
+        <label
+          htmlFor="forgot-email"
+          className="block text-sm font-medium mb-1"
+          style={{ color: '#CBD5E1' }}
+        >
           Email
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
+          <Mail
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: '#94A3B8' }}
+          />
           <input
             id="forgot-email"
             type="email"

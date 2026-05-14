@@ -14,16 +14,16 @@ export interface SliderInputProps {
   benchmark?: number
 }
 
-export function SliderInput({ 
-  label, 
-  value, 
-  onChange, 
-  min, 
-  max, 
-  step = 1, 
-  format = 'number', 
-  quickAdjust, 
-  benchmark 
+export function SliderInput({
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  step = 1,
+  format = 'number',
+  quickAdjust,
+  benchmark,
 }: SliderInputProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -71,7 +71,7 @@ export function SliderInput({
     }
     return `${prefix}${adj}`
   }
-  
+
   return (
     <div className="py-3">
       <div className="flex items-center justify-between mb-2">
@@ -105,33 +105,33 @@ export function SliderInput({
       {/* DealGapIQ Slider - 6px height, surface-200 track, teal fill */}
       <div className="relative">
         <div className="h-1.5 bg-surface-200 dark:bg-surface-600 rounded-full">
-          <div 
-            className="h-full bg-teal-600 dark:bg-teal-400 rounded-full transition-all duration-100" 
-            style={{ width: `${percentage}%` }} 
+          <div
+            className="h-full bg-teal-600 dark:bg-teal-400 rounded-full transition-all duration-100"
+            style={{ width: `${percentage}%` }}
           />
         </div>
         {benchmark !== undefined && (
-          <div 
-            className="absolute top-1/2 -translate-y-1/2 w-0.5 h-3 bg-surface-400 dark:bg-white/50 rounded" 
-            style={{ left: `${((benchmark - min) / (max - min)) * 100}%` }} 
+          <div
+            className="absolute top-1/2 -translate-y-1/2 w-0.5 h-3 bg-surface-400 dark:bg-white/50 rounded"
+            style={{ left: `${((benchmark - min) / (max - min)) * 100}%` }}
           />
         )}
-        <input 
-          type="range" 
-          min={min} 
-          max={max} 
-          step={step} 
-          value={value} 
-          onChange={(e) => onChange(Number(e.target.value))} 
-          className="absolute inset-0 w-full h-10 -top-[17px] opacity-0 cursor-pointer" 
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="absolute inset-0 w-full h-10 -top-[17px] opacity-0 cursor-pointer"
         />
       </div>
       {quickAdjust && (
         <div className="flex gap-1.5 mt-2">
           {quickAdjust.map((adj) => (
-            <button 
-              key={adj} 
-              onClick={() => onChange(Math.max(min, Math.min(max, value + adj)))} 
+            <button
+              key={adj}
+              onClick={() => onChange(Math.max(min, Math.min(max, value + adj)))}
               className="text-xs px-2.5 py-1 rounded-md bg-surface-100 dark:bg-surface-700 hover:bg-teal-600/10 dark:hover:bg-teal-400/10 text-surface-600 dark:text-surface-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors font-medium border border-surface-200 dark:border-transparent"
             >
               {formatQuickAdjust(adj)}

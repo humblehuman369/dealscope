@@ -1,12 +1,12 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import { RefreshCw, TrendingUp, Zap } from 'lucide-react';
+import React from 'react'
+import type { Metadata } from 'next'
+import { RefreshCw, TrendingUp, Zap } from 'lucide-react'
 import {
   StrategyPageLayout,
   Callout,
   Prose,
   StepItem,
-} from '@/components/strategies/StrategyPageLayout';
+} from '@/components/strategies/StrategyPageLayout'
 
 export const metadata: Metadata = {
   title: 'BRRRR Strategy — Buy, Rehab, Rent, Refinance, Repeat | DealGapIQ',
@@ -23,12 +23,11 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'BRRRR Strategy — Buy, Rehab, Rent, Refinance, Repeat',
-    description:
-      'ARV, refi cash-out targets, rehab budgeting, and the BRRRR scaling playbook.',
+    description: 'ARV, refi cash-out targets, rehab budgeting, and the BRRRR scaling playbook.',
   },
-};
+}
 
-const ACCENT = '#fbbf24';
+const ACCENT = '#fbbf24'
 
 export default function BRRRRPage() {
   return (
@@ -114,5 +113,5 @@ export default function BRRRRPage() {
         />
       </div>
     </StrategyPageLayout>
-  );
+  )
 }

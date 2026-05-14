@@ -1,6 +1,6 @@
 /**
  * PriceCheckerIQ Components
- * 
+ *
  * Unified comps page combining Sale Comps and Rent Comps
  * with appraisal-style weighted hybrid calculations.
  */

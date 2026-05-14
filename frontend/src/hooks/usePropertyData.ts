@@ -29,7 +29,16 @@ function finiteOrNull(v: unknown): number | null {
 function validatePropertyResponse(data: PropertyResponseCompat): PropertyResponseCompat {
   const v = data.valuations as Record<string, any> | undefined
   if (v) {
-    for (const k of ['zestimate', 'current_value_avm', 'market_price', 'tax_assessed_value', 'value_iq_estimate', 'rentcast_avm', 'redfin_estimate', 'realtor_estimate']) {
+    for (const k of [
+      'zestimate',
+      'current_value_avm',
+      'market_price',
+      'tax_assessed_value',
+      'value_iq_estimate',
+      'rentcast_avm',
+      'redfin_estimate',
+      'realtor_estimate',
+    ]) {
       if (v[k] != null) v[k] = finiteOrNull(v[k])
     }
   }
@@ -49,7 +58,13 @@ function validatePropertyResponse(data: PropertyResponseCompat): PropertyRespons
       // realtor_estimate dropped from rental_stats — Realtor.com has no rent
       // API. mashvisor_estimate replaces it (per-bedroom Mashvisor traditional
       // monthly rent).
-      for (const k of ['iq_estimate', 'zillow_estimate', 'rentcast_estimate', 'redfin_estimate', 'mashvisor_estimate']) {
+      for (const k of [
+        'iq_estimate',
+        'zillow_estimate',
+        'rentcast_estimate',
+        'redfin_estimate',
+        'mashvisor_estimate',
+      ]) {
         if (rs[k] != null) rs[k] = finiteOrNull(rs[k])
       }
     }
@@ -87,10 +102,7 @@ export function usePropertyData() {
           if (opts?.city) body.city = opts.city
           if (opts?.state) body.state = opts.state
           if (opts?.zip_code) body.zip_code = opts.zip_code
-          const raw = await api.post<PropertyResponseCompat>(
-            '/api/v1/properties/search',
-            body,
-          )
+          const raw = await api.post<PropertyResponseCompat>('/api/v1/properties/search', body)
           return validatePropertyResponse(raw)
         },
         staleTime: PROPERTY_STALE_TIME,

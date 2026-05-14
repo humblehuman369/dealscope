@@ -2,15 +2,23 @@
 
 import { useMemo } from 'react'
 import {
-  TrendingUp, DollarSign, PiggyBank, Home, Calendar,
-  ArrowUpRight, Wallet, Building2, Target, Award
+  TrendingUp,
+  DollarSign,
+  PiggyBank,
+  Home,
+  Calendar,
+  ArrowUpRight,
+  Wallet,
+  Building2,
+  Target,
+  Award,
 } from 'lucide-react'
 import {
   YearlyProjection,
   ProjectionAssumptions,
   ProjectionSummary,
   calculate10YearProjections,
-  calculateProjectionSummary
+  calculateProjectionSummary,
 } from '@/lib/projections'
 import { formatCurrency, formatPercent, formatCompactCurrency } from '@/utils/formatters'
 
@@ -18,34 +26,34 @@ import { formatCurrency, formatPercent, formatCompactCurrency } from '@/utils/fo
 // MINI BAR CHART
 // ============================================
 
-function MiniBarChart({ 
-  data, 
+function MiniBarChart({
+  data,
   color = 'blue',
-  height = 120 
-}: { 
+  height = 120,
+}: {
   data: number[]
   color?: string
   height?: number
 }) {
   const max = Math.max(...data.map(Math.abs))
-  const hasNegative = data.some(d => d < 0)
-  
+  const hasNegative = data.some((d) => d < 0)
+
   const colors: Record<string, { positive: string; negative: string }> = {
     blue: { positive: 'bg-[var(--accent-brand-blue)]', negative: 'bg-[rgba(4,101,242,0.35)]' },
     green: { positive: 'bg-[var(--status-positive)]', negative: 'bg-[var(--status-negative)]' },
     purple: { positive: 'bg-[#8b5cf6]', negative: 'bg-[#c4b5fd]' },
     orange: { positive: 'bg-[#f97316]', negative: 'bg-[#fdba74]' },
   }
-  
+
   return (
     <div className="flex items-end gap-1" style={{ height }}>
       {data.map((value, i) => {
         const barHeight = max > 0 ? (Math.abs(value) / max) * 100 : 0
         const isNegative = value < 0
-        
+
         return (
           <div key={i} className="flex-1 flex flex-col justify-end items-center">
-            <div 
+            <div
               className={`w-full rounded-t-sm transition-all duration-300 ${
                 isNegative ? colors[color].negative : colors[color].positive
               }`}
@@ -63,51 +71,38 @@ function MiniBarChart({
 // AREA CHART (Stacked)
 // ============================================
 
-function StackedAreaChart({
-  data,
-  height = 200
-}: {
-  data: YearlyProjection[]
-  height?: number
-}) {
-  const maxWealth = Math.max(...data.map(d => d.totalWealth))
-  
+function StackedAreaChart({ data, height = 200 }: { data: YearlyProjection[]; height?: number }) {
+  const maxWealth = Math.max(...data.map((d) => d.totalWealth))
+
   // Calculate points for SVG paths
   const width = 100
   const points = data.map((d, i) => ({
     x: (i / (data.length - 1)) * width,
     cashFlow: (d.cumulativeCashFlow / maxWealth) * 100,
     paydown: ((d.cumulativeCashFlow + d.equityFromPaydown) / maxWealth) * 100,
-    appreciation: ((d.cumulativeCashFlow + d.equityFromPaydown + d.equityFromAppreciation) / maxWealth) * 100,
+    appreciation:
+      ((d.cumulativeCashFlow + d.equityFromPaydown + d.equityFromAppreciation) / maxWealth) * 100,
   }))
-  
-  const createPath = (getY: (p: typeof points[0]) => number) => {
+
+  const createPath = (getY: (p: (typeof points)[0]) => number) => {
     const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${100 - getY(p)}`).join(' ')
     return path + ` L ${width} 100 L 0 100 Z`
   }
-  
+
   return (
     <div style={{ height }}>
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
         {/* Appreciation layer (top) */}
         <path
-          d={createPath(p => p.appreciation)}
+          d={createPath((p) => p.appreciation)}
           fill="url(#gradient-appreciation)"
           opacity="0.8"
         />
         {/* Paydown layer (middle) */}
-        <path
-          d={createPath(p => p.paydown)}
-          fill="url(#gradient-paydown)"
-          opacity="0.8"
-        />
+        <path d={createPath((p) => p.paydown)} fill="url(#gradient-paydown)" opacity="0.8" />
         {/* Cash flow layer (bottom) */}
-        <path
-          d={createPath(p => p.cashFlow)}
-          fill="url(#gradient-cashflow)"
-          opacity="0.9"
-        />
-        
+        <path d={createPath((p) => p.cashFlow)} fill="url(#gradient-cashflow)" opacity="0.9" />
+
         {/* Gradients */}
         <defs>
           <linearGradient id="gradient-appreciation" x1="0" y1="0" x2="0" y2="1">
@@ -124,20 +119,26 @@ function StackedAreaChart({
           </linearGradient>
         </defs>
       </svg>
-      
+
       {/* Legend - Wrap on mobile */}
       <div className="flex flex-wrap justify-center gap-3 sm:gap-6 mt-3">
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#0465f2] flex-shrink-0" />
-          <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">Cash Flow</span>
+          <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">
+            Cash Flow
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#07172e] flex-shrink-0" />
-          <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">Loan Paydown</span>
+          <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">
+            Loan Paydown
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#0465f2] flex-shrink-0" />
-          <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">Appreciation</span>
+          <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">
+            Appreciation
+          </span>
         </div>
       </div>
     </div>
@@ -154,7 +155,7 @@ function SummaryCard({
   subValue,
   icon: Icon,
   highlight,
-  trend
+  trend,
 }: {
   label: string
   value: string
@@ -164,27 +165,41 @@ function SummaryCard({
   trend?: 'up' | 'down'
 }) {
   return (
-    <div className={`p-2.5 sm:p-3 rounded-xl ${
-      highlight 
-        ? 'bg-gradient-to-br from-[rgba(4, 101, 242,0.08)] to-[rgba(4, 101, 242,0.14)] dark:from-blue-950/40 dark:to-blue-900/30 border border-[rgba(4, 101, 242,0.25)] dark:border-blue-700' 
-        : 'bg-[var(--surface-card)] dark:bg-navy-800 border border-[var(--border-subtle)] dark:border-navy-700'
-    }`}>
+    <div
+      className={`p-2.5 sm:p-3 rounded-xl ${
+        highlight
+          ? 'bg-gradient-to-br from-[rgba(4, 101, 242,0.08)] to-[rgba(4, 101, 242,0.14)] dark:from-blue-950/40 dark:to-blue-900/30 border border-[rgba(4, 101, 242,0.25)] dark:border-blue-700'
+          : 'bg-[var(--surface-card)] dark:bg-navy-800 border border-[var(--border-subtle)] dark:border-navy-700'
+      }`}
+    >
       <div className="flex items-start justify-between">
         <div className="min-w-0">
-          <div className="text-[9px] sm:text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5 truncate">{label}</div>
-          <div className={`text-base sm:text-lg font-bold ${highlight ? 'text-[var(--status-positive)] dark:text-blue-400' : 'text-gray-900 dark:text-white'}`}>
+          <div className="text-[9px] sm:text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5 truncate">
+            {label}
+          </div>
+          <div
+            className={`text-base sm:text-lg font-bold ${highlight ? 'text-[var(--status-positive)] dark:text-blue-400' : 'text-gray-900 dark:text-white'}`}
+          >
             {value}
           </div>
           {subValue && (
-            <div className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">{subValue}</div>
+            <div className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+              {subValue}
+            </div>
           )}
         </div>
       </div>
       {trend && (
-        <div className={`flex items-center gap-1 mt-1 text-[10px] sm:text-xs ${
-          trend === 'up' ? 'text-[var(--status-positive)] dark:text-blue-400' : 'text-[var(--status-negative)] dark:text-red-400'
-        }`}>
-          <ArrowUpRight className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${trend === 'down' ? 'rotate-180' : ''}`} />
+        <div
+          className={`flex items-center gap-1 mt-1 text-[10px] sm:text-xs ${
+            trend === 'up'
+              ? 'text-[var(--status-positive)] dark:text-blue-400'
+              : 'text-[var(--status-negative)] dark:text-red-400'
+          }`}
+        >
+          <ArrowUpRight
+            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${trend === 'down' ? 'rotate-180' : ''}`}
+          />
           <span>{trend === 'up' ? 'Positive' : 'Declining'}</span>
         </div>
       )}
@@ -217,15 +232,25 @@ function ProjectionTable({ data }: { data: YearlyProjection[] }) {
             <tr key={row.year} className="border-b border-gray-100 hover:bg-gray-50">
               <td className="py-2 px-1.5 font-medium">Y{row.year}</td>
               <td className="py-2 px-1.5 text-right">{formatCompactCurrency(row.propertyValue)}</td>
-              <td className="py-2 px-1.5 text-right text-gray-500">{formatCompactCurrency(row.loanBalance)}</td>
-              <td className="py-2 px-1.5 text-right text-blue-600 font-medium">{formatCompactCurrency(row.totalEquity)}</td>
-              <td className={`py-2 px-1.5 text-right font-medium ${row.cashFlow >= 0 ? 'text-blue-600' : 'text-red-500'}`}>
+              <td className="py-2 px-1.5 text-right text-gray-500">
+                {formatCompactCurrency(row.loanBalance)}
+              </td>
+              <td className="py-2 px-1.5 text-right text-blue-600 font-medium">
+                {formatCompactCurrency(row.totalEquity)}
+              </td>
+              <td
+                className={`py-2 px-1.5 text-right font-medium ${row.cashFlow >= 0 ? 'text-blue-600' : 'text-red-500'}`}
+              >
                 {formatCompactCurrency(row.cashFlow)}
               </td>
-              <td className={`py-2 px-1.5 text-right ${row.cumulativeCashFlow >= 0 ? 'text-blue-600' : 'text-red-500'}`}>
+              <td
+                className={`py-2 px-1.5 text-right ${row.cumulativeCashFlow >= 0 ? 'text-blue-600' : 'text-red-500'}`}
+              >
                 {formatCompactCurrency(row.cumulativeCashFlow)}
               </td>
-              <td className="py-2 px-1.5 text-right font-semibold text-purple-600">{formatCompactCurrency(row.totalWealth)}</td>
+              <td className="py-2 px-1.5 text-right font-semibold text-purple-600">
+                {formatCompactCurrency(row.totalWealth)}
+              </td>
               <td className="py-2 px-1.5 text-right">{formatPercent(row.cashOnCash * 100)}</td>
             </tr>
           ))}
@@ -246,31 +271,39 @@ interface ProjectionsViewProps {
 
 export default function ProjectionsView({ assumptions, onAssumptionChange }: ProjectionsViewProps) {
   const projections = useMemo(() => calculate10YearProjections(assumptions), [assumptions])
-  
-  const totalCashInvested = assumptions.purchasePrice * assumptions.downPaymentPct + 
-                            assumptions.purchasePrice * assumptions.closingCostsPct
-  
+
+  const totalCashInvested =
+    assumptions.purchasePrice * assumptions.downPaymentPct +
+    assumptions.purchasePrice * assumptions.closingCostsPct
+
   const summary = useMemo(
     () => calculateProjectionSummary(projections, totalCashInvested),
-    [projections, totalCashInvested]
+    [projections, totalCashInvested],
   )
-  
+
   const year10 = projections[9]
-  
+
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* 10-Year Result Summary - Mobile optimized */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl p-3 sm:p-5 text-white">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wide">10-Year Net Gain</div>
-            <div className="text-2xl sm:text-3xl font-bold mt-0.5 sm:mt-1">+{formatCompactCurrency(year10.totalWealth - totalCashInvested)}</div>
+            <div className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wide">
+              10-Year Net Gain
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold mt-0.5 sm:mt-1">
+              +{formatCompactCurrency(year10.totalWealth - totalCashInvested)}
+            </div>
             <div className="text-blue-200 text-xs sm:text-sm mt-0.5 sm:mt-1">
-              {formatCompactCurrency(totalCashInvested)} → {formatCompactCurrency(year10.totalWealth)}
+              {formatCompactCurrency(totalCashInvested)} →{' '}
+              {formatCompactCurrency(year10.totalWealth)}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-3xl sm:text-4xl font-bold">{summary.equityMultiple.toFixed(1)}x</div>
+            <div className="text-3xl sm:text-4xl font-bold">
+              {summary.equityMultiple.toFixed(1)}x
+            </div>
             <div className="text-blue-200 text-xs sm:text-sm">Return Multiple</div>
           </div>
         </div>
@@ -310,21 +343,35 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
 
       {/* Wealth Growth Chart */}
       <div className="bg-white dark:bg-navy-800 rounded-xl border border-gray-100 dark:border-navy-700 p-3 sm:p-4">
-        <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">Wealth Accumulation</h3>
+        <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">
+          Wealth Accumulation
+        </h3>
         <StackedAreaChart data={projections} height={140} />
-        
+
         <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-gray-100 dark:border-navy-700">
           <div className="text-center min-w-0">
-            <div className="text-[14px] sm:text-lg font-bold text-purple-600">{formatCompactCurrency(year10.cumulativeCashFlow)}</div>
-            <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">Cash Flow</div>
+            <div className="text-[14px] sm:text-lg font-bold text-purple-600">
+              {formatCompactCurrency(year10.cumulativeCashFlow)}
+            </div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">
+              Cash Flow
+            </div>
           </div>
           <div className="text-center min-w-0">
-            <div className="text-[14px] sm:text-lg font-bold text-blue-600">{formatCompactCurrency(year10.equityFromPaydown)}</div>
-            <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">Principal Paydown</div>
+            <div className="text-[14px] sm:text-lg font-bold text-blue-600">
+              {formatCompactCurrency(year10.equityFromPaydown)}
+            </div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">
+              Principal Paydown
+            </div>
           </div>
           <div className="text-center min-w-0">
-            <div className="text-[14px] sm:text-lg font-bold text-blue-600">{formatCompactCurrency(year10.equityFromAppreciation)}</div>
-            <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">Appreciation</div>
+            <div className="text-[14px] sm:text-lg font-bold text-blue-600">
+              {formatCompactCurrency(year10.equityFromAppreciation)}
+            </div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">
+              Appreciation
+            </div>
           </div>
         </div>
       </div>
@@ -332,12 +379,10 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
       {/* Annual Cash Flow Chart */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
         <div className="bg-white dark:bg-navy-800 rounded-xl border border-gray-100 dark:border-navy-700 p-3 sm:p-4">
-          <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">Annual Cash Flow</h3>
-          <MiniBarChart 
-            data={projections.map(p => p.cashFlow)} 
-            color="green"
-            height={80}
-          />
+          <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">
+            Annual Cash Flow
+          </h3>
+          <MiniBarChart data={projections.map((p) => p.cashFlow)} color="green" height={80} />
           <div className="mt-2 sm:mt-3 text-center">
             <span className="text-[13px] font-bold text-gray-600 dark:text-white">Avg: </span>
             <span className="text-[13px] sm:text-[14px] font-bold text-blue-600">
@@ -345,14 +390,12 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
             </span>
           </div>
         </div>
-        
+
         <div className="bg-white dark:bg-navy-800 rounded-xl border border-gray-100 dark:border-navy-700 p-3 sm:p-4">
-          <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">Equity Growth</h3>
-          <MiniBarChart 
-            data={projections.map(p => p.totalEquity)} 
-            color="blue"
-            height={80}
-          />
+          <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">
+            Equity Growth
+          </h3>
+          <MiniBarChart data={projections.map((p) => p.totalEquity)} color="blue" height={80} />
           <div className="mt-2 sm:mt-3 text-center">
             <span className="text-[13px] font-bold text-gray-600 dark:text-white">Year 10: </span>
             <span className="text-[13px] sm:text-[14px] font-bold text-blue-600">
@@ -364,30 +407,48 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
 
       {/* Growth Assumptions */}
       <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl p-3 sm:p-4 border border-indigo-100 dark:border-indigo-800">
-        <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">Growth Assumptions</h3>
+        <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">
+          Growth Assumptions
+        </h3>
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <div>
-            <div className="text-[13px] font-bold text-gray-600 dark:text-white">Annual Appreciation</div>
-            <div className="text-[13px] sm:text-[14px] font-bold text-indigo-600 dark:text-indigo-400">{formatPercent(assumptions.annualAppreciation * 100)}</div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white">
+              Annual Appreciation
+            </div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-indigo-600 dark:text-indigo-400">
+              {formatPercent(assumptions.annualAppreciation * 100)}
+            </div>
           </div>
           <div>
             <div className="text-[13px] font-bold text-gray-600 dark:text-white">Rent Growth</div>
-            <div className="text-[13px] sm:text-[14px] font-bold text-indigo-600 dark:text-indigo-400">{formatPercent(assumptions.annualRentGrowth * 100)}</div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-indigo-600 dark:text-indigo-400">
+              {formatPercent(assumptions.annualRentGrowth * 100)}
+            </div>
           </div>
           <div>
-            <div className="text-[13px] font-bold text-gray-600 dark:text-white">Property Tax Growth</div>
-            <div className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white">{formatPercent(assumptions.propertyTaxGrowth * 100)}</div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white">
+              Property Tax Growth
+            </div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white">
+              {formatPercent(assumptions.propertyTaxGrowth * 100)}
+            </div>
           </div>
           <div>
-            <div className="text-[13px] font-bold text-gray-600 dark:text-white">Insurance Growth</div>
-            <div className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white">{formatPercent(assumptions.insuranceGrowth * 100)}</div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white">
+              Insurance Growth
+            </div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white">
+              {formatPercent(assumptions.insuranceGrowth * 100)}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Year-by-Year Table */}
       <div className="bg-white dark:bg-navy-800 rounded-xl border border-gray-100 dark:border-navy-700 p-3 sm:p-4">
-        <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">Year-by-Year Breakdown</h3>
+        <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">
+          Year-by-Year Breakdown
+        </h3>
         <ProjectionTable data={projections} />
       </div>
     </div>

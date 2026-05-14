@@ -85,28 +85,39 @@ function extractCompsArray(raw: BackendCompsResponse): unknown[] {
  */
 export function transformRentComps(
   raw: BackendCompsResponse,
-  subject?: SubjectProperty
+  subject?: SubjectProperty,
 ): RentComp[] {
   const list = extractCompsArray(raw)
   const subjectLat = subject?.latitude ?? null
   const subjectLon = subject?.longitude ?? null
-  const hasSubjectCoords =
-    hasFiniteNumber(subjectLat) && hasFiniteNumber(subjectLon)
+  const hasSubjectCoords = hasFiniteNumber(subjectLat) && hasFiniteNumber(subjectLon)
 
   const comps: RentComp[] = list.map((item: unknown, index: number) => {
-    const wrapper = (item && typeof item === 'object')
-      ? (item as Record<string, unknown>)
-      : null
-    const comp = (item && typeof item === 'object' && 'property' in item
-      ? (item as { property: unknown }).property
-      : item) as Record<string, unknown>
+    const wrapper = item && typeof item === 'object' ? (item as Record<string, unknown>) : null
+    const comp = (
+      item && typeof item === 'object' && 'property' in item
+        ? (item as { property: unknown }).property
+        : item
+    ) as Record<string, unknown>
     const addr = (comp?.address as Record<string, unknown>) ?? {}
-    const address = toStr(addr.streetAddress ?? addr.street ?? comp?.formattedAddress ?? comp?.addressLine1 ?? comp?.address ?? comp?.fullAddress ?? comp?.streetAddress ?? '')
+    const address = toStr(
+      addr.streetAddress ??
+        addr.street ??
+        comp?.formattedAddress ??
+        comp?.addressLine1 ??
+        comp?.address ??
+        comp?.fullAddress ??
+        comp?.streetAddress ??
+        '',
+    )
     const city = toStr(addr.city ?? comp?.city ?? '')
     const state = toStr(addr.state ?? comp?.state ?? '')
     const zip = toStr(addr.zipcode ?? addr.zip ?? comp?.zipCode ?? comp?.zip ?? comp?.zipcode ?? '')
     const units = comp?.units as unknown[] | undefined
-    const unitPrice = Array.isArray(units) && units.length > 0 ? (units[0] as Record<string, unknown>)?.price : undefined
+    const unitPrice =
+      Array.isArray(units) && units.length > 0
+        ? (units[0] as Record<string, unknown>)?.price
+        : undefined
     const monthlyRent = toNum(
       comp?.price ??
         comp?.rent ??
@@ -115,11 +126,29 @@ export function transformRentComps(
         comp?.unformattedPrice ??
         comp?.listPrice ??
         unitPrice ??
-        0
+        0,
     )
-    const sqft = toNum(comp?.squareFootage ?? comp?.livingAreaValue ?? comp?.livingArea ?? comp?.sqft ?? comp?.squareFeet ?? comp?.finishedSqFt ?? 0)
-    const listingDateRaw = comp?.datePosted ?? comp?.listingDate ?? comp?.listedDate ?? comp?.dateSold ?? comp?.seenDate ?? comp?.lastSeenDate ?? comp?.dateSeen ?? ''
-    const listingDate = listingDateRaw ? new Date(listingDateRaw as string).toISOString().split('T')[0] : ''
+    const sqft = toNum(
+      comp?.squareFootage ??
+        comp?.livingAreaValue ??
+        comp?.livingArea ??
+        comp?.sqft ??
+        comp?.squareFeet ??
+        comp?.finishedSqFt ??
+        0,
+    )
+    const listingDateRaw =
+      comp?.datePosted ??
+      comp?.listingDate ??
+      comp?.listedDate ??
+      comp?.dateSold ??
+      comp?.seenDate ??
+      comp?.lastSeenDate ??
+      comp?.dateSeen ??
+      ''
+    const listingDate = listingDateRaw
+      ? new Date(listingDateRaw as string).toISOString().split('T')[0]
+      : ''
     const daysAgo = listingDate
       ? Math.floor((Date.now() - new Date(listingDate).getTime()) / 86400000)
       : 999
@@ -132,8 +161,7 @@ export function transformRentComps(
       hasSubjectCoords && hasCompCoords
         ? haversineDistance(subjectLat as number, subjectLon as number, lat, lon)
         : null
-    const distanceMiles =
-      haversineDist ?? toNum(comp?.distance ?? comp?.distanceMiles ?? 0)
+    const distanceMiles = haversineDist ?? toNum(comp?.distance ?? comp?.distanceMiles ?? 0)
     const beds = Math.floor(toNum(comp?.bedrooms ?? comp?.beds ?? comp?.bd ?? 0))
     const baths = toNum(comp?.bathrooms ?? comp?.baths ?? comp?.ba ?? 0)
     const yearBuilt = Math.floor(toNum(comp?.yearBuilt ?? comp?.yearConstructed ?? 0))
@@ -147,7 +175,8 @@ export function transformRentComps(
         })
       : 0
     const rentPerSqft = sqft > 0 ? Math.round((monthlyRent / sqft) * 100) / 100 : 0
-    const zpid = toStr(comp?.zpid ?? comp?.id ?? comp?.propertyId ?? '').trim() || `rent-${index + 1}`
+    const zpid =
+      toStr(comp?.zpid ?? comp?.id ?? comp?.propertyId ?? '').trim() || `rent-${index + 1}`
 
     let imageUrl: string | null = null
     imageUrl =
@@ -179,14 +208,22 @@ export function transformRentComps(
         if (hasCompCoords) {
           imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=400x300&location=${lat},${lon}&key=${key}`
         } else if (address) {
-          const fullAddr = address + (city ? `, ${city}` : '') + (state ? `, ${state}` : '') + (zip ? ` ${zip}` : '')
+          const fullAddr =
+            address +
+            (city ? `, ${city}` : '') +
+            (state ? `, ${state}` : '') +
+            (zip ? ` ${zip}` : '')
           imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=400x300&location=${encodeURIComponent(fullAddr)}&key=${key}`
         }
       }
     }
 
     const hdpUrl = comp?.hdpUrl ? toStr(comp.hdpUrl) : ''
-    const zillowUrl = comp?.url ? toStr(comp.url) : (hdpUrl ? `https://www.zillow.com${hdpUrl.startsWith('/') ? '' : '/'}${hdpUrl}` : null)
+    const zillowUrl = comp?.url
+      ? toStr(comp.url)
+      : hdpUrl
+        ? `https://www.zillow.com${hdpUrl.startsWith('/') ? '' : '/'}${hdpUrl}`
+        : null
 
     return {
       id: zpid,
@@ -223,7 +260,7 @@ export function transformRentComps(
 export async function fetchRentComps(
   identifier: CompsIdentifier,
   subject?: SubjectProperty,
-  options?: { signal?: AbortSignal }
+  options?: { signal?: AbortSignal },
 ): Promise<AxessoResponse<RentComp[]>> {
   const params: Record<string, string> = {}
   if (identifier.zpid) params.zpid = identifier.zpid
@@ -252,7 +289,7 @@ export async function fetchRentComps(
     ZILLOW_RENT_ENDPOINT,
     params,
     undefined,
-    options?.signal
+    options?.signal,
   )
 
   if (zillowRes.ok && zillowRes.data) {
@@ -261,7 +298,9 @@ export async function fetchRentComps(
       const transformed = transformRentComps(zillowRes.data, subject)
       if (transformed.length > 0) {
         if (process.env.NODE_ENV !== 'production') {
-          console.log('[comps_api] rental-comps (zillow) transformed', { count: transformed.length })
+          console.log('[comps_api] rental-comps (zillow) transformed', {
+            count: transformed.length,
+          })
         }
         return { ...zillowRes, data: transformed }
       }
@@ -277,7 +316,7 @@ export async function fetchRentComps(
     RENTCAST_ENDPOINT,
     params,
     undefined,
-    options?.signal
+    options?.signal,
   )
 
   if (!rcRes.ok || !rcRes.data) {
@@ -298,7 +337,9 @@ export async function fetchRentComps(
 
   const transformed = transformRentComps(rcRes.data, subject)
   if (process.env.NODE_ENV !== 'production') {
-    console.log('[comps_api] rental-comps (rentcast fallback) transformed', { count: transformed.length })
+    console.log('[comps_api] rental-comps (rentcast fallback) transformed', {
+      count: transformed.length,
+    })
   }
   return { ...rcRes, data: transformed }
 }

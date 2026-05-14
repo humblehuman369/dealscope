@@ -46,20 +46,34 @@ function SectionHeader({ title, color }: { title: string; color: string }) {
   return (
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-2 pl-2.5 border-l-[3px]" style={{ borderColor: color }}>
-        <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color }}>{title}</span>
+        <span className="text-[1.125rem] font-bold uppercase tracking-wide" style={{ color }}>
+          {title}
+        </span>
       </div>
     </div>
   )
 }
 
-function Row({ label, value, strike, color }: { label: string; value: string; strike?: boolean; color?: string }) {
+function Row({
+  label,
+  value,
+  strike,
+  color,
+}: {
+  label: string
+  value: string
+  strike?: boolean
+  color?: string
+}) {
   return (
     <div className="flex justify-between py-1.5 pl-6">
-      <span className="text-base" style={{ color: colors.text.body }}>{label}</span>
+      <span className="text-base" style={{ color: colors.text.body }}>
+        {label}
+      </span>
       <span
         className="text-base font-semibold tabular-nums"
         style={{
-          color: strike ? 'var(--text-body)' : (color || colors.text.primary),
+          color: strike ? 'var(--text-body)' : color || colors.text.primary,
           textDecoration: strike ? 'line-through' : undefined,
         }}
       >
@@ -75,8 +89,18 @@ function TotalRow({ label, value, color }: { label: string; value: string; color
       className="flex justify-between pt-2.5 pb-2.5 mt-1.5 pl-6"
       style={{ borderTop: `2px solid ${color}`, borderBottom: `2px solid ${color}` }}
     >
-      <span className="font-semibold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>{label}</span>
-      <span className="font-bold tabular-nums" style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}>{value}</span>
+      <span
+        className="font-semibold tabular-nums"
+        style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}
+      >
+        {label}
+      </span>
+      <span
+        className="font-bold tabular-nums"
+        style={{ color: 'var(--text-heading)', fontSize: '1.14rem' }}
+      >
+        {value}
+      </span>
     </div>
   )
 }
@@ -88,12 +112,26 @@ function WhatYoudPay(props: StrategyBreakdownProps) {
       <Row label="Market Price" value={formatCurrency(props.listPrice)} />
       <Row label="Target Buy" value={formatCurrency(props.targetPrice)} color={colors.brand.blue} />
       <Row label="Loan Amount" value={formatCurrency(props.loanAmount)} />
-      <Row label={`Down Payment (${Math.round(props.downPaymentPct * 100)}%)`} value={formatCurrency(props.downPayment)} />
-      <Row label={`Closing Costs (${Math.round(props.closingCostsPct * 100)}%)`} value={formatCurrency(props.closingCosts)} />
+      <Row
+        label={`Down Payment (${Math.round(props.downPaymentPct * 100)}%)`}
+        value={formatCurrency(props.downPayment)}
+      />
+      <Row
+        label={`Closing Costs (${Math.round(props.closingCostsPct * 100)}%)`}
+        value={formatCurrency(props.closingCosts)}
+      />
       {props.rehabCost > 0 && (
-        <Row label="Rehab Budget" value={formatCurrency(props.rehabCost)} color={colors.brand.blue} />
+        <Row
+          label="Rehab Budget"
+          value={formatCurrency(props.rehabCost)}
+          color={colors.brand.blue}
+        />
       )}
-      <TotalRow label="Cash Needed" value={formatCurrency(props.downPayment + props.closingCosts + props.rehabCost)} color={colors.brand.blue} />
+      <TotalRow
+        label="Cash Needed"
+        value={formatCurrency(props.downPayment + props.closingCosts + props.rehabCost)}
+        color={colors.brand.blue}
+      />
     </div>
   )
 }
@@ -105,7 +143,11 @@ function YourLoanPayment(props: StrategyBreakdownProps) {
       <Row label="Interest Rate" value={`${(props.rate * 100).toFixed(1)}%`} />
       <Row label="Loan Term" value={`${props.loanTermYears} years`} />
       <Row label="Monthly Payment" value={formatCurrency(props.monthlyPI)} />
-      <TotalRow label="Annual Payment" value={formatCurrency(props.annualDebt)} color={colors.brand.blue} />
+      <TotalRow
+        label="Annual Payment"
+        value={formatCurrency(props.annualDebt)}
+        color={colors.brand.blue}
+      />
     </div>
   )
 }
@@ -116,10 +158,23 @@ function WhatItCosts(props: StrategyBreakdownProps) {
       <SectionHeader title="What It Costs" color={colors.brand.blue} />
       <Row label="Property Tax" value={`${formatCurrency(props.propertyTaxes)}/yr`} />
       <Row label="Insurance" value={`${formatCurrency(props.insurance)}/yr`} />
-      <Row label={`Management (${Math.round(props.mgmtPct * 100)}%)`} value={`${formatCurrency(props.mgmt)}/yr`} />
-      <Row label={`Maintenance (${Math.round(props.maintPct * 100)}%)`} value={`${formatCurrency(props.maint)}/yr`} />
-      <Row label={`Reserves (${Math.round(props.reservesPct * 100)}%)`} value={`${formatCurrency(props.reserves)}/yr`} />
-      <TotalRow label="Total Costs" value={`${formatCurrency(props.totalExpenses)}/yr`} color={colors.brand.blue} />
+      <Row
+        label={`Management (${Math.round(props.mgmtPct * 100)}%)`}
+        value={`${formatCurrency(props.mgmt)}/yr`}
+      />
+      <Row
+        label={`Maintenance (${Math.round(props.maintPct * 100)}%)`}
+        value={`${formatCurrency(props.maint)}/yr`}
+      />
+      <Row
+        label={`Reserves (${Math.round(props.reservesPct * 100)}%)`}
+        value={`${formatCurrency(props.reserves)}/yr`}
+      />
+      <TotalRow
+        label="Total Costs"
+        value={`${formatCurrency(props.totalExpenses)}/yr`}
+        color={colors.brand.blue}
+      />
     </div>
   )
 }
@@ -131,10 +186,18 @@ function WhatYoudEarn(props: StrategyBreakdownProps) {
       <Row label="Monthly Rent" value={formatCurrency(props.monthlyRent)} />
       <Row label="Annual Gross" value={formatCurrency(props.annualRent)} />
       <div className="flex justify-between py-1.5 pl-6">
-        <span className="text-base" style={{ color: colors.text.body }}>Vacancy Loss ({Math.round(props.vacancyPct * 100)}%)</span>
-        <span className="text-base font-semibold tabular-nums" style={{ color: colors.brand.blue }}>({formatCurrency(props.vacancyLoss)})</span>
+        <span className="text-base" style={{ color: colors.text.body }}>
+          Vacancy Loss ({Math.round(props.vacancyPct * 100)}%)
+        </span>
+        <span className="text-base font-semibold tabular-nums" style={{ color: colors.brand.blue }}>
+          ({formatCurrency(props.vacancyLoss)})
+        </span>
       </div>
-      <TotalRow label="Effective Income" value={formatCurrency(props.effectiveIncome)} color={colors.brand.blue} />
+      <TotalRow
+        label="Effective Income"
+        value={formatCurrency(props.effectiveIncome)}
+        color={colors.brand.blue}
+      />
     </div>
   )
 }

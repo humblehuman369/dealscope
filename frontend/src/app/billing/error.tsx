@@ -21,9 +21,7 @@ export default function BillingError({ error, reset }: ErrorProps) {
             <AlertTriangle className="w-8 h-8 text-[var(--status-negative)]" />
           </div>
 
-          <h1 className="text-2xl font-bold text-[var(--text-heading)] mb-2">
-            Billing Error
-          </h1>
+          <h1 className="text-2xl font-bold text-[var(--text-heading)] mb-2">Billing Error</h1>
 
           <p className="text-[var(--text-secondary)] mb-6">
             We couldn&apos;t load your billing information. Your subscription is not affected.

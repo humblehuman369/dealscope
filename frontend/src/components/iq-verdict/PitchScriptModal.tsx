@@ -49,9 +49,7 @@ function isSectionHeading(line: string): boolean {
   if (t.length < 3 || t.length > 100) return false
   if (/[.!?]$/.test(t)) return false
   return (
-    PURE_ALL_CAPS_RE.test(t) ||
-    ALL_CAPS_PREFIX_DASH_RE.test(t) ||
-    ALL_CAPS_PREFIX_PAREN_RE.test(t)
+    PURE_ALL_CAPS_RE.test(t) || ALL_CAPS_PREFIX_DASH_RE.test(t) || ALL_CAPS_PREFIX_PAREN_RE.test(t)
   )
 }
 
@@ -479,7 +477,8 @@ export function PitchScriptModal({ structure, onClose, propertyAddress }: PitchS
                     textTransform: 'uppercase',
                     color: 'var(--accent-sky-light, var(--accent-sky))',
                     paddingTop: i === 0 ? 0 : 6,
-                    borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle, var(--border-default))',
+                    borderTop:
+                      i === 0 ? 'none' : '1px solid var(--border-subtle, var(--border-default))',
                   }}
                 >
                   {block.text}
@@ -534,17 +533,14 @@ export function PitchScriptModal({ structure, onClose, propertyAddress }: PitchS
                 padding: '8px 10px',
               }}
             >
-              <strong style={{ color: 'var(--text-heading)' }}>Mail app didn't open?</strong>{' '}
-              The full playbook has been copied to your clipboard — paste it into Gmail, Outlook,
-              or any compose window. (Browsers only open mail apps when one is registered as the
-              default handler.)
+              <strong style={{ color: 'var(--text-heading)' }}>Mail app didn't open?</strong> The
+              full playbook has been copied to your clipboard — paste it into Gmail, Outlook, or any
+              compose window. (Browsers only open mail apps when one is registered as the default
+              handler.)
             </div>
           )}
 
-          <div
-            className="flex flex-wrap items-center gap-2"
-            style={{ justifyContent: 'flex-end' }}
-          >
+          <div className="flex flex-wrap items-center gap-2" style={{ justifyContent: 'flex-end' }}>
             {/*
               Print is a desktop-first feature. In the Capacitor WebView,
               window.open / browser print dialog are unreliable — hide it there.

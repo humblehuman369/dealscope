@@ -14,10 +14,28 @@ export function ReturnsTargetsBars({
   onePercentRule,
 }: ReturnsTargetsBarsProps) {
   const rows = [
-    { label: 'Cap Rate', value: capRate, target: 8, suffix: '%', format: (v: number) => v.toFixed(1) },
-    { label: 'Cash on Cash', value: cashOnCash, target: 10, suffix: '%', format: (v: number) => v.toFixed(1) },
+    {
+      label: 'Cap Rate',
+      value: capRate,
+      target: 8,
+      suffix: '%',
+      format: (v: number) => v.toFixed(1),
+    },
+    {
+      label: 'Cash on Cash',
+      value: cashOnCash,
+      target: 10,
+      suffix: '%',
+      format: (v: number) => v.toFixed(1),
+    },
     { label: 'DSCR', value: dscr, target: 1.2, suffix: 'x', format: (v: number) => v.toFixed(2) },
-    { label: '1% Rule', value: onePercentRule, target: 1, suffix: '%', format: (v: number) => v.toFixed(2) },
+    {
+      label: '1% Rule',
+      value: onePercentRule,
+      target: 1,
+      suffix: '%',
+      format: (v: number) => v.toFixed(2),
+    },
   ]
 
   return (

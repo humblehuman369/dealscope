@@ -10,7 +10,7 @@ interface PriceHistoryProps {
 
 /**
  * PriceHistory Component
- * 
+ *
  * Timeline display of property price history.
  * Sold events use green (success), price changes use semantic red/green.
  * All financial values use font-weight 600 + tabular-nums.
@@ -25,7 +25,10 @@ export function PriceHistory({ history }: PriceHistoryProps) {
   if (!history || history.length === 0) {
     return (
       <div className="rounded-[14px] p-5" style={cardStyle}>
-        <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: 'var(--accent-sky)' }}>
+        <div
+          className="text-xs font-bold uppercase tracking-[0.12em] mb-4"
+          style={{ color: 'var(--accent-sky)' }}
+        >
           Price History
         </div>
         <p className="text-sm text-center py-4" style={{ color: 'var(--text-secondary)' }}>
@@ -37,7 +40,10 @@ export function PriceHistory({ history }: PriceHistoryProps) {
 
   return (
     <div className="rounded-[14px] p-5" style={cardStyle}>
-      <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: 'var(--accent-sky)' }}>
+      <div
+        className="text-xs font-bold uppercase tracking-[0.12em] mb-4"
+        style={{ color: 'var(--accent-sky)' }}
+      >
         Price History
       </div>
 
@@ -53,16 +59,21 @@ export function PriceHistory({ history }: PriceHistoryProps) {
                   style={{ backgroundColor: 'var(--border-subtle)' }}
                 />
               )}
-              
+
               {/* Timeline Dot */}
               <div
                 className="relative z-10 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: isSold ? 'var(--status-positive)' : 'var(--surface-elevated)' }}
+                style={{
+                  backgroundColor: isSold ? 'var(--status-positive)' : 'var(--surface-elevated)',
+                }}
               >
                 {isSold ? (
                   <Check size={12} className="text-[var(--text-inverse)]" />
                 ) : (
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--text-secondary)' }} />
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: 'var(--text-secondary)' }}
+                  />
                 )}
               </div>
 
@@ -88,11 +99,15 @@ export function PriceHistory({ history }: PriceHistoryProps) {
                       <div
                         className="text-xs font-semibold"
                         style={{
-                          color: item.priceChangeRate < 0 ? 'var(--status-negative)' : 'var(--status-positive)',
+                          color:
+                            item.priceChangeRate < 0
+                              ? 'var(--status-negative)'
+                              : 'var(--status-positive)',
                           fontVariantNumeric: 'tabular-nums',
                         }}
                       >
-                        {item.priceChangeRate > 0 ? '+' : ''}{item.priceChangeRate}%
+                        {item.priceChangeRate > 0 ? '+' : ''}
+                        {item.priceChangeRate}%
                       </div>
                     )}
                   </div>
@@ -116,16 +131,31 @@ export function PriceHistorySkeleton() {
       className="rounded-[14px] p-5"
       style={{ backgroundColor: 'var(--surface-base)', border: `1px solid var(--border-subtle)` }}
     >
-      <div className="h-3 w-24 rounded animate-pulse mb-4" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+      <div
+        className="h-3 w-24 rounded animate-pulse mb-4"
+        style={{ backgroundColor: 'var(--surface-elevated)' }}
+      />
       <div className="space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex items-start gap-4">
-            <div className="w-6 h-6 rounded-full animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+            <div
+              className="w-6 h-6 rounded-full animate-pulse"
+              style={{ backgroundColor: 'var(--surface-elevated)' }}
+            />
             <div className="flex-1">
-              <div className="h-4 w-24 rounded animate-pulse mb-1" style={{ backgroundColor: 'var(--surface-elevated)' }} />
-              <div className="h-3 w-32 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+              <div
+                className="h-4 w-24 rounded animate-pulse mb-1"
+                style={{ backgroundColor: 'var(--surface-elevated)' }}
+              />
+              <div
+                className="h-3 w-32 rounded animate-pulse"
+                style={{ backgroundColor: 'var(--surface-elevated)' }}
+              />
             </div>
-            <div className="h-5 w-20 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+            <div
+              className="h-5 w-20 rounded animate-pulse"
+              style={{ backgroundColor: 'var(--surface-elevated)' }}
+            />
           </div>
         ))}
       </div>

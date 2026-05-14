@@ -158,7 +158,9 @@ export function PropertyAddressBar({
   const cleanCity = safeDecode(city)
   const cleanState = safeDecode(state)
   const cleanZip = safeDecode(zip)
-  const fullAddress = [cleanAddress, cleanCity, [cleanState, cleanZip].filter(Boolean).join(' ')].filter(Boolean).join(', ')
+  const fullAddress = [cleanAddress, cleanCity, [cleanState, cleanZip].filter(Boolean).join(' ')]
+    .filter(Boolean)
+    .join(', ')
   const encodedAddress = encodeURIComponent(fullAddress)
 
   const isListed = listingStatus === 'FOR_SALE' || listingStatus === 'PENDING'
@@ -186,13 +188,7 @@ export function PropertyAddressBar({
       >
         {/* Left: House icon + Address link */}
         <div className="flex items-center gap-2.5 min-w-0 sm:flex-1">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            style={{ flexShrink: 0 }}
-          >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
             <path
               d="M2 7.5L8 2.5L14 7.5V13.5C14 14.05 13.55 14.5 13 14.5H3C2.45 14.5 2 14.05 2 13.5V7.5Z"
               stroke={barTokens.accent}
@@ -227,79 +223,86 @@ export function PropertyAddressBar({
         </div>
 
         {/* Details + Actions (full-width row on mobile, inline on desktop) */}
-        <div className={`flex items-center w-full sm:w-auto sm:shrink-0 gap-2 sm:gap-3 min-w-0 transition-all duration-300 ${
-          detailsCollapsed
-            ? 'max-h-0 opacity-0 overflow-hidden sm:max-h-none sm:opacity-100 sm:overflow-visible'
-            : 'max-h-12 opacity-100'
-        }`}>
+        <div
+          className={`flex items-center w-full sm:w-auto sm:shrink-0 gap-2 sm:gap-3 min-w-0 transition-all duration-300 ${
+            detailsCollapsed
+              ? 'max-h-0 opacity-0 overflow-hidden sm:max-h-none sm:opacity-100 sm:overflow-visible'
+              : 'max-h-12 opacity-100'
+          }`}
+        >
           {!loading && (
-          <div className="flex items-center flex-wrap sm:flex-nowrap flex-1 gap-1.5 sm:gap-3 min-w-0">
-            <DetailItem label="Beds" value={beds} />
-            <Dot />
-            <DetailItem label="Ba" value={parseFloat(baths.toFixed(1))} />
-            <Dot />
-            <DetailItem label="Sqft" value={sqft.toLocaleString()} />
-            <Dot />
-            <StatusText status={statusLabel} />
-          </div>
+            <div className="flex items-center flex-wrap sm:flex-nowrap flex-1 gap-1.5 sm:gap-3 min-w-0">
+              <DetailItem label="Beds" value={beds} />
+              <Dot />
+              <DetailItem label="Ba" value={parseFloat(baths.toFixed(1))} />
+              <Dot />
+              <DetailItem label="Sqft" value={sqft.toLocaleString()} />
+              <Dot />
+              <StatusText status={statusLabel} />
+            </div>
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-          {/* Property Details link */}
-          <Link
-            href={profileHref}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all hover:brightness-125"
-            style={{
-              color: 'var(--accent-sky)',
-              background: 'rgba(15,164,233,0.08)',
-              border: '1px solid rgba(15,164,233,0.2)',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M2 4H14M2 8H10M2 12H12"
-                stroke="currentColor"
-                strokeWidth="1.3"
-                strokeLinecap="round"
-              />
-            </svg>
-            Details
-          </Link>
+            {/* Property Details link */}
+            <Link
+              href={profileHref}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all hover:brightness-125"
+              style={{
+                color: 'var(--accent-sky)',
+                background: 'rgba(15,164,233,0.08)',
+                border: '1px solid rgba(15,164,233,0.2)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M2 4H14M2 8H10M2 12H12"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                />
+              </svg>
+              Details
+            </Link>
 
-          <button
-            type="button"
-            onClick={handleBookmarkClick}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 6,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 6,
-              transition: 'background 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = barTokens.hoverAccent
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none'
-            }}
-            title={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
-            aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill={bookmarked ? barTokens.accent : 'none'}>
-              <path
-                d="M4.5 2.25H13.5C13.91 2.25 14.25 2.59 14.25 3V16.5L9 13.125L3.75 16.5V3C3.75 2.59 4.09 2.25 4.5 2.25Z"
-                stroke={barTokens.accent}
-                strokeWidth="1.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+            <button
+              type="button"
+              onClick={handleBookmarkClick}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 6,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 6,
+                transition: 'background 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = barTokens.hoverAccent
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'none'
+              }}
+              title={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
+              aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark property'}
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill={bookmarked ? barTokens.accent : 'none'}
+              >
+                <path
+                  d="M4.5 2.25H13.5C13.91 2.25 14.25 2.59 14.25 3V16.5L9 13.125L3.75 16.5V3C3.75 2.59 4.09 2.25 4.5 2.25Z"
+                  stroke={barTokens.accent}
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
           </div>
         </div>
       </div>

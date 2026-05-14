@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   description: 'Your recent property searches.',
 }
 
-export default function SearchHistoryLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function SearchHistoryLayout({ children }: { children: React.ReactNode }) {
   return children
 }

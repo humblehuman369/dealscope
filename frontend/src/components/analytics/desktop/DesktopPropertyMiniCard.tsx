@@ -21,7 +21,7 @@ type SellerType =
 
 /**
  * DesktopPropertyMiniCard Component
- * 
+ *
  * Enhanced desktop version of the property mini card with larger
  * photo area, better spacing, and improved visual hierarchy.
  */
@@ -59,9 +59,9 @@ export function DesktopPropertyMiniCard({
   listingStatus,
   isOffMarket,
   sellerType,
-  isForeclosure
+  isForeclosure,
 }: DesktopPropertyMiniCardProps) {
-  const photoList = photos.length > 0 ? photos : (thumbnailUrl ? [thumbnailUrl] : [])
+  const photoList = photos.length > 0 ? photos : thumbnailUrl ? [thumbnailUrl] : []
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const totalPhotos = photoCount || photoList.length
 
@@ -83,16 +83,18 @@ export function DesktopPropertyMiniCard({
           <>
             {/* Main Photo */}
             <div className="desktop-photo-main">
-              <img 
-                src={photoList[currentPhotoIndex]} 
+              <img
+                src={photoList[currentPhotoIndex]}
                 alt={`Property photo ${currentPhotoIndex + 1}`}
                 className="w-full h-full object-cover"
               />
-              
+
               {/* Photo Counter Badge */}
               <div className="desktop-photo-counter">
                 <Camera className="w-3 h-3" />
-                <span>{currentPhotoIndex + 1}/{totalPhotos}</span>
+                <span>
+                  {currentPhotoIndex + 1}/{totalPhotos}
+                </span>
               </div>
 
               {/* Navigation Arrows */}
@@ -122,10 +124,17 @@ export function DesktopPropertyMiniCard({
                 {photoList.slice(0, 6).map((photo, idx) => (
                   <button
                     key={idx}
-                    onClick={(e) => { e.stopPropagation(); setCurrentPhotoIndex(idx); }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setCurrentPhotoIndex(idx)
+                    }}
                     className={`desktop-thumb-item ${idx === currentPhotoIndex ? 'active' : ''}`}
                   >
-                    <img src={photo} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                    <img
+                      src={photo}
+                      alt={`Thumbnail ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 ))}
                 {photoList.length > 6 && (
@@ -157,7 +166,7 @@ export function DesktopPropertyMiniCard({
           <p className="desktop-property-mini-location">{location}</p>
           <p className="desktop-property-mini-specs">{specs}</p>
         </div>
-        
+
         <div className="desktop-property-price-block">
           <span className="desktop-property-mini-price">{formatCurrency(price)}</span>
           <span className="desktop-property-mini-price-label">{priceLabel}</span>
@@ -165,11 +174,7 @@ export function DesktopPropertyMiniCard({
 
         {/* Expand Button */}
         {showExpandButton && onExpand && (
-          <button
-            onClick={onExpand}
-            className="desktop-expand-btn"
-            aria-label="View more"
-          >
+          <button onClick={onExpand} className="desktop-expand-btn" aria-label="View more">
             <ChevronRight className="w-5 h-5" />
           </button>
         )}

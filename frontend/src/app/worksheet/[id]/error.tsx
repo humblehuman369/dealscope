@@ -27,7 +27,8 @@ export default function WorksheetError({ error, reset }: ErrorProps) {
           </h1>
 
           <p className="text-slate-600 dark:text-slate-400 mb-6">
-            Something went wrong loading or calculating this worksheet. Your saved data is not affected.
+            Something went wrong loading or calculating this worksheet. Your saved data is not
+            affected.
           </p>
 
           {/* Error Details (development only) */}
@@ -37,9 +38,7 @@ export default function WorksheetError({ error, reset }: ErrorProps) {
                 {error.message}
               </p>
               {error.digest && (
-                <p className="text-xs font-mono text-slate-500 mt-1">
-                  Error ID: {error.digest}
-                </p>
+                <p className="text-xs font-mono text-slate-500 mt-1">Error ID: {error.digest}</p>
               )}
             </div>
           )}

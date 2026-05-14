@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   description: 'Search for a property address to analyze with DealGapIQ investment analytics.',
 }
 
-export default function SearchLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function SearchLayout({ children }: { children: React.ReactNode }) {
   return children
 }

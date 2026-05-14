@@ -2,15 +2,15 @@
 
 /**
  * LayoutWrapper Component
- * 
+ *
  * Client-side wrapper for the root layout that includes the AppHeader
  * and the UsageBar (for Starter users).
  * This is needed because AppHeader uses client-side hooks (usePathname, useSearchParams, etc.)
  * and the root layout is a server component.
- * 
+ *
  * Suspense boundary is required because useSearchParams() causes hydration issues
  * during static generation of pages.
- * 
+ *
  * IMPORTANT: The fallback must be null to avoid hydration mismatches on routes
  * where AppHeader returns null (like the homepage).
  */

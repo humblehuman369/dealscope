@@ -10,22 +10,19 @@ import { useMemo } from 'react'
 import { SavedProperty } from '@/types/savedProperty'
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
-import {
-  useWorksheetCalculator,
-  WorksheetStrategyConfig,
-} from './useWorksheetCalculator'
+import { useWorksheetCalculator, WorksheetStrategyConfig } from './useWorksheetCalculator'
 
 // =============================================================================
 // FALLBACK DEFAULTS — Must match backend/app/core/defaults.py
 // Components using this hook should ideally pass defaults from useDefaults()
 // =============================================================================
-const FALLBACK_DOWN_PAYMENT_PCT = 0.20
+const FALLBACK_DOWN_PAYMENT_PCT = 0.2
 const FALLBACK_INTEREST_RATE = 0.06
 const FALLBACK_VACANCY_RATE = 0.01
 const FALLBACK_MAINTENANCE_PCT = 0.05
-const FALLBACK_MANAGEMENT_PCT = 0.00
+const FALLBACK_MANAGEMENT_PCT = 0.0
 const FALLBACK_PLATFORM_FEES_PCT = 0.15
-const FALLBACK_STR_MANAGEMENT_PCT = 0.10
+const FALLBACK_STR_MANAGEMENT_PCT = 0.1
 const FALLBACK_FURNISHING = 6000
 
 // =============================================================================
@@ -144,12 +141,17 @@ const strConfig: WorksheetStrategyConfig<StrWorksheetInputs, StrWorksheetResult>
     if (Number.isFinite(o?.maintenance_pct)) overrides.maintenance_pct = o.maintenance_pct
     if (Number.isFinite(o?.capex_pct)) overrides.capex_pct = o.capex_pct
     if (Number.isFinite(o?.utilities_monthly)) overrides.utilities_monthly = o.utilities_monthly
-    if (Number.isFinite(s?.furniture_setup_cost)) overrides.furnishing_budget = s.furniture_setup_cost
-    if (Number.isFinite(s?.cleaning_fee_revenue)) overrides.cleaning_fee_revenue = s.cleaning_fee_revenue
-    if (Number.isFinite(s?.avg_length_of_stay_days)) overrides.avg_booking_length = s.avg_length_of_stay_days
+    if (Number.isFinite(s?.furniture_setup_cost))
+      overrides.furnishing_budget = s.furniture_setup_cost
+    if (Number.isFinite(s?.cleaning_fee_revenue))
+      overrides.cleaning_fee_revenue = s.cleaning_fee_revenue
+    if (Number.isFinite(s?.avg_length_of_stay_days))
+      overrides.avg_booking_length = s.avg_length_of_stay_days
     if (Number.isFinite(s?.platform_fees_pct)) overrides.platform_fees_pct = s.platform_fees_pct
-    if (Number.isFinite(s?.str_management_pct)) overrides.property_management_pct = s.str_management_pct
-    if (Number.isFinite(s?.cleaning_cost_per_turnover)) overrides.cleaning_cost_per_turn = s.cleaning_cost_per_turnover
+    if (Number.isFinite(s?.str_management_pct))
+      overrides.property_management_pct = s.str_management_pct
+    if (Number.isFinite(s?.cleaning_cost_per_turnover))
+      overrides.cleaning_cost_per_turn = s.cleaning_cost_per_turnover
     if (Number.isFinite(s?.supplies_monthly)) overrides.supplies_monthly = s.supplies_monthly
 
     return overrides
@@ -225,8 +227,10 @@ const strConfig: WorksheetStrategyConfig<StrWorksheetInputs, StrWorksheetResult>
 // =============================================================================
 
 export function useStrWorksheetCalculator(property: SavedProperty | null) {
-  const { inputs, updateInput, result, isCalculating, error } =
-    useWorksheetCalculator(property, strConfig)
+  const { inputs, updateInput, result, isCalculating, error } = useWorksheetCalculator(
+    property,
+    strConfig,
+  )
 
   // STR previously exposed a `derived` object — preserve for backward compat
   const derived = useMemo(

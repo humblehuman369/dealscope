@@ -1,9 +1,9 @@
 /**
  * VerdictIQ Design Tokens
- * 
+ *
  * A focused design system with specific tokens for the VerdictIQ page.
  * Based on an 8px spacing scale. See docs/marketing/BRAND_AND_STYLE_GUIDE.md.
- * 
+ *
  * Usage:
  * - Import tokens directly: import { spacing, typography, colors } from './verdict-design-tokens'
  * - Use in components: style={{ padding: spacing.md, fontSize: typography.body.size }}
@@ -310,7 +310,7 @@ export const components = {
 /**
  * Get color based on score value (0-100)
  * VerdictIQ 3.3 — uses five semantic accents
- * 
+ *
  * Score Tiers:
  * 80-100: Strong/Good — Green #34d399
  * 60-79:  Moderate — Gold #fbbf24
@@ -318,19 +318,19 @@ export const components = {
  * 0-39:   Unlikely/Pass — Red #f87171
  */
 export function getScoreColor(score: number): string {
-  if (score >= 80) return colors.status.positive     // Green
-  if (score >= 60) return colors.brand.gold          // Gold
-  if (score >= 40) return colors.brand.blue          // Blue
-  return colors.status.negative                       // Red
+  if (score >= 80) return colors.status.positive // Green
+  if (score >= 60) return colors.brand.gold // Gold
+  if (score >= 40) return colors.brand.blue // Blue
+  return colors.status.negative // Red
 }
 
 /**
  * Get harmonized bar color for confidence metrics
  */
 export function getHarmonizedBarColor(value: number): string {
-  if (value >= 70) return colors.brand.teal           // Teal
-  if (value >= 40) return colors.brand.blue           // Blue
-  return colors.status.negative                        // Red
+  if (value >= 70) return colors.brand.teal // Teal
+  if (value >= 40) return colors.brand.blue // Blue
+  return colors.status.negative // Red
 }
 
 /**
@@ -339,12 +339,10 @@ export function getHarmonizedBarColor(value: number): string {
 export function getAssessment(
   value: number,
   benchmark: number,
-  higherIsBetter: boolean = true
+  higherIsBetter: boolean = true,
 ): { color: string; label: string; bgClass: string } {
   const isGood = higherIsBetter ? value >= benchmark : value <= benchmark
-  const isFair = higherIsBetter
-    ? value >= benchmark * 0.8
-    : value <= benchmark * 1.2
+  const isFair = higherIsBetter ? value >= benchmark * 0.8 : value <= benchmark * 1.2
 
   if (isGood) {
     return {
@@ -372,10 +370,14 @@ export function getAssessment(
  */
 export function getUrgencyColor(urgency: string): string {
   switch (urgency.toLowerCase()) {
-    case 'high': return colors.status.positive
-    case 'medium': return colors.brand.gold
-    case 'low': return colors.text.tertiary
-    default: return colors.text.tertiary
+    case 'high':
+      return colors.status.positive
+    case 'medium':
+      return colors.brand.gold
+    case 'low':
+      return colors.text.tertiary
+    default:
+      return colors.text.tertiary
   }
 }
 
@@ -384,10 +386,14 @@ export function getUrgencyColor(urgency: string): string {
  */
 export function getMarketTempColor(temp: string): string {
   switch (temp.toLowerCase()) {
-    case 'cold': return colors.brand.teal
-    case 'warm': return colors.brand.gold
-    case 'hot': return colors.status.negative
-    default: return colors.text.tertiary
+    case 'cold':
+      return colors.brand.teal
+    case 'warm':
+      return colors.brand.gold
+    case 'hot':
+      return colors.status.negative
+    default:
+      return colors.text.tertiary
   }
 }
 
@@ -416,16 +422,21 @@ export const tw = {
   valueMd: 'text-lg font-semibold text-[var(--text-heading)] tabular-nums',
 
   // Buttons
-  buttonPrimary: 'h-12 px-6 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] font-bold rounded-full transition-all shadow-[var(--shadow-card)]',
-  buttonSecondary: 'h-10 px-4 border border-[var(--text-heading)] hover:border-[var(--accent-sky)] hover:text-[var(--accent-sky)] text-[var(--text-body)] font-semibold rounded-full transition-all',
-  buttonGhost: 'text-[var(--text-heading)] hover:text-[var(--accent-sky)] font-medium transition-colors',
+  buttonPrimary:
+    'h-12 px-6 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] font-bold rounded-full transition-all shadow-[var(--shadow-card)]',
+  buttonSecondary:
+    'h-10 px-4 border border-[var(--text-heading)] hover:border-[var(--accent-sky)] hover:text-[var(--accent-sky)] text-[var(--text-body)] font-semibold rounded-full transition-all',
+  buttonGhost:
+    'text-[var(--text-heading)] hover:text-[var(--accent-sky)] font-medium transition-colors',
 
   // Dividers
   divider: 'border-t border-[var(--border-subtle)]',
 
   // VerdictIQ Visual Polish — glow system
-  investmentCard: 'bg-[var(--surface-base)] rounded-[14px] border border-[var(--border-subtle)] p-5',
-  metricCard: 'bg-[var(--surface-base)] rounded-xl border border-[var(--border-subtle)] p-4 text-center',
+  investmentCard:
+    'bg-[var(--surface-base)] rounded-[14px] border border-[var(--border-subtle)] p-5',
+  metricCard:
+    'bg-[var(--surface-base)] rounded-xl border border-[var(--border-subtle)] p-4 text-center',
   pillBadge: 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-[0.03em]',
   glowRing: 'drop-shadow-[0_0_12px_rgba(15,164,233,0.25)]',
 
@@ -448,14 +459,17 @@ export const tw = {
 
 export type PriceCardVariant = 'breakeven' | 'target' | 'wholesale'
 
-export const priceCardStyles: Record<PriceCardVariant, { 
-  bgClass: string
-  borderClass: string
-  labelClass: string
-  valueClass: string
-  tagClass: string
-  tagLabel: string
-}> = {
+export const priceCardStyles: Record<
+  PriceCardVariant,
+  {
+    bgClass: string
+    borderClass: string
+    labelClass: string
+    valueClass: string
+    tagClass: string
+    tagLabel: string
+  }
+> = {
   breakeven: {
     bgClass: 'bg-[var(--surface-card)]',
     borderClass: 'border-[var(--border-subtle)]',

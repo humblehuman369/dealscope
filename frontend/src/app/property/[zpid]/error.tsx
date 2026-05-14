@@ -25,7 +25,8 @@ export default function PropertyError({ error, reset }: ErrorProps) {
           </div>
           <h1 className="text-2xl font-bold text-slate-100 mb-2">Property Unavailable</h1>
           <p className="text-slate-400 mb-6">
-            We couldn&apos;t load this property. It may have been removed or there was a connection issue.
+            We couldn&apos;t load this property. It may have been removed or there was a connection
+            issue.
           </p>
           {process.env.NODE_ENV === 'development' && error.message && (
             <div className="mb-6 p-3 bg-white/[0.04] border border-white/[0.07] rounded-lg text-left">

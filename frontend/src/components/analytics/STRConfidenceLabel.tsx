@@ -42,9 +42,7 @@ export function STRConfidenceLabel({ stats, className = '' }: STRConfidenceLabel
         <BarChart3 className="w-3 h-3" />
         {sampleSize != null ? (
           <>
-            <span className={`font-medium ${config.textColor}`}>
-              {sampleSize} Airbnb comps
-            </span>
+            <span className={`font-medium ${config.textColor}`}>{sampleSize} Airbnb comps</span>
             <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />
           </>
         ) : (
@@ -62,15 +60,12 @@ export function STRConfidenceLabel({ stats, className = '' }: STRConfidenceLabel
 
       {/* YoY occupancy trend */}
       {showYoy && (
-        <span className={`inline-flex items-center gap-1 text-xs font-medium ${
-          yoyOcc! < 0
-            ? 'text-red-500 dark:text-red-400'
-            : 'text-green-500 dark:text-green-400'
-        }`}>
-          {yoyOcc! < 0
-            ? <TrendingDown className="w-3 h-3" />
-            : <TrendingUp className="w-3 h-3" />
-          }
+        <span
+          className={`inline-flex items-center gap-1 text-xs font-medium ${
+            yoyOcc! < 0 ? 'text-red-500 dark:text-red-400' : 'text-green-500 dark:text-green-400'
+          }`}
+        >
+          {yoyOcc! < 0 ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
           {Math.abs(yoyOcc!).toFixed(0)}% YoY occupancy
         </span>
       )}

@@ -1,12 +1,12 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import { Home, DollarSign, TrendingUp, Shield } from 'lucide-react';
+import React from 'react'
+import type { Metadata } from 'next'
+import { Home, DollarSign, TrendingUp, Shield } from 'lucide-react'
 import {
   StrategyPageLayout,
   Callout,
   Prose,
   StepItem,
-} from '@/components/strategies/StrategyPageLayout';
+} from '@/components/strategies/StrategyPageLayout'
 
 export const metadata: Metadata = {
   title: 'Long-Term Rental Strategy — Cash Flow & Buy-and-Hold | DealGapIQ',
@@ -23,12 +23,11 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Long-Term Rental Strategy — Cash Flow & Buy-and-Hold',
-    description:
-      'Cash flow math, target metrics, market selection, and the buy-and-hold playbook.',
+    description: 'Cash flow math, target metrics, market selection, and the buy-and-hold playbook.',
   },
-};
+}
 
-const ACCENT = '#34d399';
+const ACCENT = '#34d399'
 
 export default function LongTermRentalPage() {
   return (
@@ -96,5 +95,5 @@ export default function LongTermRentalPage() {
         </p>
       </Callout>
     </StrategyPageLayout>
-  );
+  )
 }

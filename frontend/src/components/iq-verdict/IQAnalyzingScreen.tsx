@@ -46,15 +46,16 @@ export function IQAnalyzingScreen({
   const [currentTipIndex, setCurrentTipIndex] = useState<number>(0)
   const [progress, setProgress] = useState(0)
   const { theme } = useTheme()
-  const iconSrc = theme === 'dark'
-    ? '/images/dealgapiq-icon-dark.png'
-    : '/images/dealgapiq-icon.png'
+  const iconSrc =
+    theme === 'dark' ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png'
 
   // Build full address
   const fullAddress = [
     property.address,
-    [property.city, property.state, property.zip].filter(Boolean).join(' ')
-  ].filter(Boolean).join(', ')
+    [property.city, property.state, property.zip].filter(Boolean).join(' '),
+  ]
+    .filter(Boolean)
+    .join(', ')
 
   // Smooth progress animation (0 → 100 over ~minimumDisplayTime)
   useEffect(() => {
@@ -74,7 +75,7 @@ export function IQAnalyzingScreen({
   // Rotate micro-tips every 2 seconds
   useEffect(() => {
     const tipInterval = setInterval(() => {
-      setCurrentTipIndex(prev => (prev + 1) % MICRO_TIPS.length)
+      setCurrentTipIndex((prev) => (prev + 1) % MICRO_TIPS.length)
     }, 2000)
 
     return () => clearInterval(tipInterval)
@@ -97,7 +98,10 @@ export function IQAnalyzingScreen({
   const dashOffset = circumference - (progress / 100) * circumference
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--surface-base)' }}>
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ backgroundColor: 'var(--surface-base)' }}
+    >
       <style>{`
         @keyframes analyzing-glow-pulse {
           0%, 100% { box-shadow: ${LOGO_GLOW_BASE}; opacity: 1; }
@@ -162,11 +166,7 @@ export function IQAnalyzingScreen({
                 boxShadow: LOGO_GLOW_BASE,
               }}
             >
-              <img
-                src={iconSrc}
-                alt="DealGapIQ"
-                className="w-12 h-12 object-contain"
-              />
+              <img src={iconSrc} alt="DealGapIQ" className="w-12 h-12 object-contain" />
             </div>
           </div>
         </div>

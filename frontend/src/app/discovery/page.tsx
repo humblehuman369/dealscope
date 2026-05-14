@@ -3,13 +3,13 @@
 /**
  * IQ Verdict Page
  * Route: /discovery?address=... OR /discovery?propertyId=...
- * 
+ *
  * Shows the IQ Verdict with ranked strategy recommendations after analysis.
  * Fetches real property data from the API including photos, beds, baths, sqft, and price.
- * 
+ *
  * IMPORTANT: All calculations are done by the backend API.
  * This page does NOT perform any financial calculations locally.
- * 
+ *
  * ARCHITECTURE:
  * - For SAVED properties (propertyId param): Loads from dealMakerStore
  *   The DealMakerRecord contains all the assumptions and metrics from Deal Maker
@@ -18,13 +18,13 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { 
-  IQProperty, 
-  IQStrategy,
-  IQAnalysisResult,
-} from '@/components/iq-verdict'
+import { IQProperty, IQStrategy, IQAnalysisResult } from '@/components/iq-verdict'
 import { getDealGapTier } from '@/components/iq-verdict/types'
-import { IQEstimateSelector, type IQEstimateSources, type DataSourceId } from '@/components/iq-verdict/IQEstimateSelector'
+import {
+  IQEstimateSelector,
+  type IQEstimateSources,
+  type DataSourceId,
+} from '@/components/iq-verdict/IQEstimateSelector'
 import { parseAddressString } from '@/utils/formatters'
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
 import { useSession } from '@/hooks/useSession'
@@ -55,7 +55,10 @@ import { useAuthModal } from '@/hooks/useAuthModal'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { buildVerdictAnalysisPayload, type VerdictPayloadBase } from '@/utils/verdictPayload'
 import { MarketAnchorNote } from '@/components/iq-verdict/MarketAnchorNote'
-import { VerdictGapGuidance, VerdictPositiveGuidance } from '@/components/iq-verdict/VerdictGapGuidance'
+import {
+  VerdictGapGuidance,
+  VerdictPositiveGuidance,
+} from '@/components/iq-verdict/VerdictGapGuidance'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
@@ -70,7 +73,17 @@ import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 // See: shared/src/types/verdict.ts
 import type { IQVerdictResponse } from '@dealscope/shared'
 
-function InsightItem({ num, title, detail, delay = 0 }: { num: string; title: ReactNode; detail?: ReactNode; delay?: number }) {
+function InsightItem({
+  num,
+  title,
+  detail,
+  delay = 0,
+}: {
+  num: string
+  title: ReactNode
+  detail?: ReactNode
+  delay?: number
+}) {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
@@ -109,9 +122,29 @@ function InsightItem({ num, title, detail, delay = 0 }: { num: string; title: Re
         {num}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ margin: 0, fontSize: 15, fontWeight: 600, lineHeight: 1.35, color: 'var(--text-heading)' }}>{title}</p>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 15,
+            fontWeight: 600,
+            lineHeight: 1.35,
+            color: 'var(--text-heading)',
+          }}
+        >
+          {title}
+        </p>
         {detail && (
-          <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 400, lineHeight: 1.45, color: 'var(--text-secondary)' }}>{detail}</p>
+          <p
+            style={{
+              margin: '4px 0 0',
+              fontSize: 13,
+              fontWeight: 400,
+              lineHeight: 1.45,
+              color: 'var(--text-secondary)',
+            }}
+          >
+            {detail}
+          </p>
         )}
       </div>
     </div>
@@ -123,10 +156,10 @@ function getStrategyIcon(strategyId: string): string {
   const icons: Record<string, string> = {
     'long-term-rental': '🏠',
     'short-term-rental': '🏨',
-    'brrrr': '🔄',
+    brrrr: '🔄',
     'fix-and-flip': '🔨',
     'house-hack': '🏡',
-    'wholesale': '📋',
+    wholesale: '📋',
   }
   return icons[strategyId] || '📊'
 }
@@ -145,14 +178,14 @@ function VerdictContent() {
   const cityParam = searchParams.get('city') || undefined
   const stateParam = searchParams.get('state') || undefined
   const zipCodeParam = searchParams.get('zip_code') || undefined
-  
+
   // Deal Maker Store (for saved properties)
   const dealMakerStore = useDealMakerStore()
   const { hasRecord } = useDealMakerReady()
-  
+
   // Determine if we're in "saved property mode" (use store) or "legacy mode" (use URL params)
   const isSavedPropertyMode = !!propertyIdParam
-  
+
   // Check for Deal Maker override values
   // Priority: URL params > sessionStorage (for toolbar navigation)
   const urlPurchasePrice = searchParams.get('purchasePrice')
@@ -164,14 +197,14 @@ function VerdictContent() {
   const urlZpid = searchParams.get('zpid')
   const conditionParam = searchParams.get('condition')
   const locationParam = searchParams.get('location')
-  
+
   // Load sessionStorage data synchronously to avoid race conditions
   // This function is called during render, so we use a try/catch
   const getSessionData = useCallback(() => {
     if (typeof window === 'undefined' || !addressParam || urlPurchasePrice) {
       return null
     }
-    
+
     try {
       const data = readDealMakerOverrides(addressParam)
       // Check if data is recent (within last hour)
@@ -190,20 +223,20 @@ function VerdictContent() {
     }
     return null
   }, [addressParam, urlPurchasePrice])
-  
+
   // Use state to trigger re-render when sessionStorage is available (client-side only)
   const [isClient, setIsClient] = useState(false)
   useEffect(() => {
     setIsClient(true)
   }, [])
-  
+
   // Get session data (only on client) once per property context.
   // This avoids feedback loops when this page itself writes overrides to sessionStorage.
   const sessionData = useMemo(() => {
     if (!isClient) return null
     return getSessionData()
   }, [isClient, getSessionData])
-  
+
   // Use URL params only for purchasePrice — sessionStorage purchasePrice is auto-written
   // by this page's own analysis output, so reading it back creates a feedback loop where
   // the previous Target Buy becomes the next analysis's purchase_price override.
@@ -212,14 +245,17 @@ function VerdictContent() {
   // Keep Verdict default calculations anchored to IQ Estimate rent unless an explicit
   // URL override is provided (e.g., coming directly from Deal Maker).
   const overrideMonthlyRent = urlMonthlyRent
-  const overridePropertyTaxes = urlPropertyTaxes ?? (sessionData?.propertyTaxes != null ? String(sessionData.propertyTaxes) : null)
-  const overrideInsurance = urlInsurance ?? (sessionData?.insurance != null ? String(sessionData.insurance) : null)
+  const overridePropertyTaxes =
+    urlPropertyTaxes ??
+    (sessionData?.propertyTaxes != null ? String(sessionData.propertyTaxes) : null)
+  const overrideInsurance =
+    urlInsurance ?? (sessionData?.insurance != null ? String(sessionData.insurance) : null)
   const overrideArv = urlArv ?? (sessionData?.arv != null ? String(sessionData.arv) : null)
   const overrideZpid = urlZpid || sessionData?.zpid || null
-  
+
   // Has any overrides (from URL or session)
   const hasLegacyOverrides = !!(overridePurchasePrice || overrideMonthlyRent)
-  
+
   // Shared property data cache (React Query) — prevents redundant API calls
   // when navigating between Verdict ↔ Strategy for the same property
   const { fetchProperty } = usePropertyData()
@@ -227,7 +263,10 @@ function VerdictContent() {
   // State for property data and analysis
   const [property, setProperty] = useState<IQProperty | null>(null)
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
-  const [strMarketData, setStrMarketData] = useState<{ str_market_stats?: any; str_regulatory?: any } | null>(null)
+  const [strMarketData, setStrMarketData] = useState<{
+    str_market_stats?: any
+    str_regulatory?: any
+  } | null>(null)
   const [isLoading, setIsLoading] = useState(() => {
     if (!addressParam) return true
     const canonical = canonicalizeAddressForIdentity(addressParam)
@@ -236,7 +275,7 @@ function VerdictContent() {
   const [error, setError] = useState<string | null>(null)
   const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
   const backendFullAddressRef = useRef('')
-  
+
   const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
   const [showMethodologySheet, setShowMethodologySheet] = useState(false)
   const [methodologyScoreType, setMethodologyScoreType] = useState<'verdict' | 'profit'>('verdict')
@@ -295,7 +334,16 @@ function VerdictContent() {
         .then(() => queryClient.invalidateQueries({ queryKey: ['billing', 'usage'] }))
         .catch(() => {})
     }
-  }, [isLoading, property, analysis, addressParam, propertyIdParam, isAuthenticated, isPro, queryClient])
+  }, [
+    isLoading,
+    property,
+    analysis,
+    addressParam,
+    propertyIdParam,
+    isAuthenticated,
+    isPro,
+    queryClient,
+  ])
 
   // Load from dealMakerStore for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property
@@ -308,7 +356,7 @@ function VerdictContent() {
       }
     }
   }, [isSavedPropertyMode, propertyIdParam, hasRecord, dealMakerStore])
-  
+
   // Fetch property data from API (or use store data for saved properties)
   useEffect(() => {
     const generation = ++fetchGenerationRef.current
@@ -320,14 +368,14 @@ function VerdictContent() {
           // Still loading from store
           return
         }
-        
+
         // Use data from the dealMakerStore
         const record = dealMakerStore.record!
         // We need to fetch property details still, but use store values for calculations
         // The propertyId should be used to load from saved properties API
         // For now, continue to regular flow but use store values as overrides
       }
-      
+
       if (!addressParam && !isSavedPropertyMode) {
         setError('No address provided')
         setIsLoading(false)
@@ -407,7 +455,8 @@ function VerdictContent() {
         const propertyData: IQProperty = {
           id: data.property_id,
           zpid: data.zpid ?? undefined,
-          address: data.address?.street || parsedAddress.street || backendFullAddress || addressParam,
+          address:
+            data.address?.street || parsedAddress.street || backendFullAddress || addressParam,
           city: data.address?.city || parsedAddress.city,
           state: data.address?.state || parsedAddress.state,
           zip: data.address?.zip_code || parsedAddress.zip,
@@ -461,31 +510,37 @@ function VerdictContent() {
         // Store property info to sessionStorage so global AppHeader can access it
         try {
           const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
-          const fullAddress = [propertyData.address, propertyData.city, stateZip].filter(Boolean).join(', ')
-          writeDealMakerOverrides(fullAddress || addressParam, {
-            zpid: propertyData.zpid,
-            beds: propertyData.beds,
-            baths: propertyData.baths,
-            sqft: propertyData.sqft,
-            price: propertyData.price,
-            listingStatus: propertyData.listingStatus || null,
-          }, { origin: 'verdict_sync' })
+          const fullAddress = [propertyData.address, propertyData.city, stateZip]
+            .filter(Boolean)
+            .join(', ')
+          writeDealMakerOverrides(
+            fullAddress || addressParam,
+            {
+              zpid: propertyData.zpid,
+              beds: propertyData.beds,
+              baths: propertyData.baths,
+              sqft: propertyData.sqft,
+              price: propertyData.price,
+              listingStatus: propertyData.listingStatus || null,
+            },
+            { origin: 'verdict_sync' },
+          )
         } catch {
           // Ignore storage errors
         }
-        
+
         // Fetch analysis from backend API (all calculations done server-side)
         // Priority for calculation values:
         // 1. DealMakerStore (for saved properties) - has locked assumptions from Deal Maker
         // 2. URL param overrides (legacy mode for unsaved properties)
         // 3. Property data from API
-        
+
         let listPriceForCalc: number
         let rentForCalc: number
         let taxesForCalc: number
         let insuranceForCalc: number | null
         let arvForCalc: number | null
-        
+
         if (isSavedPropertyMode && hasRecord && dealMakerStore.record) {
           // Use values from DealMakerRecord (single source of truth for saved properties)
           // list_price stays as market price; purchase_price override is sent separately
@@ -495,7 +550,7 @@ function VerdictContent() {
           taxesForCalc = record.annual_property_tax
           insuranceForCalc = record.annual_insurance
           arvForCalc = record.arv
-          
+
           console.log('[IQ Verdict] Using DealMakerStore values:', {
             list_price: listPriceForCalc,
             monthly_rent: rentForCalc,
@@ -507,22 +562,18 @@ function VerdictContent() {
         } else {
           // Legacy mode: use URL param overrides or property data
           // list_price stays as the original market/asking price
-          listPriceForCalc = urlMarketValue
-            ? parseFloat(urlMarketValue)
-            : propertyData.price
-          rentForCalc = overrideMonthlyRent 
-            ? parseFloat(overrideMonthlyRent) 
-            : (propertyData.monthlyRent || 0)
-          taxesForCalc = overridePropertyTaxes 
-            ? parseFloat(overridePropertyTaxes) 
-            : (propertyData.propertyTaxes || 0)
-          insuranceForCalc = overrideInsurance 
-            ? parseFloat(overrideInsurance) 
+          listPriceForCalc = urlMarketValue ? parseFloat(urlMarketValue) : propertyData.price
+          rentForCalc = overrideMonthlyRent
+            ? parseFloat(overrideMonthlyRent)
+            : propertyData.monthlyRent || 0
+          taxesForCalc = overridePropertyTaxes
+            ? parseFloat(overridePropertyTaxes)
+            : propertyData.propertyTaxes || 0
+          insuranceForCalc = overrideInsurance
+            ? parseFloat(overrideInsurance)
             : (propertyData.insurance ?? null)
-          arvForCalc = overrideArv 
-            ? parseFloat(overrideArv) 
-            : (propertyData.arv ?? null)
-          
+          arvForCalc = overrideArv ? parseFloat(overrideArv) : (propertyData.arv ?? null)
+
           console.log('[IQ Verdict] Using legacy override values:', {
             list_price: listPriceForCalc,
             monthly_rent: rentForCalc,
@@ -544,14 +595,14 @@ function VerdictContent() {
           const loc = getLocationAdjustment(Number(locationParam))
           rentForCalc = Math.round(rentForCalc * loc.rentMultiplier)
         }
-        
+
         // Fire analysis + photo resolution in parallel (both depend on property
         // search response, but not on each other)
         // Send user's purchase price override separately so the backend
         // keeps list_price as market/asking price for deal gap calculation
         const purchasePriceOverride = overridePurchasePrice
           ? parseFloat(overridePurchasePrice)
-          : (isSavedPropertyMode && hasRecord && dealMakerStore.record)
+          : isSavedPropertyMode && hasRecord && dealMakerStore.record
             ? dealMakerStore.record.buy_price
             : undefined
 
@@ -598,11 +649,17 @@ function VerdictContent() {
         if (generation !== fetchGenerationRef.current) return
 
         // Diagnostic logging — traces exact key formats from backend
-        console.log('[IQ Verdict] Raw backend response:', JSON.stringify(analysisData).slice(0, 500))
+        console.log(
+          '[IQ Verdict] Raw backend response:',
+          JSON.stringify(analysisData).slice(0, 500),
+        )
         console.log('[IQ Verdict] Backend response keys:', Object.keys(analysisData))
-          
+
         try {
-          const analysisResult = parseAnalysisResponse(analysisData, data?.property_id || propertyData?.id)
+          const analysisResult = parseAnalysisResponse(
+            analysisData,
+            data?.property_id || propertyData?.id,
+          )
           setAnalysis(analysisResult)
 
           // Single source of truth: persist backend list_price, income_value, purchase_price
@@ -620,7 +677,8 @@ function VerdictContent() {
               const sessionKey = buildDealMakerSessionKey(canonicalAddress)
               const existing = sessionStorage.getItem(sessionKey)
               const parsed = existing ? JSON.parse(existing) : {}
-              if (backendListPrice != null) parsed.listPrice = isListed ? backendListPrice : propertyData.price
+              if (backendListPrice != null)
+                parsed.listPrice = isListed ? backendListPrice : propertyData.price
               if (backendIncomeValue != null) parsed.incomeValue = backendIncomeValue
               if (backendPurchasePrice != null) parsed.purchasePrice = backendPurchasePrice
               parsed.timestamp = Date.now()
@@ -662,11 +720,17 @@ function VerdictContent() {
             })
             try {
               const stateZip = [propertyData.state, propertyData.zip].filter(Boolean).join(' ')
-              const fullAddress = [propertyData.address, propertyData.city, stateZip].filter(Boolean).join(', ')
-              writeDealMakerOverrides(fullAddress || addressParam, {
-                listPrice: backendListPrice,
-                price: Math.round(backendListPrice),
-              }, { origin: 'verdict_sync' })
+              const fullAddress = [propertyData.address, propertyData.city, stateZip]
+                .filter(Boolean)
+                .join(', ')
+              writeDealMakerOverrides(
+                fullAddress || addressParam,
+                {
+                  listPrice: backendListPrice,
+                  price: Math.round(backendListPrice),
+                },
+                { origin: 'verdict_sync' },
+              )
             } catch {
               // Ignore storage errors
             }
@@ -674,13 +738,15 @@ function VerdictContent() {
 
           // Phase 2: non-blocking photo fetch — do not await; update property when done
           if (propertyData.zpid) {
-            fetchPropertyPhotos(String(propertyData.zpid), { propertyId: propertyData.id }).then((result) => {
-              if (generation !== fetchGenerationRef.current) return
-              if (result.status === 'success' && result.photos.length > 0) {
-                setPropertyPhotos(result.photos)
-                setProperty((prev) => (prev ? { ...prev, imageUrl: result.photos[0] } : null))
-              }
-            })
+            fetchPropertyPhotos(String(propertyData.zpid), { propertyId: propertyData.id }).then(
+              (result) => {
+                if (generation !== fetchGenerationRef.current) return
+                if (result.status === 'success' && result.photos.length > 0) {
+                  setPropertyPhotos(result.photos)
+                  setProperty((prev) => (prev ? { ...prev, imageUrl: result.photos[0] } : null))
+                }
+              },
+            )
           }
         } catch (analysisErr) {
           console.error('Error fetching analysis:', analysisErr)
@@ -688,10 +754,10 @@ function VerdictContent() {
       } catch (err) {
         console.error('Error fetching property:', err)
         setError(err instanceof Error ? err.message : 'Failed to load property')
-        
+
         // Parse address from URL parameter to preserve city/state/zip in fallback
         const parsedFallback = parseAddressString(addressParam)
-        
+
         // Create fallback property from address param
         const fallbackProperty: IQProperty = {
           address: parsedFallback.street || 'Unknown Address',
@@ -711,9 +777,20 @@ function VerdictContent() {
     }
 
     fetchPropertyData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addressParam, isSavedPropertyMode, hasRecord, dealMakerStore.record, isClient,
-      overridePurchasePrice, overrideMonthlyRent, overridePropertyTaxes, overrideInsurance, overrideArv, urlMarketValue])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    addressParam,
+    isSavedPropertyMode,
+    hasRecord,
+    dealMakerStore.record,
+    isClient,
+    overridePurchasePrice,
+    overrideMonthlyRent,
+    overridePropertyTaxes,
+    overrideInsurance,
+    overrideArv,
+    urlMarketValue,
+  ])
 
   // Parse backend analysis response into IQAnalysisResult
   const parseAnalysisResponse = useCallback(
@@ -721,23 +798,36 @@ function VerdictContent() {
       propertyId: propertyId || property?.id,
       analyzedAt: new Date().toISOString(),
       dealScore: analysisData.deal_score ?? analysisData.dealScore ?? 0,
-      dealVerdict: (analysisData.deal_verdict ?? analysisData.dealVerdict ?? 'pass') as IQAnalysisResult['dealVerdict'],
-      verdictDescription: (analysisData.verdict_description ?? analysisData.verdictDescription) as string,
+      dealVerdict: (analysisData.deal_verdict ??
+        analysisData.dealVerdict ??
+        'pass') as IQAnalysisResult['dealVerdict'],
+      verdictDescription: (analysisData.verdict_description ??
+        analysisData.verdictDescription) as string,
       discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
       purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,
       incomeValue: analysisData.income_value ?? analysisData.incomeValue,
       listPrice: analysisData.list_price ?? analysisData.listPrice,
-      incomeGapPercent: analysisData.income_gap_percent ?? analysisData.incomeGapPercent ?? (() => {
-        const lp = analysisData.list_price ?? analysisData.listPrice
-        const iv = analysisData.income_value ?? analysisData.incomeValue
-        return lp != null && iv != null && lp > 0 ? Math.round(((lp - iv) / lp) * 1000) / 10 : undefined
-      })(),
+      incomeGapPercent:
+        analysisData.income_gap_percent ??
+        analysisData.incomeGapPercent ??
+        (() => {
+          const lp = analysisData.list_price ?? analysisData.listPrice
+          const iv = analysisData.income_value ?? analysisData.incomeValue
+          return lp != null && iv != null && lp > 0
+            ? Math.round(((lp - iv) / lp) * 1000) / 10
+            : undefined
+        })(),
       incomeGapAmount: analysisData.income_gap_amount ?? analysisData.incomeGapAmount,
-      dealGapPercent: analysisData.deal_gap_percent ?? analysisData.dealGapPercent ?? (() => {
-        const lp = analysisData.list_price ?? analysisData.listPrice
-        const pp = analysisData.purchase_price ?? analysisData.purchasePrice
-        return lp != null && pp != null && lp > 0 ? Math.round(((lp - pp) / lp) * 1000) / 10 : undefined
-      })(),
+      dealGapPercent:
+        analysisData.deal_gap_percent ??
+        analysisData.dealGapPercent ??
+        (() => {
+          const lp = analysisData.list_price ?? analysisData.listPrice
+          const pp = analysisData.purchase_price ?? analysisData.purchasePrice
+          return lp != null && pp != null && lp > 0
+            ? Math.round(((lp - pp) / lp) * 1000) / 10
+            : undefined
+        })(),
       dealGapAmount: analysisData.deal_gap_amount ?? analysisData.dealGapAmount,
       inputsUsed: analysisData.inputs_used ?? analysisData.inputsUsed,
       strategies: (analysisData.strategies ?? []).map((s: any) => ({
@@ -770,8 +860,12 @@ function VerdictContent() {
         type: f.type as 'positive' | 'warning' | 'info',
         text: f.text as string,
       })),
-      discountBracketLabel: (analysisData.discount_bracket_label ?? analysisData.discountBracketLabel ?? '') as string,
-      dealNarrative: (analysisData.deal_narrative ?? analysisData.dealNarrative ?? null) as string | null,
+      discountBracketLabel: (analysisData.discount_bracket_label ??
+        analysisData.discountBracketLabel ??
+        '') as string,
+      dealNarrative: (analysisData.deal_narrative ?? analysisData.dealNarrative ?? null) as
+        | string
+        | null,
       dealStructures: (() => {
         const raw = analysisData.deal_structures ?? analysisData.dealStructures
         if (!raw) return null
@@ -795,11 +889,16 @@ function VerdictContent() {
           pitchScript: (p.pitch_script ?? p.pitchScript ?? null) as string | null,
           caveat: (p.caveat ?? null) as string | null,
           selectionReason: (p.selection_reason ?? p.selectionReason ?? null) as string | null,
-          preLoadedRecord: (p.pre_loaded_record ?? p.preLoadedRecord ?? null) as Record<string, unknown> | null,
+          preLoadedRecord: (p.pre_loaded_record ?? p.preLoadedRecord ?? null) as Record<
+            string,
+            unknown
+          > | null,
         }))
         return {
           paths,
-          narrativeParagraphs: (raw.narrative_paragraphs ?? raw.narrativeParagraphs ?? []) as string[],
+          narrativeParagraphs: (raw.narrative_paragraphs ??
+            raw.narrativeParagraphs ??
+            []) as string[],
           hasPaths: (raw.has_paths ?? raw.hasPaths ?? paths.length > 0) as boolean,
         }
       })(),
@@ -842,7 +941,7 @@ function VerdictContent() {
       const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
       router.replace(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=discovery`)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, property, analysis])
 
   // Navigation handlers - MUST be defined before any early returns to follow Rules of Hooks
@@ -882,7 +981,7 @@ function VerdictContent() {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
     const encodedAddress = encodeURIComponent(fullAddress)
-    
+
     const zpid = property.zpid
     if (zpid) {
       router.push(`/property/${zpid}?address=${encodedAddress}`)
@@ -893,31 +992,37 @@ function VerdictContent() {
   }, [property, router])
 
   // Export — opens the HTML report in a new tab with auto-print for Save-as-PDF
-  const handleExport = useCallback((theme: 'light' | 'dark' = 'light') => {
-    const propertyId = analysis?.propertyId || 'general'
-    const params = new URLSearchParams({
-      address: addressParam || '',
-      strategy: 'ltr',
-      theme,
-      propertyId: String(propertyId),
-    })
-    const reportBase = IS_CAPACITOR ? WEB_BASE_URL : ''
-    window.open(`${reportBase}/api/report?${params}`, '_blank')
-  }, [analysis?.propertyId, addressParam])
+  const handleExport = useCallback(
+    (theme: 'light' | 'dark' = 'light') => {
+      const propertyId = analysis?.propertyId || 'general'
+      const params = new URLSearchParams({
+        address: addressParam || '',
+        strategy: 'ltr',
+        theme,
+        propertyId: String(propertyId),
+      })
+      const reportBase = IS_CAPACITOR ? WEB_BASE_URL : ''
+      window.open(`${reportBase}/api/report?${params}`, '_blank')
+    },
+    [analysis?.propertyId, addressParam],
+  )
 
-  const handlePDFDownload = useCallback((theme: 'light' | 'dark' = 'light') => {
-    if (!isAuthenticated) {
-      openAuthModal('login')
-      return
-    }
-    if (!isPro) {
-      alert('Full Report download is a Pro feature. Visit Pricing to upgrade.')
-      return
-    }
-    setIsExporting('pdf')
-    handleExport(theme)
-    setIsExporting(null)
-  }, [handleExport, isAuthenticated, isPro, openAuthModal])
+  const handlePDFDownload = useCallback(
+    (theme: 'light' | 'dark' = 'light') => {
+      if (!isAuthenticated) {
+        openAuthModal('login')
+        return
+      }
+      if (!isPro) {
+        alert('Full Report download is a Pro feature. Visit Pricing to upgrade.')
+        return
+      }
+      setIsExporting('pdf')
+      handleExport(theme)
+      setIsExporting(null)
+    },
+    [handleExport, isAuthenticated, isPro, openAuthModal],
+  )
 
   const handleExcelDownload = useCallback(async () => {
     const propertyId = property?.zpid || propertyIdParam
@@ -944,19 +1049,21 @@ function VerdictContent() {
       if (property?.monthlyRent != null) params.set('monthly_rent', String(property.monthlyRent))
       const url = `/api/v1/proforma/property/${propertyId}/excel?${params}`
       const headers: Record<string, string> = {}
-      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      const csrfMatch = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
       if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
       const response = await fetch(url, { headers, credentials: 'include' })
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         const detail = typeof errorData.detail === 'string' ? errorData.detail : ''
         if (response.status === 401) throw new Error('Please sign in to download the worksheet.')
-        if (response.status === 403) throw new Error('Pro subscription required. Upgrade to download the worksheet.')
+        if (response.status === 403)
+          throw new Error('Pro subscription required. Upgrade to download the worksheet.')
         if (response.status === 404) throw new Error(detail || 'Property not found.')
         throw new Error(detail || 'Failed to generate Excel report.')
       }
       const contentDisposition = response.headers.get('Content-Disposition')
-      const addressSlug = (addressParam || '').replace(/[^a-zA-Z0-9]+/g, '_').slice(0, 30) || 'property'
+      const addressSlug =
+        (addressParam || '').replace(/[^a-zA-Z0-9]+/g, '_').slice(0, 30) || 'property'
       let filename = `DealGapIQ_Proforma_${addressSlug}.xlsx`
       if (contentDisposition) {
         const match = contentDisposition.match(/filename="?([^"]+)"?/)
@@ -977,7 +1084,15 @@ function VerdictContent() {
     } finally {
       setIsExporting(null)
     }
-  }, [addressParam, analysis?.purchasePrice, property, propertyIdParam, isAuthenticated, isPro, openAuthModal])
+  }, [
+    addressParam,
+    analysis?.purchasePrice,
+    property,
+    propertyIdParam,
+    isAuthenticated,
+    isPro,
+    openAuthModal,
+  ])
 
   // Handle change terms - navigate to Deal Maker to adjust assumptions
   const handleChangeTerms = useCallback(() => {
@@ -1004,38 +1119,41 @@ function VerdictContent() {
   }, [router])
 
   // Handle tab change - navigate to appropriate pages
-  const handleTabChange = useCallback((tab: 'analyze' | 'details' | 'price-checker' | 'dashboard') => {
-    if (!property) return
-    
-    // Build base URL params - property page requires address query param
-    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-    const encodedAddress = encodeURIComponent(fullAddress)
-    const zpid = property.zpid
-    
-    switch (tab) {
-      case 'analyze':
-        // Already on analyze page - no action needed
-        break
-      case 'details':
-        // Navigate to property details page - requires address query param
-        if (zpid) {
-          router.push(`/property/${zpid}?address=${encodedAddress}`)
-        }
-        break
-      case 'price-checker':
-        // Navigate to PriceCheckerIQ page (include zpid when available for reliable comps)
-        const compsQuery = new URLSearchParams({ address: fullAddress })
-        if (zpid) compsQuery.set('zpid', String(zpid))
-        if (property.latitude != null) compsQuery.set('lat', String(property.latitude))
-        if (property.longitude != null) compsQuery.set('lng', String(property.longitude))
-        router.push(`/price-intel?${compsQuery.toString()}`)
-        break
-      case 'dashboard':
-        router.push('/search')
-        break
-    }
-  }, [property, router])
+  const handleTabChange = useCallback(
+    (tab: 'analyze' | 'details' | 'price-checker' | 'dashboard') => {
+      if (!property) return
+
+      // Build base URL params - property page requires address query param
+      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+      const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+      const encodedAddress = encodeURIComponent(fullAddress)
+      const zpid = property.zpid
+
+      switch (tab) {
+        case 'analyze':
+          // Already on analyze page - no action needed
+          break
+        case 'details':
+          // Navigate to property details page - requires address query param
+          if (zpid) {
+            router.push(`/property/${zpid}?address=${encodedAddress}`)
+          }
+          break
+        case 'price-checker':
+          // Navigate to PriceCheckerIQ page (include zpid when available for reliable comps)
+          const compsQuery = new URLSearchParams({ address: fullAddress })
+          if (zpid) compsQuery.set('zpid', String(zpid))
+          if (property.latitude != null) compsQuery.set('lat', String(property.latitude))
+          if (property.longitude != null) compsQuery.set('lng', String(property.longitude))
+          router.push(`/price-intel?${compsQuery.toString()}`)
+          break
+        case 'dashboard':
+          router.push('/search')
+          break
+      }
+    },
+    [property, router],
+  )
 
   // Must run before loading/error early returns — same hook count every render (React #310 if below returns).
   const navigateToStrategy = useCallback(
@@ -1068,7 +1186,10 @@ function VerdictContent() {
       if (!isLikelyFullAddress(fullAddress) && backendFullAddressRef.current) {
         fullAddress = backendFullAddressRef.current
       }
-      trackEvent('path_opened_in_strategy', { structure_id: structure.id, family: structure.family })
+      trackEvent('path_opened_in_strategy', {
+        structure_id: structure.id,
+        family: structure.family,
+      })
       const url = buildStrategyUrlWithScenario({
         address: fullAddress,
         structure,
@@ -1112,16 +1233,30 @@ function VerdictContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
         <div className="flex flex-col items-center gap-4 text-center px-4">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-red-dim)' }}>
-            <svg className="w-8 h-8 text-[var(--status-negative)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'var(--color-red-dim)' }}
+          >
+            <svg
+              className="w-8 h-8 text-[var(--status-negative)]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
           </div>
           <h2 className="text-xl font-semibold" style={{ color: 'var(--text-heading)' }}>
             {error || 'Unable to load property'}
           </h2>
           <p className="max-w-md" style={{ color: 'var(--text-body)' }}>
-            We couldn&apos;t fetch the property data. Please try again or search for a different address.
+            We couldn&apos;t fetch the property data. Please try again or search for a different
+            address.
           </p>
           {error && error !== 'Unable to load property' && (
             <p className="max-w-md text-sm opacity-80" style={{ color: 'var(--text-secondary)' }}>
@@ -1129,7 +1264,10 @@ function VerdictContent() {
               {(error === 'Failed to fetch' ||
                 error.toLowerCase().includes('network request failed') ||
                 error.toLowerCase().includes('allows this origin in cors')) && (
-                <span className="block mt-2">Check your connection and that the API backend is reachable. If you use a separate frontend URL (e.g. Vercel), ensure the backend allows your origin in CORS.</span>
+                <span className="block mt-2">
+                  Check your connection and that the API backend is reachable. If you use a separate
+                  frontend URL (e.g. Vercel), ensure the backend allows your origin in CORS.
+                </span>
               )}
             </p>
           )}
@@ -1147,21 +1285,24 @@ function VerdictContent() {
   // Derived values for display
   const purchasePrice = analysis.purchasePrice ?? Math.round(property.price * 0.95)
   const incomeValue = analysis.incomeValue ?? property.price
-  const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.70)
+  const wholesalePrice = Math.round((analysis.listPrice || property.price) * 0.7)
   const monthlyRent = property.monthlyRent || 0
-  const isListed = !!property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
+  const isListed =
+    !!property.listingStatus && ['FOR_SALE', 'PENDING', 'FOR_RENT'].includes(property.listingStatus)
   const priceLabel = isListed ? 'Asking' : 'Market'
   const of = analysis.opportunityFactors
   // Deal Gap: discount from market/asking to Target Buy price.
   // Positive = discount needed, zero = deal works at market price.
-  const rawDealGap = property.price > 0 && purchasePrice > 0
-    ? ((property.price - purchasePrice) / property.price) * 100
-    : 0
+  const rawDealGap =
+    property.price > 0 && purchasePrice > 0
+      ? ((property.price - purchasePrice) / property.price) * 100
+      : 0
   const dealGapPct = analysis.dealGapPercent ?? rawDealGap
   // Price Gap: how far income value sits above (positive) or below (negative) market
-  const priceGapPct = property.price > 0 && incomeValue > 0
-    ? ((incomeValue - property.price) / property.price) * 100
-    : 0
+  const priceGapPct =
+    property.price > 0 && incomeValue > 0
+      ? ((incomeValue - property.price) / property.price) * 100
+      : 0
   const isPositiveIncomeCase = incomeValue > property.price && priceGapPct > 0.1
   // Deal Gap (headline) — mirrors the slider's DEAL GAP bracket so both agree.
   // When a Sweet Spot exists (Income Value above Market Price) and Target Buy is
@@ -1170,9 +1311,7 @@ function VerdictContent() {
   // Market-vs-Target Buy delta. Otherwise show the discount needed from Market
   // down to Target Buy.
   const isDealGain = dealGapPct < 0.5 && isPositiveIncomeCase
-  const effectiveDisplayPct = isDealGain
-    ? priceGapPct
-    : -dealGapPct
+  const effectiveDisplayPct = isDealGain ? priceGapPct : -dealGapPct
   const dealGapDisplay = `${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
   // Cumulative investor probability from backend (regional cohort); fallback for stale clients.
@@ -1221,7 +1360,10 @@ function VerdictContent() {
 
   return (
     <>
-      <div className="min-h-screen bg-[var(--surface-base)]" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
+      <div
+        className="min-h-screen bg-[var(--surface-base)]"
+        style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}
+      >
         {/* Header and property bar are provided by AppHeader in layout */}
 
         {/* Centered single-column container */}
@@ -1275,7 +1417,10 @@ function VerdictContent() {
                 longitude={property.longitude}
               />
             ) : property.imageUrl ? (
-              <div className="rounded-[14px] overflow-hidden" style={{ backgroundColor: 'var(--surface-elevated)' }}>
+              <div
+                className="rounded-[14px] overflow-hidden"
+                style={{ backgroundColor: 'var(--surface-elevated)' }}
+              >
                 <img
                   src={property.imageUrl}
                   alt={`Property at ${property.address}`}
@@ -1301,7 +1446,12 @@ function VerdictContent() {
               >
                 <div
                   className="relative flex-shrink-0 rounded-lg overflow-hidden"
-                  style={{ width: 100, aspectRatio: '16/9', background: 'var(--surface-card)', border: '1px solid var(--border-subtle)' }}
+                  style={{
+                    width: 100,
+                    aspectRatio: '16/9',
+                    background: 'var(--surface-card)',
+                    border: '1px solid var(--border-subtle)',
+                  }}
                 >
                   <video
                     src="/videos/what-is-dealgapiq-v3.mp4"
@@ -1317,23 +1467,48 @@ function VerdictContent() {
                   >
                     <div
                       className="flex items-center justify-center rounded-full transition-transform group-hover:scale-110"
-                      style={{ width: 28, height: 28, background: 'linear-gradient(135deg, var(--accent-brand-blue), var(--accent-sky))' }}
+                      style={{
+                        width: 28,
+                        height: 28,
+                        background:
+                          'linear-gradient(135deg, var(--accent-brand-blue), var(--accent-sky))',
+                      }}
                     >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="white" style={{ marginLeft: 1 }}>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="white"
+                        style={{ marginLeft: 1 }}
+                      >
                         <polygon points="6,3 20,12 6,21" />
                       </svg>
                     </div>
                   </div>
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-bold" style={{ color: 'var(--text-heading)', margin: 0 }}>
+                  <p
+                    className="text-sm font-bold"
+                    style={{ color: 'var(--text-heading)', margin: 0 }}
+                  >
                     What is DealGapIQ?
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)', margin: 0 }}>
+                  <p
+                    className="text-xs mt-0.5"
+                    style={{ color: 'var(--text-secondary)', margin: 0 }}
+                  >
                     See how it works in 60 seconds
                   </p>
                 </div>
-                <svg className="w-4 h-4 shrink-0 ml-auto" style={{ color: 'var(--text-label)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <svg
+                  className="w-4 h-4 shrink-0 ml-auto"
+                  style={{ color: 'var(--text-label)' }}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                >
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </button>
@@ -1382,7 +1557,8 @@ function VerdictContent() {
                     subtitle: 'Market Reality',
                     value: property.price,
                     color: 'var(--status-negative)',
-                    tooltip: 'The current list price or, for off-market properties, the estimated value based on comparable sales.',
+                    tooltip:
+                      'The current list price or, for off-market properties, the estimated value based on comparable sales.',
                   },
                 ].map((card) => (
                   <div
@@ -1395,18 +1571,38 @@ function VerdictContent() {
                     }}
                   >
                     <div className="flex items-center justify-center gap-1 mb-1">
-                      <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--text-heading)' }}>{card.title}</p>
+                      <p
+                        className="text-xs font-bold uppercase tracking-wide"
+                        style={{ color: 'var(--text-heading)' }}
+                      >
+                        {card.title}
+                      </p>
                       <InfoPopover
                         ariaLabel={`What is ${card.title}?`}
                         label={
-                          <svg className="w-3.5 h-3.5 opacity-40 hover:opacity-80 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <svg
+                            className="w-3.5 h-3.5 opacity-40 hover:opacity-80 transition-opacity"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
                             <circle cx="12" cy="12" r="10" />
                             <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
                             <line x1="12" y1="17" x2="12.01" y2="17" />
                           </svg>
                         }
                         content={
-                          <p style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--chart-tooltip-text)', margin: 0 }}>
+                          <p
+                            style={{
+                              fontSize: '12px',
+                              lineHeight: '1.5',
+                              color: 'var(--chart-tooltip-text)',
+                              margin: 0,
+                            }}
+                          >
                             {card.tooltip}
                           </p>
                         }
@@ -1414,8 +1610,15 @@ function VerdictContent() {
                         className="inline-flex items-center"
                       />
                     </div>
-                    <p className="tabular-nums mb-1 font-bold leading-none" style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}>{fmtShort(card.value)}</p>
-                    <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{card.subtitle}</p>
+                    <p
+                      className="tabular-nums mb-1 font-bold leading-none"
+                      style={{ color: card.color, fontSize: 'clamp(22px, 1.94vw, 28px)' }}
+                    >
+                      {fmtShort(card.value)}
+                    </p>
+                    <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                      {card.subtitle}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -1427,9 +1630,20 @@ function VerdictContent() {
                 type="button"
                 onClick={() => setShowDealGapVideo(true)}
                 className="flex items-center gap-1.5 text-[12px] sm:text-[13px] font-semibold transition-colors hover:underline"
-                style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+                style={{
+                  color: 'var(--accent-sky)',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
                 </svg>
                 Watch: What is the Deal Gap?
@@ -1443,9 +1657,11 @@ function VerdictContent() {
                   { label: 'TARGET', price: purchasePrice, dotColor: 'var(--accent-sky)' },
                   { label: 'INCOME', price: incomeValue, dotColor: 'var(--status-warning)' },
                   { label: 'MARKET', price: property.price, dotColor: 'var(--status-negative)' },
-                ].filter(m => m.price > 0).sort((a, b) => a.price - b.price)
+                ]
+                  .filter((m) => m.price > 0)
+                  .sort((a, b) => a.price - b.price)
 
-                const allPrices = markers.map(m => m.price)
+                const allPrices = markers.map((m) => m.price)
                 const scaleMin = Math.min(...allPrices) * 0.95
                 const scaleMax = Math.max(...allPrices) * 1.05
                 const range = scaleMax - scaleMin
@@ -1455,35 +1671,56 @@ function VerdictContent() {
                 const marketPos = property.price > 0 ? pos(property.price) : null
                 const incomePos = incomeValue > 0 ? pos(incomeValue) : null
 
-                const dealBracketLeft = targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0
-                const dealBracketPct = property.price > 0 && purchasePrice > 0
-                  ? ((property.price - purchasePrice) / property.price) * 100
-                  : 0
+                const dealBracketLeft =
+                  targetBuyPos != null && marketPos != null ? Math.min(targetBuyPos, marketPos) : 0
+                const dealBracketPct =
+                  property.price > 0 && purchasePrice > 0
+                    ? ((property.price - purchasePrice) / property.price) * 100
+                    : 0
                 // Re-derive isDealGain locally with the slider's own bracket pct
                 // for the visual layout, but keep dealDisplayPct in sync with the
                 // headline `effectiveDisplayPct` so both surfaces always agree.
                 const isDealGainLocal = dealBracketPct < 0.5 && isPositiveIncomeCase
-                const dealBracketRight = isDealGainLocal && incomePos != null
-                  ? incomePos
-                  : (targetBuyPos != null && marketPos != null ? Math.max(targetBuyPos, marketPos) : 0)
+                const dealBracketRight =
+                  isDealGainLocal && incomePos != null
+                    ? incomePos
+                    : targetBuyPos != null && marketPos != null
+                      ? Math.max(targetBuyPos, marketPos)
+                      : 0
                 const showDealBracket = isDealGainLocal
-                  ? (dealBracketRight - dealBracketLeft) >= 3
-                  : (dealBracketRight - dealBracketLeft) >= 3 && Math.abs(dealBracketPct) > 0.1
+                  ? dealBracketRight - dealBracketLeft >= 3
+                  : dealBracketRight - dealBracketLeft >= 3 && Math.abs(dealBracketPct) > 0.1
                 const dealDisplayPct = effectiveDisplayPct
 
-                const priceGapLeft = incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
-                const priceGapRight = incomePos != null && marketPos != null ? Math.max(incomePos, marketPos) : 0
-                const priceGap = property.price > 0 && incomeValue > 0
-                  ? ((incomeValue - property.price) / property.price) * 100
-                  : 0
-                const showPriceGap = incomePos != null && marketPos != null && Math.abs(priceGap) > 0.1 && (priceGapRight - priceGapLeft) >= 3 && !isDealGainLocal
+                const priceGapLeft =
+                  incomePos != null && marketPos != null ? Math.min(incomePos, marketPos) : 0
+                const priceGapRight =
+                  incomePos != null && marketPos != null ? Math.max(incomePos, marketPos) : 0
+                const priceGap =
+                  property.price > 0 && incomeValue > 0
+                    ? ((incomeValue - property.price) / property.price) * 100
+                    : 0
+                const showPriceGap =
+                  incomePos != null &&
+                  marketPos != null &&
+                  Math.abs(priceGap) > 0.1 &&
+                  priceGapRight - priceGapLeft >= 3 &&
+                  !isDealGainLocal
 
                 const bracketLabel = 'DEAL GAP'
-                const bracketColor = isDealGainLocal ? 'var(--status-positive)' : 'var(--accent-sky)'
-                const sweetSpotLeft = marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
-                const sweetSpotWidth = marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
-                const tbMarketOverlap = targetBuyPos != null && marketPos != null && Math.abs(targetBuyPos - marketPos) < 3
-                const fmtPrice = (v: number) => v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${Math.round(v / 1000)}K`
+                const bracketColor = isDealGainLocal
+                  ? 'var(--status-positive)'
+                  : 'var(--accent-sky)'
+                const sweetSpotLeft =
+                  marketPos != null && incomePos != null ? Math.min(marketPos, incomePos) : 0
+                const sweetSpotWidth =
+                  marketPos != null && incomePos != null ? Math.abs(incomePos - marketPos) : 0
+                const tbMarketOverlap =
+                  targetBuyPos != null &&
+                  marketPos != null &&
+                  Math.abs(targetBuyPos - marketPos) < 3
+                const fmtPrice = (v: number) =>
+                  v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${Math.round(v / 1000)}K`
 
                 return (
                   <>
@@ -1499,23 +1736,43 @@ function VerdictContent() {
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mb-0.5"
                           style={{ color: bracketColor }}
                         >
-                          {bracketLabel} &nbsp;{dealDisplayPct >= 0 ? '+' : ''}{dealDisplayPct.toFixed(1)}%
+                          {bracketLabel} &nbsp;{dealDisplayPct >= 0 ? '+' : ''}
+                          {dealDisplayPct.toFixed(1)}%
                         </p>
                         <div className="flex items-start">
-                          <div style={{ width: 1, height: 14, background: bracketColor, flexShrink: 0 }} />
+                          <div
+                            style={{
+                              width: 1,
+                              height: 14,
+                              background: bracketColor,
+                              flexShrink: 0,
+                            }}
+                          />
                           <div style={{ height: 1, background: bracketColor, flex: 1 }} />
-                          <div style={{ width: 1, height: 14, background: bracketColor, flexShrink: 0 }} />
+                          <div
+                            style={{
+                              width: 1,
+                              height: 14,
+                              background: bracketColor,
+                              flexShrink: 0,
+                            }}
+                          />
                         </div>
                       </div>
                     )}
 
                     {/* Bar with proportionally-positioned dots and optional Sweet Spot zone */}
-                    <div className="relative rounded-full" style={{
-                      height: 22,
-                      background: 'linear-gradient(90deg, rgba(10,30,60,0.95) 0%, rgba(30,80,140,0.85) 35%, rgba(56,160,220,0.7) 50%, rgba(30,80,140,0.85) 65%, rgba(10,30,60,0.95) 100%)',
-                      border: '1.5px solid rgba(56,189,248,0.5)',
-                      boxShadow: 'inset 0 0 12px rgba(56,189,248,0.25), 0 0 16px rgba(56,189,248,0.15)',
-                    }}>
+                    <div
+                      className="relative rounded-full"
+                      style={{
+                        height: 22,
+                        background:
+                          'linear-gradient(90deg, rgba(10,30,60,0.95) 0%, rgba(30,80,140,0.85) 35%, rgba(56,160,220,0.7) 50%, rgba(30,80,140,0.85) 65%, rgba(10,30,60,0.95) 100%)',
+                        border: '1.5px solid rgba(56,189,248,0.5)',
+                        boxShadow:
+                          'inset 0 0 12px rgba(56,189,248,0.25), 0 0 16px rgba(56,189,248,0.15)',
+                      }}
+                    >
                       {isPositiveIncomeCase && sweetSpotWidth > 0 && (
                         <div
                           className="absolute rounded-full sweet-spot-pulse"
@@ -1523,20 +1780,23 @@ function VerdictContent() {
                             left: `${sweetSpotLeft}%`,
                             width: `${sweetSpotWidth}%`,
                             height: '100%',
-                            background: 'linear-gradient(90deg, rgba(52,211,153,0.1), rgba(52,211,153,0.3), rgba(52,211,153,0.1))',
+                            background:
+                              'linear-gradient(90deg, rgba(52,211,153,0.1), rgba(52,211,153,0.3), rgba(52,211,153,0.1))',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             overflow: 'hidden',
                           }}
                         >
-                          <span style={{
-                            color: '#ffffff',
-                            fontSize: 11,
-                            fontWeight: 700,
-                            letterSpacing: '0.08em',
-                            whiteSpace: 'nowrap',
-                          }}>
+                          <span
+                            style={{
+                              color: '#ffffff',
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: '0.08em',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
                             SWEET SPOT
                           </span>
                         </div>
@@ -1544,7 +1804,9 @@ function VerdictContent() {
                       {markers.map((m, i) => {
                         const isRing = tbMarketOverlap && m.label === 'TARGET'
                         return (
-                          <div key={i} className="absolute rounded-full"
+                          <div
+                            key={i}
+                            className="absolute rounded-full"
                             style={{
                               width: isRing ? 24 : 18,
                               height: isRing ? 24 : 18,
@@ -1564,16 +1826,41 @@ function VerdictContent() {
                     {/* Price labels below dots (grouped when overlapping) */}
                     <div className="relative" style={{ height: 18, marginTop: 4 }}>
                       {(() => {
-                        const groups: { labels: string[]; price: number; colors: string[]; left: number }[] = []
-                        markers.forEach(m => {
+                        const groups: {
+                          labels: string[]
+                          price: number
+                          colors: string[]
+                          left: number
+                        }[] = []
+                        markers.forEach((m) => {
                           const p = pos(m.price)
-                          const existing = groups.find(g => Math.abs(g.left - p) < 3)
-                          if (existing) { existing.labels.push(m.label); existing.colors.push(m.dotColor) }
-                          else { groups.push({ labels: [m.label], price: m.price, colors: [m.dotColor], left: p }) }
+                          const existing = groups.find((g) => Math.abs(g.left - p) < 3)
+                          if (existing) {
+                            existing.labels.push(m.label)
+                            existing.colors.push(m.dotColor)
+                          } else {
+                            groups.push({
+                              labels: [m.label],
+                              price: m.price,
+                              colors: [m.dotColor],
+                              left: p,
+                            })
+                          }
                         })
                         return groups.map((g, i) => (
-                          <div key={i} className="absolute text-center" style={{ left: `${g.left}%`, transform: 'translateX(-50%)', top: 0 }}>
-                            <div style={{ fontSize: 10, fontWeight: 600, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                          <div
+                            key={i}
+                            className="absolute text-center"
+                            style={{ left: `${g.left}%`, transform: 'translateX(-50%)', top: 0 }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 10,
+                                fontWeight: 600,
+                                lineHeight: 1.2,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
                               {g.labels.map((l, j) => (
                                 <span key={j}>
                                   {j > 0 && <span style={{ color: 'var(--text-muted)' }}> / </span>}
@@ -1595,15 +1882,32 @@ function VerdictContent() {
                         }}
                       >
                         <div className="flex items-end">
-                          <div style={{ width: 1, height: 14, background: 'var(--status-warning)', flexShrink: 0 }} />
-                          <div style={{ height: 1, background: 'var(--status-warning)', flex: 1 }} />
-                          <div style={{ width: 1, height: 14, background: 'var(--status-warning)', flexShrink: 0 }} />
+                          <div
+                            style={{
+                              width: 1,
+                              height: 14,
+                              background: 'var(--status-warning)',
+                              flexShrink: 0,
+                            }}
+                          />
+                          <div
+                            style={{ height: 1, background: 'var(--status-warning)', flex: 1 }}
+                          />
+                          <div
+                            style={{
+                              width: 1,
+                              height: 14,
+                              background: 'var(--status-warning)',
+                              flexShrink: 0,
+                            }}
+                          />
                         </div>
                         <p
                           className="text-center text-[16px] sm:text-[20px] font-bold whitespace-nowrap tabular-nums mt-0.5"
                           style={{ color: 'var(--status-warning)', marginBottom: 8 }}
                         >
-                          PRICE GAP &nbsp;{priceGap >= 0 ? '+' : ''}{priceGap.toFixed(1)}%
+                          PRICE GAP &nbsp;{priceGap >= 0 ? '+' : ''}
+                          {priceGap.toFixed(1)}%
                         </p>
                       </div>
                     )}
@@ -1615,13 +1919,22 @@ function VerdictContent() {
             <div className="mt-4 flex flex-col gap-2">
               <MarketAnchorNote isListed={isListed} />
               {hasDataSources && (
-                <p className="text-[12px] sm:text-[13px] leading-relaxed m-0" style={{ color: 'var(--text-body)' }}>
+                <p
+                  className="text-[12px] sm:text-[13px] leading-relaxed m-0"
+                  style={{ color: 'var(--text-body)' }}
+                >
                   Rent or value look off?{' '}
                   <button
                     type="button"
                     onClick={openDataSourcesAndScroll}
                     className="font-semibold underline-offset-2 hover:underline"
-                    style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                    style={{
+                      color: 'var(--accent-sky)',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer',
+                    }}
                   >
                     Open Data Sources
                   </button>{' '}
@@ -1630,7 +1943,13 @@ function VerdictContent() {
                     type="button"
                     onClick={() => navigateToStrategy()}
                     className="font-semibold underline-offset-2 hover:underline"
-                    style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                    style={{
+                      color: 'var(--accent-sky)',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer',
+                    }}
                   >
                     Change Terms
                   </button>{' '}
@@ -1659,8 +1978,13 @@ function VerdictContent() {
                   aria-controls="verdict-data-sources-panel"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-[12px] sm:text-[14px] font-bold uppercase tracking-wide">Data Sources</span>
-                    <span className="text-[10px] sm:text-[12px]" style={{ color: 'var(--text-label)' }}>
+                    <span className="text-[12px] sm:text-[14px] font-bold uppercase tracking-wide">
+                      Data Sources
+                    </span>
+                    <span
+                      className="text-[10px] sm:text-[12px]"
+                      style={{ color: 'var(--text-label)' }}
+                    >
                       {dataSourceCount} source{dataSourceCount === 1 ? '' : 's'}
                     </span>
                   </div>
@@ -1678,7 +2002,11 @@ function VerdictContent() {
                 </button>
 
                 {isDataSourcesOpen && (
-                  <div id="verdict-data-sources-panel" className="px-3 pb-3 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <div
+                    id="verdict-data-sources-panel"
+                    className="px-3 pb-3 border-t"
+                    style={{ borderColor: 'var(--border-subtle)' }}
+                  >
                     <IQEstimateSelector
                       sources={iqSources}
                       highlightIntro
@@ -1693,22 +2021,32 @@ function VerdictContent() {
                           return prev
                         })
                         recalculateVerdict(
-                          type === 'value'
-                            ? { list_price: _value }
-                            : { monthly_rent: _value },
+                          type === 'value' ? { list_price: _value } : { monthly_rent: _value },
                         )
                         try {
-                          const stateZip = [property?.state, property?.zip].filter(Boolean).join(' ')
-                          const fullAddress = [property?.address, property?.city, stateZip].filter(Boolean).join(', ')
+                          const stateZip = [property?.state, property?.zip]
+                            .filter(Boolean)
+                            .join(' ')
+                          const fullAddress = [property?.address, property?.city, stateZip]
+                            .filter(Boolean)
+                            .join(', ')
                           if (type === 'value') {
-                            writeDealMakerOverrides(fullAddress || addressParam, {
-                              price: _value,
-                              listPrice: _value,
-                            }, { origin: 'source_selection' })
+                            writeDealMakerOverrides(
+                              fullAddress || addressParam,
+                              {
+                                price: _value,
+                                listPrice: _value,
+                              },
+                              { origin: 'source_selection' },
+                            )
                           } else {
-                            writeDealMakerOverrides(fullAddress || addressParam, {
-                              monthlyRent: _value,
-                            }, { origin: 'source_selection' })
+                            writeDealMakerOverrides(
+                              fullAddress || addressParam,
+                              {
+                                monthlyRent: _value,
+                              },
+                              { origin: 'source_selection' },
+                            )
                           }
                         } catch {
                           // Ignore storage errors
@@ -1736,7 +2074,14 @@ function VerdictContent() {
                   label is still used for grade/analytics strings elsewhere. */}
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-baseline gap-2">
-                  <span style={{ fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif", fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 600, lineHeight: 1 }}>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-source-sans), 'Source Sans 3', sans-serif",
+                      fontSize: 'clamp(26px, 3vw, 36px)',
+                      fontWeight: 600,
+                      lineHeight: 1,
+                    }}
+                  >
                     <span style={{ color: 'var(--accent-sky)' }}>The</span>{' '}
                     <span style={{ color: 'var(--text-heading)' }}>DealGap</span>
                   </span>
@@ -1820,12 +2165,22 @@ function VerdictContent() {
                   type="button"
                   onClick={() => setIsDealGapDetailsOpen((prev) => !prev)}
                   className="flex items-center gap-1.5 text-[12px] font-semibold transition-colors"
-                  style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+                  style={{
+                    color: 'var(--accent-sky)',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                  }}
                 >
                   {isDealGapDetailsOpen ? 'Hide details' : 'How this was calculated'}
                   <svg
                     className={`w-3.5 h-3.5 transition-transform ${isDealGapDetailsOpen ? 'rotate-180' : ''}`}
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
@@ -1844,9 +2199,10 @@ function VerdictContent() {
                       maxWidth: 620,
                     }}
                   >
-                    <strong>Income Value</strong> prices both your loan (mortgage payment as % of price)
-                    and your cash (required equity yield — default 8%, editable in defaults).
-                    Cash purchases are not treated as free capital, so Deal Gap stays meaningful when you pay in full.
+                    <strong>Income Value</strong> prices both your loan (mortgage payment as % of
+                    price) and your cash (required equity yield — default 8%, editable in defaults).
+                    Cash purchases are not treated as free capital, so Deal Gap stays meaningful
+                    when you pay in full.
                   </p>
                   <p
                     style={{
@@ -1865,7 +2221,12 @@ function VerdictContent() {
                     type="button"
                     onClick={handleShowMethodology}
                     className="text-xs font-semibold flex items-center gap-1"
-                    style={{ color: 'var(--text-body)', background: 'transparent', border: 'none', padding: 0 }}
+                    style={{
+                      color: 'var(--text-body)',
+                      background: 'transparent',
+                      border: 'none',
+                      padding: 0,
+                    }}
                   >
                     <span style={{ fontSize: 12 }}>ⓘ</span>
                     How Deal Gap works
@@ -1919,13 +2280,23 @@ function VerdictContent() {
                   <InsightItem
                     num="1"
                     delay={0}
-                    title={isOffMarket
-                      ? <span><strong style={{ color: 'var(--accent-sky)' }}>Off-market</strong> — not listed for sale</span>
-                      : <span><strong style={{ color: 'var(--accent-sky)' }}>Actively listed</strong> — competing buyers</span>
+                    title={
+                      isOffMarket ? (
+                        <span>
+                          <strong style={{ color: 'var(--accent-sky)' }}>Off-market</strong> — not
+                          listed for sale
+                        </span>
+                      ) : (
+                        <span>
+                          <strong style={{ color: 'var(--accent-sky)' }}>Actively listed</strong> —
+                          competing buyers
+                        </span>
+                      )
                     }
-                    detail={isOffMarket
-                      ? "You'd need to make an off-market offer. Confirm the owner's interest first."
-                      : 'Speed and terms matter when competing with other buyers.'
+                    detail={
+                      isOffMarket
+                        ? "You'd need to make an off-market offer. Confirm the owner's interest first."
+                        : 'Speed and terms matter when competing with other buyers.'
                     }
                   />
                   <InsightItem
@@ -1933,7 +2304,11 @@ function VerdictContent() {
                     delay={80}
                     title={
                       <span>
-                        Target buy: <strong style={{ color: 'var(--accent-sky)' }}>{fmtShort(purchasePrice)}</strong> ({dealGapDisplay} gap)
+                        Target buy:{' '}
+                        <strong style={{ color: 'var(--accent-sky)' }}>
+                          {fmtShort(purchasePrice)}
+                        </strong>{' '}
+                        ({dealGapDisplay} gap)
                       </span>
                     }
                     detail={`A ${fmtShort(discountAmount)} discount below market value for positive cash flow.`}
@@ -1944,12 +2319,18 @@ function VerdictContent() {
                     title={
                       <span>
                         About{' '}
-                        <strong style={{ color: 'var(--accent-sky)' }}>{cumulativeInvestorPct}%</strong> of investors
-                        close at this discount or deeper
+                        <strong style={{ color: 'var(--accent-sky)' }}>
+                          {cumulativeInvestorPct}%
+                        </strong>{' '}
+                        of investors close at this discount or deeper
                         {investorRegionLabel && investorRegionLabel !== 'U.S.' ? (
                           <>
                             {' '}
-                            in <strong style={{ color: 'var(--accent-sky)' }}>{investorRegionLabel}</strong> markets
+                            in{' '}
+                            <strong style={{ color: 'var(--accent-sky)' }}>
+                              {investorRegionLabel}
+                            </strong>{' '}
+                            markets
                           </>
                         ) : (
                           <> (U.S. baseline)</>
@@ -1964,7 +2345,13 @@ function VerdictContent() {
                       <InsightItem
                         num="4"
                         delay={0}
-                        title={<span>Repairs <strong style={{ color: 'var(--accent-sky)' }}>not included</strong> in initial analysis</span>}
+                        title={
+                          <span>
+                            Repairs{' '}
+                            <strong style={{ color: 'var(--accent-sky)' }}>not included</strong> in
+                            initial analysis
+                          </span>
+                        }
                         detail="Use DealMaker to add a rehab budget and see the impact on returns."
                       />
                       <InsightItem
@@ -1972,38 +2359,64 @@ function VerdictContent() {
                         delay={0}
                         title={
                           <span>
-                            Assumes <strong style={{ color: 'var(--accent-sky)' }}>20% down · 6.0% · 30yr</strong>
+                            Assumes{' '}
+                            <strong style={{ color: 'var(--accent-sky)' }}>
+                              20% down · 6.0% · 30yr
+                            </strong>
                           </span>
                         }
                         detail="Edit financing terms in DealMaker to match your actual loan scenario."
                       />
-                      {strMarketData?.str_regulatory?.rating && (strMarketData.str_regulatory.rating === 'Negative' || strMarketData.str_regulatory.rating === 'Restricted') && (
-                        <InsightItem
-                          num="6"
-                          delay={0}
-                          title={
-                            <span>
-                              STR regulations: <strong style={{ color: '#F59E0B' }}>{strMarketData.str_regulatory.rating}</strong>
-                              {strMarketData.str_regulatory.day_limit && (
-                                <> — {strMarketData.str_regulatory.day_limit} day limit</>
-                              )}
-                            </span>
-                          }
-                          detail={strMarketData.str_regulatory.rules_summary || 'Short-term rentals face restrictions in this market. Verify local regulations before pursuing an STR strategy.'}
-                        />
-                      )}
-                      {strMarketData?.str_market_stats?.yoy_occupancy_change != null && strMarketData.str_market_stats.yoy_occupancy_change < -20 && (
-                        <InsightItem
-                          num={strMarketData?.str_regulatory?.rating && (strMarketData.str_regulatory.rating === 'Negative' || strMarketData.str_regulatory.rating === 'Restricted') ? '7' : '6'}
-                          delay={0}
-                          title={
-                            <span>
-                              STR occupancy <strong style={{ color: '#EF4444' }}>down {Math.abs(strMarketData.str_market_stats.yoy_occupancy_change).toFixed(0)}%</strong> year-over-year
-                            </span>
-                          }
-                          detail="Airbnb occupancy is declining in this market. Factor this trend into STR revenue projections."
-                        />
-                      )}
+                      {strMarketData?.str_regulatory?.rating &&
+                        (strMarketData.str_regulatory.rating === 'Negative' ||
+                          strMarketData.str_regulatory.rating === 'Restricted') && (
+                          <InsightItem
+                            num="6"
+                            delay={0}
+                            title={
+                              <span>
+                                STR regulations:{' '}
+                                <strong style={{ color: '#F59E0B' }}>
+                                  {strMarketData.str_regulatory.rating}
+                                </strong>
+                                {strMarketData.str_regulatory.day_limit && (
+                                  <> — {strMarketData.str_regulatory.day_limit} day limit</>
+                                )}
+                              </span>
+                            }
+                            detail={
+                              strMarketData.str_regulatory.rules_summary ||
+                              'Short-term rentals face restrictions in this market. Verify local regulations before pursuing an STR strategy.'
+                            }
+                          />
+                        )}
+                      {strMarketData?.str_market_stats?.yoy_occupancy_change != null &&
+                        strMarketData.str_market_stats.yoy_occupancy_change < -20 && (
+                          <InsightItem
+                            num={
+                              strMarketData?.str_regulatory?.rating &&
+                              (strMarketData.str_regulatory.rating === 'Negative' ||
+                                strMarketData.str_regulatory.rating === 'Restricted')
+                                ? '7'
+                                : '6'
+                            }
+                            delay={0}
+                            title={
+                              <span>
+                                STR occupancy{' '}
+                                <strong style={{ color: '#EF4444' }}>
+                                  down{' '}
+                                  {Math.abs(
+                                    strMarketData.str_market_stats.yoy_occupancy_change,
+                                  ).toFixed(0)}
+                                  %
+                                </strong>{' '}
+                                year-over-year
+                              </span>
+                            }
+                            detail="Airbnb occupancy is declining in this market. Factor this trend into STR revenue projections."
+                          />
+                        )}
                     </>
                   )}
                 </div>
@@ -2012,12 +2425,22 @@ function VerdictContent() {
                   type="button"
                   onClick={() => setShowAllInsights((prev) => !prev)}
                   className="flex items-center gap-1.5 mt-3 text-[12px] font-semibold transition-colors"
-                  style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+                  style={{
+                    color: 'var(--accent-sky)',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                  }}
                 >
                   {showAllInsights ? 'Show less' : 'Show all insights'}
                   <svg
                     className={`w-3.5 h-3.5 transition-transform ${showAllInsights ? 'rotate-180' : ''}`}
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
@@ -2036,20 +2459,57 @@ function VerdictContent() {
                 className="relative flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap"
                 style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
               >
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                <svg
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                >
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                </svg>
                 <span>Change Terms</span>
               </button>
               <button
                 onClick={() => handlePDFDownload('light')}
                 disabled={isExporting === 'pdf'}
                 className="relative flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-wait"
-                style={{ background: 'var(--surface-card)', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
+                style={{
+                  background: 'var(--surface-card)',
+                  border: '1px solid var(--border-focus)',
+                  color: 'var(--accent-sky)',
+                }}
               >
-                {!isPro && <span className="absolute -top-2 -right-1 px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold uppercase tracking-wider z-10" style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', lineHeight: 1 }}>Pro</span>}
+                {!isPro && (
+                  <span
+                    className="absolute -top-2 -right-1 px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold uppercase tracking-wider z-10"
+                    style={{
+                      background: 'var(--accent-sky)',
+                      color: 'var(--text-inverse)',
+                      lineHeight: 1,
+                    }}
+                  >
+                    Pro
+                  </span>
+                )}
                 {isExporting === 'pdf' ? (
                   <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
                 ) : (
-                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <svg
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  >
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
                 )}
                 <span>{isExporting === 'pdf' ? 'Generating...' : 'Download PDF'}</span>
               </button>
@@ -2057,13 +2517,41 @@ function VerdictContent() {
                 onClick={handleExcelDownload}
                 disabled={isExporting === 'excel'}
                 className="relative flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-wait"
-                style={{ background: 'var(--surface-card)', border: '1px solid var(--border-focus)', color: 'var(--accent-sky)' }}
+                style={{
+                  background: 'var(--surface-card)',
+                  border: '1px solid var(--border-focus)',
+                  color: 'var(--accent-sky)',
+                }}
               >
-                {!isPro && <span className="absolute -top-2 -right-1 px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold uppercase tracking-wider z-10" style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)', lineHeight: 1 }}>Pro</span>}
+                {!isPro && (
+                  <span
+                    className="absolute -top-2 -right-1 px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold uppercase tracking-wider z-10"
+                    style={{
+                      background: 'var(--accent-sky)',
+                      color: 'var(--text-inverse)',
+                      lineHeight: 1,
+                    }}
+                  >
+                    Pro
+                  </span>
+                )}
                 {isExporting === 'excel' ? (
                   <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
                 ) : (
-                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                  <svg
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <line x1="3" y1="15" x2="21" y2="15" />
+                    <line x1="9" y1="3" x2="9" y2="21" />
+                    <line x1="15" y1="3" x2="15" y2="21" />
+                  </svg>
                 )}
                 <span>{isExporting === 'excel' ? 'Generating...' : 'Download Excel'}</span>
               </button>
@@ -2071,55 +2559,125 @@ function VerdictContent() {
           </section>
 
           {/* div-e gradient divider */}
-          <div className="mx-0 sm:mx-5" style={{ height: 1, background: 'linear-gradient(90deg, transparent, var(--accent-sky) 15%, var(--status-positive) 50%, var(--status-negative) 85%, transparent)', boxShadow: 'var(--shadow-card)' }} />
+          <div
+            className="mx-0 sm:mx-5"
+            style={{
+              height: 1,
+              background:
+                'linear-gradient(90deg, transparent, var(--accent-sky) 15%, var(--status-positive) 50%, var(--status-negative) 85%, transparent)',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          />
 
           {/* CTA → Strategy — copy adapts to Deal Gap tier */}
           <section className="px-3 sm:px-5 py-10 text-center">
-            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--accent-sky)' }}>
-              {dealGapPct <= 10 ? 'This deal passed the screen' : dealGapPct <= 20 ? 'This deal needs a closer look' : `The numbers don't work at ${isListed ? 'asking price' : 'this estimate'}`}
-            </p>
-            <h2 className="text-[1.35rem] font-bold leading-snug mb-3" style={{ color: 'var(--text-heading)' }}>
-              {dealGapPct <= 10 ? 'Now Prove It.' : dealGapPct <= 20 ? 'Find the Angle.' : 'See What Would Work.'}
-            </h2>
-            <p className="text-[0.95rem] leading-relaxed mx-auto mb-7" style={{ color: 'var(--text-body)' }}>
+            <p
+              className="text-xs font-bold uppercase tracking-wider mb-3"
+              style={{ color: 'var(--accent-sky)' }}
+            >
               {dealGapPct <= 10
-                ? 'Get a full financial breakdown across 6 investment strategies — what you\'d pay, what you\'d earn, and whether the numbers actually work.'
+                ? 'This deal passed the screen'
                 : dealGapPct <= 20
-                ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
-                : 'See how far the numbers are off—and what would fix them. Price cuts are only one lever: better financing, more cash down, seller carry, verified rent, or tighter expenses can all close the gap. Strategy walks through each scenario.'}
+                  ? 'This deal needs a closer look'
+                  : `The numbers don't work at ${isListed ? 'asking price' : 'this estimate'}`}
+            </p>
+            <h2
+              className="text-[1.35rem] font-bold leading-snug mb-3"
+              style={{ color: 'var(--text-heading)' }}
+            >
+              {dealGapPct <= 10
+                ? 'Now Prove It.'
+                : dealGapPct <= 20
+                  ? 'Find the Angle.'
+                  : 'See What Would Work.'}
+            </h2>
+            <p
+              className="text-[0.95rem] leading-relaxed mx-auto mb-7"
+              style={{ color: 'var(--text-body)' }}
+            >
+              {dealGapPct <= 10
+                ? "Get a full financial breakdown across 6 investment strategies — what you'd pay, what you'd earn, and whether the numbers actually work."
+                : dealGapPct <= 20
+                  ? 'The Deal Gap is larger than a typical negotiated discount, but the right strategy and terms could make it work. See the full financial breakdown to find the approach that fits.'
+                  : 'See how far the numbers are off—and what would fix them. Price cuts are only one lever: better financing, more cash down, seller carry, verified rent, or tighter expenses can all close the gap. Strategy walks through each scenario.'}
             </p>
             {dealGapPct > 20 && !isAuthenticated && (
-              <p className="text-[0.85rem] leading-relaxed mx-auto mb-4 max-w-lg" style={{ color: 'var(--text-secondary)' }}>
+              <p
+                className="text-[0.85rem] leading-relaxed mx-auto mb-4 max-w-lg"
+                style={{ color: 'var(--text-secondary)' }}
+              >
                 <button
                   type="button"
                   onClick={() => openAuthModal('login')}
                   className="font-semibold underline-offset-2 hover:underline"
-                  style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                  style={{
+                    color: 'var(--accent-sky)',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                  }}
                 >
                   Sign in
                 </button>{' '}
                 to use live sliders and save assumptions across visits.
               </p>
             )}
-            <button onClick={() => navigateToStrategy()} className="inline-flex items-center gap-2 px-7 py-3 sm:px-9 sm:py-4 rounded-full font-bold text-[0.8rem] sm:text-[1.04rem] text-[var(--text-inverse)] transition-all"
-              style={{ background: 'var(--accent-sky)', boxShadow: 'var(--shadow-card)' }}>
+            <button
+              onClick={() => navigateToStrategy()}
+              className="inline-flex items-center gap-2 px-7 py-3 sm:px-9 sm:py-4 rounded-full font-bold text-[0.8rem] sm:text-[1.04rem] text-[var(--text-inverse)] transition-all"
+              style={{ background: 'var(--accent-sky)', boxShadow: 'var(--shadow-card)' }}
+            >
               Show Me the Numbers
-              <svg className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              <svg
+                className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]"
+                fill="none"
+                stroke="white"
+                viewBox="0 0 24 24"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </button>
             <div className="flex justify-center gap-6 mt-5">
               {['Try it Free', 'No signup needed', '60 seconds'].map((f, i) => (
                 <div key={i} className="flex items-center gap-1.5 sm:gap-2">
-                  <svg className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]" fill="none" stroke="var(--accent-sky)" viewBox="0 0 24 24" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span className="text-xs sm:text-[0.94rem] font-medium" style={{ color: 'var(--text-body)' }}>{f}</span>
+                  <svg
+                    className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]"
+                    fill="none"
+                    stroke="var(--accent-sky)"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span
+                    className="text-xs sm:text-[0.94rem] font-medium"
+                    style={{ color: 'var(--text-body)' }}
+                  >
+                    {f}
+                  </span>
                 </div>
               ))}
             </div>
           </section>
 
           {/* Trust Strip */}
-          <div className="px-3 sm:px-5 py-5 text-center border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div
+            className="px-3 sm:px-5 py-5 text-center border-t"
+            style={{ borderColor: 'var(--border-subtle)' }}
+          >
             <p className="text-xs leading-relaxed" style={{ color: 'var(--text-body)' }}>
-              DealGap IQ analyzes <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>rental income, expenses, market conditions</span> and <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>comparable sales</span> to calculate every Deal Gap. No guesswork — just data.
+              DealGap IQ analyzes{' '}
+              <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>
+                rental income, expenses, market conditions
+              </span>{' '}
+              and{' '}
+              <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>
+                comparable sales
+              </span>{' '}
+              to calculate every Deal Gap. No guesswork — just data.
             </p>
           </div>
         </div>
@@ -2149,7 +2707,6 @@ function VerdictContent() {
             : null
         }
       />
-
     </>
   )
 }

@@ -7,27 +7,27 @@
 // ============================================
 
 export interface Property {
-  id: string;
+  id: string
   address: {
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-    full: string;
-  };
-  listPrice: number;
-  beds: number;
-  baths: number;
-  sqft: number;
-  yearBuilt: number;
-  propertyType: 'single_family' | 'multi_family' | 'condo' | 'townhouse';
-  images: string[];
-  estimatedRent?: number;
-  estimatedPropertyTax?: number;
-  estimatedInsurance?: number;
-  hoaFees?: number;
-  createdAt: string;
-  updatedAt: string;
+    street: string
+    city: string
+    state: string
+    zip: string
+    full: string
+  }
+  listPrice: number
+  beds: number
+  baths: number
+  sqft: number
+  yearBuilt: number
+  propertyType: 'single_family' | 'multi_family' | 'condo' | 'townhouse'
+  images: string[]
+  estimatedRent?: number
+  estimatedPropertyTax?: number
+  estimatedInsurance?: number
+  hoaFees?: number
+  createdAt: string
+  updatedAt: string
 }
 
 // ============================================
@@ -36,34 +36,34 @@ export interface Property {
 
 export interface AnalyticsInputs {
   // Purchase Terms
-  purchasePrice: number;
-  downPaymentPercent: number;
-  closingCostsPercent: number;
-  rehabCosts: number;
+  purchasePrice: number
+  downPaymentPercent: number
+  closingCostsPercent: number
+  rehabCosts: number
 
   // Financing
-  interestRate: number;
-  loanTermYears: 15 | 20 | 25 | 30;
-  loanType: 'conventional' | 'fha' | 'va' | 'hard_money' | 'seller_finance';
+  interestRate: number
+  loanTermYears: 15 | 20 | 25 | 30
+  loanType: 'conventional' | 'fha' | 'va' | 'hard_money' | 'seller_finance'
 
   // Property Income
-  monthlyRent: number;
-  otherIncome: number;
+  monthlyRent: number
+  otherIncome: number
 
   // Operating Expenses
-  vacancyRate: number;
-  maintenanceRate: number;
-  managementRate: number;
-  annualPropertyTax: number;
-  annualInsurance: number;
-  monthlyHoa: number;
-  utilities: number;
+  vacancyRate: number
+  maintenanceRate: number
+  managementRate: number
+  annualPropertyTax: number
+  annualInsurance: number
+  monthlyHoa: number
+  utilities: number
 
   // Projection Assumptions
-  appreciationRate: number;
-  rentGrowthRate: number;
-  expenseGrowthRate: number;
-  sellingCostsPercent: number;
+  appreciationRate: number
+  rentGrowthRate: number
+  expenseGrowthRate: number
+  sellingCostsPercent: number
 }
 
 export const DEFAULT_INPUTS: AnalyticsInputs = {
@@ -74,7 +74,7 @@ export const DEFAULT_INPUTS: AnalyticsInputs = {
   rehabCosts: 0,
 
   // Financing
-  interestRate: 6.0,        // 6% (was 7.0%)
+  interestRate: 6.0, // 6% (was 7.0%)
   loanTermYears: 30,
   loanType: 'conventional',
 
@@ -83,20 +83,20 @@ export const DEFAULT_INPUTS: AnalyticsInputs = {
   otherIncome: 0,
 
   // Operating Expenses
-  vacancyRate: 1,           // 1% (was 5%)
-  maintenanceRate: 5,       // 5%
-  managementRate: 0,        // 0%
+  vacancyRate: 1, // 1% (was 5%)
+  maintenanceRate: 5, // 5%
+  managementRate: 0, // 0%
   annualPropertyTax: 0,
-  annualInsurance: 0,       // Will be calculated as 1% of purchase price
+  annualInsurance: 0, // Will be calculated as 1% of purchase price
   monthlyHoa: 0,
-  utilities: 100,           // $100/mo (was 0)
+  utilities: 100, // $100/mo (was 0)
 
   // Projection Assumptions
-  appreciationRate: 5,      // 5% (was 3%)
-  rentGrowthRate: 5,        // 5% (was 3%)
-  expenseGrowthRate: 3,     // 3% (was 2%)
-  sellingCostsPercent: 6,   // 6%
-};
+  appreciationRate: 5, // 5% (was 3%)
+  rentGrowthRate: 5, // 5% (was 3%)
+  expenseGrowthRate: 3, // 3% (was 2%)
+  sellingCostsPercent: 6, // 6%
+}
 
 // ============================================
 // CALCULATED METRICS
@@ -104,42 +104,42 @@ export const DEFAULT_INPUTS: AnalyticsInputs = {
 
 export interface CalculatedMetrics {
   // Loan Details
-  loanAmount: number;
-  downPayment: number;
-  closingCosts: number;
-  totalCashRequired: number;
-  monthlyMortgage: number;
+  loanAmount: number
+  downPayment: number
+  closingCosts: number
+  totalCashRequired: number
+  monthlyMortgage: number
 
   // Monthly Breakdown
-  grossMonthlyIncome: number;
-  totalMonthlyExpenses: number;
-  monthlyVacancy: number;
-  monthlyMaintenance: number;
-  monthlyManagement: number;
-  monthlyPropertyTax: number;
-  monthlyInsurance: number;
-  monthlyHoa: number;
-  monthlyUtilities: number;
-  monthlyCashFlow: number;
+  grossMonthlyIncome: number
+  totalMonthlyExpenses: number
+  monthlyVacancy: number
+  monthlyMaintenance: number
+  monthlyManagement: number
+  monthlyPropertyTax: number
+  monthlyInsurance: number
+  monthlyHoa: number
+  monthlyUtilities: number
+  monthlyCashFlow: number
 
   // Annual Figures
-  annualGrossIncome: number;
-  annualOperatingExpenses: number;
-  annualNOI: number;
-  annualDebtService: number;
-  annualCashFlow: number;
+  annualGrossIncome: number
+  annualOperatingExpenses: number
+  annualNOI: number
+  annualDebtService: number
+  annualCashFlow: number
 
   // Key Returns
-  cashOnCash: number;
-  capRate: number;
-  dscr: number;
-  onePercentRule: number;
-  grossRentMultiplier: number;
+  cashOnCash: number
+  capRate: number
+  dscr: number
+  onePercentRule: number
+  grossRentMultiplier: number
 
   // Break-even Points
-  breakEvenOccupancy: number;
-  breakEvenRent: number;
-  maxPurchasePriceForTarget: number;
+  breakEvenOccupancy: number
+  breakEvenRent: number
+  maxPurchasePriceForTarget: number
 }
 
 // ============================================
@@ -148,10 +148,10 @@ export interface CalculatedMetrics {
 
 /**
  * Deal Score is based on Investment Opportunity
- * 
- * The score is calculated based on how much discount from list price 
+ *
+ * The score is calculated based on how much discount from list price
  * is needed to reach Income Value. Lower discount = better opportunity.
- * 
+ *
  * Thresholds:
  * - 0-5% discount needed = Strong Opportunity (A+)
  * - 5-10% = Good Opportunity (A)
@@ -161,38 +161,38 @@ export interface CalculatedMetrics {
  * - 35%+ = Pass (F)
  */
 
-export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
+export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
 
 export interface ScoreBreakdown {
-  category: string;
-  points: number;
-  maxPoints: number;
-  icon: string;
-  description: string;
-  status: 'excellent' | 'good' | 'average' | 'poor';
+  category: string
+  points: number
+  maxPoints: number
+  icon: string
+  description: string
+  status: 'excellent' | 'good' | 'average' | 'poor'
 }
 
 export interface DealScore {
-  score: number;
-  grade: OpportunityGrade;
-  verdict: string;
-  label: string;  // "Strong Opportunity", "Good Opportunity", etc.
-  color: string;
-  discountPercent: number;  // How much discount from list needed
-  incomeValue: number;     // Max price where cash flow = $0 (formerly breakevenPrice)
-  listPrice: number;
-  breakdown: ScoreBreakdown[];
-  strengths: string[];
-  concerns: string[];
-  improvements: ScoreImprovement[];
+  score: number
+  grade: OpportunityGrade
+  verdict: string
+  label: string // "Strong Opportunity", "Good Opportunity", etc.
+  color: string
+  discountPercent: number // How much discount from list needed
+  incomeValue: number // Max price where cash flow = $0 (formerly breakevenPrice)
+  listPrice: number
+  breakdown: ScoreBreakdown[]
+  strengths: string[]
+  concerns: string[]
+  improvements: ScoreImprovement[]
 }
 
 export interface ScoreImprovement {
-  action: string;
-  icon: string;
-  pointsGain: number;
-  newScore: number;
-  newGrade: string;
+  action: string
+  icon: string
+  pointsGain: number
+  newScore: number
+  newGrade: string
 }
 
 // ============================================
@@ -200,35 +200,35 @@ export interface ScoreImprovement {
 // ============================================
 
 export interface YearProjection {
-  year: number;
-  
+  year: number
+
   // Income & Expenses
-  annualRent: number;
-  annualExpenses: number;
-  annualMortgage: number;
-  annualCashFlow: number;
-  cumulativeCashFlow: number;
+  annualRent: number
+  annualExpenses: number
+  annualMortgage: number
+  annualCashFlow: number
+  cumulativeCashFlow: number
 
   // Property Value & Equity
-  propertyValue: number;
-  loanBalance: number;
-  equity: number;
-  equityGrowth: number;
+  propertyValue: number
+  loanBalance: number
+  equity: number
+  equityGrowth: number
 
   // Total Wealth
-  totalWealth: number;
-  totalReturn: number;
-  annualizedReturn: number;
+  totalWealth: number
+  totalReturn: number
+  annualizedReturn: number
 }
 
 export interface ProjectionSummary {
-  totalCashFlow: number;
-  totalEquity: number;
-  totalWealth: number;
-  totalReturn: number;
-  irr: number;
-  equityMultiple: number;
-  paybackPeriod: number | null;
+  totalCashFlow: number
+  totalEquity: number
+  totalWealth: number
+  totalReturn: number
+  irr: number
+  equityMultiple: number
+  paybackPeriod: number | null
 }
 
 // ============================================
@@ -236,24 +236,24 @@ export interface ProjectionSummary {
 // ============================================
 
 export interface AmortizationRow {
-  month: number;
-  year: number;
-  payment: number;
-  principal: number;
-  interest: number;
-  balance: number;
-  cumulativePrincipal: number;
-  cumulativeInterest: number;
+  month: number
+  year: number
+  payment: number
+  principal: number
+  interest: number
+  balance: number
+  cumulativePrincipal: number
+  cumulativeInterest: number
 }
 
 export interface AmortizationSummary {
-  monthlyPayment: number;
-  totalPayments: number;
-  totalPrincipal: number;
-  totalInterest: number;
-  principalPercent: number;
-  interestPercent: number;
-  payoffDate: Date;
+  monthlyPayment: number
+  totalPayments: number
+  totalPrincipal: number
+  totalInterest: number
+  principalPercent: number
+  interestPercent: number
+  payoffDate: Date
 }
 
 // ============================================
@@ -261,21 +261,21 @@ export interface AmortizationSummary {
 // ============================================
 
 export interface Scenario {
-  id: string;
-  name: string;
-  description?: string;
-  inputs: AnalyticsInputs;
-  metrics: CalculatedMetrics;
-  score: DealScore;
-  createdAt: string;
-  updatedAt: string;
-  isBase: boolean;
+  id: string
+  name: string
+  description?: string
+  inputs: AnalyticsInputs
+  metrics: CalculatedMetrics
+  score: DealScore
+  createdAt: string
+  updatedAt: string
+  isBase: boolean
 }
 
 export interface ScenarioComparison {
-  scenarios: Scenario[];
-  winner: Scenario | null;
-  deltas: Record<string, number>;
+  scenarios: Scenario[]
+  winner: Scenario | null
+  deltas: Record<string, number>
 }
 
 // ============================================
@@ -283,75 +283,69 @@ export interface ScenarioComparison {
 // ============================================
 
 export interface SensitivityVariable {
-  id: keyof AnalyticsInputs;
-  label: string;
-  currentValue: number;
-  minValue: number;
-  maxValue: number;
-  step: number;
-  format: 'currency' | 'percentage' | 'decimal';
+  id: keyof AnalyticsInputs
+  label: string
+  currentValue: number
+  minValue: number
+  maxValue: number
+  step: number
+  format: 'currency' | 'percentage' | 'decimal'
 }
 
 export interface SensitivityDataPoint {
-  value: number;
-  cashFlow: number;
-  cashOnCash: number;
-  score: number;
-  isCurrent: boolean;
+  value: number
+  cashFlow: number
+  cashOnCash: number
+  score: number
+  isCurrent: boolean
 }
 
 export interface SensitivityAnalysis {
-  variable: SensitivityVariable;
-  impact: 'high' | 'medium' | 'low';
-  dataPoints: SensitivityDataPoint[];
-  cashFlowRange: { min: number; max: number };
-  incomeValue: number | null;  // Price where cash flow = $0 (formerly breakEvenValue)
+  variable: SensitivityVariable
+  impact: 'high' | 'medium' | 'low'
+  dataPoints: SensitivityDataPoint[]
+  cashFlowRange: { min: number; max: number }
+  incomeValue: number | null // Price where cash flow = $0 (formerly breakEvenValue)
 }
 
 // ============================================
 // INVESTMENT STRATEGIES
 // ============================================
 
-export type InvestmentStrategy = 
+export type InvestmentStrategy =
   | 'long_term_rental'
   | 'short_term_rental'
   | 'brrrr'
   | 'fix_and_flip'
   | 'house_hack'
-  | 'wholesale';
+  | 'wholesale'
 
 export interface StrategyAnalysis {
-  strategy: InvestmentStrategy;
-  label: string;
-  icon: string;
-  color: string;
-  estimatedROI: number;
-  estimatedCashFlow: number;
-  timeHorizon: string;
-  riskLevel: 'low' | 'medium' | 'high';
-  effortLevel: 'passive' | 'moderate' | 'active';
-  keyMetrics: { label: string; value: string }[];
-  pros: string[];
-  cons: string[];
-  isBestFit: boolean;
+  strategy: InvestmentStrategy
+  label: string
+  icon: string
+  color: string
+  estimatedROI: number
+  estimatedCashFlow: number
+  timeHorizon: string
+  riskLevel: 'low' | 'medium' | 'high'
+  effortLevel: 'passive' | 'moderate' | 'active'
+  keyMetrics: { label: string; value: string }[]
+  pros: string[]
+  cons: string[]
+  isBestFit: boolean
 }
 
 // ============================================
 // UI STATE
 // ============================================
 
-export type BreakdownTab = 
-  | 'cashflow' 
-  | 'tenyear' 
-  | 'score' 
-  | 'whatif' 
-  | 'compare' 
-  | 'loan';
+export type BreakdownTab = 'cashflow' | 'tenyear' | 'score' | 'whatif' | 'compare' | 'loan'
 
 export interface TabConfig {
-  id: BreakdownTab;
-  label: string;
-  icon: string;
+  id: BreakdownTab
+  label: string
+  icon: string
 }
 
 export const BREAKDOWN_TABS: TabConfig[] = [
@@ -361,27 +355,27 @@ export const BREAKDOWN_TABS: TabConfig[] = [
   { id: 'whatif', label: 'What-If', icon: '🔮' },
   { id: 'compare', label: 'Compare', icon: '⚖️' },
   { id: 'loan', label: 'Loan', icon: '🏦' },
-];
+]
 
 export interface SliderGroup {
-  id: string;
-  title: string;
-  icon: string;
-  stepNumber: number;
-  isExpanded: boolean;
-  sliders: SliderConfig[];
+  id: string
+  title: string
+  icon: string
+  stepNumber: number
+  isExpanded: boolean
+  sliders: SliderConfig[]
 }
 
 export interface SliderConfig {
-  id: keyof AnalyticsInputs;
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  format: 'currency' | 'percentage' | 'decimal' | 'years';
-  suffix?: string;
-  prefix?: string;
-  infoText?: string;
+  id: keyof AnalyticsInputs
+  label: string
+  min: number
+  max: number
+  step: number
+  format: 'currency' | 'percentage' | 'decimal' | 'years'
+  suffix?: string
+  prefix?: string
+  infoText?: string
 }
 
 // ============================================
@@ -389,12 +383,12 @@ export interface SliderConfig {
 // ============================================
 
 export interface Insight {
-  id: string;
-  type: 'strength' | 'concern' | 'tip';
-  icon: string;
-  text: string;
-  highlight?: string;
-  priority: number;
+  id: string
+  type: 'strength' | 'concern' | 'tip'
+  icon: string
+  text: string
+  highlight?: string
+  priority: number
 }
 
 // ============================================
@@ -402,12 +396,12 @@ export interface Insight {
 // ============================================
 
 export interface Benchmark {
-  metric: string;
-  threshold: number;
-  comparison: 'above' | 'below' | 'between';
-  upperThreshold?: number;
-  label: string;
-  description: string;
+  metric: string
+  threshold: number
+  comparison: 'above' | 'below' | 'between'
+  upperThreshold?: number
+  label: string
+  description: string
 }
 
 export const BENCHMARKS: Record<string, Benchmark> = {
@@ -446,38 +440,38 @@ export const BENCHMARKS: Record<string, Benchmark> = {
     label: '> $0',
     description: 'Property should generate positive cash flow',
   },
-};
+}
 
 // ============================================
 // THEME
 // ============================================
 
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = 'light' | 'dark' | 'system'
 
 export interface ThemeColors {
   // Backgrounds
-  background: string;
-  surface: string;
-  surfaceHover: string;
-  
+  background: string
+  surface: string
+  surfaceHover: string
+
   // Borders
-  border: string;
-  borderLight: string;
-  
+  border: string
+  borderLight: string
+
   // Text
-  text: string;
-  textSecondary: string;
-  textMuted: string;
-  
+  text: string
+  textSecondary: string
+  textMuted: string
+
   // Semantic
-  primary: string;
-  primaryDark: string;
-  success: string;
-  successLight: string;
-  warning: string;
-  warningLight: string;
-  error: string;
-  errorLight: string;
+  primary: string
+  primaryDark: string
+  success: string
+  successLight: string
+  warning: string
+  warningLight: string
+  error: string
+  errorLight: string
 }
 
 // ============================================
@@ -485,13 +479,13 @@ export interface ThemeColors {
 // ============================================
 
 export type RootStackParamList = {
-  Home: undefined;
-  PropertyDetails: { propertyId: string };
-  PropertyAnalytics: { property: Property };
-  FullBreakdown: { property: Property; inputs: AnalyticsInputs };
-  ScenarioEditor: { scenarioId?: string };
-  Settings: undefined;
-};
+  Home: undefined
+  PropertyDetails: { propertyId: string }
+  PropertyAnalytics: { property: Property }
+  FullBreakdown: { property: Property; inputs: AnalyticsInputs }
+  ScenarioEditor: { scenarioId?: string }
+  Settings: undefined
+}
 
 // ============================================
 // API RESPONSES (if fetching from backend)
@@ -499,26 +493,26 @@ export type RootStackParamList = {
 
 export interface PropertyEstimates {
   estimatedRent: {
-    low: number;
-    mid: number;
-    high: number;
-  };
+    low: number
+    mid: number
+    high: number
+  }
   estimatedValue: {
-    low: number;
-    mid: number;
-    high: number;
-  };
-  propertyTax: number;
-  insurance: number;
-  comparables: Property[];
+    low: number
+    mid: number
+    high: number
+  }
+  propertyTax: number
+  insurance: number
+  comparables: Property[]
 }
 
 export interface MarketData {
-  medianPrice: number;
-  medianRent: number;
-  averageCapRate: number;
-  averageCashOnCash: number;
-  appreciationRate: number;
-  rentGrowthRate: number;
-  vacancyRate: number;
+  medianPrice: number
+  medianRent: number
+  averageCapRate: number
+  averageCashOnCash: number
+  appreciationRate: number
+  rentGrowthRate: number
+  vacancyRate: number
 }

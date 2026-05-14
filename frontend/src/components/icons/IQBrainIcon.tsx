@@ -1,56 +1,56 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Image from 'next/image';
+import React from 'react'
+import Image from 'next/image'
 
 interface IQBrainIconProps {
-  size?: number;
-  className?: string;
+  size?: number
+  className?: string
   /** Use dark mode (cyan) or light mode (blue) version */
-  mode?: 'dark' | 'light';
+  mode?: 'dark' | 'light'
   /** Use PNG image instead of inline SVG */
-  usePng?: boolean;
+  usePng?: boolean
 }
 
 /**
  * IQ Brain Icon - A human head profile with a house in the brain
  * Represents "real estate on the brain" - the genius investment advisor
- * 
+ *
  * Colors:
  * - Light mode: #1976d2 (blue)
  * - Dark mode: var(--accent-sky) (electric cyan)
  */
-export function IQBrainIcon({ 
-  size = 20, 
+export function IQBrainIcon({
+  size = 20,
   className = '',
   mode = 'dark',
-  usePng = true
+  usePng = true,
 }: IQBrainIconProps) {
-  const strokeColor = mode === 'dark' ? 'var(--accent-sky)' : '#1976d2';
+  const strokeColor = mode === 'dark' ? 'var(--accent-sky)' : '#1976d2'
 
   if (usePng) {
     return (
-      <Image 
+      <Image
         src={mode === 'dark' ? '/images/iq-brain-dark.png' : '/images/iq-brain-light.png'}
         alt="IQ - Real Estate on the Brain"
         width={size}
         height={size}
         className={`iq-brain-icon ${className}`}
       />
-    );
+    )
   }
 
   // SVG fallback version
   return (
-    <svg 
-      width={size} 
-      height={size} 
-      viewBox="0 0 100 100" 
-      fill="none" 
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      fill="none"
       className={`iq-brain-icon ${className}`}
     >
       {/* Head profile outline */}
-      <path 
+      <path
         d="M50 8
            C28 8 12 24 12 44
            C12 54 16 62 22 68
@@ -80,9 +80,9 @@ export function IQBrainIcon({
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      
+
       {/* House inside the brain */}
-      <path 
+      <path
         d="M50 24
            L28 42
            L28 62
@@ -100,7 +100,7 @@ export function IQBrainIcon({
         strokeLinejoin="round"
       />
     </svg>
-  );
+  )
 }
 
-export default IQBrainIcon;
+export default IQBrainIcon

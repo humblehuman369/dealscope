@@ -23,10 +23,7 @@ export function PropertyDescription({ description }: PropertyDescriptionProps) {
       >
         Description
       </div>
-      <p
-        className="text-sm leading-relaxed"
-        style={{ color: 'var(--text-body)' }}
-      >
+      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-body)' }}>
         {displayText}
       </p>
       {isLong && (

@@ -18,7 +18,7 @@
   --purple: #8b5cf6;
   --pink: #ec4899;
   --lime: #84cc16;
-  
+
   /* Light mode defaults */
   --bg-primary: #f0f8fa;
   --bg-secondary: #ffffff;
@@ -684,7 +684,7 @@ html:not(.dark) .desktop-expand-btn {
 }
 
 .desktop-sub-tab.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -1px;
   left: 0;
@@ -710,7 +710,7 @@ html:not(.dark) .desktop-expand-btn {
 }
 
 .desktop-iq-target-hero::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
@@ -721,7 +721,8 @@ html:not(.dark) .desktop-expand-btn {
 }
 
 @keyframes desktop-target-glow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0);
     opacity: 0.4;
   }

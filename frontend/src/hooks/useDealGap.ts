@@ -1,12 +1,17 @@
 /**
  * useDealGap - Hook for Deal Gap calculations and data
- * 
+ *
  * Computes deal gap metrics from Income Value and list price.
  * Uses the backend deal-score API for Income Value calculation.
  */
 
 import { useMemo } from 'react'
-import { DealGapData, DealZoneLabel, SellerMotivationLevel, OpportunityGrade } from '@/components/analytics/types'
+import {
+  DealGapData,
+  DealZoneLabel,
+  SellerMotivationLevel,
+  OpportunityGrade,
+} from '@/components/analytics/types'
 
 export interface UseDealGapInput {
   listPrice: number
@@ -27,7 +32,10 @@ export interface UseDealGapResult {
 /**
  * Determine the deal zone based on buy position relative to Income Value
  */
-function getDealZone(buyPrice: number, incomeValue: number): { zone: DealZoneLabel; motivation: SellerMotivationLevel } {
+function getDealZone(
+  buyPrice: number,
+  incomeValue: number,
+): { zone: DealZoneLabel; motivation: SellerMotivationLevel } {
   const buyBelowIncomeValuePct = ((incomeValue - buyPrice) / incomeValue) * 100
 
   if (buyPrice > incomeValue) {
@@ -68,8 +76,8 @@ function computeDealGapData(
   dealGradeFromApi?: OpportunityGrade,
 ): DealGapData {
   const dealGapPercent = listPrice > 0 ? ((listPrice - buyPrice) / listPrice) * 100 : 0
-  const buyVsIncomeValuePercent = incomeValue > 0 ? ((buyPrice / incomeValue) - 1) * 100 : 0
-  const listVsIncomeValuePercent = incomeValue > 0 ? ((listPrice / incomeValue) - 1) * 100 : 0
+  const buyVsIncomeValuePercent = incomeValue > 0 ? (buyPrice / incomeValue - 1) * 100 : 0
+  const listVsIncomeValuePercent = incomeValue > 0 ? (listPrice / incomeValue - 1) * 100 : 0
 
   const { zone, motivation } = getDealZone(buyPrice, incomeValue)
   const dealGrade = dealGradeFromApi ?? getDealGrade(dealGapPercent)
@@ -115,7 +123,7 @@ export function useDealGap(input: UseDealGapInput): UseDealGapResult {
  */
 export function calculateSuggestedBuyPrice(
   incomeValue: number,
-  targetDiscountPercent: number = 10
+  targetDiscountPercent: number = 10,
 ): number {
   return Math.round(incomeValue * (1 - targetDiscountPercent / 100))
 }
@@ -129,7 +137,7 @@ export function calculateSuggestedBuyPrice(
 export function buyPriceFromSliderPosition(
   incomeValue: number,
   position: number,
-  range: number = 0.20 // +/- 20% of Income Value
+  range: number = 0.2, // +/- 20% of Income Value
 ): number {
   // Map 0-100 to +range to -range of Income Value
   const pct = ((50 - position) * range * 2) / 100
@@ -142,9 +150,9 @@ export function buyPriceFromSliderPosition(
 export function sliderPositionFromBuyPrice(
   incomeValue: number,
   buyPrice: number,
-  range: number = 0.20
+  range: number = 0.2,
 ): number {
-  const pct = (buyPrice / incomeValue) - 1
+  const pct = buyPrice / incomeValue - 1
   const position = 50 - (pct / (range * 2)) * 100
   return Math.max(0, Math.min(100, position))
 }

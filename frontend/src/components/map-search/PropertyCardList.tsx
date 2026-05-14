@@ -102,8 +102,11 @@ function PropertyCard({
         boxShadow: isSelected ? '0 0 0 1px var(--accent-sky)' : 'var(--shadow-card)',
       }}
     >
-        {/* Photo row with opportunity / category badge */}
-      <div className="relative h-28 overflow-hidden" style={{ backgroundColor: 'var(--surface-elevated)' }}>
+      {/* Photo row with opportunity / category badge */}
+      <div
+        className="relative h-28 overflow-hidden"
+        style={{ backgroundColor: 'var(--surface-elevated)' }}
+      >
         {photoSrc ? (
           <img
             src={photoSrc}
@@ -115,7 +118,9 @@ function PropertyCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>No Photo</span>
+            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              No Photo
+            </span>
           </div>
         )}
 
@@ -172,22 +177,34 @@ function PropertyCard({
         {/* Stats row */}
         <div className="flex items-center gap-3 flex-wrap">
           {listing.bedrooms != null && (
-            <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <span
+              className="flex items-center gap-1 text-xs"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <Bed size={12} /> {listing.bedrooms}
             </span>
           )}
           {listing.bathrooms != null && (
-            <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <span
+              className="flex items-center gap-1 text-xs"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <Bath size={12} /> {listing.bathrooms}
             </span>
           )}
           {formatSqft(listing.sqft) && (
-            <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <span
+              className="flex items-center gap-1 text-xs"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <Ruler size={12} /> {formatSqft(listing.sqft)}
             </span>
           )}
           {listing.year_built != null && (
-            <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <span
+              className="flex items-center gap-1 text-xs"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <Calendar size={12} /> {listing.year_built}
             </span>
           )}
@@ -252,13 +269,16 @@ export function PropertyCardList({
     }
   }, [selectedId])
 
-  const setCardRef = useCallback((id: string) => (el: HTMLDivElement | null) => {
-    if (el) {
-      cardRefs.current.set(id, el)
-    } else {
-      cardRefs.current.delete(id)
-    }
-  }, [])
+  const setCardRef = useCallback(
+    (id: string) => (el: HTMLDivElement | null) => {
+      if (el) {
+        cardRefs.current.set(id, el)
+      } else {
+        cardRefs.current.delete(id)
+      }
+    },
+    [],
+  )
 
   if (isLoading && listings.length === 0) {
     return (
@@ -278,11 +298,8 @@ export function PropertyCardList({
 
   if (listings.length === 0) {
     const hasStatusFilter = (activeStatuses?.length ?? 0) > 0
-    const onlyDistressed =
-      hasStatusFilter && (activeStatuses ?? []).every((s) => s !== 'active')
-    const statusList = (activeStatuses ?? [])
-      .map((s) => STATUS_LABELS[s] ?? s)
-      .join(', ')
+    const onlyDistressed = hasStatusFilter && (activeStatuses ?? []).every((s) => s !== 'active')
+    const statusList = (activeStatuses ?? []).map((s) => STATUS_LABELS[s] ?? s).join(', ')
 
     return (
       <div className="flex items-center justify-center h-full p-8">

@@ -2,16 +2,16 @@
 
 /**
  * DealMakerScreen Component
- * 
+ *
  * Deal Maker IQ page with CompactHeader integration
  * Features:
  * - CompactHeader with strategy selector
  * - Key metrics row (Buy Price, Cash Needed, Deal Gap, Annual Profit, CAP Rate, COC Return)
  * - Accordion sections for inputs (Buy Price, Financing, Rehab, Income, Expenses)
  * - Interactive sliders for all values
- * 
+ *
  * Uses DealGapIQ Universal Style Guide colors
- * 
+ *
  * ARCHITECTURE: This component now uses the centralized dealMakerStore.
  * - For SAVED properties: Load from backend via dealMakerStore.loadRecord(propertyId)
  * - For UNSAVED properties: Use local state with property defaults (legacy mode)
@@ -27,18 +27,34 @@ import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity'
 import {
   // Strategy types & defaults
   StrategyType,
-  STRDealMakerState, STRMetrics, DEFAULT_STR_DEAL_MAKER_STATE,
-  BRRRRDealMakerState, BRRRRMetrics, DEFAULT_BRRRR_DEAL_MAKER_STATE,
-  FlipDealMakerState, FlipMetrics, DEFAULT_FLIP_DEAL_MAKER_STATE,
-  HouseHackDealMakerState, HouseHackMetrics, DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
-  WholesaleDealMakerState, WholesaleMetrics, DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
+  STRDealMakerState,
+  STRMetrics,
+  DEFAULT_STR_DEAL_MAKER_STATE,
+  BRRRRDealMakerState,
+  BRRRRMetrics,
+  DEFAULT_BRRRR_DEAL_MAKER_STATE,
+  FlipDealMakerState,
+  FlipMetrics,
+  DEFAULT_FLIP_DEAL_MAKER_STATE,
+  HouseHackDealMakerState,
+  HouseHackMetrics,
+  DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
+  WholesaleDealMakerState,
+  WholesaleMetrics,
+  DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
   // LTR types (extracted)
-  LTRDealMakerState, LTRDealMakerMetrics,
-  AnyStrategyState, AnyStrategyMetrics,
+  LTRDealMakerState,
+  LTRDealMakerMetrics,
+  AnyStrategyState,
+  AnyStrategyMetrics,
   DealMakerPropertyData,
   // Helpers (extracted)
   getStrategyType,
-  formatPrice, formatPercent, formatNumber, calculateMortgagePayment, getValueColor,
+  formatPrice,
+  formatPercent,
+  formatNumber,
+  calculateMortgagePayment,
+  getValueColor,
 } from './types'
 import { useDealMakerBackendCalc } from '@/hooks/useDealMakerBackendCalc'
 import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
@@ -86,7 +102,12 @@ function isHouseHackState(state: AnyStrategyState): state is HouseHackDealMakerS
   return 'totalUnits' in state && 'ownerOccupiedUnits' in state && 'pmiRate' in state
 }
 function isWholesaleState(state: AnyStrategyState): state is WholesaleDealMakerState {
-  return 'assignmentFee' in state && 'earnestMoney' in state && 'contractPrice' in state && !('sellingCostsPct' in state)
+  return (
+    'assignmentFee' in state &&
+    'earnestMoney' in state &&
+    'contractPrice' in state &&
+    !('sellingCostsPct' in state)
+  )
 }
 
 interface DealMakerScreenProps {
@@ -97,42 +118,58 @@ interface DealMakerScreenProps {
   backTo?: { label: string; href: string }
 }
 
-
-
-export function DealMakerScreen({ property, listPrice, initialStrategy, savedPropertyId, backTo }: DealMakerScreenProps) {
+export function DealMakerScreen({
+  property,
+  listPrice,
+  initialStrategy,
+  savedPropertyId,
+  backTo,
+}: DealMakerScreenProps) {
   const router = useRouter()
-  
+
   // Deal Maker Store (for saved properties)
   const dealMakerStore = useDealMakerStore()
   const derived = useDealMakerDerived()
   const { isReady, isLoading: storeLoading, hasRecord } = useDealMakerReady()
-  
+
   // Determine if we're in "saved property mode" (use store) or "unsaved mode" (use local state)
   const isSavedPropertyMode = !!savedPropertyId
-  
+
   // Admin-resolved defaults — drives initial slider values for unsaved properties so
   // hard-money rate, FHA down-payment, MIP, selling-costs, etc. reflect whatever the
   // owner has configured in /admin/assumptions instead of the hardcoded fallbacks.
   // Render-then-update pattern: states seed with hardcoded fallbacks for instant render,
   // then re-seed once `defaults` resolves (via the effect below).
   const { defaults: adminDefaults } = useDefaults(property.zipCode || undefined)
-  
+
   // Get initial state for a strategy (unsaved property mode).
   // Logic extracted to ./strategyDefaults.ts for maintainability.
   const getInitialLocalState = (strategy: StrategyType): AnyStrategyState =>
     buildInitialState(strategy, property, listPrice, adminDefaults)
-  
+
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
-  
+
   const strategyType = getStrategyType(currentStrategy)
-  const [localLTRState, setLocalLTRState] = useState<LTRDealMakerState>(() => buildLTRState(property, listPrice))
-  const [localSTRState, setLocalSTRState] = useState<STRDealMakerState>(() => buildSTRState(property, listPrice))
-  const [localFlipState, setLocalFlipState] = useState<FlipDealMakerState>(() => buildFlipState(property, listPrice))
-  const [localHouseHackState, setLocalHouseHackState] = useState<HouseHackDealMakerState>(() => buildHouseHackState(property, listPrice))
-  const [localWholesaleState, setLocalWholesaleState] = useState<WholesaleDealMakerState>(() => buildWholesaleState(property, listPrice))
-  const [localBRRRRState, setLocalBRRRRState] = useState<BRRRRDealMakerState>(() => buildBRRRRState(property, listPrice))
-  
+  const [localLTRState, setLocalLTRState] = useState<LTRDealMakerState>(() =>
+    buildLTRState(property, listPrice),
+  )
+  const [localSTRState, setLocalSTRState] = useState<STRDealMakerState>(() =>
+    buildSTRState(property, listPrice),
+  )
+  const [localFlipState, setLocalFlipState] = useState<FlipDealMakerState>(() =>
+    buildFlipState(property, listPrice),
+  )
+  const [localHouseHackState, setLocalHouseHackState] = useState<HouseHackDealMakerState>(() =>
+    buildHouseHackState(property, listPrice),
+  )
+  const [localWholesaleState, setLocalWholesaleState] = useState<WholesaleDealMakerState>(() =>
+    buildWholesaleState(property, listPrice),
+  )
+  const [localBRRRRState, setLocalBRRRRState] = useState<BRRRRDealMakerState>(() =>
+    buildBRRRRState(property, listPrice),
+  )
+
   // Re-seed local slider state once admin defaults arrive. We only do this once per
   // address (tracked via ref) so subsequent edits the user makes are never clobbered
   // by a late-arriving defaults response. Saved-property mode bypasses this entirely
@@ -151,7 +188,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     setLocalWholesaleState(buildWholesaleState(property, listPrice, adminDefaults))
     setLocalBRRRRState(buildBRRRRState(property, listPrice, adminDefaults))
   }, [adminDefaults, isSavedPropertyMode, property, listPrice])
-  
+
   // Load Deal Maker record from backend for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property
   // This handles navigation between different saved properties
@@ -163,7 +200,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       }
     }
   }, [isSavedPropertyMode, savedPropertyId, hasRecord, dealMakerStore])
-  
+
   // Get the current state (from store for saved properties, local for unsaved)
   const state: AnyStrategyState = useMemo(() => {
     if (isSavedPropertyMode && hasRecord) {
@@ -173,7 +210,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         sellerInterestRate: record.seller_carry_rate ?? 0,
         sellerTermYears: record.seller_carry_term_years ?? 5,
       }
-      
+
       // For STR strategy, return STR state from store
       if (strategyType === 'str') {
         return {
@@ -185,16 +222,25 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           loanTermYears: record.loan_term_years,
           rehabBudget: record.rehab_budget,
           arv: record.arv,
-          furnitureSetupCost: record.furniture_setup_cost ?? DEFAULT_STR_DEAL_MAKER_STATE.furnitureSetupCost,
-          averageDailyRate: record.average_daily_rate ?? DEFAULT_STR_DEAL_MAKER_STATE.averageDailyRate,
+          furnitureSetupCost:
+            record.furniture_setup_cost ?? DEFAULT_STR_DEAL_MAKER_STATE.furnitureSetupCost,
+          averageDailyRate:
+            record.average_daily_rate ?? DEFAULT_STR_DEAL_MAKER_STATE.averageDailyRate,
           occupancyRate: record.occupancy_rate ?? DEFAULT_STR_DEAL_MAKER_STATE.occupancyRate,
-          cleaningFeeRevenue: record.cleaning_fee_revenue ?? DEFAULT_STR_DEAL_MAKER_STATE.cleaningFeeRevenue,
-          avgLengthOfStayDays: record.avg_length_of_stay_days ?? DEFAULT_STR_DEAL_MAKER_STATE.avgLengthOfStayDays,
+          cleaningFeeRevenue:
+            record.cleaning_fee_revenue ?? DEFAULT_STR_DEAL_MAKER_STATE.cleaningFeeRevenue,
+          avgLengthOfStayDays:
+            record.avg_length_of_stay_days ?? DEFAULT_STR_DEAL_MAKER_STATE.avgLengthOfStayDays,
           platformFeeRate: record.platform_fee_rate ?? DEFAULT_STR_DEAL_MAKER_STATE.platformFeeRate,
-          strManagementRate: record.str_management_rate ?? DEFAULT_STR_DEAL_MAKER_STATE.strManagementRate,
-          cleaningCostPerTurnover: record.cleaning_cost_per_turnover ?? DEFAULT_STR_DEAL_MAKER_STATE.cleaningCostPerTurnover,
+          strManagementRate:
+            record.str_management_rate ?? DEFAULT_STR_DEAL_MAKER_STATE.strManagementRate,
+          cleaningCostPerTurnover:
+            record.cleaning_cost_per_turnover ??
+            DEFAULT_STR_DEAL_MAKER_STATE.cleaningCostPerTurnover,
           suppliesMonthly: record.supplies_monthly ?? DEFAULT_STR_DEAL_MAKER_STATE.suppliesMonthly,
-          additionalUtilitiesMonthly: record.additional_utilities_monthly ?? DEFAULT_STR_DEAL_MAKER_STATE.additionalUtilitiesMonthly,
+          additionalUtilitiesMonthly:
+            record.additional_utilities_monthly ??
+            DEFAULT_STR_DEAL_MAKER_STATE.additionalUtilitiesMonthly,
           maintenanceRate: record.maintenance_pct,
           annualPropertyTax: record.annual_property_tax,
           annualInsurance: record.annual_insurance,
@@ -202,7 +248,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           ...sf,
         } as STRDealMakerState
       }
-      
+
       // For BRRRR strategy, return BRRRR state from store
       if (strategyType === 'brrrr') {
         return {
@@ -213,15 +259,26 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           hardMoneyRate: record.hard_money_rate ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.hardMoneyRate,
           rehabBudget: record.rehab_budget,
           contingencyPct: record.contingency_pct ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.contingencyPct,
-          holdingPeriodMonths: record.holding_period_months ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingPeriodMonths,
-          holdingCostsMonthly: record.holding_costs_monthly ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingCostsMonthly,
+          holdingPeriodMonths:
+            record.holding_period_months ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingPeriodMonths,
+          holdingCostsMonthly:
+            record.holding_costs_monthly ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingCostsMonthly,
           arv: record.arv,
-          postRehabMonthlyRent: record.post_rehab_monthly_rent ?? record.monthly_rent ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.postRehabMonthlyRent,
-          postRehabRentIncreasePct: record.post_rehab_rent_increase_pct ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.postRehabRentIncreasePct,
+          postRehabMonthlyRent:
+            record.post_rehab_monthly_rent ??
+            record.monthly_rent ??
+            DEFAULT_BRRRR_DEAL_MAKER_STATE.postRehabMonthlyRent,
+          postRehabRentIncreasePct:
+            record.post_rehab_rent_increase_pct ??
+            DEFAULT_BRRRR_DEAL_MAKER_STATE.postRehabRentIncreasePct,
           refinanceLtv: record.refinance_ltv ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceLtv,
-          refinanceInterestRate: record.refinance_interest_rate ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceInterestRate,
-          refinanceTermYears: record.refinance_term_years ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceTermYears,
-          refinanceClosingCostsPct: record.refinance_closing_costs_pct ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceClosingCostsPct,
+          refinanceInterestRate:
+            record.refinance_interest_rate ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceInterestRate,
+          refinanceTermYears:
+            record.refinance_term_years ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceTermYears,
+          refinanceClosingCostsPct:
+            record.refinance_closing_costs_pct ??
+            DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceClosingCostsPct,
           vacancyRate: record.vacancy_rate,
           maintenanceRate: record.maintenance_pct,
           managementRate: record.management_pct,
@@ -231,74 +288,100 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           ...sf,
         } as BRRRRDealMakerState
       }
-      
+
       // For Flip strategy, return Flip state from store
       if (strategyType === 'flip') {
         return {
           purchasePrice: record.buy_price,
-          purchaseDiscountPct: record.purchase_discount_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.purchaseDiscountPct,
-          closingCostsPercent: record.closing_costs_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.closingCostsPercent,
-          financingType: (record.financing_type as 'cash' | 'hardMoney' | 'conventional') ?? DEFAULT_FLIP_DEAL_MAKER_STATE.financingType,
+          purchaseDiscountPct:
+            record.purchase_discount_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.purchaseDiscountPct,
+          closingCostsPercent:
+            record.closing_costs_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.closingCostsPercent,
+          financingType:
+            (record.financing_type as 'cash' | 'hardMoney' | 'conventional') ??
+            DEFAULT_FLIP_DEAL_MAKER_STATE.financingType,
           hardMoneyLtv: record.hard_money_ltv ?? DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyLtv,
           hardMoneyRate: record.hard_money_rate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyRate,
           loanPoints: record.loan_points ?? DEFAULT_FLIP_DEAL_MAKER_STATE.loanPoints,
           rehabBudget: record.rehab_budget,
           contingencyPct: record.contingency_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.contingencyPct,
-          rehabTimeMonths: record.rehab_time_months ?? DEFAULT_FLIP_DEAL_MAKER_STATE.rehabTimeMonths,
+          rehabTimeMonths:
+            record.rehab_time_months ?? DEFAULT_FLIP_DEAL_MAKER_STATE.rehabTimeMonths,
           arv: record.arv,
-          holdingCostsMonthly: record.holding_costs_monthly ?? DEFAULT_FLIP_DEAL_MAKER_STATE.holdingCostsMonthly,
+          holdingCostsMonthly:
+            record.holding_costs_monthly ?? DEFAULT_FLIP_DEAL_MAKER_STATE.holdingCostsMonthly,
           daysOnMarket: record.days_on_market ?? DEFAULT_FLIP_DEAL_MAKER_STATE.daysOnMarket,
-          sellingCostsPct: record.selling_costs_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.sellingCostsPct,
-          capitalGainsRate: record.capital_gains_rate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.capitalGainsRate,
+          sellingCostsPct:
+            record.selling_costs_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.sellingCostsPct,
+          capitalGainsRate:
+            record.capital_gains_rate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.capitalGainsRate,
           monthlyHoa: record.monthly_hoa ?? 0,
           ...sf,
         } as FlipDealMakerState
       }
-      
+
       // For HouseHack strategy, return HouseHack state from store
       if (strategyType === 'house_hack') {
         return {
           purchasePrice: record.buy_price,
           totalUnits: record.total_units ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.totalUnits,
-          ownerOccupiedUnits: record.owner_occupied_units ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.ownerOccupiedUnits,
-          ownerUnitMarketRent: record.owner_unit_market_rent ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.ownerUnitMarketRent,
-          loanType: (record.loan_type as 'fha' | 'conventional' | 'va') ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.loanType,
+          ownerOccupiedUnits:
+            record.owner_occupied_units ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.ownerOccupiedUnits,
+          ownerUnitMarketRent:
+            record.owner_unit_market_rent ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.ownerUnitMarketRent,
+          loanType:
+            (record.loan_type as 'fha' | 'conventional' | 'va') ??
+            DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.loanType,
           downPaymentPercent: record.down_payment_pct,
           interestRate: record.interest_rate,
           loanTermYears: record.loan_term_years,
           pmiRate: record.pmi_rate ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.pmiRate,
           closingCostsPercent: record.closing_costs_pct,
-          avgRentPerUnit: record.avg_rent_per_unit ?? record.monthly_rent ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.avgRentPerUnit,
+          avgRentPerUnit:
+            record.avg_rent_per_unit ??
+            record.monthly_rent ??
+            DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.avgRentPerUnit,
           vacancyRate: record.vacancy_rate,
-          currentHousingPayment: record.current_housing_payment ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.currentHousingPayment,
+          currentHousingPayment:
+            record.current_housing_payment ??
+            DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.currentHousingPayment,
           annualPropertyTax: record.annual_property_tax,
           annualInsurance: record.annual_insurance,
           monthlyHoa: record.monthly_hoa,
-          utilitiesMonthly: record.utilities_monthly ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.utilitiesMonthly,
+          utilitiesMonthly:
+            record.utilities_monthly ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.utilitiesMonthly,
           maintenanceRate: record.maintenance_pct,
           capexRate: record.capex_rate ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.capexRate,
           ...sf,
         } as HouseHackDealMakerState
       }
-      
+
       // For Wholesale strategy, return Wholesale state from store
       if (strategyType === 'wholesale') {
         return {
           arv: record.arv,
-          estimatedRepairs: record.estimated_repairs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.estimatedRepairs,
+          estimatedRepairs:
+            record.estimated_repairs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.estimatedRepairs,
           squareFootage: record.sqft ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.squareFootage,
-          contractPrice: record.contract_price ?? record.buy_price ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.contractPrice,
+          contractPrice:
+            record.contract_price ??
+            record.buy_price ??
+            DEFAULT_WHOLESALE_DEAL_MAKER_STATE.contractPrice,
           earnestMoney: record.earnest_money ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.earnestMoney,
-          inspectionPeriodDays: record.inspection_period_days ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.inspectionPeriodDays,
+          inspectionPeriodDays:
+            record.inspection_period_days ??
+            DEFAULT_WHOLESALE_DEAL_MAKER_STATE.inspectionPeriodDays,
           daysToClose: record.days_to_close ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.daysToClose,
           assignmentFee: record.assignment_fee ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.assignmentFee,
-          marketingCosts: record.marketing_costs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.marketingCosts,
-          closingCosts: record.wholesale_closing_costs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.closingCosts,
+          marketingCosts:
+            record.marketing_costs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.marketingCosts,
+          closingCosts:
+            record.wholesale_closing_costs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.closingCosts,
           monthlyHoa: record.monthly_hoa ?? 0,
           ...sf,
         } as WholesaleDealMakerState
       }
-      
+
       // Default: LTR state
       return {
         buyPrice: record.buy_price,
@@ -319,7 +402,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         ...sf,
       } as LTRDealMakerState
     }
-    
+
     // For unsaved properties, return the appropriate local state
     if (strategyType === 'str') {
       return localSTRState
@@ -337,15 +420,26 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       return localWholesaleState
     }
     return localLTRState
-  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, localLTRState, localSTRState, localBRRRRState, localFlipState, localHouseHackState, localWholesaleState])
-  
+  }, [
+    isSavedPropertyMode,
+    hasRecord,
+    dealMakerStore.record,
+    strategyType,
+    localLTRState,
+    localSTRState,
+    localBRRRRState,
+    localFlipState,
+    localHouseHackState,
+    localWholesaleState,
+  ])
+
   // Navigate to Verdict IQ page
   // For saved properties: save adjustments first, then Verdict/Strategy use store + sessionStorage
   // For unsaved properties: store values in sessionStorage and pass via URL params
   const [isSavingForNavigate, setIsSavingForNavigate] = useState(false)
   const handleSeeResults = useCallback(async () => {
     const fullAddr = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
-    
+
     if (isSavedPropertyMode && savedPropertyId) {
       // Persist any pending Deal Maker adjustments before navigating so Verdict/Strategy recalculate with latest values
       try {
@@ -364,10 +458,10 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       // 1. Store values in sessionStorage so they survive toolbar navigation
       // 2. Also pass via URL params for initial load
       const sessionKey = `dealMaker_${encodeURIComponent(fullAddr)}`
-      
+
       // Build session data based on strategy type
       let sessionData: Record<string, unknown>
-      
+
       if (strategyType === 'wholesale' && isWholesaleState(state)) {
         // Wholesale-specific session data
         const wsMetrics = metrics as WholesaleMetrics
@@ -493,9 +587,10 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         // Calculate equivalent monthly revenue for display purposes
         const nightsOccupied = 365 * state.occupancyRate
         const numberOfTurnovers = Math.floor(nightsOccupied / state.avgLengthOfStayDays)
-        const annualRevenue = (state.averageDailyRate * nightsOccupied) + (state.cleaningFeeRevenue * numberOfTurnovers)
+        const annualRevenue =
+          state.averageDailyRate * nightsOccupied + state.cleaningFeeRevenue * numberOfTurnovers
         const monthlyRevenue = annualRevenue / 12
-        
+
         sessionData = {
           address: fullAddr,
           purchasePrice: state.buyPrice,
@@ -551,7 +646,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           timestamp: Date.now(),
         }
       }
-      
+
       try {
         sessionStorage.setItem(sessionKey, JSON.stringify(sessionData))
         // Also store the current address as the "active" deal maker session
@@ -559,11 +654,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       } catch (e) {
         console.warn('Failed to save to sessionStorage:', e)
       }
-      
+
       // Calculate monthly rent/revenue and purchase price for URL params
       let monthlyRentValue: number
       let purchasePriceValue: number
-      
+
       if (strategyType === 'wholesale' && isWholesaleState(state)) {
         monthlyRentValue = 0 // Wholesale has no rental income
         purchasePriceValue = state.contractPrice
@@ -579,7 +674,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       } else if (strategyType === 'str' && isSTRState(state)) {
         const nightsOccupied = 365 * state.occupancyRate
         const numberOfTurnovers = Math.floor(nightsOccupied / state.avgLengthOfStayDays)
-        const annualRevenue = (state.averageDailyRate * nightsOccupied) + (state.cleaningFeeRevenue * numberOfTurnovers)
+        const annualRevenue =
+          state.averageDailyRate * nightsOccupied + state.cleaningFeeRevenue * numberOfTurnovers
         monthlyRentValue = annualRevenue / 12
         purchasePriceValue = state.buyPrice
       } else {
@@ -587,13 +683,13 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         monthlyRentValue = ltrState.monthlyRent ?? 0
         purchasePriceValue = ltrState.buyPrice
       }
-      
+
       // Navigate with URL params (for initial load and bookmarkability)
       // Get property tax and insurance values based on strategy
       let propertyTaxValue = 0
       let insuranceValue = 0
       let arvValue = 0
-      
+
       if (strategyType === 'wholesale' && isWholesaleState(state)) {
         propertyTaxValue = 0
         insuranceValue = 0
@@ -617,7 +713,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         insuranceValue = otherState.annualInsurance
         arvValue = otherState.arv
       }
-      
+
       const params = new URLSearchParams({
         address: fullAddr,
         purchasePrice: String(purchasePriceValue),
@@ -626,14 +722,14 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         insurance: String(insuranceValue),
         strategy: strategyType,
       })
-      
+
       if (property.zpid) {
         params.set('zpid', property.zpid)
       }
       if (arvValue > 0) {
         params.set('arv', String(arvValue))
       }
-      
+
       router.push(`/discovery?${params.toString()}`)
     }
   }, [router, property, state, isSavedPropertyMode, savedPropertyId, strategyType, dealMakerStore])
@@ -644,19 +740,24 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
 
   // Get metrics - from store for saved properties, calculate locally for unsaved
   const isCalculating = isSavedPropertyMode ? dealMakerStore.isSaving : false
-  
+
   // Calculate metrics via backend worksheet endpoints (debounced)
-  const { result: backendResult, isCalculating: backendCalculating } = useDealMakerBackendCalc<Record<string, unknown>>(
+  const { result: backendResult, isCalculating: backendCalculating } = useDealMakerBackendCalc<
+    Record<string, unknown>
+  >(
     strategyType as 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale',
     state as unknown as Record<string, unknown>,
   )
-  
+
   // Map backend result to the metrics shape the UI expects
   const metrics = useMemo<AnyStrategyMetrics>(() => {
     // Map backend worksheet API (snake_case) → camelCase metrics
     if (backendResult) {
       const br = backendResult as Record<string, number | boolean | string>
-      const n = (k: string) => { const v = br[k]; return typeof v === 'number' && isFinite(v) ? v : 0 }
+      const n = (k: string) => {
+        const v = br[k]
+        return typeof v === 'number' && isFinite(v) ? v : 0
+      }
 
       if (strategyType === 'ltr') {
         const ltrState = state as LTRDealMakerState
@@ -664,9 +765,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         const downPaymentAmt = buyPrice * ltrState.downPaymentPercent
         const closingCostsAmt = n('closing_costs') || buyPrice * ltrState.closingCostsPercent
         const sellerFin = ltrState.sellerFinancingAmount ?? 0
-        const loanAmt =
-          n('loan_amount') ||
-          Math.max(0, buyPrice - downPaymentAmt)
+        const loanAmt = n('loan_amount') || Math.max(0, buyPrice - downPaymentAmt)
         const monthlyPmt = n('monthly_payment')
         const cashNeeded =
           n('total_cash_needed') ||
@@ -676,7 +775,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         const totalExpAnnual = n('gross_expenses')
         const totalMonthlyExpenses = (totalExpAnnual + n('annual_debt_service')) / 12
         const effectiveListPrice = listPrice ?? buyPrice
-        const dealGap = effectiveListPrice > 0 ? (effectiveListPrice - buyPrice) / effectiveListPrice : 0
+        const dealGap =
+          effectiveListPrice > 0 ? (effectiveListPrice - buyPrice) / effectiveListPrice : 0
         const totalInvestment = buyPrice + ltrState.rehabBudget
         return {
           cashNeeded,
@@ -697,12 +797,10 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       if (strategyType === 'str') {
         const strState = state as STRDealMakerState
         const buyPrice = strState.buyPrice
-        const downPaymentAmt = n('down_payment') || (buyPrice * strState.downPaymentPercent)
-        const closingCostsAmt = n('closing_costs') || (buyPrice * strState.closingCostsPercent)
+        const downPaymentAmt = n('down_payment') || buyPrice * strState.downPaymentPercent
+        const closingCostsAmt = n('closing_costs') || buyPrice * strState.closingCostsPercent
         const sellerFin = strState.sellerFinancingAmount ?? 0
-        const loanAmt =
-          n('loan_amount') ||
-          Math.max(0, buyPrice - downPaymentAmt)
+        const loanAmt = n('loan_amount') || Math.max(0, buyPrice - downPaymentAmt)
         const monthlyPmt = n('monthly_payment')
         const cashNeeded =
           n('total_cash_needed') ||
@@ -757,8 +855,24 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           breakEvenOccupancy: n('break_even_occupancy'),
           equityCreated: strState.arv - (buyPrice + strState.rehabBudget),
           dealScore: ds,
-          dealGrade: (ds >= 90 ? 'A+' : ds >= 80 ? 'A' : ds >= 70 ? 'B' : ds >= 60 ? 'C' : ds >= 50 ? 'D' : 'F') as STRMetrics['dealGrade'],
-          profitQuality: (annualCF >= 10000 ? 'A' : annualCF >= 5000 ? 'B' : annualCF >= 0 ? 'C' : 'F') as STRMetrics['profitQuality'],
+          dealGrade: (ds >= 90
+            ? 'A+'
+            : ds >= 80
+              ? 'A'
+              : ds >= 70
+                ? 'B'
+                : ds >= 60
+                  ? 'C'
+                  : ds >= 50
+                    ? 'D'
+                    : 'F') as STRMetrics['dealGrade'],
+          profitQuality: (annualCF >= 10000
+            ? 'A'
+            : annualCF >= 5000
+              ? 'B'
+              : annualCF >= 0
+                ? 'C'
+                : 'F') as STRMetrics['profitQuality'],
         } as STRMetrics
       }
 
@@ -771,8 +885,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         const refiLoan = n('refinance_loan_amount')
         const infiniteRoi = cashLeft <= 0
         const capitalRecycled = totalInvested > 0 ? (cashOutRefi / totalInvested) * 100 : 0
-        const coc = cashLeft > 0 ? (annualCF / cashLeft) * 100 : (annualCF > 0 ? 999 : 0)
-        const equityPos = n('equity_position') || (bState.arv - refiLoan)
+        const coc = cashLeft > 0 ? (annualCF / cashLeft) * 100 : annualCF > 0 ? 999 : 0
+        const equityPos = n('equity_position') || bState.arv - refiLoan
         const ds = n('deal_score')
         return {
           initialLoanAmount: n('loan_amount'),
@@ -799,7 +913,17 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           postRefiAnnualCashFlow: annualCF,
           postRefiCashOnCash: coc,
           dealScore: ds,
-          dealGrade: (ds >= 90 ? 'A+' : ds >= 80 ? 'A' : ds >= 70 ? 'B' : ds >= 60 ? 'C' : ds >= 50 ? 'D' : 'F') as BRRRRMetrics['dealGrade'],
+          dealGrade: (ds >= 90
+            ? 'A+'
+            : ds >= 80
+              ? 'A'
+              : ds >= 70
+                ? 'B'
+                : ds >= 60
+                  ? 'C'
+                  : ds >= 50
+                    ? 'D'
+                    : 'F') as BRRRRMetrics['dealGrade'],
         } as BRRRRMetrics
       }
 
@@ -839,7 +963,17 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           maxAllowableOffer: n('mao'),
           meets70PercentRule: !!br.meets_70_rule,
           dealScore: ds,
-          dealGrade: (ds >= 90 ? 'A+' : ds >= 80 ? 'A' : ds >= 70 ? 'B' : ds >= 60 ? 'C' : ds >= 50 ? 'D' : 'F') as FlipMetrics['dealGrade'],
+          dealGrade: (ds >= 90
+            ? 'A+'
+            : ds >= 80
+              ? 'A'
+              : ds >= 70
+                ? 'B'
+                : ds >= 60
+                  ? 'C'
+                  : ds >= 50
+                    ? 'D'
+                    : 'F') as FlipMetrics['dealGrade'],
         } as FlipMetrics
       }
 
@@ -850,10 +984,12 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         const monthlyPmi = n('monthly_pmi')
         const monthlyTaxes = n('monthly_taxes')
         const monthlyIns = n('monthly_insurance')
-        const piti = n('monthly_piti') || (monthlyPI + monthlyPmi + monthlyTaxes + monthlyIns + hhState.monthlyHoa)
+        const piti =
+          n('monthly_piti') ||
+          monthlyPI + monthlyPmi + monthlyTaxes + monthlyIns + hhState.monthlyHoa
         const downPmt = n('down_payment')
         const closingCost = n('closing_costs')
-        const cashToClose = n('total_cash_needed') || (downPmt + closingCost)
+        const cashToClose = n('total_cash_needed') || downPmt + closingCost
         const rentalIncome = n('rental_income')
         const totalMonthExp = n('total_monthly_expenses')
         const rentedUnits = Math.max(0, hhState.totalUnits - hhState.ownerOccupiedUnits)
@@ -893,7 +1029,17 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           fullRentalCashFlow: fullRentalCF,
           fullRentalCoCReturn: cashToClose > 0 ? (fullRentalAnnual / cashToClose) * 100 : 0,
           dealScore: ds,
-          dealGrade: (ds >= 90 ? 'A+' : ds >= 80 ? 'A' : ds >= 70 ? 'B' : ds >= 60 ? 'C' : ds >= 50 ? 'D' : 'F') as HouseHackMetrics['dealGrade'],
+          dealGrade: (ds >= 90
+            ? 'A+'
+            : ds >= 80
+              ? 'A'
+              : ds >= 70
+                ? 'B'
+                : ds >= 60
+                  ? 'C'
+                  : ds >= 50
+                    ? 'D'
+                    : 'F') as HouseHackMetrics['dealGrade'],
         } as HouseHackMetrics
       }
 
@@ -925,49 +1071,75 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           annualizedROI: wsState.daysToClose > 0 ? roiVal * (365 / wsState.daysToClose) : 0,
           dealViability: (br.deal_viability as string) || 'unknown',
           dealScore: ds,
-          dealGrade: (ds >= 90 ? 'A+' : ds >= 80 ? 'A' : ds >= 70 ? 'B' : ds >= 60 ? 'C' : ds >= 50 ? 'D' : 'F') as WholesaleMetrics['dealGrade'],
+          dealGrade: (ds >= 90
+            ? 'A+'
+            : ds >= 80
+              ? 'A'
+              : ds >= 70
+                ? 'B'
+                : ds >= 60
+                  ? 'C'
+                  : ds >= 50
+                    ? 'D'
+                    : 'F') as WholesaleMetrics['dealGrade'],
         } as WholesaleMetrics
       }
     }
-    
+
     // For saved properties with LTR, use cached metrics from store
-    if (isSavedPropertyMode && hasRecord && dealMakerStore.record?.cached_metrics && strategyType === 'ltr') {
+    if (
+      isSavedPropertyMode &&
+      hasRecord &&
+      dealMakerStore.record?.cached_metrics &&
+      strategyType === 'ltr'
+    ) {
       const ltrState = state as LTRDealMakerState
       const cachedMetrics = dealMakerStore.record.cached_metrics
       const effectiveListPrice = dealMakerStore.record.list_price || ltrState.buyPrice
-      const dealGap = effectiveListPrice > 0 
-        ? (effectiveListPrice - ltrState.buyPrice) / effectiveListPrice 
-        : 0
+      const dealGap =
+        effectiveListPrice > 0 ? (effectiveListPrice - ltrState.buyPrice) / effectiveListPrice : 0
       const totalCashNeeded = (cachedMetrics.total_cash_needed || 0) + (ltrState.rehabBudget || 0)
-      
+
       return {
         cashNeeded: totalCashNeeded,
         dealGap,
         annualProfit: cachedMetrics.annual_cash_flow || 0,
         capRate: (cachedMetrics.cap_rate || 0) * 100,
-        cocReturn: totalCashNeeded > 0 ? ((cachedMetrics.annual_cash_flow || 0) / totalCashNeeded) * 100 : 0,
+        cocReturn:
+          totalCashNeeded > 0 ? ((cachedMetrics.annual_cash_flow || 0) / totalCashNeeded) * 100 : 0,
         monthlyPayment: cachedMetrics.monthly_payment || 0,
         loanAmount: cachedMetrics.loan_amount || 0,
         equityCreated: cachedMetrics.equity_after_rehab || 0,
         grossMonthlyIncome: (cachedMetrics.gross_income || 0) / 12,
-        totalMonthlyExpenses: ((cachedMetrics.total_expenses || 0) + (cachedMetrics.monthly_payment || 0) * 12) / 12,
+        totalMonthlyExpenses:
+          ((cachedMetrics.total_expenses || 0) + (cachedMetrics.monthly_payment || 0) * 12) / 12,
       } as LTRDealMakerMetrics
     }
-    
+
     // For unsaved LTR properties, calculate locally (Model A — seller second)
     const ltrState = state as LTRDealMakerState
     const downPaymentAmount = ltrState.buyPrice * ltrState.downPaymentPercent
     const closingCostsAmount = ltrState.buyPrice * ltrState.closingCostsPercent
     const sellerFin = ltrState.sellerFinancingAmount ?? 0
-    const cashNeeded =
-      Math.max(0, downPaymentAmount + closingCostsAmount + ltrState.rehabBudget - sellerFin)
+    const cashNeeded = Math.max(
+      0,
+      downPaymentAmount + closingCostsAmount + ltrState.rehabBudget - sellerFin,
+    )
 
     const loanAmount = Math.max(0, ltrState.buyPrice - downPaymentAmount)
     const sellerPi =
       sellerFin > 0
-        ? calculateMortgagePayment(sellerFin, ltrState.sellerInterestRate ?? 0, ltrState.sellerTermYears ?? 30)
+        ? calculateMortgagePayment(
+            sellerFin,
+            ltrState.sellerInterestRate ?? 0,
+            ltrState.sellerTermYears ?? 30,
+          )
         : 0
-    const bankPi = calculateMortgagePayment(loanAmount, ltrState.interestRate, ltrState.loanTermYears)
+    const bankPi = calculateMortgagePayment(
+      loanAmount,
+      ltrState.interestRate,
+      ltrState.loanTermYears,
+    )
     const monthlyPayment = bankPi + sellerPi
 
     const totalInvestment = ltrState.buyPrice + ltrState.rehabBudget
@@ -980,24 +1152,27 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     const management = grossMonthlyIncome * ltrState.managementRate
     const propertyTaxMonthly = ltrState.annualPropertyTax / 12
     const insuranceMonthly = ltrState.annualInsurance / 12
-    const monthlyOperatingExpenses = vacancy + maintenance + management + 
-      propertyTaxMonthly + insuranceMonthly + ltrState.monthlyHoa
+    const monthlyOperatingExpenses =
+      vacancy +
+      maintenance +
+      management +
+      propertyTaxMonthly +
+      insuranceMonthly +
+      ltrState.monthlyHoa
     const totalMonthlyExpenses = monthlyOperatingExpenses + monthlyPayment
 
     const annualCashFlow = (grossMonthlyIncome - totalMonthlyExpenses) * 12
 
-    const capRate = ltrState.buyPrice > 0 
-      ? (((grossMonthlyIncome - monthlyOperatingExpenses) * 12) / ltrState.buyPrice) * 100 
-      : 0
-    
-    const cocReturn = cashNeeded > 0 
-      ? (annualCashFlow / cashNeeded) * 100 
-      : 0
+    const capRate =
+      ltrState.buyPrice > 0
+        ? (((grossMonthlyIncome - monthlyOperatingExpenses) * 12) / ltrState.buyPrice) * 100
+        : 0
+
+    const cocReturn = cashNeeded > 0 ? (annualCashFlow / cashNeeded) * 100 : 0
 
     const effectiveListPrice = listPrice ?? ltrState.buyPrice
-    const dealGap = effectiveListPrice > 0 
-      ? (effectiveListPrice - ltrState.buyPrice) / effectiveListPrice 
-      : 0
+    const dealGap =
+      effectiveListPrice > 0 ? (effectiveListPrice - ltrState.buyPrice) / effectiveListPrice : 0
 
     return {
       cashNeeded,
@@ -1011,109 +1186,123 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       grossMonthlyIncome,
       totalMonthlyExpenses,
     } as LTRDealMakerMetrics
-  }, [state, listPrice, isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, backendResult])
+  }, [
+    state,
+    listPrice,
+    isSavedPropertyMode,
+    hasRecord,
+    dealMakerStore.record,
+    strategyType,
+    backendResult,
+  ])
 
   // Update state - use store for saved properties, local state for unsaved
-  const updateState = useCallback((key: string, value: number | string) => {
-    if (isSavedPropertyMode && hasRecord) {
-      // Map local field names to store field names (includes LTR, STR, and BRRRR fields)
-      const fieldMap: Record<string, string> = {
-        // Shared fields
-        buyPrice: 'buy_price',
-        downPaymentPercent: 'down_payment_pct',
-        closingCostsPercent: 'closing_costs_pct',
-        interestRate: 'interest_rate',
-        loanTermYears: 'loan_term_years',
-        rehabBudget: 'rehab_budget',
-        arv: 'arv',
-        maintenanceRate: 'maintenance_pct',
-        annualPropertyTax: 'annual_property_tax',
-        annualInsurance: 'annual_insurance',
-        monthlyHoa: 'monthly_hoa',
-        vacancyRate: 'vacancy_rate',
-        managementRate: 'management_pct',
-        // LTR-specific
-        monthlyRent: 'monthly_rent',
-        otherIncome: 'other_income',
-        // STR-specific
-        furnitureSetupCost: 'furniture_setup_cost',
-        averageDailyRate: 'average_daily_rate',
-        occupancyRate: 'occupancy_rate',
-        cleaningFeeRevenue: 'cleaning_fee_revenue',
-        avgLengthOfStayDays: 'avg_length_of_stay_days',
-        platformFeeRate: 'platform_fee_rate',
-        strManagementRate: 'str_management_rate',
-        cleaningCostPerTurnover: 'cleaning_cost_per_turnover',
-        suppliesMonthly: 'supplies_monthly',
-        additionalUtilitiesMonthly: 'additional_utilities_monthly',
-        // BRRRR-specific
-        purchasePrice: 'buy_price',  // Maps to same field
-        buyDiscountPct: 'buy_discount_pct',
-        hardMoneyRate: 'hard_money_rate',
-        contingencyPct: 'contingency_pct',
-        holdingPeriodMonths: 'holding_period_months',
-        holdingCostsMonthly: 'holding_costs_monthly',
-        postRehabMonthlyRent: 'post_rehab_monthly_rent',
-        postRehabRentIncreasePct: 'post_rehab_rent_increase_pct',
-        refinanceLtv: 'refinance_ltv',
-        refinanceInterestRate: 'refinance_interest_rate',
-        refinanceTermYears: 'refinance_term_years',
-        refinanceClosingCostsPct: 'refinance_closing_costs_pct',
-        // Flip-specific
-        purchaseDiscountPct: 'purchase_discount_pct',
-        financingType: 'financing_type',
-        hardMoneyLtv: 'hard_money_ltv',
-        loanPoints: 'loan_points',
-        rehabTimeMonths: 'rehab_time_months',
-        daysOnMarket: 'days_on_market',
-        sellingCostsPct: 'selling_costs_pct',
-        capitalGainsRate: 'capital_gains_rate',
-        // HouseHack-specific
-        totalUnits: 'total_units',
-        ownerOccupiedUnits: 'owner_occupied_units',
-        ownerUnitMarketRent: 'owner_unit_market_rent',
-        loanType: 'loan_type',
-        pmiRate: 'pmi_rate',
-        avgRentPerUnit: 'avg_rent_per_unit',
-        currentHousingPayment: 'current_housing_payment',
-        utilitiesMonthly: 'utilities_monthly',
-        capexRate: 'capex_rate',
-        // Wholesale-specific (note: closingCosts maps to wholesale_closing_costs to avoid collision with other strategies)
-        estimatedRepairs: 'estimated_repairs',
-        squareFootage: 'sqft',
-        contractPrice: 'contract_price',
-        earnestMoney: 'earnest_money',
-        inspectionPeriodDays: 'inspection_period_days',
-        daysToClose: 'days_to_close',
-        assignmentFee: 'assignment_fee',
-        marketingCosts: 'marketing_costs',
-        closingCosts: 'wholesale_closing_costs',
-        sellerFinancingAmount: 'seller_carry_amount',
-        sellerInterestRate: 'seller_carry_rate',
-        sellerTermYears: 'seller_carry_term_years',
-      }
-      
-      const storeField = fieldMap[key]
-      if (storeField) {
-        dealMakerStore.updateField(storeField as keyof typeof dealMakerStore.pendingUpdates, value)
-      }
-    } else {
-      // Local state for unsaved properties - update the appropriate state based on strategy
-      if (strategyType === 'str') {
-        setLocalSTRState(prev => ({ ...prev, [key]: value }))
-      } else if (strategyType === 'brrrr') {
-        setLocalBRRRRState(prev => ({ ...prev, [key]: value }))
-      } else if (strategyType === 'flip') {
-        setLocalFlipState(prev => ({ ...prev, [key]: value }))
-      } else if (strategyType === 'house_hack') {
-        setLocalHouseHackState(prev => ({ ...prev, [key]: value }))
-      } else if (strategyType === 'wholesale') {
-        setLocalWholesaleState(prev => ({ ...prev, [key]: value }))
+  const updateState = useCallback(
+    (key: string, value: number | string) => {
+      if (isSavedPropertyMode && hasRecord) {
+        // Map local field names to store field names (includes LTR, STR, and BRRRR fields)
+        const fieldMap: Record<string, string> = {
+          // Shared fields
+          buyPrice: 'buy_price',
+          downPaymentPercent: 'down_payment_pct',
+          closingCostsPercent: 'closing_costs_pct',
+          interestRate: 'interest_rate',
+          loanTermYears: 'loan_term_years',
+          rehabBudget: 'rehab_budget',
+          arv: 'arv',
+          maintenanceRate: 'maintenance_pct',
+          annualPropertyTax: 'annual_property_tax',
+          annualInsurance: 'annual_insurance',
+          monthlyHoa: 'monthly_hoa',
+          vacancyRate: 'vacancy_rate',
+          managementRate: 'management_pct',
+          // LTR-specific
+          monthlyRent: 'monthly_rent',
+          otherIncome: 'other_income',
+          // STR-specific
+          furnitureSetupCost: 'furniture_setup_cost',
+          averageDailyRate: 'average_daily_rate',
+          occupancyRate: 'occupancy_rate',
+          cleaningFeeRevenue: 'cleaning_fee_revenue',
+          avgLengthOfStayDays: 'avg_length_of_stay_days',
+          platformFeeRate: 'platform_fee_rate',
+          strManagementRate: 'str_management_rate',
+          cleaningCostPerTurnover: 'cleaning_cost_per_turnover',
+          suppliesMonthly: 'supplies_monthly',
+          additionalUtilitiesMonthly: 'additional_utilities_monthly',
+          // BRRRR-specific
+          purchasePrice: 'buy_price', // Maps to same field
+          buyDiscountPct: 'buy_discount_pct',
+          hardMoneyRate: 'hard_money_rate',
+          contingencyPct: 'contingency_pct',
+          holdingPeriodMonths: 'holding_period_months',
+          holdingCostsMonthly: 'holding_costs_monthly',
+          postRehabMonthlyRent: 'post_rehab_monthly_rent',
+          postRehabRentIncreasePct: 'post_rehab_rent_increase_pct',
+          refinanceLtv: 'refinance_ltv',
+          refinanceInterestRate: 'refinance_interest_rate',
+          refinanceTermYears: 'refinance_term_years',
+          refinanceClosingCostsPct: 'refinance_closing_costs_pct',
+          // Flip-specific
+          purchaseDiscountPct: 'purchase_discount_pct',
+          financingType: 'financing_type',
+          hardMoneyLtv: 'hard_money_ltv',
+          loanPoints: 'loan_points',
+          rehabTimeMonths: 'rehab_time_months',
+          daysOnMarket: 'days_on_market',
+          sellingCostsPct: 'selling_costs_pct',
+          capitalGainsRate: 'capital_gains_rate',
+          // HouseHack-specific
+          totalUnits: 'total_units',
+          ownerOccupiedUnits: 'owner_occupied_units',
+          ownerUnitMarketRent: 'owner_unit_market_rent',
+          loanType: 'loan_type',
+          pmiRate: 'pmi_rate',
+          avgRentPerUnit: 'avg_rent_per_unit',
+          currentHousingPayment: 'current_housing_payment',
+          utilitiesMonthly: 'utilities_monthly',
+          capexRate: 'capex_rate',
+          // Wholesale-specific (note: closingCosts maps to wholesale_closing_costs to avoid collision with other strategies)
+          estimatedRepairs: 'estimated_repairs',
+          squareFootage: 'sqft',
+          contractPrice: 'contract_price',
+          earnestMoney: 'earnest_money',
+          inspectionPeriodDays: 'inspection_period_days',
+          daysToClose: 'days_to_close',
+          assignmentFee: 'assignment_fee',
+          marketingCosts: 'marketing_costs',
+          closingCosts: 'wholesale_closing_costs',
+          sellerFinancingAmount: 'seller_carry_amount',
+          sellerInterestRate: 'seller_carry_rate',
+          sellerTermYears: 'seller_carry_term_years',
+        }
+
+        const storeField = fieldMap[key]
+        if (storeField) {
+          dealMakerStore.updateField(
+            storeField as keyof typeof dealMakerStore.pendingUpdates,
+            value,
+          )
+        }
       } else {
-        setLocalLTRState(prev => ({ ...prev, [key]: value }))
+        // Local state for unsaved properties - update the appropriate state based on strategy
+        if (strategyType === 'str') {
+          setLocalSTRState((prev) => ({ ...prev, [key]: value }))
+        } else if (strategyType === 'brrrr') {
+          setLocalBRRRRState((prev) => ({ ...prev, [key]: value }))
+        } else if (strategyType === 'flip') {
+          setLocalFlipState((prev) => ({ ...prev, [key]: value }))
+        } else if (strategyType === 'house_hack') {
+          setLocalHouseHackState((prev) => ({ ...prev, [key]: value }))
+        } else if (strategyType === 'wholesale') {
+          setLocalWholesaleState((prev) => ({ ...prev, [key]: value }))
+        } else {
+          setLocalLTRState((prev) => ({ ...prev, [key]: value }))
+        }
       }
-    }
-  }, [isSavedPropertyMode, hasRecord, dealMakerStore, strategyType])
+    },
+    [isSavedPropertyMode, hasRecord, dealMakerStore, strategyType],
+  )
 
   const handleStrategyChange = (strategy: string) => {
     setCurrentStrategy(strategy)
@@ -1127,8 +1316,6 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     }
   }
 
-  
-
   // getValueColor imported from ./types
 
   // Key metrics for header - varies by strategy
@@ -1140,29 +1327,62 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         { label: 'Buy Price', value: formatPrice(strState.buyPrice), color: 'white' },
         { label: 'Cash Needed', value: formatPrice(strMetrics.cashNeeded), color: 'white' },
         { label: 'RevPAR', value: formatPrice(strMetrics.revPAR), color: 'cyan' },
-        { label: 'Annual Profit', value: formatPrice(strMetrics.annualCashFlow), color: strMetrics.annualCashFlow >= 0 ? 'teal' : 'rose' },
+        {
+          label: 'Annual Profit',
+          value: formatPrice(strMetrics.annualCashFlow),
+          color: strMetrics.annualCashFlow >= 0 ? 'teal' : 'rose',
+        },
         { label: 'CAP Rate', value: `${strMetrics.capRate.toFixed(1)}%`, color: 'white' },
-        { label: 'COC Return', value: `${strMetrics.cocReturn.toFixed(1)}%`, color: strMetrics.cocReturn >= 0 ? 'white' : 'rose' },
+        {
+          label: 'COC Return',
+          value: `${strMetrics.cocReturn.toFixed(1)}%`,
+          color: strMetrics.cocReturn >= 0 ? 'white' : 'rose',
+        },
       ]
     }
-    
+
     // BRRRR metrics - focus on capital recycling
     if (strategyType === 'brrrr' && 'capitalRecycledPct' in metrics) {
       const brrrrMetrics = metrics as BRRRRMetrics
       const brrrrState = state as BRRRRDealMakerState
-      const cocDisplay = isFinite(brrrrMetrics.postRefiCashOnCash) 
-        ? `${brrrrMetrics.postRefiCashOnCash.toFixed(1)}%` 
+      const cocDisplay = isFinite(brrrrMetrics.postRefiCashOnCash)
+        ? `${brrrrMetrics.postRefiCashOnCash.toFixed(1)}%`
         : 'Infinite'
       return [
         { label: 'All-In Cost', value: formatPrice(brrrrMetrics.allInCost), color: 'white' },
-        { label: 'Cash Invested', value: formatPrice(brrrrMetrics.totalCashInvested), color: 'white' },
-        { label: 'Cash Out', value: formatPrice(brrrrMetrics.cashOutAtRefinance), color: brrrrMetrics.cashOutAtRefinance > 0 ? 'cyan' : 'rose' },
-        { label: 'Cash Left', value: formatPrice(brrrrMetrics.cashLeftInDeal), color: brrrrMetrics.infiniteRoiAchieved ? 'teal' : 'white' },
-        { label: 'Capital Recycled', value: `${brrrrMetrics.capitalRecycledPct.toFixed(0)}%`, color: brrrrMetrics.capitalRecycledPct >= 100 ? 'teal' : brrrrMetrics.capitalRecycledPct >= 80 ? 'cyan' : 'white' },
-        { label: 'Post-Refi CoC', value: cocDisplay, color: brrrrMetrics.infiniteRoiAchieved ? 'teal' : 'white' },
+        {
+          label: 'Cash Invested',
+          value: formatPrice(brrrrMetrics.totalCashInvested),
+          color: 'white',
+        },
+        {
+          label: 'Cash Out',
+          value: formatPrice(brrrrMetrics.cashOutAtRefinance),
+          color: brrrrMetrics.cashOutAtRefinance > 0 ? 'cyan' : 'rose',
+        },
+        {
+          label: 'Cash Left',
+          value: formatPrice(brrrrMetrics.cashLeftInDeal),
+          color: brrrrMetrics.infiniteRoiAchieved ? 'teal' : 'white',
+        },
+        {
+          label: 'Capital Recycled',
+          value: `${brrrrMetrics.capitalRecycledPct.toFixed(0)}%`,
+          color:
+            brrrrMetrics.capitalRecycledPct >= 100
+              ? 'teal'
+              : brrrrMetrics.capitalRecycledPct >= 80
+                ? 'cyan'
+                : 'white',
+        },
+        {
+          label: 'Post-Refi CoC',
+          value: cocDisplay,
+          color: brrrrMetrics.infiniteRoiAchieved ? 'teal' : 'white',
+        },
       ]
     }
-    
+
     // Flip metrics - focus on profit
     if (strategyType === 'flip' && 'maxAllowableOffer' in metrics) {
       const flipMetrics = metrics as FlipMetrics
@@ -1170,52 +1390,132 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       return [
         { label: 'Total Cost', value: formatPrice(flipMetrics.totalProjectCost), color: 'white' },
         { label: 'ARV', value: formatPrice(flipState.arv), color: 'white' },
-        { label: 'Net Profit', value: formatPrice(flipMetrics.netProfit), color: flipMetrics.netProfit >= 0 ? 'teal' : 'rose' },
-        { label: 'ROI', value: `${flipMetrics.roi.toFixed(1)}%`, color: flipMetrics.roi >= 20 ? 'teal' : flipMetrics.roi >= 10 ? 'cyan' : 'white' },
-        { label: 'Ann. ROI', value: `${flipMetrics.annualizedRoi.toFixed(0)}%`, color: flipMetrics.annualizedRoi >= 30 ? 'teal' : 'white' },
-        { label: '70% Rule', value: flipMetrics.meets70PercentRule ? 'PASS' : 'FAIL', color: flipMetrics.meets70PercentRule ? 'teal' : 'rose' },
+        {
+          label: 'Net Profit',
+          value: formatPrice(flipMetrics.netProfit),
+          color: flipMetrics.netProfit >= 0 ? 'teal' : 'rose',
+        },
+        {
+          label: 'ROI',
+          value: `${flipMetrics.roi.toFixed(1)}%`,
+          color: flipMetrics.roi >= 20 ? 'teal' : flipMetrics.roi >= 10 ? 'cyan' : 'white',
+        },
+        {
+          label: 'Ann. ROI',
+          value: `${flipMetrics.annualizedRoi.toFixed(0)}%`,
+          color: flipMetrics.annualizedRoi >= 30 ? 'teal' : 'white',
+        },
+        {
+          label: '70% Rule',
+          value: flipMetrics.meets70PercentRule ? 'PASS' : 'FAIL',
+          color: flipMetrics.meets70PercentRule ? 'teal' : 'rose',
+        },
       ]
     }
-    
+
     // HouseHack metrics - focus on housing cost reduction
     if (strategyType === 'house_hack' && 'effectiveHousingCost' in metrics) {
       const hhMetrics = metrics as HouseHackMetrics
-      const effectiveCostDisplay = hhMetrics.livesForFree 
-        ? (hhMetrics.effectiveHousingCost < 0 ? `+${formatPrice(Math.abs(hhMetrics.effectiveHousingCost))}` : 'FREE')
+      const effectiveCostDisplay = hhMetrics.livesForFree
+        ? hhMetrics.effectiveHousingCost < 0
+          ? `+${formatPrice(Math.abs(hhMetrics.effectiveHousingCost))}`
+          : 'FREE'
         : formatPrice(hhMetrics.effectiveHousingCost)
       return [
-        { label: 'Eff. Housing', value: effectiveCostDisplay, color: hhMetrics.livesForFree ? 'teal' : 'white' },
-        { label: 'Savings/Mo', value: formatPrice(hhMetrics.housingCostSavings), color: hhMetrics.housingCostSavings > 0 ? 'teal' : 'rose' },
-        { label: 'Offset %', value: `${hhMetrics.housingOffsetPercent.toFixed(0)}%`, color: hhMetrics.housingOffsetPercent >= 75 ? 'teal' : hhMetrics.housingOffsetPercent >= 50 ? 'cyan' : 'white' },
+        {
+          label: 'Eff. Housing',
+          value: effectiveCostDisplay,
+          color: hhMetrics.livesForFree ? 'teal' : 'white',
+        },
+        {
+          label: 'Savings/Mo',
+          value: formatPrice(hhMetrics.housingCostSavings),
+          color: hhMetrics.housingCostSavings > 0 ? 'teal' : 'rose',
+        },
+        {
+          label: 'Offset %',
+          value: `${hhMetrics.housingOffsetPercent.toFixed(0)}%`,
+          color:
+            hhMetrics.housingOffsetPercent >= 75
+              ? 'teal'
+              : hhMetrics.housingOffsetPercent >= 50
+                ? 'cyan'
+                : 'white',
+        },
         { label: 'Cash to Close', value: formatPrice(hhMetrics.cashToClose), color: 'white' },
-        { label: 'CoC Return', value: `${hhMetrics.cashOnCashReturn.toFixed(1)}%`, color: hhMetrics.cashOnCashReturn >= 10 ? 'teal' : 'white' },
-        { label: 'Full CF', value: formatPrice(hhMetrics.fullRentalCashFlow), color: hhMetrics.fullRentalCashFlow > 0 ? 'cyan' : 'rose' },
+        {
+          label: 'CoC Return',
+          value: `${hhMetrics.cashOnCashReturn.toFixed(1)}%`,
+          color: hhMetrics.cashOnCashReturn >= 10 ? 'teal' : 'white',
+        },
+        {
+          label: 'Full CF',
+          value: formatPrice(hhMetrics.fullRentalCashFlow),
+          color: hhMetrics.fullRentalCashFlow > 0 ? 'cyan' : 'rose',
+        },
       ]
     }
-    
+
     // Wholesale metrics - focus on assignment profit
     if (strategyType === 'wholesale' && 'endBuyerPrice' in metrics) {
       const wsMetrics = metrics as WholesaleMetrics
       return [
-        { label: 'Net Profit', value: formatPrice(wsMetrics.netProfit), color: wsMetrics.netProfit > 0 ? 'teal' : 'rose' },
-        { label: 'ROI', value: `${wsMetrics.roi.toFixed(0)}%`, color: wsMetrics.roi >= 500 ? 'teal' : wsMetrics.roi >= 200 ? 'cyan' : 'white' },
-        { label: '70% Rule', value: wsMetrics.meets70PercentRule ? 'PASS' : 'FAIL', color: wsMetrics.meets70PercentRule ? 'teal' : 'rose' },
-        { label: 'Buyer Profit', value: formatPrice(wsMetrics.endBuyerProfit), color: wsMetrics.endBuyerProfit >= 20000 ? 'teal' : wsMetrics.endBuyerProfit >= 10000 ? 'cyan' : 'rose' },
+        {
+          label: 'Net Profit',
+          value: formatPrice(wsMetrics.netProfit),
+          color: wsMetrics.netProfit > 0 ? 'teal' : 'rose',
+        },
+        {
+          label: 'ROI',
+          value: `${wsMetrics.roi.toFixed(0)}%`,
+          color: wsMetrics.roi >= 500 ? 'teal' : wsMetrics.roi >= 200 ? 'cyan' : 'white',
+        },
+        {
+          label: '70% Rule',
+          value: wsMetrics.meets70PercentRule ? 'PASS' : 'FAIL',
+          color: wsMetrics.meets70PercentRule ? 'teal' : 'rose',
+        },
+        {
+          label: 'Buyer Profit',
+          value: formatPrice(wsMetrics.endBuyerProfit),
+          color:
+            wsMetrics.endBuyerProfit >= 20000
+              ? 'teal'
+              : wsMetrics.endBuyerProfit >= 10000
+                ? 'cyan'
+                : 'rose',
+        },
         { label: 'Cash at Risk', value: formatPrice(wsMetrics.totalCashAtRisk), color: 'white' },
-        { label: 'Timeline', value: `${(state as WholesaleDealMakerState).daysToClose} days`, color: 'white' },
+        {
+          label: 'Timeline',
+          value: `${(state as WholesaleDealMakerState).daysToClose} days`,
+          color: 'white',
+        },
       ]
     }
-    
+
     // LTR metrics
     const ltrMetrics = metrics as LTRDealMakerMetrics
     const ltrState = state as LTRDealMakerState
     return [
       { label: 'Buy Price', value: formatPrice(ltrState.buyPrice), color: 'white' },
       { label: 'Cash Needed', value: formatPrice(ltrMetrics.cashNeeded), color: 'white' },
-      { label: 'Deal Gap', value: `${-ltrMetrics.dealGap >= 0 ? '+' : ''}${formatPercent(-ltrMetrics.dealGap)}`, color: -ltrMetrics.dealGap >= 0 ? 'teal' : 'cyan' },
-      { label: 'Annual Profit', value: formatPrice(ltrMetrics.annualProfit), color: ltrMetrics.annualProfit >= 0 ? 'teal' : 'rose' },
+      {
+        label: 'Deal Gap',
+        value: `${-ltrMetrics.dealGap >= 0 ? '+' : ''}${formatPercent(-ltrMetrics.dealGap)}`,
+        color: -ltrMetrics.dealGap >= 0 ? 'teal' : 'cyan',
+      },
+      {
+        label: 'Annual Profit',
+        value: formatPrice(ltrMetrics.annualProfit),
+        color: ltrMetrics.annualProfit >= 0 ? 'teal' : 'rose',
+      },
       { label: 'CAP Rate', value: `${ltrMetrics.capRate.toFixed(1)}%`, color: 'white' },
-      { label: 'COC Return', value: `${ltrMetrics.cocReturn.toFixed(1)}%`, color: ltrMetrics.cocReturn >= 0 ? 'white' : 'rose' },
+      {
+        label: 'COC Return',
+        value: `${ltrMetrics.cocReturn.toFixed(1)}%`,
+        color: ltrMetrics.cocReturn >= 0 ? 'white' : 'rose',
+      },
     ]
   }, [strategyType, metrics, state])
 
@@ -1254,7 +1554,16 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
             onClick={handleBack}
             className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-heading)] transition-colors mb-3"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
             Back to {backTo.label}
@@ -1277,16 +1586,20 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                 key={s.label}
                 onClick={() => handleStrategyChange(s.label)}
                 className="w-full min-w-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all hover:opacity-90"
-                style={isActive ? {
-                  background: s.color,
-                  color: '#fff',
-                  border: `0.5px solid ${s.color}`,
-                  boxShadow: `0 0 12px ${s.color}55, 0 1px 4px ${s.color}30`,
-                } : {
-                  background: 'transparent',
-                  color: s.color,
-                  border: `0.5px solid ${s.color}`,
-                }}
+                style={
+                  isActive
+                    ? {
+                        background: s.color,
+                        color: '#fff',
+                        border: `0.5px solid ${s.color}`,
+                        boxShadow: `0 0 12px ${s.color}55, 0 1px 4px ${s.color}30`,
+                      }
+                    : {
+                        background: 'transparent',
+                        color: s.color,
+                        border: `0.5px solid ${s.color}`,
+                      }
+                }
               >
                 {s.label}
               </button>
@@ -1309,17 +1622,23 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
           style={{ opacity: headerIsCalculating ? 1 : 0, pointerEvents: 'none' }}
         >
           <div className="w-3 h-3 border-2 border-[var(--accent-sky)] border-t-transparent rounded-full animate-spin" />
-          <span className="text-[10px] font-medium" style={{ color: 'var(--accent-sky)' }}>Recalculating</span>
+          <span className="text-[10px] font-medium" style={{ color: 'var(--accent-sky)' }}>
+            Recalculating
+          </span>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-x-4 gap-y-2">
           {headerMetrics.map((metric, index) => (
             <div key={index} className="flex flex-col text-center items-center py-0.5 sm:py-1">
-              <span className="text-[13px] sm:text-base font-semibold tabular-nums"
+              <span
+                className="text-[13px] sm:text-base font-semibold tabular-nums"
                 style={{ color: getValueColor(metric.color) }}
               >
                 {metric.value}
               </span>
-              <span className="text-[10px] sm:text-xs uppercase tracking-wider" style={{ color: 'var(--text-body)' }}>
+              <span
+                className="text-[10px] sm:text-xs uppercase tracking-wider"
+                style={{ color: 'var(--text-body)' }}
+              >
                 {metric.label}
               </span>
             </div>
@@ -1337,8 +1656,6 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         isCalculating={isCalculating || backendCalculating}
         propertyAddress={fullAddress}
       />
-
-
 
       {/* CSS for tabular-nums */}
       <style>{`.tabular-nums { font-variant-numeric: tabular-nums; }`}</style>

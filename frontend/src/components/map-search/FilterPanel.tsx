@@ -85,9 +85,7 @@ const DISTRESSED_LISTING_STATUS_OPTIONS: {
   },
 ]
 
-const DISTRESSED_STATUS_VALUES = new Set(
-  DISTRESSED_LISTING_STATUS_OPTIONS.map((o) => o.value),
-)
+const DISTRESSED_STATUS_VALUES = new Set(DISTRESSED_LISTING_STATUS_OPTIONS.map((o) => o.value))
 
 const DOM_OPTIONS: { value: number | undefined; label: string }[] = [
   { value: undefined, label: 'Any' },
@@ -132,14 +130,16 @@ function PillButton({
       aria-label={ariaLabel}
       className={`inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${className ?? ''}`}
       style={{
-        backgroundColor:
-          active
-            ? 'var(--accent-sky)'
-            : mapLightChrome
-              ? MAP_FILTER_LIGHT_CONTROLS.idleBg
-              : 'var(--surface-elevated)',
-        color:
-          active ? '#fff' : mapLightChrome ? MAP_FILTER_LIGHT_CONTROLS.idleText : 'var(--text-body)',
+        backgroundColor: active
+          ? 'var(--accent-sky)'
+          : mapLightChrome
+            ? MAP_FILTER_LIGHT_CONTROLS.idleBg
+            : 'var(--surface-elevated)',
+        color: active
+          ? '#fff'
+          : mapLightChrome
+            ? MAP_FILTER_LIGHT_CONTROLS.idleText
+            : 'var(--text-body)',
         border: !active && mapLightChrome ? MAP_FILTER_LIGHT_CONTROLS.idleBorder : undefined,
       }}
     >
@@ -313,7 +313,9 @@ export function FilterPanel({
             </label>
             <button
               type="button"
-              onClick={() => { void onSaveDefaultView() }}
+              onClick={() => {
+                void onSaveDefaultView()
+              }}
               disabled={savingDefaultView}
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium w-full transition-opacity hover:opacity-90 disabled:opacity-50"
               style={controlIdle}
@@ -322,7 +324,11 @@ export function FilterPanel({
               {savingDefaultView ? (
                 <Loader2 size={14} className="animate-spin flex-shrink-0" />
               ) : (
-                <Bookmark size={14} className="flex-shrink-0" style={{ color: 'var(--accent-sky)' }} />
+                <Bookmark
+                  size={14}
+                  className="flex-shrink-0"
+                  style={{ color: 'var(--accent-sky)' }}
+                />
               )}
               <span className="text-left leading-tight">
                 {savingDefaultView ? 'Saving...' : 'Save view as default'}
@@ -330,7 +336,11 @@ export function FilterPanel({
             </button>
             <p
               className="text-[10px] mt-1.5 leading-snug"
-              style={{ color: mapLightChrome ? MAP_FILTER_LIGHT_CONTROLS.placeholder : 'var(--text-secondary)' }}
+              style={{
+                color: mapLightChrome
+                  ? MAP_FILTER_LIGHT_CONTROLS.placeholder
+                  : 'var(--text-secondary)',
+              }}
             >
               Your next visit will open here.
             </p>
@@ -392,7 +402,11 @@ export function FilterPanel({
           </span>
           <p
             className="text-[10px] mb-2 leading-snug"
-            style={{ color: mapLightChrome ? MAP_FILTER_LIGHT_CONTROLS.placeholder : 'var(--text-secondary)' }}
+            style={{
+              color: mapLightChrome
+                ? MAP_FILTER_LIGHT_CONTROLS.placeholder
+                : 'var(--text-secondary)',
+            }}
           >
             MLS &amp; FSBO
           </p>
@@ -432,13 +446,17 @@ export function FilterPanel({
             <h3
               id="distressed-deals-heading"
               className="text-xs font-semibold uppercase tracking-wider"
-              style={{ color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.heading : 'var(--text-heading)' }}
+              style={{
+                color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.heading : 'var(--text-heading)',
+              }}
             >
               Distressed deals
             </h3>
             <p
               className="text-[10px] mt-1 leading-snug"
-              style={{ color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.body : 'var(--text-secondary)' }}
+              style={{
+                color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.body : 'var(--text-secondary)',
+              }}
             >
               Foreclosure, auction &amp; pre-foreclosure — same red pins as the map legend.
             </p>
@@ -458,7 +476,12 @@ export function FilterPanel({
                       style={{ backgroundColor: dotColor }}
                       aria-hidden
                     />
-                    <Icon size={12} className="flex-shrink-0 opacity-90" strokeWidth={2} aria-hidden />
+                    <Icon
+                      size={12}
+                      className="flex-shrink-0 opacity-90"
+                      strokeWidth={2}
+                      aria-hidden
+                    />
                   </>
                 }
               >
@@ -532,7 +555,11 @@ export function FilterPanel({
             />
             <span
               className="text-xs flex-shrink-0"
-              style={{ color: mapLightChrome ? MAP_FILTER_LIGHT_CONTROLS.placeholder : 'var(--text-secondary)' }}
+              style={{
+                color: mapLightChrome
+                  ? MAP_FILTER_LIGHT_CONTROLS.placeholder
+                  : 'var(--text-secondary)',
+              }}
             >
               to
             </span>
@@ -602,7 +629,9 @@ export function FilterPanel({
         <div
           className="pt-3"
           style={{
-            borderTop: mapLightChrome ? '1px solid rgba(15, 23, 42, 0.1)' : '1px solid var(--border-subtle)',
+            borderTop: mapLightChrome
+              ? '1px solid rgba(15, 23, 42, 0.1)'
+              : '1px solid var(--border-subtle)',
           }}
         >
           <label
@@ -635,7 +664,10 @@ export function FilterPanel({
             aria-pressed={filters.include_str_listings}
             aria-label="Toggle Airbnb short-term rental listings on the map"
           >
-            <span className={`w-3 h-3 rounded-full flex-shrink-0 ${filters.include_str_listings ? 'bg-rose-400' : 'bg-gray-400'}`} aria-hidden />
+            <span
+              className={`w-3 h-3 rounded-full flex-shrink-0 ${filters.include_str_listings ? 'bg-rose-400' : 'bg-gray-400'}`}
+              aria-hidden
+            />
             {filters.include_str_listings ? 'Showing Airbnb Listings' : 'Show Airbnb Listings'}
           </button>
         </div>

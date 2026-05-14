@@ -9,18 +9,19 @@ interface WelcomeSectionProps {
 
 /**
  * WelcomeSection - Expandable/collapsible welcome message
- * 
+ *
  * Shows full welcome message when expanded (no strategy selected)
  * Shows condensed tagline when collapsed (strategy selected)
  */
 export function WelcomeSection({ isCollapsed, onToggle }: WelcomeSectionProps) {
   return (
-    <div 
+    <div
       className={`
         rounded-2xl border transition-all duration-300 cursor-pointer
-        ${isCollapsed 
-          ? 'p-3 bg-transparent border-brand-500/10 dark:border-[var(--accent-sky)]/10' 
-          : 'p-6 bg-gradient-to-br from-brand-500/8 to-blue-500/4 dark:from-[var(--accent-sky)]/8 dark:to-[#0465f2]/4 border-brand-500/20 dark:border-[var(--accent-sky)]/20'
+        ${
+          isCollapsed
+            ? 'p-3 bg-transparent border-brand-500/10 dark:border-[var(--accent-sky)]/10'
+            : 'p-6 bg-gradient-to-br from-brand-500/8 to-blue-500/4 dark:from-[var(--accent-sky)]/8 dark:to-[#0465f2]/4 border-brand-500/20 dark:border-[var(--accent-sky)]/20'
         }
       `}
       onClick={onToggle}
@@ -32,7 +33,8 @@ export function WelcomeSection({ isCollapsed, onToggle }: WelcomeSectionProps) {
             Welcome to DealGapIQ
           </h3>
           <p className="text-[15px] text-gray-700 dark:text-white/85 leading-relaxed mb-4">
-            IQ analyzed the deal, local market, then generated 6 investment strategies for you that reveal 6 methods to profit.
+            IQ analyzed the deal, local market, then generated 6 investment strategies for you that
+            reveal 6 methods to profit.
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 italic">
             Explore all 6 models and if you have questions, ask IQ.

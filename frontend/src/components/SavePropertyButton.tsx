@@ -42,7 +42,9 @@ export function SavePropertyButton({
   const signInUrl = (() => {
     const p = new URLSearchParams(searchParams?.toString() ?? '')
     p.set('auth', 'required')
-    const fullPath = searchParams?.toString() ? `${pathname}?${searchParams.toString()}` : pathname || '/'
+    const fullPath = searchParams?.toString()
+      ? `${pathname}?${searchParams.toString()}`
+      : pathname || '/'
     p.set('redirect', fullPath)
     return `${pathname || '/'}?${p.toString()}`
   })()
@@ -56,7 +58,11 @@ export function SavePropertyButton({
         aria-label="Sign in to save property"
       >
         <Bookmark className="w-4 h-4" style={{ color: colors.text.tertiary }} />
-        {!compact && <span className="text-xs font-medium" style={{ color: colors.text.tertiary }}>Save</span>}
+        {!compact && (
+          <span className="text-xs font-medium" style={{ color: colors.text.tertiary }}>
+            Save
+          </span>
+        )}
       </Link>
     )
   }
@@ -75,7 +81,10 @@ export function SavePropertyButton({
         style={{ color: isSaved ? colors.brand.tealBright : colors.text.tertiary }}
       />
       {!compact && (
-        <span className="text-xs font-medium" style={{ color: isSaved ? colors.brand.tealBright : colors.text.tertiary }}>
+        <span
+          className="text-xs font-medium"
+          style={{ color: isSaved ? colors.brand.tealBright : colors.text.tertiary }}
+        >
           {isSaving ? 'Saving…' : isSaved ? 'Saved' : 'Save'}
         </span>
       )}

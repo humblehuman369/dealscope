@@ -1,6 +1,6 @@
 /**
  * Property Details Components
- * 
+ *
  * Centralized exports for all property details components.
  */
 

@@ -9,10 +9,10 @@ import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 
 /**
  * Deal Gap Page
- * 
+ *
  * Standalone page for Deal Gap analysis. Shows the price ladder visualization
  * with interactive buy price adjustment.
- * 
+ *
  * Features:
  * - Interactive Deal Gap Chart with slider
  * - Real-time deal score calculation via backend API
@@ -59,7 +59,7 @@ export default function DealGapPage() {
     // Fallback estimate: rough LTR breakeven calculation
     // This is just for UI display while loading - actual calc is on backend
     const annualRent = monthlyRent * 12 * 0.95 // 5% vacancy
-    const annualExpenses = propertyTaxes + insurance + (annualRent * 0.10) // 10% maintenance + mgmt
+    const annualExpenses = propertyTaxes + insurance + annualRent * 0.1 // 10% maintenance + mgmt
     const noi = annualRent - annualExpenses
     const capRate = 0.06 // Assume 6% cap rate
     return noi > 0 ? Math.round(noi / capRate) : listPrice * 0.85
@@ -104,18 +104,22 @@ export default function DealGapPage() {
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link 
+            <Link
               href="/search"
               className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-white/60" />
             </Link>
             <div>
-              <h1 className="text-lg font-black text-slate-900 dark:text-white">Deal Gap Analysis</h1>
-              <p className="text-xs text-slate-500 dark:text-white/50">Buy Price vs Income Value Visualization</p>
+              <h1 className="text-lg font-black text-slate-900 dark:text-white">
+                Deal Gap Analysis
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-white/50">
+                Buy Price vs Income Value Visualization
+              </p>
             </div>
           </div>
-          <Link 
+          <Link
             href="/"
             className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
           >
@@ -131,7 +135,7 @@ export default function DealGapPage() {
             <DollarSign className="w-4 h-4" />
             Property Inputs
           </h2>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* List Price */}
             <div>
@@ -202,9 +206,7 @@ export default function DealGapPage() {
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-slate-300 border-t-teal-500 rounded-full animate-spin" />
               ) : (
-                <span className="text-lg font-black text-orange-500">
-                  {formatUSD(incomeValue)}
-                </span>
+                <span className="text-lg font-black text-orange-500">{formatUSD(incomeValue)}</span>
               )}
             </div>
           </div>
@@ -287,19 +289,25 @@ export default function DealGapPage() {
                     <div className="text-lg font-black text-slate-700 dark:text-white">
                       {result.factors.dealGapScore}
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-white/50">Deal Gap (50%)</div>
+                    <div className="text-[10px] text-slate-500 dark:text-white/50">
+                      Deal Gap (50%)
+                    </div>
                   </div>
                   <div className="text-center">
                     <div className="text-lg font-black text-slate-700 dark:text-white">
                       {result.factors.availabilityScore}
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-white/50">Availability (30%)</div>
+                    <div className="text-[10px] text-slate-500 dark:text-white/50">
+                      Availability (30%)
+                    </div>
                   </div>
                   <div className="text-center">
                     <div className="text-lg font-black text-slate-700 dark:text-white">
                       {result.factors.domScore}
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-white/50">Days on Market (20%)</div>
+                    <div className="text-[10px] text-slate-500 dark:text-white/50">
+                      Days on Market (20%)
+                    </div>
                   </div>
                 </div>
               </div>
@@ -314,18 +322,21 @@ export default function DealGapPage() {
           </h3>
           <div className="space-y-2 text-sm text-slate-600 dark:text-white/70">
             <p>
-              <strong className="text-slate-800 dark:text-white">Income Value</strong> is where your monthly cash flow = $0. 
-              It&apos;s calculated from rent minus all expenses including mortgage payment.
+              <strong className="text-slate-800 dark:text-white">Income Value</strong> is where your
+              monthly cash flow = $0. It&apos;s calculated from rent minus all expenses including
+              mortgage payment.
             </p>
             <p>
-              <strong className="text-slate-800 dark:text-white">Deal Gap</strong> shows how much below list price you need to buy 
-              to achieve your target returns. A larger gap means more negotiation needed.
+              <strong className="text-slate-800 dark:text-white">Deal Gap</strong> shows how much
+              below list price you need to buy to achieve your target returns. A larger gap means
+              more negotiation needed.
             </p>
             <p>
-              <strong className="text-slate-800 dark:text-white">The Ladder</strong> visualizes your position: 
-              <span className="text-red-500 font-semibold"> Red = Loss</span>, 
-              <span className="text-yellow-500 font-semibold"> Yellow = Income Value</span>, 
-              <span className="text-green-500 font-semibold"> Green = Profit</span>, 
+              <strong className="text-slate-800 dark:text-white">The Ladder</strong> visualizes your
+              position:
+              <span className="text-red-500 font-semibold"> Red = Loss</span>,
+              <span className="text-yellow-500 font-semibold"> Yellow = Income Value</span>,
+              <span className="text-green-500 font-semibold"> Green = Profit</span>,
               <span className="text-sky-500 font-semibold"> Blue = Deep Value</span>.
             </p>
           </div>

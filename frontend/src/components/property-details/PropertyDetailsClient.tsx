@@ -102,9 +102,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           <div className="px-6 sm:px-10 py-5 space-y-5">
             <KeyFactsGrid property={property} />
 
-            {property.description && (
-              <PropertyDescription description={property.description} />
-            )}
+            {property.description && <PropertyDescription description={property.description} />}
 
             {hasFeatures && (
               <PropertyFeatures

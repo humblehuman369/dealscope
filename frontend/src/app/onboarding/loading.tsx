@@ -21,8 +21,11 @@ export default function OnboardingLoading() {
 
           {/* Options Grid Skeleton */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-20 bg-slate-100 dark:bg-navy-700 rounded-xl border border-slate-200 dark:border-navy-600 animate-pulse" />
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="h-20 bg-slate-100 dark:bg-navy-700 rounded-xl border border-slate-200 dark:border-navy-600 animate-pulse"
+              />
             ))}
           </div>
 

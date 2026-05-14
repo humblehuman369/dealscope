@@ -13,7 +13,7 @@ import { PriceHistorySkeleton } from './PriceHistory'
 
 /**
  * PropertyDetailsSkeleton
- * 
+ *
  * Full page loading skeleton for the property details page.
  * Matches the dark fintech theme of the live components.
  */
@@ -28,9 +28,18 @@ export function PropertyDetailsSkeleton() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Breadcrumb Skeleton */}
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-3 w-24 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
-          <div className="h-3 w-3 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
-          <div className="h-3 w-40 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+          <div
+            className="h-3 w-24 rounded animate-pulse"
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
+          />
+          <div
+            className="h-3 w-3 rounded animate-pulse"
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
+          />
+          <div
+            className="h-3 w-40 rounded animate-pulse"
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
+          />
         </div>
 
         {/* Full Width Image Gallery */}
@@ -70,8 +79,8 @@ export function PropertyDetailsSkeleton() {
       >
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className={`h-12 rounded-full animate-pulse ${i === 2 ? 'w-40' : 'w-24'}`}
               style={{ backgroundColor: 'var(--surface-elevated)' }}
             />

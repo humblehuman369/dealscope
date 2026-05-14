@@ -21,8 +21,12 @@ export function EquityPositionBar({ equity, loan }: EquityPositionBarProps) {
   return (
     <div className="stacked-bar-container">
       <div className="stacked-bar">
-        <div className="stacked-bar-segment equity" style={{ width: `${equityPct}%` }}>Equity</div>
-        <div className="stacked-bar-segment loan" style={{ width: `${loanPct}%` }}>Loan</div>
+        <div className="stacked-bar-segment equity" style={{ width: `${equityPct}%` }}>
+          Equity
+        </div>
+        <div className="stacked-bar-segment loan" style={{ width: `${loanPct}%` }}>
+          Loan
+        </div>
       </div>
       <div className="equity-summary">
         <div className="equity-item">

@@ -11,9 +11,10 @@ export function InvestmentReturns() {
 
   // Return on Investment calculation
   const equityAfterRehab = worksheetMetrics?.equity_after_rehab ?? 0
-  const roi = derived.totalCashNeeded > 0 
-    ? ((derived.annualCashFlow + equityAfterRehab) / derived.totalCashNeeded) * 100 
-    : 0
+  const roi =
+    derived.totalCashNeeded > 0
+      ? ((derived.annualCashFlow + equityAfterRehab) / derived.totalCashNeeded) * 100
+      : 0
 
   // Return on Equity (simplified - year 1 equity)
   const equity = derived.downPayment + equityAfterRehab
@@ -72,16 +73,12 @@ export function InvestmentReturns() {
       {metrics.map((metric, index) => {
         const Icon = metric.icon
         const status = getStatus(metric.value, metric.threshold)
-        
+
         return (
-          <DataRow 
-            key={index} 
-            label={metric.label} 
-            icon={<Icon className="w-4 h-4" />}
-          >
+          <DataRow key={index} label={metric.label} icon={<Icon className="w-4 h-4" />}>
             <div className="flex items-center gap-2">
-              <DisplayField 
-                value={metric.value} 
+              <DisplayField
+                value={metric.value}
                 format="number"
                 suffix="%"
                 isPositive={status === 'positive'}
@@ -100,4 +97,3 @@ export function InvestmentReturns() {
     </SectionCard>
   )
 }
-

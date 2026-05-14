@@ -31,17 +31,77 @@ interface TabItem {
 }
 
 const tabs: TabItem[] = [
-  { id: 'analyze', label: 'Analyze Property', shortLabel: 'Analyze', icon: Search, section: 'analyze' },
-  { id: 'property-details', label: 'Photos & Details', shortLabel: 'Photos & Details', icon: Home, section: 'property-details' },
-  { id: 'deal-gap', label: 'Deal Gap', shortLabel: 'Deal Gap', icon: TrendingDown, section: 'deal-gap' },
-  { id: 'metrics', label: 'LTR Metrics', shortLabel: 'Metrics', icon: Activity, section: 'metrics' },
-  { id: 'market-data', label: 'Market Data', shortLabel: 'Market Data', icon: BarChart3, section: 'market-data' },
-  { id: 'projections', label: 'Buy & Hold Projections', shortLabel: 'Projections', icon: TrendingUp, section: 'projections' },
-  { id: 'sales-comps', label: 'Sales Comps & ARV', shortLabel: 'Comps', icon: Building2, section: 'sales-comps' },
-  { id: 'rental-comps', label: 'Rental Comps', shortLabel: 'Rentals', icon: DollarSign, section: 'rental-comps' },
-  { id: 'records', label: 'Records & Listings', shortLabel: 'Records', icon: FileSearch, disabled: true },
+  {
+    id: 'analyze',
+    label: 'Analyze Property',
+    shortLabel: 'Analyze',
+    icon: Search,
+    section: 'analyze',
+  },
+  {
+    id: 'property-details',
+    label: 'Photos & Details',
+    shortLabel: 'Photos & Details',
+    icon: Home,
+    section: 'property-details',
+  },
+  {
+    id: 'deal-gap',
+    label: 'Deal Gap',
+    shortLabel: 'Deal Gap',
+    icon: TrendingDown,
+    section: 'deal-gap',
+  },
+  {
+    id: 'metrics',
+    label: 'LTR Metrics',
+    shortLabel: 'Metrics',
+    icon: Activity,
+    section: 'metrics',
+  },
+  {
+    id: 'market-data',
+    label: 'Market Data',
+    shortLabel: 'Market Data',
+    icon: BarChart3,
+    section: 'market-data',
+  },
+  {
+    id: 'projections',
+    label: 'Buy & Hold Projections',
+    shortLabel: 'Projections',
+    icon: TrendingUp,
+    section: 'projections',
+  },
+  {
+    id: 'sales-comps',
+    label: 'Sales Comps & ARV',
+    shortLabel: 'Comps',
+    icon: Building2,
+    section: 'sales-comps',
+  },
+  {
+    id: 'rental-comps',
+    label: 'Rental Comps',
+    shortLabel: 'Rentals',
+    icon: DollarSign,
+    section: 'rental-comps',
+  },
+  {
+    id: 'records',
+    label: 'Records & Listings',
+    shortLabel: 'Records',
+    icon: FileSearch,
+    disabled: true,
+  },
   { id: 'offer', label: 'Offer Calculator', shortLabel: 'Offer', icon: Calculator, disabled: true },
-  { id: 'reports', label: 'Reports & Sharing', shortLabel: 'Reports', icon: Share2, disabled: true },
+  {
+    id: 'reports',
+    label: 'Reports & Sharing',
+    shortLabel: 'Reports',
+    icon: Share2,
+    disabled: true,
+  },
 ]
 
 interface WorksheetTabNavProps {
@@ -52,8 +112,8 @@ interface WorksheetTabNavProps {
   onMobileMenuClose?: () => void
 }
 
-export function WorksheetTabNav({ 
-  propertyId, 
+export function WorksheetTabNav({
+  propertyId,
   strategy,
   zpid,
   mobileMenuOpen = false,
@@ -63,7 +123,7 @@ export function WorksheetTabNav({
   const { activeSection, setActiveSection, propertyData } = useWorksheetStore()
   // Tabs are enabled for all strategies (removed ltr-only restriction)
   const isTabsEnabled = true
-  
+
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [showLeftFade, setShowLeftFade] = useState(false)
   const [showRightFade, setShowRightFade] = useState(false)
@@ -85,7 +145,7 @@ export function WorksheetTabNav({
 
     checkScrollPosition()
     container.addEventListener('scroll', checkScrollPosition)
-    
+
     const resizeObserver = new ResizeObserver(checkScrollPosition)
     resizeObserver.observe(container)
 
@@ -111,7 +171,7 @@ export function WorksheetTabNav({
 
   const handleTabClick = (tab: TabItem) => {
     if (!isTabsEnabled || tab.disabled) return
-    
+
     // Navigate to property details page for property-details tab
     if (tab.id === 'property-details') {
       // Use zpid for the property page route, include address as query param (required by the page)
@@ -121,7 +181,7 @@ export function WorksheetTabNav({
       router.push(propertyRoute)
       return
     }
-    
+
     if (tab.section) {
       setActiveSection(tab.section)
     }
@@ -135,10 +195,11 @@ export function WorksheetTabNav({
         {/* Scroll Container */}
         <div className="flex-1 flex items-center relative min-w-0 overflow-hidden">
           {/* Left Fade */}
-          <div className={`absolute left-0 top-0 bottom-0 w-12 flex items-center justify-start z-10 pointer-events-none transition-opacity ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}
+          <div
+            className={`absolute left-0 top-0 bottom-0 w-12 flex items-center justify-start z-10 pointer-events-none transition-opacity ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}
             style={{ background: 'linear-gradient(to right, white 60%, transparent)' }}
           >
-            <button 
+            <button
               className={`w-7 h-7 flex items-center justify-center rounded-md bg-white border border-slate-200 text-slate-500 hover:text-teal hover:border-slate-300 transition-all ${showLeftFade ? 'pointer-events-auto' : ''}`}
               onClick={scrollLeft}
               tabIndex={showLeftFade ? 0 : -1}
@@ -148,7 +209,7 @@ export function WorksheetTabNav({
           </div>
 
           {/* Scrollable Tabs */}
-          <div 
+          <div
             ref={scrollContainerRef}
             className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-2"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -164,26 +225,31 @@ export function WorksheetTabNav({
                   onClick={() => handleTabClick(tab)}
                   disabled={isDisabled}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium whitespace-nowrap transition-all ${
-                    isActive 
-                      ? 'bg-teal/10 text-teal' 
-                      : isDisabled 
-                        ? 'text-slate-400 cursor-not-allowed opacity-50' 
+                    isActive
+                      ? 'bg-teal/10 text-teal'
+                      : isDisabled
+                        ? 'text-slate-400 cursor-not-allowed opacity-50'
                         : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                   }`}
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
                   <span className="hidden sm:inline">{tab.shortLabel}</span>
-                  {isDisabled && <span className="text-[10px] font-semibold uppercase tracking-wide bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded">Soon</span>}
+                  {isDisabled && (
+                    <span className="text-[10px] font-semibold uppercase tracking-wide bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded">
+                      Soon
+                    </span>
+                  )}
                 </button>
               )
             })}
           </div>
 
           {/* Right Fade */}
-          <div className={`absolute right-0 top-0 bottom-0 w-12 flex items-center justify-end z-10 pointer-events-none transition-opacity ${showRightFade ? 'opacity-100' : 'opacity-0'}`}
+          <div
+            className={`absolute right-0 top-0 bottom-0 w-12 flex items-center justify-end z-10 pointer-events-none transition-opacity ${showRightFade ? 'opacity-100' : 'opacity-0'}`}
             style={{ background: 'linear-gradient(to left, white 60%, transparent)' }}
           >
-            <button 
+            <button
               className={`w-7 h-7 flex items-center justify-center rounded-md bg-white border border-slate-200 text-slate-500 hover:text-teal hover:border-slate-300 transition-all ${showRightFade ? 'pointer-events-auto' : ''}`}
               onClick={scrollRight}
               tabIndex={showRightFade ? 0 : -1}
@@ -192,10 +258,10 @@ export function WorksheetTabNav({
             </button>
           </div>
         </div>
-        
+
         {/* Help button */}
-        <button 
-          className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-teal transition-all flex-shrink-0" 
+        <button
+          className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-teal transition-all flex-shrink-0"
           aria-label="Worksheet help"
         >
           <HelpCircle className="w-5 h-5" />
@@ -205,7 +271,10 @@ export function WorksheetTabNav({
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[100]">
-          <div className="absolute inset-0 bg-[var(--surface-base)]/30" onClick={() => onMobileMenuClose?.()} />
+          <div
+            className="absolute inset-0 bg-[var(--surface-base)]/30"
+            onClick={() => onMobileMenuClose?.()}
+          />
           <div className="absolute top-0 left-0 right-0 bg-white rounded-b-2xl shadow-xl max-h-[80vh] overflow-y-auto">
             <div className="p-4 border-b border-slate-200 font-semibold text-slate-800">
               Navigation
@@ -222,16 +291,20 @@ export function WorksheetTabNav({
                     onClick={() => handleTabClick(tab)}
                     disabled={isDisabled}
                     className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-left transition-all ${
-                      isActive 
-                        ? 'bg-teal/10 text-teal' 
-                        : isDisabled 
-                          ? 'text-slate-400 cursor-not-allowed opacity-50' 
+                      isActive
+                        ? 'bg-teal/10 text-teal'
+                        : isDisabled
+                          ? 'text-slate-400 cursor-not-allowed opacity-50'
                           : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
                     <span className="flex-1">{tab.label}</span>
-                    {isDisabled && <span className="text-[10px] font-semibold uppercase tracking-wide bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded">Soon</span>}
+                    {isDisabled && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wide bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded">
+                        Soon
+                      </span>
+                    )}
                   </button>
                 )
               })}

@@ -93,7 +93,10 @@ function renderSummaryWithLinks(summary: string): React.ReactNode {
   // Compile a single regex that matches any known token (longest first so
   // "Appraiser page" wins over "Appraiser").
   const sorted = [...SUMMARY_LINKS].sort((a, b) => b.token.length - a.token.length)
-  const pattern = new RegExp(`(${sorted.map((l) => l.token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g')
+  const pattern = new RegExp(
+    `(${sorted.map((l) => l.token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
+    'g',
+  )
   const parts = summary.split(pattern)
   return parts.map((part, idx) => {
     const link = sorted.find((l) => l.token === part)
@@ -231,14 +234,12 @@ function PathCard({
 }) {
   const accent = FAMILY_ACCENT[structure.family] || 'var(--accent-sky)'
   const savingsLabel = formatSavings(structure.monthlySavings)
-  const showAttorneyLine =
-    structure.family === 'strategy_switch' || structure.family === 'blended'
+  const showAttorneyLine = structure.family === 'strategy_switch' || structure.family === 'blended'
   // Bullets are passed through unmodified. (Older builds split a long "Target
   // Rent: <arithmetic>" bullet across two lines for readability; that's no
   // longer needed since MathBullet strips the formula and renders only the
   // resulting amount, which fits on a single line.)
-  const bullets =
-    structure.bullets && structure.bullets.length > 0 ? structure.bullets : null
+  const bullets = structure.bullets && structure.bullets.length > 0 ? structure.bullets : null
 
   // Split "Saves $147/mo" into verb + amount so the dollar value carries
   // the visual weight on the ribbon while "SAVES" reads as a soft label.
@@ -294,18 +295,13 @@ function PathCard({
           <span style={{ color: accent }}>{`Option ${index + 1}`}</span>
           {savingsParts && (
             <>
-              <span
-                aria-hidden="true"
-                style={{ color: accent, fontWeight: 800, fontSize: 17 }}
-              >
+              <span aria-hidden="true" style={{ color: accent, fontWeight: 800, fontSize: 17 }}>
                 →
               </span>
               <span className="tabular-nums">
-                <span style={{ fontWeight: 500, opacity: 0.85 }}>
-                  {savingsParts.verb}
-                </span>
+                <span style={{ fontWeight: 500, opacity: 0.85 }}>{savingsParts.verb}</span>
                 {savingsParts.amount && (
-                  <span style={{ fontWeight: 700 }}>{' '}{savingsParts.amount}</span>
+                  <span style={{ fontWeight: 700 }}> {savingsParts.amount}</span>
                 )}
               </span>
             </>
@@ -393,7 +389,9 @@ function PathCard({
             </p>
           )}
           {showAttorneyLine && (
-            <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+            <p
+              style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-secondary)' }}
+            >
               Get this contract reviewed by a creative-finance attorney —{' '}
               <Link
                 href="/legal/find-attorney"
@@ -569,8 +567,7 @@ export function FourPathsPanel({
                 color: 'var(--text-heading)',
               }}
             >
-              <span style={{ color: 'var(--accent-sky-light)' }}>{lead}</span>{' '}
-              {tail}
+              <span style={{ color: 'var(--accent-sky-light)' }}>{lead}</span> {tail}
             </p>
           )
         })()}
@@ -579,7 +576,12 @@ export function FourPathsPanel({
             type="button"
             onClick={handleReset}
             className="cursor-pointer text-xs font-medium underline-offset-2 hover:underline"
-            style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
+            style={{
+              color: 'var(--accent-sky)',
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+            }}
           >
             Reset preferences ({sessionDismissed.length})
           </button>

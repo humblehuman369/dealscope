@@ -27,29 +27,29 @@ export interface BRRRRMetricsData {
   cashLeftInDeal: number
   cashOnCash: number
   equityCreated: number
-  
+
   // Purchase phase
   purchasePrice: number
   rehabCosts: number
   allInCost: number
   totalCashInvested: number
-  
+
   // Refinance phase
   arv: number
   refinanceLoanAmount: number
   cashOut: number
   refiLtvPct: number
-  
+
   // Cash flow (post-refinance)
   monthlyCashFlow: number
   annualCashFlow: number
   dscr: number
   capRate: number
-  
+
   // Holding costs
   totalHoldingCosts: number
   holdingMonths: number
-  
+
   // Score
   profitQualityScore: number
 }
@@ -79,28 +79,28 @@ export function buildBRRRRMetricsData(calc: {
 }): BRRRRMetricsData {
   // Calculate profit quality score
   let score = 0
-  
+
   // Cash recovery is key for BRRRR - getting 100%+ back is ideal
   if (calc.cashRecoveryPct >= 100) score += 30
   else if (calc.cashRecoveryPct >= 75) score += 20
   else if (calc.cashRecoveryPct >= 50) score += 10
-  
+
   // Cash-on-Cash after refinance
   if (calc.cashOnCash >= 15) score += 20
   else if (calc.cashOnCash >= 10) score += 10
-  
+
   // DSCR for debt safety
   if (calc.dscr >= 1.25) score += 20
   else if (calc.dscr >= 1.0) score += 10
-  
+
   // Equity created
   if (calc.equityCreated >= 50000) score += 15
   else if (calc.equityCreated >= 25000) score += 10
-  
+
   // Positive cash flow
   if (calc.monthlyCashFlow >= 300) score += 15
   else if (calc.monthlyCashFlow >= 100) score += 10
-  
+
   return {
     cashRecoveryPct: calc.cashRecoveryPct,
     cashLeftInDeal: calc.cashLeftInDeal,
@@ -142,53 +142,80 @@ export function BRRRRMetricsChart({ data }: BRRRRMetricsChartProps) {
   // Build verdict
   const verdict: VerdictData = useMemo(() => {
     const score = data.profitQualityScore
-    if (score >= 80) return { label: 'EXCELLENT', detail: '(Full cash recovery + strong cash flow)', status: 'good' }
-    if (score >= 60) return { label: 'GOOD', detail: '(Partial recovery, decent returns)', status: 'good' }
-    if (score >= 40) return { label: 'MODERATE', detail: '(Cash left in deal, watch margins)', status: 'warn' }
+    if (score >= 80)
+      return {
+        label: 'EXCELLENT',
+        detail: '(Full cash recovery + strong cash flow)',
+        status: 'good',
+      }
+    if (score >= 60)
+      return { label: 'GOOD', detail: '(Partial recovery, decent returns)', status: 'good' }
+    if (score >= 40)
+      return { label: 'MODERATE', detail: '(Cash left in deal, watch margins)', status: 'warn' }
     return { label: 'WEAK', detail: '(Poor recovery, thin cash flow)', status: 'bad' }
   }, [data.profitQualityScore])
 
   // Primary KPIs
   const kpis: KPI[] = [
-    { label: 'Cash Recovery %', value: fmt.percent(data.cashRecoveryPct), hint: 'Capital returned at refi' },
-    { label: 'Cash Left in Deal', value: fmt.currency(data.cashLeftInDeal), hint: 'Remaining investment' },
-    { label: 'Cash-on-Cash', value: fmt.percent(data.cashOnCash), hint: 'Annual return on cash left' },
+    {
+      label: 'Cash Recovery %',
+      value: fmt.percent(data.cashRecoveryPct),
+      hint: 'Capital returned at refi',
+    },
+    {
+      label: 'Cash Left in Deal',
+      value: fmt.currency(data.cashLeftInDeal),
+      hint: 'Remaining investment',
+    },
+    {
+      label: 'Cash-on-Cash',
+      value: fmt.percent(data.cashOnCash),
+      hint: 'Annual return on cash left',
+    },
     { label: 'Equity Created', value: fmt.currency(data.equityCreated), hint: 'ARV - All-in cost' },
   ]
 
   // Factors
-  const factors: Factor[] = useMemo(() => [
-    {
-      name: 'Cash Recovery',
-      desc: 'How much capital is recycled at refinance',
-      status: data.cashRecoveryPct >= 100 ? 'good' : data.cashRecoveryPct >= 75 ? 'warn' : 'bad',
-      tag: data.cashRecoveryPct >= 100 ? 'Full' : data.cashRecoveryPct >= 75 ? 'Partial' : 'Low',
-    },
-    {
-      name: 'Equity Capture',
-      desc: 'Forced appreciation through rehab and ARV lift',
-      status: data.equityCreated >= 50000 ? 'good' : data.equityCreated >= 25000 ? 'warn' : 'bad',
-      tag: data.equityCreated >= 50000 ? 'Strong' : data.equityCreated >= 25000 ? 'Moderate' : 'Thin',
-    },
-    {
-      name: 'Cash Flow Safety',
-      desc: 'DSCR and monthly cash flow after refinance',
-      status: data.dscr >= 1.25 ? 'good' : data.dscr >= 1.0 ? 'warn' : 'bad',
-      tag: data.dscr >= 1.25 ? 'Safe' : data.dscr >= 1.0 ? 'Watch' : 'Risk',
-    },
-    {
-      name: 'Holding Period',
-      desc: 'Time and cost of rehab phase before refinance',
-      status: data.holdingMonths <= 4 ? 'good' : data.holdingMonths <= 6 ? 'warn' : 'bad',
-      tag: data.holdingMonths <= 4 ? 'Quick' : data.holdingMonths <= 6 ? 'Standard' : 'Long',
-    },
-    {
-      name: 'Refi Terms',
-      desc: 'LTV and loan amount at refinance',
-      status: data.refiLtvPct <= 75 ? 'good' : data.refiLtvPct <= 80 ? 'warn' : 'bad',
-      tag: `${data.refiLtvPct.toFixed(0)}% LTV`,
-    },
-  ], [data])
+  const factors: Factor[] = useMemo(
+    () => [
+      {
+        name: 'Cash Recovery',
+        desc: 'How much capital is recycled at refinance',
+        status: data.cashRecoveryPct >= 100 ? 'good' : data.cashRecoveryPct >= 75 ? 'warn' : 'bad',
+        tag: data.cashRecoveryPct >= 100 ? 'Full' : data.cashRecoveryPct >= 75 ? 'Partial' : 'Low',
+      },
+      {
+        name: 'Equity Capture',
+        desc: 'Forced appreciation through rehab and ARV lift',
+        status: data.equityCreated >= 50000 ? 'good' : data.equityCreated >= 25000 ? 'warn' : 'bad',
+        tag:
+          data.equityCreated >= 50000
+            ? 'Strong'
+            : data.equityCreated >= 25000
+              ? 'Moderate'
+              : 'Thin',
+      },
+      {
+        name: 'Cash Flow Safety',
+        desc: 'DSCR and monthly cash flow after refinance',
+        status: data.dscr >= 1.25 ? 'good' : data.dscr >= 1.0 ? 'warn' : 'bad',
+        tag: data.dscr >= 1.25 ? 'Safe' : data.dscr >= 1.0 ? 'Watch' : 'Risk',
+      },
+      {
+        name: 'Holding Period',
+        desc: 'Time and cost of rehab phase before refinance',
+        status: data.holdingMonths <= 4 ? 'good' : data.holdingMonths <= 6 ? 'warn' : 'bad',
+        tag: data.holdingMonths <= 4 ? 'Quick' : data.holdingMonths <= 6 ? 'Standard' : 'Long',
+      },
+      {
+        name: 'Refi Terms',
+        desc: 'LTV and loan amount at refinance',
+        status: data.refiLtvPct <= 75 ? 'good' : data.refiLtvPct <= 80 ? 'warn' : 'bad',
+        tag: `${data.refiLtvPct.toFixed(0)}% LTV`,
+      },
+    ],
+    [data],
+  )
 
   // Meta items
   const leftMeta: MetaItem[] = [
@@ -214,9 +241,21 @@ export function BRRRRMetricsChart({ data }: BRRRRMetricsChartProps) {
 
   // Cash flow panel
   const cashFlowBars: BarItem[] = [
-    { label: 'Monthly Cash Flow', value: fmt.currency(data.monthlyCashFlow), meter: data.monthlyCashFlow > 0 ? 70 : 20 },
-    { label: 'Annual Cash Flow', value: fmt.currency(data.annualCashFlow), meter: data.annualCashFlow > 0 ? 72 : 25 },
-    { label: 'Cap Rate', value: fmt.percent(data.capRate), meter: Math.min(100, data.capRate * 10) },
+    {
+      label: 'Monthly Cash Flow',
+      value: fmt.currency(data.monthlyCashFlow),
+      meter: data.monthlyCashFlow > 0 ? 70 : 20,
+    },
+    {
+      label: 'Annual Cash Flow',
+      value: fmt.currency(data.annualCashFlow),
+      meter: data.annualCashFlow > 0 ? 72 : 25,
+    },
+    {
+      label: 'Cap Rate',
+      value: fmt.percent(data.capRate),
+      meter: Math.min(100, data.capRate * 10),
+    },
   ]
 
   // Right meta
@@ -232,54 +271,62 @@ export function BRRRRMetricsChart({ data }: BRRRRMetricsChartProps) {
       leftPanel={
         <>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-            <ProfitQualityRing 
-              score={data.profitQualityScore} 
-              subline="Weights: Cash recovery + equity capture + post-refi cash flow + DSCR." 
+            <ProfitQualityRing
+              score={data.profitQualityScore}
+              subline="Weights: Cash recovery + equity capture + post-refi cash flow + DSCR."
             />
             <VerdictBadge verdict={verdict} />
           </div>
-          
+
           <KPIGrid kpis={kpis} />
-          
+
           <div className="mt-6">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">What Investors Care About Most</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+              What Investors Care About Most
+            </div>
             <FactorList factors={factors} />
           </div>
-          
+
           <MetaGrid items={leftMeta} />
         </>
       }
       rightPanel={
         <>
           <div className="mb-6">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Purchase & Rehab Phase</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+              Purchase & Rehab Phase
+            </div>
             <div className="space-y-1">
               {purchaseRehab.map((bar) => (
                 <BarRow key={bar.label} {...bar} />
               ))}
             </div>
           </div>
-          
+
           <div className="mb-6">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Refinance Phase</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+              Refinance Phase
+            </div>
             <div className="space-y-1">
               {refinance.map((bar) => (
                 <BarRow key={bar.label} {...bar} />
               ))}
             </div>
           </div>
-          
+
           <BarPanel title="Post-Refinance Cash Flow" bars={cashFlowBars} />
-          
+
           <MetaGrid items={rightMeta} />
-          
+
           {data.cashRecoveryPct >= 100 && (
             <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="font-semibold text-emerald-700">Infinite Returns!</span>
               </div>
-              <p className="text-sm text-emerald-600 mt-1">100%+ cash recovery means infinite cash-on-cash return potential.</p>
+              <p className="text-sm text-emerald-600 mt-1">
+                100%+ cash recovery means infinite cash-on-cash return potential.
+              </p>
             </div>
           )}
         </>

@@ -1,41 +1,41 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { useSession, useLogout } from '@/hooks/useSession';
-import { useAuthModal } from '@/hooks/useAuthModal';
-import { readDealMakerOverrides } from '@/utils/addressIdentity';
-import styles from './StrategyPageLayout.module.css';
+import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
+import { useSession, useLogout } from '@/hooks/useSession'
+import { useAuthModal } from '@/hooks/useAuthModal'
+import { readDealMakerOverrides } from '@/utils/addressIdentity'
+import styles from './StrategyPageLayout.module.css'
 
 /* ───────────────── Property Context (from active analysis) ───────────────── */
 
 interface PropertyContext {
-  address?: string;
-  price?: number;
-  beds?: number;
-  baths?: number;
-  sqft?: number;
+  address?: string
+  price?: number
+  beds?: number
+  baths?: number
+  sqft?: number
 }
 
 function usePropertyContext(): PropertyContext | null {
-  const [ctx, setCtx] = useState<PropertyContext | null>(null);
+  const [ctx, setCtx] = useState<PropertyContext | null>(null)
   useEffect(() => {
     try {
-      const parsed = readDealMakerOverrides();
-      if (!parsed) return;
+      const parsed = readDealMakerOverrides()
+      if (!parsed) return
       const toNumber = (value: unknown): number | undefined => {
-        if (typeof value === 'number' && Number.isFinite(value)) return value;
+        if (typeof value === 'number' && Number.isFinite(value)) return value
         if (typeof value === 'string') {
-          const n = Number(value);
-          if (Number.isFinite(n)) return n;
+          const n = Number(value)
+          if (Number.isFinite(n)) return n
         }
-        return undefined;
-      };
+        return undefined
+      }
       const toStringValue = (value: unknown): string | undefined =>
-        typeof value === 'string' ? value : undefined;
+        typeof value === 'string' ? value : undefined
 
-      const price = toNumber(parsed.price);
+      const price = toNumber(parsed.price)
       // Require at minimum a price to consider this a valid context
       if (price != null && price > 0) {
         setCtx({
@@ -44,13 +44,13 @@ function usePropertyContext(): PropertyContext | null {
           beds: toNumber(parsed.beds),
           baths: toNumber(parsed.baths),
           sqft: toNumber(parsed.sqft),
-        });
+        })
       }
     } catch {
       // Ignore parse errors
     }
-  }, []);
-  return ctx;
+  }, [])
+  return ctx
 }
 
 function PropertyContextCard({
@@ -58,19 +58,21 @@ function PropertyContextCard({
   accentColor,
   ctx,
 }: {
-  strategyName: string;
-  accentColor: string;
-  ctx: PropertyContext;
+  strategyName: string
+  accentColor: string
+  ctx: PropertyContext
 }) {
-  const address = ctx.address || 'Your Property';
-  const price = ctx.price ? `$${ctx.price.toLocaleString()}` : '—';
+  const address = ctx.address || 'Your Property'
+  const price = ctx.price ? `$${ctx.price.toLocaleString()}` : '—'
   const details = [
     ctx.beds ? `${ctx.beds} bed` : null,
     ctx.baths ? `${ctx.baths} bath` : null,
     ctx.sqft ? `${ctx.sqft.toLocaleString()} sqft` : null,
-  ].filter(Boolean).join(' · ');
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
-  const addressEncoded = encodeURIComponent(address);
+  const addressEncoded = encodeURIComponent(address)
 
   return (
     <div
@@ -82,10 +84,26 @@ function PropertyContextCard({
         marginBottom: '1.5rem',
       }}
     >
-      <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: accentColor, margin: '0 0 0.75rem' }}>
+      <p
+        style={{
+          fontSize: '0.7rem',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.12em',
+          color: accentColor,
+          margin: '0 0 0.75rem',
+        }}
+      >
         Active Analysis
       </p>
-      <h3 style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-heading)', margin: '0 0 0.25rem' }}>
+      <h3
+        style={{
+          fontWeight: 700,
+          fontSize: '1.25rem',
+          color: 'var(--text-heading)',
+          margin: '0 0 0.25rem',
+        }}
+      >
         How {address.split(',')[0]} performs as a {strategyName}
       </h3>
       <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0 0 1.25rem' }}>
@@ -107,29 +125,39 @@ function PropertyContextCard({
         }}
       >
         Run Full Analysis
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+        <svg
+          width="16"
+          height="16"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        >
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
       </Link>
     </div>
-  );
+  )
 }
 
 /* ───────────────── Types ───────────────── */
 
 interface StrategyBenefit {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
+  icon: React.ReactNode
+  title: string
+  description: string
 }
 
 interface StrategyPageLayoutProps {
-  name: string;
-  tagline: string;
-  accentColor: string;
-  icon: React.ReactNode;
-  headline: string;
-  children: React.ReactNode;
-  benefits: StrategyBenefit[];
-  benefitsHeadline: string;
+  name: string
+  tagline: string
+  accentColor: string
+  icon: React.ReactNode
+  headline: string
+  children: React.ReactNode
+  benefits: StrategyBenefit[]
+  benefitsHeadline: string
 }
 
 /* ───────────────── Helper Components ───────────────── */
@@ -139,9 +167,9 @@ export function Callout({
   children,
   accentColor,
 }: {
-  title?: string;
-  children: React.ReactNode;
-  accentColor: string;
+  title?: string
+  children: React.ReactNode
+  accentColor: string
 }) {
   return (
     <div
@@ -169,7 +197,7 @@ export function Callout({
         {children}
       </div>
     </div>
-  );
+  )
 }
 
 export function Prose({ children }: { children: React.ReactNode }) {
@@ -184,7 +212,7 @@ export function Prose({ children }: { children: React.ReactNode }) {
     >
       {children}
     </p>
-  );
+  )
 }
 
 export function StepItem({
@@ -193,10 +221,10 @@ export function StepItem({
   description,
   accentColor,
 }: {
-  num: number;
-  title: string;
-  description: string;
-  accentColor: string;
+  num: number
+  title: string
+  description: string
+  accentColor: string
 }) {
   return (
     <div
@@ -238,12 +266,19 @@ export function StepItem({
         >
           {title}
         </h4>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem', margin: 0, lineHeight: 1.5 }}>
+        <p
+          style={{
+            color: 'var(--text-secondary)',
+            fontSize: '0.9375rem',
+            margin: 0,
+            lineHeight: 1.5,
+          }}
+        >
           {description}
         </p>
       </div>
     </div>
-  );
+  )
 }
 
 /* ───────────────── Main Layout ───────────────── */
@@ -258,10 +293,10 @@ export function StrategyPageLayout({
   benefits,
   benefitsHeadline,
 }: StrategyPageLayoutProps) {
-  const { user, isAuthenticated } = useSession();
-  const { openAuthModal } = useAuthModal();
-  const logoutMutation = useLogout();
-  const propertyCtx = usePropertyContext();
+  const { user, isAuthenticated } = useSession()
+  const { openAuthModal } = useAuthModal()
+  const logoutMutation = useLogout()
+  const propertyCtx = usePropertyContext()
 
   return (
     <div
@@ -436,7 +471,9 @@ export function StrategyPageLayout({
           >
             {name}
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.125rem', margin: 0 }}>{tagline}</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1.125rem', margin: 0 }}>
+            {tagline}
+          </p>
         </div>
       </div>
 
@@ -542,7 +579,14 @@ export function StrategyPageLayout({
                 >
                   {b.title}
                 </h4>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0, lineHeight: 1.5 }}>
+                <p
+                  style={{
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.875rem',
+                    margin: 0,
+                    lineHeight: 1.5,
+                  }}
+                >
                   {b.description}
                 </p>
               </div>
@@ -584,5 +628,5 @@ export function StrategyPageLayout({
         </div>
       </footer>
     </div>
-  );
+  )
 }
