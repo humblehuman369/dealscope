@@ -82,13 +82,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
   }
 
   return (
-    <div
-      className={`min-h-screen overflow-x-hidden transition-colors duration-300 ${
-        isDark
-          ? 'bg-[#07172e] text-[#e1e8ed]'
-          : 'bg-[var(--surface-base)] text-[var(--text-heading)]'
-      }`}
-    >
+    <div className="min-h-screen overflow-x-hidden transition-colors duration-300 bg-[var(--surface-base)] text-[var(--text-body)]">
       {/* Header — solid card surface in light so canvas tint starts below */}
       <header
         className={`relative z-10 w-full px-5 py-3 lg:px-12 lg:py-5 ${
@@ -387,10 +381,8 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
 
       {/* Bottom Nav (Mobile Style) */}
       <nav
-        className={`flex justify-around py-3 px-5 ${isDark ? 'bg-[#061324]' : 'bg-[var(--surface-card)]'}`}
-        style={{
-          borderTop: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(7,23,46,0.06)',
-        }}
+        className="flex justify-around py-3 px-5 bg-[var(--surface-card)]"
+        style={{ borderTop: '1px solid var(--border-default)' }}
       >
         <NavItem icon="🏠" label="Home" active isDark={isDark} />
         <NavItem icon="📊" label="Dashboard" isDark={isDark} />
@@ -400,9 +392,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
       </nav>
 
       {/* Footer */}
-      <footer
-        className={`py-6 text-center ${isDark ? 'bg-[#061324]' : 'bg-[var(--surface-card)]'}`}
-      >
+      <footer className="py-6 text-center bg-[var(--surface-card)]">
         <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-[var(--text-secondary)]'}`}>
           © 2026 DealGapIQ. All rights reserved.
         </p>

@@ -51,6 +51,9 @@
   --surface-elevated: #0c1220;
   --surface-input: #0c1220;
   --surface-overlay: rgba(0, 0, 0, 0.8);
+  /* Constant in both themes — used for video letterboxing and similar
+     cases where pure black is industry-standard regardless of UI theme. */
+  --surface-media-letterbox: #000000;
 
   --text-heading: #f1f5f9;
   --text-body: #cbd5e1;
