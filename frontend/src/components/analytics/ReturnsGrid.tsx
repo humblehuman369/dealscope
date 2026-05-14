@@ -7,10 +7,10 @@ import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 
 /**
  * ReturnsGrid Component
- * 
+ *
  * Displays a grid of return metrics at the IQ Buy Price.
  * Shows 4 key metrics in a 2x2 grid with a profitability badge.
- * 
+ *
  * Common metrics by strategy:
  * - LTR: Cash Flow, CoC, Cap Rate, DSCR
  * - STR: Cash Flow, CoC, Annual Revenue, Occupancy
@@ -25,10 +25,7 @@ interface ReturnsGridProps {
   data: ReturnsData
 }
 
-export function ReturnsGrid({
-  title = 'Returns at IQ Target',
-  data
-}: ReturnsGridProps) {
+export function ReturnsGrid({ title = 'Returns at IQ Target', data }: ReturnsGridProps) {
   return (
     <div className="border-2 border-teal dark:border-accent-500 rounded-2xl p-4 mb-4 bg-white dark:bg-transparent">
       {/* Header */}
@@ -83,9 +80,7 @@ interface MetricCardProps {
 function MetricCard({ metric }: MetricCardProps) {
   return (
     <div className="bg-gray-100 dark:bg-white/[0.03] rounded-xl p-3 text-center">
-      <div className="text-[1.2rem] font-bold text-green-500 mb-0.5">
-        {metric.value}
-      </div>
+      <div className="text-[1.2rem] font-bold text-green-500 mb-0.5">{metric.value}</div>
       <div className="text-[0.6rem] text-gray-500 dark:text-white/50 uppercase tracking-wide">
         {metric.label}
       </div>
@@ -100,9 +95,8 @@ export function createLTRReturns(
   monthlyCashFlow: number,
   cashOnCash: number,
   capRate: number,
-  dscr: number
+  dscr: number,
 ): ReturnsData {
-
   return {
     badge: 'PROFITABLE',
     badgeType: monthlyCashFlow > 0 ? 'profitable' : 'warning',
@@ -110,8 +104,8 @@ export function createLTRReturns(
       { value: formatCurrency(monthlyCashFlow), label: 'Monthly Cash Flow' },
       { value: `${(cashOnCash * 100).toFixed(1)}%`, label: 'Cash-on-Cash' },
       { value: `${(capRate * 100).toFixed(1)}%`, label: 'Cap Rate' },
-      { value: dscr.toFixed(2), label: 'Debt Ratio' }
-    ]
+      { value: dscr.toFixed(2), label: 'Debt Ratio' },
+    ],
   }
 }
 
@@ -122,9 +116,8 @@ export function createSTRReturns(
   monthlyCashFlow: number,
   cashOnCash: number,
   annualRevenue: number,
-  occupancy: number
+  occupancy: number,
 ): ReturnsData {
-
   return {
     badge: 'PROFITABLE',
     badgeType: monthlyCashFlow > 0 ? 'profitable' : 'warning',
@@ -132,8 +125,8 @@ export function createSTRReturns(
       { value: formatCurrency(monthlyCashFlow), label: 'Monthly Cash Flow' },
       { value: `${(cashOnCash * 100).toFixed(1)}%`, label: 'Cash-on-Cash' },
       { value: formatCurrency(annualRevenue), label: 'Annual Revenue' },
-      { value: `${Math.round(occupancy * 100)}%`, label: 'Occupancy' }
-    ]
+      { value: `${Math.round(occupancy * 100)}%`, label: 'Occupancy' },
+    ],
   }
 }
 
@@ -144,10 +137,8 @@ export function createBRRRRReturns(
   cashLeftInDeal: number,
   equityCreated: number,
   monthlyCashFlow: number,
-  isInfiniteCOC: boolean = false
+  isInfiniteCOC: boolean = false,
 ): ReturnsData {
-
-
   return {
     badge: isInfiniteCOC ? 'INFINITE CoC' : 'PROFITABLE',
     badgeType: isInfiniteCOC ? 'infinite' : 'profitable',
@@ -155,8 +146,8 @@ export function createBRRRRReturns(
       { value: formatCurrency(cashLeftInDeal), label: 'Cash Left in Deal' },
       { value: isInfiniteCOC ? '∞' : 'High', label: 'Cash-on-Cash' },
       { value: formatCompactCurrency(equityCreated), label: 'Equity Created' },
-      { value: formatCurrency(monthlyCashFlow), label: 'Monthly Cash Flow' }
-    ]
+      { value: formatCurrency(monthlyCashFlow), label: 'Monthly Cash Flow' },
+    ],
   }
 }
 
@@ -167,9 +158,8 @@ export function createWholesaleReturns(
   assignmentFee: number,
   roiOnEMD: number,
   cashAtRisk: number,
-  timelineDays: number
+  timelineDays: number,
 ): ReturnsData {
-
   return {
     badge: 'ASSIGNABLE',
     badgeType: 'assignable',
@@ -177,8 +167,8 @@ export function createWholesaleReturns(
       { value: formatCurrency(assignmentFee), label: 'Assignment Fee' },
       { value: `${Math.round(roiOnEMD)}%`, label: 'ROI on EMD' },
       { value: formatCurrency(cashAtRisk), label: 'Cash at Risk' },
-      { value: `${timelineDays} days`, label: 'Timeline' }
-    ]
+      { value: `${timelineDays} days`, label: 'Timeline' },
+    ],
   }
 }
 
@@ -189,26 +179,28 @@ export function createHouseHackReturns(
   effectiveHousingCost: number,
   monthlySavings: number,
   rentalIncome: number,
-  housingOffset: number
+  housingOffset: number,
 ): ReturnsData {
-
   const isFreeHousing = effectiveHousingCost <= 0
 
   return {
     badge: isFreeHousing ? 'FREE HOUSING' : 'REDUCED COST',
     badgeType: isFreeHousing ? 'infinite' : 'profitable',
     metrics: [
-      { value: formatCurrency(Math.abs(effectiveHousingCost)), label: isFreeHousing ? 'Monthly Profit' : 'Housing Cost' },
+      {
+        value: formatCurrency(Math.abs(effectiveHousingCost)),
+        label: isFreeHousing ? 'Monthly Profit' : 'Housing Cost',
+      },
       { value: formatCurrency(monthlySavings), label: 'Monthly Savings' },
       { value: formatCurrency(rentalIncome), label: 'Rental Income' },
-      { value: `${Math.round(housingOffset * 100)}%`, label: 'Housing Offset' }
-    ]
+      { value: `${Math.round(housingOffset * 100)}%`, label: 'Housing Offset' },
+    ],
   }
 }
 
 /**
  * ReturnsGridCompact Component
- * 
+ *
  * A single-row compact version showing key metrics inline.
  */
 
@@ -223,7 +215,9 @@ export function ReturnsGridCompact({ metrics }: ReturnsGridCompactProps) {
         <React.Fragment key={index}>
           <div className="text-center px-2">
             <div className="text-sm font-bold text-green-500">{metric.value}</div>
-            <div className="text-[0.55rem] text-gray-500 dark:text-white/50 uppercase">{metric.label}</div>
+            <div className="text-[0.55rem] text-gray-500 dark:text-white/50 uppercase">
+              {metric.label}
+            </div>
           </div>
           {index < Math.min(metrics.length, 4) - 1 && (
             <div className="w-px h-8 bg-gray-300 dark:bg-white/10" />

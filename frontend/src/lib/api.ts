@@ -353,9 +353,7 @@ export interface NeighborhoodListResponse {
 
 function getCsrfToken(): string | null {
   if (typeof document === 'undefined') return null
-  const match = document.cookie
-    .split('; ')
-    .find((c) => c.startsWith('csrf_token='))
+  const match = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
   return match ? match.split('=')[1] : null
 }
 
@@ -397,11 +395,9 @@ export const api = {
         body: data,
       }),
 
-    get: (propertyId: string) =>
-      apiRequest<PropertyResponse>(`/api/v1/properties/${propertyId}`),
+    get: (propertyId: string) => apiRequest<PropertyResponse>(`/api/v1/properties/${propertyId}`),
 
-    demo: () =>
-      apiRequest<PropertyResponse>('/api/v1/properties/demo/sample'),
+    demo: () => apiRequest<PropertyResponse>('/api/v1/properties/demo/sample'),
   },
 
   // Analytics endpoints
@@ -421,12 +417,10 @@ export const api = {
       },
     ) => {
       const searchParams = new URLSearchParams()
-      if (params?.purchase_price)
-        searchParams.set('purchase_price', String(params.purchase_price))
+      if (params?.purchase_price) searchParams.set('purchase_price', String(params.purchase_price))
       if (params?.down_payment_pct)
         searchParams.set('down_payment_pct', String(params.down_payment_pct))
-      if (params?.interest_rate)
-        searchParams.set('interest_rate', String(params.interest_rate))
+      if (params?.interest_rate) searchParams.set('interest_rate', String(params.interest_rate))
       return apiRequest<Record<string, unknown>>(
         `/api/v1/analytics/${propertyId}/quick?${searchParams}`,
       )
@@ -435,8 +429,7 @@ export const api = {
 
   // Assumptions
   assumptions: {
-    defaults: () =>
-      apiRequest<{ assumptions: AllAssumptions }>('/api/v1/assumptions/defaults'),
+    defaults: () => apiRequest<{ assumptions: AllAssumptions }>('/api/v1/assumptions/defaults'),
   },
 
   // Map Search
@@ -452,7 +445,9 @@ export const api = {
         body: data,
       }),
     neighborhoods: (state: string, city: string) =>
-      apiRequest<NeighborhoodListResponse>(`/api/v1/map/neighborhoods/${state}/${encodeURIComponent(city)}`),
+      apiRequest<NeighborhoodListResponse>(
+        `/api/v1/map/neighborhoods/${state}/${encodeURIComponent(city)}`,
+      ),
     neighborhoodOverview: (id: number, state: string) =>
       apiRequest<NeighborhoodOverview>(`/api/v1/map/neighborhood/${id}?state=${state}`),
   },
@@ -505,9 +500,7 @@ export const api = {
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(
-          `Failed to download proforma: ${response.status} - ${errorText}`,
-        )
+        throw new Error(`Failed to download proforma: ${response.status} - ${errorText}`)
       }
 
       return response.blob()
@@ -539,19 +532,13 @@ export const api = {
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(
-          `Failed to download proforma: ${response.status} - ${errorText}`,
-        )
+        throw new Error(`Failed to download proforma: ${response.status} - ${errorText}`)
       }
 
       return response.blob()
     },
 
-    getData: (params: {
-      propertyId: string
-      strategy?: string
-      holdPeriodYears?: number
-    }) => {
+    getData: (params: { propertyId: string; strategy?: string; holdPeriodYears?: number }) => {
       const searchParams = new URLSearchParams()
       if (params.strategy) searchParams.set('strategy', params.strategy)
       if (params.holdPeriodYears)
@@ -590,10 +577,9 @@ export const api = {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined) searchParams.set(key, String(value))
       })
-      return apiRequest<LOIDocument>(
-        `/api/v1/loi/quick-generate?${searchParams}`,
-        { method: 'POST' },
-      )
+      return apiRequest<LOIDocument>(`/api/v1/loi/quick-generate?${searchParams}`, {
+        method: 'POST',
+      })
     },
 
     templates: () =>
@@ -606,8 +592,7 @@ export const api = {
         }>
       >('/api/v1/loi/templates'),
 
-    preferences: () =>
-      apiRequest<Record<string, unknown>>('/api/v1/loi/preferences'),
+    preferences: () => apiRequest<Record<string, unknown>>('/api/v1/loi/preferences'),
 
     savePreferences: (prefs: Record<string, unknown>) =>
       apiRequest<Record<string, unknown>>('/api/v1/loi/preferences', {

@@ -53,7 +53,8 @@ export default function SessionManager() {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Active Sessions</h3>
       </div>
       <p className="text-sm text-gray-600 dark:text-gray-400">
-        These are the devices currently signed in to your account. Revoke any session you don&apos;t recognize.
+        These are the devices currently signed in to your account. Revoke any session you don&apos;t
+        recognize.
       </p>
 
       <div className="space-y-3">
@@ -82,7 +83,8 @@ export default function SessionManager() {
                     )}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {session.ip_address || 'Unknown IP'} &middot; Last active {timeAgo(session.last_active_at)}
+                    {session.ip_address || 'Unknown IP'} &middot; Last active{' '}
+                    {timeAgo(session.last_active_at)}
                   </p>
                 </div>
               </div>

@@ -3,7 +3,13 @@
  * Used by UI; not part of the API layer.
  */
 
-import type { SaleComp, RentComp, SubjectProperty, ARVEstimate, RentEstimate } from '@/lib/api/types'
+import type {
+  SaleComp,
+  RentComp,
+  SubjectProperty,
+  ARVEstimate,
+  RentEstimate,
+} from '@/lib/api/types'
 
 function getSaleUserMessage(status: number, _error: string): string {
   switch (status) {
@@ -46,7 +52,7 @@ export { getSaleUserMessage, getRentUserMessage }
  */
 export function calculateARVEstimate(
   selectedComps: SaleComp[],
-  subject: SubjectProperty
+  subject: SubjectProperty,
 ): ARVEstimate | null {
   if (selectedComps.length === 0) return null
 
@@ -69,8 +75,8 @@ export function calculateARVEstimate(
     Math.round(
       40 +
         selectedComps.length * 15 +
-        (selectedComps.reduce((s, c) => s + c.similarityScore, 0) / selectedComps.length) * 0.45
-    )
+        (selectedComps.reduce((s, c) => s + c.similarityScore, 0) / selectedComps.length) * 0.45,
+    ),
   )
 
   return {
@@ -89,7 +95,7 @@ export function calculateARVEstimate(
 export function calculateRentEstimate(
   selectedComps: RentComp[],
   subject: SubjectProperty,
-  propertyValue: number
+  propertyValue: number,
 ): RentEstimate | null {
   if (selectedComps.length === 0) return null
 
@@ -108,15 +114,14 @@ export function calculateRentEstimate(
   const high = Math.max(...adjustedRents)
   const annualGross = monthlyRent * 12
   const rentPerSqft = subject.sqft > 0 ? monthlyRent / subject.sqft : 0
-  const capRate =
-    propertyValue > 0 ? ((annualGross * 0.6) / propertyValue) * 100 : 0
+  const capRate = propertyValue > 0 ? ((annualGross * 0.6) / propertyValue) * 100 : 0
   const confidence = Math.min(
     100,
     Math.round(
       40 +
         selectedComps.length * 15 +
-        (selectedComps.reduce((s, c) => s + c.similarityScore, 0) / selectedComps.length) * 0.45
-    )
+        (selectedComps.reduce((s, c) => s + c.similarityScore, 0) / selectedComps.length) * 0.45,
+    ),
   )
 
   return {

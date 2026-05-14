@@ -1,11 +1,7 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import { Users, Home, BookOpen, CreditCard } from 'lucide-react';
-import {
-  StrategyPageLayout,
-  Callout,
-  Prose,
-} from '@/components/strategies/StrategyPageLayout';
+import React from 'react'
+import type { Metadata } from 'next'
+import { Users, Home, BookOpen, CreditCard } from 'lucide-react'
+import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
 
 export const metadata: Metadata = {
   title: 'House Hack Strategy — Live for Free with Multi-Unit & FHA | DealGapIQ',
@@ -22,12 +18,11 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'House Hack Strategy — Live for Free with Multi-Unit & FHA',
-    description:
-      'FHA/VA on 2-4 units, owner-occupant rules, and rent-offset math.',
+    description: 'FHA/VA on 2-4 units, owner-occupant rules, and rent-offset math.',
   },
-};
+}
 
-const ACCENT = 'var(--accent-sky)';
+const ACCENT = 'var(--accent-sky)'
 
 export default function HouseHackPage() {
   return (
@@ -57,17 +52,17 @@ export default function HouseHackPage() {
       ]}
     >
       <Prose>
-        <strong style={{ fontWeight: 600, color: '#F1F5F9' }}>House hacking</strong> is the
-        ultimate beginner strategy — your biggest expense (housing) becomes your biggest asset.
-        Buy a multi-unit property, live in one unit, and rent out the others to cover your mortgage.
+        <strong style={{ fontWeight: 600, color: '#F1F5F9' }}>House hacking</strong> is the ultimate
+        beginner strategy — your biggest expense (housing) becomes your biggest asset. Buy a
+        multi-unit property, live in one unit, and rent out the others to cover your mortgage.
       </Prose>
 
       <Callout title="Live for free" accentColor={ACCENT}>
         <p style={{ margin: 0 }}>
           You&apos;re essentially{' '}
           <strong style={{ fontWeight: 600, color: '#F1F5F9' }}>living for free</strong> while
-          building equity and learning the landlord business with minimal risk. It&apos;s the
-          single best way to start your investing journey.
+          building equity and learning the landlord business with minimal risk. It&apos;s the single
+          best way to start your investing journey.
         </p>
       </Callout>
 
@@ -77,5 +72,5 @@ export default function HouseHackPage() {
         loans. It&apos;s the lowest barrier to entry in real estate investing.
       </Prose>
     </StrategyPageLayout>
-  );
+  )
 }

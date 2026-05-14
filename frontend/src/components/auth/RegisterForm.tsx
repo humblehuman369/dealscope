@@ -7,7 +7,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 import { registerSchema, type RegisterFormData } from '@/lib/validations/auth'
-import { useRegister, SESSION_QUERY_KEY, setLastKnownUser, setLastTokenRefresh } from '@/hooks/useSession'
+import {
+  useRegister,
+  SESSION_QUERY_KEY,
+  setLastKnownUser,
+  setLastTokenRefresh,
+} from '@/hooks/useSession'
 import { setMemoryToken } from '@/lib/api-client'
 
 interface RegisterFormProps {
@@ -40,7 +45,12 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
   const queryClient = useQueryClient()
   const router = useRouter()
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' },
   })
@@ -110,7 +120,10 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {error && (
-        <div className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-900/20 rounded-xl" role="alert">
+        <div
+          className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-900/20 rounded-xl"
+          role="alert"
+        >
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {error}
         </div>
@@ -118,11 +131,18 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       {/* Full name */}
       <div>
-        <label htmlFor="reg-name" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
+        <label
+          htmlFor="reg-name"
+          className="block text-sm font-medium mb-1"
+          style={{ color: '#CBD5E1' }}
+        >
           Full Name
         </label>
         <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
+          <User
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: '#94A3B8' }}
+          />
           <input
             id="reg-name"
             type="text"
@@ -139,11 +159,18 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       {/* Email */}
       <div>
-        <label htmlFor="reg-email" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
+        <label
+          htmlFor="reg-email"
+          className="block text-sm font-medium mb-1"
+          style={{ color: '#CBD5E1' }}
+        >
           Email
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
+          <Mail
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: '#94A3B8' }}
+          />
           <input
             id="reg-email"
             type="email"
@@ -160,11 +187,18 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       {/* Password */}
       <div>
-        <label htmlFor="reg-password" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
+        <label
+          htmlFor="reg-password"
+          className="block text-sm font-medium mb-1"
+          style={{ color: '#CBD5E1' }}
+        >
           Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
+          <Lock
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: '#94A3B8' }}
+          />
           <input
             id="reg-password"
             type={showPassword ? 'text' : 'password'}
@@ -199,18 +233,27 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
                 />
               ))}
             </div>
-            <p className="text-xs" style={{ color: '#94A3B8' }}>Strength: {strength.label}</p>
+            <p className="text-xs" style={{ color: '#94A3B8' }}>
+              Strength: {strength.label}
+            </p>
           </div>
         )}
       </div>
 
       {/* Confirm password */}
       <div>
-        <label htmlFor="reg-confirm" className="block text-sm font-medium mb-1" style={{ color: '#CBD5E1' }}>
+        <label
+          htmlFor="reg-confirm"
+          className="block text-sm font-medium mb-1"
+          style={{ color: '#CBD5E1' }}
+        >
           Confirm Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
+          <Lock
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: '#94A3B8' }}
+          />
           <input
             id="reg-confirm"
             type={showPassword ? 'text' : 'password'}
@@ -222,7 +265,9 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
             aria-invalid={!!errors.confirmPassword}
           />
         </div>
-        {errors.confirmPassword && <p className="mt-1 text-xs text-red-400">{errors.confirmPassword.message}</p>}
+        {errors.confirmPassword && (
+          <p className="mt-1 text-xs text-red-400">{errors.confirmPassword.message}</p>
+        )}
       </div>
 
       {/* Submit */}
@@ -238,16 +283,38 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       <p className="text-xs text-center" style={{ color: '#64748B' }}>
         By creating an account, you agree to our{' '}
-        <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors" style={{ color: 'var(--accent-sky)' }}>Terms of Service</a>
-        {' '}and{' '}
-        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors" style={{ color: 'var(--accent-sky)' }}>Privacy Policy</a>.
+        <a
+          href="/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-white transition-colors"
+          style={{ color: 'var(--accent-sky)' }}
+        >
+          Terms of Service
+        </a>{' '}
+        and{' '}
+        <a
+          href="/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-white transition-colors"
+          style={{ color: 'var(--accent-sky)' }}
+        >
+          Privacy Policy
+        </a>
+        .
       </p>
 
       {/* Switch to login */}
       {onSwitchToLogin && (
         <p className="text-center text-sm" style={{ color: '#94A3B8' }}>
           Already have an account?{' '}
-          <button type="button" onClick={onSwitchToLogin} className="font-medium" style={{ color: 'var(--accent-sky)' }}>
+          <button
+            type="button"
+            onClick={onSwitchToLogin}
+            className="font-medium"
+            style={{ color: 'var(--accent-sky)' }}
+          >
             Sign in
           </button>
         </p>

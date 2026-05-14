@@ -8,7 +8,7 @@ import { ProGate } from '@/components/ProGate'
 interface DownloadReportButtonProps {
   propertyId: string
   propertyAddress?: string
-  savedPropertyId?: string  // If downloading from a saved property
+  savedPropertyId?: string // If downloading from a saved property
   variant?: 'primary' | 'secondary' | 'ghost'
   size?: 'sm' | 'md' | 'lg'
 }
@@ -29,7 +29,7 @@ export default function DownloadReportButton({
   const downloadReport = async (format: ReportFormat) => {
     setIsDownloading(format)
     setError(null)
-    
+
     try {
       // Build URL based on whether it's a saved property or cached property
       let url: string
@@ -38,32 +38,32 @@ export default function DownloadReportButton({
       } else {
         url = `${API_BASE_URL}/api/v1/reports/property/${propertyId}/${format}`
       }
-      
+
       const headers: Record<string, string> = {}
-      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      const csrfMatch = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
       if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
-      
+
       const response = await fetch(url, {
         headers,
         credentials: 'include',
       })
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.detail || `Failed to generate ${format.toUpperCase()} report`)
       }
-      
+
       // Get filename from Content-Disposition header or generate one
       const contentDisposition = response.headers.get('Content-Disposition')
       let filename = `DealGapIQ_Report.${format === 'excel' ? 'xlsx' : 'csv'}`
-      
+
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
         if (filenameMatch) {
           filename = filenameMatch[1]
         }
       }
-      
+
       // Download the file
       const blob = await response.blob()
       const downloadUrl = window.URL.createObjectURL(blob)
@@ -74,7 +74,7 @@ export default function DownloadReportButton({
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(downloadUrl)
-      
+
       setIsOpen(false)
     } catch (err) {
       console.error('Download failed:', err)
@@ -92,84 +92,81 @@ export default function DownloadReportButton({
 
   const variantClasses = {
     primary: 'bg-brand-500 hover:bg-brand-600 text-white',
-    secondary: 'bg-white dark:bg-navy-800 border border-neutral-200 dark:border-neutral-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-navy-700',
+    secondary:
+      'bg-white dark:bg-navy-800 border border-neutral-200 dark:border-neutral-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-navy-700',
     ghost: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-navy-700',
   }
 
   return (
     <ProGate feature="Export Reports" mode="inline">
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`inline-flex items-center font-medium rounded-lg transition-colors ${sizeClasses[size]} ${variantClasses[variant]}`}
-      >
-        <Download className={size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
-        <span>Download Report</span>
-        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
+      <div className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`inline-flex items-center font-medium rounded-lg transition-colors ${sizeClasses[size]} ${variantClasses[variant]}`}
+        >
+          <Download className={size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
+          <span>Download Report</span>
+          <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
 
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-10" 
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {/* Dropdown */}
-          <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-navy-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden z-20">
-            <div className="p-2">
-              <p className="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Export Format
-              </p>
-              
-              <button
-                onClick={() => downloadReport('excel')}
-                disabled={isDownloading !== null}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-navy-700 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isDownloading === 'excel' ? (
-                  <Loader2 className="w-5 h-5 text-green-600 animate-spin" />
-                ) : (
-                  <FileSpreadsheet className="w-5 h-5 text-green-600" />
-                )}
-                <div>
-                  <p className="font-medium text-navy-900 dark:text-white">Excel Workbook</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Full analysis with all strategies
-                  </p>
-                </div>
-              </button>
-              
-              <button
-                onClick={() => downloadReport('csv')}
-                disabled={isDownloading !== null || !!savedPropertyId}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-navy-700 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isDownloading === 'csv' ? (
-                  <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
-                ) : (
-                  <FileText className="w-5 h-5 text-blue-600" />
-                )}
-                <div>
-                  <p className="font-medium text-navy-900 dark:text-white">CSV Summary</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Quick metrics comparison
-                  </p>
-                </div>
-              </button>
-            </div>
-            
-            {error && (
-              <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border-t border-neutral-200 dark:border-neutral-700">
-                <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+
+            {/* Dropdown */}
+            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-navy-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden z-20">
+              <div className="p-2">
+                <p className="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Export Format
+                </p>
+
+                <button
+                  onClick={() => downloadReport('excel')}
+                  disabled={isDownloading !== null}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-navy-700 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isDownloading === 'excel' ? (
+                    <Loader2 className="w-5 h-5 text-green-600 animate-spin" />
+                  ) : (
+                    <FileSpreadsheet className="w-5 h-5 text-green-600" />
+                  )}
+                  <div>
+                    <p className="font-medium text-navy-900 dark:text-white">Excel Workbook</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Full analysis with all strategies
+                    </p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => downloadReport('csv')}
+                  disabled={isDownloading !== null || !!savedPropertyId}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-navy-700 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isDownloading === 'csv' ? (
+                    <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                  ) : (
+                    <FileText className="w-5 h-5 text-blue-600" />
+                  )}
+                  <div>
+                    <p className="font-medium text-navy-900 dark:text-white">CSV Summary</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Quick metrics comparison
+                    </p>
+                  </div>
+                </button>
               </div>
-            )}
-          </div>
-        </>
-      )}
-    </div>
+
+              {error && (
+                <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border-t border-neutral-200 dark:border-neutral-700">
+                  <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </ProGate>
   )
 }
-

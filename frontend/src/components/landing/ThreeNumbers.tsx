@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 const numbers = [
   {
@@ -16,22 +16,19 @@ const numbers = [
     title: 'Deal Gap',
     desc: 'The distance between the asking price and your Target Buy. Your built-in profit opportunity and your negotiation distance. The bigger the gap, the better the deal — but the harder the negotiation.',
   },
-] as const;
+] as const
 
 export function ThreeNumbers() {
   return (
     <section style={{ padding: '5rem 2rem', maxWidth: 1100, margin: '0 auto' }}>
       <div className="section-label">The Three Price Signals</div>
-      <div className="section-title">
-        Hours of analysis, reduced to three numbers.
-      </div>
+      <div className="section-title">Hours of analysis, reduced to three numbers.</div>
       <div className="section-subtitle">
         <strong>
           DealGap<span className="brand-iq">IQ</span>
         </strong>{' '}
-        reduces complex underwriting into three investor-grade price signals. In
-        seconds, you know where you break even, where you profit, and whether
-        the deal is realistic.
+        reduces complex underwriting into three investor-grade price signals. In seconds, you know
+        where you break even, where you profit, and whether the deal is realistic.
       </div>
       <div className="three-numbers">
         {numbers.map((n) => (
@@ -43,5 +40,5 @@ export function ThreeNumbers() {
         ))}
       </div>
     </section>
-  );
+  )
 }

@@ -82,7 +82,10 @@ describe('Theme Surface Contract', () => {
         }
       })
 
-      expect(violations, `Hardcoded dark backgrounds in ${relPath}:\n${violations.join('\n')}`).toHaveLength(0)
+      expect(
+        violations,
+        `Hardcoded dark backgrounds in ${relPath}:\n${violations.join('\n')}`,
+      ).toHaveLength(0)
     })
   })
 })

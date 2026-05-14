@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   description: 'Manage your DealGapIQ subscription and billing.',
 }
 
-export default function BillingLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function BillingLayout({ children }: { children: React.ReactNode }) {
   return children
 }

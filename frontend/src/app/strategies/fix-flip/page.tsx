@@ -1,11 +1,7 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import { Hammer, Zap, DollarSign } from 'lucide-react';
-import {
-  StrategyPageLayout,
-  Callout,
-  Prose,
-} from '@/components/strategies/StrategyPageLayout';
+import React from 'react'
+import type { Metadata } from 'next'
+import { Hammer, Zap, DollarSign } from 'lucide-react'
+import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
 
 export const metadata: Metadata = {
   title: 'Fix & Flip Strategy — How to Underwrite a Flip Deal | DealGapIQ',
@@ -22,12 +18,11 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Fix & Flip Strategy — How to Underwrite a Flip Deal',
-    description:
-      'MAO, ARV, the 70% rule, rehab budgets, and holding-cost math.',
+    description: 'MAO, ARV, the 70% rule, rehab budgets, and holding-cost math.',
   },
-};
+}
 
-const ACCENT = '#f87171';
+const ACCENT = '#f87171'
 
 export default function FixFlipPage() {
   return (
@@ -65,9 +60,11 @@ export default function FixFlipPage() {
       <Callout title="Profit potential" accentColor={ACCENT}>
         <p style={{ margin: 0 }}>
           A successful flip can net you{' '}
-          <strong style={{ fontWeight: 600, color: '#F1F5F9' }}>$30,000 - $100,000+ in profit</strong>.
-          The key is buying right, controlling rehab costs, and understanding your after-repair value
-          before you commit.
+          <strong style={{ fontWeight: 600, color: '#F1F5F9' }}>
+            $30,000 - $100,000+ in profit
+          </strong>
+          . The key is buying right, controlling rehab costs, and understanding your after-repair
+          value before you commit.
         </p>
       </Callout>
 
@@ -77,5 +74,5 @@ export default function FixFlipPage() {
         matters more here than in any other strategy. Know your numbers before you write the offer.
       </Prose>
     </StrategyPageLayout>
-  );
+  )
 }

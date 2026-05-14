@@ -41,12 +41,8 @@ export function SectionCard({
           )}
         </div>
       </button>
-      
-      {isOpen && (
-        <div className="section-content">
-          {children}
-        </div>
-      )}
+
+      {isOpen && <div className="section-content">{children}</div>}
     </div>
   )
 }
@@ -78,7 +74,9 @@ export function DataRow({
     isHighlight ? 'highlight' : '',
     hasSlider ? 'has-slider' : '',
     className,
-  ].filter(Boolean).join(' ')
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <div className={rowClasses}>
@@ -87,7 +85,7 @@ export function DataRow({
         {icon && <span className="icon">{icon}</span>}
         {label && <span>{label}</span>}
       </div>
-      
+
       {/* Value container - RIGHT-ALIGNED, takes remaining space */}
       <div className="data-value-container flex items-center justify-end flex-1 min-w-0 text-right ml-auto">
         {children}

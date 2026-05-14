@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
+import Link from 'next/link'
 
 export function CtaSection() {
   return (
@@ -13,7 +13,16 @@ export function CtaSection() {
       <p>Income Value. Target Buy. Deal Gap. See yours in 60 seconds &mdash; free.</p>
       <Link href="/register" className="cta-btn">
         Analyze Your First Property{' '}
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M5 12h14M12 5l7 7-7 7" />
         </svg>
       </Link>
@@ -33,5 +42,5 @@ export function CtaSection() {
         No credit card required to start &middot; <Link href="/pricing">Full pricing details</Link>
       </div>
     </div>
-  );
+  )
 }

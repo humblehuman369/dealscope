@@ -2,14 +2,21 @@
 
 /**
  * SliderInput Component
- * 
- * Reusable slider input with formatted value display, 
+ *
+ * Reusable slider input with formatted value display,
  * gradient fill track, and custom thumb styling.
  */
 
 import React from 'react'
 
-export type PopupSliderFormat = 'currency' | 'currency-year' | 'currency-month' | 'percent' | 'percent-int' | 'years' | 'days'
+export type PopupSliderFormat =
+  | 'currency'
+  | 'currency-year'
+  | 'currency-month'
+  | 'percent'
+  | 'percent-int'
+  | 'years'
+  | 'days'
 
 interface SliderInputProps {
   label: string
@@ -81,9 +88,7 @@ export function SliderInput({
       <div className="flex justify-between items-start mb-3">
         <div className="flex flex-col">
           <span className="text-sm font-medium text-[#F1F5F9]">{label}</span>
-          {sublabel && (
-            <span className="text-[11px] text-[#64748B] mt-0.5">{sublabel}</span>
-          )}
+          {sublabel && <span className="text-[11px] text-[#64748B] mt-0.5">{sublabel}</span>}
         </div>
         <span className="text-lg font-bold text-[#38bdf8] tabular-nums">
           {formatValue(value, format)}
@@ -122,7 +127,7 @@ export function SliderInput({
             [&::-moz-range-thumb]:shadow-[0_0_8px_rgba(255,255,255,0.25)]
             [&::-moz-range-thumb]:cursor-pointer"
           style={{
-            background: `linear-gradient(to right, var(--accent-sky) 0%, var(--accent-sky) ${fillPercent}%, rgba(255,255,255,0.08) ${fillPercent}%, rgba(255,255,255,0.08) 100%)`
+            background: `linear-gradient(to right, var(--accent-sky) 0%, var(--accent-sky) ${fillPercent}%, rgba(255,255,255,0.08) ${fillPercent}%, rgba(255,255,255,0.08) 100%)`,
           }}
         />
       </div>

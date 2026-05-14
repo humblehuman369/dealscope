@@ -13,8 +13,8 @@ export function PurchaseRehabSection() {
   // CRITICAL: Only use property_data_snapshot.listPrice if it's a valid positive number
   // Never fall back to assumptions.purchasePrice as that creates a feedback loop
   const snapshotPrice = propertyData?.property_data_snapshot?.listPrice
-  const originalPrice = (snapshotPrice && snapshotPrice > 0) ? snapshotPrice : 500000
-  
+  const originalPrice = snapshotPrice && snapshotPrice > 0 ? snapshotPrice : 500000
+
   // Fixed ranges based on original price - won't change as slider moves
   const purchasePriceMin = Math.max(50000, Math.round(originalPrice * 0.5))
   const purchasePriceMax = Math.round(originalPrice * 1.5)
@@ -33,12 +33,12 @@ export function PurchaseRehabSection() {
           showSlider={true}
         />
       </DataRow>
-      
+
       {/* Amount Financed - Read-only calculated */}
       <DataRow label="Amount Financed">
         <DisplayField value={derived.loanAmount} format="currency" />
       </DataRow>
-      
+
       {/* Down Payment % - Editable percentage with slider */}
       <DataRow label="% Down Payment" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
@@ -51,12 +51,12 @@ export function PurchaseRehabSection() {
           showSlider={true}
         />
       </DataRow>
-      
+
       {/* Down Payment $ - Read-only calculated dollar amount */}
       <DataRow label="$ Down Payment" icon={<DollarSign className="w-4 h-4" />}>
         <DisplayField value={derived.downPayment} format="currency" />
       </DataRow>
-      
+
       {/* Purchase Costs - Editable with slider */}
       <DataRow label="Purchase Costs" icon={<FileText className="w-4 h-4" />} hasSlider>
         <EditableField
@@ -69,7 +69,7 @@ export function PurchaseRehabSection() {
           showSlider={true}
         />
       </DataRow>
-      
+
       {/* Rehab Costs - Editable with slider */}
       <DataRow label="Rehab Costs" icon={<Wrench className="w-4 h-4" />} hasSlider>
         <EditableField
@@ -82,13 +82,10 @@ export function PurchaseRehabSection() {
           showSlider={true}
         />
       </DataRow>
-      
+
       {/* Total Cash Needed - Summary total */}
       <DataRow label="Total Cash Needed" isTotal>
-        <DisplayField 
-          value={derived.totalCashNeeded} 
-          format="currency" 
-        />
+        <DisplayField value={derived.totalCashNeeded} format="currency" />
       </DataRow>
     </SectionCard>
   )

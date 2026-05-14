@@ -14,12 +14,8 @@ export function GoalsStep({ formData, updateFormData, selectBudgetRange }: Goals
   return (
     <div className="animate-fade-in">
       <div className="text-center mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-          Investment Goals
-        </h1>
-        <p className="text-gray-400 text-lg">
-          Set your budget range and return targets.
-        </p>
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">Investment Goals</h1>
+        <p className="text-gray-400 text-lg">Set your budget range and return targets.</p>
       </div>
 
       {/* Budget Range */}
@@ -29,8 +25,10 @@ export function GoalsStep({ formData, updateFormData, selectBudgetRange }: Goals
           Investment Budget per Deal
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {BUDGET_RANGES.map(range => {
-            const isSelected = formData.investment_budget_min === range.min && formData.investment_budget_max === range.max
+          {BUDGET_RANGES.map((range) => {
+            const isSelected =
+              formData.investment_budget_min === range.min &&
+              formData.investment_budget_max === range.max
 
             return (
               <button
@@ -65,7 +63,9 @@ export function GoalsStep({ formData, updateFormData, selectBudgetRange }: Goals
               min="0"
               max="50"
               value={(formData.target_cash_on_cash * 100).toFixed(0)}
-              onChange={(e) => updateFormData('target_cash_on_cash', parseFloat(e.target.value) / 100)}
+              onChange={(e) =>
+                updateFormData('target_cash_on_cash', parseFloat(e.target.value) / 100)
+              }
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">%</span>
@@ -100,7 +100,7 @@ export function GoalsStep({ formData, updateFormData, selectBudgetRange }: Goals
           Risk Tolerance
         </label>
         <div className="grid grid-cols-3 gap-3">
-          {RISK_LEVELS.map(level => (
+          {RISK_LEVELS.map((level) => (
             <button
               key={level.value}
               onClick={() => updateFormData('risk_tolerance', level.value)}
@@ -110,7 +110,9 @@ export function GoalsStep({ formData, updateFormData, selectBudgetRange }: Goals
                   : 'border-white/10 bg-white/5 hover:border-white/20'
               }`}
             >
-              <p className={`font-semibold ${formData.risk_tolerance === level.value ? 'text-white' : 'text-gray-300'}`}>
+              <p
+                className={`font-semibold ${formData.risk_tolerance === level.value ? 'text-white' : 'text-gray-300'}`}
+              >
                 {level.label}
               </p>
               <p className="text-xs text-gray-400 mt-1">{level.desc}</p>

@@ -33,9 +33,10 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
     },
     {
       label: 'Est. Rent',
-      value: (property.rentalIqEstimate ?? property.rentZestimate)
-        ? `${formatCurrency(property.rentalIqEstimate ?? property.rentZestimate)}/mo`
-        : 'N/A',
+      value:
+        (property.rentalIqEstimate ?? property.rentZestimate)
+          ? `${formatCurrency(property.rentalIqEstimate ?? property.rentZestimate)}/mo`
+          : 'N/A',
       highlight: true,
     },
     {
@@ -74,11 +75,7 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
           style={{ background: 'var(--border-subtle)' }}
         >
           {facts.map((fact, i) => (
-            <div
-              key={i}
-              className="px-3 py-2.5"
-              style={{ background: 'var(--surface-base)' }}
-            >
+            <div key={i} className="px-3 py-2.5" style={{ background: 'var(--surface-base)' }}>
               <div
                 className="text-[10px] font-bold uppercase tracking-[0.06em] mb-1"
                 style={{ color: 'var(--text-label)' }}

@@ -45,7 +45,10 @@ export function PathButton({
   const label = `Option ${index + 1}`
   const subtitle = structure.familyLabel || 'Strategy'
   const headline = structure.headline || ''
-  const isDisabled = disabled || !structure.preLoadedRecord || Object.keys(structure.preLoadedRecord ?? {}).length === 0
+  const isDisabled =
+    disabled ||
+    !structure.preLoadedRecord ||
+    Object.keys(structure.preLoadedRecord ?? {}).length === 0
 
   const baseStyle: CSSProperties = {
     // Active state mirrors the worksheet SliderRow's path-highlight glow:
@@ -78,10 +81,7 @@ export function PathButton({
       title={isDisabled ? 'No worksheet adjustments for this path' : headline || subtitle}
     >
       <div className="flex items-center justify-between gap-2 min-w-0">
-        <span
-          className="text-[11px] font-bold uppercase tracking-wider"
-          style={{ color: accent }}
-        >
+        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: accent }}>
           {label}
         </span>
         {active && (

@@ -153,8 +153,7 @@ export default function HelpCenterPage() {
           </Link>
           <h1 className="text-3xl font-bold text-white mt-6 mb-2">Help Center</h1>
           <p className="text-slate-400">
-            Find answers to common questions about DealGapIQ. Can&apos;t find
-            what you need?{' '}
+            Find answers to common questions about DealGapIQ. Can&apos;t find what you need?{' '}
             <a
               href="mailto:support@dealgapiq.com"
               className="text-sky-400 hover:text-sky-300 underline"
@@ -195,9 +194,7 @@ export default function HelpCenterPage() {
                       </svg>
                     </summary>
                     <div className="px-5 pb-5 pt-0">
-                      <p className="text-[14px] leading-relaxed text-slate-400">
-                        {faq.answer}
-                      </p>
+                      <p className="text-[14px] leading-relaxed text-slate-400">{faq.answer}</p>
                     </div>
                   </details>
                 ))}

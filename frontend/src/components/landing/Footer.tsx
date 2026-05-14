@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
+import React from 'react'
+import Link from 'next/link'
 
 const footerLinks = {
   product: [
@@ -19,7 +19,7 @@ const footerLinks = {
     { label: 'Help Center', href: '#' },
     { label: 'Documentation', href: '#' },
   ],
-};
+}
 
 export function Footer() {
   return (
@@ -35,7 +35,8 @@ export function Footer() {
               <span className="logo-subtext">by DealGapIQ</span>
             </Link>
             <p className="footer-tagline">
-              Know exactly what to offer in 60 seconds. Price<span className="iq">IQ</span> gives you the three numbers that define every deal.
+              Know exactly what to offer in 60 seconds. Price<span className="iq">IQ</span> gives
+              you the three numbers that define every deal.
             </p>
           </div>
 
@@ -85,5 +86,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  );
+  )
 }

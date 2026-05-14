@@ -1,7 +1,18 @@
 'use client'
 
 import React from 'react'
-import { TrendingUp, TrendingDown, Minus, ThermometerSun, ThermometerSnowflake, Thermometer, Clock, Home, ArrowDown, ArrowUp } from 'lucide-react'
+import {
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  ThermometerSun,
+  ThermometerSnowflake,
+  Thermometer,
+  Clock,
+  Home,
+  ArrowDown,
+  ArrowUp,
+} from 'lucide-react'
 
 export type MarketTemperature = 'hot' | 'warm' | 'cold'
 
@@ -26,7 +37,7 @@ interface MarketTemperatureIndicatorProps {
 
 /**
  * MarketTemperatureIndicator - Visual indicator of buyer/seller market conditions
- * 
+ *
  * Shows:
  * - Hot market (seller's market) - Red/orange, hard to negotiate
  * - Warm market (balanced) - Yellow, some negotiation room
@@ -35,19 +46,19 @@ interface MarketTemperatureIndicatorProps {
 export function MarketTemperatureIndicator({
   stats,
   className = '',
-  compact = false
+  compact = false,
 }: MarketTemperatureIndicatorProps) {
   if (!stats) {
     return null
   }
 
   const temperature = stats.marketTemperature || 'warm'
-  
+
   // Temperature configuration
   const tempConfig = {
     hot: {
       label: "Seller's Market",
-      description: "Properties sell quickly - limited negotiation room",
+      description: 'Properties sell quickly - limited negotiation room',
       icon: ThermometerSun,
       bgColor: 'bg-gradient-to-r from-red-500 to-orange-500',
       textColor: 'text-white',
@@ -58,7 +69,7 @@ export function MarketTemperatureIndicator({
     },
     warm: {
       label: 'Balanced Market',
-      description: "Normal market conditions - moderate negotiation possible",
+      description: 'Normal market conditions - moderate negotiation possible',
       icon: Thermometer,
       bgColor: 'bg-gradient-to-r from-yellow-500 to-amber-500',
       textColor: 'text-gray-900',
@@ -69,7 +80,7 @@ export function MarketTemperatureIndicator({
     },
     cold: {
       label: "Buyer's Market",
-      description: "High inventory, longer days on market - strong negotiation leverage",
+      description: 'High inventory, longer days on market - strong negotiation leverage',
       icon: ThermometerSnowflake,
       bgColor: 'bg-gradient-to-r from-blue-500 to-cyan-500',
       textColor: 'text-white',
@@ -79,14 +90,16 @@ export function MarketTemperatureIndicator({
       discountRange: '7-15%',
     },
   }
-  
+
   const config = tempConfig[temperature]
   const TempIcon = config.icon
 
   // Compact version - just shows badge
   if (compact) {
     return (
-      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full ${config.bgColor} ${config.textColor} ${className}`}>
+      <div
+        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full ${config.bgColor} ${config.textColor} ${className}`}
+      >
         <TempIcon className="w-3.5 h-3.5" />
         <span className="text-xs font-semibold">{config.label}</span>
       </div>
@@ -95,8 +108,8 @@ export function MarketTemperatureIndicator({
 
   // Format numbers
   const formatNumber = (n?: number) => n?.toLocaleString() ?? '-'
-  const formatPercent = (n?: number) => n ? `${(n * 100).toFixed(1)}%` : '-'
-  const formatCurrency = (n?: number) => n ? `$${n.toLocaleString()}` : '-'
+  const formatPercent = (n?: number) => (n ? `${(n * 100).toFixed(1)}%` : '-')
+  const formatCurrency = (n?: number) => (n ? `$${n.toLocaleString()}` : '-')
 
   return (
     <div className={`rounded-xl border ${config.borderColor} overflow-hidden ${className}`}>
@@ -114,7 +127,7 @@ export function MarketTemperatureIndicator({
         </div>
         <p className="text-sm opacity-90 mt-1">{config.description}</p>
       </div>
-      
+
       {/* Stats Grid */}
       <div className="bg-white dark:bg-gray-900 p-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -129,7 +142,7 @@ export function MarketTemperatureIndicator({
             </div>
             <div className="text-xs text-gray-500">days</div>
           </div>
-          
+
           {/* Total Listings */}
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 text-gray-500 dark:text-gray-400 text-xs mb-1">
@@ -141,7 +154,7 @@ export function MarketTemperatureIndicator({
             </div>
             <div className="text-xs text-gray-500">listings</div>
           </div>
-          
+
           {/* New Listings */}
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 text-gray-500 dark:text-gray-400 text-xs mb-1">
@@ -153,7 +166,7 @@ export function MarketTemperatureIndicator({
             </div>
             <div className="text-xs text-gray-500">this month</div>
           </div>
-          
+
           {/* Absorption Rate */}
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 text-gray-500 dark:text-gray-400 text-xs mb-1">
@@ -170,7 +183,7 @@ export function MarketTemperatureIndicator({
             <div className="text-xs text-gray-500">rate</div>
           </div>
         </div>
-        
+
         {/* Negotiation Insight */}
         <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <div className="flex items-start gap-2">
@@ -180,14 +193,16 @@ export function MarketTemperatureIndicator({
                 Expected Discount Range: {config.discountRange}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {temperature === 'hot' && 'Expect to pay close to asking price. Focus on speed and clean offers.'}
+                {temperature === 'hot' &&
+                  'Expect to pay close to asking price. Focus on speed and clean offers.'}
                 {temperature === 'warm' && 'Room for negotiation exists. Start 5-7% below asking.'}
-                {temperature === 'cold' && 'Significant negotiation leverage. Consider starting 10-15% below asking.'}
+                {temperature === 'cold' &&
+                  'Significant negotiation leverage. Consider starting 10-15% below asking.'}
               </div>
             </div>
           </div>
         </div>
-        
+
         {/* Days on Market Range */}
         {(stats.minDaysOnMarket !== undefined || stats.maxDaysOnMarket !== undefined) && (
           <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
@@ -209,24 +224,41 @@ export function MarketTemperatureIndicator({
 /**
  * Compact badge version for use in property cards
  */
-export function MarketTemperatureBadge({ 
+export function MarketTemperatureBadge({
   temperature = 'warm',
-  className = '' 
-}: { 
+  className = '',
+}: {
   temperature?: MarketTemperature
-  className?: string 
+  className?: string
 }) {
   const config = {
-    hot: { label: 'Hot Market', bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', icon: TrendingUp },
-    warm: { label: 'Balanced', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', icon: Minus },
-    cold: { label: "Buyer's Market", bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', icon: TrendingDown },
+    hot: {
+      label: 'Hot Market',
+      bg: 'bg-red-100 dark:bg-red-900/30',
+      text: 'text-red-700 dark:text-red-400',
+      icon: TrendingUp,
+    },
+    warm: {
+      label: 'Balanced',
+      bg: 'bg-yellow-100 dark:bg-yellow-900/30',
+      text: 'text-yellow-700 dark:text-yellow-400',
+      icon: Minus,
+    },
+    cold: {
+      label: "Buyer's Market",
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      text: 'text-blue-700 dark:text-blue-400',
+      icon: TrendingDown,
+    },
   }
-  
+
   const c = config[temperature]
   const Icon = c.icon
-  
+
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${c.bg} ${c.text} ${className}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${c.bg} ${c.text} ${className}`}
+    >
       <Icon className="w-3 h-3" />
       {c.label}
     </span>
@@ -236,32 +268,34 @@ export function MarketTemperatureBadge({
 /**
  * Mini indicator for tight spaces
  */
-export function MarketTemperatureDot({ 
+export function MarketTemperatureDot({
   temperature = 'warm',
   showLabel = true,
-  className = '' 
-}: { 
+  className = '',
+}: {
   temperature?: MarketTemperature
   showLabel?: boolean
-  className?: string 
+  className?: string
 }) {
   const colors = {
     hot: 'bg-red-500',
     warm: 'bg-yellow-500',
     cold: 'bg-blue-500',
   }
-  
+
   const labels = {
     hot: "Seller's",
     warm: 'Balanced',
     cold: "Buyer's",
   }
-  
+
   return (
     <span className={`inline-flex items-center gap-1.5 ${className}`}>
       <span className={`w-2 h-2 rounded-full ${colors[temperature]}`} />
       {showLabel && (
-        <span className="text-xs text-gray-500 dark:text-gray-400">{labels[temperature]} Market</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          {labels[temperature]} Market
+        </span>
       )}
     </span>
   )

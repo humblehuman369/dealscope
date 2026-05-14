@@ -16,8 +16,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Discovery — Instant Deal Score for Any Property',
-    description:
-      'Score any property in under 60 seconds across six investment strategies.',
+    description: 'Score any property in under 60 seconds across six investment strategies.',
   },
 }
 
@@ -37,11 +36,7 @@ const DISCOVERY_JSONLD = {
   },
 }
 
-export default function DiscoveryLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function DiscoveryLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <script

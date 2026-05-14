@@ -20,9 +20,18 @@ import {
 import { DataBoundary } from '@/components/ui/DataBoundary'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import {
-  Bookmark, Search, MapPin, Building2, Clock, Trash2,
-  TrendingUp, Star, Eye,
-  ChevronRight, BarChart3, ChevronLeft,
+  Bookmark,
+  Search,
+  MapPin,
+  Building2,
+  Clock,
+  Trash2,
+  TrendingUp,
+  Star,
+  Eye,
+  ChevronRight,
+  BarChart3,
+  ChevronLeft,
 } from 'lucide-react'
 import type { PropertyStatus, SavedPropertySummary } from '@/types/savedProperty'
 import {
@@ -104,7 +113,9 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
                 <Bookmark className="w-5 h-5 text-[var(--accent-sky)]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{totalSaved}</p>
+                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">
+                  {totalSaved}
+                </p>
                 <p className="text-xs text-[var(--text-label)] font-medium">Total Saved</p>
               </div>
             </div>
@@ -116,7 +127,9 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
                 <Eye className="w-5 h-5 text-[var(--accent-sky)]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{statusCounts.prospecting || 0}</p>
+                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">
+                  {statusCounts.prospecting || 0}
+                </p>
                 <p className="text-xs text-[var(--text-label)] font-medium">Prospecting</p>
               </div>
             </div>
@@ -128,7 +141,9 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
                 <BarChart3 className="w-5 h-5 text-[var(--status-warning)]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{statusCounts.negotiating || 0}</p>
+                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">
+                  {statusCounts.negotiating || 0}
+                </p>
                 <p className="text-xs text-[var(--text-label)] font-medium">Negotiating</p>
               </div>
             </div>
@@ -140,7 +155,9 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
                 <TrendingUp className="w-5 h-5 text-[var(--status-positive)]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{statusCounts.owned || 0}</p>
+                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">
+                  {statusCounts.owned || 0}
+                </p>
                 <p className="text-xs text-[var(--text-label)] font-medium">Owned</p>
               </div>
             </div>
@@ -161,7 +178,16 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
         >
           All
         </button>
-        {(['prospecting', 'pursuing', 'negotiating', 'under_contract', 'owned', 'passed'] as PropertyStatus[]).map(s => {
+        {(
+          [
+            'prospecting',
+            'pursuing',
+            'negotiating',
+            'under_contract',
+            'owned',
+            'passed',
+          ] as PropertyStatus[]
+        ).map((s) => {
           const config = STATUS_CONFIG[s]
           const count = statusCounts[s] || 0
           if (count === 0 && filterStatus !== s) return null
@@ -240,7 +266,9 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
                           {(property.address_city || property.address_state) && (
                             <p className="text-sm text-[var(--text-secondary)] flex items-center gap-1 mt-0.5">
                               <MapPin className="w-3 h-3 flex-shrink-0" />
-                              {[property.address_city, property.address_state].filter(Boolean).join(', ')}
+                              {[property.address_city, property.address_state]
+                                .filter(Boolean)
+                                .join(', ')}
                               {property.address_zip && ` ${property.address_zip}`}
                             </p>
                           )}
@@ -248,7 +276,9 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
                       </div>
 
                       <div className="mt-3 ml-11 flex flex-wrap items-center gap-3 text-sm">
-                        <span className={`px-2 py-0.5 rounded text-xs font-semibold ${statusConfig.bg} ${statusConfig.color}`}>
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs font-semibold ${statusConfig.bg} ${statusConfig.color}`}
+                        >
                           {statusConfig.label}
                         </span>
 
@@ -259,17 +289,23 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
                           </span>
                         )}
 
-                        {property.best_cash_flow !== undefined && property.best_cash_flow !== null && (
-                          <span className={`font-semibold tabular-nums ${property.best_cash_flow >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
-                            {formatCurrency(property.best_cash_flow)}/yr
-                          </span>
-                        )}
+                        {property.best_cash_flow !== undefined &&
+                          property.best_cash_flow !== null && (
+                            <span
+                              className={`font-semibold tabular-nums ${property.best_cash_flow >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}
+                            >
+                              {formatCurrency(property.best_cash_flow)}/yr
+                            </span>
+                          )}
 
-                        {property.best_coc_return !== undefined && property.best_coc_return !== null && (
-                          <span className={`font-semibold tabular-nums ${property.best_coc_return >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}>
-                            {formatPercent(property.best_coc_return)} CoC
-                          </span>
-                        )}
+                        {property.best_coc_return !== undefined &&
+                          property.best_coc_return !== null && (
+                            <span
+                              className={`font-semibold tabular-nums ${property.best_coc_return >= 0 ? 'text-[var(--status-positive)]' : 'text-[var(--status-negative)]'}`}
+                            >
+                              {formatPercent(property.best_coc_return)} CoC
+                            </span>
+                          )}
                       </div>
 
                       <div className="mt-2 ml-11 flex items-center gap-2">
@@ -288,7 +324,9 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
                               </span>
                             ))}
                             {property.tags.length > 3 && (
-                              <span className="text-xs text-[var(--text-label)] tabular-nums">+{property.tags.length - 3}</span>
+                              <span className="text-xs text-[var(--text-label)] tabular-nums">
+                                +{property.tags.length - 3}
+                              </span>
                             )}
                           </div>
                         )}
@@ -325,7 +363,7 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
             </p>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setPage(p => Math.max(0, p - 1))}
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={!hasPrevPage}
                 className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[var(--surface-card)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:text-[var(--text-body)] hover:border-[var(--border-strong)]"
                 aria-label="Previous page"
@@ -336,7 +374,7 @@ export function SavedPropertiesPanel({ onOpenSearchModal }: SavedPropertiesPanel
                 Page {page + 1} of {totalPages}
               </span>
               <button
-                onClick={() => setPage(p => p + 1)}
+                onClick={() => setPage((p) => p + 1)}
                 disabled={!hasNextPage}
                 className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[var(--surface-card)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:text-[var(--text-body)] hover:border-[var(--border-strong)]"
                 aria-label="Next page"

@@ -75,14 +75,14 @@ export interface ListingInfo {
 
 /**
  * Calculate Deal Score based on Investment Opportunity
- * 
+ *
  * Enhanced scoring considers multiple factors when listing info is provided:
  * - Deal Gap (50% weight): Discount needed from list to breakeven
  * - Availability (30% weight): Seller motivation based on listing status
  * - Days on Market (20% weight): Negotiation leverage context
- * 
+ *
  * Without listing info, uses Deal Gap only (legacy behavior).
- * 
+ *
  * Thresholds (with full scoring):
  * - 85-100 = Strong Opportunity (A+)
  * - 70-84 = Good Opportunity (A)
@@ -95,36 +95,32 @@ export function calculateDealScore(
   incomeValue: number,
   listPrice: number,
   metrics?: DealMetrics,
-  listingInfo?: ListingInfo
+  listingInfo?: ListingInfo,
 ): DealScoreBreakdown {
   // If listing info is provided, use enhanced scoring
   if (listingInfo) {
-    const enhancedScore = calculateDealOpportunityScore(
-      incomeValue,
-      listPrice,
-      {
-        listingStatus: listingInfo.listingStatus,
-        sellerType: listingInfo.sellerType,
-        isForeclosure: listingInfo.isForeclosure,
-        isBankOwned: listingInfo.isBankOwned,
-        isFsbo: listingInfo.isFsbo,
-        isAuction: listingInfo.isAuction,
-        priceReductions: listingInfo.priceReductions,
-        daysOnMarket: listingInfo.daysOnMarket,
-      }
-    )
-    
+    const enhancedScore = calculateDealOpportunityScore(incomeValue, listPrice, {
+      listingStatus: listingInfo.listingStatus,
+      sellerType: listingInfo.sellerType,
+      isForeclosure: listingInfo.isForeclosure,
+      isBankOwned: listingInfo.isBankOwned,
+      isFsbo: listingInfo.isFsbo,
+      isAuction: listingInfo.isAuction,
+      priceReductions: listingInfo.priceReductions,
+      daysOnMarket: listingInfo.daysOnMarket,
+    })
+
     // Generate insights based on enhanced factors
     const strengths: string[] = []
     const weaknesses: string[] = []
-    
+
     // Deal Gap insights
     if (enhancedScore.factors.dealGap.gapPercent <= 5) {
       strengths.push('Profitable near list price')
     } else if (enhancedScore.factors.dealGap.gapPercent <= 10) {
       strengths.push('Achievable with typical negotiation')
     }
-    
+
     // Availability insights
     if (enhancedScore.factors.availability.motivationLevel === 'high') {
       strengths.push(`${enhancedScore.factors.availability.label}`)
@@ -133,17 +129,19 @@ export function calculateDealScore(
     } else if (enhancedScore.factors.availability.status === 'SOLD') {
       weaknesses.push('Recently sold - not available')
     }
-    
+
     // Days on Market insights
     if (enhancedScore.factors.daysOnMarket.leverage === 'high') {
       const days = enhancedScore.factors.daysOnMarket.days
       strengths.push(`${days}+ days on market - negotiation leverage`)
-    } else if (enhancedScore.factors.daysOnMarket.days !== null && 
-               enhancedScore.factors.daysOnMarket.days < 14 &&
-               enhancedScore.factors.dealGap.gapPercent <= 10) {
+    } else if (
+      enhancedScore.factors.daysOnMarket.days !== null &&
+      enhancedScore.factors.daysOnMarket.days < 14 &&
+      enhancedScore.factors.dealGap.gapPercent <= 10
+    ) {
       strengths.push('New listing at reasonable price - act fast')
     }
-    
+
     // Metrics insights
     if (metrics) {
       if (metrics.monthlyCashFlow >= 300) {
@@ -159,14 +157,18 @@ export function calculateDealScore(
         weaknesses.push('Income may not cover debt service')
       }
     }
-    
+
     // Deal Gap warnings
     if (enhancedScore.factors.dealGap.gapPercent > 25) {
-      weaknesses.push(`Requires ${enhancedScore.factors.dealGap.gapPercent.toFixed(0)}% discount - may be unrealistic`)
+      weaknesses.push(
+        `Requires ${enhancedScore.factors.dealGap.gapPercent.toFixed(0)}% discount - may be unrealistic`,
+      )
     } else if (enhancedScore.factors.dealGap.gapPercent > 15) {
-      weaknesses.push(`Needs significant negotiation (${enhancedScore.factors.dealGap.gapPercent.toFixed(0)}% off)`)
+      weaknesses.push(
+        `Needs significant negotiation (${enhancedScore.factors.dealGap.gapPercent.toFixed(0)}% off)`,
+      )
     }
-    
+
     // Build verdict based on overall opportunity
     let verdict: string
     if (enhancedScore.score >= 85) {
@@ -182,7 +184,7 @@ export function calculateDealScore(
     } else {
       verdict = 'Not recommended - unrealistic discount needed'
     }
-    
+
     return {
       overall: enhancedScore.score,
       discountPercent: enhancedScore.discountPercent,
@@ -200,24 +202,23 @@ export function calculateDealScore(
         availability: enhancedScore.factors.availability,
         daysOnMarket: enhancedScore.factors.daysOnMarket.days,
         leverage: enhancedScore.factors.daysOnMarket.leverage,
-      }
+      },
     }
   }
-  
+
   // Legacy scoring (Deal Gap only)
-  const discountPercent = listPrice > 0 
-    ? Math.max(0, ((listPrice - incomeValue) / listPrice) * 100)
-    : 0
-  
+  const discountPercent =
+    listPrice > 0 ? Math.max(0, ((listPrice - incomeValue) / listPrice) * 100) : 0
+
   // Score is inverse of discount (lower discount = higher score)
   // 0% discount = 100 score, 45% discount = 0 score
-  const overall = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
-  
+  const overall = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100) / 45)))
+
   // Determine grade, label, verdict based on discount percentage
   let grade: OpportunityGrade
   let label: string
   let verdict: string
-  
+
   if (discountPercent <= 5) {
     grade = 'A+'
     label = 'Strong Opportunity'
@@ -243,17 +244,17 @@ export function calculateDealScore(
     label = 'Pass'
     verdict = 'Not recommended - unrealistic discount needed'
   }
-  
+
   // Generate insights
   const strengths: string[] = []
   const weaknesses: string[] = []
-  
+
   if (discountPercent <= 5) {
     strengths.push('Profitable near list price')
   } else if (discountPercent <= 10) {
     strengths.push('Achievable with typical negotiation')
   }
-  
+
   if (metrics) {
     if (metrics.monthlyCashFlow >= 300) {
       strengths.push(`Strong cash flow potential ($${Math.round(metrics.monthlyCashFlow)}/mo)`)
@@ -268,13 +269,13 @@ export function calculateDealScore(
       weaknesses.push('Income may not cover debt service')
     }
   }
-  
+
   if (discountPercent > 25) {
     weaknesses.push(`Requires ${discountPercent.toFixed(0)}% discount - may be unrealistic`)
   } else if (discountPercent > 15) {
     weaknesses.push(`Needs significant negotiation (${discountPercent.toFixed(0)}% off)`)
   }
-  
+
   return {
     overall,
     discountPercent,
@@ -284,7 +285,7 @@ export function calculateDealScore(
     label,
     verdict,
     strengths: strengths.slice(0, 4),
-    weaknesses: weaknesses.slice(0, 4)
+    weaknesses: weaknesses.slice(0, 4),
   }
 }
 
@@ -294,24 +295,24 @@ export function calculateDealScore(
  */
 export function calculateDealScoreFromMetrics(
   metrics: DealMetrics,
-  listingInfo?: ListingInfo
+  listingInfo?: ListingInfo,
 ): DealScoreBreakdown {
   // Estimate Income Value as purchase price adjusted for cash flow
   // This is a simplified estimate - actual calculation should use binary search
   const monthlyDeficit = metrics.monthlyCashFlow < 0 ? Math.abs(metrics.monthlyCashFlow) : 0
   const annualDeficit = monthlyDeficit * 12
-  const incomeValueEstimate = metrics.purchasePrice - (annualDeficit * 10) // Rough estimate
-  
+  const incomeValueEstimate = metrics.purchasePrice - annualDeficit * 10 // Rough estimate
+
   return calculateDealScore(incomeValueEstimate, metrics.purchasePrice, metrics, listingInfo)
 }
 
 // Re-export enhanced scoring functions for direct use
-export { 
+export {
   calculateDealOpportunityScore,
   getAvailabilityRanking,
   calculateDOMScore,
   type IQTargetDealScore,
-  type AvailabilityInfo 
+  type AvailabilityInfo,
 }
 
 // ============================================
@@ -345,41 +346,46 @@ export interface BaseAssumptions {
   maintenancePct: number
 }
 
-function calculateMetricsForScenario(
-  assumptions: BaseAssumptions
-): { cashFlow: number; cashOnCash: number; capRate: number } {
+function calculateMetricsForScenario(assumptions: BaseAssumptions): {
+  cashFlow: number
+  cashOnCash: number
+  capRate: number
+} {
   const downPayment = assumptions.purchasePrice * assumptions.downPaymentPct
   const closingCosts = assumptions.purchasePrice * 0.03
   const loanAmount = assumptions.purchasePrice - downPayment
   const totalCashRequired = downPayment + closingCosts
-  
+
   // Monthly mortgage
   const monthlyRate = assumptions.interestRate / 12
   const numPayments = assumptions.loanTermYears * 12
-  const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+  const monthlyPI =
+    (loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments))) /
     (Math.pow(1 + monthlyRate, numPayments) - 1)
   const annualDebtService = monthlyPI * 12
-  
+
   // Income
   const annualRent = assumptions.monthlyRent * 12
   const effectiveRent = annualRent * (1 - assumptions.vacancyRate)
-  
+
   // Expenses
-  const opEx = assumptions.propertyTaxes + assumptions.insurance + 
+  const opEx =
+    assumptions.propertyTaxes +
+    assumptions.insurance +
     annualRent * (assumptions.managementPct + assumptions.maintenancePct)
-  
+
   const noi = effectiveRent - opEx
   const annualCashFlow = noi - annualDebtService
-  
+
   return {
     cashFlow: annualCashFlow / 12,
     cashOnCash: totalCashRequired > 0 ? annualCashFlow / totalCashRequired : 0,
-    capRate: assumptions.purchasePrice > 0 ? noi / assumptions.purchasePrice : 0
+    capRate: assumptions.purchasePrice > 0 ? noi / assumptions.purchasePrice : 0,
   }
 }
 
 export function calculateSensitivityAnalysis(
-  baseAssumptions: BaseAssumptions
+  baseAssumptions: BaseAssumptions,
 ): SensitivityAnalysis {
   // Interest Rate Sensitivity: -1.5% to +1.5%
   const interestRatePoints: SensitivityPoint[] = []
@@ -387,60 +393,60 @@ export function calculateSensitivityAnalysis(
     const rate = Math.max(0.01, baseAssumptions.interestRate + delta)
     const metrics = calculateMetricsForScenario({
       ...baseAssumptions,
-      interestRate: rate
+      interestRate: rate,
     })
     interestRatePoints.push({
       value: rate,
-      ...metrics
+      ...metrics,
     })
   }
-  
+
   // Purchase Price Sensitivity: -15% to +15%
   const pricePoints: SensitivityPoint[] = []
   for (let pct = -0.15; pct <= 0.15; pct += 0.05) {
     const price = baseAssumptions.purchasePrice * (1 + pct)
     const metrics = calculateMetricsForScenario({
       ...baseAssumptions,
-      purchasePrice: price
+      purchasePrice: price,
     })
     pricePoints.push({
       value: price,
-      ...metrics
+      ...metrics,
     })
   }
-  
+
   // Rent Sensitivity: -15% to +15%
   const rentPoints: SensitivityPoint[] = []
   for (let pct = -0.15; pct <= 0.15; pct += 0.05) {
     const rent = baseAssumptions.monthlyRent * (1 + pct)
     const metrics = calculateMetricsForScenario({
       ...baseAssumptions,
-      monthlyRent: rent
+      monthlyRent: rent,
     })
     rentPoints.push({
       value: rent,
-      ...metrics
+      ...metrics,
     })
   }
-  
+
   // Vacancy Sensitivity: 0% to 15%
   const vacancyPoints: SensitivityPoint[] = []
   for (let vac = 0; vac <= 0.15; vac += 0.025) {
     const metrics = calculateMetricsForScenario({
       ...baseAssumptions,
-      vacancyRate: vac
+      vacancyRate: vac,
     })
     vacancyPoints.push({
       value: vac,
-      ...metrics
+      ...metrics,
     })
   }
-  
+
   return {
     interestRate: interestRatePoints,
     purchasePrice: pricePoints,
     rent: rentPoints,
-    vacancy: vacancyPoints
+    vacancy: vacancyPoints,
   }
 }
 
@@ -488,133 +494,377 @@ export const REHAB_CATEGORIES: RehabCategory[] = [
     name: 'Kitchen',
     icon: '🍳',
     items: [
-      { id: 'cabinets', name: 'Cabinets', lowCost: 3000, midCost: 8000, highCost: 20000, unit: 'kitchen', defaultQuantity: 1 },
-      { id: 'countertops', name: 'Countertops', lowCost: 1500, midCost: 4000, highCost: 10000, unit: 'kitchen', defaultQuantity: 1 },
-      { id: 'appliances', name: 'Appliances Package', lowCost: 2000, midCost: 5000, highCost: 15000, unit: 'set', defaultQuantity: 1 },
-      { id: 'backsplash', name: 'Backsplash', lowCost: 400, midCost: 1200, highCost: 3000, unit: 'kitchen', defaultQuantity: 1 },
-      { id: 'sink_faucet', name: 'Sink & Faucet', lowCost: 300, midCost: 800, highCost: 2000, unit: 'each', defaultQuantity: 1 },
-    ]
+      {
+        id: 'cabinets',
+        name: 'Cabinets',
+        lowCost: 3000,
+        midCost: 8000,
+        highCost: 20000,
+        unit: 'kitchen',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'countertops',
+        name: 'Countertops',
+        lowCost: 1500,
+        midCost: 4000,
+        highCost: 10000,
+        unit: 'kitchen',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'appliances',
+        name: 'Appliances Package',
+        lowCost: 2000,
+        midCost: 5000,
+        highCost: 15000,
+        unit: 'set',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'backsplash',
+        name: 'Backsplash',
+        lowCost: 400,
+        midCost: 1200,
+        highCost: 3000,
+        unit: 'kitchen',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'sink_faucet',
+        name: 'Sink & Faucet',
+        lowCost: 300,
+        midCost: 800,
+        highCost: 2000,
+        unit: 'each',
+        defaultQuantity: 1,
+      },
+    ],
   },
   {
     id: 'bathroom',
     name: 'Bathroom',
     icon: '🚿',
     items: [
-      { id: 'full_bath', name: 'Full Bath Remodel', lowCost: 5000, midCost: 12000, highCost: 30000, unit: 'bathroom', defaultQuantity: 1 },
-      { id: 'half_bath', name: 'Half Bath Remodel', lowCost: 2500, midCost: 6000, highCost: 15000, unit: 'bathroom', defaultQuantity: 1 },
-      { id: 'vanity', name: 'Vanity & Sink', lowCost: 300, midCost: 800, highCost: 2500, unit: 'each', defaultQuantity: 1 },
-      { id: 'toilet', name: 'Toilet', lowCost: 150, midCost: 400, highCost: 1000, unit: 'each', defaultQuantity: 1 },
-      { id: 'tub_shower', name: 'Tub/Shower', lowCost: 500, midCost: 2000, highCost: 6000, unit: 'each', defaultQuantity: 1 },
-    ]
+      {
+        id: 'full_bath',
+        name: 'Full Bath Remodel',
+        lowCost: 5000,
+        midCost: 12000,
+        highCost: 30000,
+        unit: 'bathroom',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'half_bath',
+        name: 'Half Bath Remodel',
+        lowCost: 2500,
+        midCost: 6000,
+        highCost: 15000,
+        unit: 'bathroom',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'vanity',
+        name: 'Vanity & Sink',
+        lowCost: 300,
+        midCost: 800,
+        highCost: 2500,
+        unit: 'each',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'toilet',
+        name: 'Toilet',
+        lowCost: 150,
+        midCost: 400,
+        highCost: 1000,
+        unit: 'each',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'tub_shower',
+        name: 'Tub/Shower',
+        lowCost: 500,
+        midCost: 2000,
+        highCost: 6000,
+        unit: 'each',
+        defaultQuantity: 1,
+      },
+    ],
   },
   {
     id: 'flooring',
     name: 'Flooring',
     icon: '🏠',
     items: [
-      { id: 'lvp', name: 'Luxury Vinyl Plank', lowCost: 3, midCost: 6, highCost: 10, unit: 'sqft', defaultQuantity: 1500 },
-      { id: 'hardwood', name: 'Hardwood', lowCost: 6, midCost: 12, highCost: 20, unit: 'sqft', defaultQuantity: 1500 },
-      { id: 'tile', name: 'Tile', lowCost: 5, midCost: 10, highCost: 20, unit: 'sqft', defaultQuantity: 200 },
-      { id: 'carpet', name: 'Carpet', lowCost: 2, midCost: 5, highCost: 10, unit: 'sqft', defaultQuantity: 500 },
-    ]
+      {
+        id: 'lvp',
+        name: 'Luxury Vinyl Plank',
+        lowCost: 3,
+        midCost: 6,
+        highCost: 10,
+        unit: 'sqft',
+        defaultQuantity: 1500,
+      },
+      {
+        id: 'hardwood',
+        name: 'Hardwood',
+        lowCost: 6,
+        midCost: 12,
+        highCost: 20,
+        unit: 'sqft',
+        defaultQuantity: 1500,
+      },
+      {
+        id: 'tile',
+        name: 'Tile',
+        lowCost: 5,
+        midCost: 10,
+        highCost: 20,
+        unit: 'sqft',
+        defaultQuantity: 200,
+      },
+      {
+        id: 'carpet',
+        name: 'Carpet',
+        lowCost: 2,
+        midCost: 5,
+        highCost: 10,
+        unit: 'sqft',
+        defaultQuantity: 500,
+      },
+    ],
   },
   {
     id: 'paint',
     name: 'Paint & Walls',
     icon: '🎨',
     items: [
-      { id: 'interior_paint', name: 'Interior Paint', lowCost: 1.5, midCost: 3, highCost: 5, unit: 'sqft', defaultQuantity: 2000 },
-      { id: 'exterior_paint', name: 'Exterior Paint', lowCost: 2000, midCost: 5000, highCost: 12000, unit: 'house', defaultQuantity: 1 },
-      { id: 'drywall_repair', name: 'Drywall Repair', lowCost: 200, midCost: 500, highCost: 1500, unit: 'room', defaultQuantity: 3 },
-    ]
+      {
+        id: 'interior_paint',
+        name: 'Interior Paint',
+        lowCost: 1.5,
+        midCost: 3,
+        highCost: 5,
+        unit: 'sqft',
+        defaultQuantity: 2000,
+      },
+      {
+        id: 'exterior_paint',
+        name: 'Exterior Paint',
+        lowCost: 2000,
+        midCost: 5000,
+        highCost: 12000,
+        unit: 'house',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'drywall_repair',
+        name: 'Drywall Repair',
+        lowCost: 200,
+        midCost: 500,
+        highCost: 1500,
+        unit: 'room',
+        defaultQuantity: 3,
+      },
+    ],
   },
   {
     id: 'systems',
     name: 'Major Systems',
     icon: '⚡',
     items: [
-      { id: 'hvac', name: 'HVAC System', lowCost: 4000, midCost: 8000, highCost: 15000, unit: 'system', defaultQuantity: 1 },
-      { id: 'water_heater', name: 'Water Heater', lowCost: 800, midCost: 1500, highCost: 3500, unit: 'each', defaultQuantity: 1 },
-      { id: 'electrical_panel', name: 'Electrical Panel', lowCost: 1500, midCost: 3000, highCost: 6000, unit: 'panel', defaultQuantity: 1 },
-      { id: 'plumbing_repipe', name: 'Plumbing Repipe', lowCost: 4000, midCost: 8000, highCost: 15000, unit: 'house', defaultQuantity: 1 },
-    ]
+      {
+        id: 'hvac',
+        name: 'HVAC System',
+        lowCost: 4000,
+        midCost: 8000,
+        highCost: 15000,
+        unit: 'system',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'water_heater',
+        name: 'Water Heater',
+        lowCost: 800,
+        midCost: 1500,
+        highCost: 3500,
+        unit: 'each',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'electrical_panel',
+        name: 'Electrical Panel',
+        lowCost: 1500,
+        midCost: 3000,
+        highCost: 6000,
+        unit: 'panel',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'plumbing_repipe',
+        name: 'Plumbing Repipe',
+        lowCost: 4000,
+        midCost: 8000,
+        highCost: 15000,
+        unit: 'house',
+        defaultQuantity: 1,
+      },
+    ],
   },
   {
     id: 'exterior',
     name: 'Exterior',
     icon: '🏡',
     items: [
-      { id: 'roof', name: 'Roof Replacement', lowCost: 8000, midCost: 15000, highCost: 30000, unit: 'roof', defaultQuantity: 1 },
-      { id: 'siding', name: 'Siding', lowCost: 5000, midCost: 12000, highCost: 25000, unit: 'house', defaultQuantity: 1 },
-      { id: 'windows', name: 'Windows', lowCost: 300, midCost: 600, highCost: 1200, unit: 'each', defaultQuantity: 10 },
-      { id: 'front_door', name: 'Front Door', lowCost: 500, midCost: 1500, highCost: 4000, unit: 'each', defaultQuantity: 1 },
-      { id: 'landscaping', name: 'Landscaping', lowCost: 1000, midCost: 3000, highCost: 10000, unit: 'yard', defaultQuantity: 1 },
-    ]
+      {
+        id: 'roof',
+        name: 'Roof Replacement',
+        lowCost: 8000,
+        midCost: 15000,
+        highCost: 30000,
+        unit: 'roof',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'siding',
+        name: 'Siding',
+        lowCost: 5000,
+        midCost: 12000,
+        highCost: 25000,
+        unit: 'house',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'windows',
+        name: 'Windows',
+        lowCost: 300,
+        midCost: 600,
+        highCost: 1200,
+        unit: 'each',
+        defaultQuantity: 10,
+      },
+      {
+        id: 'front_door',
+        name: 'Front Door',
+        lowCost: 500,
+        midCost: 1500,
+        highCost: 4000,
+        unit: 'each',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'landscaping',
+        name: 'Landscaping',
+        lowCost: 1000,
+        midCost: 3000,
+        highCost: 10000,
+        unit: 'yard',
+        defaultQuantity: 1,
+      },
+    ],
   },
   {
     id: 'other',
     name: 'Other',
     icon: '🔧',
     items: [
-      { id: 'permits', name: 'Permits', lowCost: 500, midCost: 1500, highCost: 5000, unit: 'project', defaultQuantity: 1 },
-      { id: 'dumpster', name: 'Dumpster Rental', lowCost: 400, midCost: 600, highCost: 1000, unit: 'load', defaultQuantity: 2 },
-      { id: 'cleaning', name: 'Deep Cleaning', lowCost: 200, midCost: 500, highCost: 1000, unit: 'house', defaultQuantity: 1 },
-      { id: 'staging', name: 'Staging', lowCost: 500, midCost: 2000, highCost: 5000, unit: 'house', defaultQuantity: 1 },
-    ]
-  }
+      {
+        id: 'permits',
+        name: 'Permits',
+        lowCost: 500,
+        midCost: 1500,
+        highCost: 5000,
+        unit: 'project',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'dumpster',
+        name: 'Dumpster Rental',
+        lowCost: 400,
+        midCost: 600,
+        highCost: 1000,
+        unit: 'load',
+        defaultQuantity: 2,
+      },
+      {
+        id: 'cleaning',
+        name: 'Deep Cleaning',
+        lowCost: 200,
+        midCost: 500,
+        highCost: 1000,
+        unit: 'house',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'staging',
+        name: 'Staging',
+        lowCost: 500,
+        midCost: 2000,
+        highCost: 5000,
+        unit: 'house',
+        defaultQuantity: 1,
+      },
+    ],
+  },
 ]
 
 export function calculateRehabEstimate(
   selections: RehabSelection[],
-  contingencyPct: number = 0.10
+  contingencyPct: number = 0.1,
 ): RehabEstimate {
   const breakdown: { category: string; cost: number }[] = []
   let totalCost = 0
-  
+
   // Group by category
   const categoryTotals: Record<string, number> = {}
-  
+
   for (const selection of selections) {
     // Find the item
     let foundItem: RehabItem | null = null
     let foundCategory = ''
-    
+
     for (const cat of REHAB_CATEGORIES) {
-      const item = cat.items.find(i => i.id === selection.itemId)
+      const item = cat.items.find((i) => i.id === selection.itemId)
       if (item) {
         foundItem = item
         foundCategory = cat.name
         break
       }
     }
-    
+
     if (foundItem) {
-      const unitCost = selection.costOverride != null ? selection.costOverride :
-                       selection.tier === 'low' ? foundItem.lowCost :
-                       selection.tier === 'mid' ? foundItem.midCost :
-                       foundItem.highCost
+      const unitCost =
+        selection.costOverride != null
+          ? selection.costOverride
+          : selection.tier === 'low'
+            ? foundItem.lowCost
+            : selection.tier === 'mid'
+              ? foundItem.midCost
+              : foundItem.highCost
       const itemTotal = unitCost * selection.quantity
       totalCost += itemTotal
-      
+
       categoryTotals[foundCategory] = (categoryTotals[foundCategory] || 0) + itemTotal
     }
   }
-  
+
   // Convert to breakdown array
   for (const [category, cost] of Object.entries(categoryTotals)) {
     breakdown.push({ category, cost })
   }
-  
+
   // Sort by cost descending
   breakdown.sort((a, b) => b.cost - a.cost)
-  
+
   const contingency = totalCost * contingencyPct
-  
+
   return {
     totalCost,
     breakdown,
     contingency,
-    grandTotal: totalCost + contingency
+    grandTotal: totalCost + contingency,
   }
 }
 
@@ -637,7 +887,7 @@ export const REHAB_PRESETS: RehabPreset[] = [
       { itemId: 'interior_paint', quantity: 2000, tier: 'mid' },
       { itemId: 'lvp', quantity: 1200, tier: 'mid' },
       { itemId: 'cleaning', quantity: 1, tier: 'mid' },
-    ]
+    ],
   },
   {
     id: 'light',
@@ -651,7 +901,7 @@ export const REHAB_PRESETS: RehabPreset[] = [
       { itemId: 'appliances', quantity: 1, tier: 'mid' },
       { itemId: 'vanity', quantity: 2, tier: 'mid' },
       { itemId: 'cleaning', quantity: 1, tier: 'mid' },
-    ]
+    ],
   },
   {
     id: 'medium',
@@ -667,7 +917,7 @@ export const REHAB_PRESETS: RehabPreset[] = [
       { itemId: 'full_bath', quantity: 2, tier: 'mid' },
       { itemId: 'windows', quantity: 8, tier: 'mid' },
       { itemId: 'permits', quantity: 1, tier: 'mid' },
-    ]
+    ],
   },
   {
     id: 'heavy',
@@ -690,6 +940,6 @@ export const REHAB_PRESETS: RehabPreset[] = [
       { itemId: 'windows', quantity: 15, tier: 'mid' },
       { itemId: 'permits', quantity: 1, tier: 'high' },
       { itemId: 'dumpster', quantity: 3, tier: 'mid' },
-    ]
-  }
+    ],
+  },
 ]

@@ -10,7 +10,7 @@ export const OPERATING_INSURANCE_PCT = 0.01
  */
 export function getAnnualInsurance(
   property: PropertyResponse | null | undefined,
-  override?: number | null
+  override?: number | null,
 ): number | null {
   if (override != null) return override
   return property?.market?.insurance_annual ?? null
@@ -18,7 +18,7 @@ export function getAnnualInsurance(
 
 export function getMonthlyInsurance(
   property: PropertyResponse | null | undefined,
-  override?: number | null
+  override?: number | null,
 ): number | null {
   const annual = getAnnualInsurance(property, override)
   return annual == null ? null : annual / 12

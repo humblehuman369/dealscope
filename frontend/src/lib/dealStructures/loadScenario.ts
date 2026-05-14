@@ -64,7 +64,9 @@ export const PATH_PATCH_FIELD_KEYS = [
  *   `sub2_heuristic_rate` is already decimal; pass through as-is.
  * - Seller-carry amount is dollars; rate is decimal; term is years.
  */
-export function preLoadedRecordToDealMakerPatch(levers: Record<string, unknown>): Record<string, unknown> {
+export function preLoadedRecordToDealMakerPatch(
+  levers: Record<string, unknown>,
+): Record<string, unknown> {
   const patch: Record<string, unknown> = {}
 
   const cpp = levers.custom_purchase_price ?? levers.customPurchasePrice
@@ -79,9 +81,12 @@ export function preLoadedRecordToDealMakerPatch(levers: Record<string, unknown>)
   }
 
   // Top-level seller-carry (e.g. Morby Method places these outside pending_extras).
-  if (typeof levers.seller_carry_amount === 'number') patch.sellerFinancingAmount = levers.seller_carry_amount
-  if (typeof levers.seller_carry_rate === 'number') patch.sellerInterestRate = levers.seller_carry_rate
-  if (typeof levers.seller_carry_term_years === 'number') patch.sellerTermYears = levers.seller_carry_term_years
+  if (typeof levers.seller_carry_amount === 'number')
+    patch.sellerFinancingAmount = levers.seller_carry_amount
+  if (typeof levers.seller_carry_rate === 'number')
+    patch.sellerInterestRate = levers.seller_carry_rate
+  if (typeof levers.seller_carry_term_years === 'number')
+    patch.sellerTermYears = levers.seller_carry_term_years
 
   // Top-level owner-occupied flag (FHA House Hack).
   if (typeof levers.is_owner_occupied === 'boolean') {
@@ -95,9 +100,11 @@ export function preLoadedRecordToDealMakerPatch(levers: Record<string, unknown>)
     // Pass-through everything (preserves informational keys that don't have a slider).
     Object.assign(patch, ex)
 
-    if (typeof ex.seller_carry_amount === 'number') patch.sellerFinancingAmount = ex.seller_carry_amount
+    if (typeof ex.seller_carry_amount === 'number')
+      patch.sellerFinancingAmount = ex.seller_carry_amount
     if (typeof ex.seller_carry_rate === 'number') patch.sellerInterestRate = ex.seller_carry_rate
-    if (typeof ex.seller_carry_term_years === 'number') patch.sellerTermYears = ex.seller_carry_term_years
+    if (typeof ex.seller_carry_term_years === 'number')
+      patch.sellerTermYears = ex.seller_carry_term_years
 
     // Larger-down: backend emits a decimal (0.30); inlineOverrides.downPayment is integer percent.
     if (typeof ex.down_payment_pct_override === 'number') {
@@ -118,7 +125,10 @@ export function preLoadedRecordToDealMakerPatch(levers: Record<string, unknown>)
   return patch
 }
 
-export function buildScenarioPayload(structure: DealStructure, pathIndex: number): ScenarioPayloadV1 {
+export function buildScenarioPayload(
+  structure: DealStructure,
+  pathIndex: number,
+): ScenarioPayloadV1 {
   const labelBase = structure.familyLabel || structure.headline || 'Path'
   const label = `Path ${pathIndex + 1} — ${labelBase}`
   const raw = structure.preLoadedRecord ?? {}
@@ -156,11 +166,13 @@ export function readLastAppliedScenario(): ScenarioPayloadV1 | null {
 export function appendSavedThreePathScenario(entry: SavedThreePathScenario): void {
   if (typeof window === 'undefined') return
   try {
-    const prev = JSON.parse(localStorage.getItem(SAVED_LIST_KEY) || '[]') as SavedThreePathScenario[]
-    const next = [entry, ...prev.filter((e) => e.structureId !== entry.structureId || e.savedAt !== entry.savedAt)].slice(
-      0,
-      12,
-    )
+    const prev = JSON.parse(
+      localStorage.getItem(SAVED_LIST_KEY) || '[]',
+    ) as SavedThreePathScenario[]
+    const next = [
+      entry,
+      ...prev.filter((e) => e.structureId !== entry.structureId || e.savedAt !== entry.savedAt),
+    ].slice(0, 12)
     localStorage.setItem(SAVED_LIST_KEY, JSON.stringify(next))
   } catch {
     /* ignore */

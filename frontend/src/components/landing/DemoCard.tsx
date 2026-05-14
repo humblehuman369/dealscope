@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
+import Link from 'next/link'
 
 export function DemoCard() {
   return (
@@ -8,7 +8,9 @@ export function DemoCard() {
       <div className="demo-prop">
         <div>
           <div className="demo-addr">1847 Oakridge Drive, Tampa, FL 33612</div>
-          <div className="demo-det">3 bed &middot; 2 bath &middot; 1,640 sqft &middot; Built 2004</div>
+          <div className="demo-det">
+            3 bed &middot; 2 bath &middot; 1,640 sqft &middot; Built 2004
+          </div>
         </div>
         <div>
           <div className="demo-lp-label">List Price</div>
@@ -20,7 +22,7 @@ export function DemoCard() {
         <div style={{ position: 'relative', marginBottom: '.5rem', marginTop: '2rem' }}>
           <div className="spec-gap-wrap">
             <div className="spec-gap-line"></div>
-            <div className="spec-gap-text">DEAL GAP  17.4%</div>
+            <div className="spec-gap-text">DEAL GAP 17.4%</div>
             <div className="spec-gap-line"></div>
           </div>
           <div className="spec-bar">
@@ -32,17 +34,23 @@ export function DemoCard() {
             <div className="spec-pt" style={{ left: '30%' }}>
               <div className="spec-pt-val">$289K</div>
               <div className="spec-pt-name">Target Buy</div>
-              <div className="spec-pt-sub" style={{ color: 'var(--teal)' }}>Profit</div>
+              <div className="spec-pt-sub" style={{ color: 'var(--teal)' }}>
+                Profit
+              </div>
             </div>
             <div className="spec-pt" style={{ left: '62%' }}>
               <div className="spec-pt-val">$312K</div>
               <div className="spec-pt-name">Income Value</div>
-              <div className="spec-pt-sub" style={{ color: 'var(--green)' }}>Breakeven</div>
+              <div className="spec-pt-sub" style={{ color: 'var(--green)' }}>
+                Breakeven
+              </div>
             </div>
             <div className="spec-pt" style={{ left: '100%' }}>
               <div className="spec-pt-val">$349.9K</div>
               <div className="spec-pt-name">List Price</div>
-              <div className="spec-pt-sub" style={{ color: 'var(--coral)' }}>Loss</div>
+              <div className="spec-pt-sub" style={{ color: 'var(--coral)' }}>
+                Loss
+              </div>
             </div>
           </div>
         </div>
@@ -51,10 +59,18 @@ export function DemoCard() {
         <div className="demo-gap-box">
           <div className="demo-gap-hdr">
             <span className="demo-gap-title">Deal Gap</span>
-            <span className="demo-gap-only">Only on <strong>DealGap<span className="brand-iq">IQ</span></strong></span>
+            <span className="demo-gap-only">
+              Only on{' '}
+              <strong>
+                DealGap<span className="brand-iq">IQ</span>
+              </strong>
+            </span>
           </div>
           <div className="demo-gap-pct">&minus;17.4%</div>
-          <div className="demo-gap-desc">The list price is <strong>$61K above</strong> your Target Buy. This is the negotiating distance — the discount you&apos;d need to make this deal hit your return target.</div>
+          <div className="demo-gap-desc">
+            The list price is <strong>$61K above</strong> your Target Buy. This is the negotiating
+            distance — the discount you&apos;d need to make this deal hit your return target.
+          </div>
         </div>
         <div className="demo-neg">
           <div className="demo-neg-label">Negotiation Difficulty</div>
@@ -112,7 +128,16 @@ export function DemoCard() {
             <div className="demo-method-src">industry defaults</div>
           </div>
         </div>
-        <div className="demo-method-note">Every assumption is editable. Change any variable and the analysis recalculates instantly. <Link href="/about">See how <strong>DealGap<span className="brand-iq">IQ</span></strong> works &rarr;</Link></div>
+        <div className="demo-method-note">
+          Every assumption is editable. Change any variable and the analysis recalculates instantly.{' '}
+          <Link href="/about">
+            See how{' '}
+            <strong>
+              DealGap<span className="brand-iq">IQ</span>
+            </strong>{' '}
+            works &rarr;
+          </Link>
+        </div>
       </div>
       <div className="demo-metrics">
         <div className="demo-metric">
@@ -121,13 +146,18 @@ export function DemoCard() {
         </div>
         <div className="demo-metric">
           <h4 style={{ color: 'var(--teal)' }}>Target Buy</h4>
-          <p>The price that hits your desired return. Change your terms — it recalculates instantly.</p>
+          <p>
+            The price that hits your desired return. Change your terms — it recalculates instantly.
+          </p>
         </div>
         <div className="demo-metric">
           <h4 style={{ color: 'var(--coral)' }}>Deal Gap</h4>
-          <p>The discount between asking price and Target Buy. The bigger the gap, the better the deal.</p>
+          <p>
+            The discount between asking price and Target Buy. The bigger the gap, the better the
+            deal.
+          </p>
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,12 +1,10 @@
-'use client';
+'use client'
 
 export function DealGapExplainer() {
   return (
     <section style={{ padding: '6rem 2rem', maxWidth: 1100, margin: '0 auto' }}>
       <div className="section-label">The Core Concept</div>
-      <div className="section-title">
-        The Deal Gap — the metric no one else calculates.
-      </div>
+      <div className="section-title">The Deal Gap — the metric no one else calculates.</div>
       <div className="deal-gap-grid">
         <div className="deal-gap-narrative">
           <p>
@@ -14,29 +12,25 @@ export function DealGapExplainer() {
             <strong>
               DealGap<span className="brand-iq">IQ</span>
             </strong>{' '}
-            is a proprietary concept:{' '}
-            <strong>the Deal Gap</strong> — the distance between the asking
-            price and the price required to hit your target return.
+            is a proprietary concept: <strong>the Deal Gap</strong> — the distance between the
+            asking price and the price required to hit your target return.
           </p>
           <p>
-            That single number tells you whether the deal is worth pursuing, how
-            much to negotiate, and how hard the negotiation will be.
+            That single number tells you whether the deal is worth pursuing, how much to negotiate,
+            and how hard the negotiation will be.
           </p>
           <p>
-            This turns real estate from a search game into a{' '}
-            <strong>decision system</strong>. Most investors search the same
-            listings, use the same filters, and compete on speed.{' '}
+            This turns real estate from a search game into a <strong>decision system</strong>. Most
+            investors search the same listings, use the same filters, and compete on speed.{' '}
             <strong>
               DealGap<span className="brand-iq">IQ</span>
             </strong>{' '}
-            analyzes every property to find the ones that actually are deals — by
-            calculating the exact price that delivers your target return.
+            analyzes every property to find the ones that actually are deals — by calculating the
+            exact price that delivers your target return.
           </p>
         </div>
         <div className="gap-visual">
-          <div className="gap-visual-label">
-            Price Spectrum — Example Property
-          </div>
+          <div className="gap-visual-label">Price Spectrum — Example Property</div>
           <div className="price-bar">
             <div className="price-row">
               <div className="price-label">Target Buy</div>
@@ -65,5 +59,5 @@ export function DealGapExplainer() {
         </div>
       </div>
     </section>
-  );
+  )
 }

@@ -34,21 +34,21 @@ if (typeof window !== 'undefined') {
 
 /**
  * IMPORTANT: Default Assumptions Architecture
- * 
+ *
  * The DEFAULT_ASSUMPTIONS below are FALLBACK VALUES ONLY.
- * 
+ *
  * The actual defaults should always be fetched from the API using:
  *   - useDefaults() hook for components
  *   - defaultsService.getDefaults() for services
- * 
+ *
  * These fallback values are used:
  *   1. During initial page load before API responds
  *   2. When offline or API is unavailable
  *   3. For type definitions
- * 
+ *
  * DO NOT reference DEFAULT_ASSUMPTIONS directly in components.
  * Always use the useDefaults() hook instead.
- * 
+ *
  * See docs/architecture/DEFAULTS_ARCHITECTURE.md for full details.
  */
 
@@ -69,7 +69,7 @@ export interface OperatingAssumptions {
   maintenance_pct: number
   /** Reserves / capital expenditures as % of annual gross rent. Mirrors backend `OPERATING.capex_pct`. */
   capex_pct: number
-  insurance_pct: number  // Percentage of purchase price (was fixed insurance_annual)
+  insurance_pct: number // Percentage of purchase price (was fixed insurance_annual)
   utilities_monthly: number
   landscaping_annual: number
   pest_control_annual: number
@@ -84,23 +84,23 @@ export interface STRAssumptions {
   supplies_monthly: number
   additional_utilities_monthly: number
   furniture_setup_cost: number
-  str_insurance_pct: number  // Percentage of purchase price (was fixed str_insurance_annual)
-  buy_discount_pct: number  // Discount below Income Value (0.05 = 5% below Income Value)
+  str_insurance_pct: number // Percentage of purchase price (was fixed str_insurance_annual)
+  buy_discount_pct: number // Discount below Income Value (0.05 = 5% below Income Value)
 }
 
 export interface RehabAssumptions {
-  renovation_budget_pct: number  // Percentage of ARV (was fixed renovation_budget)
+  renovation_budget_pct: number // Percentage of ARV (was fixed renovation_budget)
   contingency_pct: number
   holding_period_months: number
-  holding_costs_pct: number  // Annual percentage of purchase price (was fixed monthly_holding_costs)
+  holding_costs_pct: number // Annual percentage of purchase price (was fixed monthly_holding_costs)
 }
 
 export interface BRRRRAssumptions {
-  buy_discount_pct: number  // Discount below Income Value (0.05 = 5% below Income Value)
+  buy_discount_pct: number // Discount below Income Value (0.05 = 5% below Income Value)
   refinance_ltv: number
   refinance_interest_rate: number
   refinance_term_years: number
-  refinance_closing_costs_pct: number  // Percentage of refinance amount (was fixed refinance_closing_costs)
+  refinance_closing_costs_pct: number // Percentage of refinance amount (was fixed refinance_closing_costs)
   post_rehab_rent_increase_pct: number
 }
 
@@ -119,7 +119,7 @@ export interface HouseHackAssumptions {
   fha_interest_rate: number
   fha_mip_rate: number
   units_rented_out: number
-  buy_discount_pct: number  // Discount below Income Value (0.05 = 5% below Income Value)
+  buy_discount_pct: number // Discount below Income Value (0.05 = 5% below Income Value)
   // Note: room_rent_monthly is now calculated as (estimatedRent / bedrooms) * units_rented_out
   // Note: owner_unit_market_rent is now calculated as estimatedRent / bedrooms
 }
@@ -133,7 +133,7 @@ export interface WholesaleAssumptions {
 }
 
 export interface LTRAssumptions {
-  buy_discount_pct: number  // Discount below Income Value (0.05 = 5% below Income Value)
+  buy_discount_pct: number // Discount below Income Value (0.05 = 5% below Income Value)
 }
 
 export interface AllAssumptions {
@@ -155,89 +155,89 @@ export interface AllAssumptions {
 export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
   financing: {
     purchase_price: null,
-    down_payment_pct: 0.20,        // 20%
-    interest_rate: 0.06,           // 6% (was 7.5%)
+    down_payment_pct: 0.2, // 20%
+    interest_rate: 0.06, // 6% (was 7.5%)
     loan_term_years: 30,
-    closing_costs_pct: 0.03,       // 3%
+    closing_costs_pct: 0.03, // 3%
   },
   operating: {
-    required_equity_yield: 0.08,   // 8% — cost of cash in Income Value (WACC equity leg)
-    vacancy_rate: 0.01,            // 1% (was 5%)
-    property_management_pct: 0.00, // 0% (was 10%)
-    maintenance_pct: 0.05,         // 5% (was 10%)
-    capex_pct: 0.05,               // 5% reserves / capital expenditures
-    insurance_pct: 0.01,           // 1% of purchase price (was $500 fixed)
-    utilities_monthly: 100,        // $100 (was $75)
-    landscaping_annual: 0,         // $0 (was $500)
-    pest_control_annual: 200,      // $200
+    required_equity_yield: 0.08, // 8% — cost of cash in Income Value (WACC equity leg)
+    vacancy_rate: 0.01, // 1% (was 5%)
+    property_management_pct: 0.0, // 0% (was 10%)
+    maintenance_pct: 0.05, // 5% (was 10%)
+    capex_pct: 0.05, // 5% reserves / capital expenditures
+    insurance_pct: 0.01, // 1% of purchase price (was $500 fixed)
+    utilities_monthly: 100, // $100 (was $75)
+    landscaping_annual: 0, // $0 (was $500)
+    pest_control_annual: 200, // $200
   },
   ltr: {
-    buy_discount_pct: 0.05,     // 5% below Income Value
+    buy_discount_pct: 0.05, // 5% below Income Value
   },
   str: {
-    platform_fees_pct: 0.15,       // 15%
-    str_management_pct: 0.10,      // 10% (was 20%)
+    platform_fees_pct: 0.15, // 15%
+    str_management_pct: 0.1, // 10% (was 20%)
     cleaning_cost_per_turnover: 150, // $150 (was $200)
-    cleaning_fee_revenue: 75,      // $75
-    avg_length_of_stay_days: 6,    // 6 days
-    supplies_monthly: 100,         // $100
+    cleaning_fee_revenue: 75, // $75
+    avg_length_of_stay_days: 6, // 6 days
+    supplies_monthly: 100, // $100
     additional_utilities_monthly: 0, // $0 (was $125)
-    furniture_setup_cost: 6000,    // $6,000
-    str_insurance_pct: 0.01,       // 1% of purchase price (was $1,500 fixed)
-    buy_discount_pct: 0.05,     // 5% below Income Value
+    furniture_setup_cost: 6000, // $6,000
+    str_insurance_pct: 0.01, // 1% of purchase price (was $1,500 fixed)
+    buy_discount_pct: 0.05, // 5% below Income Value
   },
   rehab: {
-    renovation_budget_pct: 0.05,   // 5% of ARV (was $40,000 fixed)
-    contingency_pct: 0.05,         // 5% (was 10%)
-    holding_period_months: 4,      // 4 months
-    holding_costs_pct: 0.01,       // 1% of purchase price annually (was $2,000/mo fixed)
+    renovation_budget_pct: 0.05, // 5% of ARV (was $40,000 fixed)
+    contingency_pct: 0.05, // 5% (was 10%)
+    holding_period_months: 4, // 4 months
+    holding_costs_pct: 0.01, // 1% of purchase price annually (was $2,000/mo fixed)
   },
   brrrr: {
-    buy_discount_pct: 0.05,     // 5% below Income Value (replaced purchase_discount_pct)
-    refinance_ltv: 0.75,           // 75%
+    buy_discount_pct: 0.05, // 5% below Income Value (replaced purchase_discount_pct)
+    refinance_ltv: 0.75, // 75%
     refinance_interest_rate: 0.06, // 6% (was 7%)
-    refinance_term_years: 30,      // 30 years
+    refinance_term_years: 30, // 30 years
     refinance_closing_costs_pct: 0.03, // 3% of refinance amount (was $3,500 fixed)
-    post_rehab_rent_increase_pct: 0.10, // 10%
+    post_rehab_rent_increase_pct: 0.1, // 10%
   },
   flip: {
-    hard_money_ltv: 0.90,          // 90%
-    hard_money_rate: 0.12,         // 12%
-    selling_costs_pct: 0.08,       // 8% (6% commission + 2% seller closing)
-    holding_period_months: 6,      // 6 months
-    purchase_discount_pct: 0.20,   // 20% below ARV
+    hard_money_ltv: 0.9, // 90%
+    hard_money_rate: 0.12, // 12%
+    selling_costs_pct: 0.08, // 8% (6% commission + 2% seller closing)
+    holding_period_months: 6, // 6 months
+    purchase_discount_pct: 0.2, // 20% below ARV
   },
   house_hack: {
-    fha_down_payment_pct: 0.035,   // 3.5%
-    fha_interest_rate: 0.065,      // 6.5%
-    fha_mip_rate: 0.0085,          // 0.85%
-    units_rented_out: 2,           // 2 units
-    buy_discount_pct: 0.05,     // 5% below Income Value
+    fha_down_payment_pct: 0.035, // 3.5%
+    fha_interest_rate: 0.065, // 6.5%
+    fha_mip_rate: 0.0085, // 0.85%
+    units_rented_out: 2, // 2 units
+    buy_discount_pct: 0.05, // 5% below Income Value
     // room_rent_monthly now calculated: (estimatedRent / bedrooms) * units_rented_out
     // owner_unit_market_rent now calculated: estimatedRent / bedrooms
   },
   wholesale: {
-    assignment_fee: 15000,         // $15,000
-    marketing_costs: 500,          // $500
-    earnest_money_deposit: 1000,   // $1,000
-    days_to_close: 45,             // 45 days
-    target_purchase_discount_pct: 0.30, // 30%
+    assignment_fee: 15000, // $15,000
+    marketing_costs: 500, // $500
+    earnest_money_deposit: 1000, // $1,000
+    days_to_close: 45, // 45 days
+    target_purchase_discount_pct: 0.3, // 30%
   },
-  appreciation_rate: 0.05,         // 5%
-  rent_growth_rate: 0.05,          // 5% (was 3%)
-  expense_growth_rate: 0.03,       // 3%
+  appreciation_rate: 0.05, // 5%
+  rent_growth_rate: 0.05, // 5% (was 3%)
+  expense_growth_rate: 0.03, // 3%
 }
 
 // Store interface
 interface AssumptionsStore {
   assumptions: AllAssumptions
   propertyOverrides: Record<string, Partial<AllAssumptions>>
-  
+
   // Actions
   setAssumption: <K extends keyof AllAssumptions>(
     category: K,
     key: keyof AllAssumptions[K],
-    value: any
+    value: any,
   ) => void
   setPropertyOverride: (propertyId: string, overrides: Partial<AllAssumptions>) => void
   getAssumptionsForProperty: (propertyId: string) => AllAssumptions
@@ -251,7 +251,7 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
     (set, get) => ({
       assumptions: DEFAULT_ASSUMPTIONS,
       propertyOverrides: {},
-      
+
       setAssumption: (category, key, value) =>
         set((state) => ({
           assumptions: {
@@ -262,7 +262,7 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
             },
           },
         })),
-      
+
       setPropertyOverride: (propertyId, overrides) =>
         set((state) => ({
           propertyOverrides: {
@@ -273,18 +273,17 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
             },
           },
         })),
-      
+
       getAssumptionsForProperty: (propertyId) => {
         const state = get()
         const overrides = state.propertyOverrides[propertyId]
         if (!overrides) return state.assumptions
-        
+
         return deepMerge(state.assumptions, overrides)
       },
-      
-      resetToDefaults: () =>
-        set({ assumptions: DEFAULT_ASSUMPTIONS }),
-      
+
+      resetToDefaults: () => set({ assumptions: DEFAULT_ASSUMPTIONS }),
+
       resetPropertyOverrides: (propertyId) =>
         set((state) => {
           const { [propertyId]: _, ...rest } = state.propertyOverrides
@@ -298,9 +297,12 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
         const state = persistedState as AssumptionsStore
 
         if (version < 4) {
-          const assumptions = { ...state.assumptions } as unknown as Record<string, Record<string, unknown>>
+          const assumptions = { ...state.assumptions } as unknown as Record<
+            string,
+            Record<string, unknown>
+          >
           if (assumptions.flip && !('purchase_discount_pct' in assumptions.flip)) {
-            assumptions.flip.purchase_discount_pct = 0.20
+            assumptions.flip.purchase_discount_pct = 0.2
           }
           if (assumptions.house_hack && !('fha_interest_rate' in assumptions.house_hack)) {
             assumptions.house_hack.fha_interest_rate = 0.065
@@ -312,18 +314,24 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
         }
 
         if (version < 3) {
-          const assumptions = { ...state.assumptions } as unknown as Record<string, Record<string, unknown>>
+          const assumptions = { ...state.assumptions } as unknown as Record<
+            string,
+            Record<string, unknown>
+          >
           if (assumptions.operating && !('required_equity_yield' in assumptions.operating)) {
             assumptions.operating.required_equity_yield = 0.08
           }
           state.assumptions = assumptions as unknown as AllAssumptions
         }
-        
+
         if (version === 0 || version === 1) {
           // Migration from v1 to v2: Convert fixed values to percentages
           // Use type assertion through unknown for flexibility with old data shapes
-          const assumptions = { ...state.assumptions } as unknown as Record<string, Record<string, unknown>>
-          
+          const assumptions = { ...state.assumptions } as unknown as Record<
+            string,
+            Record<string, unknown>
+          >
+
           // Migrate operating assumptions
           if (assumptions.operating) {
             const operating = assumptions.operating
@@ -337,7 +345,7 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
               operating.required_equity_yield = 0.08
             }
           }
-          
+
           // Migrate STR assumptions
           if (assumptions.str) {
             const str = assumptions.str
@@ -350,7 +358,7 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
               str.buy_discount_pct = 0.05
             }
           }
-          
+
           // Migrate rehab assumptions
           if (assumptions.rehab) {
             const rehab = assumptions.rehab
@@ -363,7 +371,7 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
               delete rehab.monthly_holding_costs
             }
           }
-          
+
           // Migrate BRRRR assumptions
           if (assumptions.brrrr) {
             const brrrr = assumptions.brrrr
@@ -381,12 +389,12 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
               delete brrrr.refinance_closing_costs
             }
           }
-          
+
           // Add LTR assumptions if missing
           if (!assumptions.ltr) {
             assumptions.ltr = { buy_discount_pct: 0.05 }
           }
-          
+
           // Migrate house_hack assumptions
           if (assumptions.house_hack) {
             const houseHack = assumptions.house_hack
@@ -398,41 +406,47 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
               houseHack.buy_discount_pct = 0.05
             }
           }
-          
+
           return {
             ...state,
             assumptions: assumptions as unknown as AllAssumptions,
           }
         }
 
-        const assumptionsFinal = { ...state.assumptions } as unknown as Record<string, Record<string, unknown>>
-        if (assumptionsFinal.operating && assumptionsFinal.operating.required_equity_yield == null) {
+        const assumptionsFinal = { ...state.assumptions } as unknown as Record<
+          string,
+          Record<string, unknown>
+        >
+        if (
+          assumptionsFinal.operating &&
+          assumptionsFinal.operating.required_equity_yield == null
+        ) {
           assumptionsFinal.operating.required_equity_yield = 0.08
         }
         if (assumptionsFinal.operating && assumptionsFinal.operating.capex_pct == null) {
           assumptionsFinal.operating.capex_pct = 0.05
         }
         if (assumptionsFinal.flip && assumptionsFinal.flip.purchase_discount_pct == null) {
-          assumptionsFinal.flip.purchase_discount_pct = 0.20
+          assumptionsFinal.flip.purchase_discount_pct = 0.2
         }
         if (assumptionsFinal.house_hack && assumptionsFinal.house_hack.fha_interest_rate == null) {
           assumptionsFinal.house_hack.fha_interest_rate = 0.065
         }
         return { ...state, assumptions: assumptionsFinal as unknown as AllAssumptions }
       },
-    }
-  )
+    },
+  ),
 )
 
 // Helper function for deep merging
 function deepMerge<T>(target: T, source: Partial<T>): T {
   const result = { ...target } as T & Record<string, unknown>
-  
+
   for (const key in source) {
     if (Object.prototype.hasOwnProperty.call(source, key)) {
       const sourceValue = source[key as keyof T]
       const targetValue = target[key as keyof T]
-      
+
       if (
         sourceValue !== undefined &&
         typeof sourceValue === 'object' &&
@@ -442,23 +456,23 @@ function deepMerge<T>(target: T, source: Partial<T>): T {
         targetValue !== null &&
         !Array.isArray(targetValue)
       ) {
-        (result as Record<string, unknown>)[key] = deepMerge(
+        ;(result as Record<string, unknown>)[key] = deepMerge(
           targetValue as Record<string, unknown>,
-          sourceValue as Record<string, unknown>
+          sourceValue as Record<string, unknown>,
         )
       } else if (sourceValue !== undefined) {
-        (result as Record<string, unknown>)[key] = sourceValue
+        ;(result as Record<string, unknown>)[key] = sourceValue
       }
     }
   }
-  
+
   return result as T
 }
 
 // Current property info for header display
 export interface CurrentPropertyInfo {
   propertyId: string
-  zpid: string | null  // Zillow Property ID for photos API
+  zpid: string | null // Zillow Property ID for photos API
   address: string
   city: string
   state: string
@@ -474,7 +488,7 @@ interface PropertyStore {
   currentPropertyId: string | null
   currentProperty: CurrentPropertyInfo | null
   recentSearches: Array<{ address: string; propertyId: string; timestamp: number }>
-  
+
   setCurrentProperty: (propertyId: string) => void
   setCurrentPropertyInfo: (info: CurrentPropertyInfo) => void
   clearCurrentProperty: () => void
@@ -488,38 +502,33 @@ export const usePropertyStore = create<PropertyStore>()(
       currentPropertyId: null,
       currentProperty: null,
       recentSearches: [],
-      
-      setCurrentProperty: (propertyId) =>
-        set({ currentPropertyId: propertyId }),
-      
+
+      setCurrentProperty: (propertyId) => set({ currentPropertyId: propertyId }),
+
       setCurrentPropertyInfo: (info) =>
         set({ currentPropertyId: info.propertyId, currentProperty: info }),
-      
-      clearCurrentProperty: () =>
-        set({ currentPropertyId: null, currentProperty: null }),
-      
+
+      clearCurrentProperty: () => set({ currentPropertyId: null, currentProperty: null }),
+
       addRecentSearch: (address, propertyId) =>
         set((state) => {
           // Remove duplicate if exists
-          const filtered = state.recentSearches.filter(
-            (s) => s.propertyId !== propertyId
-          )
+          const filtered = state.recentSearches.filter((s) => s.propertyId !== propertyId)
           // Add to front, keep max 10
           return {
-            recentSearches: [
-              { address, propertyId, timestamp: Date.now() },
-              ...filtered,
-            ].slice(0, 10),
+            recentSearches: [{ address, propertyId, timestamp: Date.now() }, ...filtered].slice(
+              0,
+              10,
+            ),
           }
         }),
-      
-      clearRecentSearches: () =>
-        set({ recentSearches: [] }),
+
+      clearRecentSearches: () => set({ recentSearches: [] }),
     }),
     {
       name: 'dealgapiq-property',
-    }
-  )
+    },
+  ),
 )
 
 // UI store
@@ -527,7 +536,7 @@ interface UIStore {
   activeStrategy: string
   showAssumptionsPanel: boolean
   showDataProvenance: boolean
-  
+
   setActiveStrategy: (strategy: string) => void
   toggleAssumptionsPanel: () => void
   toggleDataProvenance: () => void
@@ -537,13 +546,11 @@ export const useUIStore = create<UIStore>((set) => ({
   activeStrategy: 'ltr',
   showAssumptionsPanel: false,
   showDataProvenance: true,
-  
-  setActiveStrategy: (strategy) =>
-    set({ activeStrategy: strategy }),
-  
+
+  setActiveStrategy: (strategy) => set({ activeStrategy: strategy }),
+
   toggleAssumptionsPanel: () =>
     set((state) => ({ showAssumptionsPanel: !state.showAssumptionsPanel })),
-  
-  toggleDataProvenance: () =>
-    set((state) => ({ showDataProvenance: !state.showDataProvenance })),
+
+  toggleDataProvenance: () => set((state) => ({ showDataProvenance: !state.showDataProvenance })),
 }))

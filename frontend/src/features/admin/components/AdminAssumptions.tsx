@@ -73,7 +73,8 @@ const FIELD_DESCRIPTIONS: Record<string, string> = {
   // Flip
   hard_money_ltv: 'Hard money loan-to-value ratio',
   hard_money_rate: 'Hard money loan annual interest rate',
-  selling_costs_pct: 'Total selling costs (agent commissions, closing) as a percentage of sale price',
+  selling_costs_pct:
+    'Total selling costs (agent commissions, closing) as a percentage of sale price',
   purchase_discount_pct: 'Target purchase discount below ARV',
   // House Hack
   fha_down_payment_pct: 'FHA loan minimum down payment percentage',
@@ -134,7 +135,13 @@ const fromDisplayPercent = (value: number): number => value / 100
 
 const getInputStep = (key: string) => {
   if (isPercentField(key)) return 0.1
-  if (key.includes('months') || key.includes('years') || key.includes('units') || key.includes('days')) return 1
+  if (
+    key.includes('months') ||
+    key.includes('years') ||
+    key.includes('units') ||
+    key.includes('days')
+  )
+    return 1
   return 1
 }
 
@@ -143,7 +150,16 @@ const getInputMax = (key: string) => (isPercentField(key) ? 100 : undefined)
 
 const getInputSuffix = (key: string): string => {
   if (isPercentField(key)) return '%'
-  if (key.includes('monthly') || key.includes('annual') || key.includes('cost') || key.includes('fee') || key.includes('revenue') || key.includes('deposit') || key.includes('assignment')) return '$'
+  if (
+    key.includes('monthly') ||
+    key.includes('annual') ||
+    key.includes('cost') ||
+    key.includes('fee') ||
+    key.includes('revenue') ||
+    key.includes('deposit') ||
+    key.includes('assignment')
+  )
+    return '$'
   if (key.includes('years') || key.includes('term_years')) return 'yr'
   if (key.includes('months')) return 'mo'
   if (key.includes('days')) return 'days'
@@ -167,7 +183,9 @@ export function AdminAssumptionsSection() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [meta, setMeta] = useState<Pick<AdminAssumptionsResponse, 'updated_at' | 'updated_by' | 'updated_by_email'>>({})
+  const [meta, setMeta] = useState<
+    Pick<AdminAssumptionsResponse, 'updated_at' | 'updated_by' | 'updated_by_email'>
+  >({})
   const [hoveredField, setHoveredField] = useState<string | null>(null)
 
   const hasChanges = useMemo(() => isDirty(assumptions, draft), [assumptions, draft])
@@ -276,11 +294,16 @@ export function AdminAssumptionsSection() {
 
   const generalKeys = ['appreciation_rate', 'rent_growth_rate', 'expense_growth_rate']
   const general = draft
-    ? generalKeys.reduce((acc, key) => ({ ...acc, [key]: draft[key] }), {} as Record<string, number>)
+    ? generalKeys.reduce(
+        (acc, key) => ({ ...acc, [key]: draft[key] }),
+        {} as Record<string, number>,
+      )
     : {}
 
   const categories = draft
-    ? Object.entries(draft).filter(([key]) => !generalKeys.includes(key) && typeof draft[key] === 'object')
+    ? Object.entries(draft).filter(
+        ([key]) => !generalKeys.includes(key) && typeof draft[key] === 'object',
+      )
     : []
 
   // ── Shared input classes ─────────────────────
@@ -305,7 +328,8 @@ export function AdminAssumptionsSection() {
             )}
           </h3>
           <p className="text-xs text-slate-500 mt-1">
-            These defaults apply to all new calculations platform-wide. Users can override them in their profile.
+            These defaults apply to all new calculations platform-wide. Users can override them in
+            their profile.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -368,7 +392,9 @@ export function AdminAssumptionsSection() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {Object.entries(values as Record<string, number>).map(([key, value]) => {
                 const isPct = isPercentField(key)
-                const displayValue = isPct ? toDisplayPercent(Number(value ?? 0)) : Number(value ?? 0)
+                const displayValue = isPct
+                  ? toDisplayPercent(Number(value ?? 0))
+                  : Number(value ?? 0)
                 const suffix = getInputSuffix(key)
                 const fieldKey = `${category}.${key}`
                 const description = FIELD_DESCRIPTIONS[key]
@@ -421,9 +447,7 @@ export function AdminAssumptionsSection() {
 
         {/* Growth / General Assumptions */}
         <div className="border border-white/[0.07] rounded-lg p-4">
-          <h4 className="text-sm font-semibold text-slate-200 mb-3">
-            Growth Rates
-          </h4>
+          <h4 className="text-sm font-semibold text-slate-200 mb-3">Growth Rates</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {Object.entries(general).map(([key, value]) => {
               const isPct = isPercentField(key)

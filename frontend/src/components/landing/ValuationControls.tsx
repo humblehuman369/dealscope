@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 export function ValuationControls() {
   return (
@@ -8,7 +8,8 @@ export function ValuationControls() {
           <div className="label">Adjust for Reality</div>
           <h3 className="val-title">Every property is different. Every assumption is editable.</h3>
           <p className="val-desc">
-            Fine-tune condition, location, and rehab estimates to see how they change your Income Value. No black boxes &mdash; every input is visible and adjustable.
+            Fine-tune condition, location, and rehab estimates to see how they change your Income
+            Value. No black boxes &mdash; every input is visible and adjustable.
           </p>
         </div>
         <div className="card-md val-card">
@@ -63,5 +64,5 @@ export function ValuationControls() {
         </div>
       </div>
     </section>
-  );
+  )
 }

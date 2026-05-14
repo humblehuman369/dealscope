@@ -5,7 +5,7 @@ import { Home, BarChart3, Bookmark, Settings, Search } from 'lucide-react'
 
 /**
  * BottomNav Component
- * 
+ *
  * Fixed bottom navigation for mobile analytics view.
  * Provides quick access to main app sections.
  */
@@ -21,7 +21,7 @@ export function BottomNav({ activeTab = 'analytics', onNavigate }: BottomNavProp
     { id: 'search', label: 'Search', icon: Search },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'saved', label: 'Saved', icon: Bookmark },
-    { id: 'settings', label: 'Settings', icon: Settings }
+    { id: 'settings', label: 'Settings', icon: Settings },
   ]
 
   return (
@@ -29,20 +29,18 @@ export function BottomNav({ activeTab = 'analytics', onNavigate }: BottomNavProp
       <div className="max-w-lg mx-auto flex items-center justify-around h-16">
         {tabs.map(({ id, label, icon: Icon }) => {
           const isActive = id === activeTab
-          
+
           return (
             <button
               key={id}
               onClick={() => onNavigate?.(id)}
               className={`relative flex flex-col items-center justify-center flex-1 h-full transition-colors ${
-                isActive 
-                  ? 'text-teal' 
+                isActive
+                  ? 'text-teal'
                   : 'text-slate-400 hover:text-slate-600 dark:text-white/40 dark:hover:text-white/60'
               }`}
             >
-              <Icon 
-                className={`w-5 h-5 mb-0.5 ${isActive ? 'stroke-[2.5]' : ''}`}
-              />
+              <Icon className={`w-5 h-5 mb-0.5 ${isActive ? 'stroke-[2.5]' : ''}`} />
               <span className={`text-[0.6rem] font-medium ${isActive ? 'text-teal' : ''}`}>
                 {label}
               </span>
@@ -59,7 +57,7 @@ export function BottomNav({ activeTab = 'analytics', onNavigate }: BottomNavProp
 
 /**
  * BottomNavSpacer Component
- * 
+ *
  * Adds appropriate spacing at the bottom of content to prevent
  * content from being hidden behind the fixed navigation.
  */
@@ -69,7 +67,7 @@ export function BottomNavSpacer() {
 
 /**
  * AnalyticsBottomBar Component
- * 
+ *
  * A contextual bottom bar specifically for the analytics view.
  * Shows quick actions like Save, Share, and Generate LOI.
  */
@@ -81,11 +79,11 @@ interface AnalyticsBottomBarProps {
   isSaved?: boolean
 }
 
-export function AnalyticsBottomBar({ 
-  onSave, 
-  onShare, 
+export function AnalyticsBottomBar({
+  onSave,
+  onShare,
   onGenerateLOI,
-  isSaved = false 
+  isSaved = false,
 }: AnalyticsBottomBarProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-[var(--surface-base)]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/[0.06] z-50 safe-area-pb">
@@ -94,8 +92,8 @@ export function AnalyticsBottomBar({
         <button
           onClick={onSave}
           className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-medium text-sm transition-colors ${
-            isSaved 
-              ? 'bg-green-500/20 text-green-500 border border-green-500/30' 
+            isSaved
+              ? 'bg-green-500/20 text-green-500 border border-green-500/30'
               : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 dark:bg-white/[0.05] dark:text-white/70 dark:border-white/10 dark:hover:bg-white/[0.1]'
           }`}
         >

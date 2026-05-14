@@ -1,6 +1,6 @@
 /**
  * DealGapIQ Analytics Components - Type Definitions
- * 
+ *
  * Comprehensive types for the redesigned property analytics UI.
  * These types support all 6 investment strategies with their specific metrics.
  *
@@ -61,8 +61,8 @@ export interface PriceRung {
 export type BenchmarkStatus = 'high' | 'average' | 'low'
 
 export interface BenchmarkThreshold {
-  low: number      // Below this = "low" status
-  average: number  // Below this = "average" status
+  low: number // Below this = "low" status
+  average: number // Below this = "average" status
   // Above average threshold = "high" status
 }
 
@@ -72,8 +72,8 @@ export interface BenchmarkConfig {
   value: number
   formattedValue: string
   status: BenchmarkStatus
-  markerPosition: number  // 0-100 percentage position on spectrum
-  isInverted?: boolean    // For metrics where lower is better (GRM, Vacancy)
+  markerPosition: number // 0-100 percentage position on spectrum
+  isInverted?: boolean // For metrics where lower is better (GRM, Vacancy)
   zones: {
     low: { label: string; range: string }
     average: { label: string; range: string }
@@ -195,7 +195,15 @@ export interface HeroMetricData {
 // SUB-TAB NAVIGATION
 // ============================================
 
-export type SubTabId = 'metrics' | 'funding' | '10year' | 'growth' | 'score' | 'whatif' | 'buyer' | 'comps'
+export type SubTabId =
+  | 'metrics'
+  | 'funding'
+  | '10year'
+  | 'growth'
+  | 'score'
+  | 'whatif'
+  | 'buyer'
+  | 'comps'
 
 export interface SubTab {
   id: SubTabId
@@ -255,9 +263,9 @@ export interface ScoreItem {
 export interface DealScoreData {
   overall: number
   grade: OpportunityGrade
-  label: string  // "Strong Opportunity", "Good Opportunity", etc.
+  label: string // "Strong Opportunity", "Good Opportunity", etc.
   verdict: string
-  discountPercent: number  // How much discount from list needed
+  discountPercent: number // How much discount from list needed
   incomeValue: number
   listPrice: number
   items: ScoreItem[]
@@ -292,7 +300,12 @@ export interface StrategyGrade {
 // DEAL GAP CHART
 // ============================================
 
-export type DealZoneLabel = 'Loss Zone' | 'High Risk' | 'Income Value / Negotiate' | 'Profit Zone' | 'Deep Value'
+export type DealZoneLabel =
+  | 'Loss Zone'
+  | 'High Risk'
+  | 'Income Value / Negotiate'
+  | 'Profit Zone'
+  | 'Deep Value'
 export type SellerMotivationLevel = 'Low' | 'Moderate' | 'High'
 
 export interface DealGapData {

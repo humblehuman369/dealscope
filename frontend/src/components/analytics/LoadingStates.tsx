@@ -4,7 +4,7 @@ import React from 'react'
 
 /**
  * Loading States & Skeleton Components
- * 
+ *
  * Provides consistent loading indicators and skeleton screens
  * for the analytics components during data fetching.
  */
@@ -21,11 +21,7 @@ interface SkeletonBoxProps {
 }
 
 export function SkeletonBox({ className = 'h-4 w-full' }: SkeletonBoxProps) {
-  return (
-    <div 
-      className={`bg-white/[0.08] rounded animate-pulse ${className}`}
-    />
-  )
+  return <div className={`bg-white/[0.08] rounded animate-pulse ${className}`} />
 }
 
 /**
@@ -40,10 +36,7 @@ export function SkeletonText({ lines = 3, className = '' }: SkeletonTextProps) {
   return (
     <div className={`space-y-2 ${className}`}>
       {Array.from({ length: lines }).map((_, i) => (
-        <SkeletonBox 
-          key={i} 
-          className={`h-3 ${i === lines - 1 ? 'w-3/4' : 'w-full'}`} 
-        />
+        <SkeletonBox key={i} className={`h-3 ${i === lines - 1 ? 'w-3/4' : 'w-full'}`} />
       ))}
     </div>
   )
@@ -205,14 +198,14 @@ export function AnalyticsPageSkeleton() {
     <div className="min-h-screen bg-gradient-to-b from-[#f0f8fa] to-[#e8f4f8] text-slate-900 dark:from-[#0b1426] dark:to-[#091020] dark:text-white p-4">
       <PropertyMiniCardSkeleton />
       <StrategySelectorSkeleton />
-      
+
       {/* Sub-tabs skeleton */}
       <div className="flex gap-1.5 mb-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <SkeletonBox key={i} className="h-8 w-16 rounded-xl" />
         ))}
       </div>
-      
+
       <IQTargetHeroSkeleton />
       <PriceLadderSkeleton />
       <ReturnsGridSkeleton />
@@ -237,11 +230,11 @@ export function LoadingSpinner({ size = 'md', className = '' }: LoadingSpinnerPr
   const sizeClasses = {
     sm: 'w-4 h-4 border-2',
     md: 'w-8 h-8 border-3',
-    lg: 'w-12 h-12 border-4'
+    lg: 'w-12 h-12 border-4',
   }
 
   return (
-    <div 
+    <div
       className={`${sizeClasses[size]} border-teal/30 border-t-teal rounded-full animate-spin ${className}`}
     />
   )
@@ -270,9 +263,18 @@ export function CalculatingIndicator() {
   return (
     <div className="flex items-center gap-2 px-3 py-2 bg-teal/10 border border-teal/20 rounded-lg">
       <div className="flex gap-0.5">
-        <div className="w-1.5 h-1.5 bg-teal rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <div className="w-1.5 h-1.5 bg-teal rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <div className="w-1.5 h-1.5 bg-teal rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        <div
+          className="w-1.5 h-1.5 bg-teal rounded-full animate-bounce"
+          style={{ animationDelay: '0ms' }}
+        />
+        <div
+          className="w-1.5 h-1.5 bg-teal rounded-full animate-bounce"
+          style={{ animationDelay: '150ms' }}
+        />
+        <div
+          className="w-1.5 h-1.5 bg-teal rounded-full animate-bounce"
+          style={{ animationDelay: '300ms' }}
+        />
       </div>
       <span className="text-teal text-xs font-medium">Calculating...</span>
     </div>
@@ -292,11 +294,7 @@ interface ErrorCardProps {
   onRetry?: () => void
 }
 
-export function ErrorCard({ 
-  title = 'Something went wrong', 
-  message, 
-  onRetry 
-}: ErrorCardProps) {
+export function ErrorCard({ title = 'Something went wrong', message, onRetry }: ErrorCardProps) {
   return (
     <div className="bg-red-500/[0.08] border border-red-500/20 rounded-2xl p-4 mb-4">
       <div className="flex items-start gap-3">
@@ -331,12 +329,12 @@ interface EmptyStateProps {
   onAction?: () => void
 }
 
-export function EmptyState({ 
-  icon = '📊', 
-  title, 
-  message, 
+export function EmptyState({
+  icon = '📊',
+  title,
+  message,
   actionLabel,
-  onAction 
+  onAction,
 }: EmptyStateProps) {
   return (
     <div className="text-center py-12">

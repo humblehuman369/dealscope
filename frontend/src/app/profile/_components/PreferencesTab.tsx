@@ -24,8 +24,16 @@ const DEFAULT_PREFS: NotificationPrefs = {
   marketing_emails: false,
 }
 
-function Toggle({ checked, onChange, label, description }: {
-  checked: boolean; onChange: (v: boolean) => void; label: string; description: string
+function Toggle({
+  checked,
+  onChange,
+  label,
+  description,
+}: {
+  checked: boolean
+  onChange: (v: boolean) => void
+  label: string
+  description: string
 }) {
   return (
     <div className="flex items-center justify-between py-3">
@@ -72,7 +80,7 @@ export function PreferencesTab() {
           preferred_theme?: string
         }>('/api/v1/users/me/profile')
         if (profile.notification_preferences) {
-          setPrefs(prev => ({ ...prev, ...profile.notification_preferences }))
+          setPrefs((prev) => ({ ...prev, ...profile.notification_preferences }))
         }
         if (profile.preferred_theme) {
           setTheme(profile.preferred_theme as 'light' | 'dark' | 'system')
@@ -136,7 +144,9 @@ export function PreferencesTab() {
         <div className="p-5 bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)]">
           <div className="flex items-center gap-2 mb-4">
             <Bell className="w-4 h-4 text-[var(--accent-sky)]" />
-            <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Notifications</p>
+            <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">
+              Notifications
+            </p>
           </div>
 
           <div className="divide-y divide-[var(--border-subtle)]">
@@ -186,7 +196,9 @@ export function PreferencesTab() {
         <div className="p-5 bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)]">
           <div className="flex items-center gap-2 mb-4">
             <Palette className="w-4 h-4 text-[var(--status-positive)]" />
-            <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Appearance</p>
+            <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">
+              Appearance
+            </p>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
@@ -220,7 +232,9 @@ export function PreferencesTab() {
         <div className="p-5 bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)]">
           <div className="flex items-center gap-2 mb-4">
             <Shield className="w-4 h-4 text-[var(--status-warning)]" />
-            <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">Security</p>
+            <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">
+              Security
+            </p>
           </div>
 
           <div className="space-y-3">
@@ -236,7 +250,6 @@ export function PreferencesTab() {
                 Request Change
               </a>
             </div>
-            
           </div>
         </div>
       </div>

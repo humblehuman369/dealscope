@@ -24,9 +24,7 @@ export default function AdminError({ error, reset }: ErrorProps) {
             <AlertTriangle className="w-8 h-8 text-red-400" />
           </div>
           <h1 className="text-2xl font-bold text-slate-100 mb-2">Admin Panel Error</h1>
-          <p className="text-slate-400 mb-6">
-            Something went wrong loading the admin panel.
-          </p>
+          <p className="text-slate-400 mb-6">Something went wrong loading the admin panel.</p>
           {process.env.NODE_ENV === 'development' && error.message && (
             <div className="mb-6 p-3 bg-white/[0.04] border border-white/[0.07] rounded-lg text-left">
               <p className="text-xs text-slate-400 break-all">{error.message}</p>

@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { X, MapPin, ArrowRight, Home, Clock, Target, CheckCircle, Map } from 'lucide-react';
-import { ScanResult } from '@/hooks/usePropertyScan';
+import React from 'react'
+import { X, MapPin, ArrowRight, Home, Clock, Target, CheckCircle, Map } from 'lucide-react'
+import { ScanResult } from '@/hooks/usePropertyScan'
 
 interface ScanResultSheetProps {
-  result: ScanResult;
-  onClose: () => void;
-  onViewDetails: () => void;
-  onPickFromMap?: () => void;
+  result: ScanResult
+  onClose: () => void
+  onViewDetails: () => void
+  onPickFromMap?: () => void
 }
 
 /**
@@ -21,7 +21,7 @@ export function ScanResultSheet({
   onViewDetails,
   onPickFromMap,
 }: ScanResultSheetProps) {
-  const { property, confidence, scanTime, heading, distance } = result;
+  const { property, confidence, scanTime, heading, distance } = result
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -40,10 +40,7 @@ export function ScanResultSheet({
       >
         {/* Handle bar */}
         <div className="flex justify-center pt-3 pb-2">
-          <div
-            className="w-12 h-1 rounded-full"
-            style={{ background: 'var(--border-default)' }}
-          />
+          <div className="w-12 h-1 rounded-full" style={{ background: 'var(--border-default)' }} />
         </div>
 
         {/* Close button */}
@@ -67,10 +64,7 @@ export function ScanResultSheet({
               <CheckCircle className="w-6 h-6" style={{ color: '#14B8A6' }} />
             </div>
             <div>
-              <h3
-                className="text-lg font-bold"
-                style={{ color: 'var(--text-heading)' }}
-              >
+              <h3 className="text-lg font-bold" style={{ color: 'var(--text-heading)' }}>
                 Property Found!
               </h3>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -80,19 +74,16 @@ export function ScanResultSheet({
           </div>
 
           {/* Property details */}
-          <div
-            className="rounded-xl p-4 mb-4"
-            style={{ background: 'var(--surface-elevated)' }}
-          >
+          <div className="rounded-xl p-4 mb-4" style={{ background: 'var(--surface-elevated)' }}>
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#14B8A6' }}>
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: '#14B8A6' }}
+              >
                 <Home className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4
-                  className="font-semibold truncate"
-                  style={{ color: 'var(--text-heading)' }}
-                >
+                <h4 className="font-semibold truncate" style={{ color: 'var(--text-heading)' }}>
                   {property.address}
                 </h4>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -122,10 +113,7 @@ export function ScanResultSheet({
           </div>
 
           {/* Confirmation prompt */}
-          <p
-            className="text-center text-sm font-medium mb-3"
-            style={{ color: 'var(--text-body)' }}
-          >
+          <p className="text-center text-sm font-medium mb-3" style={{ color: 'var(--text-body)' }}>
             Is this your property?
           </p>
 
@@ -184,5 +172,5 @@ export function ScanResultSheet({
         }
       `}</style>
     </div>
-  );
+  )
 }

@@ -15,7 +15,7 @@ export function PipelineStats({ activeStage, onSelectStage }: PipelineStatsProps
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-      {PIPELINE_STAGES.map(stage => {
+      {PIPELINE_STAGES.map((stage) => {
         const config = STATUS_CONFIG[stage]
         const count = counts[stage] || 0
         const isActive = activeStage === stage
@@ -33,9 +33,7 @@ export function PipelineStats({ activeStage, onSelectStage }: PipelineStatsProps
             aria-pressed={isActive}
           >
             <div className="flex items-baseline gap-2">
-              <span className={`text-2xl font-bold tabular-nums ${config.color}`}>
-                {count}
-              </span>
+              <span className={`text-2xl font-bold tabular-nums ${config.color}`}>{count}</span>
             </div>
             <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-[var(--text-label)]">
               {config.label}

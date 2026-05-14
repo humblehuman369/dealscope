@@ -21,9 +21,7 @@ export default function OnboardingError({ error, reset }: ErrorProps) {
             <AlertTriangle className="w-8 h-8 text-red-500" />
           </div>
 
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">
-            Setup Error
-          </h1>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Setup Error</h1>
 
           <p className="text-slate-600 dark:text-slate-400 mb-6">
             Something went wrong during setup. You can try again or skip to the dashboard.
@@ -35,9 +33,7 @@ export default function OnboardingError({ error, reset }: ErrorProps) {
                 {error.message}
               </p>
               {error.digest && (
-                <p className="text-xs font-mono text-slate-500 mt-1">
-                  Error ID: {error.digest}
-                </p>
+                <p className="text-xs font-mono text-slate-500 mt-1">Error ID: {error.digest}</p>
               )}
             </div>
           )}

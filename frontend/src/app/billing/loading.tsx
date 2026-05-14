@@ -2,7 +2,6 @@ export default function BillingLoading() {
   return (
     <div className="min-h-screen bg-[var(--surface-base)]">
       <div className="max-w-[960px] mx-auto px-5 md:px-8 pt-8 md:pt-12 pb-12 md:pb-16">
-
         {/* Page header skeleton */}
         <div className="flex flex-col items-center gap-3 mb-14">
           <div className="h-9 w-48 rounded-lg bg-[var(--surface-elevated)] animate-pulse" />
@@ -39,9 +38,7 @@ export default function BillingLoading() {
               style={{
                 background: 'var(--surface-card)',
                 border: `1px solid ${i === 0 ? 'var(--border-focus)' : 'var(--border-default)'}`,
-                boxShadow: i === 0
-                  ? 'var(--shadow-card-hover)'
-                  : undefined,
+                boxShadow: i === 0 ? 'var(--shadow-card-hover)' : undefined,
               }}
             >
               <div className="h-5 w-16 rounded bg-[var(--surface-elevated)] animate-pulse mb-3" />

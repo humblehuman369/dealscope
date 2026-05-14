@@ -8,13 +8,19 @@ import type { StrategyId } from './types'
 
 // Dynamically import containers to reduce initial bundle size
 const StrategyAnalyticsContainer = dynamic(
-  () => import('./StrategyAnalyticsContainer').then(mod => ({ default: mod.StrategyAnalyticsContainer })),
-  { loading: () => <AnalyticsPageSkeleton />, ssr: true }
+  () =>
+    import('./StrategyAnalyticsContainer').then((mod) => ({
+      default: mod.StrategyAnalyticsContainer,
+    })),
+  { loading: () => <AnalyticsPageSkeleton />, ssr: true },
 )
 
 const DesktopStrategyAnalyticsContainer = dynamic(
-  () => import('./desktop/DesktopStrategyAnalyticsContainer').then(mod => ({ default: mod.DesktopStrategyAnalyticsContainer })),
-  { loading: () => <AnalyticsPageSkeleton />, ssr: true }
+  () =>
+    import('./desktop/DesktopStrategyAnalyticsContainer').then((mod) => ({
+      default: mod.DesktopStrategyAnalyticsContainer,
+    })),
+  { loading: () => <AnalyticsPageSkeleton />, ssr: true },
 )
 
 /**
@@ -51,10 +57,10 @@ interface ResponsiveAnalyticsContainerProps {
 
 /**
  * ResponsiveAnalyticsContainer
- * 
+ *
  * Automatically switches between mobile and desktop analytics views
  * based on viewport width. Uses 1024px as the breakpoint.
- * 
+ *
  * Features:
  * - SSR-safe with hydration detection
  * - Dynamic imports for code splitting
@@ -65,7 +71,7 @@ export function ResponsiveAnalyticsContainer({
   property,
   onBack,
   forceViewMode,
-  initialStrategy
+  initialStrategy,
 }: ResponsiveAnalyticsContainerProps) {
   const detectedViewMode = useViewMode(1024)
   const viewMode = forceViewMode || detectedViewMode

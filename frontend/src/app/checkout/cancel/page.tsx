@@ -21,7 +21,10 @@ export default function CheckoutCancelPage() {
         <Link
           href="/pricing"
           className="inline-block px-5 py-2.5 rounded-lg font-semibold text-white"
-          style={{ background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))' }}
+          style={{
+            background:
+              'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
+          }}
         >
           Back to Pricing
         </Link>

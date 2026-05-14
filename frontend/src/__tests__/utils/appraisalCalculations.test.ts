@@ -57,7 +57,9 @@ describe('calculateSaleAdjustments — lot guard', () => {
 
   it('skips lot adjustment when either side is non-finite', () => {
     expect(calculateSaleAdjustments(subject, { ...compBase, lotSize: Number.NaN }).lot).toBe(0)
-    expect(calculateSaleAdjustments(subject, { ...compBase, lotSize: Number.POSITIVE_INFINITY }).lot).toBe(0)
+    expect(
+      calculateSaleAdjustments(subject, { ...compBase, lotSize: Number.POSITIVE_INFINITY }).lot,
+    ).toBe(0)
   })
 })
 

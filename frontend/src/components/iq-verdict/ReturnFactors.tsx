@@ -11,7 +11,7 @@ interface ReturnFactorsProps {
 
 /**
  * ReturnFactors Component (Profit Score Factors)
- * 
+ *
  * Displays the breakdown of factors contributing to the Profit Score:
  * - Cap Rate: Capitalization rate %
  * - Cash on Cash: Cash-on-Cash return %
@@ -24,7 +24,7 @@ export function ReturnFactors({ factors, className = '' }: ReturnFactorsProps) {
     if (value === null) return 'N/A'
     return `${value.toFixed(1)}%`
   }
-  
+
   const formatCurrency = (value: number | null) => {
     if (value === null) return 'N/A'
     if (Math.abs(value) >= 1000000) {
@@ -35,33 +35,33 @@ export function ReturnFactors({ factors, className = '' }: ReturnFactorsProps) {
     }
     return `$${Math.round(value).toLocaleString()}`
   }
-  
+
   const formatDSCR = (value: number | null) => {
     if (value === null) return 'N/A'
     return value.toFixed(2)
   }
-  
+
   const getCapRateColor = (capRate: number | null) => {
     if (capRate === null) return 'text-gray-400'
     if (capRate >= 8) return 'text-green-500'
     if (capRate >= 6) return 'text-amber-500'
     return 'text-red-500'
   }
-  
+
   const getCoCColor = (coc: number | null) => {
     if (coc === null) return 'text-gray-400'
     if (coc >= 10) return 'text-green-500'
     if (coc >= 5) return 'text-amber-500'
     return 'text-red-500'
   }
-  
+
   const getDSCRColor = (dscr: number | null) => {
     if (dscr === null) return 'text-gray-400'
     if (dscr >= 1.25) return 'text-green-500'
     if (dscr >= 1.0) return 'text-amber-500'
     return 'text-red-500'
   }
-  
+
   const getCashFlowColor = (cashFlow: number | null) => {
     if (cashFlow === null) return 'text-gray-400'
     if (cashFlow > 0) return 'text-green-500'
@@ -74,7 +74,7 @@ export function ReturnFactors({ factors, className = '' }: ReturnFactorsProps) {
       <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
         Profit Score Factors ({factors.strategyName})
       </h4>
-      
+
       <div className="space-y-2.5">
         {/* Cap Rate */}
         <div className="flex items-center justify-between">
@@ -86,7 +86,7 @@ export function ReturnFactors({ factors, className = '' }: ReturnFactorsProps) {
             {formatPercent(factors.capRate)}
           </span>
         </div>
-        
+
         {/* Cash on Cash */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -97,7 +97,7 @@ export function ReturnFactors({ factors, className = '' }: ReturnFactorsProps) {
             {formatPercent(factors.cashOnCash)}
           </span>
         </div>
-        
+
         {/* DSCR */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export function ReturnFactors({ factors, className = '' }: ReturnFactorsProps) {
             {formatDSCR(factors.dscr)}
           </span>
         </div>
-        
+
         {/* Annual ROI */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -119,7 +119,7 @@ export function ReturnFactors({ factors, className = '' }: ReturnFactorsProps) {
             {formatCurrency(factors.annualRoi)}
           </span>
         </div>
-        
+
         {/* Annual Profit */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

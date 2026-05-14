@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 /**
  * DealGapIQHomepageV3
@@ -20,10 +20,10 @@
  *  - Accent links/icons via --accent-sky; semantic text tokens throughout
  */
 
-import React, { Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
+import React, { Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
 import {
   Search,
   Check,
@@ -35,9 +35,9 @@ import {
   Sparkles,
   ScanLine,
   Map as MapIcon,
-} from 'lucide-react';
-import { useAuthModal } from '@/hooks/useAuthModal';
-import { useTheme } from '@/context/ThemeContext';
+} from 'lucide-react'
+import { useAuthModal } from '@/hooks/useAuthModal'
+import { useTheme } from '@/context/ThemeContext'
 
 // Shared headline typography — every hero statement on the page (H1 + section H2s)
 // pulls from this so the family / weight / leading / tracking stay aligned.
@@ -47,14 +47,14 @@ const HEADLINE_STYLE: React.CSSProperties = {
   fontWeight: 800,
   lineHeight: 1.08,
   letterSpacing: '-0.025em',
-};
+}
 const HERO_H1_STYLE: React.CSSProperties = {
   ...HEADLINE_STYLE,
   fontSize: 'clamp(2.8rem, 6vw, 4.5rem)',
-};
+}
 
 interface Props {
-  onPointAndScan?: () => void;
+  onPointAndScan?: () => void
 }
 
 /* ============================================================
@@ -62,19 +62,19 @@ interface Props {
  * ============================================================ */
 
 function AuthParamHandler() {
-  const { openAuthModal } = useAuthModal();
-  const searchParams = useSearchParams();
+  const { openAuthModal } = useAuthModal()
+  const searchParams = useSearchParams()
 
   React.useEffect(() => {
-    const authParam = searchParams.get('auth');
+    const authParam = searchParams.get('auth')
     if (authParam === 'login' || authParam === 'required') {
-      openAuthModal('login');
+      openAuthModal('login')
     } else if (authParam === 'register') {
-      openAuthModal('register');
+      openAuthModal('register')
     }
-  }, [searchParams, openAuthModal]);
+  }, [searchParams, openAuthModal])
 
-  return null;
+  return null
 }
 
 /* ============================================================
@@ -82,34 +82,34 @@ function AuthParamHandler() {
  * ============================================================ */
 
 export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
-  const router = useRouter();
-  const { theme } = useTheme();
+  const router = useRouter()
+  const { theme } = useTheme()
   /** Light marketing canvas only: sky grid + soft glows. Dark mode matches app shell — flat var(--surface-base), no overlay. */
-  const isLightMarketing = theme === 'light';
+  const isLightMarketing = theme === 'light'
 
   const ambientBackdropStyle: React.CSSProperties = {
     background:
       'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(15,164,233,0.07) 0%, transparent 58%), radial-gradient(ellipse 60% 40% at 100% 28%, rgba(4,101,242,0.05) 0%, transparent 50%), radial-gradient(ellipse 55% 38% at 0% 58%, rgba(15,164,233,0.04) 0%, transparent 50%)',
-  };
+  }
 
   const ambientWashStyle: React.CSSProperties = {
     background: 'linear-gradient(180deg, transparent 0%, rgba(15,164,233,0.04) 100%)',
-  };
+  }
 
   const handleVerdictClick = (presetAddress?: string) => {
     if (presetAddress) {
-      router.push(`/discovery?address=${encodeURIComponent(presetAddress)}`);
+      router.push(`/discovery?address=${encodeURIComponent(presetAddress)}`)
     } else {
-      router.push('/search');
+      router.push('/search')
     }
-  };
+  }
 
-  const handleMapSearch = () => router.push('/map-search');
+  const handleMapSearch = () => router.push('/map-search')
 
   const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
 
   return (
     <div
@@ -119,8 +119,16 @@ export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
       {/* Light-only: sky wash + grid (same family as dashboard grid-fade). Dark = plain shell like other routes. */}
       {isLightMarketing && (
         <>
-          <div aria-hidden className="fixed inset-0 pointer-events-none z-0" style={ambientBackdropStyle} />
-          <div aria-hidden className="fixed inset-0 pointer-events-none z-0" style={ambientWashStyle} />
+          <div
+            aria-hidden
+            className="fixed inset-0 pointer-events-none z-0"
+            style={ambientBackdropStyle}
+          />
+          <div
+            aria-hidden
+            className="fixed inset-0 pointer-events-none z-0"
+            style={ambientWashStyle}
+          />
         </>
       )}
 
@@ -131,10 +139,7 @@ export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
       {/* Top app nav is provided by global layout; this component intentionally omits its own header. */}
 
       <main className="relative z-10">
-        <HeroSection
-          onVerdict={handleVerdictClick}
-          onSeePaths={() => scrollTo('demo')}
-        />
+        <HeroSection onVerdict={handleVerdictClick} onSeePaths={() => scrollTo('demo')} />
         <DemoSection onTry={() => handleVerdictClick()} />
         <PlaybookSection onSeeScript={() => handleVerdictClick()} />
         <ComparisonSection />
@@ -148,7 +153,7 @@ export function DealGapIQHomepageV3({ onPointAndScan }: Props) {
 
       <SiteFooter />
     </div>
-  );
+  )
 }
 
 /* ============================================================
@@ -159,8 +164,8 @@ function HeroSection({
   onVerdict,
   onSeePaths,
 }: {
-  onVerdict: (preset?: string) => void;
-  onSeePaths: () => void;
+  onVerdict: (preset?: string) => void
+  onSeePaths: () => void
 }) {
   return (
     <section className="px-6 md:px-12 lg:px-20 pt-10 md:pt-14 pb-32 md:pb-44">
@@ -172,9 +177,15 @@ function HeroSection({
               className="mb-8 xl:mb-10 mx-auto xl:mx-0 max-w-3xl xl:max-w-none text-[clamp(2.6rem,6vw,4.5rem)] xl:text-[clamp(2.4rem,4vw,3.75rem)]"
               style={HEADLINE_STYLE}
             >
-              <span className="block text-balance text-[var(--text-heading)]">Stop Scrolling Listings.</span>
-              <span className="block text-balance text-[var(--text-heading)]">Start Spotting Real Deals.</span>
-              <span className="block text-balance text-[var(--accent-sky)]">Know What to Offer.</span>
+              <span className="block text-balance text-[var(--text-heading)]">
+                Stop Scrolling Listings.
+              </span>
+              <span className="block text-balance text-[var(--text-heading)]">
+                Start Spotting Real Deals.
+              </span>
+              <span className="block text-balance text-[var(--accent-sky)]">
+                Know What to Offer.
+              </span>
             </h1>
 
             <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto xl:mx-0 mb-9">
@@ -182,13 +193,20 @@ function HeroSection({
                 DealGap<span className="text-[var(--accent-sky)]">IQ</span>
               </span>{' '}
               helps investors turn{' '}
-              <span className="text-[var(--text-heading)] font-semibold">listings, property data, and creative-finance scenarios</span>{' '}
-              into <span className="text-[var(--text-heading)] font-semibold">clear deal decisions and offer strategies</span>.
+              <span className="text-[var(--text-heading)] font-semibold">
+                listings, property data, and creative-finance scenarios
+              </span>{' '}
+              into{' '}
+              <span className="text-[var(--text-heading)] font-semibold">
+                clear deal decisions and offer strategies
+              </span>
+              .
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center xl:justify-start xl:items-start gap-5 sm:gap-6 mb-8">
               <PrimaryButtonLarge sublabel="on any property" onClick={() => onVerdict()}>
-                Run a Free Discovery <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
+                Run a Free Discovery{' '}
+                <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
               </PrimaryButtonLarge>
               <button
                 onClick={onSeePaths}
@@ -201,8 +219,7 @@ function HeroSection({
             {/* Trust strip */}
             <div className="flex flex-wrap items-center justify-center xl:justify-start gap-x-6 gap-y-2 text-sm text-[var(--text-label)]">
               <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-[var(--accent-sky)]" strokeWidth={3} />
-                6 data sources
+                <Check className="w-4 h-4 text-[var(--accent-sky)]" strokeWidth={3} />6 data sources
               </span>
               <span className="flex items-center gap-1.5">
                 <Check className="w-4 h-4 text-[var(--accent-sky)]" strokeWidth={3} />
@@ -244,7 +261,7 @@ function HeroSection({
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 function HeroOptionButton({
@@ -254,11 +271,11 @@ function HeroOptionButton({
   onClick,
   disabled,
 }: {
-  icon: React.ReactNode;
-  label: string;
-  sublabel: string;
-  onClick?: () => void;
-  disabled?: boolean;
+  icon: React.ReactNode
+  label: string
+  sublabel: string
+  onClick?: () => void
+  disabled?: boolean
 }) {
   return (
     <button
@@ -271,17 +288,22 @@ function HeroOptionButton({
         border: '1px solid var(--border-default)',
       }}
       onMouseEnter={(e) => {
-        if (!disabled) (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-focus)';
+        if (!disabled) (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-focus)'
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)';
+        ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)'
       }}
     >
       <span className="text-[var(--accent-sky)] shrink-0">{icon}</span>
-      <span className="text-sm font-semibold text-[var(--text-heading)] whitespace-nowrap">{label}</span>
-      <ChevronRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--accent-sky)] transition-colors shrink-0" strokeWidth={2.5} />
+      <span className="text-sm font-semibold text-[var(--text-heading)] whitespace-nowrap">
+        {label}
+      </span>
+      <ChevronRight
+        className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--accent-sky)] transition-colors shrink-0"
+        strokeWidth={2.5}
+      />
     </button>
-  );
+  )
 }
 
 /* ============================================================
@@ -296,12 +318,13 @@ function DemoSection({ onTry }: { onTry: () => void }) {
           <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
             What You Get
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-6 text-[var(--text-heading)]" style={HEADLINE_STYLE}>
+          <h2
+            className="text-3xl md:text-5xl lg:text-6xl mb-6 text-[var(--text-heading)]"
+            style={HEADLINE_STYLE}
+          >
             The Discovery tells you the gap.
             <br />
-            <span className="text-[var(--accent-sky)]">
-              We tell you how to close it.
-            </span>
+            <span className="text-[var(--accent-sky)]">We tell you how to close it.</span>
           </h2>
         </div>
 
@@ -309,15 +332,17 @@ function DemoSection({ onTry }: { onTry: () => void }) {
           {/* Left: copy + bullets */}
           <div>
             <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed mb-7">
-              A Discovery on this <span className="text-[var(--text-heading)] font-semibold">$457,100</span> listing came back at{' '}
-              <span className="text-amber-400 font-semibold tabular-nums">−6.4% Deal Gap</span> — the math doesn't
-              pencil at standard 20%-down financing.{' '}
+              A Discovery on this{' '}
+              <span className="text-[var(--text-heading)] font-semibold">$457,100</span> listing
+              came back at{' '}
+              <span className="text-amber-400 font-semibold tabular-nums">−6.4% Deal Gap</span> —
+              the math doesn't pencil at standard 20%-down financing.{' '}
               <span className="text-[var(--text-label)]">That's where most tools stop.</span>
             </p>
 
             <p className="text-base md:text-lg text-[var(--text-heading)] font-semibold mb-7">
-              DealGap<span className="text-[var(--accent-sky)]">IQ</span> keeps going. Four pre-built offers, each one closing the
-              gap a different way:
+              DealGap<span className="text-[var(--accent-sky)]">IQ</span> keeps going. Four
+              pre-built offers, each one closing the gap a different way:
             </p>
 
             <ol className="space-y-5 mb-10">
@@ -345,9 +370,13 @@ function DemoSection({ onTry }: { onTry: () => void }) {
             </ol>
 
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-7">
-              Each path opens a <span className="text-[var(--text-heading)] font-semibold">pre-loaded, editable Strategy worksheet</span>{' '}
-              — and a <span className="text-[var(--text-heading)] font-semibold">negotiation script</span> you can print, email, or
-              copy to present with confidence.
+              Each path opens a{' '}
+              <span className="text-[var(--text-heading)] font-semibold">
+                pre-loaded, editable Strategy worksheet
+              </span>{' '}
+              — and a{' '}
+              <span className="text-[var(--text-heading)] font-semibold">negotiation script</span>{' '}
+              you can print, email, or copy to present with confidence.
             </p>
 
             <button
@@ -368,7 +397,7 @@ function DemoSection({ onTry }: { onTry: () => void }) {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 function PathBullet({
@@ -377,10 +406,10 @@ function PathBullet({
   body,
   highlight,
 }: {
-  num: string;
-  title: string;
-  body: string;
-  highlight?: boolean;
+  num: string
+  title: string
+  body: string
+  highlight?: boolean
 }) {
   return (
     <li className="flex gap-4">
@@ -409,7 +438,7 @@ function PathBullet({
         <div className="text-sm text-[var(--text-label)] leading-relaxed">{body}</div>
       </div>
     </li>
-  );
+  )
 }
 
 function VerdictMockup() {
@@ -458,7 +487,8 @@ function VerdictMockup() {
         <div
           className="rounded-lg py-2.5 text-center text-xs font-semibold"
           style={{
-            background: 'linear-gradient(135deg, rgba(15,164,233,0.12) 0%, rgba(4,101,242,0.08) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(15,164,233,0.12) 0%, rgba(4,101,242,0.08) 100%)',
             border: '1px solid var(--border-chrome)',
             color: 'var(--accent-sky)',
           }}
@@ -467,7 +497,7 @@ function VerdictMockup() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function MockCard({
@@ -476,10 +506,10 @@ function MockCard({
   title,
   highlight,
 }: {
-  num: string;
-  tag: string;
-  title: string;
-  highlight?: boolean;
+  num: string
+  tag: string
+  title: string
+  highlight?: boolean
 }) {
   return (
     <div
@@ -501,7 +531,7 @@ function MockCard({
       </div>
       <div className="text-xs font-semibold text-[var(--text-heading)] leading-snug">{title}</div>
     </div>
-  );
+  )
 }
 
 /* ============================================================
@@ -520,9 +550,7 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
             className="text-3xl md:text-5xl lg:text-6xl mb-6 text-balance text-[var(--text-heading)]"
             style={HEADLINE_STYLE}
           >
-            <span className="block">
-              Subject-To. Seller holds a 0%{' '}2nd.
-            </span>
+            <span className="block">Subject-To. Seller holds a 0%{' '}2nd.</span>
             <span className="block text-[var(--accent-sky)]">
               We write the script for every{' '}one.
             </span>
@@ -533,23 +561,41 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
           {/* Left: script breakdown */}
           <div>
             <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed mb-7">
-              Investors are quietly closing deals with structures most tools won't even model — Subject-To, seller
-              carrybacks, 0% 2nds with a balloon, wraparound notes, rate buydowns. Knowing the structure isn't
-              enough. You have to{' '}
-              <span className="text-[var(--text-heading)] font-semibold">pitch it on the phone</span>, in language a seller will agree
-              to.
+              Investors are quietly closing deals with structures most tools won't even model —
+              Subject-To, seller carrybacks, 0% 2nds with a balloon, wraparound notes, rate
+              buydowns. Knowing the structure isn't enough. You have to{' '}
+              <span className="text-[var(--text-heading)] font-semibold">
+                pitch it on the phone
+              </span>
+              , in language a seller will agree to.
             </p>
 
             <p className="text-base text-[var(--text-heading)] font-semibold mb-6">
-              DealGap<span className="text-[var(--accent-sky)]">IQ</span> writes the script for you, structure-by-structure:
+              DealGap<span className="text-[var(--accent-sky)]">IQ</span> writes the script for you,
+              structure-by-structure:
             </p>
 
             <ul className="space-y-4 mb-10">
-              <ScriptBullet label="Who to call." body="Listing agent or seller direct, depending on listing type and creative-finance fluency." />
-              <ScriptBullet label="The frame." body={`"Price for terms" — what you're trading, why both sides win.`} />
-              <ScriptBullet label="The opener." body="A discovery question that surfaces what the seller actually needs." />
-              <ScriptBullet label="The pitch." body="Full-asking-price offer with the structure that makes the math work." />
-              <ScriptBullet label="What's in it for the seller." body="Three concrete reasons why this beats a price cut." />
+              <ScriptBullet
+                label="Who to call."
+                body="Listing agent or seller direct, depending on listing type and creative-finance fluency."
+              />
+              <ScriptBullet
+                label="The frame."
+                body={`"Price for terms" — what you're trading, why both sides win.`}
+              />
+              <ScriptBullet
+                label="The opener."
+                body="A discovery question that surfaces what the seller actually needs."
+              />
+              <ScriptBullet
+                label="The pitch."
+                body="Full-asking-price offer with the structure that makes the math work."
+              />
+              <ScriptBullet
+                label="What's in it for the seller."
+                body="Three concrete reasons why this beats a price cut."
+              />
             </ul>
 
             {/* Print / Email / Copy strip */}
@@ -575,7 +621,7 @@ function PlaybookSection({ onSeeScript }: { onSeeScript: () => void }) {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 function ScriptBullet({ label, body }: { label: string; body: string }) {
@@ -587,7 +633,7 @@ function ScriptBullet({ label, body }: { label: string; body: string }) {
         <span className="text-[var(--text-label)]">{body}</span>
       </div>
     </li>
-  );
+  )
 }
 
 function DeliveryIcon({ icon, label }: { icon: React.ReactNode; label: string }) {
@@ -602,9 +648,11 @@ function DeliveryIcon({ icon, label }: { icon: React.ReactNode; label: string })
       >
         {icon}
       </div>
-      <span className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">{label}</span>
+      <span className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+        {label}
+      </span>
     </div>
-  );
+  )
 }
 
 function PullQuoteCard() {
@@ -629,14 +677,20 @@ function PullQuoteCard() {
       <Sparkles className="w-5 h-5 text-[var(--accent-sky)] mb-4" />
 
       <p className="text-base md:text-lg leading-relaxed text-[var(--text-heading)] italic mb-6">
-        "I can pay full asking — <span className="not-italic font-semibold text-[var(--text-heading)]">$646,050</span>, no haircut —
-        if the seller is open to carrying <span className="not-italic font-semibold text-[var(--text-heading)]">$129,210</span> of
-        that as a second mortgage at <span className="not-italic font-semibold text-[var(--accent-sky)]">0% interest</span> with a
-        5-year balloon. Bank takes the first, seller takes the second, and in 5 years I refinance and the seller gets
-        a single check for <span className="not-italic font-semibold text-[var(--text-heading)]">$129,210</span>."
+        "I can pay full asking —{' '}
+        <span className="not-italic font-semibold text-[var(--text-heading)]">$646,050</span>, no
+        haircut — if the seller is open to carrying{' '}
+        <span className="not-italic font-semibold text-[var(--text-heading)]">$129,210</span> of
+        that as a second mortgage at{' '}
+        <span className="not-italic font-semibold text-[var(--accent-sky)]">0% interest</span> with
+        a 5-year balloon. Bank takes the first, seller takes the second, and in 5 years I refinance
+        and the seller gets a single check for{' '}
+        <span className="not-italic font-semibold text-[var(--text-heading)]">$129,210</span>."
       </p>
 
-      <div className="text-xs text-[var(--text-muted)] not-italic">— A real DealGapIQ-generated pitch script</div>
+      <div className="text-xs text-[var(--text-muted)] not-italic">
+        — A real DealGapIQ-generated pitch script
+      </div>
 
       <div className="mt-8 pt-6 border-t border-[var(--border-subtle)] text-center">
         <div className="text-xs text-[var(--text-label)] italic">
@@ -644,7 +698,7 @@ function PullQuoteCard() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 /* ============================================================
@@ -652,23 +706,53 @@ function PullQuoteCard() {
  * ============================================================ */
 
 const COMPARISON_ROWS: Array<{
-  feature: string;
-  subline?: string;
-  listing: 'yes' | 'no' | 'partial';
-  calc: 'yes' | 'no' | 'partial';
-  iq: 'yes' | 'no' | 'partial';
+  feature: string
+  subline?: string
+  listing: 'yes' | 'no' | 'partial'
+  calc: 'yes' | 'no' | 'partial'
+  iq: 'yes' | 'no' | 'partial'
 }> = [
-  { feature: 'Multi-source valuation', subline: 'IQ, Zillow, RentCast, Redfin', listing: 'partial', calc: 'partial', iq: 'yes' },
+  {
+    feature: 'Multi-source valuation',
+    subline: 'IQ, Zillow, RentCast, Redfin',
+    listing: 'partial',
+    calc: 'partial',
+    iq: 'yes',
+  },
   { feature: 'Cash-flow analysis', listing: 'no', calc: 'yes', iq: 'yes' },
-  { feature: 'Deal Gap Discovery', subline: 'verified vs. asking', listing: 'no', calc: 'partial', iq: 'yes' },
-  { feature: 'Plain-English explanation', subline: '5th-grade narrative', listing: 'no', calc: 'no', iq: 'yes' },
-  { feature: 'Pre-built offer structures', subline: 'four per property', listing: 'no', calc: 'no', iq: 'yes' },
-  { feature: 'Creative-finance modeling', subline: 'Sub2, seller carry, 0% 2nds', listing: 'no', calc: 'no', iq: 'yes' },
+  {
+    feature: 'Deal Gap Discovery',
+    subline: 'verified vs. asking',
+    listing: 'no',
+    calc: 'partial',
+    iq: 'yes',
+  },
+  {
+    feature: 'Plain-English explanation',
+    subline: '5th-grade narrative',
+    listing: 'no',
+    calc: 'no',
+    iq: 'yes',
+  },
+  {
+    feature: 'Pre-built offer structures',
+    subline: 'four per property',
+    listing: 'no',
+    calc: 'no',
+    iq: 'yes',
+  },
+  {
+    feature: 'Creative-finance modeling',
+    subline: 'Sub2, seller carry, 0% 2nds',
+    listing: 'no',
+    calc: 'no',
+    iq: 'yes',
+  },
   { feature: 'Negotiation script generator', listing: 'no', calc: 'no', iq: 'yes' },
   { feature: 'Print · email · copy script delivery', listing: 'no', calc: 'no', iq: 'yes' },
   { feature: 'Pre-loaded Strategy worksheet', listing: 'no', calc: 'partial', iq: 'yes' },
   { feature: 'Off-market property analysis', listing: 'no', calc: 'partial', iq: 'yes' },
-];
+]
 
 function ComparisonSection() {
   return (
@@ -678,12 +762,13 @@ function ComparisonSection() {
           <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
             How It Compares
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-5 text-[var(--text-heading)]" style={HEADLINE_STYLE}>
+          <h2
+            className="text-3xl md:text-5xl lg:text-6xl mb-5 text-[var(--text-heading)]"
+            style={HEADLINE_STYLE}
+          >
             Where most tools stop,
             <br />
-            <span className="text-[var(--accent-sky)]">
-              DealGapIQ keeps going.
-            </span>
+            <span className="text-[var(--accent-sky)]">DealGapIQ keeps going.</span>
           </h2>
           <p className="text-base text-[var(--text-label)] max-w-2xl mx-auto italic">
             Side-by-side with the tools investors already use.
@@ -691,8 +776,10 @@ function ComparisonSection() {
         </div>
 
         <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed max-w-4xl mx-auto mb-12 text-center">
-          Listing sites help you find properties. Cash-flow calculators help you analyze them. Neither helps you{' '}
-          <span className="text-[var(--text-heading)] font-semibold">structure the offer</span> that closes the gap.
+          Listing sites help you find properties. Cash-flow calculators help you analyze them.
+          Neither helps you{' '}
+          <span className="text-[var(--text-heading)] font-semibold">structure the offer</span> that
+          closes the gap.
         </p>
 
         <ComparisonTable />
@@ -707,19 +794,18 @@ function ComparisonSection() {
         </div>
 
         <p className="text-[11px] text-[var(--text-muted)] max-w-3xl mx-auto text-center mt-10 leading-relaxed">
-          Comparison reflects publicly documented features as of Q2 2026. Tools evolve — if a competitor adds a
-          feature we've marked missing, we'll update this table. We don't compete on what they have; we compete on
-          what they don't.
+          Comparison reflects publicly documented features as of Q2 2026. Tools evolve — if a
+          competitor adds a feature we've marked missing, we'll update this table. We don't compete
+          on what they have; we compete on what they don't.
         </p>
       </div>
     </section>
-  );
+  )
 }
 
 function ComparisonTable() {
-  const rowGrid =
-    'grid grid-cols-[2fr_1fr_1fr_1fr] md:grid-cols-[3fr_1fr_1fr_1.2fr]';
-  const cellDivider = 'border-r homepage-compare-border';
+  const rowGrid = 'grid grid-cols-[2fr_1fr_1fr_1fr] md:grid-cols-[3fr_1fr_1fr_1.2fr]'
+  const cellDivider = 'border-r homepage-compare-border'
 
   return (
     <div
@@ -737,13 +823,17 @@ function ComparisonTable() {
         >
           Feature
         </div>
-        <div className={`px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-heading)] ${cellDivider}`}>
+        <div
+          className={`px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-heading)] ${cellDivider}`}
+        >
           <div>Listing Sites</div>
           <div className="text-[10px] font-normal text-[var(--text-muted)] mt-0.5 italic">
             Zillow, Redfin, Realtor.com
           </div>
         </div>
-        <div className={`px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-heading)] ${cellDivider}`}>
+        <div
+          className={`px-2 md:px-4 py-4 text-center text-xs font-bold text-[var(--text-heading)] ${cellDivider}`}
+        >
           <div>Investor Calculators</div>
           <div className="text-[10px] font-normal text-[var(--text-muted)] mt-0.5 italic">
             DealCheck, BP Calc, Mashvisor
@@ -769,9 +859,13 @@ function ComparisonTable() {
           }`}
         >
           <div className={`px-4 md:px-6 py-5 ${cellDivider}`}>
-            <div className="text-sm font-semibold text-[var(--text-heading)] leading-tight">{row.feature}</div>
+            <div className="text-sm font-semibold text-[var(--text-heading)] leading-tight">
+              {row.feature}
+            </div>
             {row.subline && (
-              <div className="text-[11px] text-[var(--text-muted)] italic mt-0.5">{row.subline}</div>
+              <div className="text-[11px] text-[var(--text-muted)] italic mt-0.5">
+                {row.subline}
+              </div>
             )}
           </div>
           <CompCell mark={row.listing} className={cellDivider} />
@@ -780,7 +874,7 @@ function ComparisonTable() {
         </div>
       ))}
     </div>
-  );
+  )
 }
 
 function CompCell({
@@ -788,9 +882,9 @@ function CompCell({
   highlight,
   className = '',
 }: {
-  mark: 'yes' | 'no' | 'partial';
-  highlight?: boolean;
-  className?: string;
+  mark: 'yes' | 'no' | 'partial'
+  highlight?: boolean
+  className?: string
 }) {
   const display =
     mark === 'yes' ? (
@@ -804,7 +898,7 @@ function CompCell({
       </span>
     ) : (
       <span className="text-[var(--text-muted)] text-lg font-light">—</span>
-    );
+    )
 
   return (
     <div
@@ -813,7 +907,7 @@ function CompCell({
     >
       {display}
     </div>
-  );
+  )
 }
 
 /* ============================================================
@@ -825,9 +919,9 @@ function TrustSection({
   onPointAndScan,
   onMapSearch,
 }: {
-  onVerdict: (preset?: string) => void;
-  onPointAndScan?: () => void;
-  onMapSearch: () => void;
+  onVerdict: (preset?: string) => void
+  onPointAndScan?: () => void
+  onMapSearch: () => void
 }) {
   return (
     <section className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
@@ -836,16 +930,19 @@ function TrustSection({
           <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
             The Trust Layer
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-5 text-[var(--text-heading)]" style={HEADLINE_STYLE}>
+          <h2
+            className="text-3xl md:text-5xl lg:text-6xl mb-5 text-[var(--text-heading)]"
+            style={HEADLINE_STYLE}
+          >
             Trust comes from
             <br />
-            <span className="text-[var(--accent-sky)]">
-              seeing the work.
-            </span>
+            <span className="text-[var(--accent-sky)]">seeing the work.</span>
           </h2>
           <p className="text-base text-[var(--text-label)] max-w-2xl mx-auto">
             Every number on this site is sourced. Every structure is reviewable.{' '}
-            <span className="text-[var(--text-secondary)] font-semibold">Run your own zip code.</span>
+            <span className="text-[var(--text-secondary)] font-semibold">
+              Run your own zip code.
+            </span>
           </p>
         </div>
 
@@ -885,7 +982,7 @@ function TrustSection({
         />
       </div>
     </section>
-  );
+  )
 }
 
 function DataSourceStrip() {
@@ -896,7 +993,7 @@ function DataSourceStrip() {
     { name: 'Redfin', desc: 'MLS-derived sale price benchmarks' },
     { name: 'Realtor.com', desc: 'MLS listings, status, and price history' },
     { name: 'Mashvisor', desc: 'Short-term rental revenue and occupancy' },
-  ];
+  ]
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -909,7 +1006,8 @@ function DataSourceStrip() {
             border: '1px solid var(--border-subtle)',
           }}
         >
-          <div className="w-10 h-10 rounded-lg mx-auto mb-3 flex items-center justify-center"
+          <div
+            className="w-10 h-10 rounded-lg mx-auto mb-3 flex items-center justify-center"
             style={{
               background: 'rgba(15,164,233,0.08)',
               border: '1px solid rgba(15,164,233,0.30)',
@@ -922,7 +1020,7 @@ function DataSourceStrip() {
         </div>
       ))}
     </div>
-  );
+  )
 }
 
 function FounderNote() {
@@ -946,30 +1044,35 @@ function FounderNote() {
             />
           </div>
           <div>
-            <div className="text-xs uppercase tracking-widest text-[var(--accent-sky)] font-bold">Why we built this</div>
+            <div className="text-xs uppercase tracking-widest text-[var(--accent-sky)] font-bold">
+              Why we built this
+            </div>
             <div className="text-sm text-[var(--text-secondary)] mt-0.5">
-              Brad Geisen · Founder of <span className="text-[var(--text-heading)] font-semibold">Foreclosure.com</span>
+              Brad Geisen · Founder of{' '}
+              <span className="text-[var(--text-heading)] font-semibold">Foreclosure.com</span>
             </div>
           </div>
         </div>
 
         <div className="space-y-4 italic text-[var(--text-secondary)] leading-relaxed">
           <p>
-            Most "deal analysis" tools were built for spreadsheet warriors who already know what they're doing. We
-            built DealGapIQ for the investor who's tired of analyzing 30 properties to find one — and learning the
-            hard way that{' '}
-            <span className="text-[var(--text-heading)] not-italic font-semibold">"good deals" don't show up in a feed</span>. They're
-            constructed.
+            Most "deal analysis" tools were built for spreadsheet warriors who already know what
+            they're doing. We built DealGapIQ for the investor who's tired of analyzing 30
+            properties to find one — and learning the hard way that{' '}
+            <span className="text-[var(--text-heading)] not-italic font-semibold">
+              "good deals" don't show up in a feed
+            </span>
+            . They're constructed.
           </p>
           <p>
-            Every property has more leverage than the asking price suggests. We built the tool that surfaces that
-            leverage automatically — because writing custom Excel models for every listing isn't a job, it's an
-            obstacle.
+            Every property has more leverage than the asking price suggests. We built the tool that
+            surfaces that leverage automatically — because writing custom Excel models for every
+            listing isn't a job, it's an obstacle.
           </p>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function VerifyBlock({
@@ -977,16 +1080,16 @@ function VerifyBlock({
   onPointAndScan,
   onMapSearch,
 }: {
-  onVerdict: (preset?: string) => void;
-  onPointAndScan?: () => void;
-  onMapSearch: () => void;
+  onVerdict: (preset?: string) => void
+  onPointAndScan?: () => void
+  onMapSearch: () => void
 }) {
-  const [val, setVal] = React.useState('');
+  const [val, setVal] = React.useState('')
 
   const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (val.trim()) onVerdict(val.trim());
-  };
+    e.preventDefault()
+    if (val.trim()) onVerdict(val.trim())
+  }
 
   return (
     <div className="max-w-3xl mx-auto text-center">
@@ -994,9 +1097,12 @@ function VerifyBlock({
         Don't take our word for it. Take ours and check it.
       </h3>
       <p className="text-base text-[var(--text-label)] leading-relaxed max-w-2xl mx-auto mb-8">
-        Run any property — yours, your neighbor's, the one you've been watching. Click any number on the Discovery to
-        see where it came from. Switch data sources and watch the four paths recompute live.{' '}
-        <span className="text-[var(--text-heading)] font-semibold">The methodology is the proof.</span>
+        Run any property — yours, your neighbor's, the one you've been watching. Click any number on
+        the Discovery to see where it came from. Switch data sources and watch the four paths
+        recompute live.{' '}
+        <span className="text-[var(--text-heading)] font-semibold">
+          The methodology is the proof.
+        </span>
       </p>
 
       <form onSubmit={submit} className="max-w-md mx-auto mb-6">
@@ -1026,7 +1132,9 @@ function VerifyBlock({
 
       <div className="flex items-center gap-3 mb-5 max-w-md mx-auto">
         <div className="flex-1 h-px bg-[var(--border-subtle)]" />
-        <span className="text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-semibold">or</span>
+        <span className="text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+          or
+        </span>
         <div className="flex-1 h-px bg-[var(--border-subtle)]" />
       </div>
 
@@ -1046,7 +1154,7 @@ function VerifyBlock({
         />
       </div>
     </div>
-  );
+  )
 }
 
 /* ============================================================
@@ -1054,15 +1162,15 @@ function VerifyBlock({
  * ============================================================ */
 
 function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) {
-  const [email, setEmail] = React.useState('');
-  const [emailSubmitted, setEmailSubmitted] = React.useState(false);
+  const [email, setEmail] = React.useState('')
+  const [emailSubmitted, setEmailSubmitted] = React.useState(false)
 
   const submitEmail = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
+    e.preventDefault()
+    if (!email.trim()) return
     // TODO: wire to email provider in a future ticket. For now, optimistic UI.
-    setEmailSubmitted(true);
-  };
+    setEmailSubmitted(true)
+  }
 
   return (
     <section className="px-6 md:px-12 lg:px-20 pb-32 md:pb-44">
@@ -1070,34 +1178,40 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
         <div className="text-xs uppercase tracking-[0.25em] text-[var(--accent-sky)] font-bold mb-5">
           Now Try It
         </div>
-        <h2 className="text-3xl md:text-5xl lg:text-6xl mb-6 text-[var(--text-heading)]" style={HEADLINE_STYLE}>
+        <h2
+          className="text-3xl md:text-5xl lg:text-6xl mb-6 text-[var(--text-heading)]"
+          style={HEADLINE_STYLE}
+        >
           Try it on the property
           <br />
-          <span className="text-[var(--accent-sky)]">
-            you've been watching.
-          </span>
+          <span className="text-[var(--accent-sky)]">you've been watching.</span>
         </h2>
         <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto mb-12">
-          One free Discovery. <span className="text-[var(--text-heading)] font-semibold">No signup. No credit card.</span> Just paste an
-          address.
+          One free Discovery.{' '}
+          <span className="text-[var(--text-heading)] font-semibold">
+            No signup. No credit card.
+          </span>{' '}
+          Just paste an address.
         </p>
 
         <div className="space-y-5 text-base text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto mb-12 text-left">
           <p className="text-center">No tutorials. No 14-day trial. No credit card up front.</p>
           <p>
-            Paste a Zillow URL or street address. In 15 seconds you'll see the Discovery, the four paths to close the
-            gap, and the negotiation script for each.
+            Paste a Zillow URL or street address. In 15 seconds you'll see the Discovery, the four
+            paths to close the gap, and the negotiation script for each.
           </p>
           <p className="text-[var(--text-label)]">
-            If the math works, you'll know. If it needs structure, you'll see exactly which structures fit. If it's
-            not a deal, you'll have spent 15 seconds — not a weekend in Excel.
+            If the math works, you'll know. If it needs structure, you'll see exactly which
+            structures fit. If it's not a deal, you'll have spent 15 seconds — not a weekend in
+            Excel.
           </p>
         </div>
 
         {/* Primary CTA — routes to /search where the user picks address / scan / map */}
         <div className="mb-14">
           <PrimaryButtonLarge sublabel="on any property" onClick={() => onVerdict()}>
-            Run a Free Discovery <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
+            Run a Free Discovery{' '}
+            <ChevronRight className="w-5 h-5 inline-block align-middle" strokeWidth={2.5} />
           </PrimaryButtonLarge>
         </div>
 
@@ -1113,9 +1227,12 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
             Not ready to run one yet?
           </h3>
           <p className="text-sm text-[var(--text-label)] leading-relaxed mb-6">
-            Get the <span className="text-[var(--text-heading)] font-semibold">Creative Finance Field Guide</span> — a one-page PDF
-            covering Subject-To, seller carrybacks, 0% 2nds, rate buydowns, and the assumable-mortgage play. Free, no
-            signup beyond your email.
+            Get the{' '}
+            <span className="text-[var(--text-heading)] font-semibold">
+              Creative Finance Field Guide
+            </span>{' '}
+            — a one-page PDF covering Subject-To, seller carrybacks, 0% 2nds, rate buydowns, and the
+            assumable-mortgage play. Free, no signup beyond your email.
           </p>
 
           {emailSubmitted ? (
@@ -1158,12 +1275,14 @@ function CloserSection({ onVerdict }: { onVerdict: (preset?: string) => void }) 
         <div className="mt-20 pt-12 border-t border-[var(--border-subtle)]">
           <p className="text-base md:text-lg italic text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
             Built for the investor who knows the price tag isn't the deal.{' '}
-            <span className="text-[var(--text-heading)] not-italic font-semibold">The structure is.</span>
+            <span className="text-[var(--text-heading)] not-italic font-semibold">
+              The structure is.
+            </span>
           </p>
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 /* ============================================================
@@ -1187,7 +1306,8 @@ function SiteFooter() {
               DealGap<span className="text-[var(--accent-sky)]">IQ</span>
             </div>
             <p className="text-sm text-[var(--text-label)] leading-relaxed">
-              We analyze. <span className="text-[var(--text-heading)] font-semibold">You decide.</span>
+              We analyze.{' '}
+              <span className="text-[var(--text-heading)] font-semibold">You decide.</span>
             </p>
           </div>
 
@@ -1197,10 +1317,32 @@ function SiteFooter() {
               Product
             </h4>
             <ul className="space-y-2 text-sm text-[var(--text-label)]">
-              <li><Link href="/discovery" className="hover:text-[var(--accent-sky)] transition-colors">Discovery</Link></li>
-              <li><Link href="/strategy" className="hover:text-[var(--accent-sky)] transition-colors">Strategy</Link></li>
-              <li><Link href="/deal-maker" className="hover:text-[var(--accent-sky)] transition-colors">DealMaker</Link></li>
-              <li><Link href="/pricing" className="hover:text-[var(--accent-sky)] transition-colors">Pricing</Link></li>
+              <li>
+                <Link
+                  href="/discovery"
+                  className="hover:text-[var(--accent-sky)] transition-colors"
+                >
+                  Discovery
+                </Link>
+              </li>
+              <li>
+                <Link href="/strategy" className="hover:text-[var(--accent-sky)] transition-colors">
+                  Strategy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/deal-maker"
+                  className="hover:text-[var(--accent-sky)] transition-colors"
+                >
+                  DealMaker
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="hover:text-[var(--accent-sky)] transition-colors">
+                  Pricing
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -1210,10 +1352,24 @@ function SiteFooter() {
               Resources
             </h4>
             <ul className="space-y-2 text-sm text-[var(--text-label)]">
-              <li><Link href="/about" className="hover:text-[var(--accent-sky)] transition-colors">About</Link></li>
-              <li><Link href="/help" className="hover:text-[var(--accent-sky)] transition-colors">Help Center</Link></li>
-              <li><span className="text-[var(--text-muted)]">Field Guide</span></li>
-              <li><Link href="/glossary" className="hover:text-[var(--accent-sky)] transition-colors">Glossary</Link></li>
+              <li>
+                <Link href="/about" className="hover:text-[var(--accent-sky)] transition-colors">
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link href="/help" className="hover:text-[var(--accent-sky)] transition-colors">
+                  Help Center
+                </Link>
+              </li>
+              <li>
+                <span className="text-[var(--text-muted)]">Field Guide</span>
+              </li>
+              <li>
+                <Link href="/glossary" className="hover:text-[var(--accent-sky)] transition-colors">
+                  Glossary
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -1223,9 +1379,24 @@ function SiteFooter() {
               Legal
             </h4>
             <ul className="space-y-2 text-sm text-[var(--text-label)]">
-              <li><Link href="/privacy" className="hover:text-[var(--accent-sky)] transition-colors">Privacy</Link></li>
-              <li><Link href="/terms" className="hover:text-[var(--accent-sky)] transition-colors">Terms</Link></li>
-              <li><Link href="/disclosures" className="hover:text-[var(--accent-sky)] transition-colors">Disclosures</Link></li>
+              <li>
+                <Link href="/privacy" className="hover:text-[var(--accent-sky)] transition-colors">
+                  Privacy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="hover:text-[var(--accent-sky)] transition-colors">
+                  Terms
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/disclosures"
+                  className="hover:text-[var(--accent-sky)] transition-colors"
+                >
+                  Disclosures
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -1235,7 +1406,7 @@ function SiteFooter() {
         </div>
       </div>
     </footer>
-  );
+  )
 }
 
 /* ============================================================
@@ -1247,9 +1418,9 @@ function PrimaryButton({
   onClick,
   type = 'button',
 }: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  type?: 'button' | 'submit';
+  children: React.ReactNode
+  onClick?: () => void
+  type?: 'button' | 'submit'
 }) {
   return (
     <button
@@ -1257,13 +1428,14 @@ function PrimaryButton({
       onClick={onClick}
       className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-bold text-white transition-all whitespace-nowrap hover:brightness-[1.03] active:brightness-[0.98]"
       style={{
-        background: 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)',
+        background:
+          'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)',
         boxShadow: '0 8px 24px -10px rgba(4, 101, 242, 0.35)',
       }}
     >
       {children}
     </button>
-  );
+  )
 }
 
 function PrimaryButtonLarge({
@@ -1271,16 +1443,17 @@ function PrimaryButtonLarge({
   sublabel,
   onClick,
 }: {
-  children: React.ReactNode;
-  sublabel?: string;
-  onClick?: () => void;
+  children: React.ReactNode
+  sublabel?: string
+  onClick?: () => void
 }) {
   return (
     <button
       onClick={onClick}
       className="inline-flex items-center justify-center gap-3 px-9 py-3.5 rounded-xl text-white transition-all hover:brightness-[1.03] active:brightness-[0.98]"
       style={{
-        background: 'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)',
+        background:
+          'linear-gradient(135deg, var(--accent-gradient-from) 0%, var(--accent-gradient-to) 100%)',
         boxShadow: '0 12px 32px -10px rgba(4, 101, 242, 0.35)',
       }}
     >
@@ -1293,5 +1466,5 @@ function PrimaryButtonLarge({
         )}
       </span>
     </button>
-  );
+  )
 }

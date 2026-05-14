@@ -2,10 +2,10 @@
 
 /**
  * ScoreMethodologySheet Component
- * 
+ *
  * Centered modal explaining how IQ scores are calculated.
  * Shows scoring factors with weights, grade tier legend, and data sources.
- * 
+ *
  * Design system: Dark fintech — true black base, deep navy cards,
  * Inter typography, four-tier Slate text hierarchy, semantic accent colors.
  */
@@ -27,17 +27,17 @@ const T = {
   borderSubtle: 'rgba(255,255,255,0.04)',
 
   // Four-tier Slate text hierarchy
-  heading: '#F1F5F9',     // Near-white — headings
-  body: '#CBD5E1',        // Solid grey — body text
-  secondary: '#F1F5F9',   // Match primary text
-  label: '#F1F5F9',       // Match primary text
+  heading: '#F1F5F9', // Near-white — headings
+  body: '#CBD5E1', // Solid grey — body text
+  secondary: '#F1F5F9', // Match primary text
+  label: '#F1F5F9', // Match primary text
 
   // Semantic accent colors — CURSOR-UNIFY-COLOR-SYSTEM primary var(--accent-sky)
-  blue: 'var(--accent-sky)',       // Primary accent (unified)
-  teal: 'var(--accent-sky)',       // Alias for primary
-  amber: '#fbbf24',       // Caution, scores
-  red: '#f87171',         // Negatives, losses
-  green: '#34d399',       // Income, success
+  blue: 'var(--accent-sky)', // Primary accent (unified)
+  teal: 'var(--accent-sky)', // Alias for primary
+  amber: '#fbbf24', // Caution, scores
+  red: '#f87171', // Negatives, losses
+  green: '#34d399', // Income, success
 }
 
 // =============================================================================
@@ -102,7 +102,8 @@ const SCORE_FORMULA = {
     'Measure the Deal Gap — how far below asking price you need to buy',
     'Map the gap directly to a score using real U.S. investor discount data',
   ],
-  example: 'If your Deal Gap is 8% → score ~77 (Negotiable). A 3% gap → score ~90 (Achievable). At or above asking → 95.',
+  example:
+    'If your Deal Gap is 8% → score ~77 (Negotiable). A 3% gap → score ~90 (Achievable). At or above asking → 95.',
 }
 
 // =============================================================================
@@ -110,12 +111,48 @@ const SCORE_FORMULA = {
 // =============================================================================
 // Score Interpretation — aligned with DealGapIQ Score Chart CSV
 const GRADE_TIERS = [
-  { grade: 'A+', range: '88–95',  label: 'Achievable',             color: '#22c55e', meaning: 'Numbers work at or near asking price' },
-  { grade: 'A',  range: '75–87',  label: 'Negotiable',             color: '#84cc16', meaning: 'Small discount — common in investor deals' },
-  { grade: 'B',  range: '60–74',  label: 'Challenging',            color: '#84cc16', meaning: 'Meaningful negotiation required' },
-  { grade: 'C',  range: '40–59',  label: 'More Challenging',       color: '#f97316', meaning: 'Significant discount needed' },
-  { grade: 'D',  range: '22–39',  label: 'Very Challenging',      color: '#f97316', meaning: 'Few investor deals achieve this discount' },
-  { grade: 'F',  range: '5–21',   label: 'Extremely Challenging',  color: '#ef4444', meaning: 'Rare — tail of investor deals (~1% nationally)' },
+  {
+    grade: 'A+',
+    range: '88–95',
+    label: 'Achievable',
+    color: '#22c55e',
+    meaning: 'Numbers work at or near asking price',
+  },
+  {
+    grade: 'A',
+    range: '75–87',
+    label: 'Negotiable',
+    color: '#84cc16',
+    meaning: 'Small discount — common in investor deals',
+  },
+  {
+    grade: 'B',
+    range: '60–74',
+    label: 'Challenging',
+    color: '#84cc16',
+    meaning: 'Meaningful negotiation required',
+  },
+  {
+    grade: 'C',
+    range: '40–59',
+    label: 'More Challenging',
+    color: '#f97316',
+    meaning: 'Significant discount needed',
+  },
+  {
+    grade: 'D',
+    range: '22–39',
+    label: 'Very Challenging',
+    color: '#f97316',
+    meaning: 'Few investor deals achieve this discount',
+  },
+  {
+    grade: 'F',
+    range: '5–21',
+    label: 'Extremely Challenging',
+    color: '#ef4444',
+    meaning: 'Rare — tail of investor deals (~1% nationally)',
+  },
 ]
 
 // =============================================================================
@@ -198,7 +235,10 @@ export function ScoreMethodologySheet({
           }}
         >
           {/* Header */}
-          <div className="flex items-start justify-between px-6 pt-6 pb-5" style={{ borderBottom: `1px solid ${T.border}` }}>
+          <div
+            className="flex items-start justify-between px-6 pt-6 pb-5"
+            style={{ borderBottom: `1px solid ${T.border}` }}
+          >
             <div>
               <h2 className="text-lg font-bold" style={{ color: T.heading }}>
                 {getTitle()}
@@ -209,9 +249,19 @@ export function ScoreMethodologySheet({
               {(currentScore !== undefined || currentGrade) && (
                 <p className="text-sm mt-1.5" style={{ color: T.label }}>
                   {currentScore !== undefined ? (
-                    <>Current score: <span className="font-semibold" style={{ color: T.blue, fontVariantNumeric: 'tabular-nums' }}>{currentScore}</span></>
+                    <>
+                      Current score:{' '}
+                      <span
+                        className="font-semibold"
+                        style={{ color: T.blue, fontVariantNumeric: 'tabular-nums' }}
+                      >
+                        {currentScore}
+                      </span>
+                    </>
                   ) : currentGrade ? (
-                    <span className="font-semibold" style={{ color: T.blue }}>{currentGrade}</span>
+                    <span className="font-semibold" style={{ color: T.blue }}>
+                      {currentGrade}
+                    </span>
                   ) : null}
                 </p>
               )}
@@ -226,8 +276,10 @@ export function ScoreMethodologySheet({
           </div>
 
           {/* Content */}
-          <div className="overflow-y-auto px-6 py-5 space-y-6" style={{ maxHeight: 'calc(90vh - 100px)' }}>
-
+          <div
+            className="overflow-y-auto px-6 py-5 space-y-6"
+            style={{ maxHeight: 'calc(90vh - 100px)' }}
+          >
             {/* Core Concept — Educational helper box */}
             <div
               className="p-5 rounded-xl"
@@ -246,10 +298,16 @@ export function ScoreMethodologySheet({
 
             {/* Income Value (breakeven) */}
             <section>
-              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
+              <h3
+                className="text-[11px] font-bold uppercase tracking-wider mb-3"
+                style={{ color: T.blue }}
+              >
                 Income Value
               </h3>
-              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
+              <div
+                className="p-4 rounded-xl"
+                style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}
+              >
                 <div className="flex items-start gap-3 mb-4">
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -258,8 +316,9 @@ export function ScoreMethodologySheet({
                     <DollarSign className="w-4 h-4" style={{ color: T.green }} />
                   </div>
                   <p className="text-sm font-semibold leading-relaxed" style={{ color: T.heading }}>
-                    The highest price the rental income can support at your blended cost of capital: mortgage debt plus a required return on
-                    any cash you put in (default 8% annually — the &quot;equity yield&quot; hurdle).
+                    The highest price the rental income can support at your blended cost of capital:
+                    mortgage debt plus a required return on any cash you put in (default 8% annually
+                    — the &quot;equity yield&quot; hurdle).
                   </p>
                 </div>
 
@@ -267,7 +326,14 @@ export function ScoreMethodologySheet({
                   Breakeven is calculated using YOUR assumptions:
                 </p>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-4">
-                  {['Down payment %', 'Interest rate', 'Loan term', 'Required equity yield', 'Management fees', 'Maintenance %'].map((item) => (
+                  {[
+                    'Down payment %',
+                    'Interest rate',
+                    'Loan term',
+                    'Required equity yield',
+                    'Management fees',
+                    'Maintenance %',
+                  ].map((item) => (
                     <div key={item} className="flex items-center gap-1.5 text-[11px]">
                       <span style={{ color: T.teal }}>•</span>
                       <span style={{ color: T.secondary }}>{item}</span>
@@ -275,9 +341,20 @@ export function ScoreMethodologySheet({
                   ))}
                 </div>
 
-                <div className="p-3.5 rounded-lg" style={{ backgroundColor: 'rgba(52,211,153,0.05)', border: `1px solid rgba(52,211,153,0.12)` }}>
+                <div
+                  className="p-3.5 rounded-lg"
+                  style={{
+                    backgroundColor: 'rgba(52,211,153,0.05)',
+                    border: `1px solid rgba(52,211,153,0.12)`,
+                  }}
+                >
                   <p className="text-xs leading-relaxed" style={{ color: T.body }}>
-                    <span className="font-semibold" style={{ color: T.green }}>At breakeven:</span> NOI covers operating expenses plus your annual capital cost (loan payments on the financed portion and the hurdle return on your equity). Any price below Income Value = positive cash flow vs. that hurdle.
+                    <span className="font-semibold" style={{ color: T.green }}>
+                      At breakeven:
+                    </span>{' '}
+                    NOI covers operating expenses plus your annual capital cost (loan payments on
+                    the financed portion and the hurdle return on your equity). Any price below
+                    Income Value = positive cash flow vs. that hurdle.
                   </p>
                 </div>
 
@@ -289,7 +366,10 @@ export function ScoreMethodologySheet({
 
             {/* Discount Brackets */}
             <section>
-              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
+              <h3
+                className="text-[11px] font-bold uppercase tracking-wider mb-3"
+                style={{ color: T.blue }}
+              >
                 1. Investor Discount Brackets
               </h3>
               <div
@@ -304,9 +384,10 @@ export function ScoreMethodologySheet({
                     <BarChart3 className="w-4 h-4" style={{ color: T.blue }} />
                   </div>
                   <p className="text-sm font-semibold leading-relaxed" style={{ color: T.heading }}>
-                    Your Deal Gap is scored against real U.S. investor transaction data. The headline probability uses your
-                    property&apos;s state to pick a regional cohort when available; cumulative share = investors who close at
-                    this discount depth or deeper.
+                    Your Deal Gap is scored against real U.S. investor transaction data. The
+                    headline probability uses your property&apos;s state to pick a regional cohort
+                    when available; cumulative share = investors who close at this discount depth or
+                    deeper.
                   </p>
                 </div>
 
@@ -332,28 +413,44 @@ export function ScoreMethodologySheet({
                 <div className="space-y-2">
                   {BRACKET_ROWS_BY_COHORT[cohortTab].map((b, idx) => (
                     <div key={idx} className="flex items-center justify-between">
-                      <span className="text-xs" style={{ color: T.secondary }}>{b.bracket}</span>
+                      <span className="text-xs" style={{ color: T.secondary }}>
+                        {b.bracket}
+                      </span>
                       <div className="flex items-center gap-3">
-                        <span className="text-[11px] tabular-nums" style={{ color: T.label }}>{b.investorPct} of deals</span>
-                        <span className="text-xs font-semibold tabular-nums w-12 text-right" style={{ color: b.color }}>{b.scoreRange}</span>
+                        <span className="text-[11px] tabular-nums" style={{ color: T.label }}>
+                          {b.investorPct} of deals
+                        </span>
+                        <span
+                          className="text-xs font-semibold tabular-nums w-12 text-right"
+                          style={{ color: b.color }}
+                        >
+                          {b.scoreRange}
+                        </span>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 <p className="text-[11px] mt-4 leading-relaxed" style={{ color: T.label }}>
-                  Sources: Redfin 2025 MLS sale-to-list, Cotality Q4 2025 Home Investor Report, Realtor.com Q1 2026 Market
-                  Clock (methodology in docs/calculations/INVESTOR_DISCOUNT_DATA.md).
+                  Sources: Redfin 2025 MLS sale-to-list, Cotality Q4 2025 Home Investor Report,
+                  Realtor.com Q1 2026 Market Clock (methodology in
+                  docs/calculations/INVESTOR_DISCOUNT_DATA.md).
                 </p>
               </div>
             </section>
 
             {/* Score Calculation */}
             <section>
-              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
+              <h3
+                className="text-[11px] font-bold uppercase tracking-wider mb-3"
+                style={{ color: T.blue }}
+              >
                 2. How It All Works
               </h3>
-              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
+              <div
+                className="p-4 rounded-xl"
+                style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}
+              >
                 <div className="space-y-3 mb-4">
                   {SCORE_FORMULA.steps.map((step, idx) => (
                     <div key={idx} className="flex items-start gap-3">
@@ -363,14 +460,24 @@ export function ScoreMethodologySheet({
                       >
                         {idx + 1}
                       </span>
-                      <span className="text-sm leading-relaxed" style={{ color: T.body }}>{step}</span>
+                      <span className="text-sm leading-relaxed" style={{ color: T.body }}>
+                        {step}
+                      </span>
                     </div>
                   ))}
                 </div>
 
-                <div className="p-3.5 rounded-lg" style={{ backgroundColor: 'rgba(15,164,233,0.05)', border: `1px solid rgba(15,164,233,0.12)` }}>
+                <div
+                  className="p-3.5 rounded-lg"
+                  style={{
+                    backgroundColor: 'rgba(15,164,233,0.05)',
+                    border: `1px solid rgba(15,164,233,0.12)`,
+                  }}
+                >
                   <p className="text-xs leading-relaxed" style={{ color: T.body }}>
-                    <span className="font-semibold" style={{ color: T.teal }}>Example: </span>
+                    <span className="font-semibold" style={{ color: T.teal }}>
+                      Example:{' '}
+                    </span>
                     {SCORE_FORMULA.example}
                   </p>
                 </div>
@@ -379,21 +486,36 @@ export function ScoreMethodologySheet({
 
             {/* Grade Tiers */}
             <section>
-              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
+              <h3
+                className="text-[11px] font-bold uppercase tracking-wider mb-3"
+                style={{ color: T.blue }}
+              >
                 Score Interpretation
               </h3>
-              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
+              <div
+                className="p-4 rounded-xl"
+                style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}
+              >
                 <div className="grid grid-cols-3 gap-2.5">
                   {GRADE_TIERS.map((tier) => (
                     <div
                       key={tier.grade}
                       className="text-center py-3 px-2 rounded-xl"
-                      style={{ backgroundColor: `${tier.color}08`, border: `1px solid ${tier.color}18` }}
+                      style={{
+                        backgroundColor: `${tier.color}08`,
+                        border: `1px solid ${tier.color}18`,
+                      }}
                     >
-                      <div className="text-xl font-bold" style={{ color: tier.color, fontVariantNumeric: 'tabular-nums' }}>
+                      <div
+                        className="text-xl font-bold"
+                        style={{ color: tier.color, fontVariantNumeric: 'tabular-nums' }}
+                      >
                         {tier.grade}
                       </div>
-                      <div className="text-[10px] font-semibold mt-0.5" style={{ color: tier.color }}>
+                      <div
+                        className="text-[10px] font-semibold mt-0.5"
+                        style={{ color: tier.color }}
+                      >
                         {tier.label}
                       </div>
                       <div className="text-[10px] mt-0.5" style={{ color: T.label }}>
@@ -407,10 +529,16 @@ export function ScoreMethodologySheet({
 
             {/* Data Sources */}
             <section>
-              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: T.blue }}>
+              <h3
+                className="text-[11px] font-bold uppercase tracking-wider mb-3"
+                style={{ color: T.blue }}
+              >
                 Data Sources
               </h3>
-              <div className="p-4 rounded-xl" style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}>
+              <div
+                className="p-4 rounded-xl"
+                style={{ backgroundColor: T.card, border: `1px solid ${T.border}` }}
+              >
                 <div className="grid grid-cols-2 gap-4">
                   {DATA_SOURCES.map((source) => {
                     const Icon = source.icon
@@ -450,12 +578,22 @@ export function ScoreMethodologySheet({
 
       <style jsx>{`
         @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
         @keyframes slide-up {
-          from { transform: translateY(24px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          from {
+            transform: translateY(24px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
         }
         .fixed.inset-0.z-50:first-child {
           animation: fade-in 0.2s ease-out;

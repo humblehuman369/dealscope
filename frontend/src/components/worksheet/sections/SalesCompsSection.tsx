@@ -2,10 +2,27 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useWorksheetStore } from '@/stores/worksheetStore'
-import { 
-  MapPin, Bed, Bath, Square, Calendar, Check, ChevronDown, ChevronUp,
-  Target, DollarSign, RefreshCw, Info, Building2,
-  Lock, Unlock, Ruler, TrendingUp, RotateCcw, FileDown, Loader2
+import {
+  MapPin,
+  Bed,
+  Bath,
+  Square,
+  Calendar,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Target,
+  DollarSign,
+  RefreshCw,
+  Info,
+  Building2,
+  Lock,
+  Unlock,
+  Ruler,
+  TrendingUp,
+  RotateCcw,
+  FileDown,
+  Loader2,
 } from 'lucide-react'
 import {
   calculateAppraisalValues,
@@ -14,7 +31,7 @@ import {
   type SubjectProperty as AppraisalSubjectProperty,
   type CompProperty,
   type AppraisalResult,
-  type CompAdjustment
+  type CompAdjustment,
 } from '@/utils/appraisalCalculations'
 import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 import { fetchSaleComps } from '@/lib/api/sale-comps'
@@ -59,7 +76,9 @@ const getSaleDaysAgo = (dateString: string): number => {
   return Math.floor(diffTime / (1000 * 60 * 60 * 24))
 }
 
-const getFreshnessBadge = (dateString: string): { label: string; color: string; bgColor: string } | null => {
+const getFreshnessBadge = (
+  dateString: string,
+): { label: string; color: string; bgColor: string } | null => {
   const daysAgo = getSaleDaysAgo(dateString)
   if (daysAgo < 0) return null
   if (daysAgo <= 30) return { label: 'Recent', color: '#10B981', bgColor: '#10B98115' }
@@ -100,7 +119,15 @@ const CompCardSkeleton = () => (
   </div>
 )
 
-const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: number; icon: React.ElementType }) => (
+const SimilarityBar = ({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string
+  value: number
+  icon: React.ElementType
+}) => (
   <div className="flex items-center gap-2">
     <Icon className="w-3 h-3 text-[var(--text-muted)] flex-shrink-0" />
     <span className="text-xs text-[var(--text-secondary)] w-14">{label}</span>
@@ -109,16 +136,18 @@ const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: num
         className="h-full rounded-full transition-all duration-500"
         style={{
           width: `${value}%`,
-          backgroundColor: value >= 90 ? 'var(--accent-sky)' : value >= 75 ? '#0E7490' : '#F59E0B'
+          backgroundColor: value >= 90 ? 'var(--accent-sky)' : value >= 75 ? '#0E7490' : '#F59E0B',
         }}
       />
     </div>
-    <span className="text-xs font-semibold text-[var(--text-body)] w-8 text-right tabular-nums">{value}%</span>
+    <span className="text-xs font-semibold text-[var(--text-body)] w-8 text-right tabular-nums">
+      {value}%
+    </span>
   </div>
 )
 
 // Dual Valuation Panel Component
-const DualValuationPanel = ({ 
+const DualValuationPanel = ({
   appraisalResult,
   isMarketValueOverridden,
   isArvOverridden,
@@ -149,7 +178,9 @@ const DualValuationPanel = ({
   loading: boolean
   selectedCount: number
 }) => {
-  const displayMarketValue = isMarketValueOverridden ? manualMarketValue : appraisalResult.marketValue
+  const displayMarketValue = isMarketValueOverridden
+    ? manualMarketValue
+    : appraisalResult.marketValue
   const displayArv = isArvOverridden ? manualArv : appraisalResult.arv
 
   return (
@@ -162,14 +193,24 @@ const DualValuationPanel = ({
           </div>
           <div>
             <h3 className="text-sm font-bold text-[var(--text-heading)]">Appraisal Values</h3>
-            <p className="text-xs text-[var(--text-secondary)]">From {selectedCount} selected comps</p>
+            <p className="text-xs text-[var(--text-secondary)]">
+              From {selectedCount} selected comps
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <div className="text-center px-3 py-1 rounded-lg bg-[var(--surface-card)]/60">
-            <div className="text-lg font-bold tabular-nums" style={{ 
-              color: appraisalResult.confidence >= 85 ? 'var(--accent-sky)' : appraisalResult.confidence >= 70 ? '#F59E0B' : '#EF4444' 
-            }}>
+            <div
+              className="text-lg font-bold tabular-nums"
+              style={{
+                color:
+                  appraisalResult.confidence >= 85
+                    ? 'var(--accent-sky)'
+                    : appraisalResult.confidence >= 70
+                      ? '#F59E0B'
+                      : '#EF4444',
+              }}
+            >
               {loading ? '...' : appraisalResult.confidence}%
             </div>
             <div className="text-[10px] text-[var(--text-secondary)] uppercase">Confidence</div>
@@ -182,13 +223,21 @@ const DualValuationPanel = ({
         {/* Zestimate */}
         <div className="bg-[var(--surface-card)] rounded-lg p-3 border border-[var(--border-default)]">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide">Zestimate</span>
+            <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
+              Zestimate
+            </span>
             <button
               onClick={onToggleMarketValueOverride}
               className={`p-1 rounded transition-colors ${isMarketValueOverridden ? 'text-amber-500 bg-amber-50' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`}
-              title={isMarketValueOverridden ? 'Value overridden - click to reset' : 'Click to override'}
+              title={
+                isMarketValueOverridden ? 'Value overridden - click to reset' : 'Click to override'
+              }
             >
-              {isMarketValueOverridden ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+              {isMarketValueOverridden ? (
+                <Lock className="w-3.5 h-3.5" />
+              ) : (
+                <Unlock className="w-3.5 h-3.5" />
+              )}
             </button>
           </div>
           {isMarketValueOverridden ? (
@@ -206,24 +255,29 @@ const DualValuationPanel = ({
               {loading ? '...' : formatCurrency(displayMarketValue)}
             </div>
           )}
-          <div className="text-[10px] text-[var(--text-muted)] mt-1">
-            As-Is Condition
-          </div>
+          <div className="text-[10px] text-[var(--text-muted)] mt-1">As-Is Condition</div>
           <div className="text-xs text-[var(--text-secondary)] mt-1">
-            Range: {formatCompactCurrency(appraisalResult.rangeLow)} — {formatCompactCurrency(appraisalResult.rangeHigh)}
+            Range: {formatCompactCurrency(appraisalResult.rangeLow)} —{' '}
+            {formatCompactCurrency(appraisalResult.rangeHigh)}
           </div>
         </div>
 
         {/* ARV */}
         <div className="bg-[var(--surface-card)] rounded-lg p-3 border border-[rgba(4, 101, 242,0.25)]">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-semibold text-[var(--accent-sky)] uppercase tracking-wide">Est. After Repair Value</span>
+            <span className="text-xs font-semibold text-[var(--accent-sky)] uppercase tracking-wide">
+              Est. After Repair Value
+            </span>
             <button
               onClick={onToggleArvOverride}
               className={`p-1 rounded transition-colors ${isArvOverridden ? 'text-amber-500 bg-amber-50' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`}
               title={isArvOverridden ? 'Value overridden - click to reset' : 'Click to override'}
             >
-              {isArvOverridden ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+              {isArvOverridden ? (
+                <Lock className="w-3.5 h-3.5" />
+              ) : (
+                <Unlock className="w-3.5 h-3.5" />
+              )}
             </button>
           </div>
           {isArvOverridden ? (
@@ -241,12 +295,12 @@ const DualValuationPanel = ({
               {loading ? '...' : formatCurrency(displayArv)}
             </div>
           )}
-          <div className="text-[10px] text-[var(--text-muted)] mt-1">
-            Post-Rehab (+15% premium)
-          </div>
+          <div className="text-[10px] text-[var(--text-muted)] mt-1">Post-Rehab (+15% premium)</div>
           <div className="flex items-center gap-1 mt-1">
             <TrendingUp className="w-3 h-3 text-green-500" />
-            <span className="text-[10px] font-medium text-green-600">Includes appreciation adjustment</span>
+            <span className="text-[10px] font-medium text-green-600">
+              Includes appreciation adjustment
+            </span>
           </div>
         </div>
       </div>
@@ -275,7 +329,11 @@ const DualValuationPanel = ({
           className="px-3 py-2.5 rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] hover:bg-[var(--surface-elevated)] text-[var(--text-body)] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
           title="Download appraisal report as PDF"
         >
-          {downloadingReport ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+          {downloadingReport ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <FileDown className="w-4 h-4" />
+          )}
           PDF
         </button>
       </div>
@@ -284,11 +342,11 @@ const DualValuationPanel = ({
 }
 
 // Adjustment Grid Component
-const AdjustmentGrid = ({ 
+const AdjustmentGrid = ({
   compAdjustments,
   isExpanded,
-  onToggle 
-}: { 
+  onToggle,
+}: {
   compAdjustments: CompAdjustment[]
   isExpanded: boolean
   onToggle: () => void
@@ -303,10 +361,16 @@ const AdjustmentGrid = ({
       >
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-[var(--accent-sky)]" />
-          <span className="text-sm font-semibold text-[var(--text-body)]">Adjustment Breakdown</span>
+          <span className="text-sm font-semibold text-[var(--text-body)]">
+            Adjustment Breakdown
+          </span>
           <span className="text-xs text-[var(--text-muted)]">({compAdjustments.length} comps)</span>
         </div>
-        {isExpanded ? <ChevronUp className="w-4 h-4 text-[var(--text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />}
+        {isExpanded ? (
+          <ChevronUp className="w-4 h-4 text-[var(--text-muted)]" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />
+        )}
       </button>
 
       {isExpanded && (
@@ -315,40 +379,81 @@ const AdjustmentGrid = ({
             <table className="w-full text-xs">
               <thead className="bg-[var(--surface-elevated)]">
                 <tr>
-                  <th className="px-3 py-2 text-left font-semibold text-[var(--text-secondary)]">Comp Address</th>
-                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Base</th>
-                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Size</th>
-                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Bed</th>
-                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Bath</th>
-                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Age</th>
-                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Lot</th>
-                  <th className="px-3 py-2 text-right font-semibold text-[var(--accent-sky)]">Adjusted</th>
-                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">Weight</th>
+                  <th className="px-3 py-2 text-left font-semibold text-[var(--text-secondary)]">
+                    Comp Address
+                  </th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">
+                    Base
+                  </th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">
+                    Size
+                  </th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">
+                    Bed
+                  </th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">
+                    Bath
+                  </th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">
+                    Age
+                  </th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">
+                    Lot
+                  </th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--accent-sky)]">
+                    Adjusted
+                  </th>
+                  <th className="px-3 py-2 text-right font-semibold text-[var(--text-secondary)]">
+                    Weight
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {compAdjustments.map((ca, idx) => (
-                  <tr key={ca.compId} className={idx % 2 === 0 ? 'bg-[var(--surface-card)]' : 'bg-[var(--surface-elevated)]/50'}>
-                    <td className="px-3 py-2 text-[var(--text-body)] truncate max-w-[150px]" title={ca.compAddress}>
+                  <tr
+                    key={ca.compId}
+                    className={
+                      idx % 2 === 0 ? 'bg-[var(--surface-card)]' : 'bg-[var(--surface-elevated)]/50'
+                    }
+                  >
+                    <td
+                      className="px-3 py-2 text-[var(--text-body)] truncate max-w-[150px]"
+                      title={ca.compAddress}
+                    >
                       {ca.compAddress}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums text-[var(--text-secondary)]">
                       {formatCompactCurrency(ca.basePrice)}
                     </td>
-                    <td className={`px-3 py-2 text-right tabular-nums ${ca.sizeAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}>
-                      {ca.sizeAdjustment >= 0 ? '+' : ''}{formatCompactCurrency(ca.sizeAdjustment)}
+                    <td
+                      className={`px-3 py-2 text-right tabular-nums ${ca.sizeAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}
+                    >
+                      {ca.sizeAdjustment >= 0 ? '+' : ''}
+                      {formatCompactCurrency(ca.sizeAdjustment)}
                     </td>
-                    <td className={`px-3 py-2 text-right tabular-nums ${ca.bedroomAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}>
-                      {ca.bedroomAdjustment >= 0 ? '+' : ''}{formatCompactCurrency(ca.bedroomAdjustment)}
+                    <td
+                      className={`px-3 py-2 text-right tabular-nums ${ca.bedroomAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}
+                    >
+                      {ca.bedroomAdjustment >= 0 ? '+' : ''}
+                      {formatCompactCurrency(ca.bedroomAdjustment)}
                     </td>
-                    <td className={`px-3 py-2 text-right tabular-nums ${ca.bathroomAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}>
-                      {ca.bathroomAdjustment >= 0 ? '+' : ''}{formatCompactCurrency(ca.bathroomAdjustment)}
+                    <td
+                      className={`px-3 py-2 text-right tabular-nums ${ca.bathroomAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}
+                    >
+                      {ca.bathroomAdjustment >= 0 ? '+' : ''}
+                      {formatCompactCurrency(ca.bathroomAdjustment)}
                     </td>
-                    <td className={`px-3 py-2 text-right tabular-nums ${ca.ageAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}>
-                      {ca.ageAdjustment >= 0 ? '+' : ''}{formatCompactCurrency(ca.ageAdjustment)}
+                    <td
+                      className={`px-3 py-2 text-right tabular-nums ${ca.ageAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}
+                    >
+                      {ca.ageAdjustment >= 0 ? '+' : ''}
+                      {formatCompactCurrency(ca.ageAdjustment)}
                     </td>
-                    <td className={`px-3 py-2 text-right tabular-nums ${ca.lotAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}>
-                      {ca.lotAdjustment >= 0 ? '+' : ''}{formatCompactCurrency(ca.lotAdjustment)}
+                    <td
+                      className={`px-3 py-2 text-right tabular-nums ${ca.lotAdjustment >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}
+                    >
+                      {ca.lotAdjustment >= 0 ? '+' : ''}
+                      {formatCompactCurrency(ca.lotAdjustment)}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums font-semibold text-[var(--accent-sky-light)]">
                       {formatCompactCurrency(ca.adjustedPrice)}
@@ -368,19 +473,31 @@ const AdjustmentGrid = ({
 }
 
 // Enhanced Comp Card
-const CompCard = ({ 
-  comp, 
-  subject, 
-  isSelected, 
-  onToggle, 
-  isExpanded, 
+const CompCard = ({
+  comp,
+  subject,
+  isSelected,
+  onToggle,
+  isExpanded,
   onExpand,
   onRefreshComp,
   refreshing,
-  freshnessBadge
-}: { 
+  freshnessBadge,
+}: {
   comp: SaleComp
-  subject: { address: string; city: string; state: string; zip: string; sqft: number; beds: number; baths: number; yearBuilt: number; lotSize: number; latitude: number; longitude: number }
+  subject: {
+    address: string
+    city: string
+    state: string
+    zip: string
+    sqft: number
+    beds: number
+    baths: number
+    yearBuilt: number
+    lotSize: number
+    latitude: number
+    longitude: number
+  }
   isSelected: boolean
   onToggle: () => void
   isExpanded: boolean
@@ -390,7 +507,7 @@ const CompCard = ({
   freshnessBadge?: { label: string; color: string; bgColor: string } | null
 }) => {
   // Calculate similarity and adjustments for this comp
-    const subjectForCalc: AppraisalSubjectProperty = {
+  const subjectForCalc: AppraisalSubjectProperty = {
     sqft: subject.sqft,
     beds: subject.beds,
     baths: subject.baths,
@@ -402,16 +519,20 @@ const CompCard = ({
   const adjustments = calculateSaleAdjustments(subjectForCalc, compForCalc)
 
   return (
-    <div className={`relative rounded-xl border transition-all overflow-hidden ${
-      isSelected 
-        ? 'bg-[var(--surface-card)] ring-2 ring-[var(--accent-sky)]/20 border-[rgba(4, 101, 242,0.25)]' 
-        : 'bg-[var(--surface-elevated)] border-[var(--border-default)] hover:border-[var(--border-default)]'
-    }`}>
+    <div
+      className={`relative rounded-xl border transition-all overflow-hidden ${
+        isSelected
+          ? 'bg-[var(--surface-card)] ring-2 ring-[var(--accent-sky)]/20 border-[rgba(4, 101, 242,0.25)]'
+          : 'bg-[var(--surface-elevated)] border-[var(--border-default)] hover:border-[var(--border-default)]'
+      }`}
+    >
       {/* Selection checkbox */}
       <button
         onClick={onToggle}
         className={`absolute top-3 left-3 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-          isSelected ? 'bg-[var(--accent-sky)] border-[var(--accent-sky)]' : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:border-[var(--accent-sky)]'
+          isSelected
+            ? 'bg-[var(--accent-sky)] border-[var(--accent-sky)]'
+            : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:border-[var(--accent-sky)]'
         }`}
       >
         {isSelected && <Check className="w-3 h-3 text-white" />}
@@ -433,11 +554,13 @@ const CompCard = ({
         {/* Image */}
         <div className="relative w-24 h-24 flex-shrink-0 bg-[var(--surface-elevated)]">
           {comp.imageUrl ? (
-            <img 
-              src={comp.imageUrl} 
-              alt="" 
-              className="w-full h-full object-cover" 
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} 
+            <img
+              src={comp.imageUrl}
+              alt=""
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                ;(e.target as HTMLImageElement).style.display = 'none'
+              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-[var(--chart-grid)]">
@@ -445,7 +568,9 @@ const CompCard = ({
             </div>
           )}
           <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-[var(--surface-card)]/90 backdrop-blur-sm shadow-sm">
-            <span className="text-[10px] font-semibold text-[var(--accent-sky)] tabular-nums">{comp.distanceMiles?.toFixed(2)} mi</span>
+            <span className="text-[10px] font-semibold text-[var(--accent-sky)] tabular-nums">
+              {comp.distanceMiles?.toFixed(2)} mi
+            </span>
           </div>
         </div>
 
@@ -453,28 +578,51 @@ const CompCard = ({
         <div className="flex-1 p-3 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="min-w-0 pl-4">
-              <h4 className="text-sm font-semibold text-[var(--text-heading)] truncate">{comp.address}</h4>
-              <p className="text-xs text-[var(--text-muted)] truncate">{comp.city}, {comp.state}</p>
+              <h4 className="text-sm font-semibold text-[var(--text-heading)] truncate">
+                {comp.address}
+              </h4>
+              <p className="text-xs text-[var(--text-muted)] truncate">
+                {comp.city}, {comp.state}
+              </p>
             </div>
             <div className="text-right flex-shrink-0">
-              <p className="text-sm font-bold text-[var(--text-heading)] tabular-nums">{formatCurrency(comp.salePrice)}</p>
-              <p className="text-[10px] text-[var(--text-muted)] tabular-nums">${comp.pricePerSqft}/sf</p>
+              <p className="text-sm font-bold text-[var(--text-heading)] tabular-nums">
+                {formatCurrency(comp.salePrice)}
+              </p>
+              <p className="text-[10px] text-[var(--text-muted)] tabular-nums">
+                ${comp.pricePerSqft}/sf
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)] mb-1 pl-4">
-            <span className="flex items-center gap-0.5"><Bed className="w-3 h-3" />{comp.beds}</span>
-            <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{comp.baths}</span>
-            <span className="flex items-center gap-0.5 tabular-nums"><Square className="w-3 h-3" />{comp.sqft?.toLocaleString()} sq ft</span>
-            <span className="flex items-center gap-0.5 tabular-nums">Year Built {comp.yearBuilt}</span>
+            <span className="flex items-center gap-0.5">
+              <Bed className="w-3 h-3" />
+              {comp.beds}
+            </span>
+            <span className="flex items-center gap-0.5">
+              <Bath className="w-3 h-3" />
+              {comp.baths}
+            </span>
+            <span className="flex items-center gap-0.5 tabular-nums">
+              <Square className="w-3 h-3" />
+              {comp.sqft?.toLocaleString()} sq ft
+            </span>
+            <span className="flex items-center gap-0.5 tabular-nums">
+              Year Built {comp.yearBuilt}
+            </span>
           </div>
 
           <div className="flex items-center justify-between pl-4">
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-[var(--text-muted)]">Sold {formatDate(comp.saleDate)}</span>
-              <span className="text-[10px] px-1 py-0.5 rounded bg-[var(--surface-elevated)] text-[var(--text-secondary)]">{getDaysAgo(comp.saleDate)}</span>
+              <span className="text-[10px] text-[var(--text-muted)]">
+                Sold {formatDate(comp.saleDate)}
+              </span>
+              <span className="text-[10px] px-1 py-0.5 rounded bg-[var(--surface-elevated)] text-[var(--text-secondary)]">
+                {getDaysAgo(comp.saleDate)}
+              </span>
               {freshnessBadge && (
-                <span 
+                <span
                   className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
                   style={{ backgroundColor: freshnessBadge.bgColor, color: freshnessBadge.color }}
                 >
@@ -482,17 +630,31 @@ const CompCard = ({
                 </span>
               )}
             </div>
-            <button onClick={onExpand} className="text-xs text-[var(--accent-sky)] hover:text-[var(--accent-sky-light)] font-medium flex items-center gap-0.5">
-              Details <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            <button
+              onClick={onExpand}
+              className="text-xs text-[var(--accent-sky)] hover:text-[var(--accent-sky-light)] font-medium flex items-center gap-0.5"
+            >
+              Details{' '}
+              <ChevronDown
+                className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+              />
             </button>
           </div>
         </div>
 
         {/* Match Score */}
         <div className="w-16 flex flex-col items-center justify-center bg-[var(--surface-elevated)] border-l border-[var(--border-subtle)]">
-          <div className="text-xl font-bold tabular-nums" style={{ 
-            color: similarity.overall >= 95 ? 'var(--accent-sky)' : similarity.overall >= 90 ? '#0E7490' : '#F59E0B' 
-          }}>
+          <div
+            className="text-xl font-bold tabular-nums"
+            style={{
+              color:
+                similarity.overall >= 95
+                  ? 'var(--accent-sky)'
+                  : similarity.overall >= 90
+                    ? '#0E7490'
+                    : '#F59E0B',
+            }}
+          >
             {similarity.overall}
           </div>
           <span className="text-[10px] text-[var(--text-muted)]">% Match</span>
@@ -504,7 +666,9 @@ const CompCard = ({
         <div className="border-t border-[var(--border-subtle)] p-3 bg-[var(--surface-elevated)]/50">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h5 className="text-[10px] font-semibold text-[var(--accent-sky)] uppercase tracking-wide mb-2">Similarity</h5>
+              <h5 className="text-[10px] font-semibold text-[var(--accent-sky)] uppercase tracking-wide mb-2">
+                Similarity
+              </h5>
               <div className="space-y-1.5">
                 <SimilarityBar label="Location" value={similarity.location} icon={MapPin} />
                 <SimilarityBar label="Size" value={similarity.size} icon={Square} />
@@ -514,7 +678,9 @@ const CompCard = ({
               </div>
             </div>
             <div>
-              <h5 className="text-[10px] font-semibold text-[var(--text-body)] uppercase tracking-wide mb-2">Adjustments</h5>
+              <h5 className="text-[10px] font-semibold text-[var(--text-body)] uppercase tracking-wide mb-2">
+                Adjustments
+              </h5>
               <div className="space-y-1">
                 {[
                   { label: 'Size', value: adjustments.size },
@@ -525,14 +691,19 @@ const CompCard = ({
                 ].map((adj) => (
                   <div key={adj.label} className="flex justify-between text-xs">
                     <span className="text-[var(--text-secondary)]">{adj.label}</span>
-                    <span className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}>
-                      {adj.value >= 0 ? '+' : ''}{formatCurrency(adj.value)}
+                    <span
+                      className={`font-medium tabular-nums ${adj.value >= 0 ? 'text-[var(--accent-sky)]' : 'text-red-500'}`}
+                    >
+                      {adj.value >= 0 ? '+' : ''}
+                      {formatCurrency(adj.value)}
                     </span>
                   </div>
                 ))}
                 <div className="flex justify-between text-xs pt-1 border-t border-[var(--border-default)]">
                   <span className="font-semibold text-[var(--text-body)]">Adjusted</span>
-                  <span className="font-bold text-[var(--accent-sky)] tabular-nums">{formatCurrency(comp.salePrice + adjustments.total)}</span>
+                  <span className="font-bold text-[var(--accent-sky)] tabular-nums">
+                    {formatCurrency(comp.salePrice + adjustments.total)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -548,7 +719,7 @@ const CompCard = ({
 // ============================================
 export function SalesCompsSection() {
   const { propertyData, assumptions, updateAssumption } = useWorksheetStore()
-  
+
   const [comps, setComps] = useState<SaleComp[]>([])
   const [loading, setLoading] = useState(false)
   const [loadFailed, setLoadFailed] = useState(false)
@@ -558,7 +729,7 @@ export function SalesCompsSection() {
   const [refreshingCompId, setRefreshingCompId] = useState<string | number | null>(null)
   const [showAdjustmentGrid, setShowAdjustmentGrid] = useState(false)
   const [fetchOffset, setFetchOffset] = useState(0)
-  
+
   // Override state
   const [isMarketValueOverridden, setIsMarketValueOverridden] = useState(false)
   const [isArvOverridden, setIsArvOverridden] = useState(false)
@@ -576,48 +747,60 @@ export function SalesCompsSection() {
 
   // Build subject property from worksheet data
   const snapshot = propertyData?.property_data_snapshot
-  const subject = useMemo(() => ({
-    address: snapshot?.street || snapshot?.streetAddress || snapshot?.address || propertyData?.address_street || '',
-    city: snapshot?.city || propertyData?.address_city || '',
-    state: snapshot?.state || propertyData?.address_state || '',
-    zip: snapshot?.zipCode || snapshot?.zipcode || propertyData?.address_zip || '',
-    price: assumptions.purchasePrice || snapshot?.listPrice || 0,
-    beds: snapshot?.bedrooms || 0,
-    baths: snapshot?.bathrooms || 0,
-    sqft: snapshot?.sqft || snapshot?.livingArea || 0,
-    lotSize: snapshot?.lotSize || 0,
-    yearBuilt: snapshot?.yearBuilt || 0,
-    latitude: snapshot?.latitude ?? null,
-    longitude: snapshot?.longitude ?? null,
-    rehabCost: assumptions.rehabCosts || 0,
-  }), [snapshot, propertyData, assumptions.purchasePrice, assumptions.rehabCosts])
+  const subject = useMemo(
+    () => ({
+      address:
+        snapshot?.street ||
+        snapshot?.streetAddress ||
+        snapshot?.address ||
+        propertyData?.address_street ||
+        '',
+      city: snapshot?.city || propertyData?.address_city || '',
+      state: snapshot?.state || propertyData?.address_state || '',
+      zip: snapshot?.zipCode || snapshot?.zipcode || propertyData?.address_zip || '',
+      price: assumptions.purchasePrice || snapshot?.listPrice || 0,
+      beds: snapshot?.bedrooms || 0,
+      baths: snapshot?.bathrooms || 0,
+      sqft: snapshot?.sqft || snapshot?.livingArea || 0,
+      lotSize: snapshot?.lotSize || 0,
+      yearBuilt: snapshot?.yearBuilt || 0,
+      latitude: snapshot?.latitude ?? null,
+      longitude: snapshot?.longitude ?? null,
+      rehabCost: assumptions.rehabCosts || 0,
+    }),
+    [snapshot, propertyData, assumptions.purchasePrice, assumptions.rehabCosts],
+  )
 
   const zpid = propertyData?.zpid?.toString() || snapshot?.zpid?.toString() || ''
 
-  const subjectForComps: CompsSubjectProperty | undefined = useMemo(() => (subject.address || zpid ? {
-    zpid: zpid || '',
-    address: subject.address,
-    city: subject.city,
-    state: subject.state,
-    zip: subject.zip,
-    beds: subject.beds,
-    baths: subject.baths,
-    sqft: subject.sqft,
-    yearBuilt: subject.yearBuilt,
-    propertyType: '',
-    listPrice: subject.price,
-    zestimate: null,
-    rentZestimate: null,
-    latitude: subject.latitude,
-    longitude: subject.longitude,
-  } : undefined), [subject, zpid])
+  const subjectForComps: CompsSubjectProperty | undefined = useMemo(
+    () =>
+      subject.address || zpid
+        ? {
+            zpid: zpid || '',
+            address: subject.address,
+            city: subject.city,
+            state: subject.state,
+            zip: subject.zip,
+            beds: subject.beds,
+            baths: subject.baths,
+            sqft: subject.sqft,
+            yearBuilt: subject.yearBuilt,
+            propertyType: '',
+            listPrice: subject.price,
+            zestimate: null,
+            rentZestimate: null,
+            latitude: subject.latitude,
+            longitude: subject.longitude,
+          }
+        : undefined,
+    [subject, zpid],
+  )
 
   // Calculate appraisal values from selected comps
   const appraisalResult = useMemo(() => {
-    const selectedComps = comps
-      .filter(c => selectedCompIds.has(c.id))
-      .map(toCompProperty)
-    
+    const selectedComps = comps.filter((c) => selectedCompIds.has(c.id)).map(toCompProperty)
+
     const subjectForCalc: AppraisalSubjectProperty = {
       sqft: subject.sqft,
       beds: subject.beds,
@@ -626,37 +809,42 @@ export function SalesCompsSection() {
       lotSize: subject.lotSize,
       rehabCost: subject.rehabCost,
     }
-    
+
     return calculateAppraisalValues(subjectForCalc, selectedComps)
   }, [selectedCompIds, comps, subject])
 
   // Fetch comps (non-blocking; never blocks core analysis)
-  const fetchComps = useCallback(async (offset = 0, excludeZpids: string[] = []) => {
-    setLoading(true)
-    setLoadFailed(false)
-
-    const identifier = {
-      zpid: zpid || undefined,
-      address: subject.address ? `${subject.address}, ${subject.city}, ${subject.state} ${subject.zip}`.trim() : undefined,
-      limit: 10,
-      offset,
-      exclude_zpids: excludeZpids.length > 0 ? excludeZpids.join(',') : undefined,
-      subject_lat: subject.latitude ?? undefined,
-      subject_lon: subject.longitude ?? undefined,
-    }
-
-    const result = await fetchSaleComps(identifier, subjectForComps ?? undefined)
-
-    setLoading(false)
-    if (result.ok && result.data) {
-      setComps(result.data)
+  const fetchComps = useCallback(
+    async (offset = 0, excludeZpids: string[] = []) => {
+      setLoading(true)
       setLoadFailed(false)
-      return result.data
-    }
-    setLoadFailed(true)
-    setComps([])
-    return []
-  }, [subject, zpid, subjectForComps])
+
+      const identifier = {
+        zpid: zpid || undefined,
+        address: subject.address
+          ? `${subject.address}, ${subject.city}, ${subject.state} ${subject.zip}`.trim()
+          : undefined,
+        limit: 10,
+        offset,
+        exclude_zpids: excludeZpids.length > 0 ? excludeZpids.join(',') : undefined,
+        subject_lat: subject.latitude ?? undefined,
+        subject_lon: subject.longitude ?? undefined,
+      }
+
+      const result = await fetchSaleComps(identifier, subjectForComps ?? undefined)
+
+      setLoading(false)
+      if (result.ok && result.data) {
+        setComps(result.data)
+        setLoadFailed(false)
+        return result.data
+      }
+      setLoadFailed(true)
+      setComps([])
+      return []
+    },
+    [subject, zpid, subjectForComps],
+  )
 
   // Initial fetch when we have an identifier (runs when zpid/address becomes available)
   useEffect(() => {
@@ -664,7 +852,7 @@ export function SalesCompsSection() {
     const doFetch = async () => {
       const fetched = await fetchComps()
       if (fetched.length > 0) {
-        setSelectedCompIds(new Set(fetched.slice(0, 3).map(c => c.id)))
+        setSelectedCompIds(new Set(fetched.slice(0, 3).map((c) => c.id)))
       }
     }
     doFetch()
@@ -673,14 +861,18 @@ export function SalesCompsSection() {
   // Load source estimates from shared property cache for consensus rail
   useEffect(() => {
     if (!subject.address) return
-    const fullAddr = [subject.address, subject.city, subject.state, subject.zip].filter(Boolean).join(', ')
+    const fullAddr = [subject.address, subject.city, subject.state, subject.zip]
+      .filter(Boolean)
+      .join(', ')
     fetchProperty(fullAddr, {
       city: subject.city || undefined,
       state: subject.state || undefined,
       zip_code: subject.zip || undefined,
     })
       .then((data) => setIqSources(mapPropertyToIQSources(data)))
-      .catch(() => { /* sources unavailable — consensus rail hides gracefully */ })
+      .catch(() => {
+        /* sources unavailable — consensus rail hides gracefully */
+      })
   }, [subject.address, subject.city, subject.state, subject.zip, fetchProperty])
 
   // Compute consensus from sources + comp appraisal
@@ -695,7 +887,7 @@ export function SalesCompsSection() {
     setComps(fetched)
     setFetchOffset(0)
     if (fetched.length > 0) {
-      setSelectedCompIds(new Set(fetched.slice(0, 3).map(c => c.id)))
+      setSelectedCompIds(new Set(fetched.slice(0, 3).map((c) => c.id)))
     }
   }
 
@@ -704,17 +896,17 @@ export function SalesCompsSection() {
     setLoading(true)
     try {
       const selectedZpids = comps
-        .filter(c => selectedCompIds.has(c.id))
-        .map(c => c.zpid || String(c.id))
+        .filter((c) => selectedCompIds.has(c.id))
+        .map((c) => c.zpid || String(c.id))
         .filter(Boolean)
-      
-      const unselectedCount = comps.filter(c => !selectedCompIds.has(c.id)).length
+
+      const unselectedCount = comps.filter((c) => !selectedCompIds.has(c.id)).length
       const newOffset = fetchOffset + unselectedCount
-      
+
       const newComps = await fetchComps(newOffset, selectedZpids)
-      
+
       // Keep selected comps, replace unselected
-      const selectedComps = comps.filter(c => selectedCompIds.has(c.id))
+      const selectedComps = comps.filter((c) => selectedCompIds.has(c.id))
       setComps([...selectedComps, ...newComps.slice(0, unselectedCount)])
       setFetchOffset(newOffset)
     } finally {
@@ -727,15 +919,15 @@ export function SalesCompsSection() {
     setRefreshingCompId(compId)
     try {
       const excludeZpids = comps
-        .filter(c => c.id !== compId)
-        .map(c => c.zpid || String(c.id))
+        .filter((c) => c.id !== compId)
+        .map((c) => c.zpid || String(c.id))
         .filter(Boolean)
-      
+
       const newComps = await fetchComps(fetchOffset, excludeZpids)
-      
+
       if (newComps.length > 0) {
-        setComps(prev => prev.map(c => c.id === compId ? newComps[0] : c))
-        setFetchOffset(prev => prev + 1)
+        setComps((prev) => prev.map((c) => (c.id === compId ? newComps[0] : c)))
+        setFetchOffset((prev) => prev + 1)
       }
     } finally {
       setRefreshingCompId(null)
@@ -743,7 +935,7 @@ export function SalesCompsSection() {
   }
 
   const toggleComp = (id: number | string) => {
-    setSelectedCompIds(prev => {
+    setSelectedCompIds((prev) => {
       const newSet = new Set(prev)
       if (newSet.has(id)) {
         newSet.delete(id)
@@ -758,7 +950,7 @@ export function SalesCompsSection() {
   const handleApplyValues = () => {
     const marketValue = isMarketValueOverridden ? manualMarketValue : appraisalResult.marketValue
     const arv = isArvOverridden ? manualArv : appraisalResult.arv
-    
+
     if (arv > 0) {
       updateAssumption('arv', arv)
     }
@@ -798,7 +990,9 @@ export function SalesCompsSection() {
     if (selectedCompIds.size === 0) return
     setDownloadingReport(true)
     try {
-      const fullAddress = [subject.address, subject.city, subject.state, subject.zip].filter(Boolean).join(', ')
+      const fullAddress = [subject.address, subject.city, subject.state, subject.zip]
+        .filter(Boolean)
+        .join(', ')
       const payload = buildAppraisalPayload({
         appraisalResult,
         comps,
@@ -815,21 +1009,23 @@ export function SalesCompsSection() {
         },
         overrideMarketValue: isMarketValueOverridden ? manualMarketValue : null,
         overrideArv: isArvOverridden ? manualArv : null,
-        propertyData: propertyData?.property_data_snapshot ? {
-          details: {
-            property_type: snapshot?.propertyType || snapshot?.property_type,
-            stories: snapshot?.stories,
-            heating_type: snapshot?.heatingType || snapshot?.heating_type,
-            cooling_type: snapshot?.coolingType || snapshot?.cooling_type,
-            has_garage: snapshot?.hasGarage || snapshot?.has_garage,
-            garage_spaces: snapshot?.garageSpaces || snapshot?.garage_spaces,
-            exterior_type: snapshot?.exteriorType || snapshot?.exterior_type,
-            roof_type: snapshot?.roofType || snapshot?.roof_type,
-            foundation_type: snapshot?.foundationType || snapshot?.foundation_type,
-            has_fireplace: snapshot?.hasFireplace || snapshot?.has_fireplace,
-            has_pool: snapshot?.hasPool || snapshot?.has_pool,
-          },
-        } : null,
+        propertyData: propertyData?.property_data_snapshot
+          ? {
+              details: {
+                property_type: snapshot?.propertyType || snapshot?.property_type,
+                stories: snapshot?.stories,
+                heating_type: snapshot?.heatingType || snapshot?.heating_type,
+                cooling_type: snapshot?.coolingType || snapshot?.cooling_type,
+                has_garage: snapshot?.hasGarage || snapshot?.has_garage,
+                garage_spaces: snapshot?.garageSpaces || snapshot?.garage_spaces,
+                exterior_type: snapshot?.exteriorType || snapshot?.exterior_type,
+                roof_type: snapshot?.roofType || snapshot?.roof_type,
+                foundation_type: snapshot?.foundationType || snapshot?.foundation_type,
+                has_fireplace: snapshot?.hasFireplace || snapshot?.has_fireplace,
+                has_pool: snapshot?.hasPool || snapshot?.has_pool,
+              },
+            }
+          : null,
       })
       await downloadAppraisalReportPDF(payload)
     } catch (err) {
@@ -841,7 +1037,7 @@ export function SalesCompsSection() {
 
   // Filter comps by recency
   const filteredComps = useMemo(() => {
-    return comps.filter(c => {
+    return comps.filter((c) => {
       const daysAgo = getSaleDaysAgo(c.saleDate)
       if (recencyFilter === '30') return daysAgo <= 30
       if (recencyFilter === '90') return daysAgo <= 90
@@ -855,9 +1051,16 @@ export function SalesCompsSection() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-[var(--text-heading)]">Appraisal Toolkit</h2>
-          <p className="text-sm text-[var(--text-secondary)]">Comparable sales for {subject.address}</p>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Comparable sales for {subject.address}
+          </p>
           <p className="text-xs text-[var(--text-muted)] mt-1">
-            Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            Last updated:{' '}
+            {new Date().toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+            })}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -945,7 +1148,7 @@ export function SalesCompsSection() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setSelectedCompIds(new Set(filteredComps.map(c => c.id)))}
+            onClick={() => setSelectedCompIds(new Set(filteredComps.map((c) => c.id)))}
             className="px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] rounded-lg"
           >
             Select All
@@ -962,8 +1165,12 @@ export function SalesCompsSection() {
       {/* Loading */}
       {loading && comps.length === 0 && !loadFailed && (
         <div className="space-y-3">
-          {[1, 2, 3].map(i => <CompCardSkeleton key={i} />)}
-          <p className="text-xs text-[var(--text-secondary)] text-center">Loading comparable sales...</p>
+          {[1, 2, 3].map((i) => (
+            <CompCardSkeleton key={i} />
+          ))}
+          <p className="text-xs text-[var(--text-secondary)] text-center">
+            Loading comparable sales...
+          </p>
         </div>
       )}
 
@@ -971,9 +1178,12 @@ export function SalesCompsSection() {
       {loadFailed && !loading && (
         <div className="rounded-xl border border-[var(--border-default)] p-6 text-center bg-[var(--surface-elevated)]/80">
           <Info className="mx-auto mb-3 text-[var(--text-muted)] w-10 h-10" aria-hidden />
-          <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">Comparable sales temporarily unavailable</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">
+            Comparable sales temporarily unavailable
+          </h3>
           <p className="text-xs text-[var(--text-secondary)] mb-4 max-w-sm mx-auto">
-            Your deal analysis and scores above are complete. Comps will appear here when the data source is back online.
+            Your deal analysis and scores above are complete. Comps will appear here when the data
+            source is back online.
           </p>
           <button
             type="button"
@@ -989,15 +1199,19 @@ export function SalesCompsSection() {
       {!loading && !loadFailed && comps.length === 0 && (
         <div className="bg-[var(--surface-elevated)] border border-[var(--border-default)] rounded-xl p-6 text-center">
           <Building2 className="mx-auto mb-2 text-[var(--text-muted)] w-8 h-8" />
-          <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">No Comparable Sales Found</h3>
-          <p className="text-xs text-[var(--text-secondary)]">Try refreshing or check the property address</p>
+          <h3 className="text-sm font-semibold text-[var(--text-body)] mb-1">
+            No Comparable Sales Found
+          </h3>
+          <p className="text-xs text-[var(--text-secondary)]">
+            Try refreshing or check the property address
+          </p>
         </div>
       )}
 
       {/* Comps List */}
       {!loading && !loadFailed && comps.length > 0 && (
         <div className="space-y-3">
-          {filteredComps.map(comp => {
+          {filteredComps.map((comp) => {
             const freshnessBadge = getFreshnessBadge(comp.saleDate)
             return (
               <CompCard
@@ -1022,22 +1236,24 @@ export function SalesCompsSection() {
         <div className="mt-4 p-3 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)]">
           <div className="flex items-center justify-between">
             <span className="text-xs text-[var(--text-secondary)]">
-              {comps.filter(c => c.distanceMiles <= 0.5).length} of {comps.length} comps within 0.5 mi
+              {comps.filter((c) => c.distanceMiles <= 0.5).length} of {comps.length} comps within
+              0.5 mi
             </span>
-            <span className={`text-xs font-semibold ${
-              comps.filter(c => c.distanceMiles <= 0.5).length >= 3 
-                ? 'text-[var(--accent-sky)]' 
-                : comps.filter(c => c.distanceMiles <= 1).length >= 3 
-                  ? 'text-amber-500' 
-                  : 'text-[var(--text-secondary)]'
-            }`}>
-              Location Quality: {
-                comps.filter(c => c.distanceMiles <= 0.5).length >= 3 
-                  ? 'EXCELLENT' 
-                  : comps.filter(c => c.distanceMiles <= 1).length >= 3 
-                    ? 'GOOD' 
-                    : 'FAIR'
-              }
+            <span
+              className={`text-xs font-semibold ${
+                comps.filter((c) => c.distanceMiles <= 0.5).length >= 3
+                  ? 'text-[var(--accent-sky)]'
+                  : comps.filter((c) => c.distanceMiles <= 1).length >= 3
+                    ? 'text-amber-500'
+                    : 'text-[var(--text-secondary)]'
+              }`}
+            >
+              Location Quality:{' '}
+              {comps.filter((c) => c.distanceMiles <= 0.5).length >= 3
+                ? 'EXCELLENT'
+                : comps.filter((c) => c.distanceMiles <= 1).length >= 3
+                  ? 'GOOD'
+                  : 'FAIR'}
             </span>
           </div>
         </div>

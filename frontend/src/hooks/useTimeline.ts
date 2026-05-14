@@ -19,8 +19,7 @@ export const TIMELINE_KEYS = {
 export function useTimeline(propertyId: string | null) {
   return useQuery({
     queryKey: TIMELINE_KEYS.forProperty(propertyId ?? ''),
-    queryFn: () =>
-      api.get<TimelineEvent[]>(`/api/v1/properties/saved/${propertyId}/timeline`),
+    queryFn: () => api.get<TimelineEvent[]>(`/api/v1/properties/saved/${propertyId}/timeline`),
     enabled: !!propertyId,
     staleTime: 10_000,
   })
@@ -30,10 +29,7 @@ export function useAddNote(propertyId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (text: string) =>
-      api.post<TimelineEvent>(
-        `/api/v1/properties/saved/${propertyId}/timeline/notes`,
-        { text },
-      ),
+      api.post<TimelineEvent>(`/api/v1/properties/saved/${propertyId}/timeline/notes`, { text }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: TIMELINE_KEYS.forProperty(propertyId) })
       qc.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.lists() })
@@ -45,9 +41,7 @@ export function useDeleteNote(propertyId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (adjustmentId: string) =>
-      api.delete<void>(
-        `/api/v1/properties/saved/${propertyId}/timeline/notes/${adjustmentId}`,
-      ),
+      api.delete<void>(`/api/v1/properties/saved/${propertyId}/timeline/notes/${adjustmentId}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: TIMELINE_KEYS.forProperty(propertyId) })
     },

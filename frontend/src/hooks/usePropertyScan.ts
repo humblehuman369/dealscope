@@ -1,107 +1,107 @@
-'use client';
+'use client'
 
-import { useState, useCallback } from 'react';
-import { useGeolocation } from './useGeolocation';
-import { useDeviceOrientation } from './useDeviceOrientation';
-import { calculateTargetPoint, generateScanCone } from '@/lib/geoCalculations';
-import { reverseGeocodeProperty, type GeocodedProperty } from '@/lib/reverseGeocode';
+import { useState, useCallback } from 'react'
+import { useGeolocation } from './useGeolocation'
+import { useDeviceOrientation } from './useDeviceOrientation'
+import { calculateTargetPoint, generateScanCone } from '@/lib/geoCalculations'
+import { reverseGeocodeProperty, type GeocodedProperty } from '@/lib/reverseGeocode'
 
 export interface ScanResult {
-  property: GeocodedProperty;
-  confidence: number;
-  scanTime: number;
-  heading: number;
-  distance: number;
+  property: GeocodedProperty
+  confidence: number
+  scanTime: number
+  heading: number
+  distance: number
 }
 
 /**
  * Hook for performing property scans using GPS and compass.
  */
 export function usePropertyScan() {
-  const geolocation = useGeolocation({ watchPosition: true });
-  const orientation = useDeviceOrientation();
-  
-  const [isScanning, setIsScanning] = useState(false);
-  const [result, setResult] = useState<ScanResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const geolocation = useGeolocation({ watchPosition: true })
+  const orientation = useDeviceOrientation()
 
-  const performScan = useCallback(async (
-    estimatedDistance: number = 50,
-    manualHeading?: number
-  ) => {
-    // Validate location is ready
-    if (!geolocation.isReady || geolocation.latitude === null || geolocation.longitude === null) {
-      setError('GPS not ready. Please wait for location lock.');
-      return;
-    }
+  const [isScanning, setIsScanning] = useState(false)
+  const [result, setResult] = useState<ScanResult | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-    // Use manual heading, device heading, or default to North
-    const heading = manualHeading ?? orientation.heading ?? 0;
+  const performScan = useCallback(
+    async (estimatedDistance: number = 50, manualHeading?: number) => {
+      // Validate location is ready
+      if (!geolocation.isReady || geolocation.latitude === null || geolocation.longitude === null) {
+        setError('GPS not ready. Please wait for location lock.')
+        return
+      }
 
-    setIsScanning(true);
-    setError(null);
-    setResult(null);
+      // Use manual heading, device heading, or default to North
+      const heading = manualHeading ?? orientation.heading ?? 0
 
-    const startTime = Date.now();
+      setIsScanning(true)
+      setError(null)
+      setResult(null)
 
-    try {
-      const userLat = geolocation.latitude;
-      const userLng = geolocation.longitude;
+      const startTime = Date.now()
 
-      console.log(`Scanning from: ${userLat}, ${userLng} heading ${heading}°`);
+      try {
+        const userLat = geolocation.latitude
+        const userLng = geolocation.longitude
 
-      // Calculate target point based on heading and distance
-      const targetPoint = calculateTargetPoint(userLat, userLng, heading, estimatedDistance);
+        console.log(`Scanning from: ${userLat}, ${userLng} heading ${heading}°`)
 
-      // Generate scan cone for better matching
-      const scanPoints = generateScanCone(
-        userLat,
-        userLng,
-        heading,
-        Math.max(10, estimatedDistance - 20),
-        estimatedDistance + 30,
-        25
-      );
+        // Calculate target point based on heading and distance
+        const targetPoint = calculateTargetPoint(userLat, userLng, heading, estimatedDistance)
 
-      let matchedProperty = await reverseGeocodeProperty(targetPoint.lat, targetPoint.lng);
-      let confidence = 95;
+        // Generate scan cone for better matching
+        const scanPoints = generateScanCone(
+          userLat,
+          userLng,
+          heading,
+          Math.max(10, estimatedDistance - 20),
+          estimatedDistance + 30,
+          25,
+        )
 
-      if (!matchedProperty) {
-        for (const point of scanPoints.slice(0, 10)) {
-          matchedProperty = await reverseGeocodeProperty(point.lat, point.lng);
-          if (matchedProperty) {
-            confidence = Math.max(50, 90 - Math.abs(point.angle) * 2);
-            break;
+        let matchedProperty = await reverseGeocodeProperty(targetPoint.lat, targetPoint.lng)
+        let confidence = 95
+
+        if (!matchedProperty) {
+          for (const point of scanPoints.slice(0, 10)) {
+            matchedProperty = await reverseGeocodeProperty(point.lat, point.lng)
+            if (matchedProperty) {
+              confidence = Math.max(50, 90 - Math.abs(point.angle) * 2)
+              break
+            }
           }
         }
+
+        if (!matchedProperty) {
+          throw new Error('No property found. Try adjusting distance or aim.')
+        }
+
+        const scanResult: ScanResult = {
+          property: matchedProperty,
+          confidence,
+          scanTime: Date.now() - startTime,
+          heading,
+          distance: estimatedDistance,
+        }
+
+        setResult(scanResult)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Scan failed. Please try again.'
+        setError(message)
+        console.error('Property scan error:', err)
+      } finally {
+        setIsScanning(false)
       }
-
-      if (!matchedProperty) {
-        throw new Error('No property found. Try adjusting distance or aim.');
-      }
-
-      const scanResult: ScanResult = {
-        property: matchedProperty,
-        confidence,
-        scanTime: Date.now() - startTime,
-        heading,
-        distance: estimatedDistance,
-      };
-
-      setResult(scanResult);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Scan failed. Please try again.';
-      setError(message);
-      console.error('Property scan error:', err);
-    } finally {
-      setIsScanning(false);
-    }
-  }, [geolocation, orientation.heading]);
+    },
+    [geolocation, orientation.heading],
+  )
 
   const clearResult = useCallback(() => {
-    setResult(null);
-    setError(null);
-  }, []);
+    setResult(null)
+    setError(null)
+  }, [])
 
   return {
     // Location state
@@ -110,7 +110,7 @@ export function usePropertyScan() {
     accuracy: geolocation.accuracy,
     isLocationReady: geolocation.isReady,
     locationError: geolocation.error,
-    
+
     // Orientation state
     heading: orientation.heading,
     hasCompass: orientation.hasCompass,
@@ -118,16 +118,15 @@ export function usePropertyScan() {
     isMobileDevice: orientation.isMobileDevice,
     permissionRequested: orientation.permissionRequested,
     requestOrientationPermission: orientation.requestPermission,
-    
+
     // Scan state
     isScanning,
     result,
     error,
-    
+
     // Actions
     performScan,
     clearResult,
     refreshLocation: geolocation.refresh,
-  };
+  }
 }
-

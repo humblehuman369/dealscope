@@ -86,9 +86,10 @@ function buildScopeDrivers(prop: Required_EstimatorInputs): ScopeDriver[] {
       field: 'year_built',
       label: 'Property Age',
       value: `${age} years`,
-      impact: age > 30
-        ? 'Major systems (HVAC, plumbing, electrical) likely need replacement'
-        : 'Some systems may need updating',
+      impact:
+        age > 30
+          ? 'Major systems (HVAC, plumbing, electrical) likely need replacement'
+          : 'Some systems may need updating',
     })
   }
 
@@ -230,9 +231,18 @@ function computeEstimatedCosts(
   selections: RehabSelection[],
   regionalFactor: number,
 ): { low: number; mid: number; high: number } {
-  const low = calculateRehabEstimate(selections.map(s => ({ ...s, tier: 'low' as const })), 0).totalCost
-  const mid = calculateRehabEstimate(selections.map(s => ({ ...s, tier: 'mid' as const })), 0).totalCost
-  const high = calculateRehabEstimate(selections.map(s => ({ ...s, tier: 'high' as const })), 0).totalCost
+  const low = calculateRehabEstimate(
+    selections.map((s) => ({ ...s, tier: 'low' as const })),
+    0,
+  ).totalCost
+  const mid = calculateRehabEstimate(
+    selections.map((s) => ({ ...s, tier: 'mid' as const })),
+    0,
+  ).totalCost
+  const high = calculateRehabEstimate(
+    selections.map((s) => ({ ...s, tier: 'high' as const })),
+    0,
+  ).totalCost
 
   return {
     low: Math.round(low * regionalFactor),
@@ -306,7 +316,7 @@ export function generatePropertyPresets(
  * when no property data is available.
  */
 export function getStaticPresetsFallback(): GeneratedPreset[] {
-  return REHAB_PRESETS.map(preset => ({
+  return REHAB_PRESETS.map((preset) => ({
     ...preset,
     property_driven: true as const,
     scope_drivers: [],

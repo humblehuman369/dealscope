@@ -30,7 +30,8 @@ export function ProfitComparison({ yourProfit, investorProfit }: ProfitCompariso
         </div>
       </div>
       <div className="compare-footnote">
-        You make <strong>{share.toFixed(0)}%</strong> of deal profits with <strong>$0 investment</strong>
+        You make <strong>{share.toFixed(0)}%</strong> of deal profits with{' '}
+        <strong>$0 investment</strong>
       </div>
     </div>
   )

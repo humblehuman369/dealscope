@@ -11,7 +11,12 @@
 
 /* LTR Worksheet Container - Dark Mode */
 html.dark .ltr-worksheet {
-  background: linear-gradient(135deg, var(--surface-card) 0%, var(--surface-elevated) 50%, var(--surface-card) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--surface-card) 0%,
+    var(--surface-elevated) 50%,
+    var(--surface-card) 100%
+  );
 }
 
 /* Header Styles */
@@ -60,7 +65,9 @@ html.dark .ltr-header {
 
 /* Section Card Animation */
 .ltr-section-card {
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
   scroll-margin-top: 72px;
 }
 
@@ -196,12 +203,12 @@ html.dark .ltr-metric-indicator.bad {
     box-shadow: none;
     border-bottom: 2px solid var(--border-default);
   }
-  
+
   .ltr-section-card {
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  
+
   .ltr-kpi-row {
     overflow: visible;
     flex-wrap: wrap;

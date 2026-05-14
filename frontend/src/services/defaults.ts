@@ -1,9 +1,9 @@
 /**
  * Defaults Service
- * 
+ *
  * Centralized service for fetching and managing investment calculation defaults.
  * This is the ONLY source for default values in the frontend.
- * 
+ *
  * NEVER hardcode default values - always use this service.
  */
 
@@ -42,10 +42,9 @@ export interface UserAssumptionsResponse {
   updated_at: string | null
 }
 
-
 /**
  * Defaults Service
- * 
+ *
  * Central service for managing investment calculation defaults.
  */
 export const defaultsService = {
@@ -58,20 +57,20 @@ export const defaultsService = {
     if (defaultsCache && Date.now() - cacheTimestamp < CACHE_TTL_MS) {
       return defaultsCache
     }
-    
+
     try {
       const response = await api.get<AllAssumptions>('/api/v1/defaults')
-      
+
       // Update cache
       defaultsCache = response
       cacheTimestamp = Date.now()
-      
+
       // Also cache in localStorage for offline access
       if (typeof window !== 'undefined') {
         localStorage.setItem('dealgapiq_defaults', JSON.stringify(response))
         localStorage.setItem('dealgapiq_defaults_timestamp', String(Date.now()))
       }
-      
+
       return response
     } catch (error) {
       // Fallback to localStorage cache on error
@@ -85,7 +84,7 @@ export const defaultsService = {
       throw error
     }
   },
-  
+
   /**
    * Get fully resolved defaults for a specific location.
    * Includes market adjustments and user preferences if authenticated.
@@ -93,42 +92,42 @@ export const defaultsService = {
   async getResolvedDefaults(zipCode?: string): Promise<ResolvedDefaultsResponse> {
     const params = new URLSearchParams()
     if (zipCode) params.set('zip_code', zipCode)
-    
+
     const endpoint = `/api/v1/defaults/resolved${params.toString() ? `?${params}` : ''}`
     return api.get<ResolvedDefaultsResponse>(endpoint)
   },
-  
+
   /**
    * Get market-specific adjustments for a ZIP code.
    */
   async getMarketAdjustments(zipCode: string): Promise<MarketAdjustments> {
     return api.get<MarketAdjustments>(`/api/v1/defaults/market/${zipCode}`)
   },
-  
+
   /**
    * Get user's saved default assumptions (requires auth).
    */
   async getUserAssumptions(): Promise<UserAssumptionsResponse> {
     return api.get<UserAssumptionsResponse>('/api/v1/users/me/assumptions')
   },
-  
+
   /**
    * Update user's default assumptions (requires auth).
    * Supports partial updates - only include fields to change.
    */
   async updateUserAssumptions(
-    assumptions: Partial<AllAssumptions>
+    assumptions: Partial<AllAssumptions>,
   ): Promise<UserAssumptionsResponse> {
     return api.put<UserAssumptionsResponse>('/api/v1/users/me/assumptions', { assumptions })
   },
-  
+
   /**
    * Reset user's default assumptions to system defaults (requires auth).
    */
   async resetUserAssumptions(): Promise<UserAssumptionsResponse> {
     return api.delete<UserAssumptionsResponse>('/api/v1/users/me/assumptions')
   },
-  
+
   /**
    * Clear the local cache.
    */
@@ -140,7 +139,7 @@ export const defaultsService = {
       localStorage.removeItem('dealgapiq_defaults_timestamp')
     }
   },
-  
+
   /**
    * Check if user is authenticated.
    * Note: Auth is handled automatically by api-client (401 redirects to login).

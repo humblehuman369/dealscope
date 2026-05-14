@@ -12,37 +12,23 @@ interface PageExplainerProps {
   relatedLinks?: Array<{ href: string; label: string }>
 }
 
-export function PageExplainer({
-  title,
-  intro,
-  sections,
-  relatedLinks,
-}: PageExplainerProps) {
+export function PageExplainer({ title, intro, sections, relatedLinks }: PageExplainerProps) {
   return (
     <section
       aria-labelledby="page-explainer-heading"
       className="border-t border-[var(--border-subtle)] bg-[var(--surface-base)] px-6 py-16"
     >
       <div className="mx-auto max-w-3xl">
-        <h2
-          id="page-explainer-heading"
-          className="text-2xl font-bold text-white mb-4"
-        >
+        <h2 id="page-explainer-heading" className="text-2xl font-bold text-white mb-4">
           {title}
         </h2>
-        <p className="text-[15px] leading-relaxed text-slate-400 mb-8">
-          {intro}
-        </p>
+        <p className="text-[15px] leading-relaxed text-slate-400 mb-8">{intro}</p>
 
         <div className="space-y-8">
           {sections.map((s) => (
             <div key={s.heading}>
-              <h3 className="text-lg font-semibold text-slate-200 mb-2">
-                {s.heading}
-              </h3>
-              <p className="text-[15px] leading-relaxed text-slate-400">
-                {s.body}
-              </p>
+              <h3 className="text-lg font-semibold text-slate-200 mb-2">{s.heading}</h3>
+              <p className="text-[15px] leading-relaxed text-slate-400">{s.body}</p>
             </div>
           ))}
         </div>

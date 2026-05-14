@@ -72,7 +72,7 @@ export async function getAllContent(folder: ContentFolder): Promise<ContentFile[
     files.map(async (file) => {
       const raw = await fs.readFile(path.join(CONTENT_DIR, folder, file), 'utf-8')
       return parseFile(folder, file, raw)
-    })
+    }),
   )
   return items.sort((a, b) => a.frontmatter.title.localeCompare(b.frontmatter.title))
 }

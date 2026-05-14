@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 const withoutItems = [
   'Search listings → guess which ones are "good deals"',
@@ -7,7 +7,7 @@ const withoutItems = [
   'No breakeven price — just hope the cash flow works',
   'Analyze one strategy at a time, one property at a time',
   '45–60 minutes per property before making a decision',
-] as const;
+] as const
 
 const withItems = [
   'Enter any address → see instantly if the deal works',
@@ -16,7 +16,7 @@ const withItems = [
   'Breakeven price is the first thing you see (Income Value)',
   'All six strategies analyzed simultaneously on every scan',
   'Full analysis in under a minute — pass or pursue, fast',
-] as const;
+] as const
 
 export function BeforeAfterComparison() {
   return (
@@ -58,5 +58,5 @@ export function BeforeAfterComparison() {
         </div>
       </div>
     </section>
-  );
+  )
 }

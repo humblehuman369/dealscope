@@ -1,9 +1,18 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { 
-  Upload, File, FileText, Image, Trash2, Download, 
-  Loader2, X, Check, Folder, Eye
+import {
+  Upload,
+  File,
+  FileText,
+  Image,
+  Trash2,
+  Download,
+  Loader2,
+  X,
+  Check,
+  Folder,
+  Eye,
 } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { API_BASE_URL } from '@/lib/env'
@@ -26,12 +35,25 @@ interface Document {
 }
 
 interface DocumentUploadProps {
-  propertyId?: string  // Optional property to link documents to
+  propertyId?: string // Optional property to link documents to
   onUploadComplete?: (document: Document) => void
   maxFiles?: number
 }
 
-const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.xlsx', '.xls', '.docx', '.doc', '.txt', '.csv']
+const ALLOWED_EXTENSIONS = [
+  '.pdf',
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.gif',
+  '.webp',
+  '.xlsx',
+  '.xls',
+  '.docx',
+  '.doc',
+  '.txt',
+  '.csv',
+]
 const MAX_FILE_SIZE_MB = 10
 
 const DOCUMENT_TYPES = [
@@ -88,7 +110,7 @@ export default function DocumentUpload({
   const [dragActive, setDragActive] = useState(false)
   const [selectedType, setSelectedType] = useState('other')
   const [description, setDescription] = useState('')
-  
+
   const [deleteDocTarget, setDeleteDocTarget] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -139,7 +161,7 @@ export default function DocumentUpload({
       }
 
       const headers: Record<string, string> = {}
-      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      const csrfMatch = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
       if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
 
       const response = await fetch(`${API_BASE_URL}/api/v1/documents`, {
@@ -155,9 +177,9 @@ export default function DocumentUpload({
       }
 
       const uploadedDoc = await response.json()
-      setDocuments(prev => [uploadedDoc, ...prev])
+      setDocuments((prev) => [uploadedDoc, ...prev])
       setDescription('')
-      
+
       if (onUploadComplete) {
         onUploadComplete(uploadedDoc)
       }
@@ -172,7 +194,7 @@ export default function DocumentUpload({
   const downloadDocument = async (doc: Document) => {
     try {
       const headers: Record<string, string> = {}
-      const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+      const csrfMatch = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
       if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
 
       const response = await fetch(`${API_BASE_URL}/api/v1/documents/${doc.id}/download`, {
@@ -201,7 +223,7 @@ export default function DocumentUpload({
     if (!deleteDocTarget) return
     try {
       await api.delete(`/api/v1/documents/${deleteDocTarget}`)
-      setDocuments(prev => prev.filter(d => d.id !== deleteDocTarget))
+      setDocuments((prev) => prev.filter((d) => d.id !== deleteDocTarget))
     } catch (err) {
       console.error('Delete failed:', err)
     } finally {
@@ -269,9 +291,7 @@ export default function DocumentUpload({
             <p className="text-sm font-medium text-navy-900 dark:text-white mb-1">
               Drag and drop a file here
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-              or click to browse
-            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">or click to browse</p>
             <button
               onClick={() => inputRef.current?.click()}
               className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-sm font-medium transition-colors"
@@ -296,8 +316,10 @@ export default function DocumentUpload({
             onChange={(e) => setSelectedType(e.target.value)}
             className="w-full px-3 py-2 bg-gray-50 dark:bg-navy-700 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm text-navy-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
-            {DOCUMENT_TYPES.map(type => (
-              <option key={type.value} value={type.value}>{type.label}</option>
+            {DOCUMENT_TYPES.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
             ))}
           </select>
         </div>
@@ -330,25 +352,27 @@ export default function DocumentUpload({
             <Folder className="w-4 h-4" />
             Uploaded Documents ({documents.length})
           </h4>
-          
+
           <div className="bg-gray-50 dark:bg-navy-700/50 rounded-xl divide-y divide-neutral-200 dark:divide-neutral-600">
-            {documents.map(doc => (
+            {documents.map((doc) => (
               <div
                 key={doc.id}
                 className="p-3 flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-navy-700 transition-colors first:rounded-t-xl last:rounded-b-xl"
               >
                 {getFileIcon(doc.mime_type)}
-                
+
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-navy-900 dark:text-white truncate">
                     {doc.original_filename}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {formatFileSize(doc.file_size)} • {DOCUMENT_TYPES.find(t => t.value === doc.document_type)?.label || doc.document_type}
+                    {formatFileSize(doc.file_size)} •{' '}
+                    {DOCUMENT_TYPES.find((t) => t.value === doc.document_type)?.label ||
+                      doc.document_type}
                     {doc.description && ` • ${doc.description}`}
                   </p>
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => downloadDocument(doc)}

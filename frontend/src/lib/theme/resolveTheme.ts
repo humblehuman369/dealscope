@@ -7,4 +7,3 @@ export function resolveTheme(preference: ThemePreference, systemPrefersDark: boo
 
   return preference
 }
-

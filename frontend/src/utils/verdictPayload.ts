@@ -167,7 +167,9 @@ export function buildVerdictBaseFromPropertyResponse(
     resolvedPrice += getConditionAdjustment(Number(options.condition)).pricePremium
   }
   if (options?.location != null) {
-    resolvedRent = Math.round(resolvedRent * getLocationAdjustment(Number(options.location)).rentMultiplier)
+    resolvedRent = Math.round(
+      resolvedRent * getLocationAdjustment(Number(options.location)).rentMultiplier,
+    )
   }
 
   return {

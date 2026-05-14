@@ -29,7 +29,7 @@ interface PropertyHeroProps {
 
 /**
  * PropertyHero - Immersive property showcase
- * 
+ *
  * Features:
  * - Large hero photo with swipe navigation
  * - Floating thumbnail strip
@@ -55,22 +55,22 @@ export function PropertyHero({
   isBankOwned,
   isAuction,
   isNewConstruction,
-  daysOnMarket
+  daysOnMarket,
 }: PropertyHeroProps) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
-  
+
   // Build photo list
-  const photoList = photos.length > 0 ? photos : (thumbnailUrl ? [thumbnailUrl] : [])
+  const photoList = photos.length > 0 ? photos : thumbnailUrl ? [thumbnailUrl] : []
   const totalPhotos = photoCount || photoList.length
-  
+
   const scrollToPhoto = (index: number) => {
     if (scrollRef.current) {
       const scrollWidth = scrollRef.current.scrollWidth
       const photoWidth = scrollWidth / photoList.length
       scrollRef.current.scrollTo({
         left: photoWidth * index,
-        behavior: 'smooth'
+        behavior: 'smooth',
       })
       setActivePhotoIndex(index)
     }
@@ -95,15 +95,11 @@ export function PropertyHero({
         {photoList.length > 0 ? (
           <>
             {/* Main Photo Carousel */}
-            <div 
-              ref={scrollRef}
-              onScroll={handleScroll}
-              className="property-hero-carousel"
-            >
+            <div ref={scrollRef} onScroll={handleScroll} className="property-hero-carousel">
               {photoList.map((photo, idx) => (
                 <div key={idx} className="property-hero-slide">
-                  <img 
-                    src={photo} 
+                  <img
+                    src={photo}
                     alt={`Property photo ${idx + 1}`}
                     className="property-hero-image"
                   />
@@ -114,22 +110,26 @@ export function PropertyHero({
             {/* Photo Counter Badge */}
             <div className="property-hero-counter">
               <Camera className="w-4 h-4" />
-              <span>{activePhotoIndex + 1}/{totalPhotos}</span>
+              <span>
+                {activePhotoIndex + 1}/{totalPhotos}
+              </span>
             </div>
 
             {/* Navigation Arrows (for desktop) */}
             {photoList.length > 1 && (
               <>
-                <button 
+                <button
                   className="property-hero-nav property-hero-nav-prev"
                   onClick={() => scrollToPhoto(Math.max(0, activePhotoIndex - 1))}
                   aria-label="Previous photo"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <button 
+                <button
                   className="property-hero-nav property-hero-nav-next"
-                  onClick={() => scrollToPhoto(Math.min(photoList.length - 1, activePhotoIndex + 1))}
+                  onClick={() =>
+                    scrollToPhoto(Math.min(photoList.length - 1, activePhotoIndex + 1))
+                  }
                   aria-label="Next photo"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -151,9 +151,7 @@ export function PropertyHero({
                   </button>
                 ))}
                 {photoList.length > 6 && (
-                  <div className="property-hero-thumb-more">
-                    +{photoList.length - 6}
-                  </div>
+                  <div className="property-hero-thumb-more">+{photoList.length - 6}</div>
                 )}
               </div>
             )}
@@ -203,21 +201,29 @@ export function PropertyHero({
             <p className="property-hero-location">{location}</p>
             <p className="property-hero-specs">{specs}</p>
           </div>
-          
+
           {/* Right: Price & Actions */}
           <div className="property-hero-price-section">
             <div className="property-hero-price">{formatCurrency(price)}</div>
             <div className="property-hero-price-label">{priceLabel}</div>
-            
+
             {/* Action Buttons */}
             <div className="property-hero-actions">
               {onSave && (
-                <button onClick={onSave} className="property-hero-action" aria-label="Save property">
+                <button
+                  onClick={onSave}
+                  className="property-hero-action"
+                  aria-label="Save property"
+                >
                   <Heart className="w-4 h-4" />
                 </button>
               )}
               {onShare && (
-                <button onClick={onShare} className="property-hero-action" aria-label="Share property">
+                <button
+                  onClick={onShare}
+                  className="property-hero-action"
+                  aria-label="Share property"
+                >
                   <Share2 className="w-4 h-4" />
                 </button>
               )}

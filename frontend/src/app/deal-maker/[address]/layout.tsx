@@ -6,10 +6,6 @@ export const metadata: Metadata = {
     'Build your deal with purchase price, financing, and expenses. See metrics across 6 investment strategies.',
 }
 
-export default function DealMakerLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function DealMakerLayout({ children }: { children: React.ReactNode }) {
   return children
 }

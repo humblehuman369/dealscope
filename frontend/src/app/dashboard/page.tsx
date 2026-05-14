@@ -45,19 +45,14 @@ function DashboardContent() {
 
         {/* "Due this week" cross-property roll-up — clicking a row jumps to the
             Tasks tab on the deal workflow page. */}
-        <UpcomingTasks
-          onOpen={(target) => router.push(`/deals/${target.id}?tab=tasks`)}
-        />
+        <UpcomingTasks onOpen={(target) => router.push(`/deals/${target.id}?tab=tasks`)} />
 
         {/* Account snapshot — single column now that Recent Searches lives
             on the saved-properties page as its own tab. */}
         <AccountSnapshot />
       </div>
 
-      <SearchPropertyModal
-        isOpen={showSearchModal}
-        onClose={() => setShowSearchModal(false)}
-      />
+      <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
     </div>
   )
 }

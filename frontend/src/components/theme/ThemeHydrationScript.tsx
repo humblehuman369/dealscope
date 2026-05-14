@@ -24,4 +24,3 @@ export function ThemeHydrationScript() {
 
   return <script dangerouslySetInnerHTML={{ __html: script }} />
 }
-

@@ -83,11 +83,7 @@ function daysBetween(a: string | null | undefined, b: string | null | undefined)
   return Math.max(0, Math.round((tb - ta) / 86_400_000))
 }
 
-export default function DealReportPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default function DealReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   return (
     <AuthGuard>
@@ -177,31 +173,30 @@ function ReportBody({
   eventCount,
 }: {
   deal: DealDetail
-  budget:
-    | {
-        baseline_total: string
-        actual_total: string
-        projected_total?: string
-        variance: string
-        variance_pct: string
-        contingency_pct: string
-        lines: Array<{
-          id: string
-          category_id: string
-          label: string
-          estimate_amount: string
-          actual_amount: string
-          pct_complete?: string
-          projected_amount?: string
-          variance: string
-        }>
-      }
-    | null
+  budget: {
+    baseline_total: string
+    actual_total: string
+    projected_total?: string
+    variance: string
+    variance_pct: string
+    contingency_pct: string
+    lines: Array<{
+      id: string
+      category_id: string
+      label: string
+      estimate_amount: string
+      actual_amount: string
+      pct_complete?: string
+      projected_amount?: string
+      variance: string
+    }>
+  } | null
   taskOpen: number
   taskDone: number
   eventCount: number
 }) {
-  const isClosed = deal.status === 'owned' && (deal.flip_stage === 'Sold' || deal.flip_stage === 'Held')
+  const isClosed =
+    deal.status === 'owned' && (deal.flip_stage === 'Sold' || deal.flip_stage === 'Held')
   const title = isClosed ? 'Final Profit Statement' : 'Deal Report'
   const fullAddress =
     deal.full_address ||
@@ -229,9 +224,7 @@ function ReportBody({
 
   // Budget rollups when present.
   const analysis = budget ? parseFloat(budget.baseline_total) : null
-  const projected = budget
-    ? parseFloat(budget.projected_total ?? budget.actual_total)
-    : null
+  const projected = budget ? parseFloat(budget.projected_total ?? budget.actual_total) : null
   const toDate = budget ? parseFloat(budget.actual_total) : null
   const variance = budget ? parseFloat(budget.variance) : null
   const variancePct = budget ? parseFloat(budget.variance_pct) : null
@@ -244,9 +237,7 @@ function ReportBody({
       : null
 
   const netProfit =
-    soldPrice != null && analysis != null && projected != null
-      ? soldPrice - projected
-      : null
+    soldPrice != null && analysis != null && projected != null ? soldPrice - projected : null
 
   return (
     <article className="space-y-6">
@@ -264,13 +255,12 @@ function ReportBody({
             Strategy:{' '}
             <span className="font-semibold text-[var(--text-body)]">
               {deal.best_strategy
-                ? STRATEGY_LABELS[deal.best_strategy] ?? deal.best_strategy
+                ? (STRATEGY_LABELS[deal.best_strategy] ?? deal.best_strategy)
                 : '—'}
             </span>
           </span>
           <span>
-            Stage:{' '}
-            <span className="font-semibold text-[var(--text-body)]">{stageLabel}</span>
+            Stage: <span className="font-semibold text-[var(--text-body)]">{stageLabel}</span>
           </span>
           <span>
             Generated:{' '}
@@ -288,10 +278,7 @@ function ReportBody({
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <ReportStat label="Analysis" value={fmtMoney(analysis)} />
-          <ReportStat
-            label={isClosed ? 'Final spend' : 'Projected'}
-            value={fmtMoney(projected)}
-          />
+          <ReportStat label={isClosed ? 'Final spend' : 'Projected'} value={fmtMoney(projected)} />
           <ReportStat label="To date" value={fmtMoney(toDate)} />
           <ReportStat
             label={isClosed ? 'Final variance' : 'Variance'}
@@ -304,10 +291,10 @@ function ReportBody({
               variance == null
                 ? 'neutral'
                 : variance > 0
-                ? 'negative'
-                : variance < 0
-                ? 'positive'
-                : 'neutral'
+                  ? 'negative'
+                  : variance < 0
+                    ? 'positive'
+                    : 'neutral'
             }
           />
         </div>
@@ -321,20 +308,14 @@ function ReportBody({
                 netProfit == null
                   ? 'neutral'
                   : netProfit > 0
-                  ? 'positive'
-                  : netProfit < 0
-                  ? 'negative'
-                  : 'neutral'
+                    ? 'positive'
+                    : netProfit < 0
+                      ? 'negative'
+                      : 'neutral'
               }
             />
-            <ReportStat
-              label="Days to close"
-              value={totalDays != null ? `${totalDays}d` : '—'}
-            />
-            <ReportStat
-              label="Activity logged"
-              value={`${eventCount} events`}
-            />
+            <ReportStat label="Days to close" value={totalDays != null ? `${totalDays}d` : '—'} />
+            <ReportStat label="Activity logged" value={`${eventCount} events`} />
           </div>
         )}
       </section>
@@ -408,17 +389,15 @@ function ReportBody({
                       {line.pct_complete ?? '0'}%
                     </td>
                     <td className="py-2 tabular-nums text-right">
-                      {fmtMoney(
-                        parseFloat(line.projected_amount ?? line.estimate_amount),
-                      )}
+                      {fmtMoney(parseFloat(line.projected_amount ?? line.estimate_amount))}
                     </td>
                     <td
                       className={`py-2 tabular-nums text-right ${
                         v > 0
                           ? 'text-[var(--status-negative)]'
                           : v < 0
-                          ? 'text-[var(--status-positive)]'
-                          : 'text-[var(--text-body)]'
+                            ? 'text-[var(--status-positive)]'
+                            : 'text-[var(--text-body)]'
                       }`}
                     >
                       {v > 0 ? '+' : ''}
@@ -473,8 +452,8 @@ function ReportStat({
     tone === 'positive'
       ? 'text-[var(--status-positive)]'
       : tone === 'negative'
-      ? 'text-[var(--status-negative)]'
-      : 'text-[var(--text-heading)]'
+        ? 'text-[var(--status-negative)]'
+        : 'text-[var(--text-heading)]'
   return (
     <div>
       <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)]">

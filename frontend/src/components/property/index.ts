@@ -1,1 +1,1 @@
-export { PropertyDetailsPage, type PropertyDetailsData } from './PropertyDetailsPage';
+export { PropertyDetailsPage, type PropertyDetailsData } from './PropertyDetailsPage'

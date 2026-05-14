@@ -6,9 +6,9 @@ import { SubTab, SubTabId, Strategy } from './types'
 
 /**
  * SubTabNav Component
- * 
+ *
  * REDESIGNED: Numbered tabs with line indicator above.
- * 
+ *
  * Features:
  * - Line above with active indicator that moves
  * - Numbered badges (1, 2, 3...) for each tab
@@ -26,14 +26,14 @@ interface SubTabNavProps {
 }
 
 export function SubTabNav({ tabs, activeTab, onChange }: SubTabNavProps) {
-  const activeIndex = tabs.findIndex(t => t.id === activeTab)
-  
+  const activeIndex = tabs.findIndex((t) => t.id === activeTab)
+
   return (
     <div className="mb-4">
       {/* Top line with active indicator */}
       <div className="relative h-[2px] bg-gray-200 dark:bg-white/[0.08] mb-3">
         {/* Active indicator */}
-        <div 
+        <div
           className="absolute top-0 h-[2px] bg-gradient-to-r from-teal to-blue-500 transition-all duration-300 ease-out"
           style={{
             left: `${(activeIndex / tabs.length) * 100}%`,
@@ -72,21 +72,21 @@ function SubTabButton({ tab, number, isActive, onClick }: SubTabButtonProps) {
       className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 whitespace-nowrap"
     >
       {/* Numbered badge */}
-      <span 
+      <span
         className={`w-5 h-5 flex items-center justify-center text-[0.65rem] font-bold rounded-full transition-all ${
-          isActive 
-            ? 'bg-gradient-to-r from-teal to-blue-500 text-white' 
+          isActive
+            ? 'bg-gradient-to-r from-teal to-blue-500 text-white'
             : 'bg-gray-100 dark:bg-white/[0.08] text-gray-500 dark:text-white/40'
         }`}
       >
         {number}
       </span>
-      
+
       {/* Tab label */}
-      <span 
+      <span
         className={`text-[0.72rem] font-medium transition-colors ${
-          isActive 
-            ? 'text-teal dark:text-teal font-semibold' 
+          isActive
+            ? 'text-teal dark:text-teal font-semibold'
             : 'text-gray-600 dark:text-white/50 hover:text-gray-800 dark:hover:text-white/70'
         }`}
       >
@@ -106,7 +106,7 @@ export const LTR_TABS: SubTab[] = [
   { id: '10year', label: '10-Year' },
   { id: 'growth', label: 'Growth' },
   { id: 'score', label: 'Score' },
-  { id: 'whatif', label: 'What-If' }
+  { id: 'whatif', label: 'What-If' },
 ]
 
 export const STR_TABS: SubTab[] = [
@@ -115,7 +115,7 @@ export const STR_TABS: SubTab[] = [
   { id: '10year', label: '10-Year' },
   { id: 'growth', label: 'Growth' },
   { id: 'score', label: 'Score' },
-  { id: 'whatif', label: 'What-If' }
+  { id: 'whatif', label: 'What-If' },
 ]
 
 export const BRRRR_TABS: SubTab[] = [
@@ -124,7 +124,7 @@ export const BRRRR_TABS: SubTab[] = [
   { id: '10year', label: '10-Year' },
   { id: 'growth', label: 'Growth' },
   { id: 'score', label: 'Score' },
-  { id: 'whatif', label: 'What-If' }
+  { id: 'whatif', label: 'What-If' },
 ]
 
 export const FLIP_TABS: SubTab[] = [
@@ -132,7 +132,7 @@ export const FLIP_TABS: SubTab[] = [
   { id: 'funding', label: 'Funding' },
   { id: 'comps', label: 'Comps' },
   { id: 'score', label: 'Score' },
-  { id: 'whatif', label: 'What-If' }
+  { id: 'whatif', label: 'What-If' },
 ]
 
 export const HOUSE_HACK_TABS: SubTab[] = [
@@ -141,14 +141,14 @@ export const HOUSE_HACK_TABS: SubTab[] = [
   { id: '10year', label: '10-Year' },
   { id: 'growth', label: 'Growth' },
   { id: 'score', label: 'Score' },
-  { id: 'whatif', label: 'What-If' }
+  { id: 'whatif', label: 'What-If' },
 ]
 
 export const WHOLESALE_TABS: SubTab[] = [
   { id: 'metrics', label: 'Metrics' },
   { id: 'buyer', label: 'Buyer' },
   { id: 'comps', label: 'Comps' },
-  { id: 'score', label: 'Score' }
+  { id: 'score', label: 'Score' },
 ]
 
 /**
@@ -156,19 +156,26 @@ export const WHOLESALE_TABS: SubTab[] = [
  */
 export function getStrategyTabs(strategyId: string): SubTab[] {
   switch (strategyId) {
-    case 'ltr': return LTR_TABS
-    case 'str': return STR_TABS
-    case 'brrrr': return BRRRR_TABS
-    case 'flip': return FLIP_TABS
-    case 'house_hack': return HOUSE_HACK_TABS
-    case 'wholesale': return WHOLESALE_TABS
-    default: return LTR_TABS
+    case 'ltr':
+      return LTR_TABS
+    case 'str':
+      return STR_TABS
+    case 'brrrr':
+      return BRRRR_TABS
+    case 'flip':
+      return FLIP_TABS
+    case 'house_hack':
+      return HOUSE_HACK_TABS
+    case 'wholesale':
+      return WHOLESALE_TABS
+    default:
+      return LTR_TABS
   }
 }
 
 /**
  * SubTabNavCompact Component
- * 
+ *
  * A more compact version with smaller buttons.
  */
 
@@ -191,11 +198,13 @@ export function SubTabNavCompact({ tabs, activeTab, onChange }: SubTabNavCompact
               : 'text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/70'
           }`}
         >
-          <span className={`w-4 h-4 flex items-center justify-center text-[0.55rem] font-bold rounded-full ${
-            tab.id === activeTab
-              ? 'bg-gradient-to-r from-teal to-blue-500 text-white'
-              : 'bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-white/30'
-          }`}>
+          <span
+            className={`w-4 h-4 flex items-center justify-center text-[0.55rem] font-bold rounded-full ${
+              tab.id === activeTab
+                ? 'bg-gradient-to-r from-teal to-blue-500 text-white'
+                : 'bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-white/30'
+            }`}
+          >
             {index + 1}
           </span>
           {tab.label}
@@ -207,7 +216,7 @@ export function SubTabNavCompact({ tabs, activeTab, onChange }: SubTabNavCompact
 
 /**
  * SubTabDropdown Component
- * 
+ *
  * A dropdown version that clearly ties to the selected strategy.
  * Shows strategy name + current view selection.
  */
@@ -226,10 +235,10 @@ interface SubTabDropdownProps {
 export function SubTabDropdown({ tabs, activeTab, onChange, strategy }: SubTabDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  
-  const activeTabData = tabs.find(t => t.id === activeTab)
-  const activeIndex = tabs.findIndex(t => t.id === activeTab)
-  
+
+  const activeTabData = tabs.find((t) => t.id === activeTab)
+  const activeIndex = tabs.findIndex((t) => t.id === activeTab)
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -267,7 +276,7 @@ export function SubTabDropdown({ tabs, activeTab, onChange, strategy }: SubTabDr
             </div>
           </div>
         </div>
-        <ChevronDown 
+        <ChevronDown
           className={`w-4 h-4 text-gray-500 dark:text-white/60 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
@@ -285,11 +294,13 @@ export function SubTabDropdown({ tabs, activeTab, onChange, strategy }: SubTabDr
                   : 'text-gray-700 dark:text-white/80 hover:bg-gray-100 dark:hover:bg-white/[0.05]'
               }`}
             >
-              <span className={`w-5 h-5 flex items-center justify-center text-[0.6rem] font-bold rounded-full ${
-                tab.id === activeTab
-                  ? 'bg-gradient-to-r from-teal to-blue-500 text-white'
-                  : 'bg-gray-200 dark:bg-white/10 text-gray-500 dark:text-white/40'
-              }`}>
+              <span
+                className={`w-5 h-5 flex items-center justify-center text-[0.6rem] font-bold rounded-full ${
+                  tab.id === activeTab
+                    ? 'bg-gradient-to-r from-teal to-blue-500 text-white'
+                    : 'bg-gray-200 dark:bg-white/10 text-gray-500 dark:text-white/40'
+                }`}
+              >
                 {index + 1}
               </span>
               <span>{tab.label}</span>

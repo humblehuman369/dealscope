@@ -44,12 +44,8 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
     >
       <div className="mx-auto flex max-w-3xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-300">
-          We use essential cookies for authentication and optional analytics to
-          improve the product.{' '}
-          <Link
-            href="/privacy"
-            className="font-medium text-teal-400 underline hover:text-teal-300"
-          >
+          We use essential cookies for authentication and optional analytics to improve the product.{' '}
+          <Link href="/privacy" className="font-medium text-teal-400 underline hover:text-teal-300">
             Learn more
           </Link>
         </p>
@@ -73,4 +69,3 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
     </div>
   )
 }
-

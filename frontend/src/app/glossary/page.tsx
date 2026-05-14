@@ -2,8 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getAllContent } from '@/lib/content'
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
 export const metadata: Metadata = {
   title: 'Glossary of Creative Finance Terms — DealGapIQ',
@@ -76,18 +75,13 @@ export default async function GlossaryIndex() {
           >
             Glossary of Creative Finance Terms
           </h1>
-          <p
-            className="text-lg sm:text-xl"
-            style={{ color: 'var(--text-secondary)' }}
-          >
+          <p className="text-lg sm:text-xl" style={{ color: 'var(--text-secondary)' }}>
             Plain-English definitions of the structures investors actually use to close deals.
           </p>
         </header>
 
         {terms.length === 0 ? (
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Glossary coming soon.
-          </p>
+          <p style={{ color: 'var(--text-secondary)' }}>Glossary coming soon.</p>
         ) : (
           <div className="space-y-6">
             {terms.map((term) => (
@@ -96,10 +90,7 @@ export default async function GlossaryIndex() {
                 className="pb-6"
                 style={{ borderBottom: '1px solid var(--border-subtle)' }}
               >
-                <Link
-                  href={`/glossary/${term.slug}`}
-                  className="group block"
-                >
+                <Link href={`/glossary/${term.slug}`} className="group block">
                   <h2
                     className="text-xl sm:text-2xl font-semibold mb-2 group-hover:opacity-80 transition-opacity"
                     style={{ color: 'var(--text-heading)' }}

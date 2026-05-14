@@ -237,9 +237,7 @@ export function computeDealGapIncomeValue(
         capexPct,
         utilitiesAnnual: baseUtilitiesAnnual + (s.additionalUtilitiesMonthly ?? 0) * 12,
         otherAnnualExpenses:
-          (s.monthlyHoa ?? 0) * 12 +
-          platformAnnual +
-          (s.suppliesMonthly ?? 0) * 12,
+          (s.monthlyHoa ?? 0) * 12 + platformAnnual + (s.suppliesMonthly ?? 0) * 12,
       })
     }
     case 'brrrr': {

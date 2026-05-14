@@ -72,22 +72,13 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
   }
 
   return (
-    <WorksheetShell
-      property={property}
-      propertyId={propertyId}
-      strategy={strategy}
-    >
-      <WorksheetHeader
-        property={property}
-        propertyId={propertyId}
-      />
+    <WorksheetShell property={property} propertyId={propertyId} strategy={strategy}>
+      <WorksheetHeader property={property} propertyId={propertyId} />
 
       {activeSection === 'worksheet-analysis' ? (
         <div className="worksheet-layout-2col">
           <div className="worksheet-main-content">
-            <div className="worksheet-sections">
-              {renderActiveSection()}
-            </div>
+            <div className="worksheet-sections">{renderActiveSection()}</div>
           </div>
           <aside className="worksheet-charts-sidebar">
             <div className="chart-card">
@@ -142,9 +133,7 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
           </aside>
         </div>
       ) : (
-        <div className="worksheet-sections">
-          {renderActiveSection()}
-        </div>
+        <div className="worksheet-sections">{renderActiveSection()}</div>
       )}
     </WorksheetShell>
   )

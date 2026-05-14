@@ -10,15 +10,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
-import {
-  CheckCircle2,
-  Circle,
-  GripVertical,
-  Pencil,
-  Plus,
-  Sparkles,
-  Trash2,
-} from 'lucide-react'
+import { CheckCircle2, Circle, GripVertical, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react'
 import {
   useCreateTask,
   useDeleteTask,
@@ -282,9 +274,7 @@ function TaskRow({
     if (!t) return
     const body: { title?: string; due_date?: string | null } = {}
     if (t !== task.title) body.title = t
-    const desiredDate = editDate
-      ? new Date(`${editDate}T23:59:59Z`).toISOString()
-      : null
+    const desiredDate = editDate ? new Date(`${editDate}T23:59:59Z`).toISOString() : null
     if (desiredDate !== task.due_date) body.due_date = desiredDate
     if (Object.keys(body).length > 0) {
       onEdit(task, body)
@@ -378,9 +368,7 @@ function TaskRow({
         {due && (
           <p
             className={`text-[11px] mt-0.5 ${
-              isOverdue
-                ? 'text-[var(--status-negative)] font-semibold'
-                : 'text-[var(--text-label)]'
+              isOverdue ? 'text-[var(--status-negative)] font-semibold' : 'text-[var(--text-label)]'
             }`}
           >
             {due}

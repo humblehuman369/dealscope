@@ -17,7 +17,7 @@ const formatCurrency = (value: number) =>
 export function CashRecovery({ cashOut, cashInvested, recoveryPercent }: CashRecoveryProps) {
   const recoveryWidth = Math.min(100, Math.max(0, recoveryPercent))
   const isPositive = cashOut >= 0
-  
+
   return (
     <div className="cash-recovery-chart">
       <div className="cash-out-indicator">
@@ -47,7 +47,7 @@ export function CashRecovery({ cashOut, cashInvested, recoveryPercent }: CashRec
             </span>
           </div>
           <div className="h-bar-track">
-            <div 
+            <div
               className={`h-bar-fill ${isPositive ? 'positive' : 'negative'}`}
               style={{ width: `${recoveryWidth}%` }}
             ></div>

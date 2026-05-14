@@ -39,7 +39,9 @@ export function CompPhotosModal({ comp, open, onClose }: CompPhotosModalProps) {
         setErrorMsg(result.error ?? 'Failed to load photos')
       }
     })
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [open, comp.zpid])
 
   useEffect(() => {
@@ -47,17 +49,23 @@ export function CompPhotosModal({ comp, open, onClose }: CompPhotosModalProps) {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
       if (status === 'success' && photos.length > 1) {
-        if (e.key === 'ArrowLeft') setIndex(i => (i - 1 + photos.length) % photos.length)
-        if (e.key === 'ArrowRight') setIndex(i => (i + 1) % photos.length)
+        if (e.key === 'ArrowLeft') setIndex((i) => (i - 1 + photos.length) % photos.length)
+        if (e.key === 'ArrowRight') setIndex((i) => (i + 1) % photos.length)
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [open, onClose, status, photos.length])
 
-  const prev = useCallback(() => setIndex(i => (i - 1 + photos.length) % photos.length), [photos.length])
-  const next = useCallback(() => setIndex(i => (i + 1) % photos.length), [photos.length])
-  const handleImgError = useCallback((idx: number) => setImgErrors(prev => ({ ...prev, [idx]: true })), [])
+  const prev = useCallback(
+    () => setIndex((i) => (i - 1 + photos.length) % photos.length),
+    [photos.length],
+  )
+  const next = useCallback(() => setIndex((i) => (i + 1) % photos.length), [photos.length])
+  const handleImgError = useCallback(
+    (idx: number) => setImgErrors((prev) => ({ ...prev, [idx]: true })),
+    [],
+  )
 
   if (!open) return null
 

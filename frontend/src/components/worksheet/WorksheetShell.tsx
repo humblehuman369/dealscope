@@ -14,12 +14,7 @@ interface WorksheetShellProps {
   children: ReactNode
 }
 
-export function WorksheetShell({
-  property,
-  propertyId,
-  strategy,
-  children,
-}: WorksheetShellProps) {
+export function WorksheetShell({ property, propertyId, strategy, children }: WorksheetShellProps) {
   const propertyData = property.property_data_snapshot || {}
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -41,14 +36,16 @@ export function WorksheetShell({
             <ChevronLeft className="w-5 h-5" />
             <span className="hidden sm:inline">Back</span>
           </Link>
-          
+
           {/* Property Info - Responsive layout */}
           <div className="worksheet-property-info">
             <h1 className="worksheet-property-title" title={shortAddress}>
               {shortAddress}
             </h1>
             <p className="worksheet-property-subtitle">
-              <span className="hidden md:inline">{cityStateZip} • {details}</span>
+              <span className="hidden md:inline">
+                {cityStateZip} • {details}
+              </span>
               <span className="md:hidden">{cityStateZip}</span>
             </p>
           </div>
@@ -56,10 +53,8 @@ export function WorksheetShell({
 
         {/* Right Section: Price Badge */}
         <div className="worksheet-topbar-right">
-          <div className="worksheet-price-badge">
-            ${listPrice.toLocaleString()}
-          </div>
-          
+          <div className="worksheet-price-badge">${listPrice.toLocaleString()}</div>
+
           {/* Mobile Menu Toggle - Only visible on small screens */}
           <button
             className="worksheet-mobile-menu-toggle"
@@ -72,8 +67,8 @@ export function WorksheetShell({
       </header>
 
       {/* Horizontal Tab Navigation - With responsive handling */}
-      <WorksheetTabNav 
-        propertyId={propertyId} 
+      <WorksheetTabNav
+        propertyId={propertyId}
         strategy={strategy}
         mobileMenuOpen={mobileMenuOpen}
         onMobileMenuClose={() => setMobileMenuOpen(false)}
@@ -81,9 +76,7 @@ export function WorksheetShell({
 
       {/* Main Content Area - Full Width with responsive padding */}
       <div className="worksheet-main-area full-width">
-        <main className="worksheet-content-area full-width">
-          {children}
-        </main>
+        <main className="worksheet-content-area full-width">{children}</main>
       </div>
     </div>
   )
