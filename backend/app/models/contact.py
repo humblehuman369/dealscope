@@ -80,5 +80,5 @@ class PropertyContact(Base):
         nullable=False,
     )
 
-    saved_property: Mapped["SavedProperty"] = relationship("SavedProperty", back_populates="contacts")
-    created_by: Mapped["User"] = relationship("User")
+    saved_property: Mapped[SavedProperty] = relationship("SavedProperty", back_populates="contacts")
+    created_by: Mapped[User] = relationship("User")

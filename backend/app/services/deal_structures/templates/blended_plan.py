@@ -240,16 +240,13 @@ def solve(
     bump_pct = (rent_bump / ctx.monthly_rent * 100) if ctx.monthly_rent > 0 else 0.0
     price_pct = ((ctx.list_price - new_price) / ctx.list_price * 100) if ctx.list_price > 0 else 0.0
 
-    headline = (
-        f"Blend: {price_pct:.1f}% price cut + {fmt_money(chosen_second)} seller 2nd + "
-        f"{bump_pct:.1f}% rent lift"
-    )
+    headline = f"Blend: {price_pct:.1f}% price cut + {fmt_money(chosen_second)} seller 2nd + {bump_pct:.1f}% rent lift"
     # Bullets carry the full math for the blended card (no separate lever block on the card).
     # Each bullet uses the "Label: before → after" pattern for at-a-glance scanning.
     bullets = [
-        f"Target price:\u00A0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
-        f"Seller 2nd:\u00A0{fmt_money(chosen_second)} → 0%, {DEFAULT_BALLOON_YEARS}yr balloon",
-        f"Target Rent:\u00A0${round(ctx.monthly_rent):,} → ${round(new_rent):,}  +{bump_pct:.1f}%",
+        f"Target price:\u00a0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
+        f"Seller 2nd:\u00a0{fmt_money(chosen_second)} → 0%, {DEFAULT_BALLOON_YEARS}yr balloon",
+        f"Target Rent:\u00a0${round(ctx.monthly_rent):,} → ${round(new_rent):,}  +{bump_pct:.1f}%",
     ]
     # Combined selection-reason + savings so the card only renders one supporting paragraph.
     summary = (
@@ -283,11 +280,11 @@ def solve(
         "OPEN — discover before you ask\n"
         "\"Before I send a number, can you walk me through what's driving the sale and where the "
         "seller would ideally land? I have a structure in mind that I think can get us close to "
-        "their number — but I want to understand their situation first.\"\n\n"
+        'their number — but I want to understand their situation first."\n\n'
         "ANCHOR — frame the gap honestly\n"
         f"\"At {fmt_money_precise(ctx.list_price)}, the deal doesn't pencil for me. But I don't "
         "think it has to come down to a single big concession. I'd like to propose a blended "
-        "structure where we share the lift across three small moves.\"\n\n"
+        'structure where we share the lift across three small moves."\n\n'
         "THE PROPOSAL — three small asks instead of one big one\n"
         f"1. PRICE — {fmt_pct_delta(ctx.list_price, new_price)} from asking, to "
         f"{fmt_money_precise(new_price)}. A modest cut, not a haircut.\n"
@@ -323,9 +320,9 @@ def solve(
         "papers the second so the seller's counsel has clean documents to review.\"\n\n"
         "TACTICS\n"
         "\u2022 Always offer 2-3 options. Sellers pick between options; they say no to single asks.\n"
-        "\u2022 Lead with the seller's situation. \"Help me understand...\" beats \"I need...\" every time.\n"
-        "\u2022 Use the words \"creative offer\" early — the agent and seller can prep for an unusual structure.\n"
-        "\u2022 Have an attorney lined up before the call. \"My attorney will paper this\" is a trust signal.\n"
+        '\u2022 Lead with the seller\'s situation. "Help me understand..." beats "I need..." every time.\n'
+        '\u2022 Use the words "creative offer" early — the agent and seller can prep for an unusual structure.\n'
+        '\u2022 Have an attorney lined up before the call. "My attorney will paper this" is a trust signal.\n'
         "\u2022 Trade concessions for concessions — never give without getting (faster close, leaseback, fewer contingencies)."
     )
 

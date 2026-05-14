@@ -5,17 +5,17 @@ All models are imported here for Alembic auto-discovery.
 
 from app.models.assumption_defaults import AdminAssumptionDefaults
 from app.models.audit_log import AuditAction, AuditLog
+from app.models.budget import BudgetExpense, BudgetLine, RehabBudget
 from app.models.contact import ContactRole, PropertyContact
 from app.models.device_token import DevicePlatform, DeviceToken
 from app.models.document import Document, DocumentType
 from app.models.role import Permission, Role, RolePermission, UserRole
-from app.models.budget import BudgetExpense, BudgetLine, RehabBudget
 from app.models.saved_property import FlipStage, PropertyAdjustment, PropertyStatus, SavedProperty
-from app.models.task import PropertyTask
 from app.models.search_history import SearchHistory
 from app.models.session import UserSession
 from app.models.share import SharedLink, ShareType
 from app.models.subscription import PaymentHistory, Subscription, SubscriptionStatus, SubscriptionTier
+from app.models.task import PropertyTask
 from app.models.user import User, UserProfile
 from app.models.verification_token import TokenType, VerificationToken
 
@@ -23,12 +23,12 @@ __all__ = [
     "AdminAssumptionDefaults",
     "AuditAction",
     "AuditLog",
+    "BudgetExpense",
+    "BudgetLine",
     "ContactRole",
     "DevicePlatform",
     "DeviceToken",
     "Document",
-    "BudgetExpense",
-    "BudgetLine",
     "DocumentType",
     "FlipStage",
     "PaymentHistory",
@@ -51,7 +51,6 @@ __all__ = [
     "User",
     "UserProfile",
     "UserRole",
-    # New auth models
     "UserSession",
     "VerificationToken",
 ]

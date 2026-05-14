@@ -104,11 +104,7 @@ def _paragraph_for(structure: DealStructure, ctx: StructureContext, index: int) 
 
     if sid == "blended-plan":
         new_rent = next(
-            (
-                lever.after_label
-                for lever in structure.levers
-                if lever.label.lower() in ("monthly rent", "target rent")
-            ),
+            (lever.after_label for lever in structure.levers if lever.label.lower() in ("monthly rent", "target rent")),
             "a small bump",
         )
         carry_label = next(

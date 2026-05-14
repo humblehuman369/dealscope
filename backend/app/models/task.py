@@ -67,6 +67,6 @@ class PropertyTask(Base):
         nullable=False,
     )
 
-    saved_property: Mapped["SavedProperty"] = relationship("SavedProperty", back_populates="tasks")
-    completed_by: Mapped["User | None"] = relationship("User", foreign_keys=[completed_by_id])
-    created_by: Mapped["User"] = relationship("User", foreign_keys=[created_by_id])
+    saved_property: Mapped[SavedProperty] = relationship("SavedProperty", back_populates="tasks")
+    completed_by: Mapped[User | None] = relationship("User", foreign_keys=[completed_by_id])
+    created_by: Mapped[User] = relationship("User", foreign_keys=[created_by_id])

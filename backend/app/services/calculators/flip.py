@@ -49,9 +49,7 @@ def calculate_flip(
     purchase_price = market_value * (1 - purchase_discount_pct)
     nominal_equity = purchase_price * (1 - hard_money_ltv)
     sc = max(0.0, float(seller_carry_amount or 0.0))
-    hard_money_loan, cash_equity_at_close = model_a_bank_loan_and_cash_equity(
-        purchase_price, nominal_equity, sc
-    )
+    hard_money_loan, cash_equity_at_close = model_a_bank_loan_and_cash_equity(purchase_price, nominal_equity, sc)
     down_payment = nominal_equity
     closing_costs = purchase_price * closing_costs_pct
     total_acquisition_cash = cash_equity_at_close + closing_costs + inspection_costs

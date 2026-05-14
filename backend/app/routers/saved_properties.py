@@ -15,10 +15,6 @@ from app.core.deps import CurrentUser, DbSession
 from app.core.schema_guard import is_schema_mismatch, log_schema_mismatch
 from app.models.saved_property import FlipStage as FlipStageORM
 from app.models.saved_property import PropertyStatus
-from app.schemas.deal_maker import (
-    DealMakerRecordUpdate,
-    DealMakerResponse,
-)
 from app.schemas.budget import (
     BudgetExpenseCreate,
     BudgetExpenseOut,
@@ -27,6 +23,11 @@ from app.schemas.budget import (
     BudgetSummaryOut,
     ParsedReceipt,
     ReceiptUploadResponse,
+)
+from app.schemas.contact import ContactCreate, ContactOut, ContactUpdate
+from app.schemas.deal_maker import (
+    DealMakerRecordUpdate,
+    DealMakerResponse,
 )
 from app.schemas.saved_property import (
     ActiveFlipSummary,
@@ -39,14 +40,14 @@ from app.schemas.saved_property import (
     SavedPropertySummary,
     SavedPropertyUpdate,
 )
-from app.schemas.contact import ContactCreate, ContactOut, ContactUpdate
 from app.schemas.task import TaskCreate, TaskOut, TaskReorderRequest, TaskUpdate, UpcomingTaskOut
 from app.schemas.timeline import NoteCreate, TimelineEvent
 from app.services.billing_service import billing_service
 from app.services.budget_service import budget_service
 from app.services.contact_service import contact_service
 from app.services.deal_maker_service import DealMakerService
-from app.services.document_service import ALLOWED_TYPES as DOC_ALLOWED_TYPES, document_service
+from app.services.document_service import ALLOWED_TYPES as DOC_ALLOWED_TYPES
+from app.services.document_service import document_service
 from app.services.receipt_parser_service import receipt_parser_service
 from app.services.saved_property_service import sanitize_for_json_storage, saved_property_service
 from app.services.search_history_service import search_history_service
@@ -243,7 +244,9 @@ async def list_saved_properties(
         try:
             from datetime import datetime as _dt
 
-            from sqlalchemy import and_ as _and, func as _func, select as _select
+            from sqlalchemy import and_ as _and
+            from sqlalchemy import func as _func
+            from sqlalchemy import select as _select
 
             from app.models.task import PropertyTask
 
@@ -337,9 +340,7 @@ async def list_active_flips_endpoint(
 ):
     """Properties with a flip_stage set — Acquisition / Rehab / Listed / (optional Sold)."""
     try:
-        rows = await saved_property_service.list_active_flips(
-            db, str(current_user.id), include_sold=include_sold
-        )
+        rows = await saved_property_service.list_active_flips(db, str(current_user.id), include_sold=include_sold)
     except Exception as exc:
         # Schema-mismatch fallback: Pipeline page renders the "no active flips
         # yet" empty state instead of erroring. See app/core/schema_guard.py.
@@ -363,9 +364,7 @@ async def list_active_flips_endpoint(
             # whole pipeline — render the card without a budget badge.
             if not is_schema_mismatch(exc):
                 raise
-            log_schema_mismatch(
-                "GET /properties/saved/active-flips:budget_enrichment", exc
-            )
+            log_schema_mismatch("GET /properties/saved/active-flips:budget_enrichment", exc)
             variance_pct = None
         out.append(
             ActiveFlipSummary(
@@ -918,9 +917,7 @@ async def delete_budget_expense(
     current_user: CurrentUser,
     db: DbSession,
 ):
-    ok = await budget_service.delete_expense(
-        db, expense_id, str(current_user.id), property_id=property_id
-    )
+    ok = await budget_service.delete_expense(db, expense_id, str(current_user.id), property_id=property_id)
     if not ok:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
 
@@ -984,7 +981,7 @@ async def create_property_task(
     summary="Update a task (toggle complete, edit fields)",
 )
 async def update_property_task(
-    property_id: str,  # noqa: ARG001 — kept in URL for symmetry & clean ownership scoping client-side
+    property_id: str,
     task_id: str,
     body: TaskUpdate,
     current_user: CurrentUser,
@@ -1002,7 +999,7 @@ async def update_property_task(
     summary="Delete a task",
 )
 async def delete_property_task(
-    property_id: str,  # noqa: ARG001
+    property_id: str,
     task_id: str,
     current_user: CurrentUser,
     db: DbSession,
@@ -1023,9 +1020,7 @@ async def reorder_property_tasks(
     current_user: CurrentUser,
     db: DbSession,
 ):
-    updated = await task_service.reorder_for_property(
-        db, property_id, str(current_user.id), body.task_ids
-    )
+    updated = await task_service.reorder_for_property(db, property_id, str(current_user.id), body.task_ids)
     if updated is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
     # Return the property's tasks in their new order so the client can
@@ -1118,7 +1113,7 @@ async def create_property_contact(
     summary="Update a contact",
 )
 async def update_property_contact(
-    property_id: str,  # noqa: ARG001
+    property_id: str,
     contact_id: str,
     body: ContactUpdate,
     current_user: CurrentUser,
@@ -1136,7 +1131,7 @@ async def update_property_contact(
     summary="Delete a contact",
 )
 async def delete_property_contact(
-    property_id: str,  # noqa: ARG001
+    property_id: str,
     contact_id: str,
     current_user: CurrentUser,
     db: DbSession,
@@ -1162,9 +1157,7 @@ async def list_property_timeline(
     db: DbSession,
     limit: int = Query(100, ge=1, le=500),
 ):
-    events = await timeline_service.list_for_property(
-        db, property_id, str(current_user.id), limit=limit
-    )
+    events = await timeline_service.list_for_property(db, property_id, str(current_user.id), limit=limit)
     if events is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
     return events
@@ -1206,9 +1199,7 @@ async def delete_property_note(
     current_user: CurrentUser,
     db: DbSession,
 ):
-    ok = await timeline_service.delete_note(
-        db, property_id, str(current_user.id), adjustment_id
-    )
+    ok = await timeline_service.delete_note(db, property_id, str(current_user.id), adjustment_id)
     if not ok:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
 
