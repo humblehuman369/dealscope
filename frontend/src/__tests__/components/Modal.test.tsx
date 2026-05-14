@@ -153,6 +153,39 @@ describe('Modal', () => {
     })
   })
 
+  describe('fullBleed', () => {
+    it('skips the inner padding wrapper when fullBleed is true', () => {
+      const { container } = render(
+        <Modal open={true} onClose={vi.fn()} aria-label="bleed" fullBleed hideCloseButton>
+          <div data-testid="bleed-content">edge</div>
+        </Modal>,
+      )
+      const content = container.querySelector('[data-testid="bleed-content"]')
+      // Direct parent must NOT carry the padded wrapper class.
+      const parent = content?.parentElement
+      expect(parent?.className).not.toMatch(/px-6|pb-6|pt-2/)
+    })
+
+    it('still renders the title header when fullBleed=true and title is provided', () => {
+      render(
+        <Modal open={true} onClose={vi.fn()} title="With header" fullBleed>
+          <p>Body</p>
+        </Modal>,
+      )
+      expect(screen.getByText('With header')).toBeTruthy()
+    })
+
+    it('suppresses the default close button when fullBleed=true and no title', () => {
+      render(
+        <Modal open={true} onClose={vi.fn()} aria-label="suppressed" fullBleed>
+          <p>Body</p>
+        </Modal>,
+      )
+      // Caller is responsible for its own close affordance in fullBleed mode.
+      expect(screen.queryByLabelText('Close')).toBeNull()
+    })
+  })
+
   describe('body scroll lock', () => {
     it('locks body scroll while open and restores it on unmount', () => {
       // Capture whatever overflow was set before the test.

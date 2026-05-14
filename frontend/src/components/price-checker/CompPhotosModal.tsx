@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react'
 import { X, ChevronLeft, ChevronRight, Camera, ImageOff, Loader2 } from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
 import { fetchPropertyPhotos, type PhotoResult } from '@/services/photoService'
 
 interface CompPhotosModalProps {
@@ -10,6 +11,19 @@ interface CompPhotosModalProps {
   onClose: () => void
 }
 
+/**
+ * CompPhotosModal — comparable-property photo gallery.
+ *
+ * Migrated to the shared <Modal> primitive (P2.4). Inherits backdrop click,
+ * Escape, focus trap, and body scroll lock from the primitive; this
+ * component only owns the gallery-specific behaviour:
+ *   - Fetch photos on open via fetchPropertyPhotos
+ *   - Keyboard left/right arrows to advance the carousel
+ *   - Per-image error fallback to "Photo unavailable"
+ *
+ * As a side benefit, the previously hardcoded `bg-[#0a0a0a]` panel is now
+ * `var(--surface-card)` (theme-token compliant).
+ */
 export function CompPhotosModal({ comp, open, onClose }: CompPhotosModalProps) {
   const [photos, setPhotos] = useState<string[]>([])
   const [status, setStatus] = useState<'loading' | 'success' | 'empty' | 'error'>('loading')
@@ -17,6 +31,8 @@ export function CompPhotosModal({ comp, open, onClose }: CompPhotosModalProps) {
   const [index, setIndex] = useState(0)
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({})
 
+  // Reset state + fetch on open. Cancellation flag avoids late
+  // resolutions overwriting state after the modal closes.
   useEffect(() => {
     if (!open) return
     setPhotos([])
@@ -44,18 +60,16 @@ export function CompPhotosModal({ comp, open, onClose }: CompPhotosModalProps) {
     }
   }, [open, comp.zpid])
 
+  // Carousel keyboard navigation. Modal handles Escape itself.
   useEffect(() => {
-    if (!open) return
+    if (!open || status !== 'success' || photos.length <= 1) return
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-      if (status === 'success' && photos.length > 1) {
-        if (e.key === 'ArrowLeft') setIndex((i) => (i - 1 + photos.length) % photos.length)
-        if (e.key === 'ArrowRight') setIndex((i) => (i + 1) % photos.length)
-      }
+      if (e.key === 'ArrowLeft') setIndex((i) => (i - 1 + photos.length) % photos.length)
+      if (e.key === 'ArrowRight') setIndex((i) => (i + 1) % photos.length)
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [open, onClose, status, photos.length])
+  }, [open, status, photos.length])
 
   const prev = useCallback(
     () => setIndex((i) => (i - 1 + photos.length) % photos.length),
@@ -67,131 +81,137 @@ export function CompPhotosModal({ comp, open, onClose }: CompPhotosModalProps) {
     [],
   )
 
-  if (!open) return null
-
   const currentFailed = imgErrors[index]
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-
-      {/* Modal panel */}
-      <div className="relative z-10 w-full max-w-lg mx-4 rounded-xl bg-[#0a0a0a] border border-[rgba(15,164,233,0.3)] shadow-[0_0_60px_rgba(15,164,233,0.12)] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(15,164,233,0.2)]">
-          <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-[#F1F5F9] truncate">{comp.address}</h3>
-          </div>
-          <button
-            onClick={onClose}
-            className="flex-shrink-0 p-1.5 rounded-full hover:bg-white/[0.07] text-[#F1F5F9] hover:text-white transition-colors"
-            aria-label="Close photos"
-          >
-            <X className="w-4 h-4" />
-          </button>
+    <Modal
+      open={open}
+      onClose={onClose}
+      size="lg"
+      aria-label={`Photos for ${comp.address}`}
+      hideCloseButton
+      fullBleed
+    >
+      {/* Custom header — single-line address with a close button. */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-subtle)]">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-[var(--text-heading)] truncate">
+            {comp.address}
+          </h3>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-shrink-0 p-1.5 rounded-full hover:bg-[var(--surface-card-hover)] text-[var(--text-heading)] transition-colors"
+          aria-label="Close photos"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
 
-        {/* Body */}
-        <div className="relative">
-          {/* Loading */}
-          {status === 'loading' && (
-            <div className="h-72 flex flex-col items-center justify-center gap-3">
-              <Loader2 className="w-8 h-8 text-[#38bdf8] animate-spin" />
-              <span className="text-sm text-[#F1F5F9]">Loading photos...</span>
-            </div>
-          )}
+      {/* Body */}
+      <div className="relative">
+        {status === 'loading' && (
+          <div className="h-72 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 text-[var(--accent-sky)] animate-spin" />
+            <span className="text-sm text-[var(--text-heading)]">Loading photos...</span>
+          </div>
+        )}
 
-          {/* Empty / Error */}
-          {(status === 'empty' || status === 'error') && (
-            <div className="h-72 flex flex-col items-center justify-center gap-3">
-              <ImageOff className="w-10 h-10 text-[#F1F5F9]" />
-              <span className="text-sm text-[#F1F5F9]">{errorMsg || 'No photos available'}</span>
-              <button
-                onClick={onClose}
-                className="mt-2 px-4 py-1.5 rounded-lg bg-[#38bdf8] text-black text-xs font-semibold hover:bg-[#38bdf8]/90 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          )}
+        {(status === 'empty' || status === 'error') && (
+          <div className="h-72 flex flex-col items-center justify-center gap-3">
+            <ImageOff className="w-10 h-10 text-[var(--text-heading)]" />
+            <span className="text-sm text-[var(--text-heading)]">
+              {errorMsg || 'No photos available'}
+            </span>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-2 px-4 py-1.5 rounded-lg bg-[var(--accent-sky)] text-[var(--text-inverse)] text-xs font-semibold hover:opacity-90 transition-opacity"
+            >
+              Close
+            </button>
+          </div>
+        )}
 
-          {/* Carousel */}
-          {status === 'success' && (
-            <>
-              <div className="relative h-72 bg-[var(--surface-base)]">
-                {currentFailed ? (
-                  <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                    <ImageOff className="w-8 h-8 text-[#F1F5F9]" />
-                    <span className="text-xs text-[#F1F5F9]">Photo unavailable</span>
-                  </div>
-                ) : (
-                  <img
-                    key={photos[index]}
-                    src={photos[index]}
-                    alt={`Comp photo ${index + 1} of ${photos.length}`}
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                    onError={() => handleImgError(index)}
-                  />
-                )}
-
-                {/* Counter badge */}
-                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-sm flex items-center gap-1.5">
-                  <Camera className="w-3 h-3 text-[#F1F5F9]" />
-                  <span className="text-xs font-medium text-[#F1F5F9] tabular-nums">
-                    {index + 1} / {photos.length}
-                  </span>
+        {status === 'success' && (
+          <>
+            <div className="relative h-72 bg-[var(--surface-media-letterbox)]">
+              {currentFailed ? (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                  <ImageOff className="w-8 h-8 text-[var(--text-heading)]" />
+                  <span className="text-xs text-[var(--text-heading)]">Photo unavailable</span>
                 </div>
+              ) : (
+                <img
+                  key={photos[index]}
+                  src={photos[index]}
+                  alt={`Comp photo ${index + 1} of ${photos.length}`}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                  onError={() => handleImgError(index)}
+                />
+              )}
 
-                {/* Prev / Next arrows */}
-                {photos.length > 1 && (
-                  <>
-                    <button
-                      onClick={prev}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/90 transition-colors"
-                      aria-label="Previous photo"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={next}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/90 transition-colors"
-                      aria-label="Next photo"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
+              {/* Counter badge */}
+              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-sm flex items-center gap-1.5">
+                <Camera className="w-3 h-3 text-white" />
+                <span className="text-xs font-medium text-white tabular-nums">
+                  {index + 1} / {photos.length}
+                </span>
               </div>
 
-              {/* Thumbnail strip */}
+              {/* Prev / Next arrows */}
               {photos.length > 1 && (
-                <div className="flex gap-1.5 p-3 overflow-x-auto scrollbar-hide">
-                  {photos.map((url, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setIndex(i)}
-                      className={`flex-shrink-0 w-14 h-10 rounded-md overflow-hidden border-2 transition-all ${
-                        i === index
-                          ? 'border-[#38bdf8] shadow-[0_0_8px_rgba(56,189,248,0.3)]'
-                          : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
-                    >
-                      <img
-                        src={url}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    </button>
-                  ))}
-                </div>
+                <>
+                  <button
+                    type="button"
+                    onClick={prev}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/90 transition-colors"
+                    aria-label="Previous photo"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={next}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/90 transition-colors"
+                    aria-label="Next photo"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
               )}
-            </>
-          )}
-        </div>
+            </div>
+
+            {/* Thumbnail strip */}
+            {photos.length > 1 && (
+              <div className="flex gap-1.5 p-3 overflow-x-auto scrollbar-hide">
+                {photos.map((url, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setIndex(i)}
+                    className={`flex-shrink-0 w-14 h-10 rounded-md overflow-hidden border-2 transition-all ${
+                      i === index
+                        ? 'border-[var(--accent-sky)] shadow-[0_0_8px_rgba(56,189,248,0.3)]'
+                        : 'border-transparent opacity-60 hover:opacity-100'
+                    }`}
+                    aria-label={`Show photo ${i + 1}`}
+                  >
+                    <img
+                      src={url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
-    </div>
+    </Modal>
   )
 }
