@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
-import { useFocusTrap } from './useFocusTrap'
+import { useEffect, useRef } from 'react'
+import { Modal } from './Modal'
 
 export interface ConfirmDialogProps {
   open: boolean
@@ -11,12 +11,19 @@ export interface ConfirmDialogProps {
   description?: string
   confirmLabel?: string
   cancelLabel?: string
-  /** 'danger' shows a red confirm button, 'info' shows blue */
+  /** 'danger' shows a red confirm button, 'info' shows blue. */
   variant?: 'danger' | 'info'
 }
 
 /**
- * ConfirmDialog — dark-themed modal that replaces window.confirm() and window.alert().
+ * ConfirmDialog — modal that replaces window.confirm().
+ *
+ * Now built on the shared <Modal> primitive (P2.4) for focus trap, escape,
+ * backdrop click, return-focus and body scroll lock. Public API unchanged
+ * — every existing callsite continues to work without edits.
+ *
+ * The confirm button is the initial focus target so a keyboard user can
+ * press Enter to commit (or Tab once + Enter to cancel).
  *
  * Usage:
  *   <ConfirmDialog
@@ -39,99 +46,67 @@ export function ConfirmDialog({
   variant = 'info',
 }: ConfirmDialogProps) {
   const confirmRef = useRef<HTMLButtonElement>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
+  const isDanger = variant === 'danger'
 
-  // Focus confirm button on open, trap Escape key
+  // Modal moves initial focus to the first focusable child by default —
+  // for a confirm dialog the user expects focus on the primary action,
+  // not the cancel button. We use Modal's `initialFocusRef` to override.
+  // (The ref is wired below; useEffect keeps the focus after rapid open
+  //  toggles where Modal's initial focus may have already fired.)
   useEffect(() => {
     if (!open) return
     confirmRef.current?.focus()
-
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel()
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [open, onCancel])
-
-  // Keyboard focus trap — Tab cycles within the dialog
-  useFocusTrap(panelRef, open)
-
-  const handleBackdrop = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) onCancel()
-    },
-    [onCancel],
-  )
-
-  if (!open) return null
-
-  const isDanger = variant === 'danger'
+  }, [open])
 
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-      style={{ background: 'var(--surface-overlay)', backdropFilter: 'blur(6px)' }}
-      onClick={handleBackdrop}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-dialog-title"
+    <Modal
+      open={open}
+      onClose={onCancel}
+      size="sm"
+      title={title}
+      hideCloseButton
+      initialFocusRef={confirmRef as React.RefObject<HTMLElement | null>}
     >
-      <div
-        ref={panelRef}
-        className="w-full max-w-sm rounded-2xl p-6"
-        style={{
-          background: 'var(--surface-card)',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-dropdown)',
-        }}
-      >
-        <h3
-          id="confirm-dialog-title"
-          className="text-lg font-bold mb-2"
-          style={{ color: 'var(--text-heading)' }}
+      {description && (
+        <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>
+          {description}
+        </p>
+      )}
+
+      <div className="flex gap-3 justify-end">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+          style={{
+            background: 'var(--surface-elevated)',
+            color: 'var(--text-body)',
+            border: '1px solid var(--border-subtle)',
+          }}
         >
-          {title}
-        </h3>
-
-        {description && (
-          <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>
-            {description}
-          </p>
-        )}
-
-        <div className="flex gap-3 justify-end">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
-            style={{
-              background: 'var(--surface-elevated)',
-              color: 'var(--text-body)',
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            {cancelLabel}
-          </button>
-          <button
-            ref={confirmRef}
-            onClick={onConfirm}
-            className="px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-colors"
-            style={{
-              background: isDanger
-                ? 'linear-gradient(135deg, var(--status-negative) 0%, #991b1b 100%)'
-                : 'linear-gradient(135deg, var(--accent-brand-blue) 0%, var(--accent-sky) 100%)',
-            }}
-          >
-            {confirmLabel}
-          </button>
-        </div>
+          {cancelLabel}
+        </button>
+        <button
+          type="button"
+          ref={confirmRef}
+          onClick={onConfirm}
+          className="px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-colors"
+          style={{
+            background: isDanger
+              ? 'linear-gradient(135deg, var(--status-negative) 0%, #991b1b 100%)'
+              : 'linear-gradient(135deg, var(--accent-brand-blue) 0%, var(--accent-sky) 100%)',
+          }}
+        >
+          {confirmLabel}
+        </button>
       </div>
-    </div>
+    </Modal>
   )
 }
 
 /**
- * InfoDialog — for non-destructive informational messages (replaces window.alert).
- * Same component, simplified API with only "Got it" button.
+ * InfoDialog — non-destructive informational message (replaces window.alert).
+ * Same primitive, simpler API: single "Got it" button.
  */
 export function InfoDialog({
   open,
@@ -148,76 +123,30 @@ export function InfoDialog({
   closeLabel?: string
   children?: React.ReactNode
 }) {
-  const infoPanelRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [open, onClose])
-
-  useFocusTrap(infoPanelRef, open)
-
-  const handleBackdrop = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) onClose()
-    },
-    [onClose],
-  )
-
-  if (!open) return null
-
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-      style={{ background: 'var(--surface-overlay)', backdropFilter: 'blur(6px)' }}
-      onClick={handleBackdrop}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="info-dialog-title"
-    >
-      <div
-        ref={infoPanelRef}
-        className="w-full max-w-sm rounded-2xl p-6"
-        style={{
-          background: 'var(--surface-card)',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-dropdown)',
-        }}
-      >
-        <h3
-          id="info-dialog-title"
-          className="text-lg font-bold mb-2"
-          style={{ color: 'var(--text-heading)' }}
+    <Modal open={open} onClose={onClose} size="sm" title={title} hideCloseButton>
+      {description && (
+        <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-secondary)' }}>
+          {description}
+        </p>
+      )}
+
+      {children}
+
+      <div className="flex justify-end mt-6">
+        <button
+          type="button"
+          onClick={onClose}
+          autoFocus
+          className="px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-colors"
+          style={{
+            background:
+              'linear-gradient(135deg, var(--accent-brand-blue) 0%, var(--accent-sky) 100%)',
+          }}
         >
-          {title}
-        </h3>
-
-        {description && (
-          <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-secondary)' }}>
-            {description}
-          </p>
-        )}
-
-        {children}
-
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={onClose}
-            autoFocus
-            className="px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-colors"
-            style={{
-              background:
-                'linear-gradient(135deg, var(--accent-brand-blue) 0%, var(--accent-sky) 100%)',
-            }}
-          >
-            {closeLabel}
-          </button>
-        </div>
+          {closeLabel}
+        </button>
       </div>
-    </div>
+    </Modal>
   )
 }

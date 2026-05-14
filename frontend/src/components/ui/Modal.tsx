@@ -67,6 +67,13 @@ export interface ModalProps {
   initialFocusRef?: React.RefObject<HTMLElement | null>
   /** Hide the default close (X) button if you render your own. */
   hideCloseButton?: boolean
+  /**
+   * Render the children edge-to-edge with no inner padding. Use for video,
+   * image, or map content where the visual fills the panel. Header
+   * (title/close) is also skipped when `fullBleed` is true and no `title`
+   * is provided — caller is responsible for any close affordance.
+   */
+  fullBleed?: boolean
   /** Additional class on the panel — for size/spacing tweaks. */
   panelClassName?: string
   /** Additional inline style on the panel — escape hatch for special cases. */
@@ -108,6 +115,7 @@ export function Modal({
   closeOnEscape = true,
   initialFocusRef,
   hideCloseButton = false,
+  fullBleed = false,
   panelClassName = '',
   panelStyle,
   children,
@@ -195,7 +203,7 @@ export function Modal({
       <div
         ref={panelRef}
         tabIndex={-1}
-        className={`w-full rounded-2xl overflow-hidden outline-none ${panelClassName}`}
+        className={`relative w-full rounded-2xl overflow-hidden outline-none ${panelClassName}`}
         style={{
           maxWidth: SIZE_MAX_WIDTH[size],
           background: 'var(--surface-card)',
@@ -204,7 +212,10 @@ export function Modal({
           ...panelStyle,
         }}
       >
-        {(title || !hideCloseButton) && (
+        {/* Header is suppressed in fullBleed mode unless an explicit title
+            is provided — full-bleed content (video, image, map) usually
+            owns its own close affordance overlaid on the content. */}
+        {(title || (!hideCloseButton && !fullBleed)) && (
           <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-2">
             {title ? (
               <h2
@@ -243,7 +254,7 @@ export function Modal({
             )}
           </div>
         )}
-        <div className="px-6 pb-6 pt-2">{children}</div>
+        <div className={fullBleed ? '' : 'px-6 pb-6 pt-2'}>{children}</div>
       </div>
     </div>
   )
