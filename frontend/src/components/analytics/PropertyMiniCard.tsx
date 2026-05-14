@@ -6,10 +6,10 @@ import { PropertyMiniData } from './types'
 
 /**
  * PropertyMiniCard Component
- * 
+ *
  * A compact property card showing address, price, and specs.
  * Used in the analytics header to remind users which property they're analyzing.
- * 
+ *
  * Features:
  * - Photo carousel with navigation arrows
  * - Photo count badge
@@ -27,22 +27,22 @@ interface PropertyMiniCardProps {
   showExpandButton?: boolean
 }
 
-export function PropertyMiniCard({ 
-  data, 
+export function PropertyMiniCard({
+  data,
   photos = [],
   onExpand,
-  showExpandButton = true 
+  showExpandButton = true,
 }: PropertyMiniCardProps) {
   // Use provided photos array or create one from thumbnail
-  const photoList = photos.length > 0 ? photos : (data.thumbnailUrl ? [data.thumbnailUrl] : [])
+  const photoList = photos.length > 0 ? photos : data.thumbnailUrl ? [data.thumbnailUrl] : []
   const totalPhotos = data.photoCount || photoList.length
 
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(value)
 
   return (
@@ -51,26 +51,26 @@ export function PropertyMiniCard({
       {photoList.length > 0 && (
         <div className="-mx-4">
           {/* Scrolling Container */}
-          <div 
+          <div
             className="flex gap-2 overflow-x-auto snap-x snap-mandatory px-4 pb-3"
-            style={{ 
-              scrollbarWidth: 'none', 
+            style={{
+              scrollbarWidth: 'none',
               msOverflowStyle: 'none',
-              WebkitOverflowScrolling: 'touch'
+              WebkitOverflowScrolling: 'touch',
             }}
           >
             {photoList.map((photo, idx) => (
               <div
                 key={idx}
                 className="flex-shrink-0 snap-start"
-                style={{ 
+                style={{
                   width: 'clamp(200px, 65vw, 320px)',
-                  minWidth: '200px'
+                  minWidth: '200px',
                 }}
               >
                 <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-neutral-300 dark:bg-navy-700">
-                  <img 
-                    src={photo} 
+                  <img
+                    src={photo}
                     alt={`Property photo ${idx + 1}`}
                     className="w-full h-full object-cover"
                   />
@@ -104,14 +104,10 @@ export function PropertyMiniCard({
             <div className="text-lg font-bold text-navy-900 dark:text-white leading-tight">
               {data.address}
             </div>
-            <div className="text-sm text-neutral-500 dark:text-white/50 mb-2">
-              {data.location}
-            </div>
-            <div className="text-sm text-neutral-500 dark:text-white/50">
-              {data.specs}
-            </div>
+            <div className="text-sm text-neutral-500 dark:text-white/50 mb-2">{data.location}</div>
+            <div className="text-sm text-neutral-500 dark:text-white/50">{data.specs}</div>
           </div>
-          
+
           <div className="flex flex-col items-end">
             <div className="flex items-baseline gap-1.5">
               <span className="text-xl font-bold text-brand-500 dark:text-teal">
@@ -121,7 +117,7 @@ export function PropertyMiniCard({
             <span className="text-xs text-neutral-400 dark:text-white/40 uppercase">
               {data.priceLabel}
             </span>
-            
+
             {/* Save Button */}
             {showExpandButton && onExpand && (
               <button
@@ -140,7 +136,7 @@ export function PropertyMiniCard({
 
 /**
  * PropertyMiniCardCompact Component
- * 
+ *
  * Even more compact version for tight spaces.
  */
 
@@ -151,12 +147,12 @@ interface PropertyMiniCardCompactProps {
 }
 
 export function PropertyMiniCardCompact({ address, price, specs }: PropertyMiniCardCompactProps) {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(value)
 
   return (
@@ -176,7 +172,7 @@ export function PropertyMiniCardCompact({ address, price, specs }: PropertyMiniC
 
 /**
  * PropertyStickyHeader Component
- * 
+ *
  * A sticky header version that appears when scrolling.
  */
 
@@ -187,13 +183,18 @@ interface PropertyStickyHeaderProps {
   onBack: () => void
 }
 
-export function PropertyStickyHeader({ address, price, strategy, onBack }: PropertyStickyHeaderProps) {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
+export function PropertyStickyHeader({
+  address,
+  price,
+  strategy,
+  onBack,
+}: PropertyStickyHeaderProps) {
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(value)
 
   return (

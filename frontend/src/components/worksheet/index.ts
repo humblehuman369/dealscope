@@ -52,4 +52,3 @@ export {
 export { CashFlowChart } from './charts/CashFlowChart'
 export { EquityChart } from './charts/EquityChart'
 export { IncomeExpensesPie } from './charts/IncomeExpensesPie'
-

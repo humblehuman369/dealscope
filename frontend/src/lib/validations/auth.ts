@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 /**
  * Auth Form Validation Schemas
- * 
+ *
  * Zod schemas for login, register, and password reset forms.
  * These schemas match the backend validation requirements.
  */
@@ -14,7 +14,10 @@ const passwordSchema = z
   .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
   .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
   .regex(/[0-9]/, 'Password must contain at least one digit')
-  .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/, 'Password must contain at least one special character')
+  .regex(
+    /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/,
+    'Password must contain at least one special character',
+  )
 
 // Email validation
 const emailSchema = z
@@ -35,18 +38,20 @@ export type LoginFormData = z.infer<typeof loginSchema>
 /**
  * Register Form Schema
  */
-export const registerSchema = z.object({
-  fullName: z
-    .string()
-    .min(1, 'Full name is required')
-    .min(2, 'Name must be at least 2 characters'),
-  email: emailSchema,
-  password: passwordSchema,
-  confirmPassword: z.string().min(1, 'Please confirm your password'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-})
+export const registerSchema = z
+  .object({
+    fullName: z
+      .string()
+      .min(1, 'Full name is required')
+      .min(2, 'Name must be at least 2 characters'),
+    email: emailSchema,
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
 
 export type RegisterFormData = z.infer<typeof registerSchema>
 
@@ -62,12 +67,14 @@ export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
 /**
  * Reset Password Form Schema
  */
-export const resetPasswordSchema = z.object({
-  password: passwordSchema,
-  confirmPassword: z.string().min(1, 'Please confirm your password'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-})
+export const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
 
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>

@@ -6,7 +6,7 @@ import { api } from '@/lib/api-client'
 import {
   PropertyData,
   PropertyDetailsSkeleton,
-  PropertyDetailsClient
+  PropertyDetailsClient,
 } from '@/components/property-details'
 import { normalizePropertyData } from '@/utils/normalizePropertyData'
 
@@ -32,7 +32,9 @@ export default function PropertyPage() {
 
     async function fetchProperty() {
       try {
-        const data = await api.post<Record<string, unknown>>('/api/v1/properties/search', { address })
+        const data = await api.post<Record<string, unknown>>('/api/v1/properties/search', {
+          address,
+        })
         if (cancelled) return
         const responseZpid = (data as any)?.zpid ? String((data as any).zpid) : ''
         if (responseZpid && responseZpid !== zpid) {
@@ -51,7 +53,9 @@ export default function PropertyPage() {
     }
 
     fetchProperty()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [zpid, address])
 
   if (loading) return <PropertyDetailsSkeleton />
@@ -61,7 +65,9 @@ export default function PropertyPage() {
       <div className="min-h-screen bg-[var(--surface-base)] flex items-center justify-center p-4">
         <div className="text-center">
           <h2 className="text-xl font-bold text-[var(--text-heading)] mb-2">Property Not Found</h2>
-          <p className="text-[var(--text-secondary)]">{error ?? 'Unable to load property details'}</p>
+          <p className="text-[var(--text-secondary)]">
+            {error ?? 'Unable to load property details'}
+          </p>
         </div>
       </div>
     )
@@ -69,4 +75,3 @@ export default function PropertyPage() {
 
   return <PropertyDetailsClient property={property} initialStrategy={strategy} />
 }
-

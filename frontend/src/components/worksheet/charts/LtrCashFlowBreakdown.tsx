@@ -25,9 +25,15 @@ export function LtrCashFlowBreakdown({
   return (
     <div className="stacked-bar-container">
       <div className="stacked-bar">
-        <div className="stacked-bar-segment loan" style={{ width: `${loanPct}%` }}>Loan</div>
-        <div className="stacked-bar-segment expenses" style={{ width: `${expPct}%` }}>Exp</div>
-        <div className="stacked-bar-segment cashflow" style={{ width: `${cfPct}%` }}>CF</div>
+        <div className="stacked-bar-segment loan" style={{ width: `${loanPct}%` }}>
+          Loan
+        </div>
+        <div className="stacked-bar-segment expenses" style={{ width: `${expPct}%` }}>
+          Exp
+        </div>
+        <div className="stacked-bar-segment cashflow" style={{ width: `${cfPct}%` }}>
+          CF
+        </div>
       </div>
       <div className="stacked-legend">
         <div className="stacked-legend-item">

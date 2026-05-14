@@ -1,7 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
 const AI_CRAWLERS = [
   'GPTBot',

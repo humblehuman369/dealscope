@@ -12,15 +12,16 @@ export function MarketAnchorNote({ isListed }: { isListed: boolean }) {
     >
       {isListed ? (
         <>
-          <strong style={{ color: 'var(--accent-sky)' }}>Listed property:</strong> Market Price is the{' '}
-          <strong style={{ color: 'var(--accent-sky)' }}>asking price</strong>. Deal Gap and Price Gap are measured
-          against that benchmark.
+          <strong style={{ color: 'var(--accent-sky)' }}>Listed property:</strong> Market Price is
+          the <strong style={{ color: 'var(--accent-sky)' }}>asking price</strong>. Deal Gap and
+          Price Gap are measured against that benchmark.
         </>
       ) : (
         <>
           <strong style={{ color: 'var(--accent-sky)' }}>Off-market:</strong> Market Price is an{' '}
-          <strong style={{ color: 'var(--accent-sky)' }}>automated estimate</strong>, not a live list price. Deal Gap
-          and Price Gap assume that estimate—if it is off, the gaps move with it.
+          <strong style={{ color: 'var(--accent-sky)' }}>automated estimate</strong>, not a live
+          list price. Deal Gap and Price Gap assume that estimate—if it is off, the gaps move with
+          it.
         </>
       )}
     </p>

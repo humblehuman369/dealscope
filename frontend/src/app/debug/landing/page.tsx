@@ -1,25 +1,23 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { ResponsiveLandingPage } from '@/components/landing/ResponsiveLandingPage';
-import { MobileLandingPage } from '@/components/MobileLandingPage';
+import React, { useState } from 'react'
+import { ResponsiveLandingPage } from '@/components/landing/ResponsiveLandingPage'
+import { MobileLandingPage } from '@/components/MobileLandingPage'
 
-type PreviewMode = 'responsive' | 'mobile';
+type PreviewMode = 'responsive' | 'mobile'
 
 export default function LandingPreviewPage() {
-  const [mode, setMode] = useState<PreviewMode>('responsive');
+  const [mode, setMode] = useState<PreviewMode>('responsive')
 
   const handlePointAndScan = () => {
     // Preview-only stub to avoid navigation side-effects.
-    console.info('[LandingPreview] Point & Scan clicked');
-  };
+    console.info('[LandingPreview] Point & Scan clicked')
+  }
 
   return (
     <div className="min-h-screen bg-[var(--surface-base)]">
       <div className="sticky top-0 z-50 flex items-center justify-between gap-3 px-4 py-3 bg-black/80 backdrop-blur border-b border-white/10">
-        <div className="text-xs sm:text-sm text-white/80">
-          Landing Preview (temporary)
-        </div>
+        <div className="text-xs sm:text-sm text-white/80">Landing Preview (temporary)</div>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -54,5 +52,5 @@ export default function LandingPreviewPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

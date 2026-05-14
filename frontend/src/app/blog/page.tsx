@@ -5,7 +5,7 @@ import { getAllContent } from '@/lib/content'
 export const metadata: Metadata = {
   title: 'Blog — DealGapIQ',
   description:
-    'Real-estate investment analysis, creative-finance teardowns, and the pitch scripts that close the deal. Built for active investors who know the price tag isn\'t the deal — the structure is.',
+    "Real-estate investment analysis, creative-finance teardowns, and the pitch scripts that close the deal. Built for active investors who know the price tag isn't the deal — the structure is.",
   alternates: { canonical: '/blog' },
   openGraph: {
     title: 'Blog — DealGapIQ',
@@ -38,18 +38,13 @@ export default async function BlogIndex() {
           >
             Blog
           </h1>
-          <p
-            className="text-lg sm:text-xl"
-            style={{ color: 'var(--text-secondary)' }}
-          >
+          <p className="text-lg sm:text-xl" style={{ color: 'var(--text-secondary)' }}>
             Deal teardowns, creative-finance breakdowns, and the pitch scripts that close the gap.
           </p>
         </header>
 
         {posts.length === 0 ? (
-          <p style={{ color: 'var(--text-secondary)' }}>
-            No posts yet. Check back soon.
-          </p>
+          <p style={{ color: 'var(--text-secondary)' }}>No posts yet. Check back soon.</p>
         ) : (
           <div className="space-y-8">
             {posts.map((post) => (
@@ -58,10 +53,7 @@ export default async function BlogIndex() {
                 className="pb-8"
                 style={{ borderBottom: '1px solid var(--border-subtle)' }}
               >
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="group block"
-                >
+                <Link href={`/blog/${post.slug}`} className="group block">
                   <h2
                     className="text-2xl sm:text-3xl font-semibold mb-2 group-hover:opacity-80 transition-opacity"
                     style={{ color: 'var(--text-heading)' }}

@@ -91,11 +91,7 @@ export const viewport: Viewport = {
   themeColor: '#000000',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
@@ -110,9 +106,7 @@ export default function RootLayout({
         <SentryInit />
         <Providers>
           {/* Layout with unified AppHeader */}
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
+          <LayoutWrapper>{children}</LayoutWrapper>
 
           {/* Toast notifications */}
           <Toaster />

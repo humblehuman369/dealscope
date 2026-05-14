@@ -10,7 +10,8 @@ import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 // DealMakerScreen is ~1,500+ lines with 6 strategy calculators.
 // Dynamic import keeps it out of the initial page bundle.
 const DealMakerScreen = dynamic(
-  () => import('@/components/deal-maker/DealMakerScreen').then(m => ({ default: m.DealMakerScreen })),
+  () =>
+    import('@/components/deal-maker/DealMakerScreen').then((m) => ({ default: m.DealMakerScreen })),
   {
     loading: () => <IQLoadingLogo />,
   },
@@ -18,14 +19,14 @@ const DealMakerScreen = dynamic(
 
 /**
  * Deal Maker Page
- * 
+ *
  * Dynamic route: /deal-maker/[address]
  * Optional query params:
  *   - listPrice: Initial list price
  *   - propertyTax: Annual property tax
  *   - insurance: Annual insurance
  *   - rentEstimate: Monthly rent estimate
- * 
+ *
  * Example: /deal-maker/123-Main-St-Austin-TX?listPrice=350000&rentEstimate=2500
  */
 
@@ -38,7 +39,7 @@ export default function DealMakerRoutePage() {
   const propertyAddress = decodeURIComponent(encodedAddress.replace(/-/g, ' '))
 
   // Parse address components
-  const addressParts = propertyAddress.split(',').map(s => s.trim())
+  const addressParts = propertyAddress.split(',').map((s) => s.trim())
   const streetAddress = addressParts[0] || propertyAddress
   const city = addressParts[1] || 'Unknown'
   const stateZip = addressParts[2] || ''
@@ -78,13 +79,10 @@ export default function DealMakerRoutePage() {
     monthlyHoa: monthlyHoa,
     zpid: zpid,
   }
-  
+
   return (
     <AuthGate feature="adjust deal inputs" mode="section">
-      <DealMakerScreen
-        property={property}
-        listPrice={listPrice}
-      />
+      <DealMakerScreen property={property} listPrice={listPrice} />
     </AuthGate>
   )
 }

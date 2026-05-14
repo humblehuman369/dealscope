@@ -28,7 +28,7 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
@@ -55,29 +55,35 @@ export function UserManagementSection() {
   const handleToggleActive = async (userId: string, currentStatus: boolean) => {
     try {
       await api.patch(`/api/v1/admin/users/${userId}`, { is_active: !currentStatus })
-      setUsers(prev => prev.map(u => 
-        u.id === userId ? { ...u, is_active: !currentStatus } : u
-      ))
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, is_active: !currentStatus } : u)),
+      )
     } catch (err) {
       console.error('Failed to toggle user:', err)
     }
   }
 
-  const handleToggleSubscription = async (userId: string, currentTier: string | null | undefined) => {
+  const handleToggleSubscription = async (
+    userId: string,
+    currentTier: string | null | undefined,
+  ) => {
     const newTier = currentTier === 'pro' ? 'free' : 'pro'
     try {
       await api.patch(`/api/v1/admin/users/${userId}/subscription`, { tier: newTier })
-      setUsers(prev => prev.map(u =>
-        u.id === userId ? { ...u, subscription_tier: newTier, subscription_status: 'active' } : u
-      ))
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId ? { ...u, subscription_tier: newTier, subscription_status: 'active' } : u,
+        ),
+      )
     } catch (err) {
       console.error('Failed to update subscription:', err)
     }
   }
 
-  const filteredUsers = users.filter(u =>
-    u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter(
+    (u) =>
+      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.full_name?.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
   return (
@@ -109,12 +115,24 @@ export function UserManagementSection() {
           <table className="w-full">
             <thead className="bg-white/[0.03]">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">User</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Plan</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Joined</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Plan
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Joined
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.07]">
@@ -124,35 +142,45 @@ export function UserManagementSection() {
                   <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-4 py-3">
                       <div>
-                        <p className="text-sm font-medium text-slate-100">{u.full_name || 'No name'}</p>
+                        <p className="text-sm font-medium text-slate-100">
+                          {u.full_name || 'No name'}
+                        </p>
                         <p className="text-xs text-slate-500">{u.email}</p>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
-                        u.is_active
-                          ? 'bg-emerald-400/10 text-emerald-400'
-                          : 'bg-red-400/10 text-red-400'
-                      }`}>
-                        {u.is_active ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
+                          u.is_active
+                            ? 'bg-emerald-400/10 text-emerald-400'
+                            : 'bg-red-400/10 text-red-400'
+                        }`}
+                      >
+                        {u.is_active ? (
+                          <CheckCircle className="w-3 h-3" />
+                        ) : (
+                          <XCircle className="w-3 h-3" />
+                        )}
                         {u.is_active ? 'Active' : 'Disabled'}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        u.is_superuser
-                          ? 'bg-amber-400/10 text-amber-400'
-                          : 'bg-white/[0.06] text-slate-300'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          u.is_superuser
+                            ? 'bg-amber-400/10 text-amber-400'
+                            : 'bg-white/[0.06] text-slate-300'
+                        }`}
+                      >
                         {u.is_superuser ? 'Admin' : 'User'}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
-                        isPro
-                          ? 'bg-sky-400/10 text-sky-400'
-                          : 'bg-white/[0.06] text-slate-300'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
+                          isPro ? 'bg-sky-400/10 text-sky-400' : 'bg-white/[0.06] text-slate-300'
+                        }`}
+                      >
                         {isPro && <Crown className="w-3 h-3" />}
                         {isPro ? 'Pro' : 'Free'}
                       </span>

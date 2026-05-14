@@ -10,7 +10,7 @@ import type { CompsIdentifier, CompsState, RentComp, SubjectProperty } from '@/l
 
 export function useRentComps(
   identifier: CompsIdentifier | null,
-  subject?: SubjectProperty
+  subject?: SubjectProperty,
 ): CompsState<RentComp> {
   const [data, setData] = useState<RentComp[]>([])
   const [loading, setLoading] = useState(false)

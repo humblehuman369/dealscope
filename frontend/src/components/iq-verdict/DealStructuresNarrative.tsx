@@ -58,8 +58,7 @@ export function DealStructuresNarrative({ paragraphs }: DealStructuresNarrativeP
           color: 'var(--text-heading)',
         }}
       >
-        <span style={{ color: 'var(--accent-sky)' }}>Here&apos;s</span>{' '}
-        the deal in plain English
+        <span style={{ color: 'var(--accent-sky)' }}>Here&apos;s</span> the deal in plain English
       </p>
       {paragraphs.map((paragraph, idx) => {
         const isCloser = idx === paragraphs.length - 1

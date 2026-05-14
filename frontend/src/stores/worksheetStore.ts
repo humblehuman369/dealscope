@@ -1,17 +1,17 @@
 import { create } from 'zustand'
-import { 
-  YearlyProjection, 
-  ProjectionAssumptions, 
+import {
+  YearlyProjection,
+  ProjectionAssumptions,
   calculate10YearProjections,
   calculateProjectionSummary,
-  ProjectionSummary
+  ProjectionSummary,
 } from '@/lib/projections'
 import { defaultsService } from '@/services/defaults'
 import { apiRequest } from '@/lib/api-client'
 
 /**
  * Worksheet Store
- * 
+ *
  * NOTE: Default values in this store are fallbacks only.
  * The store initializes from the centralized defaults API.
  * See docs/architecture/DEFAULTS_ARCHITECTURE.md for details.
@@ -43,7 +43,7 @@ export interface WorksheetAssumptions extends ProjectionAssumptions {
   utilities: number
   landscaping: number
   miscExpenses: number
-  
+
   // Tax assumptions
   incomeTaxRate: number
   depreciationYears: number
@@ -64,10 +64,13 @@ export interface WorksheetState {
   lastSaved: Date | null
   activeSection: string
   viewMode: 'monthly' | 'yearly'
-  
+
   // Actions
   initializeFromProperty: (property: any) => Promise<void>
-  updateAssumption: <K extends keyof WorksheetAssumptions>(key: K, value: WorksheetAssumptions[K]) => void
+  updateAssumption: <K extends keyof WorksheetAssumptions>(
+    key: K,
+    value: WorksheetAssumptions[K],
+  ) => void
   updateMultipleAssumptions: (updates: Partial<WorksheetAssumptions>) => void
   recalculate: () => void
   recalculateProjections: () => void
@@ -85,51 +88,51 @@ import type { WorksheetMetrics } from '@dealscope/shared'
 
 /**
  * FALLBACK DEFAULT ASSUMPTIONS
- * 
+ *
  * These values are used only when the API hasn't loaded yet.
  * The initializeFromProperty method will fetch actual defaults from the API.
- * 
+ *
  * Values here should match the backend defaults.py to minimize visual jumps.
  * DO NOT change these values here - update backend/app/core/defaults.py instead.
  */
 const defaultAssumptions: WorksheetAssumptions = {
   // Property
   purchasePrice: 0,
-  downPaymentPct: 0.20,      // Matches FINANCING.down_payment_pct
-  closingCostsPct: 0.03,     // Matches FINANCING.closing_costs_pct
+  downPaymentPct: 0.2, // Matches FINANCING.down_payment_pct
+  closingCostsPct: 0.03, // Matches FINANCING.closing_costs_pct
   closingCosts: 0,
   rehabCosts: 0,
   arv: 0,
-  
+
   // Financing
-  interestRate: 0.06,        // Matches FINANCING.interest_rate (was 0.07)
-  loanTermYears: 30,         // Matches FINANCING.loan_term_years
-  
+  interestRate: 0.06, // Matches FINANCING.interest_rate (was 0.07)
+  loanTermYears: 30, // Matches FINANCING.loan_term_years
+
   // Income
   monthlyRent: 0,
-  annualRentGrowth: 0.05,    // Matches GROWTH.rent_growth_rate (was 0.03)
-  vacancyRate: 0.01,         // Matches OPERATING.vacancy_rate (was 0.08)
-  
+  annualRentGrowth: 0.05, // Matches GROWTH.rent_growth_rate (was 0.03)
+  vacancyRate: 0.01, // Matches OPERATING.vacancy_rate (was 0.08)
+
   // Expenses
   propertyTaxes: 0,
   insurance: 0,
   propertyTaxGrowth: 0.02,
   insuranceGrowth: 0.03,
-  managementPct: 0.00,       // Matches OPERATING.property_management_pct (was 0.08)
-  maintenancePct: 0.05,      // Matches OPERATING.maintenance_pct
+  managementPct: 0.0, // Matches OPERATING.property_management_pct (was 0.08)
+  maintenancePct: 0.05, // Matches OPERATING.maintenance_pct
   capexReservePct: 0.05,
   hoaFees: 0,
   utilities: 0,
   landscaping: 0,
   miscExpenses: 0,
-  
+
   // Appreciation
-  annualAppreciation: 0.05,  // Matches GROWTH.appreciation_rate (was 0.03)
-  
+  annualAppreciation: 0.05, // Matches GROWTH.appreciation_rate (was 0.03)
+
   // Tax
   incomeTaxRate: 0.25,
   depreciationYears: 27.5,
-  landValuePercent: 0.20,
+  landValuePercent: 0.2,
 }
 
 export const useWorksheetStore = create<WorksheetState>((set, get) => ({
@@ -151,10 +154,10 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     const data = property.property_data_snapshot || {}
     const savedAssumptions = property.worksheet_assumptions || {}
     const zipCode = data.zipCode || property.zip_code
-    
+
     // Start with fallback defaults
     let baseDefaults = { ...defaultAssumptions }
-    
+
     // Try to fetch resolved defaults from API (includes market adjustments + user preferences)
     try {
       const resolvedDefaults = await defaultsService.getResolvedDefaults(zipCode)
@@ -164,11 +167,13 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
         baseDefaults = {
           ...defaultAssumptions,
           downPaymentPct: resolved.financing?.down_payment_pct ?? defaultAssumptions.downPaymentPct,
-          closingCostsPct: resolved.financing?.closing_costs_pct ?? defaultAssumptions.closingCostsPct,
+          closingCostsPct:
+            resolved.financing?.closing_costs_pct ?? defaultAssumptions.closingCostsPct,
           interestRate: resolved.financing?.interest_rate ?? defaultAssumptions.interestRate,
           loanTermYears: resolved.financing?.loan_term_years ?? defaultAssumptions.loanTermYears,
           vacancyRate: resolved.operating?.vacancy_rate ?? defaultAssumptions.vacancyRate,
-          managementPct: resolved.operating?.property_management_pct ?? defaultAssumptions.managementPct,
+          managementPct:
+            resolved.operating?.property_management_pct ?? defaultAssumptions.managementPct,
           maintenancePct: resolved.operating?.maintenance_pct ?? defaultAssumptions.maintenancePct,
           annualAppreciation: resolved.appreciation_rate ?? defaultAssumptions.annualAppreciation,
           annualRentGrowth: resolved.rent_growth_rate ?? defaultAssumptions.annualRentGrowth,
@@ -177,7 +182,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     } catch (error) {
       console.warn('Failed to fetch defaults from API, using fallback defaults:', error)
     }
-    
+
     const assumptions: WorksheetAssumptions = {
       ...baseDefaults,
       purchasePrice: data.listPrice ?? 0,
@@ -188,14 +193,14 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
       closingCosts: (data.listPrice || 0) * baseDefaults.closingCostsPct,
       ...savedAssumptions,
     }
-    
+
     set({
       propertyId: property.id,
       propertyData: property,
       assumptions,
       isDirty: false,
     })
-    
+
     // Trigger initial calculation
     get().recalculate()
   },
@@ -227,16 +232,16 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
 
   recalculateProjections: () => {
     const { assumptions } = get()
-    
+
     // Calculate 30-year projections
     const projections = calculate10YearProjections(assumptions)
-    
+
     // Calculate total cash invested (down payment + closing costs + rehab)
     const downPayment = assumptions.purchasePrice * (assumptions.downPaymentPct / 100)
     const totalCashInvested = downPayment + assumptions.closingCosts + assumptions.rehabCosts
-    
+
     const summary = calculateProjectionSummary(projections, totalCashInvested)
-    
+
     set({ projections, summary })
   },
 
@@ -285,7 +290,8 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
           isCalculating: false,
         })
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to calculate worksheet metrics'
+        const message =
+          error instanceof Error ? error.message : 'Failed to calculate worksheet metrics'
         set({
           calculationError: message,
           isCalculating: false,
@@ -331,17 +337,17 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
 
   saveToBackend: async () => {
     const { propertyId, assumptions, isDirty } = get()
-    
+
     if (!propertyId || !isDirty) return
-    
+
     set({ isSaving: true })
-    
+
     try {
       await apiRequest(`/api/v1/properties/saved/${propertyId}`, {
         method: 'PATCH',
         body: { worksheet_assumptions: assumptions },
       })
-      
+
       set({ isDirty: false, isSaving: false, lastSaved: new Date() })
     } catch (error) {
       console.error('Error saving worksheet:', error)
@@ -362,7 +368,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
 // Derived values / selectors
 export const useWorksheetDerived = () => {
   const { assumptions, projections, worksheetMetrics } = useWorksheetStore()
-  
+
   // Safe number function that handles NaN, Infinity, and extremely large values
   const safeNumber = (value?: number | null, maxAbs: number = 1e12): number => {
     if (typeof value !== 'number' || !Number.isFinite(value)) return 0
@@ -371,12 +377,12 @@ export const useWorksheetDerived = () => {
     return value
   }
   const metrics = worksheetMetrics
-  
+
   // Worksheet-calculated values (API-driven)
   const loanAmount = safeNumber(metrics?.loan_amount)
   const downPayment = safeNumber(metrics?.down_payment)
   const totalCashNeeded = safeNumber(metrics?.total_cash_needed)
-  
+
   // Year 1 values
   const year1 = projections[0] || {
     grossRent: assumptions.monthlyRent * 12,
@@ -386,37 +392,36 @@ export const useWorksheetDerived = () => {
     debtService: 0,
     cashFlow: 0,
   }
-  
+
   const annualGrossRent = safeNumber(metrics?.annual_gross_rent)
   const vacancy = safeNumber(metrics?.vacancy_loss)
   const effectiveGrossIncome = safeNumber(metrics?.gross_income)
-  
+
   const propertyManagement = safeNumber(metrics?.property_management)
   const maintenance = safeNumber(metrics?.maintenance_only)
   const capex = safeNumber(metrics?.capex)
-  
+
   const totalOperatingExpenses = safeNumber(metrics?.gross_expenses)
   const noi = safeNumber(metrics?.noi)
-  
+
   const monthlyPayment = safeNumber(metrics?.monthly_payment)
   const annualDebtService = safeNumber(metrics?.annual_debt_service)
-  
+
   const annualCashFlow = safeNumber(metrics?.annual_cash_flow)
   const monthlyCashFlow = safeNumber(metrics?.monthly_cash_flow)
-  
+
   // Returns
   const capRate = safeNumber(metrics?.cap_rate)
   const cashOnCash = safeNumber(metrics?.cash_on_cash_return)
-  
+
   // Ratios
   const ltv = safeNumber(metrics?.ltv)
   const dscr = safeNumber(metrics?.dscr)
   const rentToValue = safeNumber(metrics?.one_percent_rule) * 100
   const grm = safeNumber(metrics?.grm)
-  const breakEvenRatio = annualGrossRent > 0
-    ? ((totalOperatingExpenses + annualDebtService) / annualGrossRent) * 100
-    : 0
-  
+  const breakEvenRatio =
+    annualGrossRent > 0 ? ((totalOperatingExpenses + annualDebtService) / annualGrossRent) * 100 : 0
+
   return {
     // Financing
     loanAmount,
@@ -425,27 +430,27 @@ export const useWorksheetDerived = () => {
     ltv,
     monthlyPayment,
     annualDebtService,
-    
+
     // Income
     annualGrossRent,
     vacancy,
     effectiveGrossIncome,
-    
+
     // Expenses breakdown
     propertyManagement,
     maintenance,
     capex,
     totalOperatingExpenses,
-    
+
     // Cash Flow
     noi,
     annualCashFlow,
     monthlyCashFlow,
-    
+
     // Returns
     capRate,
     cashOnCash,
-    
+
     // Ratios
     dscr,
     rentToValue,
@@ -453,4 +458,3 @@ export const useWorksheetDerived = () => {
     breakEvenRatio,
   }
 }
-

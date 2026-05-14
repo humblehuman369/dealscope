@@ -28,15 +28,10 @@ export function PropertyFeatures({
   isWaterfront,
   waterfrontFeatures,
 }: PropertyFeaturesProps) {
-  const allFeatures = [
-    ...interiorFeatures,
-    ...exteriorFeatures,
-    ...appliances,
-  ]
+  const allFeatures = [...interiorFeatures, ...exteriorFeatures, ...appliances]
   const uniqueFeatures = [...new Set(allFeatures)]
 
-  const hasConstruction =
-    (construction && construction.length > 0) || roof || foundation
+  const hasConstruction = (construction && construction.length > 0) || roof || foundation
 
   if (uniqueFeatures.length === 0 && !hasConstruction) return null
 
@@ -69,10 +64,7 @@ export function PropertyFeatures({
       {isWaterfront && waterfrontFeatures && waterfrontFeatures.length > 0 && (
         <div className="flex items-center gap-2 mt-2">
           <Waves size={14} style={{ color: 'var(--accent-sky)' }} />
-          <span
-            className="text-xs font-semibold"
-            style={{ color: 'var(--accent-sky)' }}
-          >
+          <span className="text-xs font-semibold" style={{ color: 'var(--accent-sky)' }}>
             Waterfront: {waterfrontFeatures.join(', ')}
           </span>
         </div>
@@ -91,10 +83,7 @@ export function PropertyFeatures({
               >
                 Construction
               </span>
-              <span
-                className="text-sm font-medium"
-                style={{ color: 'var(--text-body)' }}
-              >
+              <span className="text-sm font-medium" style={{ color: 'var(--text-body)' }}>
                 {construction.join(', ')}
               </span>
             </div>
@@ -107,10 +96,7 @@ export function PropertyFeatures({
               >
                 Roof
               </span>
-              <span
-                className="text-sm font-medium"
-                style={{ color: 'var(--text-body)' }}
-              >
+              <span className="text-sm font-medium" style={{ color: 'var(--text-body)' }}>
                 {roof}
               </span>
             </div>
@@ -123,10 +109,7 @@ export function PropertyFeatures({
               >
                 Foundation
               </span>
-              <span
-                className="text-sm font-medium"
-                style={{ color: 'var(--text-body)' }}
-              >
+              <span className="text-sm font-medium" style={{ color: 'var(--text-body)' }}>
                 {foundation}
               </span>
             </div>

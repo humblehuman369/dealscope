@@ -1,65 +1,94 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  Search,
-  MapPin,
-  Loader2,
-  Sun,
-  Moon
-} from 'lucide-react';
-import { useSession, useLogout } from '@/hooks/useSession';
-import { useAuthModal } from '@/hooks/useAuthModal';
-import { useTheme } from '@/context/ThemeContext';
-import { PhoneScannerMockup } from './PhoneScannerMockup';
-import { AddressAutocomplete } from '@/components/AddressAutocomplete';
-import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Search, MapPin, Loader2, Sun, Moon } from 'lucide-react'
+import { useSession, useLogout } from '@/hooks/useSession'
+import { useAuthModal } from '@/hooks/useAuthModal'
+import { useTheme } from '@/context/ThemeContext'
+import { PhoneScannerMockup } from './PhoneScannerMockup'
+import { AddressAutocomplete } from '@/components/AddressAutocomplete'
+import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity'
 
 interface LandingPageProps {
-  onPointAndScan: () => void;
+  onPointAndScan: () => void
 }
 
 // Strategy data with emoji icons
 const strategies = [
-  { name: 'Long-Term Rental', roi: '18%', icon: '🏠', color: '#0465f2', bgColor: 'rgba(4,101,242,0.15)' },
-  { name: 'Short-Term Rental', roi: '28%', icon: '🏨', color: '#8b5cf6', bgColor: 'rgba(139,92,246,0.15)' },
-  { name: 'Fix & Flip', roi: '22%', icon: '🔨', color: '#ec4899', bgColor: 'rgba(236,72,153,0.15)' },
+  {
+    name: 'Long-Term Rental',
+    roi: '18%',
+    icon: '🏠',
+    color: '#0465f2',
+    bgColor: 'rgba(4,101,242,0.15)',
+  },
+  {
+    name: 'Short-Term Rental',
+    roi: '28%',
+    icon: '🏨',
+    color: '#8b5cf6',
+    bgColor: 'rgba(139,92,246,0.15)',
+  },
+  {
+    name: 'Fix & Flip',
+    roi: '22%',
+    icon: '🔨',
+    color: '#ec4899',
+    bgColor: 'rgba(236,72,153,0.15)',
+  },
   { name: 'BRRRR', roi: '25%', icon: '🔄', color: '#f97316', bgColor: 'rgba(249,115,22,0.15)' },
-  { name: 'House Hack', roi: '31%', icon: '🏡', color: '#14b8a6', bgColor: 'rgba(20,184,166,0.15)' },
-  { name: 'Wholesale', roi: '$12K', icon: '📋', color: '#84cc16', bgColor: 'rgba(132,204,22,0.15)', isProfit: true },
-];
+  {
+    name: 'House Hack',
+    roi: '31%',
+    icon: '🏡',
+    color: '#14b8a6',
+    bgColor: 'rgba(20,184,166,0.15)',
+  },
+  {
+    name: 'Wholesale',
+    roi: '$12K',
+    icon: '📋',
+    color: '#84cc16',
+    bgColor: 'rgba(132,204,22,0.15)',
+    isProfit: true,
+  },
+]
 
 export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
-  const router = useRouter();
-  const { user, isAuthenticated } = useSession();
-  const { openAuthModal } = useAuthModal();
-  const logoutMutation = useLogout();
-  const { theme, toggleTheme } = useTheme();
-  const isDark = theme === 'dark';
-  const [showSearchBar, setShowSearchBar] = useState(false);
-  const [searchAddress, setSearchAddress] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const hasValidSearchAddress = isLikelyFullAddress(searchAddress);
+  const router = useRouter()
+  const { user, isAuthenticated } = useSession()
+  const { openAuthModal } = useAuthModal()
+  const logoutMutation = useLogout()
+  const { theme, toggleTheme } = useTheme()
+  const isDark = theme === 'dark'
+  const [showSearchBar, setShowSearchBar] = useState(false)
+  const [searchAddress, setSearchAddress] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
+  const hasValidSearchAddress = isLikelyFullAddress(searchAddress)
 
   const handleAnalyze = async () => {
-    if (!hasValidSearchAddress) return;
-    setIsSearching(true);
+    if (!hasValidSearchAddress) return
+    setIsSearching(true)
     try {
       // Use new IQ Verdict flow
-      const canonicalAddress = canonicalizeAddressForIdentity(searchAddress);
-      await router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`);
+      const canonicalAddress = canonicalizeAddressForIdentity(searchAddress)
+      await router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`)
     } catch {
       // Navigation failed - user can retry
     } finally {
-      setIsSearching(false);
+      setIsSearching(false)
     }
-  };
+  }
 
   return (
-    <div className={`min-h-screen overflow-x-hidden transition-colors duration-300 ${
-      isDark ? 'bg-[#07172e] text-[#e1e8ed]' : 'bg-[var(--surface-base)] text-[var(--text-heading)]'
-    }`}>
+    <div
+      className={`min-h-screen overflow-x-hidden transition-colors duration-300 ${
+        isDark
+          ? 'bg-[#07172e] text-[#e1e8ed]'
+          : 'bg-[var(--surface-base)] text-[var(--text-heading)]'
+      }`}
+    >
       {/* Header — solid card surface in light so canvas tint starts below */}
       <header
         className={`relative z-10 w-full px-5 py-3 lg:px-12 lg:py-5 ${
@@ -67,128 +96,140 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
         }`}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className={`text-xl lg:text-2xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
-          DealGap<span className={isDark ? 'text-accent-500' : 'text-accent-light'}>IQ</span>
-        </div>
-        
-        <div className="flex items-center gap-3 lg:gap-4">
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-              isDark 
-                ? 'bg-white/10 hover:bg-white/15' 
-                : 'bg-[var(--surface-elevated)] hover:bg-[var(--surface-card-hover)]'
-            }`}
-            aria-label="Toggle theme"
+          <div
+            className={`text-xl lg:text-2xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}
           >
-            {isDark ? (
-              <Sun className="w-4 h-4 text-accent-500" />
-            ) : (
-              <Moon className="w-4 h-4 text-[var(--text-secondary)]" />
-            )}
-          </button>
+            DealGap<span className={isDark ? 'text-accent-500' : 'text-accent-light'}>IQ</span>
+          </div>
 
-          {isAuthenticated && user ? (
-            <>
-              <button
-                onClick={() => router.push('/search')}
-                className={`text-sm font-medium transition-colors ${
-                  isDark 
-                    ? 'text-white/70 hover:text-white' 
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-heading)]'
-                }`}
-              >
-                Dashboard
-              </button>
-              <button
-                onClick={() => logoutMutation.mutate()}
-                className={`hidden lg:block text-sm font-medium transition-colors ${
-                  isDark 
-                    ? 'text-white/50 hover:text-white/70' 
-                    : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
-                }`}
-              >
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => openAuthModal('login')}
-                className={`text-sm font-medium transition-colors ${
-                  isDark 
-                    ? 'text-white/70 hover:text-white' 
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-heading)]'
-                }`}
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => openAuthModal('register')}
-                className="hidden lg:block px-5 py-2.5 bg-brand-500 text-white font-semibold rounded-xl hover:bg-brand-600 transition-colors"
-              >
-                Get Started
-              </button>
-            </>
-          )}
-        </div>
+          <div className="flex items-center gap-3 lg:gap-4">
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                isDark
+                  ? 'bg-white/10 hover:bg-white/15'
+                  : 'bg-[var(--surface-elevated)] hover:bg-[var(--surface-card-hover)]'
+              }`}
+              aria-label="Toggle theme"
+            >
+              {isDark ? (
+                <Sun className="w-4 h-4 text-accent-500" />
+              ) : (
+                <Moon className="w-4 h-4 text-[var(--text-secondary)]" />
+              )}
+            </button>
+
+            {isAuthenticated && user ? (
+              <>
+                <button
+                  onClick={() => router.push('/search')}
+                  className={`text-sm font-medium transition-colors ${
+                    isDark
+                      ? 'text-white/70 hover:text-white'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-heading)]'
+                  }`}
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => logoutMutation.mutate()}
+                  className={`hidden lg:block text-sm font-medium transition-colors ${
+                    isDark
+                      ? 'text-white/50 hover:text-white/70'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+                  }`}
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => openAuthModal('login')}
+                  className={`text-sm font-medium transition-colors ${
+                    isDark
+                      ? 'text-white/70 hover:text-white'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-heading)]'
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => openAuthModal('register')}
+                  className="hidden lg:block px-5 py-2.5 bg-brand-500 text-white font-semibold rounded-xl hover:bg-brand-600 transition-colors"
+                >
+                  Get Started
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
       {/* Hero Section */}
       <section className="relative z-10 px-5 pt-6 lg:pt-16 text-center max-w-4xl mx-auto">
-        <h1 className={`font-bold text-[28px] lg:text-[52px] leading-[1.2] mb-1 ${
-          isDark ? 'text-white' : 'text-[var(--text-heading)]'
-        }`}>
+        <h1
+          className={`font-bold text-[28px] lg:text-[52px] leading-[1.2] mb-1 ${
+            isDark ? 'text-white' : 'text-[var(--text-heading)]'
+          }`}
+        >
           Know the Real Return
         </h1>
-        <p className={`text-[28px] lg:text-[52px] leading-[1.2] mb-2 font-semibold italic ${isDark ? 'text-accent-500' : 'text-accent-light'}`}>
+        <p
+          className={`text-[28px] lg:text-[52px] leading-[1.2] mb-2 font-semibold italic ${isDark ? 'text-accent-500' : 'text-accent-light'}`}
+        >
           Before You Buy
         </p>
-        <p className={`text-sm font-semibold tracking-[0.2em] uppercase ${isDark ? 'text-accent-500' : 'text-accent-light'}`}>
+        <p
+          className={`text-sm font-semibold tracking-[0.2em] uppercase ${isDark ? 'text-accent-500' : 'text-accent-light'}`}
+        >
           Point. Scan. Know.
         </p>
       </section>
 
       {/* Scanner Section */}
       <section className="relative z-10 px-4 pt-6 lg:pt-8 pb-5 flex flex-col items-center max-w-2xl mx-auto">
-        <PhoneScannerMockup 
-          isDark={isDark} 
+        <PhoneScannerMockup
+          isDark={isDark}
           onScanPress={onPointAndScan}
           onAddressPress={() => setShowSearchBar(!showSearchBar)}
         />
-        
+
         {/* Address Search Dropdown */}
         {showSearchBar && (
-          <div 
+          <div
             className={`w-full max-w-[460px] mt-4 p-4 rounded-2xl border animate-in slide-in-from-top-2 duration-200 ${
-              isDark 
-                ? 'bg-white/[0.08] border-white/10' 
+              isDark
+                ? 'bg-white/[0.08] border-white/10'
                 : 'bg-[var(--surface-card)] border-[var(--border-default)] shadow-lg'
             }`}
             style={{ backdropFilter: isDark ? 'blur(12px)' : undefined }}
           >
             <form
               onSubmit={(e) => {
-                e.preventDefault();
-                handleAnalyze();
+                e.preventDefault()
+                handleAnalyze()
               }}
             >
-              <div className={`flex items-center gap-2 rounded-xl px-4 py-3 border ${
-                isDark 
-                  ? 'bg-white/10 border-white/10' 
-                  : 'bg-[var(--surface-elevated)] border-[var(--border-default)]'
-              }`}>
-                <MapPin className={`w-5 h-5 flex-shrink-0 ${isDark ? 'text-accent-500' : 'text-accent-light'}`} />
+              <div
+                className={`flex items-center gap-2 rounded-xl px-4 py-3 border ${
+                  isDark
+                    ? 'bg-white/10 border-white/10'
+                    : 'bg-[var(--surface-elevated)] border-[var(--border-default)]'
+                }`}
+              >
+                <MapPin
+                  className={`w-5 h-5 flex-shrink-0 ${isDark ? 'text-accent-500' : 'text-accent-light'}`}
+                />
                 <AddressAutocomplete
                   value={searchAddress}
                   onChange={setSearchAddress}
                   onPlaceSelect={(value) => setSearchAddress(canonicalizeAddressForIdentity(value))}
                   placeholder="Enter property address..."
                   className={`flex-1 bg-transparent text-sm outline-none ${
-                    isDark 
-                      ? 'text-white placeholder-white/50' 
+                    isDark
+                      ? 'text-white placeholder-white/50'
                       : 'text-[var(--text-heading)] placeholder-[var(--text-muted)]'
                   }`}
                   autoFocus
@@ -198,20 +239,25 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                 type="submit"
                 disabled={!hasValidSearchAddress || isSearching}
                 className={`w-full mt-3 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all
-                  ${searchAddress.trim() 
-                    ? `text-white shadow-lg` 
-                    : isDark 
-                      ? 'bg-white/10 text-white/40 cursor-not-allowed'
-                      : 'bg-[var(--surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
+                  ${
+                    searchAddress.trim()
+                      ? `text-white shadow-lg`
+                      : isDark
+                        ? 'bg-white/10 text-white/40 cursor-not-allowed'
+                        : 'bg-[var(--surface-elevated)] text-[var(--text-muted)] cursor-not-allowed'
                   }`}
-                style={searchAddress.trim() ? {
-                  background: isDark 
-                    ? 'linear-gradient(135deg, #0097a7 0%, var(--accent-sky) 100%)'
-                    : 'linear-gradient(135deg, #0465f2 0%, #0354d1 100%)',
-                  boxShadow: isDark
-                    ? '0 4px 20px rgba(0, 151, 167, 0.4)'
-                    : '0 4px 20px rgba(4, 101, 242, 0.35)'
-                } : undefined}
+                style={
+                  searchAddress.trim()
+                    ? {
+                        background: isDark
+                          ? 'linear-gradient(135deg, #0097a7 0%, var(--accent-sky) 100%)'
+                          : 'linear-gradient(135deg, #0465f2 0%, #0354d1 100%)',
+                        boxShadow: isDark
+                          ? '0 4px 20px rgba(0, 151, 167, 0.4)'
+                          : '0 4px 20px rgba(4, 101, 242, 0.35)',
+                      }
+                    : undefined
+                }
               >
                 {isSearching ? (
                   <>
@@ -231,26 +277,33 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
       </section>
 
       {/* Strategy Section */}
-      <section 
+      <section
         className="relative px-5 py-8 lg:py-12 mt-4"
-        style={{ 
-          background: isDark 
-            ? 'linear-gradient(180deg, #0a1628 0%, #07172e 50%, #061324 100%)' 
-            : 'linear-gradient(180deg, color-mix(in srgb, #0fa4e9 8%, #ffffff) 0%, #ffffff 50%, #ecf8fd 100%)'
+        style={{
+          background: isDark
+            ? 'linear-gradient(180deg, #0a1628 0%, #07172e 50%, #061324 100%)'
+            : 'linear-gradient(180deg, color-mix(in srgb, #0fa4e9 8%, #ffffff) 0%, #ffffff 50%, #ecf8fd 100%)',
         }}
       >
         {/* Section Header */}
         <div className="flex justify-between items-center mb-4 max-w-4xl mx-auto">
-          <h2 className={`text-lg lg:text-xl font-bold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
-            See Your <span className={isDark ? 'text-accent-500' : 'text-accent-light'}>Profit Potential</span>
+          <h2
+            className={`text-lg lg:text-xl font-bold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}
+          >
+            See Your{' '}
+            <span className={isDark ? 'text-accent-500' : 'text-accent-light'}>
+              Profit Potential
+            </span>
           </h2>
-          <span className={`text-sm font-semibold cursor-pointer ${isDark ? 'text-accent-500' : 'text-accent-light'}`}>
+          <span
+            className={`text-sm font-semibold cursor-pointer ${isDark ? 'text-accent-500' : 'text-accent-light'}`}
+          >
             All 6 →
           </span>
         </div>
 
         {/* Strategy Cards - Horizontal Scroll */}
-        <div 
+        <div
           className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide"
           style={{ scrollSnapType: 'x mandatory' }}
         >
@@ -269,20 +322,42 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
         </div>
 
         {/* Stats Row */}
-        <div className={`flex justify-between py-5 mt-6 border-t border-b max-w-4xl mx-auto ${
-          isDark ? 'border-white/10' : 'border-[var(--border-default)]'
-        }`}>
+        <div
+          className={`flex justify-between py-5 mt-6 border-t border-b max-w-4xl mx-auto ${
+            isDark ? 'border-white/10' : 'border-[var(--border-default)]'
+          }`}
+        >
           <div className="text-center flex-1">
-            <div className={`text-xl lg:text-2xl font-bold ${isDark ? 'text-accent-500' : 'text-accent-light'}`}>10K+</div>
-            <div className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}>Analyzed</div>
+            <div
+              className={`text-xl lg:text-2xl font-bold ${isDark ? 'text-accent-500' : 'text-accent-light'}`}
+            >
+              10K+
+            </div>
+            <div
+              className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}
+            >
+              Analyzed
+            </div>
           </div>
           <div className="text-center flex-1">
             <div className="text-xl lg:text-2xl font-bold text-blue-600">$2.4M</div>
-            <div className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}>Profit Found</div>
+            <div
+              className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}
+            >
+              Profit Found
+            </div>
           </div>
           <div className="text-center flex-1">
-            <div className={`text-xl lg:text-2xl font-bold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>60s</div>
-            <div className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}>Avg. Analysis</div>
+            <div
+              className={`text-xl lg:text-2xl font-bold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}
+            >
+              60s
+            </div>
+            <div
+              className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}
+            >
+              Avg. Analysis
+            </div>
           </div>
         </div>
 
@@ -292,27 +367,29 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             onClick={onPointAndScan}
             className="w-full py-4 rounded-xl font-bold text-base text-white"
             style={{
-              background: isDark 
+              background: isDark
                 ? 'linear-gradient(135deg, #0097a7 0%, var(--accent-sky) 100%)'
                 : 'linear-gradient(135deg, #0465f2 0%, #0354d1 100%)',
               boxShadow: isDark
                 ? '0 8px 32px rgba(0, 151, 167, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
-                : '0 8px 32px rgba(4, 101, 242, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)'
+                : '0 8px 32px rgba(4, 101, 242, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
             }}
           >
             Start Analyzing Now
           </button>
-          <p className={`text-center text-xs mt-3 ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}>
+          <p
+            className={`text-center text-xs mt-3 ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}
+          >
             Free • No credit card required
           </p>
         </div>
       </section>
 
       {/* Bottom Nav (Mobile Style) */}
-      <nav 
+      <nav
         className={`flex justify-around py-3 px-5 ${isDark ? 'bg-[#061324]' : 'bg-[var(--surface-card)]'}`}
-        style={{ 
-          borderTop: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(7,23,46,0.06)'
+        style={{
+          borderTop: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(7,23,46,0.06)',
         }}
       >
         <NavItem icon="🏠" label="Home" active isDark={isDark} />
@@ -323,82 +400,96 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
       </nav>
 
       {/* Footer */}
-      <footer className={`py-6 text-center ${isDark ? 'bg-[#061324]' : 'bg-[var(--surface-card)]'}`}>
+      <footer
+        className={`py-6 text-center ${isDark ? 'bg-[#061324]' : 'bg-[var(--surface-card)]'}`}
+      >
         <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-[var(--text-secondary)]'}`}>
           © 2026 DealGapIQ. All rights reserved.
         </p>
-        <p className={`text-sm font-semibold mt-1 ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
+        <p
+          className={`text-sm font-semibold mt-1 ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}
+        >
           Invest like a Guru!
         </p>
       </footer>
     </div>
-  );
+  )
 }
 
 // Strategy Card Component
 interface StrategyCardProps {
-  name: string;
-  icon: string;
-  roi: string;
-  color: string;
-  bgColor: string;
-  isProfit?: boolean;
-  isDark: boolean;
+  name: string
+  icon: string
+  roi: string
+  color: string
+  bgColor: string
+  isProfit?: boolean
+  isDark: boolean
 }
 
 function StrategyCard({ name, icon, roi, color, bgColor, isProfit, isDark }: StrategyCardProps) {
   return (
-    <div 
+    <div
       className={`flex-shrink-0 w-[130px] p-4 rounded-2xl transition-transform hover:scale-105 cursor-pointer ${
-        isDark 
-          ? 'bg-white/[0.04] border border-white/[0.06]' 
+        isDark
+          ? 'bg-white/[0.04] border border-white/[0.06]'
           : 'bg-[var(--surface-card)] border border-[var(--border-subtle)] shadow-sm'
       }`}
       style={{ scrollSnapAlign: 'start' }}
     >
       {/* Icon */}
-      <div 
+      <div
         className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 text-xl"
         style={{ background: bgColor }}
       >
         {icon}
       </div>
-      
+
       {/* Name */}
-      <div className={`text-[11px] font-medium mb-2 leading-tight ${isDark ? 'text-gray-400' : 'text-[var(--text-secondary)]'}`}>
+      <div
+        className={`text-[11px] font-medium mb-2 leading-tight ${isDark ? 'text-gray-400' : 'text-[var(--text-secondary)]'}`}
+      >
         {name}
       </div>
-      
+
       {/* ROI */}
       <div className="text-2xl font-bold" style={{ color }}>
         {roi}
       </div>
-      
+
       {/* Label */}
-      <div className={`text-[10px] font-semibold uppercase tracking-wide ${isDark ? 'text-gray-600' : 'text-[var(--text-muted)]'}`}>
+      <div
+        className={`text-[10px] font-semibold uppercase tracking-wide ${isDark ? 'text-gray-600' : 'text-[var(--text-muted)]'}`}
+      >
         {isProfit ? 'Est. Profit' : 'Est. ROI'}
       </div>
     </div>
-  );
+  )
 }
 
 // Nav Item Component
 interface NavItemProps {
-  icon: string;
-  label: string;
-  active?: boolean;
-  isDark: boolean;
+  icon: string
+  label: string
+  active?: boolean
+  isDark: boolean
 }
 
 function NavItem({ icon, label, active, isDark }: NavItemProps) {
   return (
-    <div className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${
-      active 
-        ? isDark ? 'text-accent-500' : 'text-[var(--accent-sky)]'
-        : isDark ? 'text-gray-600' : 'text-[var(--text-muted)]'
-    }`}>
+    <div
+      className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${
+        active
+          ? isDark
+            ? 'text-accent-500'
+            : 'text-[var(--accent-sky)]'
+          : isDark
+            ? 'text-gray-600'
+            : 'text-[var(--text-muted)]'
+      }`}
+    >
       <span className="text-lg">{icon}</span>
       <span className="text-[10px] font-semibold">{label}</span>
     </div>
-  );
+  )
 }

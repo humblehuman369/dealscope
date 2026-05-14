@@ -17,11 +17,11 @@ export function IQWelcomeModal({ isOpen, onClose }: IQWelcomeModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-[var(--surface-base)]/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
       <div className="relative bg-gradient-to-br from-[#0d1f35] to-[#091525] border border-[var(--accent-sky)]/30 rounded-2xl p-8 max-w-md w-full shadow-2xl shadow-[var(--accent-sky)]/10">
         {/* IQ Brain Icon */}
@@ -30,22 +30,21 @@ export function IQWelcomeModal({ isOpen, onClose }: IQWelcomeModalProps) {
             <IQBrainIcon size={28} mode="dark" />
           </div>
         </div>
-        
+
         {/* Content */}
         <div className="text-left space-y-5">
-          <h3 className="text-lg font-bold text-white">
-            Hey, I'm IQ — your real estate analyst.
-          </h3>
-          
+          <h3 className="text-lg font-bold text-white">Hey, I'm IQ — your real estate analyst.</h3>
+
           <p className="text-[15px] font-medium text-white/90 leading-relaxed">
-            I've analyzed your property against local market data and built 6 investment strategies, each showing a different way to profit.
+            I've analyzed your property against local market data and built 6 investment strategies,
+            each showing a different way to profit.
           </p>
-          
+
           <p className="text-[15px] font-medium text-white/70 italic">
             Explore them all, I'll be here to guide you.
           </p>
         </div>
-        
+
         {/* OK Button */}
         <div className="flex justify-end mt-6">
           <button

@@ -2,7 +2,7 @@
 
 /**
  * ProgressiveProfilingPrompt Component
- * 
+ *
  * Shows a single question prompt after analysis to collect profile info incrementally.
  * Part of progressive profiling flow - asks one question at a time based on analysis count.
  *
@@ -16,11 +16,7 @@ import { X, Sparkles, Check, ChevronRight } from 'lucide-react'
 // TYPES
 // =============================================================================
 
-export type ProfileQuestion = 
-  | 'experience'
-  | 'strategies'
-  | 'budget'
-  | 'markets'
+export type ProfileQuestion = 'experience' | 'strategies' | 'budget' | 'markets'
 
 interface ProgressiveProfilingPromptProps {
   question: ProfileQuestion
@@ -34,7 +30,12 @@ interface ProgressiveProfilingPromptProps {
 // =============================================================================
 
 const EXPERIENCE_OPTIONS = [
-  { value: 'beginner', label: 'Just Getting Started', desc: 'New to real estate investing', icon: '🌱' },
+  {
+    value: 'beginner',
+    label: 'Just Getting Started',
+    desc: 'New to real estate investing',
+    icon: '🌱',
+  },
   { value: 'intermediate', label: 'Some Experience', desc: '1-5 deals completed', icon: '📈' },
   { value: 'advanced', label: 'Experienced Investor', desc: '5-20 deals', icon: '🎯' },
   { value: 'expert', label: 'Expert / Full-Time', desc: '20+ deals', icon: '🏆' },
@@ -77,10 +78,10 @@ export function ProgressiveProfilingPrompt({
         return {
           title: "What's your experience level?",
           subtitle: "We'll tailor recommendations to your needs",
-          benefit: "Get personalized strategy suggestions",
+          benefit: 'Get personalized strategy suggestions',
           content: (
             <div className="grid grid-cols-2 gap-2.5 mt-5">
-              {EXPERIENCE_OPTIONS.map(option => (
+              {EXPERIENCE_OPTIONS.map((option) => (
                 <button
                   key={option.value}
                   onClick={() => setSelectedExperience(option.value)}
@@ -103,21 +104,21 @@ export function ProgressiveProfilingPrompt({
 
       case 'strategies':
         return {
-          title: "What strategies interest you?",
-          subtitle: "Select all that apply",
+          title: 'What strategies interest you?',
+          subtitle: 'Select all that apply',
           benefit: "We'll highlight relevant scores on every analysis",
           content: (
             <div className="grid grid-cols-2 gap-2.5 mt-5">
-              {STRATEGY_OPTIONS.map(option => {
+              {STRATEGY_OPTIONS.map((option) => {
                 const isSelected = selectedStrategies.includes(option.id)
                 return (
                   <button
                     key={option.id}
-                    onClick={() => setSelectedStrategies(prev => 
-                      isSelected 
-                        ? prev.filter(s => s !== option.id)
-                        : [...prev, option.id]
-                    )}
+                    onClick={() =>
+                      setSelectedStrategies((prev) =>
+                        isSelected ? prev.filter((s) => s !== option.id) : [...prev, option.id],
+                      )
+                    }
                     className={`p-3.5 rounded-xl border text-left transition-all flex items-center justify-between ${
                       isSelected
                         ? 'border-sky-500/50 bg-sky-500/10'
@@ -138,12 +139,13 @@ export function ProgressiveProfilingPrompt({
       case 'budget':
         return {
           title: "What's your target investment range?",
-          subtitle: "Per deal investment budget",
-          benefit: "Filter alerts to properties in your range",
+          subtitle: 'Per deal investment budget',
+          benefit: 'Filter alerts to properties in your range',
           content: (
             <div className="grid grid-cols-1 gap-2 mt-5">
-              {BUDGET_OPTIONS.map(option => {
-                const isSelected = selectedBudget?.min === option.min && selectedBudget?.max === option.max
+              {BUDGET_OPTIONS.map((option) => {
+                const isSelected =
+                  selectedBudget?.min === option.min && selectedBudget?.max === option.max
                 return (
                   <button
                     key={option.label}
@@ -160,10 +162,11 @@ export function ProgressiveProfilingPrompt({
               })}
             </div>
           ),
-          onSubmit: () => onAnswer({ 
-            investment_budget_min: selectedBudget?.min,
-            investment_budget_max: selectedBudget?.max,
-          }),
+          onSubmit: () =>
+            onAnswer({
+              investment_budget_min: selectedBudget?.min,
+              investment_budget_max: selectedBudget?.max,
+            }),
           isValid: !!selectedBudget,
         }
 
@@ -178,10 +181,7 @@ export function ProgressiveProfilingPrompt({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal — Deep navy card surface */}
       <div className="relative w-full max-w-md bg-[var(--surface-card)] border border-white/[0.07] rounded-t-2xl sm:rounded-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] animate-slide-up">
@@ -208,15 +208,9 @@ export function ProgressiveProfilingPrompt({
 
         {/* Content */}
         <div className="px-5 pb-5">
-          <h2 className="text-xl font-bold text-[#F1F5F9] mb-1">
-            {questionContent.title}
-          </h2>
-          <p className="text-sm text-[#94A3B8] mb-1">
-            {questionContent.subtitle}
-          </p>
-          <p className="text-xs text-teal-400 font-medium">
-            {questionContent.benefit}
-          </p>
+          <h2 className="text-xl font-bold text-[#F1F5F9] mb-1">{questionContent.title}</h2>
+          <p className="text-sm text-[#94A3B8] mb-1">{questionContent.subtitle}</p>
+          <p className="text-xs text-teal-400 font-medium">{questionContent.benefit}</p>
 
           {questionContent.content}
 
@@ -239,16 +233,20 @@ export function ProgressiveProfilingPrompt({
           </div>
 
           {/* Time estimate */}
-          <p className="text-[10px] text-[#64748B] text-center mt-4">
-            Takes about 3 seconds
-          </p>
+          <p className="text-[10px] text-[#64748B] text-center mt-4">Takes about 3 seconds</p>
         </div>
       </div>
 
       <style jsx>{`
         @keyframes slide-up {
-          from { transform: translateY(100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
         }
         .animate-slide-up {
           animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);

@@ -12,9 +12,9 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!email.trim()) return
-    
+
     setStatus('loading')
     setMessage('')
 
@@ -22,7 +22,9 @@ export default function ForgotPasswordPage() {
       const data = await authApi.forgotPassword(email.trim())
       // Always show success to prevent email enumeration
       setStatus('success')
-      setMessage(data.message || 'If an account exists with that email, a reset link has been sent.')
+      setMessage(
+        data.message || 'If an account exists with that email, a reset link has been sent.',
+      )
     } catch (err) {
       // Even on error, show success to prevent email enumeration
       if (err instanceof ApiError && err.status >= 400 && err.status < 500) {
@@ -56,9 +58,7 @@ export default function ForgotPasswordPage() {
               <h1 className="text-2xl font-bold text-navy-900 dark:text-white mb-2">
                 Check Your Email
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">
-                {message}
-              </p>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">{message}</p>
               <p className="text-sm text-gray-400 mb-6">
                 Didn't receive an email? Check your spam folder or{' '}
                 <button
@@ -107,9 +107,7 @@ export default function ForgotPasswordPage() {
                   />
                 </div>
 
-                {status === 'error' && (
-                  <p className="text-sm text-red-500">{message}</p>
-                )}
+                {status === 'error' && <p className="text-sm text-red-500">{message}</p>}
 
                 <button
                   type="submit"
@@ -143,4 +141,3 @@ export default function ForgotPasswordPage() {
     </div>
   )
 }
-

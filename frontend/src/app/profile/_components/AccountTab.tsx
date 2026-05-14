@@ -8,14 +8,27 @@ import type { AccountFormData } from './types'
 import { formatDate } from './types'
 
 interface AccountTabProps {
-  user: { email: string; created_at?: string; last_login?: string | null; is_active?: boolean; is_verified?: boolean; full_name?: string | null } | null
+  user: {
+    email: string
+    created_at?: string
+    last_login?: string | null
+    is_active?: boolean
+    is_verified?: boolean
+    full_name?: string | null
+  } | null
   accountForm: AccountFormData
   setAccountForm: React.Dispatch<React.SetStateAction<AccountFormData>>
   isSaving: boolean
   onSave: () => void
 }
 
-export function AccountTab({ user, accountForm, setAccountForm, isSaving, onSave }: AccountTabProps) {
+export function AccountTab({
+  user,
+  accountForm,
+  setAccountForm,
+  isSaving,
+  onSave,
+}: AccountTabProps) {
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold text-[var(--text-heading)] flex items-center gap-2">
@@ -32,7 +45,7 @@ export function AccountTab({ user, accountForm, setAccountForm, isSaving, onSave
           <input
             type="text"
             value={accountForm.full_name}
-            onChange={(e) => setAccountForm(prev => ({ ...prev, full_name: e.target.value }))}
+            onChange={(e) => setAccountForm((prev) => ({ ...prev, full_name: e.target.value }))}
             className="w-full px-4 py-2.5 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg text-[var(--text-heading)] placeholder:text-[var(--text-label)] focus:outline-none focus:ring-2 focus:ring-[var(--color-sky-dim)] focus:border-[var(--border-focus)] transition-colors"
             placeholder="Your full name"
           />
@@ -40,9 +53,7 @@ export function AccountTab({ user, accountForm, setAccountForm, isSaving, onSave
 
         {/* Email (read-only) */}
         <div>
-          <label className="block text-sm font-medium text-[var(--text-body)] mb-2">
-            Email
-          </label>
+          <label className="block text-sm font-medium text-[var(--text-body)] mb-2">Email</label>
           <input
             type="email"
             value={user?.email || ''}
@@ -78,14 +89,18 @@ export function AccountTab({ user, accountForm, setAccountForm, isSaving, onSave
           <div>
             <p className="text-xs text-[var(--text-label)] font-medium">Status</p>
             <p className="text-sm font-semibold text-[var(--text-heading)] mt-1 flex items-center gap-1.5">
-              <span className={`w-2 h-2 rounded-full ${user?.is_active ? 'bg-[var(--status-positive)]' : 'bg-[var(--status-negative)]'}`} />
+              <span
+                className={`w-2 h-2 rounded-full ${user?.is_active ? 'bg-[var(--status-positive)]' : 'bg-[var(--status-negative)]'}`}
+              />
               {user?.is_active ? 'Active' : 'Inactive'}
             </p>
           </div>
           <div>
             <p className="text-xs text-[var(--text-label)] font-medium">Email verified</p>
             <p className="text-sm font-semibold text-[var(--text-heading)] mt-1 flex items-center gap-1.5">
-              <span className={`w-2 h-2 rounded-full ${user?.is_verified ? 'bg-[var(--status-positive)]' : 'bg-[var(--status-warning)]'}`} />
+              <span
+                className={`w-2 h-2 rounded-full ${user?.is_verified ? 'bg-[var(--status-positive)]' : 'bg-[var(--status-warning)]'}`}
+              />
               {user?.is_verified ? 'Verified' : 'Pending'}
             </p>
           </div>
@@ -100,7 +115,11 @@ export function AccountTab({ user, accountForm, setAccountForm, isSaving, onSave
           className="px-6 py-2.5 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] rounded-lg font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:bg-[var(--accent-sky)]"
           style={{ boxShadow: 'var(--shadow-card)' }}
         >
-          {isSaving ? <div className="w-4 h-4 border-2 border-[var(--text-inverse)] border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+          {isSaving ? (
+            <div className="w-4 h-4 border-2 border-[var(--text-inverse)] border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Save className="w-4 h-4" />
+          )}
           Save Changes
         </button>
       </div>
@@ -109,7 +128,6 @@ export function AccountTab({ user, accountForm, setAccountForm, isSaving, onSave
     </div>
   )
 }
-
 
 function DeleteAccountSection() {
   const router = useRouter()
@@ -138,8 +156,8 @@ function DeleteAccountSection() {
         Delete Account
       </h3>
       <p className="text-sm text-[var(--text-label)] mb-4">
-        Permanently delete your account and all associated data including saved properties,
-        search history, and profile information. This action cannot be undone.
+        Permanently delete your account and all associated data including saved properties, search
+        history, and profile information. This action cannot be undone.
       </p>
 
       {!showConfirm ? (
@@ -155,15 +173,22 @@ function DeleteAccountSection() {
           Delete My Account
         </button>
       ) : (
-        <div className="p-4 rounded-xl border" style={{ borderColor: 'var(--status-negative)', background: 'rgba(239,68,68,0.05)' }}>
+        <div
+          className="p-4 rounded-xl border"
+          style={{ borderColor: 'var(--status-negative)', background: 'rgba(239,68,68,0.05)' }}
+        >
           <div className="flex items-start gap-3 mb-4">
-            <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--status-negative)' }} />
+            <AlertTriangle
+              className="w-5 h-5 flex-shrink-0 mt-0.5"
+              style={{ color: 'var(--status-negative)' }}
+            />
             <div>
               <p className="text-sm font-semibold text-[var(--text-heading)] mb-1">
                 Are you sure? This is permanent.
               </p>
               <p className="text-sm text-[var(--text-label)]">
-                Type <strong className="text-[var(--text-heading)]">DELETE</strong> below to confirm.
+                Type <strong className="text-[var(--text-heading)]">DELETE</strong> below to
+                confirm.
               </p>
             </div>
           </div>
@@ -177,7 +202,9 @@ function DeleteAccountSection() {
           />
 
           {error && (
-            <p className="text-sm mb-3" style={{ color: 'var(--status-negative)' }}>{error}</p>
+            <p className="text-sm mb-3" style={{ color: 'var(--status-negative)' }}>
+              {error}
+            </p>
           )}
 
           <div className="flex gap-3">
@@ -190,7 +217,11 @@ function DeleteAccountSection() {
               {isDeleting ? 'Deleting...' : 'Permanently Delete Account'}
             </button>
             <button
-              onClick={() => { setShowConfirm(false); setConfirmText(''); setError(null) }}
+              onClick={() => {
+                setShowConfirm(false)
+                setConfirmText('')
+                setError(null)
+              }}
               className="px-4 py-2 text-sm font-medium text-[var(--text-label)] hover:text-[var(--text-heading)] transition-colors"
             >
               Cancel

@@ -75,10 +75,10 @@ function ComparisonRow({
   highlight?: 'max' | 'min'
 }) {
   const formatted = values.map(formatter)
-  const numericValues = values.map(v => typeof v === 'number' ? v : null)
+  const numericValues = values.map((v) => (typeof v === 'number' ? v : null))
 
   let bestIdx = -1
-  if (highlight && numericValues.some(v => v != null)) {
+  if (highlight && numericValues.some((v) => v != null)) {
     const validNums = numericValues.filter((v): v is number => v != null)
     if (validNums.length > 0) {
       const target = highlight === 'max' ? Math.max(...validNums) : Math.min(...validNums)
@@ -87,12 +87,20 @@ function ComparisonRow({
   }
 
   return (
-    <div className="grid items-center border-b" style={{
-      gridTemplateColumns: `160px repeat(${values.length}, 1fr)`,
-      borderColor: colors.ui.border,
-    }}>
+    <div
+      className="grid items-center border-b"
+      style={{
+        gridTemplateColumns: `160px repeat(${values.length}, 1fr)`,
+        borderColor: colors.ui.border,
+      }}
+    >
       <div className="px-4 py-3">
-        <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.text.secondary }}>{label}</span>
+        <span
+          className="text-xs font-semibold uppercase tracking-wide"
+          style={{ color: colors.text.secondary }}
+        >
+          {label}
+        </span>
       </div>
       {formatted.map((v, i) => (
         <div key={i} className="px-4 py-3 text-center">
@@ -102,7 +110,18 @@ function ComparisonRow({
           >
             {v}
             {bestIdx === i && (
-              <svg className="inline ml-1 -mt-0.5" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={colors.brand.teal} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg
+                className="inline ml-1 -mt-0.5"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={colors.brand.teal}
+                strokeWidth="3"
+                strokeLinecap="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
             )}
           </span>
         </div>
@@ -133,7 +152,9 @@ function CompareContent() {
       setIsLoading(true)
       try {
         const results = await Promise.all(
-          ids.map(id => api.get<SavedProperty>(`/api/v1/properties/saved/${id}`).catch(() => null))
+          ids.map((id) =>
+            api.get<SavedProperty>(`/api/v1/properties/saved/${id}`).catch(() => null),
+          ),
         )
         setProperties(results.filter((p): p is SavedProperty => p !== null))
       } catch {
@@ -143,7 +164,7 @@ function CompareContent() {
       }
     }
     fetchProps()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids.join(',')])
 
   // Fetch all saved for picker
@@ -163,28 +184,41 @@ function CompareContent() {
   }
 
   const removeProperty = (id: string) => {
-    const newIds = ids.filter(i => i !== id)
+    const newIds = ids.filter((i) => i !== id)
     router.push(`/compare?ids=${newIds.join(',')}`)
   }
 
-  const snap = (p: SavedProperty) => p.property_data_snapshot || {} as PropertySnapshot
+  const snap = (p: SavedProperty) => p.property_data_snapshot || ({} as PropertySnapshot)
 
   return (
-    <div className="min-h-screen bg-[var(--surface-base)]" style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}>
+    <div
+      className="min-h-screen bg-[var(--surface-base)]"
+      style={{ fontFamily: "'Inter', -apple-system, system-ui, sans-serif" }}
+    >
       {/* Header */}
       <header className="border-b px-6 py-4" style={{ borderColor: colors.ui.border }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/saved-properties" className="text-sm text-slate-400 hover:text-white transition-colors no-underline">
+            <Link
+              href="/saved-properties"
+              className="text-sm text-slate-400 hover:text-white transition-colors no-underline"
+            >
               &larr; Saved Properties
             </Link>
             <h1 className="text-lg font-bold text-white">Compare Properties</h1>
           </div>
           {properties.length < 4 && (
             <button
-              onClick={() => { setShowPicker(!showPicker); if (!showPicker) loadAllProperties() }}
+              onClick={() => {
+                setShowPicker(!showPicker)
+                if (!showPicker) loadAllProperties()
+              }}
               className="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-              style={{ background: colors.background.card, border: `1px solid ${colors.ui.border}`, color: colors.text.body }}
+              style={{
+                background: colors.background.card,
+                border: `1px solid ${colors.ui.border}`,
+                color: colors.text.body,
+              }}
             >
               + Add Property
             </button>
@@ -194,18 +228,29 @@ function CompareContent() {
 
       {/* Picker Dropdown */}
       {showPicker && (
-        <div className="border-b px-6 py-4" style={{ background: colors.background.card, borderColor: colors.ui.border }}>
+        <div
+          className="border-b px-6 py-4"
+          style={{ background: colors.background.card, borderColor: colors.ui.border }}
+        >
           <div className="max-w-6xl mx-auto">
-            <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: colors.text.secondary }}>Select a property to compare:</p>
+            <p
+              className="text-xs font-semibold uppercase tracking-wide mb-3"
+              style={{ color: colors.text.secondary }}
+            >
+              Select a property to compare:
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {allProperties
-                .filter(p => !ids.includes(p.id))
-                .map(p => (
+                .filter((p) => !ids.includes(p.id))
+                .map((p) => (
                   <button
                     key={p.id}
                     onClick={() => addProperty(p.id)}
                     className="text-left px-4 py-3 rounded-lg transition-all hover:opacity-80"
-                    style={{ background: colors.background.bg, border: `1px solid ${colors.ui.border}` }}
+                    style={{
+                      background: colors.background.bg,
+                      border: `1px solid ${colors.ui.border}`,
+                    }}
                   >
                     <p className="text-sm font-semibold text-white truncate">{p.address_street}</p>
                     <p className="text-xs" style={{ color: colors.text.secondary }}>
@@ -214,8 +259,10 @@ function CompareContent() {
                     </p>
                   </button>
                 ))}
-              {allProperties.filter(p => !ids.includes(p.id)).length === 0 && (
-                <p className="text-sm" style={{ color: colors.text.muted }}>No more saved properties to add.</p>
+              {allProperties.filter((p) => !ids.includes(p.id)).length === 0 && (
+                <p className="text-sm" style={{ color: colors.text.muted }}>
+                  No more saved properties to add.
+                </p>
               )}
             </div>
           </div>
@@ -226,13 +273,30 @@ function CompareContent() {
         {/* Empty State */}
         {properties.length === 0 && !isLoading && (
           <div className="text-center py-20">
-            <svg className="mx-auto mb-4 opacity-30" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={colors.text.secondary} strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <svg
+              className="mx-auto mb-4 opacity-30"
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={colors.text.secondary}
+              strokeWidth="1.5"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
             <h2 className="text-lg font-bold text-white mb-2">Compare Properties Side-by-Side</h2>
             <p className="text-sm max-w-sm mx-auto mb-6" style={{ color: colors.text.secondary }}>
-              Select 2-4 saved properties to compare their key metrics, strategies, and financial performance.
+              Select 2-4 saved properties to compare their key metrics, strategies, and financial
+              performance.
             </p>
             <button
-              onClick={() => { setShowPicker(true); loadAllProperties() }}
+              onClick={() => {
+                setShowPicker(true)
+                loadAllProperties()
+              }}
               className="px-6 py-3 rounded-xl text-sm font-bold"
               style={{ background: colors.brand.blueDeep, color: '#fff' }}
             >
@@ -244,8 +308,13 @@ function CompareContent() {
         {/* Loading */}
         {isLoading && (
           <div className="text-center py-20">
-            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: colors.brand.blue }} />
-            <p className="text-sm" style={{ color: colors.text.secondary }}>Loading properties...</p>
+            <div
+              className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-4"
+              style={{ borderColor: colors.brand.blue }}
+            />
+            <p className="text-sm" style={{ color: colors.text.secondary }}>
+              Loading properties...
+            </p>
           </div>
         )}
 
@@ -253,16 +322,22 @@ function CompareContent() {
         {properties.length > 0 && !isLoading && (
           <div className="overflow-x-auto">
             {/* Property Headers */}
-            <div className="grid sticky top-0 z-10" style={{
-              gridTemplateColumns: `160px repeat(${properties.length}, 1fr)`,
-              background: colors.background.bg,
-            }}>
+            <div
+              className="grid sticky top-0 z-10"
+              style={{
+                gridTemplateColumns: `160px repeat(${properties.length}, 1fr)`,
+                background: colors.background.bg,
+              }}
+            >
               <div className="px-4 py-4">
-                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.brand.teal }}>
+                <span
+                  className="text-xs font-bold uppercase tracking-wider"
+                  style={{ color: colors.brand.teal }}
+                >
                   {properties.length} Properties
                 </span>
               </div>
-              {properties.map(p => (
+              {properties.map((p) => (
                 <div key={p.id} className="px-4 py-4 text-center">
                   <p className="text-sm font-bold text-white truncate">{p.address_street}</p>
                   <p className="text-xs truncate" style={{ color: colors.text.secondary }}>
@@ -280,62 +355,75 @@ function CompareContent() {
             </div>
 
             {/* Metrics */}
-            <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${colors.ui.border}` }}>
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{ border: `1px solid ${colors.ui.border}` }}
+            >
               <div className="px-4 py-2" style={{ background: colors.background.card }}>
-                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.brand.blue }}>Investment Analysis</span>
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider"
+                  style={{ color: colors.brand.blue }}
+                >
+                  Investment Analysis
+                </span>
               </div>
               <ComparisonRow
                 label="Best Strategy"
-                values={properties.map(p => p.best_strategy)}
+                values={properties.map((p) => p.best_strategy)}
                 formatter={(v) => strategyLabel(v as string)}
               />
               <ComparisonRow
                 label="Monthly Cash Flow"
-                values={properties.map(p => p.best_cash_flow)}
+                values={properties.map((p) => p.best_cash_flow)}
                 formatter={(v) => fmt(v as number, '$')}
                 highlight="max"
               />
               <ComparisonRow
                 label="Cash-on-Cash"
-                values={properties.map(p => p.best_coc_return)}
+                values={properties.map((p) => p.best_coc_return)}
                 formatter={(v) => fmtPct(v as number)}
                 highlight="max"
               />
 
               <div className="px-4 py-2 mt-1" style={{ background: colors.background.card }}>
-                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.brand.blue }}>Property Details</span>
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider"
+                  style={{ color: colors.brand.blue }}
+                >
+                  Property Details
+                </span>
               </div>
               <ComparisonRow
                 label="List Price"
-                values={properties.map(p => p.custom_purchase_price || snap(p).listPrice)}
+                values={properties.map((p) => p.custom_purchase_price || snap(p).listPrice)}
                 formatter={(v) => fmt(v as number)}
                 highlight="min"
               />
               <ComparisonRow
                 label="Monthly Rent"
-                values={properties.map(p => p.custom_rent_estimate || snap(p).monthlyRent)}
+                values={properties.map((p) => p.custom_rent_estimate || snap(p).monthlyRent)}
                 formatter={(v) => fmt(v as number)}
                 highlight="max"
               />
               <ComparisonRow
                 label="Bedrooms"
-                values={properties.map(p => snap(p).bedrooms)}
-                formatter={(v) => v != null ? String(v) : '—'}
+                values={properties.map((p) => snap(p).bedrooms)}
+                formatter={(v) => (v != null ? String(v) : '—')}
               />
               <ComparisonRow
                 label="Bathrooms"
-                values={properties.map(p => snap(p).bathrooms)}
-                formatter={(v) => v != null ? String(v) : '—'}
+                values={properties.map((p) => snap(p).bathrooms)}
+                formatter={(v) => (v != null ? String(v) : '—')}
               />
               <ComparisonRow
                 label="Sq Ft"
-                values={properties.map(p => snap(p).sqft)}
-                formatter={(v) => v != null ? (v as number).toLocaleString() : '—'}
+                values={properties.map((p) => snap(p).sqft)}
+                formatter={(v) => (v != null ? (v as number).toLocaleString() : '—')}
                 highlight="max"
               />
               <ComparisonRow
                 label="Price / Sq Ft"
-                values={properties.map(p => {
+                values={properties.map((p) => {
                   const price = p.custom_purchase_price || snap(p).listPrice
                   const sqft = snap(p).sqft
                   return price && sqft ? Math.round(price / sqft) : null
@@ -345,26 +433,34 @@ function CompareContent() {
               />
 
               <div className="px-4 py-2 mt-1" style={{ background: colors.background.card }}>
-                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.brand.blue }}>Expenses</span>
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider"
+                  style={{ color: colors.brand.blue }}
+                >
+                  Expenses
+                </span>
               </div>
               <ComparisonRow
                 label="Property Taxes"
-                values={properties.map(p => snap(p).propertyTaxes)}
+                values={properties.map((p) => snap(p).propertyTaxes)}
                 formatter={(v) => fmt(v as number)}
                 highlight="min"
               />
               <ComparisonRow
                 label="Insurance"
-                values={properties.map(p => snap(p).insurance)}
+                values={properties.map((p) => snap(p).insurance)}
                 formatter={(v) => fmt(v as number)}
                 highlight="min"
               />
             </div>
 
             {/* Actions */}
-            <div className="grid mt-6" style={{ gridTemplateColumns: `160px repeat(${properties.length}, 1fr)` }}>
+            <div
+              className="grid mt-6"
+              style={{ gridTemplateColumns: `160px repeat(${properties.length}, 1fr)` }}
+            >
               <div />
-              {properties.map(p => (
+              {properties.map((p) => (
                 <div key={p.id} className="px-4 text-center">
                   <Link
                     href={`/discovery?address=${encodeURIComponent([p.address_street, p.address_city, [p.address_state, p.address_zip].filter(Boolean).join(' ')].filter(Boolean).join(', '))}`}
@@ -386,11 +482,16 @@ function CompareContent() {
 export default function ComparePage() {
   return (
     <ProGate feature="Deal Comparison" mode="section">
-      <Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
-          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#38bdf8' }} />
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
+            <div
+              className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+              style={{ borderColor: '#38bdf8' }}
+            />
+          </div>
+        }
+      >
         <CompareContent />
       </Suspense>
     </ProGate>

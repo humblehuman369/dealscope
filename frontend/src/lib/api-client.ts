@@ -50,7 +50,11 @@ class ApiError extends Error {
  * Extract a human-readable message from an error response body.
  * Handles FastAPI `{detail}`, Vercel/Railway proxy `{error}`, and other common shapes.
  */
-function formatApiErrorDetail(detail: unknown, status: number, rawBody?: Record<string, unknown>): string {
+function formatApiErrorDetail(
+  detail: unknown,
+  status: number,
+  rawBody?: Record<string, unknown>,
+): string {
   if (typeof detail === 'string') return detail
   if (Array.isArray(detail) && detail.length > 0) {
     const parts = detail.map((e: { loc?: string[]; msg?: string }) => {
@@ -61,7 +65,8 @@ function formatApiErrorDetail(detail: unknown, status: number, rawBody?: Record<
     return parts.join('. ')
   }
   if (detail && typeof detail === 'object' && ('msg' in detail || 'message' in detail)) {
-    const msg = 'msg' in detail ? (detail as { msg?: string }).msg : (detail as { message?: string }).message
+    const msg =
+      'msg' in detail ? (detail as { msg?: string }).msg : (detail as { message?: string }).message
     if (typeof msg === 'string') return msg
   }
 
@@ -78,7 +83,7 @@ function formatApiErrorDetail(detail: unknown, status: number, rawBody?: Record<
   }
 
   if (status === 409) {
-    return "This email is already registered. Sign in or use a different email."
+    return 'This email is already registered. Sign in or use a different email.'
   }
   return `Request failed (${status}). Please check your input and try again.`
 }
@@ -172,9 +177,7 @@ export function clearMemoryToken() {
 
 function getCsrfToken(): string | null {
   if (typeof document === 'undefined') return null
-  const match = document.cookie
-    .split('; ')
-    .find((c) => c.startsWith('csrf_token='))
+  const match = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
   return match ? match.split('=')[1] : null
 }
 
@@ -195,9 +198,7 @@ async function refreshTokens(): Promise<boolean> {
         credentials: IS_CAPACITOR ? 'omit' : 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...(IS_CAPACITOR && storedRefresh
-            ? { Authorization: `Bearer ${storedRefresh}` }
-            : {}),
+          ...(IS_CAPACITOR && storedRefresh ? { Authorization: `Bearer ${storedRefresh}` } : {}),
         },
         ...(IS_CAPACITOR && storedRefresh
           ? { body: JSON.stringify({ refresh_token: storedRefresh }) }
@@ -254,11 +255,16 @@ function runWithTimeout<T>(
   return fn(controller.signal).finally(() => clearTimeout(timeoutId))
 }
 
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestOptions = {},
-): Promise<T> {
-  const { method = 'GET', body, headers = {}, skipAuth = false, softAuth = false, signal, timeoutMs } = options
+async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+  const {
+    method = 'GET',
+    body,
+    headers = {},
+    skipAuth = false,
+    softAuth = false,
+    signal,
+    timeoutMs,
+  } = options
   const timeout =
     timeoutMs ?? (method === 'GET' ? DEFAULT_GET_TIMEOUT_MS : DEFAULT_MUTATE_TIMEOUT_MS)
 
@@ -338,7 +344,9 @@ async function apiRequest<T>(
         if (err instanceof ApiError) throw err
         const isAbort = err instanceof Error && err.name === 'AbortError'
         throw new ApiError(
-          isAbort ? 'Request timed out. Please try again.' : buildNetworkErrorMessage(endpoint, err),
+          isAbort
+            ? 'Request timed out. Please try again.'
+            : buildNetworkErrorMessage(endpoint, err),
           0,
         )
       }
@@ -352,11 +360,12 @@ async function apiRequest<T>(
       errBody = text.length ? JSON.parse(text) : {}
     } catch {
       const status = response.status
-      if (status >= 500) console.error(`[API ${status}] ${endpoint} — raw body:`, text.slice(0, 500))
+      if (status >= 500)
+        console.error(`[API ${status}] ${endpoint} — raw body:`, text.slice(0, 500))
       const fallback =
         status >= 500
           ? `Server error (${status}). Please try again in a moment.`
-          :       status === 404
+          : status === 404
             ? `Backend returned 404 (Not Found). Check that NEXT_PUBLIC_API_URL points to your running backend and that the API route exists.`
             : `Request failed (${status}). Please try again.`
       throw new ApiError(fallback, status)
@@ -452,8 +461,7 @@ export const authApi = {
     }),
 
   // Sessions
-  listSessions: () =>
-    apiRequest<SessionInfo[]>('/api/v1/auth/sessions'),
+  listSessions: () => apiRequest<SessionInfo[]>('/api/v1/auth/sessions'),
 
   revokeSession: (sessionId: string) =>
     apiRequest<{ message: string }>(`/api/v1/auth/sessions/${sessionId}`, {
@@ -461,8 +469,7 @@ export const authApi = {
     }),
 
   // MFA
-  setupMfa: () =>
-    apiRequest<MFASetupResponse>('/api/v1/auth/mfa/setup', { method: 'POST' }),
+  setupMfa: () => apiRequest<MFASetupResponse>('/api/v1/auth/mfa/setup', { method: 'POST' }),
 
   verifyMfa: (totpCode: string) =>
     apiRequest<{ message: string }>('/api/v1/auth/mfa/verify', {
@@ -470,8 +477,7 @@ export const authApi = {
       body: { totp_code: totpCode },
     }),
 
-  disableMfa: () =>
-    apiRequest<{ message: string }>('/api/v1/auth/mfa', { method: 'DELETE' }),
+  disableMfa: () => apiRequest<{ message: string }>('/api/v1/auth/mfa', { method: 'DELETE' }),
 }
 
 // ------------------------------------------------------------------
@@ -479,16 +485,29 @@ export const authApi = {
 // ------------------------------------------------------------------
 
 export const api = {
-  get: <T>(endpoint: string, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>) =>
-    apiRequest<T>(endpoint, opts),
-  post: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>) =>
-    apiRequest<T>(endpoint, { method: 'POST', body, ...opts }),
-  put: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>) =>
-    apiRequest<T>(endpoint, { method: 'PUT', body, ...opts }),
-  patch: <T>(endpoint: string, body?: unknown, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>) =>
-    apiRequest<T>(endpoint, { method: 'PATCH', body, ...opts }),
-  delete: <T>(endpoint: string, opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>) =>
-    apiRequest<T>(endpoint, { method: 'DELETE', ...opts }),
+  get: <T>(
+    endpoint: string,
+    opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>,
+  ) => apiRequest<T>(endpoint, opts),
+  post: <T>(
+    endpoint: string,
+    body?: unknown,
+    opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>,
+  ) => apiRequest<T>(endpoint, { method: 'POST', body, ...opts }),
+  put: <T>(
+    endpoint: string,
+    body?: unknown,
+    opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>,
+  ) => apiRequest<T>(endpoint, { method: 'PUT', body, ...opts }),
+  patch: <T>(
+    endpoint: string,
+    body?: unknown,
+    opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>,
+  ) => apiRequest<T>(endpoint, { method: 'PATCH', body, ...opts }),
+  delete: <T>(
+    endpoint: string,
+    opts?: Pick<RequestOptions, 'signal' | 'headers' | 'skipAuth' | 'softAuth' | 'timeoutMs'>,
+  ) => apiRequest<T>(endpoint, { method: 'DELETE', ...opts }),
 }
 
 // ------------------------------------------------------------------
@@ -590,14 +609,17 @@ export const billingApi = {
     }),
 
   createSubscription: (paymentMethodId: string, priceId?: string, lookupKey?: string) =>
-    apiRequest<{ subscription_id: string; status: string; trial_end?: number | null }>('/api/v1/billing/subscribe', {
-      method: 'POST',
-      body: {
-        payment_method_id: paymentMethodId,
-        ...(priceId ? { price_id: priceId } : {}),
-        ...(lookupKey ? { lookup_key: lookupKey } : {}),
+    apiRequest<{ subscription_id: string; status: string; trial_end?: number | null }>(
+      '/api/v1/billing/subscribe',
+      {
+        method: 'POST',
+        body: {
+          payment_method_id: paymentMethodId,
+          ...(priceId ? { price_id: priceId } : {}),
+          ...(lookupKey ? { lookup_key: lookupKey } : {}),
+        },
       },
-    }),
+    ),
 }
 
 export { ApiError, apiRequest }

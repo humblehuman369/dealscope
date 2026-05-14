@@ -12,9 +12,9 @@ import {
   ProformaAmortizationSummary,
   SensitivityScenario,
   PROFORMA_DEFAULTS,
-} from '../types/proforma';
+} from '../types/proforma'
 
-import { calculateMortgagePayment, calculateRemainingBalance } from './calculations';
+import { calculateMortgagePayment, calculateRemainingBalance } from './calculations'
 
 // ============================================
 // DEPRECIATION CALCULATIONS
@@ -22,7 +22,7 @@ import { calculateMortgagePayment, calculateRemainingBalance } from './calculati
 
 /**
  * Calculate depreciation configuration for tax purposes
- * 
+ *
  * @param purchasePrice - Total purchase price of property
  * @param landValuePercent - Percentage of purchase price allocated to land (non-depreciable)
  * @param closingCosts - Capitalized closing costs (added to basis)
@@ -34,21 +34,21 @@ export function calculateDepreciation(
   landValuePercent: number = PROFORMA_DEFAULTS.landValuePercent,
   closingCosts: number = 0,
   rehabCosts: number = 0,
-  isResidential: boolean = true
+  isResidential: boolean = true,
 ): DepreciationConfig {
-  const landValue = purchasePrice * landValuePercent;
-  const improvementValue = purchasePrice - landValue;
-  const depreciationYears = isResidential 
-    ? PROFORMA_DEFAULTS.depreciationYearsResidential 
-    : PROFORMA_DEFAULTS.depreciationYearsCommercial;
-  
+  const landValue = purchasePrice * landValuePercent
+  const improvementValue = purchasePrice - landValue
+  const depreciationYears = isResidential
+    ? PROFORMA_DEFAULTS.depreciationYearsResidential
+    : PROFORMA_DEFAULTS.depreciationYearsCommercial
+
   // Only a portion of closing costs are typically capitalized
   // (loan fees, title insurance, legal fees - not prepaid items)
-  const capitalizedClosingCosts = closingCosts * 0.6; // ~60% typically capitalizable
-  
-  const totalDepreciableBasis = improvementValue + capitalizedClosingCosts + rehabCosts;
-  const annualDepreciation = totalDepreciableBasis / depreciationYears;
-  
+  const capitalizedClosingCosts = closingCosts * 0.6 // ~60% typically capitalizable
+
+  const totalDepreciableBasis = improvementValue + capitalizedClosingCosts + rehabCosts
+  const annualDepreciation = totalDepreciableBasis / depreciationYears
+
   return {
     purchasePrice,
     landValuePercent,
@@ -61,7 +61,7 @@ export function calculateDepreciation(
     depreciationYears,
     annualDepreciation,
     monthlyDepreciation: annualDepreciation / 12,
-  };
+  }
 }
 
 /**
@@ -70,10 +70,10 @@ export function calculateDepreciation(
 export function calculateAccumulatedDepreciation(
   annualDepreciation: number,
   yearsHeld: number,
-  totalDepreciableBasis: number
+  totalDepreciableBasis: number,
 ): number {
-  const accumulated = annualDepreciation * yearsHeld;
-  return Math.min(accumulated, totalDepreciableBasis); // Cannot exceed basis
+  const accumulated = annualDepreciation * yearsHeld
+  return Math.min(accumulated, totalDepreciableBasis) // Cannot exceed basis
 }
 
 // ============================================
@@ -86,25 +86,25 @@ export function calculateAccumulatedDepreciation(
 export function calculateProformaAmortization(
   principal: number,
   annualRate: number,
-  termYears: number
+  termYears: number,
 ): { schedule: ProformaAmortizationRow[]; summary: ProformaAmortizationSummary } {
-  const monthlyPayment = calculateMortgagePayment(principal, annualRate, termYears);
-  const monthlyRate = annualRate / 100 / 12;
-  const totalMonths = termYears * 12;
+  const monthlyPayment = calculateMortgagePayment(principal, annualRate, termYears)
+  const monthlyRate = annualRate / 100 / 12
+  const totalMonths = termYears * 12
 
-  let balance = principal;
-  let cumulativePrincipal = 0;
-  let cumulativeInterest = 0;
-  const schedule: ProformaAmortizationRow[] = [];
+  let balance = principal
+  let cumulativePrincipal = 0
+  let cumulativeInterest = 0
+  const schedule: ProformaAmortizationRow[] = []
 
   for (let month = 1; month <= totalMonths; month++) {
-    const beginningBalance = balance;
-    const interestPayment = balance * monthlyRate;
-    const principalPayment = monthlyPayment - interestPayment;
+    const beginningBalance = balance
+    const interestPayment = balance * monthlyRate
+    const principalPayment = monthlyPayment - interestPayment
 
-    cumulativePrincipal += principalPayment;
-    cumulativeInterest += interestPayment;
-    balance = Math.max(0, balance - principalPayment);
+    cumulativePrincipal += principalPayment
+    cumulativeInterest += interestPayment
+    balance = Math.max(0, balance - principalPayment)
 
     schedule.push({
       month,
@@ -117,12 +117,12 @@ export function calculateProformaAmortization(
       endingBalance: balance,
       cumulativePrincipal,
       cumulativeInterest,
-    });
+    })
   }
 
   // Generate payoff date
-  const payoffDate = new Date();
-  payoffDate.setFullYear(payoffDate.getFullYear() + termYears);
+  const payoffDate = new Date()
+  payoffDate.setFullYear(payoffDate.getFullYear() + termYears)
 
   const summary: ProformaAmortizationSummary = {
     monthlyPayment,
@@ -132,9 +132,9 @@ export function calculateProformaAmortization(
     principalPercent: (principal / (monthlyPayment * totalMonths)) * 100,
     interestPercent: (cumulativeInterest / (monthlyPayment * totalMonths)) * 100,
     payoffDate: payoffDate.toISOString().split('T')[0],
-  };
+  }
 
-  return { schedule, summary };
+  return { schedule, summary }
 }
 
 /**
@@ -142,19 +142,19 @@ export function calculateProformaAmortization(
  */
 export function getYearlyAmortizationBreakdown(
   schedule: ProformaAmortizationRow[],
-  year: number
+  year: number,
 ): { interest: number; principal: number; endingBalance: number } {
-  const yearPayments = schedule.filter(row => row.year === year);
-  
+  const yearPayments = schedule.filter((row) => row.year === year)
+
   if (yearPayments.length === 0) {
-    return { interest: 0, principal: 0, endingBalance: 0 };
+    return { interest: 0, principal: 0, endingBalance: 0 }
   }
 
-  const interest = yearPayments.reduce((sum, row) => sum + row.interestPayment, 0);
-  const principal = yearPayments.reduce((sum, row) => sum + row.principalPayment, 0);
-  const endingBalance = yearPayments[yearPayments.length - 1].endingBalance;
+  const interest = yearPayments.reduce((sum, row) => sum + row.interestPayment, 0)
+  const principal = yearPayments.reduce((sum, row) => sum + row.principalPayment, 0)
+  const endingBalance = yearPayments[yearPayments.length - 1].endingBalance
 
-  return { interest, principal, endingBalance };
+  return { interest, principal, endingBalance }
 }
 
 // ============================================
@@ -169,55 +169,55 @@ export function calculateAnnualTaxProjection(
   grossRentalIncome: number,
   vacancyRate: number,
   operatingExpenses: {
-    propertyTaxes: number;
-    insurance: number;
-    management: number;
-    maintenance: number;
-    utilities: number;
-    hoaFees: number;
-    other: number;
+    propertyTaxes: number
+    insurance: number
+    management: number
+    maintenance: number
+    utilities: number
+    hoaFees: number
+    other: number
   },
   mortgageInterest: number,
   mortgagePrincipal: number,
   depreciation: number,
-  marginalTaxRate: number = PROFORMA_DEFAULTS.marginalTaxRate
+  marginalTaxRate: number = PROFORMA_DEFAULTS.marginalTaxRate,
 ): AnnualTaxProjection {
   // Income
-  const vacancyLoss = grossRentalIncome * vacancyRate;
-  const effectiveGrossIncome = grossRentalIncome - vacancyLoss;
-  const otherIncome = 0;
-  const totalIncome = effectiveGrossIncome + otherIncome;
+  const vacancyLoss = grossRentalIncome * vacancyRate
+  const effectiveGrossIncome = grossRentalIncome - vacancyLoss
+  const otherIncome = 0
+  const totalIncome = effectiveGrossIncome + otherIncome
 
   // Operating expenses total
-  const totalOperatingExpenses = 
+  const totalOperatingExpenses =
     operatingExpenses.propertyTaxes +
     operatingExpenses.insurance +
     operatingExpenses.management +
     operatingExpenses.maintenance +
     operatingExpenses.utilities +
     operatingExpenses.hoaFees +
-    operatingExpenses.other;
+    operatingExpenses.other
 
   // NOI (before debt service)
-  const netOperatingIncome = totalIncome - totalOperatingExpenses;
+  const netOperatingIncome = totalIncome - totalOperatingExpenses
 
   // Debt service
-  const totalDebtService = mortgageInterest + mortgagePrincipal;
+  const totalDebtService = mortgageInterest + mortgagePrincipal
 
   // Pre-tax cash flow
-  const preTaxCashFlow = netOperatingIncome - totalDebtService;
+  const preTaxCashFlow = netOperatingIncome - totalDebtService
 
   // Taxable income = NOI - Interest - Depreciation
   // Note: Principal payments are NOT deductible
-  const taxableIncome = netOperatingIncome - mortgageInterest - depreciation;
+  const taxableIncome = netOperatingIncome - mortgageInterest - depreciation
 
   // Tax liability (can be negative = tax benefit from passive losses)
-  const estimatedTaxLiability = taxableIncome * marginalTaxRate;
-  const taxBenefit = taxableIncome < 0 ? Math.abs(estimatedTaxLiability) : 0;
+  const estimatedTaxLiability = taxableIncome * marginalTaxRate
+  const taxBenefit = taxableIncome < 0 ? Math.abs(estimatedTaxLiability) : 0
 
   // After-tax cash flow
   // If taxable income is negative, you may get a tax benefit (depends on passive loss rules)
-  const afterTaxCashFlow = preTaxCashFlow - estimatedTaxLiability;
+  const afterTaxCashFlow = preTaxCashFlow - estimatedTaxLiability
 
   return {
     year,
@@ -244,7 +244,7 @@ export function calculateAnnualTaxProjection(
     taxBenefit,
     preTaxCashFlow,
     afterTaxCashFlow,
-  };
+  }
 }
 
 /**
@@ -252,14 +252,14 @@ export function calculateAnnualTaxProjection(
  */
 export function generateMultiYearProjections(
   baseYear: {
-    grossRent: number;
-    propertyTaxes: number;
-    insurance: number;
-    management: number;
-    maintenance: number;
-    utilities: number;
-    hoaFees: number;
-    otherExpenses: number;
+    grossRent: number
+    propertyTaxes: number
+    insurance: number
+    management: number
+    maintenance: number
+    utilities: number
+    hoaFees: number
+    otherExpenses: number
   },
   vacancyRate: number,
   amortizationSchedule: ProformaAmortizationRow[],
@@ -269,28 +269,28 @@ export function generateMultiYearProjections(
   expenseGrowthRate: number,
   appreciationRate: number,
   purchasePrice: number,
-  marginalTaxRate: number = PROFORMA_DEFAULTS.marginalTaxRate
+  marginalTaxRate: number = PROFORMA_DEFAULTS.marginalTaxRate,
 ): {
-  projections: AnnualTaxProjection[];
-  cumulativeCashFlow: number[];
-  propertyValues: number[];
-  equityPositions: number[];
-  loanBalances: number[];
+  projections: AnnualTaxProjection[]
+  cumulativeCashFlow: number[]
+  propertyValues: number[]
+  equityPositions: number[]
+  loanBalances: number[]
 } {
-  const projections: AnnualTaxProjection[] = [];
-  const cumulativeCashFlow: number[] = [];
-  const propertyValues: number[] = [];
-  const equityPositions: number[] = [];
-  const loanBalances: number[] = [];
+  const projections: AnnualTaxProjection[] = []
+  const cumulativeCashFlow: number[] = []
+  const propertyValues: number[] = []
+  const equityPositions: number[] = []
+  const loanBalances: number[] = []
 
-  let cumulativeCF = 0;
+  let cumulativeCF = 0
 
   for (let year = 1; year <= holdPeriodYears; year++) {
     // Apply growth rates
-    const growthFactor = Math.pow(1 + rentGrowthRate / 100, year - 1);
-    const expenseGrowthFactor = Math.pow(1 + expenseGrowthRate / 100, year - 1);
+    const growthFactor = Math.pow(1 + rentGrowthRate / 100, year - 1)
+    const expenseGrowthFactor = Math.pow(1 + expenseGrowthRate / 100, year - 1)
 
-    const grossRent = baseYear.grossRent * growthFactor;
+    const grossRent = baseYear.grossRent * growthFactor
     const operatingExpenses = {
       propertyTaxes: baseYear.propertyTaxes * expenseGrowthFactor,
       insurance: baseYear.insurance * expenseGrowthFactor,
@@ -299,10 +299,10 @@ export function generateMultiYearProjections(
       utilities: baseYear.utilities * expenseGrowthFactor,
       hoaFees: baseYear.hoaFees * expenseGrowthFactor,
       other: baseYear.otherExpenses * expenseGrowthFactor,
-    };
+    }
 
     // Get mortgage breakdown for this year
-    const amortBreakdown = getYearlyAmortizationBreakdown(amortizationSchedule, year);
+    const amortBreakdown = getYearlyAmortizationBreakdown(amortizationSchedule, year)
 
     // Calculate projection
     const projection = calculateAnnualTaxProjection(
@@ -313,26 +313,26 @@ export function generateMultiYearProjections(
       amortBreakdown.interest,
       amortBreakdown.principal,
       annualDepreciation,
-      marginalTaxRate
-    );
+      marginalTaxRate,
+    )
 
-    projections.push(projection);
+    projections.push(projection)
 
     // Cumulative cash flow
-    cumulativeCF += projection.afterTaxCashFlow;
-    cumulativeCashFlow.push(cumulativeCF);
+    cumulativeCF += projection.afterTaxCashFlow
+    cumulativeCashFlow.push(cumulativeCF)
 
     // Property value
-    const propertyValue = purchasePrice * Math.pow(1 + appreciationRate / 100, year);
-    propertyValues.push(propertyValue);
+    const propertyValue = purchasePrice * Math.pow(1 + appreciationRate / 100, year)
+    propertyValues.push(propertyValue)
 
     // Loan balance
-    const loanBalance = amortBreakdown.endingBalance;
-    loanBalances.push(loanBalance);
+    const loanBalance = amortBreakdown.endingBalance
+    loanBalances.push(loanBalance)
 
     // Equity position
-    const equity = propertyValue - loanBalance;
-    equityPositions.push(equity);
+    const equity = propertyValue - loanBalance
+    equityPositions.push(equity)
   }
 
   return {
@@ -341,7 +341,7 @@ export function generateMultiYearProjections(
     propertyValues,
     equityPositions,
     loanBalances,
-  };
+  }
 }
 
 // ============================================
@@ -360,44 +360,45 @@ export function calculateExitAnalysis(
   rehabCosts: number = 0,
   brokerCommissionPercent: number = PROFORMA_DEFAULTS.brokerCommissionPercent,
   closingCostsPercent: number = PROFORMA_DEFAULTS.sellerClosingCostsPercent,
-  capitalGainsTaxRate: number = PROFORMA_DEFAULTS.capitalGainsTaxRate
+  capitalGainsTaxRate: number = PROFORMA_DEFAULTS.capitalGainsTaxRate,
 ): ExitAnalysis {
   // Projected sale price
-  const projectedSalePrice = purchasePrice * Math.pow(1 + appreciationRate / 100, holdPeriodYears);
+  const projectedSalePrice = purchasePrice * Math.pow(1 + appreciationRate / 100, holdPeriodYears)
 
   // Sale costs
-  const brokerCommission = projectedSalePrice * brokerCommissionPercent;
-  const closingCosts = projectedSalePrice * closingCostsPercent;
-  const totalSaleCosts = brokerCommission + closingCosts;
+  const brokerCommission = projectedSalePrice * brokerCommissionPercent
+  const closingCosts = projectedSalePrice * closingCostsPercent
+  const totalSaleCosts = brokerCommission + closingCosts
 
   // Net proceeds before tax
-  const netSaleProceeds = projectedSalePrice - totalSaleCosts - remainingLoanBalance;
+  const netSaleProceeds = projectedSalePrice - totalSaleCosts - remainingLoanBalance
 
   // Cost basis calculation
   // Original basis = purchase price + capitalized improvements
-  const originalCostBasis = purchasePrice + rehabCosts;
-  
+  const originalCostBasis = purchasePrice + rehabCosts
+
   // Adjusted basis = original - accumulated depreciation
-  const adjustedCostBasis = originalCostBasis - accumulatedDepreciation;
+  const adjustedCostBasis = originalCostBasis - accumulatedDepreciation
 
   // Total gain = Sale proceeds (net of costs) - Adjusted basis + remaining loan
   // Or equivalently: Sale price - Sale costs - Adjusted basis
-  const totalGain = projectedSalePrice - totalSaleCosts - adjustedCostBasis;
+  const totalGain = projectedSalePrice - totalSaleCosts - adjustedCostBasis
 
   // Depreciation recapture (taxed at 25% - Section 1250)
   // Limited to the lesser of accumulated depreciation or total gain
-  const depreciationRecapture = Math.min(accumulatedDepreciation, Math.max(0, totalGain));
-  const depreciationRecaptureTax = depreciationRecapture * PROFORMA_DEFAULTS.depreciationRecaptureRate;
+  const depreciationRecapture = Math.min(accumulatedDepreciation, Math.max(0, totalGain))
+  const depreciationRecaptureTax =
+    depreciationRecapture * PROFORMA_DEFAULTS.depreciationRecaptureRate
 
   // Capital gain (remaining gain after recapture, taxed at LTCG rate)
-  const capitalGain = Math.max(0, totalGain - depreciationRecapture);
-  const capitalGainsTax = capitalGain * capitalGainsTaxRate;
+  const capitalGain = Math.max(0, totalGain - depreciationRecapture)
+  const capitalGainsTax = capitalGain * capitalGainsTaxRate
 
   // Total tax on sale
-  const totalTaxOnSale = depreciationRecaptureTax + capitalGainsTax;
-  
+  const totalTaxOnSale = depreciationRecaptureTax + capitalGainsTax
+
   // After-tax proceeds
-  const afterTaxProceeds = netSaleProceeds - totalTaxOnSale;
+  const afterTaxProceeds = netSaleProceeds - totalTaxOnSale
 
   return {
     holdPeriodYears,
@@ -423,7 +424,7 @@ export function calculateExitAnalysis(
     capitalGainsTax,
     totalTaxOnSale,
     afterTaxProceeds,
-  };
+  }
 }
 
 // ============================================
@@ -434,43 +435,43 @@ export function calculateExitAnalysis(
  * Calculate IRR using Newton-Raphson method
  */
 export function calculateIRR(cashFlows: number[], guess: number = 0.1): number {
-  const maxIterations = 100;
-  const tolerance = 0.0001;
-  let rate = guess;
+  const maxIterations = 100
+  const tolerance = 0.0001
+  let rate = guess
 
   for (let i = 0; i < maxIterations; i++) {
-    let npv = 0;
-    let derivativeNpv = 0;
+    let npv = 0
+    let derivativeNpv = 0
 
     for (let j = 0; j < cashFlows.length; j++) {
-      const discountFactor = Math.pow(1 + rate, j);
-      npv += cashFlows[j] / discountFactor;
+      const discountFactor = Math.pow(1 + rate, j)
+      npv += cashFlows[j] / discountFactor
       if (j > 0) {
-        derivativeNpv -= (j * cashFlows[j]) / Math.pow(1 + rate, j + 1);
+        derivativeNpv -= (j * cashFlows[j]) / Math.pow(1 + rate, j + 1)
       }
     }
 
     if (Math.abs(derivativeNpv) < 0.0001) {
-      break;
+      break
     }
 
-    const newRate = rate - npv / derivativeNpv;
-    
+    const newRate = rate - npv / derivativeNpv
+
     if (Math.abs(newRate - rate) < tolerance) {
-      return newRate * 100; // Return as percentage
+      return newRate * 100 // Return as percentage
     }
-    
+
     // Prevent divergence
     if (newRate < -0.99) {
-      rate = -0.99;
+      rate = -0.99
     } else if (newRate > 10) {
-      rate = 10;
+      rate = 10
     } else {
-      rate = newRate;
+      rate = newRate
     }
   }
 
-  return rate * 100; // Return as percentage
+  return rate * 100 // Return as percentage
 }
 
 /**
@@ -480,34 +481,34 @@ export function calculateIRR(cashFlows: number[], guess: number = 0.1): number {
 export function calculateMIRR(
   cashFlows: number[],
   financeRate: number = 0.06,
-  reinvestmentRate: number = 0.08
+  reinvestmentRate: number = 0.08,
 ): number {
-  const n = cashFlows.length - 1;
-  
+  const n = cashFlows.length - 1
+
   // Future value of positive cash flows
-  let fvPositive = 0;
+  let fvPositive = 0
   for (let i = 0; i < cashFlows.length; i++) {
     if (cashFlows[i] > 0) {
-      fvPositive += cashFlows[i] * Math.pow(1 + reinvestmentRate, n - i);
+      fvPositive += cashFlows[i] * Math.pow(1 + reinvestmentRate, n - i)
     }
   }
 
   // Present value of negative cash flows
-  let pvNegative = 0;
+  let pvNegative = 0
   for (let i = 0; i < cashFlows.length; i++) {
     if (cashFlows[i] < 0) {
-      pvNegative += cashFlows[i] / Math.pow(1 + financeRate, i);
+      pvNegative += cashFlows[i] / Math.pow(1 + financeRate, i)
     }
   }
 
   if (pvNegative === 0 || fvPositive === 0) {
-    return 0;
+    return 0
   }
 
   // MIRR = (FV of positives / PV of negatives)^(1/n) - 1
-  const mirr = Math.pow(fvPositive / Math.abs(pvNegative), 1 / n) - 1;
-  
-  return mirr * 100; // Return as percentage
+  const mirr = Math.pow(fvPositive / Math.abs(pvNegative), 1 / n) - 1
+
+  return mirr * 100 // Return as percentage
 }
 
 /**
@@ -518,49 +519,47 @@ export function calculateInvestmentReturns(
   annualCashFlows: number[],
   exitProceeds: number,
   financeRate: number = 0.06,
-  reinvestmentRate: number = 0.08
+  reinvestmentRate: number = 0.08,
 ): InvestmentReturns {
   // Build cash flow array for IRR
   // Year 0: negative initial investment
   // Years 1-N: annual cash flows
   // Year N: add exit proceeds to final year
-  const allCashFlows = [-initialInvestment, ...annualCashFlows];
-  allCashFlows[allCashFlows.length - 1] += exitProceeds; // Add sale proceeds to final year
+  const allCashFlows = [-initialInvestment, ...annualCashFlows]
+  allCashFlows[allCashFlows.length - 1] += exitProceeds // Add sale proceeds to final year
 
-  const irr = calculateIRR(allCashFlows);
-  const mirr = calculateMIRR(allCashFlows, financeRate, reinvestmentRate);
+  const irr = calculateIRR(allCashFlows)
+  const mirr = calculateMIRR(allCashFlows, financeRate, reinvestmentRate)
 
-  const totalCashFlows = annualCashFlows.reduce((a, b) => a + b, 0);
-  const totalDistributions = totalCashFlows + exitProceeds;
-  const equityMultiple = totalDistributions / initialInvestment;
+  const totalCashFlows = annualCashFlows.reduce((a, b) => a + b, 0)
+  const totalDistributions = totalCashFlows + exitProceeds
+  const equityMultiple = totalDistributions / initialInvestment
 
   // Payback period calculation
-  let cumulative = 0;
-  let paybackPeriodMonths: number | null = null;
+  let cumulative = 0
+  let paybackPeriodMonths: number | null = null
   for (let i = 0; i < annualCashFlows.length; i++) {
-    cumulative += annualCashFlows[i];
+    cumulative += annualCashFlows[i]
     if (cumulative >= initialInvestment && paybackPeriodMonths === null) {
       // Interpolate within the year
-      const priorCumulative = cumulative - annualCashFlows[i];
-      const remainingNeeded = initialInvestment - priorCumulative;
-      const monthsInYear = (remainingNeeded / annualCashFlows[i]) * 12;
-      paybackPeriodMonths = (i * 12) + Math.ceil(monthsInYear);
+      const priorCumulative = cumulative - annualCashFlows[i]
+      const remainingNeeded = initialInvestment - priorCumulative
+      const monthsInYear = (remainingNeeded / annualCashFlows[i]) * 12
+      paybackPeriodMonths = i * 12 + Math.ceil(monthsInYear)
     }
   }
 
   // If not paid back from cash flow alone, check with exit proceeds
   if (paybackPeriodMonths === null && cumulative + exitProceeds >= initialInvestment) {
     // Paid back at exit
-    paybackPeriodMonths = annualCashFlows.length * 12;
+    paybackPeriodMonths = annualCashFlows.length * 12
   }
 
-  const averageAnnualReturn = annualCashFlows.length > 0
-    ? (totalCashFlows / annualCashFlows.length) / initialInvestment
-    : 0;
-  
-  const cagr = annualCashFlows.length > 0
-    ? Math.pow(equityMultiple, 1 / annualCashFlows.length) - 1
-    : 0;
+  const averageAnnualReturn =
+    annualCashFlows.length > 0 ? totalCashFlows / annualCashFlows.length / initialInvestment : 0
+
+  const cagr =
+    annualCashFlows.length > 0 ? Math.pow(equityMultiple, 1 / annualCashFlows.length) - 1 : 0
 
   return {
     irr,
@@ -571,7 +570,7 @@ export function calculateInvestmentReturns(
     paybackPeriodMonths,
     averageAnnualReturn: averageAnnualReturn * 100,
     cagr: cagr * 100,
-  };
+  }
 }
 
 // ============================================
@@ -585,12 +584,12 @@ export function generateSensitivityScenarios(
   baseValue: number,
   variableName: string,
   percentChanges: number[],
-  calculateReturns: (value: number) => { irr: number; cashOnCash: number; netProfit: number }
+  calculateReturns: (value: number) => { irr: number; cashOnCash: number; netProfit: number },
 ): SensitivityScenario[] {
-  return percentChanges.map(changePercent => {
-    const absoluteValue = baseValue * (1 + changePercent / 100);
-    const returns = calculateReturns(absoluteValue);
-    
+  return percentChanges.map((changePercent) => {
+    const absoluteValue = baseValue * (1 + changePercent / 100)
+    const returns = calculateReturns(absoluteValue)
+
     return {
       variable: variableName,
       changePercent,
@@ -598,8 +597,8 @@ export function generateSensitivityScenarios(
       irr: returns.irr,
       cashOnCash: returns.cashOnCash,
       netProfit: returns.netProfit,
-    };
-  });
+    }
+  })
 }
 
 // ============================================
@@ -613,7 +612,7 @@ export { formatCurrency, formatPercent } from '@/utils/formatters'
  * Round to nearest dollar
  */
 export function roundToDollar(value: number): number {
-  return Math.round(value);
+  return Math.round(value)
 }
 
 /**
@@ -621,8 +620,8 @@ export function roundToDollar(value: number): number {
  */
 export function calculateExpenseRatio(
   operatingExpenses: number,
-  effectiveGrossIncome: number
+  effectiveGrossIncome: number,
 ): number {
-  if (effectiveGrossIncome === 0) return 0;
-  return (operatingExpenses / effectiveGrossIncome) * 100;
+  if (effectiveGrossIncome === 0) return 0
+  return (operatingExpenses / effectiveGrossIncome) * 100
 }

@@ -17,8 +17,8 @@ export function CashFlowChart() {
   }
 
   const years = projections.slice(0, 10)
-  const maxValue = Math.max(...years.map(y => Math.max(y.effectiveRent, Math.abs(y.cashFlow))))
-  const minValue = Math.min(...years.map(y => Math.min(0, y.cashFlow)))
+  const maxValue = Math.max(...years.map((y) => Math.max(y.effectiveRent, Math.abs(y.cashFlow))))
+  const minValue = Math.min(...years.map((y) => Math.min(0, y.cashFlow)))
   const range = maxValue - minValue
 
   const formatCurrency = (value: number) => {
@@ -43,7 +43,7 @@ export function CashFlowChart() {
   return (
     <div className="chart-container">
       <h3 className="chart-title">Cash Flow Over Time</h3>
-      
+
       {/* Legend */}
       <div className="flex items-center gap-4 mb-4 text-xs">
         <div className="flex items-center gap-1">
@@ -73,7 +73,7 @@ export function CashFlowChart() {
         <div className="ml-16 h-full relative">
           {/* Zero line */}
           {minValue < 0 && (
-            <div 
+            <div
               className="absolute left-0 right-0 border-t border-dashed border-[var(--ws-border)]"
               style={{ top: `${zeroLine}%` }}
             />
@@ -84,27 +84,29 @@ export function CashFlowChart() {
             {years.map((year, index) => (
               <div key={index} className="flex-1 flex flex-col items-center relative h-full">
                 {/* Income bar */}
-                <div 
+                <div
                   className="absolute w-[30%] left-[10%] bg-[var(--status-positive)] rounded-t-sm transition-all duration-300"
                   style={{
                     bottom: `${zeroLine}%`,
                     height: `${getBarHeight(year.effectiveRent) - zeroLine}%`,
                   }}
                 />
-                
+
                 {/* Expenses bar */}
-                <div 
+                <div
                   className="absolute w-[30%] left-[35%] bg-[var(--color-navy)] rounded-t-sm transition-all duration-300"
                   style={{
                     bottom: `${zeroLine}%`,
                     height: `${getBarHeight(year.operatingExpenses + year.debtService) - zeroLine}%`,
                   }}
                 />
-                
+
                 {/* Cash flow bar */}
-                <div 
+                <div
                   className={`absolute w-[30%] right-[10%] rounded-sm transition-all duration-300 ${
-                    year.cashFlow >= 0 ? 'bg-[var(--status-positive)]' : 'bg-[var(--status-negative)]'
+                    year.cashFlow >= 0
+                      ? 'bg-[var(--status-positive)]'
+                      : 'bg-[var(--status-negative)]'
                   }`}
                   style={{
                     bottom: year.cashFlow >= 0 ? `${zeroLine}%` : undefined,
@@ -112,7 +114,7 @@ export function CashFlowChart() {
                     height: `${Math.abs(getBarHeight(year.cashFlow) - zeroLine)}%`,
                   }}
                 />
-                
+
                 {/* Year label */}
                 <span className="absolute -bottom-6 text-xs text-[var(--ws-text-muted)]">
                   Y{index + 1}
@@ -130,4 +132,3 @@ export function CashFlowChart() {
     </div>
   )
 }
-

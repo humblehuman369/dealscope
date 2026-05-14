@@ -16,17 +16,17 @@ const VALUE_MESSAGES = {
     beginner: "We'll show more educational context in your analyses.",
     intermediate: "We'll tailor recommendations to your growing expertise.",
     advanced: "You'll see advanced metrics and pro-level insights.",
-    expert: "Full access to all professional tools and detailed analytics.",
+    expert: 'Full access to all professional tools and detailed analytics.',
   },
   strategy: {
-    ltr: "Long-Term Rental scores will be highlighted on every analysis.",
+    ltr: 'Long-Term Rental scores will be highlighted on every analysis.',
     str: "We'll show ADR and occupancy projections for vacation rentals.",
-    brrrr: "BRRRR metrics like equity capture will be front and center.",
+    brrrr: 'BRRRR metrics like equity capture will be front and center.',
     flip: "We'll calculate rehab ROI and flip profit margins for you.",
-    house_hack: "House Hack savings and owner-occupant benefits will be featured.",
-    wholesale: "Assignment fee estimates will appear on qualifying deals.",
+    house_hack: 'House Hack savings and owner-occupant benefits will be featured.',
+    wholesale: 'Assignment fee estimates will appear on qualifying deals.',
   },
-  budget: "Filtering deal alerts to properties in your budget range.",
+  budget: 'Filtering deal alerts to properties in your budget range.',
   risk: {
     conservative: "We'll prioritize stable, lower-risk investment opportunities.",
     moderate: "You'll see a balanced mix of risk and reward options.",
@@ -34,13 +34,14 @@ const VALUE_MESSAGES = {
   },
   market: (state: string) => `You'll get alerts when new deals appear in ${state}.`,
   financing: {
-    conventional: "Calculations will use standard 20% down with PMI if lower.",
-    fha: "FHA terms with 3.5% down and MIP will be applied.",
-    va: "VA loan terms with zero down payment will be used.",
-    cash: "All-cash analysis with no financing costs.",
-    hard_money: "Short-term hard money rates will be used for flip/BRRRR.",
+    conventional: 'Calculations will use standard 20% down with PMI if lower.',
+    fha: 'FHA terms with 3.5% down and MIP will be applied.',
+    va: 'VA loan terms with zero down payment will be used.',
+    cash: 'All-cash analysis with no financing costs.',
+    hard_money: 'Short-term hard money rates will be used for flip/BRRRR.',
   },
-  downPayment: (pct: number) => `Your breakeven prices will reflect ${(pct * 100).toFixed(1)}% down.`,
+  downPayment: (pct: number) =>
+    `Your breakeven prices will reflect ${(pct * 100).toFixed(1)}% down.`,
 } as const
 
 // ===========================================
@@ -68,7 +69,7 @@ export function useOnboarding() {
     target_cap_rate: 0.06,
     risk_tolerance: 'moderate',
     financing_type: 'conventional',
-    down_payment_pct: 0.20,
+    down_payment_pct: 0.2,
   })
 
   // Value messaging state
@@ -77,7 +78,7 @@ export function useOnboarding() {
 
   const showValueMessage = (message: string) => {
     setValueMessage(message)
-    setValueMessageKey(prev => prev + 1)
+    setValueMessageKey((prev) => prev + 1)
     setTimeout(() => setValueMessage(null), 4000)
   }
 
@@ -92,16 +93,20 @@ export function useOnboarding() {
   // Initialize with user data
   useEffect(() => {
     if (user?.full_name) {
-      setFormData(prev => ({ ...prev, full_name: user.full_name || '' }))
+      setFormData((prev) => ({ ...prev, full_name: user.full_name || '' }))
     }
   }, [user])
 
   // ── Form updaters ────────────────────────────
 
   const updateFormData = (field: keyof OnboardingData, value: string | number | string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
 
-    if (field === 'investment_experience' && typeof value === 'string' && value in VALUE_MESSAGES.experience) {
+    if (
+      field === 'investment_experience' &&
+      typeof value === 'string' &&
+      value in VALUE_MESSAGES.experience
+    ) {
       showValueMessage(VALUE_MESSAGES.experience[value as keyof typeof VALUE_MESSAGES.experience])
     }
 
@@ -112,10 +117,10 @@ export function useOnboarding() {
 
   const toggleStrategy = (strategyId: string) => {
     const isAdding = !formData.preferred_strategies.includes(strategyId)
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       preferred_strategies: prev.preferred_strategies.includes(strategyId)
-        ? prev.preferred_strategies.filter(s => s !== strategyId)
+        ? prev.preferred_strategies.filter((s) => s !== strategyId)
         : [...prev.preferred_strategies, strategyId],
     }))
 
@@ -126,10 +131,10 @@ export function useOnboarding() {
 
   const toggleMarket = (state: string) => {
     const isAdding = !formData.target_markets.includes(state)
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       target_markets: prev.target_markets.includes(state)
-        ? prev.target_markets.filter(s => s !== state)
+        ? prev.target_markets.filter((s) => s !== state)
         : [...prev.target_markets, state],
     }))
 
@@ -139,7 +144,7 @@ export function useOnboarding() {
   }
 
   const selectBudgetRange = (range: { min: number; max: number }) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       investment_budget_min: range.min,
       investment_budget_max: range.max,
@@ -148,18 +153,20 @@ export function useOnboarding() {
   }
 
   const selectFinancingType = (financing: FinancingType) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       financing_type: financing.id,
       down_payment_pct: financing.defaultDownPayment,
     }))
     if (financing.id in VALUE_MESSAGES.financing) {
-      showValueMessage(VALUE_MESSAGES.financing[financing.id as keyof typeof VALUE_MESSAGES.financing])
+      showValueMessage(
+        VALUE_MESSAGES.financing[financing.id as keyof typeof VALUE_MESSAGES.financing],
+      )
     }
   }
 
   const selectDownPayment = (pct: number) => {
-    setFormData(prev => ({ ...prev, down_payment_pct: pct }))
+    setFormData((prev) => ({ ...prev, down_payment_pct: pct }))
     showValueMessage(VALUE_MESSAGES.downPayment(pct))
   }
 
@@ -228,14 +235,14 @@ export function useOnboarding() {
   const nextStep = async () => {
     if (currentStep < TOTAL_STEPS - 1) {
       const success = await saveProgress(currentStep)
-      if (success) setCurrentStep(prev => prev + 1)
+      if (success) setCurrentStep((prev) => prev + 1)
     } else {
       await saveProgress(currentStep, true)
     }
   }
 
   const prevStep = () => {
-    if (currentStep > 0) setCurrentStep(prev => prev - 1)
+    if (currentStep > 0) setCurrentStep((prev) => prev - 1)
   }
 
   const skipOnboarding = async () => {

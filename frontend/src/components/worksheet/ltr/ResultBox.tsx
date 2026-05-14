@@ -34,10 +34,10 @@ const textColors: Record<ResultBoxVariant, string> = {
 export function ResultBox({ label, value, variant = 'default', size = 'normal' }: ResultBoxProps) {
   return (
     <div className={`rounded-xl border px-4 py-3 ${variants[variant]}`}>
-      <div className="section-label text-surface-500 dark:text-surface-400 mb-0.5">
-        {label}
-      </div>
-      <div className={`${size === 'large' ? 'text-lg' : 'text-base'} font-bold num ${textColors[variant]}`}>
+      <div className="section-label text-surface-500 dark:text-surface-400 mb-0.5">{label}</div>
+      <div
+        className={`${size === 'large' ? 'text-lg' : 'text-base'} font-bold num ${textColors[variant]}`}
+      >
         {value}
       </div>
     </div>

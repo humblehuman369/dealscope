@@ -95,12 +95,16 @@ export default function CheckoutSuccessPage() {
             <CheckCircle className="w-14 h-14 mx-auto mb-6 text-green-500" />
             <h1 className="text-xl font-bold text-white mb-2">Payment received</h1>
             <p className="text-sm text-slate-400 mb-6">
-              Your Pro access may take a moment to activate. If you don’t see it, refresh the page or open Billing.
+              Your Pro access may take a moment to activate. If you don’t see it, refresh the page
+              or open Billing.
             </p>
             <Link
               href={effectiveRedirect}
               className="inline-block px-5 py-2.5 rounded-lg font-semibold text-white"
-              style={{ background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))' }}
+              style={{
+                background:
+                  'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
+              }}
             >
               Continue
             </Link>

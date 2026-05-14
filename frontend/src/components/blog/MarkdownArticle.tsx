@@ -10,10 +10,7 @@ interface MarkdownArticleProps {
 
 export function MarkdownArticle({ content }: MarkdownArticleProps) {
   return (
-    <div
-      className="markdown-prose"
-      style={{ color: 'var(--text-body)' }}
-    >
+    <div className="markdown-prose" style={{ color: 'var(--text-body)' }}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -131,12 +128,7 @@ export function MarkdownArticle({ content }: MarkdownArticleProps) {
               />
             </div>
           ),
-          thead: (props) => (
-            <thead
-              style={{ background: 'var(--surface-elevated)' }}
-              {...props}
-            />
-          ),
+          thead: (props) => <thead style={{ background: 'var(--surface-elevated)' }} {...props} />,
           th: (props) => (
             <th
               className="px-4 py-2 text-left font-semibold"
@@ -164,11 +156,7 @@ export function MarkdownArticle({ content }: MarkdownArticleProps) {
             />
           ),
           strong: (props) => (
-            <strong
-              className="font-semibold"
-              style={{ color: 'var(--text-heading)' }}
-              {...props}
-            />
+            <strong className="font-semibold" style={{ color: 'var(--text-heading)' }} {...props} />
           ),
           em: (props) => <em className="italic" {...props} />,
         }}

@@ -25,7 +25,7 @@ export function MarketsStep({ formData, toggleMarket }: MarketsStepProps) {
       <div className="mb-6">
         <p className="text-sm text-gray-400 mb-3">Popular markets:</p>
         <div className="flex flex-wrap gap-2">
-          {POPULAR_MARKETS.map(state => (
+          {POPULAR_MARKETS.map((state) => (
             <button
               key={state}
               onClick={() => toggleMarket(state)}
@@ -45,7 +45,7 @@ export function MarketsStep({ formData, toggleMarket }: MarketsStepProps) {
       <div className="bg-white/5 rounded-xl p-4 max-h-64 overflow-y-auto">
         <p className="text-sm text-gray-400 mb-3">All states:</p>
         <div className="flex flex-wrap gap-1.5">
-          {US_STATES.map(state => (
+          {US_STATES.map((state) => (
             <button
               key={state}
               onClick={() => toggleMarket(state)}
@@ -63,7 +63,8 @@ export function MarketsStep({ formData, toggleMarket }: MarketsStepProps) {
 
       {formData.target_markets.length > 0 && (
         <p className="text-center text-brand-400 mt-4 text-sm">
-          {formData.target_markets.length} state{formData.target_markets.length !== 1 ? 's' : ''} selected
+          {formData.target_markets.length} state{formData.target_markets.length !== 1 ? 's' : ''}{' '}
+          selected
         </p>
       )}
 

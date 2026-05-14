@@ -8,7 +8,12 @@
  */
 
 import { PriceTarget } from '@/lib/priceUtils'
-import { StrategyType, MetricId, formatMetricValue, METRIC_DEFINITIONS } from '@/config/strategyMetrics'
+import {
+  StrategyType,
+  MetricId,
+  formatMetricValue,
+  METRIC_DEFINITIONS,
+} from '@/config/strategyMetrics'
 
 // =============================================================================
 // CALCULATION INPUT TYPES
@@ -21,18 +26,18 @@ export interface CalculationInputs {
   targetBuyPrice: number
   wholesalePrice: number
   arv: number
-  
+
   // Financing
   downPaymentPct: number
   interestRate: number
   loanTermYears: number
   closingCostsPct: number
-  
+
   // Income
   monthlyRent: number
   vacancyRate: number
   otherIncome?: number
-  
+
   // STR-specific
   averageDailyRate?: number
   occupancyRate?: number
@@ -43,7 +48,7 @@ export interface CalculationInputs {
   cleaningFeeRevenue?: number
   platformFeeRate?: number
   strManagementRate?: number
-  
+
   // Expenses
   propertyTaxes: number
   insurance: number
@@ -52,7 +57,7 @@ export interface CalculationInputs {
   maintenanceRate: number
   capexRate: number
   utilities?: number
-  
+
   // Rehab/BRRRR
   rehabBudget?: number
   contingencyPct?: number
@@ -62,7 +67,7 @@ export interface CalculationInputs {
   refinanceInterestRate?: number
   refinanceTermYears?: number
   postRehabMonthlyRent?: number
-  
+
   // Flip
   rehabTimeMonths?: number
   daysOnMarket?: number
@@ -71,14 +76,14 @@ export interface CalculationInputs {
   hardMoneyRate?: number
   hardMoneyLtv?: number
   loanPoints?: number
-  
+
   // House Hack
   totalUnits?: number
   ownerOccupiedUnits?: number
   avgRentPerUnit?: number
   currentHousingPayment?: number
   pmiRate?: number
-  
+
   // Wholesale
   contractPrice?: number
   assignmentFee?: number
@@ -107,17 +112,16 @@ function calculateMonthlyMortgage(principal: number, annualRate: number, years: 
   if (annualRate === 0) return principal / (years * 12)
   const monthlyRate = annualRate / 12
   const numPayments = years * 12
-  return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+  return (
+    (principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments))) /
     (Math.pow(1 + monthlyRate, numPayments) - 1)
+  )
 }
 
 /**
  * Get the base price for calculations based on active price target
  */
-export function getBasePriceForTarget(
-  priceTarget: PriceTarget,
-  inputs: CalculationInputs
-): number {
+export function getBasePriceForTarget(priceTarget: PriceTarget, inputs: CalculationInputs): number {
   switch (priceTarget) {
     case 'breakeven':
       return inputs.incomeValue
@@ -139,33 +143,38 @@ export function getBasePriceForTarget(
  */
 function calculateLTRMetrics(
   basePrice: number,
-  inputs: CalculationInputs
+  inputs: CalculationInputs,
 ): Record<MetricId, number | string | null> {
   const downPayment = basePrice * inputs.downPaymentPct
   const closingCosts = basePrice * inputs.closingCostsPct
   const loanAmount = basePrice - downPayment
   const totalCashNeeded = downPayment + closingCosts
-  
+
   const monthlyPI = calculateMonthlyMortgage(loanAmount, inputs.interestRate, inputs.loanTermYears)
   const annualDebtService = monthlyPI * 12
-  
+
   const annualGrossRent = inputs.monthlyRent * 12
   const vacancyLoss = annualGrossRent * inputs.vacancyRate
   const effectiveGrossIncome = annualGrossRent - vacancyLoss + (inputs.otherIncome ?? 0)
-  
+
   const annualMaintenance = annualGrossRent * inputs.maintenanceRate
   const annualManagement = annualGrossRent * inputs.managementRate
   const annualCapex = annualGrossRent * inputs.capexRate
-  const totalOperatingExpenses = inputs.propertyTaxes + inputs.insurance + 
-    (inputs.hoaFees ?? 0) + annualMaintenance + annualManagement + annualCapex + 
-    ((inputs.utilities ?? 0) * 12)
-  
+  const totalOperatingExpenses =
+    inputs.propertyTaxes +
+    inputs.insurance +
+    (inputs.hoaFees ?? 0) +
+    annualMaintenance +
+    annualManagement +
+    annualCapex +
+    (inputs.utilities ?? 0) * 12
+
   const noi = effectiveGrossIncome - totalOperatingExpenses
   const annualCashFlow = noi - annualDebtService
   const monthlyCashFlow = annualCashFlow / 12
-  
+
   const capRate = basePrice > 0 ? noi / basePrice : 0
-  
+
   return {
     cashFlow: monthlyCashFlow,
     cashNeeded: totalCashNeeded,
@@ -197,7 +206,7 @@ function calculateLTRMetrics(
  */
 function calculateSTRMetrics(
   basePrice: number,
-  inputs: CalculationInputs
+  inputs: CalculationInputs,
 ): Record<MetricId, number | string | null> {
   const adr = inputs.averageDailyRate ?? 200
   const occupancy = inputs.occupancyRate ?? 0.65
@@ -212,37 +221,42 @@ function calculateSTRMetrics(
       : adr * nightsOccupied
   const cleaningRevenue = (inputs.cleaningFeeRevenue ?? 0) * (nightsOccupied / 3)
   const totalRevenue = annualRevenue + cleaningRevenue
-  
+
   const platformFees = totalRevenue * (inputs.platformFeeRate ?? 0.15)
-  const strManagement = totalRevenue * (inputs.strManagementRate ?? 0.20)
-  
+  const strManagement = totalRevenue * (inputs.strManagementRate ?? 0.2)
+
   const downPayment = basePrice * inputs.downPaymentPct
   const closingCosts = basePrice * inputs.closingCostsPct
   const furnitureSetup = 6000
   const totalCashNeeded = downPayment + closingCosts + furnitureSetup
-  
+
   const loanAmount = basePrice - downPayment
   const monthlyPI = calculateMonthlyMortgage(loanAmount, inputs.interestRate, inputs.loanTermYears)
   const annualDebtService = monthlyPI * 12
-  
-  const totalOperatingExpenses = inputs.propertyTaxes + inputs.insurance + 
-    platformFees + strManagement + (inputs.utilities ?? 0) * 12 * 1.5
-  
+
+  const totalOperatingExpenses =
+    inputs.propertyTaxes +
+    inputs.insurance +
+    platformFees +
+    strManagement +
+    (inputs.utilities ?? 0) * 12 * 1.5
+
   const noi = totalRevenue - totalOperatingExpenses
   const annualCashFlow = noi - annualDebtService
   const monthlyCashFlow = annualCashFlow / 12
-  
+
   // Break-even occupancy
   const fixedCosts = annualDebtService + inputs.propertyTaxes + inputs.insurance
   const revenuePerNight = adr + (nightsOccupied > 0 ? cleaningRevenue / nightsOccupied : 0)
-  const variableCostPerNight = revenuePerNight * ((inputs.platformFeeRate ?? 0.15) + (inputs.strManagementRate ?? 0.20))
+  const variableCostPerNight =
+    revenuePerNight * ((inputs.platformFeeRate ?? 0.15) + (inputs.strManagementRate ?? 0.2))
   const netPerNight = revenuePerNight - variableCostPerNight
   const breakEvenNights = netPerNight > 0 ? fixedCosts / netPerNight : 365
   const breakEvenOccupancy = breakEvenNights / 365
-  
+
   // RevPAR
   const revpar = totalRevenue / 365
-  
+
   return {
     cashFlow: monthlyCashFlow,
     cashNeeded: totalCashNeeded,
@@ -274,51 +288,54 @@ function calculateSTRMetrics(
  */
 function calculateBRRRRMetrics(
   basePrice: number,
-  inputs: CalculationInputs
+  inputs: CalculationInputs,
 ): Record<MetricId, number | string | null> {
   const rehabBudget = inputs.rehabBudget ?? 0
-  const contingency = rehabBudget * (inputs.contingencyPct ?? 0.10)
+  const contingency = rehabBudget * (inputs.contingencyPct ?? 0.1)
   const totalRehab = rehabBudget + contingency
   const holdingMonths = inputs.holdingPeriodMonths ?? 6
   const holdingCosts = (inputs.holdingCostsMonthly ?? 1500) * holdingMonths
-  
+
   // Initial investment
-  const hardMoneyDown = basePrice * 0.10 // Typically 10% down on hard money
+  const hardMoneyDown = basePrice * 0.1 // Typically 10% down on hard money
   const purchaseClosingCosts = basePrice * inputs.closingCostsPct
   const initialInvestment = hardMoneyDown + totalRehab + holdingCosts + purchaseClosingCosts
-  
+
   // Refinance
   const refinanceLtv = inputs.refinanceLtv ?? 0.75
   const refinanceLoanAmount = inputs.arv * refinanceLtv
   const refinanceClosingCosts = refinanceLoanAmount * (inputs.closingCostsPct ?? 0.02)
-  const hardMoneyBalance = basePrice * 0.90 // 90% LTV on original loan
+  const hardMoneyBalance = basePrice * 0.9 // 90% LTV on original loan
   const cashOutAtRefi = refinanceLoanAmount - refinanceClosingCosts - hardMoneyBalance
-  
+
   const cashLeftInDeal = Math.max(0, initialInvestment - Math.max(0, cashOutAtRefi))
-  const cashRecoupPercent = initialInvestment > 0 ? 
-    ((initialInvestment - cashLeftInDeal) / initialInvestment) : 0
-  
+  const cashRecoupPercent =
+    initialInvestment > 0 ? (initialInvestment - cashLeftInDeal) / initialInvestment : 0
+
   // Equity position
   const equityCreated = inputs.arv - refinanceLoanAmount
-  
+
   // Post-refi cash flow
   const postRehabRent = inputs.postRehabMonthlyRent ?? inputs.monthlyRent
   const annualRent = postRehabRent * 12
   const effectiveRent = annualRent * (1 - inputs.vacancyRate)
-  
+
   const refiMonthlyPI = calculateMonthlyMortgage(
-    refinanceLoanAmount, 
-    inputs.refinanceInterestRate ?? inputs.interestRate, 
-    inputs.refinanceTermYears ?? 30
+    refinanceLoanAmount,
+    inputs.refinanceInterestRate ?? inputs.interestRate,
+    inputs.refinanceTermYears ?? 30,
   )
   const annualDebtService = refiMonthlyPI * 12
-  
-  const operatingExpenses = inputs.propertyTaxes + inputs.insurance + 
-    annualRent * inputs.maintenanceRate + annualRent * inputs.managementRate
+
+  const operatingExpenses =
+    inputs.propertyTaxes +
+    inputs.insurance +
+    annualRent * inputs.maintenanceRate +
+    annualRent * inputs.managementRate
   const noi = effectiveRent - operatingExpenses
   const annualCashFlow = noi - annualDebtService
   const monthlyCashFlow = annualCashFlow / 12
-  
+
   return {
     cashFlow: null,
     cashNeeded: initialInvestment,
@@ -350,46 +367,46 @@ function calculateBRRRRMetrics(
  */
 function calculateFlipMetrics(
   basePrice: number,
-  inputs: CalculationInputs
+  inputs: CalculationInputs,
 ): Record<MetricId, number | string | null> {
   const rehabBudget = inputs.rehabBudget ?? 0
-  const contingency = rehabBudget * (inputs.contingencyPct ?? 0.10)
+  const contingency = rehabBudget * (inputs.contingencyPct ?? 0.1)
   const totalRehab = rehabBudget + contingency
-  
+
   const rehabMonths = inputs.rehabTimeMonths ?? 4
   const domDays = inputs.daysOnMarket ?? 45
-  const totalHoldingMonths = rehabMonths + (domDays / 30)
-  
+  const totalHoldingMonths = rehabMonths + domDays / 30
+
   // Financing costs
-  const hardMoneyLtv = inputs.hardMoneyLtv ?? 0.90
+  const hardMoneyLtv = inputs.hardMoneyLtv ?? 0.9
   const hardMoneyLoan = basePrice * hardMoneyLtv
   const loanPoints = hardMoneyLoan * (inputs.loanPoints ?? 0.02)
-  const monthlyInterest = hardMoneyLoan * (inputs.hardMoneyRate ?? 0.12) / 12
+  const monthlyInterest = (hardMoneyLoan * (inputs.hardMoneyRate ?? 0.12)) / 12
   const totalInterest = monthlyInterest * totalHoldingMonths
-  
+
   // Holding costs
-  const monthlyHolding = (inputs.propertyTaxes / 12) + (inputs.insurance / 12) + 
-    (inputs.utilities ?? 0)
+  const monthlyHolding = inputs.propertyTaxes / 12 + inputs.insurance / 12 + (inputs.utilities ?? 0)
   const totalHoldingCosts = monthlyHolding * totalHoldingMonths
-  
+
   // Total project cost
-  const acquisitionCost = basePrice + (basePrice * inputs.closingCostsPct)
+  const acquisitionCost = basePrice + basePrice * inputs.closingCostsPct
   const financingCosts = loanPoints + totalInterest
   const totalProjectCost = acquisitionCost + totalRehab + totalHoldingCosts + financingCosts
-  
+
   // Sale
   const sellingCostsPct = inputs.sellingCostsPct ?? 0.08
   const sellingCosts = inputs.arv * sellingCostsPct
   const grossProfit = inputs.arv - sellingCosts - totalProjectCost
   const taxes = grossProfit > 0 ? grossProfit * (inputs.capitalGainsRate ?? 0.25) : 0
   const netProfit = grossProfit - taxes
-  
+
   // ROI
-  const cashInvested = basePrice * (1 - hardMoneyLtv) + totalRehab + totalHoldingCosts + financingCosts
+  const cashInvested =
+    basePrice * (1 - hardMoneyLtv) + totalRehab + totalHoldingCosts + financingCosts
   const roi = cashInvested > 0 ? netProfit / cashInvested : 0
   const annualizedRoi = roi * (12 / totalHoldingMonths)
   const profitMargin = inputs.arv > 0 ? netProfit / inputs.arv : 0
-  
+
   return {
     cashFlow: null,
     cashNeeded: cashInvested,
@@ -421,47 +438,48 @@ function calculateFlipMetrics(
  */
 function calculateHouseHackMetrics(
   basePrice: number,
-  inputs: CalculationInputs
+  inputs: CalculationInputs,
 ): Record<MetricId, number | string | null> {
   const totalUnits = inputs.totalUnits ?? 4
   const ownerUnits = inputs.ownerOccupiedUnits ?? 1
   const rentedUnits = totalUnits - ownerUnits
   const avgRentPerUnit = inputs.avgRentPerUnit ?? inputs.monthlyRent / totalUnits
-  
+
   // FHA financing (3.5% down)
   const downPayment = basePrice * 0.035
   const closingCosts = basePrice * inputs.closingCostsPct
   const loanAmount = basePrice - downPayment
-  
+
   const monthlyPI = calculateMonthlyMortgage(loanAmount, inputs.interestRate, inputs.loanTermYears)
   const monthlyTaxes = inputs.propertyTaxes / 12
   const monthlyInsurance = inputs.insurance / 12
-  const pmi = loanAmount * (inputs.pmiRate ?? 0.0085) / 12
-  
+  const pmi = (loanAmount * (inputs.pmiRate ?? 0.0085)) / 12
+
   const monthlyPITI = monthlyPI + monthlyTaxes + monthlyInsurance + pmi
-  
+
   // Rental income
   const grossRentalIncome = avgRentPerUnit * rentedUnits
   const vacancyLoss = grossRentalIncome * inputs.vacancyRate
   const effectiveRentalIncome = grossRentalIncome - vacancyLoss
-  
-  const operatingExpenses = (inputs.utilities ?? 0) + 
-    (grossRentalIncome * inputs.maintenanceRate) +
-    (grossRentalIncome * inputs.capexRate)
-  
+
+  const operatingExpenses =
+    (inputs.utilities ?? 0) +
+    grossRentalIncome * inputs.maintenanceRate +
+    grossRentalIncome * inputs.capexRate
+
   const netRentalIncome = effectiveRentalIncome - operatingExpenses
-  
+
   // Effective housing cost
   const effectiveHousingCost = monthlyPITI - netRentalIncome
   const livesForFree = effectiveHousingCost <= 0
-  
+
   // Savings
   const currentHousing = inputs.currentHousingPayment ?? 2000
   const savings = currentHousing - effectiveHousingCost
-  
+
   // Reduction percentage
   const reduction = currentHousing > 0 ? savings / currentHousing : 0
-  
+
   return {
     cashFlow: netRentalIncome - monthlyPITI,
     cashNeeded: downPayment + closingCosts,
@@ -493,24 +511,24 @@ function calculateHouseHackMetrics(
  */
 function calculateWholesaleMetrics(
   basePrice: number,
-  inputs: CalculationInputs
+  inputs: CalculationInputs,
 ): Record<MetricId, number | string | null> {
   const estimatedRepairs = inputs.estimatedRepairs ?? inputs.rehabBudget ?? 40000
   const assignmentFee = inputs.assignmentFee ?? 15000
-  
+
   // 70% Rule MAO
-  const mao = (inputs.arv * 0.70) - estimatedRepairs
-  
+  const mao = inputs.arv * 0.7 - estimatedRepairs
+
   // Expenses
   const earnestMoney = inputs.earnestMoney ?? 1000
   const marketingCosts = inputs.marketingCosts ?? 500
   const closingCosts = inputs.wholesaleClosingCosts ?? 500
   const totalExpenses = earnestMoney + marketingCosts + closingCosts
-  
+
   // Net profit and ROI
   const netProfit = assignmentFee - marketingCosts - closingCosts
   const roi = totalExpenses > 0 ? netProfit / totalExpenses : 0
-  
+
   // Deal viability
   const contractPrice = inputs.contractPrice ?? basePrice
   const meets70Rule = contractPrice <= mao
@@ -518,7 +536,7 @@ function calculateWholesaleMetrics(
   if (meets70Rule && netProfit > 10000) viability = 'Excellent'
   else if (meets70Rule || netProfit > 5000) viability = 'Good'
   else if (netProfit > 0) viability = 'Marginal'
-  
+
   return {
     cashFlow: null,
     cashNeeded: totalExpenses,
@@ -556,12 +574,12 @@ export function calculateMetric(
   metricId: MetricId,
   strategy: StrategyType,
   priceTarget: PriceTarget,
-  data: CalculationInputs
+  data: CalculationInputs,
 ): MetricResult {
   const basePrice = getBasePriceForTarget(priceTarget, data)
-  
+
   let allMetrics: Record<MetricId, number | string | null>
-  
+
   switch (strategy) {
     case 'ltr':
       allMetrics = calculateLTRMetrics(basePrice, data)
@@ -584,10 +602,10 @@ export function calculateMetric(
     default:
       allMetrics = calculateLTRMetrics(basePrice, data)
   }
-  
+
   const value = allMetrics[metricId]
   const definition = METRIC_DEFINITIONS[metricId]
-  
+
   return {
     id: metricId,
     value,
@@ -603,7 +621,7 @@ export function calculateStrategyMetrics(
   strategy: StrategyType,
   priceTarget: PriceTarget,
   data: CalculationInputs,
-  metricIds: MetricId[]
+  metricIds: MetricId[],
 ): MetricResult[] {
-  return metricIds.map(id => calculateMetric(id, strategy, priceTarget, data))
+  return metricIds.map((id) => calculateMetric(id, strategy, priceTarget, data))
 }

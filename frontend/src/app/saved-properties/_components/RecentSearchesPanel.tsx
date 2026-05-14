@@ -18,10 +18,20 @@ import {
 import { DataBoundary } from '@/components/ui/DataBoundary'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import {
-  Search, MapPin, Building2, Clock, Trash2,
-  ExternalLink, TrendingUp, Filter,
-  Calendar, BarChart3, Star, X,
-  ChevronLeft, ChevronRight,
+  Search,
+  MapPin,
+  Building2,
+  Clock,
+  Trash2,
+  ExternalLink,
+  TrendingUp,
+  Filter,
+  Calendar,
+  BarChart3,
+  Star,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 
 const PAGE_SIZE = 20
@@ -132,7 +142,9 @@ export function RecentSearchesPanel({ onOpenSearchModal }: RecentSearchesPanelPr
                 <Search className="w-5 h-5 text-[var(--accent-sky)]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{stats.total_searches}</p>
+                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">
+                  {stats.total_searches}
+                </p>
                 <p className="text-xs text-[var(--text-label)] font-medium">Total Searches</p>
               </div>
             </div>
@@ -144,7 +156,9 @@ export function RecentSearchesPanel({ onOpenSearchModal }: RecentSearchesPanelPr
                 <TrendingUp className="w-5 h-5 text-[var(--status-positive)]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{stats.successful_searches}</p>
+                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">
+                  {stats.successful_searches}
+                </p>
                 <p className="text-xs text-[var(--text-label)] font-medium">Successful</p>
               </div>
             </div>
@@ -156,7 +170,9 @@ export function RecentSearchesPanel({ onOpenSearchModal }: RecentSearchesPanelPr
                 <Star className="w-5 h-5 text-[var(--status-warning)]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{stats.saved_from_search}</p>
+                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">
+                  {stats.saved_from_search}
+                </p>
                 <p className="text-xs text-[var(--text-label)] font-medium">Saved</p>
               </div>
             </div>
@@ -168,7 +184,9 @@ export function RecentSearchesPanel({ onOpenSearchModal }: RecentSearchesPanelPr
                 <Calendar className="w-5 h-5 text-[var(--status-info)]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">{stats.searches_this_week}</p>
+                <p className="text-2xl font-bold text-[var(--text-heading)] tabular-nums">
+                  {stats.searches_this_week}
+                </p>
                 <p className="text-xs text-[var(--text-label)] font-medium">This Week</p>
               </div>
             </div>
@@ -190,7 +208,9 @@ export function RecentSearchesPanel({ onOpenSearchModal }: RecentSearchesPanelPr
                 className="px-3 py-1.5 bg-[var(--color-sky-dim)] rounded-full text-sm border border-[var(--border-focus)]"
               >
                 <span className="font-semibold text-[var(--accent-sky)]">{market.state}</span>
-                <span className="text-[var(--text-secondary)] ml-1.5 tabular-nums">({market.count})</span>
+                <span className="text-[var(--text-secondary)] ml-1.5 tabular-nums">
+                  ({market.count})
+                </span>
               </div>
             ))}
           </div>
@@ -227,11 +247,13 @@ export function RecentSearchesPanel({ onOpenSearchModal }: RecentSearchesPanelPr
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg flex-shrink-0 ${
-                        item.was_successful
-                          ? 'bg-[rgba(52,211,153,0.10)]'
-                          : 'bg-[rgba(248,113,113,0.10)]'
-                      }`}>
+                      <div
+                        className={`p-2 rounded-lg flex-shrink-0 ${
+                          item.was_successful
+                            ? 'bg-[rgba(52,211,153,0.10)]'
+                            : 'bg-[rgba(248,113,113,0.10)]'
+                        }`}
+                      >
                         {item.was_successful ? (
                           <Building2 className="w-4 h-4 text-[var(--status-positive)]" />
                         ) : (
@@ -332,7 +354,7 @@ export function RecentSearchesPanel({ onOpenSearchModal }: RecentSearchesPanelPr
             </p>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setPage(p => Math.max(0, p - 1))}
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={!hasPrevPage}
                 className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[var(--surface-card)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:text-[var(--text-body)] hover:border-[var(--border-strong)]"
                 aria-label="Previous page"
@@ -343,7 +365,7 @@ export function RecentSearchesPanel({ onOpenSearchModal }: RecentSearchesPanelPr
                 Page {page + 1} of {totalPages}
               </span>
               <button
-                onClick={() => setPage(p => p + 1)}
+                onClick={() => setPage((p) => p + 1)}
                 disabled={!hasNextPage}
                 className="p-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-[var(--surface-card)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:text-[var(--text-body)] hover:border-[var(--border-strong)]"
                 aria-label="Next page"

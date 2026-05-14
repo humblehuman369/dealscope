@@ -1,5 +1,4 @@
-const SITE_URL =
-  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
 const ORG_ID = `${SITE_URL}/#organization`
 const WEBSITE_ID = `${SITE_URL}/#website`
@@ -41,10 +40,7 @@ const graph = {
       image: `${SITE_URL}/brad-geisen.png`,
       jobTitle: 'Founder',
       worksFor: { '@id': ORG_ID },
-      sameAs: [
-        'https://www.linkedin.com/in/bradgeisen',
-        'https://www.foreclosure.com',
-      ],
+      sameAs: ['https://www.linkedin.com/in/bradgeisen', 'https://www.foreclosure.com'],
       knowsAbout: [
         'Residential real estate investing',
         'Foreclosure markets',
@@ -98,8 +94,7 @@ const graph = {
           price: '349.99',
           priceCurrency: 'USD',
           category: 'subscription',
-          description:
-            'Pro plan billed annually at $349.99/year (effective $29.17/month).',
+          description: 'Pro plan billed annually at $349.99/year (effective $29.17/month).',
           eligibleRegion: { '@type': 'Country', name: 'US' },
           availability: 'https://schema.org/InStock',
           url: `${SITE_URL}/pricing`,

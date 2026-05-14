@@ -2,28 +2,28 @@
 
 /**
  * National Averages Reference Page
- * 
+ *
  * Educational page explaining the 8 key investment metrics DealGapIQ uses:
- * - Cap Rate, Cash-on-Cash, DSCR, Expense Ratio, GRM, 
+ * - Cap Rate, Cash-on-Cash, DSCR, Expense Ratio, GRM,
  * - Breakeven Occupancy, Equity Capture, Cash Flow Yield
- * 
+ *
  * Includes national benchmarks, formulas, and interpretation guidance.
  */
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { 
-  TrendingUp, 
-  DollarSign, 
-  Shield, 
-  PieChart, 
-  Calculator, 
-  Target, 
+import {
+  TrendingUp,
+  DollarSign,
+  Shield,
+  PieChart,
+  Calculator,
+  Target,
   Home,
   BarChart3,
   ChevronDown,
   ArrowLeft,
-  Info
+  Info,
 } from 'lucide-react'
 
 // DealGapIQ Design System Colors
@@ -58,13 +58,24 @@ const METRICS = [
     highValue: 7.0,
     unit: '%',
     higherIsBetter: true,
-    whatItMeasures: 'The capitalization rate measures the ratio of net operating income to property value. It serves as the foundational metric for comparing investment returns across properties independent of financing structure.',
+    whatItMeasures:
+      'The capitalization rate measures the ratio of net operating income to property value. It serves as the foundational metric for comparing investment returns across properties independent of financing structure.',
     interpretation: [
-      { range: '4.0-5.0%', meaning: 'Gateway/primary markets with institutional demand and perceived stability' },
-      { range: '5.0-5.5%', meaning: 'Secondary markets balancing growth potential with moderate risk' },
-      { range: '5.5-7.0%+', meaning: 'Tertiary markets, value-add opportunities, or older Class C assets' },
+      {
+        range: '4.0-5.0%',
+        meaning: 'Gateway/primary markets with institutional demand and perceived stability',
+      },
+      {
+        range: '5.0-5.5%',
+        meaning: 'Secondary markets balancing growth potential with moderate risk',
+      },
+      {
+        range: '5.5-7.0%+',
+        meaning: 'Tertiary markets, value-add opportunities, or older Class C assets',
+      },
     ],
-    insight: 'A "good" cap rate cannot be evaluated in isolation. A 6% cap rate in a high-growth Sun Belt market differs fundamentally from a 6% cap rate in a declining market. Evaluate cap rates against local vacancy trends, rent growth trajectories, and economic fundamentals.',
+    insight:
+      'A "good" cap rate cannot be evaluated in isolation. A 6% cap rate in a high-growth Sun Belt market differs fundamentally from a 6% cap rate in a declining market. Evaluate cap rates against local vacancy trends, rent growth trajectories, and economic fundamentals.',
   },
   {
     id: 'cash-on-cash',
@@ -80,13 +91,21 @@ const METRICS = [
     highValue: 12.0,
     unit: '%',
     higherIsBetter: true,
-    whatItMeasures: 'Cash-on-cash return measures the annual pre-tax cash flow generated relative to the total cash invested. It provides practical insight into levered returns and the impact of financing decisions.',
+    whatItMeasures:
+      'Cash-on-cash return measures the annual pre-tax cash flow generated relative to the total cash invested. It provides practical insight into levered returns and the impact of financing decisions.',
     interpretation: [
       { range: '5-7%', meaning: 'Core stabilized assets in primary markets with lower volatility' },
-      { range: '8-10%', meaning: 'Balanced risk-return profiles satisfying most investor requirements' },
-      { range: '10-15%+', meaning: 'Value-add or opportunistic strategies with higher execution risk' },
+      {
+        range: '8-10%',
+        meaning: 'Balanced risk-return profiles satisfying most investor requirements',
+      },
+      {
+        range: '10-15%+',
+        meaning: 'Value-add or opportunistic strategies with higher execution risk',
+      },
     ],
-    insight: 'An 8% CoC return means you recover approximately 8% of your initial equity investment annually through cash flow, reaching full capital recovery in roughly 12.5 years before considering appreciation or principal paydown.',
+    insight:
+      'An 8% CoC return means you recover approximately 8% of your initial equity investment annually through cash flow, reaching full capital recovery in roughly 12.5 years before considering appreciation or principal paydown.',
   },
   {
     id: 'dscr',
@@ -97,18 +116,26 @@ const METRICS = [
     low: '1.00',
     avg: '1.25',
     high: '1.50',
-    lowValue: 1.00,
+    lowValue: 1.0,
     avgValue: 1.25,
-    highValue: 1.50,
+    highValue: 1.5,
     unit: 'x',
     higherIsBetter: true,
-    whatItMeasures: 'DSCR measures a property\'s ability to generate sufficient net operating income to cover debt service obligations. It functions as the primary credit metric for lenders evaluating cash flow sustainability.',
+    whatItMeasures:
+      "DSCR measures a property's ability to generate sufficient net operating income to cover debt service obligations. It functions as the primary credit metric for lenders evaluating cash flow sustainability.",
     interpretation: [
       { range: '1.00x', meaning: 'Income covers debt with zero margin' },
-      { range: '1.20-1.25x', meaning: 'Minimum acceptable for most lenders, providing 20-25% cushion' },
-      { range: '1.40-1.50x+', meaning: 'Strong cash flow with favorable loan terms and lower rates' },
+      {
+        range: '1.20-1.25x',
+        meaning: 'Minimum acceptable for most lenders, providing 20-25% cushion',
+      },
+      {
+        range: '1.40-1.50x+',
+        meaning: 'Strong cash flow with favorable loan terms and lower rates',
+      },
     ],
-    insight: 'Target minimum 1.25x DSCR at acquisition, providing adequate cushion for typical 3-5% vacancy and unexpected maintenance. A 1.33x ratio means the property generates $1.33 of income for every $1.00 of debt obligation.',
+    insight:
+      'Target minimum 1.25x DSCR at acquisition, providing adequate cushion for typical 3-5% vacancy and unexpected maintenance. A 1.33x ratio means the property generates $1.33 of income for every $1.00 of debt obligation.',
   },
   {
     id: 'expense-ratio',
@@ -124,13 +151,21 @@ const METRICS = [
     highValue: 50,
     unit: '%',
     higherIsBetter: false,
-    whatItMeasures: 'The operating expense ratio expresses total property operating expenses as a percentage of gross operating income. It serves as a critical efficiency metric and underwriting benchmark.',
+    whatItMeasures:
+      'The operating expense ratio expresses total property operating expenses as a percentage of gross operating income. It serves as a critical efficiency metric and underwriting benchmark.',
     interpretation: [
-      { range: '20-30%', meaning: 'Exceptionally efficient, newer properties with minimal repairs' },
+      {
+        range: '20-30%',
+        meaning: 'Exceptionally efficient, newer properties with minimal repairs',
+      },
       { range: '35-45%', meaning: 'Target range for stabilized multifamily assets' },
-      { range: '50%+', meaning: 'Operational inefficiency, deferred maintenance, or below-market rents' },
+      {
+        range: '50%+',
+        meaning: 'Operational inefficiency, deferred maintenance, or below-market rents',
+      },
     ],
-    insight: 'The 50% Rule assumes operating expenses equal 50% of gross rental income for typical residential properties. Ratios below 30% may indicate under-maintained properties; ratios exceeding 50% signal inefficiency.',
+    insight:
+      'The 50% Rule assumes operating expenses equal 50% of gross rental income for typical residential properties. Ratios below 30% may indicate under-maintained properties; ratios exceeding 50% signal inefficiency.',
   },
   {
     id: 'grm',
@@ -146,13 +181,18 @@ const METRICS = [
     highValue: 4,
     unit: ':1',
     higherIsBetter: false,
-    whatItMeasures: 'The gross rent multiplier provides a simplified valuation metric dividing property price by gross annual rental income, enabling rapid comparison across similar properties within a market.',
+    whatItMeasures:
+      'The gross rent multiplier provides a simplified valuation metric dividing property price by gross annual rental income, enabling rapid comparison across similar properties within a market.',
     interpretation: [
       { range: '4-8', meaning: 'Strong income generation, typically cash flow positive' },
       { range: '8-12', meaning: 'Balanced markets with reasonable investment potential' },
-      { range: '15-20+', meaning: 'High-appreciation coastal markets prioritizing growth over cash flow' },
+      {
+        range: '15-20+',
+        meaning: 'High-appreciation coastal markets prioritizing growth over cash flow',
+      },
     ],
-    insight: 'A GRM of 8.33 suggests the property would require approximately 8.3 years of gross rental income to recover the purchase price, before considering operating expenses or financing costs.',
+    insight:
+      'A GRM of 8.33 suggests the property would require approximately 8.3 years of gross rental income to recover the purchase price, before considering operating expenses or financing costs.',
   },
   {
     id: 'breakeven-occ',
@@ -168,13 +208,15 @@ const METRICS = [
     highValue: 100,
     unit: '%',
     higherIsBetter: false,
-    whatItMeasures: 'Breakeven occupancy measures the minimum occupancy rate required for a property to generate sufficient income to cover operating expenses and debt service. It functions as a critical risk assessment metric.',
+    whatItMeasures:
+      'Breakeven occupancy measures the minimum occupancy rate required for a property to generate sufficient income to cover operating expenses and debt service. It functions as a critical risk assessment metric.',
     interpretation: [
       { range: '60-70%', meaning: 'Strong debt service cushion, favorable financing terms' },
       { range: '70-80%', meaning: 'Acceptable for most conventional financing' },
       { range: '80%+', meaning: 'High-risk profile requiring reserves or lower LTV' },
     ],
-    insight: 'A 79% breakeven occupancy allows for 21% vacancy before the property operates at a loss. Target breakeven occupancy rates at least 10-15 percentage points below market occupancy for operational flexibility.',
+    insight:
+      'A 79% breakeven occupancy allows for 21% vacancy before the property operates at a loss. Target breakeven occupancy rates at least 10-15 percentage points below market occupancy for operational flexibility.',
   },
   {
     id: 'equity-capture',
@@ -190,13 +232,15 @@ const METRICS = [
     highValue: 8.0,
     unit: '%',
     higherIsBetter: true,
-    whatItMeasures: 'Equity capture through natural appreciation measures the annual rate of property value increase attributable to market forces, inflation, and demand/supply dynamics independent of owner-initiated improvements.',
+    whatItMeasures:
+      'Equity capture through natural appreciation measures the annual rate of property value increase attributable to market forces, inflation, and demand/supply dynamics independent of owner-initiated improvements.',
     interpretation: [
       { range: '2-4%', meaning: 'Conservative baseline tracking inflation plus modest growth' },
       { range: '4-6%', meaning: 'Historical long-term average (4.27% since 1967)' },
       { range: '6-10%+', meaning: 'High-growth markets with strong job creation' },
     ],
-    insight: 'Sophisticated investors exclude or heavily discount natural appreciation in initial underwriting, treating it as potential upside rather than base case. Prioritizing cash flow over appreciation leads to more resilient portfolios.',
+    insight:
+      'Sophisticated investors exclude or heavily discount natural appreciation in initial underwriting, treating it as potential upside rather than base case. Prioritizing cash flow over appreciation leads to more resilient portfolios.',
   },
   {
     id: 'cash-flow-yield',
@@ -212,19 +256,31 @@ const METRICS = [
     highValue: 8.0,
     unit: '%',
     higherIsBetter: true,
-    whatItMeasures: 'Cash flow yield measures annual pre-tax cash flow as a percentage of total investment, providing insight into the efficiency of capital deployment and return on equity invested.',
+    whatItMeasures:
+      'Cash flow yield measures annual pre-tax cash flow as a percentage of total investment, providing insight into the efficiency of capital deployment and return on equity invested.',
     interpretation: [
       { range: '4-6%', meaning: 'Common in high-appreciation markets or low-leverage structures' },
       { range: '7-9%', meaning: 'Balanced risk-return profiles in stable markets' },
       { range: '10-12%+', meaning: 'Value-add properties or favorable financing structures' },
     ],
-    insight: 'A 6% cash flow yield indicates you receive $6 in annual pre-tax cash flow for every $100 invested, representing a 16.7-year payback period before considering appreciation or principal reduction.',
+    insight:
+      'A 6% cash flow yield indicates you receive $6 in annual pre-tax cash flow for every $100 invested, representing a 16.7-year payback period before considering appreciation or principal reduction.',
   },
 ]
 
 // Benchmark bar component (simplified version)
-function BenchmarkBar({ low, avg, high, unit, higherIsBetter }: { 
-  low: string; avg: string; high: string; unit: string; higherIsBetter: boolean 
+function BenchmarkBar({
+  low,
+  avg,
+  high,
+  unit,
+  higherIsBetter,
+}: {
+  low: string
+  avg: string
+  high: string
+  unit: string
+  higherIsBetter: boolean
 }) {
   const segmentColors = higherIsBetter
     ? {
@@ -239,89 +295,133 @@ function BenchmarkBar({ low, avg, high, unit, higherIsBetter }: {
       }
 
   return (
-    <div 
+    <div
       className="relative h-[28px] rounded-full flex overflow-hidden"
       style={{ outline: '1px solid rgba(15,23,42,.08)' }}
     >
-      <div 
+      <div
         className="h-full flex items-center justify-center px-2"
         style={{ width: '30%', background: segmentColors.low }}
       >
         <div className="flex flex-col items-center gap-0.5 select-none">
-          <span className="text-[10px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(24,32,28,.72)' }}>Low</span>
-          <span className="text-[9px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(24,32,28,.55)' }}>
+          <span
+            className="text-[10px] font-black uppercase tracking-wide leading-none"
+            style={{ color: 'rgba(24,32,28,.72)' }}
+          >
+            Low
+          </span>
+          <span
+            className="text-[9px] font-bold leading-none whitespace-nowrap"
+            style={{ color: 'rgba(24,32,28,.55)' }}
+          >
             {low}
           </span>
         </div>
       </div>
-      
-      <div 
+
+      <div
         className="h-full flex items-center justify-center px-2"
         style={{ width: '40%', background: segmentColors.avg }}
       >
         <div className="flex flex-col items-center gap-0.5 select-none">
-          <span className="text-[10px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(24,32,28,.72)' }}>Avg</span>
-          <span className="text-[9px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(24,32,28,.55)' }}>
+          <span
+            className="text-[10px] font-black uppercase tracking-wide leading-none"
+            style={{ color: 'rgba(24,32,28,.72)' }}
+          >
+            Avg
+          </span>
+          <span
+            className="text-[9px] font-bold leading-none whitespace-nowrap"
+            style={{ color: 'rgba(24,32,28,.55)' }}
+          >
             {avg}
           </span>
         </div>
       </div>
-      
-      <div 
+
+      <div
         className="h-full flex items-center justify-center px-2"
         style={{ width: '30%', background: segmentColors.high }}
       >
         <div className="flex flex-col items-center gap-0.5 select-none">
-          <span className="text-[10px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(24,32,28,.72)' }}>High</span>
-          <span className="text-[9px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(24,32,28,.55)' }}>
+          <span
+            className="text-[10px] font-black uppercase tracking-wide leading-none"
+            style={{ color: 'rgba(24,32,28,.72)' }}
+          >
+            High
+          </span>
+          <span
+            className="text-[9px] font-bold leading-none whitespace-nowrap"
+            style={{ color: 'rgba(24,32,28,.55)' }}
+          >
             {high}
           </span>
         </div>
       </div>
-      
+
       {/* Dividers */}
-      <span 
+      <span
         className="absolute rounded-sm"
-        style={{ left: '30%', top: '4px', bottom: '4px', width: '2px', background: 'rgba(15,23,42,.14)', opacity: 0.85 }}
+        style={{
+          left: '30%',
+          top: '4px',
+          bottom: '4px',
+          width: '2px',
+          background: 'rgba(15,23,42,.14)',
+          opacity: 0.85,
+        }}
       />
-      <span 
+      <span
         className="absolute rounded-sm"
-        style={{ left: '70%', top: '4px', bottom: '4px', width: '2px', background: 'rgba(15,23,42,.14)', opacity: 0.85 }}
+        style={{
+          left: '70%',
+          top: '4px',
+          bottom: '4px',
+          width: '2px',
+          background: 'rgba(15,23,42,.14)',
+          opacity: 0.85,
+        }}
       />
     </div>
   )
 }
 
 // Metric accordion component
-function MetricCard({ metric, isOpen, onToggle }: { 
-  metric: typeof METRICS[0]; 
-  isOpen: boolean;
-  onToggle: () => void;
+function MetricCard({
+  metric,
+  isOpen,
+  onToggle,
+}: {
+  metric: (typeof METRICS)[0]
+  isOpen: boolean
+  onToggle: () => void
 }) {
   const Icon = metric.icon
-  
+
   return (
     <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-subtle)] shadow-sm overflow-hidden">
-      <button 
+      <button
         className="w-full flex items-center gap-3 p-4 text-left hover:bg-[var(--surface-elevated)] transition-colors"
         onClick={onToggle}
       >
-        <div 
+        <div
           className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: `${COLORS.teal}15` }}
         >
           <Icon className="w-5 h-5" style={{ color: COLORS.teal }} />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-[var(--text-heading)] truncate">{metric.name}</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-heading)] truncate">
+            {metric.name}
+          </h3>
           <p className="text-xs text-[var(--text-secondary)] truncate">{metric.shortDescription}</p>
         </div>
-        <ChevronDown 
+        <ChevronDown
           className="w-5 h-5 text-[var(--text-muted)] flex-shrink-0 transition-transform"
           style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)' }}
         />
       </button>
-      
+
       {isOpen && (
         <div className="px-4 pb-4 border-t border-[var(--border-subtle)]">
           {/* What it measures */}
@@ -330,22 +430,23 @@ function MetricCard({ metric, isOpen, onToggle }: {
               {metric.whatItMeasures}
             </p>
           </div>
-          
+
           {/* Formula */}
-          <div 
-            className="p-3 rounded-lg mb-4"
-            style={{ backgroundColor: COLORS.surface100 }}
-          >
-            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-1">Formula</p>
+          <div className="p-3 rounded-lg mb-4" style={{ backgroundColor: COLORS.surface100 }}>
+            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-1">
+              Formula
+            </p>
             <p className="text-sm font-mono font-medium text-[var(--text-heading)]">
               {metric.formula}
             </p>
           </div>
-          
+
           {/* Benchmark bar */}
           <div className="mb-4">
-            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-2">National Benchmarks</p>
-            <BenchmarkBar 
+            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-2">
+              National Benchmarks
+            </p>
+            <BenchmarkBar
               low={metric.low}
               avg={metric.avg}
               high={metric.high}
@@ -353,29 +454,31 @@ function MetricCard({ metric, isOpen, onToggle }: {
               higherIsBetter={metric.higherIsBetter}
             />
           </div>
-          
+
           {/* Interpretation */}
           <div className="mb-4">
-            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-2">What the Numbers Mean</p>
+            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-2">
+              What the Numbers Mean
+            </p>
             <div className="space-y-2">
               {metric.interpretation.map((item, idx) => (
                 <div key={idx} className="flex items-start gap-2 text-sm">
-                  <span className="font-semibold text-[var(--text-heading)] min-w-[70px]">{item.range}</span>
+                  <span className="font-semibold text-[var(--text-heading)] min-w-[70px]">
+                    {item.range}
+                  </span>
                   <span className="text-[var(--text-secondary)]">{item.meaning}</span>
                 </div>
               ))}
             </div>
           </div>
-          
+
           {/* Key insight */}
-          <div 
+          <div
             className="p-3 rounded-lg flex items-start gap-2"
             style={{ backgroundColor: `${COLORS.teal}10`, border: `1px solid ${COLORS.teal}20` }}
           >
             <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: COLORS.teal }} />
-            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-              {metric.insight}
-            </p>
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{metric.insight}</p>
           </div>
         </div>
       )}
@@ -395,7 +498,7 @@ export default function NationalAveragesPage() {
       {/* Header */}
       <header className="bg-[var(--surface-card)] border-b border-[var(--border-subtle)] sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link 
+          <Link
             href="/"
             className="w-9 h-9 rounded-lg bg-[var(--surface-elevated)] flex items-center justify-center hover:bg-[var(--surface-card-hover)] transition-colors"
           >
@@ -403,7 +506,9 @@ export default function NationalAveragesPage() {
           </Link>
           <div>
             <h1 className="text-lg font-bold text-[var(--text-heading)]">National Benchmarks</h1>
-            <p className="text-xs text-[var(--text-secondary)]">Investment metric reference guide</p>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Investment metric reference guide
+            </p>
           </div>
         </div>
       </header>
@@ -412,21 +517,24 @@ export default function NationalAveragesPage() {
       <main className="max-w-2xl mx-auto px-4 py-6">
         {/* Intro section */}
         <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-subtle)] shadow-sm p-4 mb-6">
-          <h2 className="text-base font-bold text-[var(--text-heading)] mb-2">Understanding the Numbers</h2>
+          <h2 className="text-base font-bold text-[var(--text-heading)] mb-2">
+            Understanding the Numbers
+          </h2>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-3">
-            DealGapIQ evaluates every property against 8 key investment metrics. These national benchmarks 
-            help you understand how a deal compares to market standards and what ranges indicate strong, 
-            average, or weak performance.
+            DealGapIQ evaluates every property against 8 key investment metrics. These national
+            benchmarks help you understand how a deal compares to market standards and what ranges
+            indicate strong, average, or weak performance.
           </p>
           <p className="text-xs text-[var(--text-muted)] italic">
-            Data reflects Q4 2025 - Q1 2026 from institutional research (CBRE, Freddie Mac) across 50+ metropolitan markets.
+            Data reflects Q4 2025 - Q1 2026 from institutional research (CBRE, Freddie Mac) across
+            50+ metropolitan markets.
           </p>
         </div>
 
         {/* Metrics list */}
         <div className="space-y-3 mb-6">
           {METRICS.map((metric) => (
-            <MetricCard 
+            <MetricCard
               key={metric.id}
               metric={metric}
               isOpen={openMetric === metric.id}
@@ -438,29 +546,35 @@ export default function NationalAveragesPage() {
         {/* Key insights section */}
         <div className="bg-gradient-to-br from-[#07172e] to-[#10223d] rounded-xl p-5 text-white mb-6">
           <h2 className="text-base font-bold mb-3">Key Takeaways</h2>
-          
+
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#00e5ff] mt-1.5 flex-shrink-0" />
               <p className="text-white/90">
-                <span className="font-semibold text-white">No single metric tells the complete story.</span>{' '}
-                Sophisticated investors triangulate across multiple dimensions to assess risk-adjusted return potential.
+                <span className="font-semibold text-white">
+                  No single metric tells the complete story.
+                </span>{' '}
+                Sophisticated investors triangulate across multiple dimensions to assess
+                risk-adjusted return potential.
               </p>
             </div>
-            
+
             <div className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#00e5ff] mt-1.5 flex-shrink-0" />
               <p className="text-white/90">
-                <span className="font-semibold text-white">Properties must perform across multiple metrics.</span>{' '}
+                <span className="font-semibold text-white">
+                  Properties must perform across multiple metrics.
+                </span>{' '}
                 A property with an attractive 7% cap rate but 0.95x DSCR is unfinanceable.
               </p>
             </div>
-            
+
             <div className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#00e5ff] mt-1.5 flex-shrink-0" />
               <p className="text-white/90">
-                <span className="font-semibold text-white">Context matters.</span>{' '}
-                A 6% cap rate in a high-growth Sun Belt market differs fundamentally from a 6% cap rate in a declining market.
+                <span className="font-semibold text-white">Context matters.</span> A 6% cap rate in
+                a high-growth Sun Belt market differs fundamentally from a 6% cap rate in a
+                declining market.
               </p>
             </div>
           </div>
@@ -468,14 +582,18 @@ export default function NationalAveragesPage() {
 
         {/* Investor profiles */}
         <div className="bg-[var(--surface-card)] rounded-xl border border-[var(--border-subtle)] shadow-sm p-4 mb-6">
-          <h2 className="text-base font-bold text-[var(--text-heading)] mb-4">Target Ranges by Investor Profile</h2>
-          
+          <h2 className="text-base font-bold text-[var(--text-heading)] mb-4">
+            Target Ranges by Investor Profile
+          </h2>
+
           <div className="space-y-4">
             {/* Conservative */}
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full bg-[var(--accent-sky)]" />
-                <span className="text-sm font-semibold text-[var(--text-heading)]">Conservative Investors</span>
+                <span className="text-sm font-semibold text-[var(--text-heading)]">
+                  Conservative Investors
+                </span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs text-[var(--text-secondary)]">
                 <span>Cap Rate: 5.5-6.5%+</span>
@@ -484,12 +602,14 @@ export default function NationalAveragesPage() {
                 <span>Breakeven: &lt;75%</span>
               </div>
             </div>
-            
+
             {/* Moderate */}
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full bg-[#b7791f]" />
-                <span className="text-sm font-semibold text-[var(--text-heading)]">Moderate Investors</span>
+                <span className="text-sm font-semibold text-[var(--text-heading)]">
+                  Moderate Investors
+                </span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs text-[var(--text-secondary)]">
                 <span>Cap Rate: 5.0-6.0%</span>
@@ -498,12 +618,14 @@ export default function NationalAveragesPage() {
                 <span>Breakeven: 70-80%</span>
               </div>
             </div>
-            
+
             {/* Aggressive */}
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full bg-[#b42318]" />
-                <span className="text-sm font-semibold text-[var(--text-heading)]">Growth/Aggressive Investors</span>
+                <span className="text-sm font-semibold text-[var(--text-heading)]">
+                  Growth/Aggressive Investors
+                </span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs text-[var(--text-secondary)]">
                 <span>Cap Rate: 4.5-5.5%</span>

@@ -2,7 +2,11 @@
 
 import { useState } from 'react'
 import { Search, X } from 'lucide-react'
-import { AddressAutocomplete, type AddressComponents, type PlaceMetadata } from '@/components/AddressAutocomplete'
+import {
+  AddressAutocomplete,
+  type AddressComponents,
+  type PlaceMetadata,
+} from '@/components/AddressAutocomplete'
 import type { MapOverlayChrome } from '@/components/map-search/mapOverlayChrome'
 
 export interface MapSearchSelection {
@@ -28,12 +32,18 @@ interface MapSearchBarProps {
 }
 
 function inferZoom(placeTypes: string[]): { zoom: number; isStreetAddress: boolean } {
-  if (placeTypes.includes('street_address') || placeTypes.includes('premise') || placeTypes.includes('subpremise')) {
+  if (
+    placeTypes.includes('street_address') ||
+    placeTypes.includes('premise') ||
+    placeTypes.includes('subpremise')
+  ) {
     return { zoom: 18, isStreetAddress: true }
   }
   if (placeTypes.includes('postal_code')) return { zoom: 13, isStreetAddress: false }
-  if (placeTypes.includes('locality') || placeTypes.includes('sublocality')) return { zoom: 12, isStreetAddress: false }
-  if (placeTypes.includes('administrative_area_level_2')) return { zoom: 10, isStreetAddress: false }
+  if (placeTypes.includes('locality') || placeTypes.includes('sublocality'))
+    return { zoom: 12, isStreetAddress: false }
+  if (placeTypes.includes('administrative_area_level_2'))
+    return { zoom: 10, isStreetAddress: false }
   if (placeTypes.includes('administrative_area_level_1')) return { zoom: 7, isStreetAddress: false }
   return { zoom: 14, isStreetAddress: false }
 }

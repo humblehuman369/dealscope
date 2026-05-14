@@ -86,13 +86,21 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
         {headerRow}
         <div
           className="h-48 rounded-xl flex items-center justify-center"
-          style={{ backgroundColor: 'var(--surface-elevated)', border: `1px solid var(--border-subtle)` }}
+          style={{
+            backgroundColor: 'var(--surface-elevated)',
+            border: `1px solid var(--border-subtle)`,
+          }}
         >
           <div className="text-center px-4">
             <MapPin size={24} className="mx-auto mb-2" style={{ color: 'var(--text-secondary)' }} />
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{address}</p>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              {address}
+            </p>
             {hasCoordinates && (
-              <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
+              <p
+                className="text-xs mt-1"
+                style={{ color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}
+              >
                 {latitude.toFixed(4)}, {longitude.toFixed(4)}
               </p>
             )}
@@ -116,10 +124,7 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
       aria-label={`View ${address} and nearby listings on the map`}
     >
       {headerRow}
-      <div
-        className="h-48 rounded-xl overflow-hidden relative"
-        style={{ pointerEvents: 'none' }}
-      >
+      <div className="h-48 rounded-xl overflow-hidden relative" style={{ pointerEvents: 'none' }}>
         <APIProvider apiKey={apiKey} libraries={['places']}>
           <Map
             defaultCenter={{ lat: latitude, lng: longitude }}
@@ -151,8 +156,14 @@ export function LocationMapSkeleton() {
       className="rounded-[14px] p-5"
       style={{ backgroundColor: 'var(--surface-base)', border: `1px solid var(--border-subtle)` }}
     >
-      <div className="h-3 w-16 rounded animate-pulse mb-4" style={{ backgroundColor: 'var(--surface-elevated)' }} />
-      <div className="h-48 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+      <div
+        className="h-3 w-16 rounded animate-pulse mb-4"
+        style={{ backgroundColor: 'var(--surface-elevated)' }}
+      />
+      <div
+        className="h-48 rounded-xl animate-pulse"
+        style={{ backgroundColor: 'var(--surface-elevated)' }}
+      />
     </div>
   )
 }

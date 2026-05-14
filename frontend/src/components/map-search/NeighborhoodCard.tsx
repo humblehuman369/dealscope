@@ -11,16 +11,24 @@ interface NeighborhoodCardProps {
 
 function fmt(n: number | null | undefined): string {
   if (n == null) return '—'
-  return n >= 1000
-    ? `$${(n / 1000).toFixed(n >= 100000 ? 0 : 1)}K`
-    : `$${n.toFixed(0)}`
+  return n >= 1000 ? `$${(n / 1000).toFixed(n >= 100000 ? 0 : 1)}K` : `$${n.toFixed(0)}`
 }
 
-function MetricRow({ label, value, suffix }: { label: string; value?: number | null; suffix?: string }) {
+function MetricRow({
+  label,
+  value,
+  suffix,
+}: {
+  label: string
+  value?: number | null
+  suffix?: string
+}) {
   if (value == null) return null
   return (
     <div className="flex justify-between items-center">
-      <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{label}</span>
+      <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+        {label}
+      </span>
       <span className="text-xs font-semibold" style={{ color: 'var(--text-heading)' }}>
         {typeof value === 'number' && suffix === '%' ? `${value.toFixed(1)}%` : fmt(value)}
         {suffix && suffix !== '%' ? ` ${suffix}` : ''}
@@ -31,7 +39,8 @@ function MetricRow({ label, value, suffix }: { label: string; value?: number | n
 
 export function NeighborhoodCard({ neighborhood: n, onClose }: NeighborhoodCardProps) {
   const strategy = n.recommended_strategy
-  const strategyLabel = strategy === 'airbnb' ? 'Airbnb' : strategy === 'traditional' ? 'Traditional' : strategy || '—'
+  const strategyLabel =
+    strategy === 'airbnb' ? 'Airbnb' : strategy === 'traditional' ? 'Traditional' : strategy || '—'
 
   return (
     <div
@@ -76,7 +85,9 @@ export function NeighborhoodCard({ neighborhood: n, onClose }: NeighborhoodCardP
                   {n.mashmeter}
                 </span>
               </div>
-              <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>MashMeter</span>
+              <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                MashMeter
+              </span>
             </div>
           )}
           <div
@@ -89,7 +100,9 @@ export function NeighborhoodCard({ neighborhood: n, onClose }: NeighborhoodCardP
                 {strategyLabel}
               </span>
             </div>
-            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Best Strategy</span>
+            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+              Best Strategy
+            </span>
           </div>
         </div>
 
@@ -108,8 +121,12 @@ export function NeighborhoodCard({ neighborhood: n, onClose }: NeighborhoodCardP
                   className="flex-1 rounded-lg py-1 text-center"
                   style={{ backgroundColor: 'var(--surface-elevated)' }}
                 >
-                  <span className="text-xs font-bold" style={{ color: 'var(--text-heading)' }}>{s.value}</span>
-                  <span className="text-[9px] block" style={{ color: 'var(--text-muted)' }}>{s.label}</span>
+                  <span className="text-xs font-bold" style={{ color: 'var(--text-heading)' }}>
+                    {s.value}
+                  </span>
+                  <span className="text-[9px] block" style={{ color: 'var(--text-muted)' }}>
+                    {s.label}
+                  </span>
                 </div>
               ))}
           </div>
@@ -119,7 +136,10 @@ export function NeighborhoodCard({ neighborhood: n, onClose }: NeighborhoodCardP
         <div className="space-y-1.5">
           <div className="flex items-center gap-1 mb-1">
             <BarChart3 size={12} style={{ color: 'var(--accent-sky)' }} />
-            <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+            <span
+              className="text-[10px] font-semibold uppercase tracking-wider"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               Investment Metrics
             </span>
           </div>
@@ -139,7 +159,10 @@ export function NeighborhoodCard({ neighborhood: n, onClose }: NeighborhoodCardP
           <div className="space-y-1">
             <div className="flex items-center gap-1">
               <TrendingUp size={12} style={{ color: 'var(--accent-sky)' }} />
-              <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+              <span
+                className="text-[10px] font-semibold uppercase tracking-wider"
+                style={{ color: 'var(--text-secondary)' }}
+              >
                 Sales Activity
               </span>
             </div>

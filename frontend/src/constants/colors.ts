@@ -1,7 +1,7 @@
 /**
  * DealGapIQ Frontend Color System
  * Consistent with mobile app branding
- * 
+ *
  * Brand Colors:
  * - Navy/Black-Blue: #07172e
  * - Medium Blue (Primary): #0465f2
@@ -9,14 +9,14 @@
  * - Brand Blue (Accent Light Mode): #0465F2
  * - Icy Silver: #e1e8ed
  * - Cool Gray: #aab2bd
- * 
+ *
  * UPDATED:
  * - Softened dark mode accent from #00e5ff → #0FA4E9 (less harsh, more premium)
  * - Strategy colors shifted to avoid conflicts with profit/loss/warning status colors
  */
 
 // Platform detection for responsive text colors
-const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
 
 export const colors = {
   // Primary - Brand Blue
@@ -26,7 +26,7 @@ export const colors = {
     200: '#99c3fb',
     300: '#66a5f9',
     400: '#3387f7',
-    500: '#0465f2',  // Main brand blue
+    500: '#0465f2', // Main brand blue
     600: '#0354d1',
     700: '#0243b0',
     800: '#02328f',
@@ -39,9 +39,9 @@ export const colors = {
     50: '#f0f9ff',
     100: '#e0f2fe',
     200: '#bae6fd',
-    300: '#7dd3fc',  // Sky blue highlight
+    300: '#7dd3fc', // Sky blue highlight
     400: '#38bdf8',
-    500: '#0FA4E9',  // Dark mode accent — soft cyan
+    500: '#0FA4E9', // Dark mode accent — soft cyan
     light: '#0465f2', // Light mode accent — Signal Blue
     600: '#0284c7',
     700: '#0369a1',
@@ -60,7 +60,7 @@ export const colors = {
     600: '#15446c',
     700: '#103351',
     800: '#0b2236',
-    900: '#07172e',  // Primary dark navy
+    900: '#07172e', // Primary dark navy
     950: '#030b17',
   },
 
@@ -103,9 +103,9 @@ export const colors = {
   // Neutral Gray - Cool tones
   gray: {
     50: '#f8fafc',
-    100: '#e1e8ed',  // Icy Silver
+    100: '#e1e8ed', // Icy Silver
     200: '#d1d9e0',
-    300: '#aab2bd',  // Cool Gray
+    300: '#aab2bd', // Cool Gray
     400: '#9ca3af',
     500: '#6b7280',
     600: '#4b5563',
@@ -131,28 +131,28 @@ export const colors = {
       label: 'Short-Term Rental',
     },
     brrrr: {
-      primary: '#f97316',  // Orange (shifted from #f59e0b)
+      primary: '#f97316', // Orange (shifted from #f59e0b)
       light: '#ffedd5',
       dark: '#ea580c',
       icon: '🔄',
       label: 'BRRRR',
     },
     fixAndFlip: {
-      primary: '#ec4899',  // Pink (shifted from #ef4444)
+      primary: '#ec4899', // Pink (shifted from #ef4444)
       light: '#fce7f3',
       dark: '#db2777',
       icon: '🔨',
       label: 'Fix & Flip',
     },
     houseHack: {
-      primary: '#14b8a6',  // Teal — distinct from accent-sky for wayfinding
+      primary: '#14b8a6', // Teal — distinct from accent-sky for wayfinding
       light: '#ccfbf1',
       dark: '#0f766e',
       icon: '🏡',
       label: 'House Hack',
     },
     wholesale: {
-      primary: '#84cc16',  // Lime (shifted from #22c55e)
+      primary: '#84cc16', // Lime (shifted from #22c55e)
       light: '#ecfccb',
       dark: '#65a30d',
       icon: '📋',
@@ -194,7 +194,7 @@ export const colors = {
     dark: '#aab2bd',
     focus: '#0465f2',
   },
-} as const;
+} as const
 
 // =============================================================================
 // GRADIENTS (CSS format for web)
@@ -208,10 +208,11 @@ export const gradients = {
   /** Dark mode backgrounds */
   backgroundDark: 'linear-gradient(135deg, #07172e 0%, #1f2937 100%)',
   /** Light mode backgrounds (#0fa4e9 @ 8% on white → white) */
-  backgroundLight: 'linear-gradient(135deg, color-mix(in srgb, #0fa4e9 8%, #ffffff) 0%, #ffffff 100%)',
+  backgroundLight:
+    'linear-gradient(135deg, color-mix(in srgb, #0fa4e9 8%, #ffffff) 0%, #ffffff 100%)',
   /** Premium card shine overlay */
   cardShine: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
-};
+}
 
 // =============================================================================
 // CSS VARIABLES (for :root or CSS-in-JS)
@@ -227,7 +228,7 @@ export const cssVariables = {
   '--color-profit': colors.profit.main,
   '--color-loss': colors.loss.main,
   '--color-warning': colors.warning.main,
-};
+}
 
 // =============================================================================
 // TAILWIND EXTEND (for tailwind.config.js)
@@ -247,12 +248,12 @@ export const tailwindColors = {
   'strategy-flip': colors.strategies.fixAndFlip.primary,
   'strategy-househack': colors.strategies.houseHack.primary,
   'strategy-wholesale': colors.strategies.wholesale.primary,
-};
+}
 
 // =============================================================================
 // TYPE EXPORTS
 // =============================================================================
 
-export type ColorKey = keyof typeof colors;
-export type StrategyKey = keyof typeof colors.strategies;
-export type StatusType = 'profit' | 'loss' | 'warning' | 'info';
+export type ColorKey = keyof typeof colors
+export type StrategyKey = keyof typeof colors.strategies
+export type StatusType = 'profit' | 'loss' | 'warning' | 'info'

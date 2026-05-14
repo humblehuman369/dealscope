@@ -1,11 +1,7 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import { Repeat, DollarSign, Clock, FileText } from 'lucide-react';
-import {
-  StrategyPageLayout,
-  Callout,
-  Prose,
-} from '@/components/strategies/StrategyPageLayout';
+import React from 'react'
+import type { Metadata } from 'next'
+import { Repeat, DollarSign, Clock, FileText } from 'lucide-react'
+import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
 
 export const metadata: Metadata = {
   title: 'Wholesale Strategy — Find Deals, Assign Contracts, Profit | DealGapIQ',
@@ -22,12 +18,11 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Wholesale Strategy — Find Deals, Assign Contracts, Profit',
-    description:
-      'Assignment vs. double-close, off-market sourcing, and MAO math.',
+    description: 'Assignment vs. double-close, off-market sourcing, and MAO math.',
   },
-};
+}
 
-const ACCENT = '#fbbf24';
+const ACCENT = '#fbbf24'
 
 export default function WholesalePage() {
   return (
@@ -66,8 +61,8 @@ export default function WholesalePage() {
         <p style={{ margin: 0 }}>
           Find properties under market value, get them under contract, then assign that contract to
           another investor for an{' '}
-          <strong style={{ fontWeight: 600, color: '#F1F5F9' }}>assignment fee of $5K-$15K+</strong>.
-          You never own the property and you never touch a paintbrush.
+          <strong style={{ fontWeight: 600, color: '#F1F5F9' }}>assignment fee of $5K-$15K+</strong>
+          . You never own the property and you never touch a paintbrush.
         </p>
       </Callout>
 
@@ -77,5 +72,5 @@ export default function WholesalePage() {
         profit. That&apos;s where precision underwriting becomes your competitive advantage.
       </Prose>
     </StrategyPageLayout>
-  );
+  )
 }

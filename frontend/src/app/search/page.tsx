@@ -6,7 +6,7 @@ import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 /**
  * Search Page
- * 
+ *
  * This page automatically opens the search modal.
  * Used for direct navigation to /search or when linked from external sources.
  */

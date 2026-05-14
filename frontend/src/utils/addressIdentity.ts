@@ -23,12 +23,19 @@ export function classifySearchInput(text: string): 'address' | 'zip' | 'unknown'
 }
 
 const ADDRESS_PLACE_TYPES = new Set([
-  'street_address', 'premise', 'subpremise', 'route',
-  'street_number', 'intersection',
+  'street_address',
+  'premise',
+  'subpremise',
+  'route',
+  'street_number',
+  'intersection',
 ])
 const CITY_PLACE_TYPES = new Set([
-  'locality', 'sublocality', 'sublocality_level_1',
-  'neighborhood', 'colloquial_area',
+  'locality',
+  'sublocality',
+  'sublocality_level_1',
+  'neighborhood',
+  'colloquial_area',
 ])
 const STATE_PLACE_TYPES = new Set(['administrative_area_level_1'])
 const ZIP_PLACE_TYPES = new Set(['postal_code'])

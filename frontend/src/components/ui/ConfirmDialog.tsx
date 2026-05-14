@@ -244,7 +244,10 @@ export function InfoDialog({
             onClick={onClose}
             autoFocus
             className="px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-colors"
-            style={{ background: 'linear-gradient(135deg, var(--accent-brand-blue) 0%, var(--accent-sky) 100%)' }}
+            style={{
+              background:
+                'linear-gradient(135deg, var(--accent-brand-blue) 0%, var(--accent-sky) 100%)',
+            }}
           >
             {closeLabel}
           </button>

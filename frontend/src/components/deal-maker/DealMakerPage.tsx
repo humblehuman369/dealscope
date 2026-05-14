@@ -29,20 +29,18 @@ import {
 
 function calculateMortgagePayment(principal: number, annualRate: number, years: number): number {
   if (principal <= 0 || annualRate <= 0 || years <= 0) return 0
-  
+
   const monthlyRate = annualRate / 12
   const numPayments = years * 12
-  
-  const payment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+
+  const payment =
+    (principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments))) /
     (Math.pow(1 + monthlyRate, numPayments) - 1)
-  
+
   return isFinite(payment) ? payment : 0
 }
 
-function calculateDealMakerMetrics(
-  state: DealMakerState,
-  listPrice?: number
-): DealMakerMetrics {
+function calculateDealMakerMetrics(state: DealMakerState, listPrice?: number): DealMakerMetrics {
   const {
     buyPrice,
     downPaymentPercent,
@@ -79,8 +77,8 @@ function calculateDealMakerMetrics(
   const propertyTaxMonthly = annualPropertyTax / 12
   const insuranceMonthly = annualInsurance / 12
 
-  const monthlyOperatingExpenses = vacancy + maintenance + management + 
-    propertyTaxMonthly + insuranceMonthly + monthlyHoa
+  const monthlyOperatingExpenses =
+    vacancy + maintenance + management + propertyTaxMonthly + insuranceMonthly + monthlyHoa
   const totalMonthlyExpenses = monthlyOperatingExpenses + monthlyPayment
 
   const annualNOI = (grossMonthlyIncome - monthlyOperatingExpenses) * 12
@@ -91,9 +89,8 @@ function calculateDealMakerMetrics(
   const cocReturn = cashNeeded > 0 ? annualCashFlow / cashNeeded : 0
 
   const effectiveListPrice = listPrice ?? buyPrice
-  const discountFromList = effectiveListPrice > 0 
-    ? (effectiveListPrice - buyPrice) / effectiveListPrice 
-    : 0
+  const discountFromList =
+    effectiveListPrice > 0 ? (effectiveListPrice - buyPrice) / effectiveListPrice : 0
   const dealGap = discountFromList
 
   const dealScore = calculateDealScore(cocReturn, capRate, annualCashFlow)
@@ -194,15 +191,15 @@ export function DealMakerPage({
     return calculateDealMakerMetrics(state, listPrice)
   }, [state, listPrice])
 
-  const updateState = useCallback(<K extends keyof DealMakerState>(
-    key: K,
-    value: DealMakerState[K]
-  ) => {
-    setState(prev => ({ ...prev, [key]: value }))
-  }, [])
+  const updateState = useCallback(
+    <K extends keyof DealMakerState>(key: K, value: DealMakerState[K]) => {
+      setState((prev) => ({ ...prev, [key]: value }))
+    },
+    [],
+  )
 
   const handleTabToggle = useCallback((tabId: TabId) => {
-    setActiveTab(prev => prev === tabId ? null : tabId)
+    setActiveTab((prev) => (prev === tabId ? null : tabId))
   }, [])
 
   const handleFinish = useCallback(() => {
@@ -210,30 +207,33 @@ export function DealMakerPage({
     router.back()
   }, [state, metrics, router])
 
-  const handleContinue = useCallback((currentTabId: TabId) => {
-    setCompletedTabs(prev => new Set(prev).add(currentTabId))
+  const handleContinue = useCallback(
+    (currentTabId: TabId) => {
+      setCompletedTabs((prev) => new Set(prev).add(currentTabId))
 
-    const tabOrder: TabId[] = ['buyPrice', 'financing', 'rehabValuation', 'income', 'expenses']
-    const currentIndex = tabOrder.indexOf(currentTabId)
-    
-    if (currentIndex < tabOrder.length - 1) {
-      setActiveTab(tabOrder[currentIndex + 1])
-    } else {
-      handleFinish()
-    }
-  }, [handleFinish])
+      const tabOrder: TabId[] = ['buyPrice', 'financing', 'rehabValuation', 'income', 'expenses']
+      const currentIndex = tabOrder.indexOf(currentTabId)
+
+      if (currentIndex < tabOrder.length - 1) {
+        setActiveTab(tabOrder[currentIndex + 1])
+      } else {
+        handleFinish()
+      }
+    },
+    [handleFinish],
+  )
 
   const handleBack = useCallback(() => {
     router.back()
   }, [router])
 
   const tabConfigs = useMemo<TabConfig[]>(() => {
-    return TAB_CONFIGS.map(config => ({
+    return TAB_CONFIGS.map((config) => ({
       ...config,
-      status: completedTabs.has(config.id) 
-        ? 'completed' 
-        : config.id === activeTab 
-          ? 'active' 
+      status: completedTabs.has(config.id)
+        ? 'completed'
+        : config.id === activeTab
+          ? 'active'
           : 'pending',
     }))
   }, [activeTab, completedTabs])
@@ -241,19 +241,22 @@ export function DealMakerPage({
   const loanTypeOptions: LoanType[] = ['15-year', '30-year', 'arm']
   const loanTypeLabels = ['15-Year Fixed', '30-Year Fixed', 'ARM']
 
-  const handleLoanTypeChange = useCallback((newType: LoanType) => {
-    updateState('loanType', newType)
-    
-    if (newType === '15-year') {
-      updateState('loanTermYears', 15)
-    } else if (newType === '30-year') {
-      updateState('loanTermYears', 30)
-    }
-  }, [updateState])
+  const handleLoanTypeChange = useCallback(
+    (newType: LoanType) => {
+      updateState('loanType', newType)
+
+      if (newType === '15-year') {
+        updateState('loanTermYears', 15)
+      } else if (newType === '30-year') {
+        updateState('loanTermYears', 30)
+      }
+    },
+    [updateState],
+  )
 
   // Reset all sliders to IQ defaults (but keep property-specific values)
   const handleResetToDefaults = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...DEFAULT_DEAL_MAKER_STATE,
       // Preserve property-specific values
       buyPrice: listPrice ?? DEFAULT_DEAL_MAKER_STATE.buyPrice,
@@ -267,45 +270,65 @@ export function DealMakerPage({
   return (
     <div className="min-h-screen" style={{ background: '#F1F5F9' }}>
       {/* DealGapIQ Header */}
-      <div 
+      <div
         className="sticky top-0 z-50 flex items-center justify-between"
-        style={{ 
-          background: 'white', 
+        style={{
+          background: 'white',
           padding: '8px 20px 12px',
         }}
       >
-        <button 
+        <button
           onClick={handleBack}
           className="flex items-center gap-1 hover:opacity-80 transition-opacity"
           style={{ cursor: 'pointer', background: 'none', border: 'none' }}
         >
-          <svg width="18" height="18" fill="none" stroke="var(--accent-sky)" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
+          <svg
+            width="18"
+            height="18"
+            fill="none"
+            stroke="var(--accent-sky)"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          <span style={{ fontSize: '16px', fontWeight: 500, color: 'var(--accent-sky)' }}>Back</span>
+          <span style={{ fontSize: '16px', fontWeight: 500, color: 'var(--accent-sky)' }}>
+            Back
+          </span>
         </button>
-        
+
         <div style={{ fontSize: '22px', fontWeight: 700 }}>
           <span style={{ color: '#0A1628' }}>DealGap</span>
           <span style={{ color: 'var(--accent-sky)' }}>IQ</span>
         </div>
-        
+
         {/* Reset to IQ Defaults button */}
-        <button 
+        <button
           onClick={handleResetToDefaults}
           className="flex items-center gap-1 hover:opacity-80 transition-opacity"
-          style={{ 
-            cursor: 'pointer', 
-            background: 'none', 
+          style={{
+            cursor: 'pointer',
+            background: 'none',
             border: 'none',
             fontSize: '12px',
             fontWeight: 500,
-            color: '#64748B'
+            color: '#64748B',
           }}
           title="Reset all sliders to IQ-recommended defaults"
         >
-          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          <svg
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
           </svg>
           Reset
         </button>
@@ -313,9 +336,9 @@ export function DealMakerPage({
 
       {/* Deal Maker IQ Header with Metrics */}
       <div className="sticky top-[52px] z-40">
-        <MetricsHeader 
-          state={state} 
-          metrics={metrics} 
+        <MetricsHeader
+          state={state}
+          metrics={metrics}
           listPrice={listPrice}
           propertyAddress={propertyAddress}
         />
@@ -334,7 +357,7 @@ export function DealMakerPage({
             value: formatSliderValue(metrics.cashNeeded, 'currency'),
           }}
         >
-          {BUY_PRICE_SLIDERS.map(slider => (
+          {BUY_PRICE_SLIDERS.map((slider) => (
             <DealMakerSlider
               key={slider.id}
               config={slider}
@@ -356,19 +379,17 @@ export function DealMakerPage({
           }}
         >
           {/* Loan Amount */}
-          <div 
+          <div
             className="flex justify-between items-center"
-            style={{ 
-              padding: '12px 0', 
+            style={{
+              padding: '12px 0',
               marginTop: '16px',
               marginBottom: '8px',
               borderBottom: '1px solid #E2E8F0',
             }}
           >
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff' }}>
-              Loan Amount
-            </span>
-            <span 
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff' }}>Loan Amount</span>
+            <span
               className="tabular-nums"
               style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff' }}
             >
@@ -378,7 +399,15 @@ export function DealMakerPage({
 
           {/* Loan Type */}
           <div style={{ marginTop: '16px', marginBottom: '8px' }}>
-            <label style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff', display: 'block', marginBottom: '8px' }}>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#ffffff',
+                display: 'block',
+                marginBottom: '8px',
+              }}
+            >
               Loan Type
             </label>
             <div className="flex rounded-lg p-1" style={{ background: '#F1F5F9' }}>
@@ -398,7 +427,7 @@ export function DealMakerPage({
             </div>
           </div>
 
-          {FINANCING_SLIDERS.map(slider => (
+          {FINANCING_SLIDERS.map((slider) => (
             <DealMakerSlider
               key={slider.id}
               config={slider}
@@ -419,7 +448,7 @@ export function DealMakerPage({
             value: formatSliderValue(metrics.equityCreated, 'currency'),
           }}
         >
-          {REHAB_VALUATION_SLIDERS.map(slider => (
+          {REHAB_VALUATION_SLIDERS.map((slider) => (
             <DealMakerSlider
               key={slider.id}
               config={{
@@ -446,7 +475,7 @@ export function DealMakerPage({
             value: formatSliderValue(metrics.grossMonthlyIncome, 'currencyPerMonth'),
           }}
         >
-          {INCOME_SLIDERS.map(slider => (
+          {INCOME_SLIDERS.map((slider) => (
             <DealMakerSlider
               key={slider.id}
               config={slider}
@@ -468,7 +497,7 @@ export function DealMakerPage({
           }}
           isLastTab
         >
-          {EXPENSES_SLIDERS.map(slider => (
+          {EXPENSES_SLIDERS.map((slider) => (
             <DealMakerSlider
               key={slider.id}
               config={slider}

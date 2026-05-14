@@ -5,7 +5,7 @@ import { BenchmarkStatus } from '../types'
 
 /**
  * DesktopSpectrumBar Component
- * 
+ *
  * Enhanced desktop version of the spectrum bar with larger zones,
  * animated markers, and improved visual feedback.
  */
@@ -34,11 +34,11 @@ export function DesktopSpectrumBar({
   markerPosition,
   status,
   isInverted = false,
-  zones
+  zones,
 }: DesktopSpectrumBarProps) {
   // Clamp marker position between 2 and 98 to keep it visible
   const clampedPosition = Math.min(98, Math.max(2, markerPosition))
-  
+
   // Get marker CSS class based on status
   const getMarkerClass = () => {
     switch (status) {
@@ -85,17 +85,14 @@ export function DesktopSpectrumBar({
       </div>
 
       {/* Animated Marker */}
-      <div
-        className={getMarkerClass()}
-        style={{ left: `${clampedPosition}%` }}
-      />
+      <div className={getMarkerClass()} style={{ left: `${clampedPosition}%` }} />
     </div>
   )
 }
 
 /**
  * DesktopMiniSpectrum Component
- * 
+ *
  * Compact version for grid layouts on desktop.
  */
 interface DesktopMiniSpectrumProps {
@@ -104,23 +101,26 @@ interface DesktopMiniSpectrumProps {
   isInverted?: boolean
 }
 
-export function DesktopMiniSpectrum({ 
-  markerPosition, 
-  status, 
-  isInverted = false 
+export function DesktopMiniSpectrum({
+  markerPosition,
+  status,
+  isInverted = false,
 }: DesktopMiniSpectrumProps) {
   const clampedPosition = Math.min(95, Math.max(5, markerPosition))
-  
+
   const getMarkerClass = () => {
     switch (status) {
-      case 'high': return 'high'
-      case 'average': return 'average'
-      case 'low': return 'low'
+      case 'high':
+        return 'high'
+      case 'average':
+        return 'average'
+      case 'low':
+        return 'low'
     }
   }
 
   return (
-    <div 
+    <div
       className={`mini-spectrum ${isInverted ? 'inverted' : ''}`}
       style={{
         height: '8px',
@@ -128,12 +128,12 @@ export function DesktopMiniSpectrum({
         position: 'relative',
         background: isInverted
           ? 'linear-gradient(90deg, rgba(34,197,94,0.4) 0%, rgba(234,179,8,0.4) 50%, rgba(239,68,68,0.4) 100%)'
-          : 'linear-gradient(90deg, rgba(239,68,68,0.4) 0%, rgba(234,179,8,0.4) 50%, rgba(34,197,94,0.4) 100%)'
+          : 'linear-gradient(90deg, rgba(239,68,68,0.4) 0%, rgba(234,179,8,0.4) 50%, rgba(34,197,94,0.4) 100%)',
       }}
     >
-      <div 
+      <div
         className={`mini-marker ${getMarkerClass()}`}
-        style={{ 
+        style={{
           position: 'absolute',
           top: '50%',
           left: `${clampedPosition}%`,
@@ -144,7 +144,7 @@ export function DesktopMiniSpectrum({
           background: 'white',
           border: '2px solid',
           borderColor: status === 'high' ? '#22c55e' : status === 'average' ? '#eab308' : '#ef4444',
-          transition: 'left 0.4s ease-out'
+          transition: 'left 0.4s ease-out',
         }}
       />
     </div>

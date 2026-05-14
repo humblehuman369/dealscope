@@ -6,10 +6,10 @@ import { formatCurrency } from '@/utils/formatters'
 
 /**
  * FormulaCard Component
- * 
+ *
  * Displays a breakdown of calculations showing the math behind key metrics.
  * Used for showing capital stacks, refinance analysis, 70% rule, etc.
- * 
+ *
  * Features:
  * - Labeled rows with values
  * - Color-coded positive/negative values
@@ -81,9 +81,8 @@ function FormulaRowComponent({ row }: FormulaRowComponentProps) {
 export function createCapitalStackFormula(
   purchasePrice: number,
   rehabCost: number,
-  closingCosts: number
+  closingCosts: number,
 ): FormulaCardData {
-
   const allInCost = purchasePrice + rehabCost + closingCosts
 
   return {
@@ -92,8 +91,8 @@ export function createCapitalStackFormula(
       { label: 'Buy Price', value: formatCurrency(purchasePrice) },
       { label: '+ Rehab Costs', value: formatCurrency(rehabCost) },
       { label: '+ Closing/Holding', value: formatCurrency(closingCosts) },
-      { label: '= All-In Cost', value: formatCurrency(allInCost), isTotal: true }
-    ]
+      { label: '= All-In Cost', value: formatCurrency(allInCost), isTotal: true },
+    ],
   }
 }
 
@@ -103,9 +102,8 @@ export function createCapitalStackFormula(
 export function createRefinanceFormula(
   arv: number,
   ltv: number,
-  allInCost: number
+  allInCost: number,
 ): FormulaCardData {
-
   const refiAmount = arv * ltv
   const cashOutSurplus = refiAmount - allInCost
 
@@ -115,14 +113,17 @@ export function createRefinanceFormula(
       { label: 'After Repair Value', value: formatCurrency(arv) },
       { label: `× ${Math.round(ltv * 100)}% LTV`, value: formatCurrency(refiAmount) },
       { label: '− All-In Cost', value: `-${formatCurrency(allInCost)}`, isNegative: true },
-      { 
-        label: '= Cash Out Surplus', 
-        value: cashOutSurplus >= 0 ? `+${formatCurrency(cashOutSurplus)}` : formatCurrency(cashOutSurplus),
+      {
+        label: '= Cash Out Surplus',
+        value:
+          cashOutSurplus >= 0
+            ? `+${formatCurrency(cashOutSurplus)}`
+            : formatCurrency(cashOutSurplus),
         isTotal: true,
         isPositive: cashOutSurplus >= 0,
-        isNegative: cashOutSurplus < 0
-      }
-    ]
+        isNegative: cashOutSurplus < 0,
+      },
+    ],
   }
 }
 
@@ -132,10 +133,9 @@ export function createRefinanceFormula(
 export function create70PercentRuleFormula(
   arv: number,
   rehabCost: number,
-  investorProfit: number
+  investorProfit: number,
 ): FormulaCardData {
-
-  const arvMultiple = arv * 0.70
+  const arvMultiple = arv * 0.7
   const mao = arvMultiple - rehabCost - investorProfit
 
   return {
@@ -143,34 +143,38 @@ export function create70PercentRuleFormula(
     rows: [
       { label: 'ARV × 70%', value: formatCurrency(arvMultiple) },
       { label: '− Repair Costs', value: `−${formatCurrency(rehabCost)}`, isNegative: true },
-      { label: '− End Buyer Profit', value: `−${formatCurrency(investorProfit)}`, isNegative: true },
-      { label: '= MAO (End Buyer Pays)', value: formatCurrency(mao), isTotal: true }
-    ]
+      {
+        label: '− End Buyer Profit',
+        value: `−${formatCurrency(investorProfit)}`,
+        isNegative: true,
+      },
+      { label: '= MAO (End Buyer Pays)', value: formatCurrency(mao), isTotal: true },
+    ],
   }
 }
 
 /**
  * Helper function to create wholesale math formula
  */
-export function createWholesaleMathFormula(
-  mao: number,
-  contractPrice: number
-): FormulaCardData {
-
+export function createWholesaleMathFormula(mao: number, contractPrice: number): FormulaCardData {
   const assignmentFee = mao - contractPrice
 
   return {
     title: 'Your Wholesale Math',
     rows: [
       { label: 'End Buyer Pays (MAO)', value: formatCurrency(mao) },
-      { label: '− Your Contract Price', value: `−${formatCurrency(contractPrice)}`, isNegative: true },
-      { 
-        label: '= Your Assignment Fee', 
+      {
+        label: '− Your Contract Price',
+        value: `−${formatCurrency(contractPrice)}`,
+        isNegative: true,
+      },
+      {
+        label: '= Your Assignment Fee',
         value: formatCurrency(assignmentFee),
         isTotal: true,
-        isPositive: true
-      }
-    ]
+        isPositive: true,
+      },
+    ],
   }
 }
 
@@ -182,9 +186,8 @@ export function createFlipPLFormula(
   purchasePrice: number,
   rehabCost: number,
   holdingCosts: number,
-  sellingCosts: number
+  sellingCosts: number,
 ): FormulaCardData {
-
   const totalCosts = purchasePrice + rehabCost + holdingCosts + sellingCosts
   const netProfit = arv - totalCosts
 
@@ -196,14 +199,15 @@ export function createFlipPLFormula(
       { label: '− Rehab Costs', value: `−${formatCurrency(rehabCost)}`, isNegative: true },
       { label: '− Holding Costs', value: `−${formatCurrency(holdingCosts)}`, isNegative: true },
       { label: '− Selling Costs', value: `−${formatCurrency(sellingCosts)}`, isNegative: true },
-      { 
-        label: '= Net Profit', 
-        value: netProfit >= 0 ? formatCurrency(netProfit) : `−${formatCurrency(Math.abs(netProfit))}`,
+      {
+        label: '= Net Profit',
+        value:
+          netProfit >= 0 ? formatCurrency(netProfit) : `−${formatCurrency(Math.abs(netProfit))}`,
         isTotal: true,
         isPositive: netProfit >= 0,
-        isNegative: netProfit < 0
-      }
-    ]
+        isNegative: netProfit < 0,
+      },
+    ],
   }
 }
 

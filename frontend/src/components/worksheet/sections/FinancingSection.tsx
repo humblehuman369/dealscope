@@ -14,27 +14,27 @@ export function FinancingSection() {
       <DataRow label="Loan Amount" icon={<Landmark className="w-4 h-4" />}>
         <DisplayField value={derived.loanAmount} format="currency" />
       </DataRow>
-      
+
       <DataRow label="Loan to Cost">
-        <DisplayField value={100 - (assumptions.downPaymentPct * 100)} format="number" suffix="%" />
+        <DisplayField value={100 - assumptions.downPaymentPct * 100} format="number" suffix="%" />
       </DataRow>
-      
+
       <DataRow label="Loan to Value">
         <DisplayField value={derived.ltv} format="number" suffix="%" />
       </DataRow>
-      
+
       <DataRow label="Financing Of">
         <span className="text-right min-w-[100px] flex-shrink-0 font-semibold text-[var(--ws-text-primary)]">
           Price ({((1 - assumptions.downPaymentPct) * 100).toFixed(0)}%)
         </span>
       </DataRow>
-      
+
       <DataRow label="Loan Type" icon={<Calendar className="w-4 h-4" />}>
         <span className="text-right min-w-[100px] flex-shrink-0 font-semibold text-[var(--ws-text-primary)]">
           Amortizing, {assumptions.loanTermYears} Year
         </span>
       </DataRow>
-      
+
       <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.interestRate}
@@ -46,7 +46,7 @@ export function FinancingSection() {
           showSlider={true}
         />
       </DataRow>
-      
+
       <DataRow label="Loan Term" hasSlider>
         <EditableField
           value={assumptions.loanTermYears}
@@ -58,7 +58,7 @@ export function FinancingSection() {
           showSlider={true}
         />
       </DataRow>
-      
+
       <DataRow label="Monthly Payment" isHighlight>
         <DisplayField value={derived.monthlyPayment} format="currency" />
       </DataRow>

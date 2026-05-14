@@ -6,11 +6,7 @@
 
 import { useRef, useState } from 'react'
 import { Download, Eye, FileText, Trash2, Upload } from 'lucide-react'
-import {
-  useDeleteDocument,
-  useDocuments,
-  useUploadDocument,
-} from '@/hooks/useDocuments'
+import { useDeleteDocument, useDocuments, useUploadDocument } from '@/hooks/useDocuments'
 import {
   DOCUMENT_TYPES_ORDERED,
   DOCUMENT_TYPE_LABELS,
@@ -60,9 +56,7 @@ export function DocumentsPanel({ propertyId }: { propertyId: string }) {
             No documents yet — drop a contract, inspection report, or photos below.
           </p>
         ) : (
-          items.map((d) => (
-            <DocumentRow key={d.id} doc={d} onDelete={() => del.mutate(d.id)} />
-          ))
+          items.map((d) => <DocumentRow key={d.id} doc={d} onDelete={() => del.mutate(d.id)} />)
         )}
       </div>
 
@@ -89,13 +83,7 @@ export function DocumentsPanel({ propertyId }: { propertyId: string }) {
             <Upload className="w-4 h-4" />
             Upload
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            onChange={onPickFile}
-            className="hidden"
-          />
+          <input ref={fileInputRef} type="file" multiple onChange={onPickFile} className="hidden" />
         </div>
         <div
           onDragOver={(e) => {
@@ -122,21 +110,15 @@ export function DocumentsPanel({ propertyId }: { propertyId: string }) {
           {upload.isPending
             ? 'Uploading…'
             : upload.isError
-            ? `Upload failed: ${(upload.error as Error)?.message ?? 'unknown error'}`
-            : 'Drop files here or click Upload'}
+              ? `Upload failed: ${(upload.error as Error)?.message ?? 'unknown error'}`
+              : 'Drop files here or click Upload'}
         </div>
       </div>
     </div>
   )
 }
 
-function DocumentRow({
-  doc,
-  onDelete,
-}: {
-  doc: PropertyDocument
-  onDelete: () => void
-}) {
+function DocumentRow({ doc, onDelete }: { doc: PropertyDocument; onDelete: () => void }) {
   return (
     <div className="group flex items-start gap-2 px-2 py-2 rounded-lg hover:bg-[var(--hover-overlay)]">
       <span className="shrink-0 mt-0.5 w-7 h-7 rounded inline-flex items-center justify-center bg-[var(--surface-elevated)] text-[var(--accent-sky)]">

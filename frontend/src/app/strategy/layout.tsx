@@ -27,17 +27,12 @@ const STRATEGY_JSONLD = {
   '@id': 'https://dealgapiq.com/strategy',
   url: 'https://dealgapiq.com/strategy',
   name: 'Strategy Analysis — Full Financial Deep-Dive',
-  description:
-    'Full financial deep-dive for any property across six investment strategies.',
+  description: 'Full financial deep-dive for any property across six investment strategies.',
   isPartOf: { '@id': 'https://dealgapiq.com/#website' },
   about: { '@id': 'https://dealgapiq.com/#software' },
 }
 
-export default function StrategyLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function StrategyLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <script

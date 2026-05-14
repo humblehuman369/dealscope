@@ -94,9 +94,7 @@ function PortfolioContent() {
   const [sort, setSort] = useState<Sort>('recent')
 
   const closed = useMemo(() => {
-    return (query.data ?? []).filter(
-      (p) => p.flip_stage && TERMINAL_STAGES.has(p.flip_stage),
-    )
+    return (query.data ?? []).filter((p) => p.flip_stage && TERMINAL_STAGES.has(p.flip_stage))
   }, [query.data])
 
   const filtered = useMemo(() => {
@@ -108,7 +106,7 @@ function PortfolioContent() {
   const sorted = useMemo(() => {
     const arr = [...filtered]
     if (sort === 'sale_price') {
-      arr.sort((a, b) => (Number(b.sold_price ?? 0) - Number(a.sold_price ?? 0)))
+      arr.sort((a, b) => Number(b.sold_price ?? 0) - Number(a.sold_price ?? 0))
     } else if (sort === 'days_to_close') {
       arr.sort((a, b) => {
         const da = daysBetween(a.saved_at, terminalDate(a)) ?? Number.POSITIVE_INFINITY
@@ -254,15 +252,7 @@ function PortfolioContent() {
   )
 }
 
-function Stat({
-  label,
-  hint,
-  value,
-}: {
-  label: string
-  hint?: string
-  value: string
-}) {
+function Stat({ label, hint, value }: { label: string; hint?: string; value: string }) {
   return (
     <div>
       <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)]">
@@ -278,7 +268,7 @@ function PortfolioCard({ property: p }: { property: SavedPropertySummary }) {
   const stage = p.flip_stage ?? null
   const stageLabel = stage ? STAGE_LABELS[stage] : '—'
   const strategyLabel = p.best_strategy
-    ? STRATEGY_LABELS[p.best_strategy] ?? p.best_strategy
+    ? (STRATEGY_LABELS[p.best_strategy] ?? p.best_strategy)
     : null
   const days = daysBetween(p.saved_at, terminalDate(p))
   const salePrice = stage === 'Sold' ? Number(p.sold_price ?? 0) : null

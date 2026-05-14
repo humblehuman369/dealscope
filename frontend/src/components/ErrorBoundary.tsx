@@ -98,7 +98,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 className="flex items-center gap-1 mt-5 px-2 py-1 text-xs text-gray-400 hover:text-gray-300"
               >
                 {showDetails ? 'Hide Details' : 'Show Details'}
-                {showDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                {showDetails ? (
+                  <ChevronUp className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                )}
               </button>
 
               {showDetails && (

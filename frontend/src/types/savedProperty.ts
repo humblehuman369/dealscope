@@ -8,11 +8,11 @@ import type { PropertyDataSnapshot } from '@dealscope/shared'
 export type { PropertyDataSnapshot }
 
 export type PropertyStatus =
-  | 'prospecting'    // Watching / Analyzing — research & underwriting
-  | 'pursuing'       // Pursue / Outreach — contacted seller or agent
-  | 'negotiating'    // Active price/terms negotiation
+  | 'prospecting' // Watching / Analyzing — research & underwriting
+  | 'pursuing' // Pursue / Outreach — contacted seller or agent
+  | 'negotiating' // Active price/terms negotiation
   | 'under_contract' // Offer accepted, in escrow
-  | 'owned'          // User owns this property
+  | 'owned' // User owns this property
   | 'passed'
   | 'archived'
 
@@ -42,7 +42,7 @@ export type SellerType =
   | 'Auction'
   | 'NewHome'
   | 'ComingSoon'
-  | 'Agent'           // legacy alias for FSBA
+  | 'Agent' // legacy alias for FSBA
   | 'NewConstruction' // legacy alias for NewHome
   | 'Unknown'
 
@@ -96,14 +96,14 @@ export interface SavedProperty {
   user_id: string
   external_property_id: string | null
   zpid: string | null
-  
+
   // Address fields (from backend)
   address_street: string
   address_city: string | null
   address_state: string | null
   address_zip: string | null
   full_address: string | null
-  
+
   // User customization
   nickname: string | null
   status: PropertyStatus
@@ -118,10 +118,10 @@ export interface SavedProperty {
   color_label: string | null
   priority: number | null
   notes: string | null
-  
+
   // Property data at time of save
   property_data_snapshot: PropertyDataSnapshot | null
-  
+
   // Custom adjustments (DEPRECATED - use deal_maker_record)
   custom_purchase_price: number | null
   custom_rent_estimate: number | null
@@ -130,29 +130,29 @@ export interface SavedProperty {
   custom_daily_rate: number | null
   custom_occupancy_rate: number | null
   custom_assumptions: Record<string, any> | null
-  
+
   // Worksheet assumptions (DEPRECATED - use deal_maker_record)
   worksheet_assumptions: Record<string, any> | null
-  
+
   // Deal Maker Record - the central analysis data structure
   deal_maker_record: Record<string, any> | null
-  
+
   // Analytics cache
   last_analytics_result: Record<string, any> | null
   analytics_calculated_at: string | null
-  
+
   // Quick metrics (inherited from Summary in backend)
   best_strategy: string | null
   best_cash_flow: number | null
   best_coc_return: number | null
-  
+
   // Timestamps
   created_at?: string
   saved_at: string
   updated_at: string
   last_viewed_at: string | null
   data_refreshed_at: string | null
-  
+
   // Related counts
   document_count: number
   adjustment_count: number

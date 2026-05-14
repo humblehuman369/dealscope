@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import { Strategy } from './types';
+import React from 'react'
+import Link from 'next/link'
+import { Strategy } from './types'
 
 interface StrategyCardProps {
-  strategy: Strategy;
+  strategy: Strategy
 }
 
 // Helper to render BRRRR description with orange capital letters
 function renderBRRRRDescription() {
-  const orange = '#f97316';
+  const orange = '#f97316'
   return (
     <>
       <span style={{ color: orange, fontWeight: 600 }}>B</span>uy a fixer-upper,{' '}
@@ -19,13 +19,13 @@ function renderBRRRRDescription() {
       <span style={{ color: orange, fontWeight: 600 }}>R</span>efinance to get your cash back and{' '}
       <span style={{ color: orange, fontWeight: 600 }}>R</span>epeat
     </>
-  );
+  )
 }
 
 export function StrategyCard({ strategy }: StrategyCardProps) {
-  const isScale = strategy.statValue === '∞';
-  const isBRRRR = strategy.id === 'brrrr';
-  
+  const isScale = strategy.statValue === '∞'
+  const isBRRRR = strategy.id === 'brrrr'
+
   return (
     <Link href={strategy.href} className={`strategy-card ${strategy.id}`}>
       <div className="strategy-card-header">
@@ -34,10 +34,10 @@ export function StrategyCard({ strategy }: StrategyCardProps) {
           {isScale ? (
             <>
               <div className="strategy-stat-value">
-                <svg 
-                  className="growth-icon" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
+                <svg
+                  className="growth-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
                   stroke={strategy.color}
                   strokeWidth="2"
                 >
@@ -62,5 +62,5 @@ export function StrategyCard({ strategy }: StrategyCardProps) {
         {isBRRRR ? renderBRRRRDescription() : strategy.description}
       </div>
     </Link>
-  );
+  )
 }

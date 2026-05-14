@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { 
-  loginSchema, 
-  registerSchema, 
+import {
+  loginSchema,
+  registerSchema,
   forgotPasswordSchema,
-  resetPasswordSchema 
+  resetPasswordSchema,
 } from '@/lib/validations/auth'
 
 describe('Auth Validation Schemas', () => {

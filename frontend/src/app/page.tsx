@@ -1,8 +1,8 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
+import React, { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import {
   LayoutGrid,
   MapPin,
   Search,
@@ -11,155 +11,163 @@ import {
   RefreshCw,
   Map,
   ScanLine,
-  Compass
-} from 'lucide-react';
-import { useSession, useLogout } from '@/hooks/useSession';
-import { useAuthModal } from '@/hooks/useAuthModal';
-import { usePropertyScan } from '@/hooks/usePropertyScan';
-import { DistanceSlider } from '@/components/scanner/DistanceSlider';
-import { InfoDialog } from '@/components/ui/ConfirmDialog';
-import { ScanTarget } from '@/components/scanner/ScanTarget';
-import { CompassDisplay } from '@/components/scanner/CompassDisplay';
-import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
-import { MapPropertyPicker } from '@/components/scanner/MapPropertyPicker';
-import { getCardinalDirection } from '@/lib/geoCalculations';
-import { DealGapIQHomepageV2, DealGapIQHomepageV3, DealGapIQHomepageV4 } from '@/components/landing';
-import { AddressAutocomplete } from '@/components/AddressAutocomplete';
-import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity';
-import type { GeocodedProperty } from '@/lib/reverseGeocode';
+  Compass,
+} from 'lucide-react'
+import { useSession, useLogout } from '@/hooks/useSession'
+import { useAuthModal } from '@/hooks/useAuthModal'
+import { usePropertyScan } from '@/hooks/usePropertyScan'
+import { DistanceSlider } from '@/components/scanner/DistanceSlider'
+import { InfoDialog } from '@/components/ui/ConfirmDialog'
+import { ScanTarget } from '@/components/scanner/ScanTarget'
+import { CompassDisplay } from '@/components/scanner/CompassDisplay'
+import { ScanResultSheet } from '@/components/scanner/ScanResultSheet'
+import { MapPropertyPicker } from '@/components/scanner/MapPropertyPicker'
+import { getCardinalDirection } from '@/lib/geoCalculations'
+import { DealGapIQHomepageV2, DealGapIQHomepageV3, DealGapIQHomepageV4 } from '@/components/landing'
+import { AddressAutocomplete } from '@/components/AddressAutocomplete'
+import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity'
+import type { GeocodedProperty } from '@/lib/reverseGeocode'
 
 export default function HomePage() {
-  const [mode, setMode] = useState<'landing' | 'camera'>('landing');
+  const [mode, setMode] = useState<'landing' | 'camera'>('landing')
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(window.location.search)
     if (params.get('scan') === 'true') {
-      setMode('camera');
-      window.history.replaceState({}, '', '/');
+      setMode('camera')
+      window.history.replaceState({}, '', '/')
     }
-  }, []);
+  }, [])
 
   // Show camera scanner view
   if (mode === 'camera') {
-    return <MobileScannerView onSwitchMode={() => setMode('landing')} />;
+    return <MobileScannerView onSwitchMode={() => setMode('landing')} />
   }
 
   // V4 = marketing-tuned homepage. V3 and V2 remain available via query flags for rollback.
   if (typeof window !== 'undefined') {
-    const version = new URLSearchParams(window.location.search).get('v');
+    const version = new URLSearchParams(window.location.search).get('v')
     if (version === '2') {
-      return <DealGapIQHomepageV2 onPointAndScan={() => setMode('camera')} />;
+      return <DealGapIQHomepageV2 onPointAndScan={() => setMode('camera')} />
     }
     if (version === '3') {
-      return <DealGapIQHomepageV3 onPointAndScan={() => setMode('camera')} />;
+      return <DealGapIQHomepageV3 onPointAndScan={() => setMode('camera')} />
     }
   }
-  return <DealGapIQHomepageV4 onPointAndScan={() => setMode('camera')} />;
+  return <DealGapIQHomepageV4 onPointAndScan={() => setMode('camera')} />
 }
 
 /**
  * Mobile Camera Scanner View
  */
 function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
-  const router = useRouter();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const [cameraReady, setCameraReady] = useState(false);
-  const [distance, setDistance] = useState(50);
-  const [manualHeading, setManualHeading] = useState<number | null>(null);
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
-  const [showAddressSearch, setShowAddressSearch] = useState(false);
-  const [addressInput, setAddressInput] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [locationError, setLocationError] = useState<string | null>(null);
-  const [showMapPicker, setShowMapPicker] = useState(false);
-  const hasValidSearchAddress = isLikelyFullAddress(addressInput);
-  
-  const scanner = usePropertyScan();
+  const router = useRouter()
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [cameraError, setCameraError] = useState<string | null>(null)
+  const [cameraReady, setCameraReady] = useState(false)
+  const [distance, setDistance] = useState(50)
+  const [manualHeading, setManualHeading] = useState<number | null>(null)
+  const [isGettingLocation, setIsGettingLocation] = useState(false)
+  const [showAddressSearch, setShowAddressSearch] = useState(false)
+  const [addressInput, setAddressInput] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
+  const [locationError, setLocationError] = useState<string | null>(null)
+  const [showMapPicker, setShowMapPicker] = useState(false)
+  const hasValidSearchAddress = isLikelyFullAddress(addressInput)
+
+  const scanner = usePropertyScan()
 
   // Handle address search - uses new IQ Verdict flow
   const handleAddressSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!hasValidSearchAddress) return;
-    setIsSearching(true);
+    e.preventDefault()
+    if (!hasValidSearchAddress) return
+    setIsSearching(true)
     try {
-      const canonicalAddress = canonicalizeAddressForIdentity(addressInput);
-      router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`);
+      const canonicalAddress = canonicalizeAddressForIdentity(addressInput)
+      router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`)
     } catch (error) {
-      console.error('Search error:', error);
-      setIsSearching(false);
+      console.error('Search error:', error)
+      setIsSearching(false)
     }
-  };
+  }
 
   const handlePlaceSelect = (selectedAddress: string) => {
-    const canonicalAddress = canonicalizeAddressForIdentity(selectedAddress);
-    setAddressInput(canonicalAddress);
-    router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`);
-  };
-  const { user, isAuthenticated } = useSession();
-  const { openAuthModal } = useAuthModal();
-  const logoutMutation = useLogout();
+    const canonicalAddress = canonicalizeAddressForIdentity(selectedAddress)
+    setAddressInput(canonicalAddress)
+    router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`)
+  }
+  const { user, isAuthenticated } = useSession()
+  const { openAuthModal } = useAuthModal()
+  const logoutMutation = useLogout()
 
   // Handle "Use your current location" for desktop users without camera
   const handleUseCurrentLocation = async () => {
-    setIsGettingLocation(true);
-    
+    setIsGettingLocation(true)
+
     try {
       // Get user's current GPS position
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 0
-        });
-      });
-      
-      const { latitude, longitude } = position.coords;
-      
+          maximumAge: 0,
+        })
+      })
+
+      const { latitude, longitude } = position.coords
+
       // Use Google Maps reverse geocode to find property at location
-      const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude.toFixed(6)},${longitude.toFixed(6)}&key=${GOOGLE_MAPS_API_KEY}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      
+      const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude.toFixed(6)},${longitude.toFixed(6)}&key=${GOOGLE_MAPS_API_KEY}`
+      const response = await fetch(url)
+      const data = await response.json()
+
       if (data.status === 'OK' && data.results?.length > 0) {
         // Get the formatted address
-        const result = data.results[0];
-        const address = canonicalizeAddressForIdentity(result.formatted_address);
-        
+        const result = data.results[0]
+        const address = canonicalizeAddressForIdentity(result.formatted_address)
+
         // Navigate to IQ Analyzing screen (new IQ Verdict flow)
-        router.push(`/discovery?address=${encodeURIComponent(address)}`);
+        router.push(`/discovery?address=${encodeURIComponent(address)}`)
       } else {
-        throw new Error('Could not find an address at your location');
+        throw new Error('Could not find an address at your location')
       }
     } catch (error) {
-      console.error('Location error:', error);
+      console.error('Location error:', error)
       if (error instanceof GeolocationPositionError) {
         if (error.code === error.PERMISSION_DENIED) {
-          setLocationError('Location access denied. Please enable location services and try again, or use the address search.');
+          setLocationError(
+            'Location access denied. Please enable location services and try again, or use the address search.',
+          )
         } else {
-          setLocationError('Could not determine your location. Please try the address search instead.');
+          setLocationError(
+            'Could not determine your location. Please try the address search instead.',
+          )
         }
       } else {
-        setLocationError('Could not find a property at your location. Please try the address search.');
+        setLocationError(
+          'Could not find a property at your location. Please try the address search.',
+        )
       }
     } finally {
-      setIsGettingLocation(false);
+      setIsGettingLocation(false)
     }
-  };
+  }
 
   // Start camera once on mount — must not depend on `scanner` (new ref every render)
   useEffect(() => {
-    let stream: MediaStream | null = null;
-    let cancelled = false;
+    let stream: MediaStream | null = null
+    let cancelled = false
 
     async function startCamera() {
       try {
         if (navigator.permissions) {
-          const status = await navigator.permissions.query({ name: 'camera' as PermissionName });
+          const status = await navigator.permissions.query({ name: 'camera' as PermissionName })
           if (status.state === 'denied') {
-            setCameraError('Camera access is blocked. Please enable camera permission in Settings and try again.');
-            return;
+            setCameraError(
+              'Camera access is blocked. Please enable camera permission in Settings and try again.',
+            )
+            return
           }
         }
 
@@ -170,75 +178,80 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
             height: { ideal: 1080 },
           },
           audio: false,
-        });
+        })
 
         if (!cancelled && videoRef.current) {
-          videoRef.current.srcObject = stream;
-          setCameraReady(true);
+          videoRef.current.srcObject = stream
+          setCameraReady(true)
         }
       } catch (error) {
-        if (cancelled) return;
-        console.error('Camera error:', error);
+        if (cancelled) return
+        console.error('Camera error:', error)
         if (error instanceof Error) {
           if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
-            setCameraError('Camera permission denied. Please enable camera access in Settings → DealGapIQ.');
+            setCameraError(
+              'Camera permission denied. Please enable camera access in Settings → DealGapIQ.',
+            )
           } else if (error.name === 'NotFoundError') {
-            setCameraError('No camera found. Please use a device with a camera.');
+            setCameraError('No camera found. Please use a device with a camera.')
           } else if (error.name === 'AbortError') {
-            setCameraError('Camera access was interrupted. Please close other apps using the camera and try again.');
+            setCameraError(
+              'Camera access was interrupted. Please close other apps using the camera and try again.',
+            )
           } else {
-            setCameraError(`Unable to access camera: ${error.message}`);
+            setCameraError(`Unable to access camera: ${error.message}`)
           }
         }
       }
     }
 
-    startCamera();
+    startCamera()
 
     return () => {
-      cancelled = true;
+      cancelled = true
       if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop())
       }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Request compass permission separately — only when compass becomes available
   useEffect(() => {
     if (scanner.hasCompass && !scanner.heading) {
-      scanner.requestOrientationPermission();
+      scanner.requestOrientationPermission()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scanner.hasCompass, scanner.heading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scanner.hasCompass, scanner.heading])
 
   const handleScan = async () => {
     if (scanner.heading === null && scanner.isOrientationSupported) {
-      await scanner.requestOrientationPermission();
+      await scanner.requestOrientationPermission()
     }
-    await scanner.performScan(distance, manualHeading ?? undefined);
-  };
+    await scanner.performScan(distance, manualHeading ?? undefined)
+  }
 
   const navigateToVerdict = (prop: GeocodedProperty) => {
-    const hasFullAddress = prop.address && prop.city && prop.state && prop.zip;
+    const hasFullAddress = prop.address && prop.city && prop.state && prop.zip
     const address = hasFullAddress
       ? `${prop.address}, ${prop.city}, ${prop.state} ${prop.zip}`
-      : prop.formattedAddress || [prop.address, prop.city, prop.state, prop.zip].filter(Boolean).join(', ');
+      : prop.formattedAddress ||
+        [prop.address, prop.city, prop.state, prop.zip].filter(Boolean).join(', ')
 
-    router.push(`/discovery?address=${encodeURIComponent(canonicalizeAddressForIdentity(address))}`);
-  };
+    router.push(`/discovery?address=${encodeURIComponent(canonicalizeAddressForIdentity(address))}`)
+  }
 
   const handleViewDetails = () => {
     if (scanner.result?.property) {
-      navigateToVerdict(scanner.result.property);
+      navigateToVerdict(scanner.result.property)
     }
-  };
+  }
 
   const handleMapPickProperty = (property: GeocodedProperty) => {
-    setShowMapPicker(false);
-    scanner.clearResult();
-    navigateToVerdict(property);
-  };
+    setShowMapPicker(false)
+    scanner.clearResult()
+    navigateToVerdict(property)
+  }
 
   if (cameraError) {
     return (
@@ -252,17 +265,19 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               <MapPin className="w-10 h-10 text-white" />
             </div>
           </div>
-          
+
           <h2 className="text-2xl font-bold text-white mb-3">Experience Instant Analytics</h2>
           <p className="text-gray-300 mb-2">
-            Camera not available on this device,<br />
+            Camera not available on this device,
+            <br />
             but you can still see the magic!
           </p>
           <p className="text-gray-400 text-sm mb-8">
-            We&apos;ll use your GPS to find properties near you<br />
+            We&apos;ll use your GPS to find properties near you
+            <br />
             and show you our instant property analysis.
           </p>
-          
+
           <div className="flex flex-col gap-3">
             <button
               onClick={handleUseCurrentLocation}
@@ -308,11 +323,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
                     disabled={!hasValidSearchAddress || isSearching}
                     className="px-6 py-3 bg-[var(--accent-sky)] text-white rounded-xl font-bold hover:bg-[#3dc0d1] transition-colors disabled:opacity-50"
                   >
-                    {isSearching ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      'Go'
-                    )}
+                    {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Go'}
                   </button>
                 </div>
                 <button
@@ -325,13 +336,13 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               </form>
             )}
           </div>
-          
+
           <p className="text-gray-500 text-xs mt-6">
             ✨ Try the mobile app for the full Point & Scan experience
           </p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -378,8 +389,8 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               <button
                 type="button"
                 onClick={() => {
-                  setShowAddressSearch(false);
-                  setAddressInput('');
+                  setShowAddressSearch(false)
+                  setAddressInput('')
                 }}
                 className="w-full mt-3 py-3 text-gray-400 font-medium hover:text-white transition-colors"
               >
@@ -398,7 +409,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               DealGap<span className="text-brand-500">IQ</span>
             </span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {scanner.isLocationReady && (
               <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full">
@@ -447,20 +458,12 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         </div>
 
         <div className="absolute top-24 right-4">
-          <CompassDisplay 
-            heading={scanner.heading} 
-            accuracy={scanner.accuracy}
-          />
+          <CompassDisplay heading={scanner.heading} accuracy={scanner.accuracy} />
         </div>
 
         <div className="bg-gradient-to-t from-black/80 to-transparent p-6 pb-safe rounded-t-3xl">
           <div className="mb-6">
-            <DistanceSlider
-              value={distance}
-              onChange={setDistance}
-              min={10}
-              max={200}
-            />
+            <DistanceSlider value={distance} onChange={setDistance} min={10} max={200} />
           </div>
 
           {scanner.heading === null && (
@@ -505,8 +508,8 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               onClick={handleScan}
               disabled={scanner.isScanning || !scanner.isLocationReady}
               className={`w-20 h-20 rounded-full flex flex-col items-center justify-center gap-1 transition-all ${
-                scanner.isScanning 
-                  ? 'bg-brand-500 scale-95' 
+                scanner.isScanning
+                  ? 'bg-brand-500 scale-95'
                   : scanner.isLocationReady
                     ? 'bg-brand-500 hover:opacity-90 active:scale-95'
                     : 'bg-gray-600'
@@ -542,16 +545,14 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
 
           <div className="flex items-center justify-between mt-4 text-xs text-white/60">
             <span>
-              {scanner.heading !== null 
+              {scanner.heading !== null
                 ? `${scanner.heading}° ${getCardinalDirection(scanner.heading)}`
-                : 'No compass'
-              }
+                : 'No compass'}
             </span>
             <span>
               {scanner.latitude !== null && scanner.longitude !== null
                 ? `📍 ${scanner.latitude.toFixed(5)}, ${scanner.longitude.toFixed(5)}`
-                : '⏳ Waiting for GPS...'
-              }
+                : '⏳ Waiting for GPS...'}
             </span>
           </div>
 
@@ -573,15 +574,18 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         />
       )}
 
-      {showMapPicker && scanner.latitude !== null && scanner.longitude !== null && scanner.result && (
-        <MapPropertyPicker
-          userLat={scanner.latitude}
-          userLng={scanner.longitude}
-          scannedProperty={scanner.result.property}
-          onSelectProperty={handleMapPickProperty}
-          onClose={() => setShowMapPicker(false)}
-        />
-      )}
+      {showMapPicker &&
+        scanner.latitude !== null &&
+        scanner.longitude !== null &&
+        scanner.result && (
+          <MapPropertyPicker
+            userLat={scanner.latitude}
+            userLng={scanner.longitude}
+            scannedProperty={scanner.result.property}
+            onSelectProperty={handleMapPickProperty}
+            onClose={() => setShowMapPicker(false)}
+          />
+        )}
 
       <InfoDialog
         open={!!locationError}
@@ -590,6 +594,5 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         description={locationError || ''}
       />
     </div>
-  );
+  )
 }
-

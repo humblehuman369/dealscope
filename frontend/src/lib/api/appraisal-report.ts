@@ -12,7 +12,7 @@ import type { SaleComp } from './types'
 
 function getCsrfToken(): string | null {
   if (typeof document === 'undefined') return null
-  const csrfMatch = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))
+  const csrfMatch = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
   return csrfMatch ? csrfMatch.split('=')[1] : null
 }
 
@@ -162,20 +162,19 @@ export function buildAppraisalPayload(opts: {
   const arv = opts.overrideArv ?? appraisalResult.arv
   const pd = opts.propertyData
 
-  const selectedComps = comps.filter(c => selectedIds.has(c.id))
-  const compAdjMap = new Map(
-    appraisalResult.compAdjustments.map(ca => [ca.compId, ca])
-  )
+  const selectedComps = comps.filter((c) => selectedIds.has(c.id))
+  const compAdjMap = new Map(appraisalResult.compAdjustments.map((ca) => [ca.compId, ca]))
 
-  const compPayloads = selectedComps.map(comp => {
+  const compPayloads = selectedComps.map((comp) => {
     const adj: CompAdjustment | undefined = compAdjMap.get(comp.id)
     const basePrice = adj?.basePrice ?? comp.salePrice
     const totalAdj = adj?.totalAdjustment ?? 0
-    const absAdj = Math.abs(adj?.sizeAdjustment ?? 0)
-      + Math.abs(adj?.bedroomAdjustment ?? 0)
-      + Math.abs(adj?.bathroomAdjustment ?? 0)
-      + Math.abs(adj?.ageAdjustment ?? 0)
-      + Math.abs(adj?.lotAdjustment ?? 0)
+    const absAdj =
+      Math.abs(adj?.sizeAdjustment ?? 0) +
+      Math.abs(adj?.bedroomAdjustment ?? 0) +
+      Math.abs(adj?.bathroomAdjustment ?? 0) +
+      Math.abs(adj?.ageAdjustment ?? 0) +
+      Math.abs(adj?.lotAdjustment ?? 0)
 
     return {
       comp_address: comp.address,
@@ -225,42 +224,48 @@ export function buildAppraisalPayload(opts: {
     weighted_average_ppsf: appraisalResult.weightedAveragePpsf,
     comp_adjustments: compPayloads,
 
-    property_details: details ? {
-      stories: details.stories ?? null,
-      heating_type: details.heating_type ?? null,
-      cooling_type: details.cooling_type ?? null,
-      has_garage: details.has_garage ?? null,
-      garage_spaces: details.garage_spaces ?? null,
-      exterior_type: details.exterior_type ?? null,
-      roof_type: details.roof_type ?? null,
-      foundation_type: details.foundation_type ?? null,
-      has_fireplace: details.has_fireplace ?? null,
-      has_pool: details.has_pool ?? null,
-      parking_type: details.parking_type ?? null,
-      hoa_fees_monthly: details.hoa_fees_monthly ?? null,
-    } : null,
+    property_details: details
+      ? {
+          stories: details.stories ?? null,
+          heating_type: details.heating_type ?? null,
+          cooling_type: details.cooling_type ?? null,
+          has_garage: details.has_garage ?? null,
+          garage_spaces: details.garage_spaces ?? null,
+          exterior_type: details.exterior_type ?? null,
+          roof_type: details.roof_type ?? null,
+          foundation_type: details.foundation_type ?? null,
+          has_fireplace: details.has_fireplace ?? null,
+          has_pool: details.has_pool ?? null,
+          parking_type: details.parking_type ?? null,
+          hoa_fees_monthly: details.hoa_fees_monthly ?? null,
+        }
+      : null,
 
     site_data: null,
     cost_data: null,
 
-    market_stats: market?.market_stats ? {
-      median_days_on_market: market.market_stats.median_days_on_market ?? null,
-      total_listings: market.market_stats.total_listings ?? null,
-      new_listings: market.market_stats.new_listings ?? null,
-      median_price: market.market_stats.median_price ?? null,
-      avg_price_per_sqft: market.market_stats.avg_price_per_sqft ?? null,
-      market_temperature: market.market_stats.market_temperature ?? null,
-    } : null,
+    market_stats: market?.market_stats
+      ? {
+          median_days_on_market: market.market_stats.median_days_on_market ?? null,
+          total_listings: market.market_stats.total_listings ?? null,
+          new_listings: market.market_stats.new_listings ?? null,
+          median_price: market.market_stats.median_price ?? null,
+          avg_price_per_sqft: market.market_stats.avg_price_per_sqft ?? null,
+          market_temperature: market.market_stats.market_temperature ?? null,
+        }
+      : null,
 
-    rental_data: rentals ? {
-      monthly_rent: rentals.monthly_rent_ltr ?? null,
-      rent_range_low: rentals.rent_range_low ?? null,
-      rent_range_high: rentals.rent_range_high ?? null,
-      grm: null,
-      cap_rate: null,
-      noi: null,
-      vacancy_rate: null,
-    } : null,
+    rental_data: rentals
+      ? {
+          monthly_rent: rentals.monthly_rent_ltr ?? null,
+          rent_range_low: rentals.rent_range_low ?? null,
+          rent_range_high: rentals.rent_range_high ?? null,
+          grm: null,
+          cap_rate: null,
+          noi: null,
+          vacancy_rate: null,
+        }
+      : null,
 
     // Reliability-first default: deterministic template narratives, no LLM dependency.
     generate_ai_narratives: false,
@@ -272,9 +277,7 @@ export function buildAppraisalPayload(opts: {
  * Falls back to downloading an HTML report if WeasyPrint is unavailable (501)
  * or the PDF endpoint fails for any reason.
  */
-export async function downloadAppraisalReportPDF(
-  payload: AppraisalReportPayload,
-): Promise<void> {
+export async function downloadAppraisalReportPDF(payload: AppraisalReportPayload): Promise<void> {
   const base = API_BASE_URL
   const url = `${base}/api/v1/proforma/appraisal-report/pdf`
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -301,9 +304,7 @@ export async function downloadAppraisalReportPDF(
   throw new Error(`Appraisal PDF failed (${response.status}): ${errText || response.statusText}`)
 }
 
-async function downloadAppraisalReportHTML(
-  payload: AppraisalReportPayload,
-): Promise<void> {
+async function downloadAppraisalReportHTML(payload: AppraisalReportPayload): Promise<void> {
   const base = API_BASE_URL
   const htmlUrl = `${base}/api/v1/proforma/appraisal-report/html?auto_print=true`
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -319,7 +320,9 @@ async function downloadAppraisalReportHTML(
 
   if (!htmlRes.ok) {
     const errText = await htmlRes.text().catch(() => '')
-    throw new Error(`Appraisal HTML fallback failed (${htmlRes.status}): ${errText || htmlRes.statusText}`)
+    throw new Error(
+      `Appraisal HTML fallback failed (${htmlRes.status}): ${errText || htmlRes.statusText}`,
+    )
   }
 
   const html = await htmlRes.text()

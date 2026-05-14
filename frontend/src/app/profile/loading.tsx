@@ -51,7 +51,7 @@ export default function ProfileLoading() {
 
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[1, 2].map(i => (
+              {[1, 2].map((i) => (
                 <div key={i} className="space-y-2">
                   <div className="h-4 w-24 bg-[var(--surface-elevated)] rounded animate-pulse" />
                   <div className="h-11 w-full bg-[var(--surface-card-hover)] rounded-lg animate-pulse" />
@@ -61,7 +61,7 @@ export default function ProfileLoading() {
 
             {/* Stats Grid Skeleton */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border-subtle)]">
-              {[1, 2, 3, 4].map(i => (
+              {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="space-y-2">
                   <div className="h-3 w-20 bg-[var(--surface-card-hover)] rounded animate-pulse" />
                   <div className="h-5 w-28 bg-[var(--surface-elevated)] rounded animate-pulse" />

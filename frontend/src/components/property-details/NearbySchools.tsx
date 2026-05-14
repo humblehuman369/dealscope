@@ -21,7 +21,7 @@ function getSchoolRatingStyle(rating: number): { bg: string; color: string } {
 
 /**
  * NearbySchools Component
- * 
+ *
  * Displays nearby schools with ratings, grades, and distances.
  * Rating badges use semantic colors: green (good), gold (average), red (poor).
  */
@@ -35,7 +35,10 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
   if (!schools || schools.length === 0) {
     return (
       <div className="rounded-[14px] p-5" style={cardStyle}>
-        <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: 'var(--accent-sky)' }}>
+        <div
+          className="text-xs font-bold uppercase tracking-[0.12em] mb-4"
+          style={{ color: 'var(--accent-sky)' }}
+        >
           Nearby Schools
         </div>
         <p className="text-sm text-center py-4" style={{ color: 'var(--text-secondary)' }}>
@@ -60,7 +63,10 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
 
   return (
     <div className="rounded-[14px] p-5" style={cardStyle}>
-      <div className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: 'var(--accent-sky)' }}>
+      <div
+        className="text-xs font-bold uppercase tracking-[0.12em] mb-4"
+        style={{ color: 'var(--accent-sky)' }}
+      >
         Nearby Schools
       </div>
 
@@ -69,10 +75,13 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
           const LevelIcon = getLevelIcon(school.level)
           const ratingStyle = getSchoolRatingStyle(school.rating)
           return (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="flex items-center gap-4 p-3 rounded-xl transition-colors hover:bg-[var(--surface-card-hover)]"
-              style={{ backgroundColor: 'var(--surface-elevated)', border: `1px solid var(--border-subtle)` }}
+              style={{
+                backgroundColor: 'var(--surface-elevated)',
+                border: `1px solid var(--border-subtle)`,
+              }}
             >
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -80,15 +89,18 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
               >
                 <LevelIcon size={18} style={{ color: 'var(--text-secondary)' }} />
               </div>
-              
+
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-heading)' }}>
+                  <span
+                    className="text-sm font-semibold truncate"
+                    style={{ color: 'var(--text-heading)' }}
+                  >
                     {school.name}
                   </span>
                   {school.link && (
-                    <a 
-                      href={school.link} 
+                    <a
+                      href={school.link}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-shrink-0 transition-colors hover:brightness-125"
@@ -135,16 +147,35 @@ export function NearbySchoolsSkeleton() {
       className="rounded-[14px] p-5"
       style={{ backgroundColor: 'var(--surface-base)', border: `1px solid var(--border-subtle)` }}
     >
-      <div className="h-3 w-24 rounded animate-pulse mb-4" style={{ backgroundColor: 'var(--surface-elevated)' }} />
+      <div
+        className="h-3 w-24 rounded animate-pulse mb-4"
+        style={{ backgroundColor: 'var(--surface-elevated)' }}
+      />
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 p-3 rounded-xl" style={{ backgroundColor: 'var(--surface-elevated)' }}>
-            <div className="w-10 h-10 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--surface-card-hover)' }} />
+          <div
+            key={i}
+            className="flex items-center gap-4 p-3 rounded-xl"
+            style={{ backgroundColor: 'var(--surface-elevated)' }}
+          >
+            <div
+              className="w-10 h-10 rounded-lg animate-pulse"
+              style={{ backgroundColor: 'var(--surface-card-hover)' }}
+            />
             <div className="flex-1">
-              <div className="h-4 w-3/4 rounded animate-pulse mb-1" style={{ backgroundColor: 'var(--surface-card-hover)' }} />
-              <div className="h-3 w-1/2 rounded animate-pulse" style={{ backgroundColor: 'var(--surface-card-hover)' }} />
+              <div
+                className="h-4 w-3/4 rounded animate-pulse mb-1"
+                style={{ backgroundColor: 'var(--surface-card-hover)' }}
+              />
+              <div
+                className="h-3 w-1/2 rounded animate-pulse"
+                style={{ backgroundColor: 'var(--surface-card-hover)' }}
+              />
             </div>
-            <div className="w-8 h-8 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--surface-card-hover)' }} />
+            <div
+              className="w-8 h-8 rounded-lg animate-pulse"
+              style={{ backgroundColor: 'var(--surface-card-hover)' }}
+            />
           </div>
         ))}
       </div>

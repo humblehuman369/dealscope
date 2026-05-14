@@ -5,11 +5,7 @@ import { Home, Satellite, Eye } from 'lucide-react'
 import { ImageGallery, ImageGallerySkeleton } from './ImageGallery'
 import { PhotoLightbox } from './PhotoLightbox'
 import { fetchPropertyPhotos, zillowListingUrl } from '@/services/photoService'
-import {
-  buildStreetViewUrl,
-  resolveBestStreetView,
-  type StreetViewParams,
-} from '@/lib/streetView'
+import { buildStreetViewUrl, resolveBestStreetView, type StreetViewParams } from '@/lib/streetView'
 
 type GalleryState = 'loading' | 'loaded' | 'unavailable'
 
@@ -40,9 +36,7 @@ export function PropertyPhotoGallery({
   latitude,
   longitude,
 }: PropertyPhotoGalleryProps) {
-  const [state, setState] = useState<GalleryState>(
-    initialImages.length > 0 ? 'loaded' : 'loading'
-  )
+  const [state, setState] = useState<GalleryState>(initialImages.length > 0 ? 'loaded' : 'loading')
   const [photos, setPhotos] = useState<string[]>(initialImages)
   const [streetViewFailed, setStreetViewFailed] = useState(false)
   const [satelliteFailed, setSatelliteFailed] = useState(false)
@@ -178,10 +172,7 @@ export function PropertyPhotoGallery({
                 style={{ backgroundColor: 'var(--surface-overlay)' }}
               >
                 <Eye size={12} style={{ color: 'var(--text-body)' }} />
-                <span
-                  className="text-xs font-medium"
-                  style={{ color: 'var(--text-body)' }}
-                >
+                <span className="text-xs font-medium" style={{ color: 'var(--text-body)' }}>
                   Street View
                 </span>
               </div>
@@ -214,10 +205,7 @@ export function PropertyPhotoGallery({
                 style={{ backgroundColor: 'var(--surface-overlay)' }}
               >
                 <Satellite size={12} style={{ color: 'var(--text-body)' }} />
-                <span
-                  className="text-xs font-medium"
-                  style={{ color: 'var(--text-body)' }}
-                >
+                <span className="text-xs font-medium" style={{ color: 'var(--text-body)' }}>
                   Satellite view
                 </span>
               </div>
@@ -277,11 +265,7 @@ export function PropertyPhotoGallery({
         onImageClick={openLightbox}
       />
       {lightboxIndex !== null && (
-        <PhotoLightbox
-          images={photos}
-          initialIndex={lightboxIndex}
-          onClose={closeLightbox}
-        />
+        <PhotoLightbox images={photos} initialIndex={lightboxIndex} onClose={closeLightbox} />
       )}
     </>
   )

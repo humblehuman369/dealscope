@@ -15,20 +15,18 @@ export function MetricRow({ label, value, good, threshold }: MetricRowProps) {
       <span className="text-sm text-surface-500 dark:text-surface-400">{label}</span>
       <div className="flex items-center gap-2">
         {/* Value with optional target display (DealGapIQ style) */}
-        <span className={`text-sm font-semibold num ${
-          good === true 
-            ? 'text-teal-600 dark:text-teal-400' 
-            : good === false 
-              ? 'text-navy dark:text-white' 
-              : 'text-navy dark:text-white'
-        }`}>
+        <span
+          className={`text-sm font-semibold num ${
+            good === true
+              ? 'text-teal-600 dark:text-teal-400'
+              : good === false
+                ? 'text-navy dark:text-white'
+                : 'text-navy dark:text-white'
+          }`}
+        >
           {value}
         </span>
-        {threshold && (
-          <span className="text-[10px] text-surface-400">
-            / {threshold}
-          </span>
-        )}
+        {threshold && <span className="text-[10px] text-surface-400">/ {threshold}</span>}
       </div>
     </div>
   )

@@ -2,7 +2,7 @@
 
 /**
  * DealMakerPopup Component
- * 
+ *
  * Slide-up popup modal for adjusting investment terms.
  * Contains sliders for all DealMaker parameters organized by section.
  */
@@ -41,12 +41,12 @@ export interface DealMakerValues {
   arv: number
   propertyTaxes: number
   insurance: number
-  
+
   // LTR-specific fields
   monthlyRent: number
   vacancyRate: number
   managementRate: number
-  
+
   // STR-specific fields
   averageDailyRate: number
   occupancyRate: number
@@ -58,7 +58,7 @@ export interface DealMakerValues {
   suppliesMonthly: number
   additionalUtilitiesMonthly: number
   furnitureSetupCost: number
-  
+
   // BRRRR-specific fields
   buyDiscountPct: number
   hardMoneyRate: number
@@ -72,7 +72,7 @@ export interface DealMakerValues {
   contingencyPct: number
   maintenanceRate: number
   monthlyHoa: number
-  
+
   // Fix & Flip-specific fields
   financingType: 'cash' | 'hardMoney'
   hardMoneyLtv: number
@@ -81,7 +81,7 @@ export interface DealMakerValues {
   daysOnMarket: number
   sellingCostsPct: number
   capitalGainsRate: number
-  
+
   // House Hack-specific fields
   totalUnits: number
   ownerOccupiedUnits: number
@@ -92,7 +92,7 @@ export interface DealMakerValues {
   currentHousingPayment: number
   utilitiesMonthly: number
   capexRate: number
-  
+
   // Wholesale-specific fields
   estimatedRepairs: number
   squareFootage: number
@@ -267,12 +267,18 @@ const DEFAULT_WHOLESALE_VALUES: DealMakerValues = {
 // Get defaults based on strategy
 function getDefaultValues(strategy: PopupStrategyType): DealMakerValues {
   switch (strategy) {
-    case 'str': return DEFAULT_STR_VALUES
-    case 'brrrr': return DEFAULT_BRRRR_VALUES
-    case 'flip': return DEFAULT_FLIP_VALUES
-    case 'house_hack': return DEFAULT_HOUSEHACK_VALUES
-    case 'wholesale': return DEFAULT_WHOLESALE_VALUES
-    default: return DEFAULT_LTR_VALUES
+    case 'str':
+      return DEFAULT_STR_VALUES
+    case 'brrrr':
+      return DEFAULT_BRRRR_VALUES
+    case 'flip':
+      return DEFAULT_FLIP_VALUES
+    case 'house_hack':
+      return DEFAULT_HOUSEHACK_VALUES
+    case 'wholesale':
+      return DEFAULT_WHOLESALE_VALUES
+    default:
+      return DEFAULT_LTR_VALUES
   }
 }
 
@@ -292,7 +298,15 @@ function SectionDivider({ text }: { text: string }) {
 }
 
 // Calculated field display
-function CalculatedField({ label, value, valueClassName = 'text-[#F1F5F9]' }: { label: string; value: string; valueClassName?: string }) {
+function CalculatedField({
+  label,
+  value,
+  valueClassName = 'text-[#F1F5F9]',
+}: {
+  label: string
+  value: string
+  valueClassName?: string
+}) {
   return (
     <div className="flex justify-between items-center p-3.5 px-4 bg-white/[0.03] rounded-xl mb-5 border border-white/[0.07]">
       <span className="text-sm text-[#CBD5E1]">{label}</span>
@@ -318,7 +332,7 @@ export function DealMakerPopup({
 
   // Get defaults based on strategy
   const defaults = useMemo(() => getDefaultValues(strategyType), [strategyType])
-  
+
   // Merge initial values with defaults
   const [values, setValues] = useState<DealMakerValues>({
     ...defaults,
@@ -378,49 +392,55 @@ export function DealMakerPopup({
 
   // Calculate derived values
   const loanAmount = values.buyPrice * (1 - values.downPayment / 100)
-  
+
   // STR-specific calculations
   const strCalculations = useMemo(() => {
     if (strategyType !== 'str') return null
-    
+
     const nightsOccupied = Math.round(365 * (values.occupancyRate / 100))
-    const turnovers = values.avgLengthOfStayDays > 0 
-      ? Math.round(nightsOccupied / values.avgLengthOfStayDays) 
-      : 0
+    const turnovers =
+      values.avgLengthOfStayDays > 0 ? Math.round(nightsOccupied / values.avgLengthOfStayDays) : 0
     const rentalRevenue = values.averageDailyRate * nightsOccupied
     const cleaningRevenue = values.cleaningFeeRevenue * turnovers
     const annualGrossRevenue = rentalRevenue + cleaningRevenue
     const monthlyGrossRevenue = annualGrossRevenue / 12
-    
+
     // Calculate break-even occupancy
     // Fixed monthly costs
     const monthlyMortgage = calculateMortgagePayment(
       values.buyPrice * (1 - values.downPayment / 100),
       values.interestRate,
-      values.loanTerm
+      values.loanTerm,
     )
     const monthlyTaxes = values.propertyTaxes / 12
     const monthlyInsurance = values.insurance / 12
-    const fixedMonthlyCosts = monthlyMortgage + monthlyTaxes + monthlyInsurance + values.suppliesMonthly + values.additionalUtilitiesMonthly
-    
+    const fixedMonthlyCosts =
+      monthlyMortgage +
+      monthlyTaxes +
+      monthlyInsurance +
+      values.suppliesMonthly +
+      values.additionalUtilitiesMonthly
+
     // Variable costs per night
     const platformFeePerNight = values.averageDailyRate * (values.platformFeeRate / 100)
     const managementPerNight = values.averageDailyRate * (values.strManagementRate / 100)
-    const cleaningCostPerNight = values.avgLengthOfStayDays > 0 
-      ? values.cleaningCostPerTurnover / values.avgLengthOfStayDays 
-      : 0
+    const cleaningCostPerNight =
+      values.avgLengthOfStayDays > 0
+        ? values.cleaningCostPerTurnover / values.avgLengthOfStayDays
+        : 0
     const variableCostPerNight = platformFeePerNight + managementPerNight + cleaningCostPerNight
-    
+
     // Net revenue per night
-    const revenuePerNight = values.averageDailyRate + (values.avgLengthOfStayDays > 0 ? values.cleaningFeeRevenue / values.avgLengthOfStayDays : 0)
+    const revenuePerNight =
+      values.averageDailyRate +
+      (values.avgLengthOfStayDays > 0 ? values.cleaningFeeRevenue / values.avgLengthOfStayDays : 0)
     const netRevenuePerNight = revenuePerNight - variableCostPerNight
-    
+
     // Break-even nights per month
-    const breakEvenNightsPerMonth = netRevenuePerNight > 0 
-      ? fixedMonthlyCosts / netRevenuePerNight 
-      : 999
+    const breakEvenNightsPerMonth =
+      netRevenuePerNight > 0 ? fixedMonthlyCosts / netRevenuePerNight : 999
     const breakEvenOccupancy = Math.min(100, Math.round((breakEvenNightsPerMonth / 30.4) * 100))
-    
+
     return {
       nightsOccupied,
       turnovers,
@@ -433,19 +453,19 @@ export function DealMakerPopup({
   // BRRRR-specific calculations
   const brrrrCalculations = useMemo(() => {
     if (strategyType !== 'brrrr') return null
-    
+
     // Total acquisition cost
     const totalRehabCost = values.rehabBudget * (1 + values.contingencyPct / 100)
     const holdingCosts = values.holdingCostsMonthly * values.holdingPeriodMonths
-    const acquisitionCost = values.buyPrice + values.closingCosts / 100 * values.buyPrice
+    const acquisitionCost = values.buyPrice + (values.closingCosts / 100) * values.buyPrice
     const totalInvestment = acquisitionCost + totalRehabCost + holdingCosts
-    
+
     // Refinance
     const refinanceLoanAmount = values.arv * (values.refinanceLtv / 100)
     const refinanceClosingCosts = refinanceLoanAmount * (values.refinanceClosingCostsPct / 100)
     const cashOutAtRefi = refinanceLoanAmount - refinanceClosingCosts
     const moneyLeftInDeal = Math.max(0, totalInvestment - cashOutAtRefi)
-    
+
     return {
       totalInvestment,
       cashOutAtRefi,
@@ -456,13 +476,13 @@ export function DealMakerPopup({
   // Fix & Flip-specific calculations
   const flipCalculations = useMemo(() => {
     if (strategyType !== 'flip') return null
-    
+
     // Costs
     const totalRehabCost = values.rehabBudget * (1 + values.contingencyPct / 100)
     const acquisitionCost = values.buyPrice * (1 + values.closingCosts / 100)
-    const holdingMonths = values.rehabTimeMonths + (values.daysOnMarket / 30)
+    const holdingMonths = values.rehabTimeMonths + values.daysOnMarket / 30
     const holdingCosts = values.holdingCostsMonthly * holdingMonths
-    
+
     // Financing costs (if hard money)
     let financingCosts = 0
     if (values.financingType === 'hardMoney') {
@@ -471,26 +491,30 @@ export function DealMakerPopup({
       const interest = loanAmount * (values.hardMoneyRate / 100 / 12) * holdingMonths
       financingCosts = points + interest
     }
-    
+
     const totalCost = acquisitionCost + totalRehabCost + holdingCosts + financingCosts
-    
+
     // Sale
     const salePrice = values.arv
     const sellingCosts = salePrice * (values.sellingCostsPct / 100)
     const grossProfit = salePrice - sellingCosts - totalCost
     const taxes = grossProfit > 0 ? grossProfit * (values.capitalGainsRate / 100) : 0
     const netProfit = grossProfit - taxes
-    
+
     // 70% Rule
-    const maxAllowableOffer = values.arv * 0.70 - values.rehabBudget
+    const maxAllowableOffer = values.arv * 0.7 - values.rehabBudget
     const meets70PercentRule = values.buyPrice <= maxAllowableOffer
-    
+
     // ROI
-    const cashInvested = values.financingType === 'cash' 
-      ? totalCost 
-      : acquisitionCost * (1 - values.hardMoneyLtv / 100) + totalRehabCost + holdingCosts + financingCosts
+    const cashInvested =
+      values.financingType === 'cash'
+        ? totalCost
+        : acquisitionCost * (1 - values.hardMoneyLtv / 100) +
+          totalRehabCost +
+          holdingCosts +
+          financingCosts
     const roi = cashInvested > 0 ? (netProfit / cashInvested) * 100 : 0
-    
+
     return {
       totalCost,
       netProfit,
@@ -502,38 +526,40 @@ export function DealMakerPopup({
   // House Hack-specific calculations
   const houseHackCalculations = useMemo(() => {
     if (strategyType !== 'house_hack') return null
-    
+
     // Calculate PITI
     const loanAmount = values.buyPrice * (1 - values.downPayment / 100)
-    const monthlyMortgage = calculateMortgagePayment(loanAmount, values.interestRate, values.loanTerm)
+    const monthlyMortgage = calculateMortgagePayment(
+      loanAmount,
+      values.interestRate,
+      values.loanTerm,
+    )
     const monthlyTaxes = values.propertyTaxes / 12
     const monthlyInsurance = values.insurance / 12
-    const monthlyPMI = loanAmount * (values.pmiRate / 100) / 12
+    const monthlyPMI = (loanAmount * (values.pmiRate / 100)) / 12
     const monthlyPITI = monthlyMortgage + monthlyTaxes + monthlyInsurance + monthlyPMI
-    
+
     // Rental income from rented units only
     const rentedUnits = values.totalUnits - values.ownerOccupiedUnits
     const grossRentalIncome = values.avgRentPerUnit * rentedUnits
     const effectiveRentalIncome = grossRentalIncome * (1 - values.vacancyRate / 100)
-    
+
     // Operating expenses
     const operatingExpenses = values.utilitiesMonthly
-    
+
     // Net rental income
     const netRentalIncome = effectiveRentalIncome - operatingExpenses
-    
+
     // Effective housing cost
     const effectiveHousingCost = monthlyPITI - netRentalIncome
     const livesForFree = effectiveHousingCost <= 0
-    
+
     // Housing offset percentage
-    const housingOffsetPercent = monthlyPITI > 0 
-      ? (netRentalIncome / monthlyPITI) * 100 
-      : 0
-    
+    const housingOffsetPercent = monthlyPITI > 0 ? (netRentalIncome / monthlyPITI) * 100 : 0
+
     // Savings vs current housing
     const housingCostSavings = values.currentHousingPayment - effectiveHousingCost
-    
+
     return {
       monthlyPITI,
       effectiveHousingCost,
@@ -546,22 +572,23 @@ export function DealMakerPopup({
   // Wholesale-specific calculations
   const wholesaleCalculations = useMemo(() => {
     if (strategyType !== 'wholesale') return null
-    
+
     // 70% Rule MAO
-    const maxAllowableOffer = values.arv * 0.70 - values.estimatedRepairs
+    const maxAllowableOffer = values.arv * 0.7 - values.estimatedRepairs
     const meets70PercentRule = values.contractPrice <= maxAllowableOffer
-    
+
     // End buyer analysis
     const endBuyerPrice = values.contractPrice + values.assignmentFee
-    const endBuyerAllIn = endBuyerPrice + values.estimatedRepairs + (endBuyerPrice * 0.03)
+    const endBuyerAllIn = endBuyerPrice + values.estimatedRepairs + endBuyerPrice * 0.03
     const buyerSellingCosts = values.arv * 0.08
     const endBuyerProfit = values.arv - buyerSellingCosts - endBuyerAllIn
-    
+
     // Your profit
-    const totalCashAtRisk = values.earnestMoney + values.marketingCosts + values.wholesaleClosingCosts
+    const totalCashAtRisk =
+      values.earnestMoney + values.marketingCosts + values.wholesaleClosingCosts
     const netProfit = values.assignmentFee - values.marketingCosts - values.wholesaleClosingCosts
     const roi = totalCashAtRisk > 0 ? (netProfit / totalCashAtRisk) * 100 : 0
-    
+
     return {
       maxAllowableOffer,
       meets70PercentRule,
@@ -573,7 +600,7 @@ export function DealMakerPopup({
 
   // Handle value change (accepts number or string for special fields like financingType, loanType)
   const handleChange = useCallback((field: keyof DealMakerValues, value: number | string) => {
-    setValues(prev => ({ ...prev, [field]: value }))
+    setValues((prev) => ({ ...prev, [field]: value }))
   }, [])
 
   // Handle apply
@@ -599,7 +626,10 @@ export function DealMakerPopup({
 
   if (sessionLoading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
+      <div
+        className="fixed inset-0 z-50 flex items-end justify-center"
+        style={{ background: 'rgba(0,0,0,0.6)' }}
+      >
         <div className="w-full max-w-lg bg-[var(--surface-base)] rounded-t-2xl p-8 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400" />
         </div>
@@ -609,18 +639,25 @@ export function DealMakerPopup({
 
   if (!isAuthenticated) {
     return (
-      <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
+      <div
+        className="fixed inset-0 z-50 flex items-end justify-center"
+        style={{ background: 'rgba(0,0,0,0.6)' }}
+      >
         <div className="w-full max-w-lg bg-[var(--surface-base)] rounded-t-2xl p-8 text-center">
           <div className="mb-4 text-4xl">🔐</div>
           <h3 className="text-xl font-bold text-white mb-2">Sign in to change terms</h3>
           <p className="text-sm text-slate-400 mb-6">
-            Create a free account to adjust loan terms, edit inputs, and see the Deal Gap recalculate in real time.
+            Create a free account to adjust loan terms, edit inputs, and see the Deal Gap
+            recalculate in real time.
           </p>
           <div className="flex gap-3 justify-center">
             <Link
               href={signInUrl}
               className="px-6 py-2.5 rounded-lg text-sm font-bold text-white"
-              style={{ background: 'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))' }}
+              style={{
+                background:
+                  'linear-gradient(135deg, var(--accent-gradient-from), var(--accent-gradient-to))',
+              }}
             >
               Sign in
             </Link>
@@ -637,9 +674,9 @@ export function DealMakerPopup({
   }
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-end justify-center animate-fadeIn"
-      style={{ 
+      style={{
         background: 'rgba(0, 0, 0, 0.85)',
         backdropFilter: 'blur(4px)',
       }}
@@ -647,9 +684,7 @@ export function DealMakerPopup({
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div 
-        className="w-full max-w-[480px] max-h-[90vh] bg-[var(--surface-base)] rounded-t-[20px] flex flex-col animate-slideUp"
-      >
+      <div className="w-full max-w-[480px] max-h-[90vh] bg-[var(--surface-base)] rounded-t-[20px] flex flex-col animate-slideUp">
         {/* Drag Handle */}
         <div className="flex justify-center py-3 pb-2">
           <div className="w-12 h-1 bg-white/[0.15] rounded-full" />
@@ -658,12 +693,17 @@ export function DealMakerPopup({
         {/* Header */}
         <div className="flex items-center justify-between px-5 pb-4 border-b border-white/[0.07] flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ background: 'linear-gradient(135deg, #101828 0%, #1E293B 100%)' }}
             >
               <svg width="20" height="20" fill="none" stroke="#38bdf8" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"
+                />
               </svg>
             </div>
             <div>
@@ -673,7 +713,9 @@ export function DealMakerPopup({
               </h2>
               {/* Strategy Toggle */}
               <div className="flex flex-wrap items-center gap-0.5 mt-1">
-                {(['ltr', 'str', 'brrrr', 'flip', 'house_hack', 'wholesale'] as PopupStrategyType[]).map((s, idx, arr) => (
+                {(
+                  ['ltr', 'str', 'brrrr', 'flip', 'house_hack', 'wholesale'] as PopupStrategyType[]
+                ).map((s, idx, arr) => (
                   <button
                     key={s}
                     onClick={() => onStrategyChange?.(s)}
@@ -691,7 +733,7 @@ export function DealMakerPopup({
               </div>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="w-9 h-9 flex items-center justify-center bg-white/[0.05] rounded-xl text-[#94A3B8] hover:bg-white/[0.1] hover:text-[#F1F5F9] transition-colors"
           >
@@ -730,13 +772,17 @@ export function DealMakerPopup({
             <Info className="w-4 h-4 text-[var(--accent-sky)]" />
           </div>
           <p className="text-[13px] text-[var(--accent-sky)] leading-relaxed">
-            Adjust the sliders or tap values to edit. Changes will recalculate your deal analytics in real-time.
+            Adjust the sliders or tap values to edit. Changes will recalculate your deal analytics
+            in real-time.
           </p>
         </div>
 
         {/* Scrollable Content */}
-        <div ref={contentRef} className="flex-1 overflow-y-auto px-5 pb-5 overscroll-contain scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          
+        <div
+          ref={contentRef}
+          className="flex-1 overflow-y-auto px-5 pb-5 overscroll-contain scrollbar-hide"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
           {/* ============================================================== */}
           {/* LTR / STR SECTIONS */}
           {/* ============================================================== */}
@@ -746,7 +792,7 @@ export function DealMakerPopup({
               <div ref={purchaseTermsRef}>
                 <SectionDivider text="Purchase Terms" />
               </div>
-              
+
               <SliderInput
                 label="Buy Price"
                 value={values.buyPrice}
@@ -756,7 +802,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('buyPrice', val)}
               />
-              
+
               <SliderInput
                 label="Down Payment"
                 value={values.downPayment}
@@ -766,7 +812,7 @@ export function DealMakerPopup({
                 format="percent"
                 onChange={(val) => handleChange('downPayment', val)}
               />
-              
+
               <SliderInput
                 label="Closing Costs"
                 value={values.closingCosts}
@@ -781,13 +827,13 @@ export function DealMakerPopup({
               <div ref={financingRef}>
                 <SectionDivider text="Financing" />
               </div>
-              
-              <CalculatedField 
-                label="Loan Amount" 
-                value={`$${loanAmount.toLocaleString()}`} 
+
+              <CalculatedField
+                label="Loan Amount"
+                value={`$${loanAmount.toLocaleString()}`}
                 valueClassName="text-white"
               />
-              
+
               <SliderInput
                 label="Interest Rate"
                 value={values.interestRate}
@@ -797,7 +843,7 @@ export function DealMakerPopup({
                 format="percent"
                 onChange={(val) => handleChange('interestRate', val)}
               />
-              
+
               <SliderInput
                 label="Loan Term"
                 value={values.loanTerm}
@@ -812,7 +858,7 @@ export function DealMakerPopup({
               <div ref={rehabRef}>
                 <SectionDivider text="Rehab & Value" />
               </div>
-              
+
               <SliderInput
                 label="Rehab Budget"
                 value={values.rehabBudget}
@@ -822,7 +868,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('rehabBudget', val)}
               />
-              
+
               <SliderInput
                 label="ARV"
                 sublabel="After Repair Value"
@@ -833,7 +879,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('arv', val)}
               />
-              
+
               {/* Furniture & Setup - STR only */}
               {strategyType === 'str' && (
                 <SliderInput
@@ -857,7 +903,7 @@ export function DealMakerPopup({
             <>
               {/* Phase 1: Buy */}
               <SectionDivider text="Phase 1: Buy" />
-              
+
               <SliderInput
                 label="Purchase Price"
                 value={values.buyPrice}
@@ -867,7 +913,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('buyPrice', val)}
               />
-              
+
               <SliderInput
                 label="Buy Discount"
                 sublabel="Below Zestimate"
@@ -878,7 +924,7 @@ export function DealMakerPopup({
                 format="percent-int"
                 onChange={(val) => handleChange('buyDiscountPct', val)}
               />
-              
+
               <SliderInput
                 label="Hard Money Rate"
                 value={values.hardMoneyRate}
@@ -888,7 +934,7 @@ export function DealMakerPopup({
                 format="percent"
                 onChange={(val) => handleChange('hardMoneyRate', val)}
               />
-              
+
               <SliderInput
                 label="Down Payment"
                 sublabel="Hard money LTV"
@@ -902,7 +948,7 @@ export function DealMakerPopup({
 
               {/* Phase 2: Rehab */}
               <SectionDivider text="Phase 2: Rehab" />
-              
+
               <SliderInput
                 label="Rehab Budget"
                 value={values.rehabBudget}
@@ -912,7 +958,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('rehabBudget', val)}
               />
-              
+
               <SliderInput
                 label="Contingency"
                 value={values.contingencyPct}
@@ -922,7 +968,7 @@ export function DealMakerPopup({
                 format="percent-int"
                 onChange={(val) => handleChange('contingencyPct', val)}
               />
-              
+
               <SliderInput
                 label="Holding Period"
                 value={values.holdingPeriodMonths}
@@ -932,7 +978,7 @@ export function DealMakerPopup({
                 format="currency-month"
                 onChange={(val) => handleChange('holdingPeriodMonths', val)}
               />
-              
+
               <SliderInput
                 label="ARV"
                 sublabel="After Repair Value"
@@ -946,7 +992,7 @@ export function DealMakerPopup({
 
               {/* Phase 3: Rent */}
               <SectionDivider text="Phase 3: Rent" />
-              
+
               <SliderInput
                 label="Post-Rehab Rent"
                 value={values.postRehabMonthlyRent}
@@ -956,7 +1002,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('postRehabMonthlyRent', val)}
               />
-              
+
               <SliderInput
                 label="Vacancy Rate"
                 value={values.vacancyRate}
@@ -966,7 +1012,7 @@ export function DealMakerPopup({
                 format="percent-int"
                 onChange={(val) => handleChange('vacancyRate', val)}
               />
-              
+
               <SliderInput
                 label="Management Rate"
                 value={values.managementRate}
@@ -979,7 +1025,7 @@ export function DealMakerPopup({
 
               {/* Phase 4: Refinance */}
               <SectionDivider text="Phase 4: Refinance" />
-              
+
               <SliderInput
                 label="Refinance LTV"
                 value={values.refinanceLtv}
@@ -989,7 +1035,7 @@ export function DealMakerPopup({
                 format="percent-int"
                 onChange={(val) => handleChange('refinanceLtv', val)}
               />
-              
+
               <SliderInput
                 label="Refinance Rate"
                 value={values.refinanceInterestRate}
@@ -999,7 +1045,7 @@ export function DealMakerPopup({
                 format="percent"
                 onChange={(val) => handleChange('refinanceInterestRate', val)}
               />
-              
+
               <SliderInput
                 label="Loan Term"
                 value={values.refinanceTermYears}
@@ -1009,16 +1055,16 @@ export function DealMakerPopup({
                 format="years"
                 onChange={(val) => handleChange('refinanceTermYears', val)}
               />
-              
+
               {brrrrCalculations && (
                 <>
-                  <CalculatedField 
-                    label="Cash Out at Refi" 
-                    value={`$${brrrrCalculations.cashOutAtRefi.toLocaleString()}`} 
+                  <CalculatedField
+                    label="Cash Out at Refi"
+                    value={`$${brrrrCalculations.cashOutAtRefi.toLocaleString()}`}
                   />
-                  <CalculatedField 
-                    label="Money Left in Deal" 
-                    value={`$${brrrrCalculations.moneyLeftInDeal.toLocaleString()}`} 
+                  <CalculatedField
+                    label="Money Left in Deal"
+                    value={`$${brrrrCalculations.moneyLeftInDeal.toLocaleString()}`}
                   />
                 </>
               )}
@@ -1032,7 +1078,7 @@ export function DealMakerPopup({
             <>
               {/* Phase 1: Buy */}
               <SectionDivider text="Phase 1: Buy" />
-              
+
               <SliderInput
                 label="Purchase Price"
                 value={values.buyPrice}
@@ -1042,7 +1088,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('buyPrice', val)}
               />
-              
+
               <SliderInput
                 label="Closing Costs"
                 value={values.closingCosts}
@@ -1055,7 +1101,7 @@ export function DealMakerPopup({
 
               {/* Phase 2: Financing */}
               <SectionDivider text="Phase 2: Financing" />
-              
+
               <div className="flex gap-2 mb-4">
                 <button
                   onClick={() => handleChange('financingType', 'cash')}
@@ -1078,7 +1124,7 @@ export function DealMakerPopup({
                   Hard Money
                 </button>
               </div>
-              
+
               {values.financingType === 'hardMoney' && (
                 <>
                   <SliderInput
@@ -1090,7 +1136,7 @@ export function DealMakerPopup({
                     format="percent-int"
                     onChange={(val) => handleChange('hardMoneyLtv', val)}
                   />
-                  
+
                   <SliderInput
                     label="Interest Rate"
                     value={values.hardMoneyRate}
@@ -1100,7 +1146,7 @@ export function DealMakerPopup({
                     format="percent"
                     onChange={(val) => handleChange('hardMoneyRate', val)}
                   />
-                  
+
                   <SliderInput
                     label="Loan Points"
                     value={values.loanPoints}
@@ -1115,7 +1161,7 @@ export function DealMakerPopup({
 
               {/* Phase 3: Rehab */}
               <SectionDivider text="Phase 3: Rehab" />
-              
+
               <SliderInput
                 label="Rehab Budget"
                 value={values.rehabBudget}
@@ -1125,7 +1171,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('rehabBudget', val)}
               />
-              
+
               <SliderInput
                 label="Contingency"
                 value={values.contingencyPct}
@@ -1135,7 +1181,7 @@ export function DealMakerPopup({
                 format="percent-int"
                 onChange={(val) => handleChange('contingencyPct', val)}
               />
-              
+
               <SliderInput
                 label="Rehab Timeline"
                 value={values.rehabTimeMonths}
@@ -1145,7 +1191,7 @@ export function DealMakerPopup({
                 format="currency-month"
                 onChange={(val) => handleChange('rehabTimeMonths', val)}
               />
-              
+
               <SliderInput
                 label="ARV"
                 sublabel="After Repair Value"
@@ -1159,7 +1205,7 @@ export function DealMakerPopup({
 
               {/* Phase 4: Hold & Sell */}
               <SectionDivider text="Phase 4: Hold & Sell" />
-              
+
               <SliderInput
                 label="Holding Costs"
                 sublabel="Monthly"
@@ -1170,7 +1216,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('holdingCostsMonthly', val)}
               />
-              
+
               <SliderInput
                 label="Days on Market"
                 value={values.daysOnMarket}
@@ -1180,7 +1226,7 @@ export function DealMakerPopup({
                 format="days"
                 onChange={(val) => handleChange('daysOnMarket', val)}
               />
-              
+
               <SliderInput
                 label="Selling Costs"
                 sublabel="Agent + closing"
@@ -1191,7 +1237,7 @@ export function DealMakerPopup({
                 format="percent"
                 onChange={(val) => handleChange('sellingCostsPct', val)}
               />
-              
+
               <SliderInput
                 label="Capital Gains Tax"
                 value={values.capitalGainsRate}
@@ -1201,20 +1247,17 @@ export function DealMakerPopup({
                 format="percent-int"
                 onChange={(val) => handleChange('capitalGainsRate', val)}
               />
-              
+
               {flipCalculations && (
                 <>
-                  <CalculatedField 
-                    label="Net Profit" 
-                    value={`$${flipCalculations.netProfit.toLocaleString()}`} 
+                  <CalculatedField
+                    label="Net Profit"
+                    value={`$${flipCalculations.netProfit.toLocaleString()}`}
                   />
-                  <CalculatedField 
-                    label="ROI" 
-                    value={`${flipCalculations.roi.toFixed(1)}%`} 
-                  />
-                  <CalculatedField 
-                    label="70% Rule" 
-                    value={flipCalculations.meets70PercentRule ? 'PASS' : 'FAIL'} 
+                  <CalculatedField label="ROI" value={`${flipCalculations.roi.toFixed(1)}%`} />
+                  <CalculatedField
+                    label="70% Rule"
+                    value={flipCalculations.meets70PercentRule ? 'PASS' : 'FAIL'}
                   />
                 </>
               )}
@@ -1228,7 +1271,7 @@ export function DealMakerPopup({
             <>
               {/* Phase 1: Property */}
               <SectionDivider text="Phase 1: Property" />
-              
+
               <SliderInput
                 label="Purchase Price"
                 value={values.buyPrice}
@@ -1238,7 +1281,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('buyPrice', val)}
               />
-              
+
               <SliderInput
                 label="Total Units"
                 value={values.totalUnits}
@@ -1248,7 +1291,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('totalUnits', val)}
               />
-              
+
               <SliderInput
                 label="Owner Units"
                 value={values.ownerOccupiedUnits}
@@ -1261,7 +1304,7 @@ export function DealMakerPopup({
 
               {/* Phase 2: Financing */}
               <SectionDivider text="Phase 2: Financing" />
-              
+
               <div className="flex gap-2 mb-4">
                 {(['fha', 'conventional', 'va'] as const).map((type) => (
                   <button
@@ -1277,7 +1320,7 @@ export function DealMakerPopup({
                   </button>
                 ))}
               </div>
-              
+
               <SliderInput
                 label="Down Payment"
                 value={values.downPayment}
@@ -1287,7 +1330,7 @@ export function DealMakerPopup({
                 format="percent"
                 onChange={(val) => handleChange('downPayment', val)}
               />
-              
+
               <SliderInput
                 label="Interest Rate"
                 value={values.interestRate}
@@ -1297,7 +1340,7 @@ export function DealMakerPopup({
                 format="percent"
                 onChange={(val) => handleChange('interestRate', val)}
               />
-              
+
               <SliderInput
                 label="PMI/MIP Rate"
                 value={values.pmiRate}
@@ -1310,7 +1353,7 @@ export function DealMakerPopup({
 
               {/* Phase 3: Rent */}
               <SectionDivider text="Phase 3: Rent" />
-              
+
               <SliderInput
                 label="Avg Rent Per Unit"
                 value={values.avgRentPerUnit}
@@ -1320,7 +1363,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('avgRentPerUnit', val)}
               />
-              
+
               <SliderInput
                 label="Vacancy Rate"
                 value={values.vacancyRate}
@@ -1330,7 +1373,7 @@ export function DealMakerPopup({
                 format="percent-int"
                 onChange={(val) => handleChange('vacancyRate', val)}
               />
-              
+
               <SliderInput
                 label="Current Housing Cost"
                 sublabel="What you pay now"
@@ -1344,7 +1387,7 @@ export function DealMakerPopup({
 
               {/* Phase 4: Expenses */}
               <SectionDivider text="Phase 4: Expenses" />
-              
+
               <SliderInput
                 label="Property Taxes"
                 value={values.propertyTaxes}
@@ -1354,7 +1397,7 @@ export function DealMakerPopup({
                 format="currency-year"
                 onChange={(val) => handleChange('propertyTaxes', val)}
               />
-              
+
               <SliderInput
                 label="Insurance"
                 value={values.insurance}
@@ -1364,7 +1407,7 @@ export function DealMakerPopup({
                 format="currency-year"
                 onChange={(val) => handleChange('insurance', val)}
               />
-              
+
               <SliderInput
                 label="Utilities"
                 sublabel="Owner paid"
@@ -1375,16 +1418,20 @@ export function DealMakerPopup({
                 format="currency-month"
                 onChange={(val) => handleChange('utilitiesMonthly', val)}
               />
-              
+
               {houseHackCalculations && (
                 <>
-                  <CalculatedField 
-                    label="Effective Housing Cost" 
-                    value={houseHackCalculations.livesForFree ? 'FREE!' : `$${houseHackCalculations.effectiveHousingCost.toLocaleString()}/mo`} 
+                  <CalculatedField
+                    label="Effective Housing Cost"
+                    value={
+                      houseHackCalculations.livesForFree
+                        ? 'FREE!'
+                        : `$${houseHackCalculations.effectiveHousingCost.toLocaleString()}/mo`
+                    }
                   />
-                  <CalculatedField 
-                    label="Housing Offset" 
-                    value={`${houseHackCalculations.housingOffsetPercent.toFixed(0)}%`} 
+                  <CalculatedField
+                    label="Housing Offset"
+                    value={`${houseHackCalculations.housingOffsetPercent.toFixed(0)}%`}
                   />
                 </>
               )}
@@ -1398,7 +1445,7 @@ export function DealMakerPopup({
             <>
               {/* Phase 1: Property Analysis */}
               <SectionDivider text="Phase 1: Property" />
-              
+
               <SliderInput
                 label="ARV"
                 sublabel="After Repair Value"
@@ -1409,7 +1456,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('arv', val)}
               />
-              
+
               <SliderInput
                 label="Estimated Repairs"
                 value={values.estimatedRepairs}
@@ -1419,17 +1466,17 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('estimatedRepairs', val)}
               />
-              
+
               {wholesaleCalculations && (
-                <CalculatedField 
-                  label="70% Rule MAO" 
-                  value={`$${wholesaleCalculations.maxAllowableOffer.toLocaleString()}`} 
+                <CalculatedField
+                  label="70% Rule MAO"
+                  value={`$${wholesaleCalculations.maxAllowableOffer.toLocaleString()}`}
                 />
               )}
 
               {/* Phase 2: Contract */}
               <SectionDivider text="Phase 2: Contract" />
-              
+
               <SliderInput
                 label="Contract Price"
                 value={values.contractPrice}
@@ -1439,7 +1486,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('contractPrice', val)}
               />
-              
+
               <SliderInput
                 label="Earnest Money"
                 value={values.earnestMoney}
@@ -1449,7 +1496,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('earnestMoney', val)}
               />
-              
+
               <SliderInput
                 label="Inspection Period"
                 value={values.inspectionPeriodDays}
@@ -1459,7 +1506,7 @@ export function DealMakerPopup({
                 format="days"
                 onChange={(val) => handleChange('inspectionPeriodDays', val)}
               />
-              
+
               <SliderInput
                 label="Days to Close"
                 value={values.daysToClose}
@@ -1469,17 +1516,17 @@ export function DealMakerPopup({
                 format="days"
                 onChange={(val) => handleChange('daysToClose', val)}
               />
-              
+
               {wholesaleCalculations && (
-                <CalculatedField 
-                  label="70% Rule" 
-                  value={wholesaleCalculations.meets70PercentRule ? 'PASS' : 'FAIL'} 
+                <CalculatedField
+                  label="70% Rule"
+                  value={wholesaleCalculations.meets70PercentRule ? 'PASS' : 'FAIL'}
                 />
               )}
 
               {/* Phase 3: Assignment */}
               <SectionDivider text="Phase 3: Assignment" />
-              
+
               <SliderInput
                 label="Assignment Fee"
                 value={values.assignmentFee}
@@ -1489,7 +1536,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('assignmentFee', val)}
               />
-              
+
               <SliderInput
                 label="Marketing Costs"
                 value={values.marketingCosts}
@@ -1499,7 +1546,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('marketingCosts', val)}
               />
-              
+
               <SliderInput
                 label="Closing Costs"
                 value={values.wholesaleClosingCosts}
@@ -1509,20 +1556,17 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('wholesaleClosingCosts', val)}
               />
-              
+
               {wholesaleCalculations && (
                 <>
-                  <CalculatedField 
-                    label="Net Profit" 
-                    value={`$${wholesaleCalculations.netProfit.toLocaleString()}`} 
+                  <CalculatedField
+                    label="Net Profit"
+                    value={`$${wholesaleCalculations.netProfit.toLocaleString()}`}
                   />
-                  <CalculatedField 
-                    label="ROI" 
-                    value={`${wholesaleCalculations.roi.toFixed(0)}%`} 
-                  />
-                  <CalculatedField 
-                    label="Buyer Profit" 
-                    value={`$${wholesaleCalculations.endBuyerProfit.toLocaleString()}`} 
+                  <CalculatedField label="ROI" value={`${wholesaleCalculations.roi.toFixed(0)}%`} />
+                  <CalculatedField
+                    label="Buyer Profit"
+                    value={`$${wholesaleCalculations.endBuyerProfit.toLocaleString()}`}
                   />
                 </>
               )}
@@ -1534,7 +1578,7 @@ export function DealMakerPopup({
             <>
               {/* STR Income Section */}
               <SectionDivider text="STR Income" />
-              
+
               <SliderInput
                 label="Average Daily Rate"
                 sublabel="ADR"
@@ -1545,7 +1589,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('averageDailyRate', val)}
               />
-              
+
               <SliderInput
                 label="Occupancy Rate"
                 value={values.occupancyRate}
@@ -1555,7 +1599,7 @@ export function DealMakerPopup({
                 format="percent-int"
                 onChange={(val) => handleChange('occupancyRate', val)}
               />
-              
+
               <SliderInput
                 label="Cleaning Fee"
                 sublabel="Revenue per stay"
@@ -1566,7 +1610,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('cleaningFeeRevenue', val)}
               />
-              
+
               <SliderInput
                 label="Avg Length of Stay"
                 value={values.avgLengthOfStayDays}
@@ -1576,11 +1620,11 @@ export function DealMakerPopup({
                 format="days"
                 onChange={(val) => handleChange('avgLengthOfStayDays', val)}
               />
-              
+
               {strCalculations && (
-                <CalculatedField 
-                  label="Annual Gross Revenue" 
-                  value={`$${strCalculations.annualGrossRevenue.toLocaleString()}`} 
+                <CalculatedField
+                  label="Annual Gross Revenue"
+                  value={`$${strCalculations.annualGrossRevenue.toLocaleString()}`}
                 />
               )}
             </>
@@ -1590,7 +1634,7 @@ export function DealMakerPopup({
               <div ref={incomeRef}>
                 <SectionDivider text="Rental Income" />
               </div>
-              
+
               <SliderInput
                 label="Monthly Rent"
                 value={values.monthlyRent}
@@ -1600,7 +1644,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('monthlyRent', val)}
               />
-              
+
               <SliderInput
                 label="Vacancy Rate"
                 value={values.vacancyRate}
@@ -1618,7 +1662,7 @@ export function DealMakerPopup({
             <>
               {/* STR Expenses Section */}
               <SectionDivider text="STR Expenses" />
-              
+
               <SliderInput
                 label="Platform Fees"
                 sublabel="Airbnb/VRBO"
@@ -1629,7 +1673,7 @@ export function DealMakerPopup({
                 format="percent-int"
                 onChange={(val) => handleChange('platformFeeRate', val)}
               />
-              
+
               <SliderInput
                 label="STR Management"
                 value={values.strManagementRate}
@@ -1639,7 +1683,7 @@ export function DealMakerPopup({
                 format="percent-int"
                 onChange={(val) => handleChange('strManagementRate', val)}
               />
-              
+
               <SliderInput
                 label="Cleaning Cost"
                 sublabel="Per turnover"
@@ -1650,7 +1694,7 @@ export function DealMakerPopup({
                 format="currency"
                 onChange={(val) => handleChange('cleaningCostPerTurnover', val)}
               />
-              
+
               <SliderInput
                 label="Supplies & Consumables"
                 value={values.suppliesMonthly}
@@ -1660,7 +1704,7 @@ export function DealMakerPopup({
                 format="currency-month"
                 onChange={(val) => handleChange('suppliesMonthly', val)}
               />
-              
+
               <SliderInput
                 label="Additional Utilities"
                 value={values.additionalUtilitiesMonthly}
@@ -1670,7 +1714,7 @@ export function DealMakerPopup({
                 format="currency-month"
                 onChange={(val) => handleChange('additionalUtilitiesMonthly', val)}
               />
-              
+
               <SliderInput
                 label="Property Taxes"
                 value={values.propertyTaxes}
@@ -1680,7 +1724,7 @@ export function DealMakerPopup({
                 format="currency-year"
                 onChange={(val) => handleChange('propertyTaxes', val)}
               />
-              
+
               <SliderInput
                 label="Insurance"
                 sublabel="STR coverage"
@@ -1691,11 +1735,11 @@ export function DealMakerPopup({
                 format="currency-year"
                 onChange={(val) => handleChange('insurance', val)}
               />
-              
+
               {strCalculations && (
-                <CalculatedField 
-                  label="Break-Even Occupancy" 
-                  value={`${strCalculations.breakEvenOccupancy}%`} 
+                <CalculatedField
+                  label="Break-Even Occupancy"
+                  value={`${strCalculations.breakEvenOccupancy}%`}
                 />
               )}
             </>
@@ -1705,7 +1749,7 @@ export function DealMakerPopup({
               <div ref={expensesRef}>
                 <SectionDivider text="Operating Expenses" />
               </div>
-              
+
               <SliderInput
                 label="Property Taxes"
                 value={values.propertyTaxes}
@@ -1715,7 +1759,7 @@ export function DealMakerPopup({
                 format="currency-year"
                 onChange={(val) => handleChange('propertyTaxes', val)}
               />
-              
+
               <SliderInput
                 label="Insurance"
                 value={values.insurance}
@@ -1725,7 +1769,7 @@ export function DealMakerPopup({
                 format="currency-year"
                 onChange={(val) => handleChange('insurance', val)}
               />
-              
+
               <SliderInput
                 label="Management Rate"
                 value={values.managementRate}
@@ -1741,14 +1785,14 @@ export function DealMakerPopup({
 
         {/* Footer Actions */}
         <div className="flex gap-3 px-5 py-4 border-t border-white/[0.07] bg-[var(--surface-base)] flex-shrink-0">
-          <button 
+          <button
             onClick={handleReset}
             className="flex items-center justify-center gap-1.5 px-4 py-3.5 bg-white/[0.04] border border-white/[0.07] rounded-xl text-[#94A3B8] text-[13px] font-medium hover:bg-white/[0.08] hover:text-[#F1F5F9] transition-all"
           >
             <RotateCcw className="w-4 h-4" />
             Reset
           </button>
-          <button 
+          <button
             onClick={handleApply}
             className="flex-1 flex items-center justify-center gap-2 py-3.5 px-5 bg-[var(--accent-sky)] rounded-xl text-white text-[15px] font-semibold hover:bg-[#0284c7] active:scale-[0.98] transition-all"
           >
@@ -1761,12 +1805,20 @@ export function DealMakerPopup({
       {/* Animation styles */}
       <style jsx global>{`
         @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
         @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
         }
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;

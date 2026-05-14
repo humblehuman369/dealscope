@@ -1,65 +1,65 @@
-'use client';
+'use client'
 
 /**
  * ProfitQualityCard Component
- * 
+ *
  * Displays the profit quality score with a circular gauge and key metrics:
  * - Strategy Fit
- * - Risk Level  
+ * - Risk Level
  * - Protection
- * 
+ *
  * Also includes expandable factors and insight text.
  * Includes "How we calculate this" link to explain scoring methodology.
  */
 
-import React, { useState } from 'react';
-import { ScoreMethodologySheet } from '../iq-verdict/ScoreMethodologySheet';
+import React, { useState } from 'react'
+import { ScoreMethodologySheet } from '../iq-verdict/ScoreMethodologySheet'
 
 // Types
 export interface ProfitQualityData {
-  score: number; // 0-100
-  strategyFit: 'Poor' | 'Fair' | 'Good Fit' | 'Great';
-  riskLevel: 'High' | 'Moderate' | 'Low';
-  protection: 'Poor' | 'Fair' | 'Good';
-  insight: string;
-  factors?: ProfitFactor[];
+  score: number // 0-100
+  strategyFit: 'Poor' | 'Fair' | 'Good Fit' | 'Great'
+  riskLevel: 'High' | 'Moderate' | 'Low'
+  protection: 'Poor' | 'Fair' | 'Good'
+  insight: string
+  factors?: ProfitFactor[]
 }
 
 export interface ProfitFactor {
-  label: string;
-  value: string;
-  isPositive: boolean;
+  label: string
+  value: string
+  isPositive: boolean
 }
 
 interface ProfitQualityCardProps {
-  data: ProfitQualityData;
-  isDark?: boolean;
+  data: ProfitQualityData
+  isDark?: boolean
 }
 
 // Circular Progress Component
-function CircularProgress({ 
-  score, 
-  size = 100, 
+function CircularProgress({
+  score,
+  size = 100,
   strokeWidth = 8,
   isDark = false,
-}: { 
-  score: number; 
-  size?: number; 
-  strokeWidth?: number;
-  isDark?: boolean;
+}: {
+  score: number
+  size?: number
+  strokeWidth?: number
+  isDark?: boolean
 }) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const progress = (score / 100) * circumference;
-  const offset = circumference - progress;
+  const radius = (size - strokeWidth) / 2
+  const circumference = radius * 2 * Math.PI
+  const progress = (score / 100) * circumference
+  const offset = circumference - progress
 
   // Score color based on value
   const getScoreColor = () => {
-    if (score >= 80) return 'var(--status-positive)';
-    if (score >= 60) return 'var(--accent-brand-blue)';
-    if (score >= 40) return 'var(--status-warning)';
-    return 'var(--status-negative)';
-  };
+    if (score >= 80) return 'var(--status-positive)'
+    if (score >= 60) return 'var(--accent-brand-blue)'
+    if (score >= 40) return 'var(--status-warning)'
+    return 'var(--status-negative)'
+  }
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -89,51 +89,68 @@ function CircularProgress({
       </svg>
       {/* Score text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`text-[28px] font-extrabold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
+        <span
+          className={`text-[28px] font-extrabold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}
+        >
           {score}
         </span>
-        <span className={`text-xs font-medium -mt-1 ${isDark ? 'text-white/50' : 'text-[var(--text-muted)]'}`}>
+        <span
+          className={`text-xs font-medium -mt-1 ${isDark ? 'text-white/50' : 'text-[var(--text-muted)]'}`}
+        >
           /100
         </span>
       </div>
     </div>
-  );
+  )
 }
 
 export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardProps) {
-  const [showFactors, setShowFactors] = useState(false);
-  const [showMethodology, setShowMethodology] = useState(false);
+  const [showFactors, setShowFactors] = useState(false)
+  const [showMethodology, setShowMethodology] = useState(false)
 
   // Color for strategy fit
   const getStrategyFitColor = () => {
     switch (data.strategyFit) {
-      case 'Great': return 'text-green-500';
-      case 'Good Fit': return 'text-green-500';
-      case 'Fair': return 'text-amber-500';
-      case 'Poor': return 'text-red-500';
-      default: return isDark ? 'text-white' : 'text-[var(--text-heading)]';
+      case 'Great':
+        return 'text-green-500'
+      case 'Good Fit':
+        return 'text-green-500'
+      case 'Fair':
+        return 'text-amber-500'
+      case 'Poor':
+        return 'text-red-500'
+      default:
+        return isDark ? 'text-white' : 'text-[var(--text-heading)]'
     }
-  };
+  }
 
   // Color for risk level
   const getRiskLevelColor = () => {
     switch (data.riskLevel) {
-      case 'Low': return 'text-green-500';
-      case 'Moderate': return 'text-amber-500';
-      case 'High': return 'text-red-500';
-      default: return isDark ? 'text-white' : 'text-[var(--text-heading)]';
+      case 'Low':
+        return 'text-green-500'
+      case 'Moderate':
+        return 'text-amber-500'
+      case 'High':
+        return 'text-red-500'
+      default:
+        return isDark ? 'text-white' : 'text-[var(--text-heading)]'
     }
-  };
+  }
 
   // Color for protection
   const getProtectionColor = () => {
     switch (data.protection) {
-      case 'Good': return 'text-green-500';
-      case 'Fair': return 'text-[var(--accent-sky)]';
-      case 'Poor': return 'text-red-500';
-      default: return isDark ? 'text-white' : 'text-[var(--text-heading)]';
+      case 'Good':
+        return 'text-green-500'
+      case 'Fair':
+        return 'text-[var(--accent-sky)]'
+      case 'Poor':
+        return 'text-red-500'
+      default:
+        return isDark ? 'text-white' : 'text-[var(--text-heading)]'
     }
-  };
+  }
 
   return (
     <div className={`rounded-xl p-4 mb-3 ${isDark ? 'bg-[#0F1D32]' : 'bg-[var(--surface-card)]'}`}>
@@ -150,7 +167,9 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
         {/* Metrics column */}
         <div className="flex-1 space-y-3">
           <div className="flex justify-between items-center">
-            <span className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-[var(--text-secondary)]'}`}>
+            <span
+              className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-[var(--text-secondary)]'}`}
+            >
               Strategy Fit
             </span>
             <span className={`text-[13px] font-semibold ${getStrategyFitColor()}`}>
@@ -158,7 +177,9 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-[var(--text-secondary)]'}`}>
+            <span
+              className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-[var(--text-secondary)]'}`}
+            >
               Risk Level
             </span>
             <span className={`text-[13px] font-semibold ${getRiskLevelColor()}`}>
@@ -166,7 +187,9 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-[var(--text-secondary)]'}`}>
+            <span
+              className={`text-[13px] font-medium ${isDark ? 'text-white/70' : 'text-[var(--text-secondary)]'}`}
+            >
               Protection
             </span>
             <span className={`text-[13px] font-semibold ${getProtectionColor()}`}>
@@ -179,28 +202,33 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
       {/* Action buttons row */}
       <div className="flex items-center justify-between mt-4">
         {/* View Factors */}
-        <button 
+        <button
           className={`flex items-center gap-1 py-1 ${isDark ? 'text-white/60' : 'text-[var(--text-secondary)]'} hover:opacity-80 transition-opacity`}
           onClick={() => setShowFactors(!showFactors)}
         >
           <span className="text-xs font-medium">View Factors</span>
-          <svg 
-            className={`w-3.5 h-3.5 transition-transform duration-200 ${showFactors ? 'rotate-180' : ''}`} 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            className={`w-3.5 h-3.5 transition-transform duration-200 ${showFactors ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
           </svg>
         </button>
 
         {/* How we calculate this */}
-        <button 
+        <button
           className="flex items-center gap-1 py-1 text-[var(--accent-sky)] hover:opacity-80 transition-opacity"
           onClick={() => setShowMethodology(true)}
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           <span className="text-xs font-medium">How we calculate this</span>
         </button>
@@ -212,18 +240,42 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
           {data.factors.map((factor, index) => (
             <div key={index} className="flex items-center gap-2">
               {factor.isPositive ? (
-                <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <svg
+                  className="w-4 h-4 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               ) : (
-                <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <svg
+                  className="w-4 h-4 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               )}
-              <span className={`flex-1 text-xs ${isDark ? 'text-white/80' : 'text-[var(--text-body)]'}`}>
+              <span
+                className={`flex-1 text-xs ${isDark ? 'text-white/80' : 'text-[var(--text-body)]'}`}
+              >
                 {factor.label}
               </span>
-              <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}>
+              <span
+                className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}
+              >
                 {factor.value}
               </span>
             </div>
@@ -233,7 +285,9 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
 
       {/* Insight */}
       <div className="mt-4 pl-3 border-l-[3px] border-[var(--accent-sky)]">
-        <p className={`text-[13px] leading-[18px] ${isDark ? 'text-white/80' : 'text-[var(--text-body)]'}`}>
+        <p
+          className={`text-[13px] leading-[18px] ${isDark ? 'text-white/80' : 'text-[var(--text-body)]'}`}
+        >
           {data.insight}
         </p>
       </div>
@@ -246,7 +300,7 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
         scoreType="profit"
       />
     </div>
-  );
+  )
 }
 
-export default ProfitQualityCard;
+export default ProfitQualityCard

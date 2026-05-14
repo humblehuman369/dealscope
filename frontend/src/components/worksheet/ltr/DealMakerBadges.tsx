@@ -16,10 +16,7 @@ interface DealMakerBadgesProps {
 export function DealMakerBadges({ dealScore, className = '' }: DealMakerBadgesProps) {
   return (
     <div className={`flex items-center justify-center py-4 ${className}`}>
-      <ScoreBadge
-        score={dealScore}
-        label="DEAL SCORE"
-      />
+      <ScoreBadge score={dealScore} label="DEAL SCORE" />
     </div>
   )
 }
@@ -36,24 +33,20 @@ interface ScoreBadgeProps {
 function ScoreBadge({ score, label }: ScoreBadgeProps) {
   const displayValue = score
   const color = getScoreColor(score)
-  
+
   // SVG ring parameters
   const size = 72
   const strokeWidth = 4
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
   const progress = (score / 100) * circumference
-  
+
   return (
     <div className="flex flex-col items-center">
       {/* Circular badge with ring */}
       <div className="relative" style={{ width: size, height: size }}>
         {/* SVG Ring */}
-        <svg 
-          className="transform -rotate-90" 
-          width={size} 
-          height={size}
-        >
+        <svg className="transform -rotate-90" width={size} height={size}>
           {/* Background circle */}
           <circle
             cx={size / 2}
@@ -74,24 +67,21 @@ function ScoreBadge({ score, label }: ScoreBadgeProps) {
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={circumference - progress}
-            style={{ 
+            style={{
               transition: 'stroke-dashoffset 0.5s ease-out',
-              filter: `drop-shadow(0 0 4px ${color}40)`
+              filter: `drop-shadow(0 0 4px ${color}40)`,
             }}
           />
         </svg>
-        
+
         {/* Center content */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span 
-            className="text-2xl font-extrabold"
-            style={{ color }}
-          >
+          <span className="text-2xl font-extrabold" style={{ color }}>
             {displayValue}
           </span>
         </div>
       </div>
-      
+
       {/* Label below */}
       <span className="mt-2 text-[10px] font-semibold text-slate-500 uppercase tracking-wide text-center whitespace-pre-line leading-tight">
         {label.replace(' ', '\n')}

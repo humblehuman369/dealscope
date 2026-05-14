@@ -1,10 +1,10 @@
 /**
  * DealGapIQ Analytics Component Library
- * 
+ *
  * A comprehensive set of components for the redesigned property analytics UI.
  * These components support all 6 investment strategies with their specific metrics,
  * benchmarks, and interactive features.
- * 
+ *
  * @module @/components/analytics
  */
 
@@ -21,17 +21,10 @@ export * from './types'
 export { IQTargetHero, IQTargetHeroCompact } from './IQTargetHero'
 
 // Price Ladder - Visual ladder of price positions
-export { 
-  PriceLadder, 
-  PriceLadderCompact, 
-  generatePriceLadder 
-} from './PriceLadder'
+export { PriceLadder, PriceLadderCompact, generatePriceLadder } from './PriceLadder'
 
 // Deal Gap Chart - Interactive price ladder with deal gap visualization
-export {
-  DealGapChart,
-  DealGapChartCompact
-} from './DealGapChart'
+export { DealGapChart, DealGapChartCompact } from './DealGapChart'
 
 // Spectrum Bar - Visual gauge for benchmarks
 export { SpectrumBar, MiniSpectrum } from './SpectrumBar'
@@ -43,7 +36,7 @@ export {
   calculateMarkerPosition,
   LTR_BENCHMARKS,
   STR_BENCHMARKS,
-  BRRRR_BENCHMARKS
+  BRRRR_BENCHMARKS,
 } from './PerformanceBenchmarks'
 
 // Returns Grid - Profitability metrics display
@@ -54,7 +47,7 @@ export {
   createSTRReturns,
   createBRRRRReturns,
   createWholesaleReturns,
-  createHouseHackReturns
+  createHouseHackReturns,
 } from './ReturnsGrid'
 
 // Hero Metric - Large single metric display
@@ -66,7 +59,7 @@ export {
   createCashRecoveryHero,
   createHousingCostHero,
   createAssignmentFeeHero,
-  createFlipProfitHero
+  createFlipProfitHero,
 } from './HeroMetric'
 
 // ============================================
@@ -78,7 +71,7 @@ export {
   NegotiationPlan,
   NegotiationPlanCompact,
   generateNegotiationPlan,
-  LEVERAGE_POINTS
+  LEVERAGE_POINTS,
 } from './NegotiationPlan'
 
 // Formula Cards - Calculation breakdowns
@@ -88,7 +81,7 @@ export {
   createRefinanceFormula,
   create70PercentRuleFormula,
   createWholesaleMathFormula,
-  createFlipPLFormula
+  createFlipPLFormula,
 } from './FormulaCard'
 
 // ============================================
@@ -101,32 +94,21 @@ export {
   StandaloneSlider,
   createSliderConfig,
   formatters,
-  createLTRTuneGroups
+  createLTRTuneGroups,
 } from './TuneSection'
 
 // Compare Toggle - Target vs List price toggle
-export {
-  CompareToggle,
-  CompareToggleInline,
-  PriceComparisonHeader
-} from './CompareToggle'
+export { CompareToggle, CompareToggleInline, PriceComparisonHeader } from './CompareToggle'
 
 // ============================================
 // NAVIGATION COMPONENTS
 // ============================================
 
 // Strategy Selector - Horizontal strategy pills
-export {
-  StrategySelector,
-  StrategySelectorCompact,
-  DEFAULT_STRATEGIES
-} from './StrategySelector'
+export { StrategySelector, StrategySelectorCompact, DEFAULT_STRATEGIES } from './StrategySelector'
 
 // Strategy Grid - 2x3 grid layout for strategy selection
-export {
-  StrategyGrid,
-  StrategyPrompt
-} from './StrategyGrid'
+export { StrategyGrid, StrategyPrompt } from './StrategyGrid'
 
 // Welcome Section - Expandable intro message
 export { WelcomeSection } from './WelcomeSection'
@@ -145,7 +127,7 @@ export {
   FLIP_TABS,
   HOUSE_HACK_TABS,
   WHOLESALE_TABS,
-  getStrategyTabs
+  getStrategyTabs,
 } from './SubTabNav'
 
 // ============================================
@@ -159,7 +141,7 @@ export {
   createIQInsight,
   createPayoffInsight,
   createExitInsight,
-  createRiskWarning
+  createRiskWarning,
 } from './InsightCard'
 
 // Deal Score Display - Comprehensive scoring view
@@ -171,11 +153,7 @@ export {
 } from './DealScoreDisplay'
 
 // Profit Quality Card - Score gauge with strategy fit metrics
-export {
-  ProfitQualityCard,
-  type ProfitQualityData,
-  type ProfitFactor
-} from './ProfitQualityCard'
+export { ProfitQualityCard, type ProfitQualityData, type ProfitFactor } from './ProfitQualityCard'
 
 // Metrics Accordion - Collapsible metrics display with grades
 export {
@@ -184,7 +162,7 @@ export {
   type MetricItem,
   type MetricGrade,
   type MetricGradeLabel,
-  type MetricsAccordionProps
+  type MetricsAccordionProps,
 } from './MetricsAccordion'
 
 // Verdict IQ Page - IQ Verdict page with CompactHeader
@@ -209,7 +187,7 @@ export {
   createPieSlices,
   AmortizationTable,
   generateAmortizationSchedule,
-  FundingOverview
+  FundingOverview,
 } from './LoanSummary'
 
 // ============================================
@@ -222,7 +200,7 @@ export {
   PerformanceSectionGrid,
   createMonthlyBreakdown,
   create10YearProjection,
-  createSTRIncomeBreakdown
+  createSTRIncomeBreakdown,
 } from './PerformanceSection'
 
 // ============================================
@@ -237,7 +215,7 @@ export {
   ListingStatusBadge,
   ListingStatusBadgeCompact,
   type ListingStatus,
-  type SellerType
+  type SellerType,
 } from './ListingStatusBadge'
 
 // Market Temperature Indicator - Buyer/seller market analysis
@@ -246,7 +224,7 @@ export {
   MarketTemperatureBadge,
   MarketTemperatureDot,
   type MarketTemperature,
-  type MarketStats
+  type MarketStats,
 } from './MarketTemperatureIndicator'
 
 // Rent Range Indicator - Rental market analysis with IQ estimate
@@ -255,35 +233,24 @@ export {
   RentEstimateBadge,
   RentTrendDot,
   type RentTrend,
-  type RentalStats
+  type RentalStats,
 } from './RentRangeIndicator'
 
 // Seller Motivation Indicator - Negotiation leverage analysis
-export {
-  SellerMotivationIndicator,
-  SellerMotivationBadge
-} from './SellerMotivationIndicator'
+export { SellerMotivationIndicator, SellerMotivationBadge } from './SellerMotivationIndicator'
 
 // Property Premium Page - World-class property analysis landing page
 export { PropertyPremiumPage } from './PropertyPremiumPage'
 
 // Property Mini Card - Compact property header
-export {
-  PropertyMiniCard,
-  PropertyMiniCardCompact,
-  PropertyStickyHeader
-} from './PropertyMiniCard'
+export { PropertyMiniCard, PropertyMiniCardCompact, PropertyStickyHeader } from './PropertyMiniCard'
 
 // ============================================
 // NAVIGATION - BOTTOM BAR
 // ============================================
 
 // Bottom Navigation - Mobile bottom bar
-export {
-  BottomNav,
-  BottomNavSpacer,
-  AnalyticsBottomBar
-} from './BottomNav'
+export { BottomNav, BottomNavSpacer, AnalyticsBottomBar } from './BottomNav'
 
 // ============================================
 // LOADING STATES
@@ -305,7 +272,7 @@ export {
   LoadingOverlay,
   CalculatingIndicator,
   ErrorCard,
-  EmptyState
+  EmptyState,
 } from './LoadingStates'
 
 // ============================================
@@ -313,16 +280,16 @@ export {
 // ============================================
 
 // Strategy Analytics Container - Main page component
-export { 
+export {
   StrategyAnalyticsContainer,
-  type PropertyData as AnalyticsPropertyData
+  type PropertyData as AnalyticsPropertyData,
 } from './StrategyAnalyticsContainer'
 
 // Responsive Analytics Container - Auto-switches between mobile/desktop
 export {
   ResponsiveAnalyticsContainer,
   useAnalyticsViewMode,
-  type PropertyData as ResponsivePropertyData
+  type PropertyData as ResponsivePropertyData,
 } from './ResponsiveAnalyticsContainer'
 
 // Desktop Components
@@ -334,7 +301,7 @@ export {
   BRRRRMetricsContent,
   FlipMetricsContent,
   HouseHackMetricsContent,
-  WholesaleMetricsContent
+  WholesaleMetricsContent,
 } from './StrategyMetricsContent'
 
 // Profit Zone Dashboard - Three-column profit/loss visualization
@@ -343,7 +310,7 @@ export {
   generateProfitZoneTips,
   type ProfitZoneMetrics,
   type ProfitZoneTip,
-  type ProfitZoneDashboardProps
+  type ProfitZoneDashboardProps,
 } from './ProfitZoneDashboard'
 
 // ============================================
@@ -369,14 +336,14 @@ import { LoanSummary, PieChartBreakdown, AmortizationTable, FundingOverview } fr
 import { PerformanceSection, PerformanceSectionGrid } from './PerformanceSection'
 import { PropertyMiniCard, PropertyMiniCardCompact, PropertyStickyHeader } from './PropertyMiniCard'
 import { BottomNav, BottomNavSpacer, AnalyticsBottomBar } from './BottomNav'
-import { 
-  SkeletonBox, 
-  SkeletonCard, 
-  AnalyticsPageSkeleton, 
-  LoadingSpinner, 
+import {
+  SkeletonBox,
+  SkeletonCard,
+  AnalyticsPageSkeleton,
+  LoadingSpinner,
   LoadingOverlay,
   ErrorCard,
-  EmptyState 
+  EmptyState,
 } from './LoadingStates'
 import { SellerMotivationIndicator, SellerMotivationBadge } from './SellerMotivationIndicator'
 
@@ -395,51 +362,51 @@ const AnalyticsComponents = {
   ReturnsGridCompact,
   HeroMetric,
   HeroMetricCompact,
-  
+
   // Negotiation
   NegotiationPlan,
   NegotiationPlanCompact,
   FormulaCard,
-  
+
   // Tuning
   TuneSection,
   StandaloneSlider,
   CompareToggle,
   CompareToggleInline,
   PriceComparisonHeader,
-  
+
   // Navigation
   StrategySelector,
   StrategySelectorCompact,
   SubTabNav,
   SubTabNavCompact,
-  
+
   // Insights
   InsightCard,
   InsightCardInline,
   DealScoreDisplay,
   DealScoreCompact,
-  
+
   // Funding
   LoanSummary,
   PieChartBreakdown,
   AmortizationTable,
   FundingOverview,
-  
+
   // Performance
   PerformanceSection,
   PerformanceSectionGrid,
-  
+
   // Property
   PropertyMiniCard,
   PropertyMiniCardCompact,
   PropertyStickyHeader,
-  
+
   // Bottom Nav
   BottomNav,
   BottomNavSpacer,
   AnalyticsBottomBar,
-  
+
   // Loading States
   SkeletonBox,
   SkeletonCard,
@@ -448,10 +415,10 @@ const AnalyticsComponents = {
   LoadingOverlay,
   ErrorCard,
   EmptyState,
-  
+
   // Seller Motivation
   SellerMotivationIndicator,
-  SellerMotivationBadge
+  SellerMotivationBadge,
 }
 
 export default AnalyticsComponents

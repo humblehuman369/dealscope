@@ -1,6 +1,6 @@
 /**
  * Property Details Types
- * 
+ *
  * Type definitions for the property details page,
  * aligned with AXESSO API response structure.
  */
@@ -17,7 +17,7 @@ export type SellerType =
   | 'Auction'
   | 'NewHome'
   | 'ComingSoon'
-  | 'Agent'           // legacy alias for FSBA
+  | 'Agent' // legacy alias for FSBA
   | 'NewConstruction' // legacy alias for NewHome
   | 'Unknown'
 
@@ -43,15 +43,15 @@ export interface MarketStatistics {
   avgDaysOnMarket?: number
   minDaysOnMarket?: number
   maxDaysOnMarket?: number
-  
+
   // Listing inventory metrics
   totalListings?: number
   newListings?: number
-  
+
   // Calculated metrics
-  absorptionRate?: number      // new_listings / total_listings
-  marketTemperature?: MarketTemperature  // 'hot' | 'warm' | 'cold'
-  
+  absorptionRate?: number // new_listings / total_listings
+  marketTemperature?: MarketTemperature // 'hot' | 'warm' | 'cold'
+
   // Price metrics
   medianPrice?: number
   avgPricePerSqft?: number
@@ -63,76 +63,76 @@ export interface MarketStatistics {
  */
 export interface RentalMarketStats {
   // Property-specific estimates
-  rentcastEstimate?: number    // RentCast rent estimate
-  zillowEstimate?: number      // Zillow rentZestimate
-  iqEstimate?: number          // DealGapIQ proprietary: avg of both
-  
+  rentcastEstimate?: number // RentCast rent estimate
+  zillowEstimate?: number // Zillow rentZestimate
+  iqEstimate?: number // DealGapIQ proprietary: avg of both
+
   // Estimate range
   estimateLow?: number
   estimateHigh?: number
-  
+
   // Market-wide rental stats
   marketAvgRent?: number
   marketMedianRent?: number
   marketMinRent?: number
   marketMaxRent?: number
   marketRentPerSqft?: number
-  
+
   // Rental market velocity
   rentalDaysOnMarket?: number
   rentalTotalListings?: number
   rentalNewListings?: number
-  
+
   // Trend indicator
-  rentTrend?: RentTrend        // 'up' | 'down' | 'stable'
-  trendPctChange?: number      // Year-over-year percentage change
+  rentTrend?: RentTrend // 'up' | 'down' | 'stable'
+  trendPctChange?: number // Year-over-year percentage change
 }
 
 /**
  * Individual seller motivation indicator
  */
 export interface SellerMotivationIndicator {
-  name: string                    // e.g., "Days on Market"
-  detected: boolean               // Whether this indicator is present
-  score: number                   // Individual score (0-100)
+  name: string // e.g., "Days on Market"
+  detected: boolean // Whether this indicator is present
+  score: number // Individual score (0-100)
   signalStrength: MotivationSignalStrength
-  weight: number                  // Weight in composite calculation
-  description: string             // Human-readable explanation
-  rawValue?: unknown              // Raw data value
-  source?: string                 // Data source (AXESSO, RentCast)
+  weight: number // Weight in composite calculation
+  description: string // Human-readable explanation
+  rawValue?: unknown // Raw data value
+  source?: string // Data source (AXESSO, RentCast)
 }
 
 /**
  * Comprehensive seller motivation score
- * 
+ *
  * Helps investors identify properties where sellers may be more
  * willing to negotiate, accept lower offers, or close quickly.
  */
 export interface SellerMotivationScore {
   // Composite score
-  score: number                   // Weighted composite score (0-100)
-  grade: string                   // Letter grade (A+, A, B, C, D, F)
-  label: string                   // Human-readable label
-  color: string                   // UI color for display
-  
+  score: number // Weighted composite score (0-100)
+  grade: string // Letter grade (A+, A, B, C, D, F)
+  label: string // Human-readable label
+  color: string // UI color for display
+
   // Individual indicators
   indicators: SellerMotivationIndicator[]
-  
+
   // Summary counts
-  highSignalsCount: number        // Count of HIGH strength signals detected
-  totalSignalsDetected: number    // Total indicators that are detected
-  
+  highSignalsCount: number // Count of HIGH strength signals detected
+  totalSignalsDetected: number // Total indicators that are detected
+
   // Key insights for negotiation
   negotiationLeverage: NegotiationLeverage
-  recommendedDiscountRange: string  // e.g., "10-20%"
-  keyLeveragePoints: string[]     // Top 3 leverage points for negotiation
-  
+  recommendedDiscountRange: string // e.g., "10-20%"
+  keyLeveragePoints: string[] // Top 3 leverage points for negotiation
+
   // Market context
-  domVsMarketAvg?: number         // Property DOM / Market median DOM
+  domVsMarketAvg?: number // Property DOM / Market median DOM
   marketTemperature?: MarketTemperature
-  
+
   // Metadata
-  dataCompleteness: number        // % of indicators with data
+  dataCompleteness: number // % of indicators with data
   calculatedAt?: string
 }
 
@@ -182,13 +182,13 @@ export interface PropertyData {
   zpid: number | string
   address: PropertyAddress
   price: number
-  
+
   // Listing Status - Critical for price display
   listingStatus: ListingStatus
   isOffMarket: boolean
   sellerType?: SellerType
-  listPrice?: number           // Actual asking price if actively listed
-  
+  listPrice?: number // Actual asking price if actively listed
+
   // Seller type flags
   isForeclosure?: boolean
   isBankOwned?: boolean
@@ -196,17 +196,17 @@ export interface PropertyData {
   isAuction?: boolean
   isNewConstruction?: boolean
   isComingSoon?: boolean
-  
+
   // Timing
   daysOnMarket?: number
   timeOnMarket?: string
   dateSold?: string
-  
+
   // Legacy fields (still used)
   daysOnZillow?: number
   views?: number
   saves?: number
-  
+
   // Property Specs
   bedrooms: number
   bathrooms: number
@@ -216,23 +216,23 @@ export interface PropertyData {
   yearBuilt: number
   propertyType: string
   stories?: number
-  
+
   // Pricing
   zestimate?: number
   rentZestimate?: number
   valueIqEstimate?: number
   rentalIqEstimate?: number
   pricePerSqft?: number
-  
+
   // Tax Info
   annualTax?: number
   taxAssessedValue?: number
   taxYear?: number
-  
+
   // HOA
   hoaFee?: number
   hoaFrequency?: string
-  
+
   // Features
   heating?: string[]
   cooling?: string[]
@@ -240,34 +240,34 @@ export interface PropertyData {
   parkingSpaces?: number
   flooring?: string[]
   appliances?: string[]
-  
+
   // Interior Features
   interiorFeatures?: string[]
-  
+
   // Exterior Features
   exteriorFeatures?: string[]
-  
+
   // Construction
   construction?: string[]
   roof?: string
   foundation?: string
-  
+
   // Waterfront
   isWaterfront?: boolean
   waterfrontFeatures?: string[]
   waterAccess?: string
-  
+
   // Location
   latitude?: number
   longitude?: number
-  
+
   // Description
   description?: string
-  
+
   // Images
   images: string[]
   totalPhotos?: number
-  
+
   // Listing Info
   listingAgent?: PropertyListingAgent
   mlsId?: string
@@ -275,20 +275,20 @@ export interface PropertyData {
   brokerageName?: string
   listingAgentName?: string
   lastSoldPrice?: number
-  
+
   // History
   priceHistory?: PriceHistoryItem[]
   taxHistory?: TaxHistoryItem[]
-  
+
   // Schools
   schools?: SchoolInfo[]
-  
+
   // Market Statistics - buyer/seller market indicators
   marketStats?: MarketStatistics
-  
+
   // Rental Market Statistics - rental investment analysis
   rentalStats?: RentalMarketStats
-  
+
   // Seller Motivation Score - negotiation leverage analysis
   sellerMotivation?: SellerMotivationScore
 }

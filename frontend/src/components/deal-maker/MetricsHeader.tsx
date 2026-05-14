@@ -1,7 +1,7 @@
 /**
  * MetricsHeader - Deal Maker IQ header
  * EXACT implementation from design files
- * 
+ *
  * Design specs:
  * - Header bg: #0A1628
  * - Address: 11px, color #94A3B8, letter-spacing 0.02em
@@ -34,25 +34,21 @@ interface MetricsHeaderProps {
   propertyAddress?: string
 }
 
-export function MetricsHeader({ 
-  state, 
-  metrics,
-  propertyAddress,
-}: MetricsHeaderProps) {
+export function MetricsHeader({ state, metrics, propertyAddress }: MetricsHeaderProps) {
   return (
     <div className="bg-[var(--surface-base)]" style={{ padding: '16px 20px 20px' }}>
       {/* Title Area - centered */}
       <div className="text-center">
         {/* Address */}
         {propertyAddress && (
-          <p 
+          <p
             className="text-[#94A3B8] truncate"
             style={{ fontSize: '11px', marginBottom: '2px', letterSpacing: '0.02em' }}
           >
             {propertyAddress}
           </p>
         )}
-        
+
         {/* DEAL MAKER IQ Title */}
         <div style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '0.05em' }}>
           <span className="text-white">DEAL </span>
@@ -62,10 +58,7 @@ export function MetricsHeader({
       </div>
 
       {/* Metrics Grid - 2 columns, 3 rows */}
-      <div 
-        className="grid grid-cols-2 mt-3"
-        style={{ gap: '6px 24px' }}
-      >
+      <div className="grid grid-cols-2 mt-3" style={{ gap: '6px 24px' }}>
         {/* Row 1 */}
         <div className="flex justify-between items-center py-[3px]">
           <span style={{ fontSize: '12px', color: '#94A3B8' }}>Buy Price</span>
@@ -79,16 +72,16 @@ export function MetricsHeader({
             {formatCurrency(metrics.cashNeeded)}
           </span>
         </div>
-        
+
         {/* Row 2 */}
         <div className="flex justify-between items-center py-[3px]">
           <span style={{ fontSize: '12px', color: '#94A3B8' }}>Deal Gap</span>
-          <span 
-            className="tabular-nums" 
-            style={{ 
-              fontSize: '13px', 
-              fontWeight: 600, 
-              color: metrics.dealGap < 0 ? '#E11D48' : 'var(--accent-sky)' 
+          <span
+            className="tabular-nums"
+            style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: metrics.dealGap < 0 ? '#E11D48' : 'var(--accent-sky)',
             }}
           >
             {formatPercent(-metrics.dealGap * 100, { decimals: 0, showSign: true })}
@@ -96,18 +89,18 @@ export function MetricsHeader({
         </div>
         <div className="flex justify-between items-center py-[3px]">
           <span style={{ fontSize: '12px', color: '#94A3B8' }}>Annual Profit</span>
-          <span 
-            className="tabular-nums" 
-            style={{ 
-              fontSize: '13px', 
-              fontWeight: 600, 
-              color: metrics.annualProfit < 0 ? '#E11D48' : 'var(--accent-sky)' 
+          <span
+            className="tabular-nums"
+            style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: metrics.annualProfit < 0 ? '#E11D48' : 'var(--accent-sky)',
             }}
           >
             {formatCurrency(metrics.annualProfit)}
           </span>
         </div>
-        
+
         {/* Row 3 */}
         <div className="flex justify-between items-center py-[3px]">
           <span style={{ fontSize: '12px', color: '#94A3B8' }}>CAP Rate</span>

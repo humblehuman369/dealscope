@@ -7,10 +7,10 @@ import { getPriceLabel } from '@/lib/priceUtils'
 
 /**
  * DealGapChart Component
- * 
- * A visual "price ladder" showing the relationship between List Price, 
+ *
+ * A visual "price ladder" showing the relationship between List Price,
  * Income Value, and Buy Price with interactive brackets showing the deal gap.
- * 
+ *
  * Features:
  * - Vertical gradient ladder (red=loss → green=profit → blue=deep value)
  * - Deal Gap bracket showing discount from list
@@ -28,12 +28,13 @@ function colorForPosition(p: number): string {
   const stops = [
     { p: 0.0, c: [180, 35, 24] }, // loss — Workcycle error
     { p: 0.36, c: [183, 121, 31] }, // risk — warning
-    { p: 0.50, c: [253, 216, 53] }, // negotiate band
+    { p: 0.5, c: [253, 216, 53] }, // negotiate band
     { p: 0.72, c: [56, 189, 248] }, // profit — sky (toward Signal Blue)
     { p: 1.0, c: [4, 101, 242] }, // deep value — Signal Blue
   ]
   const clampedP = Math.max(0, Math.min(1, p))
-  let a = stops[0], b = stops[stops.length - 1]
+  let a = stops[0],
+    b = stops[stops.length - 1]
   for (let i = 0; i < stops.length - 1; i++) {
     if (clampedP >= stops[i].p && clampedP <= stops[i + 1].p) {
       a = stops[i]
@@ -74,20 +75,17 @@ interface ChipProps {
 
 function Chip({ label, value, sub, accent }: ChipProps) {
   return (
-    <div 
+    <div
       className="relative p-3 rounded-xl border border-[var(--border-default)] dark:border-white/10 bg-[var(--surface-card)] dark:bg-white/5"
       style={{ '--chip-accent': accent } as React.CSSProperties}
     >
       {/* Accent bar */}
-      <div 
+      <div
         className="absolute left-2.5 top-3 bottom-3 w-0.5 rounded-full"
         style={{ backgroundColor: accent }}
       />
       <div className="pl-2.5">
-        <div 
-          className="text-[15px] font-black tracking-wider uppercase"
-          style={{ color: accent }}
-        >
+        <div className="text-[15px] font-black tracking-wider uppercase" style={{ color: accent }}>
           {label}
         </div>
         <div className="text-lg font-black text-[var(--text-heading)] dark:text-white leading-tight text-center">
@@ -112,7 +110,10 @@ export function DealGapChart({
   listingStatus,
 }: DealGapChartProps) {
   // Get dynamic price label
-  const priceLabel = useMemo(() => getPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
+  const priceLabel = useMemo(
+    () => getPriceLabel(isOffMarket, listingStatus),
+    [isOffMarket, listingStatus],
+  )
 
   // Use the actual buy price from props (default to 90% of Income Value if not provided)
   const buyPrice = useMemo(() => {
@@ -136,14 +137,14 @@ export function DealGapChart({
   }, [listPrice, buyPrice, incomeValue])
 
   // Scale factor: normal is 0.40, expanded is 0.15 (spreads markers much further apart)
-  const scaleFactor = needsExpandedScale ? 0.15 : 0.40
+  const scaleFactor = needsExpandedScale ? 0.15 : 0.4
 
   // Calculate dynamic ladder positions based on actual price relationships
   // The ladder range spans from highest price to lowest price
   // Income Value is always at 0.50 (center)
   // Other positions are calculated relative to Income Value
-  const ivPos = 0.50 // Income Value always at center
-  
+  const ivPos = 0.5 // Income Value always at center
+
   // Calculate list price position relative to Income Value
   // If list > Income Value: position above center (< 0.50)
   // If list < Income Value: position below center (> 0.50)
@@ -151,16 +152,16 @@ export function DealGapChart({
     if (incomeValue <= 0) return 0.15
     const listPct = (listPrice - incomeValue) / incomeValue // % difference from Income Value
     // Map to ladder using dynamic scale factor
-    const pos = 0.50 - (listPct / scaleFactor) * 0.40
+    const pos = 0.5 - (listPct / scaleFactor) * 0.4
     return Math.max(0.05, Math.min(0.95, pos))
   }, [listPrice, incomeValue, scaleFactor])
-  
+
   // Calculate buy price position relative to Income Value
   const buyPosOnLadder = useMemo(() => {
     if (incomeValue <= 0) return 0.65
     const buyPct = (buyPrice - incomeValue) / incomeValue // % difference from Income Value
     // Map to ladder using dynamic scale factor
-    const pos = 0.50 - (buyPct / scaleFactor) * 0.40
+    const pos = 0.5 - (buyPct / scaleFactor) * 0.4
     return Math.max(0.05, Math.min(0.95, pos))
   }, [buyPrice, incomeValue, scaleFactor])
 
@@ -221,120 +222,117 @@ export function DealGapChart({
               </h2>
               {/* Chips */}
               <div className="flex flex-col justify-between flex-1 py-0.5 gap-3">
-              <Chip
-                label={priceLabel}
-                value={formatUSD(listPrice)}
-                sub="Asking"
-                accent={listAccent}
-              />
-              <Chip
-                label="Income Value"
-                value={formatUSD(incomeValue)}
-                sub="$0 Cash Flow"
-                accent={ivAccent}
-              />
-              <Chip
-                label="Buy Price"
-                value={formatUSD(buyPrice)}
-                sub="Target"
-                accent={buyAccent}
-              />
+                <Chip
+                  label={priceLabel}
+                  value={formatUSD(listPrice)}
+                  sub="Asking"
+                  accent={listAccent}
+                />
+                <Chip
+                  label="Income Value"
+                  value={formatUSD(incomeValue)}
+                  sub="$0 Cash Flow"
+                  accent={ivAccent}
+                />
+                <Chip
+                  label="Buy Price"
+                  value={formatUSD(buyPrice)}
+                  sub="Target"
+                  accent={buyAccent}
+                />
               </div>
             </div>
 
             {/* Right: Gradient Ladder */}
             <div className="flex-1 flex justify-center max-w-[300px] mx-auto px-8">
-                <div 
-                  className="h-full w-10 rounded-2xl relative shadow-lg"
-              style={{
-                background: `linear-gradient(to bottom, 
+              <div
+                className="h-full w-10 rounded-2xl relative shadow-lg"
+                style={{
+                  background: `linear-gradient(to bottom, 
                   #ef4444 0%, 
                   #f59e0b 36%, 
                   #fdd835 50%, 
                   #22c55e 72%, 
-                  #38bdf8 100%)`
-              }}
-            >
-              {/* Income Value line */}
-              <div 
-                className="absolute left-[-18px] right-[-18px] h-0.5 opacity-90"
-                style={{ 
-                  top: '50%',
-                  background: 'rgba(0,0,0,0.6)',
-                  boxShadow: '0 0 10px rgba(0,0,0,0.2)'
+                  #38bdf8 100%)`,
                 }}
-              />
-
-              {/* Deal Gap Bracket (Left side) */}
-              <div
-                className={`absolute left-[-25px] w-[18px] border-l-2 border-[var(--text-secondary)] dark:border-white/60 ${showGlow ? 'animate-pulse' : ''}`}
-                style={bracketStyle(listPosOnLadder, buyPosOnLadder)}
               >
-                {/* Top tick */}
-                <div className="absolute left-[-2px] top-0 w-3 border-t-2 border-[var(--text-secondary)] dark:border-white/60" />
-                {/* Bottom tick */}
-                <div className="absolute left-[-2px] bottom-0 w-3 border-t-2 border-[var(--text-secondary)] dark:border-white/60" />
-                {/* Deal Gap label with percentage */}
-                <div className="absolute left-[-8px] top-1/2 -translate-x-full -translate-y-1/2 text-right whitespace-nowrap">
-                  <div className="text-[10px] font-bold tracking-wider uppercase text-[var(--text-secondary)] dark:text-white/60">
-                    Deal Gap
-                  </div>
-                  <div className="text-lg font-black text-orange-500">
-                    {dealGapText}
+                {/* Income Value line */}
+                <div
+                  className="absolute left-[-18px] right-[-18px] h-0.5 opacity-90"
+                  style={{
+                    top: '50%',
+                    background: 'rgba(0,0,0,0.6)',
+                    boxShadow: '0 0 10px rgba(0,0,0,0.2)',
+                  }}
+                />
+
+                {/* Deal Gap Bracket (Left side) */}
+                <div
+                  className={`absolute left-[-25px] w-[18px] border-l-2 border-[var(--text-secondary)] dark:border-white/60 ${showGlow ? 'animate-pulse' : ''}`}
+                  style={bracketStyle(listPosOnLadder, buyPosOnLadder)}
+                >
+                  {/* Top tick */}
+                  <div className="absolute left-[-2px] top-0 w-3 border-t-2 border-[var(--text-secondary)] dark:border-white/60" />
+                  {/* Bottom tick */}
+                  <div className="absolute left-[-2px] bottom-0 w-3 border-t-2 border-[var(--text-secondary)] dark:border-white/60" />
+                  {/* Deal Gap label with percentage */}
+                  <div className="absolute left-[-8px] top-1/2 -translate-x-full -translate-y-1/2 text-right whitespace-nowrap">
+                    <div className="text-[10px] font-bold tracking-wider uppercase text-[var(--text-secondary)] dark:text-white/60">
+                      Deal Gap
+                    </div>
+                    <div className="text-lg font-black text-orange-500">{dealGapText}</div>
                   </div>
                 </div>
-              </div>
 
-              {/* Markers */}
-              <div 
-                className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[var(--surface-card)] border-2 border-[var(--text-secondary)] opacity-95"
-                style={{ top: `${listPosOnLadder * 100}%` }}
-                title={priceLabel}
-              />
-              <div 
-                className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[var(--surface-card)] border-2 border-[var(--text-heading)] shadow-md"
-                style={{ top: `${buyPosOnLadder * 100}%` }}
-                title="Buy Price"
-              />
+                {/* Markers */}
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[var(--surface-card)] border-2 border-[var(--text-secondary)] opacity-95"
+                  style={{ top: `${listPosOnLadder * 100}%` }}
+                  title={priceLabel}
+                />
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[var(--surface-card)] border-2 border-[var(--text-heading)] shadow-md"
+                  style={{ top: `${buyPosOnLadder * 100}%` }}
+                  title="Buy Price"
+                />
 
-              {/* LIST Label - right of ladder, color matches position */}
-              <div 
-                className="absolute right-[-65px] text-[22px] font-bold whitespace-nowrap"
-                style={{ 
-                  top: `${listPosOnLadder * 100}%`,
-                  transform: labelsOverlap ? 'translateY(-100%)' : 'translateY(-50%)',
-                  color: listAccent
-                }}
-              >
-                LIST
-              </div>
+                {/* LIST Label - right of ladder, color matches position */}
+                <div
+                  className="absolute right-[-65px] text-[22px] font-bold whitespace-nowrap"
+                  style={{
+                    top: `${listPosOnLadder * 100}%`,
+                    transform: labelsOverlap ? 'translateY(-100%)' : 'translateY(-50%)',
+                    color: listAccent,
+                  }}
+                >
+                  LIST
+                </div>
 
-              {/* BUY Label - right of ladder, color matches position */}
-              <div 
-                className="absolute right-[-60px] text-[22px] font-bold whitespace-nowrap"
-                style={{ 
-                  top: `${buyPosOnLadder * 100}%`,
-                  transform: labelsOverlap ? 'translateY(0%)' : 'translateY(-50%)',
-                  color: buyAccent
-                }}
-              >
-                BUY
-              </div>
+                {/* BUY Label - right of ladder, color matches position */}
+                <div
+                  className="absolute right-[-60px] text-[22px] font-bold whitespace-nowrap"
+                  style={{
+                    top: `${buyPosOnLadder * 100}%`,
+                    transform: labelsOverlap ? 'translateY(0%)' : 'translateY(-50%)',
+                    color: buyAccent,
+                  }}
+                >
+                  BUY
+                </div>
 
-              {/* Income Value label on right side - further out */}
-              <div 
-                className="absolute right-[-120px] text-xs font-semibold text-[var(--text-secondary)] dark:text-white/70 whitespace-nowrap text-center"
-                style={{ top: '50%', transform: 'translateY(-50%)' }}
-              >
-                <div className="font-black text-sm">{formatUSD(incomeValue)}</div>
-                <div className="text-[9px] uppercase tracking-wider opacity-70">Income Value</div>
-              </div>
+                {/* Income Value label on right side - further out */}
+                <div
+                  className="absolute right-[-120px] text-xs font-semibold text-[var(--text-secondary)] dark:text-white/70 whitespace-nowrap text-center"
+                  style={{ top: '50%', transform: 'translateY(-50%)' }}
+                >
+                  <div className="font-black text-sm">{formatUSD(incomeValue)}</div>
+                  <div className="text-[9px] uppercase tracking-wider opacity-70">Income Value</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   )
 }
@@ -362,17 +360,19 @@ export function DealGapChartCompact({
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border-default)] dark:border-white/10 bg-[var(--surface-card)] dark:bg-white/5">
       {/* Mini ladder */}
-      <div 
+      <div
         className="w-3 h-16 rounded-full flex-shrink-0"
         style={{
-          background: 'linear-gradient(to bottom, #ef4444 0%, #fdd835 50%, #22c55e 100%)'
+          background: 'linear-gradient(to bottom, #ef4444 0%, #fdd835 50%, #22c55e 100%)',
         }}
       />
-      
+
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-bold text-[var(--text-heading)] dark:text-white">Deal Gap</span>
+          <span className="text-xs font-bold text-[var(--text-heading)] dark:text-white">
+            Deal Gap
+          </span>
           <span className="text-sm font-black text-orange-500">{dealGapText}</span>
         </div>
         <div className="text-[10px] text-[var(--text-secondary)] dark:text-white/50 mt-1">
@@ -381,7 +381,9 @@ export function DealGapChartCompact({
       </div>
 
       {/* Zone badge */}
-      <span className={`text-[9px] px-1.5 py-0.5 rounded border font-bold ${getZoneBadgeStyles(data.zone)}`}>
+      <span
+        className={`text-[9px] px-1.5 py-0.5 rounded border font-bold ${getZoneBadgeStyles(data.zone)}`}
+      >
         {data.sellerMotivation}
       </span>
     </div>
