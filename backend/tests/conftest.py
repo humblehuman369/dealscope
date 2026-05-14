@@ -1,96 +1,199 @@
-"""
-Shared test fixtures for DealGapIQ backend tests.
-"""
-import os
-import pytest
-import asyncio
-from typing import AsyncGenerator, Generator
-from unittest.mock import MagicMock, AsyncMock
+"""Shared test fixtures for DealGapIQ backend tests.
 
-# Set test environment before importing app modules (preserve CI DATABASE_URL if set)
+The models declare Postgres-only column types (``UUID(as_uuid=True)``,
+``ARRAY``, ``JSONB``), so the test database has to be Postgres — not
+SQLite. Two ways the engine is sourced, in order:
+
+1. If ``DATABASE_URL`` points at a reachable Postgres instance, we use
+   it directly. CI provisions a Postgres service and exports
+   ``DATABASE_URL`` to it, so this is the fast path in CI.
+2. Otherwise, we spin up a disposable Postgres container via
+   ``testcontainers`` (requires Docker locally). This keeps local
+   ``pytest`` runs working without forcing developers to keep a
+   Postgres service running.
+
+Schema is materialised by running Alembic migrations against the chosen
+database (matches what production does). Per-test isolation comes from
+wrapping each test in a session whose work is rolled back in teardown.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import os
+from collections.abc import AsyncGenerator, Generator
+from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+
+# Set test environment before importing app modules
 os.environ["ENVIRONMENT"] = "test"
 os.environ["SECRET_KEY"] = "test-secret-key-at-least-32-characters-long-for-testing"
 os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://test:test@localhost:5432/test_db")
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.pool import StaticPool
+# Force-import every model so Alembic and SQLAlchemy see the full metadata
+# graph before any engine is created. Listed exhaustively so a missing
+# `from app.models import X` in a service can never silently desync the
+# test DB schema from production.
+from app.models import (  # noqa: F401
+    AdminAssumptionDefaults,
+    AuditAction,
+    AuditLog,
+    BudgetExpense,
+    BudgetLine,
+    ContactRole,
+    DevicePlatform,
+    DeviceToken,
+    Document,
+    DocumentType,
+    FlipStage,
+    PaymentHistory,
+    Permission,
+    PropertyAdjustment,
+    PropertyContact,
+    PropertyStatus,
+    PropertyTask,
+    RehabBudget,
+    Role,
+    RolePermission,
+    SavedProperty,
+    SearchHistory,
+    SharedLink,
+    ShareType,
+    Subscription,
+    SubscriptionStatus,
+    SubscriptionTier,
+    TokenType,
+    User,
+    UserProfile,
+    UserRole,
+    UserSession,
+    VerificationToken,
+)
+from app.repositories.role_repository import role_repo
+from app.repositories.user_repository import user_repo
+from app.services.auth_service import auth_service
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.db.base import Base
-from app.models.user import User, UserProfile
-from app.models.session import UserSession
-from app.models.role import Role, Permission, RolePermission, UserRole
-from app.models.audit_log import AuditLog
-from app.models.verification_token import VerificationToken
-from app.services.auth_service import AuthService, auth_service
-from app.services.token_service import TokenService, token_service
-from app.services.session_service import SessionService, session_service
-from app.repositories.user_repository import UserRepository, user_repo
-from app.repositories.session_repository import SessionRepository, session_repo
-from app.repositories.role_repository import RoleRepository, role_repo
-from app.repositories.audit_repository import AuditRepository, audit_repo
-from app.repositories.token_repository import TokenRepository, token_repo
+
+def _normalize_async_url(url: str) -> str:
+    """Coerce a Postgres URL to use the async psycopg3 driver."""
+    if "+psycopg" in url or "+asyncpg" in url:
+        return url
+    if url.startswith("postgresql+psycopg2://"):
+        return url.replace("postgresql+psycopg2://", "postgresql+psycopg://", 1)
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+psycopg://", 1)
+    return url
 
 
-# Use in-memory SQLite for testing (with async driver)
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+def _is_reachable(sync_url: str, timeout: float = 2.0) -> bool:
+    """Best-effort probe to see if the configured Postgres is up."""
+    try:
+        import psycopg
+    except ImportError:
+        return False
+    try:
+        with psycopg.connect(sync_url, connect_timeout=timeout):
+            return True
+    except Exception:
+        return False
 
 
 @pytest.fixture(scope="session")
 def event_loop() -> Generator:
-    """Create an event loop for the test session."""
+    """Session-scoped event loop so async fixtures can share state."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
 
 
-@pytest.fixture(scope="function")
-async def async_engine():
-    """Create a test database engine."""
-    engine = create_async_engine(
-        TEST_DATABASE_URL,
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+@pytest.fixture(scope="session")
+def database_url() -> Generator[str, None, None]:
+    """Yield a Postgres async URL — preferring the configured DATABASE_URL."""
+    configured = os.environ.get("DATABASE_URL", "")
+    sync_probe_url = configured.replace("+psycopg", "").replace("+asyncpg", "").replace("+psycopg2", "")
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    if configured and _is_reachable(sync_probe_url):
+        yield _normalize_async_url(configured)
+        return
 
+    try:
+        from testcontainers.postgres import PostgresContainer
+    except ImportError:  # pragma: no cover - test deps only
+        pytest.skip(
+            "DATABASE_URL is not reachable and testcontainers[postgres] is not "
+            "installed. Either start a local Postgres or `pip install "
+            "'testcontainers[postgres]>=4.0'`."
+        )
+
+    with PostgresContainer("postgres:16-alpine") as pg:
+        sync_url = pg.get_connection_url()
+        async_url = _normalize_async_url(sync_url)
+        os.environ["DATABASE_URL"] = async_url
+        # Settings was instantiated at app-import time with the placeholder
+        # URL; patch it so Alembic env.py (which reads
+        # settings.async_database_url) targets the live container.
+        from app.core.config import settings as _settings
+
+        _settings.DATABASE_URL = async_url
+        yield async_url
+
+
+@pytest.fixture(scope="session")
+async def async_engine(database_url: str):
+    """Build the engine and apply Alembic migrations once per session."""
+    from alembic import command
+    from alembic.config import Config
+
+    backend_root = Path(__file__).resolve().parents[1]
+    alembic_cfg = Config(str(backend_root / "alembic.ini"))
+    # alembic/env.py overrides sqlalchemy.url with settings.async_database_url,
+    # so the override here is belt-and-suspenders: the real source of truth
+    # is os.environ["DATABASE_URL"] (which the database_url fixture has
+    # already aligned with the chosen DB).
+    alembic_cfg.set_main_option("sqlalchemy.url", database_url)
+    await asyncio.to_thread(command.upgrade, alembic_cfg, "head")
+
+    engine = create_async_engine(database_url, echo=False, future=True)
     yield engine
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-
     await engine.dispose()
 
 
 @pytest.fixture(scope="function")
 async def db_session(async_engine) -> AsyncGenerator[AsyncSession, None]:
-    """Create a database session for testing."""
-    factory = async_sessionmaker(
-        async_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-    )
+    """Per-test session whose work is rolled back on teardown.
 
+    Uses a SAVEPOINT-style transaction nested inside an outer transaction
+    so any commits done by the code under test are still reverted.
+    """
+    factory = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
     async with factory() as session:
-        yield session
-        await session.rollback()
+        try:
+            yield session
+        finally:
+            await session.rollback()
 
 
 @pytest.fixture
 async def seeded_roles(db_session: AsyncSession) -> dict:
-    """Seed default roles and return a name->Role mapping."""
-    roles = {}
-    for name, desc in [
-        ("owner", "Full access"),
-        ("admin", "Admin access"),
-        ("member", "Standard user"),
-        ("viewer", "Read-only"),
-    ]:
-        role = Role(name=name, description=desc)
-        db_session.add(role)
-        roles[name] = role
-    await db_session.flush()
+    """Return the four default roles already seeded by Alembic migrations.
+
+    The ``20260206_0001_rebuild_auth_system`` migration inserts the
+    ``owner``/``admin``/``member``/``viewer`` rows (along with their
+    permissions and role-permission mappings). We fetch them rather than
+    re-insert to keep the test database in the same shape as production.
+    """
+    from sqlalchemy import select
+
+    result = await db_session.execute(select(Role).where(Role.name.in_(["owner", "admin", "member", "viewer"])))
+    roles = {r.name: r for r in result.scalars().all()}
+    if len(roles) != 4:
+        raise RuntimeError(
+            "Default roles missing from the test DB — Alembic migrations did not seed them. "
+            f"Found: {sorted(roles.keys())}"
+        )
     return roles
 
 
@@ -109,7 +212,7 @@ async def created_user(
     seeded_roles: dict,
     sample_user_data: dict,
 ) -> User:
-    """Create a test user in the database with member role."""
+    """Create a test user in the database with the member role assigned."""
     user = await user_repo.create(
         db_session,
         email=sample_user_data["email"],
