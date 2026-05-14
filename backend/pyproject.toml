@@ -49,6 +49,9 @@ ignore = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+# Session-scoped async fixtures (e.g. the test DB engine + Alembic upgrade)
+# need a session-scoped event loop. Required for pytest-asyncio >= 0.24.
+asyncio_default_fixture_loop_scope = "session"
 addopts = "-v --tb=short"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
