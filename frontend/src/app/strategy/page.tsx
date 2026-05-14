@@ -20,7 +20,6 @@ import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { api } from '@/lib/api-client'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
-import { useDefaults } from '@/hooks/useDefaults'
 import { parseAddressString } from '@/utils/formatters'
 import {
   canonicalizeAddressForIdentity,
@@ -90,8 +89,6 @@ import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMake
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { PathButton } from '@/components/strategy/PathButton'
 import { trackEvent } from '@/lib/eventTracking'
-import { computeDealGapIncomeValue } from '@/utils/estimateIncomeValue'
-
 /**
  * MarketPriceInfoTip — explains how Market Price is derived for off-market homes.
  * Renders a tiny circled-"i" trigger in the corner of the Market Price card.
@@ -312,24 +309,6 @@ function StrategyContent() {
   /** Matches `data` to `addressParam` so we never show another property's paths during a fetch. */
   const [analysisAddressKey, setAnalysisAddressKey] = useState<string | null>(null)
   const [propertyInfo, setPropertyInfo] = useState<any>(null)
-  // Admin-resolved operating defaults (capex / utilities / pest control) drive
-  // the Deal Gap bar's live Income Value during slider edits before the backend
-  // recalc returns. Without this, the bar uses compile-time fallbacks and can
-  // disagree with the worksheet when the admin has tuned `OPERATING.*`.
-  const adminZipCode = (propertyInfo?.address?.zip_code ?? propertyInfo?.address?.zip) || undefined
-  const { defaults: adminDefaults } = useDefaults(adminZipCode)
-  const dealGapOperatingOverrides = useMemo(
-    () =>
-      adminDefaults
-        ? {
-            capexPct: adminDefaults.operating?.capex_pct,
-            utilitiesMonthly: adminDefaults.operating?.utilities_monthly,
-            landscapingAnnual: adminDefaults.operating?.landscaping_annual,
-            pestControlAnnual: adminDefaults.operating?.pest_control_annual,
-          }
-        : null,
-    [adminDefaults],
-  )
   const [isLoading, setIsLoading] = useState(() => {
     if (!addressParam) return true
     const canonical = canonicalizeAddressForIdentity(addressParam)
@@ -1023,23 +1002,15 @@ function StrategyContent() {
   // Score — capped at 95 (no deal is 100% certain)
   const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
 
-  // List / target buy: API is canonical after recalc, but DealMaker session overrides must win
-  // immediately so the Deal Gap graph and metric bar match the worksheet (not one request behind).
-  const listPriceBase = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? 0
-  const listPriceOverride = dealMakerOverrides != null ? dealMakerOverrides.listPrice : undefined
-  const listPrice =
-    typeof listPriceOverride === 'number' && isFinite(listPriceOverride) && listPriceOverride > 0
-      ? listPriceOverride
-      : listPriceBase
-
-  const targetFromOverrides =
-    dealMakerOverrides != null
-      ? (dealMakerOverrides.purchasePrice ?? dealMakerOverrides.buyPrice)
-      : undefined
+  // List price, Target Buy, and Income Value are all canonical backend values.
+  // The frontend NEVER overrides them locally — slider edits send new inputs to
+  // `/api/v1/analysis/verdict`, the backend recomputes everything, and the bar +
+  // metrics bar + worksheet all read from the same fresh `data` response. The
+  // previous override-preference logic shadowed the backend's authoritative
+  // numbers and caused the Deal Gap bar to disagree with the worksheet.
+  const listPrice = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? 0
   const targetPrice =
-    typeof targetFromOverrides === 'number' && isFinite(targetFromOverrides) && targetFromOverrides > 0
-      ? targetFromOverrides
-      : (data.purchase_price ?? (data as any).purchasePrice ?? Math.round(listPrice * 0.85))
+    data.purchase_price ?? (data as any).purchasePrice ?? Math.round(listPrice * 0.85)
   const parsed = parseAddressString(addressParam)
 
   // Strategy-specific financial breakdown from backend
@@ -1536,14 +1507,15 @@ function StrategyContent() {
     }
   })() as AnyStrategyMetrics
 
-  /** Income Value marker + brackets — same economics as backend `estimate_income_value`, driven by live worksheet state. */
+  /**
+   * Income Value marker — pulled directly from the backend response. The
+   * backend's `estimate_income_value` is the single source of truth; any
+   * client-side recomputation is forbidden because it can disagree with the
+   * worksheet's NOI / Cap Rate (which also come from `data`) and produce a
+   * chart that contradicts the metrics card right next to it.
+   */
   const dealGapIncomeValue = (() => {
-    const live = computeDealGapIncomeValue(currentStrategyType, worksheetState, dealGapOperatingOverrides)
-    if (live > 0) return live
-    const apiIv =
-      (dealMakerOverrides as Record<string, unknown> | null)?.incomeValue ??
-      data?.income_value ??
-      (data as Record<string, unknown>)?.incomeValue
+    const apiIv = data?.income_value ?? (data as Record<string, unknown>)?.incomeValue
     if (typeof apiIv === 'number' && Number.isFinite(apiIv) && apiIv > 0) return apiIv
     return listPrice
   })()
