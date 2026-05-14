@@ -23,7 +23,7 @@ import { CompassDisplay } from '@/components/scanner/CompassDisplay'
 import { ScanResultSheet } from '@/components/scanner/ScanResultSheet'
 import { MapPropertyPicker } from '@/components/scanner/MapPropertyPicker'
 import { getCardinalDirection } from '@/lib/geoCalculations'
-import { DealGapIQHomepageV2, DealGapIQHomepageV3, DealGapIQHomepageV4 } from '@/components/landing'
+import { DealGapIQHomepageV4 } from '@/components/landing'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity'
 import type { GeocodedProperty } from '@/lib/reverseGeocode'
@@ -44,16 +44,10 @@ export default function HomePage() {
     return <MobileScannerView onSwitchMode={() => setMode('landing')} />
   }
 
-  // V4 = marketing-tuned homepage. V3 and V2 remain available via query flags for rollback.
-  if (typeof window !== 'undefined') {
-    const version = new URLSearchParams(window.location.search).get('v')
-    if (version === '2') {
-      return <DealGapIQHomepageV2 onPointAndScan={() => setMode('camera')} />
-    }
-    if (version === '3') {
-      return <DealGapIQHomepageV3 onPointAndScan={() => setMode('camera')} />
-    }
-  }
+  // V4 is the canonical marketing homepage. The V2/V3 variants and their
+  // ?v=2|3 rollback flag were retired in P2.6 (audit Phase 2). If a future
+  // A/B test is needed, use a server-side cookie/middleware so SSR and
+  // hydration agree on the variant from first paint.
   return <DealGapIQHomepageV4 onPointAndScan={() => setMode('camera')} />
 }
 
