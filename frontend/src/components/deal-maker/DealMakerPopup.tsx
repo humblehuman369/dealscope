@@ -361,7 +361,9 @@ export function DealMakerPopup({
   useEffect(() => {
     if (isOpen && initialTab && contentRef.current) {
       const scrollToRef = () => {
-        let targetRef: React.RefObject<HTMLDivElement> | null = null
+        // React 19: useRef<T>() returns RefObject<T | null>; mirror that here so
+        // the ref locals from useRef are assignable without widening the consumer.
+        let targetRef: React.RefObject<HTMLDivElement | null> | null = null
         switch (initialTab) {
           case 'buy-price':
             targetRef = purchaseTermsRef
