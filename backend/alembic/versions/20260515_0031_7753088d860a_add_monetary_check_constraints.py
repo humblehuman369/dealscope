@@ -32,9 +32,11 @@ def upgrade() -> None:
         "budget_lines",
         "unit_cost >= 0",
     )
+
+    # budget_expenses – actual spend tracking (amount lives here)
     op.create_check_constraint(
-        "ck_budget_lines_amount_nonneg",
-        "budget_lines",
+        "ck_budget_expenses_amount_nonneg",
+        "budget_expenses",
         "amount >= 0",
     )
 
@@ -93,7 +95,7 @@ def downgrade() -> None:
     op.drop_constraint("ck_saved_property_sold_price_nonneg", "saved_properties", type_="check")
 
     op.drop_constraint("ck_payment_history_amount_nonneg", "payment_history", type_="check")
+    op.drop_constraint("ck_budget_expenses_amount_nonneg", "budget_expenses", type_="check")
 
-    op.drop_constraint("ck_budget_lines_amount_nonneg", "budget_lines", type_="check")
     op.drop_constraint("ck_budget_lines_unit_cost_nonneg", "budget_lines", type_="check")
     op.drop_constraint("ck_budget_lines_estimate_amount_nonneg", "budget_lines", type_="check")
