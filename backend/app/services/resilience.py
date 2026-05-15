@@ -29,7 +29,10 @@ _circuit_state: dict[str, dict[str, Any]] = defaultdict(
 class CircuitOpenError(ExternalAPIError):
     """Raised when the circuit breaker is open for a provider."""
 
-    def __init__(self, message: str = "One or more data providers are temporarily unavailable"):
+    def __init__(
+        self,
+        message: str = "Data providers are temporarily unavailable. Please try again in a few minutes.",
+    ):
         super().__init__(message=message, code="PROVIDER_CIRCUIT_OPEN")
 
 

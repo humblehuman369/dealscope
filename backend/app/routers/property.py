@@ -123,8 +123,16 @@ async def search_property(
                 )
             except Exception as rec_err:
                 logger.error(f"Failed to record search history: {rec_err}", exc_info=True)
-        logger.error(f"External API / circuit breaker error during property search: {e}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+
+        if isinstance(e, CircuitOpenError):
+            friendly_message = (
+                "Data providers are temporarily unavailable. Please try again in a few minutes."
+            )
+            logger.warning("Property search failed due to circuit breaker: %s", full_address)
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=friendly_message)
+
+        logger.error(f"External API error during property search: {e.message}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=e.message)
     except Exception as e:
         # Record failed search for authenticated users
         if current_user:
