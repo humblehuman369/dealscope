@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { UserCog, Search, CheckCircle, XCircle, Crown } from 'lucide-react'
 import { api } from '@/lib/api-client'
+import { toast } from 'sonner'
 
 // ===========================================
 // User Management — Dark Fintech Theme
@@ -67,7 +68,10 @@ export function UserManagementSection() {
     userId: string,
     currentTier: string | null | undefined,
   ) => {
-    const newTier = currentTier === 'pro' ? 'free' : 'pro'
+    const isCurrentlyPro = currentTier === 'pro'
+    const newTier = isCurrentlyPro ? 'free' : 'pro'
+    const action = isCurrentlyPro ? 'revoked' : 'granted'
+
     try {
       await api.patch(`/api/v1/admin/users/${userId}/subscription`, { tier: newTier })
       setUsers((prev) =>
@@ -75,8 +79,10 @@ export function UserManagementSection() {
           u.id === userId ? { ...u, subscription_tier: newTier, subscription_status: 'active' } : u,
         ),
       )
+      toast.success(`Pro access ${action} successfully`)
     } catch (err) {
       console.error('Failed to update subscription:', err)
+      toast.error('Failed to update subscription. Please try again.')
     }
   }
 

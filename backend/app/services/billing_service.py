@@ -384,19 +384,34 @@ class BillingService:
         (``stripe_subscription_id``, ``stripe_price_id``) are left untouched
         so this is clearly distinguishable from a paid subscription.
         """
-        subscription = await self.get_or_create_subscription(db, user_id)
         limits = TIER_LIMITS[tier]
 
-        subscription.tier = tier
-        subscription.status = SubscriptionStatus.ACTIVE
-        subscription.properties_limit = limits["properties_limit"]
-        subscription.searches_per_month = limits["searches_per_month"]
-        subscription.api_calls_per_month = limits["api_calls_per_month"]
-        subscription.cancel_at_period_end = False
-        subscription.canceled_at = None
-
         async with db.begin():
-            pass
+            # Re-fetch inside the transaction to guarantee the object is attached
+            result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
+            subscription = result.scalar_one_or_none()
+
+            if not subscription:
+                free_limits = TIER_LIMITS[SubscriptionTier.FREE]
+                subscription = Subscription(
+                    user_id=user_id,
+                    tier=SubscriptionTier.FREE,
+                    status=SubscriptionStatus.ACTIVE,
+                    properties_limit=free_limits["properties_limit"],
+                    searches_per_month=free_limits["searches_per_month"],
+                    api_calls_per_month=free_limits["api_calls_per_month"],
+                    usage_reset_date=datetime.now(UTC),
+                )
+                db.add(subscription)
+
+            subscription.tier = tier
+            subscription.status = SubscriptionStatus.ACTIVE
+            subscription.properties_limit = limits["properties_limit"]
+            subscription.searches_per_month = limits["searches_per_month"]
+            subscription.api_calls_per_month = limits["api_calls_per_month"]
+            subscription.cancel_at_period_end = False
+            subscription.canceled_at = None
+
         await db.refresh(subscription)
         logger.info("Admin granted %s tier to user %s", tier.value, user_id)
         return subscription
@@ -410,22 +425,35 @@ class BillingService:
 
         Resets usage counters so the user starts fresh on the free plan.
         """
-        subscription = await self.get_or_create_subscription(db, user_id)
         free_limits = TIER_LIMITS[SubscriptionTier.FREE]
 
-        subscription.tier = SubscriptionTier.FREE
-        subscription.status = SubscriptionStatus.ACTIVE
-        subscription.properties_limit = free_limits["properties_limit"]
-        subscription.searches_per_month = free_limits["searches_per_month"]
-        subscription.api_calls_per_month = free_limits["api_calls_per_month"]
-        subscription.cancel_at_period_end = False
-        subscription.canceled_at = None
-        subscription.searches_used = 0
-        subscription.api_calls_used = 0
-        subscription.usage_reset_date = datetime.now(UTC)
-
         async with db.begin():
-            pass
+            result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
+            subscription = result.scalar_one_or_none()
+
+            if not subscription:
+                subscription = Subscription(
+                    user_id=user_id,
+                    tier=SubscriptionTier.FREE,
+                    status=SubscriptionStatus.ACTIVE,
+                    properties_limit=free_limits["properties_limit"],
+                    searches_per_month=free_limits["searches_per_month"],
+                    api_calls_per_month=free_limits["api_calls_per_month"],
+                    usage_reset_date=datetime.now(UTC),
+                )
+                db.add(subscription)
+
+            subscription.tier = SubscriptionTier.FREE
+            subscription.status = SubscriptionStatus.ACTIVE
+            subscription.properties_limit = free_limits["properties_limit"]
+            subscription.searches_per_month = free_limits["searches_per_month"]
+            subscription.api_calls_per_month = free_limits["api_calls_per_month"]
+            subscription.cancel_at_period_end = False
+            subscription.canceled_at = None
+            subscription.searches_used = 0
+            subscription.api_calls_used = 0
+            subscription.usage_reset_date = datetime.now(UTC)
+
         await db.refresh(subscription)
         logger.info("Admin revoked subscription for user %s (downgraded to free)", user_id)
         return subscription
