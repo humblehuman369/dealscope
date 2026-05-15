@@ -244,8 +244,8 @@ class BillingService:
                 usage_reset_date=datetime.now(UTC),
             )
 
-            db.add(subscription)
-            await db.commit()
+            async with db.begin():
+                db.add(subscription)
             await db.refresh(subscription)
             logger.info(f"Created free subscription for user {user_id}")
 
@@ -265,7 +265,9 @@ class BillingService:
             days_since_reset = (datetime.now(UTC) - subscription.usage_reset_date).days
             if days_since_reset >= 30:
                 subscription.reset_usage()
-                await db.commit()
+                async with db.begin():
+                    # SQLAlchemy tracks the dirty state on the attached instance
+                    pass
                 await db.refresh(subscription)
                 logger.info(f"Auto-reset usage for user {user_id} ({days_since_reset} days since last reset)")
 

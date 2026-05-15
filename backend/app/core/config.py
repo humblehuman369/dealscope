@@ -337,6 +337,36 @@ def validate_settings(settings: Settings) -> None:
     if settings.ALGORITHM not in {"HS256", "HS384", "HS512"}:
         errors.append("ALGORITHM must be one of: HS256, HS384, HS512")
 
+    # MFA_ENCRYPTION_KEY must be a valid Fernet key (44 chars) in production.
+    # Used to encrypt TOTP secrets. In dev we auto-generate so tests pass.
+    mfa_key = settings.MFA_ENCRYPTION_KEY
+    if not mfa_key or len(mfa_key) != 44:
+        if settings.is_production:
+            errors.append(
+                "MFA_ENCRYPTION_KEY must be set to a valid Fernet key (44 chars) in production. "
+                "Generate with: python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'"
+            )
+        else:
+            warnings.warn(
+                "MFA_ENCRYPTION_KEY is not set or invalid length. "
+                "A random Fernet key will be generated for this dev session. "
+                "Set the env var for persistent MFA secrets across restarts.",
+                UserWarning,
+                stacklevel=2,
+            )
+            if not mfa_key or len(mfa_key) != 44:
+                try:
+                    from cryptography.fernet import Fernet as _F
+
+                    object.__setattr__(settings, "MFA_ENCRYPTION_KEY", _F.generate_key().decode())
+                except ImportError:
+                    # Fallback to 44-char random if cryptography not installed (tests)
+                    import secrets as _s
+                    import base64 as _b64
+
+                    raw = _s.token_bytes(32)
+                    object.__setattr__(settings, "MFA_ENCRYPTION_KEY", _b64.urlsafe_b64encode(raw).decode())
+
     # Production-specific validations
     if settings.is_production:
         if not settings.DATABASE_URL or "localhost" in settings.DATABASE_URL:
