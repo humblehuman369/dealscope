@@ -774,9 +774,8 @@ export function DealMakerScreen({
         const grossMonthly = (n('annual_gross_rent') || 0) / 12
         const totalExpAnnual = n('gross_expenses')
         const totalMonthlyExpenses = (totalExpAnnual + n('annual_debt_service')) / 12
-        const effectiveListPrice = listPrice ?? buyPrice
-        const dealGap =
-          effectiveListPrice > 0 ? (effectiveListPrice - buyPrice) / effectiveListPrice : 0
+        const incomeValue = n('income_value') || n('breakeven_price') || 0
+        const dealGap = incomeValue > 0 ? (incomeValue - buyPrice) / incomeValue : 0
         const totalInvestment = buyPrice + ltrState.rehabBudget
         return {
           cashNeeded,
@@ -1095,9 +1094,8 @@ export function DealMakerScreen({
     ) {
       const ltrState = state as LTRDealMakerState
       const cachedMetrics = dealMakerStore.record.cached_metrics
-      const effectiveListPrice = dealMakerStore.record.list_price || ltrState.buyPrice
-      const dealGap =
-        effectiveListPrice > 0 ? (effectiveListPrice - ltrState.buyPrice) / effectiveListPrice : 0
+      const incomeValue = cachedMetrics.income_value ?? cachedMetrics.breakeven_price ?? 0
+      const dealGap = incomeValue > 0 ? (incomeValue - ltrState.buyPrice) / incomeValue : 0
       const totalCashNeeded = (cachedMetrics.total_cash_needed || 0) + (ltrState.rehabBudget || 0)
 
       return {
@@ -1170,9 +1168,10 @@ export function DealMakerScreen({
 
     const cocReturn = cashNeeded > 0 ? (annualCashFlow / cashNeeded) * 100 : 0
 
-    const effectiveListPrice = listPrice ?? ltrState.buyPrice
-    const dealGap =
-      effectiveListPrice > 0 ? (effectiveListPrice - ltrState.buyPrice) / effectiveListPrice : 0
+    // In local (unsaved) mode we don't have a live income_value yet.
+    // Default to 0 so Deal Gap shows as neutral until a saved record is loaded.
+    const incomeValue = 0
+    const dealGap = 0
 
     return {
       cashNeeded,
@@ -1502,8 +1501,8 @@ export function DealMakerScreen({
       { label: 'Cash Needed', value: formatPrice(ltrMetrics.cashNeeded), color: 'white' },
       {
         label: 'Deal Gap',
-        value: `${-ltrMetrics.dealGap >= 0 ? '+' : ''}${formatPercent(-ltrMetrics.dealGap)}`,
-        color: -ltrMetrics.dealGap >= 0 ? 'teal' : 'cyan',
+        value: `${ltrMetrics.dealGap >= 0 ? '+' : ''}${formatPercent(ltrMetrics.dealGap)}`,
+        color: ltrMetrics.dealGap >= 0 ? 'teal' : 'rose',
       },
       {
         label: 'Annual Profit',
