@@ -1,23 +1,14 @@
 """
-APScheduler integration for periodic cleanup tasks.
+DEPRECATED — APScheduler scheduler.
 
-Plugs into the FastAPI lifespan so jobs start automatically on boot
-and shut down cleanly.
+Background jobs have been migrated to Arq (see ``app/tasks/arq_worker.py``).
 
-In multi-worker deployments (WEB_CONCURRENCY > 1), a Redis-based leader
-lock ensures only ONE worker runs the scheduler.  Workers without the
-lock skip scheduler startup.  If the leader dies, the lock expires and
-a restarted worker can reclaim it.
+This module is kept only for local development fallback and will be removed
+in a future release. Production deployments should run::
 
-Usage in ``main.py``::
+    arq app.tasks.arq_worker.WorkerSettings
 
-    from app.tasks.scheduler import try_start_scheduler, stop_scheduler
-
-    @asynccontextmanager
-    async def lifespan(app: FastAPI):
-        await try_start_scheduler()
-        yield
-        stop_scheduler()
+as a separate worker process (or container) alongside the web service.
 """
 
 from __future__ import annotations
@@ -96,10 +87,17 @@ async def _renew_leader_lock() -> None:
 
 
 async def try_start_scheduler() -> None:
-    """Acquire leader lock and start scheduler if this worker is the leader.
+    """DEPRECATED — use Arq worker instead.
 
-    Safe to call from every worker — only the lock winner starts jobs.
+    Acquire leader lock and start scheduler if this worker is the leader.
     """
+    import warnings
+
+    warnings.warn(
+        "APScheduler scheduler is deprecated. Run 'arq app.tasks.arq_worker.WorkerSettings' instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     is_leader = await _try_acquire_leader_lock()
     if not is_leader:
         logger.info("Another worker holds the scheduler lock — skipping scheduler in this worker (pid=%s)", os.getpid())

@@ -158,15 +158,11 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         logger.warning(f"WeasyPrint: NOT AVAILABLE — PDF exports will fail. Error: {exc}")
 
-    # Start periodic cleanup scheduler (APScheduler).
-    # In multi-worker mode, only the worker that acquires the Redis leader
-    # lock will actually start the scheduler — others skip it safely.
-    try:
-        from app.tasks.scheduler import try_start_scheduler
-
-        await try_start_scheduler()
-    except Exception as e:
-        logger.warning(f"Scheduler failed to start (non-fatal): {e}")
+    # Background jobs are now handled by the Arq worker process (see
+    # app/tasks/arq_worker.py). The web process no longer runs APScheduler.
+    # Deploy a separate worker container/process with:
+    #     arq app.tasks.arq_worker.WorkerSettings
+    logger.info("Background jobs delegated to Arq worker (web process does not schedule)")
 
     # Flush stale property caches on deploy so updated extraction logic takes effect
     try:
