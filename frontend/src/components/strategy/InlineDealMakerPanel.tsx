@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { DealMakerSlider } from '@/components/deal-maker/DealMakerSlider'
-import type { SliderConfig } from '@/components/deal-maker/types'
+import { DealMakerSlider } from '@/features/deal-maker/components/DealMakerSlider'
+import type { SliderConfig } from '@/features/deal-maker/components/types'
 
 export interface InlineDealMakerValues {
   buyPrice: number

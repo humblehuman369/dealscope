@@ -2,7 +2,7 @@
 
 import { useParams, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import type { DealMakerPropertyData } from '@/components/deal-maker/DealMakerScreen'
+import type { DealMakerPropertyData } from '@/features/deal-maker/components/DealMakerScreen'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 import { AuthGate } from '@/components/auth/AuthGate'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
@@ -11,7 +11,7 @@ import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 // Dynamic import keeps it out of the initial page bundle.
 const DealMakerScreen = dynamic(
   () =>
-    import('@/components/deal-maker/DealMakerScreen').then((m) => ({ default: m.DealMakerScreen })),
+    import('@/features/deal-maker/components/DealMakerScreen').then((m) => ({ default: m.DealMakerScreen })),
   {
     loading: () => <IQLoadingLogo />,
   },

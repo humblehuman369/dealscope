@@ -10,7 +10,7 @@ import type {
   STRDealMakerState,
   BRRRRDealMakerState,
   HouseHackDealMakerState,
-} from '@/components/deal-maker/types'
+} from '@/features/deal-maker/components/types'
 
 export interface EstimateIncomeValueParams {
   monthlyRent: number

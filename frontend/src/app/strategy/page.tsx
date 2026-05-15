@@ -61,7 +61,7 @@ import {
 } from '@/components/iq-verdict/strategyWorksheetSection'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { VideoModal } from '@/components/ui/VideoModal'
-import { DealMakerWorksheet } from '@/components/deal-maker/DealMakerWorksheet'
+import { DealMakerWorksheet } from '@/features/deal-maker/components/DealMakerWorksheet'
 import { STRRegulatoryBadge } from '@/components/analytics/STRRegulatoryBadge'
 import { STRConfidenceLabel } from '@/components/analytics/STRConfidenceLabel'
 import type {
@@ -82,14 +82,14 @@ import type {
   HouseHackMetrics,
   WholesaleDealMakerState,
   WholesaleMetrics,
-} from '@/components/deal-maker/types'
+} from '@/features/deal-maker/components/types'
 import {
   DEFAULT_STR_DEAL_MAKER_STATE,
   DEFAULT_BRRRR_DEAL_MAKER_STATE,
   DEFAULT_FLIP_DEAL_MAKER_STATE,
   DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
   DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
-} from '@/components/deal-maker/types'
+} from '@/features/deal-maker/components/types'
 import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { PathButton } from '@/components/strategy/PathButton'

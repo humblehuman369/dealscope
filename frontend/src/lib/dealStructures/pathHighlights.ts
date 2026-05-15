@@ -10,7 +10,7 @@
  * so the UI can render a soft accent glow on only those rows.
  */
 
-import type { AnyStrategyState, StrategyType } from '@/components/deal-maker/types'
+import type { AnyStrategyState, StrategyType } from '@/features/deal-maker/components/types'
 
 interface FieldChange {
   stateField: string
