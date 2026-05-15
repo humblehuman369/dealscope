@@ -326,7 +326,8 @@ class BillingService:
             days_since_reset = (datetime.now(UTC) - subscription.usage_reset_date).days
             if days_since_reset >= 30:
                 subscription.reset_usage()
-                await db.commit()
+                async with db.begin():
+                    pass
                 await db.refresh(subscription)
 
         was_first = subscription.searches_used == 0
@@ -340,7 +341,8 @@ class BillingService:
                     tier_required="pro",
                 )
             subscription.increment_search()
-            await db.commit()
+            async with db.begin():
+                pass
             await db.refresh(subscription)
 
             if subscription.searches_used == subscription.searches_per_month:
@@ -393,7 +395,8 @@ class BillingService:
         subscription.cancel_at_period_end = False
         subscription.canceled_at = None
 
-        await db.commit()
+        async with db.begin():
+            pass
         await db.refresh(subscription)
         logger.info("Admin granted %s tier to user %s", tier.value, user_id)
         return subscription
@@ -421,7 +424,8 @@ class BillingService:
         subscription.api_calls_used = 0
         subscription.usage_reset_date = datetime.now(UTC)
 
-        await db.commit()
+        async with db.begin():
+            pass
         await db.refresh(subscription)
         logger.info("Admin revoked subscription for user %s (downgraded to free)", user_id)
         return subscription
@@ -445,7 +449,8 @@ class BillingService:
             fake_id = existing_id or f"cus_dev_{user.id}"
             if not existing_id:
                 subscription.stripe_customer_id = fake_id
-                await db.commit()
+                async with db.begin():
+                    pass
             return fake_id
 
         # Validate that the stored ID exists in the current Stripe mode
@@ -477,7 +482,8 @@ class BillingService:
         )
 
         subscription.stripe_customer_id = customer.id
-        await db.commit()
+        async with db.begin():
+            pass
 
         logger.info("Created Stripe customer %s for user %s", customer.id, user.id)
         return customer.id
@@ -715,7 +721,8 @@ class BillingService:
             else:
                 subscription.cancel_at_period_end = True
             subscription.canceled_at = datetime.now(UTC)
-            await db.commit()
+            async with db.begin():
+                pass
             return True, (
                 "Trial canceled — access ended (dev mode)"
                 if is_trial_cancel
@@ -748,7 +755,8 @@ class BillingService:
                 )
                 subscription.cancel_at_period_end = True
 
-            await db.commit()
+            async with db.begin():
+                pass
 
             if is_trial_cancel:
                 message = "Trial canceled — access ended"
@@ -850,7 +858,8 @@ class BillingService:
         if subscription:
             subscription.stripe_customer_id = customer_id
             subscription.stripe_subscription_id = subscription_id
-            await db.commit()
+            async with db.begin():
+                pass
 
         if subscription_id and self.is_configured and STRIPE_AVAILABLE:
             try:
@@ -995,7 +1004,8 @@ class BillingService:
             subscription.searches_per_month = TIER_LIMITS[SubscriptionTier.FREE]["searches_per_month"]
             subscription.api_calls_per_month = TIER_LIMITS[SubscriptionTier.FREE]["api_calls_per_month"]
 
-            await db.commit()
+            async with db.begin():
+                pass
             logger.info(f"Subscription deleted, downgraded user {user_id} to free tier")
 
             user = await self._get_user_for_email(db, user_id)
@@ -1058,7 +1068,8 @@ class BillingService:
                 receipt_url=receipt_url,
             )
             db.add(payment)
-            await db.commit()
+            async with db.begin():
+                pass
 
             logger.info(f"Invoice paid for user {subscription.user_id}")
 
@@ -1097,7 +1108,8 @@ class BillingService:
                 description="Payment failed",
             )
             db.add(payment)
-            await db.commit()
+            async with db.begin():
+                pass
 
             logger.warning(f"Payment failed for user {subscription.user_id}")
 
@@ -1192,7 +1204,8 @@ class BillingService:
                     subscription.api_calls_per_month = plan.api_calls_per_month
                     break
 
-        await db.commit()
+        async with db.begin():
+            pass
         logger.info(f"Synced subscription {stripe_sub_id} for user {subscription.user_id}")
 
     # ===========================================
