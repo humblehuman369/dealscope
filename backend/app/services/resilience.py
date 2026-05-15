@@ -15,6 +15,8 @@ from collections import defaultdict
 from functools import wraps
 from typing import Any, Callable, TypeVar
 
+from app.core.exceptions import ExternalAPIError
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -24,8 +26,11 @@ _circuit_state: dict[str, dict[str, Any]] = defaultdict(
 )
 
 
-class CircuitOpenError(Exception):
+class CircuitOpenError(ExternalAPIError):
     """Raised when the circuit breaker is open for a provider."""
+
+    def __init__(self, message: str = "One or more data providers are temporarily unavailable"):
+        super().__init__(message=message, code="PROVIDER_CIRCUIT_OPEN")
 
 
 def _is_circuit_open(name: str, threshold: int, timeout: float) -> bool:
@@ -79,6 +84,9 @@ def resilient(
                     result = await fn(*args, **kwargs)
                     _record_success(name)
                     return result
+                except CircuitOpenError:
+                    # Do not retry when the circuit is already open
+                    raise
                 except Exception as exc:
                     last_exc = exc
                     _record_failure(name, circuit_breaker_threshold)

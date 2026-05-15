@@ -15,6 +15,7 @@ from sqlalchemy import select
 
 from app.core.deps import CurrentUser, DbSession, OptionalUser
 from app.core.exceptions import ExternalAPIError
+from app.services.resilience import CircuitOpenError
 from app.models.saved_property import SavedProperty
 from app.models.search_history import SearchHistory
 from app.schemas.property import (
@@ -102,7 +103,7 @@ async def search_property(
 
     try:
         result = await property_service.search_property(full_address)
-    except ExternalAPIError as e:
+    except (ExternalAPIError, CircuitOpenError) as e:
         # Record failed search for authenticated users
         if current_user:
             try:
@@ -118,12 +119,12 @@ async def search_property(
                     },
                     search_source=search_source,
                     was_successful=False,
-                    error_message=e.message,
+                    error_message=getattr(e, "message", str(e)),
                 )
             except Exception as rec_err:
                 logger.error(f"Failed to record search history: {rec_err}", exc_info=True)
-        logger.error(f"External API error during property search: {e.message}")
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=e.message)
+        logger.error(f"External API / circuit breaker error during property search: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
     except Exception as e:
         # Record failed search for authenticated users
         if current_user:
