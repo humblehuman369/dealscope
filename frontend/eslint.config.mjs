@@ -48,6 +48,29 @@ const eslintConfig = [
       // ── General ─────────────────────────────────────────────
       // Catch accidental console.log in production code
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+
+      // ── Architecture boundaries ─────────────────────────────
+      // Prevent imports from the legacy deal-maker location.
+      // All Deal Maker code must live in @/features/deal-maker.
+      'import/no-restricted-paths': [
+        'error',
+        {
+          zones: [
+            {
+              target: './src/**/*',
+              from: './src/components/deal-maker',
+              message:
+                'Import from @/features/deal-maker/components instead. The legacy components/deal-maker folder has been removed.',
+            },
+            {
+              target: './src/**/*',
+              from: './src/components/deal-maker/*',
+              message:
+                'Import from @/features/deal-maker/components instead. The legacy components/deal-maker folder has been removed.',
+            },
+          ],
+        },
+      ],
     },
   },
 

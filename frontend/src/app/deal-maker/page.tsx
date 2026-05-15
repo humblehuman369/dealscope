@@ -17,7 +17,7 @@ import type { AddressValidationResult } from '@/types/address'
 
 const DealMakerScreen = dynamic(
   () =>
-    import('@/components/deal-maker/DealMakerScreen').then((m) => ({ default: m.DealMakerScreen })),
+    import('@/features/deal-maker/components/DealMakerScreen').then((m) => ({ default: m.DealMakerScreen })),
   {
     loading: () => <IQLoadingLogo />,
   },
