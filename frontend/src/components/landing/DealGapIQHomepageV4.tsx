@@ -146,7 +146,7 @@ function MarketingNav({ onLogin, onStart }: { onLogin: () => void; onStart: () =
             >
               Log in
             </button>
-            <PrimaryButton onClick={onStart} size="sm">
+            <PrimaryButton onClick={onStart} size="xs">
               Start Free Discovery
               <ArrowRight className="h-4 w-4" />
             </PrimaryButton>
@@ -807,15 +807,22 @@ function PrimaryButton({
 }: {
   children: React.ReactNode
   onClick?: () => void
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
 }) {
+  const sizeClass =
+    size === 'xs'
+      ? 'px-5 py-2 text-sm'
+      : size === 'sm'
+        ? 'px-6 py-3 text-sm'
+        : size === 'md'
+          ? 'px-7 py-3.5 text-sm'
+          : ''
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`${primaryButtonClass} ${
-        size === 'sm' ? 'px-6 py-3 text-sm' : size === 'md' ? 'px-7 py-3.5 text-sm' : ''
-      }`}
+      className={`${primaryButtonClass} ${sizeClass}`}
       style={{
         background: 'var(--accent-sky)',
         color: 'var(--text-inverse)',
