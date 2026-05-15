@@ -5,6 +5,21 @@ const isCapacitor = process.env.BUILD_TARGET === 'capacitor'
 const nextConfig = {
   reactStrictMode: true,
 
+  // ── Bundle Budget & Performance Hints ─────────────────────────────
+  // Warn when any chunk exceeds ~250 kB (gzipped). This helps keep the
+  // main bundle lean for mobile (target: < 200 kB initial JS on 3G).
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.performance = {
+        ...config.performance,
+        maxEntrypointSize: 250000, // 250 kB
+        maxAssetSize: 250000,
+        hints: 'warning',
+      }
+    }
+    return config
+  },
+
 }
 
 if (!isCapacitor) {

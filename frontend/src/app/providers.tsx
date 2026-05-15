@@ -1,11 +1,16 @@
 'use client'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useState, Suspense } from 'react'
+import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { ThemeProvider } from '@/context/ThemeContext'
-import AuthModal from '@/components/auth/AuthModal'
 import { useCapacitorDeepLinks } from '@/hooks/useCapacitorDeepLinks'
 import { useCapacitorShell } from '@/hooks/useCapacitorShell'
+
+const AuthModal = dynamic(() => import('@/components/auth/AuthModal'), {
+  ssr: false,
+  loading: () => null,
+})
 
 function CapacitorBridge() {
   useCapacitorDeepLinks()
@@ -31,9 +36,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ThemeProvider>
         <CapacitorBridge />
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>
-        <Suspense fallback={null}>
-          <AuthModal />
-        </Suspense>
+        <AuthModal />
       </ThemeProvider>
     </QueryClientProvider>
   )

@@ -145,6 +145,10 @@ function SourceRow({
       onMouseLeave={() => setHovered(false)}
       className={`flex items-center gap-2.5 w-full px-3 rounded-lg transition-all duration-200 text-left ${compact ? 'py-1.5' : 'py-2'}`}
       style={buttonStyle}
+      role="radio"
+      aria-checked={isSelected}
+      aria-label={`${meta.label} estimate: ${available ? fmt(sourceValue) : 'Unavailable'}${isSelected ? ' (selected)' : ''}`}
+      tabIndex={available ? 0 : -1}
     >
       <div
         className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0"
