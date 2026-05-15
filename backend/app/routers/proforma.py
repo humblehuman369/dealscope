@@ -10,7 +10,9 @@ from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 
 from app.core.deps import OptionalUser, ProUser
+from app.core.exceptions import ExternalAPIError
 from app.schemas.appraisal_report import AppraisalReportRequest, NarrativesPayload
+from app.services.resilience import CircuitOpenError
 from app.schemas.proforma import (
     FinancialProforma,
     ProformaExportResponse,
@@ -29,6 +31,16 @@ from app.services.str_exporter import STRExcelExporter
 from app.services.wholesale_exporter import WholesaleExcelExporter
 
 logger = logging.getLogger(__name__)
+
+
+async def _safe_search_property(address: str):
+    """Call property_service.search_property with friendly error handling for provider outages."""
+    try:
+        return await property_service.search_property(address)
+    except (ExternalAPIError, CircuitOpenError) as e:
+        friendly = "Data providers are temporarily unavailable. Please try again in a few minutes."
+        logger.warning("Property data unavailable for %s: %s", address, e)
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=friendly)
 
 router = APIRouter(prefix="/api/v1/proforma", tags=["Proforma"])
 
@@ -62,7 +74,7 @@ async def generate_proforma(
     """
     try:
         # Fetch property data using address
-        property_data = await property_service.search_property(request.address)
+        property_data = await _safe_search_property(request.address)
 
         if not property_data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Property not found: {request.address}")
@@ -160,7 +172,7 @@ async def get_proforma(
     """
     try:
         # Fetch property data using address
-        property_data = await property_service.search_property(address)
+        property_data = await _safe_search_property(address)
 
         if not property_data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Property not found: {address}")
@@ -234,7 +246,7 @@ async def download_proforma_excel(
     """
     try:
         # Fetch property data using address
-        property_data = await property_service.search_property(address)
+        property_data = await _safe_search_property(address)
 
         if not property_data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Property not found: {address}")
@@ -343,7 +355,7 @@ async def download_proforma_pdf(
 
     try:
         # Fetch property data using address
-        property_data = await property_service.search_property(address)
+        property_data = await _safe_search_property(address)
 
         if not property_data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Property not found: {address}")
@@ -431,7 +443,7 @@ async def view_proforma_report(
         theme = "light"
 
     try:
-        property_data = await property_service.search_property(address)
+        property_data = await _safe_search_property(address)
 
         if not property_data:
             raise HTTPException(
