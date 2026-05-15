@@ -27,35 +27,9 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
   return (
     <html lang="en">
-      <body
-        style={{
-          margin: 0,
-          padding: 0,
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          backgroundColor: '#f8fafc',
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '28rem',
-            width: '100%',
-            padding: '1rem',
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '1rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              border: '1px solid #e2e8f0',
-              padding: '2rem',
-              textAlign: 'center',
-            }}
-          >
+      <body className="bg-[var(--surface-base)] text-[var(--text-body)] min-h-screen flex items-center justify-center p-4 font-sans">
+        <div className="w-full max-w-md">
+          <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl shadow-lg p-8 text-center">
             {/* Error Icon */}
             <div
               style={{

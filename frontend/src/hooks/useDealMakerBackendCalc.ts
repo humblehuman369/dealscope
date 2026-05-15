@@ -228,7 +228,8 @@ export function useDealMakerBackendCalc<T>(
 
   const endpoint = WORKSHEET_ENDPOINTS[strategyType]
   const requestIdRef = useRef(0)
-  const loadingTimerRef = useRef<ReturnType<typeof setTimeout>>()
+  // React 19: useRef now requires an explicit initial value (or `null`).
+  const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Serialize state to a stable string so the effect only fires when values change,
   // not on every render (object identity changes every render).
@@ -277,7 +278,7 @@ export function useDealMakerBackendCalc<T>(
 
     return () => {
       clearTimeout(timer)
-      clearTimeout(loadingTimerRef.current)
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current)
       controller.abort()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

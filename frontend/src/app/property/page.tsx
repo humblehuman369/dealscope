@@ -15,7 +15,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { usePropertyData } from '@/hooks/usePropertyData'
 
 function PropertyRedirector() {
   const router = useRouter()
@@ -25,6 +25,8 @@ function PropertyRedirector() {
 
   const [error, setError] = useState<string | null>(null)
 
+  const { fetchProperty } = usePropertyData()
+
   useEffect(() => {
     async function fetchAndRedirect() {
       if (!addressParam) {
@@ -33,11 +35,9 @@ function PropertyRedirector() {
       }
 
       try {
-        // Fetch property data to get zpid via api-client (handles CSRF + auth)
-        const data = await api.post<Record<string, any>>('/api/v1/properties/search', {
-          address: addressParam,
-        })
-        const zpid = data.zpid || data.property_id || 'unknown'
+        // Use shared hook to ensure cache + validation
+        const data = await fetchProperty(addressParam)
+        const zpid = (data as any).zpid || (data as any).property_id || 'unknown'
 
         // Build redirect URL
         let redirectUrl = `/property/${zpid}?address=${encodeURIComponent(addressParam)}`
@@ -54,7 +54,7 @@ function PropertyRedirector() {
     }
 
     fetchAndRedirect()
-  }, [addressParam, strategyParam, router])
+  }, [addressParam, strategyParam, router, fetchProperty])
 
   if (error) {
     return (

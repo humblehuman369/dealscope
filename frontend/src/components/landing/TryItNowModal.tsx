@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, Search, X } from 'lucide-react'
+import { Camera, Search } from 'lucide-react'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
+import { Modal } from '@/components/ui/Modal'
 import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity'
 
 interface TryItNowModalProps {
@@ -12,50 +13,55 @@ interface TryItNowModalProps {
   onScanProperty: () => void
 }
 
+/**
+ * TryItNowModal — landing-page CTA modal that lets visitors choose between
+ * camera scan and address entry. Migrated to the shared <Modal> primitive
+ * (P2.4); the inner content keeps its existing `.try-modal-*` CSS classes
+ * (defined in landing styles) so the visual is unchanged.
+ */
 export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModalProps) {
   const router = useRouter()
   const [address, setAddress] = useState('')
   const [showAddressInput, setShowAddressInput] = useState(false)
   const hasValidAddress = isLikelyFullAddress(address)
 
-  if (!isOpen) return null
+  // Reset internal state on close so reopening starts fresh.
+  const handleClose = useCallback(() => {
+    onClose()
+    setShowAddressInput(false)
+    setAddress('')
+  }, [onClose])
 
   const handleScanProperty = () => {
-    onClose()
+    handleClose()
     onScanProperty()
   }
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (hasValidAddress) {
-      onClose()
-      // Navigate to IQ Analyzing screen (new IQ Verdict flow)
-      const canonicalAddress = canonicalizeAddressForIdentity(address)
-      router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`)
-    }
-  }
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose()
-      setShowAddressInput(false)
-      setAddress('')
-    }
+    if (!hasValidAddress) return
+    handleClose()
+    const canonicalAddress = canonicalizeAddressForIdentity(address)
+    router.push(`/discovery?address=${encodeURIComponent(canonicalAddress)}`)
   }
 
   return (
-    <div className="try-modal-backdrop" onClick={handleBackdropClick}>
+    <Modal
+      open={isOpen}
+      onClose={handleClose}
+      size="md"
+      aria-label="How would you like to analyze a property?"
+      hideCloseButton
+      fullBleed
+      panelClassName="try-modal-panel"
+    >
       <div className="try-modal">
-        {/* Close Button */}
-        <button className="try-modal-close" onClick={onClose} aria-label="Close">
-          <X size={24} />
-        </button>
-
-        {/* Header - IQ icon on left, text on right, left-aligned */}
+        {/* Header — IQ icon on left, text on right */}
         <div className="try-modal-header">
           <div className="flex items-center gap-4">
             <div className="try-modal-icon flex-shrink-0">
-              <img src="/images/iq-brain-dark.png" alt="IQ" className="try-modal-iq-icon" />
+              {/* Decorative — text label is on the dialog itself via aria-label */}
+              <img src="/images/iq-brain-dark.png" alt="" className="try-modal-iq-icon" />
             </div>
             <div>
               <h2 className="try-modal-title leading-tight">
@@ -71,8 +77,7 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
         {/* Options */}
         {!showAddressInput ? (
           <div className="try-modal-options">
-            {/* Scan Property Option */}
-            <button className="try-modal-option" onClick={handleScanProperty}>
+            <button type="button" className="try-modal-option" onClick={handleScanProperty}>
               <div className="try-modal-option-icon">
                 <Camera size={32} />
               </div>
@@ -84,8 +89,11 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
               </div>
             </button>
 
-            {/* Enter Address Option */}
-            <button className="try-modal-option" onClick={() => setShowAddressInput(true)}>
+            <button
+              type="button"
+              className="try-modal-option"
+              onClick={() => setShowAddressInput(true)}
+            >
               <div className="try-modal-option-icon">
                 <Search size={32} />
               </div>
@@ -98,7 +106,6 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
             </button>
           </div>
         ) : (
-          /* Address Input Form */
           <form className="try-modal-address-form" onSubmit={handleAddressSubmit}>
             <div className="try-modal-input-wrapper">
               <Search size={20} className="try-modal-input-icon" />
@@ -129,6 +136,6 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
           </form>
         )}
       </div>
-    </div>
+    </Modal>
   )
 }

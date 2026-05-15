@@ -107,6 +107,9 @@ export interface SavedProperty {
   // User customization
   nickname: string | null
   status: PropertyStatus
+  /** When `status` was last changed — drives "X days in stage" on the kanban
+      and the deal-detail header. Same field present on `SavedPropertySummary`. */
+  status_changed_at?: string | null
   flip_stage?: FlipStage | null
   flip_stage_entered_at?: string | null
   acquired_at?: string | null

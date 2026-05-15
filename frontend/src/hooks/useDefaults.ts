@@ -1,7 +1,7 @@
 /**
  * useDefaults Hook
  *
- * React hook for accessing centralized investment calculation defaults.
+ * React Query hook for accessing centralized investment calculation defaults.
  * This is the ONLY way to access default values in components.
  *
  * NEVER hardcode default values - always use this hook.
@@ -21,9 +21,25 @@
  * ```
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { defaultsService, ResolvedDefaultsResponse } from '@/services/defaults'
 import type { AllAssumptions } from '@/stores/index'
+
+// ─── Query keys ────────────────────────────────────────────
+
+export const DEFAULTS_KEYS = {
+  /** Root — invalidating this refetches every defaults query. */
+  all: ['defaults'] as const,
+  /** Resolved defaults (system + market + user overrides) for a ZIP. */
+  resolved: (zipCode?: string) => [...DEFAULTS_KEYS.all, 'resolved', zipCode ?? null] as const,
+  /** The signed-in user's saved assumption overrides. */
+  userAssumptions: () => [...DEFAULTS_KEYS.all, 'user-assumptions'] as const,
+}
+
+// 5 minutes — defaults don't change often, and the underlying service has its
+// own 5-minute cache. This staleTime aligns the React Query layer to that.
+const DEFAULTS_STALE_TIME_MS = 5 * 60 * 1000
 
 export interface UseDefaultsResult {
   /** Resolved defaults ready for use */
@@ -51,52 +67,16 @@ export interface UseDefaultsResult {
  * @returns Defaults and status
  */
 export function useDefaults(zipCode?: string): UseDefaultsResult {
-  const [defaults, setDefaults] = useState<AllAssumptions | null>(null)
-  const [fullResponse, setFullResponse] = useState<ResolvedDefaultsResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const query = useQuery<ResolvedDefaultsResponse, Error>({
+    queryKey: DEFAULTS_KEYS.resolved(zipCode),
+    queryFn: () => defaultsService.getResolvedDefaults(zipCode),
+    staleTime: DEFAULTS_STALE_TIME_MS,
+    // Defaults rarely change between window-focus events, so don't refetch on focus.
+    refetchOnWindowFocus: false,
+  })
 
-  // Track the ZIP code to detect changes
-  const prevZipCodeRef = useRef<string | undefined>(zipCode)
+  const fullResponse = query.data ?? null
 
-  const fetchDefaults = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const response = await defaultsService.getResolvedDefaults(zipCode)
-      setFullResponse(response)
-      setDefaults(response.resolved)
-    } catch (err) {
-      console.error('Failed to fetch defaults:', err)
-      setError(err instanceof Error ? err : new Error('Failed to fetch defaults'))
-
-      // Try to use basic system defaults as fallback
-      try {
-        const basicDefaults = await defaultsService.getDefaults()
-        setDefaults(basicDefaults)
-      } catch {
-        // No fallback available
-      }
-    } finally {
-      setLoading(false)
-    }
-  }, [zipCode])
-
-  // Fetch on mount and when ZIP code changes
-  useEffect(() => {
-    fetchDefaults()
-  }, [fetchDefaults])
-
-  // Refetch when ZIP code changes
-  useEffect(() => {
-    if (prevZipCodeRef.current !== zipCode) {
-      prevZipCodeRef.current = zipCode
-      fetchDefaults()
-    }
-  }, [zipCode, fetchDefaults])
-
-  // Check if a specific field is from user override
   const isUserOverride = useCallback(
     (category: keyof AllAssumptions, field: string): boolean => {
       if (!fullResponse?.user_overrides) return false
@@ -107,127 +87,109 @@ export function useDefaults(zipCode?: string): UseDefaultsResult {
     [fullResponse],
   )
 
+  const refetch = useCallback(async () => {
+    await query.refetch()
+  }, [query])
+
   return {
-    defaults,
+    defaults: fullResponse?.resolved ?? null,
     fullResponse,
-    loading,
-    error,
+    loading: query.isLoading,
+    error: (query.error as Error | null) ?? null,
     hasUserCustomizations: !!fullResponse?.user_overrides,
     region: fullResponse?.region ?? null,
-    refetch: fetchDefaults,
+    refetch,
     isUserOverride,
   }
 }
 
 /**
- * Hook for accessing system defaults only (no market/user adjustments).
- * Use this when you need the base system defaults regardless of context.
+ * Hook for managing the signed-in user's saved default assumptions.
+ *
+ * Reads via React Query and writes via React Query mutations so the cache
+ * stays consistent across screens. After every successful write/reset the
+ * resolved-defaults cache is also invalidated so any open `useDefaults`
+ * consumer recomputes against the new overrides.
  */
-export function useSystemDefaults(): {
-  defaults: AllAssumptions | null
-  loading: boolean
-  error: Error | null
-} {
-  const [defaults, setDefaults] = useState<AllAssumptions | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-
-  useEffect(() => {
-    defaultsService
-      .getDefaults()
-      .then(setDefaults)
-      .catch((err) => setError(err instanceof Error ? err : new Error('Failed to fetch defaults')))
-      .finally(() => setLoading(false))
-  }, [])
-
-  return { defaults, loading, error }
-}
-
-/**
- * Hook for managing user's default assumptions.
- * Requires authentication.
- */
-export function useUserAssumptions(): {
+export interface UseUserAssumptionsResult {
   assumptions: Partial<AllAssumptions> | null
   hasCustomizations: boolean
   loading: boolean
   error: Error | null
   updateAssumptions: (updates: Partial<AllAssumptions>) => Promise<void>
   resetToDefaults: () => Promise<void>
-} {
-  const [assumptions, setAssumptions] = useState<Partial<AllAssumptions> | null>(null)
-  const [hasCustomizations, setHasCustomizations] = useState(false)
-  const [loading, setLoading] = useState(true)
+}
+
+export function useUserAssumptions(): UseUserAssumptionsResult {
+  const queryClient = useQueryClient()
   const [error, setError] = useState<Error | null>(null)
 
-  const fetchAssumptions = useCallback(async () => {
-    if (!defaultsService.isAuthenticated()) {
-      setLoading(false)
-      return
-    }
+  const query = useQuery({
+    queryKey: DEFAULTS_KEYS.userAssumptions(),
+    queryFn: async () => {
+      if (!defaultsService.isAuthenticated()) return null
+      return defaultsService.getUserAssumptions()
+    },
+    staleTime: DEFAULTS_STALE_TIME_MS,
+    refetchOnWindowFocus: false,
+  })
 
-    try {
-      const response = await defaultsService.getUserAssumptions()
-      setAssumptions(response.assumptions)
-      setHasCustomizations(response.has_customizations)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch user assumptions'))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchAssumptions()
-  }, [fetchAssumptions])
-
-  const updateAssumptions = useCallback(async (updates: Partial<AllAssumptions>) => {
-    if (!defaultsService.isAuthenticated()) {
-      throw new Error('Authentication required')
-    }
-
-    setLoading(true)
-    try {
-      const response = await defaultsService.updateUserAssumptions(updates)
-      setAssumptions(response.assumptions)
-      setHasCustomizations(response.has_customizations)
-
-      // Clear the defaults cache so next fetch gets updated values
+  const updateMutation = useMutation({
+    mutationFn: (updates: Partial<AllAssumptions>) => {
+      if (!defaultsService.isAuthenticated()) {
+        throw new Error('Authentication required')
+      }
+      return defaultsService.updateUserAssumptions(updates)
+    },
+    onSuccess: (response) => {
+      // Push the fresh user-assumptions payload into the cache so callers
+      // re-render against the new state without a round-trip.
+      queryClient.setQueryData(DEFAULTS_KEYS.userAssumptions(), response)
+      // Resolved-defaults depends on user overrides; clear the service-level
+      // cache and invalidate the query so the next read recomputes.
       defaultsService.clearCache()
-    } catch (err) {
+      queryClient.invalidateQueries({ queryKey: DEFAULTS_KEYS.all })
+    },
+    onError: (err) => {
       setError(err instanceof Error ? err : new Error('Failed to update assumptions'))
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+    },
+  })
+
+  const resetMutation = useMutation({
+    mutationFn: () => {
+      if (!defaultsService.isAuthenticated()) {
+        throw new Error('Authentication required')
+      }
+      return defaultsService.resetUserAssumptions()
+    },
+    onSuccess: (response) => {
+      queryClient.setQueryData(DEFAULTS_KEYS.userAssumptions(), response)
+      defaultsService.clearCache()
+      queryClient.invalidateQueries({ queryKey: DEFAULTS_KEYS.all })
+    },
+    onError: (err) => {
+      setError(err instanceof Error ? err : new Error('Failed to reset assumptions'))
+    },
+  })
+
+  const updateAssumptions = useCallback(
+    async (updates: Partial<AllAssumptions>) => {
+      setError(null)
+      await updateMutation.mutateAsync(updates)
+    },
+    [updateMutation],
+  )
 
   const resetToDefaults = useCallback(async () => {
-    if (!defaultsService.isAuthenticated()) {
-      throw new Error('Authentication required')
-    }
-
-    setLoading(true)
-    try {
-      const response = await defaultsService.resetUserAssumptions()
-      setAssumptions(response.assumptions)
-      setHasCustomizations(response.has_customizations)
-
-      // Clear the defaults cache
-      defaultsService.clearCache()
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to reset assumptions'))
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+    setError(null)
+    await resetMutation.mutateAsync()
+  }, [resetMutation])
 
   return {
-    assumptions,
-    hasCustomizations,
-    loading,
-    error,
+    assumptions: query.data?.assumptions ?? null,
+    hasCustomizations: query.data?.has_customizations ?? false,
+    loading: query.isLoading || updateMutation.isPending || resetMutation.isPending,
+    error: error ?? (query.error as Error | null) ?? null,
     updateAssumptions,
     resetToDefaults,
   }
