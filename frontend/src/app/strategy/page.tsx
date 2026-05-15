@@ -60,6 +60,7 @@ import {
   strategyWorksheetAnchorId,
 } from '@/components/iq-verdict/strategyWorksheetSection'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
+import { LoadingProperty, ErrorProperty } from '@/components/ui/PropertyStates'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { DealMakerWorksheet } from '@/features/deal-maker/components/DealMakerWorksheet'
 import { STRRegulatoryBadge } from '@/components/analytics/STRRegulatoryBadge'
@@ -1003,24 +1004,19 @@ function StrategyContent() {
   }, [isLoading, sessionLoading, data, worksheetSectionParam, isAuthenticated])
 
   if (isLoading) {
-    return <IQLoadingLogo />
+    return <LoadingProperty message="Loading property analysis..." />
   }
 
   if (error || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
-        <div className="flex flex-col items-center gap-4 text-center px-4">
-          <p className="text-xl font-bold" style={{ color: colors.text.primary }}>
-            {error || 'Unable to load'}
-          </p>
-          <button
-            onClick={handleBack}
-            className="mt-4 px-6 py-2 bg-[var(--accent-sky)] text-[var(--text-inverse)] rounded-full font-bold"
-          >
-            Back to Verdict
-          </button>
-        </div>
-      </div>
+      <ErrorProperty
+        title="Unable to Load Strategy Analysis"
+        message={error || 'We couldn’t load the property data needed for strategy comparison.'}
+        actionLabel="Try Again"
+        onAction={() => window.location.reload()}
+        secondaryActionLabel="Back to Verdict"
+        onSecondaryAction={handleBack}
+      />
     )
   }
 
