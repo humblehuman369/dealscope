@@ -335,3 +335,44 @@ class AuditLoggingMiddleware(BaseHTTPMiddleware):
 
         _audit_logger.info("audit_event", extra=extra)
         return response
+
+
+# ---------------------------------------------------------------------------
+# API VERSION DEPRECATION MIDDLEWARE
+# ---------------------------------------------------------------------------
+
+
+class APIVersionDeprecationMiddleware(BaseHTTPMiddleware):
+    """Emit deprecation headers for routes that are scheduled for removal.
+
+    Usage:
+        - Mark a router or specific path as deprecated by including the
+          path prefix in ``DEPRECATED_PREFIXES``.
+        - The middleware will add:
+            Deprecation: true
+            Sunset: <date>          (if provided)
+            Link: <sunset-policy>   (optional)
+
+    This allows clients to detect deprecated endpoints via response headers
+    without changing the URL structure.
+    """
+
+    # Add deprecated API prefixes here when a version is scheduled for removal.
+    # Example: ("/api/v0/", "2026-12-31")
+    DEPRECATED_PREFIXES: list[tuple[str, str | None]] = []
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        response = await call_next(request)
+
+        path = request.url.path
+        for prefix, sunset_date in self.DEPRECATED_PREFIXES:
+            if path.startswith(prefix):
+                response.headers["Deprecation"] = "true"
+                if sunset_date:
+                    response.headers["Sunset"] = sunset_date
+                # Optional: point to migration guide
+                response.headers["Link"] = (
+                    '</docs#api-versioning>; rel="sunset-policy"'
+                )
+                break
+        return response

@@ -260,6 +260,7 @@ except Exception as e:
 # Security and performance middleware
 try:
     from app.core.middleware import (
+        APIVersionDeprecationMiddleware,
         AuditLoggingMiddleware,
         CSRFMiddleware,
         RateLimitMiddleware,
@@ -273,13 +274,14 @@ try:
     app.add_middleware(AuditLoggingMiddleware)
     app.add_middleware(RequestIDMiddleware)
     app.add_middleware(RequestTimingMiddleware)
+    app.add_middleware(APIVersionDeprecationMiddleware)
     app.add_middleware(
         RateLimitMiddleware,
         default_limit=settings.RATE_LIMIT_REQUESTS,
         default_period=settings.RATE_LIMIT_PERIOD,
     )
     logger.info(
-        "Security middleware enabled: rate limiting, CSRF, security headers, request timing, request ID, audit logging"
+        "Security middleware enabled: rate limiting, CSRF, security headers, request timing, request ID, audit logging, API deprecation"
     )
 except Exception as e:
     logger.warning(f"Could not load security middleware: {e}")
@@ -394,16 +396,24 @@ async def generic_exception_handler(request: Request, exc: Exception):
 
 
 # ============================================
-# INCLUDE ALL ROUTERS
+# INCLUDE ALL ROUTERS (v1)
 # ============================================
-# Router manifest and import logic live in app.routers.__init__.
-# No special-casing — every router defines its own prefix.
+# Router manifest now lives under app.api.v1.routers for clean versioning.
+# Legacy app.routers is kept for backward compatibility during Phase 2.
 
-from app.routers import get_all_routers
+try:
+    from app.api.v1 import get_all_routers as get_v1_routers
 
-for _name, _r in get_all_routers():
-    app.include_router(_r)
-    logger.info(f"{_name} router included")
+    for _name, _r in get_v1_routers():
+        app.include_router(_r)
+        logger.info(f"{_name} router included (v1)")
+except Exception as e:
+    logger.warning(f"Failed to load v1 routers: {e} — falling back to legacy manifest")
+    from app.routers import get_all_routers
+
+    for _name, _r in get_all_routers():
+        app.include_router(_r)
+        logger.info(f"{_name} router included (legacy)")
 
 
 # ============================================
