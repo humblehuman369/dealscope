@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useEffect, useState, useMemo, useRef, Suspense } from 'react'
+import { ScreenErrorBoundary } from '@/components/ErrorBoundary'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@/hooks/useSession'
@@ -2927,7 +2928,9 @@ function StrategyContent() {
 export default function StrategyPage() {
   return (
     <Suspense fallback={<IQLoadingLogo />}>
-      <StrategyContent />
+      <ScreenErrorBoundary>
+        <StrategyContent />
+      </ScreenErrorBoundary>
     </Suspense>
   )
 }
