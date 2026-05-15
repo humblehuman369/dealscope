@@ -53,6 +53,7 @@ from app.services.calculators import (
     calculate_wholesale,
 )
 from app.services.iq_verdict_service import compute_iq_verdict
+from app.services.resilience import CircuitOpenError, resilient
 from app.services.zillow_client import create_zillow_client
 
 logger = logging.getLogger(__name__)
@@ -211,6 +212,7 @@ class PropertyService:
     # inside search_property() to cut wall-clock time from SUM to MAX.
     # ------------------------------------------------------------------
 
+    @resilient(name="rentcast", max_attempts=3, circuit_breaker_threshold=5, circuit_breaker_timeout=30)
     async def _fetch_rentcast_provider(self, address: str) -> tuple[dict[str, Any], float]:
         """Fetch all RentCast data (property, value, rent, market stats)."""
         t0 = time.perf_counter()
@@ -240,6 +242,7 @@ class PropertyService:
         elapsed_ms = (time.perf_counter() - t0) * 1000
         return data, elapsed_ms
 
+    @resilient(name="zillow_axesso", max_attempts=3, circuit_breaker_threshold=5, circuit_breaker_timeout=30)
     async def _fetch_zillow_provider(self, address: str) -> tuple[dict[str, Any] | None, str | None, float]:
         """Fetch Zillow data via AXESSO with retry logic."""
         t0 = time.perf_counter()
@@ -264,6 +267,7 @@ class PropertyService:
         elapsed_ms = (time.perf_counter() - t0) * 1000
         return axesso_data, zpid, elapsed_ms
 
+    @resilient(name="redfin", max_attempts=3, circuit_breaker_threshold=5, circuit_breaker_timeout=30)
     async def _fetch_redfin_provider(self, address: str) -> tuple[dict[str, Any] | None, float]:
         """Fetch Redfin property estimate."""
         if not self.redfin:
@@ -281,6 +285,7 @@ class PropertyService:
         elapsed_ms = (time.perf_counter() - t0) * 1000
         return data, elapsed_ms
 
+    @resilient(name="realtor", max_attempts=3, circuit_breaker_threshold=5, circuit_breaker_timeout=30)
     async def _fetch_realtor_provider(self, address: str) -> tuple[dict[str, Any] | None, float]:
         """Fetch Realtor.com property estimate."""
         if not self.realtor:
