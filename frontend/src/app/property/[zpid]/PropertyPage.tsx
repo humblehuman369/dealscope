@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useParams } from 'next/navigation'
-import { api } from '@/lib/api-client'
+import { usePropertyData } from '@/hooks/usePropertyData'
 import {
   PropertyData,
   PropertyDetailsSkeleton,
@@ -14,8 +14,10 @@ export default function PropertyPage() {
   const params = useParams<{ zpid: string }>()
   const searchParams = useSearchParams()
   const zpid = params.zpid
-  const address = searchParams.get('address') ?? undefined
+  const address = searchParams.get('address') || ''
   const strategy = searchParams.get('strategy') ?? undefined
+
+  const { fetchProperty } = usePropertyData()
 
   const [property, setProperty] = useState<PropertyData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -30,11 +32,9 @@ export default function PropertyPage() {
 
     let cancelled = false
 
-    async function fetchProperty() {
+    async function fetchPropertyData() {
       try {
-        const data = await api.post<Record<string, unknown>>('/api/v1/properties/search', {
-          address,
-        })
+        const data = await fetchProperty(address)
         if (cancelled) return
         const responseZpid = (data as any)?.zpid ? String((data as any).zpid) : ''
         if (responseZpid && responseZpid !== zpid) {
@@ -52,11 +52,11 @@ export default function PropertyPage() {
       }
     }
 
-    fetchProperty()
+    fetchPropertyData()
     return () => {
       cancelled = true
     }
-  }, [zpid, address])
+  }, [zpid, address, fetchProperty])
 
   if (loading) return <PropertyDetailsSkeleton />
 
