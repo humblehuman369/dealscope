@@ -12,6 +12,7 @@ import { PipelineStats } from './_components/PipelineStats'
 import { PipelineKanban } from './_components/PipelineKanban'
 import { AccountSnapshot } from './_components/AccountSnapshot'
 import { UpcomingTasks } from './_components/UpcomingTasks'
+import { ContinueWorkflowBanner } from '@/components/ui/ContinueWorkflowBanner'
 
 function DashboardContent() {
   const router = useRouter()
@@ -25,9 +26,16 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-[var(--surface-base)] py-8 px-4 sm:px-6 lg:px-8 grid-fade">
       <div className="max-w-6xl mx-auto">
-        <div className="soft-panel rounded-3xl p-6 sm:p-8 mb-8 border border-[var(--border-subtle)]">
+        <div className="soft-panel rounded-3xl p-6 sm:p-8 mb-6 border border-[var(--border-subtle)]">
           <DashboardHeader onSearchClick={() => setShowSearchModal(true)} />
         </div>
+
+        {/* High-visibility "Continue where you left off" banner */}
+        <ContinueWorkflowBanner
+          lastProperty="123 Main St, Austin, TX"
+          resumeHref="/deal-maker/123-Main-St-Austin-TX"
+          label="Resume Deal Maker"
+        />
 
         {/* Pipeline stats — clickable filters that highlight the kanban column */}
         <PipelineStats activeStage={highlightStage} onSelectStage={setHighlightStage} />

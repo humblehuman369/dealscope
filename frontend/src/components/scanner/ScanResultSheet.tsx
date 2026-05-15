@@ -1,8 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useRef } from 'react'
 import { X, MapPin, ArrowRight, Home, Clock, Target, CheckCircle, Map } from 'lucide-react'
 import { ScanResult } from '@/hooks/usePropertyScan'
+import { useFocusTrap } from '@/components/ui/useFocusTrap'
 
 interface ScanResultSheetProps {
   result: ScanResult
@@ -23,8 +24,16 @@ export function ScanResultSheet({
 }: ScanResultSheetProps) {
   const { property, confidence, scanTime, heading, distance } = result
 
+  const sheetRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(sheetRef, true)
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Scan result"
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-[var(--surface-base)]/60 backdrop-blur-sm"
@@ -33,6 +42,7 @@ export function ScanResultSheet({
 
       {/* Sheet */}
       <div
+        ref={sheetRef}
         className="relative w-full max-w-lg rounded-t-3xl shadow-2xl animate-slide-up"
         style={{
           background: 'var(--surface-card)',
