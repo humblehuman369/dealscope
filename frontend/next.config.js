@@ -5,6 +5,10 @@ const isCapacitor = process.env.BUILD_TARGET === 'capacitor'
 const nextConfig = {
   reactStrictMode: true,
 
+  // Turbopack is default in Next 16. We keep a webpack performance budget,
+  // so we must explicitly declare an empty turbopack config to avoid conflict.
+  turbopack: {},
+
   // ── Bundle Budget & Performance Hints ─────────────────────────────
   // Warn when any chunk exceeds ~250 kB (gzipped). This helps keep the
   // main bundle lean for mobile (target: < 200 kB initial JS on 3G).
