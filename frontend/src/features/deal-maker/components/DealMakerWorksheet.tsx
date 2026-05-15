@@ -375,10 +375,9 @@ function SliderRow({
 
   return (
     <div
-      className={`grid grid-cols-[1fr_minmax(90px,auto)] sm:grid-cols-[minmax(0,0.7fr)_minmax(120px,1fr)_auto_minmax(90px,auto)] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors${highlight ? '' : ' hover:bg-white/[0.03]'}`}
+      className={`flex items-center gap-3 py-1.5 pl-4 pr-1 transition-colors${highlight ? '' : ' hover:bg-white/[0.03]'}`}
       style={{
         borderBottom: `1px solid ${C.border}`,
-        // Path-applied glow: avoid Tailwind hover overlay wiping it; rgba works without color-mix().
         ...(highlight
           ? {
               background:
@@ -389,10 +388,16 @@ function SliderRow({
       }}
       data-path-highlight={highlight || undefined}
     >
-      <span className="text-sm" style={{ color: C.body }}>
+      {/* Label - fixed width so it never forces wrap */}
+      <span
+        className="text-sm shrink-0 w-[150px] sm:w-[160px]"
+        style={{ color: C.body }}
+      >
         {label}
       </span>
-      <div className="relative h-5 hidden sm:flex items-center justify-center min-w-[40px]">
+
+      {/* Slider (grows, shrinks, hidden on mobile) */}
+      <div className="relative h-5 flex-1 min-w-0 hidden sm:flex items-center justify-center">
         <div
           className="w-full h-[3px] rounded-full relative"
           style={{ background: 'var(--surface-elevated)' }}
@@ -425,12 +430,16 @@ function SliderRow({
           />
         </div>
       </div>
+
+      {/* Secondary value (e.g. 30.0%) - small fixed column */}
       <span
-        className="hidden sm:block text-xs tabular-nums text-right"
+        className="hidden sm:block text-xs tabular-nums text-right w-[52px] shrink-0"
         style={{ color: 'var(--text-secondary)' }}
       >
         {secondaryValue ?? ''}
       </span>
+
+      {/* Value input box - fixed width, never shrinks */}
       <input
         type="text"
         inputMode="decimal"
@@ -439,7 +448,7 @@ function SliderRow({
         onBlur={commit}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={handleKeyDown}
-        className={`text-sm font-semibold tabular-nums text-right outline-none w-[115px] rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] ${highlight ? '' : 'hover:text-[var(--accent-sky)]'}`}
+        className={`text-sm font-semibold tabular-nums text-right outline-none w-[105px] shrink-0 rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] ${highlight ? '' : 'hover:text-[var(--accent-sky)]'}`}
         style={
           highlight
             ? {
@@ -456,7 +465,7 @@ function SliderRow({
         }
         data-path-highlighted={highlight || undefined}
         title={highlight ? 'Auto-filled by an applied path — edit to override' : undefined}
-        size={10}
+        size={9}
       />
     </div>
   )
