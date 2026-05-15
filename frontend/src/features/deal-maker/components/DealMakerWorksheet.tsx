@@ -375,7 +375,7 @@ function SliderRow({
 
   return (
     <div
-      className={`grid grid-cols-[1fr_119px] sm:grid-cols-[0.7fr_1.5fr_50px_119px] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors${highlight ? '' : ' hover:bg-white/[0.03]'}`}
+      className={`grid grid-cols-[1fr_minmax(90px,auto)] sm:grid-cols-[minmax(0,0.7fr)_minmax(120px,1fr)_auto_minmax(90px,auto)] items-center gap-2 py-1.5 pl-4 pr-1 transition-colors${highlight ? '' : ' hover:bg-white/[0.03]'}`}
       style={{
         borderBottom: `1px solid ${C.border}`,
         // Path-applied glow: avoid Tailwind hover overlay wiping it; rgba works without color-mix().
