@@ -77,11 +77,30 @@ class SessionService:
         db: AsyncSession,
         refresh_token: str,
     ) -> tuple[UserSession, str, str] | None:
-        """Validate a refresh token and rotate it.
+        """Validate a refresh token and rotate it (with replay protection).
+
+        Uses SELECT ... FOR UPDATE to ensure only one concurrent refresh
+        request can succeed for a given token.  This prevents token replay
+        attacks where a stolen refresh token is used multiple times before
+        the first rotation is committed.
 
         Returns ``(session, new_jwt, new_refresh_token)`` or ``None``.
         """
-        session_obj = await session_repo.get_by_refresh_token(db, refresh_token)
+        from sqlalchemy import select
+        from sqlalchemy.orm import with_for_update
+
+        # Lock the row for the duration of the transaction
+        stmt = (
+            select(UserSession)
+            .where(
+                UserSession.refresh_token == refresh_token,
+                UserSession.is_revoked.is_(False),
+            )
+            .with_for_update()
+        )
+        result = await db.execute(stmt)
+        session_obj = result.scalar_one_or_none()
+
         if session_obj is None:
             return None
         if session_obj.expires_at < datetime.now(UTC):
