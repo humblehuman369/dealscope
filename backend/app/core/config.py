@@ -94,6 +94,13 @@ class Settings(BaseSettings):
     # the /jobs endpoints are effectively disabled until configured.
     CRON_SECRET: str = ""
 
+    # Optional comma-separated list of IPs or CIDR blocks allowed to call
+    # /api/v1/jobs/* endpoints. When set, requests from other IPs are rejected
+    # even if they present the correct CRON_SECRET. This hardens the job
+    # endpoints against secret leakage.
+    # Example: "10.0.0.0/8,203.0.113.5,198.51.100.0/24"
+    CRON_ALLOWED_IPS: str = ""
+
     # ===========================================
     # JWT Authentication
     # ===========================================
@@ -297,6 +304,13 @@ class Settings(BaseSettings):
     def max_upload_size_bytes(self) -> int:
         """Max upload size in bytes."""
         return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024
+
+    @property
+    def cron_allowed_ips_list(self) -> list[str]:
+        """Parse CRON_ALLOWED_IPS into a clean list for IP allow-list checks."""
+        if not self.CRON_ALLOWED_IPS:
+            return []
+        return [ip.strip() for ip in self.CRON_ALLOWED_IPS.split(",") if ip.strip()]
 
     class Config:
         env_file = ".env"

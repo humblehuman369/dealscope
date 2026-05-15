@@ -67,6 +67,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             "/api/v1/auth/reset-password": (settings.AUTH_RATE_LIMIT_REQUESTS, settings.AUTH_RATE_LIMIT_PERIOD),
             "/api/v1/auth/refresh": (settings.AUTH_RATE_LIMIT_REQUESTS * 4, settings.AUTH_RATE_LIMIT_PERIOD),
             "/api/v1/properties/search": (30, 60),
+            "/api/v1/jobs": (5, 60),  # Very tight – cron jobs should be infrequent
         }
 
     async def _get_redis_client(self):
