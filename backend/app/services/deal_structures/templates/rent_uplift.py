@@ -125,5 +125,8 @@ def solve(ctx: StructureContext) -> DealStructure | None:
             "If a rehab is required to get there, model the rehab cost in Strategy."
         ),
         selection_reason=sel_reason,
-        pre_loaded_record={"custom_rent_estimate": new_rent},
+        pre_loaded_record={
+            "custom_purchase_price": ctx.list_price,
+            "custom_rent_estimate": new_rent,
+        },
     )
