@@ -148,7 +148,7 @@ function MarketingNav({ onLogin, onStart }: { onLogin: () => void; onStart: () =
             </button>
             <PrimaryButton onClick={onStart} size="xs">
               Start Free Discovery
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-3 w-3" />
             </PrimaryButton>
           </div>
 
@@ -811,7 +811,7 @@ function PrimaryButton({
 }) {
   const sizeClass =
     size === 'xs'
-      ? 'px-4 py-2 text-sm'
+      ? 'px-3 py-1 text-xs'
       : size === 'sm'
         ? 'px-6 py-3 text-sm'
         : size === 'md'
