@@ -811,7 +811,7 @@ function PrimaryButton({
 }) {
   const sizeClass =
     size === 'xs'
-      ? 'px-3 py-1 text-xs'
+      ? 'px-4 py-1.5 text-xs gap-1.5'
       : size === 'sm'
         ? 'px-6 py-3 text-sm'
         : size === 'md'
