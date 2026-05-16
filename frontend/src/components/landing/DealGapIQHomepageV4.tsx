@@ -79,7 +79,11 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
         <AuthParamHandler />
       </Suspense>
 
-      <MarketingNav onLogin={() => openAuthModal('login')} onStart={runDiscovery} />
+      <MarketingNav
+        onLogin={() => openAuthModal('login')}
+        onRegister={() => openAuthModal('register')}
+        onStart={runDiscovery}
+      />
 
       <main>
         <HeroSection onStart={runDiscovery} onDemo={() => setShowDemoVideo(true)} />
@@ -104,7 +108,15 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
   )
 }
 
-function MarketingNav({ onLogin, onStart }: { onLogin: () => void; onStart: () => void }) {
+function MarketingNav({
+  onLogin,
+  onRegister,
+  onStart,
+}: {
+  onLogin: () => void
+  onRegister: () => void
+  onStart: () => void
+}) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const closeMobile = () => setMobileOpen(false)
 
@@ -146,6 +158,12 @@ function MarketingNav({ onLogin, onStart }: { onLogin: () => void; onStart: () =
             >
               Log in
             </button>
+            <button
+              onClick={onRegister}
+              className="px-5 py-2.5 text-sm font-bold text-[var(--text-body)] transition-colors hover:text-[var(--text-heading)]"
+            >
+              Register
+            </button>
           </div>
 
           <button
@@ -180,6 +198,15 @@ function MarketingNav({ onLogin, onStart }: { onLogin: () => void; onStart: () =
                 className="rounded-xl px-3 py-2 text-left font-semibold text-[var(--text-body)] hover:bg-[var(--surface-elevated)]"
               >
                 Log in
+              </button>
+              <button
+                onClick={() => {
+                  closeMobile()
+                  onRegister()
+                }}
+                className="rounded-xl px-3 py-2 text-left font-semibold text-[var(--text-body)] hover:bg-[var(--surface-elevated)]"
+              >
+                Register
               </button>
               <PrimaryButton
                 onClick={() => {
