@@ -146,10 +146,6 @@ function MarketingNav({ onLogin, onStart }: { onLogin: () => void; onStart: () =
             >
               Log in
             </button>
-            <PrimaryButton onClick={onStart} size="xs">
-              Start Free Discovery
-              <ArrowRight className="h-3 w-3" />
-            </PrimaryButton>
           </div>
 
           <button
