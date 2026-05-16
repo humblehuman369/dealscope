@@ -121,7 +121,7 @@ function MarketingNav({ onLogin, onStart }: { onLogin: () => void; onStart: () =
         <div className="flex h-20 items-center justify-between gap-6">
           <Link
             href="/"
-            className="flex items-center text-2xl font-black tracking-[-0.05em] text-[var(--text-heading)]"
+            className="flex items-center text-3xl font-black tracking-[-0.05em] text-[var(--text-heading)]"
             style={DISPLAY_STYLE}
           >
             DealGap<span className="text-[var(--accent-sky)]">IQ</span>
