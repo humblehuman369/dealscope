@@ -218,7 +218,7 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
 
           <div>
             <h1
-              className="text-[clamp(3.1rem,7vw,5.25rem)] text-[var(--text-heading)]"
+              className="text-[clamp(2.6rem,7vw,5.25rem)] text-[var(--text-heading)]"
               style={HEADLINE_STYLE}
             >
               Stop scrolling listings.
@@ -406,7 +406,7 @@ function TestimonialsSection() {
       <div className="mb-12 text-center">
         <SectionEyebrow>Real Results From Real Investors</SectionEyebrow>
         <h2
-          className="mx-auto mt-4 max-w-4xl text-3xl text-[var(--text-heading)] md:text-5xl"
+          className="mx-auto mt-4 max-w-4xl text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
           style={DISPLAY_STYLE}
         >
           &quot;DealGapIQ paid for itself on the first deal.&quot;
@@ -485,7 +485,7 @@ function FeaturesSection({ onContinue }: { onContinue: () => void }) {
         <div className="mb-12 max-w-2xl">
           <SectionEyebrow>The DealGapIQ Difference</SectionEyebrow>
           <h2
-            className="mt-3 text-3xl text-[var(--text-heading)] md:text-5xl"
+            className="mt-3 text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
             style={DISPLAY_STYLE}
           >
             Every property can be a deal - at the right price and terms.
@@ -573,7 +573,7 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
   return (
     <section id="how-it-works" className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-12 text-center">
-        <h2 className="text-3xl text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
+        <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
           Three clicks. One clear path forward.
         </h2>
         <p className="mx-auto mt-3 max-w-md text-lg text-[var(--text-secondary)] md:text-xl">
@@ -674,7 +674,7 @@ function ComparisonSection() {
   return (
     <section className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-10 text-center">
-        <h2 className="text-3xl text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
+        <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
           Where most tools stop, DealGapIQ keeps going.
         </h2>
       </div>
@@ -725,7 +725,7 @@ function FinalCTASection({ onStart }: { onStart: () => void }) {
           <ShieldCheck className="h-10 w-10 text-[var(--accent-sky)]" />
         </div>
 
-        <h2 className="text-4xl text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
+        <h2 className="text-[clamp(2rem,5.5vw,3.25rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
           Trust comes from seeing the work.
         </h2>
         <p className="mx-auto mt-4 max-w-md text-lg text-[var(--text-secondary)] md:text-xl">
@@ -965,7 +965,7 @@ function PricingCard({
 }) {
   return (
     <div
-      className="relative overflow-hidden rounded-3xl border p-8 text-left"
+      className={`relative overflow-hidden rounded-3xl border p-8 text-left ${featured ? 'pt-12' : ''}`}
       style={{
         background: featured ? 'var(--surface-elevated)' : 'var(--surface-card)',
         borderColor: featured ? 'var(--accent-sky)' : 'var(--border-default)',
@@ -974,7 +974,7 @@ function PricingCard({
     >
       {featured && (
         <div
-          className="absolute right-6 top-6 rounded-full px-4 py-1 text-xs font-black uppercase tracking-wider"
+          className="absolute left-1/2 top-4 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-black uppercase tracking-wider"
           style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
         >
           Most Popular
