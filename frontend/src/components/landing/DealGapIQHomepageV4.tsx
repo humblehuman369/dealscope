@@ -218,7 +218,7 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
 
           <div>
             <h1
-              className="text-[clamp(2.6rem,7vw,5.25rem)] text-[var(--text-heading)]"
+              className="text-[clamp(2rem,7vw,5.25rem)] text-[var(--text-heading)]"
               style={HEADLINE_STYLE}
             >
               Stop scrolling listings.
