@@ -101,6 +101,7 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
     sellerFinancingPct = 0,
     sellerFinancingRate = 0,
     sellerFinancingTermYears = 30,
+    baseNOI,
   } = params
 
   if (monthlyRent == null || monthlyRent < 0 || !Number.isFinite(monthlyRent)) return 0
