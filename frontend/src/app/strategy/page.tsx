@@ -1721,18 +1721,8 @@ function StrategyContent() {
       dealGapOperatingOverrides,
     )
     if (live > 0) return live
-    // When a path/option or manual override is active (e.g. Rent Increase sets higher rent + Market buy price),
-    // do not fall back to stale `data.income_value` (computed against original rent). That would show
-    // an incorrect negative Price Gap. Use listPrice as safe neutral until next recalc provides fresh value.
-    const hasActiveOverride =
-      dealMakerOverrides != null &&
-      (dealMakerOverrides.monthlyRent != null ||
-        dealMakerOverrides.buyPrice != null ||
-        dealMakerOverrides.purchasePrice != null ||
-        dealMakerOverrides.listPrice != null)
-    if (hasActiveOverride) {
-      return listPrice
-    }
+    // Fallback only when live computation cannot produce a value (e.g. flip/wholesale strategies
+    // or invalid/zero state). Prefer fresh API income_value over stale listPrice.
     const apiIv =
       (dealMakerOverrides as Record<string, unknown> | null)?.incomeValue ??
       data?.income_value ??
