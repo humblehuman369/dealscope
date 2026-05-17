@@ -63,10 +63,11 @@ def estimate_income_value(
     utilities_annual: float = 0.0,
     other_annual_expenses: float = 0.0,
 ) -> float:
-    """Income Value — breakeven purchase price using a WACC-style hurdle.
+    """Income Value — max purchase price at required equity cash-on-cash (WACC hurdle).
 
-    NOI must cover weighted annual capital cost: debt (LTV × mortgage constant)
-    plus equity ((1−LTV) × required_equity_yield). Pure cash uses only the equity leg.
+    Not literal $0 net cash flow. NOI must cover weighted annual capital cost:
+    debt (LTV × mortgage constant) plus equity (down_pct × required_equity_yield).
+    Pure cash uses only the equity leg. Target Buy = Income Value × (1 - buy_discount).
 
     Percentage-based expenses (maintenance, management, capex) are
     computed on annual_gross_rent (before vacancy), matching the LTR

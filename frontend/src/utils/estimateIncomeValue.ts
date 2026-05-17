@@ -1,5 +1,11 @@
 /**
- * Income Value — purchase price at which annual cash flow ≈ $0.
+ * Income Value — maximum purchase price at which the deal still clears an
+ * equity hurdle (default 8% cash-on-cash on down payment), using a WACC-style
+ * blend of debt service and required equity yield.
+ *
+ * This is **not** literal $0 net cash flow. Target Buy = Income Value × (1 − buy
+ * discount), so Target Buy sits below Income Value by design.
+ *
  * Port of `app.core.formulas.estimate_income_value` for client-side Deal Gap UX.
  */
 
@@ -83,6 +89,18 @@ const DEFAULT_OPERATING_OTHER_ANNUAL =
 /** Default base utilities (annual) summed for convenience. */
 const DEFAULT_OPERATING_UTILITIES_ANNUAL = DEFAULT_OPERATING_UTILITIES_MONTHLY * 12
 
+/**
+ * Solve for purchase price P where NOI covers weighted capital cost:
+ *
+ *   IncomeValue = NOI / WACC
+ *   WACC = (bankLTV × mortgageConstant) + (sellerLTV × sellerConstant) + (downPct × requiredEquityYield)
+ *
+ * At that price, annual cash flow to equity ≈ `requiredEquityYield × downPayment`
+ * (default 8% on equity invested). A deal with positive net cash flow at Target Buy
+ * will often show Income Value **above** Target Buy — that is expected, not a bug.
+ *
+ * @see backend `app.core.formulas.estimate_income_value`
+ */
 export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
   const {
     monthlyRent,
@@ -196,9 +214,9 @@ function pickFinite(value: number | null | undefined, fallback: number): number 
  * Live Income Value for the Strategy Deal Gap graph — driven by the same worksheet
  * state as DealMaker sliders (not stale `data.income_value` between API round-trips).
  *
- * Pass `operatingOverrides` (typically `defaults.operating` from `useDefaults()`)
- * to honor admin-configured capex / utilities / pest control. When omitted, the
- * function falls back to the schema defaults that mirror `backend/app/core/defaults.py`.
+ * Uses the WACC / equity-yield model above (not $0 cash-flow breakeven). Pass
+ * `operatingOverrides` (typically `defaults.operating` from `useDefaults()`) to honor
+ * admin-configured capex / utilities / pest control.
  */
 export function computeDealGapIncomeValue(
   strategyType: StrategyType,

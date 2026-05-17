@@ -95,7 +95,10 @@ import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMake
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { PathButton } from '@/components/strategy/PathButton'
 import { trackEvent } from '@/lib/eventTracking'
-import { computeDealGapIncomeValue } from '@/utils/estimateIncomeValue'
+import {
+  computeDealGapIncomeValue,
+  DEFAULT_REQUIRED_EQUITY_YIELD,
+} from '@/utils/estimateIncomeValue'
 
 /**
  * MarketPriceInfoTip — explains how Market Price is derived for off-market homes.
@@ -198,6 +201,109 @@ function MarketPriceInfoTip() {
           aren&apos;t currently for sale. Deal Gap and Price Gap use this value—if you{' '}
           <strong style={{ color: 'var(--accent-sky)' }}>adjust</strong> the price, the gaps will
           update too.
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Info tooltip on the Income Value price card — explains WACC hurdle vs $0 cash flow. */
+function IncomeValueInfoTip() {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const equityPct = Math.round(DEFAULT_REQUIRED_EQUITY_YIELD * 100)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent | TouchEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    document.addEventListener('touchstart', handler)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      document.removeEventListener('touchstart', handler)
+    }
+  }, [open])
+
+  return (
+    <div ref={ref} className="absolute top-1 right-1.5">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation()
+          setOpen((v) => !v)
+        }}
+        aria-label="What is Income Value?"
+        aria-expanded={open}
+        style={{
+          width: 18,
+          height: 18,
+          borderRadius: '50%',
+          border: `1px solid ${open ? 'var(--status-warning)' : 'var(--text-secondary)'}`,
+          background: 'transparent',
+          color: open ? 'var(--status-warning)' : 'var(--text-secondary)',
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: 11,
+          fontWeight: 700,
+          fontStyle: 'italic',
+          lineHeight: 1,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          padding: 0,
+          flexShrink: 0,
+          transition: 'color 0.15s ease, border-color 0.15s ease',
+        }}
+      >
+        i
+      </button>
+      {open && (
+        <div
+          role="tooltip"
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            right: -4,
+            width: 280,
+            maxWidth: 'calc(100vw - 32px)',
+            padding: '12px 14px',
+            borderRadius: 10,
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border-default)',
+            color: 'var(--text-body)',
+            fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+            fontSize: 12,
+            fontWeight: 400,
+            lineHeight: 1.55,
+            letterSpacing: 'normal',
+            textTransform: 'none',
+            textAlign: 'left',
+            boxShadow: '0 10px 28px rgba(0,0,0,0.45)',
+            zIndex: 60,
+          }}
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              top: -6,
+              right: 6,
+              width: 10,
+              height: 10,
+              background: 'var(--surface-elevated)',
+              borderTop: '1px solid var(--border-default)',
+              borderLeft: '1px solid var(--border-default)',
+              transform: 'rotate(45deg)',
+            }}
+          />
+          <strong style={{ color: 'var(--status-warning)' }}>Income Value</strong> is the max
+          price where your down payment still earns about{' '}
+          <strong style={{ color: 'var(--status-warning)' }}>{equityPct}% cash-on-cash</strong>{' '}
+          after debt service—not $0 net cash flow.{' '}
+          <strong style={{ color: 'var(--status-warning)' }}>Target Buy</strong> is ~5% below
+          that. If the deal already cash-flows at Target Buy, Income Value will sit above it.
         </div>
       )}
     </div>
@@ -1713,13 +1819,11 @@ function StrategyContent() {
     }
   })() as AnyStrategyMetrics
 
-  /** Income Value marker + brackets — same economics as backend `estimate_income_value`, driven by live worksheet state. */
+  /** Income Value marker — WACC / equity-yield max price (see `estimateIncomeValue`). */
   const dealGapIncomeValue = (() => {
-    // Recompute Income Value from the current worksheetState (including live vacancy,
-    // maintenance, management, rent, etc.). This makes the Deal Gap bar react
-    // immediately to worksheet adjustments without waiting for backend recalc.
-    // The internal NOI used for breakeven is derived from ws params so net income
-    // changes (e.g. higher vacancy) correctly raise/lower the Income Value.
+    // Recompute from live worksheetState so the bar reacts immediately to slider edits.
+    // Uses internal NOI from rent/expenses (not stale backend breakdown). Income Value
+    // can sit above Target Buy when the deal already cash-flows at Target Buy.
     const live = computeDealGapIncomeValue(
       currentStrategyType,
       worksheetState,
@@ -1936,10 +2040,11 @@ function StrategyContent() {
                       {
                         label: 'Income Value',
                         value: incomeVal,
-                        sub: 'Breakeven',
+                        sub: `${Math.round(DEFAULT_REQUIRED_EQUITY_YIELD * 100)}% Equity Yield`,
                         color: 'var(--status-warning)',
                         dominant: false,
                         showInfo: false,
+                        incomeInfo: true,
                       },
                       {
                         label: 'Market Price',
@@ -1961,6 +2066,7 @@ function StrategyContent() {
                         }}
                       >
                         {card.showInfo && <MarketPriceInfoTip />}
+                        {'incomeInfo' in card && card.incomeInfo && <IncomeValueInfoTip />}
                         <p
                           className="text-[10px] sm:text-[12px] font-bold uppercase tracking-wide mb-1"
                           style={{ color: 'var(--text-body)' }}
@@ -1983,7 +2089,7 @@ function StrategyContent() {
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-start mb-1">
+                  <div className="flex flex-col items-start gap-1 mb-1">
                     <button
                       type="button"
                       onClick={() => setShowDealGapVideo(true)}
@@ -2000,6 +2106,14 @@ function StrategyContent() {
                       </svg>
                       Watch: What is the Deal Gap?
                     </button>
+                    <p
+                      className="text-[10px] sm:text-[11px] leading-snug max-w-xl"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      Income Value = max price at ~{Math.round(DEFAULT_REQUIRED_EQUITY_YIELD * 100)}%
+                      cash-on-cash on your down payment (not $0 cash flow). Target Buy is ~5% below
+                      that.
+                    </p>
                   </div>
                 </section>
 
