@@ -145,6 +145,7 @@ def combine(sub2_result: DealStructure, seller_second_result: DealStructure, _ct
         caveat=caveat[:1500] or None,
         selection_reason=sel_reason,
         pre_loaded_record={
+            "custom_purchase_price": list_price,
             "pending_extras": merged_extras,
             "seller_carry_amount": ss_extras.get("seller_carry_amount"),
             "seller_carry_rate": ss_extras.get("seller_carry_rate", 0.0),
