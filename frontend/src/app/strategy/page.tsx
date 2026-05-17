@@ -1715,10 +1715,14 @@ function StrategyContent() {
 
   /** Income Value marker + brackets — same economics as backend `estimate_income_value`, driven by live worksheet state. */
   const dealGapIncomeValue = (() => {
+    // Pass the same NOI used for the displayed Net Cash Flow / Cap Rate / Cash-on-Cash
+    // so the Income Value (breakeven price) is consistent with the worksheet metrics.
+    // This guarantees: positive cash flow at Target Buy → Income Value ≥ Target Buy.
     const live = computeDealGapIncomeValue(
       currentStrategyType,
       worksheetState,
       dealGapOperatingOverrides,
+      noi, // authoritative NOI from backend breakdown + current assumptions
     )
     if (live > 0) return live
     // Fallback only when live computation cannot produce a value (e.g. flip/wholesale strategies

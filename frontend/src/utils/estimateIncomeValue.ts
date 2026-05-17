@@ -39,6 +39,11 @@ export interface EstimateIncomeValueParams {
   sellerFinancingRate?: number
   /** Term or balloon years for seller financing */
   sellerFinancingTermYears?: number
+  /** When provided, use this NOI instead of recomputing from rent/expenses.
+   *  This keeps the Deal Gap Income Value consistent with the displayed
+   *  Net Cash Flow / Cap Rate / Cash-on-Cash that come from the backend breakdown.
+   */
+  baseNOI?: number
 }
 
 /** Default matches backend ``OPERATING.required_equity_yield`` */
@@ -127,7 +132,13 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
     utilitiesAnnual +
     otherAnnualExpenses
 
-  const noi = effectiveGrossIncome - operatingExpenses
+  // If the caller supplied an authoritative baseNOI (from backend breakdown),
+  // use it so the Income Value is consistent with the displayed cash-flow metrics.
+  // Otherwise fall back to the internal calculation (used for pure live previews).
+  const noi =
+    typeof baseNOI === 'number' && Number.isFinite(baseNOI) && baseNOI > 0
+      ? baseNOI
+      : effectiveGrossIncome - operatingExpenses
   if (noi <= 0) return 0
 
   const ltvRatio = 1 - downPct
@@ -192,6 +203,11 @@ export function computeDealGapIncomeValue(
   strategyType: StrategyType,
   ws: AnyStrategyState,
   operatingOverrides?: DealGapOperatingOverrides | null,
+  /** Authoritative NOI from backend breakdown. When provided, the Income Value
+   *  uses this NOI (which matches the displayed Net Cash Flow / Cap Rate)
+   *  instead of re-computing a potentially different expense set.
+   */
+  authoritativeNOI?: number | null,
 ): number {
   const capexPct = pickFinite(operatingOverrides?.capexPct, DEFAULT_OPERATING_CAPEX_PCT)
   const baseUtilitiesAnnual =
@@ -232,6 +248,7 @@ export function computeDealGapIncomeValue(
         sellerFinancingPct,
         sellerFinancingRate: s.sellerInterestRate ?? 0,
         sellerFinancingTermYears: s.sellerTermYears ?? 30,
+        baseNOI: authoritativeNOI ?? undefined,
       })
     }
     case 'str': {
@@ -261,6 +278,7 @@ export function computeDealGapIncomeValue(
         sellerFinancingPct,
         sellerFinancingRate: s.sellerInterestRate ?? 0,
         sellerFinancingTermYears: s.sellerTermYears ?? 30,
+        baseNOI: authoritativeNOI ?? undefined,
       })
     }
     case 'brrrr': {
@@ -287,6 +305,7 @@ export function computeDealGapIncomeValue(
         sellerFinancingPct,
         sellerFinancingRate: s.sellerInterestRate ?? 0,
         sellerFinancingTermYears: s.sellerTermYears ?? 30,
+        baseNOI: authoritativeNOI ?? undefined,
       })
     }
     case 'house_hack': {
@@ -314,6 +333,7 @@ export function computeDealGapIncomeValue(
         sellerFinancingPct,
         sellerFinancingRate: s.sellerInterestRate ?? 0,
         sellerFinancingTermYears: s.sellerTermYears ?? 30,
+        baseNOI: authoritativeNOI ?? undefined,
       })
     }
     case 'flip':
