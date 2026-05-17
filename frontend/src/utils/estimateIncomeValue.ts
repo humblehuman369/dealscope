@@ -137,7 +137,7 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
   // use it so the Income Value is consistent with the displayed cash-flow metrics.
   // Otherwise fall back to the internal calculation (used for pure live previews).
   const noi =
-    typeof baseNOI === 'number' && Number.isFinite(baseNOI) && baseNOI > 0
+    typeof baseNOI === 'number' && Number.isFinite(baseNOI)
       ? baseNOI
       : effectiveGrossIncome - operatingExpenses
   if (noi <= 0) return 0
