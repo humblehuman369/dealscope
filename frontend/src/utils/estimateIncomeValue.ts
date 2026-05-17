@@ -33,6 +33,12 @@ export interface EstimateIncomeValueParams {
   capexPct?: number
   utilitiesAnnual?: number
   otherAnnualExpenses?: number
+  /** 0–1 portion of purchase price financed by seller carry (second lien) */
+  sellerFinancingPct?: number
+  /** Decimal rate for seller financing (often 0.0) */
+  sellerFinancingRate?: number
+  /** Term or balloon years for seller financing */
+  sellerFinancingTermYears?: number
 }
 
 /** Default matches backend ``OPERATING.required_equity_yield`` */
@@ -87,6 +93,9 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
     capexPct = 0,
     utilitiesAnnual = 0,
     otherAnnualExpenses = 0,
+    sellerFinancingPct = 0,
+    sellerFinancingRate = 0,
+    sellerFinancingTermYears = 30,
   } = params
 
   if (monthlyRent == null || monthlyRent < 0 || !Number.isFinite(monthlyRent)) return 0
@@ -121,20 +130,24 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
   const noi = effectiveGrossIncome - operatingExpenses
   if (noi <= 0) return 0
 
-  const monthlyRate = rate / 12
-  const numPayments = term * 12
   const ltvRatio = 1 - downPct
+  const sellerPct = Math.min(ltvRatio, Math.max(0, sellerFinancingPct))
+  const bankLtv = Math.max(0, ltvRatio - sellerPct)
 
-  let mortgageConstantAnnual: number
-  if (rate > 0) {
-    const compounded = (1 + monthlyRate) ** numPayments
+  // Helper: annual mortgage constant (payment per $1 borrowed)
+  const mortgageConstant = (r: number, t: number): number => {
+    const mr = r / 12
+    const n = Math.max(1, Math.round(t)) * 12
+    if (r <= 0) return t > 0 ? 1 / t : 0
+    const compounded = (1 + mr) ** n
     if (compounded <= 1) return 0
-    mortgageConstantAnnual = ((monthlyRate * compounded) / (compounded - 1)) * 12
-  } else {
-    mortgageConstantAnnual = term > 0 ? 1 / term : 0
+    return ((mr * compounded) / (compounded - 1)) * 12
   }
 
-  const debtCost = ltvRatio * mortgageConstantAnnual
+  const bankConstant = mortgageConstant(rate, term)
+  const sellerConstant = mortgageConstant(sellerFinancingRate, sellerFinancingTermYears)
+
+  const debtCost = bankLtv * bankConstant + sellerPct * sellerConstant
   const equityCost = downPct * equityYield
   const wacc = debtCost + equityCost
   if (wacc <= 0) return 0
@@ -196,6 +209,8 @@ export function computeDealGapIncomeValue(
   switch (strategyType) {
     case 'ltr': {
       const s = ws as LTRDealMakerState
+      const sellerFinancingPct =
+        (s.sellerFinancingAmount ?? 0) / Math.max(1, s.buyPrice || 1)
       return estimateIncomeValue({
         monthlyRent: s.monthlyRent,
         propertyTaxesAnnual: s.annualPropertyTax,
@@ -214,12 +229,17 @@ export function computeDealGapIncomeValue(
         capexPct,
         utilitiesAnnual: baseUtilitiesAnnual,
         otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12 + otherAnnualBase,
+        sellerFinancingPct,
+        sellerFinancingRate: s.sellerInterestRate ?? 0,
+        sellerFinancingTermYears: s.sellerTermYears ?? 30,
       })
     }
     case 'str': {
       const s = ws as STRDealMakerState
       const monthlyRentEq = (s.averageDailyRate * 365 * s.occupancyRate) / 12
       const platformAnnual = monthlyRentEq * 12 * (s.platformFeeRate ?? 0)
+      const sellerFinancingPct =
+        (s.sellerFinancingAmount ?? 0) / Math.max(1, s.buyPrice || 1)
       return estimateIncomeValue({
         monthlyRent: monthlyRentEq,
         propertyTaxesAnnual: s.annualPropertyTax,
@@ -238,10 +258,15 @@ export function computeDealGapIncomeValue(
         utilitiesAnnual: baseUtilitiesAnnual + (s.additionalUtilitiesMonthly ?? 0) * 12,
         otherAnnualExpenses:
           (s.monthlyHoa ?? 0) * 12 + platformAnnual + (s.suppliesMonthly ?? 0) * 12,
+        sellerFinancingPct,
+        sellerFinancingRate: s.sellerInterestRate ?? 0,
+        sellerFinancingTermYears: s.sellerTermYears ?? 30,
       })
     }
     case 'brrrr': {
       const s = ws as BRRRRDealMakerState
+      const sellerFinancingPct =
+        (s.sellerFinancingAmount ?? 0) / Math.max(1, s.buyPrice || 1)
       return estimateIncomeValue({
         monthlyRent: s.postRehabMonthlyRent,
         propertyTaxesAnnual: s.annualPropertyTax,
@@ -259,12 +284,17 @@ export function computeDealGapIncomeValue(
         capexPct,
         utilitiesAnnual: baseUtilitiesAnnual,
         otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12 + otherAnnualBase,
+        sellerFinancingPct,
+        sellerFinancingRate: s.sellerInterestRate ?? 0,
+        sellerFinancingTermYears: s.sellerTermYears ?? 30,
       })
     }
     case 'house_hack': {
       const s = ws as HouseHackDealMakerState
       const rented = Math.max(0, s.totalUnits - s.ownerOccupiedUnits)
       const monthlyRentEq = s.avgRentPerUnit * rented
+      const sellerFinancingPct =
+        (s.sellerFinancingAmount ?? 0) / Math.max(1, s.buyPrice || 1)
       // House Hack pulls capex + utilities directly from worksheet state because
       // those are user-editable sliders on this strategy (unlike LTR/STR/BRRRR).
       return estimateIncomeValue({
@@ -281,6 +311,9 @@ export function computeDealGapIncomeValue(
         capexPct: s.capexRate,
         utilitiesAnnual: (s.utilitiesMonthly ?? 0) * 12,
         otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12,
+        sellerFinancingPct,
+        sellerFinancingRate: s.sellerInterestRate ?? 0,
+        sellerFinancingTermYears: s.sellerTermYears ?? 30,
       })
     }
     case 'flip':
