@@ -145,8 +145,8 @@ export function getLastKnownUser(): UserResponse | null {
 // ------------------------------------------------------------------
 // Proactive token refresh
 // ------------------------------------------------------------------
-const JWT_LIFETIME_MS = 5 * 60 * 1000
-const REFRESH_BUFFER_MS = 90 * 1000
+const JWT_LIFETIME_MS = 30 * 60 * 1000
+const REFRESH_BUFFER_MS = 2 * 60 * 1000
 
 let _lastTokenRefreshAt = 0
 
@@ -201,7 +201,7 @@ export function useSession() {
     retry: 1,
     retryDelay: 1000,
     refetchOnWindowFocus: true,
-    refetchInterval: 3.5 * 60 * 1000, // 3.5 min — ensures refresh before 5-min JWT expiry
+    refetchInterval: 25 * 60 * 1000, // well before 30-min access token expiry
   })
 
   const effectiveUser = user ?? getLastKnownUser()

@@ -89,7 +89,12 @@ def _set_auth_cookies(response: Response, session_token: str, refresh_token: str
         domain=settings.COOKIE_DOMAIN,
         path="/",
     )
-    response.set_cookie(key="access_token", value=access_jwt, max_age=300, **cookie_kwargs)
+    response.set_cookie(
+        key="access_token",
+        value=access_jwt,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        **cookie_kwargs,
+    )
     response.set_cookie(
         key="refresh_token", value=refresh_token, max_age=86400 * settings.REFRESH_TOKEN_EXPIRE_DAYS, **cookie_kwargs
     )
@@ -280,7 +285,7 @@ async def register(body: UserRegister, request: Request, response: Response, db:
         user=user_resp,
         access_token=jwt_token,
         refresh_token=session_obj.refresh_token,
-        expires_in=300,
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
 
@@ -831,7 +836,7 @@ async def login(body: UserLogin, request: Request, response: Response, db: DbSes
         user=user_resp,
         access_token=jwt_token,
         refresh_token=session_obj.refresh_token,
-        expires_in=300,
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
 
@@ -865,7 +870,7 @@ async def login_mfa(body: MFAVerifyRequest, request: Request, response: Response
         user=user_resp,
         access_token=jwt_token,
         refresh_token=session_obj.refresh_token,
-        expires_in=300,
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
 
@@ -894,7 +899,7 @@ async def refresh_token(request: Request, response: Response, db: DbSession, bod
     return TokenResponse(
         access_token=new_jwt,
         refresh_token=new_refresh,
-        expires_in=300,
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
 

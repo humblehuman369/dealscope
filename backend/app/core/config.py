@@ -110,7 +110,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = ""
     JWT_SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 5  # Short-lived JWT; session is the authority
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # Access token lifetime; session row is the authority for revocation
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # ===========================================
