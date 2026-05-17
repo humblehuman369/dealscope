@@ -285,7 +285,7 @@ export function computeDealGapIncomeValue(
     case 'brrrr': {
       const s = ws as BRRRRDealMakerState
       const sellerFinancingPct =
-        (s.sellerFinancingAmount ?? 0) / Math.max(1, s.buyPrice || 1)
+        (s.sellerFinancingAmount ?? 0) / Math.max(1, s.purchasePrice || 1)
       return estimateIncomeValue({
         monthlyRent: s.postRehabMonthlyRent,
         propertyTaxesAnnual: s.annualPropertyTax,
@@ -314,7 +314,7 @@ export function computeDealGapIncomeValue(
       const rented = Math.max(0, s.totalUnits - s.ownerOccupiedUnits)
       const monthlyRentEq = s.avgRentPerUnit * rented
       const sellerFinancingPct =
-        (s.sellerFinancingAmount ?? 0) / Math.max(1, s.buyPrice || 1)
+        (s.sellerFinancingAmount ?? 0) / Math.max(1, s.purchasePrice || 1)
       // House Hack pulls capex + utilities directly from worksheet state because
       // those are user-editable sliders on this strategy (unlike LTR/STR/BRRRR).
       return estimateIncomeValue({
