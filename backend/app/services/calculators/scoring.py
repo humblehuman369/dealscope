@@ -241,7 +241,7 @@ def calculate_deal_opportunity_score(
 
     Formula:
     1. Deal Gap % = (List Price - Income Value) / List Price (required discount).
-       Income Value must use the same WACC-based breakeven as Verdict (debt + equity hurdle).
+       Income Value must use the same debt-service breakeven as Verdict (from estimate_income_value).
     2. Motivation = Seller signals + Market condition modifier
     3. IQ Score = Probability of achieving Deal Gap given Motivation
 

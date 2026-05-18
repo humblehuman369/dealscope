@@ -277,5 +277,4 @@ def build_valuation_params(
         vacancy_rate=o.vacancy_rate,
         maintenance_pct=o.maintenance_pct,
         management_pct=o.property_management_pct,
-        required_equity_yield=o.required_equity_yield,
     )

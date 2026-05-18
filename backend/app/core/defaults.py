@@ -24,10 +24,6 @@ class FinancingDefaults:
 class OperatingDefaults:
     """Default operating expense assumptions."""
 
-    # Minimum annual return required on equity capital when sizing Income Value (WACC equity leg).
-    # Paired with mortgage constant on debt — cash purchases use this alone (no NOI/5% fallback).
-    required_equity_yield: float = 0.08  # 8%
-
     vacancy_rate: float = 0.01  # 1% (was 5%)
     property_management_pct: float = 0.00  # 0% (was 10%)
     maintenance_pct: float = 0.05  # 5% (was 10%)
@@ -182,7 +178,6 @@ def get_all_defaults() -> dict[str, Any]:
             "closing_costs_pct": FINANCING.closing_costs_pct,
         },
         "operating": {
-            "required_equity_yield": OPERATING.required_equity_yield,
             "vacancy_rate": OPERATING.vacancy_rate,
             "property_management_pct": OPERATING.property_management_pct,
             "maintenance_pct": OPERATING.maintenance_pct,

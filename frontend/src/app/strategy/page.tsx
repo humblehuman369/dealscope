@@ -95,10 +95,7 @@ import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMake
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { PathButton } from '@/components/strategy/PathButton'
 import { trackEvent } from '@/lib/eventTracking'
-import {
-  computeDealGapIncomeValue,
-  DEFAULT_REQUIRED_EQUITY_YIELD,
-} from '@/utils/estimateIncomeValue'
+import { computeDealGapIncomeValue } from '@/utils/estimateIncomeValue'
 
 /**
  * MarketPriceInfoTip — explains how Market Price is derived for off-market homes.
@@ -207,11 +204,10 @@ function MarketPriceInfoTip() {
   )
 }
 
-/** Info tooltip on the Income Value price card — explains WACC hurdle vs $0 cash flow. */
+/** Info tooltip on the Income Value price card — explains $0 cash-flow breakeven. */
 function IncomeValueInfoTip() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const equityPct = Math.round(DEFAULT_REQUIRED_EQUITY_YIELD * 100)
 
   useEffect(() => {
     if (!open) return
@@ -299,11 +295,10 @@ function IncomeValueInfoTip() {
             }}
           />
           <strong style={{ color: 'var(--status-warning)' }}>Income Value</strong> is the max
-          price where your down payment still earns about{' '}
-          <strong style={{ color: 'var(--status-warning)' }}>{equityPct}% cash-on-cash</strong>{' '}
-          after debt service—not $0 net cash flow.{' '}
+          price where rent fully covers your loan payment and operating costs—annual cash flow
+          ≈ $0.{' '}
           <strong style={{ color: 'var(--status-warning)' }}>Target Buy</strong> is ~5% below
-          that. If the deal already cash-flows at Target Buy, Income Value will sit above it.
+          that for a margin of safety.
         </div>
       )}
     </div>
@@ -1819,7 +1814,7 @@ function StrategyContent() {
     }
   })() as AnyStrategyMetrics
 
-  /** Income Value marker — WACC / equity-yield max price (see `estimateIncomeValue`). */
+  /** Income Value marker — $0 cash-flow breakeven (see `estimateIncomeValue`). */
   const dealGapIncomeValue = (() => {
     // Recompute from live worksheetState so the bar reacts immediately to slider edits.
     // Uses internal NOI from rent/expenses (not stale backend breakdown). Income Value
@@ -2040,7 +2035,7 @@ function StrategyContent() {
                       {
                         label: 'Income Value',
                         value: incomeVal,
-                        sub: `${Math.round(DEFAULT_REQUIRED_EQUITY_YIELD * 100)}% Equity Yield`,
+                        sub: '$0 Cashflow Breakeven',
                         color: 'var(--status-warning)',
                         dominant: false,
                         showInfo: false,
@@ -2110,9 +2105,8 @@ function StrategyContent() {
                       className="text-[10px] sm:text-[11px] leading-snug max-w-xl"
                       style={{ color: 'var(--text-secondary)' }}
                     >
-                      Income Value = max price at ~{Math.round(DEFAULT_REQUIRED_EQUITY_YIELD * 100)}%
-                      cash-on-cash on your down payment (not $0 cash flow). Target Buy is ~5% below
-                      that.
+                      Income Value = max price where rent fully covers your loan payment and
+                      operating costs. Target Buy is ~5% below that.
                     </p>
                   </div>
                 </section>

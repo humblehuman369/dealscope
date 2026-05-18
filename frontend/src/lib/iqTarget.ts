@@ -615,7 +615,7 @@ export function calculateDOMScore(params: {
  * Calculate the Deal Gap score from Income Value and list price.
  *
  * Deal Gap = ((List Price - Income Value) / List Price) × 100
- * Pass Income Value from the API / same WACC-based estimate as Verdict (not a legacy formula).
+ * Pass Income Value from the API / same debt-service breakeven as Verdict (not a legacy formula).
  *
  * A positive gap means the list price is above Income Value (need discount).
  * A negative gap means property is already profitable at list price.

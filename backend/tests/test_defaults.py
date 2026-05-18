@@ -36,7 +36,7 @@ class TestEstimateIncomeValue:
         assert iv == 0
 
     def test_financing_stack_changes_income_value(self):
-        """Down payment changes the WACC blend (debt constant vs equity yield); IV is not necessarily monotonic."""
+        """Down payment changes LTV-weighted debt cost; IV scales inversely with LTV × mortgage_constant."""
         iv_default = estimate_income_value(
             monthly_rent=2500,
             property_taxes=3600,
@@ -55,14 +55,13 @@ class TestEstimateIncomeValue:
         b = estimate_income_value(3000, 4000, 1500)
         assert a == b
 
-    def test_cash_uses_equity_hurdle_not_legacy_cap_floor(self):
-        """100% cash: Income Value = NOI / required_equity_yield (no silent NOI/5%)."""
+    def test_cash_uses_cap_rate_floor(self):
+        """100% cash: Income Value = NOI / 0.05 when no debt service (legacy cap-rate floor)."""
         iv = estimate_income_value(
             monthly_rent=2500,
             property_taxes=3600,
             insurance=1200,
             down_payment_pct=1.0,
-            required_equity_yield=0.08,
         )
         monthly_rent = 2500
         annual_gross = monthly_rent * 12
@@ -72,7 +71,7 @@ class TestEstimateIncomeValue:
         maint = annual_gross * maint_pct
         opex = 3600 + 1200 + maint
         noi = egi - opex
-        expected = round(noi / 0.08)
+        expected = round(noi / 0.05)
         assert iv == expected
 
 

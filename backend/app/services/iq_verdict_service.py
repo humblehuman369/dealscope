@@ -971,11 +971,6 @@ def compute_iq_verdict(
     )
     capex_pct = input_data.capex_pct if input_data.capex_pct is not None else a.operating.capex_pct
     buy_discount = input_data.buy_discount_pct if input_data.buy_discount_pct is not None else a.ltr.buy_discount_pct
-    required_equity_yield = (
-        input_data.required_equity_yield
-        if input_data.required_equity_yield is not None
-        else a.operating.required_equity_yield
-    )
 
     utilities_annual = a.operating.utilities_monthly * 12
     # HOA / condo / co-op fees come from the property feed (AXESSO `hoaFee`).
@@ -994,7 +989,6 @@ def compute_iq_verdict(
     a.operating.maintenance_pct = maint_pct
     a.operating.property_management_pct = mgmt_pct
     a.operating.capex_pct = capex_pct
-    a.operating.required_equity_yield = required_equity_yield
 
     income_value = estimate_income_value(
         monthly_rent=monthly_rent,
@@ -1006,7 +1000,6 @@ def compute_iq_verdict(
         vacancy_rate=vacancy,
         maintenance_pct=maint_pct,
         management_pct=mgmt_pct,
-        required_equity_yield=required_equity_yield,
         capex_pct=capex_pct,
         utilities_annual=utilities_annual,
         other_annual_expenses=other_annual,
@@ -1024,7 +1017,6 @@ def compute_iq_verdict(
         vacancy_rate=vacancy,
         maintenance_pct=maint_pct,
         management_pct=mgmt_pct,
-        required_equity_yield=required_equity_yield,
         capex_pct=capex_pct,
         utilities_annual=utilities_annual,
         other_annual_expenses=other_annual,
@@ -1307,11 +1299,6 @@ def compute_deal_score(
     term = input_data.loan_term_years if input_data.loan_term_years is not None else a.financing.loan_term_years
 
     capex_pct = a.operating.capex_pct
-    required_equity_yield = (
-        input_data.required_equity_yield
-        if input_data.required_equity_yield is not None
-        else a.operating.required_equity_yield
-    )
     utilities_annual = a.operating.utilities_monthly * 12
     hoa_annual = (input_data.hoa_fees_monthly or 0) * 12
     other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual + hoa_annual
@@ -1326,7 +1313,6 @@ def compute_deal_score(
         vacancy_rate=vacancy,
         maintenance_pct=maint_pct,
         management_pct=mgmt_pct,
-        required_equity_yield=required_equity_yield,
         capex_pct=capex_pct,
         utilities_annual=utilities_annual,
         other_annual_expenses=other_annual,

@@ -116,12 +116,6 @@ class IQVerdictInput(BaseModel):
     buy_discount_pct: float | None = Field(
         None, ge=0, le=0.50, description="Target buy discount below Income Value (e.g. 0.05 = 5%%)"
     )
-    required_equity_yield: float | None = Field(
-        None,
-        ge=0,
-        le=1,
-        description="Annual hurdle on equity in Income Value WACC (e.g. 0.08 = 8%%); defaults from assumptions",
-    )
     state: str | None = Field(
         None,
         min_length=2,
@@ -375,12 +369,6 @@ class DealScoreInput(BaseModel):
     down_payment_pct: float | None = Field(None, ge=0, le=1)
     interest_rate: float | None = Field(None, ge=0, le=0.3)
     loan_term_years: int | None = Field(None, ge=1, le=50)
-    required_equity_yield: float | None = Field(
-        None,
-        ge=0,
-        le=1,
-        description="Annual hurdle on equity for Income Value WACC leg (e.g. 0.08 = 8%%)",
-    )
     listing_status: str | None = None
     seller_type: str | None = None
     is_foreclosure: bool | None = Field(False)

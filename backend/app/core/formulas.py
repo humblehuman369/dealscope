@@ -58,16 +58,16 @@ def estimate_income_value(
     vacancy_rate: float | None = None,
     maintenance_pct: float | None = None,
     management_pct: float | None = None,
-    required_equity_yield: float | None = None,
     capex_pct: float = 0.0,
     utilities_annual: float = 0.0,
     other_annual_expenses: float = 0.0,
 ) -> float:
-    """Income Value — max purchase price at required equity cash-on-cash (WACC hurdle).
+    """Income Value — purchase price at which cash flow = $0.
 
-    Not literal $0 net cash flow. NOI must cover weighted annual capital cost:
-    debt (LTV × mortgage constant) plus equity (down_pct × required_equity_yield).
-    Pure cash uses only the equity leg. Target Buy = Income Value × (1 - buy_discount).
+    At this price, rental income exactly covers operating expenses
+    and debt service (NOI = annual debt service).
+    Above this price, cash flow turns negative. Below it, positive.
+    Pure cash (100% down): uses NOI / 0.05 cap-rate floor when no debt service.
 
     Percentage-based expenses (maintenance, management, capex) are
     computed on annual_gross_rent (before vacancy), matching the LTR
@@ -88,10 +88,8 @@ def estimate_income_value(
     vac_in = vacancy_rate if vacancy_rate is not None else OPERATING.vacancy_rate
     maint_in = maintenance_pct if maintenance_pct is not None else OPERATING.maintenance_pct
     mgmt_in = management_pct if management_pct is not None else OPERATING.property_management_pct
-    equity_in = required_equity_yield if required_equity_yield is not None else OPERATING.required_equity_yield
 
     down_pct = _clamp(dp, 0.0, 1.0, "down_payment_pct")
-    equity_yield = _clamp(equity_in, 0.001, 0.50, "required_equity_yield")
     rate = _clamp(rate_in, 0.0, 0.30, "interest_rate")
     term = max(1, min(term_in, 50))
     vacancy = _clamp(vac_in, 0.0, 1.0, "vacancy_rate")
@@ -131,14 +129,11 @@ def estimate_income_value(
     else:
         mortgage_constant = 1 / term if term > 0 else 0
 
-    # WACC-style annual hurdle: price debt and equity so cash buyers are not "free capital."
-    debt_cost = ltv_ratio * mortgage_constant
-    equity_cost = down_pct * equity_yield
-    wacc = debt_cost + equity_cost
-    if wacc <= 0:
-        return 0
+    denominator = ltv_ratio * mortgage_constant
+    if denominator <= 0:
+        return round(noi / 0.05)
 
-    return round(noi / wacc)
+    return round(noi / denominator)
 
 
 def calculate_buy_price(
@@ -153,7 +148,6 @@ def calculate_buy_price(
     vacancy_rate: float | None = None,
     maintenance_pct: float | None = None,
     management_pct: float | None = None,
-    required_equity_yield: float | None = None,
     capex_pct: float = 0.0,
     utilities_annual: float = 0.0,
     other_annual_expenses: float = 0.0,
@@ -180,7 +174,6 @@ def calculate_buy_price(
         vacancy_rate=vacancy_rate,
         maintenance_pct=maintenance_pct,
         management_pct=management_pct,
-        required_equity_yield=required_equity_yield,
         capex_pct=capex_pct,
         utilities_annual=utilities_annual,
         other_annual_expenses=other_annual_expenses,

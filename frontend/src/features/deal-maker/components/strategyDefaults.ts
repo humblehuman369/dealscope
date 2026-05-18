@@ -35,7 +35,6 @@ import {
   DEFAULT_SELLER_FINANCING_FIELDS,
 } from './types'
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
-import { DEFAULT_REQUIRED_EQUITY_YIELD } from '@/utils/estimateIncomeValue'
 import type { AllAssumptions } from '@/stores/index'
 
 // ------------------------------------------------------------------
@@ -85,7 +84,6 @@ export function buildLTRState(
     annualInsurance:
       property.insurance ?? Math.round(price * pick(o?.insurance_pct, OPERATING_INSURANCE_PCT)),
     monthlyHoa: property.monthlyHoa ?? 0,
-    requiredEquityYield: pick(o?.required_equity_yield, DEFAULT_REQUIRED_EQUITY_YIELD),
   }
 }
 
@@ -138,7 +136,6 @@ export function buildSTRState(
     annualInsurance:
       property.insurance ?? Math.round(basePrice * pick(o?.insurance_pct, OPERATING_INSURANCE_PCT)),
     monthlyHoa: property.monthlyHoa ?? 0,
-    requiredEquityYield: pick(o?.required_equity_yield, DEFAULT_REQUIRED_EQUITY_YIELD),
   }
 }
 
@@ -201,7 +198,6 @@ export function buildBRRRRState(
       property.insurance ??
       Math.round(discountedPrice * pick(o?.insurance_pct, OPERATING_INSURANCE_PCT)),
     monthlyHoa: property.monthlyHoa ?? 0,
-    requiredEquityYield: pick(o?.required_equity_yield, DEFAULT_REQUIRED_EQUITY_YIELD),
   }
 }
 
@@ -280,7 +276,6 @@ export function buildHouseHackState(
     annualInsurance:
       property.insurance ?? Math.round(basePrice * pick(o?.insurance_pct, OPERATING_INSURANCE_PCT)),
     monthlyHoa: property.monthlyHoa ?? 0,
-    requiredEquityYield: pick(o?.required_equity_yield, DEFAULT_REQUIRED_EQUITY_YIELD),
   }
 }
 

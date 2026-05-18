@@ -516,7 +516,6 @@ class FinancingAssumptions(BaseModel):
 class OperatingAssumptions(BaseModel):
     """Operating expense assumptions."""
 
-    required_equity_yield: float = Field(default_factory=lambda: OPERATING.required_equity_yield)
     vacancy_rate: float = Field(default_factory=lambda: OPERATING.vacancy_rate)
     property_management_pct: float = Field(default_factory=lambda: OPERATING.property_management_pct)
     maintenance_pct: float = Field(default_factory=lambda: OPERATING.maintenance_pct)

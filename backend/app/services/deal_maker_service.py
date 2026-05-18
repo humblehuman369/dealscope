@@ -85,7 +85,6 @@ class DealMakerService:
             management_pct=o.property_management_pct,
             insurance_pct=o.insurance_pct,
             capex_pct=0.05,
-            required_equity_yield=o.required_equity_yield,
             appreciation_rate=a.appreciation_rate,
             rent_growth_rate=a.rent_growth_rate,
             expense_growth_rate=a.expense_growth_rate,
@@ -190,7 +189,6 @@ class DealMakerService:
             vacancy_rate=record.vacancy_rate,
             maintenance_pct=record.maintenance_pct,
             management_pct=record.management_pct,
-            required_equity_yield=record.required_equity_yield,
             capex_pct=record.capex_pct,
             utilities_annual=record.monthly_utilities * 12,
             other_annual_expenses=record.monthly_hoa * 12,
@@ -224,7 +222,7 @@ class DealMakerService:
             # Deal analysis
             deal_gap_pct=deal_gap_pct,
             income_value=income_value,
-            metrics_calculation_version=2,
+            metrics_calculation_version=3,
             # Metadata
             calculated_at=datetime.now(UTC),
         )
@@ -276,7 +274,6 @@ class DealMakerService:
             maintenance_pct=initial.maintenance_pct,
             management_pct=initial.management_pct,
             capex_pct=initial.capex_pct,
-            required_equity_yield=initial.required_equity_yield,
             annual_property_tax=_coalesce_none(data.property_taxes, 0),
             annual_insurance=_coalesce_none(data.insurance, data.list_price * initial.insurance_pct),
             monthly_hoa=0,
@@ -284,7 +281,7 @@ class DealMakerService:
             # Metadata
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
-            version=2,
+            version=3,
         )
 
         # Calculate initial metrics

@@ -1,10 +1,9 @@
 /**
- * Income Value — maximum purchase price at which the deal still clears an
- * equity hurdle (default 8% cash-on-cash on down payment), using a WACC-style
- * blend of debt service and required equity yield.
+ * Income Value — purchase price at which annual cash flow ≈ $0.
  *
- * This is **not** literal $0 net cash flow. Target Buy = Income Value × (1 − buy
- * discount), so Target Buy sits below Income Value by design.
+ * At this price, NOI exactly covers debt service (bank + seller carry when present).
+ * Pure cash (100% down): uses NOI / 0.05 cap-rate floor when no debt service.
+ * Target Buy = Income Value × (1 − buy discount).
  *
  * Port of `app.core.formulas.estimate_income_value` for client-side Deal Gap UX.
  */
@@ -33,8 +32,6 @@ export interface EstimateIncomeValueParams {
   maintenancePct: number
   /** 0–1 — management % of annual gross rent */
   managementPct: number
-  /** Annual hurdle on equity for WACC (e.g. 0.08); pure cash uses this alone */
-  requiredEquityYield?: number
   /** 0–1 — reserves/capex % of annual gross rent */
   capexPct?: number
   utilitiesAnnual?: number
@@ -51,9 +48,6 @@ export interface EstimateIncomeValueParams {
    */
   baseNOI?: number
 }
-
-/** Default matches backend ``OPERATING.required_equity_yield`` */
-export const DEFAULT_REQUIRED_EQUITY_YIELD = 0.08
 
 // ---------------------------------------------------------------------------
 // Backend-aligned operating expense defaults
@@ -90,14 +84,12 @@ const DEFAULT_OPERATING_OTHER_ANNUAL =
 const DEFAULT_OPERATING_UTILITIES_ANNUAL = DEFAULT_OPERATING_UTILITIES_MONTHLY * 12
 
 /**
- * Solve for purchase price P where NOI covers weighted capital cost:
+ * Solve for purchase price P where NOI covers annual debt service:
  *
- *   IncomeValue = NOI / WACC
- *   WACC = (bankLTV × mortgageConstant) + (sellerLTV × sellerConstant) + (downPct × requiredEquityYield)
+ *   IncomeValue = NOI / denominator
+ *   denominator = (bankLTV × bankConstant) + (sellerLTV × sellerConstant)
  *
- * At that price, annual cash flow to equity ≈ `requiredEquityYield × downPayment`
- * (default 8% on equity invested). A deal with positive net cash flow at Target Buy
- * will often show Income Value **above** Target Buy — that is expected, not a bug.
+ * Pure cash: denominator is 0 → NOI / 0.05 cap-rate floor.
  *
  * @see backend `app.core.formulas.estimate_income_value`
  */
@@ -112,7 +104,6 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
     vacancyRate,
     maintenancePct,
     managementPct,
-    requiredEquityYield = DEFAULT_REQUIRED_EQUITY_YIELD,
     capexPct = 0,
     utilitiesAnnual = 0,
     otherAnnualExpenses = 0,
@@ -128,7 +119,6 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
   const ins = Math.max(0, insuranceAnnual ?? 0)
 
   const downPct = Math.min(1, Math.max(0, downPaymentPct))
-  const equityYield = Math.min(0.5, Math.max(0.001, requiredEquityYield))
   const rate = Math.min(0.3, Math.max(0, interestRate))
   const term = Math.max(1, Math.min(50, Math.round(loanTermYears)))
   const vacancy = Math.min(1, Math.max(0, vacancyRate))
@@ -177,12 +167,10 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
   const bankConstant = mortgageConstant(rate, term)
   const sellerConstant = mortgageConstant(sellerFinancingRate, sellerFinancingTermYears)
 
-  const debtCost = bankLtv * bankConstant + sellerPct * sellerConstant
-  const equityCost = downPct * equityYield
-  const wacc = debtCost + equityCost
-  if (wacc <= 0) return 0
+  const denominator = bankLtv * bankConstant + sellerPct * sellerConstant
+  if (denominator <= 0) return Math.round(noi / 0.05)
 
-  return Math.round(noi / wacc)
+  return Math.round(noi / denominator)
 }
 
 /**
@@ -214,8 +202,7 @@ function pickFinite(value: number | null | undefined, fallback: number): number 
  * Live Income Value for the Strategy Deal Gap graph — driven by the same worksheet
  * state as DealMaker sliders (not stale `data.income_value` between API round-trips).
  *
- * Uses the WACC / equity-yield model above (not $0 cash-flow breakeven). Pass
- * `operatingOverrides` (typically `defaults.operating` from `useDefaults()`) to honor
+ * Pass `operatingOverrides` (typically `defaults.operating` from `useDefaults()`) to honor
  * admin-configured capex / utilities / pest control.
  */
 export function computeDealGapIncomeValue(
@@ -256,7 +243,6 @@ export function computeDealGapIncomeValue(
         vacancyRate: s.vacancyRate,
         maintenancePct: s.maintenanceRate,
         managementPct: s.managementRate ?? 0,
-        requiredEquityYield: s.requiredEquityYield ?? DEFAULT_REQUIRED_EQUITY_YIELD,
         // Backend `_calculate_long_term_rental` and `compute_deal_score` both
         // deduct capex, utilities, and pest control from NOI. Keep these in
         // sync so the Deal Gap bar's Income Value matches the worksheet's
@@ -286,7 +272,6 @@ export function computeDealGapIncomeValue(
         vacancyRate: 0,
         maintenancePct: s.maintenanceRate,
         managementPct: s.strManagementRate,
-        requiredEquityYield: s.requiredEquityYield ?? DEFAULT_REQUIRED_EQUITY_YIELD,
         // Backend `_calculate_str_strategy` deducts base utilities, capex,
         // platform fees, supplies, and HOA from STR revenue. Mirror that here
         // so the bar agrees with the worksheet's NOI / Cap Rate.
@@ -314,7 +299,6 @@ export function computeDealGapIncomeValue(
         vacancyRate: s.vacancyRate,
         maintenancePct: s.maintenanceRate,
         managementPct: s.managementRate,
-        requiredEquityYield: s.requiredEquityYield ?? DEFAULT_REQUIRED_EQUITY_YIELD,
         // Backend `_calculate_brrrr_strategy` (verdict response NOI) deducts
         // capex, utilities, and pest control. Match here so the bar's Income
         // Value lines up with the worksheet Cap Rate.
@@ -345,7 +329,6 @@ export function computeDealGapIncomeValue(
         vacancyRate: s.vacancyRate,
         maintenancePct: s.maintenanceRate,
         managementPct: 0,
-        requiredEquityYield: s.requiredEquityYield ?? DEFAULT_REQUIRED_EQUITY_YIELD,
         capexPct: s.capexRate,
         utilitiesAnnual: (s.utilitiesMonthly ?? 0) * 12,
         otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12,

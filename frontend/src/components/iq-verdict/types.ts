@@ -7,7 +7,6 @@
 
 import {
   estimateIncomeValue as estimateIncomeValueCanonical,
-  DEFAULT_REQUIRED_EQUITY_YIELD,
   DEFAULT_OPERATING_CAPEX_PCT,
   DEFAULT_OPERATING_UTILITIES_MONTHLY,
   DEFAULT_OPERATING_LANDSCAPING_ANNUAL,
@@ -841,7 +840,6 @@ const FALLBACK_ASSUMPTIONS = {
   downPaymentPct: 0.2, // FINANCING.down_payment_pct
   loanTermYears: 30, // FINANCING.loan_term_years
   closingCostsPct: 0.03, // FINANCING.closing_costs_pct
-  requiredEquityYield: 0.08, // OPERATING.required_equity_yield (WACC equity leg)
   vacancyRate: 0.01, // OPERATING.vacancy_rate
   managementPct: 0.0, // OPERATING.property_management_pct
   maintenancePct: 0.05, // OPERATING.maintenance_pct
@@ -876,7 +874,7 @@ function calculateMonthlyMortgage(principal: number, annualRate: number, years: 
 }
 
 /**
- * Estimate Income Value purchase price for LTR (WACC: debt constant + equity hurdle).
+ * Estimate Income Value purchase price for LTR ($0 cash-flow breakeven).
  *
  * Delegates to the canonical helper in `@/utils/estimateIncomeValue` so this
  * fallback path stays in lockstep with both the Strategy page Deal Gap bar
@@ -912,7 +910,6 @@ function estimateIncomeValue(
     vacancyRate: resolveNum(o?.vacancy_rate, DEFAULT_ASSUMPTIONS.vacancyRate),
     maintenancePct: resolveNum(o?.maintenance_pct, DEFAULT_ASSUMPTIONS.maintenancePct),
     managementPct: resolveNum(o?.property_management_pct, DEFAULT_ASSUMPTIONS.managementPct),
-    requiredEquityYield: resolveNum(o?.required_equity_yield, DEFAULT_REQUIRED_EQUITY_YIELD),
     capexPct: resolveNum(o?.capex_pct, DEFAULT_OPERATING_CAPEX_PCT),
     utilitiesAnnual,
     otherAnnualExpenses,
