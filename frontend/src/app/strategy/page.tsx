@@ -890,11 +890,8 @@ function StrategyContent() {
         if (dealMakerOverrides) {
           if (dealMakerOverrides.listPrice != null && dealMakerOverrides.listPrice > 0) {
             price = dealMakerOverrides.listPrice
-          } else if (
-            dealMakerOverrides.buyPrice != null ||
-            dealMakerOverrides.purchasePrice != null
-          ) {
-            price = dealMakerOverrides.buyPrice ?? dealMakerOverrides.purchasePrice
+          } else if (dealMakerOverrides.price != null && dealMakerOverrides.price > 0) {
+            price = dealMakerOverrides.price
           }
           if (dealMakerOverrides.monthlyRent != null) monthlyRent = dealMakerOverrides.monthlyRent
           if (dealMakerOverrides.propertyTaxes != null)

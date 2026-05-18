@@ -1,4 +1,10 @@
 import { getConditionAdjustment, getLocationAdjustment } from '@/utils/property-adjustments'
+import {
+  isListedStatus,
+  resolveMarketPriceFromPropertyResponse,
+} from '@/lib/resolveMarketPrice'
+
+export { isListedStatus }
 
 export interface VerdictSourceOverrides {
   price?: number
@@ -146,11 +152,6 @@ export function buildVerdictAnalysisPayload(
   return payload
 }
 
-export function isListedStatus(listingStatus?: string | null): boolean {
-  if (!listingStatus) return false
-  return !['OFF_MARKET', 'SOLD', 'FOR_RENT', 'OTHER'].includes(String(listingStatus))
-}
-
 export function buildVerdictBaseFromPropertyResponse(
   data: any,
   options?: { condition?: number | null; location?: number | null },
@@ -158,26 +159,19 @@ export function buildVerdictBaseFromPropertyResponse(
   const listingStatus = data?.listing?.listing_status
   const listed = isListedStatus(listingStatus)
 
-  const iqValueEstimate = data?.valuations?.value_iq_estimate ?? null
+  const conditionPremium =
+    options?.condition != null
+      ? getConditionAdjustment(Number(options.condition)).pricePremium
+      : 0
+  const resolvedPrice = resolveMarketPriceFromPropertyResponse(data, {
+    fallback: 1,
+    conditionPremium,
+  })
   const zestimate = data?.valuations?.zestimate ?? null
   const currentAvm = data?.valuations?.current_value_avm ?? null
   const taxAssessed = data?.valuations?.tax_assessed_value ?? null
-  const listPrice = data?.listing?.list_price ?? null
-  const apiMarketPrice = data?.valuations?.market_price ?? null
-
-  let resolvedPrice =
-    (listed && listPrice != null && listPrice > 0 ? listPrice : null) ??
-    (iqValueEstimate != null && iqValueEstimate > 0 ? iqValueEstimate : null) ??
-    (apiMarketPrice != null && apiMarketPrice > 0 ? apiMarketPrice : null) ??
-    (zestimate != null && zestimate > 0 ? zestimate : null) ??
-    (currentAvm != null && currentAvm > 0 ? currentAvm : null) ??
-    (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
-    1
 
   let resolvedRent = data?.rentals?.monthly_rent_ltr ?? 0
-  if (options?.condition != null) {
-    resolvedPrice += getConditionAdjustment(Number(options.condition)).pricePremium
-  }
   if (options?.location != null) {
     resolvedRent = Math.round(
       resolvedRent * getLocationAdjustment(Number(options.location)).rentMultiplier,
@@ -185,7 +179,7 @@ export function buildVerdictBaseFromPropertyResponse(
   }
 
   return {
-    listPrice: Math.round(resolvedPrice),
+    listPrice: resolvedPrice,
     monthlyRent: resolvedRent,
     propertyTaxes: data?.market?.property_taxes_annual ?? 0,
     insurance: data?.market?.insurance_annual ?? null,

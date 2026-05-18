@@ -12,8 +12,14 @@ import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
+import { resolveMarketPriceFromPropertyResponse } from '@/lib/resolveMarketPrice'
 import { trackEvent } from '@/lib/eventTracking'
 import type { AddressValidationResult } from '@/types/address'
+import {
+  canonicalizeAddressForIdentity,
+  isInitialOverrideEligible,
+  readDealMakerOverrides,
+} from '@/utils/addressIdentity'
 
 const DealMakerScreen = dynamic(
   () =>
@@ -33,6 +39,7 @@ export default function DealMakerIndexPage() {
   const addressParam = searchParams.get('address') || ''
   const fromParam = searchParams.get('from') || ''
   const initialStrategy = searchParams.get('strategy') || undefined
+  const urlMarketValue = searchParams.get('marketValue')
 
   const [propertyData, setPropertyData] = useState<DealMakerPropertyData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -51,25 +58,28 @@ export default function DealMakerIndexPage() {
 
         const monthlyRent = data.rentals?.monthly_rent_ltr || 0
 
-        const isListed =
-          data.listing?.listing_status &&
-          data.listing.listing_status !== 'OFF_MARKET' &&
-          data.listing.listing_status !== 'SOLD' &&
-          data.listing.listing_status !== 'FOR_RENT' &&
-          data.listing.listing_status !== 'OTHER'
-        const zestimate = data.valuations?.zestimate ?? null
-        const currentAvm = data.valuations?.current_value_avm ?? null
-        const taxAssessed = data.valuations?.tax_assessed_value ?? null
-        const listPrice = data.listing?.list_price ?? null
-        const apiMarketPrice = data.valuations?.market_price ?? null
+        let price = resolveMarketPriceFromPropertyResponse(data)
 
-        const price =
-          (isListed && listPrice != null && listPrice > 0 ? listPrice : null) ??
-          (apiMarketPrice != null && apiMarketPrice > 0 ? apiMarketPrice : null) ??
-          (zestimate != null && zestimate > 0 ? zestimate : null) ??
-          (currentAvm != null && currentAvm > 0 ? currentAvm : null) ??
-          (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
-          FALLBACK_PROPERTY.price
+        const canonical = canonicalizeAddressForIdentity(
+          data.address?.full_address || address,
+        )
+        try {
+          const stored = readDealMakerOverrides(canonical)
+          if (stored && isInitialOverrideEligible(stored)) {
+            if (typeof stored.listPrice === 'number' && stored.listPrice > 0) {
+              price = Math.round(stored.listPrice)
+            } else if (typeof stored.price === 'number' && stored.price > 0) {
+              price = Math.round(stored.price)
+            }
+          }
+        } catch {
+          /* ignore */
+        }
+
+        if (urlMarketValue) {
+          const fromUrl = parseFloat(urlMarketValue)
+          if (Number.isFinite(fromUrl) && fromUrl > 0) price = Math.round(fromUrl)
+        }
 
         const propertyTaxes = data.market?.property_taxes_annual ?? null
         const insurance = data.market?.insurance_annual ?? null
@@ -85,7 +95,7 @@ export default function DealMakerIndexPage() {
           baths: data.details?.bathrooms || FALLBACK_PROPERTY.baths,
           sqft: data.details?.square_footage || FALLBACK_PROPERTY.sqft,
           yearBuilt: data.details?.year_built ?? undefined,
-          price: Math.round(price),
+          price,
           rent: monthlyRent || undefined,
           zpid: data.zpid ? String(data.zpid) : undefined,
           propertyTax: propertyTaxes ?? undefined,
@@ -100,7 +110,7 @@ export default function DealMakerIndexPage() {
         setIsLoading(false)
       }
     },
-    [fetchProperty],
+    [fetchProperty, urlMarketValue],
   )
 
   useEffect(() => {

@@ -49,6 +49,10 @@ import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologyS
 import { InfoPopover } from '@/components/ui/InfoPopover'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
+import {
+  isListedStatus,
+  resolveMarketPriceFromPropertyResponse,
+} from '@/lib/resolveMarketPrice'
 import { trackEvent } from '@/lib/eventTracking'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
@@ -409,31 +413,11 @@ function VerdictContent() {
         // IQ Estimate rent: monthly_rent_ltr is already the IQ Estimate (avg of Zillow + RentCast)
         const monthlyRent = data.rentals?.monthly_rent_ltr ?? 0
 
-        // Market Price: when listed = List Price; when off-market = API market_price or same fallback as backend
-        const isListed =
-          data.listing?.listing_status &&
-          data.listing.listing_status !== 'OFF_MARKET' &&
-          data.listing.listing_status !== 'SOLD' &&
-          data.listing.listing_status !== 'FOR_RENT' &&
-          data.listing.listing_status !== 'OTHER'
-        const iqValueEstimate = data.valuations?.value_iq_estimate ?? null
+        const price = resolveMarketPriceFromPropertyResponse(data, { fallback: 1 })
         const zestimate = data.valuations?.zestimate ?? null
         const currentAvm = data.valuations?.current_value_avm ?? null
         const taxAssessed = data.valuations?.tax_assessed_value ?? null
-        const listPrice = data.listing?.list_price ?? null
-        const apiMarketPrice = data.valuations?.market_price ?? null
-
-        // Listed → list price; off-market → IQ Estimate (default Data Source).
-        // Sequential fallbacks ensure the app remains functional
-        // when the primary source is unavailable.
-        const price =
-          (isListed && listPrice != null && listPrice > 0 ? listPrice : null) ??
-          (iqValueEstimate != null && iqValueEstimate > 0 ? iqValueEstimate : null) ??
-          (apiMarketPrice != null && apiMarketPrice > 0 ? apiMarketPrice : null) ??
-          (zestimate != null && zestimate > 0 ? zestimate : null) ??
-          (currentAvm != null && currentAvm > 0 ? currentAvm : null) ??
-          (taxAssessed != null && taxAssessed > 0 ? Math.round(taxAssessed / 0.75) : null) ??
-          1
+        const isListed = isListedStatus(data.listing?.listing_status)
 
         const propertyTaxes = data.market?.property_taxes_annual ?? undefined
         const insurance = data.market?.insurance_annual ?? undefined
