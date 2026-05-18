@@ -111,7 +111,7 @@ export function buildVerdictAnalysisPayload(
     }
     if (overrides.downPayment != null) payload.down_payment_pct = overrides.downPayment / 100
     if (overrides.closingCosts != null) payload.closing_costs_pct = overrides.closingCosts / 100
-    if (overrides.interestRate != null) {
+    if (overrides.interestRate != null && overrides.interestRate > 0) {
       const raw = overrides.interestRate
       payload.interest_rate = raw <= 1 ? raw : raw / 100
     }

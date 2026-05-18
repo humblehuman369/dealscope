@@ -5,6 +5,7 @@ import logging
 from app.core.defaults import DEFAULT_BUY_DISCOUNT_PCT, FINANCING, OPERATING
 from app.core.valuation.debt import blended_income_value_denominator
 from app.core.valuation.noi import NOIInputs, compute_noi
+from app.core.valuation.rates import normalize_annual_rate
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ def estimate_income_value(
     mgmt_in = management_pct if management_pct is not None else OPERATING.property_management_pct
 
     down_pct = _clamp(dp, 0.0, 1.0, "down_payment_pct")
-    rate = _clamp(rate_in, 0.0, 0.30, "interest_rate")
+    rate = normalize_annual_rate(rate_in)
     term = max(1, min(term_in, 50))
     vacancy = _clamp(vac_in, 0.0, 1.0, "vacancy_rate")
     maint_pct = _clamp(maint_in, 0.0, 1.0, "maintenance_pct")

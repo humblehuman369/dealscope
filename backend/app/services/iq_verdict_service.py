@@ -12,6 +12,7 @@ import logging
 from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.core.formulas import calculate_buy_price
 from app.core.valuation import ValuationInputs, build_valuation_snapshot, estimate_income_value
+from app.core.valuation.rates import normalize_annual_rate
 from app.schemas.valuation import ValuationSnapshot
 from app.core.regions import resolve_investor_probability_region
 from app.schemas.analytics import (
@@ -961,7 +962,10 @@ def compute_iq_verdict(
 
     # Resolve per-request overrides on top of DB assumptions
     down_pct = input_data.down_payment_pct if input_data.down_payment_pct is not None else a.financing.down_payment_pct
-    rate = input_data.interest_rate if input_data.interest_rate is not None else a.financing.interest_rate
+    rate = normalize_annual_rate(
+        input_data.interest_rate,
+        fallback=a.financing.interest_rate,
+    )
     term = input_data.loan_term_years if input_data.loan_term_years is not None else a.financing.loan_term_years
     closing_pct = (
         input_data.closing_costs_pct if input_data.closing_costs_pct is not None else a.financing.closing_costs_pct
@@ -1334,7 +1338,10 @@ def compute_deal_score(
         input_data.management_pct if input_data.management_pct is not None else a.operating.property_management_pct
     )
     down_pct = input_data.down_payment_pct if input_data.down_payment_pct is not None else a.financing.down_payment_pct
-    rate = input_data.interest_rate if input_data.interest_rate is not None else a.financing.interest_rate
+    rate = normalize_annual_rate(
+        input_data.interest_rate,
+        fallback=a.financing.interest_rate,
+    )
     term = input_data.loan_term_years if input_data.loan_term_years is not None else a.financing.loan_term_years
 
     capex_pct = a.operating.capex_pct

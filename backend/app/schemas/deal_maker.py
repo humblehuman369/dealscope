@@ -95,7 +95,7 @@ class CachedMetrics(BaseModel):
         None, description="Income Value — breakeven price where NOI covers debt service"
     )
     metrics_calculation_version: int = Field(
-        4,
+        5,
         description="Increment when income_value / deal_gap formula changes; busts client-side stale cache",
     )
     valuation_snapshot: ValuationSnapshot | None = Field(

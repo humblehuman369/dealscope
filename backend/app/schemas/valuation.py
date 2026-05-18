@@ -35,7 +35,7 @@ class ValuationSnapshot(BaseModel):
         None,
         description="(list_price - target_buy) / list_price — Deal Gap",
     )
-    formula_version: int = 4
+    formula_version: int = 5
     noi_expense_basis: Literal["gross"] = "gross"
     annual_gross_rent: float | None = None
     effective_gross_income: float | None = None

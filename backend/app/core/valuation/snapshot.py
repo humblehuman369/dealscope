@@ -5,8 +5,9 @@ from dataclasses import dataclass
 from app.core.valuation.debt import annual_debt_service_at_price
 from app.core.valuation.income_value import calculate_buy_price, estimate_income_value
 from app.core.valuation.noi import NOIInputs, compute_noi
+from app.core.valuation.rates import normalize_annual_rate
 
-VALUATION_FORMULA_VERSION = 4
+VALUATION_FORMULA_VERSION = 5
 
 
 @dataclass(frozen=True)
@@ -40,6 +41,13 @@ def _pct_gap(numerator: float, denominator: float) -> float | None:
 
 def build_valuation_snapshot(inputs: ValuationInputs) -> dict:
     """Build a valuation snapshot dict (plain dict for Pydantic embedding)."""
+    bank_rate = normalize_annual_rate(inputs.interest_rate)
+    seller_rate = (
+        normalize_annual_rate(inputs.seller_carry_rate, fallback=0.0)
+        if inputs.seller_carry_amount > 0
+        else 0.0
+    )
+
     noi_result = compute_noi(
         NOIInputs(
             monthly_rent=inputs.monthly_rent,
@@ -64,7 +72,7 @@ def build_valuation_snapshot(inputs: ValuationInputs) -> dict:
         property_taxes=inputs.property_taxes,
         insurance=inputs.insurance,
         down_payment_pct=inputs.down_payment_pct,
-        interest_rate=inputs.interest_rate,
+        interest_rate=bank_rate,
         loan_term_years=inputs.loan_term_years,
         vacancy_rate=inputs.vacancy_rate,
         maintenance_pct=inputs.maintenance_pct,
@@ -73,7 +81,7 @@ def build_valuation_snapshot(inputs: ValuationInputs) -> dict:
         utilities_annual=inputs.utilities_annual,
         other_annual_expenses=inputs.other_annual_expenses,
         seller_carry_amount=inputs.seller_carry_amount,
-        seller_carry_rate=inputs.seller_carry_rate,
+        seller_carry_rate=seller_rate,
         seller_carry_term_years=inputs.seller_carry_term_years,
         reference_purchase_price=ref if ref > 0 else None,
     )
@@ -85,7 +93,7 @@ def build_valuation_snapshot(inputs: ValuationInputs) -> dict:
         insurance=inputs.insurance,
         buy_discount_pct=inputs.buy_discount_pct,
         down_payment_pct=inputs.down_payment_pct,
-        interest_rate=inputs.interest_rate,
+        interest_rate=bank_rate,
         loan_term_years=inputs.loan_term_years,
         vacancy_rate=inputs.vacancy_rate,
         maintenance_pct=inputs.maintenance_pct,
@@ -94,7 +102,7 @@ def build_valuation_snapshot(inputs: ValuationInputs) -> dict:
         utilities_annual=inputs.utilities_annual,
         other_annual_expenses=inputs.other_annual_expenses,
         seller_carry_amount=inputs.seller_carry_amount,
-        seller_carry_rate=inputs.seller_carry_rate,
+        seller_carry_rate=seller_rate,
         seller_carry_term_years=inputs.seller_carry_term_years,
     )
 
@@ -104,10 +112,10 @@ def build_valuation_snapshot(inputs: ValuationInputs) -> dict:
     annual_debt = annual_debt_service_at_price(
         price,
         inputs.down_payment_pct,
-        inputs.interest_rate,
+        bank_rate,
         inputs.loan_term_years,
         seller_carry_amount=inputs.seller_carry_amount,
-        seller_carry_rate=inputs.seller_carry_rate,
+        seller_carry_rate=seller_rate,
         seller_carry_term_years=inputs.seller_carry_term_years,
     )
     annual_cash_flow = noi - annual_debt

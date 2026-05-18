@@ -80,6 +80,39 @@ class TestValuationSnapshot:
         snap = build_valuation_snapshot(_ltr_inputs(monthly_rent=0))
         assert snap["income_value"] is None or snap["income_value"] == 0
 
+    def test_zero_interest_rate_uses_default_not_inflated_iv(self):
+        """interest_rate=0 must not imply 0% mortgage (which inflates Income Value ~2x list)."""
+        inputs = _ltr_inputs(
+            monthly_rent=8132,
+            property_taxes=15125,
+            insurance=8132,
+            list_price=813_177,
+            purchase_price=813_177,
+            down_payment_pct=0.30,
+            interest_rate=0.0,
+            other_annual_expenses=200 + 24_000,
+        )
+        snap = build_valuation_snapshot(inputs)
+        assert snap["income_value"] is not None
+        assert snap["income_value"] < inputs.list_price * 1.2
+
+    def test_percent_interest_rate_normalized(self):
+        iv = estimate_income_value(
+            monthly_rent=2500,
+            property_taxes=3600,
+            insurance=1200,
+            interest_rate=8,
+            down_payment_pct=0.20,
+        )
+        iv_decimal = estimate_income_value(
+            monthly_rent=2500,
+            property_taxes=3600,
+            insurance=1200,
+            interest_rate=0.08,
+            down_payment_pct=0.20,
+        )
+        assert iv == iv_decimal
+
     def test_price_gap_fields(self):
         snap = build_valuation_snapshot(_ltr_inputs())
         assert snap["price_gap_to_income_pct"] is not None
