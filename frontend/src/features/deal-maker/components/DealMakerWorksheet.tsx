@@ -27,6 +27,15 @@ import type {
   WholesaleDealMakerState,
   WholesaleMetrics,
 } from './types'
+import { computeLtrOperatingExpenseBreakdown } from '@/lib/ltrOperatingExpenses'
+import { DEFAULT_OPERATING_CAPEX_PCT } from '@/lib/operatingExpenseDefaults'
+
+export type WorksheetOperatingExpenseDefaults = {
+  capexPct?: number | null
+  utilitiesMonthly?: number | null
+  pestControlAnnual?: number | null
+  landscapingAnnual?: number | null
+}
 
 // ---------------------------------------------------------------------------
 // Formatting
@@ -526,11 +535,13 @@ function LTRWorksheet({
   metrics,
   listPrice,
   up,
+  operatingExpenseDefaults,
 }: {
   state: LTRDealMakerState
   metrics: LTRDealMakerMetrics
   listPrice: number
   up: (k: string, v: number | string) => void
+  operatingExpenseDefaults?: WorksheetOperatingExpenseDefaults
 }) {
   const m = metrics as unknown as Record<string, unknown>
   const downPayment = state.buyPrice * state.downPaymentPercent
@@ -551,7 +562,24 @@ function LTRWorksheet({
         : 0
   const monthlyPayment = num(m, 'monthlyPayment') || bankMonthly + sellerMonthly
   const grossMonthly = num(m, 'grossMonthlyIncome') || state.monthlyRent + state.otherIncome
-  const totalMonthlyExp = num(m, 'totalMonthlyExpenses')
+  const annualGrossRent = grossMonthly * 12
+  const opex = computeLtrOperatingExpenseBreakdown({
+    annualPropertyTax: state.annualPropertyTax,
+    annualInsurance: state.annualInsurance,
+    monthlyHoa: state.monthlyHoa,
+    managementRate: state.managementRate ?? 0,
+    maintenanceRate: state.maintenanceRate,
+    annualGrossRent,
+    capexPct: operatingExpenseDefaults?.capexPct,
+    utilitiesMonthly: operatingExpenseDefaults?.utilitiesMonthly,
+    pestControlAnnual: operatingExpenseDefaults?.pestControlAnnual,
+    landscapingAnnual: operatingExpenseDefaults?.landscapingAnnual,
+  })
+  const capexPct =
+    typeof operatingExpenseDefaults?.capexPct === 'number' &&
+    Number.isFinite(operatingExpenseDefaults.capexPct)
+      ? operatingExpenseDefaults.capexPct
+      : DEFAULT_OPERATING_CAPEX_PCT
   const annualProfit = num(m, 'annualProfit')
   const capRate = num(m, 'capRate')
   const cocReturn = num(m, 'cocReturn')
@@ -680,7 +708,7 @@ function LTRWorksheet({
         label="Management"
         value={(state.managementRate ?? 0) * 100}
         secondaryValue={`${((state.managementRate ?? 0) * 100).toFixed(0)}%`}
-        displayValue={`${fmt(grossMonthly * (state.managementRate ?? 0) * 12)}/yr`}
+        displayValue={`${fmt(opex.management)}/yr`}
         min={0}
         max={15}
         onChange={(v) => up('managementRate', v / 100)}
@@ -690,14 +718,21 @@ function LTRWorksheet({
         label="Maintenance"
         value={state.maintenanceRate * 100}
         secondaryValue={`${(state.maintenanceRate * 100).toFixed(0)}%`}
-        displayValue={`${fmt(grossMonthly * state.maintenanceRate * 12)}/yr`}
+        displayValue={`${fmt(opex.maintenance)}/yr`}
         min={0}
         max={15}
         onChange={(v) => up('maintenanceRate', v / 100)}
         parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
       />
+      <Row
+        label="Reserves / CapEx"
+        value={`${fmt(opex.reserves)}/yr (${(capexPct * 100).toFixed(0)}%)`}
+      />
+      <Row label="Utilities" value={`${fmt(opex.utilities)}/yr`} />
+      <Row label="Pest Control & Other" value={`${fmt(opex.otherAnnual)}/yr`} />
+      <TotalRow label="Total Operating Expenses" value={`${fmt(opex.total)}/yr`} />
       <SliderRow
-        label="Vacancy"
+        label="Vacancy (income loss)"
         value={state.vacancyRate * 100}
         secondaryValue={`${(state.vacancyRate * 100).toFixed(0)}%`}
         displayValue={`${fmt(grossMonthly * state.vacancyRate * 12)}/yr`}
@@ -706,7 +741,6 @@ function LTRWorksheet({
         onChange={(v) => up('vacancyRate', v / 100)}
         parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
       />
-      <TotalRow label="Total Expenses" value={`${fmt(totalMonthlyExp * 12)}/yr`} />
 
       <Divider />
 
@@ -2276,6 +2310,8 @@ export interface DealMakerWorksheetProps {
    * disabled there.
    */
   highlightedFields?: ReadonlySet<string>
+  /** Admin / profile operating defaults (capex, utilities, pest) for LTR expense rows. */
+  operatingExpenseDefaults?: WorksheetOperatingExpenseDefaults
 }
 
 export function DealMakerWorksheet({
@@ -2288,6 +2324,7 @@ export function DealMakerWorksheet({
   propertyAddress,
   flushWithinParent = false,
   highlightedFields,
+  operatingExpenseDefaults,
 }: DealMakerWorksheetProps) {
   // Memoize so SliderRow consumers don't re-subscribe every render when the
   // parent passes the same Set reference.
@@ -2344,6 +2381,7 @@ export function DealMakerWorksheet({
               metrics={metrics as LTRDealMakerMetrics}
               listPrice={listPrice}
               up={updateState}
+              operatingExpenseDefaults={operatingExpenseDefaults}
             />
           )}
           {strategyType === 'str' && (

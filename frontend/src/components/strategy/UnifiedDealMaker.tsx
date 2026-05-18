@@ -200,7 +200,7 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
       : 0
   const combinedPiEst = bankPiEst + sellerPiEst
 
-  const totalExpensesWithMortgage = totalExpenses + annualDebt
+  // Operating expenses only — debt service is shown in the loan section above.
 
   return (
     <div className="flex flex-col gap-5">
@@ -448,8 +448,8 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           listPrice={listPrice}
         />
         <TotalRow
-          label="Total Expenses"
-          value={`${formatCurrency(totalExpensesWithMortgage)}/yr`}
+          label="Total Operating Expenses"
+          value={`${formatCurrency(totalExpenses)}/yr`}
         />
       </div>
 

@@ -44,6 +44,7 @@ import {
 } from '@/lib/dealStructures/pathHighlights'
 import { getConditionAdjustment } from '@/utils/property-adjustments'
 import { calculateMortgagePayment } from '@/utils/calculations'
+import { computeLtrOperatingExpenseBreakdown } from '@/lib/ltrOperatingExpenses'
 import { tw } from '@/components/iq-verdict/verdict-design-tokens'
 import {
   IQEstimateSelector,
@@ -1810,6 +1811,19 @@ function StrategyContent() {
       case 'ltr':
       default: {
         const ltrState = worksheetState as LTRDealMakerState
+        const ltrGrossMonthly = ltrState.monthlyRent + (ltrState.otherIncome ?? 0)
+        const ltrOpex = computeLtrOperatingExpenseBreakdown({
+          annualPropertyTax: ltrState.annualPropertyTax,
+          annualInsurance: ltrState.annualInsurance,
+          monthlyHoa: ltrState.monthlyHoa,
+          managementRate: ltrState.managementRate ?? 0,
+          maintenanceRate: ltrState.maintenanceRate,
+          annualGrossRent: ltrGrossMonthly * 12,
+          capexPct: dealGapOperatingOverrides?.capexPct,
+          utilitiesMonthly: dealGapOperatingOverrides?.utilitiesMonthly,
+          pestControlAnnual: dealGapOperatingOverrides?.pestControlAnnual,
+          landscapingAnnual: dealGapOperatingOverrides?.landscapingAnnual,
+        })
         return {
           cashNeeded: cashNeededFromLtrState(ltrState),
           dealGap: dealGapPct / 100,
@@ -1819,8 +1833,8 @@ function StrategyContent() {
           monthlyPayment: monthlyPI,
           loanAmount,
           equityCreated: 0,
-          grossMonthlyIncome: monthlyRent,
-          totalMonthlyExpenses: totalExpenses / 12,
+          grossMonthlyIncome: ltrGrossMonthly,
+          totalMonthlyExpenses: ltrOpex.total / 12,
         } satisfies LTRDealMakerMetrics
       }
     }
@@ -2784,6 +2798,7 @@ function StrategyContent() {
               propertyAddress={resolvedAddress}
               flushWithinParent
               highlightedFields={highlightedFields}
+              operatingExpenseDefaults={dealGapOperatingOverrides ?? undefined}
             />
 
             {/* IQ Estimate Source Selector */}
