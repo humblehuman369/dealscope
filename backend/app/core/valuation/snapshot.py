@@ -7,7 +7,7 @@ from app.core.valuation.income_value import calculate_buy_price, estimate_income
 from app.core.valuation.noi import NOIInputs, compute_noi
 from app.core.valuation.rates import normalize_annual_rate
 
-VALUATION_FORMULA_VERSION = 5
+VALUATION_FORMULA_VERSION = 6
 
 
 @dataclass(frozen=True)

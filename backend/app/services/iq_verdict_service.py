@@ -1045,11 +1045,18 @@ def compute_iq_verdict(
         )
     )
     income_value = snap_dict.get("income_value") or 0
-    buy_price = input_data.purchase_price or snap_dict.get("target_buy_price") or provisional_buy
-
-    # Target Buy must never exceed Income Value (breakeven price).
-    if income_value > 0 and buy_price > income_value:
-        buy_price = int(income_value)
+    if input_data.purchase_price:
+        # User-specified Buy Price wins. May legitimately exceed Income Value;
+        # downstream cash flow / cap rate should reflect THAT price (negative
+        # cash flow above breakeven is the signal we want users to see).
+        buy_price = input_data.purchase_price
+    else:
+        # Derived Target Buy = Income × (1 − discount). Must not exceed
+        # Income Value (no rational investor pays above breakeven by default).
+        target_candidate = snap_dict.get("target_buy_price") or provisional_buy
+        if income_value > 0 and target_candidate > income_value:
+            target_candidate = int(income_value)
+        buy_price = target_candidate
 
     snap_dict = build_valuation_snapshot(
         ValuationInputs(

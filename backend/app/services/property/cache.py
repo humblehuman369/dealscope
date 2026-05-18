@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 # Bumped when Income Value / Deal Gap economics change (must invalidate Redis payloads).
-_PROPERTY_CACHE_FORMULA_VERSION = "5"
+_PROPERTY_CACHE_FORMULA_VERSION = "6"
 
 
 def _strip_property_cache_meta(payload: dict[str, Any]) -> dict[str, Any]:
