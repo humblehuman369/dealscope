@@ -1317,8 +1317,14 @@ function StrategyContent() {
       ]
 
   const worksheetState: AnyStrategyState = (() => {
-    const io = inlineOverrides as Record<string, number | undefined>
-    const ioAny = inlineOverrides as Record<string, unknown>
+    // Read from the SAME merged source we send to the backend (`dealMakerOverrides`)
+    // — not `inlineOverrides` alone. Otherwise initialOverrides (session storage,
+    // saved Three Paths scenarios) get sent to the backend silently while the
+    // slider UI shows the un-applied default, producing inconsistent math
+    // (e.g., $0 seller-financing slider but a $130K seller note in the cash flow).
+    const mergedOverrides = (dealMakerOverrides ?? {}) as Record<string, unknown>
+    const io = mergedOverrides as Record<string, number | undefined>
+    const ioAny = mergedOverrides
     const sf = {
       sellerFinancingAmount:
         (typeof ioAny.sellerFinancingAmount === 'number' ? ioAny.sellerFinancingAmount : null) ??

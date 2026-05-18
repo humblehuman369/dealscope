@@ -550,13 +550,18 @@ function LTRWorksheet({
     typeof bankRaw === 'number' && isFinite(bankRaw)
       ? bankRaw
       : monthlyPI(loanAmount, state.interestRate, state.loanTermYears)
-  const sellerMonthly =
-    typeof sellerRaw === 'number' && isFinite(sellerRaw)
+  const hasSellerFinancing = state.sellerFinancingAmount > 0
+  const sellerMonthly = hasSellerFinancing
+    ? typeof sellerRaw === 'number' && isFinite(sellerRaw)
       ? sellerRaw
-      : state.sellerFinancingAmount > 0
-        ? monthlyPI(state.sellerFinancingAmount, state.sellerInterestRate, state.sellerTermYears)
-        : 0
-  const monthlyPayment = num(m, 'monthlyPayment') || bankMonthly + sellerMonthly
+      : monthlyPI(state.sellerFinancingAmount, state.sellerInterestRate, state.sellerTermYears)
+    : 0
+  // When the slider shows no seller financing, force Combined = Bank P&I so
+  // the displayed math stays internally consistent even if the backend
+  // returned a stale `monthlyPayment` from a prior scenario.
+  const monthlyPayment = hasSellerFinancing
+    ? num(m, 'monthlyPayment') || bankMonthly + sellerMonthly
+    : bankMonthly
   const grossMonthly = num(m, 'grossMonthlyIncome') || state.monthlyRent + state.otherIncome
   const annualGrossRent = grossMonthly * 12
   const opex = computeLtrOperatingExpenseBreakdown({
@@ -662,10 +667,12 @@ function LTRWorksheet({
       />
       <Row label="Bank P&amp;I" value={`${fmt(bankMonthly)}/mo`} />
       <SellerNoteTermsRows state={state} up={up} />
-      {state.sellerFinancingAmount > 0 && (
-        <Row label="Seller P&amp;I" value={`${fmt(sellerMonthly)}/mo`} />
+      {hasSellerFinancing && (
+        <>
+          <Row label="Seller P&amp;I" value={`${fmt(sellerMonthly)}/mo`} />
+          <Row label="Combined Monthly Payment" value={`${fmt(monthlyPayment)}/mo`} />
+        </>
       )}
-      <Row label="Combined Monthly Payment" value={`${fmt(monthlyPayment)}/mo`} />
       <TotalRow label="Annual Payment" value={fmt(monthlyPayment * 12)} />
 
       <Divider />
