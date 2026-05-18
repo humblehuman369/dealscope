@@ -9,6 +9,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.schemas.deal_structures import DealStructuresPayload
+from app.schemas.valuation import ValuationSnapshot
 
 # ===========================================
 # Helper: camelCase alias generator
@@ -341,6 +342,10 @@ class IQVerdictResponse(BaseModel):
     deal_structures: DealStructuresPayload | None = Field(
         None,
         description="Three Paths alternatives + 5th-grade narrative; null when gap is non-negative",
+    )
+    valuation_snapshot: ValuationSnapshot | None = Field(
+        None,
+        description="Authoritative NOI / Income Value / cash flow bundle at purchase_price",
     )
 
 

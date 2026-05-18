@@ -2,7 +2,26 @@
 
 **Objective:** Single source of truth — all calculations in the backend; frontend and mobile only consume and render API values.
 
-**Audit date:** 2026-03-06
+**Audit date:** 2026-03-06  
+**SSOT rollout:** 2026-05-18 — `app.core.valuation` + `ValuationSnapshot` on verdict / Deal Maker
+
+---
+
+## SSOT compliance checklist (PR gate)
+
+| Check | Status |
+|-------|--------|
+| Income Value / Target Buy only in `backend/app/core/valuation/` | Done |
+| `IQVerdictResponse.valuation_snapshot` populated | Done |
+| `CachedMetrics.valuation_snapshot` + `metrics_calculation_version` 4 | Done |
+| Strategy Deal Gap bar uses API only (no `computeDealGapIncomeValue`) | Done |
+| ESLint bans `estimateIncomeValue` in app/features/components | Done |
+| `scripts/audit-valuation-compliance.sh` in CI path | Done |
+| Golden test: breakeven at `income_value` (`test_valuation_snapshot.py`) | Done |
+| `calculate_ltr_breakeven` delegates to `estimate_income_value` | Done |
+| Property cache `valuation_formula_version` = 4 | Done |
+
+Run: `./scripts/audit-valuation-compliance.sh` and `pytest tests/test_valuation_snapshot.py --noconftest`
 
 ---
 

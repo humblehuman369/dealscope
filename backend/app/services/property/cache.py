@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 # Bumped when Income Value / Deal Gap economics change (must invalidate Redis payloads).
-_PROPERTY_CACHE_FORMULA_VERSION = "3"
+_PROPERTY_CACHE_FORMULA_VERSION = "4"
 
 
 def _strip_property_cache_meta(payload: dict[str, Any]) -> dict[str, Any]:
@@ -113,7 +113,7 @@ def _should_invalidate_cache(
         if zillow_stale
         else "Redfin data absent > 4h"
         if redfin_stale
-        else "legacy income-value formula"
+        else "pre-valuation-snapshot-v4"
         if legacy_valuation_formula
         else "insurance_annual missing"
         if missing_insurance

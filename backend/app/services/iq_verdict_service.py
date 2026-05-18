@@ -10,7 +10,9 @@ No runtime reads from ``app.core.defaults`` singletons are allowed.
 import logging
 
 from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
-from app.core.formulas import calculate_buy_price, estimate_income_value
+from app.core.formulas import calculate_buy_price
+from app.core.valuation import ValuationInputs, build_valuation_snapshot, estimate_income_value
+from app.schemas.valuation import ValuationSnapshot
 from app.core.regions import resolve_investor_probability_region
 from app.schemas.analytics import (
     DealFactor,
@@ -990,22 +992,12 @@ def compute_iq_verdict(
     a.operating.property_management_pct = mgmt_pct
     a.operating.capex_pct = capex_pct
 
-    income_value = estimate_income_value(
-        monthly_rent=monthly_rent,
-        property_taxes=property_taxes,
-        insurance=insurance,
-        down_payment_pct=down_pct,
-        interest_rate=rate,
-        loan_term_years=term,
-        vacancy_rate=vacancy,
-        maintenance_pct=maint_pct,
-        management_pct=mgmt_pct,
-        capex_pct=capex_pct,
-        utilities_annual=utilities_annual,
-        other_annual_expenses=other_annual,
-    )
+    hoa_monthly_input = input_data.hoa_fees_monthly or 0
+    sc_amt = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
+    sc_rate = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
+    sc_term = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
 
-    buy_price = input_data.purchase_price or calculate_buy_price(
+    provisional_buy = input_data.purchase_price or calculate_buy_price(
         market_price=list_price,
         monthly_rent=monthly_rent,
         property_taxes=property_taxes,
@@ -1020,18 +1012,64 @@ def compute_iq_verdict(
         capex_pct=capex_pct,
         utilities_annual=utilities_annual,
         other_annual_expenses=other_annual,
+        seller_carry_amount=sc_amt,
+        seller_carry_rate=sc_rate,
+        seller_carry_term_years=sc_term,
     )
 
-    # Target Buy must never exceed Income Value (breakeven price).
-    # purchase_price overrides from DealMaker / session storage can bypass
-    # calculate_buy_price's min(buy_price, market_price) cap, so enforce here.
-    if income_value > 0 and buy_price > income_value:
-        buy_price = income_value
+    snap_dict = build_valuation_snapshot(
+        ValuationInputs(
+            monthly_rent=monthly_rent,
+            property_taxes=property_taxes,
+            insurance=insurance,
+            list_price=list_price,
+            purchase_price=provisional_buy,
+            down_payment_pct=down_pct,
+            interest_rate=rate,
+            loan_term_years=term,
+            vacancy_rate=vacancy,
+            maintenance_pct=maint_pct,
+            management_pct=mgmt_pct,
+            capex_pct=capex_pct,
+            utilities_annual=utilities_annual,
+            other_annual_expenses=other_annual,
+            buy_discount_pct=buy_discount,
+            seller_carry_amount=sc_amt,
+            seller_carry_rate=sc_rate,
+            seller_carry_term_years=sc_term,
+        )
+    )
+    income_value = snap_dict.get("income_value") or 0
+    buy_price = input_data.purchase_price or snap_dict.get("target_buy_price") or provisional_buy
 
-    hoa_monthly_input = input_data.hoa_fees_monthly or 0
-    sc_amt = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
-    sc_rate = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
-    sc_term = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
+    # Target Buy must never exceed Income Value (breakeven price).
+    if income_value > 0 and buy_price > income_value:
+        buy_price = int(income_value)
+
+    snap_dict = build_valuation_snapshot(
+        ValuationInputs(
+            monthly_rent=monthly_rent,
+            property_taxes=property_taxes,
+            insurance=insurance,
+            list_price=list_price,
+            purchase_price=buy_price,
+            down_payment_pct=down_pct,
+            interest_rate=rate,
+            loan_term_years=term,
+            vacancy_rate=vacancy,
+            maintenance_pct=maint_pct,
+            management_pct=mgmt_pct,
+            capex_pct=capex_pct,
+            utilities_annual=utilities_annual,
+            other_annual_expenses=other_annual,
+            buy_discount_pct=buy_discount,
+            seller_carry_amount=sc_amt,
+            seller_carry_rate=sc_rate,
+            seller_carry_term_years=sc_term,
+        )
+    )
+    income_value = snap_dict.get("income_value") or income_value
+    valuation_snapshot = ValuationSnapshot(**snap_dict)
 
     strategies = [
         _calculate_ltr_strategy(
@@ -1268,6 +1306,7 @@ def compute_iq_verdict(
         discount_bracket_label=bracket_label,
         deal_narrative=deal_narrative,
         deal_structures=deal_structures_payload if deal_structures_payload.has_paths else None,
+        valuation_snapshot=valuation_snapshot,
     )
 
 

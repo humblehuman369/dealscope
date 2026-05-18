@@ -16,6 +16,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
+from app.schemas.valuation import ValuationSnapshot
+
 
 class InitialAssumptions(BaseModel):
     """
@@ -93,8 +95,12 @@ class CachedMetrics(BaseModel):
         None, description="Income Value — breakeven price where NOI covers debt service"
     )
     metrics_calculation_version: int = Field(
-        3,
+        4,
         description="Increment when income_value / deal_gap formula changes; busts client-side stale cache",
+    )
+    valuation_snapshot: ValuationSnapshot | None = Field(
+        None,
+        description="SSOT bundle: NOI, income_value, debt, cash flow at buy_price",
     )
 
     # Metadata
@@ -243,7 +249,7 @@ class DealMakerRecord(BaseModel):
     # === Metadata ===
     created_at: datetime | None = Field(None, description="When record was created")
     updated_at: datetime | None = Field(None, description="Last update time")
-    version: int = Field(3, description="Schema version for migrations")
+    version: int = Field(4, description="Schema version for migrations")
 
     class Config:
         from_attributes = True

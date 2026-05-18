@@ -74,6 +74,35 @@ const eslintConfig = [
     },
   },
 
+  // ── Valuation SSOT: ban client-side Income Value in production UI ──
+  {
+    files: ['src/app/**/*.{ts,tsx}', 'src/features/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@/utils/estimateIncomeValue',
+              message:
+                'Use API valuation_snapshot from verdict. Allowed only in tests and scripts/parity.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      'src/utils/__tests__/**/*',
+      'src/**/__tests__/**/*',
+      'scripts/**/*',
+    ],
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
+
   // ── Ignore patterns ─────────────────────────────────────────
   {
     ignores: [

@@ -95,7 +95,6 @@ import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMake
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { PathButton } from '@/components/strategy/PathButton'
 import { trackEvent } from '@/lib/eventTracking'
-import { computeDealGapIncomeValue } from '@/utils/estimateIncomeValue'
 
 /**
  * MarketPriceInfoTip — explains how Market Price is derived for off-market homes.
@@ -350,6 +349,19 @@ interface BackendAnalysisResponse {
   purchase_price: number
   income_value: number
   list_price: number
+  valuation_snapshot?: {
+    noi?: number
+    income_value?: number | null
+    incomeValue?: number | null
+    purchase_price?: number
+    purchasePrice?: number
+    monthly_cash_flow?: number
+    monthlyCashFlow?: number
+    price_gap_to_income_pct?: number | null
+    priceGapToIncomePct?: number | null
+    formula_version?: number
+    formulaVersion?: number
+  }
   return_factors?: {
     capRate?: number
     cashOnCash?: number
@@ -1814,29 +1826,19 @@ function StrategyContent() {
     }
   })() as AnyStrategyMetrics
 
-  /** Income Value marker — $0 cash-flow breakeven (see `estimateIncomeValue`). */
-  const dealGapIncomeValue = (() => {
-    // Recompute from live worksheetState so the bar reacts immediately to slider edits.
-    // Uses internal NOI from rent/expenses (not stale backend breakdown). Income Value
-    // can sit above Target Buy when the deal already cash-flows at Target Buy.
-    const live = computeDealGapIncomeValue(
-      currentStrategyType,
-      worksheetState,
-      dealGapOperatingOverrides,
-      // Do not pass stale `noi` from bd; let estimateIncomeValue derive from live ws
-      // so adjustments to deal structure are reflected in real time.
-      undefined,
-    )
-    if (live > 0) return live
-    // Fallback only when live computation cannot produce a value (e.g. flip/wholesale strategies
-    // or invalid/zero state). Prefer fresh API income_value over stale listPrice.
-    const apiIv =
-      (dealMakerOverrides as Record<string, unknown> | null)?.incomeValue ??
-      data?.income_value ??
-      (data as Record<string, unknown>)?.incomeValue
-    if (typeof apiIv === 'number' && Number.isFinite(apiIv) && apiIv > 0) return apiIv
-    return listPrice
-  })()
+  /** Income Value — API-only (valuation_snapshot / verdict); stale-while-revalidate during recalc. */
+  const valuationSnap =
+    data?.valuation_snapshot ?? (data as Record<string, unknown>)?.valuationSnapshot
+  const snapIv =
+    (valuationSnap as { income_value?: number; incomeValue?: number } | undefined)
+      ?.income_value ??
+    (valuationSnap as { incomeValue?: number } | undefined)?.incomeValue
+  const apiIncomeValue =
+    typeof snapIv === 'number' && Number.isFinite(snapIv) && snapIv > 0
+      ? snapIv
+      : (data?.income_value ?? (data as Record<string, unknown>)?.incomeValue ?? 0)
+  const dealGapIncomeValue =
+    typeof apiIncomeValue === 'number' && apiIncomeValue > 0 ? apiIncomeValue : listPrice
 
   const handleWorksheetUpdate = (key: string, value: number | string) => {
     /* Worksheet `up()` field names → InlineDealMakerValues keys (`propertyTaxes`/`insurance` match worksheetState `io.*` and verdictPayload). */
@@ -2116,8 +2118,8 @@ function StrategyContent() {
             so the user can keep watching the gaps move while editing the worksheet.
             Containing block is the page-level wrapper, so the bar stays pinned
             through the entire scroll of cards / next-steps / worksheet content.
-            Bar values (targetPrice, listPrice, dealGapIncomeValue) are reactive
-            and update live as the worksheet sliders are adjusted.
+            Bar values come from the debounced verdict API (valuation_snapshot).
+            Prior values stay visible while recalculating (stale-while-revalidate).
           */}
                 <div
                   className="sticky z-30 px-[1px] sm:px-5"
@@ -2130,8 +2132,17 @@ function StrategyContent() {
                     boxShadow: '0 6px 14px -10px rgba(0,0,0,0.45)',
                   }}
                 >
-                  <div className="relative" style={{ paddingTop: 10 }}>
+                  <div
+                    className="relative"
+                    style={{ paddingTop: 10, opacity: isRecalculating ? 0.55 : 1 }}
+                    aria-busy={isRecalculating}
+                  >
                     {(() => {
+                      const snapPg =
+                        (valuationSnap as { price_gap_to_income_pct?: number } | undefined)
+                          ?.price_gap_to_income_pct ??
+                        (valuationSnap as { priceGapToIncomePct?: number } | undefined)
+                          ?.priceGapToIncomePct
                       const markers = [
                         { label: 'TARGET', price: targetPrice, dotColor: 'var(--accent-sky)' },
                         { label: 'INCOME', price: incomeVal, dotColor: 'var(--status-warning)' },
@@ -2152,9 +2163,11 @@ function StrategyContent() {
                       const incomePos = incomeVal > 0 ? pos(incomeVal) : null
 
                       const priceGapPct =
-                        listPrice > 0 && incomeVal > 0
-                          ? ((incomeVal - listPrice) / listPrice) * 100
-                          : 0
+                        typeof snapPg === 'number' && Number.isFinite(snapPg)
+                          ? snapPg * 100
+                          : listPrice > 0 && incomeVal > 0
+                            ? ((incomeVal - listPrice) / listPrice) * 100
+                            : 0
                       const isPositiveIncomeCase = incomeVal > listPrice && priceGapPct > 0.1
 
                       const dealBracketLeft =

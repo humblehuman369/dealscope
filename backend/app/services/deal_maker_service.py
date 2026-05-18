@@ -18,7 +18,14 @@ import logging
 from datetime import UTC, datetime
 from typing import Any
 
-from app.core.formulas import estimate_income_value
+from app.core.valuation import (
+    VALUATION_FORMULA_VERSION,
+    ValuationInputs,
+    build_valuation_snapshot,
+    compute_noi,
+)
+from app.core.valuation.debt import annual_debt_service_at_price
+from app.core.valuation.noi import NOIInputs
 from app.schemas.deal_maker import (
     CachedMetrics,
     DealMakerRecord,
@@ -26,6 +33,7 @@ from app.schemas.deal_maker import (
     DealMakerRecordUpdate,
     InitialAssumptions,
 )
+from app.schemas.valuation import ValuationSnapshot
 from app.schemas.property import AllAssumptions
 from app.services.assumptions_service import get_market_adjustments
 from app.services.calculators import (
@@ -135,33 +143,41 @@ class DealMakerService:
         loan_amount = record.buy_price - down_payment
         total_cash_needed = down_payment + closing_costs + record.rehab_budget
 
-        monthly_payment = calculate_monthly_mortgage(loan_amount, record.interest_rate, record.loan_term_years)
-        annual_debt_service = monthly_payment * 12
+        sc_amt = record.seller_carry_amount or 0.0
+        sc_rate = record.seller_carry_rate or 0.0
+        sc_term = record.seller_carry_term_years or 30
 
-        # Income calculations
-        annual_gross_rent = record.monthly_rent * 12
-        other_annual = record.other_income * 12
-        gross_income = annual_gross_rent + other_annual
-        vacancy_loss = gross_income * record.vacancy_rate
-        effective_gross_income = gross_income - vacancy_loss
-
-        # Expense calculations
-        maintenance = effective_gross_income * record.maintenance_pct
-        management = effective_gross_income * record.management_pct
-        capex = effective_gross_income * record.capex_pct
-
-        total_expenses = (
-            record.annual_property_tax
-            + record.annual_insurance
-            + maintenance
-            + management
-            + capex
-            + (record.monthly_hoa * 12)
-            + (record.monthly_utilities * 12)
+        annual_debt_service = annual_debt_service_at_price(
+            record.buy_price,
+            record.down_payment_pct,
+            record.interest_rate,
+            record.loan_term_years,
+            seller_carry_amount=sc_amt,
+            seller_carry_rate=sc_rate,
+            seller_carry_term_years=sc_term,
         )
+        monthly_payment = annual_debt_service / 12 if annual_debt_service > 0 else 0.0
 
-        # Key metrics
-        noi = effective_gross_income - total_expenses
+        noi_result = compute_noi(
+            NOIInputs(
+                monthly_rent=record.monthly_rent,
+                property_taxes=record.annual_property_tax,
+                insurance=record.annual_insurance,
+                vacancy_rate=record.vacancy_rate,
+                maintenance_pct=record.maintenance_pct,
+                management_pct=record.management_pct,
+                capex_pct=record.capex_pct,
+                utilities_annual=record.monthly_utilities * 12,
+                other_annual_expenses=record.monthly_hoa * 12,
+                other_income_annual=record.other_income * 12,
+            )
+        )
+        noi = noi_result.noi
+        vacancy_loss = noi_result.vacancy_loss
+        effective_gross_income = noi_result.effective_gross_income
+        total_expenses = noi_result.operating_expenses
+        annual_gross_rent = noi_result.annual_gross_rent
+
         annual_cash_flow = noi - annual_debt_service
         monthly_cash_flow = annual_cash_flow / 12
 
@@ -179,20 +195,30 @@ class DealMakerService:
         # Deal analysis
         deal_gap_pct = (record.list_price - record.buy_price) / record.list_price if record.list_price > 0 else 0
 
-        income_value = estimate_income_value(
-            monthly_rent=record.monthly_rent,
-            property_taxes=record.annual_property_tax,
-            insurance=record.annual_insurance,
-            down_payment_pct=record.down_payment_pct,
-            interest_rate=record.interest_rate,
-            loan_term_years=record.loan_term_years,
-            vacancy_rate=record.vacancy_rate,
-            maintenance_pct=record.maintenance_pct,
-            management_pct=record.management_pct,
-            capex_pct=record.capex_pct,
-            utilities_annual=record.monthly_utilities * 12,
-            other_annual_expenses=record.monthly_hoa * 12,
+        snap_dict = build_valuation_snapshot(
+            ValuationInputs(
+                monthly_rent=record.monthly_rent,
+                property_taxes=record.annual_property_tax,
+                insurance=record.annual_insurance,
+                list_price=record.list_price,
+                purchase_price=record.buy_price,
+                down_payment_pct=record.down_payment_pct,
+                interest_rate=record.interest_rate,
+                loan_term_years=record.loan_term_years,
+                vacancy_rate=record.vacancy_rate,
+                maintenance_pct=record.maintenance_pct,
+                management_pct=record.management_pct,
+                capex_pct=record.capex_pct,
+                utilities_annual=record.monthly_utilities * 12,
+                other_annual_expenses=record.monthly_hoa * 12,
+                seller_carry_amount=sc_amt,
+                seller_carry_rate=sc_rate,
+                seller_carry_term_years=sc_term,
+                other_income_annual=record.other_income * 12,
+            )
         )
+        income_value = snap_dict.get("income_value") or 0
+        valuation_snapshot = ValuationSnapshot(**snap_dict)
 
         return CachedMetrics(
             # Core metrics
@@ -222,7 +248,8 @@ class DealMakerService:
             # Deal analysis
             deal_gap_pct=deal_gap_pct,
             income_value=income_value,
-            metrics_calculation_version=3,
+            metrics_calculation_version=VALUATION_FORMULA_VERSION,
+            valuation_snapshot=valuation_snapshot,
             # Metadata
             calculated_at=datetime.now(UTC),
         )

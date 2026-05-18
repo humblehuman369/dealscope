@@ -66,6 +66,24 @@ interface VerdictResponse {
   }>
   inputs_used?: Record<string, unknown>
   inputsUsed?: Record<string, unknown>
+  valuation_snapshot?: VerdictSnapshot
+  valuationSnapshot?: VerdictSnapshot
+}
+
+export interface VerdictSnapshot {
+  noi?: number
+  income_value?: number | null
+  incomeValue?: number | null
+  target_buy_price?: number | null
+  targetBuyPrice?: number | null
+  purchase_price?: number
+  purchasePrice?: number
+  monthly_cash_flow?: number
+  monthlyCashFlow?: number
+  price_gap_to_income_pct?: number | null
+  priceGapToIncomePct?: number | null
+  formula_version?: number
+  formulaVersion?: number
 }
 
 /**
@@ -207,6 +225,8 @@ export interface UseIQAnalysisReturn {
   iqTarget: IQTargetResult | null
   /** From verdict API — use instead of any client-side deal score calculation. */
   verdictDealScore: VerdictDealScore | null
+  /** Authoritative NOI / Income Value / cash flow at purchase_price. */
+  valuationSnapshot: VerdictSnapshot | null
   metricsAtTarget: Record<string, unknown> | null
   metricsAtList: Record<string, unknown> | null
   isLoading: boolean
@@ -219,6 +239,7 @@ export function useIQAnalysis(
 ): UseIQAnalysisReturn {
   const [iqTarget, setIqTarget] = useState<IQTargetResult | null>(null)
   const [verdictDealScore, setVerdictDealScore] = useState<VerdictDealScore | null>(null)
+  const [valuationSnapshot, setValuationSnapshot] = useState<VerdictSnapshot | null>(null)
   const [metricsAtTarget, setMetricsAtTarget] = useState<Record<string, unknown> | null>(null)
   const [metricsAtList, setMetricsAtList] = useState<Record<string, unknown> | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -233,6 +254,7 @@ export function useIQAnalysis(
     if (!strategyId) {
       setIqTarget(null)
       setVerdictDealScore(null)
+      setValuationSnapshot(null)
       setMetricsAtTarget(null)
       setMetricsAtList(null)
       return
@@ -289,6 +311,7 @@ export function useIQAnalysis(
           color: opp?.color ?? '#f97316',
           discountPercent: verdict.discount_percent ?? verdict.discountPercent ?? 0,
         })
+        setValuationSnapshot(verdict.valuation_snapshot ?? verdict.valuationSnapshot ?? null)
 
         const endpoint = WORKSHEET_ENDPOINTS[strategyId]
         if (endpoint) {
@@ -324,5 +347,13 @@ export function useIQAnalysis(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [strategyId, assumptionsKey])
 
-  return { iqTarget, verdictDealScore, metricsAtTarget, metricsAtList, isLoading, error }
+  return {
+    iqTarget,
+    verdictDealScore,
+    valuationSnapshot,
+    metricsAtTarget,
+    metricsAtList,
+    isLoading,
+    error,
+  }
 }

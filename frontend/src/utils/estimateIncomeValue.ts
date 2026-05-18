@@ -1,11 +1,10 @@
 /**
+ * @deprecated Production UI must use API `valuation_snapshot` from `/analysis/verdict`.
+ * Retained for unit tests and `scripts/valuation-parity-check` only — do not import from
+ * `src/app`, `src/features`, or `src/components` (enforced by ESLint).
+ *
  * Income Value — purchase price at which annual cash flow ≈ $0.
- *
- * At this price, NOI exactly covers debt service (bank + seller carry when present).
- * Pure cash (100% down): uses NOI / 0.05 cap-rate floor when no debt service.
- * Target Buy = Income Value × (1 − buy discount).
- *
- * Port of `app.core.formulas.estimate_income_value` for client-side Deal Gap UX.
+ * Mirrors `app.core.valuation.estimate_income_value`.
  */
 
 import type {
@@ -16,6 +15,20 @@ import type {
   BRRRRDealMakerState,
   HouseHackDealMakerState,
 } from '@/features/deal-maker/components/types'
+
+import {
+  DEFAULT_OPERATING_CAPEX_PCT,
+  DEFAULT_OPERATING_LANDSCAPING_ANNUAL,
+  DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
+  DEFAULT_OPERATING_UTILITIES_MONTHLY,
+} from '@/lib/operatingExpenseDefaults'
+
+export {
+  DEFAULT_OPERATING_CAPEX_PCT,
+  DEFAULT_OPERATING_UTILITIES_MONTHLY,
+  DEFAULT_OPERATING_LANDSCAPING_ANNUAL,
+  DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
+} from '@/lib/operatingExpenseDefaults'
 
 export interface EstimateIncomeValueParams {
   monthlyRent: number
@@ -63,18 +76,6 @@ export interface EstimateIncomeValueParams {
 // and pest control ($200/yr) from rent — so the client-side Income Value
 // must do the same.
 // ---------------------------------------------------------------------------
-
-/** Default reserves / capex as % of annual gross rent (mirrors backend `OPERATING.capex_pct`). */
-export const DEFAULT_OPERATING_CAPEX_PCT = 0.05
-
-/** Default monthly utilities included in opex (mirrors backend `OPERATING.utilities_monthly`). */
-export const DEFAULT_OPERATING_UTILITIES_MONTHLY = 100
-
-/** Default annual landscaping (mirrors backend `OPERATING.landscaping_annual`). */
-export const DEFAULT_OPERATING_LANDSCAPING_ANNUAL = 0
-
-/** Default annual pest control (mirrors backend `OPERATING.pest_control_annual`). */
-export const DEFAULT_OPERATING_PEST_CONTROL_ANNUAL = 200
 
 /** Backend's "other annual expenses" line item summed for convenience. */
 const DEFAULT_OPERATING_OTHER_ANNUAL =

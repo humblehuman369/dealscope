@@ -1,0 +1,17 @@
+{
+  "expectedIncomeValue": 406555,
+  "clientParams": {
+    "monthlyRent": 2500,
+    "propertyTaxesAnnual": 3600,
+    "insuranceAnnual": 1200,
+    "downPaymentPct": 0.2,
+    "interestRate": 0.06,
+    "loanTermYears": 30,
+    "vacancyRate": 0.05,
+    "maintenancePct": 0.05,
+    "managementPct": 0.08,
+    "capexPct": 0.05,
+    "utilitiesAnnual": 1200,
+    "otherAnnualExpenses": 200
+  }
+}

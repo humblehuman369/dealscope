@@ -3,15 +3,21 @@
 Pure functions. Optional default kwargs use ``FINANCING`` / ``OPERATING`` for
 test and direct-call convenience; production paths should pass explicit values.
 
-Functions moved here from defaults.py to enforce separation between
-"schema / seed defaults" and "calculation logic."
+Calculation logic lives in ``app.core.valuation``; this module re-exports for
+backward compatibility.
 """
 
 import logging
 
-from app.core.defaults import DEFAULT_BUY_DISCOUNT_PCT, FINANCING, OPERATING
+from app.core.valuation.income_value import calculate_buy_price, estimate_income_value
 
 logger = logging.getLogger(__name__)
+
+__all__ = [
+    "calculate_buy_price",
+    "compute_market_price",
+    "estimate_income_value",
+]
 
 
 def _clamp(value: float, lo: float, hi: float, name: str) -> float:
@@ -46,143 +52,3 @@ def compute_market_price(
     if tax_assessed_value is not None and tax_assessed_value > 0:
         return round(tax_assessed_value / 0.75)
     return None
-
-
-def estimate_income_value(
-    monthly_rent: float,
-    property_taxes: float,
-    insurance: float,
-    down_payment_pct: float | None = None,
-    interest_rate: float | None = None,
-    loan_term_years: int | None = None,
-    vacancy_rate: float | None = None,
-    maintenance_pct: float | None = None,
-    management_pct: float | None = None,
-    capex_pct: float = 0.0,
-    utilities_annual: float = 0.0,
-    other_annual_expenses: float = 0.0,
-) -> float:
-    """Income Value — purchase price at which cash flow = $0.
-
-    At this price, rental income exactly covers operating expenses
-    and debt service (NOI = annual debt service).
-    Above this price, cash flow turns negative. Below it, positive.
-    Pure cash (100% down): uses NOI / 0.05 cap-rate floor when no debt service.
-
-    Percentage-based expenses (maintenance, management, capex) are
-    computed on annual_gross_rent (before vacancy), matching the LTR
-    strategy calculator so both produce the same breakeven price.
-
-    Callers should pass explicit assumptions in production; None uses FINANCING/OPERATING.
-    """
-    if monthly_rent is None or monthly_rent < 0:
-        return 0
-    if property_taxes is None or property_taxes < 0:
-        property_taxes = 0
-    if insurance is None or insurance < 0:
-        insurance = 0
-
-    dp = down_payment_pct if down_payment_pct is not None else FINANCING.down_payment_pct
-    rate_in = interest_rate if interest_rate is not None else FINANCING.interest_rate
-    term_in = loan_term_years if loan_term_years is not None else FINANCING.loan_term_years
-    vac_in = vacancy_rate if vacancy_rate is not None else OPERATING.vacancy_rate
-    maint_in = maintenance_pct if maintenance_pct is not None else OPERATING.maintenance_pct
-    mgmt_in = management_pct if management_pct is not None else OPERATING.property_management_pct
-
-    down_pct = _clamp(dp, 0.0, 1.0, "down_payment_pct")
-    rate = _clamp(rate_in, 0.0, 0.30, "interest_rate")
-    term = max(1, min(term_in, 50))
-    vacancy = _clamp(vac_in, 0.0, 1.0, "vacancy_rate")
-    maint_pct = _clamp(maint_in, 0.0, 1.0, "maintenance_pct")
-    mgmt_pct = _clamp(mgmt_in, 0.0, 1.0, "management_pct")
-    cap_pct = _clamp(capex_pct, 0.0, 1.0, "capex_pct")
-
-    annual_gross_rent = monthly_rent * 12
-    effective_gross_income = annual_gross_rent * (1 - vacancy)
-
-    annual_maintenance = annual_gross_rent * maint_pct
-    annual_management = annual_gross_rent * mgmt_pct
-    annual_capex = annual_gross_rent * cap_pct
-    operating_expenses = (
-        property_taxes
-        + insurance
-        + annual_maintenance
-        + annual_management
-        + annual_capex
-        + utilities_annual
-        + other_annual_expenses
-    )
-
-    noi = effective_gross_income - operating_expenses
-    if noi <= 0:
-        return 0
-
-    monthly_rate = rate / 12
-    num_payments = term * 12
-    ltv_ratio = 1 - down_pct
-
-    if monthly_rate > 0:
-        compounded = (1 + monthly_rate) ** num_payments
-        if compounded <= 1:
-            return 0
-        mortgage_constant = (monthly_rate * compounded) / (compounded - 1) * 12
-    else:
-        mortgage_constant = 1 / term if term > 0 else 0
-
-    denominator = ltv_ratio * mortgage_constant
-    if denominator <= 0:
-        return round(noi / 0.05)
-
-    return round(noi / denominator)
-
-
-def calculate_buy_price(
-    market_price: float,
-    monthly_rent: float,
-    property_taxes: float,
-    insurance: float,
-    buy_discount_pct: float | None = None,
-    down_payment_pct: float | None = None,
-    interest_rate: float | None = None,
-    loan_term_years: int | None = None,
-    vacancy_rate: float | None = None,
-    maintenance_pct: float | None = None,
-    management_pct: float | None = None,
-    capex_pct: float = 0.0,
-    utilities_annual: float = 0.0,
-    other_annual_expenses: float = 0.0,
-) -> float:
-    """Target Buy Price = Income Value x (1 - Buy Discount %).
-
-    Returns the lesser of the calculated buy price or market_price.
-    """
-    if market_price is None or market_price <= 0:
-        return 0
-    if monthly_rent is None or monthly_rent < 0:
-        return market_price
-
-    bd = buy_discount_pct if buy_discount_pct is not None else DEFAULT_BUY_DISCOUNT_PCT
-    discount_pct = _clamp(bd, 0.0, 0.50, "buy_discount_pct")
-
-    income_value = estimate_income_value(
-        monthly_rent=monthly_rent,
-        property_taxes=property_taxes,
-        insurance=insurance,
-        down_payment_pct=down_payment_pct,
-        interest_rate=interest_rate,
-        loan_term_years=loan_term_years,
-        vacancy_rate=vacancy_rate,
-        maintenance_pct=maintenance_pct,
-        management_pct=management_pct,
-        capex_pct=capex_pct,
-        utilities_annual=utilities_annual,
-        other_annual_expenses=other_annual_expenses,
-    )
-
-    if income_value <= 0:
-        # When income value is zero/negative (e.g. rent cannot cover baseline expenses),
-        # the breakeven buy price should not snap back to market price.
-        return 0
-
-    buy_price = round(income_value * (1 - discount_pct))
-    return min(buy_price, market_price)

@@ -193,49 +193,22 @@ def calculate_ltr_breakeven(
     capex_pct: float = 0.0,
     utilities_annual: float = 0.0,
     other_annual_expenses: float = 0.0,
+    **kwargs: object,
 ) -> float:
-    """Breakeven purchase price where monthly cash flow = $0.
+    """Breakeven purchase price — delegates to ``app.core.valuation.estimate_income_value``."""
+    from app.core.valuation import estimate_income_value
 
-    At breakeven: NOI = Annual Debt Service.
-    Percentage-based expenses use annual_gross_rent (before vacancy)
-    to match the LTR strategy calculator.
-    All parameters are required — resolved by the caller.
-    """
-    annual_gross_rent = monthly_rent * 12
-    effective_gross_income = annual_gross_rent * (1 - vacancy_rate)
-
-    annual_maintenance = annual_gross_rent * maintenance_pct
-    annual_management = annual_gross_rent * management_pct
-    annual_capex = annual_gross_rent * capex_pct
-    operating_expenses = (
-        property_taxes
-        + insurance
-        + annual_maintenance
-        + annual_management
-        + annual_capex
-        + utilities_annual
-        + other_annual_expenses
+    return estimate_income_value(
+        monthly_rent=monthly_rent,
+        property_taxes=property_taxes,
+        insurance=insurance,
+        down_payment_pct=down_payment_pct,
+        interest_rate=interest_rate,
+        loan_term_years=loan_term_years,
+        vacancy_rate=vacancy_rate,
+        maintenance_pct=maintenance_pct,
+        management_pct=management_pct,
+        capex_pct=capex_pct,
+        utilities_annual=utilities_annual,
+        other_annual_expenses=other_annual_expenses,
     )
-
-    noi = effective_gross_income - operating_expenses
-
-    if noi <= 0:
-        return 0
-
-    monthly_rate = interest_rate / 12
-    num_payments = loan_term_years * 12
-    ltv_ratio = 1 - down_payment_pct
-
-    if monthly_rate > 0:
-        compounded = (1 + monthly_rate) ** num_payments
-        if compounded <= 1:
-            return 0
-        mortgage_constant = (monthly_rate * compounded) / (compounded - 1) * 12
-    else:
-        mortgage_constant = 1 / loan_term_years if loan_term_years > 0 else 0
-
-    denominator = ltv_ratio * mortgage_constant
-    if denominator <= 0:
-        return round(noi / 0.05)
-
-    return round(noi / denominator)

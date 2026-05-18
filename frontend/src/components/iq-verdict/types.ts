@@ -6,12 +6,11 @@
  */
 
 import {
-  estimateIncomeValue as estimateIncomeValueCanonical,
   DEFAULT_OPERATING_CAPEX_PCT,
   DEFAULT_OPERATING_UTILITIES_MONTHLY,
   DEFAULT_OPERATING_LANDSCAPING_ANNUAL,
   DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
-} from '@/utils/estimateIncomeValue'
+} from '@/lib/operatingExpenseDefaults'
 import type { AllAssumptions } from '@/stores/index'
 
 /**
@@ -874,73 +873,23 @@ function calculateMonthlyMortgage(principal: number, annualRate: number, years: 
 }
 
 /**
- * Estimate Income Value purchase price for LTR ($0 cash-flow breakeven).
- *
- * Delegates to the canonical helper in `@/utils/estimateIncomeValue` so this
- * fallback path stays in lockstep with both the Strategy page Deal Gap bar
- * and `backend/app/core/formulas.estimate_income_value`. Subtracts the same
- * operating expense set the backend uses (maintenance + management on gross
- * rent, plus capex, utilities, pest control, and HOA).
- *
- * Pass `assumptions` (e.g. from `useDefaults().defaults`) to honor admin's
- * saved financing/operating values. Without it, falls back to schema defaults.
- */
-function estimateIncomeValue(
-  monthlyRent: number,
-  propertyTaxes: number,
-  insurance: number,
-  monthlyHoa: number = 0,
-  assumptions: AssumptionOverrides = null,
-): number {
-  const f = assumptions?.financing
-  const o = assumptions?.operating
-  const utilitiesAnnual = resolveNum(o?.utilities_monthly, DEFAULT_OPERATING_UTILITIES_MONTHLY) * 12
-  const otherAnnualExpenses =
-    resolveNum(o?.landscaping_annual, DEFAULT_OPERATING_LANDSCAPING_ANNUAL) +
-    resolveNum(o?.pest_control_annual, DEFAULT_OPERATING_PEST_CONTROL_ANNUAL) +
-    Math.max(0, monthlyHoa) * 12
-
-  return estimateIncomeValueCanonical({
-    monthlyRent,
-    propertyTaxesAnnual: propertyTaxes,
-    insuranceAnnual: insurance,
-    downPaymentPct: resolveNum(f?.down_payment_pct, DEFAULT_ASSUMPTIONS.downPaymentPct),
-    interestRate: resolveNum(f?.interest_rate, DEFAULT_ASSUMPTIONS.interestRate),
-    loanTermYears: resolveNum(f?.loan_term_years, DEFAULT_ASSUMPTIONS.loanTermYears),
-    vacancyRate: resolveNum(o?.vacancy_rate, DEFAULT_ASSUMPTIONS.vacancyRate),
-    maintenancePct: resolveNum(o?.maintenance_pct, DEFAULT_ASSUMPTIONS.maintenancePct),
-    managementPct: resolveNum(o?.property_management_pct, DEFAULT_ASSUMPTIONS.managementPct),
-    capexPct: resolveNum(o?.capex_pct, DEFAULT_OPERATING_CAPEX_PCT),
-    utilitiesAnnual,
-    otherAnnualExpenses,
-  })
-}
-
-/**
- * Calculate initial purchase price as 95% of Income Value
+ * @deprecated Offline-only fallback for `calculateDynamicAnalysis`.
+ * Production flows must use API `valuation_snapshot` / verdict `purchase_price`.
  */
 function calculateTargetPurchasePrice(
   listPrice: number,
-  monthlyRent: number,
-  propertyTaxes: number,
-  insurance: number,
-  monthlyHoa: number = 0,
+  _monthlyRent: number,
+  _propertyTaxes: number,
+  _insurance: number,
+  _monthlyHoa: number = 0,
   assumptions: AssumptionOverrides = null,
 ): number {
-  const incomeValue = estimateIncomeValue(
-    monthlyRent,
-    propertyTaxes,
-    insurance,
-    monthlyHoa,
-    assumptions,
-  )
-  if (incomeValue <= 0) return listPrice
+  if (listPrice <= 0) return 0
   const buyDiscountPct = resolveNum(
     assumptions?.ltr?.buy_discount_pct,
     DEFAULT_ASSUMPTIONS.buyDiscountPct,
   )
-  const buyPrice = Math.round(incomeValue * (1 - buyDiscountPct))
-  return Math.min(buyPrice, listPrice)
+  return Math.round(listPrice * (1 - buyDiscountPct))
 }
 
 /**
