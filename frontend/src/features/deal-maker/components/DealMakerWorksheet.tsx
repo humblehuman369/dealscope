@@ -765,7 +765,12 @@ function LTRWorksheet({
         max={10000}
         onChange={(v) => up('monthlyRent', v)}
       />
-      <Row label="Gross Monthly" value={fmt(grossMonthly)} />
+      {state.otherIncome > 0 && (
+        <Row label="Other Income" value={`${fmt(state.otherIncome)}/mo`} />
+      )}
+      {state.otherIncome > 0 && (
+        <Row label="Gross Monthly" value={fmt(grossMonthly)} />
+      )}
       <Row
         label="Annual Cash Flow"
         value={fmt(annualProfit)}
