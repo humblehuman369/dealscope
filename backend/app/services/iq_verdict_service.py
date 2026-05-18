@@ -978,14 +978,6 @@ def compute_iq_verdict(
     capex_pct = input_data.capex_pct if input_data.capex_pct is not None else a.operating.capex_pct
     buy_discount = input_data.buy_discount_pct if input_data.buy_discount_pct is not None else a.ltr.buy_discount_pct
 
-    utilities_annual = a.operating.utilities_monthly * 12
-    # HOA / condo / co-op fees come from the property feed (AXESSO `hoaFee`).
-    # These are real, recurring carrying costs and MUST be included in opex —
-    # otherwise Income Value is overstated by HOA × 12 / cap-rate equivalent
-    # (a meaningful gap on every condo, townhome, and co-op).
-    hoa_annual = (input_data.hoa_fees_monthly or 0) * 12
-    other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual + hoa_annual
-
     # Apply per-request overrides to the assumptions object so strategy helpers inherit them
     a.financing.down_payment_pct = down_pct
     a.financing.interest_rate = rate
@@ -995,6 +987,15 @@ def compute_iq_verdict(
     a.operating.maintenance_pct = maint_pct
     a.operating.property_management_pct = mgmt_pct
     a.operating.capex_pct = capex_pct
+    if input_data.utilities_monthly is not None:
+        a.operating.utilities_monthly = input_data.utilities_monthly
+    if input_data.pest_control_annual is not None:
+        a.operating.pest_control_annual = input_data.pest_control_annual
+
+    utilities_annual = a.operating.utilities_monthly * 12
+    # HOA / condo / co-op fees come from the property feed (AXESSO `hoaFee`).
+    hoa_annual = (input_data.hoa_fees_monthly or 0) * 12
+    other_annual = a.operating.landscaping_annual + a.operating.pest_control_annual + hoa_annual
 
     hoa_monthly_input = input_data.hoa_fees_monthly or 0
     sc_amt = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0

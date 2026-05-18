@@ -2029,6 +2029,12 @@ export interface LTRDealMakerState {
   annualPropertyTax: number
   annualInsurance: number
   monthlyHoa: number
+  /** CapEx / reserves as fraction of gross rent (e.g. 0.05 = 5%). */
+  capexRate: number
+  /** Landlord-paid utilities ($/mo). */
+  utilitiesMonthly: number
+  /** Annual pest control and similar fixed opex ($/yr). */
+  pestControlAnnual: number
 }
 
 export interface LTRDealMakerMetrics {

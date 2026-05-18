@@ -244,13 +244,15 @@ export function computeDealGapIncomeValue(
         vacancyRate: s.vacancyRate,
         maintenancePct: s.maintenanceRate,
         managementPct: s.managementRate ?? 0,
-        // Backend `_calculate_long_term_rental` and `compute_deal_score` both
-        // deduct capex, utilities, and pest control from NOI. Keep these in
-        // sync so the Deal Gap bar's Income Value matches the worksheet's
-        // Cap Rate / Cash-on-Cash exactly.
-        capexPct,
-        utilitiesAnnual: baseUtilitiesAnnual,
-        otherAnnualExpenses: (s.monthlyHoa ?? 0) * 12 + otherAnnualBase,
+        capexPct: s.capexRate ?? capexPct,
+        utilitiesAnnual:
+          (s.utilitiesMonthly ??
+            pickFinite(operatingOverrides?.utilitiesMonthly, DEFAULT_OPERATING_UTILITIES_MONTHLY)) *
+          12,
+        otherAnnualExpenses:
+          (s.monthlyHoa ?? 0) * 12 +
+          pickFinite(s.pestControlAnnual, pestControlAnnual) +
+          landscapingAnnual,
         sellerFinancingPct,
         sellerFinancingRate: s.sellerInterestRate ?? 0,
         sellerFinancingTermYears: s.sellerTermYears ?? 30,

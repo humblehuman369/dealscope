@@ -35,6 +35,11 @@ import {
   DEFAULT_SELLER_FINANCING_FIELDS,
 } from './types'
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
+import {
+  DEFAULT_OPERATING_CAPEX_PCT,
+  DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
+  DEFAULT_OPERATING_UTILITIES_MONTHLY,
+} from '@/lib/operatingExpenseDefaults'
 import type { AllAssumptions } from '@/stores/index'
 
 // ------------------------------------------------------------------
@@ -84,6 +89,9 @@ export function buildLTRState(
     annualInsurance:
       property.insurance ?? Math.round(price * pick(o?.insurance_pct, OPERATING_INSURANCE_PCT)),
     monthlyHoa: property.monthlyHoa ?? 0,
+    capexRate: pick(o?.capex_pct, DEFAULT_OPERATING_CAPEX_PCT),
+    utilitiesMonthly: pick(o?.utilities_monthly, DEFAULT_OPERATING_UTILITIES_MONTHLY),
+    pestControlAnnual: pick(o?.pest_control_annual, DEFAULT_OPERATING_PEST_CONTROL_ANNUAL),
   }
 }
 

@@ -399,6 +399,12 @@ export function DealMakerScreen({
         annualPropertyTax: record.annual_property_tax,
         annualInsurance: record.annual_insurance,
         monthlyHoa: record.monthly_hoa,
+        capexRate:
+          record.capex_rate ??
+          record.capex_pct ??
+          localLTRState.capexRate,
+        utilitiesMonthly: record.utilities_monthly ?? localLTRState.utilitiesMonthly,
+        pestControlAnnual: localLTRState.pestControlAnnual,
         ...sf,
       } as LTRDealMakerState
     }

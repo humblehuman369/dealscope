@@ -114,6 +114,18 @@ class IQVerdictInput(BaseModel):
     closing_costs_pct: float | None = Field(None, ge=0, le=0.20, description="Closing costs fraction (e.g. 0.03 = 3%%)")
     rehab_cost: float | None = Field(None, ge=0, le=10_000_000, description="Rehab budget (dollar amount)")
     capex_pct: float | None = Field(None, ge=0, le=1, description="CapEx / reserves as fraction of gross income")
+    utilities_monthly: float | None = Field(
+        None,
+        ge=0,
+        le=10_000,
+        description="Landlord-paid utilities per month ($)",
+    )
+    pest_control_annual: float | None = Field(
+        None,
+        ge=0,
+        le=100_000,
+        description="Annual pest control and similar fixed operating costs ($)",
+    )
     buy_discount_pct: float | None = Field(
         None, ge=0, le=0.50, description="Target buy discount below Income Value (e.g. 0.05 = 5%%)"
     )

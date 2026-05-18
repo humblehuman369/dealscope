@@ -45,6 +45,11 @@ import {
 import { getConditionAdjustment } from '@/utils/property-adjustments'
 import { calculateMortgagePayment } from '@/utils/calculations'
 import { computeLtrOperatingExpenseBreakdown } from '@/lib/ltrOperatingExpenses'
+import {
+  DEFAULT_OPERATING_CAPEX_PCT,
+  DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
+  DEFAULT_OPERATING_UTILITIES_MONTHLY,
+} from '@/lib/operatingExpenseDefaults'
 import { tw } from '@/components/iq-verdict/verdict-design-tokens'
 import {
   IQEstimateSelector,
@@ -1541,6 +1546,20 @@ function StrategyContent() {
           // Seed HOA from the property feed (`market.hoa_fees_monthly`) so condo /
           // townhome / co-op carrying costs are part of NOI on first render.
           monthlyHoa: io.monthlyHoa ?? propertyInfo?.market?.hoa_fees_monthly ?? 0,
+          capexRate:
+            io.capexRate ??
+            (io.capexPct != null ? io.capexPct : undefined) ??
+            reservesPct ??
+            dealGapOperatingOverrides?.capexPct ??
+            DEFAULT_OPERATING_CAPEX_PCT,
+          utilitiesMonthly:
+            io.utilitiesMonthly ??
+            dealGapOperatingOverrides?.utilitiesMonthly ??
+            DEFAULT_OPERATING_UTILITIES_MONTHLY,
+          pestControlAnnual:
+            io.pestControlAnnual ??
+            dealGapOperatingOverrides?.pestControlAnnual ??
+            DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
           ...sf,
         } satisfies LTRDealMakerState
     }
@@ -1819,9 +1838,9 @@ function StrategyContent() {
           managementRate: ltrState.managementRate ?? 0,
           maintenanceRate: ltrState.maintenanceRate,
           annualGrossRent: ltrGrossMonthly * 12,
-          capexPct: dealGapOperatingOverrides?.capexPct,
-          utilitiesMonthly: dealGapOperatingOverrides?.utilitiesMonthly,
-          pestControlAnnual: dealGapOperatingOverrides?.pestControlAnnual,
+          capexPct: ltrState.capexRate,
+          utilitiesMonthly: ltrState.utilitiesMonthly,
+          pestControlAnnual: ltrState.pestControlAnnual,
           landscapingAnnual: dealGapOperatingOverrides?.landscapingAnnual,
         })
         return {
@@ -2798,7 +2817,11 @@ function StrategyContent() {
               propertyAddress={resolvedAddress}
               flushWithinParent
               highlightedFields={highlightedFields}
-              operatingExpenseDefaults={dealGapOperatingOverrides ?? undefined}
+              operatingExpenseDefaults={
+                dealGapOperatingOverrides?.landscapingAnnual != null
+                  ? { landscapingAnnual: dealGapOperatingOverrides.landscapingAnnual }
+                  : undefined
+              }
             />
 
             {/* IQ Estimate Source Selector */}
