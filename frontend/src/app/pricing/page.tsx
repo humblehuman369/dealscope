@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { FaqJsonLd } from '@/components/seo/FaqJsonLd'
 import PricingContent from './PricingContent'
 
 export const metadata: Metadata = {
@@ -126,6 +127,24 @@ const PRICING_JSONLD = {
   ],
 }
 
+const PRICING_FAQ = [
+  {
+    question: 'Is there a free plan?',
+    answer:
+      'Yes. Starter is free forever with property search, three analyses per month, Discovery scores, and snapshots across all six strategies.',
+  },
+  {
+    question: 'What does Pro include?',
+    answer:
+      'Pro unlocks unlimited analyses, full calculation breakdowns, editable assumptions, sensitivity analysis, DealMaker offer scripts, Excel and PDF exports, and 10-year projections.',
+  },
+  {
+    question: 'Is there a free trial for Pro?',
+    answer:
+      'Yes. Pro monthly includes a 7-day free trial. Annual billing is $349.99/year (about $29.17/month).',
+  },
+]
+
 export default function PricingPage() {
   return (
     <>
@@ -133,6 +152,7 @@ export default function PricingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(PRICING_JSONLD) }}
       />
+      <FaqJsonLd items={PRICING_FAQ} />
       <PricingContent />
     </>
   )

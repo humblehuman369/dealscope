@@ -778,7 +778,7 @@ function SiteFooter() {
   return (
     <footer className="border-t border-[var(--border-default)] bg-[var(--surface-card)] py-16 text-sm">
       <div className="mx-auto grid max-w-7xl gap-y-12 px-6 md:grid-cols-12">
-        <div className="md:col-span-5">
+        <div className="md:col-span-4">
           <Link
             href="/"
             className="mb-6 inline-flex text-2xl font-black tracking-[-0.05em] text-[var(--text-heading)]"
@@ -796,27 +796,43 @@ function SiteFooter() {
         </div>
 
         <FooterColumn
-          className="md:col-span-3"
+          className="md:col-span-2"
           title="Product"
           links={[
             { href: '#how-it-works', label: 'How it Works' },
             { href: '/discovery', label: 'Discovery' },
             { href: '/strategy', label: 'Strategy' },
+            { href: '/deal-maker', label: 'DealMaker' },
             { href: '/pricing', label: 'Pricing' },
+            { href: '/what-is-dealgapiq', label: 'What is DealGapIQ?' },
           ]}
         />
         <FooterColumn
           className="md:col-span-4"
+          title="Learn"
+          links={[
+            { href: '/methodology', label: 'Methodology' },
+            { href: '/national-averages', label: 'National Benchmarks' },
+            { href: '/glossary', label: 'Glossary' },
+            { href: '/blog', label: 'Blog' },
+            { href: '/strategies/long-term-rental', label: 'Long-Term Rental' },
+            { href: '/strategies/brrrr', label: 'BRRRR' },
+            { href: '/strategies/fix-flip', label: 'Fix & Flip' },
+            { href: '/strategies/short-term-rental', label: 'Short-Term Rental' },
+            { href: '/strategies/house-hack', label: 'House Hack' },
+            { href: '/strategies/wholesale', label: 'Wholesale' },
+          ]}
+          twoCols
+        />
+        <FooterColumn
+          className="md:col-span-2"
           title="Company"
           links={[
             { href: '/about', label: 'About & Mission' },
-            { href: '/about', label: 'Founder Story' },
             { href: '/help', label: 'Help Center' },
-            { href: '/methodology', label: 'Methodology' },
             { href: '/privacy', label: 'Privacy' },
             { href: '/terms', label: 'Terms' },
           ]}
-          twoCols
         />
       </div>
     </footer>

@@ -2,6 +2,8 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { Repeat, DollarSign, Clock, FileText } from 'lucide-react'
 import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
+import { StrategySchema } from '@/components/seo/StrategySchema'
+import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
 
 export const metadata: Metadata = {
   title: 'Wholesale Strategy — Find Deals, Assign Contracts, Profit | DealGapIQ',
@@ -24,8 +26,12 @@ export const metadata: Metadata = {
 
 const ACCENT = '#fbbf24'
 
+const schema = STRATEGY_SCHEMA_BY_SLUG.wholesale
+
 export default function WholesalePage() {
   return (
+    <>
+      <StrategySchema slug="wholesale" {...schema} />
     <StrategyPageLayout
       name="Wholesale"
       tagline="Find deals, assign contracts, profit"
@@ -72,5 +78,6 @@ export default function WholesalePage() {
         profit. That&apos;s where precision underwriting becomes your competitive advantage.
       </Prose>
     </StrategyPageLayout>
+    </>
   )
 }

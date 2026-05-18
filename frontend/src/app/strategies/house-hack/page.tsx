@@ -2,6 +2,8 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { Users, Home, BookOpen, CreditCard } from 'lucide-react'
 import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
+import { StrategySchema } from '@/components/seo/StrategySchema'
+import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
 
 export const metadata: Metadata = {
   title: 'House Hack Strategy — Live for Free with Multi-Unit & FHA | DealGapIQ',
@@ -24,8 +26,12 @@ export const metadata: Metadata = {
 
 const ACCENT = 'var(--accent-sky)'
 
+const schema = STRATEGY_SCHEMA_BY_SLUG['house-hack']
+
 export default function HouseHackPage() {
   return (
+    <>
+      <StrategySchema slug="house-hack" {...schema} />
     <StrategyPageLayout
       name="House Hack"
       tagline="Cut your housing costs up to 100%"
@@ -72,5 +78,6 @@ export default function HouseHackPage() {
         loans. It&apos;s the lowest barrier to entry in real estate investing.
       </Prose>
     </StrategyPageLayout>
+    </>
   )
 }

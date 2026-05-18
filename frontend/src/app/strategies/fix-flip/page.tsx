@@ -2,6 +2,8 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { Hammer, Zap, DollarSign } from 'lucide-react'
 import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
+import { StrategySchema } from '@/components/seo/StrategySchema'
+import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
 
 export const metadata: Metadata = {
   title: 'Fix & Flip Strategy — How to Underwrite a Flip Deal | DealGapIQ',
@@ -24,8 +26,12 @@ export const metadata: Metadata = {
 
 const ACCENT = '#f87171'
 
+const schema = STRATEGY_SCHEMA_BY_SLUG['fix-flip']
+
 export default function FixFlipPage() {
   return (
+    <>
+      <StrategySchema slug="fix-flip" {...schema} />
     <StrategyPageLayout
       name="Fix & Flip"
       tagline="Buy low, renovate smart, sell high"
@@ -74,5 +80,6 @@ export default function FixFlipPage() {
         matters more here than in any other strategy. Know your numbers before you write the offer.
       </Prose>
     </StrategyPageLayout>
+    </>
   )
 }

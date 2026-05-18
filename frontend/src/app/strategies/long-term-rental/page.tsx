@@ -7,6 +7,8 @@ import {
   Prose,
   StepItem,
 } from '@/components/strategies/StrategyPageLayout'
+import { StrategySchema } from '@/components/seo/StrategySchema'
+import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
 
 export const metadata: Metadata = {
   title: 'Long-Term Rental Strategy — Cash Flow & Buy-and-Hold | DealGapIQ',
@@ -29,8 +31,12 @@ export const metadata: Metadata = {
 
 const ACCENT = '#34d399'
 
+const schema = STRATEGY_SCHEMA_BY_SLUG['long-term-rental']
+
 export default function LongTermRentalPage() {
   return (
+    <>
+      <StrategySchema slug="long-term-rental" {...schema} />
     <StrategyPageLayout
       name="Long-Term Rental"
       tagline="Steady income & build equity over time"
@@ -95,5 +101,6 @@ export default function LongTermRentalPage() {
         </p>
       </Callout>
     </StrategyPageLayout>
+    </>
   )
 }

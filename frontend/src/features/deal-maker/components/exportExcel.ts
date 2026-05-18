@@ -843,7 +843,7 @@ export async function exportDealMakerExcel(
   listPrice: number,
 ) {
   const wb = new ExcelJS.Workbook()
-  wb.creator = 'DealScope IQ'
+  wb.creator = 'DealGapIQ'
   wb.created = new Date()
 
   switch (strategyType) {

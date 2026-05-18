@@ -68,6 +68,12 @@ if (!isCapacitor) {
   ]
 
   nextConfig.redirects = async () => [
+    {
+      source: '/:path*',
+      has: [{ type: 'host', value: 'www.dealgapiq.com' }],
+      destination: 'https://dealgapiq.com/:path*',
+      permanent: true,
+    },
     { source: '/landing', destination: '/', permanent: true },
     { source: '/landing2', destination: '/', permanent: true },
     { source: '/verdict', destination: '/discovery', permanent: true },

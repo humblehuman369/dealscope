@@ -2,6 +2,8 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { TrendingUp, DollarSign, Calendar, MapPin } from 'lucide-react'
 import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
+import { StrategySchema } from '@/components/seo/StrategySchema'
+import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
 
 export const metadata: Metadata = {
   title: 'Short-Term Rental (Airbnb) Strategy — How to Underwrite an STR | DealGapIQ',
@@ -24,8 +26,12 @@ export const metadata: Metadata = {
 
 const ACCENT = '#38bdf8'
 
+const schema = STRATEGY_SCHEMA_BY_SLUG['short-term-rental']
+
 export default function ShortTermRentalPage() {
   return (
+    <>
+      <StrategySchema slug="short-term-rental" {...schema} />
     <StrategyPageLayout
       name="Short-Term Rental"
       tagline="Vacation & business rental income"
@@ -72,5 +78,6 @@ export default function ShortTermRentalPage() {
         handle operations while they focus on acquisition.
       </Prose>
     </StrategyPageLayout>
+    </>
   )
 }

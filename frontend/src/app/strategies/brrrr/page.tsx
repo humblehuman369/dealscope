@@ -7,6 +7,8 @@ import {
   Prose,
   StepItem,
 } from '@/components/strategies/StrategyPageLayout'
+import { StrategySchema } from '@/components/seo/StrategySchema'
+import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
 
 export const metadata: Metadata = {
   title: 'BRRRR Strategy — Buy, Rehab, Rent, Refinance, Repeat | DealGapIQ',
@@ -29,8 +31,12 @@ export const metadata: Metadata = {
 
 const ACCENT = '#fbbf24'
 
+const schema = STRATEGY_SCHEMA_BY_SLUG.brrrr
+
 export default function BRRRRPage() {
   return (
+    <>
+      <StrategySchema slug="brrrr" {...schema} />
     <StrategyPageLayout
       name="BRRRR"
       tagline="Buy, Rehab, Rent, Refinance, Repeat"
@@ -113,5 +119,6 @@ export default function BRRRRPage() {
         />
       </div>
     </StrategyPageLayout>
+    </>
   )
 }
