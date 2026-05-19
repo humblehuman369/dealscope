@@ -2240,11 +2240,12 @@ function StrategyContent() {
                       const showPriceGap =
                         incomePos != null &&
                         marketPos != null &&
-                        Math.abs(priceGap) > 0.1 &&
+                        priceGap < -0.1 &&
                         priceGapRight - priceGapLeft >= 3
 
-                      const bracketLabel = 'DEAL GAP'
-                      const bracketColor = isDealGain
+                      const isBuyZone = dealDisplayPct >= 0
+                      const bracketLabel = isBuyZone ? 'BUY ZONE' : 'DEAL GAP'
+                      const bracketColor = isBuyZone
                         ? 'var(--status-positive)'
                         : 'var(--accent-sky)'
                       const sweetSpotLeft =
