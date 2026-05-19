@@ -1094,8 +1094,10 @@ function BRRRRWorksheet({
   const coc = num(m, 'postRefiCashOnCash')
   // Mirrors backend BRRRR opex formula (calculators/brrrr.py): mgmt + maint
   // applied to annual gross rent + fixed annual costs. Vacancy is income loss,
-  // not opex, so it's excluded from the total — matches LTR worksheet convention.
+  // not opex, so it's excluded from this total and shown as a deduction from
+  // gross revenue in the "What You'd Earn" section instead.
   const annualGrossRent = state.postRehabMonthlyRent * 12
+  const effectiveGrossRevenue = annualGrossRent * (1 - state.vacancyRate)
   const totalOpex =
     annualGrossRent * (state.managementRate + state.maintenanceRate) +
     state.annualPropertyTax +
@@ -1286,19 +1288,6 @@ function BRRRRWorksheet({
         onChange={(v) => up('monthlyHoa', v)}
       />
       <TotalRow label="Total Operating Expenses" value={`${fmt(totalOpex)}/yr`} />
-      <SliderRow
-        label="Vacancy (income loss)"
-        value={state.vacancyRate * 100}
-        secondaryValue={`${(state.vacancyRate * 100).toFixed(0)}%`}
-        displayValue={`${fmt(annualGrossRent * state.vacancyRate)}/yr`}
-        min={0}
-        max={15}
-        onChange={(v) => up('vacancyRate', v / 100)}
-        parseInput={(s) => {
-          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
-          return annualGrossRent > 0 ? (dollars / annualGrossRent) * 100 : 0
-        }}
-      />
 
       <Divider />
 
@@ -1311,6 +1300,19 @@ function BRRRRWorksheet({
         min={500}
         max={10000}
         onChange={(v) => up('postRehabMonthlyRent', v)}
+      />
+      <SliderRow
+        label="Vacancy (income loss)"
+        value={state.vacancyRate * 100}
+        secondaryValue={`${(state.vacancyRate * 100).toFixed(0)}%`}
+        displayValue={`−${fmt(annualGrossRent * state.vacancyRate)}/yr`}
+        min={0}
+        max={15}
+        onChange={(v) => up('vacancyRate', v / 100)}
+        parseInput={(s) => {
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return annualGrossRent > 0 ? (dollars / annualGrossRent) * 100 : 0
+        }}
       />
       <Row label="Total Invested" value={fmt(totalInvested)} />
       <Row
@@ -1333,7 +1335,10 @@ function BRRRRWorksheet({
         value={fmt(annualCF)}
         color={annualCF >= 0 ? C.blue : '#F43F5E'}
       />
-      <TotalRow label="Annual Gross Revenue" value={`${fmt(annualGrossRent)}/yr`} />
+      <TotalRow
+        label="Effective Gross Revenue"
+        value={`${fmt(effectiveGrossRevenue)}/yr`}
+      />
       <TotalRow label="Cash-on-Cash" value={coc > 999 ? '∞' : `${coc.toFixed(2)}%`} />
     </>
   )
