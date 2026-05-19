@@ -58,6 +58,7 @@ import { useAuthModal } from '@/hooks/useAuthModal'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { buildVerdictAnalysisPayload, type VerdictPayloadBase } from '@/utils/verdictPayload'
 import { MarketAnchorNote } from '@/components/iq-verdict/MarketAnchorNote'
+import { SweetSpotZone } from '@/components/iq-verdict/SweetSpotZone'
 import {
   VerdictGapGuidance,
   VerdictPositiveGuidance,
@@ -1761,32 +1762,7 @@ function VerdictContent() {
                       }}
                     >
                       {isPositiveIncomeCase && sweetSpotWidth > 0 && (
-                        <div
-                          className="absolute rounded-full sweet-spot-pulse"
-                          style={{
-                            left: `${sweetSpotLeft}%`,
-                            width: `${sweetSpotWidth}%`,
-                            height: '100%',
-                            background:
-                              'linear-gradient(90deg, rgba(52,211,153,0.1), rgba(52,211,153,0.3), rgba(52,211,153,0.1))',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <span
-                            style={{
-                              color: '#ffffff',
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: '0.08em',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            SWEET SPOT
-                          </span>
-                        </div>
+                        <SweetSpotZone leftPercent={sweetSpotLeft} widthPercent={sweetSpotWidth} />
                       )}
                       {markers.map((m, i) => {
                         const isRing = tbMarketOverlap && m.label === 'TARGET'
