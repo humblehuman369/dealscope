@@ -1043,12 +1043,13 @@ function STRWorksheet({
 
       <Divider />
 
-      <SectionHeader title="Performance" />
+      <SectionHeader title="What You'd Earn" />
       <Row
         label="Annual Cash Flow"
         value={fmt(annualCashFlow)}
         color={annualCashFlow >= 0 ? C.blue : '#F43F5E'}
       />
+      <TotalRow label="Annual Gross Revenue" value={`${fmt(annualGross)}/yr`} />
       <Row label="Cap Rate" value={`${capRate.toFixed(2)}%`} />
       <TotalRow label="Cash-on-Cash" value={`${cocReturn.toFixed(2)}%`} />
     </>
