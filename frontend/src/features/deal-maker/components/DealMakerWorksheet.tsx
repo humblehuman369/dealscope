@@ -781,14 +781,14 @@ function LTRWorksheet({
         onChange={(v) => up('vacancyRate', v / 100)}
         parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
       />
+      <TotalRow
+        label="Effective Gross Revenue"
+        value={`${fmt(effectiveGrossRevenue)}/yr`}
+      />
       <Row
         label="Annual Cash Flow"
         value={fmt(annualProfit)}
         color={annualProfit >= 0 ? C.blue : '#F43F5E'}
-      />
-      <TotalRow
-        label="Effective Gross Revenue"
-        value={`${fmt(effectiveGrossRevenue)}/yr`}
       />
       <Row label="Cap Rate" value={`${capRate.toFixed(2)}%`} />
       <TotalRow label="Cash-on-Cash" value={`${cocReturn.toFixed(2)}%`} />
@@ -976,7 +976,7 @@ function STRWorksheet({
       />
       <Row label="Nights Occupied" value={`${Math.round(nightsOccupied)}/yr`} />
       <Row label="Monthly Gross" value={fmt(monthlyGross)} />
-      <TotalRow label="Annual Gross Revenue" value={fmt(annualGross)} />
+      <TotalRow label="Effective Gross Revenue" value={`${fmt(annualGross)}/yr`} />
 
       <Divider />
 
@@ -1050,12 +1050,12 @@ function STRWorksheet({
       <Divider />
 
       <SectionHeader title="What You'd Earn" />
+      <TotalRow label="Effective Gross Revenue" value={`${fmt(annualGross)}/yr`} />
       <Row
         label="Annual Cash Flow"
         value={fmt(annualCashFlow)}
         color={annualCashFlow >= 0 ? C.blue : '#F43F5E'}
       />
-      <TotalRow label="Annual Gross Revenue" value={`${fmt(annualGross)}/yr`} />
       <Row label="Cap Rate" value={`${capRate.toFixed(2)}%`} />
       <TotalRow label="Cash-on-Cash" value={`${cocReturn.toFixed(2)}%`} />
     </>
