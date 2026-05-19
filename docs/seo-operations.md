@@ -13,7 +13,7 @@ Verify in browser: View Source on production homepage → confirm `<meta name="g
 
 ## Host canonicalization
 
-- `https://www.dealgapiq.com/*` must 308 redirect to `https://dealgapiq.com/*` (handled in `frontend/src/middleware.ts`).
+- `https://www.dealgapiq.com/*` must 308 redirect to `https://dealgapiq.com/*` (handled in `frontend/src/proxy.ts`).
 - Test: `curl -sI https://www.dealgapiq.com/ | head -5`
 
 ## “Crawled – currently not indexed” drilldown (May 2026)
@@ -23,8 +23,8 @@ If GSC lists only these URLs under that bucket, **no marketing page is broken** 
 | URL | Cause | Fix |
 |-----|--------|-----|
 | `/_next/static/chunks/*.js` | JS asset, not a page | `robots.txt` disallows `/_next/` |
-| `/?action=analyze` | Duplicate homepage (internal link) | Redirect → `/search`; CTA link fixed; `noindex` on `/?*` via middleware |
-| `http://www.dealgapiq.com/` | Non-canonical host | 308 `www` → apex in `middleware.ts` + `next.config.js` redirects |
+| `/?action=analyze` | Duplicate homepage (internal link) | Redirect → `/search`; CTA link fixed; `noindex` on `/?*` via `proxy.ts` |
+| `http://www.dealgapiq.com/` | Non-canonical host | 308 `www` → apex in `proxy.ts` + `next.config.js` redirects |
 
 After deploy: URL Inspection → **Validate fix** on each, or wait for recrawl. Indexed marketing URLs are a separate bucket (“Discovered – not indexed”).
 

@@ -33,22 +33,27 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url, 308)
   }
 
-  if (
-    INDEXABLE_TOOL_PATHS.has(pathname) &&
-    hasPropertyContext(searchParams)
-  ) {
-    const response = NextResponse.next()
+  const response = NextResponse.next()
+
+  // Homepage with query params (e.g. /?action=analyze) duplicates canonical /
+  if (pathname === '/' && searchParams.toString().length > 0) {
     response.headers.set('X-Robots-Tag', 'noindex, follow')
     return response
   }
 
-  return NextResponse.next()
+  if (INDEXABLE_TOOL_PATHS.has(pathname) && hasPropertyContext(searchParams)) {
+    response.headers.set('X-Robots-Tag', 'noindex, follow')
+    return response
+  }
+
+  return response
 }
 
 export const config = {
   matcher: [
+    '/',
     '/discovery',
     '/strategy',
-    '/((?!_next/static|_next/image|favicon.ico|images|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|images|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }
