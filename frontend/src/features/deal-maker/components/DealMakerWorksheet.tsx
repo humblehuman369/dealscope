@@ -564,6 +564,9 @@ function LTRWorksheet({
     : bankMonthly
   const grossMonthly = num(m, 'grossMonthlyIncome') || state.monthlyRent + state.otherIncome
   const annualGrossRent = grossMonthly * 12
+  // Annual gross rent net of vacancy (income loss). Shown to investors as the
+  // earnings line in "What You'd Earn"; opex %s below still apply to the gross.
+  const effectiveGrossRevenue = annualGrossRent * (1 - state.vacancyRate)
   const opex = computeLtrOperatingExpenseBreakdown({
     annualPropertyTax: state.annualPropertyTax,
     annualInsurance: state.annualInsurance,
@@ -749,16 +752,6 @@ function LTRWorksheet({
         onChange={(v) => up('pestControlAnnual', v)}
       />
       <TotalRow label="Total Operating Expenses" value={`${fmt(opex.total)}/yr`} />
-      <SliderRow
-        label="Vacancy (income loss)"
-        value={state.vacancyRate * 100}
-        secondaryValue={`${(state.vacancyRate * 100).toFixed(0)}%`}
-        displayValue={`${fmt(grossMonthly * state.vacancyRate * 12)}/yr`}
-        min={0}
-        max={20}
-        onChange={(v) => up('vacancyRate', v / 100)}
-        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
-      />
 
       <Divider />
 
@@ -778,12 +771,25 @@ function LTRWorksheet({
       {state.otherIncome > 0 && (
         <Row label="Gross Monthly" value={fmt(grossMonthly)} />
       )}
+      <SliderRow
+        label="Vacancy (income loss)"
+        value={state.vacancyRate * 100}
+        secondaryValue={`${(state.vacancyRate * 100).toFixed(0)}%`}
+        displayValue={`−${fmt(annualGrossRent * state.vacancyRate)}/yr`}
+        min={0}
+        max={20}
+        onChange={(v) => up('vacancyRate', v / 100)}
+        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+      />
       <Row
         label="Annual Cash Flow"
         value={fmt(annualProfit)}
         color={annualProfit >= 0 ? C.blue : '#F43F5E'}
       />
-      <TotalRow label="Annual Gross Revenue" value={`${fmt(annualGrossRent)}/yr`} />
+      <TotalRow
+        label="Effective Gross Revenue"
+        value={`${fmt(effectiveGrossRevenue)}/yr`}
+      />
       <Row label="Cap Rate" value={`${capRate.toFixed(2)}%`} />
       <TotalRow label="Cash-on-Cash" value={`${cocReturn.toFixed(2)}%`} />
     </>
