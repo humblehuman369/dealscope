@@ -1236,28 +1236,24 @@ function BRRRRWorksheet({
 
       <SectionHeader title="What It Costs" />
       <SliderRow
-        label="Vacancy"
-        value={state.vacancyRate * 100}
-        displayValue={`${(state.vacancyRate * 100).toFixed(0)}%`}
-        min={0}
-        max={15}
-        onChange={(v) => up('vacancyRate', v / 100)}
-      />
-      <SliderRow
         label="Management"
         value={state.managementRate * 100}
-        displayValue={`${(state.managementRate * 100).toFixed(0)}%`}
+        secondaryValue={`${(state.managementRate * 100).toFixed(0)}%`}
+        displayValue={`${fmt(annualGrossRent * state.managementRate)}/yr`}
         min={0}
         max={12}
         onChange={(v) => up('managementRate', v / 100)}
+        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
       />
       <SliderRow
         label="Maintenance"
         value={state.maintenanceRate * 100}
-        displayValue={`${(state.maintenanceRate * 100).toFixed(0)}%`}
+        secondaryValue={`${(state.maintenanceRate * 100).toFixed(0)}%`}
+        displayValue={`${fmt(annualGrossRent * state.maintenanceRate)}/yr`}
         min={3}
         max={10}
         onChange={(v) => up('maintenanceRate', v / 100)}
+        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
       />
       <SliderRow
         label="Property Tax"
@@ -1284,6 +1280,16 @@ function BRRRRWorksheet({
         onChange={(v) => up('monthlyHoa', v)}
       />
       <TotalRow label="Total Operating Expenses" value={`${fmt(totalOpex)}/yr`} />
+      <SliderRow
+        label="Vacancy (income loss)"
+        value={state.vacancyRate * 100}
+        secondaryValue={`${(state.vacancyRate * 100).toFixed(0)}%`}
+        displayValue={`${fmt(annualGrossRent * state.vacancyRate)}/yr`}
+        min={0}
+        max={15}
+        onChange={(v) => up('vacancyRate', v / 100)}
+        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+      />
 
       <Divider />
 
