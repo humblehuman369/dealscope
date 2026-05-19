@@ -783,6 +783,7 @@ function LTRWorksheet({
         value={fmt(annualProfit)}
         color={annualProfit >= 0 ? C.blue : '#F43F5E'}
       />
+      <TotalRow label="Annual Gross Revenue" value={`${fmt(annualGrossRent)}/yr`} />
       <Row label="Cap Rate" value={`${capRate.toFixed(2)}%`} />
       <TotalRow label="Cash-on-Cash" value={`${cocReturn.toFixed(2)}%`} />
     </>
