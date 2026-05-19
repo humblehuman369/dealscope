@@ -1223,7 +1223,7 @@ function BRRRRWorksheet({
 
       <Divider />
 
-      <SectionHeader title="Expenses & Returns" />
+      <SectionHeader title="What It Costs" />
       <SliderRow
         label="Vacancy"
         value={state.vacancyRate * 100}
@@ -1272,6 +1272,19 @@ function BRRRRWorksheet({
         max={500}
         onChange={(v) => up('monthlyHoa', v)}
       />
+
+      <Divider />
+
+      <SectionHeader title="What You'd Earn" />
+      <SliderRow
+        field="postRehabMonthlyRent"
+        label="Monthly Rent"
+        value={state.postRehabMonthlyRent}
+        displayValue={fmt(state.postRehabMonthlyRent)}
+        min={500}
+        max={10000}
+        onChange={(v) => up('postRehabMonthlyRent', v)}
+      />
       <Row label="Total Invested" value={fmt(totalInvested)} />
       <Row
         label="Cash Left in Deal"
@@ -1293,6 +1306,7 @@ function BRRRRWorksheet({
         value={fmt(annualCF)}
         color={annualCF >= 0 ? C.blue : '#F43F5E'}
       />
+      <Row label="Annual Gross Revenue" value={fmt(state.postRehabMonthlyRent * 12)} />
       <TotalRow label="Cash-on-Cash" value={coc > 999 ? '∞' : `${coc.toFixed(2)}%`} />
     </>
   )
