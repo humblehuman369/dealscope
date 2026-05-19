@@ -38,7 +38,7 @@ export function ExploreDealGapIQSection() {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="block rounded-xl border border-[var(--border-default)] bg-[var(--surface-base)] px-4 py-3 text-sm font-semibold text-[var(--text-body)] transition-colors hover:border-[var(--accent-sky)] hover:text-[var(--text-heading)]"
+                className="block rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 text-sm font-semibold text-[var(--text-body)] transition-colors hover:border-[var(--accent-sky)] hover:text-[var(--text-heading)]"
               >
                 {link.label}
               </Link>
