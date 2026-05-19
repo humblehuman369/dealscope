@@ -1061,10 +1061,12 @@ function STRWorksheet({
 function BRRRRWorksheet({
   state,
   metrics,
+  listPrice,
   up,
 }: {
   state: BRRRRDealMakerState
   metrics: BRRRRMetrics
+  listPrice: number
   up: (k: string, v: number | string) => void
 }) {
   const m = metrics as unknown as Record<string, unknown>
@@ -1092,6 +1094,7 @@ function BRRRRWorksheet({
   return (
     <>
       <SectionHeader title="Phase 1 — Buy" />
+      <Row label="Market Price" value={fmt(listPrice || state.purchasePrice)} />
       <SliderRow
         field="purchasePrice"
         label="Purchase Price"
@@ -1302,10 +1305,12 @@ function BRRRRWorksheet({
 function FlipWorksheet({
   state,
   metrics,
+  listPrice,
   up,
 }: {
   state: FlipDealMakerState
   metrics: FlipMetrics
+  listPrice: number
   up: (k: string, v: number | string) => void
 }) {
   const m = metrics as unknown as Record<string, unknown>
@@ -1338,6 +1343,7 @@ function FlipWorksheet({
   return (
     <>
       <SectionHeader title="Acquisition" />
+      <Row label="Market Price" value={fmt(listPrice || state.purchasePrice)} />
       <SliderRow
         field="purchasePrice"
         label="Purchase Price"
@@ -1549,10 +1555,12 @@ function FlipWorksheet({
 function HouseHackWorksheet({
   state,
   metrics,
+  listPrice,
   up,
 }: {
   state: HouseHackDealMakerState
   metrics: HouseHackMetrics
+  listPrice: number
   up: (k: string, v: number | string) => void
 }) {
   const m = metrics as unknown as Record<string, unknown>
@@ -1589,6 +1597,7 @@ function HouseHackWorksheet({
   return (
     <>
       <SectionHeader title="What You'd Pay" />
+      <Row label="Market Price" value={fmt(listPrice || state.purchasePrice)} />
       <SliderRow
         field="purchasePrice"
         label="Purchase Price"
@@ -1809,10 +1818,12 @@ function HouseHackWorksheet({
 function WholesaleWorksheet({
   state,
   metrics,
+  listPrice,
   up,
 }: {
   state: WholesaleDealMakerState
   metrics: WholesaleMetrics
+  listPrice: number
   up: (k: string, v: number | string) => void
 }) {
   const m = metrics as unknown as Record<string, unknown>
@@ -1830,6 +1841,7 @@ function WholesaleWorksheet({
   return (
     <>
       <SectionHeader title="Deal Analysis" />
+      <Row label="Market Price" value={fmt(listPrice || state.contractPrice)} />
       <SliderRow
         label="ARV"
         value={state.arv}
@@ -2419,6 +2431,7 @@ export function DealMakerWorksheet({
             <BRRRRWorksheet
               state={state as BRRRRDealMakerState}
               metrics={metrics as BRRRRMetrics}
+              listPrice={listPrice}
               up={updateState}
             />
           )}
@@ -2426,6 +2439,7 @@ export function DealMakerWorksheet({
             <FlipWorksheet
               state={state as FlipDealMakerState}
               metrics={metrics as FlipMetrics}
+              listPrice={listPrice}
               up={updateState}
             />
           )}
@@ -2433,6 +2447,7 @@ export function DealMakerWorksheet({
             <HouseHackWorksheet
               state={state as HouseHackDealMakerState}
               metrics={metrics as HouseHackMetrics}
+              listPrice={listPrice}
               up={updateState}
             />
           )}
@@ -2440,6 +2455,7 @@ export function DealMakerWorksheet({
             <WholesaleWorksheet
               state={state as WholesaleDealMakerState}
               metrics={metrics as WholesaleMetrics}
+              listPrice={listPrice}
               up={updateState}
             />
           )}

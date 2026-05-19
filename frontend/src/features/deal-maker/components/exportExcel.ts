@@ -461,6 +461,7 @@ function buildBRRRRSheet(
   state: BRRRRDealMakerState,
   metrics: BRRRRMetrics,
   address: string,
+  listPrice: number,
 ) {
   const ws = setupSheet(wb, 'BRRRR Analysis', address, STRATEGY_LABELS.brrrr)
   const m = metrics as unknown as Record<string, unknown>
@@ -484,6 +485,7 @@ function buildBRRRRSheet(
 
   let r = 5
   applySectionHeader(ws, r++, 'PHASE 1 — BUY')
+  addRow(ws, r++, 'Market Price', listPrice || state.purchasePrice, CUR)
   addRow(ws, r++, 'Purchase Price', state.purchasePrice, CUR)
   addRow(ws, r++, 'Discount from Market', state.buyDiscountPct, PCT)
   addRow(
@@ -564,6 +566,7 @@ function buildFlipSheet(
   state: FlipDealMakerState,
   metrics: FlipMetrics,
   address: string,
+  listPrice: number,
 ) {
   const ws = setupSheet(wb, 'Flip Analysis', address, STRATEGY_LABELS.flip)
   const m = metrics as unknown as Record<string, unknown>
@@ -589,6 +592,7 @@ function buildFlipSheet(
 
   let r = 5
   applySectionHeader(ws, r++, 'ACQUISITION')
+  addRow(ws, r++, 'Market Price', listPrice || state.purchasePrice, CUR)
   addRow(ws, r++, 'Purchase Price', state.purchasePrice, CUR)
   addRow(ws, r++, 'Discount from ARV', state.purchaseDiscountPct, PCT)
   addRow(
@@ -682,6 +686,7 @@ function buildHouseHackSheet(
   state: HouseHackDealMakerState,
   metrics: HouseHackMetrics,
   address: string,
+  listPrice: number,
 ) {
   const ws = setupSheet(wb, 'House Hack Analysis', address, STRATEGY_LABELS.house_hack)
   const m = metrics as unknown as Record<string, unknown>
@@ -705,6 +710,7 @@ function buildHouseHackSheet(
 
   let r = 5
   applySectionHeader(ws, r++, 'ACQUISITION')
+  addRow(ws, r++, 'Market Price', listPrice || state.purchasePrice, CUR)
   addRow(ws, r++, 'Purchase Price', state.purchasePrice, CUR)
   addRow(ws, r++, 'Total Units', state.totalUnits, INT)
   addRow(ws, r++, 'Owner-Occupied Units', state.ownerOccupiedUnits, INT)
@@ -779,6 +785,7 @@ function buildWholesaleSheet(
   state: WholesaleDealMakerState,
   metrics: WholesaleMetrics,
   address: string,
+  listPrice: number,
 ) {
   const ws = setupSheet(wb, 'Wholesale Analysis', address, STRATEGY_LABELS.wholesale)
   const m = metrics as unknown as Record<string, unknown>
@@ -796,6 +803,7 @@ function buildWholesaleSheet(
 
   let r = 5
   applySectionHeader(ws, r++, 'DEAL ANALYSIS')
+  addRow(ws, r++, 'Market Price', listPrice || state.contractPrice, CUR)
   addRow(ws, r++, 'After Repair Value (ARV)', state.arv, CUR)
   addRow(ws, r++, 'Estimated Repairs', state.estimatedRepairs, CUR)
   addRow(ws, r++, 'Contract Price', state.contractPrice, CUR)
@@ -866,10 +874,22 @@ export async function exportDealMakerExcel(
       )
       break
     case 'brrrr':
-      buildBRRRRSheet(wb, state as BRRRRDealMakerState, metrics as BRRRRMetrics, propertyAddress)
+      buildBRRRRSheet(
+        wb,
+        state as BRRRRDealMakerState,
+        metrics as BRRRRMetrics,
+        propertyAddress,
+        listPrice,
+      )
       break
     case 'flip':
-      buildFlipSheet(wb, state as FlipDealMakerState, metrics as FlipMetrics, propertyAddress)
+      buildFlipSheet(
+        wb,
+        state as FlipDealMakerState,
+        metrics as FlipMetrics,
+        propertyAddress,
+        listPrice,
+      )
       break
     case 'house_hack':
       buildHouseHackSheet(
@@ -877,6 +897,7 @@ export async function exportDealMakerExcel(
         state as HouseHackDealMakerState,
         metrics as HouseHackMetrics,
         propertyAddress,
+        listPrice,
       )
       break
     case 'wholesale':
@@ -885,6 +906,7 @@ export async function exportDealMakerExcel(
         state as WholesaleDealMakerState,
         metrics as WholesaleMetrics,
         propertyAddress,
+        listPrice,
       )
       break
   }
