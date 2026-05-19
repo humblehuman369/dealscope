@@ -506,7 +506,7 @@ export function StrategyPageLayout({
 
           {/* CTA */}
           <Link
-            href="/?action=analyze"
+            href="/search"
             style={{
               display: 'block',
               textAlign: 'center',

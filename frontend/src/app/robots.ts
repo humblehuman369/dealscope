@@ -16,6 +16,7 @@ const AI_CRAWLERS = [
 
 /** Paths crawlers should not fetch. Prefer per-route `noindex` for de-indexing SERP URLs. */
 const PRIVATE_PATHS = [
+  '/_next/',
   '/api/',
   '/admin',
   '/dashboard',
