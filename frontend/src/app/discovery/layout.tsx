@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import { PageExplainer } from '@/components/seo/PageExplainer'
+import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 
 export const metadata: Metadata = {
   title: 'Discovery — Instant Deal Score for Any Property | DealGapIQ',
   description:
     'Discovery scores any single-family or small multi-family property in under 60 seconds — across Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale — and surfaces the Deal Gap so you know what to offer.',
   alternates: { canonical: '/discovery' },
-  robots: { index: true, follow: true },
+  robots: INDEXABLE_ROBOTS,
   openGraph: {
     title: 'Discovery — Instant Deal Score for Any Property',
     description:

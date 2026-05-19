@@ -3,8 +3,22 @@ import type { NextRequest } from 'next/server'
 
 const INDEXABLE_TOOL_PATHS = new Set(['/discovery', '/strategy'])
 
+const APEX_HOST = 'dealgapiq.com'
+
 function isWwwHost(host: string): boolean {
-  return host === 'www.dealgapiq.com'
+  return host === `www.${APEX_HOST}`
+}
+
+function isDealGapHost(host: string): boolean {
+  return host === APEX_HOST || isWwwHost(host)
+}
+
+/** Build canonical https://dealgapiq.com URL (apex, HTTPS). */
+function canonicalUrl(request: NextRequest): URL {
+  const url = request.nextUrl.clone()
+  url.protocol = 'https:'
+  url.host = APEX_HOST
+  return url
 }
 
 function hasPropertyContext(searchParams: URLSearchParams): boolean {
@@ -24,13 +38,14 @@ function hasPropertyContext(searchParams: URLSearchParams): boolean {
 export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
   const host = request.headers.get('host') ?? ''
+  const proto = request.headers.get('x-forwarded-proto')
 
-  // Canonical host first — preserves path + query (e.g. /discovery?address=...)
-  if (isWwwHost(host)) {
-    const url = request.nextUrl.clone()
-    url.host = 'dealgapiq.com'
-    url.protocol = 'https:'
-    return NextResponse.redirect(url, 308)
+  // Canonical URL: https://dealgapiq.com (no www, no http)
+  if (isDealGapHost(host) && (isWwwHost(host) || proto === 'http')) {
+    const target = canonicalUrl(request)
+    if (target.href !== request.nextUrl.href) {
+      return NextResponse.redirect(target, 308)
+    }
   }
 
   const response = NextResponse.next()

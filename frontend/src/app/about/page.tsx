@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import { AboutPageRedesign } from '@/components/landing/AboutPageRedesign'
+import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 
 export const metadata: Metadata = {
   title: 'About — DealGapIQ',
   description:
     'DealGapIQ reduces complex investment analysis into three proprietary numbers — powered by real market data, transparent assumptions, and 35 years of institutional real estate intelligence.',
   alternates: { canonical: '/about' },
+  robots: INDEXABLE_ROBOTS,
   openGraph: {
     title: 'About — DealGapIQ',
     description:

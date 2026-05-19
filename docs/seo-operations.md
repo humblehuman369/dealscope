@@ -29,6 +29,22 @@ This is **not a broken page**. Google crawled `www`, saw `rel="canonical"` point
 
 No change needed on apex pages. Do **not** remove the canonical tag.
 
+### “Page with redirect” (usually `http://dealgapiq.com/`)
+
+This is **not a broken page**. Google crawled the **HTTP** URL, received a **308** to `https://dealgapiq.com/`, and correctly **did not index** the HTTP URL. Only HTTPS apex should be indexed.
+
+**Verify (one-hop redirect):**
+
+```bash
+curl -sI http://dealgapiq.com/ | grep -iE '^(HTTP|location:)'
+# HTTP/1.0 308
+# location: https://dealgapiq.com/
+```
+
+**After deploy:** GSC → **Page with redirect** → open `http://dealgapiq.com/` → **Test live URL** → **Validate fix**. Row clears after recrawl (~1–2 weeks).
+
+Legacy app redirects (`/verdict` → `/discovery`, `/compare` → `/price-intel`, etc.) also appear in this bucket — that is expected; do not remove those redirects.
+
 ## “Crawled – currently not indexed” drilldown (May 2026)
 
 If GSC lists only these URLs under that bucket, **no marketing page is broken** — Google crawled junk/duplicate URLs:
@@ -40,6 +56,27 @@ If GSC lists only these URLs under that bucket, **no marketing page is broken** 
 | `http://www.dealgapiq.com/` | Non-canonical host | 308 `www` → apex in `proxy.ts` + `next.config.js` redirects |
 
 After deploy: URL Inspection → **Validate fix** on each, or wait for recrawl. Indexed marketing URLs are a separate bucket (“Discovered – not indexed”).
+
+## “Discovered – currently not indexed” (sitemap URLs, never crawled)
+
+If GSC lists marketing URLs (`/about`, `/blog`, `/pricing`, `/strategies/*`, etc.) with **Last crawled: 1969-12-31**, Google **found them in the sitemap** but has **not crawled them yet** — common on new domains with low authority.
+
+**Code mitigations (deployed):**
+
+- [`/learn`](/learn) — HTML hub linking to every indexable page
+- Homepage **Explore DealGapIQ** section + nav links to `/pricing` and `/learn`
+- Sitemap uses content `date_modified` where available; `/learn` added
+- RSS feed linked in root metadata (`/blog/feed.xml`)
+- `robots: index, follow` on key marketing routes
+
+**You must also (GSC):**
+
+1. Ensure homepage `https://dealgapiq.com/` is indexed (request indexing if not).
+2. Resubmit `https://dealgapiq.com/sitemap.xml`.
+3. URL Inspection → request indexing for top pages: `/pricing`, `/about`, `/methodology`, `/strategies/brrrr`, `/glossary`, `/blog`.
+4. Expect **2–6 weeks** for a new domain; indexing is not instant after fixes.
+
+Publishing **1 glossary + 1 blog post per week** and **1–2 external backlinks** remains the highest-leverage follow-up.
 
 ## Google Search Console — post-deploy
 

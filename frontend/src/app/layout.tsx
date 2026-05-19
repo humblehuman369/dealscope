@@ -61,7 +61,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(canonicalBase),
   title: defaultTitle,
   description: defaultDescription,
-  alternates: { canonical: '/' },
+  alternates: {
+    canonical: '/',
+    types: {
+      'application/rss+xml': `${canonicalBase}/blog/feed.xml`,
+    },
+  },
   icons: {
     icon: '/favicon.png',
     apple: '/favicon.png',

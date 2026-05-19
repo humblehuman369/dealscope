@@ -1,5 +1,12 @@
 import type { Metadata } from 'next'
 
+/** Explicit allow for marketing / content URLs (helps merge with root defaults). */
+export const INDEXABLE_ROBOTS: NonNullable<Metadata['robots']> = {
+  index: true,
+  follow: true,
+  googleBot: { index: true, follow: true },
+}
+
 /** Prevent indexing while allowing link equity to flow via follow. */
 export const NOINDEX_FOLLOW: NonNullable<Metadata['robots']> = {
   index: false,

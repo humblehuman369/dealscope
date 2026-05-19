@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import { PageExplainer } from '@/components/seo/PageExplainer'
+import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 
 export const metadata: Metadata = {
   title: 'Strategy Analysis — Full Financial Deep-Dive | DealGapIQ',
   description:
     'Full financial deep-dive for any property: cash-on-cash, NOI, DSCR, sensitivity analysis, 10-year projections, and benchmarks across Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale.',
   alternates: { canonical: '/strategy' },
-  robots: { index: true, follow: true },
+  robots: INDEXABLE_ROBOTS,
   openGraph: {
     title: 'Strategy Analysis — Full Financial Deep-Dive',
     description:

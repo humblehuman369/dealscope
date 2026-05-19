@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getAllContent } from '@/lib/content'
+import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 
 export const metadata: Metadata = {
   title: 'Blog — DealGapIQ',
   description:
     "Real-estate investment analysis, creative-finance teardowns, and the pitch scripts that close the deal. Built for active investors who know the price tag isn't the deal — the structure is.",
   alternates: { canonical: '/blog' },
+  robots: INDEXABLE_ROBOTS,
   openGraph: {
     title: 'Blog — DealGapIQ',
     description:

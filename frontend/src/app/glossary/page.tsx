@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getAllContent } from '@/lib/content'
+import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   description:
     'Plain-English definitions of the creative-finance structures active investors use: Subject-To, seller carrybacks, 0% 2nds, the Morby Method, FHA house-hack, and more.',
   alternates: { canonical: '/glossary' },
+  robots: INDEXABLE_ROBOTS,
   openGraph: {
     title: 'Glossary of Creative Finance Terms — DealGapIQ',
     description:

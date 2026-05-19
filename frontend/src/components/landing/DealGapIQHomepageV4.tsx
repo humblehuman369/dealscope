@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { VideoModal } from '@/components/ui/VideoModal'
+import { ExploreDealGapIQSection } from '@/components/seo/ExploreDealGapIQSection'
 
 interface Props {
   onPointAndScan?: () => void
@@ -94,6 +95,7 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
         <PricingSection onFree={startFree} onPro={startPro} />
         <ComparisonSection />
         <FinalCTASection onStart={runDiscovery} />
+        <ExploreDealGapIQSection />
       </main>
 
       <SiteFooter />
@@ -123,8 +125,8 @@ function MarketingNav({
   const navLinks = [
     { href: '#how-it-works', label: 'How it Works' },
     { href: '#features', label: 'Features' },
-    { href: '#pricing', label: 'Pricing' },
-    { href: '#trust', label: 'Trust' },
+    { href: '/pricing', label: 'Pricing' },
+    { href: '/learn', label: 'Guides' },
   ]
 
   return (
@@ -140,15 +142,25 @@ function MarketingNav({
           </Link>
 
           <div className="hidden items-center gap-10 text-sm md:flex">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-heading)]"
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) =>
+              link.href.startsWith('/') ? (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-heading)]"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-heading)]"
+                >
+                  {link.label}
+                </a>
+              ),
+            )}
           </div>
 
           <div className="hidden items-center gap-4 md:flex">
@@ -180,16 +192,27 @@ function MarketingNav({
         {mobileOpen && (
           <div className="border-t border-[var(--border-default)] pb-5 pt-4 md:hidden">
             <div className="flex flex-col gap-3">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={closeMobile}
-                  className="rounded-xl px-3 py-2 font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text-heading)]"
-                >
-                  {link.label}
-                </a>
-              ))}
+              {navLinks.map((link) =>
+                link.href.startsWith('/') ? (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={closeMobile}
+                    className="rounded-xl px-3 py-2 font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text-heading)]"
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={closeMobile}
+                    className="rounded-xl px-3 py-2 font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text-heading)]"
+                  >
+                    {link.label}
+                  </a>
+                ),
+              )}
               <button
                 onClick={() => {
                   closeMobile()
@@ -815,6 +838,7 @@ function SiteFooter() {
             { href: '/national-averages', label: 'National Benchmarks' },
             { href: '/glossary', label: 'Glossary' },
             { href: '/blog', label: 'Blog' },
+            { href: '/learn', label: 'All pages' },
             { href: '/strategies/long-term-rental', label: 'Long-Term Rental' },
             { href: '/strategies/brrrr', label: 'BRRRR' },
             { href: '/strategies/fix-flip', label: 'Fix & Flip' },
