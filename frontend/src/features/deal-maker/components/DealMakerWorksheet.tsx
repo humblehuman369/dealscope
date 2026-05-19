@@ -1092,6 +1092,15 @@ function BRRRRWorksheet({
   const monthlyCF = num(m, 'postRefiMonthlyCashFlow')
   const annualCF = num(m, 'postRefiAnnualCashFlow')
   const coc = num(m, 'postRefiCashOnCash')
+  // Mirrors backend BRRRR opex formula (calculators/brrrr.py): mgmt + maint
+  // applied to annual gross rent + fixed annual costs. Vacancy is income loss,
+  // not opex, so it's excluded from the total — matches LTR worksheet convention.
+  const annualGrossRent = state.postRehabMonthlyRent * 12
+  const totalOpex =
+    annualGrossRent * (state.managementRate + state.maintenanceRate) +
+    state.annualPropertyTax +
+    state.annualInsurance +
+    state.monthlyHoa * 12
 
   return (
     <>
@@ -1274,6 +1283,7 @@ function BRRRRWorksheet({
         max={500}
         onChange={(v) => up('monthlyHoa', v)}
       />
+      <TotalRow label="Total Operating Expenses" value={`${fmt(totalOpex)}/yr`} />
 
       <Divider />
 
@@ -1308,7 +1318,7 @@ function BRRRRWorksheet({
         value={fmt(annualCF)}
         color={annualCF >= 0 ? C.blue : '#F43F5E'}
       />
-      <Row label="Annual Gross Revenue" value={fmt(state.postRehabMonthlyRent * 12)} />
+      <TotalRow label="Annual Gross Revenue" value={`${fmt(annualGrossRent)}/yr`} />
       <TotalRow label="Cash-on-Cash" value={coc > 999 ? '∞' : `${coc.toFixed(2)}%`} />
     </>
   )
