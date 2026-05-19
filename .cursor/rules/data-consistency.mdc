@@ -1,5 +1,5 @@
 ---
-description: Data consistency rules — single source of truth, no fake data, shared cache
+description: 
 alwaysApply: true
 ---
 

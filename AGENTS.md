@@ -1,3 +1,8 @@
+---
+description: 
+alwaysApply: true
+---
+
 # DealGapIQ Frontend — Agent & Maintainer Guide
 
 This document is the single source of truth for frontend architecture, state ownership, and production practices. All contributors must follow the patterns described here.
