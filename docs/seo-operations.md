@@ -13,8 +13,21 @@ Verify in browser: View Source on production homepage → confirm `<meta name="g
 
 ## Host canonicalization
 
-- `https://www.dealgapiq.com/*` must 308 redirect to `https://dealgapiq.com/*` (handled in `frontend/src/proxy.ts`).
-- Test: `curl -sI https://www.dealgapiq.com/ | head -5`
+- `https://www.dealgapiq.com/*` must **308** redirect to `https://dealgapiq.com/*` (edge: root `vercel.json`; app: `frontend/src/proxy.ts` + `next.config.js`).
+- Test: `curl -sI https://www.dealgapiq.com/` → `location: https://dealgapiq.com/`
+- In **Vercel → Project → Settings → Domains**, set `dealgapiq.com` as primary and enable **Redirect www to apex** if offered.
+
+### “Alternate page with proper canonical tag” (usually `https://www.dealgapiq.com/`)
+
+This is **not a broken page**. Google crawled `www`, saw `rel="canonical"` pointing at `https://dealgapiq.com/`, and correctly **did not index** the www URL. That is expected.
+
+**Fix (already in code after deploy):** www must never return 200 HTML — only a 308 to apex. After deploy:
+
+1. GSC → **Page indexing** → **Alternate page with proper canonical tag** → open `https://www.dealgapiq.com/`
+2. **Test live URL** — confirm redirect to apex
+3. **Validate fix** — Google recrawls; the row should drop within ~1–2 weeks
+
+No change needed on apex pages. Do **not** remove the canonical tag.
 
 ## “Crawled – currently not indexed” drilldown (May 2026)
 
