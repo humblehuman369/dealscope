@@ -1243,7 +1243,10 @@ function BRRRRWorksheet({
         min={0}
         max={12}
         onChange={(v) => up('managementRate', v / 100)}
-        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+        parseInput={(s) => {
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return annualGrossRent > 0 ? (dollars / annualGrossRent) * 100 : 0
+        }}
       />
       <SliderRow
         label="Maintenance"
@@ -1253,7 +1256,10 @@ function BRRRRWorksheet({
         min={3}
         max={10}
         onChange={(v) => up('maintenanceRate', v / 100)}
-        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+        parseInput={(s) => {
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return annualGrossRent > 0 ? (dollars / annualGrossRent) * 100 : 0
+        }}
       />
       <SliderRow
         label="Property Tax"
@@ -1288,7 +1294,10 @@ function BRRRRWorksheet({
         min={0}
         max={15}
         onChange={(v) => up('vacancyRate', v / 100)}
-        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+        parseInput={(s) => {
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return annualGrossRent > 0 ? (dollars / annualGrossRent) * 100 : 0
+        }}
       />
 
       <Divider />
