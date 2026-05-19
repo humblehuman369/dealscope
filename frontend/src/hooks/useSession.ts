@@ -41,7 +41,8 @@ export const SESSION_QUERY_KEY = ['session', 'me'] as const
 // immediately, avoiding a flash of login prompts while /me resolves.
 // ------------------------------------------------------------------
 const SESSION_STORAGE_KEY = 'dgiq_session'
-const SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000 // 8 hours — well within session TTL
+// Persisted session indicator has no expiry — it lives until explicit logout.
+// The real authority is the httpOnly session/refresh cookies + server-side session row.
 
 interface PersistedSession {
   id: string
@@ -85,10 +86,6 @@ function readPersistedSession(): UserResponse | null {
     const raw = localStorage.getItem(SESSION_STORAGE_KEY)
     if (!raw) return null
     const data: PersistedSession = JSON.parse(raw)
-    if (Date.now() - data.ts > SESSION_MAX_AGE_MS) {
-      localStorage.removeItem(SESSION_STORAGE_KEY)
-      return null
-    }
     return {
       id: data.id,
       email: data.email,

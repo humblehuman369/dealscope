@@ -111,7 +111,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # Access token lifetime; session row is the authority for revocation
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 36500  # Effectively permanent until explicit logout or revocation
 
     # ===========================================
     # Cookie Settings (for httpOnly auth cookies)
@@ -126,8 +126,8 @@ class Settings(BaseSettings):
     # ===========================================
     # Session settings
     # ===========================================
-    SESSION_DEFAULT_DAYS: int = 7
-    SESSION_REMEMBER_ME_DAYS: int = 30
+    SESSION_DEFAULT_DAYS: int = 36500  # ~100 years — session lives until logout or revocation
+    SESSION_REMEMBER_ME_DAYS: int = 36500
 
     # ===========================================
     # Account lockout
