@@ -1695,7 +1695,7 @@ function VerdictContent() {
                   priceGapRight - priceGapLeft >= 3
 
                 const isBuyZone = dealDisplayPct >= 0
-                const bracketLabel = isBuyZone ? 'BUY ZONE' : 'DEAL GAP'
+                const bracketLabel = isBuyZone ? 'DEAL WORKS' : 'DEAL GAP'
                 const bracketColor = isBuyZone
                   ? 'var(--status-positive)'
                   : 'var(--accent-sky)'
