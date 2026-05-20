@@ -10,7 +10,7 @@ from app.services.deal_structures.formatting import (
 )
 
 FAMILY = "price"
-FAMILY_LABEL = "Negotiate price"
+FAMILY_LABEL = "More Equity"
 ID = "price-negotiation"
 
 

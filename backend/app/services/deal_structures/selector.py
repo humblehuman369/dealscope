@@ -1,10 +1,40 @@
-"""Selector — picks up to three structures with diversity across families."""
+"""Selector — fills three fixed slots (Rent Increase, More Equity, Creative Finance).
+
+The engine appends the Blended Plan as a fourth slot separately. The Four Paths
+lineup is intentionally a fixed-order taxonomy rather than a ranked feed so the
+user always reads the options in the same order across properties:
+
+    Option 1 — Rent Increase      (rent-verification)
+    Option 2 — More Equity        (price-negotiation)
+    Option 3 — Creative Finance   (seller-second-zero-balloon)
+    Option 4 — Blended Plan       (engine-appended)
+
+Templates whose math isn't feasible for a given property (e.g. monthly_rent = 0
+makes rent-verification infeasible) are silently skipped; the remaining cards
+retain their relative order.
+
+Scoring helpers (``_apply_listing_signals``, ``_apply_regional_calibration``,
+``_apply_dismissed_penalty``) still run against each selected card so the
+``ranking_score`` field stays meaningful for downstream consumers (analytics,
+future ranking experiments), but no longer affects slot order.
+"""
 
 from app.core.regions import resolve_investor_probability_region
 from app.schemas.deal_structures import DealStructure
 from app.services.deal_structures.context import StructureContext
-from app.services.deal_structures.templates import ALL_TEMPLATES
-from app.services.deal_structures.templates import morby_method as morby_template
+from app.services.deal_structures.templates import (
+    price_negotiation,
+    rent_uplift,
+    seller_second_zero_balloon,
+)
+
+# Fixed slot taxonomy. Order matters — this is the displayed order on the Four
+# Paths panel. Adding/removing entries here changes the card lineup directly.
+_FIXED_SLOTS = (
+    rent_uplift,
+    price_negotiation,
+    seller_second_zero_balloon,
+)
 
 # T15 — hand-tuned regional boosts (CALIBRATION PLACEHOLDER — refine with data / T14 telemetry).
 _TX_FL_SUB2_BONUS = 5.0
@@ -94,78 +124,46 @@ def _apply_listing_signals(ctx: StructureContext, structure: DealStructure) -> f
     return min(100.0, max(0.0, score))
 
 
-def _substitute_morby_method(
-    candidates: list[DealStructure],
-    ctx: StructureContext,
-) -> list[DealStructure]:
-    """When both Sub2 and seller-2nd are feasible, replace with one Morby Method card (T10)."""
-    flags = ctx.template_flags or {}
-    if not flags.get("morby-method", True):
-        return candidates
-    by_id = {c.id: c for c in candidates}
-    sub = by_id.get("sub2")
-    ss = by_id.get("seller-second-zero-balloon")
-    if sub is None or ss is None:
-        return candidates
-    # sub/ss scores already include listing signals; combine() adds a small Morby bonus on top.
-    merged = morby_template.combine(sub, ss, ctx)
-    out = [c for c in candidates if c.id not in ("sub2", "seller-second-zero-balloon")]
-    out.append(merged)
-    return out
-
-
-def _prioritize_assumable(selected: list[DealStructure]) -> list[DealStructure]:
-    """T9: when the assumable card is selected, it wins Path 1."""
-    if not any(s.id == "assumable" for s in selected):
-        return selected
-    first = next(s for s in selected if s.id == "assumable")
-    rest = [s for s in selected if s.id != "assumable"]
-    return [first, *rest]
-
-
 def select_four_paths(
     ctx: StructureContext,
     templates: list | None = None,
 ) -> list[DealStructure]:
-    """Run each enabled template, adjust scores, then pick up to 3 single-lever cards
-    with these rules (the engine appends the Blended Plan as Path 4 separately):
+    """Fill the three single-lever slots in fixed order, skipping infeasible ones.
 
-    1. No two structures from the same family.
-    2. Order by ranking_score desc.
-    3. Always include at least one non-price-reduction option when possible.
+    Slot order (the engine appends the Blended Plan as Path 4 separately):
+
+        1. Rent Increase     — ``rent_uplift``
+        2. More Equity       — ``price_negotiation``
+        3. Creative Finance  — ``seller_second_zero_balloon``
+
+    ``templates`` is an optional whitelist (used by tests and the engine when a
+    feature flag disables a template). Only slots whose template appears in the
+    whitelist will fire. Passing ``[]`` returns an empty list.
+
+    A slot is silently skipped when its template returns ``None`` or produces
+    ``monthly_savings <= 0`` (i.e. the math isn't viable for this property);
+    remaining slots keep their relative order so users always read them in the
+    same taxonomy.
     """
-    pool = templates if templates is not None else ALL_TEMPLATES
-    candidates: list[DealStructure] = []
-    for template in pool:
-        result = template.solve(ctx)
-        if result is not None and result.monthly_savings > 0:
-            adjusted = _apply_listing_signals(ctx, result)
-            adjusted = _apply_regional_calibration(ctx, result, adjusted)
-            adjusted = _apply_dismissed_penalty(ctx, result, adjusted)
-            candidates.append(result.model_copy(update={"ranking_score": adjusted}))
-
-    if not candidates:
-        return []
-
-    candidates = _substitute_morby_method(candidates, ctx)
-
-    candidates.sort(key=lambda s: s.ranking_score, reverse=True)
+    # ``None`` = use the fixed slot list; an explicit list (incl. ``[]``) acts
+    # as a whitelist filter against the fixed slots.
+    if templates is None:
+        active_slots = _FIXED_SLOTS
+    else:
+        allowed_ids = {getattr(t, "ID", None) for t in templates}
+        active_slots = tuple(s for s in _FIXED_SLOTS if s.ID in allowed_ids)
 
     selected: list[DealStructure] = []
-    seen_families: set[str] = set()
-    for cand in candidates:
-        if cand.family in seen_families:
+    for template in active_slots:
+        result = template.solve(ctx)
+        if result is None or result.monthly_savings <= 0:
             continue
-        selected.append(cand)
-        seen_families.add(cand.family)
-        if len(selected) >= 3:
-            break
+        adjusted = _apply_listing_signals(ctx, result)
+        adjusted = _apply_regional_calibration(ctx, result, adjusted)
+        adjusted = _apply_dismissed_penalty(ctx, result, adjusted)
+        selected.append(result.model_copy(update={"ranking_score": adjusted}))
 
-    non_price_avail = [c for c in candidates if c.family != "price" and c not in selected]
-    if non_price_avail and all(s.family == "price" for s in selected):
-        selected[-1] = non_price_avail[0]
-
-    return _prioritize_assumable(selected)
+    return selected
 
 
 # Deprecated alias — kept for one release so external callers don't break mid-migration.

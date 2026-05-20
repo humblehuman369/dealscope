@@ -10,6 +10,7 @@ interface DealStructuresNarrativeProps {
 // used by the matching FourPaths card so the narrative and cards read as one unit.
 const TAG_COLOR: Record<string, string> = {
   RENT: '#a78bfa',
+  EQUITY: '#84cc16',
   TERMS: 'var(--accent-sky)',
   PRICE: '#84cc16',
   BLEND: '#8b5cf6',

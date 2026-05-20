@@ -33,7 +33,7 @@ _POSITION_LEAD = {
 _STRUCTURE_TAG = {
     "rent-verification": "RENT",
     "seller-second-zero-balloon": "TERMS",
-    "price-negotiation": "PRICE",
+    "price-negotiation": "EQUITY",
     "blended-plan": "BLEND",
     "sub2": "LOAN",
     "assumable": "LOAN",
@@ -65,11 +65,25 @@ def _paragraph_for(structure: DealStructure, ctx: StructureContext, index: int) 
     tag = _tag_prefix(sid)
 
     if sid == "rent-verification":
+        # Pull the concrete target rent from the lever so the paragraph shows a
+        # specific dollar amount (e.g. "$5,242") instead of a vague phrase.
+        target_rent = next(
+            (
+                lever.after_label
+                for lever in structure.levers
+                if lever.label.lower() in ("target rent", "monthly rent")
+            ),
+            None,
+        )
+        target_rent_str = target_rent or f"${round(ctx.monthly_rent * 1.1):,}"
         return (
             f"{tag}{lead} is to make the house earn more. "
-            f"If you can rent it for a higher rent a month instead of "
-            f"${round(ctx.monthly_rent):,}, the deal also works. "
-            f"This might mean fixing the place up, or just checking that the current rent matches the neighborhood."
+            f"The deal works if market rent is closer to {target_rent_str} a month instead of the "
+            f"modeled ${round(ctx.monthly_rent):,}. "
+            f"IMPORTANT: verifying actual market rent is the critical first step — "
+            f"property condition, recent renovations, and local demand often support a higher rent "
+            f"than the estimate. In many cases, confirming or improving the rent is all it takes to "
+            f"make the deal work."
         )
 
     if sid == "seller-second-zero-balloon":
@@ -96,9 +110,9 @@ def _paragraph_for(structure: DealStructure, ctx: StructureContext, index: int) 
             "a lower price",
         )
         return (
-            f"{tag}{lead} is to ask the seller for a lower price. "
-            f"If you can get them down from {fmt_money_precise(ctx.list_price)} to {new_price}, "
-            f"the rent will cover the bills. "
+            f"{tag}{lead} is to build instant equity by buying at a lower price. "
+            f"If you can get the seller down from {fmt_money_precise(ctx.list_price)} to {new_price}, "
+            f"the rent covers the bills and you start with built-in equity from day one. "
             f"Houses that have been sitting for a while often go for less than asking."
         )
 
@@ -113,10 +127,10 @@ def _paragraph_for(structure: DealStructure, ctx: StructureContext, index: int) 
         )
         return (
             f"{tag}{lead} is to mix all three moves together. "
-            f"Ask for a smaller price cut, get the seller to carry {carry_label} of the price at 0% "
+            f"Ask for a reasonable price cut, get the seller to carry {carry_label} of the price at 0% "
             f"for a few years, and verify rent at {new_rent} a month. "
             f"No single ask is large — together they make the math work. "
-            f"This is what real deals usually look like."
+            f"This is what real deals usually look like after negotiation."
         )
 
     if sid == "sub2":
