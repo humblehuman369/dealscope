@@ -96,10 +96,12 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         family_label=FAMILY_LABEL,
         realism_label=realism_label,
         headline=f"Target Rent → ${round(new_rent):,}",
-        # Math-carrying bullets — split across two lines (label, then formula)
-        # so the long arithmetic expression doesn't compete with the label
-        # for visual weight on the Rent Increase card.
+        # Math-carrying bullets — "Market price" leads so all option cards share
+        # the same anchor row, then the rent target sits below as the lever this
+        # path is actually pulling. The arithmetic expression is split onto its
+        # own line so it doesn't compete with the label for visual weight.
         bullets=[
+            f"Market price: {fmt_money_precise(ctx.list_price)}",
             "Target Rent:",
             f"${round(ctx.monthly_rent):,} + ${bump_dollars:,} → ${round(new_rent):,}  {pct_label}",
         ],

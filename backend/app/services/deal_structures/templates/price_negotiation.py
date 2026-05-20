@@ -108,6 +108,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         realism_label=realism_label,
         headline=f"Negotiate to {fmt_money(new_price)}",
         bullets=[
+            f"Market price: {fmt_money(ctx.list_price)}",
             f"Price reduction: {gap_pct:.1f}% price cut",
             f"Target price: {fmt_money(new_price)}",
         ],

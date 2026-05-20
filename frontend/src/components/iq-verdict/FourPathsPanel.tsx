@@ -121,7 +121,7 @@ function renderSummaryWithLinks(summary: string): React.ReactNode {
  * the family accent without relying on browser-specific `::marker` styling.
  *
  * Examples of input → rendered remainder:
- *   "Offer price: $577K → $577K"                     → "$577K"
+ *   "Market price: $577K → $577K"                    → "$577K"
  *   "1st mortgage: $404K → $317K @ 6.0%"             → "$317K @ 6.0%"
  *   "Target Rent: $3,510 + $555 → $4,065 +15.8%"     → "$4,065"
  *   "Monthly P&I: $2,422 → $1,925"                   → "$1,925"

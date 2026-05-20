@@ -161,7 +161,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         # Math-carrying bullets — full breakdown in three lines so the card
         # tells the whole story without a separate lever block.
         bullets=[
-            f"Offer price:\u00a0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
+            f"Market price:\u00a0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
             f"1st mortgage:\u00a0{fmt_money(bank_loan)} → {fmt_money(new_bank_loan)} @ {ctx.interest_rate * 100:.1f}%",
             f"Seller 2nd:\u00a0{fmt_money(chosen_second)} (0%, {DEFAULT_BALLOON_YEARS}yr balloon)",
         ],
@@ -171,7 +171,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         ),
         levers=[
             StructureLever(
-                label="Offer price",
+                label="Market price",
                 before_label=fmt_money(ctx.list_price),
                 after_label=fmt_money(new_price),
                 delta_label=None,
