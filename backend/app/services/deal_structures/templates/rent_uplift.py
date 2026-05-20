@@ -2,7 +2,7 @@
 
 from app.schemas.deal_structures import DealStructure, StructureLever
 from app.services.deal_structures.context import StructureContext
-from app.services.deal_structures.formatting import fmt_money_precise, fmt_pct_delta
+from app.services.deal_structures.formatting import fmt_money, fmt_money_precise, fmt_pct_delta
 
 FAMILY = "income"
 FAMILY_LABEL = "Rent increase"
@@ -101,7 +101,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         # path is actually pulling. The arithmetic expression is split onto its
         # own line so it doesn't compete with the label for visual weight.
         bullets=[
-            f"Market price: {fmt_money_precise(ctx.list_price)}",
+            f"Market price: {fmt_money(ctx.list_price)}",
             "Target Rent:",
             f"${round(ctx.monthly_rent):,} + ${bump_dollars:,} → ${round(new_rent):,}  {pct_label}",
         ],
