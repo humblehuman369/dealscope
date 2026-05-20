@@ -1124,15 +1124,6 @@ function BRRRRWorksheet({
         onChange={(v) => up('purchasePrice', v)}
       />
       <SliderRow
-        label="Discount"
-        value={state.buyDiscountPct * 100}
-        displayValue={`${(state.buyDiscountPct * 100).toFixed(0)}%`}
-        min={0}
-        max={30}
-        onChange={(v) => up('buyDiscountPct', v / 100)}
-        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
-      />
-      <SliderRow
         field="downPaymentPercent"
         label="Down Payment"
         value={state.downPaymentPercent * 100}
