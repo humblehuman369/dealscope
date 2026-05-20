@@ -145,10 +145,15 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         caveat="Returns to note rate in year 3 — plan to raise rents or refi by then.",
         selection_reason=sel_reason,
         pre_loaded_record={
+            # Rate buydown preserves full asking price — buyer pays full ask, seller
+            # funds the buydown via closing-cost concessions. Without this, the
+            # worksheet's Target Buy would fall back to the LTR-discounted price and
+            # contradict the pitch ("clean offer at full price").
+            "custom_purchase_price": ctx.list_price,
             "pending_extras": {
                 "three_paths_structure_id": ID,
                 "rate_buydown_y1_pct_offset": 0.02,
                 "rate_buydown_y2_pct_offset": 0.01,
-            }
+            },
         },
     )

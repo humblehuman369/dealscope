@@ -93,6 +93,29 @@ def test_pre_loaded_record_carries_pending_extras():
     assert "sub2_heuristic_rate" in extras
 
 
+def test_pre_loaded_record_preserves_full_asking_price():
+    """Sub2 pays full ask in exchange for low-rate loan terms — Buy Price must NOT be reduced.
+
+    Without an explicit `custom_purchase_price`, the Strategy worksheet falls back
+    to the LTR-discounted target buy and silently undercuts the offer.
+    """
+    ctx = base_ctx(estimated_purchase_year=2021, estimated_purchase_price=350_000)
+    result = sub2.solve(ctx)
+    assert result is not None
+    assert result.pre_loaded_record["custom_purchase_price"] == ctx.list_price
+
+
+def test_pre_loaded_record_preserves_full_asking_price_real_data():
+    """Real-data branch must also preserve full asking price."""
+    ctx = base_ctx(
+        estimated_existing_loan_balance=240_000,
+        estimated_existing_loan_rate=0.034,
+    )
+    result = sub2.solve(ctx)
+    assert result is not None
+    assert result.pre_loaded_record["custom_purchase_price"] == ctx.list_price
+
+
 # ---------------------------------------------------------------------------
 # Real-data branch (T3b) — public records overrides
 # ---------------------------------------------------------------------------

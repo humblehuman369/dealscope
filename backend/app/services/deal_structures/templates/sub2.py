@@ -215,12 +215,16 @@ def solve(ctx: StructureContext) -> DealStructure | None:
             caveat=caveat,
             selection_reason=sel_reason,
             pre_loaded_record={
+                # Sub2 preserves full asking price — buyer takes over the existing loan
+                # and pays seller's equity. Without this, the worksheet's Target Buy
+                # would fall back to the LTR-discounted price and contradict the pitch.
+                "custom_purchase_price": ctx.list_price,
                 "pending_extras": {
                     "three_paths_structure_id": ID,
                     "sub2_from_records": True,
                     "sub2_heuristic_rate": assumed_rate,
                     "sub2_heuristic_balance": remaining_bal,
-                }
+                },
             },
         )
 
@@ -321,10 +325,14 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         caveat=caveat,
         selection_reason=sel_reason,
         pre_loaded_record={
+            # Sub2 preserves full asking price — buyer takes over the existing loan
+            # and pays seller's equity. Without this, the worksheet's Target Buy
+            # would fall back to the LTR-discounted price and contradict the pitch.
+            "custom_purchase_price": ctx.list_price,
             "pending_extras": {
                 "three_paths_structure_id": ID,
                 "sub2_heuristic_rate": assumed_rate,
                 "sub2_heuristic_balance": remaining_bal,
-            }
+            },
         },
     )

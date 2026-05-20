@@ -104,3 +104,19 @@ def test_pre_loaded_record_records_loan_type_and_pv():
     assert extras["three_paths_structure_id"] == "assumable"
     assert extras["existing_loan_type"] == "FHA"
     assert extras["assumable_pv_estimate"] > 0
+
+
+def test_pre_loaded_record_preserves_full_asking_price():
+    """Loan assumption pays full ask — Buy Price must NOT be reduced.
+
+    Without an explicit `custom_purchase_price`, the Strategy worksheet falls back
+    to the LTR-discounted target buy and contradicts the pitch ("clean offer at full price").
+    """
+    ctx = base_ctx(
+        existing_loan_type="FHA",
+        estimated_existing_loan_balance=240_000,
+        estimated_existing_loan_rate=0.034,
+    )
+    result = assumable.solve(ctx)
+    assert result is not None
+    assert result.pre_loaded_record["custom_purchase_price"] == ctx.list_price

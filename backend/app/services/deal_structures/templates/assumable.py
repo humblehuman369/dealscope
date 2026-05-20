@@ -193,10 +193,15 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         caveat=caveat,
         selection_reason=sel_reason,
         pre_loaded_record={
+            # Loan assumption preserves full asking price — buyer assumes the seller's
+            # existing low-rate loan and pays the seller's equity in cash. Without
+            # this, the worksheet's Target Buy would fall back to the LTR-discounted
+            # price and contradict the pitch ("clean offer at full price").
+            "custom_purchase_price": ctx.list_price,
             "pending_extras": {
                 "three_paths_structure_id": ID,
                 "assumable_pv_estimate": round(pv, 0),
                 "existing_loan_type": lt,
-            }
+            },
         },
     )

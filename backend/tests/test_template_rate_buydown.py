@@ -84,3 +84,16 @@ def test_pre_loaded_record_records_offsets():
     assert extras["three_paths_structure_id"] == "rate-buydown-2-1"
     assert extras.get("rate_buydown_y1_pct_offset") == 0.02
     assert extras.get("rate_buydown_y2_pct_offset") == 0.01
+
+
+def test_pre_loaded_record_preserves_full_asking_price():
+    """Rate buydown pays full ask — Buy Price must NOT be reduced.
+
+    The seller funds the buydown via closing-cost concessions; the headline price
+    is unchanged. Without `custom_purchase_price`, the Strategy worksheet falls
+    back to the LTR-discounted target buy.
+    """
+    ctx = viable_ctx()
+    result = rate_buydown.solve(ctx)
+    assert result is not None
+    assert result.pre_loaded_record["custom_purchase_price"] == ctx.list_price

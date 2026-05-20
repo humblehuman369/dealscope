@@ -199,10 +199,15 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         caveat=caveat,
         selection_reason=sel_reason,
         pre_loaded_record={
+            # Seller-second preserves full asking price — the entire premise is
+            # "price for terms": the buyer pays full ask in exchange for the seller
+            # carrying a 0% second. Without this, the worksheet's Target Buy would
+            # fall back to the LTR-discounted price and silently undercut the offer.
+            "custom_purchase_price": new_price,
             "pending_extras": {
                 "seller_carry_amount": chosen_second,
                 "seller_carry_rate": 0.0,
                 "seller_carry_term_years": DEFAULT_BALLOON_YEARS,
-            }
+            },
         },
     )
