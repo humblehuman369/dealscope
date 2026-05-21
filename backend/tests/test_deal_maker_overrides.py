@@ -56,3 +56,30 @@ def test_calculate_metrics_uses_monthly_rent_override_for_noi():
     record_no_override = _minimal_record(monthly_rent=3_000, monthly_rent_override=None)
     metrics_same = DealMakerService.calculate_metrics(record_no_override)
     assert metrics_default.gross_income == metrics_same.gross_income
+
+
+def test_from_dict_tolerates_stale_valuation_snapshot_in_cached_metrics():
+    """PATCH /deal-maker must not 500 when JSONB has an old valuation_snapshot shape."""
+    initial = InitialAssumptions()
+    stored = {
+        "list_price": 400_000,
+        "rent_estimate": 2_500,
+        "property_taxes": 5_000,
+        "insurance": 4_000,
+        "initial_assumptions": initial.model_dump(),
+        "buy_price": 340_000,
+        "arv": 450_000,
+        "monthly_rent": 2_500,
+        "cached_metrics": {
+            "cap_rate": 0.05,
+            "valuation_snapshot": {"noi": 10_000},
+        },
+    }
+    record = DealMakerService.from_dict(stored)
+    updated = DealMakerService.update_record(
+        record,
+        DealMakerRecordUpdate(market_value_override=425_000),
+    )
+    assert updated.market_value_override == 425_000
+    assert updated.cached_metrics is not None
+    assert updated.cached_metrics.valuation_snapshot is not None

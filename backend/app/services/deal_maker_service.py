@@ -14,9 +14,12 @@ This is the single source of truth for all analysis data used by:
 - Dashboard cards
 """
 
+import copy
 import logging
 from datetime import UTC, datetime
 from typing import Any
+
+from pydantic import ValidationError
 
 from app.core.valuation import (
     VALUATION_FORMULA_VERSION,
@@ -363,6 +366,23 @@ class DealMakerService:
 
         return updated_record
 
+    @staticmethod
+    def _coerce_cached_metrics(raw: Any) -> CachedMetrics | None:
+        """Load cached metrics from JSONB; tolerate stale valuation_snapshot shapes."""
+        if not raw or not isinstance(raw, dict):
+            return None
+        try:
+            return CachedMetrics(**raw)
+        except ValidationError:
+            stripped = {k: v for k, v in raw.items() if k != "valuation_snapshot"}
+            try:
+                return CachedMetrics(**stripped)
+            except ValidationError:
+                logger.warning(
+                    "Ignoring stale cached_metrics on DealMakerRecord load (will recalculate on save)"
+                )
+                return None
+
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> DealMakerRecord:
         """
@@ -372,15 +392,16 @@ class DealMakerService:
         if not data:
             return None
 
-        # Handle nested InitialAssumptions
-        if "initial_assumptions" in data and isinstance(data["initial_assumptions"], dict):
-            data["initial_assumptions"] = InitialAssumptions(**data["initial_assumptions"])
+        # Never mutate the ORM JSONB dict in place (nested models are not JSON-serializable).
+        payload = copy.deepcopy(data)
 
-        # Handle nested CachedMetrics
-        if "cached_metrics" in data and isinstance(data["cached_metrics"], dict):
-            data["cached_metrics"] = CachedMetrics(**data["cached_metrics"])
+        if "initial_assumptions" in payload and isinstance(payload["initial_assumptions"], dict):
+            payload["initial_assumptions"] = InitialAssumptions(**payload["initial_assumptions"])
 
-        return DealMakerRecord(**data)
+        if "cached_metrics" in payload:
+            payload["cached_metrics"] = cls._coerce_cached_metrics(payload["cached_metrics"])
+
+        return DealMakerRecord(**payload)
 
     @classmethod
     def to_dict(cls, record: DealMakerRecord) -> dict[str, Any]:
