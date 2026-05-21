@@ -71,9 +71,9 @@ export function preLoadedRecordToDealMakerPatch(
 
   const cpp = levers.custom_purchase_price ?? levers.customPurchasePrice
   if (typeof cpp === 'number' && cpp > 0) {
+    // Buy / Target Buy only — Market Price stays on API list price (worksheet `listPrice` prop).
     patch.buyPrice = cpp
     patch.purchasePrice = cpp
-    patch.listPrice = cpp
   }
   const cre = levers.custom_rent_estimate ?? levers.customRentEstimate
   if (typeof cre === 'number' && cre >= 0) {
