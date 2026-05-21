@@ -311,6 +311,22 @@ function IncomeValueInfoTip() {
   )
 }
 
+/** Strategies where deal-structure Options do not apply (non-rental economics). */
+const STRATEGIES_WITHOUT_OPTIONS = new Set(['fix-and-flip', 'wholesale'])
+
+/** Per-strategy template IDs to hide from the Options row. */
+const STRATEGY_EXCLUDED_TEMPLATE_IDS: Record<string, ReadonlySet<string>> = {
+  'short-term-rental': new Set(['rent-verification', 'fha-house-hack']),
+  brrrr: new Set(['rent-verification', 'fha-house-hack']),
+}
+
+const STRATEGY_LABEL: Record<string, string> = {
+  'long-term-rental': 'Long-Term Rental',
+  'short-term-rental': 'Short-Term Rental',
+  brrrr: 'BRRRR',
+  'house-hack': 'House Hack',
+}
+
 /**
  * StrategySelectDropdown — compact replacement for the 6-pill strategy selector.
  * Trigger uses the active strategy's color so the page reads as color-coded
@@ -1305,6 +1321,15 @@ function StrategyContent() {
   const recommendedStrategyName = sortedStrategies[0]?.name || 'Long-Term Rental'
   const activeStrategyId = topStrategy?.id || 'long-term-rental'
   const currentStrategyType = toStrategyType(activeStrategyId)
+
+  const optionsHiddenForStrategy = STRATEGIES_WITHOUT_OPTIONS.has(activeStrategyId)
+  const strategyExcludeIds = STRATEGY_EXCLUDED_TEMPLATE_IDS[activeStrategyId]
+  const strategyFilteredPaths = strategyExcludeIds
+    ? orderedDealStructurePaths.filter((p) => !strategyExcludeIds.has(p.id))
+    : orderedDealStructurePaths
+  const optionsSubtitle = appliedPathId
+    ? 'Pre-fills price, rent, financing, and seller-carry sliders.'
+    : `Each Option pre-fills the worksheet to show how this could work as a ${STRATEGY_LABEL[activeStrategyId] ?? 'rental'}.`
 
   // Score — capped at 95 (no deal is 100% certain)
   const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
@@ -2767,59 +2792,85 @@ function StrategyContent() {
 
         {/* Apply a Path — OUTSIDE AuthGate so signed-out users are not clipped by
             AuthGate section maxHeight (~320px); paths still apply overrides + recalc. */}
-        {displayDealStructurePaths.length > 0 && (
+        {displayDealStructurePaths.length > 0 && optionsHiddenForStrategy && (
           <section className="px-[1px] sm:px-5 pt-2 pb-2">
-            <div className="mb-2">
-              <div className="flex items-center justify-between mb-2 gap-3">
-                <div className="flex flex-col">
-                  <h3
-                    className="text-sm font-bold uppercase tracking-wider"
-                    style={{ color: 'var(--text-heading)' }}
-                  >
-                    {appliedPathId ? 'Apply an Option to the Worksheet' : 'Start here — pick an Option'}
-                  </h3>
-                  <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                    {appliedPathId
-                      ? 'Pre-fills price, rent, financing, and seller-carry sliders.'
-                      : 'See how this property could work — each Option pre-fills the worksheet below.'}
-                  </p>
-                </div>
-                {appliedPathId && (
-                  <button
-                    type="button"
-                    onClick={clearAppliedPath}
-                    className="text-xs font-semibold underline shrink-0"
-                    style={{ color: 'var(--accent-sky)' }}
-                  >
-                    Reset to baseline
-                  </button>
-                )}
-              </div>
-              <div
-                className="grid grid-cols-2 lg:grid-cols-4 gap-2 rounded-xl"
-                style={
-                  !appliedPathId
-                    ? {
-                        padding: 8,
-                        border: '1px solid var(--accent-sky)',
-                        boxShadow: '0 0 0 3px rgba(4, 101, 242, 0.12)',
-                      }
-                    : undefined
-                }
-              >
-                {orderedDealStructurePaths.slice(0, 4).map((p, i) => (
-                  <PathButton
-                    key={p.id}
-                    structure={p}
-                    index={i}
-                    active={appliedPathId === p.id}
-                    onClick={applyPathPatch}
-                  />
-                ))}
-              </div>
+            <div
+              className="rounded-xl px-4 py-3 flex items-start gap-3"
+              style={{
+                background: 'var(--surface-card)',
+                border: '1px solid var(--border-default)',
+              }}
+            >
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                Deal-making Options use long-term-rental economics.{' '}
+                <button
+                  type="button"
+                  onClick={() => handleStrategyChange('long-term-rental')}
+                  className="font-semibold underline"
+                  style={{ color: 'var(--accent-sky)' }}
+                >
+                  Switch to Long-term
+                </button>{' '}
+                to explore Options for this property.
+              </p>
             </div>
           </section>
         )}
+        {displayDealStructurePaths.length > 0 &&
+          !optionsHiddenForStrategy &&
+          strategyFilteredPaths.length > 0 && (
+            <section className="px-[1px] sm:px-5 pt-2 pb-2">
+              <div className="mb-2">
+                <div className="flex items-center justify-between mb-2 gap-3">
+                  <div className="flex flex-col">
+                    <h3
+                      className="text-sm font-bold uppercase tracking-wider"
+                      style={{ color: 'var(--text-heading)' }}
+                    >
+                      {appliedPathId
+                        ? 'Apply an Option to the Worksheet'
+                        : 'Start here — pick an Option'}
+                    </h3>
+                    <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                      {optionsSubtitle}
+                    </p>
+                  </div>
+                  {appliedPathId && (
+                    <button
+                      type="button"
+                      onClick={clearAppliedPath}
+                      className="text-xs font-semibold underline shrink-0"
+                      style={{ color: 'var(--accent-sky)' }}
+                    >
+                      Reset to baseline
+                    </button>
+                  )}
+                </div>
+                <div
+                  className="grid grid-cols-2 lg:grid-cols-4 gap-2 rounded-xl"
+                  style={
+                    !appliedPathId
+                      ? {
+                          padding: 8,
+                          border: '1px solid var(--accent-sky)',
+                          boxShadow: '0 0 0 3px rgba(4, 101, 242, 0.12)',
+                        }
+                      : undefined
+                  }
+                >
+                  {strategyFilteredPaths.slice(0, 4).map((p, i) => (
+                    <PathButton
+                      key={p.id}
+                      structure={p}
+                      index={i}
+                      active={appliedPathId === p.id}
+                      onClick={applyPathPatch}
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
 
         {/* Financial Breakdown — requires free (logged-in) tier */}
         <AuthGate feature="view the full strategy breakdown" mode="section">
