@@ -45,6 +45,7 @@ import {
 import { getConditionAdjustment } from '@/utils/property-adjustments'
 import { calculateMortgagePayment } from '@/utils/calculations'
 import { computeLtrOperatingExpenseBreakdown } from '@/lib/ltrOperatingExpenses'
+import { computeLtrMetricsFromState } from '@/lib/ltrWorksheetMetrics'
 import {
   DEFAULT_OPERATING_CAPEX_PCT,
   DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
@@ -1419,7 +1420,7 @@ function StrategyContent() {
 
   const isFlipOrWholesale = activeStrategyId === 'fix-and-flip' || activeStrategyId === 'wholesale'
 
-  const totalCashNeeded = downPayment + closingCosts + rehabCost
+  let totalCashNeeded = downPayment + closingCosts + rehabCost
   const dealGapPct = listPrice ? ((listPrice - targetPrice) / listPrice) * 100 : 0
   const strategyDscr =
     activeStrategyId === 'brrrr' && annualDebt > 0 ? noi / annualDebt : (topStrategy?.dscr ?? null)
@@ -1427,71 +1428,26 @@ function StrategyContent() {
   // Rental strategies: derive all metrics from breakdown values so the metrics
   // bar, summary cards, and breakdown section stay internally consistent.
   // Flip/wholesale use backend strategy-level metrics (different economics model).
-  const strategyCashFlow = isFlipOrWholesale
+  let strategyCashFlow = isFlipOrWholesale
     ? (topStrategy?.monthly_cash_flow ?? monthlyCashFlow)
     : monthlyCashFlow
-  const strategyAnnualCashFlow = isFlipOrWholesale
+  let strategyAnnualCashFlow = isFlipOrWholesale
     ? (topStrategy?.annual_cash_flow ?? annualCashFlow)
     : annualCashFlow
-  const capRateVal = isFlipOrWholesale
+  let capRateVal: number | null = isFlipOrWholesale
     ? ((topStrategy as { cap_rate?: number; capRate?: number })?.capRate ??
       topStrategy?.cap_rate ??
       null)
     : targetPrice > 0
       ? (noi / targetPrice) * 100
       : null
-  const cocVal = isFlipOrWholesale
+  let cocVal: number | null = isFlipOrWholesale
     ? ((topStrategy as { cash_on_cash?: number; cashOnCash?: number })?.cashOnCash ??
       topStrategy?.cash_on_cash ??
       null)
     : totalCashNeeded > 0
       ? (annualCashFlow / totalCashNeeded) * 100
       : null
-  const benchmarks = isFlipOrWholesale
-    ? [
-        {
-          metric: 'ROI',
-          value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—',
-          target: '20%',
-          status: cocVal !== null && cocVal >= 20 ? 'good' : 'poor',
-        },
-        {
-          metric: 'Profit',
-          value: formatCurrency(strategyAnnualCashFlow),
-          target: '+$30K',
-          status: strategyAnnualCashFlow >= 30000 ? 'good' : 'poor',
-        },
-      ]
-    : [
-        {
-          metric: 'Cap Rate',
-          value: capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—',
-          target: '6.0%',
-          status: capRateVal !== null && capRateVal >= 6.0 ? 'good' : 'poor',
-        },
-        {
-          metric: 'Cash-on-Cash',
-          value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—',
-          target: '8.0%',
-          status: cocVal !== null && cocVal >= 8.0 ? 'good' : 'poor',
-        },
-        {
-          metric: 'Monthly Cash Flow',
-          value: formatCurrency(strategyCashFlow),
-          target: '+$300',
-          status: strategyCashFlow >= 300 ? 'good' : 'poor',
-        },
-        ...(strategyDscr != null
-          ? [
-              {
-                metric: 'DSCR',
-                value: strategyDscr.toFixed(2),
-                target: '1.25',
-                status: strategyDscr >= 1.25 ? 'good' : 'poor',
-              },
-            ]
-          : []),
-      ]
 
   const worksheetState: AnyStrategyState = (() => {
     // Read from the SAME merged source we send to the backend (`dealMakerOverrides`)
@@ -1747,6 +1703,68 @@ function StrategyContent() {
 
   worksheetStateRef.current = worksheetState
   currentStrategyTypeRef.current = currentStrategyType
+
+  const ltrLiveMetrics =
+    currentStrategyType === 'ltr'
+      ? computeLtrMetricsFromState(worksheetState as LTRDealMakerState, {
+          dealGapPct,
+          landscapingAnnual: dealGapOperatingOverrides?.landscapingAnnual,
+        })
+      : null
+
+  if (ltrLiveMetrics) {
+    strategyAnnualCashFlow = ltrLiveMetrics.annualProfit
+    strategyCashFlow = ltrLiveMetrics.annualProfit / 12
+    capRateVal = ltrLiveMetrics.capRate
+    cocVal = ltrLiveMetrics.cocReturn
+    totalCashNeeded = ltrLiveMetrics.cashNeeded
+  }
+
+  const benchmarks = isFlipOrWholesale
+    ? [
+        {
+          metric: 'ROI',
+          value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—',
+          target: '20%',
+          status: cocVal !== null && cocVal >= 20 ? 'good' : 'poor',
+        },
+        {
+          metric: 'Profit',
+          value: formatCurrency(strategyAnnualCashFlow),
+          target: '+$30K',
+          status: strategyAnnualCashFlow >= 30000 ? 'good' : 'poor',
+        },
+      ]
+    : [
+        {
+          metric: 'Cap Rate',
+          value: capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—',
+          target: '6.0%',
+          status: capRateVal !== null && capRateVal >= 6.0 ? 'good' : 'poor',
+        },
+        {
+          metric: 'Cash-on-Cash',
+          value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—',
+          target: '8.0%',
+          status: cocVal !== null && cocVal >= 8.0 ? 'good' : 'poor',
+        },
+        {
+          metric: 'Monthly Cash Flow',
+          value: formatCurrency(strategyCashFlow),
+          target: '+$300',
+          status: strategyCashFlow >= 300 ? 'good' : 'poor',
+        },
+        ...(strategyDscr != null
+          ? [
+              {
+                metric: 'DSCR',
+                value: strategyDscr.toFixed(2),
+                target: '1.25',
+                status: strategyDscr >= 1.25 ? 'good' : 'poor',
+              },
+            ]
+          : []),
+      ]
 
   const worksheetMetrics = (() => {
     switch (currentStrategyType) {
@@ -2009,6 +2027,7 @@ function StrategyContent() {
 
       case 'ltr':
       default: {
+        if (ltrLiveMetrics) return ltrLiveMetrics
         const ltrState = worksheetState as LTRDealMakerState
         const ltrGrossMonthly = ltrState.monthlyRent + (ltrState.otherIncome ?? 0)
         const ltrOpex = computeLtrOperatingExpenseBreakdown({
