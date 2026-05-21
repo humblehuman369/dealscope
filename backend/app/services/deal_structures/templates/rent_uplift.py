@@ -109,7 +109,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
                 label="Target Rent",
                 # Show the rent bump inline so the math is self-evident:
                 #   $5,764 + $25 → $5,791  +0.5%
-                before_label=f"${round(ctx.monthly_rent):,} + ${bump_dollars:,}",
+                before_label=f"${round(ctx.monthly_rent):,} + ${round(actual_bump):,}",
                 after_label=f"${round(new_rent):,}",
                 delta_label=fmt_pct_delta(ctx.monthly_rent, new_rent),
             ),
