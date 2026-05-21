@@ -66,7 +66,6 @@ function AuthParamHandler() {
 export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) {
   const router = useRouter()
   const [showDemoVideo, setShowDemoVideo] = useState(false)
-  const { openAuthModal } = useAuthModal()
 
   const runDiscovery = () => router.push('/search')
   const startFree = () => router.push('/register')
@@ -80,11 +79,7 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
         <AuthParamHandler />
       </Suspense>
 
-      <MarketingNav
-        onLogin={() => openAuthModal('login')}
-        onRegister={() => openAuthModal('register')}
-        onStart={runDiscovery}
-      />
+      <MarketingNav onStart={runDiscovery} />
 
       <main>
         <HeroSection onStart={runDiscovery} onDemo={() => setShowDemoVideo(true)} />
@@ -110,15 +105,7 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
   )
 }
 
-function MarketingNav({
-  onLogin,
-  onRegister,
-  onStart,
-}: {
-  onLogin: () => void
-  onRegister: () => void
-  onStart: () => void
-}) {
+function MarketingNav({ onStart }: { onStart: () => void }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const closeMobile = () => setMobileOpen(false)
 
@@ -164,18 +151,18 @@ function MarketingNav({
           </div>
 
           <div className="hidden items-center gap-4 md:flex">
-            <button
-              onClick={onLogin}
+            <Link
+              href="/login"
               className="px-5 py-2.5 text-sm font-bold text-[var(--text-body)] transition-colors hover:text-[var(--text-heading)]"
             >
               Log in
-            </button>
-            <button
-              onClick={onRegister}
+            </Link>
+            <Link
+              href="/register"
               className="px-5 py-2.5 text-sm font-bold text-[var(--text-body)] transition-colors hover:text-[var(--text-heading)]"
             >
               Register
-            </button>
+            </Link>
           </div>
 
           <button
@@ -213,24 +200,20 @@ function MarketingNav({
                   </a>
                 ),
               )}
-              <button
-                onClick={() => {
-                  closeMobile()
-                  onLogin()
-                }}
+              <Link
+                href="/login"
+                onClick={closeMobile}
                 className="rounded-xl px-3 py-2 text-left font-semibold text-[var(--text-body)] hover:bg-[var(--surface-elevated)]"
               >
                 Log in
-              </button>
-              <button
-                onClick={() => {
-                  closeMobile()
-                  onRegister()
-                }}
+              </Link>
+              <Link
+                href="/register"
+                onClick={closeMobile}
                 className="rounded-xl px-3 py-2 text-left font-semibold text-[var(--text-body)] hover:bg-[var(--surface-elevated)]"
               >
                 Register
-              </button>
+              </Link>
               <PrimaryButton
                 onClick={() => {
                   closeMobile()
