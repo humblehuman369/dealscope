@@ -57,6 +57,10 @@ import { trackEvent } from '@/lib/eventTracking'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { buildVerdictAnalysisPayload, type VerdictPayloadBase } from '@/utils/verdictPayload'
+import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
+import { useSaveProperty } from '@/hooks/useSaveProperty'
+import { useDealSnapshot } from '@/hooks/useDealSnapshot'
+import { effectiveMarketValueFromRecord, effectiveMonthlyRentFromRecord } from '@/lib/dealMakerOverrides'
 import { MarketAnchorNote } from '@/components/iq-verdict/MarketAnchorNote'
 import { SweetSpotZone } from '@/components/iq-verdict/SweetSpotZone'
 import {
@@ -264,6 +268,13 @@ function VerdictContent() {
   // when navigating between Verdict ↔ Strategy for the same property
   const { fetchProperty } = usePropertyData()
 
+  const { savedPropertyId } = useSaveProperty({
+    displayAddress: addressParam,
+    propertySnapshot:
+      overrideZpid && typeof overrideZpid === 'string' ? { zpid: overrideZpid } : null,
+  })
+  const { record: dealSnapshotRecord } = useDealSnapshot(savedPropertyId)
+
   // State for property data and analysis
   const [property, setProperty] = useState<IQProperty | null>(null)
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
@@ -412,9 +423,16 @@ function VerdictContent() {
         if (generation !== fetchGenerationRef.current) return
 
         // IQ Estimate rent: monthly_rent_ltr is already the IQ Estimate (avg of Zillow + RentCast)
-        const monthlyRent = data.rentals?.monthly_rent_ltr ?? 0
+        let monthlyRent = data.rentals?.monthly_rent_ltr ?? 0
+        const persistedRent = effectiveMonthlyRentFromRecord(dealSnapshotRecord)
+        if (persistedRent != null && persistedRent > 0) {
+          monthlyRent = persistedRent
+        }
 
-        const price = resolveMarketPriceFromPropertyResponse(data, { fallback: 1 })
+        const price = resolveMarketPriceFromPropertyResponse(data, {
+          fallback: 1,
+          marketValueOverride: dealSnapshotRecord?.market_value_override,
+        })
         const zestimate = data.valuations?.zestimate ?? null
         const currentAvm = data.valuations?.current_value_avm ?? null
         const taxAssessed = data.valuations?.tax_assessed_value ?? null
@@ -472,24 +490,12 @@ function VerdictContent() {
           str_regulatory: data.rentals?.str_regulatory ?? null,
         })
 
-        // Populate IQ Estimate 3-value sources from API response
-        const rentalStats = data.rentals?.rental_stats
-        setIqSources({
-          value: {
-            iq: data.valuations?.value_iq_estimate ?? null,
-            zillow: data.valuations?.zestimate ?? null,
-            rentcast: data.valuations?.rentcast_avm ?? null,
-            redfin: data.valuations?.redfin_estimate ?? null,
-            realtor: data.valuations?.realtor_estimate ?? null,
-          },
-          rent: {
-            iq: rentalStats?.iq_estimate ?? data.rentals?.monthly_rent_ltr ?? null,
-            zillow: rentalStats?.zillow_estimate ?? null,
-            rentcast: rentalStats?.rentcast_estimate ?? null,
-            redfin: rentalStats?.redfin_estimate ?? null,
-            mashvisor: rentalStats?.mashvisor_estimate ?? null,
-          },
-        })
+        setIqSources(
+          mapPropertyToIQSources(data, {
+            marketValueOverride: dealSnapshotRecord?.market_value_override,
+            monthlyRentOverride: dealSnapshotRecord?.monthly_rent_override,
+          }),
+        )
 
         // Store property info to sessionStorage so global AppHeader can access it
         try {
@@ -546,17 +552,29 @@ function VerdictContent() {
         } else {
           // Legacy mode: use URL param overrides or property data
           // list_price stays as the original market/asking price
-          listPriceForCalc = urlMarketValue ? parseFloat(urlMarketValue) : propertyData.price
+          const persistedMarket = effectiveMarketValueFromRecord(dealSnapshotRecord)
+          listPriceForCalc = urlMarketValue
+            ? parseFloat(urlMarketValue)
+            : persistedMarket != null && persistedMarket > 0
+              ? persistedMarket
+              : propertyData.price
+          const persistedRentCalc = effectiveMonthlyRentFromRecord(dealSnapshotRecord)
           rentForCalc = overrideMonthlyRent
             ? parseFloat(overrideMonthlyRent)
-            : propertyData.monthlyRent || 0
+            : persistedRentCalc != null && persistedRentCalc > 0
+              ? persistedRentCalc
+              : propertyData.monthlyRent || 0
           taxesForCalc = overridePropertyTaxes
             ? parseFloat(overridePropertyTaxes)
             : propertyData.propertyTaxes || 0
           insuranceForCalc = overrideInsurance
             ? parseFloat(overrideInsurance)
             : (propertyData.insurance ?? null)
-          arvForCalc = overrideArv ? parseFloat(overrideArv) : (propertyData.arv ?? null)
+          arvForCalc = overrideArv
+            ? parseFloat(overrideArv)
+            : dealSnapshotRecord?.arv && dealSnapshotRecord.arv > 0
+              ? dealSnapshotRecord.arv
+              : (propertyData.arv ?? null)
 
           console.log('[IQ Verdict] Using legacy override values:', {
             list_price: listPriceForCalc,

@@ -26,8 +26,18 @@ export type PropertyMarketPriceInput = {
 
 export function resolveMarketPriceFromPropertyResponse(
   data: PropertyMarketPriceInput,
-  options?: { fallback?: number; conditionPremium?: number },
+  options?: {
+    fallback?: number
+    conditionPremium?: number
+    /** User-set market value from saved deal / Appraiser Apply to Deal */
+    marketValueOverride?: number | null
+  },
 ): number {
+  const override = options?.marketValueOverride
+  if (override != null && override > 0) {
+    return Math.round(override + (options?.conditionPremium ?? 0))
+  }
+
   const listed = isListedStatus(data.listing?.listing_status)
   const listPrice = data.listing?.list_price ?? null
   const iqValueEstimate = data.valuations?.value_iq_estimate ?? null

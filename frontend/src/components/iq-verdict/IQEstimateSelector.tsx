@@ -11,7 +11,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-export type DataSourceId = 'iq' | 'zillow' | 'rentcast' | 'redfin' | 'realtor' | 'mashvisor'
+export type DataSourceId =
+  | 'iq'
+  | 'zillow'
+  | 'rentcast'
+  | 'redfin'
+  | 'realtor'
+  | 'mashvisor'
+  | 'my_value'
+  | 'my_rent'
 
 interface SourceValue {
   value: number | null
@@ -47,6 +55,8 @@ const SOURCE_META: Record<DataSourceId, { label: string; color: string }> = {
   redfin: { label: 'Redfin', color: '#A02B2D' },
   realtor: { label: 'Realtor.com', color: '#D92228' },
   mashvisor: { label: 'Mashvisor', color: '#06B6D4' },
+  my_value: { label: 'My Value', color: 'var(--accent-teal)' },
+  my_rent: { label: 'My Rent', color: 'var(--accent-teal)' },
 }
 
 function getStoredSelections(sessionKey: string): { value: DataSourceId; rent: DataSourceId } {
@@ -181,6 +191,7 @@ function resolveDefaults(
   stored: { value: DataSourceId; rent: DataSourceId },
 ): { value: DataSourceId; rent: DataSourceId } {
   const resolveValue = (group: IQEstimateSources['value'], sel: DataSourceId): DataSourceId => {
+    if (group.my_value != null) return 'my_value'
     if (group.iq != null) return 'iq'
     if (group[sel] != null) return sel
     if (group.zillow != null) return 'zillow'
@@ -190,6 +201,7 @@ function resolveDefaults(
     return 'iq'
   }
   const resolveRent = (group: IQEstimateSources['rent'], sel: DataSourceId): DataSourceId => {
+    if (group.my_rent != null) return 'my_rent'
     if (group.iq != null) return 'iq'
     if (group[sel] != null) return sel
     if (group.zillow != null) return 'zillow'
@@ -251,10 +263,24 @@ export function IQEstimateSelector({
     [sources, sessionKey, onSourceChange, highlightIntro, introSeen],
   )
 
-  const valueSourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
+  const valueSourceIds: DataSourceId[] = [
+    ...(sources.value.my_value != null ? (['my_value'] as const) : []),
+    'iq',
+    'zillow',
+    'rentcast',
+    'redfin',
+    'realtor',
+  ]
   // Rent column swap: Realtor.com (no rent API) replaced by Mashvisor
   // /rental-rates traditional (per-bedroom monthly rent benchmark).
-  const rentSourceIds: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'mashvisor']
+  const rentSourceIds: DataSourceId[] = [
+    ...(sources.rent.my_rent != null ? (['my_rent'] as const) : []),
+    'iq',
+    'zillow',
+    'rentcast',
+    'redfin',
+    'mashvisor',
+  ]
 
   return (
     <div

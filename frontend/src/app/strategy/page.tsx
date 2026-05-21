@@ -61,6 +61,12 @@ import {
   buildVerdictBaseFromPropertyResponse,
   type VerdictPayloadBase,
 } from '@/utils/verdictPayload'
+import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
+import { useDealSnapshot } from '@/hooks/useDealSnapshot'
+import {
+  effectiveMarketValueFromRecord,
+  effectiveMonthlyRentFromRecord,
+} from '@/lib/dealMakerOverrides'
 import { AuthGate } from '@/components/auth/AuthGate'
 import {
   parseStrategyWorksheetSection,
@@ -931,10 +937,26 @@ function StrategyContent() {
     }
   }, [resolvedAddress])
 
-  const { isSaved, isSaving, save, toggle } = useSaveProperty({
+  const { isSaved, isSaving, save, toggle, savedPropertyId } = useSaveProperty({
     displayAddress: resolvedAddress,
     propertySnapshot: savePropertySnapshot,
   })
+  const { record: dealRecord } = useDealSnapshot(savedPropertyId)
+
+  useEffect(() => {
+    if (!addressParam || !dealRecord) return
+    const canonical = canonicalizeAddressForIdentity(addressParam)
+    const propData = queryClient.getQueryData(['property-search', canonical]) as
+      | import('@dealscope/shared').PropertyResponse
+      | undefined
+    if (!propData) return
+    setIqSources(
+      mapPropertyToIQSources(propData, {
+        marketValueOverride: dealRecord.market_value_override,
+        monthlyRentOverride: dealRecord.monthly_rent_override,
+      }),
+    )
+  }, [addressParam, dealRecord, queryClient])
 
   // Scroll to top on mount — prevents opening mid-page after navigation
   useEffect(() => {
@@ -994,15 +1016,27 @@ function StrategyContent() {
     async (
       propInfo: any,
       overrides: Record<string, any> | null,
-      srcOverrides: { price?: number; monthlyRent?: number },
+      srcOverrides: {
+        price?: number
+        monthlyRent?: number
+        marketValueOverride?: number | null
+        monthlyRentOverride?: number | null
+      },
     ) => {
       if (!propInfo) return
       try {
         setIsRecalculating(true)
+        const mergedSrc: typeof srcOverrides = {
+          ...srcOverrides,
+          marketValueOverride:
+            dealRecord?.market_value_override ?? srcOverrides.marketValueOverride,
+          monthlyRentOverride:
+            dealRecord?.monthly_rent_override ?? srcOverrides.monthlyRentOverride,
+        }
         const payload = buildVerdictAnalysisPayload(
           toPayloadBase(propInfo),
           overrides,
-          srcOverrides,
+          mergedSrc,
         )
         const analysis = await api.post<BackendAnalysisResponse>(
           '/api/v1/analysis/verdict',
@@ -1018,7 +1052,16 @@ function StrategyContent() {
         setIsRecalculating(false)
       }
     },
-    [toPayloadBase, addressParam],
+    [toPayloadBase, addressParam, dealRecord?.market_value_override, dealRecord?.monthly_rent_override],
+  )
+
+  const verdictSourceOverrides = useMemo(
+    () => ({
+      ...sourceOverrides,
+      marketValueOverride: dealRecord?.market_value_override ?? null,
+      monthlyRentOverride: dealRecord?.monthly_rent_override ?? null,
+    }),
+    [sourceOverrides, dealRecord?.market_value_override, dealRecord?.monthly_rent_override],
   )
 
   useEffect(() => {
@@ -1047,9 +1090,14 @@ function StrategyContent() {
       try {
         if (showBlockingLoader) setIsLoading(true)
         const propData = await fetchProperty(fetchAddr)
+        const appraiserOverrides = {
+          marketValueOverride: dealRecord?.market_value_override ?? null,
+          monthlyRentOverride: dealRecord?.monthly_rent_override ?? null,
+        }
         const baseDefaults = buildVerdictBaseFromPropertyResponse(propData, {
           condition: conditionParam ? Number(conditionParam) : null,
           location: locationParam ? Number(locationParam) : null,
+          ...appraiserOverrides,
         })
         let price = baseDefaults.listPrice
         let monthlyRent = baseDefaults.monthlyRent
@@ -1079,28 +1127,12 @@ function StrategyContent() {
         }
         setPropertyInfo(enrichedPropInfo)
 
-        const rentalStats = propData.rentals?.rental_stats
-        setIqSources({
-          value: {
-            iq: propData.valuations?.value_iq_estimate ?? null,
-            zillow: propData.valuations?.zestimate ?? null,
-            rentcast: propData.valuations?.rentcast_avm ?? null,
-            redfin: propData.valuations?.redfin_estimate ?? null,
-            realtor: propData.valuations?.realtor_estimate ?? null,
-          },
-          rent: {
-            iq: rentalStats?.iq_estimate ?? propData.rentals?.monthly_rent_ltr ?? null,
-            zillow: rentalStats?.zillow_estimate ?? null,
-            rentcast: rentalStats?.rentcast_estimate ?? null,
-            redfin: rentalStats?.redfin_estimate ?? null,
-            mashvisor: rentalStats?.mashvisor_estimate ?? null,
-          },
-        })
+        setIqSources(mapPropertyToIQSources(propData, appraiserOverrides))
 
         const payload = buildVerdictAnalysisPayload(
           toPayloadBase(enrichedPropInfo),
           dealMakerOverrides,
-          sourceOverrides,
+          appraiserOverrides,
         )
         const analysis = await api.post<BackendAnalysisResponse>(
           '/api/v1/analysis/verdict',
@@ -1132,9 +1164,9 @@ function StrategyContent() {
       // strategies invalidates them.
       setHighlightedFields(new Set())
       const merged = { ...(initialOverrides ?? {}), ...inlineOverrides }
-      recalcVerdict(propertyInfo, merged, sourceOverrides)
+      recalcVerdict(propertyInfo, merged, verdictSourceOverrides)
     },
-    [initialOverrides, inlineOverrides, propertyInfo, sourceOverrides, recalcVerdict],
+    [initialOverrides, inlineOverrides, propertyInfo, verdictSourceOverrides, recalcVerdict],
   )
 
   // Debounced verdict recalc — reads overrides from `inlineOverridesRef` at fire time so merges stay in sync with React state.
@@ -1142,9 +1174,9 @@ function StrategyContent() {
     if (recalcDebounceRef.current) clearTimeout(recalcDebounceRef.current)
     recalcDebounceRef.current = setTimeout(() => {
       const merged = { ...(initialOverrides ?? {}), ...inlineOverridesRef.current }
-      recalcVerdict(propertyInfo, merged, sourceOverrides)
+      recalcVerdict(propertyInfo, merged, verdictSourceOverrides)
     }, 300)
-  }, [initialOverrides, propertyInfo, sourceOverrides, recalcVerdict])
+  }, [initialOverrides, propertyInfo, verdictSourceOverrides, recalcVerdict])
 
   const handleInlineSliderChange = useCallback(
     (field: keyof InlineDealMakerValues, value: number) => {
@@ -1337,12 +1369,15 @@ function StrategyContent() {
 
   // List / target buy: API is canonical after recalc, but DealMaker session overrides must win
   // immediately so the Deal Gap graph and metric bar match the worksheet (not one request behind).
+  const appraiserMarketValue = effectiveMarketValueFromRecord(dealRecord)
   const listPriceBase = data.list_price ?? (data as any).listPrice ?? propertyInfo?.price ?? 0
   const listPriceOverride = dealMakerOverrides != null ? dealMakerOverrides.listPrice : undefined
   const listPrice =
-    typeof listPriceOverride === 'number' && isFinite(listPriceOverride) && listPriceOverride > 0
-      ? listPriceOverride
-      : listPriceBase
+    appraiserMarketValue != null && appraiserMarketValue > 0
+      ? appraiserMarketValue
+      : typeof listPriceOverride === 'number' && isFinite(listPriceOverride) && listPriceOverride > 0
+        ? listPriceOverride
+        : listPriceBase
 
   const targetFromOverrides =
     dealMakerOverrides != null
@@ -1364,7 +1399,11 @@ function StrategyContent() {
   >
 
   // All derived financials come from the backend breakdown
-  const monthlyRent = bd?.monthly_rent ?? propertyInfo?.monthlyRent ?? 0
+  const effectiveRent = effectiveMonthlyRentFromRecord(dealRecord)
+  const monthlyRent =
+    effectiveRent != null && effectiveRent > 0
+      ? effectiveRent
+      : (bd?.monthly_rent ?? propertyInfo?.monthlyRent ?? 0)
   const propertyTaxes = bd?.property_taxes ?? propertyInfo?.propertyTaxes ?? 0
   const insurance = bd?.insurance ?? propertyInfo?.insurance ?? 0
   // Prefer explicit DealMaker/session rehab so sliders win over stale breakdown during debounce;
@@ -1474,7 +1513,8 @@ function StrategyContent() {
           : null) ??
         5,
     }
-    const arvVal = io.arv ?? bd?.arv ?? data?.inputs_used?.arv ?? listPrice
+    const arvVal =
+      io.arv ?? (dealRecord?.arv && dealRecord.arv > 0 ? dealRecord.arv : null) ?? bd?.arv ?? data?.inputs_used?.arv ?? listPrice
 
     switch (currentStrategyType) {
       case 'str': {
@@ -3059,7 +3099,11 @@ function StrategyContent() {
                         /* ignore */
                       }
                       const merged = { ...(initialOverrides ?? {}), ...inlineOverrides }
-                      recalcVerdict(propertyInfo, merged, nextSrcOverrides)
+                      recalcVerdict(propertyInfo, merged, {
+                        ...nextSrcOverrides,
+                        marketValueOverride: dealRecord?.market_value_override ?? null,
+                        monthlyRentOverride: dealRecord?.monthly_rent_override ?? null,
+                      })
                     }}
                   />
                 </div>

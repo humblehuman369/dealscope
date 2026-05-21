@@ -13,6 +13,9 @@ import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 import { resolveMarketPriceFromPropertyResponse } from '@/lib/resolveMarketPrice'
+import { useSaveProperty } from '@/hooks/useSaveProperty'
+import { useDealSnapshot } from '@/hooks/useDealSnapshot'
+import { effectiveMarketValueFromRecord } from '@/lib/dealMakerOverrides'
 import { trackEvent } from '@/lib/eventTracking'
 import type { AddressValidationResult } from '@/types/address'
 import {
@@ -41,6 +44,9 @@ export default function DealMakerIndexPage() {
   const initialStrategy = searchParams.get('strategy') || undefined
   const urlMarketValue = searchParams.get('marketValue')
 
+  const { savedPropertyId } = useSaveProperty({ displayAddress: addressParam })
+  const { record: dealRecord } = useDealSnapshot(savedPropertyId)
+
   const [propertyData, setPropertyData] = useState<DealMakerPropertyData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -58,7 +64,13 @@ export default function DealMakerIndexPage() {
 
         const monthlyRent = data.rentals?.monthly_rent_ltr || 0
 
-        let price = resolveMarketPriceFromPropertyResponse(data)
+        let price = resolveMarketPriceFromPropertyResponse(data, {
+          marketValueOverride: dealRecord?.market_value_override,
+        })
+        const persistedMarket = effectiveMarketValueFromRecord(dealRecord)
+        if (persistedMarket != null && persistedMarket > 0) {
+          price = Math.round(persistedMarket)
+        }
 
         const canonical = canonicalizeAddressForIdentity(
           data.address?.full_address || address,
@@ -110,7 +122,7 @@ export default function DealMakerIndexPage() {
         setIsLoading(false)
       }
     },
-    [fetchProperty, urlMarketValue],
+    [fetchProperty, urlMarketValue, dealRecord?.market_value_override],
   )
 
   useEffect(() => {

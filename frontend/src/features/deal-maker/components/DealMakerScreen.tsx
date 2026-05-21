@@ -266,7 +266,9 @@ export function DealMakerScreen({
           arv: record.arv,
           postRehabMonthlyRent:
             record.post_rehab_monthly_rent ??
-            record.monthly_rent ??
+            (record.monthly_rent_override != null && record.monthly_rent_override > 0
+              ? record.monthly_rent_override
+              : record.monthly_rent) ??
             DEFAULT_BRRRR_DEAL_MAKER_STATE.postRehabMonthlyRent,
           postRehabRentIncreasePct:
             record.post_rehab_rent_increase_pct ??
@@ -339,7 +341,9 @@ export function DealMakerScreen({
           closingCostsPercent: record.closing_costs_pct,
           avgRentPerUnit:
             record.avg_rent_per_unit ??
-            record.monthly_rent ??
+            (record.monthly_rent_override != null && record.monthly_rent_override > 0
+              ? record.monthly_rent_override
+              : record.monthly_rent) ??
             DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.avgRentPerUnit,
           vacancyRate: record.vacancy_rate,
           currentHousingPayment:
@@ -391,7 +395,10 @@ export function DealMakerScreen({
         loanTermYears: record.loan_term_years,
         rehabBudget: record.rehab_budget,
         arv: record.arv,
-        monthlyRent: record.monthly_rent,
+        monthlyRent:
+          record.monthly_rent_override != null && record.monthly_rent_override > 0
+            ? record.monthly_rent_override
+            : record.monthly_rent,
         otherIncome: record.other_income,
         vacancyRate: record.vacancy_rate,
         maintenanceRate: record.maintenance_pct,

@@ -63,6 +63,9 @@ import {
 import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 import { buildAppraisalPayload, downloadAppraisalReportPDF } from '@/lib/api/appraisal-report'
 import { usePropertyData } from '@/hooks/usePropertyData'
+import { useSaveProperty } from '@/hooks/useSaveProperty'
+import { useDealSnapshot } from '@/hooks/useDealSnapshot'
+import { useApplyToDeal } from '@/hooks/useApplyToDeal'
 import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
 import {
   buildSalesConsensus,
@@ -702,6 +705,25 @@ export function PriceCheckerIQScreen({
   const router = useRouter()
   const fullAddress =
     `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`.trim()
+
+  const propertySnapshot = useMemo(
+    () => ({
+      street: property.address,
+      city: property.city,
+      state: property.state,
+      zipCode: property.zipCode,
+      bedrooms: property.beds,
+      bathrooms: property.baths,
+      sqft: property.sqft,
+      listPrice: property.price,
+      zpid: property.zpid,
+    }),
+    [property],
+  )
+
+  const { savedPropertyId } = useSaveProperty({ displayAddress: fullAddress, propertySnapshot })
+  const { record: dealRecord, invalidate: invalidateDealSnapshot } = useDealSnapshot(savedPropertyId)
+  const { applyToDeal, isApplying } = useApplyToDeal({ displayAddress: fullAddress, propertySnapshot })
   // Align with buildParams: valid if zpid OR usable fullAddress (same length check buildParams uses)
   const hasValidSubject = Boolean(
     property.zpid || (fullAddress && fullAddress.replace(/,|\s/g, '').length > 2),
@@ -941,11 +963,26 @@ export function PriceCheckerIQScreen({
       state: property.state || undefined,
       zip_code: property.zipCode || undefined,
     })
-      .then((data) => setIqSources(mapPropertyToIQSources(data)))
+      .then((data) =>
+        setIqSources(
+          mapPropertyToIQSources(data, {
+            marketValueOverride: dealRecord?.market_value_override,
+            monthlyRentOverride: dealRecord?.monthly_rent_override,
+          }),
+        ),
+      )
       .catch(() => {
         /* sources unavailable — consensus rail hides gracefully */
       })
-  }, [fullAddress, property.city, property.state, property.zipCode, fetchProperty])
+  }, [
+    fullAddress,
+    property.city,
+    property.state,
+    property.zipCode,
+    fetchProperty,
+    dealRecord?.market_value_override,
+    dealRecord?.monthly_rent_override,
+  ])
 
   // Compute consensus from sources + comp appraisal
   const saleConsensus = useMemo(
@@ -1112,19 +1149,39 @@ export function PriceCheckerIQScreen({
     })
   }
 
-  // Apply values
-  const handleApplyValues = () => {
-    const params = new URLSearchParams({ address: fullAddress })
-    if (isSale) {
-      const arv = saleOverrideArv ?? saleAppraisal.arv
-      const mv = saleOverrideMarket ?? saleAppraisal.marketValue
-      if (arv > 0) params.append('arv', String(arv))
-      if (mv > 0) params.append('marketValue', String(mv))
-    } else {
-      const rent = rentOverrideMarket ?? rentAppraisal.marketRent
-      if (rent > 0) params.append('rent', String(rent))
-    }
-    router.push(`/discovery?${params.toString()}`)
+  const displayMarketValue = saleOverrideMarket ?? saleAppraisal.marketValue
+  const displayArv = saleOverrideArv ?? saleAppraisal.arv
+  const displayMarketRent = rentOverrideMarket ?? rentAppraisal.marketRent
+  const displayImprovedRent = rentOverrideImproved ?? rentAppraisal.improvedRent
+
+  const valuesMatch = (stored: number | null | undefined, display: number) =>
+    stored != null && stored > 0 && Math.abs(stored - display) < 1
+
+  const marketValueApplied = valuesMatch(dealRecord?.market_value_override, displayMarketValue)
+  const arvApplied = valuesMatch(dealRecord?.arv, displayArv)
+  const marketRentApplied = valuesMatch(dealRecord?.monthly_rent_override, displayMarketRent)
+  const improvedRentApplied = valuesMatch(dealRecord?.monthly_rent_override, displayImprovedRent)
+
+  const handleApplyMarketValue = () => {
+    void applyToDeal({ marketValueOverride: displayMarketValue }, 'market_value').then(() =>
+      invalidateDealSnapshot(),
+    )
+  }
+
+  const handleApplyArv = () => {
+    void applyToDeal({ arv: displayArv }, 'arv').then(() => invalidateDealSnapshot())
+  }
+
+  const handleApplyMarketRent = () => {
+    void applyToDeal({ monthlyRentOverride: displayMarketRent }, 'market_rent').then(() =>
+      invalidateDealSnapshot(),
+    )
+  }
+
+  const handleApplyImprovedRent = () => {
+    void applyToDeal({ monthlyRentOverride: displayImprovedRent }, 'improved_rent').then(() =>
+      invalidateDealSnapshot(),
+    )
   }
 
   const handleDownloadReport = async () => {
@@ -1182,12 +1239,6 @@ export function PriceCheckerIQScreen({
       })),
     [filteredComps],
   )
-
-  // Display values with override
-  const displayMarketValue = saleOverrideMarket ?? saleAppraisal.marketValue
-  const displayArv = saleOverrideArv ?? saleAppraisal.arv
-  const displayMarketRent = rentOverrideMarket ?? rentAppraisal.marketRent
-  const displayImprovedRent = rentOverrideImproved ?? rentAppraisal.improvedRent
 
   return (
     <div className="min-h-screen bg-[var(--surface-base)] font-['Inter',sans-serif]">
@@ -1368,14 +1419,18 @@ export function PriceCheckerIQScreen({
                   </div>
                   <div className="mt-auto flex justify-end pt-1">
                     <button
-                      onClick={handleApplyValues}
+                      onClick={isSale ? handleApplyMarketValue : handleApplyMarketRent}
                       disabled={
+                        isApplying ||
                         appraisalUnavailable ||
                         (isSale ? displayMarketValue : displayMarketRent) <= 0
                       }
-                      className="px-2.5 py-[2.5px] rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
+                      className="px-2.5 py-[2.5px] rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[12.5px] font-semibold disabled:opacity-50 transition-colors inline-flex items-center gap-1"
                     >
-                      Apply to Deal
+                      {(isSale ? marketValueApplied : marketRentApplied) && (
+                        <Check className="w-3 h-3 text-[var(--status-positive)]" aria-hidden />
+                      )}
+                      {isApplying ? 'Saving…' : 'Apply to Deal'}
                     </button>
                   </div>
                 </div>
@@ -1438,13 +1493,18 @@ export function PriceCheckerIQScreen({
                   </div>
                   <div className="mt-auto flex justify-end pt-1">
                     <button
-                      onClick={handleApplyValues}
+                      onClick={isSale ? handleApplyArv : handleApplyImprovedRent}
                       disabled={
-                        appraisalUnavailable || (isSale ? displayArv : displayImprovedRent) <= 0
+                        isApplying ||
+                        appraisalUnavailable ||
+                        (isSale ? displayArv : displayImprovedRent) <= 0
                       }
-                      className="px-2.5 py-[2.5px] rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[12.5px] font-semibold disabled:opacity-50 transition-colors"
+                      className="px-2.5 py-[2.5px] rounded-full bg-[var(--surface-base)] border border-[var(--accent-sky-light)] hover:border-[var(--accent-sky)] text-[var(--accent-sky-light)] text-[12.5px] font-semibold disabled:opacity-50 transition-colors inline-flex items-center gap-1"
                     >
-                      Apply to Deal
+                      {(isSale ? arvApplied : improvedRentApplied) && (
+                        <Check className="w-3 h-3 text-[var(--status-positive)]" aria-hidden />
+                      )}
+                      {isApplying ? 'Saving…' : 'Apply to Deal'}
                     </button>
                   </div>
                 </div>

@@ -158,9 +158,20 @@ class DealMakerService:
         )
         monthly_payment = annual_debt_service / 12 if annual_debt_service > 0 else 0.0
 
+        effective_monthly_rent = (
+            record.monthly_rent_override
+            if record.monthly_rent_override is not None and record.monthly_rent_override > 0
+            else record.monthly_rent
+        )
+        effective_market_value = (
+            record.market_value_override
+            if record.market_value_override is not None and record.market_value_override > 0
+            else record.list_price
+        )
+
         noi_result = compute_noi(
             NOIInputs(
-                monthly_rent=record.monthly_rent,
+                monthly_rent=effective_monthly_rent,
                 property_taxes=record.annual_property_tax,
                 insurance=record.annual_insurance,
                 vacancy_rate=record.vacancy_rate,
@@ -185,22 +196,26 @@ class DealMakerService:
         cash_on_cash = calculate_cash_on_cash(annual_cash_flow, total_cash_needed)
         dscr = calculate_dscr(noi, annual_debt_service) if annual_debt_service > 0 else None
         ltv = loan_amount / record.buy_price if record.buy_price > 0 else 0
-        one_percent = record.monthly_rent / record.buy_price if record.buy_price > 0 else 0
+        one_percent = effective_monthly_rent / record.buy_price if record.buy_price > 0 else 0
         grm = calculate_grm(record.buy_price, annual_gross_rent)
 
         # Equity calculations
         equity = record.buy_price - loan_amount
         equity_after_rehab = record.arv - loan_amount if record.arv > 0 else equity
 
-        # Deal analysis
-        deal_gap_pct = (record.list_price - record.buy_price) / record.list_price if record.list_price > 0 else 0
+        # Deal analysis — market value override is SSOT for "current market" when set
+        deal_gap_pct = (
+            (effective_market_value - record.buy_price) / effective_market_value
+            if effective_market_value > 0
+            else 0
+        )
 
         snap_dict = build_valuation_snapshot(
             ValuationInputs(
-                monthly_rent=record.monthly_rent,
+                monthly_rent=effective_monthly_rent,
                 property_taxes=record.annual_property_tax,
                 insurance=record.annual_insurance,
-                list_price=record.list_price,
+                list_price=effective_market_value,
                 purchase_price=record.buy_price,
                 down_payment_pct=record.down_payment_pct,
                 interest_rate=record.interest_rate,

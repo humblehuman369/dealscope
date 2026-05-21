@@ -8,6 +8,8 @@ export const SOURCE_META: Record<DataSourceId, { label: string; color: string }>
   redfin: { label: 'Redfin', color: '#EF5350' },
   realtor: { label: 'Realtor', color: '#D92228' },
   mashvisor: { label: 'Mashvisor', color: '#06B6D4' },
+  my_value: { label: 'My Value', color: 'var(--accent-teal)' },
+  my_rent: { label: 'My Rent', color: 'var(--accent-teal)' },
 }
 
 // Per-column source lists. Realtor.com is value-only (no rent API); Mashvisor
@@ -32,10 +34,21 @@ export const ALL_SOURCE_IDS: DataSourceId[] = [
  * This is the single canonical mapping — Verdict, Strategy, and Comps
  * should all use this instead of inline mapping.
  */
-export function mapPropertyToIQSources(data: PropertyResponse): IQEstimateSources {
+export interface AppraiserSourceOverrides {
+  marketValueOverride?: number | null
+  monthlyRentOverride?: number | null
+}
+
+export function mapPropertyToIQSources(
+  data: PropertyResponse,
+  overrides?: AppraiserSourceOverrides,
+): IQEstimateSources {
   const rentalStats = data.rentals?.rental_stats
+  const mvOverride = overrides?.marketValueOverride
+  const rentOverride = overrides?.monthlyRentOverride
   return {
     value: {
+      ...(mvOverride != null && mvOverride > 0 ? { my_value: mvOverride } : {}),
       iq: data.valuations?.value_iq_estimate ?? null,
       zillow: data.valuations?.zestimate ?? null,
       rentcast: data.valuations?.rentcast_avm ?? null,
@@ -43,6 +56,7 @@ export function mapPropertyToIQSources(data: PropertyResponse): IQEstimateSource
       realtor: data.valuations?.realtor_estimate ?? null,
     },
     rent: {
+      ...(rentOverride != null && rentOverride > 0 ? { my_rent: rentOverride } : {}),
       iq: rentalStats?.iq_estimate ?? data.rentals?.monthly_rent_ltr ?? null,
       zillow: rentalStats?.zillow_estimate ?? null,
       rentcast: rentalStats?.rentcast_estimate ?? null,

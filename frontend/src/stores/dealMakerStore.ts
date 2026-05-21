@@ -111,6 +111,11 @@ export interface DealMakerRecord {
   vacancy_rate: number
   management_pct: number
 
+  /** User-set market value from Appraiser (Apply to Deal) */
+  market_value_override?: number | null
+  /** User-set monthly rent from Appraiser (Apply to Deal) */
+  monthly_rent_override?: number | null
+
   // STR-specific adjustments (optional - only present for STR strategy)
   furniture_setup_cost?: number
   average_daily_rate?: number
@@ -216,6 +221,9 @@ export interface DealMakerUpdate {
   other_income?: number
   vacancy_rate?: number
   management_pct?: number
+
+  market_value_override?: number | null
+  monthly_rent_override?: number | null
 
   // STR-specific fields
   furniture_setup_cost?: number

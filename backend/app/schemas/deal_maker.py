@@ -162,6 +162,18 @@ class DealMakerRecord(BaseModel):
     monthly_rent: float = Field(..., description="Expected monthly rent")
     other_income: float = Field(0, description="Other monthly income")
 
+    # Appraiser overrides (user-set via Apply to Deal on PriceCheckerIQ)
+    market_value_override: float | None = Field(
+        None,
+        ge=0,
+        description="User-set market value from Appraiser; takes precedence over provider AVMs.",
+    )
+    monthly_rent_override: float | None = Field(
+        None,
+        ge=0,
+        description="User-set monthly rent from Appraiser; replaces provider rent estimates.",
+    )
+
     # Operating Expenses (rates)
     vacancy_rate: float = Field(0.01, description="Vacancy rate")
     maintenance_pct: float = Field(0.05, description="Maintenance as % of rent")
@@ -303,6 +315,14 @@ class DealMakerRecordUpdate(BaseModel):
     # Income (LTR)
     monthly_rent: float | None = Field(None, ge=0)
     other_income: float | None = Field(None, ge=0)
+
+    # Appraiser overrides
+    market_value_override: float | None = Field(
+        None, ge=0, description="User-set market value from Appraiser"
+    )
+    monthly_rent_override: float | None = Field(
+        None, ge=0, description="User-set monthly rent from Appraiser"
+    )
 
     # Operating Expenses (rates)
     vacancy_rate: float | None = Field(None, ge=0, le=1)

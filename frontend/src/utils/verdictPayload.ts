@@ -9,6 +9,9 @@ export { isListedStatus }
 export interface VerdictSourceOverrides {
   price?: number
   monthlyRent?: number
+  /** Appraiser / saved-deal market value override (highest priority for list_price) */
+  marketValueOverride?: number | null
+  monthlyRentOverride?: number | null
 }
 
 export interface VerdictPayloadBase {
@@ -73,8 +76,16 @@ export function buildVerdictAnalysisPayload(
   if (overrides?.monthlyHoa != null) hoaFeesMonthly = overrides.monthlyHoa
   if (overrides?.arv != null) arv = overrides.arv
 
-  if (sourceOverrides.price != null) listPrice = sourceOverrides.price
-  if (sourceOverrides.monthlyRent != null) monthlyRent = sourceOverrides.monthlyRent
+  if (sourceOverrides.marketValueOverride != null && sourceOverrides.marketValueOverride > 0) {
+    listPrice = sourceOverrides.marketValueOverride
+  } else if (sourceOverrides.price != null) {
+    listPrice = sourceOverrides.price
+  }
+  if (sourceOverrides.monthlyRentOverride != null && sourceOverrides.monthlyRentOverride > 0) {
+    monthlyRent = sourceOverrides.monthlyRentOverride
+  } else if (sourceOverrides.monthlyRent != null) {
+    monthlyRent = sourceOverrides.monthlyRent
+  }
 
   const payload: Record<string, any> = {
     list_price: listPrice,
@@ -154,7 +165,12 @@ export function buildVerdictAnalysisPayload(
 
 export function buildVerdictBaseFromPropertyResponse(
   data: any,
-  options?: { condition?: number | null; location?: number | null },
+  options?: {
+    condition?: number | null
+    location?: number | null
+    marketValueOverride?: number | null
+    monthlyRentOverride?: number | null
+  },
 ): VerdictPayloadBase {
   const listingStatus = data?.listing?.listing_status
   const listed = isListedStatus(listingStatus)
@@ -166,13 +182,16 @@ export function buildVerdictBaseFromPropertyResponse(
   const resolvedPrice = resolveMarketPriceFromPropertyResponse(data, {
     fallback: 1,
     conditionPremium,
+    marketValueOverride: options?.marketValueOverride,
   })
   const zestimate = data?.valuations?.zestimate ?? null
   const currentAvm = data?.valuations?.current_value_avm ?? null
   const taxAssessed = data?.valuations?.tax_assessed_value ?? null
 
   let resolvedRent = data?.rentals?.monthly_rent_ltr ?? 0
-  if (options?.location != null) {
+  if (options?.monthlyRentOverride != null && options.monthlyRentOverride > 0) {
+    resolvedRent = options.monthlyRentOverride
+  } else if (options?.location != null) {
     resolvedRent = Math.round(
       resolvedRent * getLocationAdjustment(Number(options.location)).rentMultiplier,
     )
