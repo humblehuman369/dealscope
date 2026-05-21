@@ -658,10 +658,6 @@ function StrategyContent() {
   }, [inlineOverrides])
   // Currently applied Three Paths structure (so the matching button highlights).
   const [appliedPathId, setAppliedPathId] = useState<string | null>(null)
-  // Strategy dropdown is hidden on first visit so the Options buttons are the
-  // primary CTA. Reveals when the user opts to compare strategies, or when
-  // they arrive with a non-default strategy URL param.
-  const [showStrategySelector, setShowStrategySelector] = useState(false)
   // Worksheet state-field names whose value the most recently applied path
   // actually changed vs the prior baseline. Drives the soft glow on
   // SliderRow's via WorksheetHighlightContext.
@@ -672,16 +668,7 @@ function StrategyContent() {
   useEffect(() => {
     setHighlightedFields(new Set())
     setAppliedPathId(null)
-    setShowStrategySelector(false)
   }, [addressParam])
-
-  // Auto-reveal the strategy selector when the user arrives with a non-default
-  // strategy URL param — they came in wanting to see a specific strategy.
-  useEffect(() => {
-    if (strategyParam && strategyParam !== 'long-term-rental') {
-      setShowStrategySelector(true)
-    }
-  }, [strategyParam])
   // Merged view used by all downstream calculations.
   const dealMakerOverrides = useMemo(() => {
     if (!initialOverrides && Object.keys(inlineOverrides).length === 0) return null
@@ -2837,9 +2824,7 @@ function StrategyContent() {
         {/* Financial Breakdown — requires free (logged-in) tier */}
         <AuthGate feature="view the full strategy breakdown" mode="section">
           <section className="px-[1px] sm:px-5 pt-2 pb-6">
-            {/* Strategy Selector — hidden on first visit so the Options buttons
-                are the primary CTA. Reveals via the "Compare other strategies"
-                toggle, or automatically when arriving via a non-default URL param. */}
+            {/* Strategy Tabs — matches DealMaker page styling, per-strategy color coded */}
             {sortedStrategies.length > 1 &&
               (() => {
                 const STRATEGY_DISPLAY = [
@@ -2853,33 +2838,12 @@ function StrategyContent() {
                 const available = STRATEGY_DISPLAY.filter((s) =>
                   sortedStrategies.some((ss) => ss.id === s.id),
                 )
-                if (showStrategySelector) {
-                  return (
-                    <StrategySelectDropdown
-                      options={available}
-                      activeId={activeStrategyId}
-                      onChange={handleStrategyChange}
-                    />
-                  )
-                }
                 return (
-                  <button
-                    type="button"
-                    onClick={() => setShowStrategySelector(true)}
-                    className="mb-4 text-xs font-semibold inline-flex items-center gap-1.5 underline-offset-2 hover:underline"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    Compare other strategies
-                    <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden>
-                      <path
-                        d="M5 7.5L10 12.5L15 7.5"
-                        stroke="currentColor"
-                        strokeWidth="1.75"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
+                  <StrategySelectDropdown
+                    options={available}
+                    activeId={activeStrategyId}
+                    onChange={handleStrategyChange}
+                  />
                 )
               })()}
 
