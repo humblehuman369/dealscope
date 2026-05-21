@@ -3,14 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { api, apiRequest } from '@/lib/api-client'
+import { api } from '@/lib/api-client'
 import { useSession } from '@/hooks/useSession'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { SAVED_PROPERTIES_KEYS } from '@/hooks/useSavedProperties'
 import type { PropertySnapshot } from '@/hooks/useSaveProperty'
 import { parseAddressString } from '@/utils/formatters'
-import { writeDealMakerOverrides } from '@/utils/addressIdentity'
+import { canonicalizeAddressForIdentity, writeDealMakerOverrides } from '@/utils/addressIdentity'
 import type { DealMakerUpdate } from '@/stores/dealMakerStore'
+import type { PropertyResponse } from '@dealscope/shared'
 
 export interface ApplyToDealPayload {
   marketValueOverride?: number
@@ -30,41 +31,97 @@ const SUCCESS_MESSAGES: Record<ApplyToDealKind, string> = {
 export interface UseApplyToDealOptions {
   displayAddress: string
   propertySnapshot?: PropertySnapshot | null
+  /** Called after a successful save + PATCH with the saved property id. */
+  onSuccess?: (savedPropertyId: string) => void
+}
+
+function finitePositive(value: number | undefined): number | undefined {
+  if (value == null || !Number.isFinite(value) || value <= 0) return undefined
+  return Math.round(value)
 }
 
 function buildPatchBody(payload: ApplyToDealPayload): DealMakerUpdate {
   const body: DealMakerUpdate = {}
-  if (payload.marketValueOverride != null && payload.marketValueOverride > 0) {
-    body.market_value_override = payload.marketValueOverride
+  const mv = finitePositive(payload.marketValueOverride)
+  const rent = finitePositive(payload.monthlyRentOverride)
+  const arv = finitePositive(payload.arv)
+  if (mv != null) body.market_value_override = mv
+  if (rent != null) {
+    body.monthly_rent_override = rent
+    body.monthly_rent = rent
   }
-  if (payload.monthlyRentOverride != null && payload.monthlyRentOverride > 0) {
-    body.monthly_rent_override = payload.monthlyRentOverride
-    body.monthly_rent = payload.monthlyRentOverride
-  }
-  if (payload.arv != null && payload.arv > 0) {
-    body.arv = payload.arv
-  }
+  if (arv != null) body.arv = arv
   return body
 }
 
-function buildSessionPatch(
-  payload: ApplyToDealPayload,
-): Record<string, unknown> {
+function buildSessionPatch(payload: ApplyToDealPayload): Record<string, unknown> {
   const patch: Record<string, unknown> = { origin: 'dealmaker_edit' as const }
-  if (payload.marketValueOverride != null && payload.marketValueOverride > 0) {
-    patch.listPrice = payload.marketValueOverride
-    patch.price = payload.marketValueOverride
+  const mv = finitePositive(payload.marketValueOverride)
+  const rent = finitePositive(payload.monthlyRentOverride)
+  const arv = finitePositive(payload.arv)
+  if (mv != null) {
+    patch.listPrice = mv
+    patch.price = mv
   }
-  if (payload.monthlyRentOverride != null && payload.monthlyRentOverride > 0) {
-    patch.monthlyRent = payload.monthlyRentOverride
-  }
-  if (payload.arv != null && payload.arv > 0) {
-    patch.arv = payload.arv
-  }
+  if (rent != null) patch.monthlyRent = rent
+  if (arv != null) patch.arv = arv
   return patch
 }
 
-export function useApplyToDeal({ displayAddress, propertySnapshot }: UseApplyToDealOptions) {
+function buildSnapshotFromProperty(
+  propertySnapshot: PropertySnapshot | null | undefined,
+  payload: ApplyToDealPayload,
+  cached?: PropertyResponse | null,
+): Record<string, unknown> {
+  const snapshot: Record<string, unknown> = {}
+  if (propertySnapshot) {
+    if (propertySnapshot.street !== undefined) snapshot.street = propertySnapshot.street
+    if (propertySnapshot.city !== undefined) snapshot.city = propertySnapshot.city
+    if (propertySnapshot.state !== undefined) snapshot.state = propertySnapshot.state
+    if (propertySnapshot.zipCode !== undefined) snapshot.zipCode = propertySnapshot.zipCode
+    if (propertySnapshot.bedrooms !== undefined) snapshot.bedrooms = propertySnapshot.bedrooms
+    if (propertySnapshot.bathrooms !== undefined) snapshot.bathrooms = propertySnapshot.bathrooms
+    if (propertySnapshot.sqft !== undefined) snapshot.sqft = propertySnapshot.sqft
+    if (propertySnapshot.zpid !== undefined) snapshot.zpid = propertySnapshot.zpid
+  }
+  if (cached) {
+    const listing = cached.listing
+    const details = cached.details
+    const valuations = cached.valuations
+    if (listing?.list_price != null) snapshot.listPrice = listing.list_price
+    if (valuations?.value_iq_estimate != null) snapshot.value_iq_estimate = valuations.value_iq_estimate
+    if (details?.bedrooms != null) snapshot.bedrooms = details.bedrooms
+    if (details?.bathrooms != null) snapshot.bathrooms = details.bathrooms
+    if (details?.square_footage != null) snapshot.sqft = details.square_footage
+    if (cached.rentals?.monthly_rent_ltr != null) snapshot.monthlyRent = cached.rentals.monthly_rent_ltr
+    if (cached.market?.property_taxes_annual != null) {
+      snapshot.propertyTaxes = cached.market.property_taxes_annual
+    }
+    if (cached.market?.insurance_annual != null) snapshot.insurance = cached.market.insurance_annual
+  }
+  const mv = finitePositive(payload.marketValueOverride)
+  const rent = finitePositive(payload.monthlyRentOverride)
+  const arv = finitePositive(payload.arv)
+  if (mv != null) {
+    snapshot.listPrice = mv
+    snapshot.list_price = mv
+  }
+  if (rent != null) {
+    snapshot.monthlyRent = rent
+    snapshot.rent_estimate = rent
+  }
+  if (arv != null) snapshot.arv = arv
+  if (propertySnapshot?.listPrice != null && snapshot.listPrice == null) {
+    snapshot.listPrice = propertySnapshot.listPrice
+  }
+  return snapshot
+}
+
+export function useApplyToDeal({
+  displayAddress,
+  propertySnapshot,
+  onSuccess,
+}: UseApplyToDealOptions) {
   const { isAuthenticated } = useSession()
   const { openAuthModal } = useAuthModal()
   const queryClient = useQueryClient()
@@ -72,18 +129,26 @@ export function useApplyToDeal({ displayAddress, propertySnapshot }: UseApplyToD
   const pendingRef = useRef<{ payload: ApplyToDealPayload; kind: ApplyToDealKind } | null>(null)
 
   const persistToDeal = useCallback(
-    async (payload: ApplyToDealPayload, kind: ApplyToDealKind) => {
-      if (!displayAddress) {
-        throw new Error('Address is required to save')
+    async (payload: ApplyToDealPayload, kind: ApplyToDealKind): Promise<string | null> => {
+      if (!displayAddress?.trim()) {
+        toast.error('Address is required to save')
+        return null
       }
 
       const patchBody = buildPatchBody(payload)
       if (Object.keys(patchBody).length === 0) {
-        throw new Error('No value to apply')
+        toast.error('No valid value to apply')
+        return null
       }
 
       setIsApplying(true)
       try {
+        const canonical = canonicalizeAddressForIdentity(displayAddress)
+        const cachedProperty = queryClient.getQueryData<PropertyResponse>([
+          'property-search',
+          canonical,
+        ])
+
         const params = new URLSearchParams({ address: displayAddress })
         if (propertySnapshot?.zpid) params.set('zpid', propertySnapshot.zpid)
 
@@ -95,22 +160,11 @@ export function useApplyToDeal({ displayAddress, propertySnapshot }: UseApplyToD
 
         if (!propertyId) {
           const parsed = parseAddressString(displayAddress)
-          const snapshot: Record<string, unknown> = {}
-          if (propertySnapshot) {
-            if (propertySnapshot.street !== undefined) snapshot.street = propertySnapshot.street
-            if (propertySnapshot.city !== undefined) snapshot.city = propertySnapshot.city
-            if (propertySnapshot.state !== undefined) snapshot.state = propertySnapshot.state
-            if (propertySnapshot.zipCode !== undefined) snapshot.zipCode = propertySnapshot.zipCode
-            if (propertySnapshot.bedrooms !== undefined) snapshot.bedrooms = propertySnapshot.bedrooms
-            if (propertySnapshot.bathrooms !== undefined) snapshot.bathrooms = propertySnapshot.bathrooms
-            if (propertySnapshot.sqft !== undefined) snapshot.sqft = propertySnapshot.sqft
-            if (propertySnapshot.listPrice !== undefined) snapshot.listPrice = propertySnapshot.listPrice
-            if (propertySnapshot.zpid !== undefined) snapshot.zpid = propertySnapshot.zpid
-          }
+          const snapshot = buildSnapshotFromProperty(propertySnapshot, payload, cachedProperty)
 
           try {
             const created = await api.post<{ id: string }>('/api/v1/properties/saved', {
-              address_street: parsed.street,
+              address_street: parsed.street || displayAddress.split(',')[0]?.trim() || displayAddress,
               address_city: parsed.city || undefined,
               address_state: parsed.state || undefined,
               address_zip: parsed.zip || undefined,
@@ -134,13 +188,11 @@ export function useApplyToDeal({ displayAddress, propertySnapshot }: UseApplyToD
         }
 
         if (!propertyId) {
-          throw new Error('Could not save property')
+          toast.error('Could not save property')
+          return null
         }
 
-        await apiRequest(`/api/v1/properties/saved/${propertyId}/deal-maker`, {
-          method: 'PATCH',
-          body: patchBody,
-        })
+        await api.patch(`/api/v1/properties/saved/${propertyId}/deal-maker`, patchBody)
 
         writeDealMakerOverrides(displayAddress, buildSessionPatch(payload), {
           origin: 'dealmaker_edit',
@@ -151,6 +203,8 @@ export function useApplyToDeal({ displayAddress, propertySnapshot }: UseApplyToD
           queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.detail(propertyId) }),
           queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all }),
         ])
+
+        onSuccess?.(propertyId)
 
         toast.success(SUCCESS_MESSAGES[kind], {
           action: {
@@ -163,23 +217,6 @@ export function useApplyToDeal({ displayAddress, propertySnapshot }: UseApplyToD
         })
 
         return propertyId
-      } finally {
-        setIsApplying(false)
-      }
-    },
-    [displayAddress, propertySnapshot, queryClient],
-  )
-
-  const applyToDeal = useCallback(
-    async (payload: ApplyToDealPayload, kind: ApplyToDealKind) => {
-      if (!isAuthenticated) {
-        pendingRef.current = { payload, kind }
-        openAuthModal('login')
-        return
-      }
-
-      try {
-        await persistToDeal(payload, kind)
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to apply value'
         toast.error(message, {
@@ -190,8 +227,22 @@ export function useApplyToDeal({ displayAddress, propertySnapshot }: UseApplyToD
             },
           },
         })
-        throw error
+        return null
+      } finally {
+        setIsApplying(false)
       }
+    },
+    [displayAddress, propertySnapshot, queryClient, onSuccess],
+  )
+
+  const applyToDeal = useCallback(
+    async (payload: ApplyToDealPayload, kind: ApplyToDealKind): Promise<string | null> => {
+      if (!isAuthenticated) {
+        pendingRef.current = { payload, kind }
+        openAuthModal('login')
+        return null
+      }
+      return persistToDeal(payload, kind)
     },
     [isAuthenticated, openAuthModal, persistToDeal],
   )
@@ -200,17 +251,7 @@ export function useApplyToDeal({ displayAddress, propertySnapshot }: UseApplyToD
     if (!isAuthenticated || !pendingRef.current) return
     const pending = pendingRef.current
     pendingRef.current = null
-    void persistToDeal(pending.payload, pending.kind).catch((error) => {
-      const message = error instanceof Error ? error.message : 'Failed to apply value'
-      toast.error(message, {
-        action: {
-          label: 'Retry',
-          onClick: () => {
-            void persistToDeal(pending.payload, pending.kind)
-          },
-        },
-      })
-    })
+    void persistToDeal(pending.payload, pending.kind)
   }, [isAuthenticated, persistToDeal])
 
   return { applyToDeal, isApplying }

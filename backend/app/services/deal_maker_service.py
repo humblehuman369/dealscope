@@ -349,7 +349,7 @@ class DealMakerService:
         updates_dict = updates.model_dump(exclude_unset=True)
 
         for key, value in updates_dict.items():
-            if value is not None and key in record_dict:
+            if value is not None:
                 record_dict[key] = value
 
         # Update timestamp

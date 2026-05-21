@@ -1298,12 +1298,24 @@ async def update_deal_maker(
     if saved.deal_maker_record:
         record = DealMakerService.from_dict(saved.deal_maker_record)
     else:
-        # Create from property data if doesn't exist
+        # Create from property data if doesn't exist; seed from PATCH when snapshot is thin
         zip_code = saved.address_zip or (
             saved.property_data_snapshot.get("zipCode") if saved.property_data_snapshot else None
         )
+        snapshot = dict(saved.property_data_snapshot or {})
+        updates_dict = updates.model_dump(exclude_unset=True)
+        if updates_dict.get("market_value_override"):
+            mv = updates_dict["market_value_override"]
+            snapshot.setdefault("listPrice", mv)
+            snapshot.setdefault("list_price", mv)
+        if updates_dict.get("arv"):
+            snapshot.setdefault("arv", updates_dict["arv"])
+        if updates_dict.get("monthly_rent_override"):
+            rent = updates_dict["monthly_rent_override"]
+            snapshot.setdefault("monthlyRent", rent)
+            snapshot.setdefault("rent_estimate", rent)
         record = DealMakerService.create_from_property_data(
-            property_data=saved.property_data_snapshot or {},
+            property_data=snapshot,
             zip_code=zip_code,
         )
 

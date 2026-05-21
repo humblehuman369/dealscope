@@ -40,6 +40,8 @@ export interface UseSavePropertyResult {
   toggle: () => Promise<void>
   save: () => Promise<void>
   unsave: () => Promise<void>
+  /** Re-run saved/check (e.g. after Apply to Deal auto-save). */
+  refreshSavedCheck: () => Promise<void>
 }
 
 export function useSaveProperty({
@@ -161,5 +163,5 @@ export function useSaveProperty({
     else await save()
   }, [isSaved, savedPropertyId, save, unsave])
 
-  return { isSaved, savedPropertyId, isSaving, toggle, save, unsave }
+  return { isSaved, savedPropertyId, isSaving, toggle, save, unsave, refreshSavedCheck: checkSaved }
 }

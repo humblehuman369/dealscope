@@ -721,9 +721,22 @@ export function PriceCheckerIQScreen({
     [property],
   )
 
-  const { savedPropertyId } = useSaveProperty({ displayAddress: fullAddress, propertySnapshot })
-  const { record: dealRecord, invalidate: invalidateDealSnapshot } = useDealSnapshot(savedPropertyId)
-  const { applyToDeal, isApplying } = useApplyToDeal({ displayAddress: fullAddress, propertySnapshot })
+  const [appliedSavedPropertyId, setAppliedSavedPropertyId] = useState<string | null>(null)
+  const { savedPropertyId, refreshSavedCheck } = useSaveProperty({
+    displayAddress: fullAddress,
+    propertySnapshot,
+  })
+  const resolvedSavedPropertyId = appliedSavedPropertyId ?? savedPropertyId
+  const { record: dealRecord, invalidate: invalidateDealSnapshot } =
+    useDealSnapshot(resolvedSavedPropertyId)
+  const { applyToDeal, isApplying } = useApplyToDeal({
+    displayAddress: fullAddress,
+    propertySnapshot,
+    onSuccess: (id) => {
+      setAppliedSavedPropertyId(id)
+      void refreshSavedCheck()
+    },
+  })
   // Align with buildParams: valid if zpid OR usable fullAddress (same length check buildParams uses)
   const hasValidSubject = Boolean(
     property.zpid || (fullAddress && fullAddress.replace(/,|\s/g, '').length > 2),
@@ -1163,25 +1176,27 @@ export function PriceCheckerIQScreen({
   const improvedRentApplied = valuesMatch(dealRecord?.monthly_rent_override, displayImprovedRent)
 
   const handleApplyMarketValue = () => {
-    void applyToDeal({ marketValueOverride: displayMarketValue }, 'market_value').then(() =>
-      invalidateDealSnapshot(),
-    )
+    void applyToDeal({ marketValueOverride: displayMarketValue }, 'market_value').then((id) => {
+      if (id) invalidateDealSnapshot()
+    })
   }
 
   const handleApplyArv = () => {
-    void applyToDeal({ arv: displayArv }, 'arv').then(() => invalidateDealSnapshot())
+    void applyToDeal({ arv: displayArv }, 'arv').then((id) => {
+      if (id) invalidateDealSnapshot()
+    })
   }
 
   const handleApplyMarketRent = () => {
-    void applyToDeal({ monthlyRentOverride: displayMarketRent }, 'market_rent').then(() =>
-      invalidateDealSnapshot(),
-    )
+    void applyToDeal({ monthlyRentOverride: displayMarketRent }, 'market_rent').then((id) => {
+      if (id) invalidateDealSnapshot()
+    })
   }
 
   const handleApplyImprovedRent = () => {
-    void applyToDeal({ monthlyRentOverride: displayImprovedRent }, 'improved_rent').then(() =>
-      invalidateDealSnapshot(),
-    )
+    void applyToDeal({ monthlyRentOverride: displayImprovedRent }, 'improved_rent').then((id) => {
+      if (id) invalidateDealSnapshot()
+    })
   }
 
   const handleDownloadReport = async () => {
