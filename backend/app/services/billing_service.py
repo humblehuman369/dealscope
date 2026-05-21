@@ -260,13 +260,16 @@ class BillingService:
                 usage_reset_date=datetime.now(UTC),
             )
 
-            async with db.begin():
-                db.add(subscription)
+            # The session implicitly begins a transaction on the prior
+            # ``db.execute`` above, so ``async with db.begin()`` here would
+            # raise ``InvalidRequestError: A transaction is already begun``.
+            # Use the explicit-commit policy documented on ``get_db``.
+            db.add(subscription)
+            await db.commit()
             await db.refresh(subscription)
             logger.info(f"Created free subscription for user {user_id}")
         elif self._sync_limits_from_tier(subscription):
-            async with db.begin():
-                pass
+            await db.commit()
             await db.refresh(subscription)
             logger.info("Repaired subscription limits for user %s (tier=%s)", user_id, subscription.tier.value)
 
