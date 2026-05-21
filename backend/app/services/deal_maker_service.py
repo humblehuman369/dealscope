@@ -384,10 +384,16 @@ class DealMakerService:
                 return None
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> DealMakerRecord:
+    def from_dict(cls, data: dict[str, Any]) -> DealMakerRecord | None:
         """
         Reconstruct a DealMakerRecord from a stored dictionary.
-        Used when loading from database JSON column.
+
+        Returns ``None`` when the stored JSONB cannot satisfy the current
+        ``DealMakerRecord`` schema (e.g. older records missing fields that are
+        now required, or fields nulled out by older bugs). Callers should
+        treat ``None`` the same as "no stored record" and rebuild from
+        ``property_data_snapshot`` so PATCH /deal-maker never 500s on a
+        stale-schema record.
         """
         if not data:
             return None
@@ -395,13 +401,28 @@ class DealMakerService:
         # Never mutate the ORM JSONB dict in place (nested models are not JSON-serializable).
         payload = copy.deepcopy(data)
 
-        if "initial_assumptions" in payload and isinstance(payload["initial_assumptions"], dict):
-            payload["initial_assumptions"] = InitialAssumptions(**payload["initial_assumptions"])
+        if "initial_assumptions" in payload:
+            raw = payload["initial_assumptions"]
+            if isinstance(raw, dict):
+                try:
+                    payload["initial_assumptions"] = InitialAssumptions(**raw)
+                except ValidationError:
+                    payload.pop("initial_assumptions", None)
+            elif raw is None:
+                payload.pop("initial_assumptions", None)
 
         if "cached_metrics" in payload:
             payload["cached_metrics"] = cls._coerce_cached_metrics(payload["cached_metrics"])
 
-        return DealMakerRecord(**payload)
+        try:
+            return DealMakerRecord(**payload)
+        except ValidationError as exc:
+            logger.warning(
+                "Stored deal_maker_record failed validation against current schema; "
+                "caller should rebuild from property_data_snapshot. errors=%s",
+                exc.errors(include_url=False, include_context=False),
+            )
+            return None
 
     @classmethod
     def to_dict(cls, record: DealMakerRecord) -> dict[str, Any]:

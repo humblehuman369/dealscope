@@ -83,3 +83,53 @@ def test_from_dict_tolerates_stale_valuation_snapshot_in_cached_metrics():
     assert updated.market_value_override == 425_000
     assert updated.cached_metrics is not None
     assert updated.cached_metrics.valuation_snapshot is not None
+
+
+def test_from_dict_returns_none_when_record_missing_required_fields():
+    """Legacy saved records missing now-required fields should return None
+    instead of raising, so PATCH /deal-maker can fall back to rebuilding
+    from property_data_snapshot."""
+    initial = InitialAssumptions()
+    base = {
+        "list_price": 400_000,
+        "rent_estimate": 2_500,
+        "property_taxes": 5_000,
+        "insurance": 4_000,
+        "initial_assumptions": initial.model_dump(),
+        "buy_price": 340_000,
+        "arv": 450_000,
+        "monthly_rent": 2_500,
+    }
+
+    # list_price is None on an old record
+    bad = {**base, "list_price": None}
+    assert DealMakerService.from_dict(bad) is None
+
+    # Whole arv field nulled out
+    bad = {**base, "arv": None}
+    assert DealMakerService.from_dict(bad) is None
+
+    # monthly_rent nulled out
+    bad = {**base, "monthly_rent": None}
+    assert DealMakerService.from_dict(bad) is None
+
+
+def test_from_dict_recovers_when_initial_assumptions_shape_is_invalid():
+    """A corrupt initial_assumptions dict should be dropped (Pydantic re-fills
+    from defaults) instead of bringing the whole record down."""
+    initial = InitialAssumptions()
+    stored = {
+        "list_price": 400_000,
+        "rent_estimate": 2_500,
+        "property_taxes": 5_000,
+        "insurance": 4_000,
+        "initial_assumptions": {"bad": "shape"},
+        "buy_price": 340_000,
+        "arv": 450_000,
+        "monthly_rent": 2_500,
+    }
+    record = DealMakerService.from_dict(stored)
+    assert record is not None
+    # Defaults were applied — record is still usable for PATCH
+    assert record.initial_assumptions is not None
+    _ = DealMakerService.update_record(record, DealMakerRecordUpdate(arv=500_000))

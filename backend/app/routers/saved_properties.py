@@ -1299,11 +1299,14 @@ async def update_deal_maker(
     if not saved:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
 
-    # Get or create DealMakerRecord
-    if saved.deal_maker_record:
-        record = DealMakerService.from_dict(saved.deal_maker_record)
-    else:
-        # Create from property data if doesn't exist; seed from PATCH when snapshot is thin
+    # Get or rebuild DealMakerRecord.
+    # NOTE: from_dict returns None when the stored record is missing fields
+    # that the current schema requires (older saves, partial migrations).
+    # Treat that the same as "no record yet" and seed a fresh one from the
+    # property snapshot + PATCH payload so users on legacy data can still
+    # apply Appraiser values without hitting a 500.
+    record = DealMakerService.from_dict(saved.deal_maker_record) if saved.deal_maker_record else None
+    if record is None:
         zip_code = saved.address_zip or (
             saved.property_data_snapshot.get("zipCode") if saved.property_data_snapshot else None
         )
@@ -1367,11 +1370,11 @@ async def get_deal_maker(
     if not saved:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
 
-    # Get or create DealMakerRecord
-    if saved.deal_maker_record:
-        record = DealMakerService.from_dict(saved.deal_maker_record)
-    else:
-        # Create from property data if doesn't exist
+    # Get or rebuild DealMakerRecord. ``from_dict`` returns None if the stored
+    # record can't satisfy the current schema (legacy saves) — rebuild from
+    # snapshot and persist so the user is back on a clean record.
+    record = DealMakerService.from_dict(saved.deal_maker_record) if saved.deal_maker_record else None
+    if record is None:
         zip_code = saved.address_zip or (
             saved.property_data_snapshot.get("zipCode") if saved.property_data_snapshot else None
         )
@@ -1380,7 +1383,6 @@ async def get_deal_maker(
             zip_code=zip_code,
         )
 
-        # Save the newly created record (sanitize so JSONB never gets inf/nan)
         saved.deal_maker_record = sanitize_for_json_storage(DealMakerService.to_dict(record))
         await db.commit()
         await db.refresh(saved)
