@@ -1394,6 +1394,10 @@ export function PriceCheckerIQScreen({
                       }}
                       className="text-lg font-bold text-[var(--text-heading)] tabular-nums bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/30 rounded px-1.5 py-0.5 w-full"
                     />
+                  ) : loading ? (
+                    <div className="text-lg font-bold text-[var(--text-heading)] tabular-nums opacity-60">
+                      …
+                    </div>
                   ) : appraisalUnavailable ? (
                     <div className="text-lg font-bold text-[var(--text-heading)] opacity-60">
                       Unavailable
@@ -1403,9 +1407,7 @@ export function PriceCheckerIQScreen({
                       className="text-lg font-bold text-[var(--text-heading)] tabular-nums"
                       style={{ fontVariantNumeric: 'tabular-nums' }}
                     >
-                      {loading
-                        ? '...'
-                        : formatCurrency(isSale ? displayMarketValue : displayMarketRent)}
+                      {formatCurrency(isSale ? displayMarketValue : displayMarketRent)}
                       {!isSale && (
                         <span className="text-xs font-normal text-[var(--text-heading)]">/mo</span>
                       )}
@@ -1415,7 +1417,9 @@ export function PriceCheckerIQScreen({
                     As-Is Condition
                   </div>
                   <div className="text-[13px] font-medium text-[var(--text-heading)]">
-                    {appraisalUnavailable ? (
+                    {loading ? (
+                      <span className="text-[var(--text-body)] opacity-70">Loading comps…</span>
+                    ) : appraisalUnavailable ? (
                       <span className="text-[var(--status-warning)]">
                         No comp prices available — pick comps with sale prices to compute a range
                       </span>
@@ -1482,6 +1486,10 @@ export function PriceCheckerIQScreen({
                       }}
                       className="text-lg font-bold text-white tabular-nums bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/30 rounded px-1.5 py-0.5 w-full"
                     />
+                  ) : loading ? (
+                    <div className="text-lg font-bold text-white tabular-nums opacity-60">
+                      …
+                    </div>
                   ) : appraisalUnavailable ? (
                     <div className="text-lg font-bold text-[var(--text-heading)] opacity-60">
                       Unavailable
@@ -1491,7 +1499,7 @@ export function PriceCheckerIQScreen({
                       className="text-lg font-bold text-white tabular-nums"
                       style={{ fontVariantNumeric: 'tabular-nums' }}
                     >
-                      {loading ? '...' : formatCurrency(isSale ? displayArv : displayImprovedRent)}
+                      {formatCurrency(isSale ? displayArv : displayImprovedRent)}
                       {!isSale && (
                         <span className="text-xs font-normal text-[var(--text-heading)]">/mo</span>
                       )}
