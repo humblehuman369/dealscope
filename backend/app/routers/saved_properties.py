@@ -488,11 +488,16 @@ async def save_property(
     Enforces subscription property limit (Starter: 10, Pro: unlimited).
     """
     subscription = await billing_service.get_or_create_subscription(db, current_user.id)
-    if not subscription.can_save_property():
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Property save limit reached ({subscription.properties_limit} properties). Upgrade to Pro for unlimited saves.",
-        )
+    if not current_user.is_superuser and not subscription.can_save_property():
+        props_limit = subscription.tier_properties_limit()
+        if subscription.is_premium():
+            detail = "Unable to save property. Please contact support."
+        else:
+            detail = (
+                f"Property save limit reached ({subscription.properties_count}/{props_limit} properties). "
+                "Upgrade to Pro for unlimited saves."
+            )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
 
     logger.info(f"Save property request received for user {current_user.id}")
     logger.debug(

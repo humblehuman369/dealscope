@@ -227,6 +227,22 @@ class BillingService:
     # Subscription Management
     # ===========================================
 
+    @staticmethod
+    def _sync_limits_from_tier(subscription: Subscription) -> bool:
+        """Repair denormalized limit columns when they drift from ``tier``."""
+        limits = TIER_LIMITS[subscription.tier]
+        changed = False
+        if subscription.properties_limit != limits["properties_limit"]:
+            subscription.properties_limit = limits["properties_limit"]
+            changed = True
+        if subscription.searches_per_month != limits["searches_per_month"]:
+            subscription.searches_per_month = limits["searches_per_month"]
+            changed = True
+        if subscription.api_calls_per_month != limits["api_calls_per_month"]:
+            subscription.api_calls_per_month = limits["api_calls_per_month"]
+            changed = True
+        return changed
+
     async def get_or_create_subscription(self, db: AsyncSession, user_id: uuid.UUID) -> Subscription:
         """Get existing subscription or create free tier."""
         result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
@@ -248,6 +264,11 @@ class BillingService:
                 db.add(subscription)
             await db.refresh(subscription)
             logger.info(f"Created free subscription for user {user_id}")
+        elif self._sync_limits_from_tier(subscription):
+            async with db.begin():
+                pass
+            await db.refresh(subscription)
+            logger.info("Repaired subscription limits for user %s (tier=%s)", user_id, subscription.tier.value)
 
         return subscription
 
@@ -273,10 +294,10 @@ class BillingService:
 
         properties_count = subscription.properties_count
 
-        # Calculate remaining
-        props_limit = subscription.properties_limit
-        searches_limit = subscription.searches_per_month
-        api_limit = subscription.api_calls_per_month
+        # Calculate remaining (tier SSOT — avoids stale denormalized columns in API responses)
+        props_limit = subscription.tier_properties_limit()
+        searches_limit = subscription.tier_searches_limit()
+        api_limit = TIER_LIMITS[subscription.tier]["api_calls_per_month"]
 
         # Handle unlimited (-1)
         props_remaining = -1 if props_limit == -1 else max(0, props_limit - properties_count)

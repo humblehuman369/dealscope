@@ -100,23 +100,32 @@ class Subscription(Base):
         """Check if user has a paid subscription."""
         return self.tier == SubscriptionTier.PRO
 
+    def tier_properties_limit(self) -> int:
+        """Effective save cap from tier config (not stale denormalized columns)."""
+        return TIER_LIMITS[self.tier]["properties_limit"]
+
+    def tier_searches_limit(self) -> int:
+        """Effective monthly analysis cap from tier config."""
+        return TIER_LIMITS[self.tier]["searches_per_month"]
+
     def can_save_property(self, current_count: int | None = None) -> bool:
         """Check if user can save another property.
 
-        Uses the denormalized ``properties_count`` column by default.
-        ``current_count`` is accepted for backward compatibility but
-        ignored when the column is populated.
+        Uses tier limits as source of truth so Pro is never blocked when
+        ``properties_limit`` drifted out of sync with ``tier``.
         """
-        if self.properties_limit == -1:
+        limit = self.tier_properties_limit()
+        if limit == -1:
             return True
         count = self.properties_count if current_count is None else current_count
-        return count < self.properties_limit
+        return count < limit
 
     def can_search(self) -> bool:
         """Check if user has searches remaining."""
-        if self.searches_per_month == -1:
+        limit = self.tier_searches_limit()
+        if limit == -1:
             return True
-        return self.searches_used < self.searches_per_month
+        return self.searches_used < limit
 
     def increment_search(self) -> None:
         """Increment search counter."""
