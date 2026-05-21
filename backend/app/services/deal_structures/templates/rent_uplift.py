@@ -88,22 +88,18 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     if bump_pct > 12:
         sel_reason = "The gap needs a larger rent lift — verify comps before leaning on this path."
 
-    bump_dollars = max(0, round(actual_bump))
-    pct_label = f"+{bump_pct:.1f}%" if bump_pct >= 0 else f"{bump_pct:.1f}%"
     return DealStructure(
         id=ID,
         family=FAMILY,
         family_label=FAMILY_LABEL,
         realism_label=realism_label,
         headline=f"Target Rent → ${round(new_rent):,}",
-        # Math-carrying bullets — "Market price" leads so all option cards share
-        # the same anchor row, then the rent target sits below as the lever this
-        # path is actually pulling. The arithmetic expression is split onto its
-        # own line so it doesn't compete with the label for visual weight.
+        # Discovery card bullets — same three-row shape as other options (Market
+        # Price, lever, 1st mortgage at list-price baseline).
         bullets=[
-            f"Market price: {fmt_money(ctx.list_price)}",
-            "Target Rent:",
-            f"${round(ctx.monthly_rent):,} + ${bump_dollars:,} → ${round(new_rent):,}  {pct_label}",
+            f"Market Price: {fmt_money(ctx.list_price)}",
+            f"Target Rent: ${round(new_rent):,}",
+            f"1st Mortgage: {fmt_money(ctx.baseline_loan_amount)} @ {ctx.interest_rate * 100:.1f}%",
         ],
         # Compact closing line — points the user to the deeper tool instead of
         # restating the math already shown above.

@@ -245,7 +245,7 @@ def solve(
     # Each bullet uses the "Label: before → after" pattern for at-a-glance scanning.
     bullets = [
         f"Target price:\u00a0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
-        f"Seller 2nd:\u00a0{fmt_money(chosen_second)} → 0%, {DEFAULT_BALLOON_YEARS}yr balloon",
+        f"Seller 2nd:\u00a0{fmt_money(chosen_second)} (0%, {DEFAULT_BALLOON_YEARS}yr balloon)",
         f"Target Rent:\u00a0${round(ctx.monthly_rent):,} → ${round(new_rent):,}  +{bump_pct:.1f}%",
     ]
     # Combined selection-reason + savings so the card only renders one supporting paragraph.
