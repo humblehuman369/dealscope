@@ -20,7 +20,6 @@ import {
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { ExploreDealGapIQSection } from '@/components/seo/ExploreDealGapIQSection'
-import './hero-blend.css'
 
 interface Props {
   onPointAndScan?: () => void
@@ -233,112 +232,94 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
 
 function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => void }) {
   return (
-    <section className="hero-v4-blend pb-14 pt-12 md:pt-16" aria-labelledby="hero-heading">
-      <div className="hero-v4-blend__atmo-glow" aria-hidden="true" />
-      <div className="hero-v4-blend__atmo-grid" aria-hidden="true" />
+    <section className="mx-auto max-w-7xl px-6 pb-14 pt-12 md:pt-16">
+      <div className="grid items-center gap-12 lg:grid-cols-12">
+        <div className="space-y-8 lg:col-span-7">
+          <div className="inline-flex items-center gap-2 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1.5 text-sm font-bold text-[var(--accent-sky)]">
+            <span className="h-2 w-2 rounded-full bg-[var(--accent-sky)] animate-pulse" />
+            <span>Built by an Investor for Investors</span>
+          </div>
 
-      <div className="relative mx-auto max-w-7xl px-6">
-        <div className="hero-v4-blend__stage flex flex-col-reverse gap-8 lg:block lg:gap-0">
-          <div className="hero-v4-blend__copy space-y-8">
-            <div className="inline-flex items-center gap-2 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1.5 text-sm font-bold text-[var(--accent-sky)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--accent-sky)] animate-pulse" />
-              <span>Built by an Investor for Investors</span>
+          <div>
+            <h1
+              className="text-[clamp(2rem,7vw,5.25rem)] text-[var(--text-heading)]"
+              style={HEADLINE_STYLE}
+            >
+              Stop scrolling listings.
+              <br />
+              <span className="text-[var(--accent-sky)]">Start spotting real deals.</span>
+              <br />
+              Know what to offer.
+            </h1>
+
+            <p className="mt-6 max-w-xl text-xl font-semibold leading-tight text-[var(--text-body)] md:text-2xl">
+              The Discovery tells you the gap.
+              <br />
+              We tell you how to close it.
+              <br />
+              <span className="text-[var(--text-secondary)]">
+                Most tools stop at the numbers. We give you four complete offer paths, including
+                creative finance structures most investors never consider.
+              </span>
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4 pt-2 sm:flex-row">
+            <PrimaryButton onClick={onStart}>
+              Run Free Discovery
+              <Search className="h-5 w-5" />
+            </PrimaryButton>
+            <SecondaryButton onClick={onDemo}>
+              <Play className="h-5 w-5 fill-current" />
+              Watch 60-second demo
+            </SecondaryButton>
+          </div>
+
+        </div>
+
+        <div className="relative lg:col-span-5">
+          <div className="relative overflow-hidden rounded-3xl border border-[var(--border-default)] shadow-[var(--shadow-card)]">
+            <Image
+              src="/images/phone-house-hero.png"
+              alt="DealGapIQ analyzing a residential property on a phone, with a suburban home in the background"
+              width={1024}
+              height={826}
+              priority
+              sizes="(max-width: 1024px) 100vw, 520px"
+              className="aspect-[16/14] w-full object-cover"
+            />
+
+            {/* TODO(brad): swap with real hero-badges data */}
+            <div
+              data-fake-marker="hero-badges"
+              className="absolute right-6 top-6 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)]/90 px-4 py-2 text-sm shadow-[var(--shadow-card)] backdrop-blur-md"
+            >
+              <div className="flex items-center gap-2 font-bold text-[var(--text-heading)]">
+                <Check className="h-4 w-4 text-[var(--status-positive)]" />
+                <span>-6.4% Deal Gap</span>
+              </div>
             </div>
 
-            <div>
-              <h1
-                id="hero-heading"
-                className="text-[clamp(2rem,7vw,5.25rem)] text-[var(--text-heading)]"
-                style={HEADLINE_STYLE}
-              >
-                Stop scrolling listings.
-                <br />
-                <span className="text-[var(--accent-sky)]">Start spotting real deals.</span>
-                <br />
-                Know what to offer.
-              </h1>
-
-              <p className="mt-6 max-w-xl text-xl font-semibold leading-tight text-[var(--text-body)] md:text-2xl">
-                The Discovery tells you the gap.
-                <br />
-                We tell you how to close it.
-                <br />
-                <span className="text-[var(--text-secondary)]">
-                  Most tools stop at the numbers. We give you four complete offer paths, including
-                  creative finance structures most investors never consider.
-                </span>
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-4 pt-2 sm:flex-row">
-              <PrimaryButton onClick={onStart}>
-                Run Free Discovery
-                <Search className="h-5 w-5" />
-              </PrimaryButton>
-              <SecondaryButton onClick={onDemo}>
-                <Play className="h-5 w-5 fill-current" />
-                Watch 60-second demo
-              </SecondaryButton>
+            <div className="absolute bottom-6 left-6 max-w-[210px] rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)]/90 px-5 py-3 text-xs shadow-[var(--shadow-card)] backdrop-blur">
+              <div className="mb-1 font-mono text-[10px] uppercase text-[var(--text-secondary)]">
+                1014-16 N J St, Lake Worth, FL
+              </div>
+              <div className="font-bold text-[var(--text-heading)]">
+                4 offer paths ready - 12s analysis
+              </div>
             </div>
           </div>
 
-          <div className="hero-v4-blend__image-stage">
-            <div className="hero-v4-blend__image-mask">
-              <Image
-                src="/images/phone-house-hero.png"
-                alt="DealGapIQ analyzing a residential property on a phone, with a suburban home in the background"
-                width={1024}
-                height={826}
-                priority
-                sizes="(max-width: 1023px) 100vw, 58vw"
-                className="hero-v4-blend__photo"
-              />
-              <div className="hero-v4-blend__seam-scrim" aria-hidden="true" />
-
-              {/* TODO(brad): swap with real hero-badges data */}
-              <div
-                data-fake-marker="hero-badges"
-                className="absolute right-4 top-4 z-20 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)]/90 px-4 py-2 text-sm shadow-[var(--shadow-card)] backdrop-blur-md sm:right-6 sm:top-6"
-              >
-                <div className="flex items-center gap-2 font-bold text-[var(--text-heading)]">
-                  <Check className="h-4 w-4 text-[var(--status-positive)]" />
-                  <span>-6.4% Deal Gap</span>
-                </div>
-              </div>
-
-              <div className="absolute bottom-4 left-4 z-20 max-w-[210px] rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)]/90 px-5 py-3 text-xs shadow-[var(--shadow-card)] backdrop-blur sm:bottom-6 sm:left-6">
-                <div className="mb-1 font-mono text-[10px] uppercase text-[var(--text-secondary)]">
-                  1014-16 N J St, Lake Worth, FL
-                </div>
-                <div className="font-bold text-[var(--text-heading)]">
-                  4 offer paths ready - 12s analysis
-                </div>
-              </div>
+          {/* TODO(brad): swap with real hero-badges data */}
+          <div
+            data-fake-marker="hero-badges"
+            className="absolute -bottom-5 -left-3 flex items-center gap-4 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] px-5 py-4 shadow-[var(--shadow-card)] md:-left-5"
+          >
+            <div>
+              <div className="text-xs text-[var(--text-secondary)]">Avg. improvement</div>
+              <div className="text-3xl font-black text-[var(--status-positive)]">+22%</div>
             </div>
-
-            {/* TODO(brad): swap with real hero-badges data — in-flow on mobile */}
-            <div
-              data-fake-marker="hero-badges"
-              className="mt-4 flex items-center gap-4 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] px-5 py-4 shadow-[var(--shadow-card)] lg:hidden"
-            >
-              <div>
-                <div className="text-xs text-[var(--text-secondary)]">Avg. improvement</div>
-                <div className="text-3xl font-black text-[var(--status-positive)]">+22%</div>
-              </div>
-              <TrendingUp className="h-8 w-8 text-[var(--status-positive)]" />
-            </div>
-
-            {/* TODO(brad): swap with real hero-badges data — desktop overlay on image */}
-            <div
-              data-fake-marker="hero-badges"
-              className="hero-v4-blend__stat-desktop items-center gap-4 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] px-5 py-4 shadow-[var(--shadow-card)]"
-            >
-              <div>
-                <div className="text-xs text-[var(--text-secondary)]">Avg. improvement</div>
-                <div className="text-3xl font-black text-[var(--status-positive)]">+22%</div>
-              </div>
-              <TrendingUp className="h-8 w-8 text-[var(--status-positive)]" />
-            </div>
+            <TrendingUp className="h-8 w-8 text-[var(--status-positive)]" />
           </div>
         </div>
       </div>
