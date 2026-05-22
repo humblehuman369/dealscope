@@ -32,11 +32,11 @@ backgrounds. Borders at 7% white opacity in dark mode.
 
 | Role | Dark Mode | Light Mode | CSS Variable |
 |------|-----------|------------|--------------|
-| **Primary Accent (Sky)** | `#0EA5E9` | `#0284C7` | `--accent-sky` |
-| **Accent Highlight** | `#38bdf8` | `#0EA5E9` | `--accent-sky-light` |
-| **Brand Blue** | `#0465f2` | `#0052CC` | `--accent-brand-blue` |
-| **Gradient Start** | `#0465f2` | `#0052CC` | `--accent-gradient-from` |
-| **Gradient End** | `#0EA5E9` | `#0284C7` | `--accent-gradient-to` |
+| **Primary Accent (Sky)** | `#0EA5E9` | `#0465F2` | `--accent-sky` |
+| **Accent Highlight** | `#38bdf8` | `#0354D1` | `--accent-sky-light` |
+| **Brand Blue** | `#0465f2` | `#0465F2` | `--accent-brand-blue` |
+| **Gradient Start** | `#0465f2` | `#0465F2` | `--accent-gradient-from` |
+| **Gradient End** | `#0EA5E9` | `#0354D1` | `--accent-gradient-to` |
 
 The primary accent (`#0EA5E9`) is the signature DealGapIQ color. It appears on
 CTAs, links, interactive elements, focus rings, and the "IQ" portion of the logo.
@@ -50,7 +50,7 @@ Brand Blue (`#0465f2`) is used for gradient origins and deeper button states.
 | **Section** | `#060B14` | `#F1F4F8` | `--surface-section` | Alternating section backgrounds |
 | **Card** | `#000000` | `#FFFFFF` | `--surface-card` | Cards, panels, modals |
 | **Card Hover** | `#0C1220` | `#F5F7FA` | `--surface-card-hover` | Card hover state |
-| **Elevated** | `#0C1220` | `#F8FAFC` | `--surface-elevated` | Tooltips, dropdowns, nested panels |
+| **Elevated** | `#0C1220` | `#F1F4F8` | `--surface-elevated` | Tooltips, dropdowns, nested panels |
 | **Input** | `#0C1220` | `#FFFFFF` | `--surface-input` | Form inputs |
 | **Overlay** | `rgba(0,0,0,0.8)` | `rgba(0,0,0,0.5)` | `--surface-overlay` | Modal backdrops |
 
@@ -65,13 +65,13 @@ Never hardcode hex backgrounds in components. Use CSS variables.
 
 | Tier | Dark Mode | Light Mode | CSS Variable | Usage |
 |------|-----------|------------|--------------|-------|
-| **Heading** | `#F1F5F9` | `#000000` | `--text-heading` | Page titles, section headers |
+| **Heading** | `#F1F5F9` | `#0F172A` | `--text-heading` | Page titles, section headers |
 | **Body** | `#CBD5E1` | `#1E293B` | `--text-body` | Paragraphs, descriptions |
-| **Secondary** | `#94A3B8` | `#334155` | `--text-secondary` | Supporting text, metadata |
-| **Label** | `#7C8CA0` | `#475569` | `--text-label` | Field labels, captions |
-| **Muted** | `#64748B` | `#64748B` | `--text-muted` | Disabled, timestamps |
+| **Secondary** | `#94A3B8` | `#475569` | `--text-secondary` | Supporting text, metadata |
+| **Label** | `#7C8CA0` | `#64748B` | `--text-label` | Field labels, captions |
+| **Muted** | `#64748B` | `#94A3B8` | `--text-muted` | Disabled, timestamps |
 | **Inverse** | `#000000` | `#FFFFFF` | `--text-inverse` | Text on accent backgrounds |
-| **Link** | `#0EA5E9` | `#0284C7` | `--text-link` | Hyperlinks, interactive text |
+| **Link** | `#0EA5E9` | `#0465F2` | `--text-link` | Hyperlinks, interactive text |
 
 All tiers maintain WCAG AA contrast (4.5:1 minimum) against their
 expected surface backgrounds.
@@ -83,11 +83,11 @@ data state — never for decoration or strategy identification.
 
 | Status | Dark Mode | Light Mode | CSS Variable | Meaning |
 |--------|-----------|------------|--------------|---------|
-| **Positive** | `#34d399` | `#059669` | `--status-positive` | Profit, cash flow, success |
-| **Warning** | `#fbbf24` | `#D97706` | `--status-warning` | Caution, moderate risk, scores |
-| **Negative** | `#f87171` | `#DC2626` | `--status-negative` | Loss, high risk, failure |
-| **Info** | `#38bdf8` | `#0284C7` | `--status-info` | Neutral data, informational |
-| **Income Value** | `#FACC15` | `#A16207` | `--status-income-value` | Revenue, income highlights |
+| **Positive** | `#34d399` | `#15803D` | `--status-positive` | Profit, cash flow, success |
+| **Warning** | `#fbbf24` | `#B7791F` | `--status-warning` | Caution, moderate risk, scores |
+| **Negative** | `#f87171` | `#B42318` | `--status-negative` | Loss, high risk, failure |
+| **Info** | `#38bdf8` | `#0465F2` | `--status-info` | Neutral data, informational |
+| **Income Value** | `#FACC15` | `#B7791F` | `--status-income-value` | Revenue, income highlights |
 
 ### 2.5 Strategy Colors
 
@@ -109,8 +109,8 @@ colors to prevent confusion between "what strategy" and "how it performed."
 |-------|-----------|------------|--------------|-------|
 | **Subtle** | `rgba(14,165,233,0.25)` | `#D5DBE4` | `--border-subtle` | Decorative separators |
 | **Default** | `#334155` | `#B8C4CE` | `--border-default` | Card borders, dividers |
-| **Strong** | `#475569` | `#8896A6` | `--border-strong` | Active state borders |
-| **Focus** | `#0EA5E9` | `#0284C7` | `--border-focus` | Focus rings, selected state |
+| **Strong** | `#475569` | `#8896A6` | `--border-strong` | Emphasis borders, disabled-adjacent UI |
+| **Focus** | `#0EA5E9` | `#0465F2` | `--border-focus` | Focus rings, selected state |
 
 ---
 

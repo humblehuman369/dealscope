@@ -11,11 +11,11 @@ interface DealStructuresNarrativeProps {
 const TAG_COLOR: Record<string, string> = {
   RENT: '#a78bfa',
   EQUITY: '#84cc16',
-  TERMS: 'var(--accent-sky)',
+  TERMS: 'var(--strategy-ltr)',
   PRICE: '#84cc16',
   BLEND: '#8b5cf6',
-  LOAN: 'var(--accent-sky)',
-  RATE: 'var(--accent-sky)',
+  LOAN: 'var(--strategy-ltr)',
+  RATE: 'var(--strategy-ltr)',
   CASH: '#22c55e',
   'LIVE-IN': '#f97316',
   COMBO: '#8b5cf6',
@@ -59,14 +59,14 @@ export function DealStructuresNarrative({ paragraphs }: DealStructuresNarrativeP
           color: 'var(--text-heading)',
         }}
       >
-        <span style={{ color: 'var(--accent-sky)' }}>Here&apos;s</span> the deal in plain English
+        Here&apos;s the deal in plain English
       </p>
       {paragraphs.map((paragraph, idx) => {
         const isCloser = idx === paragraphs.length - 1
         const match = TAG_PATTERN.exec(paragraph)
         const tag = match?.[1]
         const body = match ? paragraph.slice(match[0].length) : paragraph
-        const tagColor = (tag && TAG_COLOR[tag]) || 'var(--accent-sky)'
+        const tagColor = (tag && TAG_COLOR[tag]) || 'var(--text-secondary)'
 
         return (
           <p

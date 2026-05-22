@@ -254,24 +254,24 @@
 
 [data-theme="light"] {
   /*
-   * Light surfaces: neutral canvas so white cards read clearly; sky tint on chrome only.
-   * Brand blue = interaction (sliders, links, CTAs). Green/red/amber = financial semantics.
+   * Cool slate canvas + white cards (brand guide). Worksheets stay white on gray canvas.
+   * Brand blue = interaction only. Green/red/amber = financial semantics.
    */
-  --surface-base: #ffffff;
+  --surface-base: #eaeef3;
   --surface-chrome: #ffffff;
-  --surface-section: #ffffff;
+  --surface-section: #f1f4f8;
   --surface-card: #ffffff;
   --surface-card-elevated: rgba(255, 255, 255, 0.96);
-  --surface-card-hover: #f1f5f9;
-  --surface-elevated: #f1f5f9;
+  --surface-card-hover: #f5f7fa;
+  --surface-elevated: #f1f4f8;
   --surface-input: #ffffff;
   --surface-overlay: rgba(7, 23, 46, 0.45);
 
-  --text-heading: #18201c;
-  --text-body: #18201c;
-  --text-secondary: #6f756d;
-  --text-label: #6f756d;
-  --text-muted: #aab2bd;
+  --text-heading: #0f172a;
+  --text-body: #1e293b;
+  --text-secondary: #475569;
+  --text-label: #64748b;
+  --text-muted: #94a3b8;
   --text-inverse: #ffffff;
   --text-link: #0465f2;
 
@@ -294,15 +294,14 @@
   --strategy-house-hack: #0f766e;
   --strategy-wholesale: #4d7c0f;
 
-  /* Hairlines on nav/tab chrome — sky hue, not neutral gray */
   --border-chrome: rgba(15, 164, 233, 0.14);
-  --border-subtle: #e1e8ed;
-  --border-default: #aab2bd;
-  --border-strong: #6f756d;
+  --border-subtle: #d5dbe4;
+  --border-default: #b8c4ce;
+  --border-strong: #8896a6;
   --border-focus: #0465f2;
 
-  --shadow-card: 0 1px 2px rgba(24, 32, 28, 0.04), 0 4px 12px rgba(4, 101, 242, 0.08);
-  --shadow-card-hover: 0 4px 16px rgba(24, 32, 28, 0.08), 0 2px 8px rgba(4, 101, 242, 0.12);
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 14px rgba(15, 23, 42, 0.04);
+  --shadow-card-hover: 0 4px 18px rgba(15, 23, 42, 0.08);
   --shadow-dropdown: 0 10px 25px rgba(24, 32, 28, 0.1), 0 4px 10px rgba(24, 32, 28, 0.06);
   --glow-sky-inset: rgba(4, 101, 242, 0.18);
   --hover-overlay: rgba(7, 23, 46, 0.05);
@@ -315,7 +314,7 @@
   --color-navy: #07172e;
 
   --color-sky-dim: rgba(4, 101, 242, 0.06);
-  --color-teal-dim: transparent;
+  --color-teal-dim: rgba(4, 101, 242, 0.03);
   --color-gold-dim: rgba(183, 121, 31, 0.14);
   --color-red-dim: rgba(180, 35, 24, 0.12);
   --color-green-dim: rgba(21, 128, 61, 0.1);
@@ -1506,7 +1505,9 @@ input[type="range"]::-moz-range-thumb {
 }
 
 [data-theme='light'] .strategy-page-shell {
-  background: var(--surface-base);
+  background:
+    radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%),
+    var(--surface-base);
 }
 
 [data-theme='dark'] .deal-gap-marker {

@@ -2044,8 +2044,10 @@ function VerdictContent() {
             <div
               className="mt-6 rounded-xl px-5 py-4"
               style={{
-                background: 'var(--surface-elevated)',
-                border: '1px solid var(--border-default)',
+                background:
+                  'linear-gradient(0deg, var(--sky-tint-fill), var(--sky-tint-fill)), var(--surface-card)',
+                border: '1px solid var(--sky-tint-border)',
+                boxShadow: 'var(--shadow-card)',
               }}
             >
               {/* Headline metric + tier badge — precision/credibility line.
@@ -2064,7 +2066,7 @@ function VerdictContent() {
                       lineHeight: 1,
                     }}
                   >
-                    <span style={{ color: 'var(--accent-sky)' }}>The</span>{' '}
+                    <span style={{ color: 'var(--text-secondary)' }}>The</span>{' '}
                     <span style={{ color: 'var(--text-heading)' }}>DealGap</span>
                   </span>
                   <span
@@ -2072,7 +2074,10 @@ function VerdictContent() {
                     style={{
                       fontSize: 'clamp(26px, 3vw, 36px)',
                       fontWeight: 800,
-                      color: 'var(--accent-sky)',
+                      color:
+                        effectiveDisplayPct >= 0
+                          ? 'var(--status-positive)'
+                          : 'var(--text-heading)',
                       lineHeight: 1,
                     }}
                   >

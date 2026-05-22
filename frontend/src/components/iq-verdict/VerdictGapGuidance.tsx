@@ -43,7 +43,7 @@ function LeverButton({ children, onClick }: { children: ReactNode; onClick: () =
         color: 'var(--text-body)',
       }}
     >
-      <span style={{ color: 'var(--accent-sky)', fontWeight: 700 }}>→ </span>
+      <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>→ </span>
       {children}
     </button>
   )
@@ -165,7 +165,7 @@ export function VerdictGapGuidance({
               fontWeight: 700,
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
-              color: 'var(--accent-sky)',
+              color: 'var(--text-label)',
             }}
           >
             Ways to make the math work
@@ -282,7 +282,7 @@ function StaticTip({ children }: { children: ReactNode }) {
         color: 'var(--text-body)',
       }}
     >
-      <span style={{ color: 'var(--accent-sky)', fontWeight: 700 }}>→ </span>
+      <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>→ </span>
       {children}
     </div>
   )
@@ -331,7 +331,7 @@ export function VerdictPositiveGuidance({
           fontWeight: 700,
           letterSpacing: '0.06em',
           textTransform: 'uppercase',
-          color: 'var(--accent-sky)',
+          color: 'var(--text-label)',
         }}
       >
         Next steps
