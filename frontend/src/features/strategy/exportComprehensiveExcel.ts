@@ -40,7 +40,15 @@ export async function downloadComprehensiveExcel(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
-    const detail = typeof errorData.detail === 'string' ? errorData.detail : ''
+    let detail = ''
+    if (typeof errorData.detail === 'string') {
+      detail = errorData.detail
+    } else if (Array.isArray(errorData.detail)) {
+      detail = errorData.detail
+        .map((item: { msg?: string }) => item?.msg)
+        .filter(Boolean)
+        .join('; ')
+    }
     if (response.status === 401) {
       throw new Error('Please sign in to download the worksheet.')
     }

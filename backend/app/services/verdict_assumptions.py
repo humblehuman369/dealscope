@@ -144,8 +144,8 @@ def apply_verdict_input_to_assumptions(
         assumptions.operating.insurance_annual = input_data.insurance
         user_keys.add("insurance")
 
+    assumptions.rehab.renovation_budget = rehab_cost
     if input_data.rehab_cost is not None:
-        assumptions.rehab.renovation_budget = input_data.rehab_cost
         user_keys.add("rehab_cost")
 
     if input_data.buy_discount_pct is not None:
@@ -162,6 +162,15 @@ def apply_verdict_input_to_assumptions(
     # Ensure purchase_price for analytics when only list/target context exists
     if assumptions.financing.purchase_price is None and input_data.purchase_price is not None:
         assumptions.financing.purchase_price = input_data.purchase_price
+
+    purchase_for_finalize = assumptions.financing.purchase_price or input_data.list_price
+    from app.services.assumption_resolver import finalize_assumptions_for_calculators
+
+    finalize_assumptions_for_calculators(
+        assumptions,
+        purchase_price=purchase_for_finalize,
+        arv=arv,
+    )
 
     return user_keys
 

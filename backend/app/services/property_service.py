@@ -1796,8 +1796,19 @@ class PropertyService:
             or 250
         )
         occupancy = property_data.rentals.occupancy_rate or 0.75
+        if occupancy > 1:
+            occupancy = occupancy / 100
         arv = property_data.valuations.arv or purchase_price * 1.10
         arv_flip = property_data.valuations.arv_flip or purchase_price * 1.06
+
+        from app.services.assumption_resolver import finalize_assumptions_for_calculators
+
+        finalize_assumptions_for_calculators(
+            assumptions,
+            purchase_price=purchase_price,
+            arv=arv,
+            arv_flip=arv_flip,
+        )
 
         results = AnalyticsResponse(
             property_id=property_id, assumptions_hash=assumptions_hash, calculated_at=datetime.now(UTC)

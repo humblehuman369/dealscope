@@ -48,6 +48,8 @@ class ComprehensiveExcelExporter:
         self.rs._create_summary_sheet(wb, property_data, analytics_data, active_strategy)
 
         ProformaExcelExporter(proforma).add_tabs_to_workbook(wb)
+        if "Assumptions" in wb.sheetnames:
+            wb["Assumptions"].title = "Proforma Assumptions"
 
         self.rs._create_cash_flow_statement_sheet(wb, property_data, analytics_data, assumptions)
         self.rs._create_dscr_analysis_sheet(wb, property_data, analytics_data, assumptions)
@@ -75,9 +77,10 @@ class ComprehensiveExcelExporter:
         return output.getvalue()
 
     def _append_user_overrides_note(self, wb: Workbook, keys: set[str]) -> None:
-        if "Assumptions" not in wb.sheetnames:
+        sheet_name = "Assumptions" if "Assumptions" in wb.sheetnames else None
+        if sheet_name is None:
             return
-        ws = wb["Assumptions"]
+        ws = wb[sheet_name]
         row = ws.max_row + 2
         ws.cell(row=row, column=1, value="User Adjustments Applied").font = Font(bold=True, size=12)
         row += 1

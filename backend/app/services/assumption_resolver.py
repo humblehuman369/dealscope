@@ -59,6 +59,38 @@ async def resolve_assumptions(
     return AllAssumptions.model_validate(base)
 
 
+def finalize_assumptions_for_calculators(
+    assumptions: AllAssumptions,
+    purchase_price: float,
+    arv: float | None = None,
+    arv_flip: float | None = None,
+) -> None:
+    """Fill computed assumption fields before strategy calculators run (mutates in place)."""
+    if purchase_price <= 0:
+        return
+
+    arv_val = arv if arv is not None and arv > 0 else purchase_price * 1.10
+    arv_f = arv_flip if arv_flip is not None and arv_flip > 0 else purchase_price * 1.06
+
+    r = assumptions.rehab
+    if r.renovation_budget is None:
+        r.renovation_budget = arv_val * r.renovation_budget_pct
+    if r.monthly_holding_costs is None:
+        r.monthly_holding_costs = (purchase_price * r.holding_costs_pct) / 12
+
+    b = assumptions.brrrr
+    if b.refinance_closing_costs is None:
+        b.refinance_closing_costs = arv_val * b.refinance_closing_costs_pct
+
+    o = assumptions.operating
+    if o.insurance_annual is None:
+        o.insurance_annual = _resolve_insurance_annual(o, purchase_price)
+
+    s = assumptions.str_assumptions
+    if s.str_insurance_annual is None:
+        s.str_insurance_annual = _resolve_insurance_annual(o, purchase_price)
+
+
 def _deep_merge(base: dict, overrides: dict) -> None:
     """Recursively merge *overrides* into *base* in-place.
 

@@ -2302,6 +2302,8 @@ function StrategyContent() {
         interestRate: dealMakerOverrides?.interestRate ?? rate,
         downPayment: dealMakerOverrides?.downPayment ?? downPaymentPct * 100,
         closingCosts: dealMakerOverrides?.closingCosts ?? closingCostsPct * 100,
+        rehabBudget: dealMakerOverrides?.rehabBudget ?? dealMakerOverrides?.rehabCost,
+        arv: dealMakerOverrides?.arv ?? (dealRecord?.arv && dealRecord.arv > 0 ? dealRecord.arv : undefined),
       }
 
       const verdictInput = buildVerdictAnalysisPayload(

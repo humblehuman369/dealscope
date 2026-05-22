@@ -172,7 +172,7 @@ async def download_comprehensive_excel(
         logger.error("Failed to build comprehensive Excel: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate Excel report",
+            detail=f"Failed to generate Excel report: {e!s}",
         )
 
     street = (
