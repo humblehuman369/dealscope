@@ -232,6 +232,15 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
 }
 
 function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => void }) {
+  const [subcopyExpanded, setSubcopyExpanded] = useState(false)
+
+  const investorPill = (
+    <div className="inline-flex items-center gap-2 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]/80 px-3 py-1 text-xs font-bold text-[var(--accent-sky)] backdrop-blur-md lg:px-4 lg:py-1.5 lg:text-sm">
+      <span className="h-2 w-2 rounded-full bg-[var(--accent-sky)] animate-pulse" />
+      <span>Built by an Investor for Investors</span>
+    </div>
+  )
+
   return (
     <section className="hero-v4-blend" aria-labelledby="hero-heading">
       <div className="hero-v4-blend__canvas">
@@ -244,21 +253,19 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
             sizes="100vw"
             className="hero-v4-blend__photo"
           />
+          <div className="hero-v4-blend__sky-glow" aria-hidden="true" />
         </div>
         <div className="hero-v4-blend__scrim" aria-hidden="true" />
         <div className="hero-v4-blend__edge-fade" aria-hidden="true" />
 
         <div className="hero-v4-blend__content">
-          <div className="hero-v4-blend__copy space-y-8">
-            <div className="inline-flex items-center gap-2 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]/80 px-4 py-1.5 text-sm font-bold text-[var(--accent-sky)] backdrop-blur-md">
-              <span className="h-2 w-2 rounded-full bg-[var(--accent-sky)] animate-pulse" />
-              <span>Built by an Investor for Investors</span>
-            </div>
+          <div className="hero-v4-blend__copy space-y-5 lg:space-y-8">
+            <div className="hidden lg:block">{investorPill}</div>
 
-            <div>
+            <div className="hero-v4-blend__animate-in">
               <h1
                 id="hero-heading"
-                className="text-[clamp(2rem,7vw,5.25rem)] text-[var(--text-heading)]"
+                className="hero-v4-blend__headline text-[var(--text-heading)]"
                 style={HEADLINE_STYLE}
               >
                 Stop scrolling listings.
@@ -268,24 +275,45 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
                 Know what to offer.
               </h1>
 
-              <p className="mt-6 max-w-xl text-xl font-semibold leading-tight text-[var(--text-body)] md:text-2xl">
+              <div className="mt-3 lg:hidden">{investorPill}</div>
+
+              <p className="hero-v4-blend__sub max-w-xl text-[var(--text-body)]">
                 The Discovery tells you the gap.
                 <br />
                 We tell you how to close it.
-                <br />
-                <span className="text-[var(--text-secondary)]">
-                  Most tools stop at the numbers. We give you four complete offer paths, including
-                  creative finance structures most investors never consider.
+                <span
+                  className={`hero-v4-blend__sub-detail text-[var(--text-secondary)] ${
+                    subcopyExpanded ? 'hero-v4-blend__sub-detail--open' : ''
+                  }`}
+                >
+                  <br className="hidden lg:block" />
+                  <span className="lg:inline">
+                    {' '}
+                    Most tools stop at the numbers. We give you four complete offer paths,
+                    including creative finance structures most investors never consider.
+                  </span>
                 </span>
+                <button
+                  type="button"
+                  className="hero-v4-blend__sub-read-more lg:hidden"
+                  aria-expanded={subcopyExpanded}
+                  onClick={() => setSubcopyExpanded((open) => !open)}
+                >
+                  {subcopyExpanded ? 'Show less' : 'Read more'}
+                </button>
               </p>
             </div>
 
-            <div className="flex flex-col gap-4 pt-2 sm:flex-row">
-              <PrimaryButton onClick={onStart}>
+            <div className="hero-v4-blend__cta hero-v4-blend__animate-in hero-v4-blend__animate-in--delay flex flex-col gap-3 lg:flex-row lg:gap-4 lg:pt-2">
+              <PrimaryButton onClick={onStart} className="hero-v4-blend__cta-primary">
                 Run Free Discovery
                 <Search className="h-5 w-5" />
               </PrimaryButton>
-              <SecondaryButton onClick={onDemo}>
+              <button type="button" onClick={onDemo} className="hero-v4-blend__demo-link lg:hidden">
+                <Play className="h-4 w-4 fill-current" aria-hidden />
+                Watch 60-second demo
+              </button>
+              <SecondaryButton onClick={onDemo} className="hidden lg:inline-flex">
                 <Play className="h-5 w-5 fill-current" />
                 Watch 60-second demo
               </SecondaryButton>
@@ -294,13 +322,16 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
             {/* TODO(brad): swap with real hero-badges data */}
             <div
               data-fake-marker="hero-badges"
-              className="hero-v4-blend__badge-stat--mobile-inline items-center gap-4 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]/90 px-5 py-4 shadow-[var(--shadow-card)] backdrop-blur-md"
+              className="hero-v4-blend__proof-strip lg:hidden"
             >
-              <div>
-                <div className="text-xs text-[var(--text-secondary)]">Avg. improvement</div>
-                <div className="text-3xl font-black text-[var(--status-positive)]">+22%</div>
+              <div className="hero-v4-blend__proof-chip text-[var(--text-heading)]">
+                <Check className="h-4 w-4 shrink-0 text-[var(--status-positive)]" />
+                <span>-6.4% Deal Gap</span>
               </div>
-              <TrendingUp className="h-8 w-8 text-[var(--status-positive)]" />
+              <div className="hero-v4-blend__proof-chip hero-v4-blend__proof-chip--stat">
+                <span className="hero-v4-blend__proof-chip-label">Avg. improvement</span>
+                <span className="hero-v4-blend__proof-chip-value">+22%</span>
+              </div>
             </div>
           </div>
         </div>
@@ -330,10 +361,7 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
           </div>
 
           {/* TODO(brad): swap with real hero-badges data */}
-          <div
-            data-fake-marker="hero-badges"
-            className="hero-v4-blend__badge-stat hero-v4-blend__badge-stat--desktop absolute items-center gap-4 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]/90 px-5 py-4 shadow-[var(--shadow-card)] backdrop-blur-md"
-          >
+          <div data-fake-marker="hero-badges" className="hero-v4-blend__badge-stat--desktop">
             <div>
               <div className="text-xs text-[var(--text-secondary)]">Avg. improvement</div>
               <div className="text-3xl font-black text-[var(--status-positive)]">+22%</div>
@@ -836,10 +864,12 @@ function PrimaryButton({
   children,
   onClick,
   size = 'lg',
+  className = '',
 }: {
   children: React.ReactNode
   onClick?: () => void
   size?: 'xs' | 'sm' | 'md' | 'lg'
+  className?: string
 }) {
   const sizeClass =
     size === 'xs'
@@ -854,7 +884,7 @@ function PrimaryButton({
     <button
       type="button"
       onClick={onClick}
-      className={`${primaryButtonClass} ${sizeClass}`}
+      className={`${primaryButtonClass} ${sizeClass} ${className}`.trim()}
       style={{
         background: 'var(--accent-sky)',
         color: 'var(--text-inverse)',
@@ -869,15 +899,17 @@ function PrimaryButton({
 function SecondaryButton({
   children,
   onClick,
+  className = '',
 }: {
   children: React.ReactNode
   onClick?: () => void
+  className?: string
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={secondaryButtonClass}
+      className={`${secondaryButtonClass} ${className}`.trim()}
       style={{
         border: '1px solid var(--accent-sky)',
         color: 'var(--accent-sky)',
