@@ -258,14 +258,14 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
             <div>
               <h1
                 id="hero-heading"
-                className="text-[clamp(2rem,7vw,5.25rem)] text-[var(--text-heading)]"
+                className="hero-v4-blend__headline text-[var(--text-heading)]"
                 style={HEADLINE_STYLE}
               >
-                Stop scrolling listings.
-                <br />
-                <span className="text-[var(--accent-sky)]">Start spotting real deals.</span>
-                <br />
-                Know what to offer.
+                <span className="hero-v4-blend__headline-line">Stop scrolling listings.</span>
+                <span className="hero-v4-blend__headline-line text-[var(--accent-sky)]">
+                  Start spotting real deals.
+                </span>
+                <span className="hero-v4-blend__headline-line">Know what to offer.</span>
               </h1>
 
               <p className="mt-6 max-w-xl text-xl font-semibold leading-tight text-[var(--text-body)] md:text-2xl">

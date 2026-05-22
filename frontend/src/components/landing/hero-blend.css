@@ -97,6 +97,21 @@
   }
 }
 
+.hero-v4-blend__headline {
+  font-size: clamp(1.75rem, 5.2vw, 5.25rem);
+}
+
+.hero-v4-blend__headline-line {
+  display: block;
+  white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .hero-v4-blend__headline {
+    font-size: clamp(1.5rem, 8.2vw, 2rem);
+  }
+}
+
 .hero-v4-blend__copy {
   max-width: 36rem;
 }
