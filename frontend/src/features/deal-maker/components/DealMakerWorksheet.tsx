@@ -90,6 +90,9 @@ const C = {
   border: 'var(--border-subtle)',
 } as const
 
+/** Fixed right column width — display rows and slider inputs must match for alignment. */
+const WS_VALUE_COL = 'w-[119px] shrink-0 pr-1.5' as const
+
 /**
  * Set of worksheet state-field names (e.g. `buyPrice`, `downPaymentPercent`,
  * `sellerFinancingAmount`) whose value the most recently applied Three Paths
@@ -127,7 +130,7 @@ function Row({ label, value, color }: { label: string; value: string; color?: st
         {label}
       </span>
       <span
-        className="text-sm font-semibold tabular-nums text-right w-[119px] shrink-0 pr-1.5"
+        className={`text-sm font-semibold tabular-nums text-right ${WS_VALUE_COL}`}
         style={{ color: color || C.heading }}
       >
         {value}
@@ -146,7 +149,7 @@ function NegRow({ label, value }: { label: string; value: string }) {
         {label}
       </span>
       <span
-        className="text-sm font-semibold tabular-nums text-right w-[119px] shrink-0 pr-1.5"
+        className={`text-sm font-semibold tabular-nums text-right ${WS_VALUE_COL}`}
         style={{ color: C.blue }}
       >
         ({value})
@@ -165,7 +168,7 @@ function TotalRow({ label, value }: { label: string; value: string }) {
         {label}
       </span>
       <span
-        className="font-bold tabular-nums text-[0.95rem] text-right w-[119px] shrink-0 pr-1.5"
+        className={`font-bold tabular-nums text-[0.95rem] text-right ${WS_VALUE_COL}`}
         style={{ color: C.heading }}
       >
         {value}
@@ -184,7 +187,7 @@ function StatusRow({ label, pass }: { label: string; pass: boolean }) {
         {label}
       </span>
       <span
-        className="text-sm font-semibold text-right w-[119px] shrink-0 pr-1.5"
+        className={`text-sm font-semibold text-right ${WS_VALUE_COL}`}
         style={{ color: pass ? '#10B981' : '#F43F5E' }}
       >
         {pass ? 'PASS' : 'FAIL'}
@@ -380,7 +383,7 @@ function SliderRow({
 
   return (
     <div
-      className={`flex items-center gap-3 py-1.5 pl-4 pr-1 transition-colors${highlight ? '' : ' hover:bg-white/[0.03]'}`}
+      className={`flex items-center gap-3 py-1.5 pl-4 pr-1 transition-colors max-sm:justify-between sm:justify-start${highlight ? '' : ' hover:bg-white/[0.03]'}`}
       style={{
         borderBottom: `1px solid ${C.border}`,
         ...(highlight
@@ -453,7 +456,7 @@ function SliderRow({
         onBlur={commit}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={handleKeyDown}
-        className={`text-sm font-semibold tabular-nums text-right outline-none w-[105px] shrink-0 rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] ${highlight ? '' : 'hover:text-[var(--accent-sky)]'}`}
+        className={`text-sm font-semibold tabular-nums text-right outline-none ${WS_VALUE_COL} rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] ${highlight ? '' : 'hover:text-[var(--accent-sky)]'}`}
         style={
           highlight
             ? {
