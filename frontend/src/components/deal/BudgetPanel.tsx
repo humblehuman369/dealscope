@@ -106,11 +106,11 @@ function BudgetVsActualBoard({
         </p>
       )}
 
+      <ExpenseAddForm propertyId={propertyId} lines={summary.lines} />
+
       {Array.from(byCategory.entries()).map(([cat, lines]) => (
         <CategorySection key={cat} category={cat} lines={lines} propertyId={propertyId} />
       ))}
-
-      <ExpenseAddForm propertyId={propertyId} lines={summary.lines} />
     </div>
   )
 }
