@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import {
   Plus,
   Minus,
@@ -32,10 +34,12 @@ import {
   trackTierChanged,
   trackContingencyChanged,
   trackModeSwitched,
+  trackEstimateAccepted,
 } from '@/lib/estimatorTracking'
-import QuickRehabEstimate from './QuickRehabEstimate'
+import QuickRehabEstimate, { type QuickEstimateSnapshot } from './QuickRehabEstimate'
 import { BudgetTable } from '@/components/budget/BudgetTable'
-import { useRehabBudgetSummary, useSeedRehabBudget } from '@/hooks/useSavedProperties'
+import { useRehabBudgetSummary } from '@/hooks/useSavedProperties'
+import { useSaveRehabEstimate } from '@/hooks/useSaveRehabEstimate'
 
 type QualityTier = 'low' | 'mid' | 'high'
 type EstimatorMode = 'quick' | 'detailed'
@@ -506,8 +510,70 @@ export default function RehabEstimator({
   const [globalTier, setGlobalTier] = useState<QualityTier>('mid')
   const [workspaceTab, setWorkspaceTab] = useState<'estimate' | 'budget'>('estimate')
 
+  const router = useRouter()
   const budgetQuery = useRehabBudgetSummary(savedPropertyId)
-  const seedBudget = useSeedRehabBudget()
+  const [quickSnapshot, setQuickSnapshot] = useState<QuickEstimateSnapshot | null>(null)
+
+  const { saveRehabEstimate, isSaving } = useSaveRehabEstimate({
+    displayAddress: propertyAddress ?? '',
+    savedPropertyId: savedPropertyId ?? null,
+    onSuccess: (propertyId, summary) => {
+      trackEstimateAccepted(
+        parseFloat(summary.baseline_total) || 0,
+        activePreset,
+        isPropertyDriven,
+        zipCode,
+        propertyData?.square_footage,
+      )
+      toast.success('Estimate saved to property', {
+        action: {
+          label: 'Track expenses',
+          onClick: () => router.push(`/deals/${propertyId}?tab=budget`),
+        },
+      })
+      setWorkspaceTab('budget')
+      void budgetQuery.refetch()
+    },
+  })
+
+  const handleSaveEstimate = useCallback(async () => {
+    const selectionsToSave =
+      mode === 'quick' && quickSnapshot ? quickSnapshot.getSelections() : selections
+
+    const contingency =
+      mode === 'quick' && quickSnapshot ? quickSnapshot.contingencyPct : contingencyPct
+
+    if (selectionsToSave.length === 0) {
+      toast.error(
+        mode === 'quick'
+          ? 'Unable to build scope from this estimate'
+          : 'Add line items before saving',
+      )
+      return
+    }
+
+    const propertyId = await saveRehabEstimate({
+      selections: selectionsToSave,
+      contingency_pct: contingency,
+    })
+    if (propertyId && !savedPropertyId) {
+      router.replace(
+        `/rehab?${new URLSearchParams({
+          ...(propertyAddress ? { address: propertyAddress } : {}),
+          saved_property_id: propertyId,
+        }).toString()}`,
+      )
+    }
+  }, [
+    mode,
+    quickSnapshot,
+    selections,
+    contingencyPct,
+    saveRehabEstimate,
+    savedPropertyId,
+    propertyAddress,
+    router,
+  ])
 
   const presets: RehabPreset[] = useMemo(() => {
     if (propertyData) {
@@ -585,6 +651,22 @@ export default function RehabEstimator({
   const isOverBudget = budgetDiff > 0
   const budgetPct = initialBudget > 0 ? Math.abs((budgetDiff / initialBudget) * 100).toFixed(0) : 0
 
+  const canSaveEstimate = Boolean(propertyAddress?.trim() || savedPropertyId)
+  const canSaveNow =
+    canSaveEstimate &&
+    (mode === 'quick' ? Boolean(quickSnapshot) : selections.length > 0)
+
+  const saveEstimateButton = canSaveEstimate ? (
+    <button
+      type="button"
+      disabled={isSaving || !canSaveNow}
+      onClick={() => void handleSaveEstimate()}
+      className="w-full py-3 rounded-xl font-semibold text-[var(--text-inverse)] brand-gradient disabled:opacity-50"
+    >
+      {isSaving ? 'Saving estimate…' : 'Save estimate to property'}
+    </button>
+  ) : null
+
   if (mode === 'quick' && propertyData) {
     const tabBar = savedPropertyId ? (
       <div className="flex rounded-xl border border-[var(--border-default)] p-1 gap-1 bg-[var(--surface-elevated)]">
@@ -631,8 +713,8 @@ export default function RehabEstimator({
           ) : (
             <p className="py-6 text-[var(--text-secondary)]">
               No budget saved yet. Switch to{' '}
-              <strong className="text-[var(--text-heading)]">Estimate</strong>, switch to detailed
-              mode, add line items, and tap <strong>Save as budget</strong>.
+              <strong className="text-[var(--text-heading)]">Estimate</strong> and tap{' '}
+              <strong>Save estimate to property</strong>.
             </p>
           )
         ) : (
@@ -640,8 +722,10 @@ export default function RehabEstimator({
             <QuickRehabEstimate
               propertyData={propertyData}
               onEstimateChange={onEstimateChange}
+              onEstimateSnapshot={setQuickSnapshot}
               onSwitchToDetailed={() => setMode('detailed')}
               costContext={costContext}
+              saveAction={saveEstimateButton}
             />
 
             {propertyAddress && (
@@ -707,8 +791,8 @@ export default function RehabEstimator({
           />
         ) : (
           <p className="py-6 text-[var(--text-secondary)]">
-            Use <strong className="text-[var(--text-heading)]">Save as budget</strong> below after
-            you’ve built your scope.
+            Use <strong className="text-[var(--text-heading)]">Save estimate to property</strong>{' '}
+            below after you’ve built your scope.
           </p>
         )
       ) : (
@@ -805,24 +889,7 @@ export default function RehabEstimator({
             </div>
           </div>
 
-          {savedPropertyId && selections.length > 0 && (
-            <button
-              type="button"
-              disabled={seedBudget.isPending}
-              onClick={async () => {
-                await seedBudget.mutateAsync({
-                  propertyId: savedPropertyId,
-                  selections,
-                  contingency_pct: contingencyPct,
-                })
-                setWorkspaceTab('budget')
-                await budgetQuery.refetch()
-              }}
-              className="w-full py-3 rounded-xl font-semibold text-[var(--text-inverse)] brand-gradient disabled:opacity-50"
-            >
-              {seedBudget.isPending ? 'Saving budget…' : 'Save as budget for this property'}
-            </button>
-          )}
+          {saveEstimateButton}
 
           {/* Total Estimate */}
           <div

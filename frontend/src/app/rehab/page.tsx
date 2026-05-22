@@ -1,9 +1,10 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
+import { api } from '@/lib/api-client'
 import { API_BASE_URL } from '@/lib/env'
 import type { RegionalCostContext } from '@/lib/estimatorTypes'
 
@@ -33,14 +34,48 @@ interface PropertyData {
 }
 
 function RehabPageContent() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const address = searchParams.get('address') || ''
-  const savedPropertyId = searchParams.get('saved_property_id') || undefined
+  const savedPropertyIdFromUrl = searchParams.get('saved_property_id') || undefined
   const initialBudget = parseInt(searchParams.get('budget') || '25000', 10)
 
+  const [resolvedSavedPropertyId, setResolvedSavedPropertyId] = useState<string | undefined>(
+    savedPropertyIdFromUrl,
+  )
   const [propertyData, setPropertyData] = useState<PropertyData | undefined>(undefined)
   const [costContext, setCostContext] = useState<RegionalCostContext | null>(null)
   const [loading, setLoading] = useState(!!address)
+
+  const savedPropertyId = savedPropertyIdFromUrl ?? resolvedSavedPropertyId
+
+  useEffect(() => {
+    setResolvedSavedPropertyId(savedPropertyIdFromUrl)
+  }, [savedPropertyIdFromUrl])
+
+  useEffect(() => {
+    if (!address || savedPropertyIdFromUrl) return
+
+    let cancelled = false
+    ;(async () => {
+      try {
+        const check = await api.get<{ is_saved: boolean; saved_property_id: string | null }>(
+          `/api/v1/properties/saved/check?${new URLSearchParams({ address }).toString()}`,
+        )
+        if (cancelled || !check.saved_property_id) return
+        setResolvedSavedPropertyId(check.saved_property_id)
+        const params = new URLSearchParams(searchParams.toString())
+        params.set('saved_property_id', check.saved_property_id)
+        router.replace(`/rehab?${params.toString()}`, { scroll: false })
+      } catch {
+        // Non-critical: estimator works without saved property link
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [address, savedPropertyIdFromUrl, searchParams, router])
 
   useEffect(() => {
     async function fetchCostContext(zipCode: string) {

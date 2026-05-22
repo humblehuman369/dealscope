@@ -290,10 +290,21 @@ export function useSeedRehabBudget() {
         notes,
       }),
 
-    onSuccess: (_data, variables) => {
+    onSuccess: async (data, variables) => {
+      const baseline = Math.round(parseFloat(data.baseline_total))
+      if (Number.isFinite(baseline) && baseline > 0) {
+        try {
+          await api.patch(`/api/v1/properties/saved/${variables.propertyId}/deal-maker`, {
+            rehab_budget: baseline,
+          })
+        } catch {
+          // Non-blocking: structured budget is still saved
+        }
+      }
       queryClient.invalidateQueries({
         queryKey: SAVED_PROPERTIES_KEYS.rehabBudget(variables.propertyId),
       })
+      queryClient.invalidateQueries({ queryKey: ['deal-maker', 'snapshot', variables.propertyId] })
       queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
     },
   })

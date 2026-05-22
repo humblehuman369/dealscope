@@ -46,6 +46,7 @@ import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
+import { buildRehabUrl } from '@/lib/rehabNavigation'
 import { readDealMakerOverrides } from '@/utils/addressIdentity'
 import { useTheme } from '@/context/ThemeContext'
 
@@ -408,7 +409,7 @@ export function AppHeader({
     }
   }, [resolvedProperty, displayAddress])
 
-  const { isSaved, toggle: handleSaveToggle } = useSaveProperty({
+  const { isSaved, savedPropertyId, toggle: handleSaveToggle } = useSaveProperty({
     displayAddress: displayAddress || '',
     propertySnapshot: savePropertySnapshot,
   })
@@ -532,7 +533,21 @@ export function AppHeader({
         break
       case 'estimator':
         if (displayAddress) {
-          router.push(`/rehab?address=${encodedAddress}`)
+          router.push(
+            buildRehabUrl({
+              address: displayAddress,
+              savedPropertyId: savedPropertyId ?? undefined,
+              property: resolvedProperty
+                ? {
+                    square_footage: resolvedProperty.sqft,
+                    zip_code: resolvedProperty.zip,
+                    bedrooms: resolvedProperty.beds,
+                    bathrooms: resolvedProperty.baths,
+                    arv: resolvedProperty.price,
+                  }
+                : undefined,
+            }),
+          )
         } else {
           router.push('/rehab')
         }

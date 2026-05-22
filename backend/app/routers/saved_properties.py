@@ -215,24 +215,31 @@ async def list_saved_properties(
 
     response.headers["X-Total-Count"] = str(total)
 
-    # Variance is rendered on Owned cards only — fetch it just for those
-    # rows. ``budget_service.build_summary`` does its own DB roundtrip per
-    # property, so limiting the lookup to owned rows keeps the list endpoint
-    # cheap for the typical case where most rows are pre-purchase.
+    # Budget badges for late-funnel statuses (pursuing → owned).
+    _BUDGET_ENRICH_STATUSES = frozenset(
+        {
+            PropertyStatus.PURSUING,
+            PropertyStatus.NEGOTIATING,
+            PropertyStatus.UNDER_CONTRACT,
+            PropertyStatus.OWNED,
+        }
+    )
     owned_variance: dict[str, str | None] = {}
-    owned_rows = [p for p in properties if p.status == PropertyStatus.OWNED]
-    if owned_rows:
+    budget_has: dict[str, bool] = {}
+    budget_baseline: dict[str, str] = {}
+    enrich_rows = [p for p in properties if p.status in _BUDGET_ENRICH_STATUSES]
+    if enrich_rows:
         uid_str = str(current_user.id)
-        for p in owned_rows:
+        for p in enrich_rows:
             try:
                 budget = await budget_service.get_budget_for_property(db, str(p.id), uid_str)
                 if budget:
-                    summary = await budget_service.build_summary(db, budget)
-                    owned_variance[str(p.id)] = summary.get("variance_pct")
+                    budget_has[str(p.id)] = True
+                    budget_baseline[str(p.id)] = str(budget.baseline_total)
+                    if p.status == PropertyStatus.OWNED:
+                        summary = await budget_service.build_summary(db, budget)
+                        owned_variance[str(p.id)] = summary.get("variance_pct")
             except Exception as exc:
-                # Same defensive posture as the active-flips endpoint — a
-                # missing budget table during a deploy gap shouldn't break
-                # the dashboard. See app/core/schema_guard.py.
                 if not is_schema_mismatch(exc):
                     raise
                 log_schema_mismatch("GET /properties/saved:budget_enrichment", exc)
@@ -305,6 +312,8 @@ async def list_saved_properties(
             updated_at=p.updated_at,
             status_changed_at=p.status_changed_at,
             budget_variance_pct=owned_variance.get(str(p.id)),
+            has_rehab_budget=budget_has.get(str(p.id), False),
+            rehab_budget_baseline=budget_baseline.get(str(p.id)),
             task_count_open=task_counts.get(str(p.id), {}).get("open", 0),
             task_count_overdue=task_counts.get(str(p.id), {}).get("overdue", 0),
         )
@@ -353,9 +362,13 @@ async def list_active_flips_endpoint(
     uid = str(current_user.id)
     for p in rows:
         variance_pct: str | None = None
+        has_budget = False
+        baseline: str | None = None
         try:
             budget = await budget_service.get_budget_for_property(db, str(p.id), uid)
             if budget:
+                has_budget = True
+                baseline = str(budget.baseline_total)
                 summary = await budget_service.build_summary(db, budget)
                 variance_pct = summary.get("variance_pct")
         except Exception as exc:
@@ -393,6 +406,8 @@ async def list_active_flips_endpoint(
                 updated_at=p.updated_at,
                 status_changed_at=p.status_changed_at,
                 budget_variance_pct=variance_pct,
+                has_rehab_budget=has_budget,
+                rehab_budget_baseline=baseline,
             )
         )
     return out

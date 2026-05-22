@@ -8,8 +8,10 @@
  */
 
 import { useRef, useState } from 'react'
+import Link from 'next/link'
 import { FileText, Plus, Sparkles, X } from 'lucide-react'
 import { DataBoundary } from '@/components/ui/DataBoundary'
+import { buildRehabUrl } from '@/lib/rehabNavigation'
 import {
   useAddBudgetExpense,
   useParseReceipt,
@@ -41,7 +43,15 @@ export function BudgetPanel({ propertyId }: { propertyId: string }) {
       onRetry={() => summary.refetch()}
       isEmpty={!summary.isLoading && !summary.data}
       emptyTitle="No budget yet"
-      emptyDescription="Seed a rehab budget from the estimator on the Verdict page to start tracking actuals here."
+      emptyDescription="Build a rehab estimate in the Estimator, save it to this property, then log paid expenses here."
+      emptyAction={
+        <Link
+          href={buildRehabUrl({ savedPropertyId: propertyId })}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--accent-sky)] hover:underline"
+        >
+          Open Rehab Estimator
+        </Link>
+      }
     >
       {summary.data && <BudgetVsActualBoard propertyId={propertyId} summary={summary.data} />}
     </DataBoundary>

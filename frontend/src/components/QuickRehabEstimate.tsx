@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   Zap,
   AlertTriangle,
@@ -26,6 +26,8 @@ import {
   CapExWarning,
   getLocationFactor,
 } from '@/lib/rehabIntelligence'
+import type { RehabSelection } from '@/lib/analytics'
+import { lineItemsToSelections } from '@/lib/rehabBudgetSeed'
 import type { RegionalCostContext } from '@/lib/estimatorTypes'
 import { ConfidenceBadge, CostExplanationPanel } from './EstimatorConfidence'
 import { trackConditionChanged } from '@/lib/estimatorTracking'
@@ -33,6 +35,12 @@ import { trackConditionChanged } from '@/lib/estimatorTracking'
 // ============================================
 // TYPES
 // ============================================
+
+export interface QuickEstimateSnapshot {
+  getSelections: () => RehabSelection[]
+  contingencyPct: number
+  total: number
+}
 
 interface QuickRehabEstimateProps {
   propertyData: {
@@ -51,9 +59,11 @@ interface QuickRehabEstimateProps {
     hoa_monthly?: number
   }
   onEstimateChange?: (total: number) => void
+  onEstimateSnapshot?: (snapshot: QuickEstimateSnapshot) => void
   onSwitchToDetailed?: () => void
   initialCondition?: PropertyCondition
   costContext?: RegionalCostContext | null
+  saveAction?: React.ReactNode
 }
 
 // ============================================
@@ -575,9 +585,11 @@ function HoldingCostsCard({ estimate }: { estimate: RehabEstimate }) {
 export default function QuickRehabEstimate({
   propertyData,
   onEstimateChange,
+  onEstimateSnapshot,
   onSwitchToDetailed,
   initialCondition = 'fair',
   costContext,
+  saveAction,
 }: QuickRehabEstimateProps) {
   const [condition, setConditionRaw] = useState<PropertyCondition>(initialCondition)
   const setCondition = (c: PropertyCondition) => {
@@ -587,7 +599,7 @@ export default function QuickRehabEstimate({
   const [contingencyPct, setContingencyPct] = useState(0.1)
   const [includeHolding, setIncludeHolding] = useState(true)
 
-  const estimate = useMemo(() => {
+  const { estimate, intelligence } = useMemo(() => {
     const ri = new RehabIntelligence({
       sq_ft: propertyData.square_footage || 1500,
       year_built: propertyData.year_built || 2000,
@@ -604,15 +616,26 @@ export default function QuickRehabEstimate({
       hoa_monthly: propertyData.hoa_monthly,
     })
 
-    return ri.calculate({
-      contingencyPct,
-      includeHoldingCosts: includeHolding,
-    })
+    return {
+      intelligence: ri,
+      estimate: ri.calculate({
+        contingencyPct,
+        includeHoldingCosts: includeHolding,
+      }),
+    }
   }, [propertyData, condition, contingencyPct, includeHolding])
 
   useMemo(() => {
     onEstimateChange?.(estimate.total_rehab)
   }, [estimate.total_rehab, onEstimateChange])
+
+  useEffect(() => {
+    onEstimateSnapshot?.({
+      getSelections: () => lineItemsToSelections(intelligence.generateLineItems()),
+      contingencyPct,
+      total: estimate.total_rehab,
+    })
+  }, [intelligence, contingencyPct, estimate.total_rehab, onEstimateSnapshot])
 
   return (
     <div className="space-y-4">
@@ -762,6 +785,8 @@ export default function QuickRehabEstimate({
           </div>
         )}
       </div>
+
+      {saveAction}
 
       {/* Action Buttons */}
       <div className="flex gap-2">

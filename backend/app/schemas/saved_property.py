@@ -197,10 +197,10 @@ class SavedPropertySummary(BaseModel):
     # newly-saved properties.
     status_changed_at: datetime | None = None
 
-    # Rehab budget health, populated only for owned properties (the kanban
-    # only renders this badge in the Owned column, so we skip the per-row
-    # budget query for everything else).
+    # Rehab budget health — variance populated for owned rows with spend.
     budget_variance_pct: str | None = None
+    has_rehab_budget: bool = False
+    rehab_budget_baseline: str | None = None
 
     # Open task counts — drive the task badge on each kanban card. Computed
     # in a single GROUP BY query in the list endpoint.

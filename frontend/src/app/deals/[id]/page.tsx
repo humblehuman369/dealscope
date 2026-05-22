@@ -41,6 +41,7 @@ import { useTimeline } from '@/hooks/useTimeline'
 import { useRehabBudgetSummary, useSavedProperty } from '@/hooks/useSavedProperties'
 import { STATUS_CONFIG, STRATEGY_LABELS } from '@/lib/savedPropertyStatus'
 import { STAGE_LABELS } from '@/lib/lifecycleStages'
+import { buildRehabUrl } from '@/lib/rehabNavigation'
 import type { SavedProperty } from '@/types/savedProperty'
 
 type Tab = 'overview' | 'tasks' | 'budget' | 'documents' | 'contacts' | 'activity'
@@ -73,6 +74,27 @@ function buildVerdictAddress(deal: DealDetail): string {
     .filter(Boolean)
     .join(', ')
   return parts || deal.address_street
+}
+
+function buildRehabUrlForDeal(deal: DealDetail): string {
+  const snapshot = deal.property_data_snapshot as Record<string, unknown> | null | undefined
+  return buildRehabUrl({
+    address: buildVerdictAddress(deal),
+    savedPropertyId: deal.id,
+    property: {
+      square_footage:
+        typeof snapshot?.sqft === 'number'
+          ? snapshot.sqft
+          : typeof snapshot?.square_footage === 'number'
+            ? snapshot.square_footage
+            : undefined,
+      year_built: typeof snapshot?.year_built === 'number' ? snapshot.year_built : undefined,
+      arv: typeof snapshot?.arv === 'number' ? snapshot.arv : undefined,
+      zip_code: deal.address_zip ?? (typeof snapshot?.zipCode === 'string' ? snapshot.zipCode : undefined),
+      bedrooms: typeof snapshot?.bedrooms === 'number' ? snapshot.bedrooms : undefined,
+      bathrooms: typeof snapshot?.bathrooms === 'number' ? snapshot.bathrooms : undefined,
+    },
+  })
 }
 
 export default function DealPage({ params }: { params: Promise<{ id: string }> }) {
@@ -466,11 +488,11 @@ function FinancialsCard({ deal, onSeeBudget }: { deal: DealDetail; onSeeBudget: 
             No budget yet — seed one to track variance and projections.
           </p>
           <Link
-            href={`/strategy?address=${encodeURIComponent(buildVerdictAddress(deal))}`}
+            href={buildRehabUrlForDeal(deal)}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-sky)] hover:underline"
           >
             <Receipt className="w-3.5 h-3.5" />
-            Seed a budget
+            Build rehab estimate
           </Link>
         </div>
       ) : (

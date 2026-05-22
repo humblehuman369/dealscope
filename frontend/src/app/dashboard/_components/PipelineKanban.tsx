@@ -22,7 +22,8 @@ import {
   type LifecycleStrategy,
 } from '@/lib/lifecycleStages'
 import type { FlipStage, PropertyStatus, SavedPropertySummary } from '@/types/savedProperty'
-import { ChevronDown, ChevronRight, MoreHorizontal, Bookmark, ListChecks } from 'lucide-react'
+import { buildRehabUrl } from '@/lib/rehabNavigation'
+import { ChevronDown, ChevronRight, MoreHorizontal, Bookmark, ListChecks, Receipt } from 'lucide-react'
 import { DataBoundary } from '@/components/ui/DataBoundary'
 
 interface PipelineKanbanProps {
@@ -89,6 +90,34 @@ function daysSince(iso: string | null | undefined): number | null {
   const t = new Date(iso).getTime()
   if (!Number.isFinite(t)) return null
   return Math.max(0, Math.floor((Date.now() - t) / 86_400_000))
+}
+
+const BUDGET_BADGE_STATUSES: ReadonlySet<PropertyStatus> = new Set([
+  'pursuing',
+  'negotiating',
+  'under_contract',
+  'owned',
+])
+
+/** Neutral badge when a budget exists but variance is not yet meaningful. */
+function BudgetBaselineBadge({
+  baseline,
+  propertyId,
+}: {
+  baseline: string
+  propertyId: string
+}) {
+  const n = parseFloat(baseline)
+  const label = Number.isFinite(n) ? `Budget ${formatCurrency(n)}` : 'Budget set'
+  return (
+    <Link
+      href={`/deals/${propertyId}?tab=budget`}
+      onClick={(e) => e.stopPropagation()}
+      className="inline-flex text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ring-1 transition-colors bg-[var(--surface-elevated)] text-[var(--text-secondary)] ring-[var(--border-default)] hover:text-[var(--accent-sky)]"
+    >
+      {label}
+    </Link>
+  )
 }
 
 /** Variance badge mirrors the styling used elsewhere; doubles as a link to
@@ -770,6 +799,11 @@ function KanbanCard({
       )
     : null
   const showVariance = property.status === 'owned' && !!property.budget_variance_pct
+  const showBudgetBaseline =
+    BUDGET_BADGE_STATUSES.has(property.status) &&
+    property.has_rehab_budget &&
+    !showVariance &&
+    !!property.rehab_budget_baseline
 
   // The "All" filter shows owned cards from every strategy together; surface
   // the strategy + sub-stage as chips so the user can scan them at a glance.
@@ -817,12 +851,18 @@ function KanbanCard({
             </span>
           )}
         </div>
-        {(showStrategyChip && showStageBadge) || showVariance ? (
+        {(showStrategyChip && showStageBadge) || showVariance || showBudgetBaseline ? (
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {showStrategyChip && showStageBadge && (
               <span className="inline-flex text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--surface-elevated)] text-[var(--text-secondary)] ring-1 ring-[var(--border-default)]">
                 {strategyLabel ?? 'Flip'} · {STAGE_LABELS[property.flip_stage as FlipStage]}
               </span>
+            )}
+            {showBudgetBaseline && (
+              <BudgetBaselineBadge
+                baseline={property.rehab_budget_baseline as string}
+                propertyId={property.id}
+              />
             )}
             {showVariance && (
               <VarianceBadge
@@ -881,6 +921,22 @@ function KanbanCard({
             }}
           >
             <p className="px-3 py-1 text-[10px] uppercase tracking-wide text-[var(--text-label)]">
+              Actions
+            </p>
+            <Link
+              href={buildRehabUrl({
+                savedPropertyId: property.id,
+                address: [property.address_street, property.address_city, property.address_state, property.address_zip]
+                  .filter(Boolean)
+                  .join(', '),
+              })}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full text-left px-3 py-1.5 text-xs text-[var(--text-body)] hover:bg-[var(--hover-overlay)] flex items-center gap-2"
+            >
+              <Receipt className="w-3.5 h-3.5" />
+              Open estimator
+            </Link>
+            <p className="px-3 py-1 text-[10px] uppercase tracking-wide text-[var(--text-label)] border-t border-[var(--border-default)] mt-1">
               Move to
             </p>
             {MOVE_TO_OPTIONS.map((s) => {
