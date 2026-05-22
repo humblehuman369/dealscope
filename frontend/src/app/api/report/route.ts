@@ -278,16 +278,6 @@ const D: P = {
   colors: ['#0FA4E9', '#0FA4E9', '#FBBF24', '#F87171', '#A78BFA', '#22D3EE'],
 }
 
-function gc(g: string, p: P) {
-  return g.startsWith('A')
-    ? p.pos
-    : g.startsWith('B')
-      ? p.brand
-      : g.startsWith('C')
-        ? p.warn
-        : p.neg
-}
-
 // ---------------------------------------------------------------------------
 // SVG: Donut
 // ---------------------------------------------------------------------------
@@ -325,20 +315,6 @@ function donut(segs: [string, number][], p: P, label: string, value: string, sz 
     a += sw2
   }
   return `<svg viewBox="0 0 ${sz} ${sz}" width="${sz}" height="${sz}" xmlns="http://www.w3.org/2000/svg">${ps.join('')}<text x="${cx}" y="${cy - 6}" text-anchor="middle" font-size="11" font-weight="600" fill="${p.muted}">${label}</text><text x="${cx}" y="${cy + 14}" text-anchor="middle" font-size="18" font-weight="700" fill="${p.text}">${value}</text></svg>`
-}
-
-// ---------------------------------------------------------------------------
-// SVG: Score Ring
-// ---------------------------------------------------------------------------
-function ring(score: number, grade: string, p: P, sz = 160): string {
-  const cx = sz / 2,
-    cy = sz / 2,
-    R = sz / 2 - 14,
-    C = 2 * Math.PI * R,
-    pc = Math.min(score, 100) / 100,
-    off = C * (1 - pc),
-    c = gc(grade, p)
-  return `<svg viewBox="0 0 ${sz} ${sz}" width="${sz}" height="${sz}" xmlns="http://www.w3.org/2000/svg"><circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${p.border}" stroke-width="10"/><circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${c}" stroke-width="10" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/><text x="${cx}" y="${cy - 6}" text-anchor="middle" font-size="32" font-weight="700" fill="${p.text}">${score}</text><text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="16" font-weight="700" fill="${c}">${grade}</text></svg>`
 }
 
 // ---------------------------------------------------------------------------
@@ -447,30 +423,6 @@ function narrativeMetrics(d: Proforma): string {
       ' total returns when held through the full investment cycle, accounting for rental income, appreciation, loan amortization, and eventual sale proceeds.'
   }
   return t
-}
-
-function narrativeDealScore(d: Proforma): string {
-  const ds = d.deal_score
-  let assess: string, action: string
-  if (ds.score >= 80) {
-    assess = 'a strong investment opportunity'
-    action = 'The data supports moving forward with due diligence and negotiation.'
-  } else if (ds.score >= 60) {
-    assess = 'a moderate opportunity with upside potential'
-    action = 'Consider negotiating toward the breakeven price to improve returns.'
-  } else if (ds.score >= 40) {
-    assess = 'a marginal opportunity requiring careful evaluation'
-    action = 'Significant price negotiation would be needed to achieve target returns.'
-  } else {
-    assess = 'a challenging investment at current pricing'
-    action =
-      'The current pricing does not support the investment thesis. Look for substantial price reduction or alternative strategies.'
-  }
-  let t = `The DealGapIQ Deal Score of ${ds.score} (${ds.grade}) indicates this is ${assess}. ${ds.verdict || ''}. `
-  const incomeVal = ds.income_value ?? ds.breakeven_price ?? 0
-  if (incomeVal > 0 && ds.discount_required !== 0)
-    t += `The income value is calculated at ${$(incomeVal)}, representing a ${Math.abs(ds.discount_required).toFixed(1)}% ${ds.discount_required > 0 ? 'discount' : 'premium'} from the current price. `
-  return t + action
 }
 
 function narrativeProjections(d: Proforma): string {
@@ -779,20 +731,12 @@ function buildReport(d: Proforma, theme: string, photos: string[]): string {
   ${pgFt(3)}
 </div>
 
-<!-- ===== PAGE 4: VERDICT + DISCLAIMER ===== -->
+<!-- ===== PAGE 4: SUMMARY + DISCLAIMER ===== -->
 <div class="page">
   ${pgHdr}
   <div class="sec-tag">06</div>
-  <h2 class="sec-title">Investment Verdict</h2>
-  <div class="score-section">
-    <div class="score-ring-wrap">${ring(d.deal_score.score, d.deal_score.grade, p, 150)}</div>
-    <div class="score-text">
-      <h3 class="verdict-hd" style="color:${gc(d.deal_score.grade, p)}">${d.deal_score.verdict || `Grade ${d.deal_score.grade}`}</h3>
-      <p class="narrative">${narrativeDealScore(d)}</p>
-    </div>
-  </div>
-  <div class="card mt-16">
-    <div class="card-hd">Investment Thesis Summary</div>
+  <h2 class="sec-title">Investment Thesis Summary</h2>
+  <div class="card mt-14">
     <div class="grid2">
       <div>
         ${kv('Total Cash Required', $(d.acquisition.total_acquisition_cost))}
@@ -1060,12 +1004,6 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:11px;line-height:1.5
 .m-val{font-size:16px;font-weight:700;color:${p.text}}
 .m-lbl{font-size:8.5px;font-weight:600;color:${p.text};margin-top:3px}
 .m-desc{font-size:7.5px;color:${p.muted};margin-top:1px}
-
-/* --- Deal Score --- */
-.score-section{display:flex;gap:24px;align-items:center;margin-top:14px}
-.score-ring-wrap{flex-shrink:0}
-.score-text{flex:1}
-.verdict-hd{font-size:16px;font-weight:700;margin-bottom:6px}
 
 /* --- Tables --- */
 .tbl{width:100%;border-collapse:collapse;font-size:10px}
