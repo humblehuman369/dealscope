@@ -2386,6 +2386,8 @@ export interface DealMakerWorksheetProps {
   updateState: (key: string, value: number | string) => void
   isCalculating: boolean
   propertyAddress?: string
+  /** When set, replaces default single-strategy client export (e.g. Strategy comprehensive workbook). */
+  onExportExcel?: () => Promise<void>
   flushWithinParent?: boolean
   /**
    * Worksheet state-field names whose value the most recently applied Three
@@ -2406,6 +2408,7 @@ export function DealMakerWorksheet({
   updateState,
   isCalculating,
   propertyAddress,
+  onExportExcel,
   flushWithinParent = false,
   highlightedFields,
   operatingExpenseDefaults,
@@ -2422,21 +2425,26 @@ export function DealMakerWorksheet({
   const handleExportExcel = useCallback(async () => {
     setExporting(true)
     try {
-      await exportDealMakerExcel(
-        strategyType,
-        state,
-        metrics,
-        propertyAddress || 'Property',
-        listPrice,
-      )
+      if (onExportExcel) {
+        await onExportExcel()
+      } else {
+        await exportDealMakerExcel(
+          strategyType,
+          state,
+          metrics,
+          propertyAddress || 'Property',
+          listPrice,
+        )
+      }
       setExportDone(true)
       setTimeout(() => setExportDone(false), 3000)
     } catch (e) {
       console.error('Excel export failed:', e)
+      if (e instanceof Error) alert(e.message)
     } finally {
       setExporting(false)
     }
-  }, [strategyType, state, metrics, propertyAddress, listPrice])
+  }, [onExportExcel, strategyType, state, metrics, propertyAddress, listPrice])
 
   return (
     <WorksheetHighlightContext.Provider value={highlightContextValue}>
@@ -2569,7 +2577,7 @@ export function DealMakerWorksheet({
                     <line x1="12" y1="18" x2="12" y2="12" />
                     <polyline points="9 15 12 18 15 15" />
                   </svg>
-                  Download Excel
+                  {onExportExcel ? 'Download Comprehensive Excel' : 'Download Excel'}
                 </>
               )}
             </button>

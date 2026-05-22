@@ -16,17 +16,178 @@ from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 
 from app.core.deps import DbSession, OptionalUser, ProUser
+from app.core.exceptions import ExternalAPIError
+from app.schemas.deal_maker import DealMakerRecord
+from app.schemas.reports import ComprehensiveExcelRequest
+from app.services.assumption_resolver import _resolve_insurance_annual, resolve_assumptions
+from app.services.comprehensive_excel_exporter import comprehensive_excel_exporter
+from app.services.proforma_generator import generate_proforma_data
 from app.services.property_service import property_service
 from app.services.report_service import report_service
+from app.services.resilience import CircuitOpenError
+from app.services.saved_property_service import saved_property_service
+from app.services.verdict_assumptions import (
+    apply_verdict_input_to_assumptions,
+    deal_maker_record_to_verdict_overrides,
+    merge_verdict_input,
+    patch_property_from_verdict_input,
+    resolve_purchase_price,
+)
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/reports", tags=["Reports"])
 
 
+async def _load_property_for_export(property_id: str, address: str):
+    """Cached property first; search by address when cache miss."""
+    property_data = await property_service.get_cached_property(property_id)
+    if property_data:
+        return property_data
+    try:
+        return await property_service.search_property(address)
+    except (ExternalAPIError, CircuitOpenError) as e:
+        logger.warning("Property data unavailable for export %s: %s", address, e)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Data providers are temporarily unavailable. Please try again in a few minutes.",
+        )
+
+
 # ===========================================
 # Report Generation
 # ===========================================
+
+
+@router.post(
+    "/property/{property_id}/comprehensive-excel",
+    summary="Download comprehensive Excel proforma with all 6 strategy worksheets",
+)
+async def download_comprehensive_excel(
+    property_id: str,
+    body: ComprehensiveExcelRequest,
+    current_user: ProUser,
+    db: DbSession,
+):
+    """
+    Strategy page export: accounting proforma + financial statements + one worksheet
+    per investment strategy, using live verdict inputs and optional saved deal record.
+    """
+    property_data = await _load_property_for_export(property_id, body.address)
+    if not property_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Property not found. Please analyze the property first.",
+        )
+
+    verdict_input = body.verdict_input
+    if body.saved_property_id:
+        saved = await saved_property_service.get_by_id(
+            db=db,
+            property_id=body.saved_property_id,
+            user_id=str(current_user.id),
+        )
+        if saved and saved.deal_maker_record:
+            try:
+                record = (
+                    saved.deal_maker_record
+                    if isinstance(saved.deal_maker_record, DealMakerRecord)
+                    else DealMakerRecord.model_validate(saved.deal_maker_record)
+                )
+                saved_overrides = deal_maker_record_to_verdict_overrides(record)
+                verdict_input = merge_verdict_input(verdict_input, saved_overrides)
+            except Exception as e:
+                logger.warning("Could not merge saved deal_maker_record: %s", e)
+
+    assumptions = await resolve_assumptions(db)
+    user_keys = apply_verdict_input_to_assumptions(assumptions, verdict_input)
+    patched_property = patch_property_from_verdict_input(property_data, verdict_input)
+    purchase_price = resolve_purchase_price(verdict_input, assumptions)
+    assumptions.financing.purchase_price = purchase_price
+    if assumptions.operating.insurance_annual is None:
+        assumptions.operating.insurance_annual = _resolve_insurance_annual(
+            assumptions.operating, purchase_price
+        )
+
+    try:
+        analytics = await property_service.calculate_analytics(
+            property_id=property_id,
+            assumptions=assumptions,
+            strategies=None,
+            property_data=patched_property,
+        )
+    except Exception as e:
+        logger.error("Failed to calculate analytics for comprehensive export: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to calculate analytics for export",
+        )
+
+    monthly_rent = verdict_input.monthly_rent
+    if monthly_rent is None and patched_property.rentals:
+        monthly_rent = patched_property.rentals.monthly_rent_ltr
+
+    property_taxes = verdict_input.property_taxes
+    if property_taxes is None and patched_property.market:
+        property_taxes = patched_property.market.property_taxes_annual
+
+    insurance = verdict_input.insurance
+    if insurance is None and patched_property.market:
+        insurance = patched_property.market.insurance_annual
+
+    try:
+        proforma = await generate_proforma_data(
+            property_data=patched_property,
+            strategy="ltr",
+            purchase_price_override=purchase_price,
+            monthly_rent_override=monthly_rent,
+            interest_rate_override=verdict_input.interest_rate,
+            down_payment_pct_override=verdict_input.down_payment_pct,
+            property_taxes_override=property_taxes,
+            insurance_override=insurance,
+            assumptions=assumptions,
+        )
+    except Exception as e:
+        logger.error("Failed to generate proforma for comprehensive export: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate proforma for export",
+        )
+
+    property_dict = patched_property.model_dump(mode="json")
+    analytics_dict = analytics.model_dump(mode="json", by_alias=True)
+    assumptions_dict = assumptions.model_dump(mode="json", by_alias=True)
+
+    try:
+        excel_bytes = comprehensive_excel_exporter.generate(
+            property_data=property_dict,
+            analytics_data=analytics_dict,
+            proforma=proforma,
+            assumptions=assumptions_dict,
+            active_strategy=body.active_strategy,
+            user_override_keys=user_keys,
+            include_sensitivity=body.include_sensitivity,
+        )
+    except Exception as e:
+        logger.error("Failed to build comprehensive Excel: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate Excel report",
+        )
+
+    street = (
+        patched_property.address.street.replace(" ", "_").replace(",", "")[:30]
+        if patched_property.address
+        else "property"
+    )
+    timestamp = datetime.now().strftime("%Y%m%d")
+    filename = f"DealGapIQ_Comprehensive_{street}_{timestamp}.xlsx"
+
+    return StreamingResponse(
+        BytesIO(excel_bytes),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get("/property/{property_id}/excel", summary="Generate Excel report for a property")

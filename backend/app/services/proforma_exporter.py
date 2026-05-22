@@ -48,10 +48,20 @@ class ProformaExcelExporter:
 
     def generate(self) -> BytesIO:
         """Generate complete proforma workbook."""
-        # Remove default sheet
-        self.wb.remove(self.wb.active)
+        self.wb = Workbook()
+        self.add_tabs_to_workbook(self.wb)
+        buffer = BytesIO()
+        self.wb.save(buffer)
+        buffer.seek(0)
+        return buffer
 
-        # Create tabs
+    def add_tabs_to_workbook(self, wb: Workbook) -> None:
+        """Append standard proforma tabs to an existing workbook."""
+        self.wb = wb
+        if wb.sheetnames:
+            default = wb.active
+            if default is not None and default.title == "Sheet" and len(wb.sheetnames) == 1:
+                wb.remove(default)
         self._create_property_summary_tab()
         self._create_income_expense_tab()
         self._create_cash_flow_projection_tab()
@@ -60,12 +70,6 @@ class ProformaExcelExporter:
         self._create_exit_analysis_tab()
         self._create_returns_summary_tab()
         self._create_assumptions_tab()
-
-        # Save to buffer
-        buffer = BytesIO()
-        self.wb.save(buffer)
-        buffer.seek(0)
-        return buffer
 
     def _create_property_summary_tab(self):
         """Tab 1: Property & Deal Summary"""

@@ -1728,23 +1728,31 @@ class PropertyService:
         return unique_candidates
 
     async def calculate_analytics(
-        self, property_id: str, assumptions: AllAssumptions, strategies: list[StrategyType] | None = None
+        self,
+        property_id: str,
+        assumptions: AllAssumptions,
+        strategies: list[StrategyType] | None = None,
+        property_data: PropertyResponse | None = None,
     ) -> AnalyticsResponse:
         """
         Calculate investment analytics for all or specified strategies.
+
+        ``property_data`` optional override (e.g. verdict-adjusted rent/taxes) when
+        the cached snapshot should not be used as-is.
         """
         assumptions_hash = self._generate_assumptions_hash(assumptions)
 
         # Check calculation cache (Redis-backed)
         cached_calc = await self._cache.get_calculation(property_id, assumptions_hash)
-        if cached_calc:
+        if cached_calc and property_data is None:
             try:
                 return AnalyticsResponse(**cached_calc)
             except Exception as e:
                 logger.warning(f"Failed to deserialize cached calculation: {e}")
 
         # Get property data from cache (by property_id)
-        property_data = await self.get_cached_property(property_id)
+        if property_data is None:
+            property_data = await self.get_cached_property(property_id)
         if not property_data:
             raise ValueError(f"Property {property_id} not found. Search first.")
 

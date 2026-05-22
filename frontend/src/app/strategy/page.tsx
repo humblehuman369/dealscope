@@ -85,6 +85,7 @@ import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { LoadingProperty, ErrorProperty } from '@/components/ui/PropertyStates'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { DealMakerWorksheet } from '@/features/deal-maker/components/DealMakerWorksheet'
+import { downloadComprehensiveExcel } from '@/features/strategy/exportComprehensiveExcel'
 import { STRRegulatoryBadge } from '@/components/analytics/STRRegulatoryBadge'
 import { STRConfidenceLabel } from '@/components/analytics/STRConfidenceLabel'
 import type {
@@ -2271,12 +2272,13 @@ function StrategyContent() {
     }
   }
 
-  const handleExcelDownload = async () => {
+  const handleComprehensiveExcelDownload = useCallback(async () => {
     const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
     if (!propertyId) {
       alert('Property data is still loading. Please wait a moment and try again.')
       return
     }
+    if (!propertyInfo) return
 
     if (!isAuthenticated) {
       openAuthModal('login')
@@ -2289,68 +2291,58 @@ function StrategyContent() {
 
     setIsExporting('excel')
     try {
-      const params = new URLSearchParams({
-        address: addressParam,
-        strategy: activeStrategyId,
-      })
-      params.set('purchase_price', String(targetPrice))
-      params.set('monthly_rent', String(monthlyRent))
-      params.set('interest_rate', String(rate * 100))
-      params.set('down_payment_pct', String(downPaymentPct * 100))
-      params.set('property_taxes', String(propertyTaxes))
-      params.set('insurance', String(insurance))
-      // Wholesale-specific: pass AMV and rent for the deal proforma
-      if (activeStrategyId === 'wholesale') {
-        params.set('amv', String(listPrice))
-        params.set('monthly_rent', String(monthlyRent))
-      }
-      const url = `/api/v1/proforma/property/${propertyId}/excel?${params}`
+    const exportOverrides: Record<string, unknown> = {
+      ...(dealMakerOverrides ?? {}),
+      purchasePrice:
+        dealMakerOverrides?.purchasePrice ?? dealMakerOverrides?.buyPrice ?? targetPrice,
+      buyPrice: dealMakerOverrides?.buyPrice ?? dealMakerOverrides?.purchasePrice ?? targetPrice,
+      monthlyRent: dealMakerOverrides?.monthlyRent ?? monthlyRent,
+      propertyTaxes: dealMakerOverrides?.propertyTaxes ?? propertyTaxes,
+      insurance: dealMakerOverrides?.insurance ?? insurance,
+      interestRate: dealMakerOverrides?.interestRate ?? rate,
+      downPayment: dealMakerOverrides?.downPayment ?? downPaymentPct * 100,
+      closingCosts: dealMakerOverrides?.closingCosts ?? closingCostsPct * 100,
+    }
 
-      const headers: Record<string, string> = {}
-      const csrfMatch = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
-      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
+    const verdictInput = buildVerdictAnalysisPayload(
+      toPayloadBase(propertyInfo),
+      exportOverrides,
+      verdictSourceOverrides,
+    )
 
-      const response = await fetch(url, { headers, credentials: 'include' })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const detail = typeof errorData.detail === 'string' ? errorData.detail : ''
-        if (response.status === 401) {
-          throw new Error('Please sign in to download the worksheet.')
-        }
-        if (response.status === 403) {
-          throw new Error('Pro subscription required. Upgrade to download the worksheet.')
-        }
-        if (response.status === 404) {
-          throw new Error(detail || 'Property not found.')
-        }
-        throw new Error(detail || 'Failed to generate Excel report.')
-      }
-
-      const contentDisposition = response.headers.get('Content-Disposition')
-      const addressSlug = addressParam.replace(/[^a-zA-Z0-9]+/g, '_').slice(0, 30) || 'property'
-      let filename = `DealGapIQ_Proforma_${addressSlug}.xlsx`
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?([^"]+)"?/)
-        if (match) filename = match[1]
-      }
-
-      const blob = await response.blob()
-      const downloadUrl = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = downloadUrl
-      link.download = filename
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(downloadUrl)
+    await downloadComprehensiveExcel({
+      propertyId: String(propertyId),
+      address: addressParam,
+      activeStrategy: currentStrategyType,
+      verdictInput,
+      savedPropertyId,
+    })
     } catch (err) {
       console.error('Excel download failed:', err)
       alert(err instanceof Error ? err.message : 'Failed to generate worksheet. Please try again.')
     } finally {
       setIsExporting(null)
     }
-  }
+  }, [
+    propertyInfo,
+    isAuthenticated,
+    isPro,
+    openAuthModal,
+    dealMakerOverrides,
+    targetPrice,
+    monthlyRent,
+    propertyTaxes,
+    insurance,
+    rate,
+    downPaymentPct,
+    closingCostsPct,
+    toPayloadBase,
+    verdictSourceOverrides,
+    addressParam,
+    currentStrategyType,
+    savedPropertyId,
+    isRecalculating,
+  ])
 
   return (
     <div
@@ -2979,8 +2971,8 @@ function StrategyContent() {
             </button>
             <button
               type="button"
-              onClick={handleExcelDownload}
-              disabled={isExporting === 'excel'}
+              onClick={() => void handleComprehensiveExcelDownload()}
+              disabled={isExporting === 'excel' || isRecalculating}
               className="relative flex items-center justify-center gap-1.5 py-3 px-2 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-wait"
               style={{
                 background: 'var(--surface-card)',
@@ -3223,6 +3215,7 @@ function StrategyContent() {
               updateState={handleWorksheetUpdate}
               isCalculating={isRecalculating}
               propertyAddress={resolvedAddress}
+              onExportExcel={handleComprehensiveExcelDownload}
               flushWithinParent
               highlightedFields={highlightedFields}
               operatingExpenseDefaults={
