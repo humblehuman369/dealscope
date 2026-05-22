@@ -8,29 +8,51 @@ FAMILY = "income"
 FAMILY_LABEL = "Rent increase"
 ID = "rent-verification"
 
-MAX_REALISTIC_BUMP_PCT = 0.20  # cap rent increase at +20% — beyond that becomes implausible
+MAX_REALISTIC_BUMP_PCT = 0.20  # ranking / realism only — not applied to Target Rent math
+
+# Cushion above $0 monthly CF at list price when Option 1 is applied on Strategy.
+_TARGET_MONTHLY_CF_AT_LIST = 25.0
+
+
+def _marginal_noi_per_rent_dollar(ctx: StructureContext) -> float | None:
+    """Marginal monthly NOI per $1 of gross rent (vacancy + % opex on gross basis)."""
+    haircut = (1 - ctx.vacancy_rate) - (ctx.maintenance_pct + ctx.management_pct + ctx.capex_pct)
+    return haircut if haircut > 0 else None
+
+
+def _required_rent_for_monthly_cf(ctx: StructureContext, target_monthly_cf: float) -> float | None:
+    """Closed-form rent at list price that achieves ``target_monthly_cf`` after fixed opex + P&I."""
+    haircut = _marginal_noi_per_rent_dollar(ctx)
+    if haircut is None:
+        return None
+    fixed_annual = (
+        ctx.property_taxes_annual
+        + ctx.insurance_annual
+        + ctx.utilities_annual
+        + ctx.other_annual_expenses
+    )
+    fixed_monthly = fixed_annual / 12 + ctx.baseline_monthly_pi
+    required = (fixed_monthly + target_monthly_cf) / haircut
+    return max(ctx.monthly_rent, required)
 
 
 def solve(ctx: StructureContext) -> DealStructure | None:
-    """Solve for the monthly rent that closes the gap, capped at +20% of current rent."""
+    """Solve for Target Rent that yields positive cash flow at Market (list) price."""
     if ctx.deal_gap_amount <= 0:
         return None
     if ctx.monthly_rent <= 0:
         return None
 
-    # Each $1/mo of additional rent (after vacancy/management/maint/capex haircuts)
-    # adds roughly $1 * (1 - vacancy) * (1 - maint - mgmt - capex) to NOI/mo.
-    haircut = (1 - ctx.vacancy_rate) - (ctx.maintenance_pct + ctx.management_pct + ctx.capex_pct)
-    if haircut <= 0:
+    haircut = _marginal_noi_per_rent_dollar(ctx)
+    if haircut is None:
         return None
 
-    # Monthly gap to close, plus a small cushion.
-    target_savings = max(0.0, -ctx.baseline_monthly_cash_flow) + 25
-    rent_bump_needed = target_savings / haircut
+    required_rent = _required_rent_for_monthly_cf(ctx, _TARGET_MONTHLY_CF_AT_LIST)
+    if required_rent is None:
+        return None
 
-    max_bump = ctx.monthly_rent * MAX_REALISTIC_BUMP_PCT
-    actual_bump = min(rent_bump_needed, max_bump)
-    new_rent = ctx.monthly_rent + actual_bump
+    new_rent = required_rent
+    actual_bump = new_rent - ctx.monthly_rent
     monthly_savings = actual_bump * haircut
 
     bump_pct = (actual_bump / ctx.monthly_rent) * 100 if ctx.monthly_rent > 0 else 0

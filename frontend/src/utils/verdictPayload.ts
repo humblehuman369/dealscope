@@ -69,6 +69,9 @@ export function buildVerdictAnalysisPayload(
   let hoaFeesMonthly = base.hoaFeesMonthly ?? null
   let arv = base.arv ?? null
 
+  if (sourceOverrides.price != null) listPrice = sourceOverrides.price
+  if (sourceOverrides.monthlyRent != null) monthlyRent = sourceOverrides.monthlyRent
+
   if (overrides?.listPrice != null) listPrice = overrides.listPrice
   if (overrides?.monthlyRent != null) monthlyRent = overrides.monthlyRent
   if (overrides?.propertyTaxes != null) propertyTaxes = overrides.propertyTaxes
@@ -76,15 +79,17 @@ export function buildVerdictAnalysisPayload(
   if (overrides?.monthlyHoa != null) hoaFeesMonthly = overrides.monthlyHoa
   if (overrides?.arv != null) arv = overrides.arv
 
-  if (sourceOverrides.marketValueOverride != null && sourceOverrides.marketValueOverride > 0) {
+  // Appraiser / saved-deal overrides apply only when the worksheet did not set the field
+  // (e.g. Three Paths Option 1 must not lose to a stale monthly_rent_override).
+  if (overrides?.listPrice == null && sourceOverrides.marketValueOverride != null && sourceOverrides.marketValueOverride > 0) {
     listPrice = sourceOverrides.marketValueOverride
-  } else if (sourceOverrides.price != null) {
-    listPrice = sourceOverrides.price
   }
-  if (sourceOverrides.monthlyRentOverride != null && sourceOverrides.monthlyRentOverride > 0) {
+  if (
+    overrides?.monthlyRent == null &&
+    sourceOverrides.monthlyRentOverride != null &&
+    sourceOverrides.monthlyRentOverride > 0
+  ) {
     monthlyRent = sourceOverrides.monthlyRentOverride
-  } else if (sourceOverrides.monthlyRent != null) {
-    monthlyRent = sourceOverrides.monthlyRent
   }
 
   const payload: Record<string, any> = {

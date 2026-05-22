@@ -20,11 +20,20 @@ describe('buildVerdictAnalysisPayload appraiser overrides', () => {
     expect(payload.list_price).toBe(425_000)
   })
 
-  it('uses monthlyRentOverride over sourceOverrides.monthlyRent', () => {
+  it('uses monthlyRentOverride when worksheet did not set monthlyRent', () => {
     const payload = buildVerdictAnalysisPayload(base, null, {
       monthlyRent: 2_400,
       monthlyRentOverride: 2_800,
     })
     expect(payload.monthly_rent).toBe(2_800)
+  })
+
+  it('worksheet monthlyRent wins over monthlyRentOverride (Three Paths apply)', () => {
+    const payload = buildVerdictAnalysisPayload(
+      base,
+      { monthlyRent: 3_612 },
+      { monthlyRentOverride: 2_800 },
+    )
+    expect(payload.monthly_rent).toBe(3_612)
   })
 })
