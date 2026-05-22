@@ -17,6 +17,8 @@ import {
   X,
 } from 'lucide-react'
 import { useAuthModal } from '@/hooks/useAuthModal'
+import { useSession } from '@/hooks/useSession'
+import { MarketingUserMenu, MarketingUserMenuMobileLinks } from '@/components/layout/MarketingUserMenu'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { ExploreDealGapIQSection } from '@/components/seo/ExploreDealGapIQSection'
 import './hero-blend.css'
@@ -106,6 +108,7 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
 
 function MarketingNav({ onStart }: { onStart: () => void }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { isAuthenticated } = useSession()
   const closeMobile = () => setMobileOpen(false)
 
   const navLinks = [
@@ -150,24 +153,36 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
           </div>
 
           <div className="hidden items-center gap-4 md:flex">
-            <Link
-              href="/login"
-              className="px-5 py-2.5 text-sm font-bold text-[var(--text-body)] transition-colors hover:text-[var(--text-heading)]"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/register"
-              className="px-5 py-2.5 text-sm font-bold text-[var(--text-body)] transition-colors hover:text-[var(--text-heading)]"
-            >
-              Register
-            </Link>
+            {isAuthenticated ? (
+              <MarketingUserMenu />
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-5 py-2.5 text-sm font-bold text-[var(--text-body)] transition-colors hover:text-[var(--text-heading)]"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-5 py-2.5 text-sm font-bold text-[var(--text-body)] transition-colors hover:text-[var(--text-heading)]"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
+
+          {isAuthenticated ? (
+            <div className="md:hidden">
+              <MarketingUserMenu />
+            </div>
+          ) : null}
 
           <button
             type="button"
             onClick={() => setMobileOpen((open) => !open)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border-default)] text-[var(--text-heading)] md:hidden"
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border-default)] text-[var(--text-heading)] ${isAuthenticated ? 'hidden' : 'md:hidden'}`}
             aria-label="Toggle navigation"
             aria-expanded={mobileOpen}
           >
@@ -199,20 +214,26 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
                   </a>
                 ),
               )}
-              <Link
-                href="/login"
-                onClick={closeMobile}
-                className="rounded-xl px-3 py-2 text-left font-semibold text-[var(--text-body)] hover:bg-[var(--surface-elevated)]"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/register"
-                onClick={closeMobile}
-                className="rounded-xl px-3 py-2 text-left font-semibold text-[var(--text-body)] hover:bg-[var(--surface-elevated)]"
-              >
-                Register
-              </Link>
+              {isAuthenticated ? (
+                <MarketingUserMenuMobileLinks onNavigate={closeMobile} />
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={closeMobile}
+                    className="rounded-xl px-3 py-2 text-left font-semibold text-[var(--text-body)] hover:bg-[var(--surface-elevated)]"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={closeMobile}
+                    className="rounded-xl px-3 py-2 text-left font-semibold text-[var(--text-body)] hover:bg-[var(--surface-elevated)]"
+                  >
+                    Register
+                  </Link>
+                </>
+              )}
               <PrimaryButton
                 onClick={() => {
                   closeMobile()
