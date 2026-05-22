@@ -57,6 +57,10 @@ import {
   getValueColor,
 } from './types'
 import { useDealMakerBackendCalc } from '@/hooks/useDealMakerBackendCalc'
+import { useSession } from '@/hooks/useSession'
+import { useSubscription } from '@/hooks/useSubscription'
+import { useAuthModal } from '@/hooks/useAuthModal'
+import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 import { DealMakerWorksheet } from './DealMakerWorksheet'
 import {
@@ -126,6 +130,9 @@ export function DealMakerScreen({
   backTo,
 }: DealMakerScreenProps) {
   const router = useRouter()
+  const { isAuthenticated } = useSession()
+  const { isPro } = useSubscription()
+  const { openAuthModal } = useAuthModal()
 
   // Deal Maker Store (for saved properties)
   const dealMakerStore = useDealMakerStore()
@@ -748,6 +755,91 @@ export function DealMakerScreen({
   }, [router, property, state, isSavedPropertyMode, savedPropertyId, strategyType, dealMakerStore])
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
+
+  const handlePDFDownload = useCallback(() => {
+    if (!isAuthenticated) {
+      openAuthModal('login')
+      return
+    }
+    if (!isPro) {
+      alert('Full Report download is a Pro feature. Visit Pricing to upgrade.')
+      return
+    }
+
+    let monthlyRentValue = 0
+    let purchasePriceValue = 0
+    let propertyTaxValue = 0
+    let insuranceValue = 0
+    let interestRateValue = 6
+    let downPaymentPctValue = 20
+
+    if (strategyType === 'wholesale' && isWholesaleState(state)) {
+      purchasePriceValue = state.contractPrice
+    } else if (strategyType === 'house_hack' && isHouseHackState(state)) {
+      purchasePriceValue = state.purchasePrice
+      monthlyRentValue = state.avgRentPerUnit * (state.totalUnits - state.ownerOccupiedUnits)
+      propertyTaxValue = state.annualPropertyTax
+      insuranceValue = state.annualInsurance
+      interestRateValue = state.interestRate * 100
+      downPaymentPctValue = state.downPaymentPercent * 100
+    } else if (strategyType === 'flip' && isFlipState(state)) {
+      purchasePriceValue = state.purchasePrice
+      interestRateValue = state.hardMoneyRate * 100
+      downPaymentPctValue = Math.max(0, (1 - state.hardMoneyLtv) * 100)
+    } else if (strategyType === 'brrrr' && isBRRRRState(state)) {
+      purchasePriceValue = state.purchasePrice
+      monthlyRentValue = state.postRehabMonthlyRent
+      propertyTaxValue = state.annualPropertyTax
+      insuranceValue = state.annualInsurance
+      interestRateValue = state.hardMoneyRate * 100
+      downPaymentPctValue = state.downPaymentPercent * 100
+    } else if (strategyType === 'str' && isSTRState(state)) {
+      const nightsOccupied = 365 * state.occupancyRate
+      const numberOfTurnovers = Math.floor(nightsOccupied / state.avgLengthOfStayDays)
+      const annualRevenue =
+        state.averageDailyRate * nightsOccupied + state.cleaningFeeRevenue * numberOfTurnovers
+      purchasePriceValue = state.buyPrice
+      monthlyRentValue = annualRevenue / 12
+      propertyTaxValue = state.annualPropertyTax
+      insuranceValue = state.annualInsurance
+      interestRateValue = state.interestRate * 100
+      downPaymentPctValue = state.downPaymentPercent * 100
+    } else {
+      const ltrState = state as LTRDealMakerState
+      purchasePriceValue = ltrState.buyPrice
+      monthlyRentValue = ltrState.monthlyRent ?? 0
+      propertyTaxValue = ltrState.annualPropertyTax
+      insuranceValue = ltrState.annualInsurance
+      interestRateValue = ltrState.interestRate * 100
+      downPaymentPctValue = ltrState.downPaymentPercent * 100
+    }
+
+    const propertyId = property.zpid || savedPropertyId || 'general'
+    const params = new URLSearchParams({
+      address: fullAddress,
+      strategy: strategyType,
+      theme: 'light',
+      propertyId: String(propertyId),
+    })
+    params.set('purchase_price', String(purchasePriceValue))
+    params.set('monthly_rent', String(monthlyRentValue))
+    params.set('interest_rate', String(interestRateValue))
+    params.set('down_payment_pct', String(downPaymentPctValue))
+    params.set('property_taxes', String(propertyTaxValue))
+    params.set('insurance', String(insuranceValue))
+
+    const reportBase = IS_CAPACITOR ? WEB_BASE_URL : ''
+    window.open(`${reportBase}/api/report?${params}`, '_blank')
+  }, [
+    isAuthenticated,
+    isPro,
+    openAuthModal,
+    strategyType,
+    state,
+    property.zpid,
+    savedPropertyId,
+    fullAddress,
+  ])
 
   // Note: Header is now handled by global AppHeader
 
@@ -1667,6 +1759,7 @@ export function DealMakerScreen({
         updateState={updateState}
         isCalculating={isCalculating || backendCalculating}
         propertyAddress={fullAddress}
+        onExportPDF={handlePDFDownload}
       />
 
       {/* CSS for tabular-nums */}

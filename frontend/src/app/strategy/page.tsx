@@ -3201,6 +3201,7 @@ function StrategyContent() {
               updateState={handleWorksheetUpdate}
               isCalculating={isRecalculating}
               propertyAddress={resolvedAddress}
+              onExportPDF={() => handlePDFDownload('light')}
               onExportExcel={handleComprehensiveExcelDownload}
               flushWithinParent
               highlightedFields={highlightedFields}
