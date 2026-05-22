@@ -3,8 +3,10 @@ Saved Properties router for user's property portfolio management.
 """
 
 import logging
+import math
 import uuid
 from datetime import UTC
+from decimal import Decimal
 
 from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Query, Response, UploadFile, status
 from pydantic import ValidationError as PydanticValidationError
@@ -1348,11 +1350,21 @@ async def update_deal_maker(
 
     # Save to database (sanitize so JSONB never gets inf/nan)
     saved.deal_maker_record = sanitize_for_json_storage(DealMakerService.to_dict(updated_record))
+    updates_dict = updates.model_dump(exclude_unset=True)
+    if updates_dict.get("strategy_type"):
+        saved.best_strategy = updates_dict["strategy_type"]
+    metrics = updated_record.cached_metrics
+    if metrics:
+        annual_cf = metrics.annual_cash_flow
+        if annual_cf is not None and math.isfinite(annual_cf):
+            saved.best_cash_flow = Decimal(str(round(annual_cf, 2)))
+        coc = metrics.cash_on_cash
+        if coc is not None and math.isfinite(coc):
+            saved.best_coc_return = Decimal(str(round(coc, 4)))
     await db.commit()
     await db.refresh(saved)
 
     # Return response with convenience fields
-    metrics = updated_record.cached_metrics
 
     return DealMakerResponse(
         record=updated_record,

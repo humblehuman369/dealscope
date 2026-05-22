@@ -26,6 +26,7 @@ import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
+import { useSaveStrategyWorksheet } from '@/hooks/useSaveStrategyWorksheet'
 import { api } from '@/lib/api-client'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
@@ -682,6 +683,8 @@ function StrategyContent() {
   const [initialOverrides, setInitialOverrides] = useState<Record<string, any> | null>(null)
   // Inline slider overrides — local-only, never re-triggers API fetch.
   const [inlineOverrides, setInlineOverrides] = useState<Record<string, any>>({})
+  /** True after worksheet edits once a property is saved — drives "Save worksheet" CTA. */
+  const [worksheetDirty, setWorksheetDirty] = useState(false)
   /** Mirrors `inlineOverrides` for debounced recalc so we always merge the latest committed state. */
   const inlineOverridesRef = useRef<Record<string, any>>({})
   useEffect(() => {
@@ -950,6 +953,20 @@ function StrategyContent() {
     propertySnapshot: savePropertySnapshot,
   })
   const { record: dealRecord } = useDealSnapshot(savedPropertyId)
+
+  const strategyTypeForPersistence = toStrategyType(
+    selectedStrategyId ?? strategyParam ?? 'long-term-rental',
+  )
+
+  const markWorksheetDirty = useCallback(() => {
+    setWorksheetDirty(true)
+  }, [])
+
+  const { saveWorksheet, isSavingWorksheet } = useSaveStrategyWorksheet({
+    savedPropertyId,
+    strategyType: strategyTypeForPersistence,
+    getWorksheetState: () => worksheetStateRef.current,
+  })
 
   useEffect(() => {
     if (!addressParam || !dealRecord) return
@@ -1279,6 +1296,7 @@ function StrategyContent() {
           }
         }, 300)
         scheduleRecalc()
+        markWorksheetDirty()
         return next
       })
       // A manual slider edit invalidates the path-applied glow on this field.
@@ -1294,7 +1312,7 @@ function StrategyContent() {
         return next
       })
     },
-    [scheduleRecalc],
+    [scheduleRecalc, markWorksheetDirty],
   )
 
   /**
@@ -1327,6 +1345,7 @@ function StrategyContent() {
           /* ignore */
         }
         scheduleRecalc()
+        markWorksheetDirty()
         return next as Record<string, any>
       })
       setAppliedPathId(structure.id)
@@ -1343,7 +1362,7 @@ function StrategyContent() {
         path_index: idx + 1,
       })
     },
-    [scheduleRecalc],
+    [scheduleRecalc, markWorksheetDirty],
   )
 
   /**
@@ -2212,6 +2231,7 @@ function StrategyContent() {
           }
         }, 300)
         scheduleRecalc()
+        markWorksheetDirty()
         return next
       })
     }
@@ -3328,42 +3348,104 @@ function StrategyContent() {
           </section>
         </AuthGate>
 
-        {/* Save CTA — adapt for logged-in vs anonymous; future: scan limit → Pro upgrade */}
+        {/* Save CTA — property bookmark + worksheet persistence for dashboard */}
         <section
           className="px-[1px] sm:px-5 py-10 text-center border-t"
           style={{ borderColor: colors.ui.border }}
         >
           <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 12 }}>
-            You screened it. You proved it.
+            {isSaved && worksheetDirty ? 'Almost there' : 'You screened it. You proved it.'}
           </p>
           <h2
             className="text-2xl font-extrabold mb-3"
             style={{ color: colors.text.primary, letterSpacing: '-0.5px', lineHeight: 1.25 }}
           >
-            Now Save It.
+            {isSaved && worksheetDirty ? 'Save Your Worksheet' : 'Now Save It.'}
           </h2>
           <p
             className="text-[15px] mb-7 mx-auto max-w-md"
             style={{ color: colors.text.body, lineHeight: 1.6 }}
           >
-            Save to your DealVaultIQ and we&apos;ll keep the numbers fresh and alert you if anything
-            changes.
+            {isSaved && worksheetDirty
+              ? 'Your slider changes are not in DealVault yet. Save the worksheet so your dashboard and deal pages reopen with these numbers.'
+              : 'Save to your DealVaultIQ and we&apos;ll keep the numbers fresh and alert you if anything changes.'}
           </p>
           {isAuthenticated ? (
             <>
-              <button
-                type="button"
-                onClick={() =>
-                  (isSaved ? toggle() : save()).catch((err) =>
-                    console.error('Save to DealVault failed:', err),
-                  )
-                }
-                disabled={isSaving}
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-[var(--text-inverse)] transition-all mb-4 disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ background: colors.brand.teal }}
-              >
-                {isSaving ? 'Saving…' : isSaved ? 'Saved to DealVault ✓' : 'Save to DealVaultIQ'}
-              </button>
+              {!isSaved ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    save().catch((err) => console.error('Save to DealVault failed:', err))
+                  }
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-[var(--text-inverse)] transition-all mb-4 disabled:opacity-60 disabled:cursor-not-allowed"
+                  style={{ background: colors.brand.teal }}
+                >
+                  {isSaving ? 'Saving…' : 'Save to DealVaultIQ'}
+                </button>
+              ) : worksheetDirty ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    saveWorksheet()
+                      .then((ok) => {
+                        if (ok) setWorksheetDirty(false)
+                      })
+                      .catch((err) => console.error('Save worksheet failed:', err))
+                  }}
+                  disabled={isSavingWorksheet || !savedPropertyId}
+                  className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base text-[var(--text-inverse)] transition-all mb-3 disabled:opacity-60 disabled:cursor-not-allowed"
+                  style={{ background: colors.brand.teal }}
+                >
+                  {isSavingWorksheet ? 'Saving worksheet…' : 'Save worksheet to DealVault'}
+                </button>
+              ) : (
+                <p
+                  className="text-sm font-semibold mb-4"
+                  style={{ color: colors.status.positive }}
+                >
+                  Saved to DealVault ✓
+                </p>
+              )}
+              {isSaved && (
+                <p className="text-xs mb-4" style={{ color: 'var(--text-body)' }}>
+                  <a
+                    href="/dashboard"
+                    className="font-semibold underline underline-offset-2"
+                    style={{ color: colors.brand.teal }}
+                  >
+                    View in dashboard
+                  </a>
+                  {worksheetDirty ? (
+                    <>
+                      {' '}
+                      · or{' '}
+                      <button
+                        type="button"
+                        className="font-semibold underline underline-offset-2"
+                        style={{ color: colors.brand.teal }}
+                        onClick={() => toggle().catch((err) => console.error('Unsave failed:', err))}
+                      >
+                        remove from DealVault
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {' '}
+                      ·{' '}
+                      <button
+                        type="button"
+                        className="font-semibold underline underline-offset-2"
+                        style={{ color: colors.brand.teal }}
+                        onClick={() => toggle().catch((err) => console.error('Unsave failed:', err))}
+                      >
+                        remove from DealVault
+                      </button>
+                    </>
+                  )}
+                </p>
+              )}
             </>
           ) : (
             <>
