@@ -60,13 +60,13 @@ const FAQ_DATA: FAQItem[] = [
     category: 'Reports & Export',
     question: 'Can I export a PDF report?',
     answer:
-      'Yes. On the Strategy page, click "Full Report" to generate a lender-ready PDF with property details, financial breakdown, and analysis summary. On mobile, tap "Report" in the action bar to download and share the PDF.',
+      'Yes. On Discovery, tap "Download PDF" in the action row. On Strategy, tap "Full Report" below Next Steps. Both open a lender-ready print view — use your browser Print dialog and choose Save as PDF. Pro subscription required.',
   },
   {
     category: 'Reports & Export',
     question: 'Can I export to Excel?',
     answer:
-      'Yes. On the Strategy page, click "Worksheet" to download an Excel file with the full proforma — including all inputs, calculations, and projections. This is useful for custom modeling or sharing with partners.',
+      'Yes. On Discovery or Strategy, tap "Download Excel" to get the full proforma workbook — inputs, calculations, and projections. Useful for custom modeling or sharing with partners. Pro subscription required.',
   },
   {
     category: 'Mobile App',
