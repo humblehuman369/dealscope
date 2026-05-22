@@ -15,7 +15,6 @@ import {
   Sparkles,
   Star,
   TrendingUp,
-  Users,
   X,
 } from 'lucide-react'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -236,13 +235,9 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
     <section className="mx-auto max-w-7xl px-6 pb-14 pt-12 md:pt-16">
       <div className="grid items-center gap-12 lg:grid-cols-12">
         <div className="space-y-8 lg:col-span-7">
-          {/* TODO(brad): swap with real weekly-counter data */}
-          <div
-            data-fake-marker="weekly-counter"
-            className="inline-flex items-center gap-2 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1.5 text-sm font-bold text-[var(--accent-sky)]"
-          >
+          <div className="inline-flex items-center gap-2 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1.5 text-sm font-bold text-[var(--accent-sky)]">
             <span className="h-2 w-2 rounded-full bg-[var(--accent-sky)] animate-pulse" />
-            <span>1,284 investors ran discoveries this week</span>
+            <span>Built by an Investor for Investors</span>
           </div>
 
           <div>
@@ -280,30 +275,6 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
             </SecondaryButton>
           </div>
 
-          {/* TODO(brad): swap with real monthly-counter data */}
-          <div
-            data-fake-marker="monthly-counter"
-            className="flex flex-col gap-4 pt-4 sm:flex-row sm:items-center sm:gap-8"
-          >
-            <div className="flex -space-x-3" aria-hidden>
-              {['MR', 'PP', 'DT', 'AK'].map((initials) => (
-                <div
-                  key={initials}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--surface-base)] bg-[var(--surface-elevated)] text-[10px] font-black text-[var(--accent-sky)]"
-                >
-                  {initials}
-                </div>
-              ))}
-            </div>
-            <div className="text-sm">
-              <div className="font-bold text-[var(--text-heading)]">
-                Joined by 2,847 investors this month
-              </div>
-              <div className="text-xs font-bold text-[var(--status-positive)]">
-                47 deals closed using our scripts last week
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="relative lg:col-span-5">
@@ -360,16 +331,12 @@ function QuickStatsBar() {
   const stats = [
     { icon: Database, label: 'Data Sources', value: '6 live' },
     { icon: Clock, label: 'Avg Analysis Time', value: '15 seconds' },
-    { icon: Users, label: 'Active Investors', value: '8,412' },
-    { icon: ShieldCheck, label: 'Deals Structured', value: '3,291' },
+    { icon: Sparkles, label: 'Strategies', value: '6 modeled' },
+    { icon: ShieldCheck, label: 'Offer Paths', value: '4 per property' },
   ]
 
   return (
-    <div
-      data-fake-marker="quick-stats"
-      className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-5"
-    >
-      {/* TODO(brad): swap with real quick-stats data */}
+    <div className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-5">
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-2 gap-6 text-center md:grid-cols-4">
           {stats.map((stat) => (
@@ -1071,12 +1038,8 @@ function PricingCard({
         {cta}
       </button>
       {featured && (
-        <div
-          data-fake-marker="conversion-stat"
-          className="mt-3 text-center text-[10px] font-bold text-[var(--accent-sky)]"
-        >
-          {/* TODO(brad): swap with real conversion-stat data */}
-          Cancel anytime. 94% of triers convert.
+        <div className="mt-3 text-center text-[10px] font-bold text-[var(--accent-sky)]">
+          Cancel anytime. No card required for free tier.
         </div>
       )}
     </div>
