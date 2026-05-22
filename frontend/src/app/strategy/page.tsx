@@ -2272,7 +2272,7 @@ function StrategyContent() {
     }
   }
 
-  const handleComprehensiveExcelDownload = useCallback(async () => {
+  const handleComprehensiveExcelDownload = async () => {
     const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
     if (!propertyId) {
       alert('Property data is still loading. Please wait a moment and try again.')
@@ -2291,58 +2291,39 @@ function StrategyContent() {
 
     setIsExporting('excel')
     try {
-    const exportOverrides: Record<string, unknown> = {
-      ...(dealMakerOverrides ?? {}),
-      purchasePrice:
-        dealMakerOverrides?.purchasePrice ?? dealMakerOverrides?.buyPrice ?? targetPrice,
-      buyPrice: dealMakerOverrides?.buyPrice ?? dealMakerOverrides?.purchasePrice ?? targetPrice,
-      monthlyRent: dealMakerOverrides?.monthlyRent ?? monthlyRent,
-      propertyTaxes: dealMakerOverrides?.propertyTaxes ?? propertyTaxes,
-      insurance: dealMakerOverrides?.insurance ?? insurance,
-      interestRate: dealMakerOverrides?.interestRate ?? rate,
-      downPayment: dealMakerOverrides?.downPayment ?? downPaymentPct * 100,
-      closingCosts: dealMakerOverrides?.closingCosts ?? closingCostsPct * 100,
-    }
+      const exportOverrides: Record<string, unknown> = {
+        ...(dealMakerOverrides ?? {}),
+        purchasePrice:
+          dealMakerOverrides?.purchasePrice ?? dealMakerOverrides?.buyPrice ?? targetPrice,
+        buyPrice: dealMakerOverrides?.buyPrice ?? dealMakerOverrides?.purchasePrice ?? targetPrice,
+        monthlyRent: dealMakerOverrides?.monthlyRent ?? monthlyRent,
+        propertyTaxes: dealMakerOverrides?.propertyTaxes ?? propertyTaxes,
+        insurance: dealMakerOverrides?.insurance ?? insurance,
+        interestRate: dealMakerOverrides?.interestRate ?? rate,
+        downPayment: dealMakerOverrides?.downPayment ?? downPaymentPct * 100,
+        closingCosts: dealMakerOverrides?.closingCosts ?? closingCostsPct * 100,
+      }
 
-    const verdictInput = buildVerdictAnalysisPayload(
-      toPayloadBase(propertyInfo),
-      exportOverrides,
-      verdictSourceOverrides,
-    )
+      const verdictInput = buildVerdictAnalysisPayload(
+        toPayloadBase(propertyInfo),
+        exportOverrides,
+        verdictSourceOverrides,
+      )
 
-    await downloadComprehensiveExcel({
-      propertyId: String(propertyId),
-      address: addressParam,
-      activeStrategy: currentStrategyType,
-      verdictInput,
-      savedPropertyId,
-    })
+      await downloadComprehensiveExcel({
+        propertyId: String(propertyId),
+        address: addressParam,
+        activeStrategy: currentStrategyType,
+        verdictInput,
+        savedPropertyId,
+      })
     } catch (err) {
       console.error('Excel download failed:', err)
       alert(err instanceof Error ? err.message : 'Failed to generate worksheet. Please try again.')
     } finally {
       setIsExporting(null)
     }
-  }, [
-    propertyInfo,
-    isAuthenticated,
-    isPro,
-    openAuthModal,
-    dealMakerOverrides,
-    targetPrice,
-    monthlyRent,
-    propertyTaxes,
-    insurance,
-    rate,
-    downPaymentPct,
-    closingCostsPct,
-    toPayloadBase,
-    verdictSourceOverrides,
-    addressParam,
-    currentStrategyType,
-    savedPropertyId,
-    isRecalculating,
-  ])
+  }
 
   return (
     <div
