@@ -10,7 +10,15 @@
  * Design: VerdictIQ 3.3 — True black base, Inter typography, Slate text hierarchy
  */
 
-import { useCallback, useEffect, useState, useMemo, useRef, Suspense } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useMemo,
+  useRef,
+  Suspense,
+} from 'react'
 import { ScreenErrorBoundary } from '@/components/ErrorBoundary'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
@@ -958,10 +966,63 @@ function StrategyContent() {
     )
   }, [addressParam, dealRecord, queryClient])
 
-  // Scroll to top on mount — prevents opening mid-page after navigation
+  // Keep browser from restoring a mid-page scroll when landing on Strategy.
   useEffect(() => {
-    window.scrollTo(0, 0)
+    if (typeof window === 'undefined' || !('scrollRestoration' in window.history)) return
+    const prev = window.history.scrollRestoration
+    window.history.scrollRestoration = 'manual'
+    return () => {
+      window.history.scrollRestoration = prev
+    }
   }, [])
+
+  const scrollStrategyToDealGapBar = useCallback(() => {
+    if (typeof window === 'undefined') return
+    const bar = document.getElementById('strategy-deal-gap-bar')
+    if (!bar) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      return
+    }
+    const root = document.documentElement
+    const addressH = parseFloat(
+      getComputedStyle(root).getPropertyValue('--app-address-bar-height') || '0',
+    )
+    let safeInset = 0
+    try {
+      const probe = document.createElement('div')
+      probe.style.position = 'absolute'
+      probe.style.visibility = 'hidden'
+      probe.style.paddingTop = 'env(safe-area-inset-top)'
+      document.body.appendChild(probe)
+      safeInset = parseFloat(getComputedStyle(probe).paddingTop) || 0
+      document.body.removeChild(probe)
+    } catch {
+      /* ignore */
+    }
+    const stickyTop = safeInset + addressH
+    const barDocTop = bar.getBoundingClientRect().top + window.scrollY
+    const target = Math.max(0, barDocTop - stickyTop)
+    window.scrollTo({ top: target, left: 0, behavior: 'instant' })
+  }, [])
+
+  // Initial load: align Deal Gap bar under the sticky property address bar.
+  const shouldScrollToDealGapBar =
+    !worksheetSectionParam && !isLoading && !!data
+
+  useLayoutEffect(() => {
+    if (!shouldScrollToDealGapBar) return
+    scrollStrategyToDealGapBar()
+  }, [shouldScrollToDealGapBar, addressParam, scrollStrategyToDealGapBar])
+
+  useEffect(() => {
+    if (!shouldScrollToDealGapBar) return
+    const t1 = window.setTimeout(scrollStrategyToDealGapBar, 120)
+    const t2 = window.setTimeout(scrollStrategyToDealGapBar, 320)
+    return () => {
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+    }
+  }, [shouldScrollToDealGapBar, addressParam, scrollStrategyToDealGapBar])
 
   const hasRecordedAnalysisRef = useRef(false)
 
@@ -2394,6 +2455,7 @@ function StrategyContent() {
             Prior values stay visible while recalculating (stale-while-revalidate).
           */}
                 <div
+                  id="strategy-deal-gap-bar"
                   className="sticky z-30 px-[1px] sm:px-5"
                   style={{
                     top: 'calc(env(safe-area-inset-top, 0px) + var(--app-address-bar-height, 0px))',
