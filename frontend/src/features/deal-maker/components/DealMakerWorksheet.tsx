@@ -411,7 +411,7 @@ function SliderRow({
         <div className="relative h-5 flex-1 min-w-0 flex items-center justify-center">
           <div
             className="w-full h-[3px] rounded-full relative"
-            style={{ background: 'var(--surface-elevated)' }}
+            style={{ background: 'var(--slider-track-bg)' }}
           >
             <div
               className="absolute left-0 top-0 h-full rounded-full pointer-events-none"
@@ -471,7 +471,7 @@ function SliderRow({
               : {
                   color: C.heading,
                   border: '1px solid var(--border-subtle)',
-                  background: 'var(--surface-elevated)',
+                  background: 'var(--surface-input)',
                 }
           }
           data-path-highlighted={highlight || undefined}
@@ -2453,8 +2453,8 @@ export function DealMakerWorksheet({
         <div
           className="rounded-xl p-4 sm:p-5 relative"
           style={{
-            background: 'var(--surface-base)',
-            border: '1px solid var(--border-default)',
+            background: 'var(--surface-card)',
+            border: '1px solid var(--border-subtle)',
             boxShadow: 'var(--shadow-card)',
           }}
         >

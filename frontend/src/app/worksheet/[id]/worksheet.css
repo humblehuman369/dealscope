@@ -1226,14 +1226,6 @@ body {
   background-color: var(--ws-row-hover);
 }
 
-[data-theme='light'] .section-content .data-row:nth-child(even):not(.total):not(.highlight) {
-  background-color: var(--surface-elevated);
-}
-
-[data-theme='light'] .section-content .data-row:nth-child(even):not(.total):not(.highlight):hover {
-  background-color: var(--surface-card-hover);
-}
-
 .data-row.total {
   background: var(--ws-row-total-bg);
   font-weight: 600;

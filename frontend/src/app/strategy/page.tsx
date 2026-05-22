@@ -2329,11 +2329,9 @@ function StrategyContent() {
 
   return (
     <div
-      className="min-h-screen"
+      className="strategy-page-shell min-h-screen"
       style={{
         fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
-        background:
-          'radial-gradient(ellipse at 30% 0%, var(--color-teal-dim) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, var(--color-teal-dim) 0%, transparent 50%), var(--surface-base)',
       }}
     >
       {/* Header and property bar are provided by AppHeader in layout */}
@@ -2457,16 +2455,22 @@ function StrategyContent() {
                   className="sticky z-30 px-[1px] sm:px-5"
                   style={{
                     top: 'calc(env(safe-area-inset-top, 0px) + var(--app-address-bar-height, 0px))',
-                    background: 'var(--surface-base)',
+                    background: 'var(--surface-chrome)',
                     borderBottom: '1px solid var(--border-subtle)',
-                    paddingTop: 2,
-                    paddingBottom: 6,
+                    paddingTop: 8,
+                    paddingBottom: 10,
                     boxShadow: 'var(--shadow-sticky)',
                   }}
                 >
                   <div
-                    className="relative"
-                    style={{ paddingTop: 10, opacity: isRecalculating ? 0.55 : 1 }}
+                    className="relative rounded-xl mx-0 sm:mx-0"
+                    style={{
+                      padding: '12px 14px',
+                      background: 'var(--surface-card)',
+                      border: '1px solid var(--border-subtle)',
+                      boxShadow: 'var(--shadow-card)',
+                      opacity: isRecalculating ? 0.55 : 1,
+                    }}
                     aria-busy={isRecalculating}
                   >
                     {(() => {
@@ -2601,11 +2605,9 @@ function StrategyContent() {
                             className="relative rounded-full"
                             style={{
                               height: 22,
-                              background:
-                                'linear-gradient(90deg, rgba(10,30,60,0.95) 0%, rgba(30,80,140,0.85) 35%, rgba(56,160,220,0.7) 50%, rgba(30,80,140,0.85) 65%, rgba(10,30,60,0.95) 100%)',
-                              border: '1.5px solid rgba(56,189,248,0.5)',
-                              boxShadow:
-                                'inset 0 0 12px rgba(56,189,248,0.25), 0 0 16px rgba(56,189,248,0.15)',
+                              background: 'var(--deal-gap-track-bg)',
+                              border: '1px solid var(--deal-gap-track-border)',
+                              boxShadow: 'var(--deal-gap-track-shadow)',
                             }}
                           >
                             {isPositiveIncomeCase && sweetSpotWidth > 0 && (
@@ -2619,7 +2621,7 @@ function StrategyContent() {
                               return (
                                 <div
                                   key={i}
-                                  className="absolute rounded-full"
+                                  className="absolute rounded-full deal-gap-marker"
                                   style={{
                                     width: isRing ? 24 : 18,
                                     height: isRing ? 24 : 18,
@@ -2627,8 +2629,11 @@ function StrategyContent() {
                                     left: `${pos(m.price)}%`,
                                     transform: 'translate(-50%, -50%)',
                                     background: isRing ? 'transparent' : m.dotColor,
-                                    border: isRing ? `2px solid ${m.dotColor}` : 'none',
-                                    boxShadow: `0 0 8px ${m.dotColor}90`,
+                                    border: isRing
+                                      ? `2px solid ${m.dotColor}`
+                                      : '2px solid var(--surface-card)',
+                                    color: m.dotColor,
+                                    boxShadow: 'var(--deal-gap-marker-shadow)',
                                     zIndex: isRing ? 0 : 1,
                                   }}
                                 />
