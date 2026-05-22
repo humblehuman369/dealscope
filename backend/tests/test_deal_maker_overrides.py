@@ -1,6 +1,10 @@
 """Tests for Appraiser override fields on DealMakerRecord."""
 
-from app.schemas.deal_maker import DealMakerRecord, DealMakerRecordUpdate, InitialAssumptions
+import json
+
+from starlette.responses import JSONResponse
+
+from app.schemas.deal_maker import DealMakerRecord, DealMakerRecordUpdate, DealMakerResponse, InitialAssumptions
 from app.services.deal_maker_service import DealMakerService
 
 
@@ -133,3 +137,51 @@ def test_from_dict_recovers_when_initial_assumptions_shape_is_invalid():
     # Defaults were applied — record is still usable for PATCH
     assert record.initial_assumptions is not None
     _ = DealMakerService.update_record(record, DealMakerRecordUpdate(arv=500_000))
+
+
+def test_update_record_metrics_are_json_serializable_when_buy_price_is_zero():
+    """PATCH /deal-maker must not 500 when buy_price=0 and rent override yields inf CoC."""
+    initial = InitialAssumptions()
+    stored = {
+        "list_price": 0,
+        "rent_estimate": 0,
+        "property_taxes": 0,
+        "insurance": 0,
+        "initial_assumptions": initial.model_dump(),
+        "buy_price": 0,
+        "arv": 0,
+        "monthly_rent": 0,
+    }
+    record = DealMakerService.from_dict(stored)
+    assert record is not None
+    updated = DealMakerService.update_record(
+        record,
+        DealMakerRecordUpdate(monthly_rent_override=2_800, monthly_rent=2_800),
+    )
+    metrics = updated.cached_metrics
+    assert metrics is not None
+    assert metrics.cash_on_cash is None
+
+    resp = DealMakerResponse(
+        record=updated,
+        cash_needed=metrics.total_cash_needed,
+        deal_gap=metrics.deal_gap_pct,
+        annual_profit=metrics.annual_cash_flow,
+        cap_rate=metrics.cap_rate,
+        coc_return=metrics.cash_on_cash,
+        monthly_payment=metrics.monthly_payment,
+    )
+    # Starlette JSONResponse uses strict JSON — inf/nan must not reach the wire.
+    JSONResponse(content=resp.model_dump(mode="json"))
+    json.dumps(resp.model_dump(mode="json"))
+
+
+def test_update_record_seeds_buy_price_from_market_value_override_when_zero():
+    record = _minimal_record(buy_price=0, list_price=0)
+    updated = DealMakerService.update_record(
+        record,
+        DealMakerRecordUpdate(market_value_override=848_586),
+    )
+    assert updated.market_value_override == 848_586
+    assert updated.buy_price == 848_586
+    assert updated.list_price == 848_586

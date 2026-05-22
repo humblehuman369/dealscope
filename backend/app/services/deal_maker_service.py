@@ -16,6 +16,7 @@ This is the single source of truth for all analysis data used by:
 
 import copy
 import logging
+import math
 from datetime import UTC, datetime
 from typing import Any
 
@@ -56,6 +57,15 @@ def _coalesce_none(*values):
         if value is not None:
             return value
     return None
+
+
+def _finite_metric(value: float | None) -> float | None:
+    """Drop non-finite floats so API JSON serialization never 500s on inf/nan."""
+    if value is None:
+        return None
+    if not math.isfinite(value):
+        return None
+    return value
 
 
 class DealMakerService:
@@ -240,32 +250,32 @@ class DealMakerService:
 
         return CachedMetrics(
             # Core metrics
-            cap_rate=cap_rate,
-            cash_on_cash=cash_on_cash,
-            monthly_cash_flow=monthly_cash_flow,
-            annual_cash_flow=annual_cash_flow,
+            cap_rate=_finite_metric(cap_rate),
+            cash_on_cash=_finite_metric(cash_on_cash),
+            monthly_cash_flow=_finite_metric(monthly_cash_flow),
+            annual_cash_flow=_finite_metric(annual_cash_flow),
             # Financing
-            loan_amount=loan_amount,
-            down_payment=down_payment,
-            closing_costs=closing_costs,
-            monthly_payment=monthly_payment,
-            total_cash_needed=total_cash_needed,
+            loan_amount=_finite_metric(loan_amount),
+            down_payment=_finite_metric(down_payment),
+            closing_costs=_finite_metric(closing_costs),
+            monthly_payment=_finite_metric(monthly_payment),
+            total_cash_needed=_finite_metric(total_cash_needed),
             # NOI components
-            gross_income=effective_gross_income,
-            vacancy_loss=vacancy_loss,
-            total_expenses=total_expenses,
-            noi=noi,
+            gross_income=_finite_metric(effective_gross_income),
+            vacancy_loss=_finite_metric(vacancy_loss),
+            total_expenses=_finite_metric(total_expenses),
+            noi=_finite_metric(noi),
             # Ratios
-            dscr=dscr,
-            ltv=ltv,
-            one_percent_rule=one_percent,
-            grm=grm,
+            dscr=_finite_metric(dscr),
+            ltv=_finite_metric(ltv),
+            one_percent_rule=_finite_metric(one_percent),
+            grm=_finite_metric(grm),
             # Equity
-            equity=equity,
-            equity_after_rehab=equity_after_rehab,
+            equity=_finite_metric(equity),
+            equity_after_rehab=_finite_metric(equity_after_rehab),
             # Deal analysis
-            deal_gap_pct=deal_gap_pct,
-            income_value=income_value,
+            deal_gap_pct=_finite_metric(deal_gap_pct),
+            income_value=_finite_metric(income_value),
             metrics_calculation_version=VALUATION_FORMULA_VERSION,
             valuation_snapshot=valuation_snapshot,
             # Metadata
@@ -354,6 +364,15 @@ class DealMakerService:
         for key, value in updates_dict.items():
             if value is not None:
                 record_dict[key] = value
+
+        # Appraiser "Apply to Deal" for market value on off-market / zero-list saves:
+        # seed buy_price and list_price when they are still zero so metrics stay finite.
+        mv_override = updates_dict.get("market_value_override")
+        if mv_override is not None and mv_override > 0:
+            if (record_dict.get("buy_price") or 0) <= 0:
+                record_dict["buy_price"] = mv_override
+            if (record_dict.get("list_price") or 0) <= 0:
+                record_dict["list_price"] = mv_override
 
         # Update timestamp
         record_dict["updated_at"] = datetime.now(UTC)

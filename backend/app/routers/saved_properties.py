@@ -1314,14 +1314,15 @@ async def update_deal_maker(
         updates_dict = updates.model_dump(exclude_unset=True)
         if updates_dict.get("market_value_override"):
             mv = updates_dict["market_value_override"]
-            snapshot.setdefault("listPrice", mv)
-            snapshot.setdefault("list_price", mv)
+            # Assign (not setdefault): snapshots often have listPrice=0 for off-market
+            snapshot["listPrice"] = mv
+            snapshot["list_price"] = mv
         if updates_dict.get("arv"):
-            snapshot.setdefault("arv", updates_dict["arv"])
+            snapshot["arv"] = updates_dict["arv"]
         if updates_dict.get("monthly_rent_override"):
             rent = updates_dict["monthly_rent_override"]
-            snapshot.setdefault("monthlyRent", rent)
-            snapshot.setdefault("rent_estimate", rent)
+            snapshot["monthlyRent"] = rent
+            snapshot["rent_estimate"] = rent
         record = DealMakerService.create_from_property_data(
             property_data=snapshot,
             zip_code=zip_code,
