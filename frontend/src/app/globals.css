@@ -236,24 +236,22 @@
   --slider-thumb-bg: #f1f5f9;
   --slider-thumb-border: #000000;
   --slider-track-bg: rgba(255, 255, 255, 0.07);
+
+  --shadow-sticky: 0 6px 14px -10px rgba(0, 0, 0, 0.45);
 }
 
 [data-theme="light"] {
   /*
-   * Harmonized surfaces (same hue #0fa4e9):
-   * chrome → subtle tint so nav meets canvas without a harsh white seam
-   * canvas → one step deeper so content still reads as “on brand sky wash”
-   * elevated cards stay pure white inside the canvas
+   * Light surfaces: neutral canvas so white cards read clearly; sky tint on chrome only.
+   * Brand blue = interaction (sliders, links, CTAs). Green/red/amber = financial semantics.
    */
-  --surface-base: #ecf8fd;
-  --surface-base: color-mix(in srgb, #0fa4e9 8%, #ffffff);
-  --surface-chrome: #f7fcfe;
-  --surface-chrome: color-mix(in srgb, #0fa4e9 3%, #ffffff);
+  --surface-base: #f8fafc;
+  --surface-chrome: #ffffff;
   --surface-section: #ffffff;
   --surface-card: #ffffff;
   --surface-card-elevated: rgba(255, 255, 255, 0.96);
-  --surface-card-hover: #eef4ff;
-  --surface-elevated: #eef4ff;
+  --surface-card-hover: #f1f5f9;
+  --surface-elevated: #f1f5f9;
   --surface-input: #ffffff;
   --surface-overlay: rgba(7, 23, 46, 0.45);
 
@@ -271,7 +269,7 @@
   --accent-gradient-from: #0465f2;
   --accent-gradient-to: #0354d1;
 
-  --status-positive: #0465f2;
+  --status-positive: #15803d;
   --status-warning: #b7791f;
   --status-negative: #b42318;
   --status-info: #0465f2;
@@ -304,11 +302,11 @@
 
   --color-navy: #07172e;
 
-  --color-sky-dim: rgba(4, 101, 242, 0.1);
-  --color-teal-dim: rgba(4, 101, 242, 0.12);
+  --color-sky-dim: rgba(4, 101, 242, 0.06);
+  --color-teal-dim: rgba(4, 101, 242, 0.05);
   --color-gold-dim: rgba(183, 121, 31, 0.14);
   --color-red-dim: rgba(180, 35, 24, 0.12);
-  --color-green-dim: rgba(4, 101, 242, 0.12);
+  --color-green-dim: rgba(21, 128, 61, 0.1);
   --color-border: var(--border-default);
   --color-border-light: var(--border-subtle);
   --dg-bg-selected: rgba(4, 101, 242, 0.1);
@@ -322,6 +320,8 @@
   /* Informational card tint — same sky @ 5% as shell */
   --sky-tint-fill: rgba(15, 164, 233, 0.05);
   --sky-tint-border: rgba(15, 164, 233, 0.12);
+
+  --shadow-sticky: 0 4px 12px -8px rgba(24, 32, 28, 0.1);
 }
 
 /* FlipCycle-style brand utilities */
@@ -461,7 +461,7 @@ input[type="range"]::-moz-range-thumb {
 
   /* Match chrome so overscroll / gaps never flash pure white against tinted nav */
   [data-theme="light"] body {
-    background: var(--surface-chrome);
+    background: var(--surface-base);
     -webkit-font-smoothing: auto;
     -moz-osx-font-smoothing: auto;
   }

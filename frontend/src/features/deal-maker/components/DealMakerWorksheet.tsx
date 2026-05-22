@@ -112,7 +112,7 @@ function SectionHeader({ title, anchorId }: { title: string; anchorId?: string }
         className="flex items-center gap-2 pl-2.5 border-l-[3px]"
         style={{ borderColor: C.blue }}
       >
-        <span className="text-[1rem] font-bold uppercase tracking-wide" style={{ color: C.blue }}>
+        <span className="text-[1rem] font-bold uppercase tracking-wide" style={{ color: C.heading }}>
           {title}
         </span>
       </div>
@@ -385,14 +385,14 @@ function SliderRow({
 
   return (
     <div
-      className={`flex w-full items-center gap-2 py-1.5 pl-4 pr-1 transition-colors${highlight ? '' : ' hover:bg-white/[0.03]'}`}
+      className={`flex w-full items-center gap-2 py-1.5 pl-4 pr-1 transition-colors${highlight ? '' : ' hover:bg-[var(--hover-overlay)]'}`}
       style={{
         borderBottom: `1px solid ${C.border}`,
         ...(highlight
           ? {
               background:
-                'linear-gradient(90deg, rgba(15, 164, 233, 0.14), rgba(15, 164, 233, 0.02) 72%, transparent)',
-              boxShadow: 'inset 3px 0 0 rgba(15, 164, 233, 0.55)',
+                'linear-gradient(90deg, var(--sky-tint-fill), transparent 72%)',
+              boxShadow: 'inset 3px 0 0 var(--border-focus)',
             }
           : {}),
       }}
@@ -436,7 +436,7 @@ function SliderRow({
                 left: `calc(${Math.min(100, Math.max(0, fill))}% - 6px)`,
                 background: 'var(--surface-card)',
                 border: '2px solid var(--accent-sky)',
-                boxShadow: '0 0 5px rgba(15,164,233,0.3)',
+                boxShadow: 'var(--shadow-card)',
               }}
             />
           </div>
@@ -499,7 +499,7 @@ function ToggleRow({
 }) {
   return (
     <div
-      className="grid grid-cols-[110px_1fr] sm:grid-cols-[140px_1fr] items-center gap-3 py-1.5 pl-4 pr-1 transition-colors hover:bg-white/[0.03]"
+      className="grid grid-cols-[110px_1fr] sm:grid-cols-[140px_1fr] items-center gap-3 py-1.5 pl-4 pr-1 transition-colors hover:bg-[var(--hover-overlay)]"
       style={{ borderBottom: `1px solid ${C.border}` }}
     >
       <span className="text-sm" style={{ color: C.body }}>
@@ -509,14 +509,12 @@ function ToggleRow({
         {options.map((opt) => (
           <button
             key={opt.id}
-            className={`flex-1 py-1 px-2 rounded-md text-xs font-semibold transition-colors ${
-              value === opt.id
-                ? 'text-white shadow-[0_0_8px_rgba(15,164,233,0.4)]'
-                : 'text-white/60 hover:text-white'
-            }`}
+            className="flex-1 py-1 px-2 rounded-md text-xs font-semibold transition-colors"
             style={{
-              background: value === opt.id ? 'var(--accent-sky)' : 'rgba(255,255,255,0.06)',
-              border: value === opt.id ? 'none' : '1px solid rgba(255,255,255,0.1)',
+              background: value === opt.id ? 'var(--accent-sky)' : 'var(--surface-elevated)',
+              border: value === opt.id ? 'none' : '1px solid var(--border-subtle)',
+              color: value === opt.id ? 'var(--text-inverse)' : 'var(--text-secondary)',
+              boxShadow: value === opt.id ? 'var(--shadow-card)' : 'none',
             }}
             onClick={() => onChange(opt.id)}
           >

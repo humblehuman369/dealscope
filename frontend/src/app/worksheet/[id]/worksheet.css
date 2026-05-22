@@ -37,21 +37,20 @@
   --ws-accent-light: var(--accent-sky-light);
   --ws-accent-bg: var(--color-teal-dim);
 
-  /* Status Colors - Pacific Teal for positive */
+  /* Status Colors */
   --ws-positive: var(--status-positive);
-  --ws-positive-light: rgba(52, 211, 153, 0.12);
+  --ws-positive-light: var(--color-green-dim);
   --ws-negative: var(--status-negative);
   --ws-negative-light: rgba(220, 38, 38, 0.12);
   --ws-warning: var(--status-warning);
   --ws-warning-light: rgba(217, 119, 6, 0.12);
 
   /* Section Colors */
-  --ws-section-header: linear-gradient(
-    135deg,
-    var(--color-teal-dim) 0%,
-    var(--surface-section) 100%
-  );
+  --ws-section-header: var(--surface-elevated);
+  --ws-section-header-hover: var(--surface-card-hover);
   --ws-section-header-text: var(--text-body);
+  --ws-row-total-bg: var(--color-green-dim);
+  --ws-row-hover: var(--hover-overlay);
 
   /* Shadows */
   --ws-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -1152,7 +1151,7 @@ body {
 }
 
 .section-header:hover {
-  background: linear-gradient(135deg, rgba(0, 126, 167, 0.12) 0%, #e8eef3 100%);
+  background: var(--ws-section-header-hover);
 }
 
 .section-title {
@@ -1160,7 +1159,7 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--iq-teal-dark);
+  color: var(--text-heading);
 }
 
 @media (min-width: 768px) {
@@ -1224,11 +1223,19 @@ body {
 }
 
 .data-row:hover {
-  background-color: var(--ws-accent-bg);
+  background-color: var(--ws-row-hover);
+}
+
+[data-theme='light'] .section-content .data-row:nth-child(even):not(.total):not(.highlight) {
+  background-color: var(--surface-elevated);
+}
+
+[data-theme='light'] .section-content .data-row:nth-child(even):not(.total):not(.highlight):hover {
+  background-color: var(--surface-card-hover);
 }
 
 .data-row.total {
-  background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, #e0f2fe 100%);
+  background: var(--ws-row-total-bg);
   font-weight: 600;
   padding: 12px var(--ws-spacing-sm);
 }
@@ -2636,7 +2643,7 @@ body {
 }
 
 .section-header.brrrr-highlight:hover {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, #e8eef3 100%);
+  background: var(--ws-section-header-hover);
 }
 
 .section-title.brrrr {

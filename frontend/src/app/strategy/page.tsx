@@ -2385,9 +2385,12 @@ function StrategyContent() {
                         className={`relative rounded-xl py-3 px-1.5 sm:px-2 text-center min-w-0 ${card.dominant ? 'flex-[1.2]' : 'flex-1'}`}
                         style={{
                           background: 'var(--surface-card)',
-                          border: `1px solid ${card.color}`,
-                          boxShadow: `0 0 30px ${card.color}70, 0 0 60px ${card.color}35, inset 0 0 20px ${card.color}15`,
-                          transition: 'all 0.3s ease',
+                          border: '1px solid var(--border-subtle)',
+                          borderLeft: `3px solid ${card.color}`,
+                          boxShadow: card.dominant
+                            ? 'var(--shadow-card-hover)'
+                            : 'var(--shadow-card)',
+                          transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
                         }}
                       >
                         {card.showInfo && <MarketPriceInfoTip />}
@@ -2458,7 +2461,7 @@ function StrategyContent() {
                     borderBottom: '1px solid var(--border-subtle)',
                     paddingTop: 2,
                     paddingBottom: 6,
-                    boxShadow: '0 6px 14px -10px rgba(0,0,0,0.45)',
+                    boxShadow: 'var(--shadow-sticky)',
                   }}
                 >
                   <div
