@@ -123,18 +123,20 @@ function SectionHeader({ title, anchorId }: { title: string; anchorId?: string }
 function Row({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div
-      className="flex justify-between py-1.5 pl-4 pr-1"
+      className="flex w-full items-center gap-2 py-1.5 pl-4 pr-1"
       style={{ borderBottom: `1px solid ${C.border}` }}
     >
-      <span className="text-sm" style={{ color: C.body }}>
+      <span className="text-sm min-w-0 flex-1" style={{ color: C.body }}>
         {label}
       </span>
-      <span
-        className={`text-sm font-semibold tabular-nums text-right ${WS_VALUE_COL}`}
-        style={{ color: color || C.heading }}
-      >
-        {value}
-      </span>
+      <div className={`flex justify-end shrink-0 ${WS_VALUE_COL}`}>
+        <span
+          className="w-full text-sm font-semibold tabular-nums text-right"
+          style={{ color: color || C.heading }}
+        >
+          {value}
+        </span>
+      </div>
     </div>
   )
 }
@@ -142,18 +144,17 @@ function Row({ label, value, color }: { label: string; value: string; color?: st
 function NegRow({ label, value }: { label: string; value: string }) {
   return (
     <div
-      className="flex justify-between py-1.5 pl-4 pr-1"
+      className="flex w-full items-center gap-2 py-1.5 pl-4 pr-1"
       style={{ borderBottom: `1px solid ${C.border}` }}
     >
-      <span className="text-sm" style={{ color: C.body }}>
+      <span className="text-sm min-w-0 flex-1" style={{ color: C.body }}>
         {label}
       </span>
-      <span
-        className={`text-sm font-semibold tabular-nums text-right ${WS_VALUE_COL}`}
-        style={{ color: C.blue }}
-      >
-        ({value})
-      </span>
+      <div className={`flex justify-end shrink-0 ${WS_VALUE_COL}`}>
+        <span className="w-full text-sm font-semibold tabular-nums text-right" style={{ color: C.blue }}>
+          ({value})
+        </span>
+      </div>
     </div>
   )
 }
@@ -161,18 +162,17 @@ function NegRow({ label, value }: { label: string; value: string }) {
 function TotalRow({ label, value }: { label: string; value: string }) {
   return (
     <div
-      className="flex justify-between py-2 pl-4 pr-1 mt-1"
+      className="flex w-full items-center gap-2 py-2 pl-4 pr-1 mt-1"
       style={{ borderTop: `2px solid ${C.blue}`, borderBottom: `2px solid ${C.blue}` }}
     >
-      <span className="font-semibold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>
+      <span className="min-w-0 flex-1 font-semibold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>
         {label}
       </span>
-      <span
-        className={`font-bold tabular-nums text-[0.95rem] text-right ${WS_VALUE_COL}`}
-        style={{ color: C.heading }}
-      >
-        {value}
-      </span>
+      <div className={`flex justify-end shrink-0 ${WS_VALUE_COL}`}>
+        <span className="w-full font-bold tabular-nums text-[0.95rem] text-right" style={{ color: C.heading }}>
+          {value}
+        </span>
+      </div>
     </div>
   )
 }
@@ -180,18 +180,20 @@ function TotalRow({ label, value }: { label: string; value: string }) {
 function StatusRow({ label, pass }: { label: string; pass: boolean }) {
   return (
     <div
-      className="flex justify-between py-1.5 pl-4 pr-1"
+      className="flex w-full items-center gap-2 py-1.5 pl-4 pr-1"
       style={{ borderBottom: `1px solid ${C.border}` }}
     >
-      <span className="text-sm" style={{ color: C.body }}>
+      <span className="text-sm min-w-0 flex-1" style={{ color: C.body }}>
         {label}
       </span>
-      <span
-        className={`text-sm font-semibold text-right ${WS_VALUE_COL}`}
-        style={{ color: pass ? '#10B981' : '#F43F5E' }}
-      >
-        {pass ? 'PASS' : 'FAIL'}
-      </span>
+      <div className={`flex justify-end shrink-0 ${WS_VALUE_COL}`}>
+        <span
+          className="w-full text-sm font-semibold text-right"
+          style={{ color: pass ? '#10B981' : '#F43F5E' }}
+        >
+          {pass ? 'PASS' : 'FAIL'}
+        </span>
+      </div>
     </div>
   )
 }
@@ -383,7 +385,7 @@ function SliderRow({
 
   return (
     <div
-      className={`flex items-center gap-3 py-1.5 pl-4 pr-1 transition-colors max-sm:justify-between sm:justify-start${highlight ? '' : ' hover:bg-white/[0.03]'}`}
+      className={`flex w-full items-center gap-2 py-1.5 pl-4 pr-1 transition-colors${highlight ? '' : ' hover:bg-white/[0.03]'}`}
       style={{
         borderBottom: `1px solid ${C.border}`,
         ...(highlight
@@ -396,85 +398,86 @@ function SliderRow({
       }}
       data-path-highlight={highlight || undefined}
     >
-      {/* Label - fixed width so it never forces wrap */}
+      {/* Label — flex-1 on mobile pushes value column to the right edge */}
       <span
-        className="text-sm shrink-0 w-[150px] sm:w-[160px]"
+        className="text-sm min-w-0 flex-1 sm:flex-none sm:w-[160px] sm:shrink-0"
         style={{ color: C.body }}
       >
         {label}
       </span>
 
-      {/* Slider (grows, shrinks, hidden on mobile) */}
-      <div className="relative h-5 flex-1 min-w-0 hidden sm:flex items-center justify-center">
-        <div
-          className="w-full h-[3px] rounded-full relative"
-          style={{ background: 'var(--surface-elevated)' }}
-        >
+      {/* Desktop: slider + secondary between label and value column */}
+      <div className="hidden sm:flex flex-1 min-w-0 items-center gap-3">
+        <div className="relative h-5 flex-1 min-w-0 flex items-center justify-center">
           <div
-            className="absolute left-0 top-0 h-full rounded-full pointer-events-none"
-            style={{ width: `${fill}%`, background: C.blue }}
-          />
-          <input
-            type="range"
-            min={rangeMin}
-            max={rangeMax}
-            step={step ?? (Number.isInteger(min) && Number.isInteger(max) ? 1 : 0.01)}
-            value={clamped}
-            onChange={(e) => onChange(parseFloat(e.target.value))}
-            onPointerDown={handlePointerDown}
-            onPointerUp={handlePointerUp}
-            onLostPointerCapture={handlePointerUp}
-            className="absolute inset-0 w-full cursor-pointer z-10"
-            style={{ opacity: 0, height: '20px', top: '50%', transform: 'translateY(-50%)' }}
-          />
-          <div
-            className="absolute w-3 h-3 rounded-full -translate-y-1/2 top-1/2 pointer-events-none"
-            style={{
-              left: `calc(${Math.min(100, Math.max(0, fill))}% - 6px)`,
-              background: 'var(--surface-card)',
-              border: '2px solid var(--accent-sky)',
-              boxShadow: '0 0 5px rgba(15,164,233,0.3)',
-            }}
-          />
+            className="w-full h-[3px] rounded-full relative"
+            style={{ background: 'var(--surface-elevated)' }}
+          >
+            <div
+              className="absolute left-0 top-0 h-full rounded-full pointer-events-none"
+              style={{ width: `${fill}%`, background: C.blue }}
+            />
+            <input
+              type="range"
+              min={rangeMin}
+              max={rangeMax}
+              step={step ?? (Number.isInteger(min) && Number.isInteger(max) ? 1 : 0.01)}
+              value={clamped}
+              onChange={(e) => onChange(parseFloat(e.target.value))}
+              onPointerDown={handlePointerDown}
+              onPointerUp={handlePointerUp}
+              onLostPointerCapture={handlePointerUp}
+              className="absolute inset-0 w-full cursor-pointer z-10"
+              style={{ opacity: 0, height: '20px', top: '50%', transform: 'translateY(-50%)' }}
+            />
+            <div
+              className="absolute w-3 h-3 rounded-full -translate-y-1/2 top-1/2 pointer-events-none"
+              style={{
+                left: `calc(${Math.min(100, Math.max(0, fill))}% - 6px)`,
+                background: 'var(--surface-card)',
+                border: '2px solid var(--accent-sky)',
+                boxShadow: '0 0 5px rgba(15,164,233,0.3)',
+              }}
+            />
+          </div>
         </div>
+        <span
+          className="text-xs tabular-nums text-right w-[52px] shrink-0"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          {secondaryValue ?? ''}
+        </span>
       </div>
 
-      {/* Secondary value (e.g. 30.0%) - small fixed column */}
-      <span
-        className="hidden sm:block text-xs tabular-nums text-right w-[52px] shrink-0"
-        style={{ color: 'var(--text-secondary)' }}
-      >
-        {secondaryValue ?? ''}
-      </span>
-
-      {/* Value input box - fixed width, never shrinks */}
-      <input
-        type="text"
-        inputMode="decimal"
-        value={editing ? draft : displayValue}
-        onFocus={handleFocus}
-        onBlur={commit}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className={`text-sm font-semibold tabular-nums text-right outline-none ${WS_VALUE_COL} rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] ${highlight ? '' : 'hover:text-[var(--accent-sky)]'}`}
-        style={
-          highlight
-            ? {
-                color: '#0F172A',
-                border: '1px solid #F59E0B',
-                background: '#FACC15',
-                boxShadow: '0 0 0 2px rgba(250, 204, 21, 0.35)',
-              }
-            : {
-                color: C.heading,
-                border: '1px solid var(--border-subtle)',
-                background: 'var(--surface-elevated)',
-              }
-        }
-        data-path-highlighted={highlight || undefined}
-        title={highlight ? 'Auto-filled by an applied path — edit to override' : undefined}
-        size={9}
-      />
+      {/* Value column — same width/edge as display-only Row values */}
+      <div className={`flex justify-end shrink-0 ${WS_VALUE_COL}`}>
+        <input
+          type="text"
+          inputMode="decimal"
+          value={editing ? draft : displayValue}
+          onFocus={handleFocus}
+          onBlur={commit}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className={`box-border w-full text-sm font-semibold tabular-nums text-right outline-none rounded px-1.5 py-0.5 cursor-text transition-all focus:ring-1 focus:ring-[var(--accent-sky)] ${highlight ? '' : 'hover:text-[var(--accent-sky)]'}`}
+          style={
+            highlight
+              ? {
+                  color: '#0F172A',
+                  border: '1px solid #F59E0B',
+                  background: '#FACC15',
+                  boxShadow: '0 0 0 2px rgba(250, 204, 21, 0.35)',
+                }
+              : {
+                  color: C.heading,
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--surface-elevated)',
+                }
+          }
+          data-path-highlighted={highlight || undefined}
+          title={highlight ? 'Auto-filled by an applied path — edit to override' : undefined}
+        />
+      </div>
     </div>
   )
 }
