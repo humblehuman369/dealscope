@@ -14,7 +14,6 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  TrendingUp,
   X,
 } from 'lucide-react'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -309,64 +308,11 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
                 Run Free Discovery
                 <Search className="h-5 w-5" />
               </PrimaryButton>
-              <button type="button" onClick={onDemo} className="hero-v4-blend__demo-link lg:hidden">
-                <Play className="h-4 w-4 fill-current" aria-hidden />
-                Watch 60-second demo
-              </button>
-              <SecondaryButton onClick={onDemo} className="hidden lg:inline-flex">
+              <SecondaryButton onClick={onDemo} className="hero-v4-blend__cta-secondary w-full lg:w-auto">
                 <Play className="h-5 w-5 fill-current" />
                 Watch 60-second demo
               </SecondaryButton>
             </div>
-
-            {/* TODO(brad): swap with real hero-badges data */}
-            <div
-              data-fake-marker="hero-badges"
-              className="hero-v4-blend__proof-strip lg:hidden"
-            >
-              <div className="hero-v4-blend__proof-chip text-[var(--text-heading)]">
-                <Check className="h-4 w-4 shrink-0 text-[var(--status-positive)]" />
-                <span>-6.4% Deal Gap</span>
-              </div>
-              <div className="hero-v4-blend__proof-chip hero-v4-blend__proof-chip--stat">
-                <span className="hero-v4-blend__proof-chip-label">Avg. improvement</span>
-                <span className="hero-v4-blend__proof-chip-value">+22%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="hero-v4-blend__badges">
-          {/* TODO(brad): swap with real hero-badges data */}
-          <div
-            data-fake-marker="hero-badges"
-            className="hero-v4-blend__badge-gap absolute rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)]/90 px-4 py-2 text-sm shadow-[var(--shadow-card)] backdrop-blur-md"
-          >
-            <div className="flex items-center gap-2 font-bold text-[var(--text-heading)]">
-              <Check className="h-4 w-4 text-[var(--status-positive)]" />
-              <span>-6.4% Deal Gap</span>
-            </div>
-          </div>
-
-          <div
-            data-fake-marker="hero-badges"
-            className="hero-v4-blend__badge-address absolute hidden max-w-[210px] rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)]/90 px-5 py-3 text-xs shadow-[var(--shadow-card)] backdrop-blur sm:block"
-          >
-            <div className="mb-1 font-mono text-[10px] uppercase text-[var(--text-secondary)]">
-              1014-16 N J St, Lake Worth, FL
-            </div>
-            <div className="font-bold text-[var(--text-heading)]">
-              4 offer paths ready - 12s analysis
-            </div>
-          </div>
-
-          {/* TODO(brad): swap with real hero-badges data */}
-          <div data-fake-marker="hero-badges" className="hero-v4-blend__badge-stat--desktop">
-            <div>
-              <div className="text-xs text-[var(--text-secondary)]">Avg. improvement</div>
-              <div className="text-3xl font-black text-[var(--status-positive)]">+22%</div>
-            </div>
-            <TrendingUp className="h-8 w-8 text-[var(--status-positive)]" />
           </div>
         </div>
       </div>
