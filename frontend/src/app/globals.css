@@ -238,6 +238,7 @@
   --slider-track-bg: rgba(255, 255, 255, 0.07);
 
   --shadow-sticky: 0 6px 14px -10px rgba(0, 0, 0, 0.45);
+  --surface-path-strip: var(--surface-elevated);
 
   --deal-gap-track-bg: linear-gradient(
     90deg,
