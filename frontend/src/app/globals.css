@@ -1515,6 +1515,43 @@ input[type="range"]::-moz-range-thumb {
     var(--surface-base);
 }
 
+/* Deal Gap scale bar — white panel; rounded corners in light mode */
+.deal-gap-chart-panel {
+  background: var(--surface-card);
+  padding: 12px 14px 10px;
+}
+
+[data-theme='light'] .deal-gap-chart-panel {
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme='light'] #strategy-deal-gap-bar {
+  background: var(--surface-base);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-theme='dark'] #strategy-deal-gap-bar {
+  background: var(--surface-card);
+}
+
+[data-theme='dark'] .deal-gap-chart-panel {
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  padding: 4px 2px 2px;
+}
+
+[data-theme='light'] .deal-maker-theme .deal-maker-metrics-bar {
+  background: var(--surface-path-strip, #f2f2f2);
+}
+
+[data-theme='dark'] .deal-maker-theme .deal-maker-metrics-bar {
+  background: var(--surface-elevated);
+  border-color: var(--border-default);
+}
+
 [data-theme='dark'] .deal-gap-marker {
   border: none !important;
 }

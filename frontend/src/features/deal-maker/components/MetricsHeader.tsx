@@ -36,13 +36,16 @@ interface MetricsHeaderProps {
 
 export function MetricsHeader({ state, metrics, propertyAddress }: MetricsHeaderProps) {
   return (
-    <div className="bg-[var(--surface-base)]" style={{ padding: '16px 20px 20px' }}>
+    <div
+      className="deal-maker-metrics-bar bg-[var(--surface-elevated)]"
+      style={{ padding: '16px 20px 20px' }}
+    >
       {/* Title Area - centered */}
       <div className="text-center">
         {/* Address */}
         {propertyAddress && (
           <p
-            className="text-[#94A3B8] truncate"
+            className="text-[var(--text-secondary)] truncate"
             style={{ fontSize: '11px', marginBottom: '2px', letterSpacing: '0.02em' }}
           >
             {propertyAddress}
@@ -51,9 +54,9 @@ export function MetricsHeader({ state, metrics, propertyAddress }: MetricsHeader
 
         {/* DEAL MAKER IQ Title */}
         <div style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '0.05em' }}>
-          <span className="text-white">DEAL </span>
+          <span className="text-[var(--text-heading)]">DEAL </span>
           <span style={{ color: 'var(--accent-sky)' }}>MAKER </span>
-          <span className="text-white">IQ</span>
+          <span className="text-[var(--text-heading)]">IQ</span>
         </div>
       </div>
 
@@ -61,21 +64,27 @@ export function MetricsHeader({ state, metrics, propertyAddress }: MetricsHeader
       <div className="grid grid-cols-2 mt-3" style={{ gap: '6px 24px' }}>
         {/* Row 1 */}
         <div className="flex justify-between items-center py-[3px]">
-          <span style={{ fontSize: '12px', color: '#94A3B8' }}>Buy Price</span>
-          <span className="text-white tabular-nums" style={{ fontSize: '13px', fontWeight: 600 }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Buy Price</span>
+          <span
+            className="text-[var(--text-heading)] tabular-nums"
+            style={{ fontSize: '13px', fontWeight: 600 }}
+          >
             {formatCurrency(state.buyPrice)}
           </span>
         </div>
         <div className="flex justify-between items-center py-[3px]">
-          <span style={{ fontSize: '12px', color: '#94A3B8' }}>Cash Needed</span>
-          <span className="text-white tabular-nums" style={{ fontSize: '13px', fontWeight: 600 }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Cash Needed</span>
+          <span
+            className="text-[var(--text-heading)] tabular-nums"
+            style={{ fontSize: '13px', fontWeight: 600 }}
+          >
             {formatCurrency(metrics.cashNeeded)}
           </span>
         </div>
 
         {/* Row 2 */}
         <div className="flex justify-between items-center py-[3px]">
-          <span style={{ fontSize: '12px', color: '#94A3B8' }}>Deal Gap</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Deal Gap</span>
           <span
             className="tabular-nums"
             style={{
@@ -88,7 +97,7 @@ export function MetricsHeader({ state, metrics, propertyAddress }: MetricsHeader
           </span>
         </div>
         <div className="flex justify-between items-center py-[3px]">
-          <span style={{ fontSize: '12px', color: '#94A3B8' }}>Annual Profit</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Annual Profit</span>
           <span
             className="tabular-nums"
             style={{
@@ -103,14 +112,20 @@ export function MetricsHeader({ state, metrics, propertyAddress }: MetricsHeader
 
         {/* Row 3 */}
         <div className="flex justify-between items-center py-[3px]">
-          <span style={{ fontSize: '12px', color: '#94A3B8' }}>CAP Rate</span>
-          <span className="text-white tabular-nums" style={{ fontSize: '13px', fontWeight: 600 }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>CAP Rate</span>
+          <span
+            className="text-[var(--text-heading)] tabular-nums"
+            style={{ fontSize: '13px', fontWeight: 600 }}
+          >
             {formatPercent(metrics.capRate * 100)}
           </span>
         </div>
         <div className="flex justify-between items-center py-[3px]">
-          <span style={{ fontSize: '12px', color: '#94A3B8' }}>COC Return</span>
-          <span className="text-white tabular-nums" style={{ fontSize: '13px', fontWeight: 600 }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>COC Return</span>
+          <span
+            className="text-[var(--text-heading)] tabular-nums"
+            style={{ fontSize: '13px', fontWeight: 600 }}
+          >
             {formatPercent(metrics.cocReturn * 100)}
           </span>
         </div>

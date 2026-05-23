@@ -1657,15 +1657,7 @@ function VerdictContent() {
             </div>
 
             {/* Price scale bar (Deal Gap / Price Gap) — white panel so track reads on canvas */}
-            <div
-              className="relative rounded-xl mt-2"
-              style={{
-                padding: '12px 10px 10px',
-                background: 'var(--surface-card)',
-                border: '1px solid var(--border-subtle)',
-                boxShadow: 'var(--shadow-card)',
-              }}
-            >
+            <div className="deal-gap-chart-panel relative mt-2">
               {(() => {
                 const markers = [
                   { label: 'TARGET', price: purchasePrice, dotColor: 'var(--accent-sky)' },

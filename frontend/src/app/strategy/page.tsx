@@ -2455,18 +2455,14 @@ function StrategyContent() {
                   className="sticky z-30 px-[1px] sm:px-5"
                   style={{
                     top: 'calc(env(safe-area-inset-top, 0px) + var(--app-address-bar-height, 0px))',
-                    background: 'var(--surface-card)',
-                    borderBottom: '1px solid var(--border-subtle)',
                     paddingTop: 10,
                     paddingBottom: 12,
                     boxShadow: 'var(--shadow-sticky)',
                   }}
                 >
                   <div
-                    className="relative mx-0 sm:mx-0"
+                    className="deal-gap-chart-panel relative mx-0 sm:mx-0"
                     style={{
-                      padding: '4px 2px 2px',
-                      background: 'var(--surface-card)',
                       opacity: isRecalculating ? 0.55 : 1,
                     }}
                     aria-busy={isRecalculating}

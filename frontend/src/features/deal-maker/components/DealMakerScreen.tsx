@@ -1712,12 +1712,12 @@ export function DealMakerScreen({
         </div>
       </div>
 
-      {/* Key Metrics Row */}
+      {/* Key Metrics Row — elevated gray in light mode; distinct from white worksheet card */}
       <div
-        className="mx-4 sm:mx-6 mb-4 rounded-xl px-4 sm:px-5 py-3 relative"
+        className="deal-maker-metrics-bar mx-4 sm:mx-6 mb-4 rounded-xl px-4 sm:px-5 py-3 relative"
         style={{
-          background: 'var(--surface-card)',
-          border: '1px solid var(--border-default)',
+          background: 'var(--surface-elevated)',
+          border: '1px solid var(--border-subtle)',
           boxShadow: 'var(--shadow-card)',
         }}
       >
