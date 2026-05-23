@@ -334,8 +334,14 @@ export function DealMakerPage({
         </button>
       </div>
 
-      {/* Deal Maker IQ Header with Metrics */}
-      <div className="sticky top-[52px] z-40">
+      {/* Deal Maker IQ Header with Metrics — pins under AppHeader property address bar when present */}
+      <div
+        className="sticky z-30"
+        style={{
+          top: 'calc(env(safe-area-inset-top, 0px) + var(--app-address-bar-height, 0px))',
+          boxShadow: 'var(--shadow-sticky)',
+        }}
+      >
         <MetricsHeader
           state={state}
           metrics={metrics}

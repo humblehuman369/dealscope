@@ -1712,13 +1712,19 @@ export function DealMakerScreen({
         </div>
       </div>
 
-      {/* Key Metrics Row — elevated gray in light mode; distinct from white worksheet card */}
+      {/*
+        Sticky metrics — pins under the property address bar (same pattern as Strategy Deal Gap bar).
+        --app-address-bar-height is measured live in AppHeader via ResizeObserver.
+      */}
       <div
-        className="deal-maker-metrics-bar mx-4 sm:mx-6 mb-4 rounded-xl px-4 sm:px-5 py-3 relative"
+        id="deal-maker-metrics-bar"
+        className="deal-maker-metrics-bar sticky z-30 mx-4 sm:mx-6 mb-4 rounded-xl px-4 sm:px-5 py-3 relative"
         style={{
+          top: 'calc(env(safe-area-inset-top, 0px) + var(--app-address-bar-height, 0px))',
+          paddingTop: 8,
           background: 'var(--surface-elevated)',
           border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-card)',
+          boxShadow: 'var(--shadow-sticky)',
         }}
       >
         <div
