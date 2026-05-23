@@ -2455,20 +2455,18 @@ function StrategyContent() {
                   className="sticky z-30 px-[1px] sm:px-5"
                   style={{
                     top: 'calc(env(safe-area-inset-top, 0px) + var(--app-address-bar-height, 0px))',
-                    background: 'var(--surface-chrome)',
+                    background: 'var(--surface-card)',
                     borderBottom: '1px solid var(--border-subtle)',
-                    paddingTop: 8,
-                    paddingBottom: 10,
+                    paddingTop: 10,
+                    paddingBottom: 12,
                     boxShadow: 'var(--shadow-sticky)',
                   }}
                 >
                   <div
-                    className="relative rounded-xl mx-0 sm:mx-0"
+                    className="relative mx-0 sm:mx-0"
                     style={{
-                      padding: '12px 14px',
+                      padding: '4px 2px 2px',
                       background: 'var(--surface-card)',
-                      border: '1px solid var(--border-subtle)',
-                      boxShadow: 'var(--shadow-card)',
                       opacity: isRecalculating ? 0.55 : 1,
                     }}
                     aria-busy={isRecalculating}
@@ -3037,44 +3035,49 @@ function StrategyContent() {
           !optionsHiddenForStrategy &&
           strategyFilteredPaths.length > 0 && (
             <section className="px-[1px] sm:px-5 pt-2 pb-2">
-              <div className="mb-2">
-                <div className="flex items-center justify-between mb-2 gap-3">
-                  <div className="flex flex-col">
-                    <h3
-                      className="text-sm font-bold uppercase tracking-wider"
-                      style={{ color: 'var(--text-heading)' }}
-                    >
-                      {appliedPathId
-                        ? 'Apply an Option to the Worksheet'
-                        : 'Start here — pick an Option'}
-                    </h3>
-                    <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                      {optionsSubtitle}
-                    </p>
+              <div
+                className="rounded-xl p-3 sm:p-4"
+                style={{ background: 'var(--surface-path-strip, #f2f2f2)' }}
+              >
+                <div className="mb-2">
+                  <div className="flex items-center justify-between mb-2 gap-3">
+                    <div className="flex flex-col">
+                      <h3
+                        className="text-sm font-bold uppercase tracking-wider"
+                        style={{ color: 'var(--text-heading)' }}
+                      >
+                        {appliedPathId
+                          ? 'Apply an Option to the Worksheet'
+                          : 'Start here — pick an Option'}
+                      </h3>
+                      <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                        {optionsSubtitle}
+                      </p>
+                    </div>
+                    {appliedPathId && (
+                      <button
+                        type="button"
+                        onClick={clearAppliedPath}
+                        className="text-xs font-semibold underline shrink-0"
+                        style={{ color: 'var(--accent-sky)' }}
+                      >
+                        Reset to baseline
+                      </button>
+                    )}
                   </div>
-                  {appliedPathId && (
-                    <button
-                      type="button"
-                      onClick={clearAppliedPath}
-                      className="text-xs font-semibold underline shrink-0"
-                      style={{ color: 'var(--accent-sky)' }}
-                    >
-                      Reset to baseline
-                    </button>
-                  )}
-                </div>
-                <div
-                  className="grid grid-cols-2 lg:grid-cols-4 gap-2 rounded-xl"
-                  style={
-                    !appliedPathId
-                      ? {
-                          padding: 8,
-                          border: '1px solid var(--accent-sky)',
-                          boxShadow: '0 0 0 3px rgba(4, 101, 242, 0.12)',
-                        }
-                      : undefined
-                  }
-                >
+                  <div
+                    className="grid grid-cols-2 lg:grid-cols-4 gap-2 rounded-xl"
+                    style={
+                      !appliedPathId
+                        ? {
+                            padding: 8,
+                            background: 'var(--surface-card)',
+                            border: '1px solid var(--accent-sky)',
+                            boxShadow: '0 0 0 3px rgba(4, 101, 242, 0.12)',
+                          }
+                        : { background: 'var(--surface-card)', padding: 4 }
+                    }
+                  >
                   {strategyFilteredPaths.slice(0, 4).map((p, i) => (
                     <PathButton
                       key={p.id}
@@ -3084,6 +3087,7 @@ function StrategyContent() {
                       onClick={applyPathPatch}
                     />
                   ))}
+                  </div>
                 </div>
               </div>
             </section>
