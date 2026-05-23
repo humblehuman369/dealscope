@@ -16,7 +16,11 @@ from app.services.map_search_service import (
 )
 
 
-def test_motivated_seller_keywords_loaded_from_docx() -> None:
+def test_motivated_seller_keywords_module_importable() -> None:
+    """Keywords must be importable in production (not gitignored under app/data)."""
+    from app.data import motivated_seller_keywords as mod
+
+    assert mod.MOTIVATED_SELLER_KEYWORDS
     assert len(MOTIVATED_SELLER_KEYWORDS) >= 150
     assert "Motivated Seller" in MOTIVATED_SELLER_KEYWORDS
     assert "As Is" in MOTIVATED_SELLER_KEYWORDS

@@ -73,8 +73,8 @@ htmlcov/
 backend/dealgapiq_property_data_*.json
 backend/*.db
 
-# Trial / analysis data (raw API responses)
-data/
+# Trial / analysis data (raw API responses) — repo root only
+/data/
 
 # Generated screenshots
 scripts/screenshots/output/
