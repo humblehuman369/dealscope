@@ -1771,9 +1771,9 @@ function VerdictContent() {
                     <div
                       className="relative rounded-full"
                       style={{
-                        height: 22,
+                        height: 26,
                         background: 'var(--deal-gap-track-bg)',
-                        border: '1px solid var(--deal-gap-track-border)',
+                        border: '2px solid var(--deal-gap-track-border)',
                         boxShadow: 'var(--deal-gap-track-shadow)',
                       }}
                     >
