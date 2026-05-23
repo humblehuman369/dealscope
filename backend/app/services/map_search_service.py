@@ -17,6 +17,7 @@ import urllib.parse
 from typing import Any
 
 from app.core.config import settings
+from app.data.motivated_seller_keywords import MOTIVATED_SELLER_KEYWORDS
 from app.schemas.property import MapListing, MapSearchRequest, MapSearchResponse
 from app.services.api_clients import MashvisorClient, RentCastClient, create_api_clients
 from app.services.cache_service import get_cache_service
@@ -25,6 +26,8 @@ from app.services.zillow_client import ZillowClient, create_zillow_client
 logger = logging.getLogger(__name__)
 
 MAP_CACHE_TTL = 600  # 10 minutes
+MOTIVATED_SELLER_KEYWORD_CACHE_TTL = 1800  # 30 minutes per keyword + viewport
+MOTIVATED_SELLER_CONCURRENCY = 8
 
 # ─── Listing status canonicalization ─────────────────────────────────────
 # Mirrors frontend/src/lib/dealSignal.ts :: STATUS_MAP. Keep in sync; if these
@@ -178,6 +181,7 @@ def _build_cache_key(req: MapSearchRequest) -> str:
             "bed": req.bedrooms,
             "bath": req.bathrooms,
             "ls": sorted(req.listing_statuses) if req.listing_statuses else None,
+            "mss": req.motivated_seller_search,
             "lim": req.limit,
             "off": req.offset,
         },
@@ -185,6 +189,23 @@ def _build_cache_key(req: MapSearchRequest) -> str:
     )
     digest = hashlib.sha256(raw.encode()).hexdigest()[:16]
     return f"mapsearch:{digest}"
+
+
+def _build_keyword_cache_key(keyword: str, req: MapSearchRequest) -> str:
+    """Cache key for a single motivated-seller keyword query within a viewport."""
+    raw = json.dumps(
+        {
+            "kw": keyword.lower().strip(),
+            "n": _round_coord(req.north),
+            "s": _round_coord(req.south),
+            "e": _round_coord(req.east),
+            "w": _round_coord(req.west),
+            "pt": req.property_type,
+        },
+        sort_keys=True,
+    )
+    digest = hashlib.sha256(raw.encode()).hexdigest()[:16]
+    return f"mapsearch:kw:{digest}"
 
 
 def _point_in_polygon(lat: float, lng: float, polygon: list[list[float]]) -> bool:
@@ -284,8 +305,12 @@ class MapSearchService:
         center_lng = (req.east + req.west) / 2
         radius = _viewport_radius_miles(req.north, req.south, req.east, req.west)
 
+        motivated_seller_mode = req.motivated_seller_search
+
         # Decide grid size based on viewport radius
-        if radius > 100:
+        if motivated_seller_mode:
+            grid_size = 1
+        elif radius > 100:
             grid_size = 3  # 9 query points for state-level views
         elif radius > 30:
             grid_size = 2  # 4 query points for metro-level views
@@ -323,109 +348,120 @@ class MapSearchService:
         listings_by_addr: dict[str, MapListing] = {}
         raw_source_totals: int = 0
 
-        # Fetch from all sources at all grid points in parallel
-        tasks: list[asyncio.Task] = []
-
-        if _skip_rentcast_sale_use_zillow_only_distressed(requested_statuses, bool(self.zillow)):
+        if motivated_seller_mode:
             logger.info(
-                "Map search sale: RentCast skipped (filters are foreclosure / pre-foreclosure / auction only; using Zillow)",
+                "Map search motivated-seller mode: replacing standard sources with %d Zillow keyword queries",
+                len(MOTIVATED_SELLER_KEYWORDS),
             )
-
-        # Dispatch shape, per grid point:
-        # - 1 vanilla forSale query when active/owner-listed is requested.
-        # - 1 typed Auction query (isAuction=true) when auction is requested.
-        # - 1 typed Foreclosure query (isForSaleForeclosure=true) when
-        #   foreclosure is requested.
-        # - 1 URL-based query for pre-foreclosure (AXESSO has no typed
-        #   isPreForeclosure param; the only way to filter pre-foreclosure
-        #   exclusively is via Zillow's searchQueryState.filterState.pre).
-        #
-        # Zillow's "Foreclosures" search can return both REO and
-        # pre-foreclosure inventory; their UI splits **Foreclosed** vs
-        # **Pre-foreclosures**. We classify each row with
-        # `_derive_zillow_status` (listingSubType / foreclosureTypes)—no blanket
-        # foreclosure tag—so filters match that split.
-
-        for pt_lat, pt_lng in query_points:
             if req.listing_type in ("sale", "both"):
-                if not _skip_rentcast_sale_use_zillow_only_distressed(
-                    requested_statuses,
-                    bool(self.zillow),
-                ):
-                    tasks.append(
-                        asyncio.create_task(
-                            self._fetch_rentcast(req, "sale", pt_lat, pt_lng, sub_radius),
-                        )
-                    )
-                if self.zillow:
-                    # Vanilla forSale query — covers Active and the
-                    # owner-listed (FSBO) bucket Zillow's defaults already
-                    # include. Issued whenever any non-distressed status is
-                    # requested so the user sees something even when the
-                    # distressed query fails.
-                    if requested_statuses & {"active", "owner_listed"}:
+                motivated_rows = await self._fetch_motivated_seller_listings(req, cache)
+                raw_source_totals = len(motivated_rows)
+                for item in motivated_rows:
+                    self._merge_listing_into(listings_by_addr, item)
+        else:
+            # Fetch from all sources at all grid points in parallel
+            tasks: list[asyncio.Task] = []
+
+            if _skip_rentcast_sale_use_zillow_only_distressed(requested_statuses, bool(self.zillow)):
+                logger.info(
+                    "Map search sale: RentCast skipped (filters are foreclosure / pre-foreclosure / auction only; using Zillow)",
+                )
+
+            # Dispatch shape, per grid point:
+            # - 1 vanilla forSale query when active/owner-listed is requested.
+            # - 1 typed Auction query (isAuction=true) when auction is requested.
+            # - 1 typed Foreclosure query (isForSaleForeclosure=true) when
+            #   foreclosure is requested.
+            # - 1 URL-based query for pre-foreclosure (AXESSO has no typed
+            #   isPreForeclosure param; the only way to filter pre-foreclosure
+            #   exclusively is via Zillow's searchQueryState.filterState.pre).
+            #
+            # Zillow's "Foreclosures" search can return both REO and
+            # pre-foreclosure inventory; their UI splits **Foreclosed** vs
+            # **Pre-foreclosures**. We classify each row with
+            # `_derive_zillow_status` (listingSubType / foreclosureTypes)—no blanket
+            # foreclosure tag—so filters match that split.
+
+            for pt_lat, pt_lng in query_points:
+                if req.listing_type in ("sale", "both"):
+                    if not _skip_rentcast_sale_use_zillow_only_distressed(
+                        requested_statuses,
+                        bool(self.zillow),
+                    ):
                         tasks.append(
                             asyncio.create_task(
-                                self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forSale", req, None),
+                                self._fetch_rentcast(req, "sale", pt_lat, pt_lng, sub_radius),
                             )
                         )
-                    # All three distressed buckets route through the URL-based
-                    # AXESSO `search-by-url` path. Earlier the dispatch used
-                    # AXESSO's typed `isAuction` / `isForSaleForeclosure` params
-                    # for the first two, but those return 0 rows in practice
-                    # (verified across Detroit, Cleveland, and South Florida).
-                    # Pre-foreclosure already used the URL path; we now use the
-                    # same `_zillow_distressed_url` mechanism for all three.
-                    for distressed_status in ("auction", "foreclosure", "pre-foreclosure"):
-                        if distressed_status in requested_statuses:
+                    if self.zillow:
+                        # Vanilla forSale query — covers Active and the
+                        # owner-listed (FSBO) bucket Zillow's defaults already
+                        # include. Issued whenever any non-distressed status is
+                        # requested so the user sees something even when the
+                        # distressed query fails.
+                        if requested_statuses & {"active", "owner_listed"}:
                             tasks.append(
                                 asyncio.create_task(
-                                    self._fetch_zillow_distressed(
-                                        pt_lat,
-                                        pt_lng,
-                                        sub_radius,
-                                        distressed_status,
-                                    ),
+                                    self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forSale", req, None),
+                                )
+                            )
+                        # All three distressed buckets route through the URL-based
+                        # AXESSO `search-by-url` path. Earlier the dispatch used
+                        # AXESSO's typed `isAuction` / `isForSaleForeclosure` params
+                        # for the first two, but those return 0 rows in practice
+                        # (verified across Detroit, Cleveland, and South Florida).
+                        # Pre-foreclosure already used the URL path; we now use the
+                        # same `_zillow_distressed_url` mechanism for all three.
+                        for distressed_status in ("auction", "foreclosure", "pre-foreclosure"):
+                            if distressed_status in requested_statuses:
+                                tasks.append(
+                                    asyncio.create_task(
+                                        self._fetch_zillow_distressed(
+                                            pt_lat,
+                                            pt_lng,
+                                            sub_radius,
+                                            distressed_status,
+                                        ),
+                                    )
+                                )
+
+                if req.listing_type in ("rental", "both"):
+                    # Distressed/pending semantics don't apply to rentals; only
+                    # fetch when the caller wants active inventory (or no
+                    # explicit status filter, which defaults to active).
+                    if "active" in requested_statuses:
+                        tasks.append(
+                            asyncio.create_task(
+                                self._fetch_rentcast(req, "rental", pt_lat, pt_lng, sub_radius),
+                            )
+                        )
+                        if self.zillow:
+                            tasks.append(
+                                asyncio.create_task(
+                                    self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forRent", req, None),
                                 )
                             )
 
-            if req.listing_type in ("rental", "both"):
-                # Distressed/pending semantics don't apply to rentals; only
-                # fetch when the caller wants active inventory (or no
-                # explicit status filter, which defaults to active).
-                if "active" in requested_statuses:
-                    tasks.append(
-                        asyncio.create_task(
-                            self._fetch_rentcast(req, "rental", pt_lat, pt_lng, sub_radius),
-                        )
-                    )
-                    if self.zillow:
-                        tasks.append(
-                            asyncio.create_task(
-                                self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forRent", req, None),
-                            )
-                        )
+            results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+            for result in results:
+                if isinstance(result, Exception):
+                    logger.warning("Map search source failed: %s", result)
+                    continue
+                raw_source_totals += len(result)
+                for item in result:
+                    self._merge_listing_into(listings_by_addr, item)
 
-        for result in results:
-            if isinstance(result, Exception):
-                logger.warning("Map search source failed: %s", result)
-                continue
-            raw_source_totals += len(result)
-            for item in result:
-                self._merge_listing_into(listings_by_addr, item)
-
-        # Merge Mashvisor Airbnb listings when requested. Airbnb rows are
-        # already a distinct inventory bucket (id-prefixed
-        # ``mashvisor_airbnb_*``) so they only collide with sale/rental
-        # rows when the address truly matches — in that case the sale row
-        # outranks the Airbnb tag and the Airbnb is intentionally dropped.
-        if req.include_str_listings and self.mashvisor:
-            str_listings = await self._fetch_mashvisor_str_listings(req, center_lat, center_lng)
-            for item in str_listings:
-                self._merge_listing_into(listings_by_addr, item)
-            raw_source_totals += len(str_listings)
+            # Merge Mashvisor Airbnb listings when requested. Airbnb rows are
+            # already a distinct inventory bucket (id-prefixed
+            # ``mashvisor_airbnb_*``) so they only collide with sale/rental
+            # rows when the address truly matches — in that case the sale row
+            # outranks the Airbnb tag and the Airbnb is intentionally dropped.
+            if req.include_str_listings and self.mashvisor:
+                str_listings = await self._fetch_mashvisor_str_listings(req, center_lat, center_lng)
+                for item in str_listings:
+                    self._merge_listing_into(listings_by_addr, item)
+                raw_source_totals += len(str_listings)
 
         listings = list(listings_by_addr.values())
 
@@ -471,7 +507,7 @@ class MapSearchService:
         # Estimate total: if every sub-query returned its limit, there are
         # likely more listings than we fetched. Extrapolate conservatively.
         estimated_total: int | None = None
-        if grid_size > 1:
+        if not motivated_seller_mode and grid_size > 1:
             full_queries = sum(1 for r in results if not isinstance(r, Exception) and len(r) >= req.limit * 0.8)
             if full_queries > 0:
                 avg_per_query = raw_source_totals / max(len([r for r in results if not isinstance(r, Exception)]), 1)
@@ -479,9 +515,10 @@ class MapSearchService:
                 estimated_total = int(avg_per_query * area_multiplier * 1.5)
 
         logger.info(
-            "Map search returned %d listings (statuses=%s, %d grid points, radius=%.1fmi, grid=%dx%d)",
+            "Map search returned %d listings (statuses=%s, motivated=%s, %d grid points, radius=%.1fmi, grid=%dx%d)",
             len(listings),
             sorted(requested_statuses),
+            motivated_seller_mode,
             len(query_points),
             radius,
             grid_size,
@@ -617,6 +654,36 @@ class MapSearchService:
                 }
             )
 
+        state = {
+            "pagination": {},
+            "isMapVisible": True,
+            "mapBounds": {
+                "north": round(north, 6),
+                "south": round(south, 6),
+                "east": round(east, 6),
+                "west": round(west, 6),
+            },
+            "filterState": filter_state,
+            "isListVisible": True,
+        }
+        encoded = urllib.parse.quote(json.dumps(state, separators=(",", ":")))
+        return f"https://www.zillow.com/homes/for_sale/?searchQueryState={encoded}"
+
+    @staticmethod
+    def _zillow_keyword_url(
+        north: float,
+        south: float,
+        east: float,
+        west: float,
+        keyword: str,
+    ) -> str:
+        """Build a Zillow ``searchQueryState`` URL for listing-description keyword search.
+
+        Zillow's Keywords filter maps to ``filterState.kw.value`` (comma-separated
+        terms are ANDed; we issue one keyword per URL for OR semantics).
+        Routed through AXESSO ``search-by-url`` like distressed inventory.
+        """
+        filter_state = {"kw": {"value": keyword.strip()}}
         state = {
             "pagination": {},
             "isMapVisible": True,
@@ -878,6 +945,87 @@ class MapSearchService:
         except Exception:
             logger.exception("Zillow %s listing fetch failed", status)
             return []
+
+    async def _fetch_zillow_keyword(
+        self,
+        req: MapSearchRequest,
+        keyword: str,
+        cache: Any,
+    ) -> list[MapListing]:
+        """Fetch for-sale listings matching a single Zillow keyword within the viewport."""
+        if not self.zillow:
+            return []
+
+        cache_key = _build_keyword_cache_key(keyword, req)
+        cached = await cache.get(cache_key)
+        if cached:
+            try:
+                return [MapListing(**item) for item in cached]
+            except Exception:
+                logger.warning("Motivated-seller keyword cache parse failed for %r", keyword)
+
+        url = self._zillow_keyword_url(req.north, req.south, req.east, req.west, keyword)
+        try:
+            resp = await self.zillow.search_by_url(url)
+            if not resp.success or not resp.data:
+                await cache.set(cache_key, [], ttl_seconds=MOTIVATED_SELLER_KEYWORD_CACHE_TTL)
+                return []
+
+            raw_props = resp.data.get("results") or resp.data.get("props") or resp.data.get("searchResults") or []
+            if isinstance(resp.data, dict) and not raw_props:
+                for val in resp.data.values():
+                    if isinstance(val, list) and len(val) > 0:
+                        raw_props = val
+                        break
+
+            results: list[MapListing] = []
+            for item in raw_props:
+                if not self._zillow_has_coords(item):
+                    continue
+                results.append(self._normalize_zillow_listing(item))
+
+            await cache.set(
+                cache_key,
+                [item.model_dump(mode="json") for item in results],
+                ttl_seconds=MOTIVATED_SELLER_KEYWORD_CACHE_TTL,
+            )
+            if results:
+                logger.info("Zillow keyword %r: %d listings", keyword, len(results))
+            return results
+        except Exception:
+            logger.exception("Zillow keyword %r listing fetch failed", keyword)
+            return []
+
+    async def _fetch_motivated_seller_listings(
+        self,
+        req: MapSearchRequest,
+        cache: Any,
+    ) -> list[MapListing]:
+        """Run parallel Zillow keyword searches for every motivated-seller phrase."""
+        if not self.zillow:
+            return []
+
+        semaphore = asyncio.Semaphore(MOTIVATED_SELLER_CONCURRENCY)
+        listings_by_addr: dict[str, MapListing] = {}
+        hits_by_keyword: dict[str, int] = {}
+
+        async def _run_keyword(keyword: str) -> None:
+            async with semaphore:
+                rows = await self._fetch_zillow_keyword(req, keyword, cache)
+            hits_by_keyword[keyword] = len(rows)
+            for item in rows:
+                self._merge_listing_into(listings_by_addr, item)
+
+        await asyncio.gather(*(_run_keyword(kw) for kw in MOTIVATED_SELLER_KEYWORDS))
+
+        keywords_with_hits = sum(1 for count in hits_by_keyword.values() if count > 0)
+        logger.info(
+            "Motivated seller search: %d unique listings from %d/%d keywords with hits",
+            len(listings_by_addr),
+            keywords_with_hits,
+            len(MOTIVATED_SELLER_KEYWORDS),
+        )
+        return list(listings_by_addr.values())
 
     # ─── Normalization helpers ─────────────────────
 

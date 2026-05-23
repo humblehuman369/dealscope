@@ -27,6 +27,7 @@ export interface MapSearchFilters {
   include_str_listings?: boolean
   str_state?: string
   str_city?: string
+  motivated_seller_search?: boolean
 }
 
 export interface MapBounds {
@@ -105,6 +106,7 @@ export function useMapSearch() {
         include_str_listings: activeFilters.include_str_listings,
         str_state: activeFilters.str_state,
         str_city: activeFilters.str_city,
+        motivated_seller_search: activeFilters.motivated_seller_search || undefined,
         limit: 500,
       }
 

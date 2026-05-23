@@ -242,6 +242,7 @@ export interface MapSearchRequest {
   str_city?: string
   limit?: number
   offset?: number
+  motivated_seller_search?: boolean
 }
 
 export interface MapListing {

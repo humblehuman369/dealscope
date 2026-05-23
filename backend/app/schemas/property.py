@@ -1132,6 +1132,13 @@ class MapSearchRequest(BaseModel):
     )
     limit: int = Field(default=500, le=500)
     offset: int = 0
+    motivated_seller_search: bool = Field(
+        default=False,
+        description=(
+            "When true, replace normal map sources with Zillow keyword searches "
+            "for motivated-seller listing-description phrases."
+        ),
+    )
 
 
 class MapListing(BaseModel):

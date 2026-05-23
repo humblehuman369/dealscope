@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useMemo } from 'react'
-import { AlertTriangle, Bookmark, Gavel, Hammer, Loader2, SlidersHorizontal, X } from 'lucide-react'
+import { AlertTriangle, Bookmark, Gavel, Hammer, Loader2, SlidersHorizontal, Target, X } from 'lucide-react'
 import type { MapSearchFilters } from '@/hooks/useMapSearch'
 import type { SortOption } from '@/lib/dealSignal'
 import {
@@ -190,6 +190,7 @@ export function FilterPanel({
     filters.bathrooms,
     filters.listing_statuses.length > 0 ? true : undefined,
     filters.min_dom,
+    filters.motivated_seller_search ? true : undefined,
   ].filter(Boolean).length
 
   const hasDistressedStatusFilter = useMemo(
@@ -287,7 +288,11 @@ export function FilterPanel({
             className="text-xs flex-shrink-0"
             style={{ color: chrome?.secondaryText ?? 'var(--text-secondary)' }}
           >
-            {isLoading ? 'Searching...' : `${totalCount} results`}
+            {isLoading
+              ? filters.motivated_seller_search
+                ? 'Scanning motivated-seller keywords…'
+                : 'Searching...'
+              : `${totalCount} results`}
           </span>
         </div>
         <button
@@ -423,6 +428,63 @@ export function FilterPanel({
               </PillButton>
             ))}
           </div>
+        </div>
+
+        {/* Motivated Seller Search */}
+        <div
+          className="rounded-lg p-3 space-y-2"
+          role="group"
+          aria-labelledby="motivated-seller-heading"
+          style={
+            mapLightChrome
+              ? {
+                  backgroundColor: MAP_FILTER_DISTRESSED_LIGHT.boxBg,
+                  border: MAP_FILTER_DISTRESSED_LIGHT.boxBorder,
+                }
+              : {
+                  backgroundColor: 'rgba(245, 158, 11, 0.09)',
+                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                }
+          }
+        >
+          <div>
+            <h3
+              id="motivated-seller-heading"
+              className="text-xs font-semibold uppercase tracking-wider"
+              style={{
+                color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.heading : 'var(--text-heading)',
+              }}
+            >
+              Motivated Seller Search
+            </h3>
+            <p
+              className="text-[10px] mt-1 leading-snug"
+              style={{
+                color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.body : 'var(--text-secondary)',
+              }}
+            >
+              Scans listing descriptions for investor / motivated-seller language via Zillow
+              keywords. Replaces standard map results while enabled.
+            </p>
+          </div>
+          <PillButton
+            mapLightChrome={mapLightChrome}
+            active={Boolean(filters.motivated_seller_search)}
+            onClick={() =>
+              onChange({ motivated_seller_search: !filters.motivated_seller_search })
+            }
+            aria-label="Motivated seller keyword search. Replaces standard map results when enabled."
+            leading={
+              <Target
+                size={12}
+                className="flex-shrink-0 opacity-90"
+                strokeWidth={2}
+                aria-hidden
+              />
+            }
+          >
+            {filters.motivated_seller_search ? 'On' : 'Off'}
+          </PillButton>
         </div>
 
         {/* Distressed deals */}
