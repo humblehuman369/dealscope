@@ -41,18 +41,8 @@ def _get_mashvisor() -> MashvisorClient | None:
     )
 
 
-@router.post("/properties/search-area", response_model=MapSearchResponse)
-async def search_area(
-    request: MapSearchRequest,
-    current_user: OptionalUser = None,
-):
-    """
-    Search for property listings within a map viewport or drawn polygon.
-
-    Accepts bounding box coordinates (north/south/east/west) and optional
-    polygon vertices. Returns lightweight listing objects suitable for map
-    marker display.
-    """
+async def run_map_search(request: MapSearchRequest) -> MapSearchResponse:
+    """Shared map-search handler used by the property router endpoint."""
     if request.north <= request.south:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

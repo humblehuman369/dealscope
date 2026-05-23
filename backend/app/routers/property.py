@@ -19,6 +19,8 @@ from app.services.resilience import CircuitOpenError
 from app.models.saved_property import SavedProperty
 from app.models.search_history import SearchHistory
 from app.schemas.property import (
+    MapSearchRequest,
+    MapSearchResponse,
     PropertyResponse,
     PropertySearchRequest,
 )
@@ -244,6 +246,23 @@ async def get_demo_property():
     except Exception as e:
         logger.error(f"Demo property error: {e!s}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@router.post("/properties/search-area", response_model=MapSearchResponse)
+async def search_property_area(
+    request: MapSearchRequest,
+    current_user: OptionalUser = None,
+):
+    """
+    Map viewport / polygon listing search.
+
+    Registered on the property router (before ``/properties/{property_id}``)
+    so POST is not shadowed by the dynamic GET path when the map-search
+    router fails to load or an older deployment omits it.
+    """
+    from app.routers.map_search import run_map_search
+
+    return await run_map_search(request)
 
 
 @router.get("/properties/{property_id}", response_model=PropertyResponse)

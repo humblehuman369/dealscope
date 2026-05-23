@@ -439,6 +439,7 @@ export const api = {
       apiRequest<MapSearchResponse>('/api/v1/properties/search-area', {
         method: 'POST',
         body: data,
+        timeoutMs: data.motivated_seller_search ? 120_000 : 60_000,
       }),
     heatmap: (data: HeatmapRequest) =>
       apiRequest<HeatmapResponse>('/api/v1/map/heatmap', {
