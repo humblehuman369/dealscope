@@ -21,10 +21,16 @@ def test_motivated_seller_keywords_module_importable() -> None:
     from app.data import motivated_seller_keywords as mod
 
     assert mod.MOTIVATED_SELLER_KEYWORDS
-    assert len(MOTIVATED_SELLER_KEYWORDS) >= 150
+    assert len(MOTIVATED_SELLER_KEYWORDS) >= 90
+    assert len(MOTIVATED_SELLER_KEYWORDS) <= 120
     assert "Motivated Seller" in MOTIVATED_SELLER_KEYWORDS
     assert "As Is" in MOTIVATED_SELLER_KEYWORDS
     assert "Cash only" in MOTIVATED_SELLER_KEYWORDS
+    # Broad false-positive terms removed in curation pass
+    assert "Invest" not in MOTIVATED_SELLER_KEYWORDS
+    assert "Potential" not in MOTIVATED_SELLER_KEYWORDS
+    assert "Fire" not in MOTIVATED_SELLER_KEYWORDS
+    assert "Rental" not in MOTIVATED_SELLER_KEYWORDS
 
 
 def test_zillow_keyword_url_encodes_kw_and_map_bounds() -> None:
@@ -105,11 +111,11 @@ def test_merge_accumulates_motivated_keywords() -> None:
         longitude=-81.65,
         listing_status="Active",
         source="zillow",
-        motivated_keywords=["Investor"],
+        motivated_keywords=["Investor Special"],
     )
     service._merge_listing_into(bucket, a)
     service._merge_listing_into(bucket, b)
-    assert bucket["100 main st"].motivated_keywords == ["As Is", "Investor"]
+    assert bucket["100 main st"].motivated_keywords == ["As Is", "Investor Special"]
 
 
 @pytest.mark.asyncio
