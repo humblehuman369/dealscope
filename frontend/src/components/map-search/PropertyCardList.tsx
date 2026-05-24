@@ -7,6 +7,7 @@ import type { MapListing } from '@/lib/api'
 import type { DealSignalResult, SortOption } from '@/lib/dealSignal'
 import { displayListingStatus } from '@/lib/dealSignal'
 import { useListingPhoto } from './listingPhoto'
+import { discoveryPathFromListing } from './mapDiscoveryNavigation'
 
 const SORT_LABELS: Record<SortOption, string> = {
   deal_signal: 'Opportunity',
@@ -82,11 +83,7 @@ function PropertyCard({
   const handleAnalyze = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
-      const params = new URLSearchParams({ address: listing.address })
-      if (listing.city) params.set('city', listing.city)
-      if (listing.state) params.set('state', listing.state)
-      if (listing.zip_code) params.set('zip_code', listing.zip_code)
-      router.push(`/discovery?${params.toString()}`)
+      router.push(discoveryPathFromListing(listing))
     },
     [router, listing],
   )
@@ -209,6 +206,20 @@ function PropertyCard({
             </span>
           )}
         </div>
+
+        {listing.motivated_keywords && listing.motivated_keywords.length > 0 && (
+          <p
+            className="text-[10px] leading-snug mt-1.5"
+            style={{ color: 'var(--text-secondary)' }}
+            title={listing.motivated_keywords.join(', ')}
+          >
+            Motivated seller match:{' '}
+            {listing.motivated_keywords.slice(0, 2).join(', ')}
+            {listing.motivated_keywords.length > 2
+              ? ` +${listing.motivated_keywords.length - 2} more`
+              : ''}
+          </p>
+        )}
 
         {/* Status + DOM row */}
         <div className="flex items-center justify-between">

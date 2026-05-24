@@ -86,6 +86,32 @@ def test_merge_dedupes_same_address_from_two_keyword_queries() -> None:
     assert bucket["100 main st"].listing_status == "Foreclosure"
 
 
+def test_merge_accumulates_motivated_keywords() -> None:
+    service = MapSearchService()
+    bucket: dict[str, MapListing] = {}
+    a = MapListing(
+        id="z1",
+        address="100 Main St",
+        latitude=41.45,
+        longitude=-81.65,
+        listing_status="Active",
+        source="zillow",
+        motivated_keywords=["As Is"],
+    )
+    b = MapListing(
+        id="z1",
+        address="100 Main St",
+        latitude=41.45,
+        longitude=-81.65,
+        listing_status="Active",
+        source="zillow",
+        motivated_keywords=["Investor"],
+    )
+    service._merge_listing_into(bucket, a)
+    service._merge_listing_into(bucket, b)
+    assert bucket["100 main st"].motivated_keywords == ["As Is", "Investor"]
+
+
 @pytest.mark.asyncio
 async def test_motivated_seller_mode_skips_rentcast_and_uses_keyword_fetch() -> None:
     service = MapSearchService()

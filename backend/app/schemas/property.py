@@ -935,6 +935,10 @@ class PropertySearchRequest(BaseModel):
     city: str | None = None
     state: str | None = None
     zip_code: str | None = None
+    zpid: str | None = Field(
+        default=None,
+        description="Zillow property ID — when provided, fetches Zillow details directly (e.g. from map search)",
+    )
     search_source: str | None = None
 
     @field_validator("address", "city", "state", "zip_code", mode="before")
@@ -1165,6 +1169,10 @@ class MapListing(BaseModel):
     occupancy: int | None = None
     star_rating: float | None = None
     reviews_count: int | None = None
+    motivated_keywords: list[str] | None = Field(
+        default=None,
+        description="Motivated-seller keyword phrases that matched this listing (Zillow description search)",
+    )
 
 
 class MapSearchResponse(BaseModel):

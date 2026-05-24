@@ -104,7 +104,7 @@ async def search_property(
     logger.info(f"Searching for property: {full_address}")
 
     try:
-        result = await property_service.search_property(full_address)
+        result = await property_service.search_property(full_address, zpid=request.zpid)
     except (ExternalAPIError, CircuitOpenError) as e:
         # Record failed search for authenticated users
         if current_user:

@@ -555,11 +555,17 @@ class MapSearchService:
         existing_pri = _listing_status_priority(existing.listing_status)
         new_pri = _listing_status_priority(item.listing_status)
         if new_pri > existing_pri:
-            bucket[addr_key] = _merge_preserving_loser_fields(item, existing)
+            merged = _merge_preserving_loser_fields(item, existing)
         else:
             # Same-or-lower priority: existing wins, but pick up any
             # display fields it was missing.
-            bucket[addr_key] = _merge_preserving_loser_fields(existing, item)
+            merged = _merge_preserving_loser_fields(existing, item)
+        combined_kw = sorted(
+            set((existing.motivated_keywords or []) + (item.motivated_keywords or []))
+        )
+        if combined_kw:
+            merged = merged.model_copy(update={"motivated_keywords": combined_kw})
+        bucket[addr_key] = merged
 
     @staticmethod
     def _radius_to_bbox(lat: float, lng: float, radius_miles: float) -> tuple[float, float, float, float]:
@@ -982,7 +988,8 @@ class MapSearchService:
             for item in raw_props:
                 if not self._zillow_has_coords(item):
                     continue
-                results.append(self._normalize_zillow_listing(item))
+                listing = self._normalize_zillow_listing(item)
+                results.append(listing.model_copy(update={"motivated_keywords": [keyword]}))
 
             await cache.set(
                 cache_key,

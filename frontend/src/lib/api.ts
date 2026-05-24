@@ -267,6 +267,8 @@ export interface MapListing {
   occupancy?: number | null
   star_rating?: number | null
   reviews_count?: number | null
+  /** Phrases from motivated-seller keyword search that matched this listing */
+  motivated_keywords?: string[] | null
 }
 
 export interface MapSearchResponse {

@@ -6,6 +6,7 @@ import type { MapListing } from '@/lib/api'
 import type { DealSignalResult } from '@/lib/dealSignal'
 import { displayListingStatus } from '@/lib/dealSignal'
 import { useListingPhoto } from './listingPhoto'
+import { buildDiscoverySearchParams } from './mapDiscoveryNavigation'
 
 interface PropertyPreviewCardProps {
   listing: MapListing
@@ -48,10 +49,7 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    const params = new URLSearchParams({ address: listing.address })
-    if (listing.city) params.set('city', listing.city)
-    if (listing.state) params.set('state', listing.state)
-    if (listing.zip_code) params.set('zip_code', listing.zip_code)
+    const params = buildDiscoverySearchParams(listing)
     router.push(`/discovery?${params.toString()}`)
   }
 

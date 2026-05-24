@@ -431,6 +431,7 @@ class PropertyService:
         self,
         address: str,
         pre_fetched: tuple[dict[str, Any], tuple[dict[str, Any] | None, dict[str, Any]]] | None = None,
+        zpid: str | None = None,
     ) -> PropertyResponse | tuple[PropertyResponse, dict[str, Any], dict[str, Any]]:
         """
         Search for property by address.
@@ -460,9 +461,10 @@ class PropertyService:
             if axesso_data:
                 zillow_zpid = axesso_data.get("zpid")
         else:
-            # Check Redis/in-memory cache first
+            # Check Redis/in-memory cache first (skip when zpid is provided — map search
+            # often has a reliable Zillow ID while address-only AXESSO lookup failed).
             t_cache = time.perf_counter()
-            cached_data = await self._cache.get_property(address)
+            cached_data = None if zpid else await self._cache.get_property(address)
             timings["cache_lookup_ms"] = (time.perf_counter() - t_cache) * 1000
             if cached_data:
                 valuations = cached_data.get("valuations") or {}
@@ -526,7 +528,7 @@ class PropertyService:
                 (mashvisor_data, mashvisor_ms),
             ) = await asyncio.gather(
                 self._fetch_rentcast_provider(address),
-                self._fetch_zillow_provider(address),
+                self._fetch_zillow_by_zpid(zpid) if zpid else self._fetch_zillow_provider(address),
                 self._fetch_redfin_provider(address),
                 self._fetch_realtor_provider(address),
                 self._fetch_mashvisor_provider(address),
@@ -926,6 +928,34 @@ class PropertyService:
 
         logger.warning("AXESSO returned empty responses for %s after %d attempts", address, max_attempts)
         return None, None
+
+    async def _fetch_zillow_by_zpid(self, zpid: str) -> tuple[dict[str, Any] | None, str | None, float]:
+        """Fetch Zillow property details directly by zpid (map search → Discovery handoff)."""
+        t0 = time.perf_counter()
+        axesso_data: dict[str, Any] | None = None
+        zpid_str = str(zpid).strip() if zpid else None
+        if not zpid_str:
+            return None, None, (time.perf_counter() - t0) * 1000
+        try:
+            logger.info("Fetching Zillow data by zpid: %s", zpid_str)
+            details_response = await self.zillow.get_property_details(zpid=zpid_str)
+            if details_response.success and details_response.data:
+                raw = details_response.data
+                if isinstance(raw, dict) and raw.get("error"):
+                    logger.warning("Zillow property-v2 returned error: %s (zpid=%s)", raw.get("error"), zpid_str)
+                else:
+                    axesso_data = self._unwrap_axesso_property(raw)
+                    logger.info(
+                        "Zillow zpid lookup - zestimate: $%s, homeStatus: %s",
+                        axesso_data.get("zestimate") or axesso_data.get("Zestimate"),
+                        axesso_data.get("homeStatus"),
+                    )
+            else:
+                logger.warning("Zillow zpid lookup failed for %s: %s", zpid_str, details_response.error)
+        except Exception as e:
+            logger.error("Error fetching Zillow data by zpid %s: %s", zpid_str, e)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        return axesso_data, zpid_str, elapsed_ms
 
     def _unwrap_axesso_property(self, raw: dict[str, Any]) -> dict[str, Any]:
         """

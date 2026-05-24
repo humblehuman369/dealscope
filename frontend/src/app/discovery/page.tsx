@@ -285,7 +285,8 @@ function VerdictContent() {
   const [isLoading, setIsLoading] = useState(() => {
     if (!addressParam) return true
     const canonical = canonicalizeAddressForIdentity(addressParam)
-    return !queryClient.getQueryData(['property-search', canonical])
+    const cacheZpid = urlZpid?.trim() || null
+    return !queryClient.getQueryData(['property-search', canonical, cacheZpid])
   })
   const [error, setError] = useState<string | null>(null)
   const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
@@ -408,7 +409,8 @@ function VerdictContent() {
 
       try {
         const canonical = canonicalizeAddressForIdentity(addressParam)
-        const hasCachedProperty = !!queryClient.getQueryData(['property-search', canonical])
+        const cacheZpid = overrideZpid?.trim() || null
+        const hasCachedProperty = !!queryClient.getQueryData(['property-search', canonical, cacheZpid])
         if (!hasCachedProperty) setIsLoading(true)
         setError(null)
 
@@ -417,6 +419,7 @@ function VerdictContent() {
           city: cityParam,
           state: stateParam,
           zip_code: zipCodeParam,
+          ...(overrideZpid ? { zpid: overrideZpid } : {}),
         })
 
         // Discard if a newer address search has started since this fetch began

@@ -87,6 +87,8 @@ export interface FetchPropertyOptions {
   city?: string
   state?: string
   zip_code?: string
+  /** Zillow property ID from map search — fetches Zillow details directly */
+  zpid?: string
 }
 
 export function usePropertyData() {
@@ -95,13 +97,15 @@ export function usePropertyData() {
   const fetchProperty = useCallback(
     async (address: string, opts?: FetchPropertyOptions): Promise<PropertyResponseCompat> => {
       const canonicalAddress = canonicalizeAddressForIdentity(address)
+      const zpid = opts?.zpid?.trim() || null
       return queryClient.ensureQueryData({
-        queryKey: ['property-search', canonicalAddress],
+        queryKey: ['property-search', canonicalAddress, zpid],
         queryFn: async () => {
           const body: Record<string, string> = { address: canonicalAddress }
           if (opts?.city) body.city = opts.city
           if (opts?.state) body.state = opts.state
           if (opts?.zip_code) body.zip_code = opts.zip_code
+          if (zpid) body.zpid = zpid
           const raw = await api.post<PropertyResponseCompat>('/api/v1/properties/search', body)
           return validatePropertyResponse(raw)
         },
@@ -114,7 +118,8 @@ export function usePropertyData() {
   const invalidateProperty = useCallback(
     (address: string, opts?: FetchPropertyOptions) => {
       const canonicalAddress = canonicalizeAddressForIdentity(address)
-      queryClient.invalidateQueries({ queryKey: ['property-search', canonicalAddress] })
+      const zpid = opts?.zpid?.trim() || null
+      queryClient.invalidateQueries({ queryKey: ['property-search', canonicalAddress, zpid] })
     },
     [queryClient],
   )
