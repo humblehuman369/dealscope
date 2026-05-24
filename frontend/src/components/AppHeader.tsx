@@ -39,6 +39,7 @@ import {
   Info,
   DollarSign,
   LayoutDashboard,
+  Users,
 } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
@@ -148,6 +149,7 @@ const NO_PROPERTY_BAR_ROUTES = [
   '/about',
   '/pricing',
   '/map-search',
+  '/directory',
 ]
 
 // Map routes to active tabs
@@ -165,6 +167,7 @@ function getActiveTabFromPath(pathname: string): AppTab | undefined {
   if (pathname.startsWith('/about')) return undefined
   if (pathname.startsWith('/pricing')) return undefined
   if (pathname.startsWith('/map-search')) return undefined
+  if (pathname.startsWith('/directory')) return undefined
   return 'analyze'
 }
 
@@ -666,6 +669,20 @@ export function AppHeader({
                   Property Search
                 </span>
               </button>
+              <Link
+                href="/directory"
+                className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                style={{
+                  color: 'var(--text-heading)',
+                  borderBottom:
+                    pathname?.startsWith('/directory')
+                      ? `2px solid ${colors.brand.teal}`
+                      : '2px solid transparent',
+                  paddingBottom: 2,
+                }}
+              >
+                Buyer Directory
+              </Link>
               {/* Dashboard — visible primary nav for signed-in users. */}
               {isAuthenticated && (
                 <>
@@ -758,6 +775,14 @@ export function AppHeader({
                             style={{ color: 'var(--text-heading)' }}
                           >
                             <Info className="w-4 h-4" /> Blog
+                          </Link>
+                          <Link
+                            href="/directory"
+                            onClick={() => setShowProfileMenu(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            <Users className="w-4 h-4" /> Buyer Directory
                           </Link>
                           <button
                             onClick={() => {
@@ -926,6 +951,14 @@ export function AppHeader({
                             style={{ color: 'var(--text-heading)' }}
                           >
                             <Info className="w-4 h-4" /> Blog
+                          </Link>
+                          <Link
+                            href="/directory"
+                            onClick={() => setMobileNavOpen(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            <Users className="w-4 h-4" /> Buyer Directory
                           </Link>
                           <div
                             style={{ borderTop: '1px solid var(--border-default)' }}
