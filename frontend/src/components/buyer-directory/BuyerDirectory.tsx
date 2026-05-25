@@ -80,6 +80,54 @@ const BUYERS = [
 const STATES = ['FL', 'TX', 'GA', 'NC', 'TN', 'AZ', 'OH', 'IN'];
 const STRATEGIES = ['all', 'Fix & Flip', 'BRRRR', 'Buy & Hold', 'Wholesale'] as const;
 
+// Local county lookups keep the mock directory behaving like market search until
+// the backend exposes geocoded county metadata for each query.
+const CITY_TO_COUNTY_BY_STATE: Record<string, Record<string, string>> = {
+  FL: {
+    'boca raton': 'Palm Beach',
+    'boynton beach': 'Palm Beach',
+    'delray beach': 'Palm Beach',
+    'fort lauderdale': 'Broward',
+    hollywood: 'Broward',
+    jacksonville: 'Duval',
+    melbourne: 'Brevard',
+    miami: 'Miami-Dade',
+    'north miami beach': 'Miami-Dade',
+    orlando: 'Orange',
+    'palm beach': 'Palm Beach',
+    tampa: 'Hillsborough',
+    'west palm beach': 'Palm Beach',
+  },
+};
+
+const ZIP_TO_COUNTY_BY_STATE: Record<string, Record<string, string>> = {
+  FL: {
+    '32202': 'Duval',
+    '32803': 'Orange',
+    '32901': 'Brevard',
+    '33021': 'Broward',
+    '33142': 'Miami-Dade',
+    '33162': 'Miami-Dade',
+    '33309': 'Broward',
+    '33432': 'Palm Beach',
+    '33602': 'Hillsborough',
+    '33609': 'Hillsborough',
+  },
+};
+
+const ZIP_PREFIX_TO_COUNTY_BY_STATE: Record<string, Record<string, string>> = {
+  FL: {
+    '322': 'Duval',
+    '328': 'Orange',
+    '329': 'Brevard',
+    '330': 'Broward',
+    '331': 'Miami-Dade',
+    '333': 'Broward',
+    '334': 'Palm Beach',
+    '336': 'Hillsborough',
+  },
+};
+
 type SearchMode = 'city' | 'county' | 'zip';
 type StrategyFilter = (typeof STRATEGIES)[number];
 
@@ -111,6 +159,72 @@ interface Buyer {
 function csvField(v: unknown) {
   const s = String(v == null ? '' : v);
   return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+const KNOWN_COUNTIES = Array.from(new Set(BUYERS.flatMap(b => b.coverage)));
+
+function normalizeSearchValue(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeCountyName(value: string) {
+  return normalizeSearchValue(value).replace(/\s+county$/, '');
+}
+
+function canonicalCountyName(value: string) {
+  const normalized = normalizeCountyName(value);
+  if (!normalized) return '';
+
+  return KNOWN_COUNTIES.find(county => normalizeCountyName(county) === normalized) ?? value.trim().replace(/\s+county$/i, '');
+}
+
+function countyMatches(county: string, query: string) {
+  const countyName = normalizeCountyName(county);
+  const queryName = normalizeCountyName(query);
+  return !!queryName && (countyName === queryName || countyName.includes(queryName));
+}
+
+function buyerCoversCounty(buyer: Buyer, county: string) {
+  return buyer.coverage.some(coverageCounty => countyMatches(coverageCounty, county));
+}
+
+function getCountyForCity(cityName: string, state: string) {
+  const normalizedCity = normalizeSearchValue(cityName);
+  if (!normalizedCity) return '';
+
+  const cityMap = CITY_TO_COUNTY_BY_STATE[state] ?? {};
+  if (cityMap[normalizedCity]) return cityMap[normalizedCity];
+
+  const matchedCounties = Array.from(new Set(
+    Object.entries(cityMap)
+      .filter(([city]) => city.includes(normalizedCity) || normalizedCity.includes(city))
+      .map(([, county]) => county),
+  ));
+
+  return matchedCounties.length === 1 ? matchedCounties[0] : '';
+}
+
+function getCountyForZip(zipCode: string) {
+  const zip = zipCode.trim();
+  if (!zip) return '';
+
+  for (const countiesByState of Object.values(ZIP_TO_COUNTY_BY_STATE)) {
+    if (countiesByState[zip]) return countiesByState[zip];
+  }
+
+  if (zip.length < 3) return '';
+
+  const prefix = zip.slice(0, 3);
+  for (const countiesByState of Object.values(ZIP_PREFIX_TO_COUNTY_BY_STATE)) {
+    if (countiesByState[prefix]) return countiesByState[prefix];
+  }
+
+  return '';
 }
 
 // =============================================================================
@@ -149,14 +263,18 @@ export default function BuyerDirectory() {
     return BUYERS.filter(b => {
       if (strategyFilter !== 'all' && !b.strategies.includes(strategyFilter)) return false;
       if (mode === 'city') {
-        const q = activeCity.toLowerCase();
-        if (q && !b.city.toLowerCase().includes(q) &&
-            !b.coverage.some(c => c.toLowerCase().includes(q))) return false;
+        const q = normalizeSearchValue(activeCity);
+        const resolvedCounty = getCountyForCity(activeCity, activeState);
+        if (q && !normalizeSearchValue(b.city).includes(q) &&
+            !b.coverage.some(c => countyMatches(c, activeCity)) &&
+            (!resolvedCounty || !buyerCoversCounty(b, resolvedCounty))) return false;
         if (activeState && b.state !== activeState) return false;
       } else if (mode === 'county') {
-        if (activeCounty && !b.coverage.some(c => c.toLowerCase().includes(activeCounty.toLowerCase()))) return false;
+        if (activeCounty && !buyerCoversCounty(b, activeCounty)) return false;
       } else if (mode === 'zip') {
-        if (activeZip && !b.zip.startsWith(activeZip)) return false;
+        const resolvedCounty = getCountyForZip(activeZip);
+        if (activeZip && !b.zip.startsWith(activeZip) &&
+            (!resolvedCounty || !buyerCoversCounty(b, resolvedCounty))) return false;
       }
       return true;
     });
@@ -383,7 +501,7 @@ export default function BuyerDirectory() {
             <span style={styles.countNum}>{filtered.length}</span>
             <span style={{ fontSize: 14, color: '#9ca3af' }}>
               verified buyers {appliedSearch.mode === 'city' && appliedSearch.city ? `in ${appliedSearch.city}, ${appliedSearch.stateCode}` :
-                appliedSearch.mode === 'county' && appliedSearch.county ? `in ${appliedSearch.county} County` :
+                appliedSearch.mode === 'county' && appliedSearch.county ? `in ${canonicalCountyName(appliedSearch.county)} County` :
                 appliedSearch.mode === 'zip' && appliedSearch.zip ? `near ${appliedSearch.zip}` : 'nationwide'}
             </span>
           </div>
