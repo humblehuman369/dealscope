@@ -450,7 +450,7 @@ export default function BuyerDirectory() {
         {/* Sticky action bar */}
         <div style={{
           ...styles.actionBar,
-          transform: selected.size > 0 ? 'translateY(0)' : 'translateY(calc(100% + 20px))',
+          transform: selected.size > 0 ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(calc(100% + 20px))',
           opacity: selected.size > 0 ? 1 : 0,
           pointerEvents: selected.size > 0 ? 'auto' : 'none',
         }}>
