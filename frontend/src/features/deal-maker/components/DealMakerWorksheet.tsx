@@ -50,11 +50,12 @@ function num(obj: Record<string, unknown>, key: string): number {
   return typeof v === 'number' && isFinite(v) ? v : 0
 }
 
-/** Bank loan principal = buy price − down payment (seller financing does not change this). */
-function conventionalBankLoan(price: number, downPaymentPct: number): number {
+/** Bank loan principal after buyer down payment and seller note. */
+function conventionalBankLoan(price: number, downPaymentPct: number, sellerFinancing = 0): number {
   if (price <= 0) return 0
   const dp = price * downPaymentPct
-  return Math.max(0, price - dp)
+  const sc = Math.max(0, sellerFinancing)
+  return Math.max(0, price - dp - sc)
 }
 
 /** Cash needed = down payment + closing + extra cash costs (rehab, furniture, etc.) − seller financing. */
@@ -547,7 +548,8 @@ function LTRWorksheet({
   const downPayment = state.buyPrice * state.downPaymentPercent
   const closingCosts = state.buyPrice * state.closingCostsPercent
   const loanAmount =
-    num(m, 'loanAmount') || conventionalBankLoan(state.buyPrice, state.downPaymentPercent)
+    num(m, 'loanAmount') ||
+    conventionalBankLoan(state.buyPrice, state.downPaymentPercent, state.sellerFinancingAmount)
   const bankRaw = m['bankMonthlyPayment']
   const sellerRaw = m['sellerMonthlyPayment']
   const bankMonthly =
@@ -819,7 +821,8 @@ function STRWorksheet({
   const downPayment = num(m, 'downPaymentAmount') || state.buyPrice * state.downPaymentPercent
   const closingCosts = num(m, 'closingCostsAmount') || state.buyPrice * state.closingCostsPercent
   const loanAmount =
-    num(m, 'loanAmount') || conventionalBankLoan(state.buyPrice, state.downPaymentPercent)
+    num(m, 'loanAmount') ||
+    conventionalBankLoan(state.buyPrice, state.downPaymentPercent, state.sellerFinancingAmount)
   const bankRaw = m['bankMonthlyPayment']
   const sellerRaw = m['sellerMonthlyPayment']
   const bankMonthly =
@@ -1087,7 +1090,7 @@ function BRRRRWorksheet({
   const initialLoan =
     typeof initialLoanRaw === 'number' && isFinite(initialLoanRaw)
       ? initialLoanRaw
-      : conventionalBankLoan(purchaseEff, state.downPaymentPercent)
+      : conventionalBankLoan(purchaseEff, state.downPaymentPercent, state.sellerFinancingAmount)
   const initialDown = num(m, 'initialDownPayment')
   const initialClosing = num(m, 'initialClosingCosts')
   const cashPhase1 = num(m, 'cashRequiredPhase1')
@@ -1612,7 +1615,8 @@ function HouseHackWorksheet({
 }) {
   const m = metrics as unknown as Record<string, unknown>
   const loanAmt =
-    num(m, 'loanAmount') || conventionalBankLoan(state.purchasePrice, state.downPaymentPercent)
+    num(m, 'loanAmount') ||
+    conventionalBankLoan(state.purchasePrice, state.downPaymentPercent, state.sellerFinancingAmount)
   const downPayment = num(m, 'downPayment')
   const closingCosts = num(m, 'closingCosts')
   const cashToClose = num(m, 'cashToClose')

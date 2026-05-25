@@ -870,7 +870,7 @@ export function DealMakerScreen({
         const downPaymentAmt = buyPrice * ltrState.downPaymentPercent
         const closingCostsAmt = n('closing_costs') || buyPrice * ltrState.closingCostsPercent
         const sellerFin = ltrState.sellerFinancingAmount ?? 0
-        const loanAmt = n('loan_amount') || Math.max(0, buyPrice - downPaymentAmt)
+        const loanAmt = n('loan_amount') || Math.max(0, buyPrice - downPaymentAmt - sellerFin)
         const monthlyPmt = n('monthly_payment')
         const cashNeeded =
           n('total_cash_needed') ||
@@ -904,7 +904,7 @@ export function DealMakerScreen({
         const downPaymentAmt = n('down_payment') || buyPrice * strState.downPaymentPercent
         const closingCostsAmt = n('closing_costs') || buyPrice * strState.closingCostsPercent
         const sellerFin = strState.sellerFinancingAmount ?? 0
-        const loanAmt = n('loan_amount') || Math.max(0, buyPrice - downPaymentAmt)
+        const loanAmt = n('loan_amount') || Math.max(0, buyPrice - downPaymentAmt - sellerFin)
         const monthlyPmt = n('monthly_payment')
         const cashNeeded =
           n('total_cash_needed') ||
@@ -1219,7 +1219,7 @@ export function DealMakerScreen({
       } as LTRDealMakerMetrics
     }
 
-    // For unsaved LTR properties, calculate locally (Model A — seller second)
+    // For unsaved LTR properties, calculate locally with seller carry reducing bank debt.
     const ltrState = state as LTRDealMakerState
     const downPaymentAmount = ltrState.buyPrice * ltrState.downPaymentPercent
     const closingCostsAmount = ltrState.buyPrice * ltrState.closingCostsPercent
@@ -1229,18 +1229,18 @@ export function DealMakerScreen({
       downPaymentAmount + closingCostsAmount + ltrState.rehabBudget - sellerFin,
     )
 
-    const loanAmount = Math.max(0, ltrState.buyPrice - downPaymentAmount)
+    const loanAmount = Math.max(0, ltrState.buyPrice - downPaymentAmount - sellerFin)
     const sellerPi =
       sellerFin > 0
         ? calculateMortgagePayment(
             sellerFin,
-            ltrState.sellerInterestRate ?? 0,
+            (ltrState.sellerInterestRate ?? 0) * 100,
             ltrState.sellerTermYears ?? 30,
           )
         : 0
     const bankPi = calculateMortgagePayment(
       loanAmount,
-      ltrState.interestRate,
+      ltrState.interestRate * 100,
       ltrState.loanTermYears,
     )
     const monthlyPayment = bankPi + sellerPi

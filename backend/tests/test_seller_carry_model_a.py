@@ -1,4 +1,4 @@
-"""Model A seller-second financing — bank loan and cash equity stack."""
+"""Seller-carry financing — bank loan and cash equity stack."""
 
 import pytest
 
@@ -60,10 +60,10 @@ class TestSellerCarryLTR:
         assert r["total_cash_required"] == pytest.approx(60_000 + 9_000, rel=1e-6)
 
     def test_creative_seller_covers_part_of_down(self):
-        # 20% down = 60k; seller carries 45k → bank loan still purchase − down; cash stacks net of seller
+        # 20% down = 60k; seller carries 45k → bank loan is reduced by the seller note.
         r = calculate_ltr(**LTR_KW, seller_carry_amount=45_000, seller_carry_rate=0.06, seller_carry_term_years=30)
         assert r["cash_equity_at_close"] == pytest.approx(15_000, rel=1e-6)
-        assert r["loan_amount"] == pytest.approx(240_000, rel=1e-6)
+        assert r["loan_amount"] == pytest.approx(195_000, rel=1e-6)
         assert r["total_cash_required"] == pytest.approx(max(0, 60_000 + 9_000 - 45_000), rel=1e-6)
 
     def test_all_cash_no_financing(self):
@@ -87,6 +87,19 @@ class TestSellerCarryLTR:
         assert r["total_cash_required"] == pytest.approx(max(0, 300_000 + 9_000 - 300_000), rel=1e-6)
         assert r["seller_monthly_pi"] > 0
 
+    def test_zero_down_full_seller_financing(self):
+        r = calculate_ltr(
+            **{**LTR_KW, "down_payment_pct": 0.0},
+            seller_carry_amount=300_000,
+            seller_carry_rate=0.05,
+            seller_carry_term_years=30,
+        )
+        assert r["loan_amount"] == pytest.approx(0, abs=1)
+        assert r["bank_monthly_pi"] == pytest.approx(0, abs=1)
+        assert r["seller_monthly_pi"] > 0
+        assert r["monthly_pi"] == pytest.approx(r["seller_monthly_pi"], rel=1e-6)
+        assert r["total_cash_required"] == pytest.approx(0, abs=1)
+
 
 class TestSellerCarrySTR:
     def test_traditional_no_seller(self):
@@ -102,6 +115,6 @@ class TestSellerCarrySTR:
             seller_carry_term_years=30,
         )
         assert r["cash_equity_at_close"] == pytest.approx(30_000, rel=1e-6)
-        # Bank loan is purchase − down payment (seller does not change loan principal)
-        exp_loan = 350_000 * 0.80
+        # Seller note reduces the remaining bank-financed portion.
+        exp_loan = 350_000 * 0.80 - 40_000
         assert r["loan_amount"] == pytest.approx(exp_loan, rel=1e-6)

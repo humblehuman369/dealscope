@@ -3,7 +3,7 @@
  * while the debounced `/api/v1/analysis/verdict` recalc is in flight.
  *
  * Math aligns with `DealMakerWorksheet` LTR (vacancy as income adjustment;
- * opex via `computeLtrOperatingExpenseBreakdown`; Model A bank loan).
+ * opex via `computeLtrOperatingExpenseBreakdown`; seller carry reduces bank loan).
  */
 
 import { computeLtrOperatingExpenseBreakdown } from '@/lib/ltrOperatingExpenses'
@@ -23,7 +23,7 @@ export function computeLtrMetricsFromState(
     downPaymentAmount + closingCostsAmount + (state.rehabBudget ?? 0) - sellerFin,
   )
 
-  const loanAmount = Math.max(0, buy - downPaymentAmount)
+  const loanAmount = Math.max(0, buy - downPaymentAmount - sellerFin)
   const bankPi =
     loanAmount > 0
       ? calculateMortgagePayment(loanAmount, state.interestRate * 100, state.loanTermYears)

@@ -100,10 +100,21 @@ def calculate_monthly_mortgage(principal: float, annual_rate: float, years: int)
 
 
 def conventional_first_lien_loan(purchase_price: float, down_payment_dollars: float) -> float:
-    """Bank loan = purchase price − down payment (seller carry does not change loan principal)."""
+    """Bank loan = purchase price minus buyer down payment."""
     pp = float(purchase_price)
     dp = max(0.0, float(down_payment_dollars))
     return max(0.0, pp - dp)
+
+
+def bank_loan_after_seller_carry(
+    purchase_price: float,
+    down_payment_dollars: float,
+    seller_carry_amount: float,
+) -> float:
+    """Bank loan = remaining financed price after buyer down payment and seller note."""
+    conventional_loan = conventional_first_lien_loan(purchase_price, down_payment_dollars)
+    sc = max(0.0, float(seller_carry_amount or 0.0))
+    return max(0.0, conventional_loan - sc)
 
 
 def cash_needed_after_seller(

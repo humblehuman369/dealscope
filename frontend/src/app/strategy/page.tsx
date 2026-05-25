@@ -496,7 +496,7 @@ function StrategySelectDropdown({
   )
 }
 
-/** Cash to close from DealMaker sliders — Model A (must stay aligned with DealMakerWorksheet). */
+/** Cash to close from DealMaker sliders (must stay aligned with DealMakerWorksheet). */
 function cashNeededFromLtrState(s: LTRDealMakerState): number {
   const buy = s.buyPrice
   if (buy <= 0) return 0
@@ -1516,11 +1516,21 @@ function StrategyContent() {
 
   const downPayment = bd?.down_payment ?? targetPrice * downPaymentPct
   const closingCosts = bd?.closing_costs ?? targetPrice * closingCostsPct
+  const sellerFinancingAmount = Math.max(
+    0,
+    ((dealMakerOverrides as Record<string, number | undefined> | null)?.sellerFinancingAmount ??
+      (dealMakerOverrides as Record<string, number | undefined> | null)?.seller_carry_amount ??
+      bd?.seller_carry_amount ??
+      inputsUsed.seller_carry_amount ??
+      0) as number,
+  )
   // BRRRR backend breakdown uses refinance loan for `loan_amount` / debt service (post-refi model).
   // This page always renders the LTR-style worksheet, so show acquisition P&I tied to Target Buy.
-  const purchaseLoanAmount = Math.max(0, targetPrice - downPayment)
+  const purchaseLoanAmount = Math.max(0, targetPrice - downPayment - sellerFinancingAmount)
   const loanAmount =
-    activeStrategyId === 'brrrr' ? purchaseLoanAmount : (bd?.loan_amount ?? purchaseLoanAmount)
+    activeStrategyId === 'brrrr' || sellerFinancingAmount > 0
+      ? purchaseLoanAmount
+      : (bd?.loan_amount ?? purchaseLoanAmount)
   let monthlyPI = bd?.monthly_payment ?? 0
   if (activeStrategyId === 'brrrr') {
     monthlyPI = calculateMortgagePayment(loanAmount, rate * 100, loanTermYears)

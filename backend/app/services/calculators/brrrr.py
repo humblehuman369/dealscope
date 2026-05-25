@@ -7,9 +7,9 @@ No imports from app.core.defaults allowed.
 from typing import Any
 
 from .common import (
+    bank_loan_after_seller_carry,
     cash_needed_after_seller,
     combined_bank_and_seller_pi,
-    conventional_first_lien_loan,
     validate_financial_inputs,
 )
 
@@ -57,12 +57,12 @@ def calculate_brrrr(
         holding_period_months=holding_period_months,
     )
 
-    # Phase 1: Buy (at discount) — conventional bank loan; seller carry offsets cash only
+    # Phase 1: Buy (at discount) — seller carry replaces bank debt dollar-for-dollar.
     purchase_price = market_value * (1 - purchase_discount_pct)
     down_payment = purchase_price * down_payment_pct
     closing_costs = purchase_price * closing_costs_pct
     sc = max(0.0, float(seller_carry_amount or 0.0))
-    initial_loan_amount = conventional_first_lien_loan(purchase_price, down_payment)
+    initial_loan_amount = bank_loan_after_seller_carry(purchase_price, down_payment, sc)
     cash_equity_phase1 = max(0.0, down_payment - sc)
     cash_required_phase1 = cash_needed_after_seller(down_payment, closing_costs, 0.0, sc)
 

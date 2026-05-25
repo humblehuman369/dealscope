@@ -183,8 +183,8 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
 
   const buyPx = sliderValues.buyPrice
   const sellerAmt = Math.max(0, sliderValues.sellerFinancingAmount ?? 0)
-  const bankLoanDerived = Math.max(0, buyPx - downPayment)
-  const cashNeededModelA = Math.max(0, downPayment + closingCosts + rehabCost - sellerAmt)
+  const bankLoanDerived = Math.max(0, buyPx - downPayment - sellerAmt)
+  const cashNeededAfterSeller = Math.max(0, downPayment + closingCosts + rehabCost - sellerAmt)
   const bankPiEst = monthlyMortgagePI(
     bankLoanDerived,
     sliderValues.interestRate,
@@ -286,7 +286,7 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
           onChange={(v) => onSliderChange('rehabBudget', v)}
           listPrice={listPrice}
         />
-        <TotalRow label="Cash Needed" value={formatCurrency(cashNeededModelA)} />
+        <TotalRow label="Cash Needed" value={formatCurrency(cashNeededAfterSeller)} />
       </div>
 
       <SectionDivider />

@@ -31,12 +31,12 @@ from app.schemas.analytics import (
 from app.schemas.property import AllAssumptions
 from app.services.calculators import calculate_monthly_mortgage
 from app.services.calculators.common import (
+    bank_loan_after_seller_carry,
     calculate_cap_rate,
     calculate_cash_on_cash,
     calculate_dscr,
     cash_needed_after_seller,
     combined_bank_and_seller_pi,
-    conventional_first_lien_loan,
 )
 from app.services.deal_structures import compute_deal_structures
 from app.services.deal_structures.context import StructureContext
@@ -100,7 +100,7 @@ def _calculate_ltr_strategy(
     down_payment = price * f.down_payment_pct
     closing_costs = price * f.closing_costs_pct
     sc = max(0.0, float(seller_carry_amount or 0.0))
-    loan_amount = conventional_first_lien_loan(price, down_payment)
+    loan_amount = bank_loan_after_seller_carry(price, down_payment, sc)
     cash_equity = max(0.0, down_payment - sc)
     total_cash = cash_needed_after_seller(down_payment, closing_costs, rehab_cost, sc)
     bank_pi, seller_pi, monthly_pi = combined_bank_and_seller_pi(
@@ -198,7 +198,7 @@ def _calculate_str_strategy(
     down_payment = price * f.down_payment_pct
     closing_costs = price * f.closing_costs_pct
     sc = max(0.0, float(seller_carry_amount or 0.0))
-    loan_amount = conventional_first_lien_loan(price, down_payment)
+    loan_amount = bank_loan_after_seller_carry(price, down_payment, sc)
     cash_equity = max(0.0, down_payment - sc)
     total_cash = cash_needed_after_seller(
         down_payment,

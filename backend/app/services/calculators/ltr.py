@@ -8,13 +8,13 @@ these functions. No imports from app.core.defaults allowed.
 from typing import Any
 
 from .common import (
+    bank_loan_after_seller_carry,
     calculate_cap_rate,
     calculate_cash_on_cash,
     calculate_dscr,
     calculate_grm,
     cash_needed_after_seller,
     combined_bank_and_seller_pi,
-    conventional_first_lien_loan,
     validate_financial_inputs,
 )
 
@@ -57,11 +57,11 @@ def calculate_ltr(
         loan_term_years=loan_term_years,
     )
 
-    # Acquisition — conventional bank loan; seller carry offsets cash only
+    # Acquisition — seller carry replaces bank debt dollar-for-dollar.
     down_payment = purchase_price * down_payment_pct
     closing_costs = purchase_price * closing_costs_pct
     sc = max(0.0, float(seller_carry_amount or 0.0))
-    loan_amount = conventional_first_lien_loan(purchase_price, down_payment)
+    loan_amount = bank_loan_after_seller_carry(purchase_price, down_payment, sc)
     cash_equity_at_close = max(0.0, down_payment - sc)
     total_cash_required = cash_needed_after_seller(down_payment, closing_costs, rehab_costs, sc)
 

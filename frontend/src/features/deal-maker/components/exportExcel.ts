@@ -53,6 +53,10 @@ function num(obj: Record<string, unknown>, key: string): number {
   return typeof v === 'number' && isFinite(v) ? v : 0
 }
 
+function bankLoanAfterSeller(price: number, downPayment: number, sellerFinancing: number): number {
+  return Math.max(0, price - downPayment - Math.max(0, sellerFinancing))
+}
+
 type SellerFinExport = Pick<
   LTRDealMakerState,
   'sellerFinancingAmount' | 'sellerInterestRate' | 'sellerTermYears'
@@ -225,14 +229,18 @@ function buildLTRSheet(
 
   const downPayment = state.buyPrice * state.downPaymentPercent
   const closingCosts = state.buyPrice * state.closingCostsPercent
-  const loanAmount = num(m, 'loanAmount') || state.buyPrice - downPayment
+  const loanAmount =
+    num(m, 'loanAmount') ||
+    bankLoanAfterSeller(state.buyPrice, downPayment, state.sellerFinancingAmount)
   const monthlyPayment = num(m, 'monthlyPayment')
   const grossMonthly = num(m, 'grossMonthlyIncome') || state.monthlyRent + state.otherIncome
   const totalMonthlyExp = num(m, 'totalMonthlyExpenses')
   const annualProfit = num(m, 'annualProfit')
   const capRate = num(m, 'capRate')
   const cocReturn = num(m, 'cocReturn')
-  const cashNeeded = num(m, 'cashNeeded') || downPayment + closingCosts + state.rehabBudget
+  const cashNeeded =
+    num(m, 'cashNeeded') ||
+    Math.max(0, downPayment + closingCosts + state.rehabBudget - state.sellerFinancingAmount)
   const noi = annualProfit + monthlyPayment * 12
 
   let r = 5
@@ -347,9 +355,20 @@ function buildSTRSheet(
 
   const downPayment = num(m, 'downPaymentAmount') || state.buyPrice * state.downPaymentPercent
   const closingCosts = num(m, 'closingCostsAmount') || state.buyPrice * state.closingCostsPercent
-  const loanAmount = num(m, 'loanAmount') || state.buyPrice - downPayment
+  const loanAmount =
+    num(m, 'loanAmount') ||
+    bankLoanAfterSeller(state.buyPrice, downPayment, state.sellerFinancingAmount)
   const monthlyPayment = num(m, 'monthlyPayment')
-  const cashNeeded = num(m, 'cashNeeded') || downPayment + closingCosts + state.furnitureSetupCost
+  const cashNeeded =
+    num(m, 'cashNeeded') ||
+    Math.max(
+      0,
+      downPayment +
+        closingCosts +
+        state.furnitureSetupCost +
+        state.rehabBudget -
+        state.sellerFinancingAmount,
+    )
   const nightsOccupied = num(m, 'nightsOccupied')
   const annualGross = num(m, 'annualGrossRevenue')
   const totalMonthlyExp = num(m, 'totalMonthlyExpenses')
