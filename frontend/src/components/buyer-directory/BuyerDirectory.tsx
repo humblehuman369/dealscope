@@ -126,27 +126,41 @@ export default function BuyerDirectory() {
   const [stateCode, setStateCode] = useState('FL');
   const [county, setCounty] = useState('');
   const [zip, setZip] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState({
+    mode: 'city' as SearchMode,
+    city: 'Tampa',
+    stateCode: 'FL',
+    county: '',
+    zip: '',
+  });
   const [strategyFilter, setStrategyFilter] = useState<StrategyFilter>('all');
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
   const printAreaRef = useRef<HTMLDivElement>(null);
 
+  const runSearch = () => {
+    setAppliedSearch({ mode: searchMode, city, stateCode, county, zip });
+    setSelected(new Set());
+  };
+
   const filtered = useMemo(() => {
+    const { mode, city: activeCity, stateCode: activeState, county: activeCounty, zip: activeZip } =
+      appliedSearch;
     return BUYERS.filter(b => {
       if (strategyFilter !== 'all' && !b.strategies.includes(strategyFilter)) return false;
-      if (searchMode === 'city') {
-        const q = city.toLowerCase();
+      if (mode === 'city') {
+        const q = activeCity.toLowerCase();
         if (q && !b.city.toLowerCase().includes(q) &&
             !b.coverage.some(c => c.toLowerCase().includes(q))) return false;
-        if (stateCode && b.state !== stateCode) return false;
-      } else if (searchMode === 'county') {
-        if (county && !b.coverage.some(c => c.toLowerCase().includes(county.toLowerCase()))) return false;
-      } else if (searchMode === 'zip') {
-        if (zip && !b.zip.startsWith(zip)) return false;
+        if (activeState && b.state !== activeState) return false;
+      } else if (mode === 'county') {
+        if (activeCounty && !b.coverage.some(c => c.toLowerCase().includes(activeCounty.toLowerCase()))) return false;
+      } else if (mode === 'zip') {
+        if (activeZip && !b.zip.startsWith(activeZip)) return false;
       }
       return true;
     });
-  }, [city, stateCode, county, zip, searchMode, strategyFilter]);
+  }, [appliedSearch, strategyFilter]);
 
   const selectedBuyers = BUYERS.filter(b => selected.has(b.id));
 
@@ -303,6 +317,12 @@ export default function BuyerDirectory() {
             ))}
           </div>
 
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              runSearch();
+            }}
+          >
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 16, alignItems: 'end' }}>
             <div style={{ display: 'grid', gridTemplateColumns: searchMode === 'city' ? '1fr 140px' : '1fr', gap: 12 }}>
               {searchMode === 'city' && (
@@ -332,10 +352,11 @@ export default function BuyerDirectory() {
                 </Field>
               )}
             </div>
-            <button className="dgiq-btn-press" style={styles.searchBtn}>
+            <button type="submit" className="dgiq-btn-press" style={styles.searchBtn}>
               <Search size={16} /> Search
             </button>
           </div>
+          </form>
 
           {/* Strategy filter */}
           <div style={styles.filterRow}>
@@ -361,9 +382,9 @@ export default function BuyerDirectory() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
             <span style={styles.countNum}>{filtered.length}</span>
             <span style={{ fontSize: 14, color: '#9ca3af' }}>
-              verified buyers {searchMode === 'city' && city ? `in ${city}, ${stateCode}` :
-                searchMode === 'county' && county ? `in ${county} County` :
-                searchMode === 'zip' && zip ? `near ${zip}` : 'nationwide'}
+              verified buyers {appliedSearch.mode === 'city' && appliedSearch.city ? `in ${appliedSearch.city}, ${appliedSearch.stateCode}` :
+                appliedSearch.mode === 'county' && appliedSearch.county ? `in ${appliedSearch.county} County` :
+                appliedSearch.mode === 'zip' && appliedSearch.zip ? `near ${appliedSearch.zip}` : 'nationwide'}
             </span>
           </div>
           {isPro && filtered.length > 0 && (
