@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useAppPathname, useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import LoginForm from './LoginForm'
 import RegisterForm from './RegisterForm'
 import ForgotPasswordForm from './ForgotPasswordForm'
@@ -36,8 +37,8 @@ const VIEW_TITLE: Record<View, string> = {
  */
 export default function AuthModal() {
   const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = useAppPathname()
+  const searchParams = useAppSearchParams()
   const { isAuthenticated } = useSession()
   const [view, setView] = useState<View>('login')
   const [isOpen, setIsOpen] = useState(false)

@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState, Suspense } from 'react'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+
 import { useSession } from '@/hooks/useSession'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { Footer } from './Footer'
@@ -27,7 +28,7 @@ interface ResponsiveLandingPageProps {
 // Separate component to handle search params (must be wrapped in Suspense)
 function AuthParamHandler() {
   const { openAuthModal } = useAuthModal()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
 
   React.useEffect(() => {
     const authParam = searchParams.get('auth')

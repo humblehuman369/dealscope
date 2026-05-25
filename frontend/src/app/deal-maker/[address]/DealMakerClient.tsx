@@ -1,7 +1,8 @@
 'use client'
 
-import { useParams, useSearchParams } from 'next/navigation'
+
 import dynamic from 'next/dynamic'
+import { useAppParams, useAppSearchParams } from '@/hooks/useAppNavigation'
 import type { DealMakerPropertyData } from '@/features/deal-maker/components/DealMakerScreen'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
 import { AuthGate } from '@/components/auth/AuthGate'
@@ -31,8 +32,8 @@ const DealMakerScreen = dynamic(
  */
 
 export default function DealMakerRoutePage() {
-  const params = useParams()
-  const searchParams = useSearchParams()
+  const params = useAppParams()
+  const searchParams = useAppSearchParams()
 
   // Decode the address from the URL
   const encodedAddress = params.address as string

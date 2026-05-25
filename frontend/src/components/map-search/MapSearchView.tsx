@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/context/ThemeContext'
@@ -718,7 +719,7 @@ function MapContent({
 
 export function MapSearchView() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const { theme } = useTheme()
 
   // Per-map theme override. When set, beats the global app theme for the

@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useAppParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 
 export default function WorksheetRedirect() {
-  const params = useParams()
+  const params = useAppParams()
   const router = useRouter()
   const propertyId = params.id as string
 

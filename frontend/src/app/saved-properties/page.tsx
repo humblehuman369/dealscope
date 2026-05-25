@@ -10,7 +10,8 @@
  */
 
 import { Suspense, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import { Bookmark, History, Search } from 'lucide-react'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
@@ -21,7 +22,7 @@ type Tab = 'saved' | 'recent'
 
 function PageContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const tabParam = (searchParams.get('tab') ?? 'saved') as Tab
   const tab: Tab = tabParam === 'recent' ? 'recent' : 'saved'
   const [showSearchModal, setShowSearchModal] = useState(false)

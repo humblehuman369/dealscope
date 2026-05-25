@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams, useParams } from 'next/navigation'
+import { useAppParams, useAppSearchParams } from '@/hooks/useAppNavigation'
+
 import { usePropertyData } from '@/hooks/usePropertyData'
 import {
   PropertyData,
@@ -11,8 +12,8 @@ import {
 import { normalizePropertyData } from '@/utils/normalizePropertyData'
 
 export default function PropertyPage() {
-  const params = useParams<{ zpid: string }>()
-  const searchParams = useSearchParams()
+  const params = useAppParams<{ zpid: string }>()
+  const searchParams = useAppSearchParams()
   const zpid = params.zpid
   const address = searchParams.get('address') || ''
   const strategy = searchParams.get('strategy') ?? undefined

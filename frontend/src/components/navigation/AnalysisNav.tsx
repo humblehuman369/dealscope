@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { useAppPathname, useAppSearchParams } from '@/hooks/useAppNavigation'
+
 import Link from 'next/link'
 import { SavePropertyButton } from '@/components/SavePropertyButton'
 import type { PropertySnapshot } from '@/hooks/useSaveProperty'
@@ -14,8 +15,8 @@ import { readDealMakerOverrides } from '@/utils/addressIdentity'
  * Preserves all search params when switching between pages.
  */
 export function AnalysisNav() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = useAppPathname()
+  const searchParams = useAppSearchParams()
   const params = searchParams.toString()
   const address = searchParams.get('address') || ''
 

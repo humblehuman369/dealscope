@@ -11,12 +11,13 @@
  */
 
 import { useEffect, useRef } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { useAppPathname } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { shouldLandOnDashboard } from '@/lib/dashboardLanding'
 
 export function DashboardLandingGate() {
-  const pathname = usePathname()
+  const pathname = useAppPathname()
   const router = useRouter()
   const { isAuthenticated, isLoading } = useSession()
   const hasRedirectedRef = useRef(false)

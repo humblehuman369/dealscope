@@ -17,7 +17,8 @@
  */
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import { IQProperty, IQStrategy, IQAnalysisResult } from '@/components/iq-verdict'
 import { getDealGapTier } from '@/components/iq-verdict/types'
 import {
@@ -174,7 +175,7 @@ function getStrategyIcon(strategyId: string): string {
 
 function VerdictContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const queryClient = useQueryClient()
   const { isAuthenticated } = useSession()
   const { isPro } = useSubscription()
@@ -259,7 +260,8 @@ function VerdictContent() {
   const overrideInsurance =
     urlInsurance ?? (sessionData?.insurance != null ? String(sessionData.insurance) : null)
   const overrideArv = urlArv ?? (sessionData?.arv != null ? String(sessionData.arv) : null)
-  const overrideZpid = urlZpid || sessionData?.zpid || null
+  const overrideZpidRaw = urlZpid || sessionData?.zpid || null
+  const overrideZpid = typeof overrideZpidRaw === 'string' ? overrideZpidRaw : null
 
   // Has any overrides (from URL or session)
   const hasLegacyOverrides = !!(overridePurchasePrice || overrideMonthlyRent)

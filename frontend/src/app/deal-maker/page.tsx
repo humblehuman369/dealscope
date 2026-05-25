@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import dynamic from 'next/dynamic'
 import { Search, Loader2, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react'
@@ -35,7 +36,7 @@ const DealMakerScreen = dynamic(
 type ValidationStatus = 'idle' | 'validating' | 'valid' | 'issues' | 'error' | 'unavailable'
 
 export default function DealMakerIndexPage() {
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const router = useRouter()
   const { fetchProperty } = usePropertyData()
 

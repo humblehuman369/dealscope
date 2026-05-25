@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useAppPathname } from '@/hooks/useAppNavigation'
+
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -78,7 +79,7 @@ const HIDDEN_ON = [
 /* ── UsageBar ────────────────────────────────────────────────── */
 
 export function UsageBar() {
-  const pathname = usePathname()
+  const pathname = useAppPathname()
   const { isAuthenticated, isLoading: authLoading } = useSession()
   const { isPro } = useSubscription()
 

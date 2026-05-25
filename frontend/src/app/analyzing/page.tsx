@@ -9,13 +9,14 @@
  */
 
 import { useEffect, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 
 function AnalyzingContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const queryString = searchParams.toString()
+  const searchParams = useAppSearchParams()
+  const queryString = searchParams?.toString() ?? ''
 
   useEffect(() => {
     router.replace(queryString ? `/discovery?${queryString}` : '/discovery')

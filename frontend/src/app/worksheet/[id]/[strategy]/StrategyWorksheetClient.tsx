@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useMemo } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useAppParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { Loader2 } from 'lucide-react'
 import { WorksheetShell } from '@/components/worksheet/WorksheetShell'
@@ -59,7 +60,7 @@ const WholesaleWorksheet = dynamic(
 )
 
 export default function StrategyWorksheetPage() {
-  const params = useParams()
+  const params = useAppParams()
   const router = useRouter()
   const { initializeFromProperty } = useWorksheetStore()
 

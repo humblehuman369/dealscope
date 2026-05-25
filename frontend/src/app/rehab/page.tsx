@@ -1,6 +1,7 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import { Suspense, useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
@@ -35,7 +36,7 @@ interface PropertyData {
 
 function RehabPageContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const address = searchParams.get('address') || ''
   const savedPropertyIdFromUrl = searchParams.get('saved_property_id') || undefined
   const initialBudget = parseInt(searchParams.get('budget') || '25000', 10)

@@ -7,7 +7,8 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import { CheckCircle, Loader2 } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import Link from 'next/link'
@@ -22,7 +23,7 @@ function isAddressDependentPath(path: string): boolean {
 
 export default function CheckoutSuccessPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const sessionId = searchParams.get('session_id')
   const returnTo = searchParams.get('returnTo') || '/'
 

@@ -8,13 +8,14 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useAppPathname, useAppSearchParams } from '@/hooks/useAppNavigation'
 import { X, RotateCcw, Check, Info } from 'lucide-react'
 import { SliderInput } from './SliderInput'
 import { PriceTarget } from '@/lib/priceUtils'
 import { calculateMortgagePayment } from '@/utils/calculations'
 import { useSession } from '@/hooks/useSession'
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
 
 // Strategy type - matches VerdictIQ header options
@@ -327,8 +328,8 @@ export function DealMakerPopup({
   onPriceTargetChange,
 }: DealMakerPopupProps) {
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = useAppPathname()
+  const searchParams = useAppSearchParams()
 
   // Get defaults based on strategy
   const defaults = useMemo(() => getDefaultValues(strategyType), [strategyType])

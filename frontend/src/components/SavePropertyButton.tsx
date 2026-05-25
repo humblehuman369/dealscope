@@ -1,8 +1,9 @@
 'use client'
 
 import React from 'react'
+import { useAppPathname, useAppSearchParams } from '@/hooks/useAppNavigation'
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+
 import { Bookmark } from 'lucide-react'
 import { useSession } from '@/hooks/useSession'
 import { useSaveProperty, type PropertySnapshot } from '@/hooks/useSaveProperty'
@@ -29,8 +30,8 @@ export function SavePropertyButton({
   compact = true,
   className = '',
 }: SavePropertyButtonProps) {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = useAppPathname()
+  const searchParams = useAppSearchParams()
   const { isAuthenticated } = useSession()
   const { isSaved, isSaving, toggle } = useSaveProperty({
     displayAddress,

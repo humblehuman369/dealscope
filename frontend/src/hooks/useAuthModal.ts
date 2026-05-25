@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useAppPathname } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 
 /**
  * Hook to control the global auth modal via URL search params.
@@ -12,7 +13,7 @@ import { useRouter, usePathname } from 'next/navigation'
  */
 export function useAuthModal() {
   const router = useRouter()
-  const pathname = usePathname()
+  const pathname = useAppPathname()
 
   const openAuthModal = useCallback(
     (mode: 'login' | 'register', redirectTo?: string) => {

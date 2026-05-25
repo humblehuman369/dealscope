@@ -1,7 +1,8 @@
 'use client'
 
 import { Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+
 import { PriceCheckerIQScreen } from '@/components/price-checker'
 import { AuthGate } from '@/components/auth/AuthGate'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
@@ -15,7 +16,7 @@ import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
  */
 
 function PriceIntelContent() {
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const rawAddress = searchParams.get('address') || ''
   const addressParam = decodeURIComponent(rawAddress)
   const viewParam = (searchParams.get('view') as 'sale' | 'rent') || 'sale'

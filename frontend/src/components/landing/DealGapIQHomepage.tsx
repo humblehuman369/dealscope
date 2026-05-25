@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState, useRef, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -11,7 +12,7 @@ import { DataSourcesSection } from './DataSourcesSection'
 
 function AuthParamHandler() {
   const { openAuthModal } = useAuthModal()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
 
   React.useEffect(() => {
     const authParam = searchParams.get('auth')

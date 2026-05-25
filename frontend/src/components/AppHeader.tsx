@@ -21,9 +21,10 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { useAppPathname, useAppSearchParams } from '@/hooks/useAppNavigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import {
   Search,
   Menu,
@@ -220,8 +221,8 @@ export function AppHeader({
   propertyAddress,
 }: AppHeaderProps) {
   const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = useAppPathname()
+  const searchParams = useAppSearchParams()
 
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)

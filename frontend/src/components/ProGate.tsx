@@ -16,7 +16,8 @@
  */
 
 import React, { useMemo, useState } from 'react'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { useAppPathname, useAppSearchParams } from '@/hooks/useAppNavigation'
+
 import Link from 'next/link'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useSession } from '@/hooks/useSession'
@@ -35,8 +36,8 @@ interface ProGateProps {
 export function ProGate({ children, feature, mode = 'inline', fallback }: ProGateProps) {
   const { isPro, isTrialing, isLoading: subLoading } = useSubscription()
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = useAppPathname()
+  const searchParams = useAppSearchParams()
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
 
   /** Full path + query for Stripe metadata → post-purchase email deep-link back here. */

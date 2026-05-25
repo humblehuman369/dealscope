@@ -13,13 +13,14 @@
  */
 
 import { useEffect, useState, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { usePropertyData } from '@/hooks/usePropertyData'
 
 function PropertyRedirector() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const addressParam = searchParams.get('address') || ''
   const strategyParam = searchParams.get('strategy') || ''
 

@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+
 import Link from 'next/link'
 import { CheckCircle, XCircle, Loader2, ArrowRight } from 'lucide-react'
 import { authApi } from '@/lib/api-client'
 
 function VerifyEmailContent() {
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const token = searchParams.get('token')
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')

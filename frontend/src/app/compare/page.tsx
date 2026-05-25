@@ -1,7 +1,8 @@
 'use client'
 
 import { Suspense, useCallback, useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api-client'
 import { colors } from '@/components/iq-verdict/verdict-design-tokens'
@@ -133,7 +134,7 @@ function ComparisonRow({
 /* ─── Main Component ─── */
 
 function CompareContent() {
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const router = useRouter()
   const ids = searchParams.get('ids')?.split(',').filter(Boolean) || []
 

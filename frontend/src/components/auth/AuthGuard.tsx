@@ -15,7 +15,8 @@
  */
 
 import { useEffect } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useAppPathname, useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 
 interface AuthGuardProps {
@@ -33,8 +34,8 @@ export function AuthGuard({
 }: AuthGuardProps) {
   const { isAuthenticated, isLoading, isAdmin } = useSession()
   const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = useAppPathname()
+  const searchParams = useAppSearchParams()
 
   // ── Unauthenticated → open auth modal with redirect ───────────
   useEffect(() => {

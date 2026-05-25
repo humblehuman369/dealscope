@@ -1,9 +1,10 @@
 'use client'
 
 import React, { Suspense, useState } from 'react'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
   Check,
@@ -50,7 +51,7 @@ const secondaryButtonClass =
 
 function AuthParamHandler() {
   const { openAuthModal } = useAuthModal()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
 
   React.useEffect(() => {
     const authParam = searchParams.get('auth')

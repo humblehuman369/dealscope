@@ -13,7 +13,8 @@
  */
 
 import React from 'react'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { useAppPathname, useAppSearchParams } from '@/hooks/useAppNavigation'
+
 import Link from 'next/link'
 import { LogIn } from 'lucide-react'
 import { useSession } from '@/hooks/useSession'
@@ -30,8 +31,8 @@ interface AuthGateProps {
 
 export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthGateProps) {
   const { isAuthenticated, isLoading } = useSession()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = useAppPathname()
+  const searchParams = useAppSearchParams()
   const cleanParams = new URLSearchParams(searchParams.toString())
   cleanParams.delete('auth')
   cleanParams.delete('redirect')

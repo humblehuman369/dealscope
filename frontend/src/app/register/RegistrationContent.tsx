@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState, useMemo, Suspense } from 'react'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useRegister, useLogin } from '@/hooks/useSession'
 import { IS_CAPACITOR } from '@/lib/env'
 import { authApi } from '@/lib/api-client'
@@ -324,7 +325,7 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
 // ═══════════════════════════════════════════════
 function RegistrationInner() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const registerMutation = useRegister()
   const loginMutation = useLogin()
 

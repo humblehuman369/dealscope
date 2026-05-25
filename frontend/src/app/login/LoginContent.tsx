@@ -1,14 +1,15 @@
 'use client'
 
 import { Suspense } from 'react'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import LoginForm from '@/components/auth/LoginForm'
 import { IS_CAPACITOR } from '@/lib/env'
 
 function LoginInner() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
 
   const redirect = searchParams.get('redirect') || searchParams.get('returnTo')
 

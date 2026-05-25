@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { api } from '@/lib/api-client'
@@ -156,7 +157,7 @@ const ctaDisabledStyle = {
 /* ── Billing Page Content ────────────────────────────────────── */
 
 function BillingContent() {
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const { isLoading: authLoading } = useSession()
   const { isPro, isTrialing } = useSubscription()
 

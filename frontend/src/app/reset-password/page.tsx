@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Lock,
@@ -17,7 +18,7 @@ import { authApi } from '@/lib/api-client'
 
 function ResetPasswordContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const token = searchParams.get('token')
 
   const [password, setPassword] = useState('')

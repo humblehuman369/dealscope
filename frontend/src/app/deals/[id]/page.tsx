@@ -14,8 +14,9 @@
  */
 
 import { use, Suspense } from 'react'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import {
   Activity,
   ArrowLeft,
@@ -110,7 +111,7 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
 
 function DealPageContent({ propertyId }: { propertyId: string }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const tabParam = (searchParams.get('tab') ?? 'overview') as Tab
   const tab: Tab = TABS.includes(tabParam) ? tabParam : 'overview'
 

@@ -19,8 +19,9 @@ import {
   useRef,
   Suspense,
 } from 'react'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import { ScreenErrorBoundary } from '@/components/ErrorBoundary'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -615,7 +616,7 @@ function toStrategyType(backendId: string): StrategyType {
 
 function StrategyContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useAppSearchParams()
   const queryClient = useQueryClient()
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const { isPro } = useSubscription()
