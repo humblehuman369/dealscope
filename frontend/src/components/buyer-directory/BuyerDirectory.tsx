@@ -6,7 +6,7 @@ import { useState, useMemo, useRef, useEffect, type CSSProperties, type ReactNod
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
-import { api } from '@/lib/api-client';
+import { ApiError, api } from '@/lib/api-client';
 import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import {
   Search, MapPin, Phone, Mail, Globe, Lock, CheckCircle2,
@@ -277,6 +277,7 @@ export default function BuyerDirectory() {
     data: buyers = [],
     isLoading: buyersLoading,
     isError: buyersErrored,
+    error: buyersError,
   } = useQuery({
     queryKey: ['buyer-directory'],
     queryFn: async () => {
@@ -287,7 +288,8 @@ export default function BuyerDirectory() {
     retry: false,
   });
 
-  const hasPaidAccess = isPaidPro;
+  const buyerDirectoryForbidden = buyersError instanceof ApiError && buyersError.status === 403;
+  const hasPaidAccess = isPaidPro && !buyerDirectoryForbidden;
   const stateOptions = useMemo(() => {
     const buyerStates = Array.from(new Set(buyers.map(b => b.state).filter(Boolean))).sort();
     return buyerStates.length > 0 ? buyerStates : DEFAULT_STATES;

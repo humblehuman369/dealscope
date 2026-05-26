@@ -11,6 +11,13 @@ vi.mock('@/hooks/useSubscription', () => ({
 }))
 
 vi.mock('@/lib/api-client', () => ({
+  ApiError: class ApiError extends Error {
+    status: number
+    constructor(message: string, status: number) {
+      super(message)
+      this.status = status
+    }
+  },
   api: {
     get: (...args: unknown[]) => mockApiGet(...args),
   },
