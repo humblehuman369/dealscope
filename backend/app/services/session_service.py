@@ -32,10 +32,19 @@ logger = logging.getLogger(__name__)
 # Constants
 # -----------------------------------------------------------------------
 SESSION_TOKEN_BYTES = 64  # 64 url-safe bytes → ~86 chars
+CLIENT_TYPE_DESKTOP = "desktop"
+CLIENT_TYPE_MOBILE = "mobile"
+VALID_CLIENT_TYPES = {CLIENT_TYPE_DESKTOP, CLIENT_TYPE_MOBILE}
 
 
 def _generate_opaque_token() -> str:
     return secrets.token_urlsafe(SESSION_TOKEN_BYTES)
+
+
+def normalize_client_type(client_type: str | None) -> str:
+    if client_type in VALID_CLIENT_TYPES:
+        return client_type
+    return CLIENT_TYPE_DESKTOP
 
 
 class SessionService:
@@ -53,6 +62,7 @@ class SessionService:
         ip_address: str | None = None,
         user_agent: str | None = None,
         device_name: str | None = None,
+        client_type: str | None = None,
         remember_me: bool = False,
     ) -> tuple[UserSession, str]:
         """Create a new session and return (session, jwt).
@@ -62,6 +72,7 @@ class SessionService:
         # Keep API compatibility with older clients that still send remember_me,
         # but all sessions now persist until explicit logout/revocation.
         _ = remember_me
+        normalized_client_type = normalize_client_type(client_type)
 
         session_obj = await session_repo.create(
             db,
@@ -71,7 +82,14 @@ class SessionService:
             ip_address=ip_address,
             user_agent=user_agent,
             device_name=device_name,
+            client_type=normalized_client_type,
             expires_at=self._persistent_expires_at(),
+        )
+        await session_repo.revoke_for_user_client_type(
+            db,
+            user_id,
+            normalized_client_type,
+            except_session_id=session_obj.id,
         )
 
         access_jwt = token_service.create_jwt(user_id, session_obj.id)

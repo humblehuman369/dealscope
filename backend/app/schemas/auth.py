@@ -184,6 +184,7 @@ class SessionInfo(BaseModel):
     ip_address: str | None = None
     user_agent: str | None = None
     device_name: str | None = None
+    client_type: str = "desktop"
     last_active_at: datetime
     created_at: datetime
     is_current: bool = False

@@ -50,12 +50,13 @@ from app.schemas.auth import (
 )
 from app.services.auth_service import AuthError, MFARequired, auth_service
 from app.services.email_service import email_service
-from app.services.session_service import session_service
+from app.services.session_service import CLIENT_TYPE_DESKTOP, CLIENT_TYPE_MOBILE, normalize_client_type, session_service
 from app.services.signup_notification_service import signup_notification_service
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
+CLIENT_TYPE_HEADER = "X-DGIQ-Client-Type"
 
 
 # Strong references for fire-and-forget signup notification tasks. Without
@@ -79,6 +80,10 @@ def _client_ip(request: Request) -> str | None:
     if forwarded:
         return forwarded.split(",")[0].strip()
     return request.client.host if request.client else None
+
+
+def _client_type_from_request(request: Request) -> str:
+    return normalize_client_type(request.headers.get(CLIENT_TYPE_HEADER))
 
 
 def _session_cookie_max_age(session_expires_at: datetime) -> int:
@@ -285,6 +290,7 @@ async def register(body: UserRegister, request: Request, response: Response, db:
         user.id,
         ip_address=_client_ip(request),
         user_agent=request.headers.get("User-Agent"),
+        client_type=_client_type_from_request(request),
     )
     await db.commit()
     _set_auth_cookies(
@@ -579,6 +585,7 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         user.id,
         ip_address=_client_ip(request),
         user_agent=request.headers.get("User-Agent") or "",
+        client_type=CLIENT_TYPE_MOBILE if mobile_redirect else CLIENT_TYPE_DESKTOP,
         remember_me=False,
     )
     await db.commit()
@@ -787,6 +794,7 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
         user.id,
         ip_address=_client_ip(request),
         user_agent=request.headers.get("User-Agent") or "",
+        client_type=CLIENT_TYPE_MOBILE if mobile_redirect else CLIENT_TYPE_DESKTOP,
         remember_me=False,
     )
     await db.commit()
@@ -841,6 +849,7 @@ async def login(body: UserLogin, request: Request, response: Response, db: DbSes
             password=body.password,
             ip_address=_client_ip(request),
             user_agent=request.headers.get("User-Agent"),
+            client_type=_client_type_from_request(request),
             remember_me=body.remember_me,
         )
         await db.commit()
@@ -884,6 +893,7 @@ async def login_mfa(body: MFAVerifyRequest, request: Request, response: Response
             totp_code=body.totp_code,
             ip_address=_client_ip(request),
             user_agent=request.headers.get("User-Agent"),
+            client_type=_client_type_from_request(request),
             remember_me=body.remember_me,
         )
         await db.commit()
@@ -1116,6 +1126,7 @@ async def list_sessions(user: CurrentUser, db: DbSession, session: CurrentSessio
             ip_address=s.ip_address,
             user_agent=s.user_agent,
             device_name=s.device_name,
+            client_type=s.client_type,
             last_active_at=s.last_active_at,
             created_at=s.created_at,
             is_current=(s.id == session.id),
@@ -1221,6 +1232,7 @@ async def login_form(request: Request, response: Response, db: DbSession):
             password=str(password),
             ip_address=_client_ip(request),
             user_agent=request.headers.get("User-Agent"),
+            client_type=_client_type_from_request(request),
         )
         await db.commit()
     except (AuthError, MFARequired) as e:

@@ -60,6 +60,7 @@ class UserSession(Base):
     ip_address: Mapped[str | None] = mapped_column(String(45))  # IPv6 max
     user_agent: Mapped[str | None] = mapped_column(Text)
     device_name: Mapped[str | None] = mapped_column(String(255))
+    client_type: Mapped[str] = mapped_column(String(20), default="desktop", nullable=False)
 
     # Lifecycle
     is_revoked: Mapped[bool] = mapped_column(Boolean, default=False)

@@ -126,10 +126,15 @@ function buildNetworkErrorMessage(endpoint: string, rawError: unknown): string {
 
 const CAP_ACCESS_KEY = 'dgiq_access_token'
 const CAP_REFRESH_KEY = 'dgiq_refresh_token'
+const CLIENT_TYPE_HEADER = 'X-DGIQ-Client-Type'
 
 let _memoryToken: string | null = null
 let _memoryTokenSetAt = 0
 const MEMORY_TOKEN_TTL_MS = 60_000
+
+function getClientType(): 'mobile' | 'desktop' {
+  return IS_CAPACITOR ? 'mobile' : 'desktop'
+}
 
 /** Store the access token (called right after login). */
 export function setMemoryToken(token: string, refreshToken?: string) {
@@ -198,6 +203,7 @@ async function refreshTokens(): Promise<boolean> {
         credentials: IS_CAPACITOR ? 'omit' : 'include',
         headers: {
           'Content-Type': 'application/json',
+          [CLIENT_TYPE_HEADER]: getClientType(),
           ...(IS_CAPACITOR && storedRefresh ? { Authorization: `Bearer ${storedRefresh}` } : {}),
         },
         ...(IS_CAPACITOR && storedRefresh
@@ -272,6 +278,9 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
   const requestHeaders: Record<string, string> = { ...headers }
   if (!isFormDataBody && !requestHeaders['Content-Type']) {
     requestHeaders['Content-Type'] = 'application/json'
+  }
+  if (!requestHeaders[CLIENT_TYPE_HEADER]) {
+    requestHeaders[CLIENT_TYPE_HEADER] = getClientType()
   }
   if (isFormDataBody && requestHeaders['Content-Type']) {
     delete requestHeaders['Content-Type']
@@ -564,6 +573,7 @@ export interface SessionInfo {
   ip_address: string | null
   user_agent: string | null
   device_name: string | null
+  client_type: 'mobile' | 'desktop'
   last_active_at: string
   created_at: string
   is_current: boolean

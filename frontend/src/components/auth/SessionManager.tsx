@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Monitor, Smartphone, Globe, Trash2, Loader2, Shield } from 'lucide-react'
+import { Monitor, Smartphone, Trash2, Loader2, Shield } from 'lucide-react'
 import { authApi, type SessionInfo } from '@/lib/api-client'
 
-function parseUserAgent(ua: string | null): { icon: typeof Monitor; label: string } {
-  if (!ua) return { icon: Globe, label: 'Unknown device' }
-  if (/mobile|android|iphone|ipad/i.test(ua)) return { icon: Smartphone, label: 'Mobile' }
-  return { icon: Monitor, label: 'Desktop' }
+function getSessionDevice(session: SessionInfo): { icon: typeof Monitor; label: string } {
+  if (session.client_type === 'mobile') {
+    return { icon: Smartphone, label: 'Mobile app' }
+  }
+  return { icon: Monitor, label: 'Desktop / web' }
 }
 
 function timeAgo(dateStr: string): string {
@@ -53,13 +54,13 @@ export default function SessionManager() {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Active Sessions</h3>
       </div>
       <p className="text-sm text-gray-600 dark:text-gray-400">
-        These are the devices currently signed in to your account. Revoke any session you don&apos;t
-        recognize.
+        Your membership includes one mobile app session and one desktop/web session. Signing in on a
+        new device replaces the previous session in that same slot.
       </p>
 
       <div className="space-y-3">
         {sessions?.map((session: SessionInfo) => {
-          const { icon: DeviceIcon, label: deviceLabel } = parseUserAgent(session.user_agent)
+          const { icon: DeviceIcon, label: deviceLabel } = getSessionDevice(session)
           return (
             <div
               key={session.id}

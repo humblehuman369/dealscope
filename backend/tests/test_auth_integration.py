@@ -11,20 +11,14 @@ against an in-memory SQLite database, verifying:
   - RBAC permission checks
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
-import uuid
-from unittest.mock import patch, AsyncMock
-
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.main import app
 from app.db.session import get_db
-from app.services.auth_service import auth_service
+from app.main import app
 from app.repositories.user_repository import user_repo
-from app.repositories.role_repository import role_repo
-from app.models.role import Role, Permission, RolePermission
-
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 pytestmark = pytest.mark.asyncio
 
@@ -209,6 +203,88 @@ class TestSessionManagement:
         sessions = resp.json()
         assert isinstance(sessions, list)
         assert len(sessions) >= 1
+        assert sessions[0]["client_type"] == "desktop"
+
+    async def test_desktop_login_replaces_previous_desktop_session(self, client, db_session, created_user):
+        first_login = await client.post(
+            LOGIN_URL,
+            json={
+                "email": "test@example.com",
+                "password": "SecurePassword123",
+            },
+        )
+        assert first_login.status_code == 200
+
+        second_login = await client.post(
+            LOGIN_URL,
+            json={
+                "email": "test@example.com",
+                "password": "SecurePassword123",
+            },
+        )
+        assert second_login.status_code == 200
+
+        token = second_login.json().get("access_token")
+        resp = await client.get(SESSIONS_URL, headers={"Authorization": f"Bearer {token}"})
+        assert resp.status_code == 200
+        sessions = resp.json()
+        assert len(sessions) == 1
+        assert sessions[0]["client_type"] == "desktop"
+
+    async def test_mobile_login_replaces_previous_mobile_session(self, client, db_session, created_user):
+        mobile_headers = {"X-DGIQ-Client-Type": "mobile"}
+        first_login = await client.post(
+            LOGIN_URL,
+            json={
+                "email": "test@example.com",
+                "password": "SecurePassword123",
+            },
+            headers=mobile_headers,
+        )
+        assert first_login.status_code == 200
+
+        second_login = await client.post(
+            LOGIN_URL,
+            json={
+                "email": "test@example.com",
+                "password": "SecurePassword123",
+            },
+            headers=mobile_headers,
+        )
+        assert second_login.status_code == 200
+
+        token = second_login.json().get("access_token")
+        resp = await client.get(SESSIONS_URL, headers={"Authorization": f"Bearer {token}"})
+        assert resp.status_code == 200
+        sessions = resp.json()
+        assert len(sessions) == 1
+        assert sessions[0]["client_type"] == "mobile"
+
+    async def test_desktop_and_mobile_sessions_can_coexist(self, client, db_session, created_user):
+        desktop_login = await client.post(
+            LOGIN_URL,
+            json={
+                "email": "test@example.com",
+                "password": "SecurePassword123",
+            },
+        )
+        assert desktop_login.status_code == 200
+
+        mobile_login = await client.post(
+            LOGIN_URL,
+            json={
+                "email": "test@example.com",
+                "password": "SecurePassword123",
+            },
+            headers={"X-DGIQ-Client-Type": "mobile"},
+        )
+        assert mobile_login.status_code == 200
+
+        token = mobile_login.json().get("access_token")
+        resp = await client.get(SESSIONS_URL, headers={"Authorization": f"Bearer {token}"})
+        assert resp.status_code == 200
+        sessions = resp.json()
+        assert sorted(session["client_type"] for session in sessions) == ["desktop", "mobile"]
 
 
 # ------------------------------------------------------------------

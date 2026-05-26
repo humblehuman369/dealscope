@@ -68,6 +68,29 @@ class SessionRepository:
         result = await db.execute(stmt)
         return result.rowcount  # type: ignore[return-value]
 
+    async def revoke_for_user_client_type(
+        self,
+        db: AsyncSession,
+        user_id: uuid.UUID,
+        client_type: str,
+        *,
+        except_session_id: uuid.UUID | None = None,
+    ) -> int:
+        """Revoke active sessions for one client slot, optionally keeping one."""
+        stmt = (
+            update(UserSession)
+            .where(
+                UserSession.user_id == user_id,
+                UserSession.client_type == client_type,
+                UserSession.is_revoked.is_(False),
+            )
+            .values(is_revoked=True)
+        )
+        if except_session_id:
+            stmt = stmt.where(UserSession.id != except_session_id)
+        result = await db.execute(stmt)
+        return result.rowcount  # type: ignore[return-value]
+
     async def list_active(self, db: AsyncSession, user_id: uuid.UUID) -> list[UserSession]:
         result = await db.execute(
             select(UserSession)

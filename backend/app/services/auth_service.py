@@ -280,6 +280,7 @@ class AuthService:
         ip_address: str | None = None,
         user_agent: str | None = None,
         device_name: str | None = None,
+        client_type: str | None = None,
         remember_me: bool = False,
     ) -> tuple[User, UserSession, str]:
         """Authenticate a user and create a session.
@@ -356,6 +357,7 @@ class AuthService:
             ip_address=ip_address,
             user_agent=user_agent,
             device_name=device_name,
+            client_type=client_type,
             remember_me=remember_me,
         )
 
@@ -384,6 +386,7 @@ class AuthService:
         ip_address: str | None = None,
         user_agent: str | None = None,
         device_name: str | None = None,
+        client_type: str | None = None,
         remember_me: bool = False,
     ) -> tuple[User, UserSession, str]:
         """Complete MFA login after a successful password check."""
@@ -418,6 +421,7 @@ class AuthService:
             ip_address=ip_address,
             user_agent=user_agent,
             device_name=device_name,
+            client_type=client_type,
             remember_me=remember_me,
         )
 
