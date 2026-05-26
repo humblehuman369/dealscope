@@ -2,7 +2,7 @@
 
 // DealGapIQ — Cash Buyer Directory (Pro members only)
 
-import { useState, useMemo, useRef, type CSSProperties, type ReactNode } from 'react';
+import { useState, useMemo, useRef, useEffect, type CSSProperties, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -26,6 +26,7 @@ const PREVIEW_CARDS = [
 
 const DEFAULT_STATES = ['FL', 'TX', 'GA', 'NC', 'TN', 'AZ', 'OH', 'IN'];
 const STRATEGIES = ['all', 'Fix & Flip', 'BRRRR', 'Buy & Hold', 'Wholesale'] as const;
+const PAGE_SIZE = 60;
 
 // Local county lookups keep the mock directory behaving like market search until
 // the backend exposes geocoded county metadata for each query.
@@ -160,7 +161,7 @@ function buyerCoversCounty(buyer: Buyer, county: string) {
   return buyer.coverage.some(coverageCounty => countyMatches(coverageCounty, county));
 }
 
-function getCountyForCity(cityName: string, state: string) {
+function getStaticCountyForCity(cityName: string, state: string) {
   const normalizedCity = normalizeSearchValue(cityName);
   if (!normalizedCity) return '';
 
@@ -176,7 +177,7 @@ function getCountyForCity(cityName: string, state: string) {
   return matchedCounties.length === 1 ? matchedCounties[0] : '';
 }
 
-function getCountyForZip(zipCode: string) {
+function getStaticCountyForZip(zipCode: string) {
   const zip = zipCode.trim();
   if (!zip) return '';
 
@@ -192,6 +193,52 @@ function getCountyForZip(zipCode: string) {
   }
 
   return '';
+}
+
+function getCountiesForCity(cityName: string, state: string, buyers: Buyer[]) {
+  const normalizedCity = normalizeSearchValue(cityName);
+  if (!normalizedCity) return [];
+
+  const counties = new Set<string>();
+  const staticCounty = getStaticCountyForCity(cityName, state);
+  if (staticCounty) counties.add(staticCounty);
+
+  buyers.forEach(buyer => {
+    if (state && buyer.state !== state) return;
+    const buyerCity = normalizeSearchValue(buyer.city);
+    if (!buyerCity) return;
+    if (buyerCity.includes(normalizedCity) || normalizedCity.includes(buyerCity)) {
+      buyer.coverage.forEach(county => counties.add(canonicalCountyName(county)));
+    }
+  });
+
+  return Array.from(counties).filter(Boolean);
+}
+
+function getCountiesForZip(zipCode: string, buyers: Buyer[]) {
+  const zip = zipCode.trim();
+  if (!zip) return { counties: [] as string[], state: '' };
+
+  const counties = new Set<string>();
+  const states = new Set<string>();
+  const staticCounty = getStaticCountyForZip(zip);
+  if (staticCounty) counties.add(staticCounty);
+
+  const matchingBuyers = buyers.filter(buyer => {
+    if (!buyer.zip) return false;
+    if (buyer.zip.startsWith(zip)) return true;
+    return zip.length >= 3 && buyer.zip.startsWith(zip.slice(0, 3));
+  });
+
+  matchingBuyers.forEach(buyer => {
+    if (buyer.state) states.add(buyer.state);
+    buyer.coverage.forEach(county => counties.add(canonicalCountyName(county)));
+  });
+
+  return {
+    counties: Array.from(counties).filter(Boolean),
+    state: states.size === 1 ? Array.from(states)[0] : '',
+  };
 }
 
 // =============================================================================
@@ -222,6 +269,7 @@ export default function BuyerDirectory() {
   const [strategyFilter, setStrategyFilter] = useState<StrategyFilter>('all');
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const printAreaRef = useRef<HTMLDivElement>(null);
 
@@ -250,6 +298,10 @@ export default function BuyerDirectory() {
     setSelected(new Set());
   };
 
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [appliedSearch, strategyFilter]);
+
   const filtered = useMemo(() => {
     const { mode, city: activeCity, stateCode: activeState, county: activeCounty, zip: activeZip } =
       appliedSearch;
@@ -257,22 +309,24 @@ export default function BuyerDirectory() {
       if (strategyFilter !== 'all' && !b.strategies.includes(strategyFilter)) return false;
       if (mode === 'city') {
         const q = normalizeSearchValue(activeCity);
-        const resolvedCounty = getCountyForCity(activeCity, activeState);
+        const resolvedCounties = getCountiesForCity(activeCity, activeState, buyers);
         if (q && !normalizeSearchValue(b.city).includes(q) &&
             !b.coverage.some(c => countyMatches(c, activeCity)) &&
-            (!resolvedCounty || !buyerCoversCounty(b, resolvedCounty))) return false;
+            !resolvedCounties.some(resolvedCounty => buyerCoversCounty(b, resolvedCounty))) return false;
         if (activeState && b.state !== activeState) return false;
       } else if (mode === 'county') {
         if (activeCounty && !buyerCoversCounty(b, activeCounty)) return false;
       } else if (mode === 'zip') {
-        const resolvedCounty = getCountyForZip(activeZip);
+        const resolved = getCountiesForZip(activeZip, buyers);
         if (activeZip && !b.zip.startsWith(activeZip) &&
-            (!resolvedCounty || !buyerCoversCounty(b, resolvedCounty))) return false;
+            !resolved.counties.some(resolvedCounty => buyerCoversCounty(b, resolvedCounty))) return false;
+        if (resolved.state && b.state !== resolved.state) return false;
       }
       return true;
     });
   }, [appliedSearch, buyers, strategyFilter]);
 
+  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const selectedBuyers = buyers.filter(b => selected.has(b.id));
 
   const displayCount = hasPaidAccess ? filtered.length : PREVIEW_BUYER_COUNT;
@@ -560,11 +614,26 @@ export default function BuyerDirectory() {
             {hasPaidAccess && buyersErrored && (
               <div style={styles.emptyState}>Could not load buyer directory. Refresh and try again.</div>
             )}
-            {hasPaidAccess && !buyersLoading && !buyersErrored && filtered.map(b => (
+            {hasPaidAccess && !buyersLoading && !buyersErrored && filtered.length === 0 && (
+              <div style={styles.emptyState}>No buyers found. Try a nearby city, county, or zip code.</div>
+            )}
+            {hasPaidAccess && !buyersLoading && !buyersErrored && visible.map(b => (
               <BuyerCard key={b.id} buyer={b} selected={selected.has(b.id)} onToggle={() => toggleSelect(b.id)} />
             ))}
             {!hasPaidAccess && <PreviewBuyerCards />}
           </div>
+          {hasPaidAccess && !buyersLoading && !buyersErrored && visibleCount < filtered.length && (
+            <div style={styles.loadMoreWrap}>
+              <button
+                type="button"
+                onClick={() => setVisibleCount(count => count + PAGE_SIZE)}
+                className="dgiq-btn-press"
+                style={styles.loadMoreBtn}
+              >
+                Load more buyers ({Math.min(visibleCount, filtered.length)} of {filtered.length})
+              </button>
+            </div>
+          )}
 
           {/* Pro upgrade overlay */}
           {!subscriptionLoading && !hasPaidAccess && (
@@ -948,6 +1017,22 @@ const styles = {
     color: '#9ca3af',
     fontSize: 14,
     textAlign: 'center',
+  },
+  loadMoreWrap: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  loadMoreBtn: {
+    background: 'transparent',
+    color: '#0EA5E9',
+    border: '1px solid rgba(14, 165, 233, 0.35)',
+    borderRadius: 9,
+    padding: '10px 18px',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    fontSize: 13,
+    fontWeight: 700,
   },
   gateWrap: {
     position: 'absolute', inset: 0,

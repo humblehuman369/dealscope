@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockUseSubscription = vi.fn()
@@ -107,14 +107,79 @@ describe('BuyerDirectory paid access', () => {
           response: '< 24h',
           strategies: ['Fix & Flip', 'BRRRR'],
         },
+        {
+          id: 2,
+          initials: 'CB',
+          accent: '#A78BFA',
+          company: 'Countywide Buyer',
+          owner: 'Casey Buyer',
+          street: '1 Main St',
+          city: 'Brandon',
+          state: 'FL',
+          zip: '33511',
+          phone: '(813) 555-0100',
+          email: 'casey@example.com',
+          website: 'countywide.example',
+          coverage: ['Hillsborough'],
+          description: 'Buys throughout Hillsborough County.',
+          deals: 20,
+          years: 4,
+          response: '< 24h',
+          strategies: ['Buy & Hold'],
+        },
       ],
     })
 
     renderDirectory()
 
     await waitFor(() => expect(screen.getByText('Revival Home Buyer')).toBeTruthy())
+    expect(screen.getByText('Countywide Buyer')).toBeTruthy()
     expect(screen.getByText('(813) 548-3674')).toBeTruthy()
     expect(screen.queryByText('Cash Buyer Directory requires paid Pro')).toBeNull()
     expect(mockApiGet).toHaveBeenCalledWith('/api/v1/buyer-directory')
+  })
+
+  it('supports county suffix searches for paid users', async () => {
+    mockUseSubscription.mockReturnValue({
+      isPaidPro: true,
+      isTrialing: false,
+      isAuthenticated: true,
+      isLoading: false,
+    })
+    mockApiGet.mockResolvedValue({
+      buyers: [
+        {
+          id: 1,
+          initials: 'JB',
+          accent: '#0EA5E9',
+          company: 'Jefferson Buyer',
+          owner: 'Jess Buyer',
+          street: '790 Montclair Rd',
+          city: 'Birmingham',
+          state: 'AL',
+          zip: '35213',
+          phone: '(205) 555-0100',
+          email: 'buyer@example.com',
+          website: 'buyer.example',
+          coverage: ['Jefferson'],
+          description: 'Buys throughout Jefferson County.',
+          deals: 12,
+          years: 3,
+          response: '24 hours',
+          strategies: ['Wholesale'],
+        },
+      ],
+    })
+
+    renderDirectory()
+    await waitFor(() => expect(mockApiGet).toHaveBeenCalledWith('/api/v1/buyer-directory'))
+
+    fireEvent.click(screen.getByRole('button', { name: 'County' }))
+    fireEvent.change(screen.getByPlaceholderText('Hillsborough, Broward, Palm Beach...'), {
+      target: { value: 'Jefferson County' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /search/i }))
+
+    expect(await screen.findByText('Jefferson Buyer')).toBeTruthy()
   })
 })
