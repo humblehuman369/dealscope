@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import Coroutine
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlencode, urlparse
 
@@ -80,8 +81,22 @@ def _client_ip(request: Request) -> str | None:
     return request.client.host if request.client else None
 
 
-def _set_auth_cookies(response: Response, session_token: str, refresh_token: str, access_jwt: str) -> None:
+def _session_cookie_max_age(session_expires_at: datetime) -> int:
+    now = datetime.now(UTC)
+    if session_expires_at.tzinfo is None:
+        now = now.replace(tzinfo=None)
+    return max(0, int((session_expires_at - now).total_seconds()))
+
+
+def _set_auth_cookies(
+    response: Response,
+    session_token: str,
+    refresh_token: str,
+    access_jwt: str,
+    session_expires_at: datetime,
+) -> None:
     """Set httpOnly auth cookies on the response."""
+    session_max_age = _session_cookie_max_age(session_expires_at)
     cookie_kwargs = dict(
         httponly=True,
         secure=settings.COOKIE_SECURE,
@@ -95,11 +110,9 @@ def _set_auth_cookies(response: Response, session_token: str, refresh_token: str
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         **cookie_kwargs,
     )
+    response.set_cookie(key="refresh_token", value=refresh_token, max_age=session_max_age, **cookie_kwargs)
     response.set_cookie(
-        key="refresh_token", value=refresh_token, max_age=86400 * settings.REFRESH_TOKEN_EXPIRE_DAYS, **cookie_kwargs
-    )
-    response.set_cookie(
-        key="session_token", value=session_token, max_age=86400 * settings.REFRESH_TOKEN_EXPIRE_DAYS, **cookie_kwargs
+        key="session_token", value=session_token, max_age=session_max_age, **cookie_kwargs
     )
 
 
@@ -128,15 +141,12 @@ async def _check_new_device_and_notify(
             ip_address=ip_address,
         )
         if not known:
-            from datetime import UTC
-            from datetime import datetime as _dt
-
             await email_service.send_new_device_login_email(
                 to=user.email,
                 user_name=user.full_name or user.email,
                 device_info=user_agent or "Unknown device",
                 ip_address=ip_address,
-                login_time=_dt.now(UTC).strftime("%B %d, %Y at %I:%M %p UTC"),
+                login_time=datetime.now(UTC).strftime("%B %d, %Y at %I:%M %p UTC"),
             )
     except Exception as exc:
         logger.warning("New-device login email failed: %s", exc)
@@ -277,7 +287,13 @@ async def register(body: UserRegister, request: Request, response: Response, db:
         user_agent=request.headers.get("User-Agent"),
     )
     await db.commit()
-    _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
+    _set_auth_cookies(
+        response,
+        session_obj.session_token,
+        session_obj.refresh_token,
+        jwt_token,
+        session_obj.expires_at,
+    )
     user_resp = await _build_user_response(db, user)
     return RegisterResponse(
         message="Registration successful. You are now signed in.",
@@ -588,7 +604,13 @@ async def google_callback(request: Request, response: Response, db: DbSession):
         return _mobile_success_redirect(mobile_redirect, mobile_code)
 
     redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
-    _set_auth_cookies(redirect_to, session_obj.session_token, session_obj.refresh_token, jwt_token)
+    _set_auth_cookies(
+        redirect_to,
+        session_obj.session_token,
+        session_obj.refresh_token,
+        jwt_token,
+        session_obj.expires_at,
+    )
     return redirect_to
 
 
@@ -790,7 +812,13 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
         return _mobile_success_redirect(mobile_redirect, mobile_code)
 
     redirect_to = RedirectResponse(url=settings.FRONTEND_URL, status_code=302)
-    _set_auth_cookies(redirect_to, session_obj.session_token, session_obj.refresh_token, jwt_token)
+    _set_auth_cookies(
+        redirect_to,
+        session_obj.session_token,
+        session_obj.refresh_token,
+        jwt_token,
+        session_obj.expires_at,
+    )
     return redirect_to
 
 
@@ -822,7 +850,13 @@ async def login(body: UserLogin, request: Request, response: Response, db: DbSes
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
-    _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
+    _set_auth_cookies(
+        response,
+        session_obj.session_token,
+        session_obj.refresh_token,
+        jwt_token,
+        session_obj.expires_at,
+    )
 
     await _check_new_device_and_notify(
         db,
@@ -856,7 +890,13 @@ async def login_mfa(body: MFAVerifyRequest, request: Request, response: Response
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
-    _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
+    _set_auth_cookies(
+        response,
+        session_obj.session_token,
+        session_obj.refresh_token,
+        jwt_token,
+        session_obj.expires_at,
+    )
 
     await _check_new_device_and_notify(
         db,
@@ -894,7 +934,13 @@ async def refresh_token(request: Request, response: Response, db: DbSession, bod
 
     session_obj, new_jwt, new_refresh = result
     await db.commit()
-    _set_auth_cookies(response, session_obj.session_token, new_refresh, new_jwt)
+    _set_auth_cookies(
+        response,
+        session_obj.session_token,
+        new_refresh,
+        new_jwt,
+        session_obj.expires_at,
+    )
 
     return TokenResponse(
         access_token=new_jwt,
@@ -1180,5 +1226,11 @@ async def login_form(request: Request, response: Response, db: DbSession):
     except (AuthError, MFARequired) as e:
         raise HTTPException(status_code=401, detail=str(e))
 
-    _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
+    _set_auth_cookies(
+        response,
+        session_obj.session_token,
+        session_obj.refresh_token,
+        jwt_token,
+        session_obj.expires_at,
+    )
     return {"access_token": jwt_token, "token_type": "bearer"}

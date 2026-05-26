@@ -111,7 +111,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # Access token lifetime; session row is the authority for revocation
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 36500  # Effectively permanent until explicit logout or revocation
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 36500  # Legacy env var; session cookies follow SESSION_DEFAULT_DAYS
 
     # ===========================================
     # Cookie Settings (for httpOnly auth cookies)
@@ -127,7 +127,7 @@ class Settings(BaseSettings):
     # Session settings
     # ===========================================
     SESSION_DEFAULT_DAYS: int = 36500  # ~100 years — session lives until logout or revocation
-    SESSION_REMEMBER_ME_DAYS: int = 36500
+    SESSION_REMEMBER_ME_DAYS: int = 36500  # Legacy env var; remember_me no longer changes lifetime
 
     # ===========================================
     # Account lockout
@@ -375,8 +375,8 @@ def validate_settings(settings: Settings) -> None:
                     object.__setattr__(settings, "MFA_ENCRYPTION_KEY", _F.generate_key().decode())
                 except ImportError:
                     # Fallback to 44-char random if cryptography not installed (tests)
-                    import secrets as _s
                     import base64 as _b64
+                    import secrets as _s
 
                     raw = _s.token_bytes(32)
                     object.__setattr__(settings, "MFA_ENCRYPTION_KEY", _b64.urlsafe_b64encode(raw).decode())

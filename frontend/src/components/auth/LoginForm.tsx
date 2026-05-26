@@ -23,7 +23,6 @@ export default function LoginForm({
   const [error, setError] = useState('')
   const [mfaChallenge, setMfaChallenge] = useState<string | null>(null)
   const [mfaCode, setMfaCode] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
 
   const loginMutation = useLogin()
   const mfaMutation = useLoginMfa()
@@ -43,7 +42,6 @@ export default function LoginForm({
       const result = await loginMutation.mutateAsync({
         email: data.email,
         password: data.password,
-        rememberMe,
       })
       if ('mfa_required' in result && result.mfa_required) {
         setMfaChallenge((result as MFAChallengeResponse).challenge_token)
@@ -62,7 +60,6 @@ export default function LoginForm({
       await mfaMutation.mutateAsync({
         challengeToken: mfaChallenge,
         totpCode: mfaCode,
-        rememberMe,
       })
       onSuccess?.()
     } catch (err: any) {
@@ -220,21 +217,9 @@ export default function LoginForm({
         {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>}
       </div>
 
-      {/* Remember me + Forgot password */}
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            className="w-4 h-4 rounded text-brand-500 focus:ring-brand-500"
-            style={{ backgroundColor: '#103351', borderColor: '#15446c' }}
-          />
-          <span className="text-sm" style={{ color: '#94A3B8' }}>
-            Remember me
-          </span>
-        </label>
-        {onForgotPassword && (
+      {/* Forgot password */}
+      {onForgotPassword && (
+        <div className="flex justify-end">
           <button
             type="button"
             onClick={onForgotPassword}
@@ -243,8 +228,8 @@ export default function LoginForm({
           >
             Forgot password?
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Submit */}
       <button

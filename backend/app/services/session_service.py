@@ -41,6 +41,10 @@ def _generate_opaque_token() -> str:
 class SessionService:
     """Manages the lifecycle of server-side user sessions."""
 
+    @staticmethod
+    def _persistent_expires_at() -> datetime:
+        return datetime.now(UTC) + timedelta(days=settings.SESSION_DEFAULT_DAYS)
+
     async def create_session(
         self,
         db: AsyncSession,
@@ -55,8 +59,9 @@ class SessionService:
 
         The caller is responsible for committing the transaction.
         """
-        lifetime_days = settings.SESSION_REMEMBER_ME_DAYS if remember_me else settings.SESSION_DEFAULT_DAYS
-        lifetime = timedelta(days=lifetime_days)
+        # Keep API compatibility with older clients that still send remember_me,
+        # but all sessions now persist until explicit logout/revocation.
+        _ = remember_me
 
         session_obj = await session_repo.create(
             db,
@@ -66,7 +71,7 @@ class SessionService:
             ip_address=ip_address,
             user_agent=user_agent,
             device_name=device_name,
-            expires_at=datetime.now(UTC) + lifetime,
+            expires_at=self._persistent_expires_at(),
         )
 
         access_jwt = token_service.create_jwt(user_id, session_obj.id)
@@ -87,8 +92,6 @@ class SessionService:
         Returns ``(session, new_jwt, new_refresh_token)`` or ``None``.
         """
         from sqlalchemy import select
-        from sqlalchemy.orm import with_for_update
-
         # Lock the row for the duration of the transaction
         stmt = (
             select(UserSession)
@@ -103,13 +106,16 @@ class SessionService:
 
         if session_obj is None:
             return None
-        if session_obj.expires_at < datetime.now(UTC):
-            await session_repo.revoke(db, session_obj.id)
-            return None
-
-        # Rotate the refresh token (old one is now invalid)
+        # Rotate the refresh token and extend legacy short-lived sessions.
         new_refresh = _generate_opaque_token()
-        await session_repo.update_refresh_token(db, session_obj.id, new_refresh)
+        new_expires_at = self._persistent_expires_at()
+        session_obj.expires_at = new_expires_at
+        await session_repo.update_refresh_token(
+            db,
+            session_obj.id,
+            new_refresh,
+            expires_at=new_expires_at,
+        )
 
         new_jwt = token_service.create_jwt(session_obj.user_id, session_obj.id)
         return session_obj, new_jwt, new_refresh
@@ -139,15 +145,15 @@ class SessionService:
         session_obj = await session_repo.get_by_id(db, sid)
         if session_obj is None or session_obj.is_revoked:
             return None
-        if session_obj.expires_at < datetime.now(UTC):
-            return None
 
         # Verify user_id matches
         if str(session_obj.user_id) != payload.get("sub"):
             return None
 
-        # Touch last_active_at
-        await session_repo.touch(db, session_obj.id)
+        # Touch last_active_at and extend legacy short-lived sessions while they remain valid.
+        new_expires_at = self._persistent_expires_at()
+        session_obj.expires_at = new_expires_at
+        await session_repo.touch(db, session_obj.id, expires_at=new_expires_at)
         return session_obj
 
     async def revoke_session(

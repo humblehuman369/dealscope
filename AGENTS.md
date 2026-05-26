@@ -48,7 +48,7 @@ The original monolithic `dealMakerStore` has been decomposed:
 - `retryLastSave()` and `revertToLastGood()` are exposed for recovery UI.
 
 ### Session / Auth
-- `useSession()` — React Query + localStorage indicator (8h TTL).
+- `useSession()` — React Query + localStorage indicator; session ends on logout/revocation.
 - Tokens are HTTP-only cookies (web) or memory (Capacitor).
 
 ---

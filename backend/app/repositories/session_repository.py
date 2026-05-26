@@ -74,31 +74,42 @@ class SessionRepository:
             .where(
                 UserSession.user_id == user_id,
                 UserSession.is_revoked.is_(False),
-                UserSession.expires_at > datetime.now(UTC),
             )
             .order_by(UserSession.last_active_at.desc())
         )
         return list(result.scalars().all())
 
-    async def touch(self, db: AsyncSession, session_id: uuid.UUID) -> None:
+    async def touch(
+        self,
+        db: AsyncSession,
+        session_id: uuid.UUID,
+        *,
+        expires_at: datetime | None = None,
+    ) -> None:
         """Update last_active_at to now."""
-        await db.execute(
-            update(UserSession).where(UserSession.id == session_id).values(last_active_at=datetime.now(UTC))
-        )
+        values: dict[str, datetime] = {"last_active_at": datetime.now(UTC)}
+        if expires_at is not None:
+            values["expires_at"] = expires_at
+        await db.execute(update(UserSession).where(UserSession.id == session_id).values(**values))
 
     async def update_refresh_token(
         self,
         db: AsyncSession,
         session_id: uuid.UUID,
         new_refresh_token: str,
+        *,
+        expires_at: datetime | None = None,
     ) -> None:
+        values: dict[str, datetime | str] = {
+            "refresh_token": new_refresh_token,
+            "last_active_at": datetime.now(UTC),
+        }
+        if expires_at is not None:
+            values["expires_at"] = expires_at
         await db.execute(
             update(UserSession)
             .where(UserSession.id == session_id)
-            .values(
-                refresh_token=new_refresh_token,
-                last_active_at=datetime.now(UTC),
-            )
+            .values(**values)
         )
 
     async def has_matching_session(
@@ -133,11 +144,8 @@ class SessionRepository:
         return result.scalar_one_or_none() is not None
 
     async def delete_expired(self, db: AsyncSession) -> int:
-        """Remove sessions that are either expired or revoked for > 30 days."""
-        cutoff = datetime.now(UTC)
-        result = await db.execute(
-            delete(UserSession).where((UserSession.expires_at < cutoff) | (UserSession.is_revoked.is_(True)))
-        )
+        """Remove revoked sessions. Active sessions persist until explicit logout/revocation."""
+        result = await db.execute(delete(UserSession).where(UserSession.is_revoked.is_(True)))
         return result.rowcount  # type: ignore[return-value]
 
 
