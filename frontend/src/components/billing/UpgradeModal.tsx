@@ -41,6 +41,8 @@ interface UpgradeModalProps {
    * pass their own toggle state so the modal mirrors the user's selection.
    */
   initialAnnual?: boolean
+  /** Paid-only features skip the 7-day trial so access can activate immediately. */
+  paidOnlyFeature?: string
 }
 
 function pickRCPackage(packages: RCPackage[], annual: boolean): RCPackage | undefined {
@@ -60,6 +62,7 @@ export function UpgradeModal({
   onClose,
   returnTo,
   initialAnnual = true,
+  paidOnlyFeature,
 }: UpgradeModalProps) {
   const router = useRouter()
   const [annual, setAnnual] = useState(initialAnnual)
@@ -68,6 +71,7 @@ export function UpgradeModal({
   const [error, setError] = useState<string | null>(null)
 
   const rc = useRevenueCat()
+  const isPaidOnly = !!paidOnlyFeature
 
   // Mirror the caller's billing selection every time the modal opens. Without
   // this, a user who toggles to "Monthly" on the pricing page would still see
@@ -147,10 +151,12 @@ export function UpgradeModal({
         success_url: successUrl,
         cancel_url: cancelUrl,
         return_to: returnTo ?? undefined,
+        skip_trial: isPaidOnly,
       })
       trackEvent('checkout_started', {
-        source: 'upgrade_modal',
+        source: isPaidOnly ? 'paid_only_upgrade_modal' : 'upgrade_modal',
         plan: annual ? 'yearly' : 'monthly',
+        paid_only_feature: paidOnlyFeature,
       })
       window.location.href = checkout_url
     } catch (e: unknown) {
@@ -159,7 +165,7 @@ export function UpgradeModal({
     } finally {
       setLoading(false)
     }
-  }, [annual, proPlan, returnTo, rcPkg, rc, onClose, router])
+  }, [annual, proPlan, returnTo, rcPkg, rc, onClose, router, isPaidOnly, paidOnlyFeature])
 
   if (!isOpen) return null
 
@@ -182,7 +188,7 @@ export function UpgradeModal({
       >
         <div className="flex items-center justify-between px-6 pt-6 pb-2">
           <h2 className="text-xl font-bold" style={{ color: '#f1f5f9' }}>
-            Upgrade to Pro
+            {isPaidOnly ? 'Start Paid Pro' : 'Upgrade to Pro'}
           </h2>
           <button
             type="button"
@@ -194,7 +200,9 @@ export function UpgradeModal({
           </button>
         </div>
         <p className="px-6 pb-4 text-sm" style={{ color: '#94a3b8' }}>
-          7-day free trial. Cancel anytime.
+          {isPaidOnly
+            ? `${paidOnlyFeature} requires a paid Pro subscription. Billing starts today.`
+            : '7-day free trial. Cancel anytime.'}
         </p>
 
         {/* Billing toggle */}
@@ -333,7 +341,7 @@ export function UpgradeModal({
               ) : (
                 <>
                   <Check size={18} />
-                  Start 7-day free trial
+                  {isPaidOnly ? 'Start paid Pro now' : 'Start 7-day free trial'}
                 </>
               )}
             </button>
@@ -388,17 +396,17 @@ export function UpgradeModal({
                   className="text-[10px] leading-snug text-center mt-1"
                   style={{ color: '#64748b' }}
                 >
-                  After your 7-day free trial, your {accountName} account will be charged{' '}
-                  {fullPrice}/{period}. Subscription automatically renews each {period} at the same
-                  price unless canceled{cancelWindow} the end of the current period. Manage or
-                  cancel anytime in your {settingsName} subscription settings.
+                  {isPaidOnly ? 'Your' : 'After your 7-day free trial, your'} {accountName} account
+                  will be charged {fullPrice}/{period}. Subscription automatically renews each{' '}
+                  {period} at the same price unless canceled{cancelWindow} the end of the current
+                  period. Manage or cancel anytime in your {settingsName} subscription settings.
                 </p>
               )
             })()}
           {IS_ANDROID && (
             <p className="text-[10px] leading-snug text-center" style={{ color: '#64748b' }}>
-              Subscriptions are billed through Google Play. By tapping &ldquo;Start 7-day free
-              trial&rdquo; you agree to the{' '}
+              Subscriptions are billed through Google Play. By tapping &ldquo;
+              {isPaidOnly ? 'Start paid Pro now' : 'Start 7-day free trial'}&rdquo; you agree to the{' '}
               <a
                 href="https://dealgapiq.com/terms"
                 target="_blank"

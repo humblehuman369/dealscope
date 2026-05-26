@@ -246,6 +246,23 @@ async def get_current_pro_user(
     )
 
 
+async def get_current_paid_pro_user(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """Require an active paid Pro subscription; trials do not qualify."""
+    from app.models.subscription import SubscriptionStatus
+    from app.services.billing_service import billing_service
+
+    subscription = await billing_service.get_subscription(db, current_user.id)
+    if subscription and subscription.is_premium() and subscription.status == SubscriptionStatus.ACTIVE:
+        return current_user
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="This feature requires a paid Pro subscription. Trial access is not included.",
+    )
+
+
 # ------------------------------------------------------------------
 # Type aliases for cleaner route signatures
 # ------------------------------------------------------------------
@@ -257,3 +274,4 @@ SuperUser = Annotated[User, Depends(get_current_superuser)]
 CurrentSession = Annotated[UserSession, Depends(get_current_session)]
 DbSession = Annotated[AsyncSession, Depends(get_db)]
 ProUser = Annotated[User, Depends(get_current_pro_user)]
+PaidProUser = Annotated[User, Depends(get_current_paid_pro_user)]

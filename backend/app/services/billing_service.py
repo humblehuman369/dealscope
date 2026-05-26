@@ -549,8 +549,9 @@ class BillingService:
         success_url: str | None = None,
         cancel_url: str | None = None,
         return_to: str | None = None,
+        skip_trial: bool = False,
     ) -> CheckoutSessionResponse:
-        """Create Stripe checkout session with 7-day trial.
+        """Create Stripe checkout session.
 
         Accepts either a price_id or a lookup_key to resolve the price.
         """
@@ -596,6 +597,47 @@ class BillingService:
             session_metadata["return_to"] = safe_rt
             sub_metadata["return_to"] = safe_rt
 
+        existing_subscription = await self.get_subscription(db, user.id)
+        if (
+            skip_trial
+            and existing_subscription
+            and existing_subscription.tier == SubscriptionTier.PRO
+            and existing_subscription.status == SubscriptionStatus.TRIALING
+            and existing_subscription.stripe_subscription_id
+        ):
+            updated = stripe.Subscription.modify(
+                existing_subscription.stripe_subscription_id,
+                trial_end="now",
+            )
+            existing_subscription.status = SubscriptionStatus.ACTIVE
+            existing_subscription.trial_end = datetime.now(UTC)
+            if updated.get("current_period_start"):
+                existing_subscription.current_period_start = datetime.fromtimestamp(
+                    updated["current_period_start"],
+                    tz=UTC,
+                )
+            if updated.get("current_period_end"):
+                existing_subscription.current_period_end = datetime.fromtimestamp(
+                    updated["current_period_end"],
+                    tz=UTC,
+                )
+            existing_subscription.updated_at = datetime.now(UTC)
+            await db.commit()
+            await db.refresh(existing_subscription)
+            logger.info(
+                "Ended trial immediately for user %s subscription %s",
+                user.id,
+                existing_subscription.stripe_subscription_id,
+            )
+            return CheckoutSessionResponse(
+                checkout_url=success_url,
+                session_id=f"{existing_subscription.stripe_subscription_id}_paid_now",
+            )
+
+        subscription_data: dict[str, Any] = {"metadata": sub_metadata}
+        if not skip_trial:
+            subscription_data["trial_period_days"] = 7
+
         session = stripe.checkout.Session.create(
             customer=customer_id,
             mode="subscription",
@@ -604,14 +646,16 @@ class BillingService:
             success_url=success_url + sep + "session_id={CHECKOUT_SESSION_ID}",
             cancel_url=cancel_url,
             metadata=session_metadata,
-            subscription_data={
-                "trial_period_days": 7,
-                "metadata": sub_metadata,
-            },
+            subscription_data=subscription_data,
             allow_promotion_codes=True,
         )
 
-        logger.info("Created checkout session %s for user %s (7-day trial)", session.id, user.id)
+        logger.info(
+            "Created checkout session %s for user %s (%s)",
+            session.id,
+            user.id,
+            "paid immediately" if skip_trial else "7-day trial",
+        )
 
         return CheckoutSessionResponse(
             checkout_url=session.url,

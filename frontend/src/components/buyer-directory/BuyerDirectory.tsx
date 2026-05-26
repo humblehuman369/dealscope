@@ -4,77 +4,24 @@
 
 import { useState, useMemo, useRef, type CSSProperties, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
+import { api } from '@/lib/api-client';
+import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import {
   Search, MapPin, Phone, Mail, Globe, Lock, CheckCircle2,
-  Sparkles, Filter, Printer, FileSpreadsheet, X,
+  Sparkles, Filter, Printer, FileSpreadsheet,
 } from 'lucide-react';
 
 // -----------------------------------------------------------------------------
-// MOCK DATA — replace with fetch('/api/buyers').then(...) when backend is ready
+// Safe preview metadata only. Full buyer records are fetched from the paid API.
 // -----------------------------------------------------------------------------
 
-const BUYERS = [
-  { id: 1, initials: 'DD', accent: '#0EA5E9', company: 'Revival Home Buyer', owner: 'Daniel Di Bartolomeo',
-    street: '4830 W Kennedy Blvd, Suite 600', city: 'Tampa', state: 'FL', zip: '33609',
-    phone: '(813) 548-3674', email: 'info@revivalhomebuyer.com', website: 'revivalhomebuyer.com',
-    coverage: ['Hillsborough', 'Pinellas', 'Pasco', 'Polk', 'Manatee'],
-    description: 'Family-run fix-and-flip operator serving Tampa Bay since 2017. Closes in 7-14 days, buys properties in any condition including hoarder homes and code violations.',
-    deals: 184, years: 8, response: '< 24h', strategies: ['Fix & Flip', 'BRRRR'] },
-  { id: 2, initials: 'OR', accent: '#A78BFA', company: 'Florida Cash Home Buyers', owner: 'Omer Reiner',
-    street: '1925 NW 35th St', city: 'Miami', state: 'FL', zip: '33142',
-    phone: '(954) 519-7040', email: 'omer@floridacashhomebuyers.com', website: 'floridacashhomebuyers.com',
-    coverage: ['Miami-Dade', 'Broward', 'Palm Beach', 'Hillsborough', 'Orange', 'Duval'],
-    description: 'Statewide buyer with 15+ years in Florida. Specializes in distressed inheritances, divorce sales, and pre-foreclosure properties.',
-    deals: 412, years: 15, response: '< 12h', strategies: ['Fix & Flip', 'Buy & Hold', 'Wholesale'] },
-  { id: 3, initials: 'RC', accent: '#0EA5E9', company: 'Hello Reeve', owner: 'Reeve Conyngham',
-    street: '1700 N Federal Hwy', city: 'Boca Raton', state: 'FL', zip: '33432',
-    phone: '(561) 220-1212', email: 'reeve@helloreeve.com', website: 'helloreeve.com',
-    coverage: ['Palm Beach', 'Broward', 'Martin', 'St. Lucie'],
-    description: 'Solo operator focused on luxury distressed and probate properties on the Treasure Coast. Direct decision-maker, no middlemen.',
-    deals: 67, years: 6, response: '< 6h', strategies: ['Fix & Flip'] },
-  { id: 4, initials: 'MT', accent: '#FACC15', company: 'Liberty House Buying Group', owner: 'Marcus Thompson',
-    street: '2870 Peachtree Rd NW #501', city: 'Jacksonville', state: 'FL', zip: '32202',
-    phone: '(904) 580-2244', email: 'deals@libertyhousebuyinggroup.com', website: 'libertyhousebuyinggroup.com',
-    coverage: ['Duval', 'St. Johns', 'Clay', 'Nassau'],
-    description: 'North Florida specialist. Buys 8-12 properties per month across Jacksonville metro. Wholesaler-friendly with assignable contracts.',
-    deals: 138, years: 9, response: '< 24h', strategies: ['Fix & Flip', 'Wholesale', 'Buy & Hold'] },
-  { id: 5, initials: 'CM', accent: '#0EA5E9', company: 'Cornerstone Home Buyers', owner: 'Linda & Carlos Mendez',
-    street: '500 W Cypress Creek Rd', city: 'Fort Lauderdale', state: 'FL', zip: '33309',
-    phone: '(954) 633-7195', email: 'offers@cornerstonehomebuyers.com', website: 'cornerstonehomebuyers.com',
-    coverage: ['Broward', 'Miami-Dade'],
-    description: 'Husband-wife team with construction background. Tackles heavy rehabs others pass on — fire damage, foundation issues, full gut jobs.',
-    deals: 92, years: 7, response: '< 24h', strategies: ['Fix & Flip'] },
-  { id: 6, initials: 'BL', accent: '#A78BFA', company: 'Sell To Bobby', owner: 'Bobby Larsen',
-    street: '4040 Sheridan St', city: 'Hollywood', state: 'FL', zip: '33021',
-    phone: '(954) 248-9928', email: 'bobby@selltobobby.com', website: 'selltobobby.com',
-    coverage: ['Broward', 'Miami-Dade', 'Palm Beach'],
-    description: 'Independent investor since 2013. Personally inspects every property. Strong reputation in South Florida wholesale community.',
-    deals: 76, years: 12, response: '< 12h', strategies: ['Fix & Flip', 'Buy & Hold'] },
-  { id: 7, initials: 'JP', accent: '#0EA5E9', company: 'Central Florida House Buyers', owner: 'Jason Patel',
-    street: '801 N Magnolia Ave', city: 'Orlando', state: 'FL', zip: '32803',
-    phone: '(407) 535-0202', email: 'jason@cfhousebuyers.com', website: 'cfhousebuyers.com',
-    coverage: ['Orange', 'Seminole', 'Osceola', 'Lake', 'Volusia'],
-    description: 'Orlando metro fix-and-flipper with strong contractor crew. Targets 1980s-2000s suburban properties needing cosmetic-to-medium rehabs.',
-    deals: 156, years: 10, response: '< 24h', strategies: ['Fix & Flip', 'BRRRR'] },
-  { id: 8, initials: 'SW', accent: '#FACC15', company: 'Optimal Home Buyers', owner: 'Sarah Whitmore',
-    street: '1700 W Hibiscus Blvd', city: 'Melbourne', state: 'FL', zip: '32901',
-    phone: '(321) 209-1551', email: 'sarah@optimalhomebuyers.net', website: 'optimalhomebuyers.net',
-    coverage: ['Brevard', 'Indian River', 'Orange'],
-    description: 'Space Coast specialist. Buys mobile homes, condos, and SFR. Cash within 7 days, handles existing tenant situations.',
-    deals: 58, years: 5, response: '< 24h', strategies: ['Buy & Hold', 'Fix & Flip'] },
-  { id: 9, initials: 'EV', accent: '#0EA5E9', company: 'Priority Home Buyers', owner: 'Eric Vance',
-    street: '601 N Ashley Dr', city: 'Tampa', state: 'FL', zip: '33602',
-    phone: '(727) 287-8888', email: 'eric@priorityhomebuyers.com', website: 'priorityhomebuyers.com',
-    coverage: ['Hillsborough', 'Pinellas', 'Pasco'],
-    description: 'Tampa Bay operator focused on quick-close situations. Probate, divorce, relocations. Looks at every deal within 24 hours.',
-    deals: 103, years: 8, response: '< 6h', strategies: ['Fix & Flip', 'Wholesale'] },
-  { id: 10, initials: 'DG', accent: '#A78BFA', company: 'South Florida Cash Home Buyers', owner: 'David Goldman',
-    street: '633 NE 167th St #911', city: 'North Miami Beach', state: 'FL', zip: '33162',
-    phone: '(305) 985-3134', email: 'david@southfloridacashhomebuyers.com', website: 'southfloridacashhomebuyers.com',
-    coverage: ['Miami-Dade', 'Broward'],
-    description: 'Tri-county buyer with deep contractor network. Strong in oceanfront and older Miami neighborhoods. Handles title issues and liens in-house.',
-    deals: 119, years: 11, response: '< 12h', strategies: ['Fix & Flip', 'BRRRR', 'Buy & Hold'] },
+const PREVIEW_BUYER_COUNT = 10;
+const PREVIEW_CARDS = [
+  { initials: 'PB', accent: '#0EA5E9', title: 'Verified Palm Beach Buyer', strategies: ['Fix & Flip', 'Buy & Hold'] },
+  { initials: 'FL', accent: '#A78BFA', title: 'Statewide Cash Buyer', strategies: ['Wholesale', 'BRRRR'] },
+  { initials: 'SF', accent: '#FACC15', title: 'South Florida Investor', strategies: ['Fix & Flip'] },
 ];
 
 const STATES = ['FL', 'TX', 'GA', 'NC', 'TN', 'AZ', 'OH', 'IN'];
@@ -161,7 +108,27 @@ function csvField(v: unknown) {
   return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 
-const KNOWN_COUNTIES = Array.from(new Set(BUYERS.flatMap(b => b.coverage)));
+const KNOWN_COUNTIES = [
+  'Brevard',
+  'Broward',
+  'Duval',
+  'Hillsborough',
+  'Indian River',
+  'Lake',
+  'Manatee',
+  'Martin',
+  'Miami-Dade',
+  'Nassau',
+  'Orange',
+  'Palm Beach',
+  'Pasco',
+  'Pinellas',
+  'Polk',
+  'Seminole',
+  'St. Johns',
+  'St. Lucie',
+  'Volusia',
+];
 
 function normalizeSearchValue(value: string) {
   return value
@@ -233,7 +200,12 @@ function getCountyForZip(zipCode: string) {
 
 export default function BuyerDirectory() {
   const router = useRouter();
-  const { isPro } = useSubscription();
+  const {
+    isPaidPro,
+    isTrialing,
+    isAuthenticated,
+    isLoading: subscriptionLoading,
+  } = useSubscription();
 
   const [searchMode, setSearchMode] = useState<SearchMode>('city');
   const [city, setCity] = useState('Tampa');
@@ -250,7 +222,24 @@ export default function BuyerDirectory() {
   const [strategyFilter, setStrategyFilter] = useState<StrategyFilter>('all');
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const printAreaRef = useRef<HTMLDivElement>(null);
+
+  const {
+    data: buyers = [],
+    isLoading: buyersLoading,
+    isError: buyersErrored,
+  } = useQuery({
+    queryKey: ['buyer-directory'],
+    queryFn: async () => {
+      const response = await api.get<{ buyers: Buyer[] }>('/api/v1/buyer-directory');
+      return response.buyers;
+    },
+    enabled: isPaidPro,
+    retry: false,
+  });
+
+  const hasPaidAccess = isPaidPro;
 
   const runSearch = () => {
     setAppliedSearch({ mode: searchMode, city, stateCode, county, zip });
@@ -260,7 +249,7 @@ export default function BuyerDirectory() {
   const filtered = useMemo(() => {
     const { mode, city: activeCity, stateCode: activeState, county: activeCounty, zip: activeZip } =
       appliedSearch;
-    return BUYERS.filter(b => {
+    return buyers.filter(b => {
       if (strategyFilter !== 'all' && !b.strategies.includes(strategyFilter)) return false;
       if (mode === 'city') {
         const q = normalizeSearchValue(activeCity);
@@ -278,9 +267,42 @@ export default function BuyerDirectory() {
       }
       return true;
     });
-  }, [appliedSearch, strategyFilter]);
+  }, [appliedSearch, buyers, strategyFilter]);
 
-  const selectedBuyers = BUYERS.filter(b => selected.has(b.id));
+  const selectedBuyers = buyers.filter(b => selected.has(b.id));
+
+  const displayCount = hasPaidAccess ? filtered.length : PREVIEW_BUYER_COUNT;
+
+  const openSignIn = () => {
+    router.push('/directory?auth=required&redirect=/directory');
+  };
+
+  const gateCopy = !isAuthenticated
+    ? {
+        eyebrow: 'Sign In Required',
+        title: 'Sign in to unlock paid buyer access',
+        description: 'Create an account or sign in, then upgrade to paid Pro to view verified cash buyer contacts.',
+        cta: 'Sign in to continue',
+        onClick: openSignIn,
+        footnote: 'Cash Buyer Directory is not included in free trial access.',
+      }
+    : isTrialing
+      ? {
+          eyebrow: 'Paid Pro Required',
+          title: 'Cash Buyer Directory requires paid Pro',
+          description: 'Your 7-day trial does not include buyer contacts. Start a paid Pro subscription now to unlock the directory.',
+          cta: 'Start paid Pro now',
+          onClick: () => setUpgradeModalOpen(true),
+          footnote: 'Trial users keep all other Pro trial features.',
+        }
+      : {
+          eyebrow: 'Paid Pro Required',
+          title: `Unlock ${PREVIEW_BUYER_COUNT}+ verified buyers`,
+          description: 'Full contact info, verified deal counts, and direct outreach are available to paid Pro subscribers.',
+          cta: 'Upgrade to paid Pro',
+          onClick: () => setUpgradeModalOpen(true),
+          footnote: 'This paid-only feature starts billing immediately.',
+        };
 
   const toggleSelect = (id: number) => {
     const next = new Set(selected);
@@ -498,23 +520,23 @@ export default function BuyerDirectory() {
         {/* Count strip */}
         <div style={styles.countStrip}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-            <span style={styles.countNum}>{filtered.length}</span>
+            <span style={styles.countNum}>{displayCount}</span>
             <span style={{ fontSize: 14, color: '#9ca3af' }}>
               verified buyers {appliedSearch.mode === 'city' && appliedSearch.city ? `in ${appliedSearch.city}, ${appliedSearch.stateCode}` :
                 appliedSearch.mode === 'county' && appliedSearch.county ? `in ${canonicalCountyName(appliedSearch.county)} County` :
                 appliedSearch.mode === 'zip' && appliedSearch.zip ? `near ${appliedSearch.zip}` : 'nationwide'}
             </span>
           </div>
-          {isPro && filtered.length > 0 && (
+          {hasPaidAccess && filtered.length > 0 && (
             <button onClick={selectAllFiltered} style={styles.selectAllBtn}>
               <CheckCircle2 size={14} />
               {filtered.length > 0 && filtered.every(b => selected.has(b.id)) ? 'Clear all' : 'Select all'}
             </button>
           )}
-          {!isPro && (
+          {!hasPaidAccess && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#FACC15' }}>
               <Lock size={14} />
-              <span style={{ fontFamily: 'Space Mono, monospace', letterSpacing: 0.5 }}>PRO ONLY</span>
+              <span style={{ fontFamily: 'Space Mono, monospace', letterSpacing: 0.5 }}>PAID PRO ONLY</span>
             </div>
           )}
         </div>
@@ -525,25 +547,30 @@ export default function BuyerDirectory() {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
             gap: 16,
-            filter: isPro ? 'none' : 'blur(8px)',
-            pointerEvents: isPro ? 'auto' : 'none',
-            userSelect: isPro ? 'auto' : 'none',
+            filter: hasPaidAccess ? 'none' : 'blur(8px)',
+            pointerEvents: hasPaidAccess ? 'auto' : 'none',
+            userSelect: hasPaidAccess ? 'auto' : 'none',
             transition: 'filter 0.4s ease',
           }}>
-            {filtered.map(b => (
+            {hasPaidAccess && buyersLoading && <LoadingBuyerCards />}
+            {hasPaidAccess && buyersErrored && (
+              <div style={styles.emptyState}>Could not load buyer directory. Refresh and try again.</div>
+            )}
+            {hasPaidAccess && !buyersLoading && !buyersErrored && filtered.map(b => (
               <BuyerCard key={b.id} buyer={b} selected={selected.has(b.id)} onToggle={() => toggleSelect(b.id)} />
             ))}
+            {!hasPaidAccess && <PreviewBuyerCards />}
           </div>
 
           {/* Pro upgrade overlay */}
-          {!isPro && (
+          {!subscriptionLoading && !hasPaidAccess && (
             <div style={styles.gateWrap}>
               <div style={styles.gateCard}>
                 <div style={styles.gateIcon}><Lock size={24} color="#fff" /></div>
-                <div style={styles.gateEyebrow}>Pro Membership Required</div>
-                <h2 style={styles.gateTitle}>Unlock {filtered.length} verified buyers</h2>
+                <div style={styles.gateEyebrow}>{gateCopy.eyebrow}</div>
+                <h2 style={styles.gateTitle}>{gateCopy.title}</h2>
                 <p style={styles.gateDesc}>
-                  Full contact info, verified deal counts, and direct outreach for every active cash buyer in your market.
+                  {gateCopy.description}
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24, textAlign: 'left' }}>
                   {['Phone, email, and website for every buyer',
@@ -556,10 +583,10 @@ export default function BuyerDirectory() {
                     </div>
                   ))}
                 </div>
-                <button onClick={() => router.push('/pricing')} className="dgiq-btn-press" style={styles.gateBtn}>
-                  <Sparkles size={16} /> Upgrade to Pro — $29/mo
+                <button onClick={gateCopy.onClick} className="dgiq-btn-press" style={styles.gateBtn}>
+                  <Sparkles size={16} /> {gateCopy.cta}
                 </button>
-                <div style={{ fontSize: 12, color: '#6b7280' }}>7-day free trial · Cancel anytime</div>
+                <div style={{ fontSize: 12, color: '#6b7280' }}>{gateCopy.footnote}</div>
               </div>
             </div>
           )}
@@ -598,6 +625,13 @@ export default function BuyerDirectory() {
           <CheckCircle2 size={14} /> {toast}
         </div>
       )}
+
+      <UpgradeModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        returnTo="/directory"
+        paidOnlyFeature="Cash Buyer Directory"
+      />
     </div>
   );
 }
@@ -687,6 +721,66 @@ function BuyerCard({ buyer, selected, onToggle }: { buyer: Buyer; selected: bool
         <ContactRow icon={<Globe size={12} />} value={buyer.website} />
       </div>
     </div>
+  );
+}
+
+function LoadingBuyerCards() {
+  return (
+    <>
+      {[0, 1, 2].map((index) => (
+        <div key={index} style={{ ...styles.card, minHeight: 280, opacity: 0.55 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: '#111827', marginBottom: 16 }} />
+          <div style={{ height: 16, width: '60%', background: '#111827', borderRadius: 999, marginBottom: 10 }} />
+          <div style={{ height: 12, width: '40%', background: '#111827', borderRadius: 999, marginBottom: 20 }} />
+          <div style={{ height: 64, background: '#111827', borderRadius: 8, marginBottom: 16 }} />
+          <div style={{ height: 44, background: '#111827', borderRadius: 8 }} />
+        </div>
+      ))}
+    </>
+  );
+}
+
+function PreviewBuyerCards() {
+  return (
+    <>
+      {PREVIEW_CARDS.map(card => (
+        <div key={card.title} style={styles.card}>
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+            background: `linear-gradient(90deg, transparent, ${card.accent}, transparent)`,
+            opacity: 0.5,
+          }} />
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 14 }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: 10,
+              background: `${card.accent}2E`, border: `1px solid ${card.accent}4D`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'Space Mono, monospace', fontWeight: 700, fontSize: 13, color: card.accent,
+              flexShrink: 0,
+            }}>
+              {card.initials}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 3px' }}>{card.title}</h3>
+              <div style={{ fontSize: 12, color: '#9ca3af' }}>Paid Pro contact</div>
+            </div>
+          </div>
+          <p style={styles.cardDesc}>
+            Verified acquisition criteria, county coverage, direct phone, email, and response data unlock after paid Pro activation.
+          </p>
+          <div style={styles.statStrip}>
+            <Stat label="Deals (12mo)" value="Paid" small />
+            <Stat label="Years" value="Pro" small />
+            <Stat label="Response" value="Only" small />
+          </div>
+          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+            {card.strategies.map(s => (
+              <span key={s} style={styles.strategyChip}>{s}</span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
   );
 }
 
@@ -840,6 +934,16 @@ const styles = {
     background: 'rgba(14, 165, 233, 0.1)', color: '#0EA5E9',
     padding: '2px 9px', borderRadius: 999,
     fontSize: 11, fontWeight: 600, border: '1px solid rgba(14, 165, 233, 0.22)',
+  },
+  emptyState: {
+    gridColumn: '1 / -1',
+    background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
+    border: '1px solid #1f2937',
+    borderRadius: 14,
+    padding: 24,
+    color: '#9ca3af',
+    fontSize: 14,
+    textAlign: 'center',
   },
   gateWrap: {
     position: 'absolute', inset: 0,

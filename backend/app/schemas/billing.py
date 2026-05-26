@@ -151,6 +151,7 @@ class CreateCheckoutRequest(BaseModel):
         None,
         description="App path to return to after Pro (e.g. /discovery?address=...). Stored in Stripe metadata for the welcome email CTA.",
     )
+    skip_trial: bool = Field(False, description="Start paid subscription immediately instead of creating a free trial")
 
 
 class CheckoutSessionResponse(BaseModel):

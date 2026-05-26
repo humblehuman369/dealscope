@@ -595,6 +595,8 @@ export interface CreateCheckoutParams {
   cancel_url?: string
   /** Server → Stripe metadata; used in Pro welcome email CTA to deep-link back to pre-paywall page. */
   return_to?: string | null
+  /** Start billing immediately instead of creating a trial subscription. */
+  skip_trial?: boolean
 }
 
 export interface CheckoutSessionResponse {
@@ -615,6 +617,7 @@ export const billingApi = {
         success_url: params.success_url ?? undefined,
         cancel_url: params.cancel_url ?? undefined,
         return_to: params.return_to ?? undefined,
+        skip_trial: params.skip_trial ?? undefined,
       },
     }),
 

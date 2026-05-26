@@ -297,6 +297,7 @@ async def create_checkout_session(data: CreateCheckoutRequest, current_user: Cur
             success_url=data.success_url,
             cancel_url=data.cancel_url,
             return_to=data.return_to,
+            skip_trial=data.skip_trial,
         )
     except ValueError as e:
         raise HTTPException(

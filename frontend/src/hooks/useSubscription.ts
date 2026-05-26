@@ -8,7 +8,7 @@
  * No additional API call required — piggybacks on useSession's cache.
  *
  * Usage:
- *   const { isPro, tier, isTrialing } = useSubscription()
+ *   const { isPro, isPaidPro, tier, isTrialing } = useSubscription()
  *   if (!isPro) showUpgradePrompt()
  */
 
@@ -24,11 +24,13 @@ export function useSubscription() {
   const isPro = tier === 'pro'
   const isFree = tier === 'free'
   const isTrialing = status === 'trialing'
+  const isPaidPro = isPro && status === 'active'
 
   return {
     tier,
     status,
     isPro,
+    isPaidPro,
     isFree,
     isTrialing,
     isLoading,
