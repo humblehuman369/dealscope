@@ -17,14 +17,14 @@ import {
 // Safe preview metadata only. Full buyer records are fetched from the paid API.
 // -----------------------------------------------------------------------------
 
-const PREVIEW_BUYER_COUNT = 10;
+const PREVIEW_BUYER_COUNT = '2,800+';
 const PREVIEW_CARDS = [
   { initials: 'PB', accent: '#0EA5E9', title: 'Verified Palm Beach Buyer', strategies: ['Fix & Flip', 'Buy & Hold'] },
   { initials: 'FL', accent: '#A78BFA', title: 'Statewide Cash Buyer', strategies: ['Wholesale', 'BRRRR'] },
   { initials: 'SF', accent: '#FACC15', title: 'South Florida Investor', strategies: ['Fix & Flip'] },
 ];
 
-const STATES = ['FL', 'TX', 'GA', 'NC', 'TN', 'AZ', 'OH', 'IN'];
+const DEFAULT_STATES = ['FL', 'TX', 'GA', 'NC', 'TN', 'AZ', 'OH', 'IN'];
 const STRATEGIES = ['all', 'Fix & Flip', 'BRRRR', 'Buy & Hold', 'Wholesale'] as const;
 
 // Local county lookups keep the mock directory behaving like market search until
@@ -240,6 +240,10 @@ export default function BuyerDirectory() {
   });
 
   const hasPaidAccess = isPaidPro;
+  const stateOptions = useMemo(() => {
+    const buyerStates = Array.from(new Set(buyers.map(b => b.state).filter(Boolean))).sort();
+    return buyerStates.length > 0 ? buyerStates : DEFAULT_STATES;
+  }, [buyers]);
 
   const runSearch = () => {
     setAppliedSearch({ mode: searchMode, city, stateCode, county, zip });
@@ -297,7 +301,7 @@ export default function BuyerDirectory() {
         }
       : {
           eyebrow: 'Paid Pro Required',
-          title: `Unlock ${PREVIEW_BUYER_COUNT}+ verified buyers`,
+          title: `Unlock ${PREVIEW_BUYER_COUNT} verified buyers`,
           description: 'Full contact info, verified deal counts, and direct outreach are available to paid Pro subscribers.',
           cta: 'Upgrade to paid Pro',
           onClick: () => setUpgradeModalOpen(true),
@@ -474,7 +478,7 @@ export default function BuyerDirectory() {
                   <Field label="State">
                     <select className="dgiq-select" style={styles.select}
                       value={stateCode} onChange={e => setStateCode(e.target.value)}>
-                      {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                      {stateOptions.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </Field>
                 </>
