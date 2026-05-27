@@ -42,6 +42,7 @@ import {
   LayoutDashboard,
   Users,
   Landmark,
+  Kanban,
 } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
@@ -794,22 +795,6 @@ export function AppHeader({
                           >
                             <Info className="w-4 h-4" /> Blog
                           </Link>
-                          <Link
-                            href="/directory"
-                            onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                            style={{ color: 'var(--text-heading)' }}
-                          >
-                            <Users className="w-4 h-4" /> Cash Buyers
-                          </Link>
-                          <Link
-                            href="/lenders"
-                            onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                            style={{ color: 'var(--text-heading)' }}
-                          >
-                            <Landmark className="w-4 h-4" /> Hard Money
-                          </Link>
                           <button
                             onClick={() => {
                               toggleTheme()
@@ -863,6 +848,29 @@ export function AppHeader({
                       >
                         <LayoutDashboard className="w-4 h-4" /> Dashboard
                       </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false)
+                          router.push('/pipeline')
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                      >
+                        <Kanban className="w-4 h-4" /> Pipeline
+                      </button>
+                      <Link
+                        href="/directory"
+                        onClick={() => setShowProfileMenu(false)}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                      >
+                        <Users className="w-4 h-4" /> Cash Buyers
+                      </Link>
+                      <Link
+                        href="/lenders"
+                        onClick={() => setShowProfileMenu(false)}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                      >
+                        <Landmark className="w-4 h-4" /> Hard Money
+                      </Link>
                       <button
                         onClick={() => {
                           setShowProfileMenu(false)
@@ -977,6 +985,14 @@ export function AppHeader({
                             style={{ color: 'var(--text-heading)' }}
                           >
                             <Info className="w-4 h-4" /> Blog
+                          </Link>
+                          <Link
+                            href="/pipeline"
+                            onClick={() => setMobileNavOpen(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            <Kanban className="w-4 h-4" /> Pipeline
                           </Link>
                           <Link
                             href="/directory"
