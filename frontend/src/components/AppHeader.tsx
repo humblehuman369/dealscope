@@ -769,53 +769,6 @@ export function AppHeader({
 
                   {showProfileMenu && (
                     <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-navy-900 rounded-lg shadow-lg border border-slate-200 dark:border-navy-700 py-1 z-50">
-                      {isHomepage && (
-                        <div className="sm:hidden">
-                          <Link
-                            href="/about"
-                            onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                            style={{ color: 'var(--text-heading)' }}
-                          >
-                            <Info className="w-4 h-4" /> About
-                          </Link>
-                          <Link
-                            href="/pricing"
-                            onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                            style={{ color: 'var(--text-heading)' }}
-                          >
-                            <DollarSign className="w-4 h-4" /> Pricing
-                          </Link>
-                          <Link
-                            href="/blog"
-                            onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                            style={{ color: 'var(--text-heading)' }}
-                          >
-                            <Info className="w-4 h-4" /> Blog
-                          </Link>
-                          <button
-                            onClick={() => {
-                              toggleTheme()
-                              setShowProfileMenu(false)
-                            }}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                            style={{ color: 'var(--text-heading)' }}
-                          >
-                            {mounted && theme === 'dark' ? (
-                              <>
-                                <Sun className="w-4 h-4" /> Light Mode
-                              </>
-                            ) : (
-                              <>
-                                <Moon className="w-4 h-4" /> Dark Mode
-                              </>
-                            )}
-                          </button>
-                          <div className="border-t border-slate-100 dark:border-navy-700 my-1" />
-                        </div>
-                      )}
                       {user && (
                         <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-700">
                           <div className="flex items-center gap-2">
