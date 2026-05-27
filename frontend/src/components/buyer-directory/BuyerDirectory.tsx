@@ -4,9 +4,15 @@
 
 import { useState, useMemo, useRef, useEffect, type CSSProperties, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ApiError, api } from '@/lib/api-client';
+import {
+  buildBuyersListPath,
+  formatBuyerTotal,
+  type BuyerListResponse,
+  type BuyerStatsResponse,
+} from '@/lib/buyers-api';
 import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import {
   Search, MapPin, Phone, Mail, Globe, Lock, CheckCircle2,
@@ -17,7 +23,7 @@ import {
 // Safe preview metadata only. Full buyer records are fetched from the paid API.
 // -----------------------------------------------------------------------------
 
-const PREVIEW_BUYER_COUNT = '2,800+';
+const PREVIEW_BUYER_COUNT_FALLBACK = '2,800+';
 const PREVIEW_CARDS = [
   { initials: 'PB', accent: '#0EA5E9', title: 'Verified Palm Beach Buyer', strategies: ['Fix & Flip', 'Buy & Hold'] },
   { initials: 'FL', accent: '#A78BFA', title: 'Statewide Cash Buyer', strategies: ['Wholesale', 'BRRRR'] },
@@ -269,69 +275,77 @@ export default function BuyerDirectory() {
   const [strategyFilter, setStrategyFilter] = useState<StrategyFilter>('all');
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const printAreaRef = useRef<HTMLDivElement>(null);
 
+  const { data: statsData } = useQuery({
+    queryKey: ['buyer-directory-stats'],
+    queryFn: async (): Promise<BuyerStatsResponse> => {
+      try {
+        return await api.get<BuyerStatsResponse>('/api/buyers/stats');
+      } catch (error) {
+        if (
+          error instanceof ApiError &&
+          error.code === 'PRO_REQUIRED' &&
+          typeof error.detail?.total === 'number'
+        ) {
+          return { total: error.detail.total, byState: [] };
+        }
+        throw error;
+      }
+    },
+    enabled: isAuthenticated && !subscriptionLoading,
+    retry: false,
+  });
+
   const {
-    data: buyers = [],
+    data: buyerPages,
     isLoading: buyersLoading,
     isError: buyersErrored,
     error: buyersError,
-  } = useQuery({
-    queryKey: ['buyer-directory'],
-    queryFn: async () => {
-      const response = await api.get<{ buyers: Buyer[] }>('/api/v1/buyer-directory');
-      return response.buyers;
-    },
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['buyers', appliedSearch, strategyFilter],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      api.get<BuyerListResponse>(
+        buildBuyersListPath(appliedSearch, strategyFilter, pageParam, PAGE_SIZE),
+      ),
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     enabled: isPaidPro,
     retry: false,
   });
 
-  const buyerDirectoryForbidden = buyersError instanceof ApiError && buyersError.status === 403;
+  const buyers = useMemo(
+    () => (buyerPages?.pages.flatMap(page => page.buyers) as Buyer[]) ?? [],
+    [buyerPages],
+  );
+  const listTotal = buyerPages?.pages[0]?.total ?? 0;
+  const buyerDirectoryForbidden =
+    buyersError instanceof ApiError &&
+    (buyersError.code === 'PRO_REQUIRED' || buyersError.status === 401);
   const hasPaidAccess = isPaidPro && !buyerDirectoryForbidden;
+  const directoryTotal = statsData?.total;
+  const displayTotalLabel =
+    typeof directoryTotal === 'number' ? formatBuyerTotal(directoryTotal) : PREVIEW_BUYER_COUNT_FALLBACK;
   const stateOptions = useMemo(() => {
+    const fromStats = statsData?.byState?.map(row => row.state) ?? [];
+    if (fromStats.length > 0) return fromStats;
     const buyerStates = Array.from(new Set(buyers.map(b => b.state).filter(Boolean))).sort();
     return buyerStates.length > 0 ? buyerStates : DEFAULT_STATES;
-  }, [buyers]);
+  }, [statsData, buyers]);
 
   const runSearch = () => {
     setAppliedSearch({ mode: searchMode, city, stateCode, county, zip });
     setSelected(new Set());
   };
 
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [appliedSearch, strategyFilter]);
-
-  const filtered = useMemo(() => {
-    const { mode, city: activeCity, stateCode: activeState, county: activeCounty, zip: activeZip } =
-      appliedSearch;
-    return buyers.filter(b => {
-      if (strategyFilter !== 'all' && !b.strategies.includes(strategyFilter)) return false;
-      if (mode === 'city') {
-        const q = normalizeSearchValue(activeCity);
-        const resolvedCounties = getCountiesForCity(activeCity, activeState, buyers);
-        if (q && !normalizeSearchValue(b.city).includes(q) &&
-            !b.coverage.some(c => countyMatches(c, activeCity)) &&
-            !resolvedCounties.some(resolvedCounty => buyerCoversCounty(b, resolvedCounty))) return false;
-        if (activeState && b.state !== activeState) return false;
-      } else if (mode === 'county') {
-        if (activeCounty && !buyerCoversCounty(b, activeCounty)) return false;
-      } else if (mode === 'zip') {
-        const resolved = getCountiesForZip(activeZip, buyers);
-        if (activeZip && !b.zip.startsWith(activeZip) &&
-            !resolved.counties.some(resolvedCounty => buyerCoversCounty(b, resolvedCounty))) return false;
-        if (resolved.state && b.state !== resolved.state) return false;
-      }
-      return true;
-    });
-  }, [appliedSearch, buyers, strategyFilter]);
-
-  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const selectedBuyers = buyers.filter(b => selected.has(b.id));
 
-  const displayCount = hasPaidAccess ? filtered.length : PREVIEW_BUYER_COUNT;
+  const displayCount = hasPaidAccess ? listTotal : displayTotalLabel;
 
   const openSignIn = () => {
     router.push('/directory?auth=required&redirect=/directory');
@@ -357,7 +371,7 @@ export default function BuyerDirectory() {
         }
       : {
           eyebrow: 'Paid Pro Required',
-          title: `Unlock ${PREVIEW_BUYER_COUNT} verified buyers`,
+          title: `Unlock ${displayTotalLabel} verified buyers`,
           description: 'Full contact info, verified deal counts, and direct outreach are available to paid Pro subscribers.',
           cta: 'Upgrade to paid Pro',
           onClick: () => setUpgradeModalOpen(true),
@@ -372,10 +386,10 @@ export default function BuyerDirectory() {
   };
 
   const selectAllFiltered = () => {
-    const allSelected = filtered.length > 0 && filtered.every(b => selected.has(b.id));
+    const allSelected = buyers.length > 0 && buyers.every(b => selected.has(b.id));
     const next = new Set(selected);
-    if (allSelected) filtered.forEach(b => next.delete(b.id));
-    else filtered.forEach(b => next.add(b.id));
+    if (allSelected) buyers.forEach(b => next.delete(b.id));
+    else buyers.forEach(b => next.add(b.id));
     setSelected(next);
   };
 
@@ -587,10 +601,10 @@ export default function BuyerDirectory() {
                 appliedSearch.mode === 'zip' && appliedSearch.zip ? `near ${appliedSearch.zip}` : 'nationwide'}
             </span>
           </div>
-          {hasPaidAccess && filtered.length > 0 && (
+          {hasPaidAccess && buyers.length > 0 && (
             <button onClick={selectAllFiltered} style={styles.selectAllBtn}>
               <CheckCircle2 size={14} />
-              {filtered.length > 0 && filtered.every(b => selected.has(b.id)) ? 'Clear all' : 'Select all'}
+              {buyers.length > 0 && buyers.every(b => selected.has(b.id)) ? 'Clear all' : 'Select all'}
             </button>
           )}
           {!hasPaidAccess && (
@@ -616,23 +630,26 @@ export default function BuyerDirectory() {
             {hasPaidAccess && buyersErrored && (
               <div style={styles.emptyState}>Could not load buyer directory. Refresh and try again.</div>
             )}
-            {hasPaidAccess && !buyersLoading && !buyersErrored && filtered.length === 0 && (
+            {hasPaidAccess && !buyersLoading && !buyersErrored && buyers.length === 0 && (
               <div style={styles.emptyState}>No buyers found. Try a nearby city, county, or zip code.</div>
             )}
-            {hasPaidAccess && !buyersLoading && !buyersErrored && visible.map(b => (
+            {hasPaidAccess && !buyersLoading && !buyersErrored && buyers.map(b => (
               <BuyerCard key={b.id} buyer={b} selected={selected.has(b.id)} onToggle={() => toggleSelect(b.id)} />
             ))}
             {!hasPaidAccess && <PreviewBuyerCards />}
           </div>
-          {hasPaidAccess && !buyersLoading && !buyersErrored && visibleCount < filtered.length && (
+          {hasPaidAccess && !buyersLoading && !buyersErrored && hasNextPage && (
             <div style={styles.loadMoreWrap}>
               <button
                 type="button"
-                onClick={() => setVisibleCount(count => count + PAGE_SIZE)}
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
                 className="dgiq-btn-press"
                 style={styles.loadMoreBtn}
               >
-                Load more buyers ({Math.min(visibleCount, filtered.length)} of {filtered.length})
+                {isFetchingNextPage
+                  ? 'Loading…'
+                  : `Load more buyers (${buyers.length} of ${listTotal})`}
               </button>
             </div>
           )}

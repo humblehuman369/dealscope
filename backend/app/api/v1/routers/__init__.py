@@ -35,6 +35,7 @@ _V1_ROUTER_MANIFEST: list[tuple[str, str]] = [
     ("Documents", "app.routers.documents"),
     ("Billing", "app.routers.billing"),
     ("Buyer Directory", "app.routers.buyer_directory"),
+    ("Buyers", "app.routers.buyers"),
     ("Sync", "app.routers.sync"),
     ("Defaults", "app.routers.defaults"),
     ("Devices", "app.routers.devices"),

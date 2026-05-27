@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from app.models.cash_buyer import CashBuyer
-from app.services.buyer_directory_service import _row_to_record, invalidate_buyers_cache, list_buyers
+from app.services.buyer_directory_service import invalidate_buyers_cache, list_buyers, row_to_buyer_record
 
 
 def test_row_to_record_maps_postgres_columns_to_api_shape():
@@ -35,7 +35,7 @@ def test_row_to_record_maps_postgres_columns_to_api_shape():
         updated_at=SimpleNamespace(),
     )
 
-    record = _row_to_record(row)
+    record = row_to_buyer_record(row)
 
     assert record["id"] == 42
     assert record["company"] == "Acme Buyers"

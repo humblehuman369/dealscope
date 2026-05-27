@@ -97,7 +97,7 @@ def _normalize_buyer(item: object) -> BuyerRecord:
     return buyer
 
 
-def _row_to_record(row: CashBuyer) -> BuyerRecord:
+def row_to_buyer_record(row: CashBuyer) -> BuyerRecord:
     buyer: BuyerRecord = {
         "id": row.id,
         "initials": row.initials or "",
@@ -140,7 +140,7 @@ async def _load_buyers_db(db: AsyncSession) -> tuple[BuyerRecord, ...]:
         .order_by(CashBuyer.id)
     )
     rows = result.scalars().all()
-    return tuple(_row_to_record(row) for row in rows)
+    return tuple(row_to_buyer_record(row) for row in rows)
 
 
 def _get_cached_buyers() -> tuple[BuyerRecord, ...] | None:

@@ -37,12 +37,15 @@ interface RequestOptions {
 class ApiError extends Error {
   status: number
   code?: string
+  /** FastAPI `detail` object when present (e.g. PRO_REQUIRED payloads). */
+  detail?: Record<string, unknown>
 
-  constructor(message: string, status: number, code?: string) {
+  constructor(message: string, status: number, code?: string, detail?: Record<string, unknown>) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.code = code
+    this.detail = detail
   }
 }
 
@@ -380,8 +383,28 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
       throw new ApiError(fallback, status)
     }
     if (response.status >= 500) console.error(`[API ${response.status}] ${endpoint}`, errBody)
+    // Buyer directory stats: 401 returns { total } at top level (no detail wrapper)
+    if (
+      response.status === 401 &&
+      typeof errBody.total === 'number' &&
+      errBody.byState === undefined
+    ) {
+      throw new ApiError(
+        'Cash Buyer Directory requires DealGapIQ Pro',
+        401,
+        'PRO_REQUIRED',
+        errBody as Record<string, unknown>,
+      )
+    }
     const message = formatApiErrorDetail(errBody.detail, response.status, errBody)
-    throw new ApiError(message, response.status, errBody.code as string | undefined)
+    const detailObj =
+      errBody.detail && typeof errBody.detail === 'object' && !Array.isArray(errBody.detail)
+        ? (errBody.detail as Record<string, unknown>)
+        : undefined
+    const code =
+      (typeof detailObj?.error === 'string' ? detailObj.error : undefined) ??
+      (errBody.code as string | undefined)
+    throw new ApiError(message, response.status, code, detailObj)
   }
 
   // 204 No Content has no body — return undefined instead of parsing
