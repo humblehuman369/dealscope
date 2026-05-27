@@ -6,6 +6,7 @@ All models are imported here for Alembic auto-discovery.
 from app.models.assumption_defaults import AdminAssumptionDefaults
 from app.models.audit_log import AuditAction, AuditLog
 from app.models.budget import BudgetExpense, BudgetLine, RehabBudget
+from app.models.cash_buyer import CashBuyer
 from app.models.contact import ContactRole, PropertyContact
 from app.models.device_token import DevicePlatform, DeviceToken
 from app.models.document import Document, DocumentType
@@ -25,6 +26,7 @@ __all__ = [
     "AuditLog",
     "BudgetExpense",
     "BudgetLine",
+    "CashBuyer",
     "ContactRole",
     "DevicePlatform",
     "DeviceToken",

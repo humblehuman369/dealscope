@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import PaidProUser
+from app.db.session import get_db
 from app.services.buyer_directory_service import list_buyers
 
 
@@ -39,6 +41,6 @@ class BuyerDirectoryResponse(BaseModel):
 
 
 @router.get("", response_model=BuyerDirectoryResponse, summary="List paid cash buyers")
-async def get_buyer_directory(_: PaidProUser):
+async def get_buyer_directory(_: PaidProUser, db: AsyncSession = Depends(get_db)):
     """Return full buyer contact records for active paid Pro subscribers only."""
-    return BuyerDirectoryResponse(buyers=list_buyers())
+    return BuyerDirectoryResponse(buyers=await list_buyers(db))
