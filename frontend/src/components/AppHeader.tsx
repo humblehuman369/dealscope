@@ -41,6 +41,7 @@ import {
   DollarSign,
   LayoutDashboard,
   Users,
+  Landmark,
 } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
@@ -151,6 +152,7 @@ const NO_PROPERTY_BAR_ROUTES = [
   '/pricing',
   '/map-search',
   '/directory',
+  '/lenders',
 ]
 
 // Map routes to active tabs
@@ -169,6 +171,7 @@ function getActiveTabFromPath(pathname: string): AppTab | undefined {
   if (pathname.startsWith('/pricing')) return undefined
   if (pathname.startsWith('/map-search')) return undefined
   if (pathname.startsWith('/directory')) return undefined
+  if (pathname.startsWith('/lenders')) return undefined
   return 'analyze'
 }
 
@@ -684,6 +687,20 @@ export function AppHeader({
               >
                 Buyer Directory
               </Link>
+              <Link
+                href="/lenders"
+                className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                style={{
+                  color: 'var(--text-heading)',
+                  borderBottom:
+                    pathname?.startsWith('/lenders')
+                      ? `2px solid ${colors.brand.teal}`
+                      : '2px solid transparent',
+                  paddingBottom: 2,
+                }}
+              >
+                Lenders
+              </Link>
               {/* Dashboard — visible primary nav for signed-in users. */}
               {isAuthenticated && (
                 <>
@@ -784,6 +801,14 @@ export function AppHeader({
                             style={{ color: 'var(--text-heading)' }}
                           >
                             <Users className="w-4 h-4" /> Buyer Directory
+                          </Link>
+                          <Link
+                            href="/lenders"
+                            onClick={() => setShowProfileMenu(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            <Landmark className="w-4 h-4" /> Lenders
                           </Link>
                           <button
                             onClick={() => {
@@ -960,6 +985,14 @@ export function AppHeader({
                             style={{ color: 'var(--text-heading)' }}
                           >
                             <Users className="w-4 h-4" /> Buyer Directory
+                          </Link>
+                          <Link
+                            href="/lenders"
+                            onClick={() => setMobileNavOpen(false)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            <Landmark className="w-4 h-4" /> Lenders
                           </Link>
                           <div
                             style={{ borderTop: '1px solid var(--border-default)' }}
