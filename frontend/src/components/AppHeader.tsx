@@ -685,7 +685,7 @@ export function AppHeader({
                   paddingBottom: 2,
                 }}
               >
-                Buyer Directory
+                Cash Buyers
               </Link>
               <Link
                 href="/lenders"
@@ -699,7 +699,7 @@ export function AppHeader({
                   paddingBottom: 2,
                 }}
               >
-                Lenders
+                Hard Money
               </Link>
               {/* Dashboard — visible primary nav for signed-in users. */}
               {isAuthenticated && (
@@ -800,7 +800,7 @@ export function AppHeader({
                             className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
                             style={{ color: 'var(--text-heading)' }}
                           >
-                            <Users className="w-4 h-4" /> Buyer Directory
+                            <Users className="w-4 h-4" /> Cash Buyers
                           </Link>
                           <Link
                             href="/lenders"
@@ -808,7 +808,7 @@ export function AppHeader({
                             className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
                             style={{ color: 'var(--text-heading)' }}
                           >
-                            <Landmark className="w-4 h-4" /> Lenders
+                            <Landmark className="w-4 h-4" /> Hard Money
                           </Link>
                           <button
                             onClick={() => {
@@ -984,7 +984,7 @@ export function AppHeader({
                             className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
                             style={{ color: 'var(--text-heading)' }}
                           >
-                            <Users className="w-4 h-4" /> Buyer Directory
+                            <Users className="w-4 h-4" /> Cash Buyers
                           </Link>
                           <Link
                             href="/lenders"
@@ -992,7 +992,7 @@ export function AppHeader({
                             className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
                             style={{ color: 'var(--text-heading)' }}
                           >
-                            <Landmark className="w-4 h-4" /> Lenders
+                            <Landmark className="w-4 h-4" /> Hard Money
                           </Link>
                           <div
                             style={{ borderTop: '1px solid var(--border-default)' }}
