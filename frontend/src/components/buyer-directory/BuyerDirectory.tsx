@@ -13,6 +13,7 @@ import {
   type BuyerListResponse,
   type BuyerStatsResponse,
 } from '@/lib/buyers-api';
+import buyersData from '@/data/buyers.json';
 import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import {
   Search, MapPin, Phone, Mail, Globe, Lock, CheckCircle2,
@@ -30,7 +31,24 @@ const PREVIEW_CARDS = [
   { initials: 'SF', accent: '#FACC15', title: 'South Florida Investor', strategies: ['Fix & Flip'] },
 ];
 
-const DEFAULT_STATES = ['FL', 'TX', 'GA', 'NC', 'TN', 'AZ', 'OH', 'IN'];
+const BUYERS = buyersData as Array<{ state: string }>;
+
+const US_STATES = new Set([
+  'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA',
+  'HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
+  'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ',
+  'NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
+  'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'
+]);
+
+const STATES = Array.from(
+  new Set(
+    BUYERS
+      .map((b) => b.state)
+      .filter((s) => s && US_STATES.has(s))
+  )
+).sort();
+
 const STRATEGIES = ['all', 'Fix & Flip', 'BRRRR', 'Buy & Hold', 'Wholesale'] as const;
 const PAGE_SIZE = 60;
 
@@ -331,12 +349,7 @@ export default function BuyerDirectory() {
   const directoryTotal = statsData?.total;
   const displayTotalLabel =
     typeof directoryTotal === 'number' ? formatBuyerTotal(directoryTotal) : PREVIEW_BUYER_COUNT_FALLBACK;
-  const stateOptions = useMemo(() => {
-    const fromStats = statsData?.byState?.map(row => row.state) ?? [];
-    if (fromStats.length > 0) return fromStats;
-    const buyerStates = Array.from(new Set(buyers.map(b => b.state).filter(Boolean))).sort();
-    return buyerStates.length > 0 ? buyerStates : DEFAULT_STATES;
-  }, [statsData, buyers]);
+  const stateOptions = STATES;
 
   const runSearch = () => {
     setAppliedSearch({ mode: searchMode, city, stateCode, county, zip });
