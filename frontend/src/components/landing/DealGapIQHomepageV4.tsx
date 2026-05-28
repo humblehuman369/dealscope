@@ -358,15 +358,13 @@ function QuickStatsBar() {
     { icon: Database, label: 'Data Sources', value: '6 live' },
     { icon: Clock, label: 'Avg Analysis Time', value: '15 seconds' },
     { icon: Users, label: 'Cash Buyers', value: buyerTotalLabel },
-    { icon: Banknote, label: 'Hard Money Lenders', value: lenderTotalLabel },
-    { icon: Sparkles, label: 'Strategies', value: '6 modeled' },
-    { icon: ShieldCheck, label: 'Offer Paths', value: '4 per property' },
+    { icon: Banknote, label: 'Hard Money', value: lenderTotalLabel },
   ]
 
   return (
     <div className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-5">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="grid grid-cols-2 gap-6 text-center md:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-6 text-center md:grid-cols-4">
           {stats.map((stat) => (
             <div
               key={stat.label}
