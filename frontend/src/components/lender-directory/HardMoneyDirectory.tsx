@@ -358,7 +358,7 @@ export default function HardMoneyDirectory() {
 
         <div style={styles.panel}>
           <div className="dgiq-lender-filters" style={styles.filterGrid}>
-            <Field label="State (lenders funding here)">
+            <Field label="State">
               <select
                 className="dgiq-select"
                 style={styles.select}
