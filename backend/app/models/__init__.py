@@ -11,6 +11,7 @@ from app.models.contact import ContactRole, PropertyContact
 from app.models.device_token import DevicePlatform, DeviceToken
 from app.models.document import Document, DocumentType
 from app.models.role import Permission, Role, RolePermission, UserRole
+from app.models.saved_directory_contact import DirectoryEntityType, SavedDirectoryContact
 from app.models.saved_property import FlipStage, PropertyAdjustment, PropertyStatus, SavedProperty
 from app.models.search_history import SearchHistory
 from app.models.session import UserSession
@@ -42,6 +43,8 @@ __all__ = [
     "RehabBudget",
     "Role",
     "RolePermission",
+    "DirectoryEntityType",
+    "SavedDirectoryContact",
     "SavedProperty",
     "SearchHistory",
     "ShareType",

@@ -2,14 +2,16 @@
 
 // DealGapIQ — Hard Money Lender Directory (Pro members)
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSubscription } from '@/hooks/useSubscription';
 import { UpgradeModal } from '@/components/billing/UpgradeModal';
+import { SaveDirectoryContactButton } from '@/components/SaveDirectoryContactButton';
+import { buildLenderSnapshot } from '@/types/savedDirectoryContact';
 import lendersData from '@/data/lenders.json';
 import {
   Search, Phone, Mail, Globe, Lock, CheckCircle2, Sparkles, Filter,
-  Printer, FileSpreadsheet, ExternalLink,
+  ExternalLink,
 } from 'lucide-react';
 
 // -----------------------------------------------------------------------------
@@ -94,15 +96,6 @@ const MIN_LOAN_OPTIONS = [
   { value: '10000000', label: '$10M+' },
 ] as const;
 
-// -----------------------------------------------------------------------------
-// CSV helpers
-// -----------------------------------------------------------------------------
-
-function csvField(v: unknown) {
-  const s = String(v == null ? '' : v);
-  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-}
-
 function productLabel(code: string) {
   return PRODUCT_LABELS[code] ?? code;
 }
@@ -125,16 +118,9 @@ export default function HardMoneyDirectory() {
   const [minLoanFilter, setMinLoanFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [includeWebOnly, setIncludeWebOnly] = useState(true);
-  const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [toast, setToast] = useState<string | null>(null);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
-  const printAreaRef = useRef<HTMLDivElement>(null);
 
   const hasPaidAccess = isPaidPro;
-
-  useEffect(() => {
-    setSelected(new Set());
-  }, [stateFilter, productFilter, minLoanFilter, searchTerm, includeWebOnly]);
 
   const filtered = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -159,8 +145,6 @@ export default function HardMoneyDirectory() {
   const displayLenders = hasPaidAccess ? filtered : filtered.slice(0, PREVIEW_COUNT);
   const hiddenCount = hasPaidAccess ? 0 : Math.max(0, filtered.length - PREVIEW_COUNT);
 
-  const selectedLenders = filtered.filter((l) => selected.has(l.id));
-
   const openSignIn = () => {
     router.push('/lenders?auth=required&redirect=/lenders');
   };
@@ -180,7 +164,7 @@ export default function HardMoneyDirectory() {
           eyebrow: 'Paid Pro Required',
           title: 'Lender Directory requires paid Pro',
           description:
-            'Upgrade to paid Pro to unlock all verified lenders, CSV export, and Print-to-PDF.',
+            'Upgrade to paid Pro to unlock all verified lenders and save contacts to your dashboard.',
           cta: 'Start paid Pro now',
           onClick: () => setUpgradeModalOpen(true),
           footnote: 'Trial users can preview the first 8 matching lenders.',
@@ -189,117 +173,11 @@ export default function HardMoneyDirectory() {
           eyebrow: 'Pro Required',
           title: `Unlock ${data.stats.total_lenders.toLocaleString()} verified lenders`,
           description:
-            'Full contact info, CSV export, and Print-to-PDF are available to Pro subscribers.',
+            'Full contact info and save-to-dashboard are available to Pro subscribers.',
           cta: 'Upgrade to Pro',
           onClick: () => setUpgradeModalOpen(true),
           footnote: 'Preview the first 8 lenders that match your filters.',
         };
-
-  const toggleSelect = (id: number) => {
-    if (!hasPaidAccess) return;
-    const next = new Set(selected);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelected(next);
-  };
-
-  const selectAllFiltered = () => {
-    if (!hasPaidAccess || displayLenders.length === 0) return;
-    const allSelected = displayLenders.every((l) => selected.has(l.id));
-    const next = new Set(selected);
-    if (allSelected) displayLenders.forEach((l) => next.delete(l.id));
-    else displayLenders.forEach((l) => next.add(l.id));
-    setSelected(next);
-  };
-
-  const clearSelected = () => setSelected(new Set());
-
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2400);
-  };
-
-  const downloadCSV = () => {
-    if (!hasPaidAccess) return;
-    const toExport = selectedLenders.length > 0 ? selectedLenders : filtered;
-    if (toExport.length === 0) return;
-
-    const headers = [
-      'Company', 'Website', 'Phone', 'Email', 'HQ State', 'States Served',
-      'Loan Products', 'Loan Range', 'Max LTV', 'Max ARV', 'Rate', 'Points', 'Term',
-      'NMLS ID', 'AAPL Member', 'Year Founded',
-    ];
-    const lines = [headers.map(csvField).join(',')];
-    toExport.forEach((l) => {
-      lines.push([
-        l.company_name,
-        l.website,
-        l.phone ?? '',
-        l.email ?? '',
-        l.state ?? '',
-        l.nationwide ? 'Nationwide (51)' : l.states_served.join(' '),
-        l.loan_products.map(productLabel).join('; '),
-        l.display.loan_range ?? '',
-        l.display.max_ltv ?? '',
-        l.display.max_arv ?? '',
-        l.display.interest_rate ?? '',
-        l.display.points ?? '',
-        l.display.term ?? '',
-        l.nmls_id ?? '',
-        l.aapl_member === true ? 'Yes' : l.aapl_member === false ? 'No' : '',
-        l.year_founded ?? '',
-      ].map(csvField).join(','));
-    });
-
-    const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const date = new Date().toISOString().split('T')[0];
-    a.href = url;
-    a.download = `dealgapiq-lenders-${date}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
-    showToast(`${toExport.length} lender${toExport.length > 1 ? 's' : ''} exported`);
-  };
-
-  const printSelected = () => {
-    if (!hasPaidAccess || selectedLenders.length === 0 || !printAreaRef.current) return;
-    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const html = `
-      <div class="print-header">
-        <h2 class="print-title">DealGapIQ — Hard Money Lender Directory</h2>
-        <div class="print-meta">${selectedLenders.length} ${selectedLenders.length === 1 ? 'lender' : 'lenders'} · Generated ${date}</div>
-      </div>
-      ${selectedLenders.map((l) => `
-        <div class="print-card">
-          <div class="pc-head">
-            <div class="pc-info">
-              <h3>${l.company_name}</h3>
-              <p>${l.nationwide ? 'Nationwide' : `${l.states_served_count} states`}${l.state ? ` · HQ ${l.state}` : ''}</p>
-            </div>
-          </div>
-          ${l.description ? `<div class="pc-desc">${l.description}</div>` : ''}
-          <div class="pc-stats">
-            ${l.display.loan_range ? `<div class="pc-stat"><div class="l">Loan size</div><div class="v">${l.display.loan_range}</div></div>` : ''}
-            ${l.display.max_ltv ? `<div class="pc-stat"><div class="l">Max LTV</div><div class="v">${l.display.max_ltv}</div></div>` : ''}
-            ${l.display.interest_rate ? `<div class="pc-stat"><div class="l">Rate</div><div class="v">${l.display.interest_rate}</div></div>` : ''}
-            ${l.display.term ? `<div class="pc-stat"><div class="l">Term</div><div class="v">${l.display.term}</div></div>` : ''}
-          </div>
-          <div class="pc-row"><strong>Website:</strong> ${l.website}</div>
-          ${l.phone ? `<div class="pc-row"><strong>Phone:</strong> ${l.phone}</div>` : ''}
-          ${l.email ? `<div class="pc-row"><strong>Email:</strong> ${l.email}</div>` : ''}
-          <div class="pc-row"><strong>Products:</strong> ${l.loan_products.map(productLabel).join(', ')}</div>
-        </div>
-      `).join('')}
-      <div class="print-footer">DealGapIQ · See Every Property Through an Investor Lens · dealgapiq.com</div>
-    `;
-    printAreaRef.current.innerHTML = html;
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => { if (printAreaRef.current) printAreaRef.current.innerHTML = ''; }, 500);
-    }, 50);
-  };
 
   return (
     <div style={styles.page}>
@@ -307,7 +185,6 @@ export default function HardMoneyDirectory() {
         @keyframes dgiq-toast-in { from { opacity: 0; transform: translateX(-50%) translateY(-12px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         .dgiq-lender-card { transition: border-color 0.2s, box-shadow 0.2s; }
         .dgiq-lender-card:hover { border-color: #4b5563; }
-        .dgiq-lender-card.selected { border-color: #0EA5E9 !important; box-shadow: inset 0 0 0 1px #0EA5E9, 0 0 24px rgba(14, 165, 233, 0.12); }
         .dgiq-input:focus, .dgiq-select:focus { outline: none; border-color: #0EA5E9 !important; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15); }
         .dgiq-btn-press { transition: all 0.15s ease; }
         .dgiq-btn-press:active { transform: scale(0.97); }
@@ -316,28 +193,6 @@ export default function HardMoneyDirectory() {
         }
         @media (max-width: 560px) {
           .dgiq-lender-filters { grid-template-columns: 1fr !important; }
-        }
-        @media print {
-          @page { size: letter; margin: 0.5in; }
-          body { background: #fff !important; }
-          body * { visibility: hidden; }
-          .dgiq-print-area, .dgiq-print-area * { visibility: visible; }
-          .dgiq-print-area { position: absolute; left: 0; top: 0; width: 100%; background: #fff; color: #000; font-family: 'DM Sans', system-ui, sans-serif; }
-          .dgiq-print-area .print-header { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 10px; border-bottom: 2px solid #0EA5E9; margin-bottom: 16px; }
-          .dgiq-print-area .print-title { font: 700 16px 'DM Sans', sans-serif; color: #1B2141; margin: 0; }
-          .dgiq-print-area .print-meta { font: 11px 'Space Mono', monospace; color: #555; }
-          .dgiq-print-area .print-card { border: 1px solid #d1d5db; border-radius: 8px; padding: 14px; margin-bottom: 12px; background: #fff; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }
-          .dgiq-print-area .print-card:last-of-type { page-break-after: auto; break-after: auto; }
-          .dgiq-print-area .pc-head { margin-bottom: 8px; }
-          .dgiq-print-area .pc-info h3 { font: 700 14px 'DM Sans', sans-serif; color: #1B2141; margin: 0 0 2px; }
-          .dgiq-print-area .pc-info p { font: 12px 'DM Sans', sans-serif; color: #555; margin: 0; }
-          .dgiq-print-area .pc-desc { font: 11px 'DM Sans', sans-serif; color: #333; line-height: 1.5; margin: 8px 0; }
-          .dgiq-print-area .pc-stats { display: flex; gap: 16px; padding: 8px 0; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; margin: 8px 0; flex-wrap: wrap; }
-          .dgiq-print-area .pc-stat .l { font: 8px 'DM Sans', sans-serif; color: #6b7280; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
-          .dgiq-print-area .pc-stat .v { font: 700 14px 'DM Sans', sans-serif; color: #1B2141; }
-          .dgiq-print-area .pc-row { font: 11px 'DM Sans', sans-serif; color: #333; margin: 4px 0; }
-          .dgiq-print-area .pc-row strong { color: #1B2141; min-width: 70px; display: inline-block; }
-          .dgiq-print-area .print-footer { position: fixed; bottom: 0.25in; left: 0; right: 0; text-align: center; font: 9px 'Space Mono', monospace; color: #6b7280; }
         }
       `}</style>
 
@@ -436,11 +291,10 @@ export default function HardMoneyDirectory() {
               lenders match{!hasPaidAccess && hiddenCount > 0 ? ` · ${PREVIEW_COUNT} shown` : ''}
             </span>
           </div>
-          {hasPaidAccess && displayLenders.length > 0 && (
-            <button type="button" onClick={selectAllFiltered} style={styles.selectAllBtn}>
-              <CheckCircle2 size={14} />
-              {displayLenders.every((l) => selected.has(l.id)) ? 'Clear all' : 'Select all'}
-            </button>
+          {hasPaidAccess && (
+            <div style={{ fontSize: 12, color: '#9ca3af' }}>
+              Save lenders to your dashboard for quick access later
+            </div>
           )}
           {!hasPaidAccess && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#FACC15' }}>
@@ -462,13 +316,7 @@ export default function HardMoneyDirectory() {
               </div>
             )}
             {displayLenders.map((lender) => (
-              <LenderCard
-                key={lender.id}
-                lender={lender}
-                selected={selected.has(lender.id)}
-                onToggle={() => toggleSelect(lender.id)}
-                selectable={hasPaidAccess}
-              />
+              <LenderCard key={lender.id} lender={lender} showSave={hasPaidAccess} />
             ))}
           </div>
 
@@ -491,8 +339,7 @@ export default function HardMoneyDirectory() {
                   {[
                     'Phone, email, and apply-online links for every lender',
                     'Filter by state, product, and minimum loan size',
-                    'Export selected lenders to CSV',
-                    'Print / Save as PDF for outreach',
+                    'Save lenders to your dashboard for quick access',
                   ].map((item) => (
                     <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: '#d1d5db' }}>
                       <CheckCircle2 size={16} style={{ color: '#0EA5E9', flexShrink: 0 }} />
@@ -508,63 +355,7 @@ export default function HardMoneyDirectory() {
             </div>
           )}
         </div>
-
-        <div style={{
-          ...styles.exportRow,
-          marginTop: hasPaidAccess ? 0 : 8,
-        }}>
-          <button
-            type="button"
-            onClick={downloadCSV}
-            disabled={!hasPaidAccess}
-            style={hasPaidAccess ? styles.actionBtn : styles.actionBtnDisabled}
-          >
-            <FileSpreadsheet size={14} /> Download CSV
-          </button>
-          <button
-            type="button"
-            onClick={printSelected}
-            disabled={!hasPaidAccess || selected.size === 0}
-            style={
-              hasPaidAccess && selected.size > 0
-                ? { ...styles.actionBtn, ...styles.actionBtnPrimary }
-                : styles.actionBtnDisabled
-            }
-          >
-            <Printer size={14} /> Print / Save as PDF
-          </button>
-        </div>
       </div>
-
-      <div style={{
-        ...styles.actionBar,
-        transform: selected.size > 0 && hasPaidAccess ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(calc(100% + 20px))',
-        opacity: selected.size > 0 && hasPaidAccess ? 1 : 0,
-        pointerEvents: selected.size > 0 && hasPaidAccess ? 'auto' : 'none',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={styles.actionCount}>
-            <CheckCircle2 size={14} /> {selected.size} selected
-          </span>
-          <button type="button" onClick={clearSelected} style={styles.actionClear}>Clear</button>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button type="button" onClick={downloadCSV} style={styles.actionBtn}>
-            <FileSpreadsheet size={14} /> Download CSV
-          </button>
-          <button type="button" onClick={printSelected} style={{ ...styles.actionBtn, ...styles.actionBtnPrimary }}>
-            <Printer size={14} /> Print / Save as PDF
-          </button>
-        </div>
-      </div>
-
-      <div ref={printAreaRef} className="dgiq-print-area" />
-
-      {toast && (
-        <div style={styles.toast}>
-          <CheckCircle2 size={14} /> {toast}
-        </div>
-      )}
 
       <UpgradeModal
         isOpen={upgradeModalOpen}
@@ -582,43 +373,32 @@ export default function HardMoneyDirectory() {
 
 function LenderCard({
   lender,
-  selected,
-  onToggle,
-  selectable,
+  showSave,
 }: {
   lender: Lender;
-  selected: boolean;
-  onToggle: () => void;
-  selectable: boolean;
+  showSave: boolean;
 }) {
   const products = lender.loan_products.map(productLabel);
 
   return (
     <div
-      onClick={selectable ? onToggle : undefined}
-      className={`dgiq-lender-card${selected ? ' selected' : ''}`}
+      className="dgiq-lender-card"
       style={{
         ...styles.card,
-        cursor: selectable ? 'pointer' : 'default',
         boxShadow: '0 0 24px rgba(14, 165, 233, 0.12)',
       }}
     >
-      {selectable && (
-        <div style={{
-          ...(styles.checkbox as CSSProperties),
-          background: selected ? '#0EA5E9' : '#000',
-          borderColor: selected ? '#0EA5E9' : '#4b5563',
-        }}>
-          {selected && (
-            <div style={{
-              width: 9, height: 5, borderLeft: '2px solid #000', borderBottom: '2px solid #000',
-              transform: 'rotate(-45deg) translate(0, -1px)',
-            }} />
-          )}
+      {showSave && (
+        <div style={{ position: 'absolute', top: 14, right: 14 }}>
+          <SaveDirectoryContactButton
+            entityType="lender"
+            entityId={lender.id}
+            snapshot={buildLenderSnapshot(lender)}
+          />
         </div>
       )}
 
-      <div style={{ marginBottom: 10, paddingRight: selectable ? 32 : 0 }}>
+      <div style={{ marginBottom: 10, paddingRight: showSave ? 32 : 0 }}>
         <h3 style={{
           fontSize: 15, fontWeight: 700, margin: '0 0 6px', letterSpacing: '-0.01em',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',

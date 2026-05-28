@@ -32,6 +32,10 @@ vi.mock('@/components/billing/UpgradeModal', () => ({
     isOpen ? <div>{paidOnlyFeature} paid checkout</div> : null,
 }))
 
+vi.mock('@/components/SaveDirectoryContactButton', () => ({
+  SaveDirectoryContactButton: () => null,
+}))
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,

@@ -12,6 +12,7 @@ import { PipelineStats } from './_components/PipelineStats'
 import { PipelineKanban } from './_components/PipelineKanban'
 import { AccountSnapshot } from './_components/AccountSnapshot'
 import { UpcomingTasks } from './_components/UpcomingTasks'
+import { SavedContactsSection } from './_components/SavedContactsSection'
 import { ContinueWorkflowBanner } from '@/components/ui/ContinueWorkflowBanner'
 
 function DashboardContent() {
@@ -50,6 +51,8 @@ function DashboardContent() {
             onEmptyAction={() => setShowSearchModal(true)}
           />
         </section>
+
+        <SavedContactsSection />
 
         {/* "Due this week" cross-property roll-up — clicking a row jumps to the
             Tasks tab on the deal workflow page. */}
