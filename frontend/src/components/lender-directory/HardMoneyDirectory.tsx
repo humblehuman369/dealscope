@@ -70,7 +70,12 @@ interface LendersFile {
 }
 
 const data = lendersData as LendersFile;
-const PREVIEW_COUNT = 8;
+
+const PREVIEW_LENDER_CARDS = [
+  { title: 'Verified Hard Money Lender', products: ['Fix & Flip', 'Bridge'] },
+  { title: 'Private Lending Partner', products: ['BRRRR', 'DSCR'] },
+  { title: 'Nationwide Capital Source', products: ['Fix & Flip', 'Construction'] },
+] as const;
 
 const PRODUCT_LABELS: Record<string, string> = {
   fix_flip: 'Fix & Flip',
@@ -205,8 +210,10 @@ export default function HardMoneyDirectory() {
     });
   }, [stateFilter, productFilter, minLoanFilter, creditFilter, searchTerm, includeWebOnly]);
 
-  const displayLenders = hasPaidAccess ? filtered : filtered.slice(0, PREVIEW_COUNT);
-  const hiddenCount = hasPaidAccess ? 0 : Math.max(0, filtered.length - PREVIEW_COUNT);
+  const displayLenders = hasPaidAccess ? filtered : [];
+  const displayCount = hasPaidAccess
+    ? filtered.length
+    : data.stats.total_lenders.toLocaleString();
 
   const openSignIn = () => {
     router.push('/lenders?auth=required&redirect=/lenders');
@@ -220,26 +227,26 @@ export default function HardMoneyDirectory() {
           'Create an account or sign in, then upgrade to Pro to view the full hard money lender directory.',
         cta: 'Sign in to continue',
         onClick: openSignIn,
-        footnote: 'Full lender directory is a Pro feature.',
+        footnote: 'Hard Money Lender Directory is not included in free trial access.',
       }
     : isTrialing
       ? {
           eyebrow: 'Paid Pro Required',
           title: 'Lender Directory requires paid Pro',
           description:
-            'Upgrade to paid Pro to unlock all verified lenders and save contacts to your dashboard.',
+            'Your 7-day trial does not include lender contacts. Start a paid Pro subscription now to unlock the directory.',
           cta: 'Start paid Pro now',
           onClick: () => setUpgradeModalOpen(true),
-          footnote: 'Trial users can preview the first 8 matching lenders.',
+          footnote: 'Trial users keep all other Pro trial features.',
         }
       : {
-          eyebrow: 'Pro Required',
+          eyebrow: 'Paid Pro Required',
           title: `Unlock ${data.stats.total_lenders.toLocaleString()} verified lenders`,
           description:
-            'Full contact info and save-to-dashboard are available to Pro subscribers.',
-          cta: 'Upgrade to Pro',
+            'Full contact info and save-to-dashboard are available to paid Pro subscribers.',
+          cta: 'Upgrade to paid Pro',
           onClick: () => setUpgradeModalOpen(true),
-          footnote: 'Preview the first 8 lenders that match your filters.',
+          footnote: 'This paid-only feature starts billing immediately.',
         };
 
   return (
@@ -370,9 +377,9 @@ export default function HardMoneyDirectory() {
 
         <div style={styles.countStrip}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-            <span style={styles.countNum}>{filtered.length}</span>
+            <span style={styles.countNum}>{displayCount}</span>
             <span style={{ fontSize: 14, color: '#9ca3af' }}>
-              lenders match{!hasPaidAccess && hiddenCount > 0 ? ` · ${PREVIEW_COUNT} shown` : ''}
+              {hasPaidAccess ? 'lenders match' : 'verified lenders nationwide'}
             </span>
           </div>
           {hasPaidAccess && (
@@ -395,7 +402,7 @@ export default function HardMoneyDirectory() {
           {!hasPaidAccess && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#FACC15' }}>
               <Lock size={14} />
-              <span style={{ fontFamily: 'Space Mono, monospace', letterSpacing: 0.5 }}>PRO ONLY</span>
+              <span style={{ fontFamily: 'Space Mono, monospace', letterSpacing: 0.5 }}>PAID PRO ONLY</span>
             </div>
           )}
         </div>
@@ -405,32 +412,29 @@ export default function HardMoneyDirectory() {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
             gap: 16,
+            filter: hasPaidAccess ? 'none' : 'blur(8px)',
+            pointerEvents: hasPaidAccess ? 'auto' : 'none',
+            userSelect: hasPaidAccess ? 'auto' : 'none',
+            transition: 'filter 0.4s ease',
           }}>
-            {displayLenders.length === 0 && (
+            {hasPaidAccess && displayLenders.length === 0 && (
               <div style={styles.emptyState}>
                 No lenders match these filters. Try widening your criteria.
               </div>
             )}
-            {displayLenders.map((lender) => (
+            {hasPaidAccess && displayLenders.map((lender) => (
               <LenderCard key={lender.id} lender={lender} showSave={hasPaidAccess} />
             ))}
+            {!hasPaidAccess && <PreviewLenderCards />}
           </div>
 
-          {!subscriptionLoading && !hasPaidAccess && hiddenCount > 0 && (
-            <div style={{ marginTop: 28 }}>
+          {!subscriptionLoading && !hasPaidAccess && (
+            <div style={styles.gateWrap}>
               <div style={styles.gateCardInline}>
                 <div style={styles.gateIcon}><Lock size={24} color="#fff" /></div>
                 <div style={styles.gateEyebrow}>{gateCopy.eyebrow}</div>
                 <h2 style={styles.gateTitle}>{gateCopy.title}</h2>
-                <p style={styles.gateDesc}>
-                  {gateCopy.description}
-                  {' '}
-                  <strong style={{ color: '#FACC15' }}>
-                    +{hiddenCount.toLocaleString()} more
-                  </strong>
-                  {' '}
-                  behind Pro for this search.
-                </p>
+                <p style={styles.gateDesc}>{gateCopy.description}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24, textAlign: 'left' }}>
                   {[
                     'Phone, email, and apply-online links for every lender',
@@ -466,6 +470,33 @@ export default function HardMoneyDirectory() {
 // =============================================================================
 // SUB-COMPONENTS
 // =============================================================================
+
+function PreviewLenderCards() {
+  return (
+    <>
+      {PREVIEW_LENDER_CARDS.map((card) => (
+        <div key={card.title} className="dgiq-lender-card" style={styles.card}>
+          <div style={{ marginBottom: 10 }}>
+            <h3 style={{
+              fontSize: 15, fontWeight: 700, margin: '0 0 6px', letterSpacing: '-0.01em',
+            }}>
+              {card.title}
+            </h3>
+            <div style={{ fontSize: 12, color: '#9ca3af' }}>Paid Pro contact</div>
+          </div>
+          <p style={{ fontSize: 13, color: '#9ca3af', lineHeight: 1.5, margin: '0 0 14px' }}>
+            Phone, email, and loan terms unlock after paid Pro activation.
+          </p>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {card.products.map((product) => (
+              <span key={product} style={styles.badgeRegional}>{product}</span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
 
 function LenderCard({
   lender,
@@ -752,6 +783,11 @@ const styles = {
     color: '#9ca3af',
     fontSize: 14,
     textAlign: 'center',
+  },
+  gateWrap: {
+    position: 'absolute', inset: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: 32, pointerEvents: 'auto',
   },
   gateCardInline: {
     maxWidth: 560, margin: '0 auto',
