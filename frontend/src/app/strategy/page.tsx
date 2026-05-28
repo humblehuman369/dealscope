@@ -119,6 +119,8 @@ import {
 } from '@/features/deal-maker/components/types'
 import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
+import { PathOptionCard } from '@/components/iq-verdict/PathOptionCard'
+import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import { SweetSpotZone } from '@/components/iq-verdict/SweetSpotZone'
 import { PathButton } from '@/components/strategy/PathButton'
 import { trackEvent } from '@/lib/eventTracking'
@@ -669,6 +671,7 @@ function StrategyContent() {
   )
   const [isRecalculating, setIsRecalculating] = useState(false)
   const [showDealGapVideo, setShowDealGapVideo] = useState(false)
+  const [pitchModalStructure, setPitchModalStructure] = useState<DealStructure | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const recalcDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const resolvedAddressRef = useRef(addressParam)
@@ -1424,6 +1427,14 @@ function StrategyContent() {
   const optionsSubtitle = appliedPathId
     ? 'Pre-fills price, rent, financing, and seller-carry sliders.'
     : `Each Option pre-fills the worksheet to show how this could work as a ${STRATEGY_LABEL[activeStrategyId] ?? 'rental'}.`
+
+  const appliedPathEntry = useMemo(() => {
+    if (!appliedPathId) return null
+    const paths = strategyFilteredPaths.slice(0, 4)
+    const index = paths.findIndex((p) => p.id === appliedPathId)
+    if (index < 0) return null
+    return { structure: paths[index], index }
+  }, [appliedPathId, strategyFilteredPaths])
 
   // Score — capped at 95 (no deal is 100% certain)
   const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
@@ -3089,6 +3100,17 @@ function StrategyContent() {
                     />
                   ))}
                   </div>
+                  {appliedPathEntry && (
+                    <div className="mt-3">
+                      <PathOptionCard
+                        structure={appliedPathEntry.structure}
+                        index={appliedPathEntry.index}
+                        propertyState={propertyInfo?.state ?? parsed.state ?? null}
+                        applied
+                        onShowPitch={setPitchModalStructure}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
@@ -3553,6 +3575,12 @@ function StrategyContent() {
         onClose={() => setShowDealGapVideo(false)}
         src="/videos/what-is-dealgapiq-v3.mp4"
         title="What is Deal Gap?"
+      />
+
+      <PitchScriptModal
+        structure={pitchModalStructure}
+        onClose={() => setPitchModalStructure(null)}
+        propertyAddress={addressParam}
       />
     </div>
   )
