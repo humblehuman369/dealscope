@@ -23,6 +23,7 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
 function DirectoryCard({
   icon: Icon,
   badge,
+  eyebrow,
   headline,
   bullets,
   ctaLabel,
@@ -31,6 +32,7 @@ function DirectoryCard({
 }: {
   icon: typeof Users
   badge: string
+  eyebrow?: string
   headline: React.ReactNode
   bullets: string[]
   ctaLabel: string
@@ -51,6 +53,15 @@ function DirectoryCard({
           {badge}
         </span>
       </div>
+
+      {eyebrow ? (
+        <div
+          className="mb-2 text-[10px] font-black uppercase tracking-[0.2em]"
+          style={{ color: '#0EA5E9' }}
+        >
+          {eyebrow}
+        </div>
+      ) : null}
 
       <h3
         className="text-[clamp(1.35rem,3.5vw,1.75rem)] leading-tight text-[var(--text-heading)]"
@@ -105,6 +116,7 @@ export function DirectoriesPromoSection() {
         <DirectoryCard
           icon={Users}
           badge="Paid Pro"
+          eyebrow="CASH BUYERS"
           headline={
             <>
               Direct access to{' '}

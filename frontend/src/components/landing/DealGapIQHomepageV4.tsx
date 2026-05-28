@@ -121,10 +121,9 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
 
   const navLinks = [
     { href: '#how-it-works', label: 'How it Works' },
-    { href: '#features', label: 'Features' },
-    { href: '#directories', label: 'Directories' },
+    { href: '/directory', label: 'Cash Buyers' },
+    { href: '/lenders', label: 'Hard Money' },
     { href: '/pricing', label: 'Pricing' },
-    { href: '/learn', label: 'Guides' },
   ]
 
   return (
@@ -343,6 +342,11 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
                 Watch 60-second demo
               </SecondaryButton>
             </div>
+            <p className="text-xs text-[var(--text-muted)]">
+              Inside Pro:{' '}
+              <span style={{ color: '#0EA5E9' }}>2,812+</span> verified cash buyers ·{' '}
+              <span style={{ color: '#0EA5E9' }}>484+</span> hard money lenders
+            </p>
           </div>
         </div>
       </div>
