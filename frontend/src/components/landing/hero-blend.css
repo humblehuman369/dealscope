@@ -1,4 +1,4 @@
-/* Homepage V4 — full-bleed hero with copy overlaid on image */
+/* Homepage V4 — full-bleed hero with copy overlaid on image (all breakpoints) */
 
 .hero-v4-blend {
   position: relative;
@@ -9,17 +9,9 @@
 .hero-v4-blend__canvas {
   position: relative;
   isolation: isolate;
-  min-height: min(88vh, 760px);
+  min-height: max(520px, min(92svh, 760px));
   display: flex;
   align-items: center;
-}
-
-@media (max-width: 1023px) {
-  .hero-v4-blend__canvas {
-    flex-direction: column;
-    align-items: stretch;
-    min-height: auto;
-  }
 }
 
 .hero-v4-blend__media {
@@ -28,44 +20,50 @@
   z-index: 0;
 }
 
-@media (max-width: 1023px) {
-  .hero-v4-blend__media {
-    position: relative;
-    inset: auto;
-    flex-shrink: 0;
-    height: min(38vh, 360px);
-    min-height: 280px;
+.hero-v4-blend__photo {
+  object-fit: cover;
+  /* Crop from the left on narrow viewports — keep phone + house on the right */
+  object-position: 92% 38%;
+}
+
+@media (min-width: 480px) {
+  .hero-v4-blend__photo {
+    object-position: 88% 36%;
   }
 }
 
-.hero-v4-blend__photo {
-  object-fit: cover;
-  object-position: 65% 32%;
+@media (min-width: 640px) {
+  .hero-v4-blend__photo {
+    object-position: 82% 34%;
+  }
+}
+
+@media (min-width: 768px) {
+  .hero-v4-blend__photo {
+    object-position: 76% 32%;
+  }
 }
 
 @media (min-width: 1024px) {
+  .hero-v4-blend__canvas {
+    min-height: min(88vh, 760px);
+  }
+
   .hero-v4-blend__photo {
     object-position: 72% center;
   }
 }
 
 .hero-v4-blend__sky-glow {
-  display: none;
-}
-
-@media (max-width: 1023px) {
-  .hero-v4-blend__sky-glow {
-    display: block;
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background: radial-gradient(
-      ellipse 75% 65% at 68% 38%,
-      color-mix(in srgb, var(--accent-sky) 16%, transparent),
-      transparent 68%
-    );
-  }
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 75% 65% at 78% 38%,
+    color-mix(in srgb, var(--accent-sky) 12%, transparent),
+    transparent 68%
+  );
 }
 
 .hero-v4-blend__scrim {
@@ -76,28 +74,25 @@
   background: linear-gradient(
     102deg,
     var(--surface-base) 0%,
-    color-mix(in srgb, var(--surface-base) 96%, transparent) 22%,
-    color-mix(in srgb, var(--surface-base) 72%, transparent) 40%,
-    color-mix(in srgb, var(--surface-base) 28%, transparent) 58%,
-    transparent 78%
+    color-mix(in srgb, var(--surface-base) 97%, transparent) 26%,
+    color-mix(in srgb, var(--surface-base) 82%, transparent) 42%,
+    color-mix(in srgb, var(--surface-base) 45%, transparent) 58%,
+    color-mix(in srgb, var(--surface-base) 12%, transparent) 72%,
+    transparent 88%
   );
 }
 
 @media (max-width: 1023px) {
   .hero-v4-blend__scrim {
-    inset: auto;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: min(38vh, 360px);
-    min-height: 280px;
-    background:
-      linear-gradient(
-        to bottom,
-        color-mix(in srgb, var(--surface-base) 20%, transparent) 0%,
-        transparent 38%,
-        color-mix(in srgb, var(--surface-base) 50%, transparent) 100%
-      );
+    background: linear-gradient(
+      102deg,
+      var(--surface-base) 0%,
+      color-mix(in srgb, var(--surface-base) 98%, transparent) 32%,
+      color-mix(in srgb, var(--surface-base) 88%, transparent) 48%,
+      color-mix(in srgb, var(--surface-base) 55%, transparent) 62%,
+      color-mix(in srgb, var(--surface-base) 18%, transparent) 78%,
+      transparent 92%
+    );
   }
 }
 
@@ -112,44 +107,27 @@
   background: linear-gradient(to bottom, transparent, var(--surface-base));
 }
 
-@media (max-width: 1023px) {
-  .hero-v4-blend__edge-fade {
-    top: min(38vh, 360px);
-    bottom: auto;
-    height: 3rem;
-    min-height: 0;
-    transform: translateY(-100%);
-  }
-}
-
 .hero-v4-blend__content {
   position: relative;
   z-index: 2;
   width: 100%;
   margin: 0 auto;
   max-width: 80rem;
-  padding: 3rem 1.5rem 3.5rem;
-}
-
-@media (max-width: 1023px) {
-  .hero-v4-blend__content {
-    flex: 1;
-    padding: 1.25rem 1.5rem 2rem;
-    padding-top: max(1.25rem, env(safe-area-inset-top, 0px));
-    background: var(--surface-base);
-  }
+  padding: 5.5rem 1.5rem 2.5rem;
+  padding-top: max(5.5rem, calc(env(safe-area-inset-top, 0px) + 5rem));
+  background: transparent;
 }
 
 @media (min-width: 768px) {
   .hero-v4-blend__content {
     padding: 4rem 1.5rem 4.5rem;
+    padding-top: max(4rem, calc(env(safe-area-inset-top, 0px) + 3.5rem));
   }
 }
 
 @media (min-width: 1024px) {
   .hero-v4-blend__content {
     padding: 4.5rem 1.5rem 5rem;
-    background: transparent;
   }
 }
 
