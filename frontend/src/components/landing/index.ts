@@ -1,6 +1,7 @@
 export { ResponsiveLandingPage } from './ResponsiveLandingPage'
 export { DealGapIQHomepage } from './DealGapIQHomepage'
 export { DealGapIQHomepageV4 } from './DealGapIQHomepageV4'
+export { DirectoriesPromoSection } from './DirectoriesPromoSection'
 export { DealGapBar } from './DealGapBar'
 export { DealGapIQGateway } from './DealGapIQGateway'
 export { AnimatedPhoneMockup } from './AnimatedPhoneMockup'

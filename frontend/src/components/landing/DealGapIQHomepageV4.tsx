@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
+  Banknote,
   Check,
   Clock,
   Database,
@@ -15,8 +16,13 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Lock,
+  Users,
   X,
 } from 'lucide-react'
+import { DirectoriesPromoSection } from '@/components/landing/DirectoriesPromoSection'
+import { useBuyerDirectoryTeaserTotal } from '@/hooks/useBuyerDirectoryTeaserTotal'
+import { formatLenderDirectoryTotal } from '@/lib/directory-promo'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSession } from '@/hooks/useSession'
 import { MarketingUserMenu, MarketingUserMenuMobileLinks } from '@/components/layout/MarketingUserMenu'
@@ -87,6 +93,7 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
         <HeroSection onStart={runDiscovery} onDemo={() => setShowDemoVideo(true)} />
         <QuickStatsBar />
         <TestimonialsSection />
+        <DirectoriesPromoSection />
         <FeaturesSection onContinue={openDemoProperty} />
         <HowItWorksSection onStart={runDiscovery} />
         <PricingSection onFree={startFree} onPro={startPro} />
@@ -115,6 +122,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
   const navLinks = [
     { href: '#how-it-works', label: 'How it Works' },
     { href: '#features', label: 'Features' },
+    { href: '#directories', label: 'Directories' },
     { href: '/pricing', label: 'Pricing' },
     { href: '/learn', label: 'Guides' },
   ]
@@ -343,9 +351,14 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
 }
 
 function QuickStatsBar() {
+  const { buyerTotalLabel } = useBuyerDirectoryTeaserTotal()
+  const lenderTotalLabel = formatLenderDirectoryTotal()
+
   const stats = [
     { icon: Database, label: 'Data Sources', value: '6 live' },
     { icon: Clock, label: 'Avg Analysis Time', value: '15 seconds' },
+    { icon: Users, label: 'Cash Buyers', value: buyerTotalLabel },
+    { icon: Banknote, label: 'Hard Money Lenders', value: lenderTotalLabel },
     { icon: Sparkles, label: 'Strategies', value: '6 modeled' },
     { icon: ShieldCheck, label: 'Offer Paths', value: '4 per property' },
   ]
@@ -353,7 +366,7 @@ function QuickStatsBar() {
   return (
     <div className="border-y border-[var(--border-default)] bg-[var(--surface-section)] py-5">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="grid grid-cols-2 gap-6 text-center md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-6 text-center md:grid-cols-3 lg:grid-cols-6">
           {stats.map((stat) => (
             <div
               key={stat.label}
@@ -615,6 +628,9 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
 }
 
 function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => void }) {
+  const { buyerTotalLabel } = useBuyerDirectoryTeaserTotal()
+  const lenderTotalLabel = formatLenderDirectoryTotal()
+
   return (
     <section
       id="pricing"
@@ -658,6 +674,8 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
             subprice="or $29/mo billed annually"
             features={[
               'Unlimited discoveries',
+              `Cash Buyer Directory (${buyerTotalLabel} verified contacts)`,
+              `Hard Money Lender Directory (${lenderTotalLabel} lenders)`,
               'Priority data sources + live MLS sync',
               'Team collaboration & shared workspaces',
               'Advanced creative finance templates',
@@ -665,8 +683,14 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
             ]}
             cta="Start 7-day Pro trial - no card required"
             onClick={onPro}
+            lockedFeatureIndices={[1, 2]}
           />
         </div>
+        <p className="mx-auto mt-6 max-w-lg text-xs text-[var(--text-muted)]">
+          Cash Buyer and Hard Money directories unlock with{' '}
+          <strong className="font-semibold text-[var(--text-secondary)]">paid Pro</strong> only — not
+          included in the 7-day trial.
+        </p>
       </div>
     </section>
   )
@@ -679,6 +703,8 @@ function ComparisonSection() {
     ['Pre-built offer structures', 'X', 'X', '4 paths including creative'],
     ['Negotiation scripts', 'X', 'X', 'Yes - tailored to path & seller'],
     ['Creative finance modeling', 'X', 'X', 'Sub2 - Seller carry - 0% 2nds'],
+    ['Verified cash buyer directory', 'X', 'X', 'Paid Pro'],
+    ['Hard money lender directory', 'X', 'X', 'Paid Pro'],
     ['No signup to try', 'Yes', 'X', 'Yes - instant'],
   ]
 
@@ -757,6 +783,14 @@ function FinalCTASection({ onStart }: { onStart: () => void }) {
             Read the full methodology
           </Link>
         </div>
+        <p className="mt-6">
+          <a
+            href="#directories"
+            className="text-sm font-semibold text-[var(--accent-sky)] transition-colors hover:brightness-110"
+          >
+            Explore buyer &amp; lender directories →
+          </a>
+        </p>
       </div>
     </section>
   )
@@ -791,6 +825,8 @@ function SiteFooter() {
             { href: '/discovery', label: 'Discovery' },
             { href: '/strategy', label: 'Strategy' },
             { href: '/deal-maker', label: 'DealMaker' },
+            { href: '/directory', label: 'Cash Buyer Directory' },
+            { href: '/lenders', label: 'Hard Money Lenders' },
             { href: '/pricing', label: 'Pricing' },
             { href: '/what-is-dealgapiq', label: 'What is DealGapIQ?' },
           ]}
@@ -983,6 +1019,7 @@ function PricingCard({
   features,
   cta,
   featured,
+  lockedFeatureIndices,
   onClick,
 }: {
   title: string
@@ -993,8 +1030,11 @@ function PricingCard({
   features: string[]
   cta: string
   featured?: boolean
+  /** Feature row indices that show a paid-only lock icon (e.g. directories). */
+  lockedFeatureIndices?: number[]
   onClick: () => void
 }) {
+  const lockedSet = new Set(lockedFeatureIndices ?? [])
   return (
     <div
       className={`relative overflow-hidden rounded-3xl border p-8 text-left ${featured ? 'pt-12' : ''}`}
@@ -1037,9 +1077,16 @@ function PricingCard({
         </div>
       </div>
       <ul className="mt-6 space-y-3 text-sm text-[var(--text-body)]">
-        {features.map((feature) => (
+        {features.map((feature, index) => (
           <li key={feature} className="flex items-start gap-3">
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--status-positive)]" />
+            {lockedSet.has(index) ? (
+              <Lock
+                className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent-sky)]"
+                aria-hidden
+              />
+            ) : (
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--status-positive)]" />
+            )}
             <span>{feature}</span>
           </li>
         ))}

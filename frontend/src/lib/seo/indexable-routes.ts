@@ -6,6 +6,8 @@ export const INDEXABLE_SITE_SECTIONS = [
       { href: '/discovery', label: 'Discovery — instant deal score' },
       { href: '/strategy', label: 'Strategy — full financial deep-dive' },
       { href: '/deal-maker', label: 'DealMaker — assumptions & offer scripts' },
+      { href: '/directory', label: 'Cash Buyer Directory' },
+      { href: '/lenders', label: 'Hard Money Lender Directory' },
       { href: '/pricing', label: 'Pricing' },
       { href: '/what-is-dealgapiq', label: 'What is DealGapIQ?' },
     ],

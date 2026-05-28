@@ -4,7 +4,7 @@ import HomePageClient from './_components/HomePageClient'
 
 const defaultTitle = 'DealGapIQ - Real Estate Investment Analytics'
 const defaultDescription =
-  'Analyze properties across 6 investment strategies: Long-term Rental, Short-term Rental, BRRRR, Fix & Flip, House Hacking, and Wholesale. Score any deal in 60 seconds and see the Deal Gap.'
+  'Analyze properties across 6 investment strategies, see the Deal Gap, and get paid Pro access to verified cash buyers and 484+ hard money lenders. Score any deal in 60 seconds.'
 
 export const metadata: Metadata = {
   title: defaultTitle,
@@ -50,6 +50,16 @@ const HOME_FAQ = [
     question: 'Which investment strategies does DealGapIQ support?',
     answer:
       'Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale. Each strategy uses its own underwriting model and ranks independently so you see which path fits the property.',
+  },
+  {
+    question: 'Does Pro include the Cash Buyer and Hard Money directories?',
+    answer:
+      'Yes — both directories are included with a paid Pro subscription (monthly or annual). They are not included in the free tier or the 7-day Pro trial; billing starts immediately when you upgrade specifically to unlock directory access.',
+  },
+  {
+    question: 'What is in the Cash Buyer Directory?',
+    answer:
+      'A searchable database of verified fix-and-flip, BRRRR, and active cash buyers across major U.S. markets. Filter by city, county, or zip, view deal history where available, and save contacts to your DealGapIQ dashboard.',
   },
 ]
 

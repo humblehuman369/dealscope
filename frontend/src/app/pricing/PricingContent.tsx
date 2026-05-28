@@ -196,6 +196,22 @@ const COMPARISON_DATA: ComparisonCategory[] = [
       { name: 'Search history', free: true, pro: true },
     ],
   },
+  {
+    name: 'Investor Directories',
+    rows: [
+      {
+        name: 'Cash Buyer Directory — verified investor contacts by market',
+        free: false,
+        pro: 'Paid Pro only',
+      },
+      {
+        name: 'Hard Money Lender Directory — fix & flip, BRRRR, bridge, DSCR',
+        free: false,
+        pro: 'Paid Pro only',
+      },
+      { name: 'Save directory contacts to dashboard', free: false, pro: 'Paid Pro only' },
+    ],
+  },
 ]
 
 const RESPONSIVE_STYLE = `
@@ -262,6 +278,8 @@ export default function PricingContent() {
     'Downloadable Excel proforma & strategy-specific worksheets',
     'PDF property reports',
     'DealGapIQ pipeline with unlimited saves & side-by-side deal comparison',
+    'Cash Buyer Directory — direct access to verified cash buyers by market',
+    'Hard Money Lender Directory — 484+ lenders with phone, email, and web contacts',
   ]
 
   const faqs = [
