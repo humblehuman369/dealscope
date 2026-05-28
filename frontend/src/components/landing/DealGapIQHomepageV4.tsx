@@ -34,8 +34,6 @@ interface Props {
   onPointAndScan?: () => void
 }
 
-const DEMO_ADDRESS = '1014-16 N J St, Lake Worth, FL 33460'
-
 const HEADLINE_STYLE: React.CSSProperties = {
   fontFamily: 'var(--font-dm-sans), var(--font-inter), system-ui, sans-serif',
   fontWeight: 800,
@@ -78,8 +76,6 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
   const runDiscovery = () => router.push('/search')
   const startFree = () => router.push('/register')
   const startPro = () => router.push('/register?plan=pro&billing=annual')
-  const openDemoProperty = () =>
-    router.push(`/discovery?address=${encodeURIComponent(DEMO_ADDRESS)}`)
 
   return (
     <div className="min-h-screen bg-[var(--surface-base)] text-[var(--text-body)] antialiased">
@@ -94,7 +90,7 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
         <QuickStatsBar />
         <TestimonialsSection />
         <DirectoriesPromoSection />
-        <FeaturesSection onContinue={openDemoProperty} />
+        <FeaturesSection />
         <HowItWorksSection onStart={runDiscovery} />
         <PricingSection onFree={startFree} onPro={startPro} />
         <ComparisonSection />
@@ -471,7 +467,7 @@ function TestimonialsSection() {
   )
 }
 
-function FeaturesSection({ onContinue }: { onContinue: () => void }) {
+function FeaturesSection() {
   const paths = [
     {
       num: '1',
@@ -516,48 +512,41 @@ function FeaturesSection({ onContinue }: { onContinue: () => void }) {
             className="mt-3 text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
             style={DISPLAY_STYLE}
           >
-            Every property can be a deal - at the right price and terms.
+            Every property can be a deal - at the right price or terms.
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
-            We uncover the hidden ones others miss and give you the exact offer structures to win
+            We uncover the hidden value others miss and give you the exact offer structures to win
             with almost no competition. Most tools stop at the numbers. We give you four complete
             offer paths, including creative finance structures most investors never consider.
           </p>
         </div>
 
         <div className="overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] shadow-[var(--shadow-card)]">
-          <div className="flex flex-col gap-5 border-b border-[var(--border-default)] px-6 py-7 md:flex-row md:items-end md:justify-between md:px-8">
-            <div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <span className="w-fit rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1 text-xs font-black uppercase tracking-widest text-[var(--accent-sky)]">
-                  Example
+          <div className="border-b border-[var(--border-default)] px-6 py-7 md:px-8">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <span className="w-fit rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1 text-xs font-black uppercase tracking-widest text-[var(--accent-sky)]">
+                Example
+              </span>
+              <span className="font-mono text-sm uppercase text-[var(--text-muted)]">
+                1014-16 N J St - Lake Worth, FL
+              </span>
+            </div>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-baseline">
+              <div>
+                <span className="text-4xl font-black tabular-nums text-[var(--text-heading)] md:text-5xl">
+                  $457,100
                 </span>
-                <span className="font-mono text-sm uppercase text-[var(--text-muted)]">
-                  1014-16 N J St - Lake Worth, FL
-                </span>
+                <span className="ml-1 text-[var(--text-muted)]">list</span>
               </div>
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-baseline">
-                <div>
-                  <span className="text-4xl font-black tabular-nums text-[var(--text-heading)] md:text-5xl">
-                    $457,100
-                  </span>
-                  <span className="ml-1 text-[var(--text-muted)]">list</span>
-                </div>
-                <div className="flex w-fit items-center gap-2 rounded-2xl border border-[var(--status-negative)] bg-[var(--color-red-dim)] px-4 py-1.5 text-sm font-black text-[var(--status-negative)]">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span>-6.4% Deal Gap</span>
-                </div>
-              </div>
-              <div className="mt-1 text-sm text-[var(--text-secondary)]">
-                Target buy price:{' '}
-                <span className="font-bold text-[var(--text-heading)]">$428,000</span> at 20% down
+              <div className="flex w-fit items-center gap-2 rounded-2xl border border-[var(--status-negative)] bg-[var(--color-red-dim)] px-4 py-1.5 text-sm font-black text-[var(--status-negative)]">
+                <ShieldCheck className="h-4 w-4" />
+                <span>-6.4% Deal Gap</span>
               </div>
             </div>
-
-            <PrimaryButton onClick={onContinue} size="md">
-              Continue to full strategy
-              <ArrowRight className="h-4 w-4" />
-            </PrimaryButton>
+            <div className="mt-1 text-sm text-[var(--text-secondary)]">
+              Target buy price:{' '}
+              <span className="font-bold text-[var(--text-heading)]">$428,000</span> at 20% down
+            </div>
           </div>
 
           <div className="p-6 md:p-8">
