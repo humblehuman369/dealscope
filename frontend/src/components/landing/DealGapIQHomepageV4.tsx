@@ -583,7 +583,7 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
   const steps = [
     {
       num: '1',
-      title: 'Paste any Zillow link or address',
+      title: 'Search any address',
       body: 'Works on active listings, expired, or even off-market comps. No login required for first discovery.',
     },
     {
@@ -593,7 +593,7 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
     },
     {
       num: '3',
-      title: 'Choose your path + get the script',
+      title: 'Get 4 Ways to Make the Deal Work',
       body: 'Four pre-built offers. One click opens the full negotiation script, worksheet, and talking points tailored to the seller type.',
     },
   ]
@@ -604,9 +604,6 @@ function HowItWorksSection({ onStart }: { onStart: () => void }) {
         <h2 className="text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
           Three clicks. One clear path forward.
         </h2>
-        <p className="mx-auto mt-3 max-w-md text-lg text-[var(--text-secondary)] md:text-xl">
-          No spreadsheets. No 40-tab browser chaos. Just answers.
-        </p>
       </div>
 
       <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
