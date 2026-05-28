@@ -513,7 +513,8 @@ function FeaturesSection() {
             style={DISPLAY_STYLE}
           >
             Every property can be a deal - at the right price{' '}
-            <span className="italic text-[var(--accent-sky)]">or</span> terms.
+            <span className="italic text-[var(--accent-sky)]">or</span>{' '}
+            terms.
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
             We uncover the hidden value others miss and give you the exact offer structures to win
