@@ -19,9 +19,9 @@ const STAT_STYLE: React.CSSProperties = {
 
 const SKY = '#0EA5E9'
 
-/** Product labels match pre-reduction stat scale; counts render 10% smaller. */
-const CARD_LABEL_SIZE = 'clamp(2.5rem, 6vw, 3.25rem)'
-const CARD_STAT_SIZE = 'clamp(2.25rem, 5.4vw, 2.925rem)'
+/** Product labels and counts (counts ~15% below label scale). */
+const CARD_LABEL_SIZE = 'clamp(2.125rem, 5.1vw, 2.7625rem)'
+const CARD_STAT_SIZE = 'clamp(1.9125rem, 4.59vw, 2.48625rem)'
 
 const HOMEPAGE_BUYER_STAT = '2,900+'
 
@@ -115,7 +115,7 @@ export function DirectoriesPromoSection() {
         <DirectoryCard
           productLabel="Cash Buyers"
           stat={HOMEPAGE_BUYER_STAT}
-          tagline="Verified fix-and-flip, BRRRR, and buy-and-hold investors nationwide"
+          tagline="Verified Wholesale fix-and-flip, BRRRR, and buy-and-hold investors nationwide"
           bullets={[
             'Search by city, county, or zip',
             'Deal history where available',
