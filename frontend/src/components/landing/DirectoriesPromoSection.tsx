@@ -58,7 +58,7 @@ function DirectoryCard({
         className="mt-2 leading-none text-[var(--text-heading)]"
         style={{ ...STAT_STYLE, fontSize: CARD_STAT_SIZE }}
       >
-        <span style={{ color: SKY }}>{stat}</span>
+        {stat}
       </div>
 
       <p
