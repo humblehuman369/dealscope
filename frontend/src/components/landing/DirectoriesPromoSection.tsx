@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Banknote, Check, Lock, Users } from 'lucide-react'
+import { ArrowRight, Check } from 'lucide-react'
 import { useBuyerDirectoryTeaserTotal } from '@/hooks/useBuyerDirectoryTeaserTotal'
 import { formatLenderDirectoryTotal } from '@/lib/directory-promo'
 import { trackEvent } from '@/lib/eventTracking'
@@ -12,63 +12,56 @@ const DISPLAY_STYLE: React.CSSProperties = {
   letterSpacing: '-0.04em',
 }
 
-function SectionEyebrow({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="inline-flex rounded-full border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-[var(--accent-sky)]">
-      {children}
-    </div>
-  )
+const STAT_STYLE: React.CSSProperties = {
+  fontFamily: 'var(--font-space-mono, "Space Mono", ui-monospace, monospace)',
+  fontWeight: 700,
+  letterSpacing: '-0.03em',
 }
 
+const SKY = '#0EA5E9'
+
 function DirectoryCard({
-  icon: Icon,
-  badge,
-  eyebrow,
-  headline,
+  productLabel,
+  stat,
+  tagline,
   bullets,
   ctaLabel,
   href,
   trackEventName,
 }: {
-  icon: typeof Users
-  badge: string
-  eyebrow?: string
-  headline: React.ReactNode
+  productLabel: string
+  stat: string
+  tagline: string
   bullets: string[]
   ctaLabel: string
   href: string
   trackEventName: string
 }) {
   return (
-    <div className="flex flex-col rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-8 shadow-[var(--shadow-card)]">
-      <div className="mb-5 flex items-start justify-between gap-4">
-        <div
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)]"
-          aria-hidden
-        >
-          <Icon className="h-6 w-6 text-[var(--accent-sky)]" />
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)]">
-          <Lock className="h-3 w-3" aria-hidden />
-          {badge}
-        </span>
+    <div
+      className="flex flex-col rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-8 shadow-[var(--shadow-card)]"
+      style={{ borderTopWidth: 3, borderTopColor: SKY }}
+    >
+      <div
+        className="text-[11px] font-black uppercase tracking-[0.22em]"
+        style={{ color: SKY }}
+      >
+        {productLabel}
       </div>
 
-      {eyebrow ? (
-        <div
-          className="mb-2 text-[10px] font-black uppercase tracking-[0.2em]"
-          style={{ color: '#0EA5E9' }}
-        >
-          {eyebrow}
-        </div>
-      ) : null}
+      <div
+        className="mt-3 text-[clamp(2.5rem,6vw,3.25rem)] leading-none text-[var(--text-heading)]"
+        style={STAT_STYLE}
+      >
+        <span style={{ color: SKY }}>{stat}</span>
+      </div>
 
-      <h3
-        className="text-[clamp(1.35rem,3.5vw,1.75rem)] leading-tight text-[var(--text-heading)]"
+      <p
+        className="mt-3 text-[clamp(1.1rem,2.8vw,1.35rem)] leading-snug text-[var(--text-heading)]"
         style={DISPLAY_STYLE}
       >
-        {headline}
-      </h3>
+        {tagline}
+      </p>
 
       <ul className="mt-5 flex-1 space-y-2.5 text-sm text-[var(--text-body)]">
         {bullets.map((item) => (
@@ -82,7 +75,7 @@ function DirectoryCard({
       <Link
         href={href}
         onClick={() => trackEvent(trackEventName)}
-        className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-3xl border border-[var(--accent-sky)] px-6 py-3.5 text-sm font-bold text-[var(--accent-sky)] transition-all hover:bg-[var(--color-teal-dim)] active:scale-[0.985]"
+        className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-[var(--accent-sky)] px-6 py-3.5 text-sm font-bold text-[var(--surface-base)] transition-all hover:opacity-90 active:scale-[0.985]"
       >
         {ctaLabel}
         <ArrowRight className="h-4 w-4" />
@@ -98,54 +91,46 @@ export function DirectoriesPromoSection() {
   return (
     <section id="directories" className="mx-auto max-w-7xl px-6 py-16" aria-labelledby="directories-heading">
       <div className="mb-10 text-center">
-        <SectionEyebrow>Close Deals Faster</SectionEyebrow>
         <h2
           id="directories-heading"
-          className="mx-auto mt-4 max-w-3xl text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
+          className="mx-auto max-w-4xl text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] text-[var(--text-heading)] md:text-6xl"
           style={DISPLAY_STYLE}
         >
-          From analysis to execution — in one platform
+          <span style={{ color: SKY }}>Cash Buyers</span>
+          <span className="text-[var(--text-muted)]"> &amp; </span>
+          <span style={{ color: SKY }}>Hard Money</span>
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-lg text-[var(--text-secondary)]">
-          Run Discovery on any deal, then connect with verified cash buyers and hard money lenders
-          when you are ready to move.
+        <p className="mx-auto mt-4 max-w-2xl text-lg text-[var(--text-secondary)]">
+          When your analysis pencils, reach verified investors and lenders in minutes — not weeks of
+          cold outreach.
+        </p>
+        <p className="mx-auto mt-2 max-w-xl text-sm text-[var(--text-muted)]">
+          Search by market · filter by strategy · save contacts to your dashboard
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <DirectoryCard
-          icon={Users}
-          badge="Paid Pro"
-          eyebrow="CASH BUYERS"
-          headline={
-            <>
-              Direct access to{' '}
-              <span className="text-[var(--accent-sky)]">{buyerTotalLabel}</span> verified cash
-              buyers
-            </>
-          }
+          productLabel="Cash Buyers"
+          stat={buyerTotalLabel}
+          tagline="Verified fix-and-flip, BRRRR, and buy-and-hold investors nationwide"
           bullets={[
-            'Fix-and-flip, BRRRR, and active investors nationwide',
-            'Search by city, county, or zip — skip cold outreach',
-            'Save contacts to your dashboard',
+            'Search by city, county, or zip',
+            'Deal history where available',
+            'Skip the guesswork on who actually closes',
           ]}
           ctaLabel="Browse cash buyers"
           href="/directory"
           trackEventName="homepage_directory_buyers_click"
         />
         <DirectoryCard
-          icon={Banknote}
-          badge="Paid Pro"
-          headline={
-            <>
-              Find <span className="text-[var(--accent-sky)]">{lenderTotalLabel}</span> hard money
-              lenders fast
-            </>
-          }
+          productLabel="Hard Money"
+          stat={lenderTotalLabel}
+          tagline="Lenders for fix & flip, BRRRR, bridge, DSCR, and more"
           bullets={[
-            'Fix & flip, BRRRR, bridge, DSCR, and more',
             'Filter by state and loan product',
             'Phone, email, and web contacts',
+            'Fund the deal while your offer is still warm',
           ]}
           ctaLabel="Browse lenders"
           href="/lenders"
@@ -153,11 +138,18 @@ export function DirectoriesPromoSection() {
         />
       </div>
 
-      <p className="mx-auto mt-6 max-w-2xl text-center text-xs text-[var(--text-muted)]">
-        Cash Buyer and Hard Money directories are included with{' '}
-        <strong className="font-semibold text-[var(--text-secondary)]">paid Pro</strong> only. Not
-        included in the 7-day trial.
-      </p>
+      <div className="mx-auto mt-8 max-w-2xl text-center">
+        <p className="text-sm text-[var(--text-secondary)]">
+          Both directories are included with{' '}
+          <Link
+            href="/pricing"
+            className="font-semibold text-[var(--accent-sky)] underline-offset-2 hover:underline"
+          >
+            DealGapIQ Pro
+          </Link>
+          {' '}— unlock when you are ready to move from analysis to a signed contract.
+        </p>
+      </div>
     </section>
   )
 }
