@@ -259,7 +259,7 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
   const [subcopyExpanded, setSubcopyExpanded] = useState(false)
 
   const investorPill = (
-    <div className="inline-flex items-center gap-2 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]/80 px-3 py-1 text-xs font-bold text-[var(--accent-sky)] backdrop-blur-md lg:px-4 lg:py-1.5 lg:text-sm">
+    <div className="inline-flex items-center gap-2 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]/80 px-3 py-1 text-xs font-bold text-[var(--accent-sky)] backdrop-blur-md md:px-4 md:py-1.5 md:text-sm">
       <span className="h-2 w-2 rounded-full bg-[var(--accent-sky)] animate-pulse" />
       <span>Built by an Investor for Investors</span>
     </div>
@@ -283,8 +283,8 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
         <div className="hero-v4-blend__edge-fade" aria-hidden="true" />
 
         <div className="hero-v4-blend__content">
-          <div className="hero-v4-blend__copy space-y-5 lg:space-y-8">
-            <div className="hidden lg:block">{investorPill}</div>
+          <div className="hero-v4-blend__copy space-y-5 md:space-y-6 lg:space-y-8">
+            <div className="hidden md:block">{investorPill}</div>
 
             <div className="hero-v4-blend__animate-in">
               <h1
@@ -299,7 +299,7 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
                 Know what to offer.
               </h1>
 
-              <div className="mt-3 lg:hidden">{investorPill}</div>
+              <div className="mt-3 md:hidden">{investorPill}</div>
 
               <p className="hero-v4-blend__sub max-w-xl text-[var(--text-body)]">
                 The Discovery tells you the gap.
@@ -310,8 +310,8 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
                     subcopyExpanded ? 'hero-v4-blend__sub-detail--open' : ''
                   }`}
                 >
-                  <br className="hidden lg:block" />
-                  <span className="lg:inline">
+                  <br className="hidden md:block" />
+                  <span className="md:inline">
                     {' '}
                     Most tools stop at the numbers. We give you four complete offer paths,
                     including creative finance structures most investors never consider.
@@ -319,7 +319,7 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
                 </span>
                 <button
                   type="button"
-                  className="hero-v4-blend__sub-read-more lg:hidden"
+                  className="hero-v4-blend__sub-read-more md:hidden"
                   aria-expanded={subcopyExpanded}
                   onClick={() => setSubcopyExpanded((open) => !open)}
                 >
@@ -328,13 +328,13 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
               </p>
             </div>
 
-            <div className="hero-v4-blend__cta hero-v4-blend__animate-in hero-v4-blend__animate-in--delay flex flex-col gap-3 lg:flex-row lg:gap-4 lg:pt-2">
-              <PrimaryButton onClick={onStart} className="hero-v4-blend__cta-primary">
+            <div className="hero-v4-blend__cta hero-v4-blend__animate-in hero-v4-blend__animate-in--delay">
+              <PrimaryButton onClick={onStart} size="md" className="hero-v4-blend__cta-primary">
                 Run Free Discovery
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4" />
               </PrimaryButton>
-              <SecondaryButton onClick={onDemo} className="hero-v4-blend__cta-secondary w-full lg:w-auto">
-                <Play className="h-5 w-5 fill-current" />
+              <SecondaryButton onClick={onDemo} className="hero-v4-blend__cta-secondary">
+                <Play className="h-4 w-4 fill-current" />
                 Watch 60-second demo
               </SecondaryButton>
             </div>

@@ -148,20 +148,13 @@
 }
 
 .hero-v4-blend__headline {
-  font-size: clamp(1.75rem, 8vw, 2.5rem);
-  line-height: 1.08;
-}
-
-@media (min-width: 1024px) {
-  .hero-v4-blend__headline {
-    font-size: clamp(2rem, 7vw, 5.25rem);
-    line-height: 1.04;
-  }
+  font-size: clamp(1.875rem, 3.8vw + 0.85rem, 5.25rem);
+  line-height: 1.06;
 }
 
 .hero-v4-blend__sub {
   margin-top: 1rem;
-  font-size: 1.125rem;
+  font-size: clamp(1.0625rem, 1.15vw + 0.8rem, 1.5rem);
   font-weight: 600;
   line-height: 1.35;
 }
@@ -169,14 +162,7 @@
 @media (min-width: 1024px) {
   .hero-v4-blend__sub {
     margin-top: 1.5rem;
-    font-size: 1.25rem;
     line-height: 1.25;
-  }
-}
-
-@media (min-width: 768px) {
-  .hero-v4-blend__sub {
-    font-size: 1.5rem;
   }
 }
 
@@ -193,7 +179,7 @@
   display: block;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 640px) {
   .hero-v4-blend__sub-detail {
     display: inline;
     margin-top: 0;
@@ -217,22 +203,42 @@
   text-underline-offset: 3px;
 }
 
-.hero-v4-blend__cta-primary {
-  width: 100%;
+.hero-v4-blend__cta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
 }
 
-@media (min-width: 1024px) {
-  .hero-v4-blend__cta-primary {
+@media (min-width: 640px) {
+  .hero-v4-blend__cta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.hero-v4-blend__cta-primary,
+.hero-v4-blend__cta-secondary {
+  width: 100%;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.875rem !important;
+  line-height: 1.25;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .hero-v4-blend__cta-primary,
+  .hero-v4-blend__cta-secondary {
     width: auto;
   }
 }
 
-@media (max-width: 1023px) {
-  .hero-v4-blend__cta-primary {
-    box-shadow:
-      0 4px 24px color-mix(in srgb, var(--accent-sky) 35%, transparent),
-      var(--shadow-card);
-  }
+.hero-v4-blend__cta-primary {
+  box-shadow:
+    0 4px 24px color-mix(in srgb, var(--accent-sky) 35%, transparent),
+    var(--shadow-card);
 }
 
 @media (prefers-reduced-motion: no-preference) {
