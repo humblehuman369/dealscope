@@ -292,9 +292,15 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
                 className="hero-v4-blend__headline text-[var(--text-heading)]"
                 style={HEADLINE_STYLE}
               >
-                Stop scrolling listings.
+                Stop scrolling
                 <br />
-                <span className="text-[var(--accent-sky)]">Start spotting real deals.</span>
+                listings.
+                <br />
+                <span className="text-[var(--accent-sky)]">
+                  Start spotting real
+                  <br />
+                  deals.
+                </span>
                 <br />
                 Know what to offer.
               </h1>

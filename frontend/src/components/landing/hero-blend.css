@@ -132,7 +132,13 @@
 }
 
 .hero-v4-blend__copy {
-  max-width: 36rem;
+  max-width: min(100%, 20rem);
+}
+
+@media (min-width: 640px) {
+  .hero-v4-blend__copy {
+    max-width: min(100%, 24rem);
+  }
 }
 
 @media (min-width: 1024px) {
@@ -148,8 +154,9 @@
 }
 
 .hero-v4-blend__headline {
-  font-size: clamp(1.875rem, 3.8vw + 0.85rem, 5.25rem);
-  line-height: 1.06;
+  font-size: clamp(2.25rem, 4.8vw + 0.65rem, 5.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
 }
 
 .hero-v4-blend__sub {
