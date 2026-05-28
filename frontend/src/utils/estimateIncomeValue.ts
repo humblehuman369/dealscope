@@ -166,7 +166,9 @@ export function estimateIncomeValue(params: EstimateIncomeValueParams): number {
   }
 
   const bankConstant = mortgageConstant(rate, term)
-  const sellerConstant = mortgageConstant(sellerFinancingRate, sellerFinancingTermYears)
+  // 0% seller seconds are balloon-only — no monthly debt service in the denominator.
+  const sellerConstant =
+    sellerFinancingRate <= 0 ? 0 : mortgageConstant(sellerFinancingRate, sellerFinancingTermYears)
 
   const denominator = bankLtv * bankConstant + sellerPct * sellerConstant
   if (denominator <= 0) return Math.round(noi / 0.05)

@@ -56,6 +56,7 @@ import {
 import { getConditionAdjustment } from '@/utils/property-adjustments'
 import { calculateMortgagePayment } from '@/utils/calculations'
 import { computeLtrOperatingExpenseBreakdown } from '@/lib/ltrOperatingExpenses'
+import { computeDealGapIncomeValue } from '@/lib/dealGapIncomeValue'
 import { computeLtrMetricsFromState } from '@/lib/ltrWorksheetMetrics'
 import {
   DEFAULT_OPERATING_CAPEX_PCT,
@@ -2168,7 +2169,7 @@ function StrategyContent() {
     }
   })() as AnyStrategyMetrics
 
-  /** Income Value — API-only (valuation_snapshot / verdict); stale-while-revalidate during recalc. */
+  /** Income Value — live from worksheet (rent, financing, opex); API snapshot as fallback. */
   const valuationSnap =
     data?.valuation_snapshot ?? (data as Record<string, unknown>)?.valuationSnapshot
   const snapIv =
@@ -2179,8 +2180,22 @@ function StrategyContent() {
     typeof snapIv === 'number' && Number.isFinite(snapIv) && snapIv > 0
       ? snapIv
       : (data?.income_value ?? (data as Record<string, unknown>)?.incomeValue ?? 0)
+
+  const liveIncomeValue =
+    currentStrategyType === 'flip' || currentStrategyType === 'wholesale'
+      ? 0
+      : computeDealGapIncomeValue(
+          currentStrategyType,
+          worksheetState,
+          dealGapOperatingOverrides,
+        )
+
   const dealGapIncomeValue =
-    typeof apiIncomeValue === 'number' && apiIncomeValue > 0 ? apiIncomeValue : listPrice
+    liveIncomeValue > 0
+      ? liveIncomeValue
+      : typeof apiIncomeValue === 'number' && apiIncomeValue > 0
+        ? apiIncomeValue
+        : listPrice
 
   const handleWorksheetUpdate = (key: string, value: number | string) => {
     /* Worksheet `up()` field names → InlineDealMakerValues keys (`propertyTaxes`/`insurance` match worksheetState `io.*` and verdictPayload). */
@@ -2436,8 +2451,9 @@ function StrategyContent() {
             so the user can keep watching the gaps move while editing the worksheet.
             Containing block is the page-level wrapper, so the bar stays pinned
             through the entire scroll of cards / next-steps / worksheet content.
-            Bar values come from the debounced verdict API (valuation_snapshot).
-            Prior values stay visible while recalculating (stale-while-revalidate).
+            Income Value updates immediately from worksheet sliders; Target Buy and
+            Market Price follow overrides / verdict recalc. Prior values stay visible
+            while recalculating (stale-while-revalidate).
           */}
                 <div
                   id="strategy-deal-gap-bar"
