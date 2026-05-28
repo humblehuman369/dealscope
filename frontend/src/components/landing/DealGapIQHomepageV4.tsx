@@ -512,7 +512,8 @@ function FeaturesSection() {
             className="mt-3 text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
             style={DISPLAY_STYLE}
           >
-            Every property can be a deal - at the right price or terms.
+            Every property can be a deal - at the right price{' '}
+            <span className="italic text-[var(--accent-sky)]">or</span> terms.
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
             We uncover the hidden value others miss and give you the exact offer structures to win
