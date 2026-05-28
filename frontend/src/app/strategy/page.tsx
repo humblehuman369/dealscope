@@ -1428,13 +1428,13 @@ function StrategyContent() {
     ? 'Pre-fills price, rent, financing, and seller-carry sliders.'
     : `Each Option pre-fills the worksheet to show how this could work as a ${STRATEGY_LABEL[activeStrategyId] ?? 'rental'}.`
 
-  const appliedPathEntry = useMemo(() => {
+  const appliedPathEntry = (() => {
     if (!appliedPathId) return null
     const paths = strategyFilteredPaths.slice(0, 4)
     const index = paths.findIndex((p) => p.id === appliedPathId)
     if (index < 0) return null
     return { structure: paths[index], index }
-  }, [appliedPathId, strategyFilteredPaths])
+  })()
 
   // Score — capped at 95 (no deal is 100% certain)
   const verdictScore = Math.min(95, Math.max(0, data.deal_score ?? (data as any).dealScore ?? 0))
