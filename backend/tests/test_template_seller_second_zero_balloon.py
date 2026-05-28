@@ -31,14 +31,9 @@ def test_pre_loaded_record_carries_seller_carry_terms():
     assert extras.get("seller_carry_term_years") == 5
 
 
-def test_pre_loaded_record_preserves_full_asking_price():
-    """The entire premise is "full price for terms" — Buy Price must NOT be reduced.
-
-    Without an explicit `custom_purchase_price`, the Strategy worksheet falls back
-    to the LTR-discounted target buy and silently undercuts the offer the pitch
-    promises ("I can pay full asking — {list_price}").
-    """
+def test_pre_loaded_record_never_exceeds_list_price():
+    """Worksheet buy price must stay at or below asking."""
     ctx = base_ctx()
     result = seller_second_zero_balloon.solve(ctx)
     assert result is not None
-    assert result.pre_loaded_record["custom_purchase_price"] == ctx.list_price
+    assert 0 < result.pre_loaded_record["custom_purchase_price"] <= ctx.list_price

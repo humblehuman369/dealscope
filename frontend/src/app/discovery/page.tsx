@@ -72,6 +72,7 @@ import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
 import { buildStrategyUrlWithScenario } from '@/lib/dealStructures/loadScenario'
+import { mapDealStructuresFromApi } from '@/lib/dealStructures/mapDealStructures'
 import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'
 import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
 import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
@@ -875,39 +876,7 @@ function VerdictContent() {
         | null,
       dealStructures: (() => {
         const raw = analysisData.deal_structures ?? analysisData.dealStructures
-        if (!raw) return null
-        const paths = (raw.paths ?? []).map((p: any) => ({
-          id: p.id,
-          family: p.family,
-          familyLabel: p.family_label ?? p.familyLabel ?? '',
-          realismLabel: p.realism_label ?? p.realismLabel ?? '',
-          headline: p.headline,
-          bullets: Array.isArray(p.bullets) ? (p.bullets as string[]) : [],
-          summary: p.summary,
-          levers: (p.levers ?? []).map((lv: any) => ({
-            label: lv.label,
-            beforeLabel: lv.before_label ?? lv.beforeLabel ?? '',
-            afterLabel: lv.after_label ?? lv.afterLabel ?? '',
-            deltaLabel: lv.delta_label ?? lv.deltaLabel ?? null,
-          })),
-          monthlySavings: (p.monthly_savings ?? p.monthlySavings ?? 0) as number,
-          cashRequired: (p.cash_required ?? p.cashRequired ?? 0) as number,
-          rankingScore: (p.ranking_score ?? p.rankingScore ?? 0) as number,
-          pitchScript: (p.pitch_script ?? p.pitchScript ?? null) as string | null,
-          caveat: (p.caveat ?? null) as string | null,
-          selectionReason: (p.selection_reason ?? p.selectionReason ?? null) as string | null,
-          preLoadedRecord: (p.pre_loaded_record ?? p.preLoadedRecord ?? null) as Record<
-            string,
-            unknown
-          > | null,
-        }))
-        return {
-          paths,
-          narrativeParagraphs: (raw.narrative_paragraphs ??
-            raw.narrativeParagraphs ??
-            []) as string[],
-          hasPaths: (raw.has_paths ?? raw.hasPaths ?? paths.length > 0) as boolean,
-        }
+        return mapDealStructuresFromApi(raw as Record<string, unknown> | undefined)
       })(),
       dealProbabilityScore:
         analysisData.deal_probability_score ?? analysisData.dealProbabilityScore ?? undefined,

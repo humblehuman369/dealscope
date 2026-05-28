@@ -16,6 +16,11 @@ from __future__ import annotations
 
 from app.schemas.deal_structures import DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
+from app.services.deal_structures.cashflow import (
+    TARGET_MONTHLY_CASH_FLOW,
+    project_monthly_cash_flow,
+    rent_for_target_cash_flow,
+)
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.formatting import (
     fmt_money,
@@ -73,7 +78,12 @@ def _solve_price_for_savings(target: float, ctx: StructureContext) -> tuple[floa
     return new_price, _price_savings_at(new_price, ctx)
 
 
-def _solve_seller_second_for_savings(target: float, ctx: StructureContext) -> tuple[float, float]:
+def _solve_seller_second_for_savings(
+    target: float,
+    ctx: StructureContext,
+    *,
+    purchase_price: float | None = None,
+) -> tuple[float, float]:
     """Bisection on the seller-2nd principal for given monthly savings.
 
     The 2nd is interest-only at 0% (no monthly cost), so every dollar shifted
@@ -81,11 +91,12 @@ def _solve_seller_second_for_savings(target: float, ctx: StructureContext) -> tu
 
     Returns ``(chosen_second, achieved_savings)``.
     """
-    if target <= 0 or ctx.list_price <= 0:
+    price = purchase_price if purchase_price is not None and purchase_price > 0 else ctx.list_price
+    if target <= 0 or price <= 0:
         return 0.0, 0.0
 
-    bank_loan = ctx.list_price * (1 - ctx.down_payment_pct)
-    max_second = ctx.list_price * MAX_SECOND_AS_PCT_OF_PRICE
+    bank_loan = price * (1 - ctx.down_payment_pct)
+    max_second = price * MAX_SECOND_AS_PCT_OF_PRICE
 
     def savings_at(second: float) -> float:
         new_bank = max(0.0, bank_loan - second)
@@ -213,11 +224,87 @@ def solve(
     target_p, target_f, target_r = _allocate_with_bleed(gap, weights, caps)
 
     new_price, savings_p = _solve_price_for_savings(target_p, ctx)
-    chosen_second, savings_f = _solve_seller_second_for_savings(target_f, ctx)
+    chosen_second, savings_f = _solve_seller_second_for_savings(
+        target_f, ctx, purchase_price=new_price
+    )
     new_rent, rent_bump, savings_r = _solve_rent_for_savings(target_r, ctx)
 
     monthly_savings = round(savings_p + savings_f + savings_r, 2)
     if monthly_savings <= 0:
+        return None
+
+    cf = project_monthly_cash_flow(
+        ctx,
+        purchase_price=new_price,
+        monthly_rent=new_rent,
+        seller_carry_amount=chosen_second,
+        seller_carry_rate=0.0,
+        seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+    )
+    if cf < TARGET_MONTHLY_CASH_FLOW:
+        max_rent = ctx.monthly_rent * (1 + RENT_MAX_BUMP_PCT)
+        bumped = rent_for_target_cash_flow(
+            ctx,
+            purchase_price=new_price,
+            seller_carry_amount=chosen_second,
+            seller_carry_rate=0.0,
+            seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+            max_rent=max_rent,
+        )
+        if bumped is not None and bumped > new_rent:
+            new_rent = bumped
+            rent_bump = new_rent - ctx.monthly_rent
+            savings_r = rent_bump * (
+                (1 - ctx.vacancy_rate)
+                - (ctx.maintenance_pct + ctx.management_pct + ctx.capex_pct)
+            )
+            monthly_savings = round(savings_p + savings_f + savings_r, 2)
+            cf = project_monthly_cash_flow(
+                ctx,
+                purchase_price=new_price,
+                monthly_rent=new_rent,
+                seller_carry_amount=chosen_second,
+                seller_carry_rate=0.0,
+                seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+            )
+
+    if cf < TARGET_MONTHLY_CASH_FLOW:
+        lo, hi = 0.0, new_price
+        best_price = 0.0
+        for _ in range(40):
+            mid = (lo + hi) / 2
+            sc_mid, _ = _solve_seller_second_for_savings(
+                target_f, ctx, purchase_price=mid
+            )
+            test_cf = project_monthly_cash_flow(
+                ctx,
+                purchase_price=mid,
+                monthly_rent=new_rent,
+                seller_carry_amount=sc_mid,
+                seller_carry_rate=0.0,
+                seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+            )
+            if test_cf >= TARGET_MONTHLY_CASH_FLOW:
+                best_price = mid
+                lo = mid
+            else:
+                hi = mid
+        if best_price <= 0:
+            return None
+        new_price = best_price
+        chosen_second, savings_f = _solve_seller_second_for_savings(
+            target_f, ctx, purchase_price=new_price
+        )
+        cf = project_monthly_cash_flow(
+            ctx,
+            purchase_price=new_price,
+            monthly_rent=new_rent,
+            seller_carry_amount=chosen_second,
+            seller_carry_rate=0.0,
+            seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+        )
+
+    if cf < TARGET_MONTHLY_CASH_FLOW:
         return None
 
     # Cash to close: price drop reduces it; seller carry stays in 1st/2nd ratio.

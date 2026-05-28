@@ -2,6 +2,10 @@
 
 from app.schemas.deal_structures import DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
+from app.services.deal_structures.cashflow import (
+    TARGET_MONTHLY_CASH_FLOW,
+    project_monthly_cash_flow,
+)
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.formatting import (
     fmt_money,
@@ -20,6 +24,21 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         return None
 
     new_price = ctx.target_buy_price
+    # Target Buy can be stale vs current rent/opex — bisect down until cash flow clears.
+    if project_monthly_cash_flow(
+        ctx, purchase_price=new_price, monthly_rent=ctx.monthly_rent
+    ) < TARGET_MONTHLY_CASH_FLOW:
+        lo, hi = 0.0, new_price
+        for _ in range(40):
+            mid = (lo + hi) / 2
+            if project_monthly_cash_flow(
+                ctx, purchase_price=mid, monthly_rent=ctx.monthly_rent
+            ) >= TARGET_MONTHLY_CASH_FLOW:
+                new_price = mid
+                lo = mid
+            else:
+                hi = mid
+
     new_loan = new_price * (1 - ctx.down_payment_pct)
     new_monthly_pi = calculate_monthly_mortgage(new_loan, ctx.interest_rate, ctx.loan_term_years)
     monthly_savings = ctx.baseline_monthly_pi - new_monthly_pi

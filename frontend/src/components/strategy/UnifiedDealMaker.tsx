@@ -4,6 +4,8 @@ import React from 'react'
 import { DealMakerSlider } from '@/features/deal-maker/components/DealMakerSlider'
 import type { SliderConfig } from '@/features/deal-maker/components/types'
 import type { InlineDealMakerValues } from './InlineDealMakerPanel'
+import { sellerMonthlyPayment } from '@/lib/sellerFinancing'
+import { calculateMortgagePayment } from '@/utils/calculations'
 
 function formatCurrency(v: number): string {
   return `$${Math.round(v).toLocaleString()}`
@@ -11,10 +13,7 @@ function formatCurrency(v: number): string {
 
 function monthlyMortgagePI(principal: number, annualRate: number, years: number): number {
   if (principal <= 0 || years <= 0) return 0
-  if (annualRate === 0) return principal / (years * 12)
-  const r = annualRate / 12
-  const n = years * 12
-  return (principal * (r * (1 + r) ** n)) / ((1 + r) ** n - 1)
+  return calculateMortgagePayment(principal, annualRate * 100, years)
 }
 
 const C = {
@@ -192,7 +191,7 @@ export function UnifiedDealMaker(props: UnifiedDealMakerProps) {
   )
   const sellerPiEst =
     sellerAmt > 0
-      ? monthlyMortgagePI(
+      ? sellerMonthlyPayment(
           sellerAmt,
           sliderValues.sellerInterestRate ?? 0,
           sliderValues.sellerTermYears ?? 5,

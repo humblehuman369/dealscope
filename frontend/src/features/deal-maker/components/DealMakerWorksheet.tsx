@@ -28,6 +28,7 @@ import type {
   WholesaleMetrics,
 } from './types'
 import { computeLtrOperatingExpenseBreakdown } from '@/lib/ltrOperatingExpenses'
+import { sellerMonthlyPayment } from '@/lib/sellerFinancing'
 
 export type WorksheetOperatingExpenseDefaults = {
   landscapingAnnual?: number | null
@@ -560,7 +561,11 @@ function LTRWorksheet({
   const sellerMonthly = hasSellerFinancing
     ? typeof sellerRaw === 'number' && isFinite(sellerRaw)
       ? sellerRaw
-      : monthlyPI(state.sellerFinancingAmount, state.sellerInterestRate, state.sellerTermYears)
+      : sellerMonthlyPayment(
+          state.sellerFinancingAmount,
+          state.sellerInterestRate,
+          state.sellerTermYears,
+        )
     : 0
   // When the slider shows no seller financing, force Combined = Bank P&I so
   // the displayed math stays internally consistent even if the backend
@@ -833,7 +838,11 @@ function STRWorksheet({
     typeof sellerRaw === 'number' && isFinite(sellerRaw)
       ? sellerRaw
       : state.sellerFinancingAmount > 0
-        ? monthlyPI(state.sellerFinancingAmount, state.sellerInterestRate, state.sellerTermYears)
+        ? sellerMonthlyPayment(
+            state.sellerFinancingAmount,
+            state.sellerInterestRate,
+            state.sellerTermYears,
+          )
         : 0
   const monthlyPayment = num(m, 'monthlyPayment') || bankMonthly + sellerMonthly
   const cashNeeded = cashNeededSellerOffset(
@@ -1371,7 +1380,11 @@ function FlipWorksheet({
     state.financingType !== 'cash' && loanAmount > 0 ? (loanAmount * state.hardMoneyRate) / 12 : 0
   const sellerMonthly =
     state.sellerFinancingAmount > 0
-      ? monthlyPI(state.sellerFinancingAmount, state.sellerInterestRate, state.sellerTermYears)
+      ? sellerMonthlyPayment(
+          state.sellerFinancingAmount,
+          state.sellerInterestRate,
+          state.sellerTermYears,
+        )
       : 0
   const combinedDebtMonthly = hmMonthly + sellerMonthly
   const points = num(m, 'loanPointsCost')
@@ -1623,7 +1636,11 @@ function HouseHackWorksheet({
   const bankPiCalc = monthlyPI(loanAmt, state.interestRate, state.loanTermYears)
   const sellerPiCalc =
     state.sellerFinancingAmount > 0
-      ? monthlyPI(state.sellerFinancingAmount, state.sellerInterestRate, state.sellerTermYears)
+      ? sellerMonthlyPayment(
+          state.sellerFinancingAmount,
+          state.sellerInterestRate,
+          state.sellerTermYears,
+        )
       : 0
   const combinedPiFallback = bankPiCalc + sellerPiCalc
   const piRaw = m['monthlyPrincipalInterest']

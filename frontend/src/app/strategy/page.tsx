@@ -48,6 +48,7 @@ import {
   readLastAppliedScenario,
   writeLastAppliedScenario,
 } from '@/lib/dealStructures/loadScenario'
+import { mapDealStructuresFromApi } from '@/lib/dealStructures/mapDealStructures'
 import {
   computeHighlightedStateFields,
   inlineOverrideKeyToStateField,
@@ -726,35 +727,12 @@ function StrategyContent() {
       (d?.deal_structures as Record<string, unknown> | undefined) ??
       (d?.dealStructures as Record<string, unknown> | undefined)
     if (!raw) return []
-    const paths = Array.isArray(raw.paths) ? raw.paths : []
-    const hasPaths = (raw.has_paths as boolean | undefined) ?? (raw.hasPaths as boolean | undefined)
-    // Prefer trusting a non-empty `paths` array even if `hasPaths` is false (defensive).
-    if (paths.length === 0 && hasPaths === false) return []
-    return paths.map((p: any) => ({
-      id: String(p.id ?? ''),
-      family: p.family,
-      familyLabel: (p.family_label ?? p.familyLabel ?? '') as string,
-      realismLabel: (p.realism_label ?? p.realismLabel ?? '') as string,
-      headline: (p.headline ?? '') as string,
-      bullets: Array.isArray(p.bullets) ? (p.bullets as string[]) : [],
-      summary: (p.summary ?? '') as string,
-      levers: (p.levers ?? []).map((lv: any) => ({
-        label: lv.label,
-        beforeLabel: lv.before_label ?? lv.beforeLabel ?? '',
-        afterLabel: lv.after_label ?? lv.afterLabel ?? '',
-        deltaLabel: lv.delta_label ?? lv.deltaLabel ?? null,
-      })),
-      monthlySavings: (p.monthly_savings ?? p.monthlySavings ?? 0) as number,
-      cashRequired: (p.cash_required ?? p.cashRequired ?? 0) as number,
-      rankingScore: (p.ranking_score ?? p.rankingScore ?? 0) as number,
-      pitchScript: (p.pitch_script ?? p.pitchScript ?? null) as string | null,
-      caveat: (p.caveat ?? null) as string | null,
-      selectionReason: (p.selection_reason ?? p.selectionReason ?? null) as string | null,
-      preLoadedRecord: (p.pre_loaded_record ?? p.preLoadedRecord ?? null) as Record<
-        string,
-        unknown
-      > | null,
-    }))
+    const mapped = mapDealStructuresFromApi(raw)
+    if (!mapped || mapped.paths.length === 0) {
+      if (mapped?.hasPaths === false) return []
+      return []
+    }
+    return mapped.paths
   }, [data, addressParam, analysisAddressKey])
 
   /**

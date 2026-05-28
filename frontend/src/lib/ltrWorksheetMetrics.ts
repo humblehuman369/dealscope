@@ -7,6 +7,7 @@
  */
 
 import { computeLtrOperatingExpenseBreakdown } from '@/lib/ltrOperatingExpenses'
+import { sellerMonthlyPayment } from '@/lib/sellerFinancing'
 import { calculateMortgagePayment } from '@/utils/calculations'
 import type { LTRDealMakerMetrics, LTRDealMakerState } from '@/features/deal-maker/components/types'
 
@@ -30,9 +31,9 @@ export function computeLtrMetricsFromState(
       : 0
   const sellerPi =
     sellerFin > 0
-      ? calculateMortgagePayment(
+      ? sellerMonthlyPayment(
           sellerFin,
-          (state.sellerInterestRate ?? 0) * 100,
+          state.sellerInterestRate ?? 0,
           state.sellerTermYears ?? 30,
         )
       : 0

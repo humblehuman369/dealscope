@@ -7,7 +7,13 @@ This is the trending creative-finance pattern (Pace Morby, BiggerPockets).
 
 from app.schemas.deal_structures import DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
+from app.services.deal_structures.cashflow import (
+    TARGET_MONTHLY_CASH_FLOW,
+    project_monthly_cash_flow,
+    rent_for_target_cash_flow,
+)
 from app.services.deal_structures.context import StructureContext
+from app.services.deal_structures.templates.rent_uplift import MAX_REALISTIC_BUMP_PCT
 from app.services.deal_structures.formatting import (
     fmt_money,
     fmt_money_precise,
@@ -71,6 +77,115 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     new_monthly_pi = calculate_monthly_mortgage(new_bank_loan, ctx.interest_rate, ctx.loan_term_years)
     monthly_savings = ctx.baseline_monthly_pi - new_monthly_pi
     cash_required = new_price * (ctx.down_payment_pct + ctx.closing_costs_pct)
+
+    custom_rent = ctx.monthly_rent
+    cf = project_monthly_cash_flow(
+        ctx,
+        purchase_price=new_price,
+        monthly_rent=custom_rent,
+        seller_carry_amount=chosen_second,
+        seller_carry_rate=0.0,
+        seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+    )
+    # Full ask + max 2nd still negative → step down to Target Buy and re-size the 2nd.
+    if cf < TARGET_MONTHLY_CASH_FLOW and ctx.target_buy_price < new_price:
+        new_price = ctx.target_buy_price
+        bank_loan = new_price * (1 - ctx.down_payment_pct)
+        max_second = new_price * MAX_SECOND_AS_PCT_OF_PRICE
+        lo, hi = 0.0, max_second
+        chosen_second = max_second
+        for _ in range(40):
+            mid = (lo + hi) / 2
+            test_cf = project_monthly_cash_flow(
+                ctx,
+                purchase_price=new_price,
+                monthly_rent=custom_rent,
+                seller_carry_amount=mid,
+                seller_carry_rate=0.0,
+                seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+            )
+            if test_cf >= TARGET_MONTHLY_CASH_FLOW:
+                chosen_second = mid
+                hi = mid
+            else:
+                lo = mid
+        new_bank_loan = max(0.0, bank_loan - chosen_second)
+        new_monthly_pi = calculate_monthly_mortgage(
+            new_bank_loan, ctx.interest_rate, ctx.loan_term_years
+        )
+        monthly_savings = ctx.baseline_monthly_pi - new_monthly_pi
+        cash_required = new_price * (ctx.down_payment_pct + ctx.closing_costs_pct)
+        cf = project_monthly_cash_flow(
+            ctx,
+            purchase_price=new_price,
+            monthly_rent=custom_rent,
+            seller_carry_amount=chosen_second,
+            seller_carry_rate=0.0,
+            seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+        )
+
+    if cf < TARGET_MONTHLY_CASH_FLOW:
+        max_rent = ctx.monthly_rent * (1 + MAX_REALISTIC_BUMP_PCT)
+        bumped = rent_for_target_cash_flow(
+            ctx,
+            purchase_price=new_price,
+            seller_carry_amount=chosen_second,
+            seller_carry_rate=0.0,
+            seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+            max_rent=max_rent,
+        )
+        if bumped is not None and bumped > custom_rent:
+            custom_rent = bumped
+            cf = project_monthly_cash_flow(
+                ctx,
+                purchase_price=new_price,
+                monthly_rent=custom_rent,
+                seller_carry_amount=chosen_second,
+                seller_carry_rate=0.0,
+                seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+            )
+
+    if cf < TARGET_MONTHLY_CASH_FLOW:
+        # Maximize purchase price subject to positive cash flow (may be below Target Buy).
+        lo, hi = 0.0, new_price
+        best_price = 0.0
+        for _ in range(40):
+            mid = (lo + hi) / 2
+            max_sc = mid * MAX_SECOND_AS_PCT_OF_PRICE
+            test_cf = project_monthly_cash_flow(
+                ctx,
+                purchase_price=mid,
+                monthly_rent=custom_rent,
+                seller_carry_amount=max_sc,
+                seller_carry_rate=0.0,
+                seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+            )
+            if test_cf >= TARGET_MONTHLY_CASH_FLOW:
+                best_price = mid
+                lo = mid
+            else:
+                hi = mid
+        if best_price <= 0:
+            return None
+        new_price = best_price
+        chosen_second = new_price * MAX_SECOND_AS_PCT_OF_PRICE
+        new_bank_loan = max(0.0, new_price * (1 - ctx.down_payment_pct) - chosen_second)
+        new_monthly_pi = calculate_monthly_mortgage(
+            new_bank_loan, ctx.interest_rate, ctx.loan_term_years
+        )
+        monthly_savings = ctx.baseline_monthly_pi - new_monthly_pi
+        cash_required = new_price * (ctx.down_payment_pct + ctx.closing_costs_pct)
+        cf = project_monthly_cash_flow(
+            ctx,
+            purchase_price=new_price,
+            monthly_rent=custom_rent,
+            seller_carry_amount=chosen_second,
+            seller_carry_rate=0.0,
+            seller_carry_term_years=DEFAULT_BALLOON_YEARS,
+        )
+
+    if cf < TARGET_MONTHLY_CASH_FLOW:
+        return None
 
     # Realism scoring — this structure has been getting more common.
     ranking = 70.0
@@ -199,11 +314,12 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         caveat=caveat,
         selection_reason=sel_reason,
         pre_loaded_record={
-            # Seller-second preserves full asking price — the entire premise is
-            # "price for terms": the buyer pays full ask in exchange for the seller
-            # carrying a 0% second. Without this, the worksheet's Target Buy would
-            # fall back to the LTR-discounted price and silently undercut the offer.
             "custom_purchase_price": new_price,
+            **(
+                {"custom_rent_estimate": custom_rent}
+                if custom_rent > ctx.monthly_rent + 1
+                else {}
+            ),
             "pending_extras": {
                 "seller_carry_amount": chosen_second,
                 "seller_carry_rate": 0.0,

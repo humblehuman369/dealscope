@@ -99,6 +99,19 @@ def calculate_monthly_mortgage(principal: float, annual_rate: float, years: int)
     return payment
 
 
+def seller_monthly_payment(principal: float, annual_rate: float, term_years: int) -> float:
+    """Monthly seller-carry P&I.
+
+    0% seller seconds (creative finance) are interest-only until balloon — no monthly
+    payment. Non-zero rates amortize over the note term.
+    """
+    if principal <= 0:
+        return 0.0
+    if annual_rate <= 0:
+        return 0.0
+    return calculate_monthly_mortgage(principal, annual_rate, max(1, int(term_years or 5)))
+
+
 def conventional_first_lien_loan(purchase_price: float, down_payment_dollars: float) -> float:
     """Bank loan = purchase price minus buyer down payment."""
     pp = float(purchase_price)
@@ -161,8 +174,9 @@ def combined_bank_and_seller_pi(
     bank_pi = calculate_monthly_mortgage(bank_loan, bank_rate, bank_term_years)
     if seller_principal <= 0:
         return bank_pi, 0.0, bank_pi
-    st = max(1, int(seller_term_years or 5))
-    seller_pi = calculate_monthly_mortgage(seller_principal, seller_rate, st)
+    seller_pi = seller_monthly_payment(
+        seller_principal, seller_rate, max(1, int(seller_term_years or 5))
+    )
     return bank_pi, seller_pi, bank_pi + seller_pi
 
 
