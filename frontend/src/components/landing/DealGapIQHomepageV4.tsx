@@ -754,7 +754,7 @@ function FinalCTASection({ onStart }: { onStart: () => void }) {
         </div>
 
         <h2 className="text-[clamp(2rem,5.5vw,3.25rem)] text-[var(--text-heading)] md:text-5xl" style={DISPLAY_STYLE}>
-          Trust comes from seeing the work.
+          Trust comes from seeing the logic that generates profit.
         </h2>
         <p className="mx-auto mt-4 max-w-md text-lg text-[var(--text-secondary)] md:text-xl">
           Every number, every source, every script is reviewable. No black boxes.
