@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-27T08:12:40.871048+00:00",
+  "generated_at": "2026-05-28T05:02:40.652742+00:00",
   "stats": {
     "total_lenders": 484,
     "by_contact_type": {
@@ -74,6 +74,13 @@
       "ground_up": 41,
       "brrrr": 49
     },
+    "by_credit_policy": {
+      "none": 175,
+      "hard_pull": 151,
+      "unknown": 141,
+      "soft_pull": 17
+    },
+    "no_credit_check_count": 192,
     "nationwide_count": 79
   },
   "lenders": [
@@ -170,6 +177,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -235,6 +245,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2007,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 580,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -296,6 +309,9 @@
       "nmls_id": "1281",
       "aapl_member": null,
       "year_founded": 2005,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -343,6 +359,9 @@
       "nmls_id": "162461",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -388,6 +407,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -447,6 +469,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -494,6 +519,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -538,6 +566,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -592,6 +623,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -639,6 +673,9 @@
       "nmls_id": "255368",
       "aapl_member": null,
       "year_founded": 1999,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -684,6 +721,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -728,6 +768,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2004,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -775,6 +818,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -818,6 +864,9 @@
       "nmls_id": "1951574",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -866,6 +915,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -910,6 +962,9 @@
       "nmls_id": "278210",
       "aapl_member": null,
       "year_founded": 1984,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -961,6 +1016,9 @@
       "nmls_id": "298819",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -1005,6 +1063,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -1104,6 +1165,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2015,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -1199,6 +1263,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2007,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -1294,6 +1361,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -1338,6 +1408,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -1434,6 +1507,9 @@
       "nmls_id": "93735",
       "aapl_member": null,
       "year_founded": 2004,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -1478,6 +1554,9 @@
       "nmls_id": "138422",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -1522,6 +1601,9 @@
       "nmls_id": "245422",
       "aapl_member": null,
       "year_founded": 1994,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 500,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -1567,6 +1649,9 @@
       "nmls_id": "320385",
       "aapl_member": null,
       "year_founded": 1990,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -1650,6 +1735,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -1708,6 +1796,9 @@
       "nmls_id": "2289894",
       "aapl_member": null,
       "year_founded": 1998,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -1753,6 +1844,9 @@
       "nmls_id": "1160240",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 640,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -1851,6 +1945,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1997,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -1896,6 +1993,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -1942,6 +2042,9 @@
       "nmls_id": "175371",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -1989,6 +2092,9 @@
       "nmls_id": "334620",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -2039,6 +2145,9 @@
       "nmls_id": "2674250",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -2085,6 +2194,9 @@
       "nmls_id": "1502345",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -2134,6 +2246,9 @@
       "nmls_id": "1007154",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -2226,6 +2341,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -2315,6 +2433,9 @@
       "nmls_id": "2449622",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -2359,6 +2480,9 @@
       "nmls_id": "380601",
       "aapl_member": null,
       "year_founded": 2006,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -2452,6 +2576,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2003,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 650,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -2501,6 +2628,9 @@
       "nmls_id": "#1359227",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -2597,6 +2727,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2015,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -2692,6 +2825,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -2733,6 +2869,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -2778,6 +2917,9 @@
       "nmls_id": "1703543",
       "aapl_member": null,
       "year_founded": 1997,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -2850,6 +2992,9 @@
       "nmls_id": "1799947",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -2907,6 +3052,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -2954,6 +3102,9 @@
       "nmls_id": "2552455",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 580,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3001,6 +3152,9 @@
       "nmls_id": "2046862",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3046,6 +3200,9 @@
       "nmls_id": "2234263",
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -3091,6 +3248,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3142,6 +3302,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -3186,6 +3349,9 @@
       "nmls_id": "209137",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3230,6 +3396,9 @@
       "nmls_id": "196864",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3275,6 +3444,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3330,6 +3502,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2015,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3377,6 +3552,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -3421,6 +3599,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -3467,6 +3648,9 @@
       "nmls_id": "195785",
       "aapl_member": null,
       "year_founded": 2014,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -3513,6 +3697,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -3558,6 +3745,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -3608,6 +3798,9 @@
       "nmls_id": "MNMLS #189497",
       "aapl_member": null,
       "year_founded": 2007,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3703,6 +3896,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1997,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3751,6 +3947,9 @@
       "nmls_id": null,
       "aapl_member": true,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3818,6 +4017,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3912,6 +4114,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1992,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -3961,6 +4166,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2016,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -4057,6 +4265,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -4150,6 +4361,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -4247,6 +4461,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2000,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -4295,6 +4512,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -4341,6 +4561,9 @@
       "nmls_id": "684321",
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -4384,6 +4607,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -4444,6 +4670,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -4503,6 +4732,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1998,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -4595,6 +4827,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -4641,6 +4876,9 @@
       "nmls_id": "372157",
       "aapl_member": null,
       "year_founded": 1996,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -4687,6 +4925,9 @@
       "nmls_id": "1922416",
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -4741,6 +4982,9 @@
       "nmls_id": "396288",
       "aapl_member": null,
       "year_founded": 2009,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -4791,6 +5035,9 @@
       "nmls_id": "1500207",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -4840,6 +5087,9 @@
       "nmls_id": "1500207",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -4935,6 +5185,9 @@
       "nmls_id": "2723764",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -5034,6 +5287,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -5096,6 +5352,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -5164,6 +5423,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -5211,6 +5473,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2006,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -5263,6 +5528,9 @@
       "nmls_id": null,
       "aapl_member": true,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -5307,6 +5575,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2012,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -5350,6 +5621,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -5436,6 +5710,9 @@
       "nmls_id": "905781",
       "aapl_member": null,
       "year_founded": 2010,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 640,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -5514,6 +5791,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -5562,6 +5842,9 @@
       "nmls_id": "1584481",
       "aapl_member": null,
       "year_founded": 2017,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 540,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -5609,6 +5892,9 @@
       "nmls_id": "85855",
       "aapl_member": null,
       "year_founded": 1998,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -5707,6 +5993,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -5753,6 +6042,9 @@
       "nmls_id": "149378",
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -5797,6 +6089,9 @@
       "nmls_id": "1652918",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -5849,6 +6144,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -5895,6 +6193,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2003,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -5942,6 +6243,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -5988,6 +6292,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1975,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -6034,6 +6341,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6087,6 +6397,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6171,6 +6484,9 @@
       "nmls_id": "1168701",
       "aapl_member": null,
       "year_founded": 2018,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6218,6 +6534,9 @@
       "nmls_id": "1818623",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6272,6 +6591,9 @@
       "nmls_id": "1627183",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6324,6 +6646,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2016,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -6368,6 +6693,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2010,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6413,6 +6741,9 @@
       "nmls_id": "390159",
       "aapl_member": null,
       "year_founded": 1994,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6461,6 +6792,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1977,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -6559,6 +6893,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -6656,6 +6993,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2013,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 640,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6700,6 +7040,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2014,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6744,6 +7087,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -6790,6 +7136,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2014,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6833,6 +7182,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6881,6 +7233,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6930,6 +7285,9 @@
       "nmls_id": "1556995",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -6979,6 +7337,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7030,6 +7391,9 @@
       "nmls_id": "1547352",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7078,6 +7442,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -7157,6 +7524,9 @@
       "nmls_id": "2111568",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 640,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7205,6 +7575,9 @@
       "nmls_id": "2141784",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7264,6 +7637,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2016,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7312,6 +7688,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -7356,6 +7735,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7403,6 +7785,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7459,6 +7844,9 @@
       "nmls_id": "1835285",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7510,6 +7898,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1974,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -7609,6 +8000,9 @@
       "nmls_id": "2029225",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7655,6 +8049,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7751,6 +8148,9 @@
       "nmls_id": "898795",
       "aapl_member": null,
       "year_founded": 2006,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7797,6 +8197,9 @@
       "nmls_id": "2856",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7845,6 +8248,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -7890,6 +8296,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2005,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -7982,6 +8391,9 @@
       "nmls_id": "2167568",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -8026,6 +8438,9 @@
       "nmls_id": "1704105",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -8069,6 +8484,9 @@
       "nmls_id": "1205048",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -8164,6 +8582,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2009,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -8209,6 +8630,9 @@
       "nmls_id": "763350",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -8261,6 +8685,9 @@
       "nmls_id": "1523517",
       "aapl_member": null,
       "year_founded": 1990,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -8359,6 +8786,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -8454,6 +8884,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2017,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -8501,6 +8934,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1988,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -8552,6 +8988,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1975,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -8598,6 +9037,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1975,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -8688,6 +9130,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -8780,6 +9225,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -8824,6 +9272,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2015,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -8872,6 +9323,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1978,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -8916,6 +9370,9 @@
       "nmls_id": "268792",
       "aapl_member": null,
       "year_founded": 1998,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -9010,6 +9467,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -9058,6 +9518,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -9108,6 +9571,9 @@
       "nmls_id": "1165726",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 650,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -9203,6 +9669,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -9247,6 +9716,9 @@
       "nmls_id": "402963",
       "aapl_member": null,
       "year_founded": 1915,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -9341,6 +9813,9 @@
       "nmls_id": "631666",
       "aapl_member": null,
       "year_founded": 1979,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -9385,6 +9860,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -9438,6 +9916,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -9534,6 +10015,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -9594,6 +10078,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -9642,6 +10129,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -9694,6 +10184,9 @@
       "nmls_id": "1892568",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -9790,6 +10283,9 @@
       "nmls_id": "2260234",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -9839,6 +10335,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2022,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -9884,6 +10383,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -9961,6 +10463,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -10009,6 +10514,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -10082,6 +10590,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1989,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -10125,6 +10636,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -10212,6 +10726,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -10309,6 +10826,9 @@
       "nmls_id": "1636005",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -10353,6 +10873,9 @@
       "nmls_id": "212990",
       "aapl_member": null,
       "year_founded": 2001,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -10397,6 +10920,9 @@
       "nmls_id": "241012",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -10442,6 +10968,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2001,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -10487,6 +11016,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -10531,6 +11063,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -10577,6 +11112,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -10657,6 +11195,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -10704,6 +11245,9 @@
       "nmls_id": "248980",
       "aapl_member": null,
       "year_founded": 1982,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -10748,6 +11292,9 @@
       "nmls_id": "248980",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -10794,6 +11341,9 @@
       "nmls_id": "248980",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -10888,6 +11438,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -10986,6 +11539,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2013,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -11081,6 +11637,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11129,6 +11688,9 @@
       "nmls_id": "279696",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -11231,6 +11793,9 @@
       "nmls_id": "873293",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 500,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -11282,6 +11847,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2007,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11331,6 +11899,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11377,6 +11948,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1976,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11452,6 +12026,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11495,6 +12072,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11544,6 +12124,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11591,6 +12174,9 @@
       "nmls_id": "181106",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11640,6 +12226,9 @@
       "nmls_id": "#1390213",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11685,6 +12274,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -11730,6 +12322,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -11778,6 +12373,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11824,6 +12422,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11868,6 +12469,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -11918,6 +12522,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -11971,6 +12578,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -12015,6 +12625,9 @@
       "nmls_id": "338682",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -12062,6 +12675,9 @@
       "nmls_id": "2335096",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -12118,6 +12734,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -12170,6 +12789,9 @@
       "nmls_id": "143636",
       "aapl_member": null,
       "year_founded": 1980,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -12266,6 +12888,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -12325,6 +12950,9 @@
       "nmls_id": "1003404",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -12370,6 +12998,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -12419,6 +13050,9 @@
       "nmls_id": "2625701",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -12515,6 +13149,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -12565,6 +13202,9 @@
       "nmls_id": "2631",
       "aapl_member": null,
       "year_founded": 1983,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -12660,6 +13300,9 @@
       "nmls_id": "2262692",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 640,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -12722,6 +13365,9 @@
       "nmls_id": "267051",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -12788,6 +13434,9 @@
       "nmls_id": "2383700",
       "aapl_member": null,
       "year_founded": 2018,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -12835,6 +13484,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -12886,6 +13538,9 @@
       "nmls_id": "478664",
       "aapl_member": null,
       "year_founded": 1999,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -12967,6 +13622,9 @@
       "nmls_id": "2394450",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13014,6 +13672,9 @@
       "nmls_id": "1118243",
       "aapl_member": null,
       "year_founded": 2013,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 575,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13060,6 +13721,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -13153,6 +13817,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13197,6 +13864,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13287,6 +13957,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13337,6 +14010,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13378,6 +14054,9 @@
       "nmls_id": "1006977",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13467,6 +14146,9 @@
       "nmls_id": "2017191",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13513,6 +14195,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2009,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13563,6 +14248,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13606,6 +14294,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 550,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13651,6 +14342,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -13698,6 +14392,9 @@
       "nmls_id": "1623101",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -13746,6 +14443,9 @@
       "nmls_id": "241784",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 650,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13794,6 +14494,9 @@
       "nmls_id": "854231",
       "aapl_member": null,
       "year_founded": 2009,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13836,6 +14539,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -13931,6 +14637,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -14026,6 +14735,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -14121,6 +14833,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -14172,6 +14887,9 @@
       "nmls_id": "935554",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -14226,6 +14944,9 @@
       "nmls_id": "1657323",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -14322,6 +15043,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -14367,6 +15091,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -14463,6 +15190,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -14510,6 +15240,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -14559,6 +15292,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1992,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -14606,6 +15342,9 @@
       "nmls_id": "296471",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -14704,6 +15443,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -14766,6 +15508,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -14861,6 +15606,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -14906,6 +15654,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2015,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -14960,6 +15711,9 @@
       "nmls_id": "99045",
       "aapl_member": null,
       "year_founded": 2006,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15001,6 +15755,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15097,6 +15854,9 @@
       "nmls_id": "32417",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15140,6 +15900,9 @@
       "nmls_id": "174095",
       "aapl_member": null,
       "year_founded": 2007,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15189,6 +15952,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15233,6 +15999,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -15301,6 +16070,9 @@
       "nmls_id": "1508627",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -15381,6 +16153,9 @@
       "nmls_id": "2371349",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -15431,6 +16206,9 @@
       "nmls_id": "1326437",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15484,6 +16262,9 @@
       "nmls_id": "1326437",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15536,6 +16317,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15591,6 +16375,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2020,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15685,6 +16472,9 @@
       "nmls_id": "1324403",
       "aapl_member": null,
       "year_founded": 2010,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 700,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15730,6 +16520,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2006,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -15774,6 +16567,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 580,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15820,6 +16616,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2006,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 550,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -15866,6 +16665,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2007,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -15915,6 +16717,9 @@
       "nmls_id": "285084",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -15962,6 +16767,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16009,6 +16817,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2018,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16053,6 +16864,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16107,6 +16921,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16203,6 +17020,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2020,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 640,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16300,6 +17120,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -16343,6 +17166,9 @@
       "nmls_id": "1281698",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16386,6 +17212,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2013,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16462,6 +17291,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16512,6 +17344,9 @@
       "nmls_id": "860339",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -16555,6 +17390,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -16598,6 +17436,9 @@
       "nmls_id": "806170",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -16644,6 +17485,9 @@
       "nmls_id": "1885405",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16690,6 +17534,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -16738,6 +17585,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1989,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16788,6 +17638,9 @@
       "nmls_id": "3446",
       "aapl_member": null,
       "year_founded": 2006,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16832,6 +17685,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -16880,6 +17736,9 @@
       "nmls_id": null,
       "aapl_member": true,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -16923,6 +17782,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -16967,6 +17829,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 575,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17017,6 +17882,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17064,6 +17932,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2011,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17108,6 +17979,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17152,6 +18026,9 @@
       "nmls_id": "259288",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -17200,6 +18077,9 @@
       "nmls_id": "BK-1046952",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -17244,6 +18124,9 @@
       "nmls_id": "227722",
       "aapl_member": null,
       "year_founded": 1997,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17288,6 +18171,9 @@
       "nmls_id": "1653619",
       "aapl_member": null,
       "year_founded": 2017,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17334,6 +18220,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1999,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -17379,6 +18268,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -17476,6 +18368,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2025,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17524,6 +18419,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2005,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17582,6 +18480,9 @@
       "nmls_id": "131062",
       "aapl_member": null,
       "year_founded": 1987,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17684,6 +18585,9 @@
       "nmls_id": "173855",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17765,6 +18669,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17814,6 +18721,9 @@
       "nmls_id": "1873548",
       "aapl_member": null,
       "year_founded": 2019,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -17858,6 +18768,9 @@
       "nmls_id": "2637160",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -17902,6 +18815,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1971,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -17970,6 +18886,9 @@
       "nmls_id": "1936",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 700,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -18014,6 +18933,9 @@
       "nmls_id": "729612",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -18066,6 +18988,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -18112,6 +19037,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2009,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -18168,6 +19096,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -18221,6 +19152,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -18318,6 +19252,9 @@
       "nmls_id": "1662480",
       "aapl_member": null,
       "year_founded": 1998,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -18414,6 +19351,9 @@
       "nmls_id": "1662480",
       "aapl_member": null,
       "year_founded": 1998,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -18460,6 +19400,9 @@
       "nmls_id": "123456",
       "aapl_member": true,
       "year_founded": 2010,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -18557,6 +19500,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 640,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -18653,6 +19599,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -18702,6 +19651,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -18745,6 +19697,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -18804,6 +19759,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 650,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -18850,6 +19808,9 @@
       "nmls_id": "994227",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -18894,6 +19855,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -18988,6 +19952,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 640,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -19034,6 +20001,9 @@
       "nmls_id": "379632",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -19131,6 +20101,9 @@
       "nmls_id": "1660690",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -19184,6 +20157,9 @@
       "nmls_id": "2536820",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -19234,6 +20210,9 @@
       "nmls_id": "292143",
       "aapl_member": null,
       "year_founded": 2003,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 650,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -19282,6 +20261,9 @@
       "nmls_id": "408902",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -19366,6 +20348,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -19409,6 +20394,9 @@
       "nmls_id": "323044",
       "aapl_member": null,
       "year_founded": 1981,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -19457,6 +20445,9 @@
       "nmls_id": "323044",
       "aapl_member": null,
       "year_founded": 1981,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -19502,6 +20493,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1972,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -19591,6 +20585,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -19640,6 +20637,9 @@
       "nmls_id": "1522364",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -19685,6 +20685,9 @@
       "nmls_id": "75597",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -19731,6 +20734,9 @@
       "nmls_id": "1521580",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -19774,6 +20780,9 @@
       "nmls_id": "438265",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -19818,6 +20827,9 @@
       "nmls_id": null,
       "aapl_member": true,
       "year_founded": 2015,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -19862,6 +20874,9 @@
       "nmls_id": "4869",
       "aapl_member": null,
       "year_founded": 2005,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -19911,6 +20926,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -20013,6 +21031,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2016,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 580,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -20080,6 +21101,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 650,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -20133,6 +21157,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -20192,6 +21219,9 @@
       "nmls_id": "278194",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -20246,6 +21276,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1998,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -20298,6 +21331,9 @@
       "nmls_id": "945582",
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -20396,6 +21432,9 @@
       "nmls_id": "367411",
       "aapl_member": null,
       "year_founded": 2006,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -20449,6 +21488,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2013,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -20495,6 +21537,9 @@
       "nmls_id": "357614",
       "aapl_member": null,
       "year_founded": 2006,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -20543,6 +21588,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -20586,6 +21634,9 @@
       "nmls_id": "1764010",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -20631,6 +21682,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2022,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -20722,6 +21776,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -20780,6 +21837,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -20830,6 +21890,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -20877,6 +21940,9 @@
       "nmls_id": "199919",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -20925,6 +21991,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -20968,6 +22037,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -21021,6 +22093,9 @@
       "nmls_id": "38783",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -21070,6 +22145,9 @@
       "nmls_id": "2055852",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -21116,6 +22194,9 @@
       "nmls_id": "1602950",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -21211,6 +22292,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2001,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 650,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -21306,6 +22390,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -21355,6 +22442,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -21412,6 +22502,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -21463,6 +22556,9 @@
       "nmls_id": "314018",
       "aapl_member": null,
       "year_founded": 1997,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -21560,6 +22656,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2019,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -21606,6 +22705,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2006,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 431,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -21652,6 +22754,9 @@
       "nmls_id": "1685350",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -21711,6 +22816,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -21759,6 +22867,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -21806,6 +22917,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 300,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -21872,6 +22986,9 @@
       "nmls_id": "211466",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -21968,6 +23085,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22013,6 +23133,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22082,6 +23205,9 @@
       "nmls_id": "2577725",
       "aapl_member": null,
       "year_founded": 2009,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -22129,6 +23255,9 @@
       "nmls_id": "69573",
       "aapl_member": null,
       "year_founded": 2001,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22179,6 +23308,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1973,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -22236,6 +23368,9 @@
       "nmls_id": "2609886",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 640,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22284,6 +23419,9 @@
       "nmls_id": "1045656",
       "aapl_member": null,
       "year_founded": 2010,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 650,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22333,6 +23471,9 @@
       "nmls_id": "369116",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -22391,6 +23532,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2000,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22437,6 +23581,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22484,6 +23631,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22571,6 +23721,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 650,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22659,6 +23812,9 @@
       "nmls_id": "2135934, 2476464, 2594707",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22756,6 +23912,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 25,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 650,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22850,6 +24009,9 @@
       "nmls_id": "2809780",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -22896,6 +24058,9 @@
       "nmls_id": "2187460",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -22941,6 +24106,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -23021,6 +24189,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23067,6 +24238,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23112,6 +24286,9 @@
       "nmls_id": "666287",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23158,6 +24335,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1985,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23205,6 +24385,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23251,6 +24434,9 @@
       "nmls_id": "256179",
       "aapl_member": null,
       "year_founded": 1985,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23297,6 +24483,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2004,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23343,6 +24532,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2004,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23389,6 +24581,9 @@
       "nmls_id": "2257291",
       "aapl_member": null,
       "year_founded": 2007,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -23433,6 +24628,9 @@
       "nmls_id": "192521",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -23497,6 +24695,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23545,6 +24746,9 @@
       "nmls_id": "118653",
       "aapl_member": null,
       "year_founded": 1992,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -23595,6 +24799,9 @@
       "nmls_id": "248271",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -23645,6 +24852,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1988,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23688,6 +24898,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23781,6 +24994,9 @@
       "nmls_id": "2384002",
       "aapl_member": true,
       "year_founded": 2015,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -23829,6 +25045,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23911,6 +25130,9 @@
       "nmls_id": "1538766",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -23994,6 +25216,9 @@
       "nmls_id": "1303151",
       "aapl_member": null,
       "year_founded": 2009,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -24039,6 +25264,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2011,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -24092,6 +25320,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2018,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -24187,6 +25418,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -24231,6 +25465,9 @@
       "nmls_id": "292152",
       "aapl_member": null,
       "year_founded": 2006,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -24280,6 +25517,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -24379,6 +25619,9 @@
       "nmls_id": "2825327",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -24425,6 +25668,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -24523,6 +25769,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2007,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -24575,6 +25824,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2007,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -24619,6 +25871,9 @@
       "nmls_id": "9462",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -24705,6 +25960,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1993,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -24760,6 +26018,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -24855,6 +26116,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -24903,6 +26167,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2019,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -25005,6 +26272,9 @@
       "nmls_id": "278264",
       "aapl_member": null,
       "year_founded": 2005,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -25096,6 +26366,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -25192,6 +26465,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -25238,6 +26514,9 @@
       "nmls_id": "1210695",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -25283,6 +26562,9 @@
       "nmls_id": "337721",
       "aapl_member": null,
       "year_founded": 2008,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -25329,6 +26611,9 @@
       "nmls_id": "376933",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -25426,6 +26711,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -25470,6 +26758,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1993,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -25515,6 +26806,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 1982,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -25562,6 +26856,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2009,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -25642,6 +26939,9 @@
       "nmls_id": "898360",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -25685,6 +26985,9 @@
       "nmls_id": "2638131",
       "aapl_member": null,
       "year_founded": 1985,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -25729,6 +27032,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "soft_pull",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -25774,6 +27080,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -25858,6 +27167,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -25899,6 +27211,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2010,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -25943,6 +27258,9 @@
       "nmls_id": "785783",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -25993,6 +27311,9 @@
       "nmls_id": "1623669",
       "aapl_member": null,
       "year_founded": 1997,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -26037,6 +27358,9 @@
       "nmls_id": "133519",
       "aapl_member": null,
       "year_founded": 2019,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -26137,6 +27461,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2016,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -26184,6 +27511,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -26231,6 +27561,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2014,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -26276,6 +27609,9 @@
       "nmls_id": "402935",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -26324,6 +27660,9 @@
       "nmls_id": "1967850",
       "aapl_member": null,
       "year_founded": 2020,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -26381,6 +27720,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2004,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -26434,6 +27776,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -26479,6 +27824,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -26541,6 +27889,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -26631,6 +27982,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 650,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -26675,6 +28029,9 @@
       "nmls_id": "411048",
       "aapl_member": null,
       "year_founded": 1904,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -26720,6 +28077,9 @@
       "nmls_id": "870441",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -26816,6 +28176,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 600,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -26907,6 +28270,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -27001,6 +28367,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -27095,6 +28464,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -27144,6 +28516,9 @@
       "nmls_id": "1600345",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -27191,6 +28566,9 @@
       "nmls_id": "1804955",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -27235,6 +28613,9 @@
       "nmls_id": "1804955",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -27286,6 +28667,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -27332,6 +28716,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2011,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -27375,6 +28762,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -27427,6 +28817,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -27487,6 +28880,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -27581,6 +28977,9 @@
       "nmls_id": "1935590",
       "aapl_member": null,
       "year_founded": 2012,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -27675,6 +29074,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -27721,6 +29123,9 @@
       "nmls_id": "3213",
       "aapl_member": null,
       "year_founded": 2001,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -27807,6 +29212,9 @@
       "nmls_id": "2615658",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -27866,6 +29274,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -27912,6 +29323,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -27997,6 +29411,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 620,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -28049,6 +29466,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -28094,6 +29514,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2007,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 680,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -28137,6 +29560,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -28232,6 +29658,9 @@
       "nmls_id": "2282570",
       "aapl_member": null,
       "year_founded": 2004,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -28276,6 +29705,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -28321,6 +29753,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -28368,6 +29803,9 @@
       "nmls_id": "2535756",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": null,
+      "min_credit_score": null,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -28414,6 +29852,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": 2016,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -28459,6 +29900,9 @@
       "nmls_id": "269043",
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 660,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -28503,6 +29947,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 550,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -28549,6 +29996,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -28634,6 +30084,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "none",
+      "min_credit_score": null,
+      "no_credit_check": true,
       "source": "brave_search"
     },
     {
@@ -28731,6 +30184,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 720,
+      "no_credit_check": false,
       "source": "brave_search"
     },
     {
@@ -28775,6 +30231,9 @@
       "nmls_id": null,
       "aapl_member": null,
       "year_founded": null,
+      "credit_check_policy": "hard_pull",
+      "min_credit_score": 580,
+      "no_credit_check": false,
       "source": "brave_search"
     }
   ]
