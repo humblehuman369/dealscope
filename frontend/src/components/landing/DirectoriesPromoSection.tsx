@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { ArrowRight, Check } from 'lucide-react'
-import { useBuyerDirectoryTeaserTotal } from '@/hooks/useBuyerDirectoryTeaserTotal'
 import { formatLenderDirectoryTotal } from '@/lib/directory-promo'
 import { trackEvent } from '@/lib/eventTracking'
 
@@ -19,6 +18,12 @@ const STAT_STYLE: React.CSSProperties = {
 }
 
 const SKY = '#0EA5E9'
+
+/** Product labels match pre-reduction stat scale; counts render 10% smaller. */
+const CARD_LABEL_SIZE = 'clamp(2.5rem, 6vw, 3.25rem)'
+const CARD_STAT_SIZE = 'clamp(2.25rem, 5.4vw, 2.925rem)'
+
+const HOMEPAGE_BUYER_STAT = '2,900+'
 
 function DirectoryCard({
   productLabel,
@@ -43,15 +48,15 @@ function DirectoryCard({
       style={{ borderTopWidth: 3, borderTopColor: SKY }}
     >
       <div
-        className="text-[11px] font-black uppercase tracking-[0.22em]"
-        style={{ color: SKY }}
+        className="leading-none uppercase tracking-[0.06em]"
+        style={{ ...DISPLAY_STYLE, color: SKY, fontSize: CARD_LABEL_SIZE }}
       >
         {productLabel}
       </div>
 
       <div
-        className="mt-3 text-[clamp(2.5rem,6vw,3.25rem)] leading-none text-[var(--text-heading)]"
-        style={STAT_STYLE}
+        className="mt-2 leading-none text-[var(--text-heading)]"
+        style={{ ...STAT_STYLE, fontSize: CARD_STAT_SIZE }}
       >
         <span style={{ color: SKY }}>{stat}</span>
       </div>
@@ -85,7 +90,6 @@ function DirectoryCard({
 }
 
 export function DirectoriesPromoSection() {
-  const { buyerTotalLabel } = useBuyerDirectoryTeaserTotal()
   const lenderTotalLabel = formatLenderDirectoryTotal()
 
   return (
@@ -96,9 +100,7 @@ export function DirectoriesPromoSection() {
           className="mx-auto max-w-4xl text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] text-[var(--text-heading)] md:text-6xl"
           style={DISPLAY_STYLE}
         >
-          <span style={{ color: SKY }}>Cash Buyers</span>
-          <span className="text-[var(--text-muted)]"> &amp; </span>
-          <span style={{ color: SKY }}>Hard Money</span>
+          Get Funding
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-[var(--text-secondary)]">
           When your analysis pencils, reach verified investors and lenders in minutes — not weeks of
@@ -112,7 +114,7 @@ export function DirectoriesPromoSection() {
       <div className="grid gap-6 md:grid-cols-2">
         <DirectoryCard
           productLabel="Cash Buyers"
-          stat={buyerTotalLabel}
+          stat={HOMEPAGE_BUYER_STAT}
           tagline="Verified fix-and-flip, BRRRR, and buy-and-hold investors nationwide"
           bullets={[
             'Search by city, county, or zip',
