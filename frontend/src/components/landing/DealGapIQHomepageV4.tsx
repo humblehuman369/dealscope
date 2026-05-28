@@ -688,14 +688,14 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
 
 function ComparisonSection() {
   const rows = [
-    ['Multi-source valuation', 'X', 'Partial', 'Full (6 sources)'],
-    ['Deal Gap detection', 'X', 'X', 'Yes - with target buy price'],
-    ['Pre-built offer structures', 'X', 'X', '4 paths including creative'],
-    ['Negotiation scripts', 'X', 'X', 'Yes - tailored to path & seller'],
-    ['Creative finance modeling', 'X', 'X', 'Sub2 - Seller carry - 0% 2nds'],
-    ['Verified cash buyer directory', 'X', 'X', 'Paid Pro'],
-    ['Hard money lender directory', 'X', 'X', 'Paid Pro'],
-    ['No signup to try', 'Yes', 'X', 'Yes - instant'],
+    ['Multi-Source Valuation', 'X', 'Partial', 'Full (6 sources)'],
+    ['Deal Gap Detection', 'X', 'X', 'Yes - with target buy price'],
+    ['Pre-Built Offer Structures', 'X', 'X', '4 paths including creative'],
+    ['Negotiation Scripts', 'X', 'X', 'Yes - tailored to path & seller'],
+    ['Creative Finance Modeling', 'X', 'X', 'Sub2 - Seller carry - 0% 2nds'],
+    ['Verified Cash Buyer Directory', 'X', 'X', 'Cash Wholesale Buyers'],
+    ['Hard Money Lender Directory', 'X', 'X', 'Approved in 24 hrs'],
+    ['No Signup To Try', 'Yes', 'X', 'Yes - instant'],
   ]
 
   return (
