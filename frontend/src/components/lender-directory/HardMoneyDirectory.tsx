@@ -27,6 +27,8 @@ interface LenderDisplay {
   term: string | null;
 }
 
+type CreditCheckPolicy = 'none' | 'soft_pull' | 'hard_pull';
+
 interface Lender {
   id: number;
   domain: string;
@@ -48,6 +50,9 @@ interface Lender {
   nmls_id: string | null;
   aapl_member: boolean | null;
   year_founded: number | null;
+  credit_check_policy?: CreditCheckPolicy | null;
+  min_credit_score?: number | null;
+  no_credit_check?: boolean;
 }
 
 interface LendersFile {
@@ -57,6 +62,8 @@ interface LendersFile {
     by_contact_type: Record<string, number>;
     by_state: Record<string, number>;
     by_product: Record<string, number>;
+    by_credit_policy?: Record<string, number>;
+    no_credit_check_count?: number;
     nationwide_count: number;
   };
   lenders: Lender[];
@@ -100,6 +107,52 @@ function productLabel(code: string) {
   return PRODUCT_LABELS[code] ?? code;
 }
 
+function creditPolicyLabel(policy: CreditCheckPolicy | null | undefined): string {
+  if (policy === 'none') return 'No credit check';
+  if (policy === 'soft_pull') return 'Soft pull';
+  if (policy === 'hard_pull') return 'Hard pull';
+  return '';
+}
+
+function lenderNoCreditCheck(lender: Lender): boolean {
+  if (lender.no_credit_check != null) return lender.no_credit_check;
+  return lender.credit_check_policy === 'none' || lender.credit_check_policy === 'soft_pull';
+}
+
+function escapeCsvCell(value: string): string {
+  if (value.includes('"') || value.includes(',') || value.includes('\n')) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
+function downloadLendersCsv(lenders: Lender[]) {
+  const headers = [
+    'Company', 'Domain', 'Phone', 'Email', 'Website', 'HQ State', 'States Served',
+    'Loan Products', 'Credit Policy', 'Min Credit Score',
+  ];
+  const rows = lenders.map((l) => [
+    l.company_name,
+    l.domain,
+    l.phone ?? '',
+    l.email ?? '',
+    l.website,
+    l.state ?? '',
+    l.states_served.join('; '),
+    l.loan_products.map(productLabel).join('; '),
+    creditPolicyLabel(l.credit_check_policy),
+    l.min_credit_score != null ? String(l.min_credit_score) : '',
+  ].map(escapeCsvCell).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `dealgapiq-lenders-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
@@ -116,11 +169,13 @@ export default function HardMoneyDirectory() {
   const [stateFilter, setStateFilter] = useState('');
   const [productFilter, setProductFilter] = useState('');
   const [minLoanFilter, setMinLoanFilter] = useState('');
+  const [creditFilter, setCreditFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [includeWebOnly, setIncludeWebOnly] = useState(true);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
   const hasPaidAccess = isPaidPro;
+  const noCreditCheckCount = data.stats.no_credit_check_count ?? 0;
 
   const filtered = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -132,6 +187,14 @@ export default function HardMoneyDirectory() {
       if (!Number.isNaN(minLoan) && l.max_loan_amount !== null && l.max_loan_amount < minLoan) {
         return false;
       }
+      if (creditFilter === 'no_credit_check' && !lenderNoCreditCheck(l)) return false;
+      if (creditFilter === 'soft_pull' && l.credit_check_policy !== 'soft_pull') return false;
+      if (
+        creditFilter === 'no_min_score'
+        && (l.min_credit_score != null || !lenderNoCreditCheck(l))
+      ) {
+        return false;
+      }
       if (term) {
         if (!l.company_name.toLowerCase().includes(term) && !l.domain.toLowerCase().includes(term)) {
           return false;
@@ -140,7 +203,7 @@ export default function HardMoneyDirectory() {
       if (!includeWebOnly && l.contact_type === 'web_only') return false;
       return true;
     });
-  }, [stateFilter, productFilter, minLoanFilter, searchTerm, includeWebOnly]);
+  }, [stateFilter, productFilter, minLoanFilter, creditFilter, searchTerm, includeWebOnly]);
 
   const displayLenders = hasPaidAccess ? filtered : filtered.slice(0, PREVIEW_COUNT);
   const hiddenCount = hasPaidAccess ? 0 : Math.max(0, filtered.length - PREVIEW_COUNT);
@@ -188,6 +251,9 @@ export default function HardMoneyDirectory() {
         .dgiq-input:focus, .dgiq-select:focus { outline: none; border-color: #0EA5E9 !important; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15); }
         .dgiq-btn-press { transition: all 0.15s ease; }
         .dgiq-btn-press:active { transform: scale(0.97); }
+        @media (max-width: 1100px) {
+          .dgiq-lender-filters { grid-template-columns: repeat(3, 1fr) !important; }
+        }
         @media (max-width: 900px) {
           .dgiq-lender-filters { grid-template-columns: 1fr 1fr !important; }
         }
@@ -258,6 +324,24 @@ export default function HardMoneyDirectory() {
               </select>
             </Field>
 
+            <Field label="Credit policy">
+              <select
+                className="dgiq-select"
+                style={styles.select}
+                value={creditFilter}
+                onChange={(e) => setCreditFilter(e.target.value)}
+              >
+                <option value="">Any credit policy</option>
+                <option value="no_credit_check">
+                  No credit check ({noCreditCheckCount})
+                </option>
+                <option value="soft_pull">
+                  Soft pull only ({data.stats.by_credit_policy?.soft_pull ?? 0})
+                </option>
+                <option value="no_min_score">No minimum score</option>
+              </select>
+            </Field>
+
             <Field label="Search by name" icon={<Search size={16} />}>
               <input
                 className="dgiq-input"
@@ -292,8 +376,20 @@ export default function HardMoneyDirectory() {
             </span>
           </div>
           {hasPaidAccess && (
-            <div style={{ fontSize: 12, color: '#9ca3af' }}>
-              Save lenders to your dashboard for quick access later
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 12, color: '#9ca3af' }}>
+                Save lenders to your dashboard for quick access later
+              </div>
+              {filtered.length > 0 && (
+                <button
+                  type="button"
+                  className="dgiq-btn-press"
+                  style={styles.selectAllBtn}
+                  onClick={() => downloadLendersCsv(filtered)}
+                >
+                  Download CSV ({filtered.length})
+                </button>
+              )}
             </div>
           )}
           {!hasPaidAccess && (
@@ -416,7 +512,18 @@ function LenderCard({
           {lender.state && !lender.nationwide && (
             <span style={styles.badgeRegional}>HQ {lender.state}</span>
           )}
+          {lender.credit_check_policy === 'none' && (
+            <span style={styles.badgeNoCredit}>No Credit Check</span>
+          )}
+          {lender.credit_check_policy === 'soft_pull' && (
+            <span style={styles.badgeSoftPull}>Soft Pull Only</span>
+          )}
         </div>
+        {lender.min_credit_score != null && (
+          <div style={styles.creditScoreLine}>
+            Min credit: {lender.min_credit_score}
+          </div>
+        )}
       </div>
 
       <div style={{ marginBottom: 14 }}>
@@ -540,7 +647,7 @@ const styles = {
   },
   filterGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
+    gridTemplateColumns: 'repeat(5, 1fr)',
     gap: 16,
     marginBottom: 16,
   },
@@ -600,6 +707,21 @@ const styles = {
     textTransform: 'uppercase', padding: '2px 8px', borderRadius: 999,
     color: '#C4B5FD', border: '1px solid rgba(196, 181, 253, 0.45)',
     background: 'rgba(196, 181, 253, 0.08)',
+  },
+  badgeNoCredit: {
+    fontFamily: 'Space Mono, monospace', fontSize: 10, letterSpacing: 0.8,
+    textTransform: 'uppercase', padding: '2px 8px', borderRadius: 999,
+    color: '#4ade80', border: '1px solid rgba(74, 222, 128, 0.45)',
+    background: 'rgba(74, 222, 128, 0.08)',
+  },
+  badgeSoftPull: {
+    fontFamily: 'Space Mono, monospace', fontSize: 10, letterSpacing: 0.8,
+    textTransform: 'uppercase', padding: '2px 8px', borderRadius: 999,
+    color: '#7dd3fc', border: '1px solid rgba(125, 211, 252, 0.45)',
+    background: 'rgba(125, 211, 252, 0.08)',
+  },
+  creditScoreLine: {
+    fontSize: 11, color: '#6b7280', marginTop: 6,
   },
   contactRow: {
     display: 'flex', alignItems: 'center', gap: 7, padding: '2px 0',
