@@ -689,7 +689,9 @@ function LTRWorksheet({
       <Divider />
 
       <SectionHeader title="Your Loan Payment" anchorId="strategy-worksheet-financing" />
-      <Row label="Loan Amount" value={fmt(loanAmount)} />
+      {/* Two loans, each priced off its principal from the section above:
+          the Bank Loan (bank rate/term) and the Seller Financing note (seller rate/term). */}
+      <Row label="Bank Loan" value={fmt(loanAmount)} />
       <SliderRow
         field="interestRate"
         label="Interest Rate"
@@ -712,9 +714,10 @@ function LTRWorksheet({
         parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)}
       />
       <Row label="Bank P&amp;I" value={`${fmt(bankMonthly)}/mo`} />
-      <SellerNoteTermsRows state={state} up={up} />
       {hasSellerFinancing && (
         <>
+          <Row label="Seller Financing" value={fmt(state.sellerFinancingAmount)} />
+          <SellerNoteTermsRows state={state} up={up} />
           <Row label="Seller P&amp;I" value={`${fmt(sellerMonthly)}/mo`} />
           <Row label="Combined Monthly Payment" value={`${fmt(monthlyPayment)}/mo`} />
         </>
