@@ -1622,9 +1622,21 @@ function StrategyContent() {
           bd?.occupancy_rate != null
             ? bd.occupancy_rate / 100
             : DEFAULT_STR_DEAL_MAKER_STATE.occupancyRate
+        // Bank Loan is the stored financing input; Down Payment is the derived residual.
+        const strBuy = io.purchasePrice ?? targetPrice
+        const strSeller = Math.max(0, sf.sellerFinancingAmount)
+        const strBankLoan =
+          typeof ioAny.bankLoanAmount === 'number' ? Math.max(0, ioAny.bankLoanAmount) : null
+        const strDownPct =
+          strBankLoan != null && strBuy > 0
+            ? Math.max(-1, Math.min(1, (strBuy - strBankLoan - strSeller) / strBuy))
+            : io.downPayment != null
+              ? io.downPayment / 100
+              : downPaymentPct
         return {
-          buyPrice: io.purchasePrice ?? targetPrice,
-          downPaymentPercent: io.downPayment != null ? io.downPayment / 100 : downPaymentPct,
+          buyPrice: strBuy,
+          downPaymentPercent: strDownPct,
+          bankLoanAmount: strBankLoan ?? undefined,
           closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
           loanType: '30-year' as const,
           interestRate: io.interestRate ?? rate,
@@ -1671,11 +1683,26 @@ function StrategyContent() {
         } satisfies STRDealMakerState
       }
 
-      case 'brrrr':
+      case 'brrrr': {
+        // Acquisition loan is sized off the discount-adjusted effective price; the Bank
+        // Loan is the stored financing input and the down payment is the derived residual.
+        const brBuy = io.purchasePrice ?? targetPrice
+        const brDiscount = io.buyDiscountPct ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.buyDiscountPct
+        const brEff = brBuy * (1 - brDiscount)
+        const brSeller = Math.max(0, sf.sellerFinancingAmount)
+        const brBankLoan =
+          typeof ioAny.bankLoanAmount === 'number' ? Math.max(0, ioAny.bankLoanAmount) : null
+        const brDownPct =
+          brBankLoan != null && brEff > 0
+            ? Math.max(-1, Math.min(1, (brEff - brBankLoan - brSeller) / brEff))
+            : io.downPayment != null
+              ? io.downPayment / 100
+              : downPaymentPct
         return {
-          purchasePrice: io.purchasePrice ?? targetPrice,
-          buyDiscountPct: io.buyDiscountPct ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.buyDiscountPct,
-          downPaymentPercent: io.downPayment != null ? io.downPayment / 100 : downPaymentPct,
+          purchasePrice: brBuy,
+          buyDiscountPct: brDiscount,
+          downPaymentPercent: brDownPct,
+          bankLoanAmount: brBankLoan ?? undefined,
           closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
           hardMoneyRate: io.hardMoneyRate ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.hardMoneyRate,
           rehabBudget: io.rehabBudget ?? rehabCost,
@@ -1704,6 +1731,7 @@ function StrategyContent() {
           monthlyHoa: io.monthlyHoa ?? propertyInfo?.market?.hoa_fees_monthly ?? 0,
           ...sf,
         } satisfies BRRRRDealMakerState
+      }
 
       case 'flip': {
         const hoa = io.monthlyHoa ?? propertyInfo?.market?.hoa_fees_monthly ?? 0
@@ -1742,18 +1770,27 @@ function StrategyContent() {
       case 'house_hack': {
         const totalBeds = bd?.total_bedrooms ?? propertyInfo?.details?.bedrooms ?? 4
         const rentPerRoom = bd?.rent_per_room ?? monthlyRent / Math.max(totalBeds, 1)
+        // Bank Loan is the stored financing input; Down Payment is the derived residual.
+        const hhBuy = io.purchasePrice ?? targetPrice
+        const hhSeller = Math.max(0, sf.sellerFinancingAmount)
+        const hhBankLoan =
+          typeof ioAny.bankLoanAmount === 'number' ? Math.max(0, ioAny.bankLoanAmount) : null
+        const hhDownPct =
+          hhBankLoan != null && hhBuy > 0
+            ? Math.max(-1, Math.min(1, (hhBuy - hhBankLoan - hhSeller) / hhBuy))
+            : io.downPayment != null
+              ? io.downPayment / 100
+              : bd?.down_payment_pct != null
+                ? bd.down_payment_pct / 100
+                : DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.downPaymentPercent
         return {
-          purchasePrice: io.purchasePrice ?? targetPrice,
+          purchasePrice: hhBuy,
           totalUnits: io.totalUnits ?? totalBeds,
           ownerOccupiedUnits: io.ownerOccupiedUnits ?? 1,
           ownerUnitMarketRent: rentPerRoom,
           loanType: (inlineOverrides.loanType as HouseHackLoanType) ?? 'fha',
-          downPaymentPercent:
-            io.downPayment != null
-              ? io.downPayment / 100
-              : bd?.down_payment_pct != null
-                ? bd.down_payment_pct / 100
-                : DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.downPaymentPercent,
+          downPaymentPercent: hhDownPct,
+          bankLoanAmount: hhBankLoan ?? undefined,
           interestRate:
             io.interestRate ??
             (bd?.interest_rate != null

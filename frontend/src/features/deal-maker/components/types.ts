@@ -408,6 +408,8 @@ export interface STRDealMakerState {
   // Tab 1: Buy Price (same as LTR)
   buyPrice: number
   downPaymentPercent: number
+  /** Explicit bank loan principal (financing source of truth; down payment is derived). */
+  bankLoanAmount?: number
   closingCostsPercent: number
 
   // Tab 2: Financing (same as LTR)
@@ -778,6 +780,8 @@ export interface BRRRRDealMakerState {
   purchasePrice: number
   buyDiscountPct: number // Discount below market (5% default)
   downPaymentPercent: number // Hard money down (10-20%)
+  /** Explicit acquisition loan principal (financing source of truth; down payment derived). */
+  bankLoanAmount?: number
   closingCostsPercent: number
   hardMoneyRate: number // Short-term financing rate (10-12%)
   sellerFinancingAmount: number
@@ -1466,6 +1470,8 @@ export interface HouseHackDealMakerState {
   // Phase 2: Finance (FHA/Low Down Payment)
   loanType: HouseHackLoanType
   downPaymentPercent: number // 3.5% FHA min, 0% VA
+  /** Explicit bank loan principal (financing source of truth; down payment is derived). */
+  bankLoanAmount?: number
   interestRate: number
   loanTermYears: number
   pmiRate: number // PMI/MIP annual rate (0.85% FHA)
