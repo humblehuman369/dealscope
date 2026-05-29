@@ -131,7 +131,21 @@ export function buildVerdictAnalysisPayload(
     if (overrides.purchasePrice != null || overrides.buyPrice != null) {
       payload.purchase_price = overrides.purchasePrice ?? overrides.buyPrice
     }
-    if (overrides.downPayment != null) payload.down_payment_pct = overrides.downPayment / 100
+    // Bank Loan is the financing source of truth when set: derive the down payment % from it
+    // (Down Payment = Buy Price − Bank Loan − Seller Financing). Otherwise use downPayment.
+    if (overrides.bankLoanAmount != null) {
+      const buyP = (overrides.purchasePrice ?? overrides.buyPrice ?? listPrice) as number
+      const sellerAmt =
+        overrides.sellerFinancingAmount != null && overrides.sellerFinancingAmount >= 0
+          ? (overrides.sellerFinancingAmount as number)
+          : 0
+      if (buyP > 0) {
+        const dp = (buyP - overrides.bankLoanAmount - sellerAmt) / buyP
+        payload.down_payment_pct = Math.max(-1, Math.min(1, dp))
+      }
+    } else if (overrides.downPayment != null) {
+      payload.down_payment_pct = overrides.downPayment / 100
+    }
     if (overrides.closingCosts != null) payload.closing_costs_pct = overrides.closingCosts / 100
     if (overrides.interestRate != null && overrides.interestRate > 0) {
       const raw = overrides.interestRate

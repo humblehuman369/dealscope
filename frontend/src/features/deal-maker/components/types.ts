@@ -2035,6 +2035,11 @@ export function isWholesaleMetrics(
 export interface LTRDealMakerState {
   buyPrice: number
   downPaymentPercent: number
+  /**
+   * Explicit bank loan principal (the financing source of truth). When set, the down
+   * payment is the derived residual: Down Payment = Buy Price − (Bank Loan + Seller).
+   */
+  bankLoanAmount?: number
   closingCostsPercent: number
   loanType?: '15-year' | '30-year' | 'arm'
   interestRate: number

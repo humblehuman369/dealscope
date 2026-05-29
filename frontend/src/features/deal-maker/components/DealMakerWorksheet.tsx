@@ -658,14 +658,9 @@ function LTRWorksheet({
         max={100}
         step={1}
         onChange={(ltv) => {
-          // Slider is expressed as loan-to-value % of buy price; hold seller
-          // financing constant so the down payment absorbs the change.
-          const newLoan = Math.max(0, (ltv / 100) * state.buyPrice)
-          const dpPct =
-            state.buyPrice > 0
-              ? (state.buyPrice - newLoan - state.sellerFinancingAmount) / state.buyPrice
-              : 0
-          up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
+          // Bank Loan is the stored financing input (LTV % of buy price). The down
+          // payment is derived from it, so we only write the loan — no feedback through dp%.
+          up('bankLoanAmount', Math.max(0, (ltv / 100) * state.buyPrice))
         }}
         parseInput={(s) => {
           // The editable box accepts a dollar loan amount → convert to LTV %.
@@ -684,14 +679,10 @@ function LTRWorksheet({
         step={1}
         onChange={(ltv) => {
           const newSeller = Math.max(0, (ltv / 100) * state.buyPrice)
-          // Hold the bank loan constant; the down payment absorbs the change.
-          const dpPct =
-            state.buyPrice > 0
-              ? state.downPaymentPercent +
-                (state.sellerFinancingAmount - newSeller) / state.buyPrice
-              : state.downPaymentPercent
+          // Pin the current bank loan as the stored input so it stays put; the derived
+          // down payment absorbs the seller-financing change.
+          up('bankLoanAmount', state.bankLoanAmount ?? loanAmount)
           up('sellerFinancingAmount', newSeller)
-          up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
         }}
         parseInput={(s) => {
           const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))

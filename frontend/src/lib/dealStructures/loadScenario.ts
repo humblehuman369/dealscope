@@ -28,6 +28,7 @@ export const PATH_PATCH_FIELD_KEYS = [
   'monthlyRent',
   'downPayment',
   'interestRate',
+  'bankLoanAmount',
   'sellerFinancingAmount',
   'sellerInterestRate',
   'sellerTermYears',

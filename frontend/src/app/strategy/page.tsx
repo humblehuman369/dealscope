@@ -1802,10 +1802,25 @@ function StrategyContent() {
       }
 
       case 'ltr':
-      default:
+      default: {
+        // Bank Loan + Seller Financing are the financing inputs; Down Payment is the
+        // derived residual. When the user has set an explicit Bank Loan it is the source
+        // of truth, so the down payment absorbs buy-price / seller-financing changes
+        // (this keeps the Bank Loan slider stable instead of feeding back through dp%).
+        const ltrBuy = io.purchasePrice ?? targetPrice
+        const ltrSeller = Math.max(0, sf.sellerFinancingAmount)
+        const ltrBankLoan =
+          typeof ioAny.bankLoanAmount === 'number' ? Math.max(0, ioAny.bankLoanAmount) : null
+        const ltrDownPct =
+          ltrBankLoan != null && ltrBuy > 0
+            ? Math.max(-1, Math.min(1, (ltrBuy - ltrBankLoan - ltrSeller) / ltrBuy))
+            : io.downPayment != null
+              ? io.downPayment / 100
+              : downPaymentPct
         return {
-          buyPrice: io.purchasePrice ?? targetPrice,
-          downPaymentPercent: io.downPayment != null ? io.downPayment / 100 : downPaymentPct,
+          buyPrice: ltrBuy,
+          downPaymentPercent: ltrDownPct,
+          bankLoanAmount: ltrBankLoan ?? undefined,
           closingCostsPercent: io.closingCosts != null ? io.closingCosts / 100 : closingCostsPct,
           interestRate: io.interestRate ?? rate,
           loanTermYears: io.loanTerm ?? loanTermYears,
@@ -1837,6 +1852,7 @@ function StrategyContent() {
             DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
           ...sf,
         } satisfies LTRDealMakerState
+      }
     }
   })()
 
