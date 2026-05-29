@@ -101,8 +101,10 @@ def _calculate_ltr_strategy(
     closing_costs = price * f.closing_costs_pct
     sc = max(0.0, float(seller_carry_amount or 0.0))
     loan_amount = bank_loan_after_seller_carry(price, down_payment, sc)
-    cash_equity = max(0.0, down_payment - sc)
-    total_cash = cash_needed_after_seller(down_payment, closing_costs, rehab_cost, sc)
+    # Sources & uses: cash equity = price − bank loan − seller note; total cash needed
+    # adds closing + rehab. May be negative when financing exceeds purchase + costs.
+    cash_equity = max(0.0, price - loan_amount - sc)
+    total_cash = price + closing_costs + rehab_cost - loan_amount - sc
     bank_pi, seller_pi, monthly_pi = combined_bank_and_seller_pi(
         loan_amount,
         f.interest_rate,
@@ -124,7 +126,9 @@ def _calculate_ltr_strategy(
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
     monthly_cash_flow = annual_cash_flow / 12
-    coc = calculate_cash_on_cash(annual_cash_flow, total_cash)
+    # Cash-on-cash is undefined when no positive cash is invested (over-funded deal
+    # returning cash at close); report 0 to keep the metric JSON-serializable.
+    coc = calculate_cash_on_cash(annual_cash_flow, total_cash) if total_cash > 0 else 0.0
     coc_pct = coc * 100
     cap_rate = calculate_cap_rate(noi, price) * 100
     dscr = calculate_dscr(noi, annual_debt)

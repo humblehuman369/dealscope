@@ -13,7 +13,6 @@ from .common import (
     calculate_cash_on_cash,
     calculate_dscr,
     calculate_grm,
-    cash_needed_after_seller,
     combined_bank_and_seller_pi,
     validate_financial_inputs,
 )
@@ -62,8 +61,11 @@ def calculate_ltr(
     closing_costs = purchase_price * closing_costs_pct
     sc = max(0.0, float(seller_carry_amount or 0.0))
     loan_amount = bank_loan_after_seller_carry(purchase_price, down_payment, sc)
-    cash_equity_at_close = max(0.0, down_payment - sc)
-    total_cash_required = cash_needed_after_seller(down_payment, closing_costs, rehab_costs, sc)
+    # Sources & uses: cash equity = price − bank loan − seller note; total cash needed
+    # adds closing + rehab. Total may be negative when financing exceeds purchase +
+    # costs (cash back at close), so it is intentionally not clamped to zero.
+    cash_equity_at_close = max(0.0, purchase_price - loan_amount - sc)
+    total_cash_required = purchase_price + closing_costs + rehab_costs - loan_amount - sc
 
     # Financing — combined bank + seller note P&I
     bank_pi, seller_pi, monthly_pi = combined_bank_and_seller_pi(

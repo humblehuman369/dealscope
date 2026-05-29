@@ -504,10 +504,11 @@ function StrategySelectDropdown({
 function cashNeededFromLtrState(s: LTRDealMakerState): number {
   const buy = s.buyPrice
   if (buy <= 0) return 0
-  const dp = buy * s.downPaymentPercent
   const cc = buy * s.closingCostsPercent
   const sc = Math.max(0, s.sellerFinancingAmount ?? 0)
-  return Math.max(0, dp + cc + (s.rehabBudget ?? 0) - sc)
+  const loan = Math.max(0, buy - buy * s.downPaymentPercent - sc)
+  // Sources & uses: (price + closing + rehab) − (bank loan + seller note). May be negative.
+  return buy + cc + (s.rehabBudget ?? 0) - loan - sc
 }
 
 function cashNeededFromStrState(s: STRDealMakerState): number {
@@ -1541,7 +1542,9 @@ function StrategyContent() {
 
   const isFlipOrWholesale = activeStrategyId === 'fix-and-flip' || activeStrategyId === 'wholesale'
 
-  let totalCashNeeded = downPayment + closingCosts + rehabCost
+  // Sources & uses: (price + closing + rehab) − (bank loan + seller note). May be negative
+  // when financing exceeds purchase + costs (cash back at close).
+  let totalCashNeeded = targetPrice + closingCosts + rehabCost - loanAmount - sellerFinancingAmount
   const dealGapPct = listPrice ? ((listPrice - targetPrice) / listPrice) * 100 : 0
   const strategyDscr =
     activeStrategyId === 'brrrr' && annualDebt > 0 ? noi / annualDebt : (topStrategy?.dscr ?? null)

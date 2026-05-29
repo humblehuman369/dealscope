@@ -45,8 +45,10 @@ def validate_financial_inputs(
             errors.append("Interest rate exceeds maximum of 30%")
 
     if down_payment_pct is not None:
-        if down_payment_pct < 0:
-            errors.append("Down payment percentage cannot be negative")
+        # Negative down payment is allowed: it represents an over-funded deal where the
+        # bank loan + seller note exceed the purchase price (cash back at close).
+        if down_payment_pct < -1.0:
+            errors.append("Down payment percentage cannot be below -100%")
         elif down_payment_pct > 1.0:
             errors.append("Down payment percentage cannot exceed 100%")
 
@@ -193,8 +195,13 @@ def calculate_cap_rate(noi: float, property_value: float) -> float:
 
 
 def calculate_cash_on_cash(annual_cash_flow: float, total_cash_invested: float) -> float:
-    """Calculate Cash-on-Cash Return."""
-    if total_cash_invested == 0:
+    """Calculate Cash-on-Cash Return.
+
+    When no positive cash is invested (zero or negative — e.g. an over-funded deal
+    that returns cash at close), cash-on-cash is undefined: report infinite return
+    for positive cash flow, otherwise 0.
+    """
+    if total_cash_invested <= 0:
         return float("inf") if annual_cash_flow > 0 else 0
     return annual_cash_flow / total_cash_invested
 

@@ -62,9 +62,11 @@ class TestSellerCarryLTR:
     def test_creative_seller_covers_part_of_down(self):
         # 20% down = 60k; seller carries 45k → bank loan is reduced by the seller note.
         r = calculate_ltr(**LTR_KW, seller_carry_amount=45_000, seller_carry_rate=0.06, seller_carry_term_years=30)
-        assert r["cash_equity_at_close"] == pytest.approx(15_000, rel=1e-6)
+        # Cash equity = price − bank loan − seller note = 300k − 195k − 45k.
+        assert r["cash_equity_at_close"] == pytest.approx(60_000, rel=1e-6)
         assert r["loan_amount"] == pytest.approx(195_000, rel=1e-6)
-        assert r["total_cash_required"] == pytest.approx(max(0, 60_000 + 9_000 - 45_000), rel=1e-6)
+        # Cash needed = price + closing + rehab − bank loan − seller note = 60k + 9k.
+        assert r["total_cash_required"] == pytest.approx(60_000 + 9_000, rel=1e-6)
 
     def test_all_cash_no_financing(self):
         r = calculate_ltr(
@@ -98,7 +100,8 @@ class TestSellerCarryLTR:
         assert r["bank_monthly_pi"] == pytest.approx(0, abs=1)
         assert r["seller_monthly_pi"] > 0
         assert r["monthly_pi"] == pytest.approx(r["seller_monthly_pi"], rel=1e-6)
-        assert r["total_cash_required"] == pytest.approx(0, abs=1)
+        # Seller note covers the full price; only closing costs remain as cash.
+        assert r["total_cash_required"] == pytest.approx(9_000, abs=1)
 
 
 class TestSellerCarrySTR:

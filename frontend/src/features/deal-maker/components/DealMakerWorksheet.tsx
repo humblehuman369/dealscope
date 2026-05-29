@@ -42,6 +42,14 @@ function fmt(v: number): string {
   return `$${Math.round(v).toLocaleString()}`
 }
 
+/** Currency with an explicit leading minus for negative values (e.g. cash back at close). */
+function fmtSigned(v: number): string {
+  const rounded = Math.round(v)
+  return rounded < 0
+    ? `-$${Math.abs(rounded).toLocaleString()}`
+    : `$${rounded.toLocaleString()}`
+}
+
 function pct(v: number, decimals = 1): string {
   return `${(v * 100).toFixed(decimals)}%`
 }
@@ -593,13 +601,11 @@ function LTRWorksheet({
   const annualProfit = num(m, 'annualProfit')
   const capRate = num(m, 'capRate')
   const cocReturn = num(m, 'cocReturn')
-  const cashNeeded = cashNeededSellerOffset(
-    state.buyPrice,
-    state.downPaymentPercent,
-    closingCosts,
-    state.rehabBudget,
-    state.sellerFinancingAmount,
-  )
+  // Sources & uses: cash needed = uses (price + closing + rehab) − financing
+  // (bank loan + seller note). Negative when financing exceeds purchase + costs
+  // (cash back at close).
+  const cashNeeded =
+    state.buyPrice + closingCosts + state.rehabBudget - loanAmount - state.sellerFinancingAmount
 
   return (
     <>
@@ -628,7 +634,24 @@ function LTRWorksheet({
           return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0
         }}
       />
-      <Row label="Bank Loan" value={fmt(loanAmount)} />
+      <SliderRow
+        field="bankLoanAmount"
+        label="Bank Loan"
+        value={loanAmount}
+        displayValue={fmt(loanAmount)}
+        min={0}
+        max={Math.max(state.buyPrice, 100000)}
+        step={1000}
+        onChange={(v) => {
+          const newLoan = Math.max(0, v)
+          const dpPct =
+            state.buyPrice > 0
+              ? (state.buyPrice - newLoan - state.sellerFinancingAmount) / state.buyPrice
+              : 0
+          up('downPaymentPercent', dpPct)
+        }}
+        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+      />
       <SellerFinancingPrincipalRow basePrice={state.buyPrice} state={state} up={up} />
       <SliderRow
         label="Closing Costs"
@@ -652,7 +675,7 @@ function LTRWorksheet({
         max={100000}
         onChange={(v) => up('rehabBudget', v)}
       />
-      <TotalRow label="Cash Needed" value={fmt(cashNeeded)} />
+      <TotalRow label="Cash Needed" value={fmtSigned(cashNeeded)} />
 
       <Divider />
 

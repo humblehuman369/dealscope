@@ -103,7 +103,12 @@ class IQVerdictInput(BaseModel):
         None, ge=0, le=100_000_000, description="Tax assessed value (for off-market fallback)"
     )
     # Assumptions - when provided, Income Value and Target Buy are calculated from these; otherwise backend defaults are used
-    down_payment_pct: float | None = Field(None, ge=0, le=1, description="Down payment fraction (e.g. 0.20 = 20%%)")
+    down_payment_pct: float | None = Field(
+        None,
+        ge=-1,
+        le=1,
+        description="Down payment fraction (e.g. 0.20 = 20%%); negative means an over-funded deal",
+    )
     interest_rate: float | None = Field(None, ge=0, le=0.30, description="Annual interest rate (e.g. 0.06 = 6%%)")
     loan_term_years: int | None = Field(None, ge=1, le=50, description="Loan term in years")
     vacancy_rate: float | None = Field(None, ge=0, le=1, description="Vacancy rate (e.g. 0.05 = 5%%)")

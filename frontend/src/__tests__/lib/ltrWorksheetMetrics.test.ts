@@ -37,7 +37,8 @@ describe('computeLtrMetricsFromState', () => {
     expect(metrics.bankMonthlyPayment).toBe(0)
     expect(metrics.sellerMonthlyPayment).toBeCloseTo(sellerPi, 2)
     expect(metrics.monthlyPayment).toBeCloseTo(sellerPi, 2)
-    expect(metrics.cashNeeded).toBe(0)
+    // Seller note covers the full purchase price; only closing costs (3% of 735k) remain as cash.
+    expect(metrics.cashNeeded).toBeCloseTo(735_000 * 0.03, 2)
   })
 
   it('treats 0% seller carry as $0/mo (balloon note)', () => {

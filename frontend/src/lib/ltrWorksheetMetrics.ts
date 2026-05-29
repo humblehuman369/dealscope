@@ -19,12 +19,11 @@ export function computeLtrMetricsFromState(
   const downPaymentAmount = buy * state.downPaymentPercent
   const closingCostsAmount = buy * state.closingCostsPercent
   const sellerFin = Math.max(0, state.sellerFinancingAmount ?? 0)
-  const cashNeeded = Math.max(
-    0,
-    downPaymentAmount + closingCostsAmount + (state.rehabBudget ?? 0) - sellerFin,
-  )
 
   const loanAmount = Math.max(0, buy - downPaymentAmount - sellerFin)
+  // Sources & uses: cash needed = (price + closing + rehab) − (bank loan + seller note).
+  // Negative when financing exceeds purchase + costs (cash back at close).
+  const cashNeeded = buy + closingCostsAmount + (state.rehabBudget ?? 0) - loanAmount - sellerFin
   const bankPi =
     loanAmount > 0
       ? calculateMortgagePayment(loanAmount, state.interestRate * 100, state.loanTermYears)
