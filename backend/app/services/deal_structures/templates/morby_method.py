@@ -151,5 +151,7 @@ def combine(sub2_result: DealStructure, seller_second_result: DealStructure, _ct
             "seller_carry_rate": ss_extras.get("seller_carry_rate", 0.0),
             "seller_carry_term_years": ss_extras.get("seller_carry_term_years", DEFAULT_BALLOON_YEARS),
             "seller_carry_balloon_years": DEFAULT_BALLOON_YEARS,
+            # Deferred 0% balloon note: $0/mo until the balloon (not amortized).
+            "seller_carry_interest_only": ss_extras.get("seller_carry_interest_only", True),
         },
     )

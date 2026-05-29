@@ -20,6 +20,9 @@ def project_monthly_cash_flow(
     seller_carry_amount: float = 0.0,
     seller_carry_rate: float = 0.0,
     seller_carry_term_years: int = 5,
+    # Deal-structure seller carries are creative-finance 0% balloon notes (interest-only
+    # until balloon), so this projection defaults to a deferred seller payment.
+    seller_interest_only: bool = True,
 ) -> float:
     """Monthly cash flow after P&I at the given price, rent, and seller-carry terms."""
     if purchase_price <= 0:
@@ -35,6 +38,7 @@ def project_monthly_cash_flow(
         sc,
         seller_carry_rate,
         seller_carry_term_years,
+        seller_interest_only=seller_interest_only,
     )
 
     annual_gross = monthly_rent * 12
@@ -60,6 +64,7 @@ def rent_for_target_cash_flow(
     seller_carry_amount: float = 0.0,
     seller_carry_rate: float = 0.0,
     seller_carry_term_years: int = 5,
+    seller_interest_only: bool = True,
     max_rent: float | None = None,
 ) -> float | None:
     """Closed-form rent (capped) that achieves ``target_monthly_cf`` at ``purchase_price``."""
@@ -85,6 +90,7 @@ def rent_for_target_cash_flow(
         sc,
         seller_carry_rate,
         seller_carry_term_years,
+        seller_interest_only=seller_interest_only,
     )
     fixed_monthly = fixed_annual / 12 + monthly_pi
     required = (fixed_monthly + target_monthly_cf) / haircut

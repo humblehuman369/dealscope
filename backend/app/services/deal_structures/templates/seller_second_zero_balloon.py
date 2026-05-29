@@ -324,6 +324,8 @@ def solve(ctx: StructureContext) -> DealStructure | None:
                 "seller_carry_amount": chosen_second,
                 "seller_carry_rate": 0.0,
                 "seller_carry_term_years": DEFAULT_BALLOON_YEARS,
+                # Deferred 0% balloon note: $0/mo until the balloon (not amortized).
+                "seller_carry_interest_only": True,
             },
         },
     )

@@ -101,17 +101,26 @@ def calculate_monthly_mortgage(principal: float, annual_rate: float, years: int)
     return payment
 
 
-def seller_monthly_payment(principal: float, annual_rate: float, term_years: int) -> float:
+def seller_monthly_payment(
+    principal: float,
+    annual_rate: float,
+    term_years: int,
+    interest_only: bool = False,
+) -> float:
     """Monthly seller-carry P&I.
 
-    0% seller seconds (creative finance) are interest-only until balloon — no monthly
-    payment. Non-zero rates amortize over the note term.
+    By default the note amortizes principal over the term — including 0% notes, where
+    the payment is simply principal ÷ term (no interest). Pass ``interest_only=True`` for
+    deferred/balloon-only creative-finance notes (e.g. Morby Method, Seller 2nd 0%
+    balloon): a 0% deferred note has no monthly payment ($0/mo until the balloon).
     """
     if principal <= 0:
         return 0.0
-    if annual_rate <= 0:
-        return 0.0
-    return calculate_monthly_mortgage(principal, annual_rate, max(1, int(term_years or 5)))
+    if interest_only:
+        # Deferred note: nothing amortizes monthly. A 0% deferred note pays $0/mo; a
+        # nonzero-rate deferred note pays interest only.
+        return 0.0 if annual_rate <= 0 else principal * annual_rate / 12
+    return calculate_monthly_mortgage(principal, annual_rate, max(1, int(term_years or 30)))
 
 
 def conventional_first_lien_loan(purchase_price: float, down_payment_dollars: float) -> float:
@@ -171,13 +180,21 @@ def combined_bank_and_seller_pi(
     seller_principal: float,
     seller_rate: float,
     seller_term_years: int,
+    seller_interest_only: bool = False,
 ) -> tuple[float, float, float]:
-    """Returns (bank_monthly_pi, seller_monthly_pi, combined_monthly_pi)."""
+    """Returns (bank_monthly_pi, seller_monthly_pi, combined_monthly_pi).
+
+    ``seller_interest_only=True`` models a deferred/balloon-only seller note (no
+    amortization); otherwise the seller note amortizes over its term (0% → principal÷term).
+    """
     bank_pi = calculate_monthly_mortgage(bank_loan, bank_rate, bank_term_years)
     if seller_principal <= 0:
         return bank_pi, 0.0, bank_pi
     seller_pi = seller_monthly_payment(
-        seller_principal, seller_rate, max(1, int(seller_term_years or 5))
+        seller_principal,
+        seller_rate,
+        max(1, int(seller_term_years or 30)),
+        interest_only=seller_interest_only,
     )
     return bank_pi, seller_pi, bank_pi + seller_pi
 

@@ -94,6 +94,7 @@ def _calculate_ltr_strategy(
     seller_carry_amount: float = 0.0,
     seller_carry_rate: float = 0.0,
     seller_carry_term_years: int = 30,
+    seller_carry_interest_only: bool = False,
 ) -> dict:
     f = a.financing
     o = a.operating
@@ -112,6 +113,7 @@ def _calculate_ltr_strategy(
         sc,
         seller_carry_rate,
         seller_carry_term_years,
+        seller_interest_only=seller_carry_interest_only,
     )
     annual_debt = monthly_pi * 12
     annual_rent = monthly_rent * 12
@@ -195,6 +197,7 @@ def _calculate_str_strategy(
     seller_carry_amount: float = 0.0,
     seller_carry_rate: float = 0.0,
     seller_carry_term_years: int = 30,
+    seller_carry_interest_only: bool = False,
 ) -> dict:
     f = a.financing
     o = a.operating
@@ -215,6 +218,7 @@ def _calculate_str_strategy(
         sc,
         seller_carry_rate,
         seller_carry_term_years,
+        seller_interest_only=seller_carry_interest_only,
     )
     annual_debt = monthly_pi * 12
     # Mashvisor monthly STR revenue (per-bed) bypasses ADR×365×occupancy
@@ -1005,6 +1009,7 @@ def compute_iq_verdict(
     sc_amt = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
     sc_rate = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
     sc_term = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
+    sc_io = bool(getattr(input_data, "seller_carry_interest_only", False) or False)
 
     provisional_buy = input_data.purchase_price or calculate_buy_price(
         market_price=list_price,
@@ -1099,6 +1104,7 @@ def compute_iq_verdict(
             seller_carry_amount=sc_amt,
             seller_carry_rate=sc_rate,
             seller_carry_term_years=sc_term,
+            seller_carry_interest_only=sc_io,
         ),
         _calculate_str_strategy(
             buy_price,
@@ -1113,6 +1119,7 @@ def compute_iq_verdict(
             seller_carry_amount=sc_amt,
             seller_carry_rate=sc_rate,
             seller_carry_term_years=sc_term,
+            seller_carry_interest_only=sc_io,
         ),
         _calculate_brrrr_strategy(
             buy_price, monthly_rent, property_taxes, insurance, arv, rehab_cost, a, hoa_annual=hoa_annual
