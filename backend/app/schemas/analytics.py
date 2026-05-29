@@ -210,6 +210,11 @@ class IQVerdictInput(BaseModel):
         le=40,
         description="Seller note amortization term in years",
     )
+    seller_carry_interest_only: bool | None = Field(
+        None,
+        description="When true, the seller note is deferred/interest-only ($0/mo at 0%) "
+        "until a balloon, rather than amortizing principal over the term.",
+    )
 
     @field_validator("existing_loan_type", mode="before")
     @classmethod

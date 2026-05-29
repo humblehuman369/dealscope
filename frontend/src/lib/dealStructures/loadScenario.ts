@@ -31,6 +31,8 @@ export const PATH_PATCH_FIELD_KEYS = [
   'sellerFinancingAmount',
   'sellerInterestRate',
   'sellerTermYears',
+  'sellerInterestOnly',
+  'sellerBalloonYears',
   // pass-through extras (informational / non-slider)
   'isOwnerOccupied',
   'is_owner_occupied',
@@ -87,6 +89,8 @@ export function preLoadedRecordToDealMakerPatch(
     patch.sellerInterestRate = levers.seller_carry_rate
   if (typeof levers.seller_carry_term_years === 'number')
     patch.sellerTermYears = levers.seller_carry_term_years
+  if (typeof levers.seller_carry_interest_only === 'boolean')
+    patch.sellerInterestOnly = levers.seller_carry_interest_only
 
   // Top-level owner-occupied flag (FHA House Hack).
   if (typeof levers.is_owner_occupied === 'boolean') {
@@ -105,6 +109,8 @@ export function preLoadedRecordToDealMakerPatch(
     if (typeof ex.seller_carry_rate === 'number') patch.sellerInterestRate = ex.seller_carry_rate
     if (typeof ex.seller_carry_term_years === 'number')
       patch.sellerTermYears = ex.seller_carry_term_years
+    if (typeof ex.seller_carry_interest_only === 'boolean')
+      patch.sellerInterestOnly = ex.seller_carry_interest_only
 
     // Larger-down: backend emits a decimal (0.30); inlineOverrides.downPayment is integer percent.
     if (typeof ex.down_payment_pct_override === 'number') {

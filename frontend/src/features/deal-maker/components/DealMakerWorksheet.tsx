@@ -75,6 +75,29 @@ function monthlyPI(principal: number, annualRate: number, years: number): number
   return (principal * (r * (1 + r) ** n)) / ((1 + r) ** n - 1)
 }
 
+/**
+ * Remaining seller-note balance due at the balloon date (reference only — not part of
+ * cash-flow math). Deferred/interest-only notes owe the full principal; amortizing notes
+ * owe the remaining balance after `balloonYears` of payments on the amortization term.
+ */
+function sellerBalloonBalance(
+  principal: number,
+  annualRateDecimal: number,
+  termYears: number,
+  balloonYears: number,
+  interestOnly = false,
+): number {
+  if (principal <= 0) return 0
+  if (interestOnly) return principal
+  const n = Math.max(1, termYears) * 12
+  const p = Math.min(n, Math.max(0, Math.round(balloonYears * 12)))
+  if (p >= n) return 0
+  if (annualRateDecimal <= 0) return Math.max(0, principal * (1 - p / n))
+  const r = annualRateDecimal / 12
+  const balance = (principal * ((1 + r) ** n - (1 + r) ** p)) / ((1 + r) ** n - 1)
+  return Math.max(0, balance)
+}
+
 // ---------------------------------------------------------------------------
 // Visual building blocks
 // ---------------------------------------------------------------------------
@@ -552,6 +575,7 @@ function LTRWorksheet({
       ? bankRaw
       : monthlyPI(loanAmount, state.interestRate, state.loanTermYears)
   const hasSellerFinancing = state.sellerFinancingAmount > 0
+  const sellerInterestOnly = state.sellerInterestOnly ?? false
   const sellerMonthly = hasSellerFinancing
     ? typeof sellerRaw === 'number' && isFinite(sellerRaw)
       ? sellerRaw
@@ -559,7 +583,19 @@ function LTRWorksheet({
           state.sellerFinancingAmount,
           state.sellerInterestRate,
           state.sellerTermYears,
+          sellerInterestOnly,
         )
+    : 0
+  const sellerBalloonYears = state.sellerBalloonYears ?? 10
+  // Reference-only: remaining note balance due at the balloon date (not in cash flow).
+  const sellerBalloon = hasSellerFinancing
+    ? sellerBalloonBalance(
+        state.sellerFinancingAmount,
+        state.sellerInterestRate,
+        state.sellerTermYears,
+        sellerBalloonYears,
+        sellerInterestOnly,
+      )
     : 0
   // When the slider shows no seller financing, force Combined = Bank P&I so
   // the displayed math stays internally consistent even if the backend
@@ -718,8 +754,24 @@ function LTRWorksheet({
         <>
           <Row label="Seller Financing" value={fmt(state.sellerFinancingAmount)} />
           <SellerNoteTermsRows state={state} up={up} />
+          <SliderRow
+            field="sellerBalloonYears"
+            label="Seller Balloon"
+            value={sellerBalloonYears}
+            displayValue={`${sellerBalloonYears} years`}
+            min={1}
+            max={30}
+            onChange={(v) => up('sellerBalloonYears', Math.round(v))}
+            parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)}
+          />
           <Row label="Seller P&amp;I" value={`${fmt(sellerMonthly)}/mo`} />
           <Row label="Combined Monthly Payment" value={`${fmt(monthlyPayment)}/mo`} />
+          {/* Reference only — the balloon balance is not part of the cash-flow math. */}
+          <Row
+            label={`Seller Balloon Payment (yr ${sellerBalloonYears})`}
+            value={fmt(sellerBalloon)}
+            color="var(--text-secondary)"
+          />
         </>
       )}
       <TotalRow label="Annual Payment" value={fmt(monthlyPayment * 12)} />

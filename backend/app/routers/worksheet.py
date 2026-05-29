@@ -53,6 +53,7 @@ class LTRWorksheetInput(BaseModel):
     seller_carry_amount: float | None = Field(None, ge=0, description="Seller note principal (Model A)")
     seller_carry_rate: float | None = Field(None, ge=0, le=0.30, description="Seller note annual rate")
     seller_carry_term_years: int | None = Field(None, ge=1, le=40, description="Seller note amortization years")
+    seller_carry_interest_only: bool | None = Field(None, description="Deferred/interest-only seller note ($0/mo at 0% until balloon)")
 
 
 class STRWorksheetInput(BaseModel):
@@ -81,6 +82,7 @@ class STRWorksheetInput(BaseModel):
     seller_carry_amount: float | None = Field(None, ge=0)
     seller_carry_rate: float | None = Field(None, ge=0, le=0.30)
     seller_carry_term_years: int | None = Field(None, ge=1, le=40)
+    seller_carry_interest_only: bool | None = Field(None)
 
 
 class BRRRRWorksheetInput(BaseModel):
@@ -209,6 +211,7 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession):
         sca = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
         scr = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
         sct = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
+        sci = bool(input_data.seller_carry_interest_only or False)
 
         result = calculate_ltr(
             purchase_price=input_data.purchase_price,
@@ -235,6 +238,7 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession):
             seller_carry_amount=sca,
             seller_carry_rate=scr,
             seller_carry_term_years=sct,
+            seller_carry_interest_only=sci,
         )
 
         arv = input_data.arv or input_data.purchase_price
@@ -344,6 +348,7 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
         sca = input_data.seller_carry_amount if input_data.seller_carry_amount is not None else 0.0
         scr = input_data.seller_carry_rate if input_data.seller_carry_rate is not None else 0.0
         sct = input_data.seller_carry_term_years if input_data.seller_carry_term_years is not None else 30
+        sci = bool(input_data.seller_carry_interest_only or False)
 
         result = calculate_str(
             purchase_price=input_data.purchase_price,
@@ -373,6 +378,7 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
             seller_carry_amount=sca,
             seller_carry_rate=scr,
             seller_carry_term_years=sct,
+            seller_carry_interest_only=sci,
         )
 
         supplies_annual = input_data.supplies_monthly * 12

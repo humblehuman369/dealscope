@@ -62,6 +62,7 @@ def calculate_str(
     seller_carry_amount: float = 0.0,
     seller_carry_rate: float = 0.0,
     seller_carry_term_years: int = 30,
+    seller_carry_interest_only: bool = False,
 ) -> dict[str, Any]:
     """Calculate Short-Term Rental metrics.
 
@@ -104,6 +105,7 @@ def calculate_str(
         sc,
         seller_carry_rate,
         seller_carry_term_years,
+        seller_interest_only=seller_carry_interest_only,
     )
     annual_debt_service = monthly_pi * 12
 

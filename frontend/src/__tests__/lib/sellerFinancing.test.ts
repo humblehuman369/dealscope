@@ -3,8 +3,12 @@ import { sellerMonthlyPayment } from '@/lib/sellerFinancing'
 import { calculateMortgagePayment } from '@/utils/calculations'
 
 describe('sellerMonthlyPayment', () => {
-  it('returns 0 for 0% creative-finance seconds (balloon only)', () => {
-    expect(sellerMonthlyPayment(133_735, 0, 5)).toBe(0)
+  it('amortizes principal over the term for a 0% note (principal ÷ term)', () => {
+    expect(sellerMonthlyPayment(133_735, 0, 5)).toBeCloseTo(133_735 / (5 * 12), 2)
+  })
+
+  it('returns 0 for a deferred (interest-only) 0% note — balloon only', () => {
+    expect(sellerMonthlyPayment(133_735, 0, 5, true)).toBe(0)
   })
 
   it('amortizes when rate is positive', () => {

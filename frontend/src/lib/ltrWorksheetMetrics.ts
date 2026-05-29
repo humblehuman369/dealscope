@@ -34,6 +34,7 @@ export function computeLtrMetricsFromState(
           sellerFin,
           state.sellerInterestRate ?? 0,
           state.sellerTermYears ?? 30,
+          state.sellerInterestOnly ?? false,
         )
       : 0
   const monthlyPayment = bankPi + sellerPi

@@ -163,6 +163,10 @@ export function buildVerdictAnalysisPayload(
     if (overrides.sellerTermYears != null) {
       payload.seller_carry_term_years = overrides.sellerTermYears
     }
+    const sellerIO = overrides.sellerInterestOnly ?? overrides.seller_carry_interest_only
+    if (sellerIO != null) {
+      payload.seller_carry_interest_only = !!sellerIO
+    }
   }
 
   return payload

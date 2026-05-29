@@ -7,8 +7,11 @@
 export const DEFAULT_SELLER_FINANCING_FIELDS = {
   sellerFinancingAmount: 0,
   sellerInterestRate: 0,
-  sellerTermYears: 5,
+  sellerTermYears: 30,
 }
+
+/** Default balloon term (years) for the seller note's reference balloon payment. */
+export const DEFAULT_SELLER_BALLOON_YEARS = 10
 
 // =============================================================================
 // DEAL MAKER STATE
@@ -2019,6 +2022,10 @@ export interface LTRDealMakerState {
   sellerFinancingAmount: number
   sellerInterestRate: number
   sellerTermYears: number
+  /** Balloon term (years) for the seller note's reference balloon payment. */
+  sellerBalloonYears?: number
+  /** When true, the seller note is deferred/interest-only ($0/mo at 0% until balloon). */
+  sellerInterestOnly?: boolean
   rehabBudget: number
   arv: number
   monthlyRent: number
