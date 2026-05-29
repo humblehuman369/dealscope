@@ -1543,15 +1543,24 @@ function FlipWorksheet({
         value={state.financingType}
         onChange={(v) => up('financingType', v)}
       />
-      {state.financingType !== 'cash' && (
+      {/* Hard Money Loan is the LTV-driven financing input; Down Payment is the residual:
+          Down Payment = Purchase Price − (Hard Money Loan + Seller Financing). */}
+      {state.financingType !== 'cash' ? (
         <>
           <SliderRow
-            label="LTV"
+            field="hardMoneyLtv"
+            label="Hard Money Loan"
             value={state.hardMoneyLtv * 100}
-            displayValue={`${(state.hardMoneyLtv * 100).toFixed(0)}%`}
-            min={70}
+            secondaryValue={`${(state.hardMoneyLtv * 100).toFixed(1)}%`}
+            displayValue={fmt(loanAmount)}
+            min={0}
             max={100}
-            onChange={(v) => up('hardMoneyLtv', v / 100)}
+            step={1}
+            onChange={(ltv) => up('hardMoneyLtv', Math.max(0, Math.min(1, ltv / 100)))}
+            parseInput={(s) => {
+              const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+              return state.purchasePrice > 0 ? (dollars / state.purchasePrice) * 100 : 0
+            }}
           />
           <SliderRow
             label="Interest Rate"
@@ -1571,12 +1580,14 @@ function FlipWorksheet({
             onChange={(v) => up('loanPoints', v)}
           />
         </>
+      ) : (
+        <Row label="Hard Money Loan" value={fmt(loanAmount)} />
       )}
-      <Row
-        label={state.financingType === 'cash' ? 'Bank / Hard Money Loan' : 'Hard Money Loan'}
-        value={fmt(loanAmount)}
-      />
       <SellerFinancingPrincipalRow basePrice={state.purchasePrice} state={state} up={up} />
+      <Row
+        label={`Down Payment (${(state.purchasePrice > 0 ? (downPayment / state.purchasePrice) * 100 : 0).toFixed(1)}%)`}
+        value={fmtSigned(downPayment)}
+      />
       <SellerNoteTermsRows state={state} up={up} />
       {state.sellerFinancingAmount > 0 && (
         <>
@@ -1584,7 +1595,7 @@ function FlipWorksheet({
           <Row label="Combined Debt Service (est.)" value={`${fmt(combinedDebtMonthly)}/mo`} />
         </>
       )}
-      <TotalRow label="Cash at Purchase" value={fmt(cashAtPurchase)} />
+      <TotalRow label="Cash at Purchase" value={fmtSigned(cashAtPurchase)} />
 
       <Divider />
 

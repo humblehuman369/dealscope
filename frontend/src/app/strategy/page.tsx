@@ -2012,9 +2012,12 @@ function StrategyContent() {
 
       case 'flip': {
         const fState = worksheetState as FlipDealMakerState
+        const fSeller = Math.max(0, fState.sellerFinancingAmount ?? 0)
         const fLoan =
           fState.financingType !== 'cash' ? fState.purchasePrice * fState.hardMoneyLtv : 0
-        const fDown = fState.purchasePrice - fLoan
+        // Down payment is the residual after the hard money loan and any seller note:
+        // Down Payment = Purchase Price − (Hard Money Loan + Seller Financing).
+        const fDown = fState.purchasePrice - fLoan - fSeller
         const fClosing = fState.purchasePrice * fState.closingCostsPercent
         const pointsCost = fLoan * (fState.loanPoints / 100)
         const totalRehab = fState.rehabBudget * (1 + fState.contingencyPct)
