@@ -629,21 +629,27 @@ function LTRWorksheet({
       <SliderRow
         field="bankLoanAmount"
         label="Bank Loan"
-        value={loanAmount}
+        value={state.buyPrice > 0 ? (loanAmount / state.buyPrice) * 100 : 0}
+        secondaryValue={`${(state.buyPrice > 0 ? (loanAmount / state.buyPrice) * 100 : 0).toFixed(1)}%`}
         displayValue={fmt(loanAmount)}
         min={0}
-        max={Math.max(state.buyPrice, 100000)}
-        step={1000}
-        onChange={(v) => {
-          const newLoan = Math.max(0, v)
-          // Hold seller financing constant; the down payment absorbs the change.
+        max={100}
+        step={1}
+        onChange={(ltv) => {
+          // Slider is expressed as loan-to-value % of buy price; hold seller
+          // financing constant so the down payment absorbs the change.
+          const newLoan = Math.max(0, (ltv / 100) * state.buyPrice)
           const dpPct =
             state.buyPrice > 0
               ? (state.buyPrice - newLoan - state.sellerFinancingAmount) / state.buyPrice
               : 0
           up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
         }}
-        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+        parseInput={(s) => {
+          // The editable box accepts a dollar loan amount → convert to LTV %.
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return state.buyPrice > 0 ? (dollars / state.buyPrice) * 100 : 0
+        }}
       />
       <SliderRow
         field="sellerFinancingAmount"
