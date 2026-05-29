@@ -417,6 +417,10 @@ export interface STRDealMakerState {
   sellerFinancingAmount: number
   sellerInterestRate: number
   sellerTermYears: number
+  /** Balloon term (years) for the seller note's reference balloon payment. */
+  sellerBalloonYears?: number
+  /** When true, the seller note is deferred/interest-only ($0/mo at 0% until balloon). */
+  sellerInterestOnly?: boolean
 
   // Tab 3: Rehab & Valuation (add furniture)
   rehabBudget: number
@@ -779,6 +783,10 @@ export interface BRRRRDealMakerState {
   sellerFinancingAmount: number
   sellerInterestRate: number
   sellerTermYears: number
+  /** Balloon term (years) for the seller note's reference balloon payment. */
+  sellerBalloonYears?: number
+  /** When true, the seller note is deferred/interest-only ($0/mo at 0% until balloon). */
+  sellerInterestOnly?: boolean
 
   // Phase 2: Rehab
   rehabBudget: number
@@ -1149,6 +1157,10 @@ export interface FlipDealMakerState {
   sellerFinancingAmount: number
   sellerInterestRate: number
   sellerTermYears: number
+  /** Balloon term (years) for the seller note's reference balloon payment. */
+  sellerBalloonYears?: number
+  /** When true, the seller note is deferred/interest-only ($0/mo at 0% until balloon). */
+  sellerInterestOnly?: boolean
 
   // Phase 3: Rehab
   rehabBudget: number
@@ -1461,6 +1473,10 @@ export interface HouseHackDealMakerState {
   sellerFinancingAmount: number
   sellerInterestRate: number
   sellerTermYears: number
+  /** Balloon term (years) for the seller note's reference balloon payment. */
+  sellerBalloonYears?: number
+  /** When true, the seller note is deferred/interest-only ($0/mo at 0% until balloon). */
+  sellerInterestOnly?: boolean
 
   // Phase 3: Rent (Unit Income)
   avgRentPerUnit: number // Average rent per rented unit
@@ -1788,6 +1804,10 @@ export interface WholesaleDealMakerState {
   sellerFinancingAmount: number
   sellerInterestRate: number
   sellerTermYears: number
+  /** Balloon term (years) for the seller note's reference balloon payment. */
+  sellerBalloonYears?: number
+  /** When true, the seller note is deferred/interest-only ($0/mo at 0% until balloon). */
+  sellerInterestOnly?: boolean
 
   // Phase 3: Assignment
   assignmentFee: number // Your wholesale fee

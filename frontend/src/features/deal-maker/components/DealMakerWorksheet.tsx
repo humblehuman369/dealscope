@@ -921,6 +921,7 @@ function STRWorksheet({
     typeof bankRaw === 'number' && isFinite(bankRaw)
       ? bankRaw
       : monthlyPI(loanAmount, state.interestRate, state.loanTermYears)
+  const sellerInterestOnly = state.sellerInterestOnly ?? false
   const sellerMonthly =
     typeof sellerRaw === 'number' && isFinite(sellerRaw)
       ? sellerRaw
@@ -929,8 +930,20 @@ function STRWorksheet({
             state.sellerFinancingAmount,
             state.sellerInterestRate,
             state.sellerTermYears,
+            sellerInterestOnly,
           )
         : 0
+  const sellerBalloonYears = state.sellerBalloonYears ?? 10
+  const sellerBalloon =
+    state.sellerFinancingAmount > 0
+      ? sellerBalloonBalance(
+          state.sellerFinancingAmount,
+          state.sellerInterestRate,
+          state.sellerTermYears,
+          sellerBalloonYears,
+          sellerInterestOnly,
+        )
+      : 0
   const monthlyPayment = num(m, 'monthlyPayment') || bankMonthly + sellerMonthly
   // Sources & uses: cash needed = uses (price + closing + rehab + furniture) − financing
   // (bank loan + seller note). Negative when financing exceeds purchase + costs.
@@ -1049,7 +1062,8 @@ function STRWorksheet({
       <Divider />
 
       <SectionHeader title="Your Loan Payment" />
-      <Row label="Loan Amount" value={fmt(loanAmount)} />
+      {/* Two loans, each priced off its principal: the Bank Loan and the Seller note. */}
+      <Row label="Bank Loan" value={fmt(loanAmount)} />
       <SliderRow
         field="interestRate"
         label="Interest Rate"
@@ -1072,11 +1086,30 @@ function STRWorksheet({
         parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)}
       />
       <Row label="Bank P&amp;I" value={`${fmt(bankMonthly)}/mo`} />
-      <SellerNoteTermsRows state={state} up={up} />
       {state.sellerFinancingAmount > 0 && (
-        <Row label="Seller P&amp;I" value={`${fmt(sellerMonthly)}/mo`} />
+        <>
+          <Row label="Seller Financing" value={fmt(state.sellerFinancingAmount)} />
+          <SellerNoteTermsRows state={state} up={up} />
+          <SliderRow
+            field="sellerBalloonYears"
+            label="Seller Balloon"
+            value={sellerBalloonYears}
+            displayValue={`${sellerBalloonYears} years`}
+            min={1}
+            max={30}
+            onChange={(v) => up('sellerBalloonYears', Math.round(v))}
+            parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)}
+          />
+          <Row label="Seller P&amp;I" value={`${fmt(sellerMonthly)}/mo`} />
+          <Row label="Combined Monthly Payment" value={`${fmt(monthlyPayment)}/mo`} />
+          {/* Reference only — not part of the cash-flow math. */}
+          <Row
+            label={`Seller Balloon Payment (yr ${sellerBalloonYears})`}
+            value={fmt(sellerBalloon)}
+            color="var(--text-secondary)"
+          />
+        </>
       )}
-      <Row label="Combined Monthly Payment" value={`${fmt(monthlyPayment)}/mo`} />
       <TotalRow label="Annual Payment" value={fmt(monthlyPayment * 12)} />
 
       <Divider />
@@ -1228,6 +1261,27 @@ function BRRRRWorksheet({
       : conventionalBankLoan(purchaseEff, state.downPaymentPercent, state.sellerFinancingAmount)
   const initialClosing = num(m, 'initialClosingCosts')
   const cashPhase1 = num(m, 'cashRequiredPhase1')
+  const sellerInterestOnly = state.sellerInterestOnly ?? false
+  const sellerMonthly =
+    state.sellerFinancingAmount > 0
+      ? sellerMonthlyPayment(
+          state.sellerFinancingAmount,
+          state.sellerInterestRate,
+          state.sellerTermYears,
+          sellerInterestOnly,
+        )
+      : 0
+  const sellerBalloonYears = state.sellerBalloonYears ?? 10
+  const sellerBalloon =
+    state.sellerFinancingAmount > 0
+      ? sellerBalloonBalance(
+          state.sellerFinancingAmount,
+          state.sellerInterestRate,
+          state.sellerTermYears,
+          sellerBalloonYears,
+          sellerInterestOnly,
+        )
+      : 0
   const holdingCosts = num(m, 'holdingCosts')
   const allIn = num(m, 'allInCost')
   const refiLoan = num(m, 'refinanceLoanAmount')
@@ -1328,7 +1382,28 @@ function BRRRRWorksheet({
         parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
       />
       <Row label="Closing Costs" value={fmt(initialClosing)} />
-      <SellerNoteTermsRows state={state} up={up} />
+      {state.sellerFinancingAmount > 0 && (
+        <>
+          <SellerNoteTermsRows state={state} up={up} />
+          <SliderRow
+            field="sellerBalloonYears"
+            label="Seller Balloon"
+            value={sellerBalloonYears}
+            displayValue={`${sellerBalloonYears} years`}
+            min={1}
+            max={30}
+            onChange={(v) => up('sellerBalloonYears', Math.round(v))}
+            parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)}
+          />
+          <Row label="Seller P&amp;I" value={`${fmt(sellerMonthly)}/mo`} />
+          {/* Reference only — not part of the cash-flow math. */}
+          <Row
+            label={`Seller Balloon Payment (yr ${sellerBalloonYears})`}
+            value={fmt(sellerBalloon)}
+            color="var(--text-secondary)"
+          />
+        </>
+      )}
       <TotalRow label="Cash Required" value={fmt(cashPhase1)} />
 
       <Divider />
@@ -1540,12 +1615,25 @@ function FlipWorksheet({
   const closingCosts = num(m, 'closingCosts')
   const hmMonthly =
     state.financingType !== 'cash' && loanAmount > 0 ? (loanAmount * state.hardMoneyRate) / 12 : 0
+  const sellerInterestOnly = state.sellerInterestOnly ?? false
   const sellerMonthly =
     state.sellerFinancingAmount > 0
       ? sellerMonthlyPayment(
           state.sellerFinancingAmount,
           state.sellerInterestRate,
           state.sellerTermYears,
+          sellerInterestOnly,
+        )
+      : 0
+  const sellerBalloonYears = state.sellerBalloonYears ?? 10
+  const sellerBalloon =
+    state.sellerFinancingAmount > 0
+      ? sellerBalloonBalance(
+          state.sellerFinancingAmount,
+          state.sellerInterestRate,
+          state.sellerTermYears,
+          sellerBalloonYears,
+          sellerInterestOnly,
         )
       : 0
   const combinedDebtMonthly = hmMonthly + sellerMonthly
@@ -1671,11 +1759,27 @@ function FlipWorksheet({
         label={`Down Payment (${(state.purchasePrice > 0 ? (downPayment / state.purchasePrice) * 100 : 0).toFixed(1)}%)`}
         value={fmtSigned(downPayment)}
       />
-      <SellerNoteTermsRows state={state} up={up} />
       {state.sellerFinancingAmount > 0 && (
         <>
+          <SellerNoteTermsRows state={state} up={up} />
+          <SliderRow
+            field="sellerBalloonYears"
+            label="Seller Balloon"
+            value={sellerBalloonYears}
+            displayValue={`${sellerBalloonYears} years`}
+            min={1}
+            max={30}
+            onChange={(v) => up('sellerBalloonYears', Math.round(v))}
+            parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)}
+          />
           <Row label="Seller P&amp;I (est.)" value={`${fmt(sellerMonthly)}/mo`} />
           <Row label="Combined Debt Service (est.)" value={`${fmt(combinedDebtMonthly)}/mo`} />
+          {/* Reference only — not part of the cash-flow math. */}
+          <Row
+            label={`Seller Balloon Payment (yr ${sellerBalloonYears})`}
+            value={fmt(sellerBalloon)}
+            color="var(--text-secondary)"
+          />
         </>
       )}
       <TotalRow label="Cash at Purchase" value={fmtSigned(cashAtPurchase)} />
@@ -1823,12 +1927,25 @@ function HouseHackWorksheet({
   const closingCosts = num(m, 'closingCosts')
   const cashToClose = num(m, 'cashToClose')
   const bankPiCalc = monthlyPI(loanAmt, state.interestRate, state.loanTermYears)
+  const sellerInterestOnly = state.sellerInterestOnly ?? false
   const sellerPiCalc =
     state.sellerFinancingAmount > 0
       ? sellerMonthlyPayment(
           state.sellerFinancingAmount,
           state.sellerInterestRate,
           state.sellerTermYears,
+          sellerInterestOnly,
+        )
+      : 0
+  const sellerBalloonYears = state.sellerBalloonYears ?? 10
+  const sellerBalloon =
+    state.sellerFinancingAmount > 0
+      ? sellerBalloonBalance(
+          state.sellerFinancingAmount,
+          state.sellerInterestRate,
+          state.sellerTermYears,
+          sellerBalloonYears,
+          sellerInterestOnly,
         )
       : 0
   const combinedPiFallback = bankPiCalc + sellerPiCalc
@@ -1981,12 +2098,30 @@ function HouseHackWorksheet({
       <Divider />
 
       <SectionHeader title="Monthly Payment" />
-      <SellerNoteTermsRows state={state} up={up} />
       {state.sellerFinancingAmount > 0 ? (
         <>
+          <Row label="Bank Loan" value={fmt(loanAmt)} />
           <Row label="Bank P&amp;I" value={`${fmt(bankPiCalc)}/mo`} />
+          <Row label="Seller Financing" value={fmt(state.sellerFinancingAmount)} />
+          <SellerNoteTermsRows state={state} up={up} />
+          <SliderRow
+            field="sellerBalloonYears"
+            label="Seller Balloon"
+            value={sellerBalloonYears}
+            displayValue={`${sellerBalloonYears} years`}
+            min={1}
+            max={30}
+            onChange={(v) => up('sellerBalloonYears', Math.round(v))}
+            parseInput={(s) => parseInt(s.replace(/[^0-9]/g, ''), 10)}
+          />
           <Row label="Seller P&amp;I" value={`${fmt(sellerPiCalc)}/mo`} />
           <Row label="Combined Monthly Payment" value={`${fmt(pi)}/mo`} />
+          {/* Reference only — not part of the cash-flow math. */}
+          <Row
+            label={`Seller Balloon Payment (yr ${sellerBalloonYears})`}
+            value={fmt(sellerBalloon)}
+            color="var(--text-secondary)"
+          />
         </>
       ) : (
         <Row label="Principal &amp; Interest" value={`${fmt(pi)}/mo`} />

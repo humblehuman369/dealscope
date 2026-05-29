@@ -1599,6 +1599,18 @@ function StrategyContent() {
           ? ioAny.seller_carry_term_years
           : null) ??
         30,
+      sellerBalloonYears:
+        (typeof ioAny.sellerBalloonYears === 'number' ? ioAny.sellerBalloonYears : null) ??
+        (typeof ioAny.seller_carry_balloon_years === 'number'
+          ? ioAny.seller_carry_balloon_years
+          : null) ??
+        10,
+      sellerInterestOnly:
+        (typeof ioAny.sellerInterestOnly === 'boolean' ? ioAny.sellerInterestOnly : null) ??
+        (typeof ioAny.seller_carry_interest_only === 'boolean'
+          ? ioAny.seller_carry_interest_only
+          : null) ??
+        false,
     }
     const arvVal =
       io.arv ?? (dealRecord?.arv && dealRecord.arv > 0 ? dealRecord.arv : null) ?? bd?.arv ?? data?.inputs_used?.arv ?? listPrice
@@ -1824,18 +1836,6 @@ function StrategyContent() {
             dealGapOperatingOverrides?.pestControlAnnual ??
             DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
           ...sf,
-          sellerBalloonYears:
-            (typeof ioAny.sellerBalloonYears === 'number' ? ioAny.sellerBalloonYears : null) ??
-            (typeof ioAny.seller_carry_balloon_years === 'number'
-              ? ioAny.seller_carry_balloon_years
-              : null) ??
-            10,
-          sellerInterestOnly:
-            (typeof ioAny.sellerInterestOnly === 'boolean' ? ioAny.sellerInterestOnly : null) ??
-            (typeof ioAny.seller_carry_interest_only === 'boolean'
-              ? ioAny.seller_carry_interest_only
-              : null) ??
-            false,
         } satisfies LTRDealMakerState
     }
   })()
@@ -2089,7 +2089,12 @@ function StrategyContent() {
         )
         const hSellerPi =
           hSeller > 0
-            ? sellerMonthlyPayment(hSeller, hState.sellerInterestRate, hState.sellerTermYears)
+            ? sellerMonthlyPayment(
+                hSeller,
+                hState.sellerInterestRate,
+                hState.sellerTermYears,
+                hState.sellerInterestOnly ?? false,
+              )
             : 0
         const hPI = hBankPi + hSellerPi
         const hPmi = (hLoan * hState.pmiRate) / 12
