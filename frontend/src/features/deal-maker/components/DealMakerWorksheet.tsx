@@ -640,13 +640,14 @@ function LTRWorksheet({
       <SliderRow
         field="sellerFinancingAmount"
         label="Seller Financing"
-        value={state.sellerFinancingAmount}
+        value={state.buyPrice > 0 ? (state.sellerFinancingAmount / state.buyPrice) * 100 : 0}
+        secondaryValue={`${(state.buyPrice > 0 ? (state.sellerFinancingAmount / state.buyPrice) * 100 : 0).toFixed(1)}%`}
         displayValue={fmt(state.sellerFinancingAmount)}
         min={0}
-        max={state.buyPrice > 0 ? state.buyPrice : 500000}
-        step={1000}
-        onChange={(v) => {
-          const newSeller = Math.max(0, v)
+        max={100}
+        step={1}
+        onChange={(ltv) => {
+          const newSeller = Math.max(0, (ltv / 100) * state.buyPrice)
           // Hold the bank loan constant; the down payment absorbs the change.
           const dpPct =
             state.buyPrice > 0
@@ -656,7 +657,10 @@ function LTRWorksheet({
           up('sellerFinancingAmount', newSeller)
           up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
         }}
-        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+        parseInput={(s) => {
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return state.buyPrice > 0 ? (dollars / state.buyPrice) * 100 : 0
+        }}
       />
       <SliderRow
         label="Closing Costs"
@@ -934,13 +938,14 @@ function STRWorksheet({
       <SliderRow
         field="sellerFinancingAmount"
         label="Seller Financing"
-        value={state.sellerFinancingAmount}
+        value={state.buyPrice > 0 ? (state.sellerFinancingAmount / state.buyPrice) * 100 : 0}
+        secondaryValue={`${(state.buyPrice > 0 ? (state.sellerFinancingAmount / state.buyPrice) * 100 : 0).toFixed(1)}%`}
         displayValue={fmt(state.sellerFinancingAmount)}
         min={0}
-        max={state.buyPrice > 0 ? state.buyPrice : 500000}
-        step={1000}
-        onChange={(v) => {
-          const newSeller = Math.max(0, v)
+        max={100}
+        step={1}
+        onChange={(ltv) => {
+          const newSeller = Math.max(0, (ltv / 100) * state.buyPrice)
           // Hold the bank loan constant; the down payment absorbs the change.
           const dpPct =
             state.buyPrice > 0
@@ -950,7 +955,10 @@ function STRWorksheet({
           up('sellerFinancingAmount', newSeller)
           up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
         }}
-        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+        parseInput={(s) => {
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return state.buyPrice > 0 ? (dollars / state.buyPrice) * 100 : 0
+        }}
       />
       <SliderRow
         label="Closing Costs"
@@ -1233,13 +1241,14 @@ function BRRRRWorksheet({
       <SliderRow
         field="sellerFinancingAmount"
         label="Seller Financing"
-        value={state.sellerFinancingAmount}
+        value={purchaseEff > 0 ? (state.sellerFinancingAmount / purchaseEff) * 100 : 0}
+        secondaryValue={`${(purchaseEff > 0 ? (state.sellerFinancingAmount / purchaseEff) * 100 : 0).toFixed(1)}%`}
         displayValue={fmt(state.sellerFinancingAmount)}
         min={0}
-        max={purchaseEff > 0 ? purchaseEff : 500000}
-        step={1000}
-        onChange={(v) => {
-          const newSeller = Math.max(0, v)
+        max={100}
+        step={1}
+        onChange={(ltv) => {
+          const newSeller = Math.max(0, (ltv / 100) * purchaseEff)
           // Hold the bank loan constant; the down payment absorbs the change.
           const dpPct =
             purchaseEff > 0
@@ -1248,7 +1257,10 @@ function BRRRRWorksheet({
           up('sellerFinancingAmount', newSeller)
           up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
         }}
-        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+        parseInput={(s) => {
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return purchaseEff > 0 ? (dollars / purchaseEff) * 100 : 0
+        }}
       />
       <SliderRow
         label="Hard Money Rate"
@@ -1583,7 +1595,23 @@ function FlipWorksheet({
       ) : (
         <Row label="Hard Money Loan" value={fmt(loanAmount)} />
       )}
-      <SellerFinancingPrincipalRow basePrice={state.purchasePrice} state={state} up={up} />
+      <SliderRow
+        field="sellerFinancingAmount"
+        label="Seller Financing"
+        value={state.purchasePrice > 0 ? (state.sellerFinancingAmount / state.purchasePrice) * 100 : 0}
+        secondaryValue={`${(state.purchasePrice > 0 ? (state.sellerFinancingAmount / state.purchasePrice) * 100 : 0).toFixed(1)}%`}
+        displayValue={fmt(state.sellerFinancingAmount)}
+        min={0}
+        max={100}
+        step={1}
+        onChange={(ltv) =>
+          up('sellerFinancingAmount', Math.max(0, (ltv / 100) * state.purchasePrice))
+        }
+        parseInput={(s) => {
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return state.purchasePrice > 0 ? (dollars / state.purchasePrice) * 100 : 0
+        }}
+      />
       <Row
         label={`Down Payment (${(state.purchasePrice > 0 ? (downPayment / state.purchasePrice) * 100 : 0).toFixed(1)}%)`}
         value={fmtSigned(downPayment)}
@@ -1838,13 +1866,14 @@ function HouseHackWorksheet({
       <SliderRow
         field="sellerFinancingAmount"
         label="Seller Financing"
-        value={state.sellerFinancingAmount}
+        value={state.purchasePrice > 0 ? (state.sellerFinancingAmount / state.purchasePrice) * 100 : 0}
+        secondaryValue={`${(state.purchasePrice > 0 ? (state.sellerFinancingAmount / state.purchasePrice) * 100 : 0).toFixed(1)}%`}
         displayValue={fmt(state.sellerFinancingAmount)}
         min={0}
-        max={state.purchasePrice > 0 ? state.purchasePrice : 500000}
-        step={1000}
-        onChange={(v) => {
-          const newSeller = Math.max(0, v)
+        max={100}
+        step={1}
+        onChange={(ltv) => {
+          const newSeller = Math.max(0, (ltv / 100) * state.purchasePrice)
           // Hold the bank loan constant; the down payment absorbs the change.
           const dpPct =
             state.purchasePrice > 0
@@ -1854,7 +1883,10 @@ function HouseHackWorksheet({
           up('sellerFinancingAmount', newSeller)
           up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
         }}
-        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+        parseInput={(s) => {
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return state.purchasePrice > 0 ? (dollars / state.purchasePrice) * 100 : 0
+        }}
       />
       <SliderRow
         field="interestRate"
