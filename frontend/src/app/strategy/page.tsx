@@ -514,11 +514,12 @@ function cashNeededFromLtrState(s: LTRDealMakerState): number {
 function cashNeededFromStrState(s: STRDealMakerState): number {
   const buy = s.buyPrice
   if (buy <= 0) return 0
-  const dp = buy * s.downPaymentPercent
   const cc = buy * s.closingCostsPercent
   const sc = Math.max(0, s.sellerFinancingAmount ?? 0)
+  const loan = Math.max(0, buy - buy * s.downPaymentPercent - sc)
   const extra = (s.rehabBudget ?? 0) + (s.furnitureSetupCost ?? 0)
-  return Math.max(0, dp + cc + extra - sc)
+  // Sources & uses: (price + closing + rehab + furniture) − (bank loan + seller note).
+  return buy + cc + extra - loan - sc
 }
 
 // Types from existing verdict system

@@ -12,7 +12,6 @@ from .common import (
     calculate_cap_rate,
     calculate_cash_on_cash,
     calculate_dscr,
-    cash_needed_after_seller,
     combined_bank_and_seller_pi,
     validate_financial_inputs,
 )
@@ -89,12 +88,12 @@ def calculate_str(
     closing_costs = purchase_price * closing_costs_pct
     sc = max(0.0, float(seller_carry_amount or 0.0))
     loan_amount = bank_loan_after_seller_carry(purchase_price, down_payment, sc)
-    cash_equity_at_close = max(0.0, down_payment - sc)
-    total_cash_required = cash_needed_after_seller(
-        down_payment,
-        closing_costs,
-        furniture_setup_cost + rehab_costs,
-        sc,
+    # Sources & uses: cash equity = price − bank loan − seller note; total cash needed
+    # adds closing + furniture + rehab. May be negative when financing exceeds purchase
+    # + costs (cash back at close), so it is intentionally not clamped to zero.
+    cash_equity_at_close = max(0.0, purchase_price - loan_amount - sc)
+    total_cash_required = (
+        purchase_price + closing_costs + furniture_setup_cost + rehab_costs - loan_amount - sc
     )
 
     # Financing
@@ -146,7 +145,13 @@ def calculate_str(
     monthly_cash_flow = annual_cash_flow / 12
 
     cap_rate = calculate_cap_rate(noi, purchase_price)
-    cash_on_cash = calculate_cash_on_cash(annual_cash_flow, total_cash_required)
+    # Cash-on-cash is undefined when no positive cash is invested (over-funded deal
+    # returning cash at close); report 0 to keep the metric finite/serializable.
+    cash_on_cash = (
+        calculate_cash_on_cash(annual_cash_flow, total_cash_required)
+        if total_cash_required > 0
+        else 0.0
+    )
     dscr = calculate_dscr(noi, annual_debt_service)
     revenue_per_night = total_gross_revenue / 365
 

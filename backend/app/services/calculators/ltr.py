@@ -106,7 +106,13 @@ def calculate_ltr(
     monthly_cash_flow = annual_cash_flow / 12
 
     cap_rate = calculate_cap_rate(noi, purchase_price)
-    cash_on_cash = calculate_cash_on_cash(annual_cash_flow, total_cash_required)
+    # Cash-on-cash is undefined when no positive cash is invested (over-funded deal
+    # returning cash at close); report 0 to keep the metric finite/serializable.
+    cash_on_cash = (
+        calculate_cash_on_cash(annual_cash_flow, total_cash_required)
+        if total_cash_required > 0
+        else 0.0
+    )
     dscr = calculate_dscr(noi, annual_debt_service)
     grm = calculate_grm(purchase_price, annual_gross_rent)
     one_percent_rule = monthly_rent / purchase_price

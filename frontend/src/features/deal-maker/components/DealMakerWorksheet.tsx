@@ -67,20 +67,6 @@ function conventionalBankLoan(price: number, downPaymentPct: number, sellerFinan
   return Math.max(0, price - dp - sc)
 }
 
-/** Cash needed = down payment + closing + extra cash costs (rehab, furniture, etc.) − seller financing. */
-function cashNeededSellerOffset(
-  price: number,
-  downPaymentPct: number,
-  closingCostsAmount: number,
-  extraCashCosts: number,
-  sellerFinancing: number,
-): number {
-  if (price <= 0) return 0
-  const dp = price * downPaymentPct
-  const sc = Math.max(0, sellerFinancing)
-  return Math.max(0, dp + closingCostsAmount + extraCashCosts - sc)
-}
-
 function monthlyPI(principal: number, annualRate: number, years: number): number {
   if (principal <= 0 || years <= 0) return 0
   if (annualRate === 0) return principal / (years * 12)
@@ -887,13 +873,15 @@ function STRWorksheet({
           )
         : 0
   const monthlyPayment = num(m, 'monthlyPayment') || bankMonthly + sellerMonthly
-  const cashNeeded = cashNeededSellerOffset(
-    state.buyPrice,
-    state.downPaymentPercent,
-    closingCosts,
-    state.furnitureSetupCost + state.rehabBudget,
-    state.sellerFinancingAmount,
-  )
+  // Sources & uses: cash needed = uses (price + closing + rehab + furniture) − financing
+  // (bank loan + seller note). Negative when financing exceeds purchase + costs.
+  const cashNeeded =
+    state.buyPrice +
+    closingCosts +
+    state.rehabBudget +
+    state.furnitureSetupCost -
+    loanAmount -
+    state.sellerFinancingAmount
   const nightsOccupied = num(m, 'nightsOccupied')
   const monthlyGross = num(m, 'monthlyGrossRevenue')
   const annualGross = num(m, 'annualGrossRevenue')
@@ -915,22 +903,55 @@ function STRWorksheet({
         max={2000000}
         onChange={(v) => up('buyPrice', v)}
       />
+      {/* Down Payment is the derived residual; Bank Loan and Seller Financing are the
+          financing inputs: Down Payment = Buy Price − (Bank Loan + Seller Financing). */}
+      <Row
+        label={`Down Payment (${(state.downPaymentPercent * 100).toFixed(1)}%)`}
+        value={fmtSigned(downPayment)}
+      />
       <SliderRow
-        field="downPaymentPercent"
-        label="Down Payment"
-        value={state.downPaymentPercent * 100}
-        secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`}
-        displayValue={fmt(downPayment)}
-        min={5}
+        field="bankLoanAmount"
+        label="Bank Loan"
+        value={state.buyPrice > 0 ? (loanAmount / state.buyPrice) * 100 : 0}
+        secondaryValue={`${(state.buyPrice > 0 ? (loanAmount / state.buyPrice) * 100 : 0).toFixed(1)}%`}
+        displayValue={fmt(loanAmount)}
+        min={0}
         max={100}
-        onChange={(v) => up('downPaymentPercent', v / 100)}
+        step={1}
+        onChange={(ltv) => {
+          const newLoan = Math.max(0, (ltv / 100) * state.buyPrice)
+          const dpPct =
+            state.buyPrice > 0
+              ? (state.buyPrice - newLoan - state.sellerFinancingAmount) / state.buyPrice
+              : 0
+          up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
+        }}
         parseInput={(s) => {
-          const n = parseFloat(s.replace(/[^0-9.]/g, ''))
-          return state.buyPrice > 0 ? (n / state.buyPrice) * 100 : 0
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return state.buyPrice > 0 ? (dollars / state.buyPrice) * 100 : 0
         }}
       />
-      <Row label="Bank Loan" value={fmt(loanAmount)} />
-      <SellerFinancingPrincipalRow basePrice={state.buyPrice} state={state} up={up} />
+      <SliderRow
+        field="sellerFinancingAmount"
+        label="Seller Financing"
+        value={state.sellerFinancingAmount}
+        displayValue={fmt(state.sellerFinancingAmount)}
+        min={0}
+        max={state.buyPrice > 0 ? state.buyPrice : 500000}
+        step={1000}
+        onChange={(v) => {
+          const newSeller = Math.max(0, v)
+          // Hold the bank loan constant; the down payment absorbs the change.
+          const dpPct =
+            state.buyPrice > 0
+              ? state.downPaymentPercent +
+                (state.sellerFinancingAmount - newSeller) / state.buyPrice
+              : state.downPaymentPercent
+          up('sellerFinancingAmount', newSeller)
+          up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
+        }}
+        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+      />
       <SliderRow
         label="Closing Costs"
         value={state.closingCostsPercent * 100}
@@ -960,7 +981,7 @@ function STRWorksheet({
         max={30000}
         onChange={(v) => up('furnitureSetupCost', v)}
       />
-      <TotalRow label="Cash Needed" value={fmt(cashNeeded)} />
+      <TotalRow label="Cash Needed" value={fmtSigned(cashNeeded)} />
 
       <Divider />
 
@@ -1142,7 +1163,6 @@ function BRRRRWorksheet({
     typeof initialLoanRaw === 'number' && isFinite(initialLoanRaw)
       ? initialLoanRaw
       : conventionalBankLoan(purchaseEff, state.downPaymentPercent, state.sellerFinancingAmount)
-  const initialDown = num(m, 'initialDownPayment')
   const initialClosing = num(m, 'initialClosingCosts')
   const cashPhase1 = num(m, 'cashRequiredPhase1')
   const holdingCosts = num(m, 'holdingCosts')
@@ -1181,22 +1201,55 @@ function BRRRRWorksheet({
         max={2000000}
         onChange={(v) => up('purchasePrice', v)}
       />
+      {/* Down Payment is the derived residual; Bank Loan and Seller Financing are the
+          financing inputs: Down Payment = Effective Price − (Bank Loan + Seller Financing).
+          BRRRR sizes the acquisition loan off the (discount-adjusted) effective price. */}
+      <Row
+        label={`Down Payment (${(purchaseEff > 0 ? ((purchaseEff - initialLoan - state.sellerFinancingAmount) / purchaseEff) * 100 : 0).toFixed(1)}%)`}
+        value={fmtSigned(purchaseEff - initialLoan - state.sellerFinancingAmount)}
+      />
       <SliderRow
-        field="downPaymentPercent"
-        label="Down Payment"
-        value={state.downPaymentPercent * 100}
-        secondaryValue={`${(state.downPaymentPercent * 100).toFixed(0)}%`}
-        displayValue={fmt(initialDown)}
-        min={5}
+        field="bankLoanAmount"
+        label="Bank Loan"
+        value={purchaseEff > 0 ? (initialLoan / purchaseEff) * 100 : 0}
+        secondaryValue={`${(purchaseEff > 0 ? (initialLoan / purchaseEff) * 100 : 0).toFixed(1)}%`}
+        displayValue={fmt(initialLoan)}
+        min={0}
         max={100}
-        onChange={(v) => up('downPaymentPercent', v / 100)}
+        step={1}
+        onChange={(ltv) => {
+          const newLoan = Math.max(0, (ltv / 100) * purchaseEff)
+          const dpPct =
+            purchaseEff > 0
+              ? (purchaseEff - newLoan - state.sellerFinancingAmount) / purchaseEff
+              : 0
+          up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
+        }}
         parseInput={(s) => {
-          const n = parseFloat(s.replace(/[^0-9.]/g, ''))
-          return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return purchaseEff > 0 ? (dollars / purchaseEff) * 100 : 0
         }}
       />
-      <Row label="Bank Loan" value={fmt(initialLoan)} />
-      <SellerFinancingPrincipalRow basePrice={state.purchasePrice} state={state} up={up} />
+      <SliderRow
+        field="sellerFinancingAmount"
+        label="Seller Financing"
+        value={state.sellerFinancingAmount}
+        displayValue={fmt(state.sellerFinancingAmount)}
+        min={0}
+        max={purchaseEff > 0 ? purchaseEff : 500000}
+        step={1000}
+        onChange={(v) => {
+          const newSeller = Math.max(0, v)
+          // Hold the bank loan constant; the down payment absorbs the change.
+          const dpPct =
+            purchaseEff > 0
+              ? state.downPaymentPercent + (state.sellerFinancingAmount - newSeller) / purchaseEff
+              : state.downPaymentPercent
+          up('sellerFinancingAmount', newSeller)
+          up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
+        }}
+        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+      />
       <SliderRow
         label="Hard Money Rate"
         value={state.hardMoneyRate * 100}

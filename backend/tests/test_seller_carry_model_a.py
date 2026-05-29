@@ -117,7 +117,8 @@ class TestSellerCarrySTR:
             seller_carry_rate=0.06,
             seller_carry_term_years=30,
         )
-        assert r["cash_equity_at_close"] == pytest.approx(30_000, rel=1e-6)
+        # Cash equity = price − bank loan − seller note = 350k − 240k − 40k.
+        assert r["cash_equity_at_close"] == pytest.approx(70_000, rel=1e-6)
         # Seller note reduces the remaining bank-financed portion.
         exp_loan = 350_000 * 0.80 - 40_000
         assert r["loan_amount"] == pytest.approx(exp_loan, rel=1e-6)
