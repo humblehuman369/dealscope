@@ -58,6 +58,7 @@ import { calculateMortgagePayment } from '@/utils/calculations'
 import { computeLtrOperatingExpenseBreakdown } from '@/lib/ltrOperatingExpenses'
 import { computeDealGapIncomeValue } from '@/lib/dealGapIncomeValue'
 import { computeLtrMetricsFromState } from '@/lib/ltrWorksheetMetrics'
+import { sellerMonthlyPayment } from '@/lib/sellerFinancing'
 import {
   DEFAULT_OPERATING_CAPEX_PCT,
   DEFAULT_OPERATING_PEST_CONTROL_ANNUAL,
@@ -2062,14 +2063,27 @@ function StrategyContent() {
 
       case 'house_hack': {
         const hState = worksheetState as HouseHackDealMakerState
-        const hLoan = hState.purchasePrice * (1 - hState.downPaymentPercent)
-        const hPI = calculateMortgagePayment(hLoan, hState.interestRate * 100, hState.loanTermYears)
+        const hSeller = Math.max(0, hState.sellerFinancingAmount ?? 0)
+        const hDown = hState.purchasePrice * hState.downPaymentPercent
+        // Bank loan is the residual after the buyer's cash down and the seller note.
+        const hLoan = Math.max(0, hState.purchasePrice - hDown - hSeller)
+        const hBankPi = calculateMortgagePayment(
+          hLoan,
+          hState.interestRate * 100,
+          hState.loanTermYears,
+        )
+        const hSellerPi =
+          hSeller > 0
+            ? sellerMonthlyPayment(hSeller, hState.sellerInterestRate, hState.sellerTermYears)
+            : 0
+        const hPI = hBankPi + hSellerPi
         const hPmi = (hLoan * hState.pmiRate) / 12
         const hTaxes = hState.annualPropertyTax / 12
         const hIns = hState.annualInsurance / 12
         const hPiti = hPI + hPmi + hTaxes + hIns + hState.monthlyHoa
-        const hDown = hState.purchasePrice * hState.downPaymentPercent
         const hClosing = hState.purchasePrice * hState.closingCostsPercent
+        // Sources & uses: (price + closing) − (bank loan + seller note). May be negative.
+        const hCashToClose = hState.purchasePrice + hClosing - hLoan - hSeller
         const rentedUnits = Math.max(0, hState.totalUnits - hState.ownerOccupiedUnits)
         const grossRental = hState.avgRentPerUnit * rentedUnits
         const effectiveRental = grossRental * (1 - hState.vacancyRate)
@@ -2087,7 +2101,7 @@ function StrategyContent() {
           monthlyPITI: hPiti,
           downPayment: hDown,
           closingCosts: hClosing,
-          cashToClose: hDown + hClosing,
+          cashToClose: hCashToClose,
           rentedUnits,
           grossRentalIncome: grossRental,
           effectiveRentalIncome: effectiveRental,
@@ -2101,7 +2115,7 @@ function StrategyContent() {
           livesForFree: effectiveCost <= 0,
           annualCashFlow: netRental * 12 - hPiti * 12,
           cashOnCashReturn:
-            hDown + hClosing > 0 ? (((netRental - hPiti) * 12) / (hDown + hClosing)) * 100 : 0,
+            hCashToClose > 0 ? (((netRental - hPiti) * 12) / hCashToClose) * 100 : 0,
           fullRentalIncome: hState.avgRentPerUnit * hState.totalUnits,
           fullRentalCashFlow:
             (hState.avgRentPerUnit * hState.totalUnits * (1 - hState.vacancyRate) -

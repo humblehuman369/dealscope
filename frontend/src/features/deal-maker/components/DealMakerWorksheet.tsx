@@ -1796,22 +1796,55 @@ function HouseHackWorksheet({
         value={state.loanType}
         onChange={(v) => up('loanType', v)}
       />
+      {/* Down Payment is the derived residual; Bank Loan and Seller Financing are the
+          financing inputs: Down Payment = Purchase Price − (Bank Loan + Seller Financing). */}
+      <Row
+        label={`Down Payment (${(state.purchasePrice > 0 ? (downPayment / state.purchasePrice) * 100 : 0).toFixed(1)}%)`}
+        value={fmtSigned(downPayment)}
+      />
       <SliderRow
-        field="downPaymentPercent"
-        label="Down Payment"
-        value={state.downPaymentPercent * 100}
-        secondaryValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`}
-        displayValue={fmt(downPayment)}
-        min={state.loanType === 'va' ? 0 : state.loanType === 'fha' ? 3.5 : 5}
+        field="bankLoanAmount"
+        label="Bank Loan"
+        value={state.purchasePrice > 0 ? (loanAmt / state.purchasePrice) * 100 : 0}
+        secondaryValue={`${(state.purchasePrice > 0 ? (loanAmt / state.purchasePrice) * 100 : 0).toFixed(1)}%`}
+        displayValue={fmt(loanAmt)}
+        min={0}
         max={100}
-        onChange={(v) => up('downPaymentPercent', v / 100)}
+        step={1}
+        onChange={(ltv) => {
+          const newLoan = Math.max(0, (ltv / 100) * state.purchasePrice)
+          const dpPct =
+            state.purchasePrice > 0
+              ? (state.purchasePrice - newLoan - state.sellerFinancingAmount) / state.purchasePrice
+              : 0
+          up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
+        }}
         parseInput={(s) => {
-          const n = parseFloat(s.replace(/[^0-9.]/g, ''))
-          return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0
+          const dollars = parseFloat(s.replace(/[^0-9.]/g, ''))
+          return state.purchasePrice > 0 ? (dollars / state.purchasePrice) * 100 : 0
         }}
       />
-      <Row label="Bank Loan" value={fmt(loanAmt)} />
-      <SellerFinancingPrincipalRow basePrice={state.purchasePrice} state={state} up={up} />
+      <SliderRow
+        field="sellerFinancingAmount"
+        label="Seller Financing"
+        value={state.sellerFinancingAmount}
+        displayValue={fmt(state.sellerFinancingAmount)}
+        min={0}
+        max={state.purchasePrice > 0 ? state.purchasePrice : 500000}
+        step={1000}
+        onChange={(v) => {
+          const newSeller = Math.max(0, v)
+          // Hold the bank loan constant; the down payment absorbs the change.
+          const dpPct =
+            state.purchasePrice > 0
+              ? state.downPaymentPercent +
+                (state.sellerFinancingAmount - newSeller) / state.purchasePrice
+              : state.downPaymentPercent
+          up('sellerFinancingAmount', newSeller)
+          up('downPaymentPercent', Math.max(-1, Math.min(1, dpPct)))
+        }}
+        parseInput={(s) => parseFloat(s.replace(/[^0-9.]/g, ''))}
+      />
       <SliderRow
         field="interestRate"
         label="Interest Rate"
@@ -1845,7 +1878,7 @@ function HouseHackWorksheet({
           return state.purchasePrice > 0 ? (n / state.purchasePrice) * 100 : 0
         }}
       />
-      <TotalRow label="Cash to Close" value={fmt(cashToClose)} />
+      <TotalRow label="Cash to Close" value={fmtSigned(cashToClose)} />
 
       <Divider />
 
