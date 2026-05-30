@@ -308,7 +308,7 @@ const SUB_HEADLINE_POSITIVE =
 const SUB_HEADLINE_NEUTRAL =
   'A neutral DealGap means price and value are in balance — the deal may still work, but advantage must come from execution, financing, or future upside.'
 const SUB_HEADLINE_NEGATIVE =
-  'A negative DealGap means the current price and terms don\u2019t quite match the rental income yet. To close the gap and improve cash flow, you can adjust the deal structure in a way that works for you and the seller. Below are several options to consider\u2014and you can mix and match them during negotiations to create the right terms.'
+  'A negative DealGap means the current price and terms don\u2019t quite match the rental income yet. That sounds bad, but it\u2019s normal. Most houses start out this way. Here are four ways people fix it to make the deal.'
 
 const MOTIVATING_SUBTITLES = {
   cashFlow: 'clears at standard terms',
