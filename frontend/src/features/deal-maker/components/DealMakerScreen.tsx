@@ -177,6 +177,18 @@ export function DealMakerScreen({
     buildBRRRRState(property, listPrice),
   )
 
+  // Bank Loan is decoupled from Seller Financing (mirrors the Strategy page worksheet):
+  // when the user sets the Bank Loan, it becomes the financing source of truth and the
+  // Down Payment is the derived residual (Down Payment = Price − Bank Loan − Seller Note).
+  // This keeps the Bank Loan slider stable when Seller Financing changes, instead of the
+  // two sliders feeding back through one another via down-payment %.
+  const [bankLoanOverride, setBankLoanOverride] = useState<number | null>(null)
+  // Drop the override when the property or strategy changes — a fixed dollar bank loan
+  // does not carry across a different price basis / strategy.
+  useEffect(() => {
+    setBankLoanOverride(null)
+  }, [strategyType, property.address, property.city, property.state, property.zipCode, listPrice])
+
   // Re-seed local slider state once admin defaults arrive. We only do this once per
   // address (tracked via ref) so subsequent edits the user makes are never clobbered
   // by a late-arriving defaults response. Saved-property mode bypasses this entirely
@@ -209,7 +221,7 @@ export function DealMakerScreen({
   }, [isSavedPropertyMode, savedPropertyId, hasRecord, dealMakerStore])
 
   // Get the current state (from store for saved properties, local for unsaved)
-  const state: AnyStrategyState = useMemo(() => {
+  const baseState: AnyStrategyState = useMemo(() => {
     if (isSavedPropertyMode && hasRecord) {
       const record = dealMakerStore.record!
       const sf = {
@@ -452,6 +464,29 @@ export function DealMakerScreen({
     localHouseHackState,
     localWholesaleState,
   ])
+
+  // Effective worksheet state: when a Bank Loan override is set, re-derive the down
+  // payment % as the residual so the Bank Loan stays fixed and the Down Payment absorbs
+  // Buy Price / Seller Financing changes. Driving this derived % into the backend calc,
+  // metrics, and worksheet keeps every figure consistent (the backend computes
+  // loan = price − downPayment − seller, which equals the override by construction).
+  const state: AnyStrategyState = useMemo(() => {
+    if (bankLoanOverride == null) return baseState
+    const s = baseState as unknown as {
+      buyPrice?: number
+      purchasePrice?: number
+      sellerFinancingAmount?: number
+    }
+    const price = s.buyPrice ?? s.purchasePrice ?? 0
+    if (!(price > 0)) return baseState
+    const seller = Math.max(0, s.sellerFinancingAmount ?? 0)
+    const derivedDownPct = Math.max(-1, Math.min(1, (price - bankLoanOverride - seller) / price))
+    return {
+      ...baseState,
+      bankLoanAmount: bankLoanOverride,
+      downPaymentPercent: derivedDownPct,
+    } as AnyStrategyState
+  }, [baseState, bankLoanOverride])
 
   // Navigate to Verdict IQ page
   // For saved properties: save adjustments first, then Verdict/Strategy use store + sessionStorage
@@ -1303,6 +1338,14 @@ export function DealMakerScreen({
   // Update state - use store for saved properties, local state for unsaved
   const updateState = useCallback(
     (key: string, value: number | string) => {
+      // Bank Loan is stored as a decoupled override (see `state` memo above); it is the
+      // financing source of truth and the down payment derives from it. Don't forward it
+      // to the store/local strategy state.
+      if (key === 'bankLoanAmount') {
+        const amt = typeof value === 'number' ? value : parseFloat(value)
+        setBankLoanOverride(Number.isFinite(amt) ? Math.max(0, amt) : null)
+        return
+      }
       if (isSavedPropertyMode && hasRecord) {
         // Map local field names to store field names (includes LTR, STR, and BRRRR fields)
         const fieldMap: Record<string, string> = {
