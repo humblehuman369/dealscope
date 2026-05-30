@@ -383,6 +383,15 @@ class MapSearchService:
                 self._fetch_recent_resales(center_lat, center_lng, sub_radius),
             )
             tenure_rows = self._annotate_tenure_confidence(tenure_rows, resale_index)
+            # Hard-exclude candidates an independent source shows resold recently.
+            # Only drops rows actually flagged "recent_resale"; when validation was
+            # unavailable (confidence is None) nothing is dropped, so we never hide
+            # leads we couldn't verify.
+            before_exclude = len(tenure_rows)
+            tenure_rows = [r for r in tenure_rows if r.tenure_confidence != "recent_resale"]
+            excluded = before_exclude - len(tenure_rows)
+            if excluded:
+                logger.info("Owner-tenure: hard-excluded %d recently-resold candidates", excluded)
             raw_source_totals = len(tenure_rows)
             for item in tenure_rows:
                 self._merge_listing_into(listings_by_addr, item)
