@@ -20,6 +20,43 @@ from app.services.base_client import BaseAPIClient, BaseAPIResponse
 logger = logging.getLogger(__name__)
 
 
+def _sale_date_to_iso(value: Any) -> str | None:
+    """Normalize a sale date to ``YYYY-MM-DD``.
+
+    Redfin/Realtor scraper payloads express dates inconsistently — epoch
+    milliseconds (``1714719600000``), epoch seconds, or ISO/date strings
+    (``"2006-06-23T07:00:00.000Z"``). Returns None for anything unparseable.
+    """
+    if value is None:
+        return None
+    if isinstance(value, bool):  # guard: bool is an int subclass
+        return None
+    if isinstance(value, (int, float)):
+        try:
+            # >1e11 ⇒ milliseconds (any plausible recent date in ms exceeds this).
+            ts = value / 1000 if value > 1e11 else value
+            return datetime.fromtimestamp(ts, tz=UTC).date().isoformat()
+        except (ValueError, OSError, OverflowError):
+            return None
+    s = str(value).strip()
+    if not s:
+        return None
+    # ISO datetime/date → date portion; leave other strings untouched.
+    if len(s) >= 10 and s[4] == "-" and s[7] == "-":
+        return s[:10]
+    return s
+
+
+def _coerce_float(value: Any) -> float | None:
+    """Best-effort float coercion; None on failure."""
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 class APIProvider(StrEnum):
     RENTCAST = "rentcast"
     AXESSO = "axesso"
@@ -506,12 +543,69 @@ class RedfinClient(BaseAPIClient[APIResponse]):
         return None
 
     @staticmethod
+    def _extract_last_sale(payload: dict[str, Any]) -> dict[str, Any]:
+        """Extract the most recent SOLD event from a Redfin details payload.
+
+        Primary source is Redfin's property-history events (nested under
+        ``belowTheFold.propertyHistoryInfo.events`` on the live API). Falls back
+        to the ``addressSectionInfo`` "Last Sold Price" block when no event
+        history is present. Returns ``{}`` when nothing usable is found.
+
+        NOTE: exact paths vary across redfin-com-data response versions, so this
+        is written defensively and should be validated against a live response.
+        """
+        # 1) Property-history events — pick the latest one tagged as a sale.
+        events: Any = None
+        history = payload.get("belowTheFold")
+        if isinstance(history, dict):
+            phi = history.get("propertyHistoryInfo")
+            if isinstance(phi, dict):
+                events = phi.get("events")
+        if not isinstance(events, list):
+            phi = payload.get("propertyHistoryInfo")
+            events = phi.get("events") if isinstance(phi, dict) else None
+
+        sold: list[tuple[str, float | None]] = []
+        if isinstance(events, list):
+            for ev in events:
+                if not isinstance(ev, dict):
+                    continue
+                desc = str(ev.get("eventDescription") or ev.get("eventType") or "").lower()
+                if "sold" not in desc:
+                    continue
+                iso = _sale_date_to_iso(
+                    ev.get("eventDate") or ev.get("mostRecentPriceDate") or ev.get("date")
+                )
+                price = ev.get("price")
+                if isinstance(price, dict):
+                    price = price.get("amount") or price.get("value")
+                if iso:
+                    sold.append((iso, _coerce_float(price)))
+        if sold:
+            sold.sort(key=lambda x: x[0], reverse=True)
+            return {"redfin_last_sale_date": sold[0][0], "redfin_last_sale_price": sold[0][1]}
+
+        # 2) Fallback: "Last Sold Price" block on addressSectionInfo.
+        atf = payload.get("aboveTheFold")
+        addr_info = atf.get("addressSectionInfo") if isinstance(atf, dict) else None
+        if isinstance(addr_info, dict):
+            for pk in ("latestPriceInfo", "priceInfo"):
+                pinfo = addr_info.get(pk)
+                if isinstance(pinfo, dict) and "sold" in str(pinfo.get("label", "")).lower():
+                    iso = _sale_date_to_iso(addr_info.get("soldDate") or pinfo.get("date"))
+                    price = _coerce_float(pinfo.get("amount"))
+                    if iso or price is not None:
+                        return {"redfin_last_sale_date": iso, "redfin_last_sale_price": price}
+        return {}
+
+    @staticmethod
     def _parse_details_response(data: Any) -> dict[str, Any]:
         """
-        Extract redfin_estimate and redfin_rental_estimate from /properties/details.
+        Extract value, rental estimate, and last-sale info from /properties/details.
 
         Value path:  data.aboveTheFold.addressSectionInfo.avmInfo.predictedValue
         Rental path: data["rental-estimate"].rentalEstimateInfo.predictedValue
+        Sale path:   data.belowTheFold.propertyHistoryInfo.events[] (latest "Sold")
         """
         result: dict[str, Any] = {}
         if not isinstance(data, dict):
@@ -521,12 +615,7 @@ class RedfinClient(BaseAPIClient[APIResponse]):
             return result
 
         def _safe_float(v: Any) -> float | None:
-            if v is None:
-                return None
-            try:
-                return float(v)
-            except (TypeError, ValueError):
-                return None
+            return _coerce_float(v)
 
         # Value estimate
         atf = payload.get("aboveTheFold")
@@ -547,6 +636,9 @@ class RedfinClient(BaseAPIClient[APIResponse]):
             rental_info = rental.get("rentalEstimateInfo")
             if isinstance(rental_info, dict) and rental_info.get("shouldShow", True):
                 result["redfin_rental_estimate"] = _safe_float(rental_info.get("predictedValue"))
+
+        # Last recorded sale (date + price)
+        result.update(RedfinClient._extract_last_sale(payload))
 
         return result
 
@@ -632,11 +724,20 @@ class RedfinClient(BaseAPIClient[APIResponse]):
 
         parsed = self._parse_details_response(det_resp.data)
         logger.info(
-            "Redfin step 2 OK: details → redfin_estimate=%s, redfin_rental_estimate=%s",
+            "Redfin step 2 OK: details → redfin_estimate=%s, redfin_rental_estimate=%s, last_sale=%s",
             parsed.get("redfin_estimate"),
             parsed.get("redfin_rental_estimate"),
+            parsed.get("redfin_last_sale_date"),
         )
-        return parsed if (parsed.get("redfin_estimate") or parsed.get("redfin_rental_estimate")) else None
+        return (
+            parsed
+            if (
+                parsed.get("redfin_estimate")
+                or parsed.get("redfin_rental_estimate")
+                or parsed.get("redfin_last_sale_date")
+            )
+            else None
+        )
 
 
 class RealtorClient(BaseAPIClient[APIResponse]):
@@ -737,11 +838,53 @@ class RealtorClient(BaseAPIClient[APIResponse]):
         return None
 
     @staticmethod
+    def _extract_last_sale(payload: dict[str, Any]) -> dict[str, Any]:
+        """Extract the most recent SOLD event from a Realtor.com detail payload.
+
+        Prefers the ``property_history`` transaction list (latest "Sold" event),
+        then falls back to top-level / ``description`` last-sold fields. Returns
+        ``{}`` when nothing usable is found.
+
+        NOTE: exact paths vary across realtor-search response versions, so this
+        is written defensively and should be validated against a live response.
+        """
+        history = payload.get("property_history") or payload.get("propertyHistory")
+        sold: list[tuple[str, float | None]] = []
+        if isinstance(history, list):
+            for ev in history:
+                if not isinstance(ev, dict):
+                    continue
+                name = str(ev.get("event_name") or ev.get("event_type") or ev.get("event") or "").lower()
+                if "sold" not in name and "sale" not in name:
+                    continue
+                iso = _sale_date_to_iso(ev.get("date") or ev.get("sold_date") or ev.get("event_date"))
+                price = _coerce_float(ev.get("price") or ev.get("sold_price") or ev.get("amount"))
+                if iso:
+                    sold.append((iso, price))
+        if sold:
+            sold.sort(key=lambda x: x[0], reverse=True)
+            return {"realtor_last_sale_date": sold[0][0], "realtor_last_sale_price": sold[0][1]}
+
+        # Fallback: top-level or description block last-sold fields.
+        desc = payload.get("description")
+        desc = desc if isinstance(desc, dict) else {}
+        iso = _sale_date_to_iso(
+            payload.get("last_sold_date") or payload.get("lastSoldDate") or desc.get("sold_date")
+        )
+        price = _coerce_float(
+            payload.get("last_sold_price") or payload.get("lastSoldPrice") or desc.get("sold_price")
+        )
+        if iso or price is not None:
+            return {"realtor_last_sale_date": iso, "realtor_last_sale_price": price}
+        return {}
+
+    @staticmethod
     def _parse_detail_response(data: Any) -> dict[str, Any]:
         """
-        Extract realtor_estimate from /properties/detail response.
+        Extract realtor_estimate and last-sale info from /properties/detail response.
 
         Value path: data.estimates.current_values → best or average
+        Sale path:  data.property_history[] (latest "Sold"), or last_sold_* fields
         """
         result: dict[str, Any] = {}
         if not isinstance(data, dict):
@@ -751,12 +894,7 @@ class RealtorClient(BaseAPIClient[APIResponse]):
             return result
 
         def _safe_float(v: Any) -> float | None:
-            if v is None:
-                return None
-            try:
-                return float(v)
-            except (TypeError, ValueError):
-                return None
+            return _coerce_float(v)
 
         estimates = payload.get("estimates")
         if isinstance(estimates, dict):
@@ -775,6 +913,9 @@ class RealtorClient(BaseAPIClient[APIResponse]):
                             if val is not None:
                                 result["realtor_estimate"] = val
                                 break
+
+        # Last recorded sale (date + price)
+        result.update(RealtorClient._extract_last_sale(payload))
 
         return result
 
@@ -815,10 +956,11 @@ class RealtorClient(BaseAPIClient[APIResponse]):
 
         parsed = self._parse_detail_response(det_resp.data)
         logger.info(
-            "Realtor step 2 OK: detail → realtor_estimate=%s",
+            "Realtor step 2 OK: detail → realtor_estimate=%s, last_sale=%s",
             parsed.get("realtor_estimate"),
+            parsed.get("realtor_last_sale_date"),
         )
-        return parsed if parsed.get("realtor_estimate") else None
+        return parsed if (parsed.get("realtor_estimate") or parsed.get("realtor_last_sale_date")) else None
 
 
 class MashvisorClient(BaseAPIClient[APIResponse]):
