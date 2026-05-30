@@ -556,22 +556,37 @@ class MapSearchService:
             and any(normalize_listing_status(i.listing_status) == "expired" for i in listings)
         )
         if expired_candidates:
-            # Only pay for the (slow, Zillow-scraping) recently-sold validation
-            # when there's actually something to validate.
-            resale_index = await self._fetch_recent_resales(center_lat, center_lng, radius)
+            # RentCast's "Inactive" flag lags reality — many delisted records are
+            # actually back on the market or already sold. Validate candidates
+            # against fresh Zillow data (run concurrently, each bounded) and drop
+            # any that Zillow shows as CURRENTLY for sale or RECENTLY sold. Only
+            # paid for when there are expired candidates to validate; if a check
+            # is unavailable its rows are kept (fail-safe).
+            resale_index, active_keys = await asyncio.gather(
+                self._fetch_recent_resales(center_lat, center_lng, radius),
+                self._fetch_active_address_index(center_lat, center_lng, radius, req),
+            )
+            exclude_keys: set[str] = set()
             if resale_index:
-                before_resold = len(listings)
+                exclude_keys |= set(resale_index)
+            if active_keys:
+                exclude_keys |= active_keys
+            if exclude_keys:
+                before_excl = len(listings)
                 listings = [
                     item
                     for item in listings
                     if not (
                         normalize_listing_status(item.listing_status) == "expired"
-                        and self._addr_match_key(item.address) in resale_index
+                        and self._addr_match_key(item.address) in exclude_keys
                     )
                 ]
-                dropped_sold = before_resold - len(listings)
-                if dropped_sold:
-                    logger.info("Expired filter: dropped %d delisted-but-sold rows", dropped_sold)
+                dropped = before_excl - len(listings)
+                if dropped:
+                    logger.info(
+                        "Expired filter: dropped %d stale rows (currently listed or recently sold)",
+                        dropped,
+                    )
 
         if req.polygon:
             listings = [item for item in listings if _point_in_polygon(item.latitude, item.longitude, req.polygon)]
@@ -928,6 +943,37 @@ class MapSearchService:
         except Exception:
             logger.exception("RentCast expired (inactive) listing fetch failed")
             return []
+
+    async def _fetch_active_address_index(
+        self,
+        center_lat: float,
+        center_lng: float,
+        radius_miles: float,
+        req: MapSearchRequest,
+    ) -> set[str] | None:
+        """Address keys of properties CURRENTLY for sale on Zillow in the viewport.
+
+        RentCast's "Inactive" flag lags reality — many delisted records are
+        actually back on the market. This fresh Zillow forSale snapshot lets the
+        expired filter drop those false positives. Bounded; returns None when
+        unavailable so callers keep rows rather than over-dropping.
+        """
+        if not self.zillow:
+            return None
+        try:
+            rows = await asyncio.wait_for(
+                self._fetch_zillow(center_lat, center_lng, radius_miles, "forSale", req, None),
+                timeout=RECENT_RESALE_TIMEOUT_S,
+            )
+        except (TimeoutError, asyncio.TimeoutError):
+            logger.warning("Expired active cross-check timed out — skipping (rows kept)")
+            return None
+        except Exception:
+            logger.exception("Expired active cross-check failed")
+            return None
+        keys = {k for k in (self._addr_match_key(r.address) for r in rows) if k}
+        logger.info("Expired active cross-check: %d currently-listed addresses in viewport", len(keys))
+        return keys
 
     # ─── Owner tenure (RentCast property records) ──────────────────────────
 

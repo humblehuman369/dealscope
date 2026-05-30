@@ -667,7 +667,8 @@ export function FilterPanel({
               }}
             >
               Was listed but didn&apos;t sell (expired or withdrawn) — a motivated-seller signal.
-              Sourced from RentCast delisted records, last 120 days.
+              RentCast delisted records (last 120 days), cross-checked against live Zillow
+              listings to drop any back on the market or already sold.
             </p>
           </div>
           <PillButton
