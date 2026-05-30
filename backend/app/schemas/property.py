@@ -1204,6 +1204,18 @@ class MapListing(BaseModel):
         default=None,
         description="Years since the last sale — i.e. how long the current owner has held the property.",
     )
+    tenure_confidence: str | None = Field(
+        default=None,
+        description=(
+            "Owner-tenure validation result against an independent recently-sold "
+            "source: 'clear' (no recent resale found), 'recent_resale' (a fresher "
+            "source shows a sale that contradicts the tenure), or None (not checked)."
+        ),
+    )
+    recent_resale_date: str | None = Field(
+        default=None,
+        description="ISO sale date from the independent source when tenure_confidence='recent_resale'.",
+    )
 
 
 class MapSearchResponse(BaseModel):

@@ -14,6 +14,7 @@ import json
 import logging
 import math
 import urllib.parse
+from datetime import UTC, datetime
 from typing import Any
 
 from app.core.config import settings
@@ -371,7 +372,17 @@ class MapSearchService:
                 req.owner_tenure_min_years,
                 req.owner_tenure_max_years,
             )
-            tenure_rows = await self._fetch_owner_tenure_records(req, center_lat, center_lng, sub_radius)
+            # Fetch long-tenure candidates (RentCast records) and an independent
+            # recently-sold set (Zillow) concurrently. The latter validates that
+            # RentCast's lastSaleDate hasn't gone stale via a resale in the gap —
+            # RentCast can't catch that itself (same dataset), so we use a fresher
+            # MLS-sourced source. Best-effort: if validation fails, rows are left
+            # unflagged rather than dropped.
+            tenure_rows, resale_index = await asyncio.gather(
+                self._fetch_owner_tenure_records(req, center_lat, center_lng, sub_radius),
+                self._fetch_recent_resales(center_lat, center_lng, sub_radius),
+            )
+            tenure_rows = self._annotate_tenure_confidence(tenure_rows, resale_index)
             raw_source_totals = len(tenure_rows)
             for item in tenure_rows:
                 self._merge_listing_into(listings_by_addr, item)
@@ -907,6 +918,173 @@ class MapSearchService:
             last_sale_price=last_sale_price,
             owner_years=owner_years,
         )
+
+    # ─── Owner-tenure validation (recent-resale guard) ─────────────────────
+
+    @staticmethod
+    def _addr_match_key(address: str | None) -> str | None:
+        """Cross-provider address key: normalized street line + 5-digit zip.
+
+        RentCast and Zillow format addresses slightly differently, so we key on
+        the street portion (before the first comma) plus any zip, lower-cased and
+        stripped of punctuation, to maximize match rate. Imperfect matching fails
+        safe — a miss leaves a candidate unflagged (over-includes), never drops a
+        legitimate one.
+        """
+        if not address:
+            return None
+        import re
+
+        s = address.lower().strip()
+        if not s:
+            return None
+        street = re.sub(r"[^a-z0-9 ]", "", s.split(",")[0])
+        street = re.sub(r"\s+", " ", street).strip()
+        if not street:
+            return None
+        zip_match = re.search(r"\b(\d{5})\b", s)
+        return f"{street}|{zip_match.group(1) if zip_match else ''}"
+
+    @staticmethod
+    def _zillow_sold_date_to_iso(value: Any) -> str | None:
+        """Normalize a Zillow sold date (epoch-ms / epoch-s / ISO string) to YYYY-MM-DD."""
+        if value is None or isinstance(value, bool):
+            return None
+        if isinstance(value, (int, float)):
+            try:
+                ts = value / 1000 if value > 1e11 else value
+                return datetime.fromtimestamp(ts, tz=UTC).date().isoformat()
+            except (ValueError, OSError, OverflowError):
+                return None
+        s = str(value).strip()
+        if len(s) >= 10 and s[4] == "-":
+            return s[:10]
+        return s or None
+
+    @staticmethod
+    def _zillow_recently_sold_url(
+        north: float,
+        south: float,
+        east: float,
+        west: float,
+        doz: str = "36m",
+    ) -> str:
+        """Build a Zillow ``searchQueryState`` URL for recently-sold inventory.
+
+        Recently-sold requires ``rs`` (isRecentlySold) on and ALL for-sale
+        category toggles off (``fsba``/``fsbo``/``nc``/``cmsn``/``auc``/``fore``),
+        otherwise Zillow returns the union of for-sale + sold. ``doz`` (days on
+        Zillow, sold-within) only accepts preset buckets — "36m" is the widest,
+        which comfortably covers RentCast's realistic ingestion lag.
+
+        Routed through AXESSO ``search-by-url`` like the distressed buckets.
+        NOTE: validate against live AXESSO as the distressed path was — if the
+        filter is wrong it simply yields no flags (fail-safe), not bad results.
+        """
+        filter_state = {
+            "rs": {"value": True},
+            "doz": {"value": doz},
+            "fsba": {"value": False},
+            "fsbo": {"value": False},
+            "nc": {"value": False},
+            "cmsn": {"value": False},
+            "auc": {"value": False},
+            "fore": {"value": False},
+        }
+        state = {
+            "pagination": {},
+            "isMapVisible": True,
+            "mapBounds": {
+                "north": round(north, 6),
+                "south": round(south, 6),
+                "east": round(east, 6),
+                "west": round(west, 6),
+            },
+            "filterState": filter_state,
+            "isListVisible": True,
+        }
+        encoded = urllib.parse.quote(json.dumps(state, separators=(",", ":")))
+        return f"https://www.zillow.com/homes/recently_sold/?searchQueryState={encoded}"
+
+    async def _fetch_recent_resales(
+        self,
+        center_lat: float,
+        center_lng: float,
+        radius_miles: float,
+    ) -> dict[str, str | None] | None:
+        """Build an index of recently-sold addresses (last ~36mo) for the viewport.
+
+        Returns ``{addr_key: sold_date_iso_or_None}`` on success (possibly empty),
+        or ``None`` when validation is unavailable (no Zillow client / request
+        failed) so callers can distinguish "checked, nothing recent" from
+        "couldn't check".
+        """
+        if not self.zillow:
+            return None
+
+        north, south, east, west = self._radius_to_bbox(center_lat, center_lng, max(radius_miles, 0.5))
+        url = self._zillow_recently_sold_url(north, south, east, west, doz="36m")
+        try:
+            resp = await self.zillow.search_by_url(url)
+            if not resp.success:
+                return None
+            data = resp.data or {}
+            raw_props = data.get("results") or data.get("props") or data.get("searchResults") or []
+            if isinstance(data, dict) and not raw_props:
+                for val in data.values():
+                    if isinstance(val, list) and len(val) > 0:
+                        raw_props = val
+                        break
+
+            index: dict[str, str | None] = {}
+            for item in raw_props:
+                if not isinstance(item, dict) or not self._zillow_has_coords(item):
+                    continue
+                listing = self._normalize_zillow_listing(item)
+                key = self._addr_match_key(listing.address)
+                if not key:
+                    continue
+                sold_raw = item.get("dateSold") or item.get("soldDate") or item.get("lastSoldDate")
+                index[key] = self._zillow_sold_date_to_iso(sold_raw)
+            logger.info("Recent-resale validation: %d recently-sold addresses in viewport", len(index))
+            return index
+        except Exception:
+            logger.exception("Zillow recent-resale validation fetch failed")
+            return None
+
+    @staticmethod
+    def _annotate_tenure_confidence(
+        rows: list[MapListing],
+        resale_index: dict[str, str | None] | None,
+    ) -> list[MapListing]:
+        """Flag long-tenure candidates that an independent source shows resold recently.
+
+        ``tenure_confidence`` is left ``None`` when validation was unavailable,
+        set to ``"recent_resale"`` when a fresher source contradicts the tenure,
+        and ``"clear"`` otherwise. Rows are flagged, never dropped — surfacing the
+        uncertainty is safer than silently hiding leads.
+        """
+        if resale_index is None:
+            return rows
+        annotated: list[MapListing] = []
+        flagged = 0
+        for row in rows:
+            key = MapSearchService._addr_match_key(row.address)
+            if key and key in resale_index:
+                flagged += 1
+                annotated.append(
+                    row.model_copy(
+                        update={
+                            "tenure_confidence": "recent_resale",
+                            "recent_resale_date": resale_index[key],
+                        }
+                    )
+                )
+            else:
+                annotated.append(row.model_copy(update={"tenure_confidence": "clear"}))
+        if flagged:
+            logger.info("Owner-tenure: flagged %d/%d candidates as possible recent resales", flagged, len(rows))
+        return annotated
 
     # ─── Zillow (AXESSO) ───────────────────────────
 

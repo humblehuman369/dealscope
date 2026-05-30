@@ -279,6 +279,10 @@ export interface MapListing {
   last_sale_price?: number | null
   /** Years since the last sale — current owner's tenure (owner-tenure mode) */
   owner_years?: number | null
+  /** Tenure validation vs an independent recently-sold source: 'clear' | 'recent_resale' | null */
+  tenure_confidence?: string | null
+  /** ISO sale date from the independent source when tenure_confidence='recent_resale' */
+  recent_resale_date?: string | null
 }
 
 export interface MapSearchResponse {

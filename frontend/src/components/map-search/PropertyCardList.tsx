@@ -219,6 +219,19 @@ function PropertyCard({
           </p>
         )}
 
+        {listing.tenure_confidence === 'recent_resale' && (
+          <p
+            className="text-[10px] leading-snug font-medium"
+            style={{ color: 'var(--status-warning)' }}
+            title="An independent source (Zillow recently-sold) shows a sale newer than the records date — tenure may be inaccurate."
+          >
+            ⚠ May have resold
+            {listing.recent_resale_date
+              ? ` (sold ${String(listing.recent_resale_date).slice(0, 4)})`
+              : ''}
+          </p>
+        )}
+
         {listing.motivated_keywords && listing.motivated_keywords.length > 0 && (
           <p
             className="text-[10px] leading-snug mt-1.5"
