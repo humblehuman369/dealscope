@@ -51,6 +51,10 @@ CANONICAL_STATUSES: set[str] = {
 # removedDate can be and still count as an actionable expired lead. ~18 months.
 EXPIRED_MAX_AGE_DAYS = 545
 
+# Hard cap for the best-effort recently-sold validation call (Zillow scraping via
+# AXESSO is slow); keeps it from blowing the request budget → gateway 500.
+RECENT_RESALE_TIMEOUT_S = 12.0
+
 # Foreclosure / auction / pre-FC map inventory: Zillow (AXESSO) only when the user
 # asks exclusively for these buckets—RentCast labels and staleness are skipped.
 DISTRESSED_ONLY_STATUSES: frozenset[str] = frozenset(
@@ -546,7 +550,14 @@ class MapSearchService:
         # expired/withdrawn lead if it DIDN'T sell. Cross-check against an
         # independent recently-sold source (Zillow) and drop any expired row that
         # actually closed. Best-effort: if validation is unavailable, rows are kept.
-        if "expired" in requested_statuses and self.zillow:
+        expired_candidates = (
+            "expired" in requested_statuses
+            and self.zillow
+            and any(normalize_listing_status(i.listing_status) == "expired" for i in listings)
+        )
+        if expired_candidates:
+            # Only pay for the (slow, Zillow-scraping) recently-sold validation
+            # when there's actually something to validate.
             resale_index = await self._fetch_recent_resales(center_lat, center_lng, radius)
             if resale_index:
                 before_resold = len(listings)
@@ -1154,7 +1165,11 @@ class MapSearchService:
         north, south, east, west = self._radius_to_bbox(center_lat, center_lng, max(radius_miles, 0.5))
         url = self._zillow_recently_sold_url(north, south, east, west, doz="36m")
         try:
-            resp = await self.zillow.search_by_url(url)
+            # Hard cap: AXESSO search-by-url scrapes Zillow and can run 30s+ with
+            # retries. This validation is best-effort, so bound it tightly — a
+            # slow call must never blow the overall request budget (which would
+            # surface as a gateway 500), it just skips validation instead.
+            resp = await asyncio.wait_for(self.zillow.search_by_url(url), timeout=RECENT_RESALE_TIMEOUT_S)
             if not resp.success:
                 return None
             data = resp.data or {}
@@ -1177,6 +1192,12 @@ class MapSearchService:
                 index[key] = self._zillow_sold_date_to_iso(sold_raw)
             logger.info("Recent-resale validation: %d recently-sold addresses in viewport", len(index))
             return index
+        except (TimeoutError, asyncio.TimeoutError):
+            logger.warning(
+                "Recent-resale validation timed out after %.0fs — skipping (rows kept)",
+                RECENT_RESALE_TIMEOUT_S,
+            )
+            return None
         except Exception:
             logger.exception("Zillow recent-resale validation fetch failed")
             return None
