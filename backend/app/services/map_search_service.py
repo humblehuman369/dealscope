@@ -848,7 +848,7 @@ class MapSearchService:
             return None
         # RentCast returns e.g. "2003-05-14T00:00:00.000Z"; normalize the Z.
         normalized = raw.replace("Z", "+00:00")
-        from datetime import datetime
+        from datetime import UTC, datetime
 
         for candidate in (normalized, raw[:10]):
             try:

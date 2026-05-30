@@ -207,6 +207,18 @@ function PropertyCard({
           )}
         </div>
 
+        {listing.owner_years != null && (
+          <p
+            className="text-[10px] leading-snug mt-1.5 font-medium"
+            style={{ color: 'var(--accent-sky)' }}
+          >
+            Owner tenure: ~{Math.round(listing.owner_years)} yrs held
+            {listing.last_sale_date
+              ? ` · sold ${String(listing.last_sale_date).slice(0, 4)}`
+              : ''}
+          </p>
+        )}
+
         {listing.motivated_keywords && listing.motivated_keywords.length > 0 && (
           <p
             className="text-[10px] leading-snug mt-1.5"
