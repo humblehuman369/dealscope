@@ -493,9 +493,15 @@ export function FilterPanel({
           <PillButton
             mapLightChrome={mapLightChrome}
             active={Boolean(filters.motivated_seller_search)}
-            onClick={() =>
-              onChange({ motivated_seller_search: !filters.motivated_seller_search })
-            }
+            onClick={() => {
+              const next = !filters.motivated_seller_search
+              onChange({
+                motivated_seller_search: next,
+                ...(next
+                  ? { owner_tenure_min_years: undefined, owner_tenure_max_years: undefined }
+                  : {}),
+              })
+            }}
             aria-label="Motivated seller keyword search. Replaces standard map results when enabled."
             leading={
               <Target
@@ -508,6 +514,61 @@ export function FilterPanel({
           >
             {filters.motivated_seller_search ? 'On' : 'Off'}
           </PillButton>
+        </div>
+
+        {/* Owner Tenure — long-held owners (high equity, off-market) */}
+        <div
+          className="rounded-lg p-3 space-y-2"
+          role="group"
+          aria-labelledby="owner-tenure-heading"
+          style={
+            mapLightChrome
+              ? {
+                  backgroundColor: MAP_FILTER_DISTRESSED_LIGHT.boxBg,
+                  border: MAP_FILTER_DISTRESSED_LIGHT.boxBorder,
+                }
+              : {
+                  backgroundColor: 'rgba(56, 189, 248, 0.09)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                }
+          }
+        >
+          <div>
+            <h3
+              id="owner-tenure-heading"
+              className="text-xs font-semibold uppercase tracking-wider"
+              style={{
+                color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.heading : 'var(--text-heading)',
+              }}
+            >
+              Owner Tenure
+            </h3>
+            <p
+              className="text-[10px] mt-1 leading-snug"
+              style={{
+                color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.body : 'var(--text-secondary)',
+              }}
+            >
+              Off-market homes by how long the current owner has held them — long-held owners
+              often carry high equity. Replaces standard map results while active.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {OWNER_TENURE_PRESETS.map((preset) => (
+              <PillButton
+                key={preset.label}
+                mapLightChrome={mapLightChrome}
+                active={
+                  filters.owner_tenure_min_years === preset.min &&
+                  filters.owner_tenure_max_years === preset.max
+                }
+                onClick={() => selectOwnerTenure(preset.min, preset.max)}
+                aria-label={`Owner tenure: ${preset.label}`}
+              >
+                {preset.label}
+              </PillButton>
+            ))}
+          </div>
         </div>
 
         {/* Distressed deals */}
