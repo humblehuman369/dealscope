@@ -30,11 +30,8 @@ interface FourPathsPanelProps {
   onDismissFamily?: (family: StructureFamily) => void
 }
 
-const PATH_COUNT_WORD = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six']
-function pathCountWords(n: number): { lead: string; tail: string } {
-  const word = PATH_COUNT_WORD[n] ?? String(n)
-  const noun = n === 1 ? 'Option' : 'Options'
-  return { lead: `${word} ${noun}`, tail: 'to Make This Work' }
+function pathCountWords(): { lead: string; tail: string } {
+  return { lead: 'Ways', tail: 'to Make This Work' }
 }
 
 export function FourPathsPanel({
@@ -119,7 +116,7 @@ export function FourPathsPanel({
     >
       <div className="flex items-baseline justify-between gap-3 flex-wrap">
         {(() => {
-          const { lead, tail } = pathCountWords(visiblePaths.length)
+          const { lead, tail } = pathCountWords()
           return (
             <p
               style={{
@@ -130,7 +127,7 @@ export function FourPathsPanel({
                 color: 'var(--text-heading)',
               }}
             >
-              <span style={{ color: 'var(--accent-sky-light)' }}>{lead}</span> {tail}
+              <span style={{ color: 'var(--text-heading)' }}>{lead}</span> {tail}
             </p>
           )
         })()}
