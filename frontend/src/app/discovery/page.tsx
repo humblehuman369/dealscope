@@ -2055,20 +2055,22 @@ function VerdictContent() {
                     {dealGapDisplay}
                   </span>
                 </div>
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    borderRadius: 999,
-                    border: '1px solid var(--border-focus)',
-                    padding: '3px 10px',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: 'var(--text-heading)',
-                    background: 'var(--surface-card)',
-                  }}
-                >
-                  {dealGapPct > 0 ? 'Options Below Close the Gap' : tier.label}
-                </span>
+                {dealGapPct <= 0 && (
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      borderRadius: 999,
+                      border: '1px solid var(--border-focus)',
+                      padding: '3px 10px',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: 'var(--text-heading)',
+                      background: 'var(--surface-card)',
+                    }}
+                  >
+                    {tier.label}
+                  </span>
+                )}
               </div>
 
               {/* Verdict copy — positive spread; neutral at anchor; challenging when discount is required */}
