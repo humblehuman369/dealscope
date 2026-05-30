@@ -681,6 +681,9 @@ function StrategyContent() {
   /** After first successful property load, refetches skip full-page loader (DealMaker sliders / session echo). */
   const hasLoadedPropertyRef = useRef(false)
   const threePathsScenarioKeyRef = useRef<string | null>(null)
+  /** Set when a ?scenario= patch is applied before property data has loaded, so we
+   *  can recompute the verdict once `propertyInfo` is available. */
+  const pendingScenarioRecalcRef = useRef(false)
   /** Synced every render after `worksheetState` is computed (below early returns). */
   const worksheetStateRef = useRef<AnyStrategyState | null>(null)
   const currentStrategyTypeRef = useRef<StrategyType>('ltr')
@@ -870,38 +873,69 @@ function StrategyContent() {
       decoded = readLastAppliedScenario()
     }
     if (!decoded) return
-    writeLastAppliedScenario(decoded)
+    const scenario = decoded
+    writeLastAppliedScenario(scenario)
 
-    const patch = preLoadedRecordToDealMakerPatch((decoded.levers ?? {}) as Record<string, unknown>)
+    const patch = preLoadedRecordToDealMakerPatch((scenario.levers ?? {}) as Record<string, unknown>)
+
+    // Apply the patch to the inline-override layer — the SAME layer the in-page
+    // "Apply an Option" buttons (applyPathPatch) write to. This autofills the
+    // worksheet AND lets "Reset to baseline" cleanly remove it. Writing to
+    // session with origin 'verdict_sync' alone is not enough: that origin is not
+    // `isInitialOverrideEligible`, so it never reaches the worksheet calc.
+    setInlineOverrides((prev) => {
+      const cleared: Record<string, unknown> = { ...prev }
+      for (const key of PATH_PATCH_FIELD_KEYS) {
+        delete cleared[key as string]
+      }
+      const next = {
+        ...cleared,
+        ...patch,
+        threePathsLabel: scenario.label,
+      }
+      inlineOverridesRef.current = next as Record<string, any>
+      return next as Record<string, any>
+    })
+
+    // Keep session in sync so the DealMaker tab reflects the same numbers.
     try {
       writeDealMakerOverrides(
         addressParam,
-        { ...patch, threePathsLabel: decoded.label } as Record<string, unknown>,
+        { ...patch, threePathsLabel: scenario.label } as Record<string, unknown>,
         { origin: 'verdict_sync' },
       )
     } catch {
       /* ignore */
     }
+
+    // Mark the matching Option as selected so the worksheet's path UI reflects
+    // the structure the user opened from Discovery (highlight + applied card).
+    if (scenario.structureId) {
+      setAppliedPathId(scenario.structureId)
+    }
+
+    // Recompute the verdict panel against the freshly applied overrides. If the
+    // property hasn't loaded yet (arriving via URL), recalcVerdict is a no-op, so
+    // flag a pending recalc that fires once `propertyInfo` is available.
+    pendingScenarioRecalcRef.current = true
+    scheduleRecalc()
+    markWorksheetDirty()
+
     appendSavedThreePathScenario({
-      label: decoded.label,
-      structureId: decoded.structureId,
+      label: scenario.label,
+      structureId: scenario.structureId,
       savedAt: Date.now(),
       address: addressParam,
-      payload: decoded,
+      payload: scenario,
     })
 
     const nextParams = new URLSearchParams(searchParams.toString())
     nextParams.delete('scenario')
     router.replace(`/strategy?${nextParams.toString()}`, { scroll: false })
-
-    try {
-      const merged = readDealMakerOverrides(addressParam)
-      if (merged && isInitialOverrideEligible(merged)) {
-        setInitialOverrides(merged)
-      }
-    } catch {
-      /* ignore */
-    }
+    // scheduleRecalc / markWorksheetDirty are declared after this effect; calling
+    // them in the body is safe (resolved at run time), but they must stay out of
+    // the deps array to avoid a temporal-dead-zone reference.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addressParam, searchParams, router])
 
   const savePropertySnapshot = useMemo(() => {
@@ -1242,6 +1276,15 @@ function StrategyContent() {
       recalcVerdict(propertyInfo, merged, verdictSourceOverrides)
     }, 300)
   }, [initialOverrides, propertyInfo, verdictSourceOverrides, recalcVerdict])
+
+  // Fire the pending recalc once property data is available for a scenario that
+  // was applied from the URL before the property finished loading.
+  useEffect(() => {
+    if (!pendingScenarioRecalcRef.current || !propertyInfo) return
+    pendingScenarioRecalcRef.current = false
+    const merged = { ...(initialOverrides ?? {}), ...inlineOverridesRef.current }
+    recalcVerdict(propertyInfo, merged, verdictSourceOverrides)
+  }, [propertyInfo, initialOverrides, verdictSourceOverrides, recalcVerdict])
 
   const handleInlineSliderChange = useCallback(
     (field: keyof InlineDealMakerValues, value: number) => {
