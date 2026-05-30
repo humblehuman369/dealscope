@@ -14,7 +14,7 @@ from app.services.deal_structures.formatting import (
 )
 
 FAMILY = "price"
-FAMILY_LABEL = "More Equity"
+FAMILY_LABEL = "Price Cut"
 ID = "price-negotiation"
 
 
