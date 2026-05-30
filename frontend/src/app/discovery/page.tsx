@@ -305,7 +305,7 @@ function VerdictContent() {
     value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
     rent: { iq: null, zillow: null, rentcast: null, redfin: null, mashvisor: null },
   })
-  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(true)
+  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false)
   const dataSourcesRef = useRef<HTMLDivElement>(null)
   const [isDealGapDetailsOpen, setIsDealGapDetailsOpen] = useState(false)
   const [showDealGapVideo, setShowDealGapVideo] = useState(false)
@@ -1791,7 +1791,7 @@ function VerdictContent() {
             <div className="mt-4 flex flex-col gap-2">
               {hasDataSources && (
                 <p
-                  className="text-[12px] sm:text-[13px] leading-relaxed m-0"
+                  className="text-[12px] sm:text-[13px] leading-relaxed m-0 text-center"
                   style={{ color: 'var(--text-body)' }}
                 >
                   Rent or value look off?{' '}
