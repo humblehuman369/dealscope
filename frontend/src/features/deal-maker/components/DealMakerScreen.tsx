@@ -183,6 +183,9 @@ export function DealMakerScreen({
   // This keeps the Bank Loan slider stable when Seller Financing changes, instead of the
   // two sliders feeding back through one another via down-payment %.
   const [bankLoanOverride, setBankLoanOverride] = useState<number | null>(null)
+  // Tracks the currently displayed bank loan so a Seller Financing change can pin it
+  // (capture-and-hold) even before the user touches the Bank Loan slider.
+  const currentBankLoanRef = useRef(0)
   // Drop the override when the property or strategy changes — a fixed dollar bank loan
   // does not carry across a different price basis / strategy.
   useEffect(() => {
@@ -890,7 +893,7 @@ export function DealMakerScreen({
   )
 
   // Map backend result to the metrics shape the UI expects
-  const metrics = useMemo<AnyStrategyMetrics>(() => {
+  const baseMetrics = useMemo<AnyStrategyMetrics>(() => {
     // Map backend worksheet API (snake_case) → camelCase metrics
     if (backendResult) {
       const br = backendResult as Record<string, number | boolean | string>
@@ -1335,6 +1338,19 @@ export function DealMakerScreen({
     backendResult,
   ])
 
+  // Force the displayed Bank Loan to the user-set override so the slider never moves
+  // when Seller Financing (or anything else) is adjusted — the Down Payment absorbs the
+  // change instead. The backend `loan_amount` can drift from the override (e.g. it clamps
+  // down payment to ≥ 0), so we pin the display value here to guarantee decoupling.
+  const metrics = useMemo<AnyStrategyMetrics>(() => {
+    if (bankLoanOverride == null) return baseMetrics
+    return { ...baseMetrics, loanAmount: bankLoanOverride } as AnyStrategyMetrics
+  }, [baseMetrics, bankLoanOverride])
+  currentBankLoanRef.current =
+    (metrics as { loanAmount?: number }).loanAmount ??
+    (baseMetrics as { loanAmount?: number }).loanAmount ??
+    0
+
   // Update state - use store for saved properties, local state for unsaved
   const updateState = useCallback(
     (key: string, value: number | string) => {
@@ -1345,6 +1361,12 @@ export function DealMakerScreen({
         const amt = typeof value === 'number' ? value : parseFloat(value)
         setBankLoanOverride(Number.isFinite(amt) ? Math.max(0, amt) : null)
         return
+      }
+      // Changing Seller Financing must NOT move the Bank Loan. Pin the current bank loan
+      // as the override (if not already pinned) so the Down Payment absorbs the change.
+      if (key === 'sellerFinancingAmount') {
+        setBankLoanOverride((prev) => (prev == null ? Math.max(0, currentBankLoanRef.current) : prev))
+        // fall through to forward the seller-financing update below
       }
       if (isSavedPropertyMode && hasRecord) {
         // Map local field names to store field names (includes LTR, STR, and BRRRR fields)
