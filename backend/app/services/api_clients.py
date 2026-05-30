@@ -84,6 +84,54 @@ class RentCastClient(BaseAPIClient[APIResponse]):
         """Get property records by address."""
         return await self._make_request("properties", {"address": address})
 
+    async def get_property_records(
+        self,
+        latitude: float | None = None,
+        longitude: float | None = None,
+        radius: float | None = None,
+        zip_code: str | None = None,
+        city: str | None = None,
+        state: str | None = None,
+        property_type: str | None = None,
+        sale_date_range: str | None = None,
+        limit: int = 500,
+        offset: int = 0,
+    ) -> APIResponse:
+        """Search property RECORDS (not active listings) in a geographic area.
+
+        Hits RentCast ``GET /v1/properties``, which returns assessor-grade
+        records for *all* properties in the area — including off-market homes —
+        with ``lastSaleDate``, ``lastSalePrice``, ``owner`` and ``ownerOccupied``.
+
+        ``sale_date_range`` is RentCast's ``saleDateRange`` lookback filter,
+        expressed in **days ago** with range syntax ``min:max`` (``*`` wildcards
+        allowed). For example ``"7305:10958"`` matches properties last sold
+        between ~20 and ~30 years ago — i.e. owners with 20–30 years of tenure.
+
+        As with the listings endpoints, ``latitude``/``longitude`` MUST be paired
+        with ``radius``; lat/lng alone makes RentCast fall back to its default
+        Austin, TX area.
+        """
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
+        if latitude is not None:
+            params["latitude"] = latitude
+        if longitude is not None:
+            params["longitude"] = longitude
+        if radius is not None:
+            params["radius"] = max(0.5, min(radius, 100.0))
+        if zip_code:
+            params["zipCode"] = zip_code
+        if city:
+            params["city"] = city
+        if state:
+            params["state"] = state
+        if property_type:
+            params["propertyType"] = property_type
+        if sale_date_range:
+            params["saleDateRange"] = sale_date_range
+
+        return await self._make_request("properties", params)
+
     async def get_value_estimate(
         self,
         address: str,

@@ -87,6 +87,13 @@ const DISTRESSED_LISTING_STATUS_OPTIONS: {
 
 const DISTRESSED_STATUS_VALUES = new Set(DISTRESSED_LISTING_STATUS_OPTIONS.map((o) => o.value))
 
+const OWNER_TENURE_PRESETS: { label: string; min?: number; max?: number }[] = [
+  { label: 'Any' },
+  { label: '10–20 yrs', min: 10, max: 20 },
+  { label: '20–30 yrs', min: 20, max: 30 },
+  { label: '30+ yrs', min: 30 },
+]
+
 const DOM_OPTIONS: { value: number | undefined; label: string }[] = [
   { value: undefined, label: 'Any' },
   { value: 30, label: '30+' },
@@ -182,6 +189,21 @@ export function FilterPanel({
     [filters.listing_statuses, onChange],
   )
 
+  const ownerTenureActive = filters.owner_tenure_min_years != null
+
+  const selectOwnerTenure = useCallback(
+    (min?: number, max?: number) => {
+      // Owner-tenure mode replaces standard map sources on the backend; keep it
+      // mutually exclusive with motivated-seller mode (which takes precedence).
+      onChange({
+        owner_tenure_min_years: min,
+        owner_tenure_max_years: max,
+        ...(min != null ? { motivated_seller_search: false } : {}),
+      })
+    },
+    [onChange],
+  )
+
   const activeFilterCount = [
     filters.property_type,
     filters.min_price,
@@ -191,6 +213,7 @@ export function FilterPanel({
     filters.listing_statuses.length > 0 ? true : undefined,
     filters.min_dom,
     filters.motivated_seller_search ? true : undefined,
+    ownerTenureActive ? true : undefined,
   ].filter(Boolean).length
 
   const hasDistressedStatusFilter = useMemo(

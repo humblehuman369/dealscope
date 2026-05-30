@@ -28,6 +28,8 @@ export interface MapSearchFilters {
   str_state?: string
   str_city?: string
   motivated_seller_search?: boolean
+  owner_tenure_min_years?: number
+  owner_tenure_max_years?: number
 }
 
 export interface MapBounds {
@@ -107,6 +109,8 @@ export function useMapSearch() {
         str_state: activeFilters.str_state,
         str_city: activeFilters.str_city,
         motivated_seller_search: activeFilters.motivated_seller_search || undefined,
+        owner_tenure_min_years: activeFilters.owner_tenure_min_years,
+        owner_tenure_max_years: activeFilters.owner_tenure_max_years,
         limit: 500,
       }
 
@@ -176,7 +180,9 @@ export function useMapSearch() {
         'bedrooms' in next ||
         'bathrooms' in next ||
         'listing_statuses' in next ||
-        'include_str_listings' in next
+        'include_str_listings' in next ||
+        'owner_tenure_min_years' in next ||
+        'owner_tenure_max_years' in next
 
       setFilters((prev) => {
         const merged = { ...prev, ...next }

@@ -1143,6 +1143,25 @@ class MapSearchRequest(BaseModel):
             "for motivated-seller listing-description phrases."
         ),
     )
+    owner_tenure_min_years: int | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description=(
+            "Minimum years the current owner has held the property (time since "
+            "last sale). When set, the map switches to RentCast property-records "
+            "mode, returning off-market long-tenure owners instead of listings."
+        ),
+    )
+    owner_tenure_max_years: int | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description=(
+            "Maximum years the current owner has held the property. Omit for an "
+            "open-ended window (e.g. '30+ years')."
+        ),
+    )
 
 
 class MapListing(BaseModel):
@@ -1172,6 +1191,18 @@ class MapListing(BaseModel):
     motivated_keywords: list[str] | None = Field(
         default=None,
         description="Motivated-seller keyword phrases that matched this listing (Zillow description search)",
+    )
+    last_sale_date: str | None = Field(
+        default=None,
+        description="ISO date of the property's last recorded sale (owner-tenure mode).",
+    )
+    last_sale_price: float | None = Field(
+        default=None,
+        description="Price of the property's last recorded sale (owner-tenure mode).",
+    )
+    owner_years: float | None = Field(
+        default=None,
+        description="Years since the last sale — i.e. how long the current owner has held the property.",
     )
 
 

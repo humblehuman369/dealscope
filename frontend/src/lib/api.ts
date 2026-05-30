@@ -243,6 +243,10 @@ export interface MapSearchRequest {
   limit?: number
   offset?: number
   motivated_seller_search?: boolean
+  /** Min years the current owner has held (time since last sale). Enables owner-tenure mode. */
+  owner_tenure_min_years?: number
+  /** Max years the current owner has held. Omit for an open-ended window (e.g. 30+). */
+  owner_tenure_max_years?: number
 }
 
 export interface MapListing {
@@ -269,6 +273,12 @@ export interface MapListing {
   reviews_count?: number | null
   /** Phrases from motivated-seller keyword search that matched this listing */
   motivated_keywords?: string[] | null
+  /** ISO date of the last recorded sale (owner-tenure mode) */
+  last_sale_date?: string | null
+  /** Price of the last recorded sale (owner-tenure mode) */
+  last_sale_price?: number | null
+  /** Years since the last sale — current owner's tenure (owner-tenure mode) */
+  owner_years?: number | null
 }
 
 export interface MapSearchResponse {

@@ -29,6 +29,10 @@ MAP_CACHE_TTL = 600  # 10 minutes
 MOTIVATED_SELLER_KEYWORD_CACHE_TTL = 1800  # 30 minutes per keyword + viewport
 MOTIVATED_SELLER_CONCURRENCY = 8
 
+# Average days per year (accounts for leap years) — used to translate an
+# owner-tenure window in years into RentCast's saleDateRange (days-ago) filter.
+DAYS_PER_YEAR = 365.25
+
 # ─── Listing status canonicalization ─────────────────────────────────────
 # Mirrors frontend/src/lib/dealSignal.ts :: STATUS_MAP. Keep in sync; if these
 # drift the user-visible filter and the server-side filter will disagree.
@@ -182,6 +186,8 @@ def _build_cache_key(req: MapSearchRequest) -> str:
             "bath": req.bathrooms,
             "ls": sorted(req.listing_statuses) if req.listing_statuses else None,
             "mss": req.motivated_seller_search,
+            "otmin": req.owner_tenure_min_years,
+            "otmax": req.owner_tenure_max_years,
             "lim": req.limit,
             "off": req.offset,
         },
@@ -306,9 +312,10 @@ class MapSearchService:
         radius = _viewport_radius_miles(req.north, req.south, req.east, req.west)
 
         motivated_seller_mode = req.motivated_seller_search
+        owner_tenure_mode = req.owner_tenure_min_years is not None
 
         # Decide grid size based on viewport radius
-        if motivated_seller_mode:
+        if motivated_seller_mode or owner_tenure_mode:
             grid_size = 1
         elif radius > 100:
             grid_size = 3  # 9 query points for state-level views
@@ -358,6 +365,16 @@ class MapSearchService:
                 raw_source_totals = len(motivated_rows)
                 for item in motivated_rows:
                     self._merge_listing_into(listings_by_addr, item)
+        elif owner_tenure_mode:
+            logger.info(
+                "Map search owner-tenure mode: RentCast property records, tenure=%s-%s yrs",
+                req.owner_tenure_min_years,
+                req.owner_tenure_max_years,
+            )
+            tenure_rows = await self._fetch_owner_tenure_records(req, center_lat, center_lng, sub_radius)
+            raw_source_totals = len(tenure_rows)
+            for item in tenure_rows:
+                self._merge_listing_into(listings_by_addr, item)
         else:
             # Fetch from all sources at all grid points in parallel
             tasks: list[asyncio.Task] = []
@@ -501,8 +518,11 @@ class MapSearchService:
         # Authoritative status filter — guarantees the response only
         # contains the statuses the caller asked for, regardless of how
         # generous each upstream provider was. Unrecognized statuses are
-        # also dropped here.
-        listings = [item for item in listings if normalize_listing_status(item.listing_status) in requested_statuses]
+        # also dropped here. Skipped in owner-tenure mode, whose off-market
+        # property records are an intentionally distinct (non-listing)
+        # inventory that doesn't map onto the for-sale status buckets.
+        if not owner_tenure_mode:
+            listings = [item for item in listings if normalize_listing_status(item.listing_status) in requested_statuses]
 
         # Estimate total: if every sub-query returned its limit, there are
         # likely more listings than we fetched. Extrapolate conservatively.
@@ -752,6 +772,141 @@ class MapSearchService:
         except Exception:
             logger.exception("RentCast %s listing fetch failed", listing_type)
             return []
+
+    # ─── Owner tenure (RentCast property records) ──────────────────────────
+
+    @staticmethod
+    def _tenure_sale_date_range(min_years: int, max_years: int | None) -> str:
+        """Translate an owner-tenure window (years) into RentCast ``saleDateRange``.
+
+        RentCast expresses ``saleDateRange`` as a *days-ago* lookback with
+        ``min:max`` range syntax. Longer tenure = sold further in the past, so
+        ``min_years`` maps to the smaller day bound and ``max_years`` to the
+        larger one. An omitted ``max_years`` yields an open-ended ``min:*``
+        window (e.g. "30+ years").
+        """
+        min_days = int(round(min_years * DAYS_PER_YEAR))
+        if max_years is None:
+            return f"{min_days}:*"
+        max_days = int(round(max_years * DAYS_PER_YEAR))
+        return f"{min_days}:{max_days}"
+
+    async def _fetch_owner_tenure_records(
+        self,
+        req: MapSearchRequest,
+        center_lat: float,
+        center_lng: float,
+        radius_miles: float,
+    ) -> list[MapListing]:
+        """Fetch off-market property records whose owner tenure matches the window.
+
+        Uses RentCast's ``/properties`` records endpoint (not the for-sale
+        listings endpoint) filtered by ``saleDateRange``, surfacing long-held
+        owners — a high-equity, off-market lead profile.
+        """
+        if req.owner_tenure_min_years is None:
+            return []
+
+        sale_date_range = self._tenure_sale_date_range(
+            req.owner_tenure_min_years,
+            req.owner_tenure_max_years,
+        )
+        radius = max(radius_miles, 0.5)
+        try:
+            resp = await self.rentcast.get_property_records(
+                latitude=center_lat,
+                longitude=center_lng,
+                radius=radius,
+                property_type=req.property_type,
+                sale_date_range=sale_date_range,
+                limit=req.limit,
+                offset=req.offset,
+            )
+            if not resp.success or not resp.data:
+                logger.info("RentCast property records returned no data (tenure=%s)", sale_date_range)
+                return []
+
+            raw_records: list[dict[str, Any]] = resp.data if isinstance(resp.data, list) else [resp.data]
+            results = [
+                self._normalize_owner_tenure_record(item)
+                for item in raw_records
+                if self._has_coords(item)
+            ]
+            logger.info("RentCast property records: %d records (saleDateRange=%s)", len(results), sale_date_range)
+            return results
+        except Exception:
+            logger.exception("RentCast property records fetch failed (saleDateRange=%s)", sale_date_range)
+            return []
+
+    @staticmethod
+    def _owner_years_from_sale_date(last_sale_date: str | None) -> float | None:
+        """Years between ``last_sale_date`` (ISO) and now, or None if unparseable."""
+        if not last_sale_date:
+            return None
+        raw = str(last_sale_date).strip()
+        if not raw:
+            return None
+        # RentCast returns e.g. "2003-05-14T00:00:00.000Z"; normalize the Z.
+        normalized = raw.replace("Z", "+00:00")
+        from datetime import datetime
+
+        for candidate in (normalized, raw[:10]):
+            try:
+                parsed = datetime.fromisoformat(candidate)
+                if parsed.tzinfo is None:
+                    parsed = parsed.replace(tzinfo=UTC)
+                delta_days = (datetime.now(UTC) - parsed).days
+                return round(max(delta_days, 0) / DAYS_PER_YEAR, 1)
+            except (ValueError, TypeError):
+                continue
+        return None
+
+    @staticmethod
+    def _normalize_owner_tenure_record(item: dict) -> MapListing:
+        street = item.get("addressLine1") or ""
+        city = item.get("city") or ""
+        state = item.get("state") or ""
+        zipcode = item.get("zipCode") or ""
+        formatted = item.get("formattedAddress") or ""
+
+        if formatted and "," in formatted:
+            address = formatted
+        else:
+            parts = [street or formatted]
+            if city:
+                parts.append(city)
+            if state or zipcode:
+                parts.append(f"{state} {zipcode}".strip())
+            address = ", ".join(p for p in parts if p)
+
+        last_sale_date = item.get("lastSaleDate")
+        last_sale_price = item.get("lastSalePrice")
+        owner_years = MapSearchService._owner_years_from_sale_date(last_sale_date)
+
+        return MapListing(
+            id=item.get("id") or f"rc-rec-{item.get('latitude')}-{item.get('longitude')}",
+            address=address,
+            city=city or None,
+            state=state or None,
+            zip_code=zipcode or None,
+            latitude=item["latitude"],
+            longitude=item["longitude"],
+            # Off-market record: no list price. Surface last sale price so the
+            # marker/card still has a dollar anchor.
+            price=last_sale_price,
+            bedrooms=item.get("bedrooms"),
+            bathrooms=item.get("bathrooms"),
+            sqft=item.get("squareFootage"),
+            property_type=item.get("propertyType"),
+            listing_status="off-market",
+            photo_url=None,
+            source="rentcast_records",
+            days_on_market=None,
+            year_built=item.get("yearBuilt"),
+            last_sale_date=str(last_sale_date) if last_sale_date else None,
+            last_sale_price=last_sale_price,
+            owner_years=owner_years,
+        )
 
     # ─── Zillow (AXESSO) ───────────────────────────
 
