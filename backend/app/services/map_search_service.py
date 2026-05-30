@@ -1112,15 +1112,44 @@ class MapSearchService:
 
     # ─── Owner-tenure validation (recent-resale guard) ─────────────────────
 
+    # Canonical forms for street-type suffixes and directionals so the same
+    # address from different providers ("12 Oak Street N" vs "12 Oak St N" vs
+    # "12 Oak St North") collapses to one key. Matching is the #1 leak in the
+    # expired cross-check — every miss leaves a sold/listed false positive in.
+    _STREET_TOKEN_CANON: dict[str, str] = {
+        "street": "st", "st": "st",
+        "avenue": "ave", "ave": "ave", "av": "ave",
+        "road": "rd", "rd": "rd",
+        "drive": "dr", "dr": "dr",
+        "lane": "ln", "ln": "ln",
+        "court": "ct", "ct": "ct",
+        "circle": "cir", "cir": "cir", "cr": "cir",
+        "boulevard": "blvd", "blvd": "blvd",
+        "place": "pl", "pl": "pl",
+        "terrace": "ter", "ter": "ter", "terr": "ter",
+        "parkway": "pkwy", "pkwy": "pkwy", "pky": "pkwy",
+        "highway": "hwy", "hwy": "hwy",
+        "trail": "trl", "trl": "trl",
+        "square": "sq", "sq": "sq",
+        "cove": "cv", "cv": "cv",
+        "point": "pt", "pt": "pt",
+        "plaza": "plz", "plz": "plz",
+        "way": "way", "loop": "loop", "run": "run", "pass": "pass", "path": "path", "row": "row",
+        # directionals
+        "north": "n", "n": "n", "south": "s", "s": "s",
+        "east": "e", "e": "e", "west": "w", "w": "w",
+        "northeast": "ne", "ne": "ne", "northwest": "nw", "nw": "nw",
+        "southeast": "se", "se": "se", "southwest": "sw", "sw": "sw",
+    }
+
     @staticmethod
     def _addr_match_key(address: str | None) -> str | None:
-        """Cross-provider address key: normalized street line + 5-digit zip.
+        """Cross-provider address key: canonicalized street line + 5-digit zip.
 
-        RentCast and Zillow format addresses slightly differently, so we key on
-        the street portion (before the first comma) plus any zip, lower-cased and
-        stripped of punctuation, to maximize match rate. Imperfect matching fails
-        safe — a miss leaves a candidate unflagged (over-includes), never drops a
-        legitimate one.
+        Normalizes street-type/directional tokens (Street→st, North→n, …) so the
+        same property from RentCast vs Zillow collapses to one key. Imperfect
+        matching fails safe — a miss leaves a candidate in (over-includes), never
+        drops a legitimate one.
         """
         if not address:
             return None
@@ -1129,10 +1158,12 @@ class MapSearchService:
         s = address.lower().strip()
         if not s:
             return None
-        street = re.sub(r"[^a-z0-9 ]", "", s.split(",")[0])
-        street = re.sub(r"\s+", " ", street).strip()
-        if not street:
+        street_raw = re.sub(r"[^a-z0-9 ]", "", s.split(",")[0])
+        tokens = [t for t in street_raw.split() if t]
+        if not tokens:
             return None
+        canon = [MapSearchService._STREET_TOKEN_CANON.get(t, t) for t in tokens]
+        street = " ".join(canon)
         zip_match = re.search(r"\b(\d{5})\b", s)
         return f"{street}|{zip_match.group(1) if zip_match else ''}"
 
