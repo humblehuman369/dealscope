@@ -1691,7 +1691,7 @@ export function DealMakerScreen({
   const headerIsCalculating = isCalculating || backendCalculating
 
   return (
-    <div className="deal-maker-theme min-h-screen bg-[var(--surface-base)] max-w-[960px] mx-auto font-['Inter',sans-serif]">
+    <div className="deal-maker-theme min-h-screen bg-[var(--surface-base)] font-['Inter',sans-serif]">
       <style>{`
         .deal-maker-theme .text-\\[\\#ffffff\\] { color: var(--text-heading) !important; }
         .deal-maker-theme .text-white { color: var(--text-heading) !important; }
