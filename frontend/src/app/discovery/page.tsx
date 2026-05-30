@@ -62,7 +62,6 @@ import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { useDealSnapshot } from '@/hooks/useDealSnapshot'
 import { effectiveMarketValueFromRecord, effectiveMonthlyRentFromRecord } from '@/lib/dealMakerOverrides'
-import { MarketAnchorNote } from '@/components/iq-verdict/MarketAnchorNote'
 import { SweetSpotZone } from '@/components/iq-verdict/SweetSpotZone'
 import {
   VerdictGapGuidance,
@@ -1873,7 +1872,6 @@ function VerdictContent() {
             </div>
 
             <div className="mt-4 flex flex-col gap-2">
-              <MarketAnchorNote isListed={isListed} />
               {hasDataSources && (
                 <p
                   className="text-[12px] sm:text-[13px] leading-relaxed m-0"
