@@ -84,6 +84,8 @@ export function normalizePropertyData(
     brokerageName: p.listing?.brokerage_name,
     listingAgentName: p.listing?.listing_agent_name,
     mlsId: p.listing?.mls_id,
+    lastSoldPrice: p.valuations?.last_sale_price ?? p.listing?.last_sold_price ?? undefined,
+    lastSoldDate: p.valuations?.last_sale_date ?? p.listing?.date_sold ?? undefined,
     bedrooms: p.details?.bedrooms ?? 0,
     bathrooms: p.details?.bathrooms ?? 0,
     livingArea,

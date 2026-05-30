@@ -275,6 +275,7 @@ export interface PropertyData {
   brokerageName?: string
   listingAgentName?: string
   lastSoldPrice?: number
+  lastSoldDate?: string
 
   // History
   priceHistory?: PriceHistoryItem[]

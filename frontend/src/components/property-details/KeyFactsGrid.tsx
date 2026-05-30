@@ -1,7 +1,7 @@
 'use client'
 
 import { PropertyData } from './types'
-import { formatCurrency, formatNumber, formatPropertyType, formatListingType } from './utils'
+import { formatCurrency, formatDate, formatNumber, formatPropertyType, formatListingType } from './utils'
 
 interface KeyFactsGridProps {
   property: PropertyData
@@ -57,6 +57,15 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
     { label: 'Listing Type', value: formatListingType(property.sellerType) },
     { label: 'MLS #', value: property.mlsId || 'N/A' },
   ]
+
+  // Last recorded sale — only shown when known (e.g. off-market / previously sold
+  // homes). Surfaces the deed/AVM-sourced last sale so users can gauge owner tenure.
+  if (property.lastSoldPrice != null) {
+    facts.push({ label: 'Last Sold', value: formatCurrency(property.lastSoldPrice) })
+  }
+  if (property.lastSoldDate) {
+    facts.push({ label: 'Sold Date', value: formatDate(property.lastSoldDate) })
+  }
 
   return (
     <div>
