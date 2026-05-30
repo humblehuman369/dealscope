@@ -207,7 +207,7 @@ export function PathOptionCard({
       className="rounded-xl h-full min-h-0 overflow-hidden flex flex-col"
       style={{
         background: 'var(--surface-card)',
-        border: `1px solid ${accent}33`,
+        border: `1px solid color-mix(in srgb, ${accent} 20%, transparent)`,
         minHeight: 0,
       }}
     >

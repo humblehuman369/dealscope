@@ -33,7 +33,7 @@ _POSITION_LEAD = {
 _STRUCTURE_TAG = {
     "rent-verification": "RENT",
     "seller-second-zero-balloon": "TERMS",
-    "price-negotiation": "EQUITY",
+    "price-negotiation": "PRICE",
     "blended-plan": "BLEND",
     "sub2": "LOAN",
     "assumable": "LOAN",
