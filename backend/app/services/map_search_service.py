@@ -48,8 +48,8 @@ CANONICAL_STATUSES: set[str] = {
 }
 
 # Expired proxy: how far back a RentCast "Inactive"/delisted listing's
-# removedDate can be and still count as an actionable expired lead. ~18 months.
-EXPIRED_MAX_AGE_DAYS = 545
+# removedDate can be and still count as an actionable expired lead.
+EXPIRED_MAX_AGE_DAYS = 120
 
 # Hard cap for the best-effort recently-sold validation call (Zillow scraping via
 # AXESSO is slow); keeps it from blowing the request budget → gateway 500.
@@ -863,12 +863,17 @@ class MapSearchService:
 
     @classmethod
     def _within_days(cls, value: Any, max_days: int) -> bool:
-        """True when ``value`` is within ``max_days`` of now. Unknown dates pass
-        (we don't drop a delisted listing just because the date field is absent)."""
+        """True only when ``value`` is a known date within ``max_days`` of now.
+
+        Unknown/unparseable dates return False: a strict recency window ("delisted
+        in the past N days") is a positive assertion we can't make for a missing
+        date, so those listings are excluded rather than assumed recent. Future
+        dates are also rejected defensively.
+        """
         dt = cls._parse_iso_dt(value)
         if dt is None:
-            return True
-        return (datetime.now(UTC) - dt).days <= max_days
+            return False
+        return 0 <= (datetime.now(UTC) - dt).days <= max_days
 
     async def _fetch_rentcast_expired(
         self,

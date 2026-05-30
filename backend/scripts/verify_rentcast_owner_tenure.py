@@ -226,7 +226,7 @@ def main() -> int:
 
         # --- Expired proxy: /listings/sale status=Inactive coverage ---
         # Confirms RentCast (a) accepts status=Inactive and (b) populates
-        # removedDate, and how many fall in the ~18-month actionable window the
+        # removedDate, and how many fall in the 120-day actionable window the
         # expired map filter uses.
         exp_params = dict(location_params)
         exp_params.update({"status": "Inactive", "limit": args.limit})
@@ -243,10 +243,10 @@ def main() -> int:
                 e_records = [e_records]
             e_total = len(e_records)
             with_removed = [r for r in e_records if r.get("removedDate")]
-            within_18mo = [r for r in with_removed if (_owner_years(r.get("removedDate")) or 99) <= 1.5]
+            within_120d = [r for r in with_removed if (_owner_years(r.get("removedDate")) or 99) * 365.25 <= 120]
             print(f"  inactive listings:       {e_total}")
             print(f"  with removedDate:        {len(with_removed)} ({_pct(len(with_removed), e_total)})")
-            print(f"  delisted within ~18mo:   {len(within_18mo)} ({_pct(len(within_18mo), e_total)})  ← actionable expired proxy")
+            print(f"  delisted within 120d:    {len(within_120d)} ({_pct(len(within_120d), e_total)})  ← actionable expired proxy")
             for r in e_records[:5]:
                 addr = r.get("formattedAddress") or r.get("addressLine1") or "(no address)"
                 yrs = _owner_years(r.get("removedDate"))
