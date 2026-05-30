@@ -131,13 +131,13 @@ export function VerdictGapGuidance({
 
       {hasStructures && (
         <>
-          <DealStructuresNarrative paragraphs={dealStructures!.narrativeParagraphs} />
           <FourPathsPanel
             payload={dealStructures!}
             propertyState={propertyState}
             onOpenInStrategy={onOpenStructureInStrategy}
             onShowPitch={onShowPitch}
           />
+          <DealStructuresNarrative paragraphs={dealStructures!.narrativeParagraphs} />
         </>
       )}
 
