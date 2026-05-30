@@ -124,6 +124,7 @@ export function FourPathsPanel({
                 fontSize: 18,
                 fontWeight: 700,
                 letterSpacing: '0.01em',
+                textTransform: 'uppercase',
                 color: 'var(--text-heading)',
               }}
             >

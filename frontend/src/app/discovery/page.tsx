@@ -1954,7 +1954,6 @@ function VerdictContent() {
                       lineHeight: 1,
                     }}
                   >
-                    <span style={{ color: 'var(--text-secondary)' }}>Current</span>{' '}
                     <span style={{ color: 'var(--text-heading)' }}>DealGap</span>
                   </span>
                   <span
