@@ -44,7 +44,12 @@ CANONICAL_STATUSES: set[str] = {
     "foreclosure",
     "pre-foreclosure",
     "auction",
+    "expired",
 }
+
+# Expired proxy: how far back a RentCast "Inactive"/delisted listing's
+# removedDate can be and still count as an actionable expired lead. ~18 months.
+EXPIRED_MAX_AGE_DAYS = 545
 
 # Foreclosure / auction / pre-FC map inventory: Zillow (AXESSO) only when the user
 # asks exclusively for these buckets—RentCast labels and staleness are skipped.
@@ -77,6 +82,8 @@ _STATUS_MAP: dict[str, str] = {
     "foreclosure": "foreclosure",
     "foreclosed": "foreclosure",
     "auction": "auction",
+    # Expired proxy (RentCast inactive/delisted-and-unsold)
+    "expired": "expired",
     "bank owned": "foreclosure",
     "bank_owned": "foreclosure",
     "bankowned": "foreclosure",
@@ -122,6 +129,7 @@ _LISTING_STATUS_PRIORITY: dict[str, int] = {
     "pre-foreclosure": 100,
     "auction": 100,
     "owner_listed": 80,
+    "expired": 60,
     "active": 40,
     "off-market": 10,
     "sold": 10,
@@ -421,13 +429,24 @@ class MapSearchService:
 
             for pt_lat, pt_lng in query_points:
                 if req.listing_type in ("sale", "both"):
-                    if not _skip_rentcast_sale_use_zillow_only_distressed(
+                    # RentCast active for-sale — only when active/owner-listed is
+                    # wanted (mirrors the Zillow forSale gate below) so an
+                    # expired-only or distressed-only search doesn't waste the call.
+                    if requested_statuses & {"active", "owner_listed"} and not _skip_rentcast_sale_use_zillow_only_distressed(
                         requested_statuses,
                         bool(self.zillow),
                     ):
                         tasks.append(
                             asyncio.create_task(
                                 self._fetch_rentcast(req, "sale", pt_lat, pt_lng, sub_radius),
+                            )
+                        )
+                    # Expired proxy: RentCast "Inactive" (delisted) for-sale records
+                    # that did NOT sell (recently-sold ones are removed downstream).
+                    if "expired" in requested_statuses:
+                        tasks.append(
+                            asyncio.create_task(
+                                self._fetch_rentcast_expired(req, pt_lat, pt_lng, sub_radius),
                             )
                         )
                     if self.zillow:
@@ -522,6 +541,26 @@ class MapSearchService:
                 pre_bounds_count - len(listings),
                 len(listings),
             )
+
+        # Expired proxy refinement: a RentCast "Inactive" listing is only a true
+        # expired/withdrawn lead if it DIDN'T sell. Cross-check against an
+        # independent recently-sold source (Zillow) and drop any expired row that
+        # actually closed. Best-effort: if validation is unavailable, rows are kept.
+        if "expired" in requested_statuses and self.zillow:
+            resale_index = await self._fetch_recent_resales(center_lat, center_lng, radius)
+            if resale_index:
+                before_resold = len(listings)
+                listings = [
+                    item
+                    for item in listings
+                    if not (
+                        normalize_listing_status(item.listing_status) == "expired"
+                        and self._addr_match_key(item.address) in resale_index
+                    )
+                ]
+                dropped_sold = before_resold - len(listings)
+                if dropped_sold:
+                    logger.info("Expired filter: dropped %d delisted-but-sold rows", dropped_sold)
 
         if req.polygon:
             listings = [item for item in listings if _point_in_polygon(item.latitude, item.longitude, req.polygon)]
@@ -791,6 +830,87 @@ class MapSearchService:
             return results
         except Exception:
             logger.exception("RentCast %s listing fetch failed", listing_type)
+            return []
+
+    # ─── Expired listings (RentCast inactive/delisted proxy) ────────────────
+
+    @staticmethod
+    def _parse_iso_dt(value: Any) -> datetime | None:
+        """Parse an ISO date/datetime string to an aware datetime, or None."""
+        if value is None:
+            return None
+        s = str(value).strip()
+        if not s:
+            return None
+        for candidate in (s.replace("Z", "+00:00"), s[:10]):
+            try:
+                dt = datetime.fromisoformat(candidate)
+                return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
+            except (ValueError, TypeError):
+                continue
+        return None
+
+    @classmethod
+    def _within_days(cls, value: Any, max_days: int) -> bool:
+        """True when ``value`` is within ``max_days`` of now. Unknown dates pass
+        (we don't drop a delisted listing just because the date field is absent)."""
+        dt = cls._parse_iso_dt(value)
+        if dt is None:
+            return True
+        return (datetime.now(UTC) - dt).days <= max_days
+
+    async def _fetch_rentcast_expired(
+        self,
+        req: MapSearchRequest,
+        center_lat: float,
+        center_lng: float,
+        radius_miles: float,
+    ) -> list[MapListing]:
+        """Fetch RentCast "Inactive" (delisted) for-sale listings as expired-proxy rows.
+
+        RentCast doesn't expose a true "Expired" status — only Active/Inactive —
+        so this returns delisted listings (gated to a recent ``removedDate`` window
+        for actionability), tagged ``Expired``. The caller removes any that
+        actually sold via an independent recently-sold cross-check, leaving the
+        expired/withdrawn "failed to sell" set.
+        """
+        radius = max(radius_miles, 0.5)
+        try:
+            resp = await self.rentcast.get_sale_listings(
+                latitude=center_lat,
+                longitude=center_lng,
+                radius=radius,
+                property_type=req.property_type,
+                status="Inactive",
+                limit=req.limit,
+                offset=req.offset,
+            )
+            if not resp.success or not resp.data:
+                logger.info("RentCast expired (inactive) returned no data")
+                return []
+
+            raw_listings: list[dict[str, Any]] = resp.data if isinstance(resp.data, list) else [resp.data]
+            results: list[MapListing] = []
+            for item in raw_listings:
+                if not self._has_coords(item):
+                    continue
+                removed = item.get("removedDate")
+                if not self._within_days(removed, EXPIRED_MAX_AGE_DAYS):
+                    continue
+                base = self._normalize_rentcast_listing(item)
+                delisted_dt = self._parse_iso_dt(removed)
+                results.append(
+                    base.model_copy(
+                        update={
+                            "listing_status": "Expired",
+                            "delisted_date": delisted_dt.date().isoformat() if delisted_dt else None,
+                        }
+                    )
+                )
+            logger.info("RentCast expired: %d delisted listings within %dd window", len(results), EXPIRED_MAX_AGE_DAYS)
+            return results
+        except Exception:
+            logger.exception("RentCast expired (inactive) listing fetch failed")
             return []
 
     # ─── Owner tenure (RentCast property records) ──────────────────────────

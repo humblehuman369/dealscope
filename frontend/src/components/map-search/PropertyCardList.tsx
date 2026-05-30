@@ -219,6 +219,15 @@ function PropertyCard({
           </p>
         )}
 
+        {listing.delisted_date && (
+          <p
+            className="text-[10px] leading-snug mt-1.5 font-medium"
+            style={{ color: '#8B5CF6' }}
+          >
+            Expired · delisted {String(listing.delisted_date).slice(0, 4)}
+          </p>
+        )}
+
         {listing.tenure_confidence === 'recent_resale' && (
           <p
             className="text-[10px] leading-snug font-medium"

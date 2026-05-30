@@ -1216,6 +1216,10 @@ class MapListing(BaseModel):
         default=None,
         description="ISO sale date from the independent source when tenure_confidence='recent_resale'.",
     )
+    delisted_date: str | None = Field(
+        default=None,
+        description="ISO date the listing was delisted/removed (expired-listing mode).",
+    )
 
 
 class MapSearchResponse(BaseModel):

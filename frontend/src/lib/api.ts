@@ -283,6 +283,8 @@ export interface MapListing {
   tenure_confidence?: string | null
   /** ISO sale date from the independent source when tenure_confidence='recent_resale' */
   recent_resale_date?: string | null
+  /** ISO date the listing was delisted/removed (expired-listing mode) */
+  delisted_date?: string | null
 }
 
 export interface MapSearchResponse {

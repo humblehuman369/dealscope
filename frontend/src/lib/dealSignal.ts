@@ -3,6 +3,7 @@ import type { MapListing } from '@/lib/api'
 /** Map marker / list classification — rule-based, not viewport-relative. */
 export type DealCategory =
   | 'distressed' // Red — auction, foreclosure, pre-foreclosure
+  | 'expired' // Violet — delisted/unsold (expired or withdrawn)
   | 'stale_60' // Orange — 60+ days on market
   | 'stale_30' // Yellow — 30+ days on market
   | 'owner_listed' // Green — FSBO / owner-listed when DOM under 30 (or DOM unknown)
@@ -30,6 +31,7 @@ export type CanonicalStatus =
   | 'foreclosure'
   | 'pre-foreclosure'
   | 'auction'
+  | 'expired'
   | 'sold'
   | 'off-market'
   | 'other'
@@ -54,6 +56,7 @@ const STATUS_MAP: Record<string, CanonicalStatus> = {
   foreclosure: 'foreclosure',
   foreclosed: 'foreclosure',
   auction: 'auction',
+  expired: 'expired',
   'bank owned': 'foreclosure',
   bank_owned: 'foreclosure',
   bankowned: 'foreclosure',
@@ -96,6 +99,8 @@ export function displayListingStatus(raw: string | null): string {
       return 'Pre-Foreclosure'
     case 'auction':
       return 'Auction'
+    case 'expired':
+      return 'Expired'
     case 'sold':
       return 'Sold'
     case 'off-market':
@@ -112,7 +117,8 @@ const DISTRESSED_CATEGORIES: Set<CanonicalStatus> = new Set([
 ])
 
 const CATEGORY_RANK: Record<DealCategory, number> = {
-  distressed: 5,
+  distressed: 6,
+  expired: 5,
   stale_60: 4,
   stale_30: 3,
   owner_listed: 2,
@@ -123,6 +129,7 @@ const CATEGORY_RANK: Record<DealCategory, number> = {
 /** Marker / badge fill colors (solid hex for map pins). */
 const CATEGORY_MARKER_HEX: Record<DealCategory, string> = {
   distressed: '#EF4444',
+  expired: '#8B5CF6',
   stale_60: '#F97316',
   stale_30: '#EAB308',
   owner_listed: '#22C55E',
@@ -138,6 +145,7 @@ const CATEGORY_MARKER_HEX: Record<DealCategory, string> = {
  */
 const CATEGORY_MARKER_HEX_DARK: Record<DealCategory, string> = {
   distressed: '#DC2626',
+  expired: '#7C3AED',
   stale_60: '#EA580C',
   stale_30: '#D97706',
   owner_listed: '#16A34A',
@@ -180,6 +188,17 @@ export function classifyListing(listing: MapListing): DealSignalResult {
       rank: CATEGORY_RANK.distressed,
       label: distressLabel(canonical),
       color: CATEGORY_MARKER_HEX.distressed,
+    }
+  }
+
+  // Expired/withdrawn (delisted-and-unsold). Off-market with no DOM, so check
+  // before the DOM buckets and surface it as its own violet category.
+  if (canonical === 'expired') {
+    return {
+      category: 'expired',
+      rank: CATEGORY_RANK.expired,
+      label: 'Expired',
+      color: CATEGORY_MARKER_HEX.expired,
     }
   }
 

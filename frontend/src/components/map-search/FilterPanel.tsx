@@ -64,6 +64,9 @@ const BEDROOM_OPTIONS = [
 /** Matches map distressed pin color in dealSignal.ts (markerColorForCategory distressed). */
 const DISTRESSED_MARKER_DOT = '#EF4444'
 
+/** Matches map expired pin color in dealSignal.ts (markerColorForCategory expired). */
+const EXPIRED_MARKER_DOT = '#8B5CF6'
+
 const CORE_LISTING_STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: 'active', label: 'Active' },
   { value: 'owner_listed', label: 'Owner Listed' },
@@ -635,6 +638,53 @@ export function FilterPanel({
               </PillButton>
             ))}
           </div>
+        </div>
+
+        {/* Expired listings */}
+        <div
+          className="rounded-lg p-3 space-y-2"
+          role="group"
+          aria-labelledby="expired-listings-heading"
+          style={{
+            backgroundColor: 'rgba(139, 92, 246, 0.09)',
+            border: '1px solid rgba(139, 92, 246, 0.35)',
+          }}
+        >
+          <div>
+            <h3
+              id="expired-listings-heading"
+              className="text-xs font-semibold uppercase tracking-wider"
+              style={{
+                color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.heading : 'var(--text-heading)',
+              }}
+            >
+              Expired Listings
+            </h3>
+            <p
+              className="text-[10px] mt-1 leading-snug"
+              style={{
+                color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.body : 'var(--text-secondary)',
+              }}
+            >
+              Was listed but didn&apos;t sell (expired or withdrawn) — a motivated-seller signal.
+              Sourced from RentCast delisted records, last ~18 months.
+            </p>
+          </div>
+          <PillButton
+            mapLightChrome={mapLightChrome}
+            active={filters.listing_statuses.includes('expired')}
+            onClick={() => toggleListingStatus('expired')}
+            aria-label="Expired listings. Toggle on or off."
+            leading={
+              <span
+                className="w-2 h-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: EXPIRED_MARKER_DOT }}
+                aria-hidden
+              />
+            }
+          >
+            {filters.listing_statuses.includes('expired') ? 'On' : 'Off'}
+          </PillButton>
         </div>
 
         {/* Days on Market */}
