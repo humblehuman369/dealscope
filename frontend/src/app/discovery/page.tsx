@@ -1833,7 +1833,7 @@ function VerdictContent() {
             {hasDataSources && (
               <div
                 ref={dataSourcesRef}
-                className="mt-5 rounded-xl overflow-hidden"
+                className="mt-3 rounded-xl overflow-hidden"
                 style={{
                   background: 'var(--surface-card)',
                   border: '1px solid var(--border-default)',
