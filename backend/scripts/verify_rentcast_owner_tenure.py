@@ -70,10 +70,12 @@ def _owner_years(last_sale_date: str | None) -> float | None:
     return None
 
 
-def _fetch(client: httpx.Client, key: str, params: dict) -> tuple[int, list[dict] | dict | None, str | None]:
+def _fetch(
+    client: httpx.Client, key: str, params: dict, path: str = "/properties"
+) -> tuple[int, list[dict] | dict | None, str | None]:
     try:
         resp = client.get(
-            f"{BASE_URL}/properties",
+            f"{BASE_URL}{path}",
             params=params,
             headers={"X-Api-Key": key, "Accept": "application/json"},
             timeout=30.0,
@@ -221,6 +223,38 @@ def main() -> int:
             print(f"CONTROL (no saleDateRange): {c_total} records in same area")
             if c_total:
                 print(f"  → {args.min_years}-{args.max_years}yr owners are ~{_pct(total, c_total)} of area inventory")
+
+        # --- Expired proxy: /listings/sale status=Inactive coverage ---
+        # Confirms RentCast (a) accepts status=Inactive and (b) populates
+        # removedDate, and how many fall in the ~18-month actionable window the
+        # expired map filter uses.
+        exp_params = dict(location_params)
+        exp_params.update({"status": "Inactive", "limit": args.limit})
+        if args.property_type:
+            exp_params["propertyType"] = args.property_type
+        e_status, e_body, e_err = _fetch(client, key, exp_params, path="/listings/sale")
+        print("-" * 70)
+        print(f"EXPIRED PROXY (/listings/sale status=Inactive): HTTP {e_status}")
+        if e_err:
+            print(f"  REQUEST FAILED / REJECTED: {e_err}")
+        else:
+            e_records = e_body if isinstance(e_body, list) else (e_body or {}).get("listings") or []
+            if not isinstance(e_records, list):
+                e_records = [e_records]
+            e_total = len(e_records)
+            with_removed = [r for r in e_records if r.get("removedDate")]
+            within_18mo = [r for r in with_removed if (_owner_years(r.get("removedDate")) or 99) <= 1.5]
+            print(f"  inactive listings:       {e_total}")
+            print(f"  with removedDate:        {len(with_removed)} ({_pct(len(with_removed), e_total)})")
+            print(f"  delisted within ~18mo:   {len(within_18mo)} ({_pct(len(within_18mo), e_total)})  ← actionable expired proxy")
+            for r in e_records[:5]:
+                addr = r.get("formattedAddress") or r.get("addressLine1") or "(no address)"
+                yrs = _owner_years(r.get("removedDate"))
+                ago = f"{yrs}y ago" if yrs is not None else "?"
+                print(
+                    f"    {addr[:46]:<46} removed={str(r.get('removedDate'))[:10]:<10} ({ago})"
+                    f" price={r.get('price')}"
+                )
 
     print("=" * 70)
     return 0

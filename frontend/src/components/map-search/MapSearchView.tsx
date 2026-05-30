@@ -143,6 +143,7 @@ const MAP_MARKER_LEGEND: { category: DealCategory; label: string }[] = [
   { category: 'stale_30', label: '30+ days on market' },
   { category: 'stale_60', label: '60+ days on market' },
   { category: 'distressed', label: 'Auction / foreclosure' },
+  { category: 'expired', label: 'Expired / withdrawn' },
   { category: 'unknown', label: 'Status or DOM unknown' },
 ]
 
