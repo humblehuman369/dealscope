@@ -46,9 +46,9 @@ import type { NeighborhoodOverview } from '@/lib/api'
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
 // Initial zoom while the map mounts before `fitBounds` runs.
-// ~12 ≈ a ~20-mile-wide span on a typical desktop viewport (10 mi radius).
-const INITIAL_VIEW_ZOOM = 12
-const INITIAL_VIEW_RADIUS_MILES = 10
+// ~13 ≈ a ~10-mile-wide span on a typical desktop viewport (5 mi radius).
+const INITIAL_VIEW_ZOOM = 13
+const INITIAL_VIEW_RADIUS_MILES = 5
 const MAP_ID = 'DEMO_MAP_ID'
 const MIN_ZOOM_FOR_GEOCODE = 13
 const HINT_DISMISSED_KEY = 'dealscope:map-click-hint-dismissed'
@@ -805,7 +805,7 @@ export function MapSearchView() {
   const snapshotViewport = initialSnapshot?.viewport ?? null
 
   // Only restore a saved viewport when returning from Discovery after Analyze.
-  // Fresh map entry (nav, reload) always reframes to the 10-mile radius.
+  // Fresh map entry (nav, reload) always reframes to the 5-mile radius.
   const shouldRestoreViewport = useMemo(() => {
     if (typeof window === 'undefined') return false
     return consumeMapViewportRestore()
@@ -1430,7 +1430,7 @@ export function MapSearchView() {
             </AdvancedMarker>
           )}
 
-          {/* Fit the camera to a 10-mile radius around the initial location.
+          {/* Fit the camera to a 5-mile radius around the initial location.
               Runs once after the map mounts so the framing adapts to viewport size. */}
           {shouldFitInitialRadius && initialLocationCenter && (
             <FitToRadius
