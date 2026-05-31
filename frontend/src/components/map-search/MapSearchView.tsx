@@ -366,10 +366,9 @@ function LabelGeocoder({
 }
 
 /**
- * Fits the map viewport to a circular radius (in miles) around `center` once
- * on mount. Using `fitBounds` (instead of a fixed zoom) keeps the framing
- * consistent across desktop, mobile, and the desktop 60% split panel where
- * the rendered map width varies considerably.
+ * Fits the map viewport to a circular radius (in miles) around `center`.
+ * Re-runs when the center or radius changes so async location resolution
+ * (e.g. saved ZIP arriving after GPS) can update the framing.
  */
 function FitToRadius({
   center,
@@ -381,13 +380,15 @@ function FitToRadius({
   onFitted?: (bounds: { north: number; south: number; east: number; west: number }) => void
 }) {
   const map = useMap()
-  const fittedRef = useRef(false)
+  const lastFittedKeyRef = useRef<string | null>(null)
   const onFittedRef = useRef(onFitted)
   onFittedRef.current = onFitted
 
   useEffect(() => {
-    if (!map || fittedRef.current) return
-    fittedRef.current = true
+    if (!map) return
+    const fitKey = `${center.lat.toFixed(5)},${center.lng.toFixed(5)},${radiusMiles}`
+    if (lastFittedKeyRef.current === fitKey) return
+    lastFittedKeyRef.current = fitKey
 
     // 1° latitude ≈ 69 miles; longitude scales by cos(latitude).
     const latDelta = radiusMiles / 69
@@ -881,10 +882,13 @@ export function MapSearchView() {
 
   // Fit the initial viewport to a fixed radius around the resolved location
   // (saved ZIP, GPS, or IP fallback). Skip for URL params, label geocode,
-  // snapshot restore, or explicit zoom.
+  // snapshot restore, or explicit zoom. When the user has a saved ZIP, wait
+  // for that geocode — do not fall back to GPS for the fit target.
   const initialLocationCenter =
     !paramCenter && !needsGeocode && !snapshotViewport
-      ? (accountZipCenter ?? geoCenter)
+      ? accountZip
+        ? accountZipCenter
+        : geoCenter
       : null
   const shouldFitInitialRadius = !!initialLocationCenter && paramZoom === null
 
