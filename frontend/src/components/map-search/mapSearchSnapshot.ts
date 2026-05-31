@@ -13,6 +13,8 @@
 import type { MapSearchFilters } from '@/hooks/useMapSearch'
 
 export const MAP_SNAPSHOT_KEY = 'dealscope:map-search-snapshot'
+/** Set when navigating from map search to Discovery so the next map mount restores viewport. */
+export const MAP_RESTORE_VIEWPORT_KEY = 'dealscope:map-search-restore-viewport'
 const SNAPSHOT_VERSION = 1
 
 export type MapViewport = {
@@ -119,6 +121,28 @@ export function clearMapSnapshot(): void {
     sessionStorage.removeItem(MAP_SNAPSHOT_KEY)
   } catch {
     /* ignore */
+  }
+}
+
+/** Call before leaving map search for Discovery — next map entry restores saved viewport. */
+export function markMapViewportForRestore(): void {
+  if (typeof window === 'undefined') return
+  try {
+    sessionStorage.setItem(MAP_RESTORE_VIEWPORT_KEY, '1')
+  } catch {
+    /* private browsing */
+  }
+}
+
+/** True once when returning from Discovery; clears the flag. */
+export function consumeMapViewportRestore(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    if (sessionStorage.getItem(MAP_RESTORE_VIEWPORT_KEY) !== '1') return false
+    sessionStorage.removeItem(MAP_RESTORE_VIEWPORT_KEY)
+    return true
+  } catch {
+    return false
   }
 }
 

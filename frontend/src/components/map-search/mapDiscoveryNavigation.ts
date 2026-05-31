@@ -1,4 +1,7 @@
 import type { MapListing } from '@/lib/api'
+import { markMapViewportForRestore } from './mapSearchSnapshot'
+
+type MapDiscoveryRouter = { push: (href: string) => void }
 
 /** True when listing.id is a numeric Zillow zpid from map search. */
 export function isZillowZpid(id: string): boolean {
@@ -19,4 +22,15 @@ export function buildDiscoverySearchParams(listing: MapListing): URLSearchParams
 
 export function discoveryPathFromListing(listing: MapListing): string {
   return `/discovery?${buildDiscoverySearchParams(listing).toString()}`
+}
+
+/** Navigate to Discovery and mark the map viewport for restore on return. */
+export function navigateToDiscoveryFromMap(router: MapDiscoveryRouter, listing: MapListing): void {
+  markMapViewportForRestore()
+  router.push(discoveryPathFromListing(listing))
+}
+
+export function navigateToDiscoveryFromMapPath(router: MapDiscoveryRouter, path: string): void {
+  markMapViewportForRestore()
+  router.push(path)
 }

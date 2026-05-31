@@ -7,7 +7,7 @@ import type { MapListing } from '@/lib/api'
 import type { DealSignalResult, SortOption } from '@/lib/dealSignal'
 import { displayListingStatus } from '@/lib/dealSignal'
 import { useListingPhoto } from './listingPhoto'
-import { discoveryPathFromListing } from './mapDiscoveryNavigation'
+import { navigateToDiscoveryFromMap } from './mapDiscoveryNavigation'
 import { MapViewModeToggle } from './MapViewModeToggle'
 
 const SORT_LABELS: Record<SortOption, string> = {
@@ -94,7 +94,7 @@ function PropertyListRow({
   const handleAnalyze = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
-      router.push(discoveryPathFromListing(listing))
+      navigateToDiscoveryFromMap(router, listing)
     },
     [router, listing],
   )

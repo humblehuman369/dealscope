@@ -6,7 +6,7 @@ import type { MapListing } from '@/lib/api'
 import type { DealSignalResult } from '@/lib/dealSignal'
 import { displayListingStatus } from '@/lib/dealSignal'
 import { useListingPhoto } from './listingPhoto'
-import { buildDiscoverySearchParams } from './mapDiscoveryNavigation'
+import { buildDiscoverySearchParams, navigateToDiscoveryFromMapPath } from './mapDiscoveryNavigation'
 
 interface PropertyPreviewCardProps {
   listing: MapListing
@@ -50,7 +50,7 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
     e.stopPropagation()
     e.preventDefault()
     const params = buildDiscoverySearchParams(listing)
-    router.push(`/discovery?${params.toString()}`)
+    navigateToDiscoveryFromMapPath(router, `/discovery?${params.toString()}`)
   }
 
   return (

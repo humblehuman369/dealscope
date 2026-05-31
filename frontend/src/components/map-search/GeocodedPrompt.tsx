@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { MapPin, ArrowRight, X, Loader2, Bed, Bath, Ruler, Calendar } from 'lucide-react'
+import { navigateToDiscoveryFromMapPath } from './mapDiscoveryNavigation'
 
 export interface OffMarketPreview {
   bedrooms?: number | null
@@ -51,7 +52,7 @@ export function GeocodedPrompt({
     if (addressComponents?.city) params.set('city', addressComponents.city)
     if (addressComponents?.state) params.set('state', addressComponents.state)
     if (addressComponents?.zip_code) params.set('zip_code', addressComponents.zip_code)
-    router.push(`/discovery?${params.toString()}`)
+    navigateToDiscoveryFromMapPath(router, `/discovery?${params.toString()}`)
   }
 
   const hasPreview = !!propertyPreview && !isLoadingPreview

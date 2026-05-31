@@ -39,7 +39,7 @@ import { buildExportRows, exportListingsCsv, exportListingsExcel } from './mapSe
 import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
 import { NeighborhoodCard } from './NeighborhoodCard'
 import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
-import { readMapSnapshot, writeMapSnapshot, clearMapSnapshot } from './mapSearchSnapshot'
+import { readMapSnapshot, writeMapSnapshot, clearMapSnapshot, consumeMapViewportRestore } from './mapSearchSnapshot'
 import { getMapOverlaySurface } from './mapOverlayChrome'
 import type { NeighborhoodOverview } from '@/lib/api'
 
@@ -388,33 +388,40 @@ function FitToRadius({
     if (!map) return
     const fitKey = `${center.lat.toFixed(5)},${center.lng.toFixed(5)},${radiusMiles}`
     if (lastFittedKeyRef.current === fitKey) return
-    lastFittedKeyRef.current = fitKey
 
-    // 1° latitude ≈ 69 miles; longitude scales by cos(latitude).
     const latDelta = radiusMiles / 69
     const lngDelta = radiusMiles / (69 * Math.cos((center.lat * Math.PI) / 180))
-    const bounds = {
-      north: center.lat + latDelta,
-      south: center.lat - latDelta,
-      east: center.lng + lngDelta,
-      west: center.lng - lngDelta,
-    }
-    map.fitBounds(bounds)
+    const bounds = new google.maps.LatLngBounds(
+      { lat: center.lat - latDelta, lng: center.lng - lngDelta },
+      { lat: center.lat + latDelta, lng: center.lng + lngDelta },
+    )
 
-    // Push the resolved bounds to the listings hook in case `idle` doesn't fire
-    // (mirrors LabelGeocoder's belt-and-suspenders pattern).
-    setTimeout(() => {
-      const b = map.getBounds()
-      if (!b || !onFittedRef.current) return
-      const ne = b.getNorthEast()
-      const sw = b.getSouthWest()
-      onFittedRef.current({
-        north: ne.lat(),
-        south: sw.lat(),
-        east: ne.lng(),
-        west: sw.lng(),
-      })
-    }, 200)
+    const applyFit = () => {
+      if (lastFittedKeyRef.current === fitKey) return
+      lastFittedKeyRef.current = fitKey
+      map.fitBounds(bounds, 0)
+
+      // Push the resolved bounds to the listings hook in case `idle` doesn't fire
+      // (mirrors LabelGeocoder's belt-and-suspenders pattern).
+      setTimeout(() => {
+        const b = map.getBounds()
+        if (!b || !onFittedRef.current) return
+        const ne = b.getNorthEast()
+        const sw = b.getSouthWest()
+        onFittedRef.current({
+          north: ne.lat(),
+          south: sw.lat(),
+          east: ne.lng(),
+          west: sw.lng(),
+        })
+      }, 250)
+    }
+
+    // Wait until the map has laid out — fitBounds is unreliable on first paint.
+    const idleListener = google.maps.event.addListenerOnce(map, 'idle', applyFit)
+    return () => {
+      google.maps.event.removeListener(idleListener)
+    }
   }, [map, center.lat, center.lng, radiusMiles])
 
   return null
@@ -797,7 +804,14 @@ export function MapSearchView() {
   }, [])
   const snapshotViewport = initialSnapshot?.viewport ?? null
 
-  const hasExplicitLocation = !!paramCenter || needsGeocode || !!snapshotViewport
+  // Only restore a saved viewport when returning from Discovery after Analyze.
+  // Fresh map entry (nav, reload) always reframes to the 10-mile radius.
+  const shouldRestoreViewport = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    return consumeMapViewportRestore()
+  }, [])
+
+  const hasExplicitLocation = !!paramCenter || needsGeocode
 
   // Authenticated user — used to prefer the saved business_address_zip as the
   // initial map center, ahead of navigator.geolocation.
@@ -871,21 +885,22 @@ export function MapSearchView() {
 
   const initialCenter =
     paramCenter ??
-    (snapshotViewport ? { lat: snapshotViewport.lat, lng: snapshotViewport.lng } : null) ??
+    (shouldRestoreViewport && snapshotViewport
+      ? { lat: snapshotViewport.lat, lng: snapshotViewport.lng }
+      : null) ??
     accountZipCenter ??
     geoCenter ??
     DEFAULT_CENTER
   const initialZoom =
     paramZoom ??
-    snapshotViewport?.zoom ??
+    (shouldRestoreViewport && snapshotViewport ? snapshotViewport.zoom : null) ??
     (accountZipCenter || geoCenter ? INITIAL_VIEW_ZOOM : DEFAULT_ZOOM)
 
   // Fit the initial viewport to a fixed radius around the resolved location
   // (saved ZIP, GPS, or IP fallback). Skip for URL params, label geocode,
-  // snapshot restore, or explicit zoom. When the user has a saved ZIP, wait
-  // for that geocode — do not fall back to GPS for the fit target.
+  // explicit zoom, or when restoring a saved viewport after Discovery.
   const initialLocationCenter =
-    !paramCenter && !needsGeocode && !snapshotViewport
+    !paramCenter && !needsGeocode && !shouldRestoreViewport
       ? accountZip
         ? accountZipCenter
         : geoCenter
@@ -895,7 +910,7 @@ export function MapSearchView() {
   // Only show the "you are here" pin when the location came from GPS/IP —
   // not for URL params, snapshot, account-ZIP centering, or the US default.
   const shouldUseUserLocation =
-    !paramCenter && !needsGeocode && !snapshotViewport && !accountZipCenter && !!geoCenter
+    !paramCenter && !needsGeocode && !shouldRestoreViewport && !accountZipCenter && !!geoCenter
   const userLocation = shouldUseUserLocation ? geoCenter : null
 
   const {
