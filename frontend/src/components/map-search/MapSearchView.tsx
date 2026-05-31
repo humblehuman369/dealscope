@@ -45,11 +45,10 @@ import type { NeighborhoodOverview } from '@/lib/api'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
-// Initial zoom used while the map is mounting before `fitBounds` runs.
-// ~15 ≈ a ~4-mile-wide span on a typical desktop viewport (2 mi radius), so first paint
-// is already close to the final framing instead of zooming out and snapping in.
-const GEOLOCATION_INITIAL_ZOOM = 15
-const GEOLOCATION_RADIUS_MILES = 2
+// Initial zoom while the map mounts before `fitBounds` runs.
+// ~12 ≈ a ~20-mile-wide span on a typical desktop viewport (10 mi radius).
+const INITIAL_VIEW_ZOOM = 12
+const INITIAL_VIEW_RADIUS_MILES = 10
 const MAP_ID = 'DEMO_MAP_ID'
 const MIN_ZOOM_FOR_GEOCODE = 13
 const HINT_DISMISSED_KEY = 'dealscope:map-click-hint-dismissed'
@@ -102,8 +101,6 @@ function writePersistedMapThemeOverride(value: PersistedMapThemeOverride | null)
     /* private browsing */
   }
 }
-// Zoom used when centering on the user's saved ZIP (ZIP-level framing).
-const ACCOUNT_ZIP_INITIAL_ZOOM = 13
 
 interface ZipCacheEntry {
   lat: number
@@ -880,15 +877,19 @@ export function MapSearchView() {
   const initialZoom =
     paramZoom ??
     snapshotViewport?.zoom ??
-    (accountZipCenter
-      ? ACCOUNT_ZIP_INITIAL_ZOOM
-      : geoCenter
-        ? GEOLOCATION_INITIAL_ZOOM
-        : DEFAULT_ZOOM)
+    (accountZipCenter || geoCenter ? INITIAL_VIEW_ZOOM : DEFAULT_ZOOM)
 
-  // Only fit-to-radius and show the "you are here" pin when the location came
-  // from the user's actual GPS — never for URL params, snapshot-restored
-  // viewports, account-ZIP centering, or the US-center default.
+  // Fit the initial viewport to a fixed radius around the resolved location
+  // (saved ZIP, GPS, or IP fallback). Skip for URL params, label geocode,
+  // snapshot restore, or explicit zoom.
+  const initialLocationCenter =
+    !paramCenter && !needsGeocode && !snapshotViewport
+      ? (accountZipCenter ?? geoCenter)
+      : null
+  const shouldFitInitialRadius = !!initialLocationCenter && paramZoom === null
+
+  // Only show the "you are here" pin when the location came from GPS/IP —
+  // not for URL params, snapshot, account-ZIP centering, or the US default.
   const shouldUseUserLocation =
     !paramCenter && !needsGeocode && !snapshotViewport && !accountZipCenter && !!geoCenter
   const userLocation = shouldUseUserLocation ? geoCenter : null
@@ -1410,13 +1411,12 @@ export function MapSearchView() {
             </AdvancedMarker>
           )}
 
-          {/* Fit the camera to a 2-mile radius around the user's location.
-              Runs once after the map mounts so the framing adapts to the actual
-              container size (mobile vs. desktop split). */}
-          {userLocation && paramZoom === null && (
+          {/* Fit the camera to a 10-mile radius around the initial location.
+              Runs once after the map mounts so the framing adapts to viewport size. */}
+          {shouldFitInitialRadius && initialLocationCenter && (
             <FitToRadius
-              center={userLocation}
-              radiusMiles={GEOLOCATION_RADIUS_MILES}
+              center={initialLocationCenter}
+              radiusMiles={INITIAL_VIEW_RADIUS_MILES}
               onFitted={onBoundsChanged}
             />
           )}
