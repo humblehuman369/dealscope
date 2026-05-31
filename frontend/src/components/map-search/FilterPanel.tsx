@@ -666,9 +666,9 @@ export function FilterPanel({
                 color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.body : 'var(--text-secondary)',
               }}
             >
-              Was listed but didn&apos;t sell (expired or withdrawn) — a motivated-seller signal.
-              RentCast delisted records (last 120 days), cross-checked against live Zillow
-              listings to drop any back on the market or already sold.
+              Off-market homes that were listed but didn&apos;t sell (expired, withdrawn,
+              cancelled, delisted) — a motivated-seller signal. Each candidate is verified
+              live on Zillow and dropped if it&apos;s back on the market or already sold.
             </p>
           </div>
           <PillButton

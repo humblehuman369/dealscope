@@ -55,6 +55,28 @@ EXPIRED_MAX_AGE_DAYS = 120
 # AXESSO is slow); keeps it from blowing the request budget → gateway 500.
 RECENT_RESALE_TIMEOUT_S = 12.0
 
+# Per-property expired validation: each delisted candidate gets a current-status
+# lookup on Zillow. Bounded by concurrency + per-call timeout + a candidate cap
+# so the (many, slow) lookups can't blow the request budget.
+EXPIRED_VALIDATION_CONCURRENCY = 10
+EXPIRED_VALIDATION_TIMEOUT_S = 6.0
+EXPIRED_VALIDATION_MAX_CANDIDATES = 60
+
+# Zillow current-status tokens that mean a delisted candidate is back on the
+# market or already sold → NOT an off-market lead. Matched as substrings against
+# an uppercased, separator-stripped status so "FOR_SALE"/"ForSale", "RECENTLY_SOLD"
+# /"RecentlySold", "PENDING", etc. all hit. ("ACTIVE" is intentionally excluded —
+# it would substring-match "INACTIVE".)
+_EXPIRED_DISQUALIFYING_STATUS_TOKENS: tuple[str, ...] = (
+    "FORSALE",
+    "FORRENT",
+    "PENDING",
+    "COMINGSOON",
+    "CONTINGENT",
+    "BACKUP",
+    "SOLD",
+)
+
 # Foreclosure / auction / pre-FC map inventory: Zillow (AXESSO) only when the user
 # asks exclusively for these buckets—RentCast labels and staleness are skipped.
 DISTRESSED_ONLY_STATUSES: frozenset[str] = frozenset(
@@ -550,43 +572,21 @@ class MapSearchService:
         # expired/withdrawn lead if it DIDN'T sell. Cross-check against an
         # independent recently-sold source (Zillow) and drop any expired row that
         # actually closed. Best-effort: if validation is unavailable, rows are kept.
-        expired_candidates = (
-            "expired" in requested_statuses
-            and self.zillow
-            and any(normalize_listing_status(i.listing_status) == "expired" for i in listings)
-        )
-        if expired_candidates:
-            # RentCast's "Inactive" flag lags reality — many delisted records are
-            # actually back on the market or already sold. Validate candidates
-            # against fresh Zillow data (run concurrently, each bounded) and drop
-            # any that Zillow shows as CURRENTLY for sale or RECENTLY sold. Only
-            # paid for when there are expired candidates to validate; if a check
-            # is unavailable its rows are kept (fail-safe).
-            resale_index, active_keys = await asyncio.gather(
-                self._fetch_recent_resales(center_lat, center_lng, radius),
-                self._fetch_active_address_index(center_lat, center_lng, radius, req),
-            )
-            exclude_keys: set[str] = set()
-            if resale_index:
-                exclude_keys |= set(resale_index)
-            if active_keys:
-                exclude_keys |= active_keys
-            if exclude_keys:
-                before_excl = len(listings)
-                listings = [
-                    item
-                    for item in listings
-                    if not (
-                        normalize_listing_status(item.listing_status) == "expired"
-                        and self._addr_match_key(item.address) in exclude_keys
-                    )
-                ]
-                dropped = before_excl - len(listings)
-                if dropped:
-                    logger.info(
-                        "Expired filter: dropped %d stale rows (currently listed or recently sold)",
-                        dropped,
-                    )
+        if "expired" in requested_statuses and self.zillow:
+            # RentCast's "Inactive" flag lags reality — delisted records are often
+            # back on the market or already sold. Validate each candidate's CURRENT
+            # status directly on Zillow (per-property address lookup) and keep only
+            # the ones that are NOT relisted or sold — the genuine off-market leads.
+            expired_rows = [i for i in listings if normalize_listing_status(i.listing_status) == "expired"]
+            if expired_rows:
+                others = [i for i in listings if normalize_listing_status(i.listing_status) != "expired"]
+                kept = await self._filter_expired_not_relisted(expired_rows)
+                listings = others + kept
+                logger.info(
+                    "Expired validation: %d candidates → %d not relisted/sold",
+                    len(expired_rows),
+                    len(kept),
+                )
 
         if req.polygon:
             listings = [item for item in listings if _point_in_polygon(item.latitude, item.longitude, req.polygon)]
@@ -944,36 +944,66 @@ class MapSearchService:
             logger.exception("RentCast expired (inactive) listing fetch failed")
             return []
 
-    async def _fetch_active_address_index(
-        self,
-        center_lat: float,
-        center_lng: float,
-        radius_miles: float,
-        req: MapSearchRequest,
-    ) -> set[str] | None:
-        """Address keys of properties CURRENTLY for sale on Zillow in the viewport.
+    @staticmethod
+    def _extract_current_status(resp: Any) -> str | None:
+        """Pull the current listing status from a Zillow search-by-address response."""
+        if resp is None or not getattr(resp, "success", False) or not getattr(resp, "data", None):
+            return None
+        data = resp.data
+        if isinstance(data, list):
+            data = data[0] if data else None
+        if not isinstance(data, dict):
+            return None
+        return data.get("homeStatus") or data.get("keystoneHomeStatus") or data.get("listingStatus")
 
-        RentCast's "Inactive" flag lags reality — many delisted records are
-        actually back on the market. This fresh Zillow forSale snapshot lets the
-        expired filter drop those false positives. Bounded; returns None when
-        unavailable so callers keep rows rather than over-dropping.
+    @classmethod
+    def _is_relisted_or_sold(cls, status: str | None) -> bool:
+        """True when a Zillow status means the property is back on market or sold."""
+        if not status:
+            return False
+        s = status.upper().replace("_", "").replace(" ", "")
+        return any(tok in s for tok in _EXPIRED_DISQUALIFYING_STATUS_TOKENS)
+
+    async def _filter_expired_not_relisted(self, candidates: list[MapListing]) -> list[MapListing]:
+        """Keep only delisted candidates that Zillow shows as NOT relisted or sold.
+
+        For each candidate we look up its CURRENT status on Zillow by address and
+        drop it if it's back on the market (for sale / pending / coming soon /
+        contingent) or sold — leaving the genuinely off-market "listed but didn't
+        sell, not relisted" set the user is after.
+
+        Bounded by concurrency, a per-call timeout, and a candidate cap so the
+        per-property lookups can't blow the request budget. Lookups that fail are
+        kept (not *confirmed* relisted).
         """
-        if not self.zillow:
-            return None
-        try:
-            rows = await asyncio.wait_for(
-                self._fetch_zillow(center_lat, center_lng, radius_miles, "forSale", req, None),
-                timeout=RECENT_RESALE_TIMEOUT_S,
+        if not self.zillow or not candidates:
+            return candidates
+
+        to_check = candidates[:EXPIRED_VALIDATION_MAX_CANDIDATES]
+        if len(candidates) > EXPIRED_VALIDATION_MAX_CANDIDATES:
+            logger.info(
+                "Expired validation capped at %d of %d candidates (zoom in to validate the rest)",
+                EXPIRED_VALIDATION_MAX_CANDIDATES,
+                len(candidates),
             )
-        except (TimeoutError, asyncio.TimeoutError):
-            logger.warning("Expired active cross-check timed out — skipping (rows kept)")
-            return None
-        except Exception:
-            logger.exception("Expired active cross-check failed")
-            return None
-        keys = {k for k in (self._addr_match_key(r.address) for r in rows) if k}
-        logger.info("Expired active cross-check: %d currently-listed addresses in viewport", len(keys))
-        return keys
+        semaphore = asyncio.Semaphore(EXPIRED_VALIDATION_CONCURRENCY)
+
+        async def _keep(candidate: MapListing) -> MapListing | None:
+            async with semaphore:
+                try:
+                    resp = await asyncio.wait_for(
+                        self.zillow.search_by_address(candidate.address),
+                        timeout=EXPIRED_VALIDATION_TIMEOUT_S,
+                    )
+                except (TimeoutError, asyncio.TimeoutError):
+                    return candidate  # couldn't verify → not confirmed relisted → keep
+                except Exception:
+                    logger.debug("Expired validation lookup failed for %s", candidate.address)
+                    return candidate
+            return None if self._is_relisted_or_sold(self._extract_current_status(resp)) else candidate
+
+        results = await asyncio.gather(*[_keep(c) for c in to_check])
+        return [c for c in results if c is not None]
 
     # ─── Owner tenure (RentCast property records) ──────────────────────────
 
