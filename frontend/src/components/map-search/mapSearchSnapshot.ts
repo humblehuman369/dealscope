@@ -29,7 +29,7 @@ export type MapSnapshotV1 = {
   // Stored as `[lat, lng]` pairs to match `polygon` shape used inside
   // `useMapSearch` and the map's drawing-manager output.
   polygon: number[][] | null
-  mobileView: 'map' | 'list' | null
+  viewMode: 'map' | 'list' | null
 }
 
 function isFiniteNumber(v: unknown): v is number {
@@ -64,7 +64,7 @@ function sanitizeFilters(input: unknown): Partial<MapSearchFilters> | null {
   return input as Partial<MapSearchFilters>
 }
 
-function sanitizeMobileView(input: unknown): 'map' | 'list' | null {
+function sanitizeViewMode(input: unknown): 'map' | 'list' | null {
   return input === 'map' || input === 'list' ? input : null
 }
 
@@ -73,7 +73,7 @@ export function readMapSnapshot(): MapSnapshotV1 | null {
   try {
     const raw = sessionStorage.getItem(MAP_SNAPSHOT_KEY)
     if (!raw) return null
-    const parsed = JSON.parse(raw) as Partial<MapSnapshotV1> | null
+    const parsed = JSON.parse(raw) as Partial<MapSnapshotV1 & { mobileView?: unknown }> | null
     if (!parsed || parsed.v !== SNAPSHOT_VERSION) return null
     return {
       v: SNAPSHOT_VERSION,
@@ -81,7 +81,7 @@ export function readMapSnapshot(): MapSnapshotV1 | null {
       viewport: sanitizeViewport(parsed.viewport),
       filters: sanitizeFilters(parsed.filters),
       polygon: sanitizePolygon(parsed.polygon),
-      mobileView: sanitizeMobileView(parsed.mobileView),
+      viewMode: sanitizeViewMode(parsed.viewMode ?? parsed.mobileView),
     }
   } catch {
     return null
@@ -91,7 +91,7 @@ export function readMapSnapshot(): MapSnapshotV1 | null {
 /**
  * Read existing snapshot, merge in `partial`, persist.
  *
- * Each owner (MapSearchView writes viewport / mobileView, useMapSearch
+ * Each owner (MapSearchView writes viewport / viewMode, useMapSearch
  * writes filters / polygon) calls this with only its slice — the merge
  * preserves slices owned by the other writers.
  */
@@ -105,8 +105,7 @@ export function writeMapSnapshot(partial: Partial<Omit<MapSnapshotV1, 'v' | 'ts'
       viewport: 'viewport' in partial ? (partial.viewport ?? null) : (existing?.viewport ?? null),
       filters: 'filters' in partial ? (partial.filters ?? null) : (existing?.filters ?? null),
       polygon: 'polygon' in partial ? (partial.polygon ?? null) : (existing?.polygon ?? null),
-      mobileView:
-        'mobileView' in partial ? (partial.mobileView ?? null) : (existing?.mobileView ?? null),
+      viewMode: 'viewMode' in partial ? (partial.viewMode ?? null) : (existing?.viewMode ?? null),
     }
     sessionStorage.setItem(MAP_SNAPSHOT_KEY, JSON.stringify(next))
   } catch {

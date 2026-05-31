@@ -22,8 +22,6 @@ import {
   Loader2,
   Home,
   MousePointerClick,
-  List,
-  MapIcon,
   Check,
   Sun,
   Moon,
@@ -35,7 +33,9 @@ import type { MapListing } from '@/lib/api'
 import { markerColorForCategory, type DealCategory, type DealSignalResult } from '@/lib/dealSignal'
 import { FilterPanel } from './FilterPanel'
 import { PropertyPreviewCard } from './PropertyPreviewCard'
-import { PropertyCardList } from './PropertyCardList'
+import { PropertyListView } from './PropertyListView'
+import { MapViewModeToggle } from './MapViewModeToggle'
+import { buildExportRows, exportListingsCsv, exportListingsExcel } from './mapSearchExport'
 import { GeocodedPrompt, type OffMarketPreview } from './GeocodedPrompt'
 import { NeighborhoodCard } from './NeighborhoodCard'
 import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
@@ -785,7 +785,7 @@ export function MapSearchView() {
   // arriving via a deep link with explicit lat/lng or `label` is treated as a
   // fresh entry, and we clear the snapshot so stale filters/polygon don't hide
   // listings near the new location. SSR returns null (no sessionStorage); the
-  // consumed state (initialCenter / initialZoom / mobileView) only paints after
+  // consumed state (initialCenter / initialZoom / viewMode) only paints after
   // the loading spinner exits, so the server-vs-client divergence is invisible
   // to React's hydration check.
   const initialSnapshot = useMemo(() => {
@@ -922,17 +922,27 @@ export function MapSearchView() {
   const [activeLabel] = useState<string | null>(locationLabel)
   const [showLabel, setShowLabel] = useState(!!locationLabel)
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
-  // Mobile view tab — restored from the tab-session snapshot when present so
+  // Map/list view — restored from the tab-session snapshot when present so
   // the user lands back on whichever view they were last using.
-  const [mobileView, setMobileView] = useState<'map' | 'list'>(initialSnapshot?.mobileView ?? 'map')
+  const [viewMode, setViewMode] = useState<'map' | 'list'>(initialSnapshot?.viewMode ?? 'map')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
 
-  // Persist mobile view changes to the snapshot. Fires on mount with the
+  // Persist view mode changes to the snapshot. Fires on mount with the
   // current value (no-op write when the snapshot already matches) and on
-  // every subsequent toggle, including the implicit `setMobileView('map')`
-  // calls from card / search selection handlers.
+  // every subsequent toggle.
   useEffect(() => {
-    writeMapSnapshot({ mobileView })
-  }, [mobileView])
+    writeMapSnapshot({ viewMode })
+  }, [viewMode])
+
+  // Drop selections for listings that are no longer in the current result set.
+  useEffect(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === 0) return prev
+      const listingIds = new Set(listings.map((l) => l.id))
+      const next = new Set([...prev].filter((id) => listingIds.has(id)))
+      return next.size === prev.size ? prev : next
+    })
+  }, [listings])
 
   const panToRef = useRef<((lat: number, lng: number, zoom?: number) => void) | null>(null)
   const mapInstanceRef = useRef<google.maps.Map | null>(null)
@@ -1089,17 +1099,51 @@ export function MapSearchView() {
     }
   }, [isDrawing, handleClearPolygon])
 
-  const handleCardSelect = useCallback(
+  const handleListSelect = useCallback(
     (listing: MapListing) => {
       setSelectedListing(listing)
       clearGeocode()
-      if (panToRef.current) {
-        panToRef.current(listing.latitude, listing.longitude)
-      }
-      setMobileView('map')
     },
     [clearGeocode],
   )
+
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
+
+  const handleToggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === listings.length) return new Set()
+      return new Set(listings.map((l) => l.id))
+    })
+  }, [listings])
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedIds(new Set())
+  }, [])
+
+  const getExportListings = useCallback(() => {
+    if (selectedIds.size === 0) return listings
+    return listings.filter((l) => selectedIds.has(l.id))
+  }, [listings, selectedIds])
+
+  const handleExportCsv = useCallback(() => {
+    const rows = buildExportRows(getExportListings(), dealSignals)
+    exportListingsCsv(rows)
+  }, [getExportListings, dealSignals])
+
+  const handleExportExcel = useCallback(async () => {
+    const rows = buildExportRows(getExportListings(), dealSignals)
+    await exportListingsExcel(rows)
+  }, [getExportListings, dealSignals])
 
   const handleMarkerSelect = useCallback(
     (listing: MapListing | null) => {
@@ -1183,7 +1227,7 @@ export function MapSearchView() {
 
       // Update the location-confirmation toast so the user sees a quick
       // "Showing {label}" pill, mirroring URL-driven navigations.
-      setMobileView('map')
+      setViewMode('map')
     },
     [clearGeocode],
   )
@@ -1552,66 +1596,42 @@ export function MapSearchView() {
           </div>
         </div>
       )}
-    </div>
-  )
 
-  const listSection = (
-    <div
-      className="h-full"
-      style={{
-        backgroundColor: 'var(--surface-base)',
-        borderLeft: '1px solid var(--border-subtle)',
-      }}
-    >
-      <PropertyCardList
-        listings={listings}
-        dealSignals={dealSignals}
-        selectedId={selectedListing?.id ?? null}
-        onSelectListing={handleCardSelect}
-        isLoading={isLoading}
-        activeStatuses={filters.listing_statuses}
-        onResetStatuses={() => updateFilters({ listing_statuses: [] })}
-        sortBy={filters.sort_by}
-      />
+      {/* Map / List view toggle — bottom center on all viewports */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-auto pb-safe">
+        <MapViewModeToggle
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          listingCount={listings.length}
+        />
+      </div>
     </div>
   )
 
   return (
     <div className="w-full h-full" style={{ backgroundColor: 'var(--surface-base)' }}>
-      {/* Desktop: split panel */}
-      <div className="hidden md:flex w-full h-full">
-        <div className="w-[60%] h-full">{mapSection}</div>
-        <div className="w-[40%] h-full">{listSection}</div>
-      </div>
-
-      {/* Mobile: toggle between map and list */}
-      <div className="md:hidden w-full h-full relative">
-        {mobileView === 'map' ? mapSection : listSection}
-
-        {/* Mobile view toggle */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
-          <button
-            onClick={() => setMobileView(mobileView === 'map' ? 'list' : 'map')}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold shadow-xl transition-colors"
-            style={{
-              backgroundColor: 'var(--accent-sky)',
-              color: '#fff',
-            }}
-          >
-            {mobileView === 'map' ? (
-              <>
-                <List size={16} />
-                View List ({listings.length})
-              </>
-            ) : (
-              <>
-                <MapIcon size={16} />
-                View Map
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+      {viewMode === 'map' ? (
+        mapSection
+      ) : (
+        <PropertyListView
+          listings={listings}
+          dealSignals={dealSignals}
+          selectedListingId={selectedListing?.id ?? null}
+          onSelectListing={handleListSelect}
+          isLoading={isLoading}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onToggleSelectAll={handleToggleSelectAll}
+          onClearSelection={handleClearSelection}
+          onExportCsv={handleExportCsv}
+          onExportExcel={handleExportExcel}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          activeStatuses={filters.listing_statuses}
+          onResetStatuses={() => updateFilters({ listing_statuses: [] })}
+          sortBy={filters.sort_by}
+        />
+      )}
     </div>
   )
 }
