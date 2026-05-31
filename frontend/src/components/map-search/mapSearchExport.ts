@@ -16,11 +16,10 @@ export type MapListingExportRow = {
   'Days on Market': string
   'Year Built': string
   'Deal Signal': string
-  'Owner Years': string
-  'Owner Occupied': string
-  Source: string
   Latitude: string
   Longitude: string
+  'Owner Years': string
+  'Owner Occupied': string
 }
 
 const EXPORT_COLUMNS: (keyof MapListingExportRow)[] = [
@@ -38,11 +37,10 @@ const EXPORT_COLUMNS: (keyof MapListingExportRow)[] = [
   'Days on Market',
   'Year Built',
   'Deal Signal',
-  'Owner Years',
-  'Owner Occupied',
-  'Source',
   'Latitude',
   'Longitude',
+  'Owner Years',
+  'Owner Occupied',
 ]
 
 function formatExportPrice(price: number | null): string {
@@ -81,11 +79,10 @@ export function buildExportRows(
       'Days on Market': listing.days_on_market != null ? String(listing.days_on_market) : '',
       'Year Built': listing.year_built != null ? String(listing.year_built) : '',
       'Deal Signal': signal?.label ?? '',
-      'Owner Years': listing.owner_years != null ? String(Math.round(listing.owner_years)) : '',
-      'Owner Occupied': formatOwnerOccupied(listing.owner_occupied),
-      Source: listing.source,
       Latitude: String(listing.latitude),
       Longitude: String(listing.longitude),
+      'Owner Years': listing.owner_years != null ? String(Math.round(listing.owner_years)) : '',
+      'Owner Occupied': formatOwnerOccupied(listing.owner_occupied),
     }
   })
 }
