@@ -34,6 +34,11 @@ MOTIVATED_SELLER_CONCURRENCY = 8
 # owner-tenure window in years into RentCast's saleDateRange (days-ago) filter.
 DAYS_PER_YEAR = 365.25
 
+# Wide "ever sold" saleDateRange (~100 years). RentCast only returns FULL property
+# records (owner / ownerOccupied / lastSaleDate) when a saleDateRange is present;
+# used for occupancy-only searches that have no tenure window.
+OWNER_RECORDS_ANY_TENURE_RANGE = "*:36500"
+
 # ─── Listing status canonicalization ─────────────────────────────────────
 # Mirrors frontend/src/lib/dealSignal.ts :: STATUS_MAP. Keep in sync; if these
 # drift the user-visible filter and the server-side filter will disagree.
@@ -223,6 +228,7 @@ def _build_cache_key(req: MapSearchRequest) -> str:
             "mss": req.motivated_seller_search,
             "otmin": req.owner_tenure_min_years,
             "otmax": req.owner_tenure_max_years,
+            "occ": req.owner_occupancy,
             "lim": req.limit,
             "off": req.offset,
         },
@@ -347,10 +353,12 @@ class MapSearchService:
         radius = _viewport_radius_miles(req.north, req.south, req.east, req.west)
 
         motivated_seller_mode = req.motivated_seller_search
-        owner_tenure_mode = req.owner_tenure_min_years is not None
+        # Owner-records mode: RentCast property-records lead search, driven by an
+        # owner-tenure window and/or an owner-occupancy (absentee) filter.
+        owner_records_mode = req.owner_tenure_min_years is not None or req.owner_occupancy is not None
 
         # Decide grid size based on viewport radius
-        if motivated_seller_mode or owner_tenure_mode:
+        if motivated_seller_mode or owner_records_mode:
             grid_size = 1
         elif radius > 100:
             grid_size = 3  # 9 query points for state-level views
@@ -400,11 +408,12 @@ class MapSearchService:
                 raw_source_totals = len(motivated_rows)
                 for item in motivated_rows:
                     self._merge_listing_into(listings_by_addr, item)
-        elif owner_tenure_mode:
+        elif owner_records_mode:
             logger.info(
-                "Map search owner-tenure mode: RentCast property records, tenure=%s-%s yrs",
+                "Map search owner-records mode: RentCast property records, tenure=%s-%s yrs, occupancy=%s",
                 req.owner_tenure_min_years,
                 req.owner_tenure_max_years,
+                req.owner_occupancy,
             )
             # Fetch long-tenure candidates (RentCast records) and an independent
             # recently-sold set (Zillow) concurrently. The latter validates that
@@ -606,7 +615,7 @@ class MapSearchService:
         # also dropped here. Skipped in owner-tenure mode, whose off-market
         # property records are an intentionally distinct (non-listing)
         # inventory that doesn't map onto the for-sale status buckets.
-        if not owner_tenure_mode:
+        if not owner_records_mode:
             listings = [item for item in listings if normalize_listing_status(item.listing_status) in requested_statuses]
 
         # Estimate total: if every sub-query returned its limit, there are
@@ -1030,19 +1039,28 @@ class MapSearchService:
         center_lng: float,
         radius_miles: float,
     ) -> list[MapListing]:
-        """Fetch off-market property records whose owner tenure matches the window.
+        """Fetch off-market property records for owner-tenure / absentee lead search.
 
-        Uses RentCast's ``/properties`` records endpoint (not the for-sale
-        listings endpoint) filtered by ``saleDateRange``, surfacing long-held
-        owners — a high-equity, off-market lead profile.
+        Uses RentCast's ``/properties`` records endpoint (not the for-sale listings
+        endpoint). A ``saleDateRange`` filter is ALWAYS sent — it's what makes
+        RentCast return full records (owner, ownerOccupied, lastSaleDate); without
+        it the bulk list is trimmed. When no tenure window is set we send a wide
+        "ever sold" range so an occupancy-only search still gets full records.
+
+        Owner-occupancy (absentee) is filtered CLIENT-SIDE: RentCast ignores the
+        ``ownerOccupied`` query param, so we filter on the returned field.
         """
-        if req.owner_tenure_min_years is None:
+        if req.owner_tenure_min_years is None and req.owner_occupancy is None:
             return []
 
-        sale_date_range = self._tenure_sale_date_range(
-            req.owner_tenure_min_years,
-            req.owner_tenure_max_years,
-        )
+        if req.owner_tenure_min_years is not None:
+            sale_date_range = self._tenure_sale_date_range(
+                req.owner_tenure_min_years,
+                req.owner_tenure_max_years,
+            )
+        else:
+            sale_date_range = OWNER_RECORDS_ANY_TENURE_RANGE
+
         radius = max(radius_miles, 0.5)
         try:
             resp = await self.rentcast.get_property_records(
@@ -1055,7 +1073,7 @@ class MapSearchService:
                 offset=req.offset,
             )
             if not resp.success or not resp.data:
-                logger.info("RentCast property records returned no data (tenure=%s)", sale_date_range)
+                logger.info("RentCast property records returned no data (saleDateRange=%s)", sale_date_range)
                 return []
 
             raw_records: list[dict[str, Any]] = resp.data if isinstance(resp.data, list) else [resp.data]
@@ -1064,7 +1082,19 @@ class MapSearchService:
                 for item in raw_records
                 if self._has_coords(item)
             ]
-            logger.info("RentCast property records: %d records (saleDateRange=%s)", len(results), sale_date_range)
+
+            # Client-side owner-occupancy filter (RentCast ignores the server param).
+            if req.owner_occupancy == "absentee":
+                results = [r for r in results if r.owner_occupied is False]
+            elif req.owner_occupancy == "owner_occupied":
+                results = [r for r in results if r.owner_occupied is True]
+
+            logger.info(
+                "RentCast property records: %d records (saleDateRange=%s, occupancy=%s)",
+                len(results),
+                sale_date_range,
+                req.owner_occupancy,
+            )
             return results
         except Exception:
             logger.exception("RentCast property records fetch failed (saleDateRange=%s)", sale_date_range)
@@ -1114,6 +1144,7 @@ class MapSearchService:
         last_sale_date = item.get("lastSaleDate")
         last_sale_price = item.get("lastSalePrice")
         owner_years = MapSearchService._owner_years_from_sale_date(last_sale_date)
+        owner_occupied = item.get("ownerOccupied")
 
         return MapListing(
             id=item.get("id") or f"rc-rec-{item.get('latitude')}-{item.get('longitude')}",
@@ -1138,6 +1169,7 @@ class MapSearchService:
             last_sale_date=str(last_sale_date) if last_sale_date else None,
             last_sale_price=last_sale_price,
             owner_years=owner_years,
+            owner_occupied=owner_occupied if isinstance(owner_occupied, bool) else None,
         )
 
     # ─── Owner-tenure validation (recent-resale guard) ─────────────────────

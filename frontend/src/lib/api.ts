@@ -247,6 +247,8 @@ export interface MapSearchRequest {
   owner_tenure_min_years?: number
   /** Max years the current owner has held. Omit for an open-ended window (e.g. 30+). */
   owner_tenure_max_years?: number
+  /** Owner-occupancy lead filter: 'absentee' (landlord) | 'owner_occupied' | undefined (any). */
+  owner_occupancy?: 'owner_occupied' | 'absentee'
 }
 
 export interface MapListing {
@@ -279,6 +281,8 @@ export interface MapListing {
   last_sale_price?: number | null
   /** Years since the last sale — current owner's tenure (owner-tenure mode) */
   owner_years?: number | null
+  /** Whether the owner occupies the property (false = absentee/landlord) */
+  owner_occupied?: boolean | null
   /** Tenure validation vs an independent recently-sold source: 'clear' | 'recent_resale' | null */
   tenure_confidence?: string | null
   /** ISO sale date from the independent source when tenure_confidence='recent_resale' */

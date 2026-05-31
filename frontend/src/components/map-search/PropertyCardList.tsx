@@ -219,6 +219,15 @@ function PropertyCard({
           </p>
         )}
 
+        {listing.owner_occupied != null && (
+          <p
+            className="text-[10px] leading-snug font-medium"
+            style={{ color: listing.owner_occupied ? 'var(--text-secondary)' : '#F59E0B' }}
+          >
+            {listing.owner_occupied ? 'Owner-occupied' : 'Absentee owner (landlord)'}
+          </p>
+        )}
+
         {listing.delisted_date && (
           <p
             className="text-[10px] leading-snug mt-1.5 font-medium"

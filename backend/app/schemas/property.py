@@ -1162,6 +1162,14 @@ class MapSearchRequest(BaseModel):
             "open-ended window (e.g. '30+ years')."
         ),
     )
+    owner_occupancy: Literal["owner_occupied", "absentee"] | None = Field(
+        default=None,
+        description=(
+            "Owner-occupancy lead filter (RentCast property-records mode). "
+            "'absentee' = owner does not live there (landlord/investor); "
+            "'owner_occupied' = owner lives there; None = any."
+        ),
+    )
 
 
 class MapListing(BaseModel):
@@ -1203,6 +1211,10 @@ class MapListing(BaseModel):
     owner_years: float | None = Field(
         default=None,
         description="Years since the last sale — i.e. how long the current owner has held the property.",
+    )
+    owner_occupied: bool | None = Field(
+        default=None,
+        description="Whether the owner occupies the property (False = absentee/landlord). Owner-records mode.",
     )
     tenure_confidence: str | None = Field(
         default=None,

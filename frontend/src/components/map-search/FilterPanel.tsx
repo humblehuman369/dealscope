@@ -97,6 +97,15 @@ const OWNER_TENURE_PRESETS: { label: string; min?: number; max?: number }[] = [
   { label: '30+ yrs', min: 30 },
 ]
 
+const OWNER_OCCUPANCY_OPTIONS: {
+  value: 'owner_occupied' | 'absentee' | undefined
+  label: string
+}[] = [
+  { value: undefined, label: 'Any' },
+  { value: 'absentee', label: 'Absentee' },
+  { value: 'owner_occupied', label: 'Owner-occupied' },
+]
+
 const DOM_OPTIONS: { value: number | undefined; label: string }[] = [
   { value: undefined, label: 'Any' },
   { value: 30, label: '30+' },
@@ -192,16 +201,28 @@ export function FilterPanel({
     [filters.listing_statuses, onChange],
   )
 
-  const ownerTenureActive = filters.owner_tenure_min_years != null
+  // Owner-records mode (RentCast property records) is active when a tenure window
+  // OR an occupancy filter is set.
+  const ownerRecordsActive = filters.owner_tenure_min_years != null || filters.owner_occupancy != null
 
   const selectOwnerTenure = useCallback(
     (min?: number, max?: number) => {
-      // Owner-tenure mode replaces standard map sources on the backend; keep it
+      // Owner-records mode replaces standard map sources on the backend; keep it
       // mutually exclusive with motivated-seller mode (which takes precedence).
       onChange({
         owner_tenure_min_years: min,
         owner_tenure_max_years: max,
         ...(min != null ? { motivated_seller_search: false } : {}),
+      })
+    },
+    [onChange],
+  )
+
+  const selectOwnerOccupancy = useCallback(
+    (value?: 'owner_occupied' | 'absentee') => {
+      onChange({
+        owner_occupancy: value,
+        ...(value != null ? { motivated_seller_search: false } : {}),
       })
     },
     [onChange],
@@ -216,7 +237,7 @@ export function FilterPanel({
     filters.listing_statuses.length > 0 ? true : undefined,
     filters.min_dom,
     filters.motivated_seller_search ? true : undefined,
-    ownerTenureActive ? true : undefined,
+    ownerRecordsActive ? true : undefined,
   ].filter(Boolean).length
 
   const hasDistressedStatusFilter = useMemo(
@@ -501,7 +522,11 @@ export function FilterPanel({
               onChange({
                 motivated_seller_search: next,
                 ...(next
-                  ? { owner_tenure_min_years: undefined, owner_tenure_max_years: undefined }
+                  ? {
+                      owner_tenure_min_years: undefined,
+                      owner_tenure_max_years: undefined,
+                      owner_occupancy: undefined,
+                    }
                   : {}),
               })
             }}
@@ -519,11 +544,11 @@ export function FilterPanel({
           </PillButton>
         </div>
 
-        {/* Owner Tenure — long-held owners (high equity, off-market) */}
+        {/* Owner Leads — off-market owners by tenure and/or occupancy (RentCast records) */}
         <div
           className="rounded-lg p-3 space-y-2"
           role="group"
-          aria-labelledby="owner-tenure-heading"
+          aria-labelledby="owner-leads-heading"
           style={
             mapLightChrome
               ? {
@@ -538,13 +563,13 @@ export function FilterPanel({
         >
           <div>
             <h3
-              id="owner-tenure-heading"
+              id="owner-leads-heading"
               className="text-xs font-semibold uppercase tracking-wider"
               style={{
                 color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.heading : 'var(--text-heading)',
               }}
             >
-              Owner Tenure
+              Owner Leads
             </h3>
             <p
               className="text-[10px] mt-1 leading-snug"
@@ -552,10 +577,18 @@ export function FilterPanel({
                 color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.body : 'var(--text-secondary)',
               }}
             >
-              Off-market homes by how long the current owner has held them — long-held owners
-              often carry high equity. Replaces standard map results while active.
+              Off-market homes by how long the owner has held (long tenure = likely high equity)
+              and whether they live there (absentee = landlord/investor). Replaces standard map
+              results while active.
             </p>
           </div>
+          {/* Tenure */}
+          <span
+            className="block text-[10px] font-semibold uppercase tracking-wider"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
+            Tenure
+          </span>
           <div className="flex flex-wrap gap-1">
             {OWNER_TENURE_PRESETS.map((preset) => (
               <PillButton
@@ -569,6 +602,26 @@ export function FilterPanel({
                 aria-label={`Owner tenure: ${preset.label}`}
               >
                 {preset.label}
+              </PillButton>
+            ))}
+          </div>
+          {/* Occupancy */}
+          <span
+            className="block text-[10px] font-semibold uppercase tracking-wider pt-1"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
+            Occupancy
+          </span>
+          <div className="flex flex-wrap gap-1">
+            {OWNER_OCCUPANCY_OPTIONS.map((opt) => (
+              <PillButton
+                key={opt.label}
+                mapLightChrome={mapLightChrome}
+                active={(filters.owner_occupancy ?? undefined) === opt.value}
+                onClick={() => selectOwnerOccupancy(opt.value)}
+                aria-label={`Owner occupancy: ${opt.label}`}
+              >
+                {opt.label}
               </PillButton>
             ))}
           </div>
