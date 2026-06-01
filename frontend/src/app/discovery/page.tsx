@@ -87,12 +87,10 @@ import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 import type { IQVerdictResponse } from '@dealscope/shared'
 
 function InsightItem({
-  num,
   title,
   detail,
   delay = 0,
 }: {
-  num: string
   title: ReactNode
   detail?: ReactNode
   delay?: number
@@ -116,24 +114,16 @@ function InsightItem({
       }}
     >
       <div
+        aria-hidden
         style={{
-          minWidth: 28,
-          height: 28,
+          width: 7,
+          height: 7,
           borderRadius: '50%',
-          background: 'var(--color-sky-dim)',
-          border: '1px solid var(--accent-sky)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 12,
-          fontWeight: 700,
-          color: 'var(--accent-sky)',
+          background: 'var(--color-cyan-electric)',
           flexShrink: 0,
-          marginTop: 1,
+          marginTop: 7,
         }}
-      >
-        {num}
-      </div>
+      />
       <div style={{ flex: 1, minWidth: 0 }}>
         <p
           style={{
@@ -312,7 +302,6 @@ function VerdictContent() {
   })
   const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false)
   const dataSourcesRef = useRef<HTMLDivElement>(null)
-  const [isDealGapDetailsOpen, setIsDealGapDetailsOpen] = useState(false)
   const [showDealGapVideo, setShowDealGapVideo] = useState(false)
   const [showAllInsights, setShowAllInsights] = useState(true)
 
@@ -2046,12 +2035,12 @@ function VerdictContent() {
                 />
               )}
 
-              {/* How this was calculated */}
+              {/* How Deal Gap works */}
               <div className="mt-3">
                 <button
                   type="button"
-                  onClick={() => setIsDealGapDetailsOpen((prev) => !prev)}
-                  className="flex items-center gap-1.5 text-[12px] font-semibold transition-colors"
+                  onClick={handleShowMethodology}
+                  className="flex items-center gap-1 text-[12px] font-semibold transition-colors"
                   style={{
                     color: 'var(--accent-sky)',
                     background: 'transparent',
@@ -2059,67 +2048,10 @@ function VerdictContent() {
                     padding: 0,
                   }}
                 >
-                  {isDealGapDetailsOpen ? 'Hide details' : 'How this was calculated'}
-                  <svg
-                    className={`w-3.5 h-3.5 transition-transform ${isDealGapDetailsOpen ? 'rotate-180' : ''}`}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
+                  <span style={{ fontSize: 12 }}>ⓘ</span>
+                  How Deal Gap works
                 </button>
               </div>
-
-              {/* Expandable details */}
-              {isDealGapDetailsOpen && (
-                <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                  <p
-                    style={{
-                      margin: '0 0 12px',
-                      fontSize: 13,
-                      lineHeight: 1.55,
-                      color: 'var(--text-secondary)',
-                      maxWidth: 620,
-                    }}
-                  >
-                    <strong>Income Value</strong> prices both your loan (mortgage payment as % of
-                    price) and your cash (required equity yield — default 8%, editable in defaults).
-                    Cash purchases are not treated as free capital, so Deal Gap stays meaningful
-                    when you pay in full.
-                  </p>
-                  <p
-                    style={{
-                      margin: '0 0 12px',
-                      fontSize: 13,
-                      lineHeight: 1.55,
-                      color: 'var(--text-secondary)',
-                      maxWidth: 620,
-                    }}
-                  >
-                    {effectiveDisplayPct > 0
-                      ? 'A positive DealGap means the asking price falls below your Target Buy \u2014 this deal cash flows at current terms. That\u2019s rare. Confirm your numbers in the Strategy tab before you move.'
-                      : 'A negative DealGap means the Market Price is higher than Income Value needed to produce a positive cash flow. To make this deal work requires negotiation and/or creative terms. See the breakdown in the Strategy tab and use Dealmaker to craft the optimal deal.'}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleShowMethodology}
-                    className="text-xs font-semibold flex items-center gap-1"
-                    style={{
-                      color: 'var(--text-body)',
-                      background: 'transparent',
-                      border: 'none',
-                      padding: 0,
-                    }}
-                  >
-                    <span style={{ fontSize: 12 }}>ⓘ</span>
-                    How Deal Gap works
-                  </button>
-                </div>
-              )}
 
               {/* Continue to Strategy CTA */}
               <button
@@ -2165,7 +2097,6 @@ function VerdictContent() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   <InsightItem
-                    num="1"
                     delay={0}
                     title={
                       isOffMarket ? (
@@ -2194,7 +2125,6 @@ function VerdictContent() {
                   {motivatedInsights.map((insight, i) => (
                     <InsightItem
                       key={`motivated-${i}`}
-                      num="!"
                       delay={40 + i * 40}
                       title={
                         <span style={{ fontWeight: 600 }}>
@@ -2208,7 +2138,6 @@ function VerdictContent() {
                     />
                   ))}
                   <InsightItem
-                    num="2"
                     delay={80}
                     title={
                       <span>
@@ -2222,7 +2151,6 @@ function VerdictContent() {
                     detail={`A ${fmtShort(discountAmount)} discount below market value for positive cash flow.`}
                   />
                   <InsightItem
-                    num="3"
                     delay={160}
                     title={
                       <span>
@@ -2251,7 +2179,6 @@ function VerdictContent() {
                   {showAllInsights && (
                     <>
                       <InsightItem
-                        num="4"
                         delay={0}
                         title={
                           <span>
@@ -2263,7 +2190,6 @@ function VerdictContent() {
                         detail="Use DealMaker to add a rehab budget and see the impact on returns."
                       />
                       <InsightItem
-                        num="5"
                         delay={0}
                         title={
                           <span>
@@ -2279,7 +2205,6 @@ function VerdictContent() {
                         (strMarketData.str_regulatory.rating === 'Negative' ||
                           strMarketData.str_regulatory.rating === 'Restricted') && (
                           <InsightItem
-                            num="6"
                             delay={0}
                             title={
                               <span>
@@ -2301,13 +2226,6 @@ function VerdictContent() {
                       {strMarketData?.str_market_stats?.yoy_occupancy_change != null &&
                         strMarketData.str_market_stats.yoy_occupancy_change < -20 && (
                           <InsightItem
-                            num={
-                              strMarketData?.str_regulatory?.rating &&
-                              (strMarketData.str_regulatory.rating === 'Negative' ||
-                                strMarketData.str_regulatory.rating === 'Restricted')
-                                ? '7'
-                                : '6'
-                            }
                             delay={0}
                             title={
                               <span>

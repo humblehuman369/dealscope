@@ -56,12 +56,10 @@ export function VerdictGapGuidance({
   dealGapPct,
   effectiveDisplayPct,
   isListed,
-  isAuthenticated,
   hasDataSources,
   onOpenDataSources,
   onNavigateStrategy,
   onDealMaker,
-  onSignIn,
   dealStructures,
   onOpenStructureInStrategy,
   onShowPitch,
@@ -191,33 +189,6 @@ export function VerdictGapGuidance({
           </ul>
         </>
       )}
-
-      {!isAuthenticated && (
-        <p
-          style={{
-            margin: '14px 0 0',
-            fontSize: 12,
-            lineHeight: 1.5,
-            color: 'var(--text-secondary)',
-          }}
-        >
-          <button
-            type="button"
-            onClick={onSignIn}
-            className="font-semibold underline-offset-2 hover:underline"
-            style={{
-              color: 'var(--accent-sky)',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-            }}
-          >
-            Sign in
-          </button>{' '}
-          to save scenarios and run the full Strategy worksheet with live sliders.
-        </p>
-      )}
     </div>
   )
 }
@@ -264,10 +235,8 @@ function StaticTip({ children }: { children: ReactNode }) {
 export function VerdictPositiveGuidance({
   effectiveDisplayPct,
   isListed,
-  isAuthenticated,
   onNavigateAppraiser,
   onNavigateStrategy,
-  onSignIn,
   dealStructures,
   onOpenStructureInStrategy,
   onShowPitch,
@@ -343,33 +312,6 @@ export function VerdictPositiveGuidance({
           )}
         </li>
       </ul>
-
-      {!isAuthenticated && (
-        <p
-          style={{
-            margin: '14px 0 0',
-            fontSize: 12,
-            lineHeight: 1.5,
-            color: 'var(--text-secondary)',
-          }}
-        >
-          <button
-            type="button"
-            onClick={onSignIn}
-            className="font-semibold underline-offset-2 hover:underline"
-            style={{
-              color: 'var(--accent-sky)',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-            }}
-          >
-            Sign in
-          </button>{' '}
-          to save scenarios and run the full Strategy worksheet with live sliders.
-        </p>
-      )}
     </div>
   )
 }
