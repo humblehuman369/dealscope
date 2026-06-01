@@ -1,7 +1,11 @@
 'use client'
 
+import { useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { TaxHistoryItem } from './types'
 import { formatCurrency } from './utils'
+
+const COLLAPSED_COUNT = 3
 
 interface TaxHistoryProps {
   history: TaxHistoryItem[]
@@ -14,6 +18,7 @@ interface TaxHistoryProps {
  * all financial columns use tabular-nums for clean column alignment.
  */
 export function TaxHistory({ history }: TaxHistoryProps) {
+  const [expanded, setExpanded] = useState(false)
   const cardStyle = {
     backgroundColor: 'var(--surface-base)',
     border: `1px solid var(--border-subtle)`,
@@ -36,14 +41,39 @@ export function TaxHistory({ history }: TaxHistoryProps) {
     )
   }
 
+  const canExpand = history.length > COLLAPSED_COUNT
+  const visibleHistory = expanded ? history : history.slice(0, COLLAPSED_COUNT)
+
   return (
     <div className="rounded-[14px] p-5" style={cardStyle}>
-      <div
-        className="text-xs font-bold uppercase tracking-[0.12em] mb-4"
-        style={{ color: 'var(--accent-sky)' }}
-      >
-        Tax History
-      </div>
+      {canExpand ? (
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-2 mb-4 text-left"
+          onClick={() => setExpanded((open) => !open)}
+          aria-expanded={expanded}
+        >
+          <span
+            className="text-xs font-bold uppercase tracking-[0.12em]"
+            style={{ color: 'var(--accent-sky)' }}
+          >
+            Tax History
+          </span>
+          <ChevronDown
+            size={16}
+            className={`flex-shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}
+            style={{ color: 'var(--text-secondary)' }}
+            aria-hidden
+          />
+        </button>
+      ) : (
+        <div
+          className="text-xs font-bold uppercase tracking-[0.12em] mb-4"
+          style={{ color: 'var(--accent-sky)' }}
+        >
+          Tax History
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[500px]">
@@ -82,8 +112,8 @@ export function TaxHistory({ history }: TaxHistoryProps) {
             </tr>
           </thead>
           <tbody>
-            {history.map((item, i) => (
-              <tr key={i} style={{ borderBottom: `1px solid var(--border-subtle)` }}>
+            {visibleHistory.map((item, i) => (
+              <tr key={`${item.year}-${i}`} style={{ borderBottom: `1px solid var(--border-subtle)` }}>
                 <td className="py-3 text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
                   {item.year}
                 </td>
@@ -128,6 +158,17 @@ export function TaxHistory({ history }: TaxHistoryProps) {
           </tbody>
         </table>
       </div>
+
+      {canExpand && !expanded && (
+        <button
+          type="button"
+          className="mt-3 text-xs font-semibold transition-colors hover:brightness-110"
+          style={{ color: 'var(--accent-sky)' }}
+          onClick={() => setExpanded(true)}
+        >
+          Show all {history.length} years
+        </button>
+      )}
     </div>
   )
 }

@@ -1,8 +1,11 @@
 'use client'
 
-import { Check } from 'lucide-react'
+import { useState } from 'react'
+import { Check, ChevronDown } from 'lucide-react'
 import { PriceHistoryItem } from './types'
 import { formatCurrency, formatDate } from './utils'
+
+const COLLAPSED_COUNT = 3
 
 interface PriceHistoryProps {
   history: PriceHistoryItem[]
@@ -16,6 +19,7 @@ interface PriceHistoryProps {
  * All financial values use font-weight 600 + tabular-nums.
  */
 export function PriceHistory({ history }: PriceHistoryProps) {
+  const [expanded, setExpanded] = useState(false)
   const cardStyle = {
     backgroundColor: 'var(--surface-base)',
     border: `1px solid var(--border-subtle)`,
@@ -38,22 +42,48 @@ export function PriceHistory({ history }: PriceHistoryProps) {
     )
   }
 
+  const canExpand = history.length > COLLAPSED_COUNT
+  const visibleHistory = expanded ? history : history.slice(0, COLLAPSED_COUNT)
+
   return (
     <div className="rounded-[14px] p-5" style={cardStyle}>
-      <div
-        className="text-xs font-bold uppercase tracking-[0.12em] mb-4"
-        style={{ color: 'var(--accent-sky)' }}
-      >
-        Price History
-      </div>
+      {canExpand ? (
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-2 mb-4 text-left"
+          onClick={() => setExpanded((open) => !open)}
+          aria-expanded={expanded}
+        >
+          <span
+            className="text-xs font-bold uppercase tracking-[0.12em]"
+            style={{ color: 'var(--accent-sky)' }}
+          >
+            Price History
+          </span>
+          <ChevronDown
+            size={16}
+            className={`flex-shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}
+            style={{ color: 'var(--text-secondary)' }}
+            aria-hidden
+          />
+        </button>
+      ) : (
+        <div
+          className="text-xs font-bold uppercase tracking-[0.12em] mb-4"
+          style={{ color: 'var(--accent-sky)' }}
+        >
+          Price History
+        </div>
+      )}
 
       <div className="space-y-0">
-        {history.map((item, i) => {
+        {visibleHistory.map((item, i) => {
           const isSold = item.event.toLowerCase().includes('sold')
+          const isLastVisible = i === visibleHistory.length - 1
           return (
-            <div key={i} className="relative flex items-start gap-4 pb-4">
+            <div key={`${item.date}-${item.event}-${i}`} className="relative flex items-start gap-4 pb-4">
               {/* Timeline Line */}
-              {i < history.length - 1 && (
+              {!isLastVisible && (
                 <div
                   className="absolute left-[11px] top-6 bottom-0 w-0.5"
                   style={{ backgroundColor: 'var(--border-subtle)' }}
@@ -117,6 +147,17 @@ export function PriceHistory({ history }: PriceHistoryProps) {
           )
         })}
       </div>
+
+      {canExpand && !expanded && (
+        <button
+          type="button"
+          className="mt-1 text-xs font-semibold transition-colors hover:brightness-110"
+          style={{ color: 'var(--accent-sky)' }}
+          onClick={() => setExpanded(true)}
+        >
+          Show all {history.length} events
+        </button>
+      )}
     </div>
   )
 }

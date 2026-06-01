@@ -141,12 +141,12 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
             address={fullAddress}
           />
 
-          {property.taxHistory && property.taxHistory.length > 0 && (
-            <TaxHistory history={property.taxHistory} />
-          )}
-
           {property.priceHistory && property.priceHistory.length > 0 && (
             <PriceHistory history={property.priceHistory} />
+          )}
+
+          {property.taxHistory && property.taxHistory.length > 0 && (
+            <TaxHistory history={property.taxHistory} />
           )}
 
           {property.zestimateHistory && property.zestimateHistory.length >= 2 && (
