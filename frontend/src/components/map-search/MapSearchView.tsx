@@ -990,7 +990,35 @@ export function MapSearchView() {
   } = useMapSearch()
 
   const [selectedListing, setSelectedListing] = useState<MapListing | null>(null)
-  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(true)
+  const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const autoCloseArmedRef = useRef(true)
+
+  const clearAutoClose = useCallback(() => {
+    if (autoCloseTimerRef.current) clearTimeout(autoCloseTimerRef.current)
+    autoCloseTimerRef.current = null
+  }, [])
+
+  const scheduleAutoClose = useCallback(() => {
+    clearAutoClose()
+    if (!autoCloseArmedRef.current) return
+    autoCloseTimerRef.current = setTimeout(() => {
+      setFiltersOpen(false)
+      autoCloseArmedRef.current = false
+    }, 5000)
+  }, [clearAutoClose])
+
+  useEffect(() => {
+    scheduleAutoClose()
+    return clearAutoClose
+  }, [scheduleAutoClose, clearAutoClose])
+
+  const toggleFilters = useCallback(() => {
+    autoCloseArmedRef.current = false
+    clearAutoClose()
+    setFiltersOpen((p) => !p)
+  }, [clearAutoClose])
+
   const [isDrawing, setIsDrawing] = useState(false)
   // Marker-color legend starts expanded so first-time users immediately see
   // what the colors mean. It auto-collapses the first time the user pans or
@@ -1535,13 +1563,15 @@ export function MapSearchView() {
           totalCount={totalCount}
           isLoading={isLoading}
           isOpen={filtersOpen}
-          onToggle={() => setFiltersOpen((p) => !p)}
+          onToggle={toggleFilters}
           canSaveDefaultView={!!user}
           onSaveDefaultView={handleSaveDefaultLocation}
           savingDefaultView={savingDefault}
           overlayChrome={overlaySurface}
           dockCollapsedInline={!filtersOpen}
           mapLightChrome={!isDarkMap}
+          onPanelMouseEnter={clearAutoClose}
+          onPanelMouseLeave={scheduleAutoClose}
         />
       </div>
 

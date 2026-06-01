@@ -37,6 +37,10 @@ interface FilterPanelProps {
    * map panel even if the global app theme is dark.
    */
   mapLightChrome?: boolean
+  /** Fired when the pointer enters the open filter panel (auto-close cancel). */
+  onPanelMouseEnter?: () => void
+  /** Fired when the pointer leaves the open filter panel (auto-close schedule). */
+  onPanelMouseLeave?: () => void
 }
 
 const LISTING_TYPES: { value: MapSearchFilters['listing_type']; label: string }[] = [
@@ -181,6 +185,8 @@ export function FilterPanel({
   overlayChrome = null,
   dockCollapsedInline = false,
   mapLightChrome = false,
+  onPanelMouseEnter,
+  onPanelMouseLeave,
 }: FilterPanelProps) {
   const handlePriceChange = useCallback(
     (field: 'min_price' | 'max_price', raw: string) => {
@@ -313,6 +319,8 @@ export function FilterPanel({
         backgroundColor: chrome?.backgroundColor ?? 'var(--surface-card)',
         border: `1px solid ${chrome?.borderColor ?? 'var(--border-default)'}`,
       }}
+      onMouseEnter={onPanelMouseEnter}
+      onMouseLeave={onPanelMouseLeave}
     >
       {/* Header */}
       <div
