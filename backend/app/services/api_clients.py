@@ -2092,33 +2092,35 @@ class DataNormalizer:
 
         normalized["price_history"] = events
 
-        # Count downward price-change events
-        reduction_count = sum(
-            1
-            for e in events
-            if e.get("event")
-            and "price" in str(e["event"]).lower()
-            and (e.get("price_change_rate") is not None and e["price_change_rate"] < 0)
-        )
-        normalized["price_reduction_count"] = reduction_count
+        # Count price cuts by comparing consecutive prices within the CURRENT
+        # listing cycle. AXESSO's ``priceChangeRate`` is unreliable (often 0.0
+        # even on real cuts), so we cannot count on it. We also restrict to the
+        # current cycle (from the most recent "Listed for sale" forward) so a
+        # prior rental cycle's price changes aren't counted as sale reductions.
+        cycle_end_idx = len(events) - 1  # default: whole history (no listing marker)
+        for idx, e in enumerate(events):  # events are most-recent-first
+            if "list" in str(e.get("event") or "").lower():
+                cycle_end_idx = idx
+                break
+        cycle_chron = list(reversed(events[: cycle_end_idx + 1]))  # oldest -> newest
 
-        # Total reduction: peak listed price vs latest listed price. Prefer
-        # explicit "Listed"/"Price change" events; fall back to all priced
-        # events when there aren't at least two of those.
-        listed_prices = [
-            e["price"]
-            for e in events
-            if e.get("price")
-            and e.get("event")
-            and any(tok in str(e["event"]).lower() for tok in ("list", "price"))
-        ]
-        if len(listed_prices) < 2:
-            listed_prices = [e["price"] for e in events if e.get("price")]
-        if len(listed_prices) >= 2:
-            peak = max(listed_prices)
-            latest = listed_prices[0]  # AXESSO returns most-recent first
-            if peak and peak > 0 and latest < peak:
-                normalized["total_price_reduction_pct"] = round((peak - latest) / peak, 4)
+        reduction_count = 0
+        peak_price: float | None = None
+        latest_price: float | None = None
+        prev_price: float | None = None
+        for e in cycle_chron:
+            p = e.get("price")
+            if p is None or p <= 0:
+                continue
+            if prev_price is not None and p < prev_price:
+                reduction_count += 1
+            prev_price = p
+            peak_price = p if peak_price is None else max(peak_price, p)
+            latest_price = p
+
+        normalized["price_reduction_count"] = reduction_count
+        if peak_price and latest_price and peak_price > 0 and latest_price < peak_price:
+            normalized["total_price_reduction_pct"] = round((peak_price - latest_price) / peak_price, 4)
 
     def _extract_ownership(
         self,

@@ -226,6 +226,32 @@ def test_extract_price_history_computes_reductions() -> None:
     assert normalized["total_price_reduction_pct"] == round((420000 - 380000) / 420000, 4)
 
 
+def test_extract_price_history_counts_cuts_when_rate_is_zero() -> None:
+    """Real AXESSO data: priceChangeRate is 0.0 even on genuine cuts, and an
+    older rental cycle must not be counted as sale reductions.
+    Mirrors zpid 46491558 (13587 77th Pl N)."""
+    from app.services.api_clients import DataNormalizer
+
+    normalizer = DataNormalizer()
+    normalized: dict = {}
+    axesso = {
+        "priceHistory": [
+            {"date": "2026-05-27", "event": "Price change", "price": 475000, "priceChangeRate": 0.0},
+            {"date": "2026-05-02", "event": "Price change", "price": 525000, "priceChangeRate": 0.0},
+            {"date": "2026-04-01", "event": "Listed for sale", "price": 574900, "priceChangeRate": 1.0},
+            {"date": "2022-10-20", "event": "Listing removed", "price": None, "priceChangeRate": 0.0},
+            {"date": "2022-09-30", "event": "Price change", "price": 3410, "priceChangeRate": 0.0},
+            {"date": "2022-09-21", "event": "Price change", "price": 3495, "priceChangeRate": 0.0},
+        ]
+    }
+    normalizer._extract_price_history(normalized, axesso)
+
+    # Two cuts in the current cycle (574900 -> 525000 -> 475000); the 2022
+    # rental cycle is excluded.
+    assert normalized["price_reduction_count"] == 2
+    assert normalized["total_price_reduction_pct"] == round((574900 - 475000) / 574900, 4)
+
+
 def test_extract_ownership_absentee_flag() -> None:
     from app.services.api_clients import DataNormalizer
 
