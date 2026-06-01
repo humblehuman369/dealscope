@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { School, BookOpen, GraduationCap, ExternalLink, ChevronDown } from 'lucide-react'
 import { SchoolInfo } from './types'
 
-const COLLAPSED_COUNT = 3
-
 interface NearbySchoolsProps {
   schools: SchoolInfo[]
 }
@@ -65,114 +63,101 @@ export function NearbySchools({ schools }: NearbySchoolsProps) {
     }
   }
 
-  const canExpand = schools.length > COLLAPSED_COUNT
-  const visibleSchools = expanded ? schools : schools.slice(0, COLLAPSED_COUNT)
-
   return (
     <div className="rounded-[14px] p-5" style={cardStyle}>
-      {canExpand ? (
-        <button
-          type="button"
-          className="flex w-full items-center justify-between gap-2 mb-4 text-left"
-          onClick={() => setExpanded((open) => !open)}
-          aria-expanded={expanded}
-        >
-          <span
-            className="text-xs font-bold uppercase tracking-[0.12em]"
-            style={{ color: 'var(--accent-sky)' }}
-          >
-            Nearby Schools
-          </span>
-          <ChevronDown
-            size={16}
-            className={`flex-shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}
-            style={{ color: 'var(--text-secondary)' }}
-            aria-hidden
-          />
-        </button>
-      ) : (
-        <div
-          className="text-xs font-bold uppercase tracking-[0.12em] mb-4"
+      <button
+        type="button"
+        className={`flex w-full items-center justify-between gap-2 text-left ${expanded ? 'mb-4' : ''}`}
+        onClick={() => setExpanded((open) => !open)}
+        aria-expanded={expanded}
+      >
+        <span
+          className="text-xs font-bold uppercase tracking-[0.12em]"
           style={{ color: 'var(--accent-sky)' }}
         >
           Nearby Schools
-        </div>
-      )}
+          {!expanded && (
+            <span className="font-semibold normal-case tracking-normal" style={{ color: 'var(--text-secondary)' }}>
+              {' '}
+              ({schools.length})
+            </span>
+          )}
+        </span>
+        <ChevronDown
+          size={16}
+          className={`flex-shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          style={{ color: 'var(--text-secondary)' }}
+          aria-hidden
+        />
+      </button>
 
-      <div className="space-y-3">
-        {visibleSchools.map((school, i) => {
-          const LevelIcon = getLevelIcon(school.level)
-          const ratingStyle = getSchoolRatingStyle(school.rating)
-          return (
-            <div
-              key={`${school.name}-${i}`}
-              className="flex items-center gap-4 p-3 rounded-xl transition-colors hover:bg-[var(--surface-card-hover)]"
-              style={{
-                backgroundColor: 'var(--surface-elevated)',
-                border: `1px solid var(--border-subtle)`,
-              }}
-            >
-              <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: 'var(--surface-elevated)' }}
-              >
-                <LevelIcon size={18} style={{ color: 'var(--text-secondary)' }} />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="text-sm font-semibold truncate"
-                    style={{ color: 'var(--text-heading)' }}
+      {expanded && (
+        <>
+          <div className="space-y-3">
+            {schools.map((school, i) => {
+              const LevelIcon = getLevelIcon(school.level)
+              const ratingStyle = getSchoolRatingStyle(school.rating)
+              return (
+                <div
+                  key={`${school.name}-${i}`}
+                  className="flex items-center gap-4 p-3 rounded-xl transition-colors hover:bg-[var(--surface-card-hover)]"
+                  style={{
+                    backgroundColor: 'var(--surface-elevated)',
+                    border: `1px solid var(--border-subtle)`,
+                  }}
+                >
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: 'var(--surface-elevated)' }}
                   >
-                    {school.name}
-                  </span>
-                  {school.link && (
-                    <a
-                      href={school.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-shrink-0 transition-colors hover:brightness-125"
-                      style={{ color: 'var(--accent-sky)' }}
-                    >
-                      <ExternalLink size={12} />
-                    </a>
-                  )}
-                </div>
-                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                  {school.type} · Grades {school.grades} · {school.distance} mi
-                </div>
-              </div>
+                    <LevelIcon size={18} style={{ color: 'var(--text-secondary)' }} />
+                  </div>
 
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0"
-                style={{
-                  backgroundColor: ratingStyle.bg,
-                  color: ratingStyle.color,
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {school.rating}
-              </div>
-            </div>
-          )
-        })}
-      </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-sm font-semibold truncate"
+                        style={{ color: 'var(--text-heading)' }}
+                      >
+                        {school.name}
+                      </span>
+                      {school.link && (
+                        <a
+                          href={school.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-shrink-0 transition-colors hover:brightness-125"
+                          style={{ color: 'var(--accent-sky)' }}
+                        >
+                          <ExternalLink size={12} />
+                        </a>
+                      )}
+                    </div>
+                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      {school.type} · Grades {school.grades} · {school.distance} mi
+                    </div>
+                  </div>
 
-      {canExpand && !expanded && (
-        <button
-          type="button"
-          className="mt-3 text-xs font-semibold transition-colors hover:brightness-110"
-          style={{ color: 'var(--accent-sky)' }}
-          onClick={() => setExpanded(true)}
-        >
-          Show all {schools.length} schools
-        </button>
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0"
+                    style={{
+                      backgroundColor: ratingStyle.bg,
+                      color: ratingStyle.color,
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
+                    {school.rating}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <p className="mt-3 text-[10px]" style={{ color: 'var(--text-secondary)' }}>
+            School ratings provided by GreatSchools. Ratings are on a scale of 1-10.
+          </p>
+        </>
       )}
-
-      <p className="mt-3 text-[10px]" style={{ color: 'var(--text-secondary)' }}>
-        School ratings provided by GreatSchools. Ratings are on a scale of 1-10.
-      </p>
     </div>
   )
 }
