@@ -3121,9 +3121,9 @@ function StrategyContent() {
                     text: (
                       <>
                         <strong style={{ color: 'var(--text-heading)' }}>
-                          Use Appraiser to Set Your Values
+                          Use Comps to Set Your Values
                         </strong>{' '}
-                        – Visit the Appraiser tab to confirm value, set the ARV and create your own
+                        – Visit the Comps tab to confirm value, set the ARV and create your own
                         appraisal report.
                       </>
                     ),

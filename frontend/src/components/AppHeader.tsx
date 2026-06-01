@@ -122,7 +122,7 @@ interface AppHeaderProps {
 const TABS: { id: AppTab; label: string }[] = [
   { id: 'analyze', label: 'Discovery' },
   { id: 'strategy', label: 'Strategy' },
-  { id: 'price-checker', label: 'Appraiser' },
+  { id: 'price-checker', label: 'Comps' },
   { id: 'deal-maker', label: 'DealMaker' },
   { id: 'estimator', label: 'Estimator' },
 ]

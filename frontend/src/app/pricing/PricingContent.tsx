@@ -168,7 +168,7 @@ const COMPARISON_DATA: ComparisonCategory[] = [
     name: 'Market & Comps',
     rows: [
       {
-        name: 'Appraiser — professional appraisal tool with sale & rental comps',
+        name: 'Comps — professional sale & rental comparables with adjusted valuation',
         free: false,
         pro: true,
       },
@@ -269,7 +269,7 @@ export default function PricingContent() {
     'Unlimited property analyses',
     'Full calculation breakdown — see every number behind Discovery',
     'Editable assumptions & stress testing — adjust rent, rates, and expenses',
-    'Appraiser — professional appraisal tool with sale & rental comps',
+    'Comps — professional sale & rental comparables with adjusted valuation',
     'Market Consensus engine — aggregate view across all data sources',
     'Sensitivity analysis — see how deal metrics shift across scenarios',
     'Interactive Map Search — browse and analyze listings on a map',

@@ -56,10 +56,10 @@ export const FAMILY_ACCENT: Record<StructureFamily, string> = {
 
 // In-summary tokens that should be rendered as clickable links to the matching
 // in-app tool. Keeps copy-side wording stable while letting product link to the
-// right surface (e.g. "Appraiser page" → /price-intel).
+// right surface (e.g. "Comps page" → /price-intel).
 const SUMMARY_LINKS: Array<{ token: string; href: string }> = [
-  { token: 'Appraiser page', href: '/price-intel' },
-  { token: 'Appraiser', href: '/price-intel' },
+  { token: 'Comps page', href: '/price-intel' },
+  { token: 'Comps', href: '/price-intel' },
   { token: 'Strategy worksheet', href: '/strategy' },
 ]
 

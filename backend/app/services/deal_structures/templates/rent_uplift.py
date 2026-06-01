@@ -125,7 +125,7 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         ],
         # Compact closing line — points the user to the deeper tool instead of
         # restating the math already shown above.
-        summary="Confirm local rent. Go to the Appraiser page in DealGapIQ.",
+        summary="Confirm local rent. Go to the Comps page in DealGapIQ.",
         levers=[
             StructureLever(
                 label="Target Rent",

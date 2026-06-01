@@ -275,7 +275,7 @@ export function VerdictPositiveGuidance({
         <li>
           <LeverButton onClick={onNavigateAppraiser}>
             <strong style={{ color: 'var(--text-heading)' }}>Verify rental values</strong> — use the
-            Appraiser tab to review local rental and sales comps in the neighborhood.
+            Comps tab to review local rental and sales comps in the neighborhood.
           </LeverButton>
         </li>
         <li>
