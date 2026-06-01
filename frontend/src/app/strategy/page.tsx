@@ -2970,7 +2970,7 @@ function StrategyContent() {
             >
               {/* Export links — inline with Next Steps. stopPropagation keeps a
                   link click from toggling the accordion. */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-6">
                 <button
                   type="button"
                   onClick={(e) => {
