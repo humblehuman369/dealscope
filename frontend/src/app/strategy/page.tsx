@@ -1014,13 +1014,10 @@ function StrategyContent() {
     }
   }, [])
 
-  const scrollStrategyToDealGapBar = useCallback(() => {
-    if (typeof window === 'undefined') return
-    const bar = document.getElementById('strategy-deal-gap-bar')
-    if (!bar) {
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-      return
-    }
+  // Distance from the viewport top to just under the sticky property address
+  // bar (safe-area inset + the live-measured address-bar height).
+  const measureStrategyAddressOffset = useCallback(() => {
+    if (typeof window === 'undefined') return 0
     const root = document.documentElement
     const addressH = parseFloat(
       getComputedStyle(root).getPropertyValue('--app-address-bar-height') || '0',
@@ -1037,11 +1034,35 @@ function StrategyContent() {
     } catch {
       /* ignore */
     }
-    const stickyTop = safeInset + addressH
+    return safeInset + addressH
+  }, [])
+
+  const scrollStrategyToDealGapBar = useCallback(() => {
+    if (typeof window === 'undefined') return
+    const bar = document.getElementById('strategy-deal-gap-bar')
+    if (!bar) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      return
+    }
+    const stickyTop = measureStrategyAddressOffset()
     const barDocTop = bar.getBoundingClientRect().top + window.scrollY
     const target = Math.max(0, barDocTop - stickyTop)
     window.scrollTo({ top: target, left: 0, behavior: 'instant' })
-  }, [])
+  }, [measureStrategyAddressOffset])
+
+  // After an Option is picked, bring its card to the top of view — directly
+  // under the sticky address bar + Deal Gap bar so it reads as the focus.
+  const scrollStrategyToOptionCard = useCallback(() => {
+    if (typeof window === 'undefined') return
+    const card = document.getElementById('strategy-option-card')
+    if (!card) return
+    const bar = document.getElementById('strategy-deal-gap-bar')
+    const barH = bar ? bar.getBoundingClientRect().height : 0
+    const stickyTop = measureStrategyAddressOffset() + barH
+    const cardDocTop = card.getBoundingClientRect().top + window.scrollY
+    const target = Math.max(0, cardDocTop - stickyTop - 8)
+    window.scrollTo({ top: target, left: 0, behavior: 'smooth' })
+  }, [measureStrategyAddressOffset])
 
   // Initial load: align Deal Gap bar under the sticky property address bar.
   const shouldScrollToDealGapBar =
@@ -1429,8 +1450,12 @@ function StrategyContent() {
         family: structure.family,
         path_index: idx + 1,
       })
+      // Wait for the Option card to mount/paint, then bring it to the top.
+      if (typeof window !== 'undefined') {
+        requestAnimationFrame(() => requestAnimationFrame(scrollStrategyToOptionCard))
+      }
     },
-    [scheduleRecalc, markWorksheetDirty],
+    [scheduleRecalc, markWorksheetDirty, scrollStrategyToOptionCard],
   )
 
   /**
@@ -3273,7 +3298,7 @@ function StrategyContent() {
                   ))}
                   </div>
                   {appliedPathEntry && (
-                    <div className="mt-3">
+                    <div id="strategy-option-card" className="mt-3 scroll-mt-2">
                       <PathOptionCard
                         structure={appliedPathEntry.structure}
                         index={appliedPathEntry.index}
