@@ -51,10 +51,12 @@ export function buildMotivatedSellerInsights(
   }
 
   // 3. Top detected motivation indicators (DOM, absentee, foreclosure, FSBO…)
-  //    Skip "Poor Condition" — already covered by the listing-language insight.
+  //    Skip indicators already covered above: "Poor Condition" (listing
+  //    language) and "Price Reductions" (the dedicated price-cut insight).
+  const coveredIndicators = new Set(['Poor Condition', 'Price Reductions'])
   if (motivation?.indicators?.length) {
     const top = motivation.indicators
-      .filter((i) => i.detected && i.score >= 60 && i.name !== 'Poor Condition')
+      .filter((i) => i.detected && i.score >= 60 && !coveredIndicators.has(i.name))
       .sort((a, b) => b.score - a.score)
       .slice(0, 2)
     const leverage = formatLeverage(motivation.negotiation_leverage)
