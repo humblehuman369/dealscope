@@ -45,10 +45,14 @@ import type { NeighborhoodOverview } from '@/lib/api'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
-// Initial zoom while the map mounts before `fitBounds` runs.
-// ~13 ≈ a ~10-mile-wide span on a typical desktop viewport (5 mi radius).
+// Initial zoom while the map mounts before the span fit runs.
 const INITIAL_VIEW_ZOOM = 13
-const INITIAL_VIEW_RADIUS_MILES = 5
+/** Full north–south span of the initial viewport (miles). */
+const INITIAL_VIEW_LAT_SPAN_MILES = 10
+/** Full east–west span on landscape / desktop (miles). */
+const INITIAL_VIEW_LNG_SPAN_MILES = 10
+/** Full east–west span on portrait mobile — half of landscape (miles). */
+const INITIAL_VIEW_LNG_SPAN_MILES_PORTRAIT = 5
 const MAP_ID = 'DEMO_MAP_ID'
 const MIN_ZOOM_FOR_GEOCODE = 13
 const HINT_DISMISSED_KEY = 'dealscope:map-click-hint-dismissed'
@@ -365,19 +369,32 @@ function LabelGeocoder({
   return null
 }
 
-/** Web Mercator zoom so a circle of `radiusMiles` fits the smaller map dimension. */
-function zoomLevelForRadiusMiles(
-  lat: number,
-  radiusMiles: number,
-  mapWidthPx: number,
-  mapHeightPx: number,
-): number {
-  const minDim = Math.max(Math.min(mapWidthPx, mapHeightPx), 1)
-  const diameterMeters = radiusMiles * 2 * 1609.344
-  const metersPerPixel = diameterMeters / minDim
-  const latRad = (lat * Math.PI) / 180
-  const zoom = Math.log2((156543.03392 * Math.cos(latRad)) / metersPerPixel)
-  return Math.min(21, Math.max(3, Math.round(zoom)))
+const MILES_PER_LAT_DEGREE = 69
+
+function milesToLatDegrees(miles: number): number {
+  return miles / MILES_PER_LAT_DEGREE
+}
+
+function milesToLngDegrees(miles: number, lat: number): number {
+  const cosLat = Math.cos((lat * Math.PI) / 180)
+  return miles / (MILES_PER_LAT_DEGREE * Math.max(cosLat, 0.01))
+}
+
+/** Target visible extent for the initial camera fit. */
+function initialViewSpansMiles(mapWidthPx: number, mapHeightPx: number): {
+  latSpan: number
+  lngSpan: number
+} {
+  if (mapHeightPx > mapWidthPx) {
+    return {
+      latSpan: INITIAL_VIEW_LAT_SPAN_MILES,
+      lngSpan: INITIAL_VIEW_LNG_SPAN_MILES_PORTRAIT,
+    }
+  }
+  return {
+    latSpan: INITIAL_VIEW_LAT_SPAN_MILES,
+    lngSpan: INITIAL_VIEW_LNG_SPAN_MILES,
+  }
 }
 
 function pushMapBounds(
@@ -398,38 +415,38 @@ function pushMapBounds(
   }, 200)
 }
 
-function applyRadiusFit(
+function applyViewSpanFit(
   map: google.maps.Map,
   center: { lat: number; lng: number },
-  radiusMiles: number,
   onFitted?: (bounds: { north: number; south: number; east: number; west: number }) => void,
 ): boolean {
   const div = map.getDiv()
   if (div.clientWidth < 50 || div.clientHeight < 50) return false
-  const zoom = zoomLevelForRadiusMiles(
-    center.lat,
-    radiusMiles,
-    div.clientWidth,
-    div.clientHeight,
+
+  const { latSpan, lngSpan } = initialViewSpansMiles(div.clientWidth, div.clientHeight)
+  const halfLat = milesToLatDegrees(latSpan / 2)
+  const halfLng = milesToLngDegrees(lngSpan / 2, center.lat)
+
+  const bounds = new google.maps.LatLngBounds(
+    { lat: center.lat - halfLat, lng: center.lng - halfLng },
+    { lat: center.lat + halfLat, lng: center.lng + halfLng },
   )
-  map.setCenter(center)
-  map.setZoom(zoom)
+  map.fitBounds(bounds, 0)
   pushMapBounds(map, onFitted)
   return true
 }
 
 /**
- * Fits the map viewport to a circular radius (in miles) around `center`.
- * Re-runs when the center or radius changes so async location resolution
+ * Fits the map viewport to a fixed mile span around `center`.
+ * Portrait: 10 mi tall × 5 mi wide. Landscape/desktop: 10 mi × 10 mi.
+ * Re-runs when the center changes so async location resolution
  * (e.g. saved ZIP arriving after GPS) can update the framing.
  */
-function FitToRadius({
+function FitInitialView({
   center,
-  radiusMiles,
   onFitted,
 }: {
   center: { lat: number; lng: number }
-  radiusMiles: number
   onFitted?: (bounds: { north: number; south: number; east: number; west: number }) => void
 }) {
   const map = useMap()
@@ -439,11 +456,13 @@ function FitToRadius({
 
   useEffect(() => {
     if (!map) return
-    const fitKey = `${center.lat.toFixed(5)},${center.lng.toFixed(5)},${radiusMiles}`
+    const div = map.getDiv()
+    const { latSpan, lngSpan } = initialViewSpansMiles(div.clientWidth, div.clientHeight)
+    const fitKey = `${center.lat.toFixed(5)},${center.lng.toFixed(5)},${latSpan},${lngSpan},${div.clientWidth}x${div.clientHeight}`
 
     const tryFit = (): boolean => {
       if (lastFittedKeyRef.current === fitKey) return true
-      const didFit = applyRadiusFit(map, center, radiusMiles, onFittedRef.current)
+      const didFit = applyViewSpanFit(map, center, onFittedRef.current)
       if (didFit) lastFittedKeyRef.current = fitKey
       return didFit
     }
@@ -454,6 +473,7 @@ function FitToRadius({
     // still be sizing — retry on idle and on resize until the fit lands.
     const idleListener = google.maps.event.addListenerOnce(map, 'idle', tryFit)
     const ro = new ResizeObserver(() => {
+      lastFittedKeyRef.current = null
       tryFit()
     })
     ro.observe(map.getDiv())
@@ -462,7 +482,7 @@ function FitToRadius({
       google.maps.event.removeListener(idleListener)
       ro.disconnect()
     }
-  }, [map, center.lat, center.lng, radiusMiles])
+  }, [map, center.lat, center.lng])
 
   return null
 }
@@ -608,7 +628,7 @@ function MapContent({
 
   // Auto-collapse the marker-color legend the first time the user actually
   // pans or zooms the map. We arm the listeners only after the first `idle`
-  // event so the initial camera setup (FitToRadius / LabelGeocoder / snapshot
+  // event so the initial camera setup (FitInitialView / LabelGeocoder / snapshot
   // restore) doesn't immediately collapse it on first paint. `dragstart` is
   // unambiguously user-initiated; `zoom_changed` covers both wheel zoom and
   // the +/- control once armed.
@@ -1470,14 +1490,10 @@ export function MapSearchView() {
             </AdvancedMarker>
           )}
 
-          {/* Fit the camera to a 5-mile radius around the initial location.
-              Runs once after the map mounts so the framing adapts to viewport size. */}
+          {/* Fit the camera to a fixed mile span around the initial location.
+              Portrait: 10×5 mi; landscape/desktop: 10×10 mi. */}
           {shouldFitInitialRadius && initialLocationCenter && (
-            <FitToRadius
-              center={initialLocationCenter}
-              radiusMiles={INITIAL_VIEW_RADIUS_MILES}
-              onFitted={onBoundsChanged}
-            />
+            <FitInitialView center={initialLocationCenter} onFitted={onBoundsChanged} />
           )}
 
           {needsGeocode && apiKey && (
