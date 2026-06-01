@@ -70,6 +70,7 @@ import {
   VerdictGapGuidance,
   VerdictPositiveGuidance,
 } from '@/components/iq-verdict/VerdictGapGuidance'
+import { DealStructuresNarrative } from '@/components/iq-verdict/DealStructuresNarrative'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
@@ -2160,6 +2161,20 @@ function VerdictContent() {
               </div>
             </div>
           </div>
+
+          {/* "Here's the deal in plain English" — moved out of the verdict card
+              to sit below Key Insights (same gap-case visibility as before). */}
+          {effectiveDisplayPct <= 0 &&
+            dealGapPct > 0 &&
+            analysis.dealStructures &&
+            analysis.dealStructures.hasPaths &&
+            analysis.dealStructures.paths.length > 0 && (
+              <div className="mx-0 sm:mx-5 mt-4">
+                <DealStructuresNarrative
+                  paragraphs={analysis.dealStructures.narrativeParagraphs}
+                />
+              </div>
+            )}
 
           {/* Continue to Strategy CTA — placed after Key Insights so the
               primary action follows the supporting detail. */}

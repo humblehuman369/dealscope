@@ -10,8 +10,6 @@ import {
   type DealStructure,
   type DealStructuresPayload,
 } from '@/components/iq-verdict/FourPathsPanel'
-import { DealStructuresNarrative } from '@/components/iq-verdict/DealStructuresNarrative'
-
 export interface VerdictGapGuidanceProps {
   tier: DealGapTier
   dealGapPct: number
@@ -98,15 +96,12 @@ export function VerdictGapGuidance({
       </p>
 
       {hasStructures && (
-        <>
-          <FourPathsPanel
-            payload={dealStructures!}
-            propertyState={propertyState}
-            onOpenInStrategy={onOpenStructureInStrategy}
-            onShowPitch={onShowPitch}
-          />
-          <DealStructuresNarrative paragraphs={dealStructures!.narrativeParagraphs} />
-        </>
+        <FourPathsPanel
+          payload={dealStructures!}
+          propertyState={propertyState}
+          onOpenInStrategy={onOpenStructureInStrategy}
+          onShowPitch={onShowPitch}
+        />
       )}
 
       {!hasStructures && (
