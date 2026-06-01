@@ -2170,13 +2170,18 @@ function VerdictContent() {
                     title={
                       isOffMarket ? (
                         <span>
-                          <strong style={{ color: 'var(--accent-sky)' }}>Off-market</strong> — not
-                          listed for sale
+                          <strong style={{ color: 'var(--text-heading)' }}>Off-market</strong> —{' '}
+                          <span style={{ color: 'var(--accent-sky)', fontWeight: 600 }}>
+                            not listed for sale
+                          </span>
                         </span>
                       ) : (
                         <span>
-                          <strong style={{ color: 'var(--accent-sky)' }}>Actively listed</strong> —
-                          competing buyers
+                          <strong style={{ color: 'var(--text-heading)' }}>Actively listed</strong>{' '}
+                          —{' '}
+                          <span style={{ color: 'var(--accent-sky)', fontWeight: 600 }}>
+                            competing buyers
+                          </span>
                         </span>
                       )
                     }
@@ -2192,8 +2197,11 @@ function VerdictContent() {
                       num="!"
                       delay={40 + i * 40}
                       title={
-                        <span style={{ color: 'var(--accent-sky)', fontWeight: 600 }}>
-                          {insight.title}
+                        <span style={{ fontWeight: 600 }}>
+                          <span style={{ color: 'var(--text-heading)' }}>{insight.label}</span>
+                          {insight.highlight && (
+                            <span style={{ color: 'var(--accent-sky)' }}> {insight.highlight}</span>
+                          )}
                         </span>
                       }
                       detail={insight.detail}

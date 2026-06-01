@@ -1,7 +1,10 @@
 import type { PropertyResponse, SellerMotivationScore } from '@dealscope/shared'
 
 export interface MotivatedSellerInsight {
-  title: string
+  /** Leading status label — rendered in white (--text-heading). */
+  label: string
+  /** Trailing descriptor / metric — rendered in accent-sky blue. Omitted when none. */
+  highlight?: string
   detail: string
 }
 
@@ -30,9 +33,9 @@ export function buildMotivatedSellerInsights(
   const cuts = listing?.price_reduction_count ?? 0
   if (cuts > 0) {
     const pct = listing?.total_price_reduction_pct
-    const pctLabel = pct && pct > 0 ? ` totaling ${Math.round(pct * 100)}%` : ''
     insights.push({
-      title: `${cuts} price reduction${cuts > 1 ? 's' : ''}${pctLabel}`,
+      label: `${cuts} price reduction${cuts > 1 ? 's' : ''}`,
+      highlight: pct && pct > 0 ? `totaling ${Math.round(pct * 100)}%` : undefined,
       detail:
         'Repeated price cuts signal a seller adjusting to the market — a strong opening for a below-ask offer.',
     })
@@ -44,7 +47,8 @@ export function buildMotivatedSellerInsights(
     const shown = keywords.slice(0, 4).join(', ')
     const more = keywords.length > 4 ? ` +${keywords.length - 4} more` : ''
     insights.push({
-      title: `Listing language: ${shown}${more}`,
+      label: 'Listing language:',
+      highlight: `${shown}${more}`,
       detail:
         'The listing description uses investor / motivated-seller phrasing. These often indicate condition issues or urgency you can use as leverage.',
     })
@@ -61,8 +65,14 @@ export function buildMotivatedSellerInsights(
       .slice(0, 2)
     const leverage = formatLeverage(motivation.negotiation_leverage)
     for (const ind of top) {
+      const desc = ind.description || ind.name
+      // Indicator descriptions use " - " to separate the status label from its
+      // explanation (e.g. "Non-owner occupied - Treated as investment…"). Keep
+      // the label white and surface the explanation as the blue highlight.
+      const sep = desc.indexOf(' - ')
       insights.push({
-        title: ind.description || ind.name,
+        label: sep >= 0 ? desc.slice(0, sep) : desc,
+        highlight: sep >= 0 ? desc.slice(sep + 1).trim() : undefined,
         detail: leverage
           ? `${leverage} negotiation leverage — typical discount range ${motivation.recommended_discount_range}.`
           : 'Adds to the seller-motivation profile for this property.',
