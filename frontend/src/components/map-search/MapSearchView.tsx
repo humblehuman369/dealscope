@@ -1572,23 +1572,39 @@ export function MapSearchView() {
         />
       )}
 
-      {/* Search loading takeover — mirrors the property-analysis screen
-          (IQLoadingLogo) so users see the pulsing DealGapIQ icon instead of an
-          empty-looking map while inventory loads. Sits above every floating
-          control (search bar, Filters, view toggle, theme toggle). */}
+      {/* Search loading indicator — the map stays visible underneath; a
+          pulsing DealGapIQ icon with an "Analyzing..." label floats centered
+          on top so users know inventory is loading without losing context.
+          pointer-events-none keeps the map interactive while it resolves. */}
       {isLoading && (
         <div
-          className="absolute inset-0 z-[70] flex items-center justify-center pb-[12vh]"
-          style={{ backgroundColor: 'var(--surface-base)' }}
+          className="absolute inset-0 z-[70] flex items-center justify-center pointer-events-none"
           role="status"
           aria-live="polite"
-          aria-label="Searching properties"
+          aria-label="Analyzing"
         >
-          <img
-            src={theme === 'dark' ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png'}
-            alt="DealGapIQ"
-            className="w-24 h-24 md:w-36 md:h-36 animate-pulseSoft"
-          />
+          <div
+            className="flex flex-col items-center gap-3 px-6 py-5 rounded-2xl"
+            style={{
+              backgroundColor: overlaySurface.backgroundColor,
+              border: `1px solid ${overlaySurface.borderColor}`,
+              boxShadow: 'var(--shadow-card)',
+            }}
+          >
+            <img
+              src={
+                isDarkMap ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png'
+              }
+              alt="DealGapIQ"
+              className="w-20 h-20 md:w-28 md:h-28 animate-pulseSoft"
+            />
+            <span
+              className="text-sm font-semibold"
+              style={{ color: overlaySurface.primaryText }}
+            >
+              Analyzing...
+            </span>
+          </div>
         </div>
       )}
 
