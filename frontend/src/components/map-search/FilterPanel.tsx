@@ -510,8 +510,8 @@ export function FilterPanel({
                 color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.body : 'var(--text-secondary)',
               }}
             >
-              Scans listing descriptions for investor / motivated-seller language via Zillow
-              keywords. Replaces standard map results while enabled.
+              Scans listings for the motivated-sellers. Replaces standard map results while
+              enabled.
             </p>
           </div>
           <PillButton
