@@ -9,7 +9,9 @@ from datetime import UTC, datetime
 from typing import Any
 
 # Bumped when Income Value / Deal Gap economics change (must invalidate Redis payloads).
-_PROPERTY_CACHE_FORMULA_VERSION = "6"
+# v7: listing narrative (description), motivated_keywords, price history/cuts,
+# owner-occupancy, agent contact, and seller_motivation added to PropertyResponse.
+_PROPERTY_CACHE_FORMULA_VERSION = "7"
 
 
 def _strip_property_cache_meta(payload: dict[str, Any]) -> dict[str, Any]:

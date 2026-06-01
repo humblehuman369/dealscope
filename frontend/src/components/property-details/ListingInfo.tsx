@@ -11,12 +11,29 @@ interface ListingInfoProps {
  * ListingInfo — Horizontal label-value pairs matching the address-bar detail panel.
  */
 export function ListingInfo({ property }: ListingInfoProps) {
+  // Contact details are only meaningful for actively listed properties.
+  const showContact = !property.isOffMarket
   const rows = [
     property.listingAgent?.name && { label: 'Listed By', value: property.listingAgent.name },
+    showContact &&
+      property.listingAgent?.phone && {
+        label: 'Agent Phone',
+        value: property.listingAgent.phone,
+      },
+    showContact &&
+      property.listingAgent?.email && {
+        label: 'Agent Email',
+        value: property.listingAgent.email,
+      },
     property.listingAgent?.brokerage && {
       label: 'Brokerage',
       value: property.listingAgent.brokerage,
     },
+    showContact &&
+      property.listingAgent?.brokerPhone && {
+        label: 'Broker Phone',
+        value: property.listingAgent.brokerPhone,
+      },
     property.listDate && { label: 'List Date', value: formatDate(property.listDate) },
     property.mlsId && { label: 'MLS #', value: property.mlsId },
   ].filter(Boolean) as { label: string; value: string }[]

@@ -148,7 +148,9 @@ export interface PropertyAddress {
 export interface PropertyListingAgent {
   name: string
   phone?: string
+  email?: string
   brokerage?: string
+  brokerPhone?: string
 }
 
 export interface PriceHistoryItem {
@@ -292,6 +294,12 @@ export interface PropertyData {
 
   // Seller Motivation Score - negotiation leverage analysis
   sellerMotivation?: SellerMotivationScore
+
+  // Motivated-seller language matched in the listing description
+  motivatedKeywords?: string[]
+  // Price-cut signals
+  priceReductionCount?: number
+  totalPriceReductionPct?: number
 }
 
 // API Response types

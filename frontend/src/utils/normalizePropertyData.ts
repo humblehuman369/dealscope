@@ -83,6 +83,15 @@ export function normalizePropertyData(
     timeOnMarket: p.listing?.time_on_market,
     brokerageName: p.listing?.brokerage_name,
     listingAgentName: p.listing?.listing_agent_name,
+    listingAgent: p.listing?.listing_agent_name
+      ? {
+          name: p.listing.listing_agent_name,
+          phone: p.listing?.listing_agent_phone ?? undefined,
+          email: p.listing?.listing_agent_email ?? undefined,
+          brokerage: p.listing?.broker_name ?? p.listing?.brokerage_name ?? undefined,
+          brokerPhone: p.listing?.broker_phone ?? undefined,
+        }
+      : undefined,
     mlsId: p.listing?.mls_id,
     lastSoldPrice: p.valuations?.last_sale_price ?? p.listing?.last_sold_price ?? undefined,
     lastSoldDate: p.valuations?.last_sale_date ?? p.listing?.date_sold ?? undefined,
@@ -107,9 +116,12 @@ export function normalizePropertyData(
     hoaFee: p.market?.hoa_fees_monthly,
     latitude: p.address?.latitude,
     longitude: p.address?.longitude,
-    description:
-      p.description ||
-      `${p.details?.bedrooms ?? 0} bed, ${p.details?.bathrooms ?? 0} bath property in ${city}, ${state}.`,
+    // Real listing comments only — never fabricate (data-consistency rule).
+    description: p.listing?.description || p.description || undefined,
+    motivatedKeywords: p.listing?.motivated_keywords ?? undefined,
+    priceReductionCount: p.listing?.price_reduction_count ?? undefined,
+    totalPriceReductionPct: p.listing?.total_price_reduction_pct ?? undefined,
+    sellerMotivation: p.seller_motivation ?? undefined,
     images: [],
     totalPhotos: 0,
     heating,
@@ -122,7 +134,18 @@ export function normalizePropertyData(
     roof: p.details?.roof_type,
     flooring: [],
     appliances,
-    priceHistory: [],
+    priceHistory: Array.isArray(p.listing?.price_history)
+      ? p.listing.price_history
+          .filter((e: any) => e && (e.price != null || e.event))
+          .map((e: any) => ({
+            date: e.date ?? '',
+            event: e.event ?? '',
+            price: e.price ?? 0,
+            source: e.source ?? '',
+            priceChangeRate:
+              e.price_change_rate != null ? Math.round(e.price_change_rate * 1000) / 10 : undefined,
+          }))
+      : [],
     taxHistory: [],
     schools: [],
   }

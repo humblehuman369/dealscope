@@ -379,6 +379,16 @@ class DataQuality(BaseModel):
     conflict_fields: list[str] = []
 
 
+class PriceHistoryEvent(BaseModel):
+    """A single event in a property's Zillow price history timeline."""
+
+    date: str | None = None  # ISO date string
+    event: str | None = None  # "Listed for sale", "Price change", "Pending sale", "Sold", "Listing removed"
+    price: float | None = None
+    price_change_rate: float | None = None  # Fractional change vs prior event (e.g. -0.05 = 5% cut)
+    source: str | None = None
+
+
 class ListingInfo(BaseModel):
     """
     Listing status information for property display.
@@ -419,6 +429,31 @@ class ListingInfo(BaseModel):
     brokerage_name: str | None = None
     listing_agent_name: str | None = None
     mls_id: str | None = None
+
+    # Listing/agent contact (actionable for investors making offers)
+    listing_agent_phone: str | None = None
+    listing_agent_email: str | None = None
+    broker_name: str | None = None
+    broker_phone: str | None = None
+
+    # Listing narrative (agent/MLS public remarks)
+    description: str | None = None
+
+    # Motivated-seller phrases matched in the listing description
+    motivated_keywords: list[str] | None = None
+
+    # Price history + derived price-cut signals (motivation leverage)
+    price_history: list[PriceHistoryEvent] | None = None
+    price_reduction_count: int | None = None
+    total_price_reduction_pct: float | None = None
+
+    # Ownership signals (RentCast property records)
+    is_owner_occupied: bool | None = None
+    is_absentee_owner: bool | None = None
+
+    # Engagement / staleness signals (Zillow)
+    page_view_count: int | None = None
+    favorite_count: int | None = None
 
 
 # ============================================

@@ -202,6 +202,14 @@ export interface DataQuality {
 // LISTING INFO
 // =============================================================================
 
+export interface PriceHistoryEvent {
+  date?: string | null;
+  event?: string | null;
+  price?: number | null;
+  price_change_rate?: number | null;
+  source?: string | null;
+}
+
 export interface ListingInfo {
   listing_status?: string | null;
   is_off_market?: boolean | null;
@@ -219,6 +227,56 @@ export interface ListingInfo {
   brokerage_name?: string | null;
   listing_agent_name?: string | null;
   mls_id?: string | null;
+  // Listing/agent contact
+  listing_agent_phone?: string | null;
+  listing_agent_email?: string | null;
+  broker_name?: string | null;
+  broker_phone?: string | null;
+  // Listing narrative + motivated-seller language
+  description?: string | null;
+  motivated_keywords?: string[] | null;
+  // Price history + derived price-cut signals
+  price_history?: PriceHistoryEvent[] | null;
+  price_reduction_count?: number | null;
+  total_price_reduction_pct?: number | null;
+  // Ownership signals
+  is_owner_occupied?: boolean | null;
+  is_absentee_owner?: boolean | null;
+  // Engagement / staleness
+  page_view_count?: number | null;
+  favorite_count?: number | null;
+}
+
+// =============================================================================
+// SELLER MOTIVATION
+// =============================================================================
+
+export interface SellerMotivationIndicator {
+  name: string;
+  detected: boolean;
+  score: number;
+  signal_strength: string;
+  weight: number;
+  description: string;
+  raw_value?: unknown;
+  source?: string | null;
+}
+
+export interface SellerMotivationScore {
+  score: number;
+  grade: string;
+  label: string;
+  color: string;
+  indicators: SellerMotivationIndicator[];
+  high_signals_count: number;
+  total_signals_detected: number;
+  negotiation_leverage: string;
+  recommended_discount_range: string;
+  key_leverage_points: string[];
+  dom_vs_market_avg?: number | null;
+  market_temperature?: string | null;
+  data_completeness: number;
+  calculated_at?: string | null;
 }
 
 // =============================================================================
@@ -234,6 +292,7 @@ export interface PropertyResponse {
   rentals: RentalData;
   market: MarketData;
   listing?: ListingInfo | null;
+  seller_motivation?: SellerMotivationScore | null;
   data_quality: DataQuality;
   fetched_at: string;
 }

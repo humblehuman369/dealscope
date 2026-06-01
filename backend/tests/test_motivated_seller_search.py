@@ -164,3 +164,76 @@ async def test_motivated_seller_mode_skips_rentcast_and_uses_keyword_fetch() -> 
     zillow_fetch.assert_not_awaited()
     assert response.total_count == 1
     assert response.listings[0].address == "200 Oak Ave"
+
+
+def test_match_motivated_seller_keywords_basic() -> None:
+    from app.data.motivated_seller_keywords import match_motivated_seller_keywords
+
+    text = "Charming fixer upper, sold AS IS. Cash only, motivated seller must sell fast!"
+    matched = match_motivated_seller_keywords(text)
+    # Case-insensitive, returns canonical casing
+    assert "As Is" in matched
+    assert "Cash only" in matched
+    assert "Motivated Seller" in matched
+    assert "Must Sell" in matched
+    assert "Fixer Upper" in matched
+
+
+def test_match_motivated_seller_keywords_empty_and_none() -> None:
+    from app.data.motivated_seller_keywords import match_motivated_seller_keywords
+
+    assert match_motivated_seller_keywords(None) == []
+    assert match_motivated_seller_keywords("") == []
+    assert match_motivated_seller_keywords("Beautiful move-in ready home, no issues") == []
+
+
+def test_match_motivated_seller_keywords_dedupes_and_orders() -> None:
+    from app.data.motivated_seller_keywords import match_motivated_seller_keywords
+
+    text = "as is, as is, AS IS — cash only"
+    matched = match_motivated_seller_keywords(text)
+    assert matched.count("As Is") == 1
+    # Curated order: As Is appears before Cash only in the source tuple
+    assert matched.index("As Is") < matched.index("Cash only")
+
+
+def test_extract_condition_keywords_delegates_to_shared_matcher() -> None:
+    from app.services.calculators import extract_condition_keywords
+
+    matched = extract_condition_keywords("Handyman Special, bring your contractor")
+    assert "Handyman Special" in matched
+
+
+def test_extract_price_history_computes_reductions() -> None:
+    from datetime import UTC, datetime
+
+    from app.services.api_clients import DataNormalizer
+
+    normalizer = DataNormalizer()
+    normalized: dict = {}
+    axesso = {
+        "priceHistory": [
+            {"date": "2026-05-01", "event": "Price change", "price": 380000, "priceChangeRate": -0.05, "source": "MLS"},
+            {"date": "2026-03-01", "event": "Price change", "price": 400000, "priceChangeRate": -0.0476, "source": "MLS"},
+            {"date": "2026-01-01", "event": "Listed for sale", "price": 420000, "priceChangeRate": 0, "source": "MLS"},
+        ]
+    }
+    normalizer._extract_price_history(normalized, axesso)
+
+    assert normalized["price_reduction_count"] == 2
+    assert len(normalized["price_history"]) == 3
+    # Peak listed 420000 -> latest 380000 = ~9.52% total reduction
+    assert normalized["total_price_reduction_pct"] == round((420000 - 380000) / 420000, 4)
+
+
+def test_extract_ownership_absentee_flag() -> None:
+    from app.services.api_clients import DataNormalizer
+
+    normalizer = DataNormalizer()
+    normalized: dict = {}
+    rentcast = {"ownerOccupied": False, "owner": {"mailingAddress": {"state": "NY"}}}
+    normalizer._extract_ownership(normalized, rentcast)
+
+    assert normalized["is_owner_occupied"] is False
+    assert normalized["is_absentee_owner"] is True
+    assert normalized["owner_state"] == "NY"

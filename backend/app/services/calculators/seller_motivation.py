@@ -531,66 +531,13 @@ def calculate_seller_motivation(
 
 def extract_condition_keywords(description: str | None) -> list[str]:
     """
-    Extract keywords from property description that indicate poor condition.
+    Extract motivated-seller / condition phrases from a property description.
 
-    These keywords suggest the property needs work and may have a limited
-    buyer pool, giving investors negotiation leverage.
+    Delegates to the curated, shared :func:`match_motivated_seller_keywords`
+    list so property analysis and map search stay aligned on a single source
+    of truth. These phrases suggest the property needs work or the seller is
+    motivated, giving investors negotiation leverage.
     """
-    if not description:
-        return []
+    from app.data.motivated_seller_keywords import match_motivated_seller_keywords
 
-    # Normalize text
-    text = description.lower()
-
-    # Keywords indicating property needs work (investor opportunities)
-    condition_keywords = [
-        "as-is",
-        "as is",
-        "sold as-is",
-        "sold as is",
-        "fixer",
-        "fixer-upper",
-        "fixer upper",
-        "handyman",
-        "tlc",
-        "needs tlc",
-        "needs work",
-        "needs updating",
-        "investor special",
-        "investor opportunity",
-        "investor",
-        "cash only",
-        "cash buyers",
-        "cash buyer",
-        "estate sale",
-        "estate",
-        "probate",
-        "motivated seller",
-        "motivated",
-        "must sell",
-        "bring your contractor",
-        "bring contractor",
-        "cosmetic",
-        "needs cosmetic",
-        "deferred maintenance",
-        "maintenance needed",
-        "priced to sell",
-        "price to sell",
-        "diamond in the rough",
-        "potential",
-        "foreclosure",
-        "bank owned",
-        "reo",
-        "vacant",
-        "unoccupied",
-    ]
-
-    found_keywords = []
-    for keyword in condition_keywords:
-        if keyword in text:
-            # Avoid duplicates (e.g., "as-is" and "as is")
-            normalized = keyword.replace("-", " ").strip()
-            if normalized not in [k.replace("-", " ") for k in found_keywords]:
-                found_keywords.append(keyword)
-
-    return found_keywords
+    return match_motivated_seller_keywords(description)

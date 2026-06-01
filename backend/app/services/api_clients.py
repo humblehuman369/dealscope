@@ -1539,8 +1539,8 @@ class DataNormalizer:
         market_stats_data = rentcast_data.get("market_statistics") if rentcast_data else None
         self._extract_market_statistics(normalized, market_stats_data)
 
-        # Extract complex listing info from AXESSO data
-        self._extract_listing_info(normalized, axesso_data, timestamp, provenance)
+        # Extract complex listing info from AXESSO data (+ RentCast ownership)
+        self._extract_listing_info(normalized, axesso_data, timestamp, provenance, rentcast_data)
 
         # Compute proprietary IQ Estimates (average of all available sources)
         self._compute_iq_estimates(normalized, provenance, timestamp)
@@ -1872,6 +1872,7 @@ class DataNormalizer:
         axesso_data: dict[str, Any] | None,
         timestamp: datetime,
         provenance: dict[str, Any],
+        rentcast_data: dict[str, Any] | None = None,
     ):
         """
         Extract listing status and seller type from AXESSO/Zillow data.
@@ -1880,7 +1881,12 @@ class DataNormalizer:
         - Whether property is actively listed (FOR_SALE, FOR_RENT) or OFF_MARKET/SOLD
         - Seller type (Agent, FSBO, Foreclosure, BankOwned, Auction)
         - Actual list price vs estimated value
+        - Listing narrative, price history / cuts, agent contact, engagement
+        - Owner-occupancy (RentCast property records)
         """
+        # Ownership signals come from RentCast and are independent of AXESSO.
+        self._extract_ownership(normalized, rentcast_data)
+
         if not axesso_data:
             normalized["is_off_market"] = True
             normalized["seller_type"] = None
@@ -1975,10 +1981,24 @@ class DataNormalizer:
         # Last sold price
         normalized["last_sold_price"] = axesso_data.get("lastSoldPrice")
 
-        # Listing agent/brokerage info
+        # Listing agent/brokerage info + contact (actionable for offers)
         attribution = axesso_data.get("attributionInfo", {}) or {}
         normalized["listing_agent_name"] = attribution.get("agentName")
         normalized["mls_id"] = attribution.get("mlsId")
+        normalized["listing_agent_phone"] = attribution.get("agentPhoneNumber")
+        normalized["listing_agent_email"] = attribution.get("agentEmail")
+        normalized["broker_name"] = attribution.get("brokerName")
+        normalized["broker_phone"] = attribution.get("brokerPhoneNumber")
+
+        # Listing narrative (public remarks / agent description)
+        normalized["listing_description"] = axesso_data.get("description")
+
+        # Engagement / staleness signals
+        normalized["page_view_count"] = axesso_data.get("pageViewCount")
+        normalized["favorite_count"] = axesso_data.get("favoriteCount")
+
+        # Price history + derived price-cut signals
+        self._extract_price_history(normalized, axesso_data)
 
         # Add provenance for listing fields
         listing_fields = [
@@ -1995,6 +2015,16 @@ class DataNormalizer:
             "listing_agent_name",
             "mls_id",
             "time_on_market",
+            "listing_agent_phone",
+            "listing_agent_email",
+            "broker_name",
+            "broker_phone",
+            "listing_description",
+            "price_history",
+            "price_reduction_count",
+            "total_price_reduction_pct",
+            "page_view_count",
+            "favorite_count",
         ]
         for fname in listing_fields:
             provenance[fname] = {
@@ -2004,6 +2034,116 @@ class DataNormalizer:
                 "raw_values": None,
                 "conflict_flag": False,
             }
+
+    def _extract_price_history(
+        self,
+        normalized: dict[str, Any],
+        axesso_data: dict[str, Any] | None,
+    ):
+        """Parse AXESSO ``priceHistory`` into normalized events + price-cut signals.
+
+        Computes ``price_reduction_count`` (number of downward "Price change"
+        events) and ``total_price_reduction_pct`` (peak listed price → current/
+        latest listed price, as a positive fraction) — both strong negotiation
+        leverage signals consumed by ``calculate_seller_motivation``.
+        """
+        raw = axesso_data.get("priceHistory") if axesso_data else None
+        if not isinstance(raw, list) or not raw:
+            return
+
+        events: list[dict[str, Any]] = []
+        for item in raw:
+            if not isinstance(item, dict):
+                continue
+            date_val = item.get("date") or item.get("time")
+            # AXESSO dates may be epoch millis or ISO strings
+            if isinstance(date_val, (int, float)):
+                try:
+                    date_str = datetime.fromtimestamp(date_val / 1000, tz=UTC).date().isoformat()
+                except (ValueError, OSError, OverflowError):
+                    date_str = str(date_val)
+            else:
+                date_str = str(date_val) if date_val else None
+
+            price = item.get("price")
+            try:
+                price_num = float(price) if price is not None else None
+            except (TypeError, ValueError):
+                price_num = None
+
+            rate = item.get("priceChangeRate")
+            try:
+                rate_num = float(rate) if rate is not None else None
+            except (TypeError, ValueError):
+                rate_num = None
+
+            events.append(
+                {
+                    "date": date_str,
+                    "event": item.get("event"),
+                    "price": price_num,
+                    "price_change_rate": rate_num,
+                    "source": item.get("source"),
+                }
+            )
+
+        if not events:
+            return
+
+        normalized["price_history"] = events
+
+        # Count downward price-change events
+        reduction_count = sum(
+            1
+            for e in events
+            if e.get("event")
+            and "price" in str(e["event"]).lower()
+            and (e.get("price_change_rate") is not None and e["price_change_rate"] < 0)
+        )
+        normalized["price_reduction_count"] = reduction_count
+
+        # Total reduction: peak listed price vs latest listed price. Prefer
+        # explicit "Listed"/"Price change" events; fall back to all priced
+        # events when there aren't at least two of those.
+        listed_prices = [
+            e["price"]
+            for e in events
+            if e.get("price")
+            and e.get("event")
+            and any(tok in str(e["event"]).lower() for tok in ("list", "price"))
+        ]
+        if len(listed_prices) < 2:
+            listed_prices = [e["price"] for e in events if e.get("price")]
+        if len(listed_prices) >= 2:
+            peak = max(listed_prices)
+            latest = listed_prices[0]  # AXESSO returns most-recent first
+            if peak and peak > 0 and latest < peak:
+                normalized["total_price_reduction_pct"] = round((peak - latest) / peak, 4)
+
+    def _extract_ownership(
+        self,
+        normalized: dict[str, Any],
+        rentcast_data: dict[str, Any] | None,
+    ):
+        """Extract owner-occupancy signals from RentCast property records.
+
+        ``ownerOccupied`` (bool) drives both the owner-occupied counter-signal
+        and the absentee-owner motivation signal. Owner mailing state (when
+        present) lets the analyzer flag out-of-state owners.
+        """
+        if not rentcast_data:
+            return
+
+        owner_occupied = rentcast_data.get("ownerOccupied")
+        if isinstance(owner_occupied, bool):
+            normalized["is_owner_occupied"] = owner_occupied
+            normalized["is_absentee_owner"] = not owner_occupied
+
+        owner = rentcast_data.get("owner")
+        if isinstance(owner, dict):
+            mailing = owner.get("mailingAddress")
+            if isinstance(mailing, dict) and mailing.get("state"):
+                normalized["owner_state"] = mailing.get("state")
 
     def _compute_iq_estimates(
         self,

@@ -8,6 +8,7 @@ import {
   PropertyHeader,
   KeyFactsGrid,
   PropertyDescription,
+  MotivatedSellerSignals,
   PropertyFeatures,
   PriceHistory,
   TaxHistory,
@@ -103,6 +104,12 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
             <KeyFactsGrid property={property} />
 
             {property.description && <PropertyDescription description={property.description} />}
+
+            <MotivatedSellerSignals
+              keywords={property.motivatedKeywords}
+              priceReductionCount={property.priceReductionCount}
+              totalPriceReductionPct={property.totalPriceReductionPct}
+            />
 
             {hasFeatures && (
               <PropertyFeatures

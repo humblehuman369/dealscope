@@ -30,11 +30,14 @@ from app.schemas.property import (
     LTRResults,
     MarketData,
     MarketStatistics,
+    PriceHistoryEvent,
     PropertyDetails,
     PropertyResponse,
     ProvenanceMap,
     RentalData,
     RentalMarketStatistics,
+    SellerMotivationIndicator,
+    SellerMotivationScore,
     StrategyType,
     STRMarketStats,
     STRRegulatory,
@@ -49,9 +52,11 @@ from app.services.calculators import (
     calculate_flip,
     calculate_house_hack,
     calculate_ltr,
+    calculate_seller_motivation,
     calculate_str,
     calculate_wholesale,
 )
+from app.data.motivated_seller_keywords import match_motivated_seller_keywords
 from app.services.iq_verdict_service import compute_iq_verdict
 from app.services.resilience import CircuitOpenError, resilient
 from app.services.zillow_client import create_zillow_client
@@ -575,6 +580,22 @@ class PropertyService:
         if address_obj.longitude is None:
             address_obj.longitude = normalized.get("longitude")
 
+        # Listing narrative + motivated-seller language scan
+        listing_description = normalized.get("listing_description")
+        motivated_keywords = match_motivated_seller_keywords(listing_description)
+
+        # Price history events
+        price_history_events = [
+            PriceHistoryEvent(**e) for e in (normalized.get("price_history") or []) if isinstance(e, dict)
+        ] or None
+
+        # Seller motivation analysis (now fed real listing/ownership/price signals)
+        seller_motivation = self._build_seller_motivation(
+            normalized=normalized,
+            motivated_keywords=motivated_keywords,
+            property_state=address_obj.state,
+        )
+
         # Build response
         response = PropertyResponse(
             property_id=property_id,
@@ -733,7 +754,21 @@ class PropertyService:
                 brokerage_name=normalized.get("brokerage_name"),
                 listing_agent_name=normalized.get("listing_agent_name"),
                 mls_id=normalized.get("mls_id"),
+                listing_agent_phone=normalized.get("listing_agent_phone"),
+                listing_agent_email=normalized.get("listing_agent_email"),
+                broker_name=normalized.get("broker_name"),
+                broker_phone=normalized.get("broker_phone"),
+                description=listing_description,
+                motivated_keywords=motivated_keywords or None,
+                price_history=price_history_events,
+                price_reduction_count=normalized.get("price_reduction_count"),
+                total_price_reduction_pct=normalized.get("total_price_reduction_pct"),
+                is_owner_occupied=normalized.get("is_owner_occupied"),
+                is_absentee_owner=normalized.get("is_absentee_owner"),
+                page_view_count=normalized.get("page_view_count"),
+                favorite_count=normalized.get("favorite_count"),
             ),
+            seller_motivation=seller_motivation,
             provenance=ProvenanceMap(
                 fields={k: FieldProvenance(**v) if isinstance(v, dict) else v for k, v in provenance.items()}
             ),
@@ -1068,6 +1103,93 @@ class PropertyService:
         )
         valuations["market_price"] = market_price_val
         return {**cached_data, "valuations": valuations}
+
+    def _build_seller_motivation(
+        self,
+        normalized: dict,
+        motivated_keywords: list[str],
+        property_state: str | None,
+    ) -> SellerMotivationScore | None:
+        """Run the seller-motivation calculator with all available signals.
+
+        Returns ``None`` when there is no meaningful signal to analyze
+        (no listing/ownership/price data) so the UI shows nothing rather
+        than a fabricated score.
+        """
+        days_on_market = normalized.get("days_on_market")
+        market_median_dom = normalized.get("market_days_on_market")
+        is_owner_occupied = normalized.get("is_owner_occupied")
+        is_absentee_owner = normalized.get("is_absentee_owner")
+
+        # Bail out when we have nothing to score on
+        has_signal = any(
+            v is not None
+            for v in (
+                days_on_market,
+                normalized.get("price_reduction_count"),
+                is_owner_occupied,
+                normalized.get("page_view_count"),
+            )
+        ) or bool(motivated_keywords) or bool(
+            normalized.get("is_foreclosure")
+            or normalized.get("is_bank_owned")
+            or normalized.get("is_auction")
+            or normalized.get("is_fsbo")
+        )
+        if not has_signal:
+            return None
+
+        result = calculate_seller_motivation(
+            days_on_market=days_on_market,
+            market_median_dom=market_median_dom,
+            price_reduction_count=normalized.get("price_reduction_count") or 0,
+            total_price_reduction_pct=normalized.get("total_price_reduction_pct"),
+            listing_status=normalized.get("listing_status"),
+            is_foreclosure=bool(normalized.get("is_foreclosure")),
+            is_bank_owned=bool(normalized.get("is_bank_owned")),
+            is_auction=bool(normalized.get("is_auction")),
+            is_owner_occupied=is_owner_occupied,
+            is_absentee_owner=is_absentee_owner,
+            owner_state=normalized.get("owner_state"),
+            property_state=property_state,
+            condition_keywords_found=motivated_keywords,
+            last_sale_price=normalized.get("last_sale_price") or normalized.get("last_sold_price"),
+            favorite_count=normalized.get("favorite_count"),
+            page_view_count=normalized.get("page_view_count"),
+            is_fsbo=bool(normalized.get("is_fsbo")),
+            market_temperature=normalized.get("market_temperature"),
+        )
+
+        indicators = [
+            SellerMotivationIndicator(
+                name=ind.get("name", ""),
+                detected=ind.get("detected", False),
+                score=ind.get("score", 0),
+                signal_strength=ind.get("signal_strength", "low"),
+                weight=ind.get("weight", 1.0),
+                description=ind.get("description", ""),
+                raw_value=ind.get("raw_value"),
+                source=ind.get("source"),
+            )
+            for ind in result.get("indicators", [])
+        ]
+
+        return SellerMotivationScore(
+            score=result.get("score", 0),
+            grade=result.get("grade", "C"),
+            label=result.get("label", "Unknown"),
+            color=result.get("color", "#9ca3af"),
+            indicators=indicators,
+            high_signals_count=result.get("high_signals_count", 0),
+            total_signals_detected=result.get("total_signals_detected", 0),
+            negotiation_leverage=result.get("negotiation_leverage", "unknown"),
+            recommended_discount_range=result.get("recommended_discount_range", "0-5%"),
+            key_leverage_points=result.get("key_leverage_points", []),
+            dom_vs_market_avg=result.get("dom_vs_market_avg"),
+            market_temperature=result.get("market_temperature"),
+            data_completeness=result.get("data_completeness", 0.0),
+            calculated_at=result.get("calculated_at"),
+        )
 
     def _build_valuations(self, normalized: dict) -> ValuationData:
         """Build ValuationData — Zestimate is single source for off-market market_price."""

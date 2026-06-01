@@ -51,6 +51,9 @@ export type {
   MarketData,
   DataQuality,
   ListingInfo,
+  PriceHistoryEvent,
+  SellerMotivationIndicator,
+  SellerMotivationScore,
   PropertyResponse,
   PropertyDataSnapshot,
 } from './property';

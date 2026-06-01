@@ -55,6 +55,10 @@ import {
   resolveMarketPriceFromPropertyResponse,
 } from '@/lib/resolveMarketPrice'
 import { trackEvent } from '@/lib/eventTracking'
+import {
+  buildMotivatedSellerInsights,
+  type MotivatedSellerInsight,
+} from '@/lib/motivatedSellerInsights'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { buildVerdictAnalysisPayload, type VerdictPayloadBase } from '@/utils/verdictPayload'
@@ -292,6 +296,7 @@ function VerdictContent() {
   })
   const [error, setError] = useState<string | null>(null)
   const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
+  const [motivatedInsights, setMotivatedInsights] = useState<MotivatedSellerInsight[]>([])
   const backendFullAddressRef = useRef('')
 
   const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
@@ -404,6 +409,7 @@ function VerdictContent() {
       setProperty(null)
       setAnalysis(null)
       setPropertyPhotos([])
+      setMotivatedInsights([])
       setIqSources({
         value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
         rent: { iq: null, zillow: null, rentcast: null, redfin: null, mashvisor: null },
@@ -494,6 +500,7 @@ function VerdictContent() {
           str_market_stats: data.rentals?.str_market_stats ?? null,
           str_regulatory: data.rentals?.str_regulatory ?? null,
         })
+        setMotivatedInsights(buildMotivatedSellerInsights(data as any))
 
         setIqSources(
           mapPropertyToIQSources(data, {
@@ -2175,6 +2182,19 @@ function VerdictContent() {
                         : 'Speed and terms matter when competing with other buyers.'
                     }
                   />
+                  {motivatedInsights.map((insight, i) => (
+                    <InsightItem
+                      key={`motivated-${i}`}
+                      num="!"
+                      delay={40 + i * 40}
+                      title={
+                        <span style={{ color: 'var(--accent-sky)', fontWeight: 600 }}>
+                          {insight.title}
+                        </span>
+                      }
+                      detail={insight.detail}
+                    />
+                  ))}
                   <InsightItem
                     num="2"
                     delay={80}

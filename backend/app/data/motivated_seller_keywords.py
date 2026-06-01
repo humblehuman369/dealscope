@@ -134,3 +134,20 @@ MOTIVATED_SELLER_KEYWORDS: tuple[str, ...] = (
     'Cash cow',
     '1031 exchange',
 )
+
+
+def match_motivated_seller_keywords(text: str | None) -> list[str]:
+    """Return the motivated-seller phrases that appear in ``text``.
+
+    Case-insensitive substring match against ``MOTIVATED_SELLER_KEYWORDS``.
+    Phrases are returned in their canonical casing and in the curated order,
+    deduped. Returns an empty list when ``text`` is empty or has no matches.
+    """
+    if not text:
+        return []
+    haystack = text.lower()
+    matched: list[str] = []
+    for phrase in MOTIVATED_SELLER_KEYWORDS:
+        if phrase.lower() in haystack and phrase not in matched:
+            matched.append(phrase)
+    return matched
