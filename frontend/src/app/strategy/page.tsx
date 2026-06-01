@@ -1052,14 +1052,52 @@ function StrategyContent() {
     scrollStrategyToDealGapBar()
   }, [shouldScrollToDealGapBar, addressParam, scrollStrategyToDealGapBar])
 
+  // Re-align across animation frames while the page settles — data, fonts, and
+  // async panels (verdict recalculation, worksheet) can shift the bar's
+  // position after the first paint, which the old fixed 120/320ms retries
+  // missed. Stops early once the position holds steady, after ~1.5s, or the
+  // instant the user scrolls so we never fight their input.
   useEffect(() => {
-    if (!shouldScrollToDealGapBar) return
-    const t1 = window.setTimeout(scrollStrategyToDealGapBar, 120)
-    const t2 = window.setTimeout(scrollStrategyToDealGapBar, 320)
-    return () => {
-      window.clearTimeout(t1)
-      window.clearTimeout(t2)
+    if (!shouldScrollToDealGapBar || typeof window === 'undefined') return
+
+    let raf = 0
+    let cancelled = false
+    let lastTop = -1
+    let stableFrames = 0
+    const start = performance.now()
+
+    const stop = () => {
+      cancelled = true
+      if (raf) cancelAnimationFrame(raf)
+      window.removeEventListener('wheel', stop)
+      window.removeEventListener('touchstart', stop)
+      window.removeEventListener('keydown', stop)
+      window.removeEventListener('pointerdown', stop)
     }
+
+    window.addEventListener('wheel', stop, { passive: true })
+    window.addEventListener('touchstart', stop, { passive: true })
+    window.addEventListener('keydown', stop)
+    window.addEventListener('pointerdown', stop)
+
+    const tick = () => {
+      if (cancelled) return
+      scrollStrategyToDealGapBar()
+      const top = Math.round(window.scrollY)
+      if (top === lastTop) {
+        stableFrames += 1
+      } else {
+        stableFrames = 0
+        lastTop = top
+      }
+      if (stableFrames < 3 && performance.now() - start < 1500) {
+        raf = requestAnimationFrame(tick)
+      } else {
+        stop()
+      }
+    }
+    raf = requestAnimationFrame(tick)
+    return stop
   }, [shouldScrollToDealGapBar, addressParam, scrollStrategyToDealGapBar])
 
   const hasRecordedAnalysisRef = useRef(false)
