@@ -1572,20 +1572,23 @@ export function MapSearchView() {
         />
       )}
 
-      {/* Loading spinner */}
+      {/* Search loading takeover — mirrors the property-analysis screen
+          (IQLoadingLogo) so users see the pulsing DealGapIQ icon instead of an
+          empty-looking map while inventory loads. Sits above every floating
+          control (search bar, Filters, view toggle, theme toggle). */}
       {isLoading && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
-          <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-lg"
-            style={{
-              backgroundColor: 'var(--surface-card)',
-              color: 'var(--text-body)',
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            <Loader2 size={14} className="animate-spin" style={{ color: 'var(--accent-sky)' }} />
-            Searching...
-          </div>
+        <div
+          className="absolute inset-0 z-[70] flex items-center justify-center pb-[12vh]"
+          style={{ backgroundColor: 'var(--surface-base)' }}
+          role="status"
+          aria-live="polite"
+          aria-label="Searching properties"
+        >
+          <img
+            src={theme === 'dark' ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png'}
+            alt="DealGapIQ"
+            className="w-24 h-24 md:w-36 md:h-36 animate-pulseSoft"
+          />
         </div>
       )}
 
