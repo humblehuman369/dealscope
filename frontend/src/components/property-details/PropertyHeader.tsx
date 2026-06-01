@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { Bed, Bath, Square, Calendar, Clock } from 'lucide-react'
 import { PropertyData } from './types'
+import { MotivatedSellerSignals } from './MotivatedSellerSignals'
 import { formatCurrency, formatNumber } from './utils'
 import { getPriceLabel } from '@/lib/priceUtils'
 
@@ -22,6 +23,9 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
     () => getPriceLabel(property.isOffMarket, property.listingStatus),
     [property.isOffMarket, property.listingStatus],
   )
+  const hasMotivatedSignals =
+    (property.priceReductionCount ?? 0) > 0 || (property.motivatedKeywords?.length ?? 0) > 0
+
   return (
     <div
       className="rounded-[14px] p-5 relative overflow-hidden bg-white dark:bg-black"
@@ -108,9 +112,21 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
             built
           </span>
         </div>
+
+        {hasMotivatedSignals && (
+          <div className="flex-1 min-w-[140px] flex justify-end">
+            <MotivatedSellerSignals
+              variant="inline"
+              keywords={property.motivatedKeywords}
+              priceReductionCount={property.priceReductionCount}
+              totalPriceReductionPct={property.totalPriceReductionPct}
+            />
+          </div>
+        )}
+
         {property.daysOnZillow !== undefined && (
           <div
-            className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full"
+            className="flex items-center gap-2 px-3 py-1 rounded-full sm:ml-0"
             style={{ backgroundColor: 'var(--color-sky-dim)' }}
           >
             <Clock size={14} style={{ color: 'var(--accent-sky)' }} />

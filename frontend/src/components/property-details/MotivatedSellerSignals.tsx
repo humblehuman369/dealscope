@@ -4,6 +4,28 @@ interface MotivatedSellerSignalsProps {
   keywords?: string[]
   priceReductionCount?: number
   totalPriceReductionPct?: number
+  /** `section` = titled block; `inline` = chips only (e.g. property header stats row) */
+  variant?: 'section' | 'inline'
+}
+
+function buildMotivatedSellerChips(
+  keywords?: string[],
+  priceReductionCount?: number,
+  totalPriceReductionPct?: number,
+): string[] {
+  const chips: string[] = []
+
+  if (priceReductionCount && priceReductionCount > 0) {
+    const pct =
+      totalPriceReductionPct && totalPriceReductionPct > 0
+        ? ` (${Math.round(totalPriceReductionPct * 100)}% total)`
+        : ''
+    chips.push(`${priceReductionCount} price cut${priceReductionCount > 1 ? 's' : ''}${pct}`)
+  }
+
+  if (keywords && keywords.length > 0) chips.push(...keywords)
+
+  return chips
 }
 
 /**
@@ -15,22 +37,33 @@ export function MotivatedSellerSignals({
   keywords,
   priceReductionCount,
   totalPriceReductionPct,
+  variant = 'section',
 }: MotivatedSellerSignalsProps) {
-  const chips: string[] = []
-
-  if (priceReductionCount && priceReductionCount > 0) {
-    const pct =
-      totalPriceReductionPct && totalPriceReductionPct > 0
-        ? ` (${Math.round(totalPriceReductionPct * 100)}% total)`
-        : ''
-    chips.push(
-      `${priceReductionCount} price cut${priceReductionCount > 1 ? 's' : ''}${pct}`,
-    )
-  }
-
-  if (keywords && keywords.length > 0) chips.push(...keywords)
+  const chips = buildMotivatedSellerChips(keywords, priceReductionCount, totalPriceReductionPct)
 
   if (chips.length === 0) return null
+
+  const chipRow = (
+    <div className={`flex flex-wrap gap-1.5 ${variant === 'inline' ? 'items-center' : ''}`}>
+      {chips.map((chip, i) => (
+        <span
+          key={`${chip}-${i}`}
+          className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wide"
+          style={{
+            background: 'var(--surface-elevated)',
+            color: 'var(--status-negative)',
+            border: '1px solid var(--border-subtle)',
+          }}
+        >
+          {chip}
+        </span>
+      ))}
+    </div>
+  )
+
+  if (variant === 'inline') {
+    return chipRow
+  }
 
   return (
     <div>
@@ -40,21 +73,7 @@ export function MotivatedSellerSignals({
       >
         Motivated Seller Signals
       </div>
-      <div className="flex flex-wrap gap-1.5">
-        {chips.map((chip, i) => (
-          <span
-            key={`${chip}-${i}`}
-            className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wide"
-            style={{
-              background: 'var(--surface-elevated)',
-              color: 'var(--status-negative)',
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            {chip}
-          </span>
-        ))}
-      </div>
+      {chipRow}
     </div>
   )
 }
