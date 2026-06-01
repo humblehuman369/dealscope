@@ -8,7 +8,6 @@ import { PropertyFeaturesSkeleton } from './PropertyFeatures'
 import { TaxHistorySkeleton } from './TaxHistory'
 import { NearbySchoolsSkeleton } from './NearbySchools'
 import { ListingInfoSkeleton } from './ListingInfo'
-import { LocationMapSkeleton } from './LocationMap'
 import { PriceHistorySkeleton } from './PriceHistory'
 
 /**
@@ -63,7 +62,6 @@ export function PropertyDetailsSkeleton() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <NearbySchoolsSkeleton />
-          <LocationMapSkeleton />
           <TaxHistorySkeleton />
           <PriceHistorySkeleton />
         </div>

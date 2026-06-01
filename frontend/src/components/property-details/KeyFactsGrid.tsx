@@ -1,7 +1,11 @@
 'use client'
 
+import { useMemo, useState } from 'react'
+import { MapPin } from 'lucide-react'
 import { PropertyData } from './types'
+import { PropertyLocationMapModal } from './PropertyLocationMapModal'
 import { formatCurrency, formatDate, formatNumber, formatPropertyType, formatListingType } from './utils'
+import { trackEvent } from '@/lib/eventTracking'
 
 interface KeyFactsGridProps {
   property: PropertyData
@@ -18,6 +22,14 @@ interface FactCell {
  * 4 columns on md+, gap-px trick produces thin divider lines between cells.
  */
 export function KeyFactsGrid({ property }: KeyFactsGridProps) {
+  const [mapOpen, setMapOpen] = useState(false)
+
+  const fullAddress = useMemo(
+    () =>
+      `${property.address.streetAddress}, ${property.address.city}, ${property.address.state} ${property.address.zipcode}`,
+    [property.address],
+  )
+
   const facts: FactCell[] = [
     { label: 'Price/Sqft', value: formatCurrency(property.pricePerSqft) },
     {
@@ -80,6 +92,14 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
     facts.push({ label: 'Parcel ID', value: property.parcelId })
   }
 
+  const openMap = () => {
+    trackEvent('property_map_opened', {
+      source: 'property_details_facts_grid',
+      has_coordinates: property.latitude != null && property.longitude != null,
+    })
+    setMapOpen(true)
+  }
+
   return (
     <div>
       <div
@@ -114,8 +134,38 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
               </div>
             </div>
           ))}
+
+          <div
+            className="px-3 py-2.5 flex flex-col justify-center min-h-[68px]"
+            style={{ background: 'var(--surface-base)' }}
+          >
+            <div
+              className="text-[10px] font-bold uppercase tracking-[0.06em] mb-1"
+              style={{ color: 'var(--text-label)' }}
+            >
+              Map Location
+            </div>
+            <button
+              type="button"
+              onClick={openMap}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-left transition-colors hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-sky)] rounded"
+              style={{ color: 'var(--accent-sky)' }}
+              aria-label={`View map for ${fullAddress}`}
+            >
+              <MapPin size={14} strokeWidth={2.5} aria-hidden />
+              View Map
+            </button>
+          </div>
         </div>
       </div>
+
+      <PropertyLocationMapModal
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        latitude={property.latitude}
+        longitude={property.longitude}
+        address={fullAddress}
+      />
     </div>
   )
 }

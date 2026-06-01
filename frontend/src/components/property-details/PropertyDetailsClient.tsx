@@ -15,7 +15,6 @@ import {
   NearbySchools,
   ValueTrend,
   ListingInfo,
-  LocationMap,
 } from './index'
 
 interface PropertyDetailsClientProps {
@@ -129,17 +128,11 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           </div>
         </div>
 
-        {/* Additional Data — schools, map, price & tax history */}
+        {/* Additional Data — schools, price & tax history */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {property.schools && property.schools.length > 0 && (
             <NearbySchools schools={property.schools} />
           )}
-
-          <LocationMap
-            latitude={property.latitude}
-            longitude={property.longitude}
-            address={fullAddress}
-          />
 
           {property.priceHistory && property.priceHistory.length > 0 && (
             <PriceHistory history={property.priceHistory} />
