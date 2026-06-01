@@ -79,6 +79,7 @@ export function PriceHistory({ history }: PriceHistoryProps) {
       <div className="space-y-0">
         {visibleHistory.map((item, i) => {
           const isSold = item.event.toLowerCase().includes('sold')
+          const isPriceChange = item.event.toLowerCase().includes('price change')
           const isLastVisible = i === visibleHistory.length - 1
           return (
             <div key={`${item.date}-${item.event}-${i}`} className="relative flex items-start gap-4 pb-4">
@@ -111,7 +112,10 @@ export function PriceHistory({ history }: PriceHistoryProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div>
-                    <div className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
+                    <div
+                      className={`text-sm font-semibold${isPriceChange ? ' uppercase' : ''}`}
+                      style={{ color: isPriceChange ? 'var(--status-negative)' : 'var(--text-heading)' }}
+                    >
                       {item.event}
                     </div>
                     <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
@@ -120,8 +124,11 @@ export function PriceHistory({ history }: PriceHistoryProps) {
                   </div>
                   <div className="text-right">
                     <div
-                      className="text-sm font-semibold"
-                      style={{ color: 'var(--text-heading)', fontVariantNumeric: 'tabular-nums' }}
+                      className={`text-sm font-semibold${isPriceChange ? ' uppercase' : ''}`}
+                      style={{
+                        color: isPriceChange ? 'var(--status-negative)' : 'var(--text-heading)',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
                     >
                       {formatCurrency(item.price)}
                     </div>
