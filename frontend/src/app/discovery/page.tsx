@@ -643,6 +643,10 @@ function VerdictContent() {
           isBankOwned: data.listing?.is_bank_owned || false,
           isFsbo: data.listing?.is_fsbo || false,
           marketTemperature: data.market?.market_stats?.market_temperature || undefined,
+          priceReductions: data.listing?.price_reduction_count ?? 0,
+          sellerMotivationScore: data.seller_motivation?.score ?? undefined,
+          isAbsenteeOwner: data.listing?.is_absentee_owner ?? undefined,
+          ownerState: data.listing?.owner_state ?? data.owner_state ?? undefined,
           state: propertyData.state || undefined,
           dismissedFamilies: getDismissedFamilies(),
         }

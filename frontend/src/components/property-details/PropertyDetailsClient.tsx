@@ -13,6 +13,7 @@ import {
   PriceHistory,
   TaxHistory,
   NearbySchools,
+  ValueTrend,
   ListingInfo,
   LocationMap,
 } from './index'
@@ -146,6 +147,10 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
 
           {property.priceHistory && property.priceHistory.length > 0 && (
             <PriceHistory history={property.priceHistory} />
+          )}
+
+          {property.zestimateHistory && property.zestimateHistory.length >= 2 && (
+            <ValueTrend history={property.zestimateHistory} />
           )}
         </div>
       </div>

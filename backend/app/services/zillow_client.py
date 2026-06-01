@@ -700,6 +700,113 @@ class ZillowDataExtractor:
         }
 
     @staticmethod
+    def parse_tax_history(data: Any) -> list[dict[str, Any]]:
+        """Parse price-tax-history endpoint payload into canonical tax rows."""
+        if not data:
+            return []
+        payload = data
+        if isinstance(data, dict):
+            payload = data.get("taxHistory") or data.get("tax_history") or []
+        if not isinstance(payload, list):
+            return []
+        rows: list[dict[str, Any]] = []
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+            year = item.get("time") or item.get("year")
+            tax_paid = item.get("taxPaid") or item.get("tax_paid")
+            assessed = item.get("value") or item.get("assessedValue") or item.get("assessed_value")
+            if year is None or tax_paid is None or assessed is None:
+                continue
+            try:
+                rows.append(
+                    {
+                        "year": int(year),
+                        "tax_paid": float(tax_paid),
+                        "assessed_value": float(assessed),
+                        "land_value": _finite_or_none(item.get("landValue") or item.get("land_value")),
+                        "improvement_value": _finite_or_none(
+                            item.get("improvementValue") or item.get("improvement_value")
+                        ),
+                    }
+                )
+            except (TypeError, ValueError):
+                continue
+        return rows
+
+    @staticmethod
+    def parse_nearby_schools(data: Any) -> list[dict[str, Any]]:
+        """Parse schools endpoint payload."""
+        if not data:
+            return []
+        payload = data
+        if isinstance(data, dict):
+            payload = data.get("schools") or data.get("nearbySchools") or data.get("nearby_schools") or []
+        if isinstance(data, list):
+            payload = data
+        if not isinstance(payload, list):
+            return []
+        schools: list[dict[str, Any]] = []
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+            name = item.get("name")
+            rating = item.get("rating")
+            if not name or rating is None:
+                continue
+            try:
+                schools.append(
+                    {
+                        "name": str(name),
+                        "level": str(item.get("level") or item.get("schoolType") or "Unknown"),
+                        "grades": str(item.get("grades") or item.get("gradeRange") or ""),
+                        "rating": float(rating),
+                        "distance": float(item.get("distance") or item.get("distanceInMiles") or 0),
+                        "type": str(item.get("type") or item.get("schoolCategory") or "Public"),
+                        "link": item.get("link") or item.get("url"),
+                    }
+                )
+            except (TypeError, ValueError):
+                continue
+        return schools
+
+    @staticmethod
+    def parse_zestimate_history(data: Any) -> list[dict[str, Any]]:
+        """Parse zestimate-history endpoint payload."""
+        if not data:
+            return []
+        payload = data
+        if isinstance(data, dict):
+            payload = (
+                data.get("zestimateHistory")
+                or data.get("zestimate_history")
+                or data.get("history")
+                or data.get("points")
+                or []
+            )
+        if not isinstance(payload, list):
+            return []
+        points: list[dict[str, Any]] = []
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+            value = item.get("value") or item.get("zestimate") or item.get("amount")
+            date_raw = item.get("date") or item.get("time") or item.get("timestamp")
+            if value is None or date_raw is None:
+                continue
+            try:
+                if isinstance(date_raw, (int, float)):
+                    from datetime import datetime
+
+                    date_str = datetime.fromtimestamp(date_raw / 1000).date().isoformat()
+                else:
+                    date_str = str(date_raw)[:10]
+                points.append({"date": date_str, "value": float(value)})
+            except (TypeError, ValueError, OSError):
+                continue
+        return points
+
+    @staticmethod
     def extract_listing_info(data: dict[str, Any]) -> dict[str, Any]:
         """
         Extract listing status and seller type information.
@@ -780,7 +887,7 @@ class ZillowDataExtractor:
 
                 try:
                     date_sold_str = datetime.fromtimestamp(date_sold / 1000).isoformat()
-                except:
+                except Exception:
                     date_sold_str = str(date_sold)
             else:
                 date_sold_str = str(date_sold)
@@ -810,6 +917,16 @@ class ZillowDataExtractor:
             "listing_agent_name": listing_agent_name,
             "mls_id": mls_id,
         }
+
+
+def _finite_or_none(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        f = float(value)
+        return f if f == f else None  # NaN check
+    except (TypeError, ValueError):
+        return None
 
 
 # Factory function

@@ -67,6 +67,19 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
     facts.push({ label: 'Sold Date', value: formatDate(property.lastSoldDate) })
   }
 
+  if (property.walkScore != null) {
+    facts.push({ label: 'Walk Score', value: `${property.walkScore}/100` })
+  }
+  if (property.transitScore != null) {
+    facts.push({ label: 'Transit Score', value: `${property.transitScore}/100` })
+  }
+  if (property.bikeScore != null) {
+    facts.push({ label: 'Bike Score', value: `${property.bikeScore}/100` })
+  }
+  if (property.parcelId) {
+    facts.push({ label: 'Parcel ID', value: property.parcelId })
+  }
+
   return (
     <div>
       <div

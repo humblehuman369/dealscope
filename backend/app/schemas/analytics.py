@@ -74,6 +74,21 @@ class IQVerdictInput(BaseModel):
     is_fsbo: bool | None = Field(False, description="For Sale By Owner")
     days_on_market: int | None = Field(None, ge=0, le=10_000, description="Days on market")
     market_temperature: str | None = Field(None, max_length=20, description="Market temperature: cold, warm, hot")
+    is_auction: bool | None = Field(False, description="Whether property is an auction listing")
+    price_reductions: int | None = Field(0, ge=0, description="Number of price reductions in current listing cycle")
+    seller_motivation_score: int | None = Field(
+        None,
+        ge=0,
+        le=100,
+        description="Composite seller motivation score (0-100) from calculate_seller_motivation",
+    )
+    is_absentee_owner: bool | None = Field(None, description="Owner does not occupy the property")
+    owner_state: str | None = Field(
+        None,
+        min_length=2,
+        max_length=2,
+        description="Two-letter state code of owner's mailing address (out-of-state signal)",
+    )
 
     @field_validator("days_on_market", mode="before")
     @classmethod
@@ -228,7 +243,7 @@ class IQVerdictInput(BaseModel):
             return u
         return None
 
-    @field_validator("state", mode="before")
+    @field_validator("state", "owner_state", mode="before")
     @classmethod
     def normalize_state_code(cls, v: object) -> str | None:
         if v is None or v == "":
@@ -405,6 +420,9 @@ class DealScoreInput(BaseModel):
     price_reductions: int | None = Field(0, ge=0)
     days_on_market: int | None = Field(None, ge=0, le=10_000)
     market_temperature: str | None = None
+    seller_motivation_score: int | None = Field(None, ge=0, le=100)
+    is_absentee_owner: bool | None = None
+    owner_state: str | None = Field(None, min_length=2, max_length=2)
     state: str | None = Field(
         None,
         min_length=2,

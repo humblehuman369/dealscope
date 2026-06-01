@@ -695,6 +695,8 @@ def _generate_deal_factors(
     is_bank_owned: bool,
     is_fsbo: bool,
     is_listed: bool | None,
+    price_reductions: int = 0,
+    is_absentee_owner: bool | None = None,
 ) -> list[dict[str, str]]:
     """Generate actionable guidance factors for closing the Deal Gap."""
     factors: list[dict[str, str]] = []
@@ -741,6 +743,29 @@ def _generate_deal_factors(
             {
                 "type": "info",
                 "text": "Agent-listed property with standard seller motivation",
+            }
+        )
+
+    if price_reductions >= 2:
+        factors.append(
+            {
+                "type": "positive",
+                "text": f"Price reduced {price_reductions} times — seller is showing flexibility",
+            }
+        )
+    elif price_reductions == 1:
+        factors.append(
+            {
+                "type": "info",
+                "text": "One price reduction on record — watch for further cuts",
+            }
+        )
+
+    if is_absentee_owner is True:
+        factors.append(
+            {
+                "type": "positive",
+                "text": "Absentee owner — may be more motivated to sell vs. occupy",
             }
         )
 
@@ -1144,18 +1169,39 @@ def compute_iq_verdict(
     motivation_label = "Medium"
     is_distressed = input_data.is_foreclosure or input_data.is_bank_owned
 
-    if input_data.listing_status or input_data.seller_type:
-        from app.services.calculators import get_availability_ranking
+    has_listing_context = (
+        input_data.listing_status is not None
+        or input_data.seller_type is not None
+        or input_data.is_foreclosure
+        or input_data.is_bank_owned
+        or input_data.is_fsbo
+        or input_data.days_on_market is not None
+        or (input_data.price_reductions or 0) > 0
+        or input_data.market_temperature is not None
+        or input_data.seller_motivation_score is not None
+        or input_data.is_absentee_owner is True
+        or input_data.owner_state is not None
+    )
 
-        avail = get_availability_ranking(
+    if has_listing_context or input_data.seller_motivation_score is not None:
+        from app.services.calculators import calculate_deal_opportunity_score
+
+        enhanced_motivation = calculate_deal_opportunity_score(
+            income_value=income_value,
+            list_price=list_price,
             listing_status=input_data.listing_status,
             seller_type=input_data.seller_type,
             is_foreclosure=input_data.is_foreclosure or False,
             is_bank_owned=input_data.is_bank_owned or False,
             is_fsbo=input_data.is_fsbo or False,
+            is_auction=input_data.is_auction or False,
+            price_reductions=input_data.price_reductions or 0,
+            days_on_market=input_data.days_on_market,
+            market_temperature=input_data.market_temperature,
+            motivation_override=input_data.seller_motivation_score,
         )
-        motivation_score = avail["score"]
-        motivation_label = avail["motivation"].capitalize()
+        motivation_score = enhanced_motivation["motivation"]["score"]
+        motivation_label = enhanced_motivation["motivation"]["label"]
 
     income_gap_amount = list_price - income_value if list_price > 0 else 0
     income_gap_pct = max(0, (income_gap_amount / list_price) * 100) if list_price > 0 else 0
@@ -1168,6 +1214,16 @@ def compute_iq_verdict(
     pricing_tier, _pricing_sentence = _assess_pricing_quality(income_value, list_price)
 
     deal_score = _calculate_verdict_score(deal_gap_pct)
+    if has_listing_context or input_data.seller_motivation_score is not None:
+        deal_score = max(
+            5,
+            min(
+                95,
+                deal_score
+                + _motivation_modifier(motivation_score)
+                + _market_modifier(input_data.market_temperature),
+            ),
+        )
 
     bracket_label = _get_bracket_label(deal_gap_pct)
 
@@ -1181,6 +1237,8 @@ def compute_iq_verdict(
         is_bank_owned=input_data.is_bank_owned or False,
         is_fsbo=input_data.is_fsbo or False,
         is_listed=input_data.is_listed,
+        price_reductions=input_data.price_reductions or 0,
+        is_absentee_owner=input_data.is_absentee_owner,
     )
 
     deal_verdict = (
@@ -1244,6 +1302,8 @@ def compute_iq_verdict(
         estimated_existing_loan_rate=input_data.estimated_existing_loan_rate,
         unit_count=input_data.unit_count,
         is_owner_occupied=input_data.is_owner_occupied,
+        seller_motivation_score=input_data.seller_motivation_score,
+        is_absentee_owner=input_data.is_absentee_owner,
         bedrooms=input_data.bedrooms,
         state=input_data.state,
         dismissed_families=tuple(input_data.dismissed_families or ()),
@@ -1390,8 +1450,11 @@ def compute_deal_score(
         or input_data.is_bank_owned
         or input_data.is_fsbo
         or input_data.days_on_market is not None
-        or input_data.price_reductions > 0
+        or (input_data.price_reductions or 0) > 0
         or input_data.market_temperature is not None
+        or input_data.seller_motivation_score is not None
+        or input_data.is_absentee_owner is True
+        or input_data.owner_state is not None
     )
 
     if has_listing_context:
@@ -1407,6 +1470,7 @@ def compute_deal_score(
             price_reductions=input_data.price_reductions or 0,
             days_on_market=input_data.days_on_market,
             market_temperature=input_data.market_temperature,
+            motivation_override=input_data.seller_motivation_score,
         )
         deal_score = enhanced_result["score"]
         discount_pct = enhanced_result["deal_gap_percent"]

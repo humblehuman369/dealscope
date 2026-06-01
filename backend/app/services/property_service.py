@@ -30,6 +30,7 @@ from app.schemas.property import (
     LTRResults,
     MarketData,
     MarketStatistics,
+    NearbySchool,
     PriceHistoryEvent,
     PropertyDetails,
     PropertyResponse,
@@ -42,8 +43,10 @@ from app.schemas.property import (
     STRMarketStats,
     STRRegulatory,
     STRResults,
+    TaxHistoryEntry,
     ValuationData,
     WholesaleResults,
+    ZestimateHistoryPoint,
 )
 from app.services.api_clients import create_api_clients
 from app.services.cache_service import CacheService, get_cache_service
@@ -59,7 +62,7 @@ from app.services.calculators import (
 from app.data.motivated_seller_keywords import match_motivated_seller_keywords
 from app.services.iq_verdict_service import compute_iq_verdict
 from app.services.resilience import CircuitOpenError, resilient
-from app.services.zillow_client import create_zillow_client
+from app.services.zillow_client import ZillowDataExtractor, create_zillow_client
 
 logger = logging.getLogger(__name__)
 
@@ -596,6 +599,32 @@ class PropertyService:
             property_state=address_obj.state,
         )
 
+        # Zillow enrichment — tax history, schools, walk scores (zpid-gated, best-effort)
+        resolved_zpid = str(zpid or zillow_zpid or "").strip() or None
+        enrichment: dict[str, Any] = {}
+        if resolved_zpid:
+            enrichment, enrichment_ms = await self._fetch_zillow_enrichment(resolved_zpid)
+            timings["zillow_enrichment_ms"] = enrichment_ms
+
+        tax_history_rows = [TaxHistoryEntry(**r) for r in enrichment.get("tax_history", [])]
+        nearby_school_rows = [NearbySchool(**s) for s in enrichment.get("nearby_schools", [])]
+        zestimate_history_rows = [ZestimateHistoryPoint(**p) for p in enrichment.get("zestimate_history", [])]
+
+        walk_score = enrichment.get("walk_score")
+        transit_score = enrichment.get("transit_score")
+        bike_score = enrichment.get("bike_score")
+        if axesso_data and (walk_score is None or transit_score is None or bike_score is None):
+            axesso_scores = ZillowDataExtractor.extract_scores(axesso_data)
+            walk_score = walk_score if walk_score is not None else axesso_scores.get("walk_score")
+            transit_score = transit_score if transit_score is not None else axesso_scores.get("transit_score")
+            bike_score = bike_score if bike_score is not None else axesso_scores.get("bike_score")
+
+        parcel_id = None
+        if axesso_data and isinstance(axesso_data, dict):
+            reso_facts = axesso_data.get("resoFacts") or {}
+            if isinstance(reso_facts, dict):
+                parcel_id = reso_facts.get("parcelNumber") or reso_facts.get("parcelId")
+
         # Build response
         response = PropertyResponse(
             property_id=property_id,
@@ -624,6 +653,7 @@ class PropertyService:
                 fireplace_count=normalized.get("fireplace_count"),
                 has_pool=normalized.get("has_pool"),
                 view_type=normalized.get("view_type"),
+                parcel_id=parcel_id,
             ),
             valuations=self._build_valuations(normalized),
             rentals=RentalData(
@@ -736,6 +766,9 @@ class PropertyService:
                     ]
                 )
                 else None,
+                walk_score=walk_score,
+                transit_score=transit_score,
+                bike_score=bike_score,
             ),
             listing=ListingInfo(
                 listing_status=normalized.get("listing_status"),
@@ -765,10 +798,14 @@ class PropertyService:
                 total_price_reduction_pct=normalized.get("total_price_reduction_pct"),
                 is_owner_occupied=normalized.get("is_owner_occupied"),
                 is_absentee_owner=normalized.get("is_absentee_owner"),
+                owner_state=normalized.get("owner_state"),
                 page_view_count=normalized.get("page_view_count"),
                 favorite_count=normalized.get("favorite_count"),
             ),
             seller_motivation=seller_motivation,
+            tax_history=tax_history_rows or None,
+            nearby_schools=nearby_school_rows or None,
+            zestimate_history=zestimate_history_rows or None,
             provenance=ProvenanceMap(
                 fields={k: FieldProvenance(**v) if isinstance(v, dict) else v for k, v in provenance.items()}
             ),
@@ -1001,6 +1038,39 @@ class PropertyService:
             logger.error("Error fetching Zillow data by zpid %s: %s", zpid_str, e)
         elapsed_ms = (time.perf_counter() - t0) * 1000
         return axesso_data, zpid_str, elapsed_ms
+
+    async def _fetch_zillow_enrichment(self, zpid: str) -> tuple[dict[str, Any], float]:
+        """Fetch tax history, schools, accessibility scores, and zestimate trend in parallel."""
+        t0 = time.perf_counter()
+        out: dict[str, Any] = {
+            "tax_history": [],
+            "nearby_schools": [],
+            "zestimate_history": [],
+        }
+        zpid_str = str(zpid).strip()
+        if not zpid_str:
+            return out, 0.0
+        try:
+            tax_resp, schools_resp, access_resp, zest_resp = await asyncio.gather(
+                self.zillow.get_price_tax_history(zpid=zpid_str),
+                self.zillow.get_nearby_schools(zpid=zpid_str),
+                self.zillow.get_accessibility_scores(zpid=zpid_str),
+                self.zillow.get_zestimate_history(zpid=zpid_str),
+                return_exceptions=True,
+            )
+            if not isinstance(tax_resp, Exception) and tax_resp.success and tax_resp.data:
+                out["tax_history"] = ZillowDataExtractor.parse_tax_history(tax_resp.data)
+            if not isinstance(schools_resp, Exception) and schools_resp.success and schools_resp.data:
+                out["nearby_schools"] = ZillowDataExtractor.parse_nearby_schools(schools_resp.data)
+            if not isinstance(access_resp, Exception) and access_resp.success and access_resp.data:
+                scores = ZillowDataExtractor.extract_scores(access_resp.data)
+                out.update({k: v for k, v in scores.items() if v is not None})
+            if not isinstance(zest_resp, Exception) and zest_resp.success and zest_resp.data:
+                out["zestimate_history"] = ZillowDataExtractor.parse_zestimate_history(zest_resp.data)
+        except Exception as e:
+            logger.warning("Zillow enrichment failed for zpid %s: %s", zpid_str, e)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        return out, elapsed_ms
 
     def _unwrap_axesso_property(self, raw: dict[str, Any]) -> dict[str, Any]:
         """

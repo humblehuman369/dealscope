@@ -65,6 +65,10 @@ class StructureContext:
     is_owner_occupied: bool | None = None
     bedrooms: int = 3
 
+    # Seller motivation signals (rich composite + absentee for creative paths)
+    seller_motivation_score: int | None = None
+    is_absentee_owner: bool | None = None
+
     # Regional selector calibration (T15) — two-letter state when known
     state: str | None = None
 

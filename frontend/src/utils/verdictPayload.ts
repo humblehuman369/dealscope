@@ -43,6 +43,14 @@ export interface VerdictPayloadBase {
   isBankOwned?: boolean
   isFsbo?: boolean
   marketTemperature?: string | null
+  /** Number of price reductions in the current listing cycle */
+  priceReductions?: number
+  /** Composite seller motivation score (0-100) from property search */
+  sellerMotivationScore?: number | null
+  /** Owner does not occupy the property */
+  isAbsenteeOwner?: boolean | null
+  /** Owner mailing-address state (out-of-state signal) */
+  ownerState?: string | null
   /** Two-letter state code for regional investor discount probability */
   state?: string | null
   /** Last sale — drives Three Paths Sub2 heuristic when set */
@@ -115,6 +123,10 @@ export function buildVerdictAnalysisPayload(
     is_bank_owned: base.isBankOwned ?? false,
     is_fsbo: base.isFsbo ?? false,
     market_temperature: base.marketTemperature ?? undefined,
+    price_reductions: base.priceReductions ?? undefined,
+    seller_motivation_score: base.sellerMotivationScore ?? undefined,
+    is_absentee_owner: base.isAbsenteeOwner ?? undefined,
+    owner_state: base.ownerState ?? undefined,
     state: base.state ?? undefined,
     estimated_purchase_year: base.estimatedPurchaseYear ?? undefined,
     estimated_purchase_price: base.estimatedPurchasePrice ?? undefined,
@@ -243,6 +255,10 @@ export function buildVerdictBaseFromPropertyResponse(
     isBankOwned: data?.listing?.is_bank_owned || false,
     isFsbo: data?.listing?.is_fsbo || false,
     marketTemperature: data?.market?.market_stats?.market_temperature || undefined,
+    priceReductions: data?.listing?.price_reduction_count ?? 0,
+    sellerMotivationScore: data?.seller_motivation?.score ?? undefined,
+    isAbsenteeOwner: data?.listing?.is_absentee_owner ?? undefined,
+    ownerState: data?.listing?.owner_state ?? data?.owner_state ?? undefined,
     state: data?.state ?? data?.details?.state ?? undefined,
     estimatedPurchaseYear: (() => {
       const raw = data?.listing?.date_sold

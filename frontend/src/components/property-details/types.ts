@@ -286,6 +286,15 @@ export interface PropertyData {
   // Schools
   schools?: SchoolInfo[]
 
+  // Accessibility scores (Zillow)
+  walkScore?: number
+  transitScore?: number
+  bikeScore?: number
+  parcelId?: string
+
+  // Value trend (Zestimate history)
+  zestimateHistory?: Array<{ date: string; value: number }>
+
   // Market Statistics - buyer/seller market indicators
   marketStats?: MarketStatistics
 

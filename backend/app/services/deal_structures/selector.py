@@ -121,6 +121,16 @@ def _apply_listing_signals(ctx: StructureContext, structure: DealStructure) -> f
         if structure.id == "price-negotiation":
             score += 3
 
+    if ctx.is_absentee_owner is True:
+        if structure.family == "financing":
+            score += 5  # CALIBRATION PLACEHOLDER — absentee owners more open to creative terms
+        if structure.id in ("sub2", "seller-second-zero-balloon"):
+            score += 4  # CALIBRATION PLACEHOLDER
+
+    if ctx.seller_motivation_score is not None and ctx.seller_motivation_score >= 60:
+        if structure.id == "price-negotiation":
+            score += min(8, (ctx.seller_motivation_score - 50) // 5)
+
     return min(100.0, max(0.0, score))
 
 

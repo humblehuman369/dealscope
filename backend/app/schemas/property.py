@@ -169,6 +169,8 @@ class PropertyDetails(BaseModel):
     has_pool: bool | None = None
     # View
     view_type: str | None = None
+    # County parcel / folio when available from Zillow resoFacts
+    parcel_id: str | None = None
 
     @field_validator(
         "square_footage",
@@ -368,6 +370,10 @@ class MarketData(BaseModel):
     mortgage_rate_30yr: float | None = None
     # Market statistics for buyer/seller analysis
     market_stats: MarketStatistics | None = None
+    # Walk / transit / bike scores (Zillow accessibility-scores endpoint)
+    walk_score: int | None = Field(None, ge=0, le=100)
+    transit_score: int | None = Field(None, ge=0, le=100)
+    bike_score: int | None = Field(None, ge=0, le=100)
 
 
 class DataQuality(BaseModel):
@@ -387,6 +393,35 @@ class PriceHistoryEvent(BaseModel):
     price: float | None = None
     price_change_rate: float | None = None  # Fractional change vs prior event (e.g. -0.05 = 5% cut)
     source: str | None = None
+
+
+class TaxHistoryEntry(BaseModel):
+    """Annual property tax assessment record."""
+
+    year: int
+    tax_paid: float
+    assessed_value: float
+    land_value: float | None = None
+    improvement_value: float | None = None
+
+
+class NearbySchool(BaseModel):
+    """Nearby school with rating and distance."""
+
+    name: str
+    level: str
+    grades: str
+    rating: float
+    distance: float
+    type: str
+    link: str | None = None
+
+
+class ZestimateHistoryPoint(BaseModel):
+    """Historical Zestimate data point for value trend."""
+
+    date: str
+    value: float
 
 
 class ListingInfo(BaseModel):
@@ -450,6 +485,7 @@ class ListingInfo(BaseModel):
     # Ownership signals (RentCast property records)
     is_owner_occupied: bool | None = None
     is_absentee_owner: bool | None = None
+    owner_state: str | None = None
 
     # Engagement / staleness signals (Zillow)
     page_view_count: int | None = None
@@ -1059,6 +1095,9 @@ class PropertyResponse(BaseModel):
     market: MarketData
     listing: ListingInfo | None = None  # Listing status, seller type, price display info
     seller_motivation: SellerMotivationScore | None = None  # Seller motivation analysis
+    tax_history: list[TaxHistoryEntry] | None = None
+    nearby_schools: list[NearbySchool] | None = None
+    zestimate_history: list[ZestimateHistoryPoint] | None = None
     provenance: ProvenanceMap
     data_quality: DataQuality
     fetched_at: datetime

@@ -494,3 +494,60 @@ class TestInvestorDiscountProbability:
         ma = compute_iq_verdict(base.model_copy(update={"state": "MA"}))
         assert fl.deal_gap_percent > 5
         assert fl.cumulative_investor_pct != ma.cumulative_investor_pct
+
+
+class TestSellerMotivationVerdictWiring:
+    """Rich seller-motivation signals flow into verdict opportunity factors."""
+
+    def test_seller_motivation_score_passthrough(self):
+        base = IQVerdictInput(
+            list_price=475_000,
+            monthly_rent=2800,
+            property_taxes=5000,
+            insurance=4750,
+            listing_status="FOR_SALE",
+            days_on_market=60,
+            price_reductions=2,
+        )
+        without = compute_iq_verdict(base)
+        with_rich = compute_iq_verdict(
+            base.model_copy(
+                update={
+                    "seller_motivation_score": 68,
+                    "is_absentee_owner": True,
+                }
+            )
+        )
+        assert with_rich.opportunity_factors.motivation == 68
+        assert with_rich.opportunity_factors.motivation >= without.opportunity_factors.motivation
+
+    def test_price_reductions_raise_motivation_vs_baseline(self):
+        baseline = compute_iq_verdict(
+            IQVerdictInput(
+                list_price=475_000,
+                monthly_rent=2800,
+                listing_status="FOR_SALE",
+            )
+        )
+        with_cuts = compute_iq_verdict(
+            IQVerdictInput(
+                list_price=475_000,
+                monthly_rent=2800,
+                listing_status="FOR_SALE",
+                price_reductions=2,
+                days_on_market=60,
+            )
+        )
+        assert with_cuts.opportunity_factors.motivation > baseline.opportunity_factors.motivation
+
+    def test_deal_factors_include_price_reductions(self):
+        resp = compute_iq_verdict(
+            IQVerdictInput(
+                list_price=475_000,
+                monthly_rent=2800,
+                listing_status="FOR_SALE",
+                price_reductions=2,
+            )
+        )
+        texts = " ".join(f.text for f in resp.deal_factors)
+        assert "Price reduced" in texts

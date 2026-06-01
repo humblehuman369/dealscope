@@ -146,7 +146,35 @@ export function normalizePropertyData(
               e.price_change_rate != null ? Math.round(e.price_change_rate * 1000) / 10 : undefined,
           }))
       : [],
-    taxHistory: [],
-    schools: [],
+    taxHistory: Array.isArray(p.tax_history)
+      ? p.tax_history.map((row: any) => ({
+          year: row.year,
+          taxPaid: row.tax_paid,
+          assessedValue: row.assessed_value,
+          landValue: row.land_value ?? undefined,
+          improvementValue: row.improvement_value ?? undefined,
+        }))
+      : [],
+    schools: Array.isArray(p.nearby_schools)
+      ? p.nearby_schools.map((s: any) => ({
+          name: s.name,
+          level: s.level,
+          grades: s.grades,
+          rating: s.rating,
+          distance: s.distance,
+          type: s.type,
+          link: s.link ?? undefined,
+        }))
+      : [],
+    walkScore: p.market?.walk_score ?? undefined,
+    transitScore: p.market?.transit_score ?? undefined,
+    bikeScore: p.market?.bike_score ?? undefined,
+    parcelId: p.details?.parcel_id ?? undefined,
+    zestimateHistory: Array.isArray(p.zestimate_history)
+      ? p.zestimate_history.map((pt: any) => ({
+          date: pt.date,
+          value: pt.value,
+        }))
+      : undefined,
   }
 }

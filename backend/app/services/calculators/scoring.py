@@ -233,6 +233,7 @@ def calculate_deal_opportunity_score(
     price_reductions: int = 0,
     days_on_market: int | None = None,
     market_temperature: str | None = None,
+    motivation_override: int | None = None,
 ) -> dict[str, Any]:
     """
     Calculate IQ Verdict Score (Deal Opportunity Score).
@@ -257,6 +258,9 @@ def calculate_deal_opportunity_score(
         price_reductions: Number of price reductions
         days_on_market: Days the property has been listed
         market_temperature: Market condition (hot, warm, cold) from AXESSO
+        motivation_override: Pre-computed composite motivation (0-100) from
+            calculate_seller_motivation. When set, used directly without adding
+            DOM/market bonuses (those signals are already in the composite).
 
     Returns:
         Dict with score, grade, label, color, deal_gap, motivation details
@@ -282,30 +286,38 @@ def calculate_deal_opportunity_score(
     )
     base_motivation = availability["score"]
 
-    # Add DOM bonus (longer = more motivated)
-    dom_bonus = 0
-    if days_on_market is not None:
-        if days_on_market >= 180:
-            dom_bonus = 20
-        elif days_on_market >= 120:
-            dom_bonus = 15
-        elif days_on_market >= 90:
-            dom_bonus = 10
-        elif days_on_market >= 60:
-            dom_bonus = 5
+    # When a rich composite score is provided, use it directly — it already
+    # incorporates DOM, price cuts, absentee/out-of-state, keywords, etc.
+    if motivation_override is not None:
+        motivation_score = min(100, max(0, int(motivation_override)))
+        dom_bonus = 0
+        market_modifier = 0
+        base_motivation = motivation_score
+    else:
+        # Add DOM bonus (longer = more motivated)
+        dom_bonus = 0
+        if days_on_market is not None:
+            if days_on_market >= 180:
+                dom_bonus = 20
+            elif days_on_market >= 120:
+                dom_bonus = 15
+            elif days_on_market >= 90:
+                dom_bonus = 10
+            elif days_on_market >= 60:
+                dom_bonus = 5
 
-    # Apply market temperature modifier
-    # Cold (buyer's market) = sellers more motivated = +15
-    # Hot (seller's market) = sellers less motivated = -15
-    market_modifier = 0
-    if market_temperature:
-        temp_lower = market_temperature.lower()
-        if temp_lower == "cold":
-            market_modifier = 15
-        elif temp_lower == "hot":
-            market_modifier = -15
+        # Apply market temperature modifier
+        # Cold (buyer's market) = sellers more motivated = +15
+        # Hot (seller's market) = sellers less motivated = -15
+        market_modifier = 0
+        if market_temperature:
+            temp_lower = market_temperature.lower()
+            if temp_lower == "cold":
+                market_modifier = 15
+            elif temp_lower == "hot":
+                market_modifier = -15
 
-    motivation_score = min(100, max(0, base_motivation + dom_bonus + market_modifier))
+        motivation_score = min(100, max(0, base_motivation + dom_bonus + market_modifier))
 
     # ========================================
     # STEP 3: Map Motivation to Max Achievable Discount

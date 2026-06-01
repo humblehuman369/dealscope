@@ -37,3 +37,20 @@ describe('buildVerdictAnalysisPayload appraiser overrides', () => {
     expect(payload.monthly_rent).toBe(3_612)
   })
 })
+
+describe('buildVerdictAnalysisPayload seller motivation fields', () => {
+  it('maps price reductions and rich motivation signals to snake_case', () => {
+    const payload = buildVerdictAnalysisPayload({
+      ...base,
+      listingStatus: 'FOR_SALE',
+      priceReductions: 2,
+      sellerMotivationScore: 68,
+      isAbsenteeOwner: true,
+      ownerState: 'IL',
+    })
+    expect(payload.price_reductions).toBe(2)
+    expect(payload.seller_motivation_score).toBe(68)
+    expect(payload.is_absentee_owner).toBe(true)
+    expect(payload.owner_state).toBe('IL')
+  })
+})

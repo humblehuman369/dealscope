@@ -48,6 +48,7 @@ export interface PropertyDetails {
   foundation_type?: string | null;
   has_fireplace?: boolean | null;
   has_pool?: boolean | null;
+  parcel_id?: string | null;
 }
 
 // =============================================================================
@@ -185,6 +186,9 @@ export interface MarketData {
   mortgage_rate_arm5?: number | null;
   mortgage_rate_30yr?: number | null;
   market_stats?: MarketStatistics | null;
+  walk_score?: number | null;
+  transit_score?: number | null;
+  bike_score?: number | null;
 }
 
 // =============================================================================
@@ -242,6 +246,7 @@ export interface ListingInfo {
   // Ownership signals
   is_owner_occupied?: boolean | null;
   is_absentee_owner?: boolean | null;
+  owner_state?: string | null;
   // Engagement / staleness
   page_view_count?: number | null;
   favorite_count?: number | null;
@@ -279,6 +284,29 @@ export interface SellerMotivationScore {
   calculated_at?: string | null;
 }
 
+export interface TaxHistoryEntry {
+  year: number;
+  tax_paid: number;
+  assessed_value: number;
+  land_value?: number | null;
+  improvement_value?: number | null;
+}
+
+export interface NearbySchool {
+  name: string;
+  level: string;
+  grades: string;
+  rating: number;
+  distance: number;
+  type: string;
+  link?: string | null;
+}
+
+export interface ZestimateHistoryPoint {
+  date: string;
+  value: number;
+}
+
 // =============================================================================
 // PROPERTY RESPONSE (full API response)
 // =============================================================================
@@ -293,6 +321,9 @@ export interface PropertyResponse {
   market: MarketData;
   listing?: ListingInfo | null;
   seller_motivation?: SellerMotivationScore | null;
+  tax_history?: TaxHistoryEntry[] | null;
+  nearby_schools?: NearbySchool[] | null;
+  zestimate_history?: ZestimateHistoryPoint[] | null;
   data_quality: DataQuality;
   fetched_at: string;
 }

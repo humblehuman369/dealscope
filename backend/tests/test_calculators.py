@@ -13,6 +13,7 @@ from app.core.defaults import BRRRR, FLIP, GROWTH, HOUSE_HACK, OPERATING, REHAB,
 from app.services.calculators import (
     CalculationInputError,
     calculate_brrrr,
+    calculate_deal_opportunity_score,
     calculate_flip,
     calculate_house_hack,
     calculate_ltr,
@@ -351,6 +352,45 @@ class TestSellerMotivation:
     def test_zero_dom_valid(self):
         result = calculate_seller_motivation(days_on_market=0, price_reduction_count=0)
         assert result["score"] >= 0
+
+
+# =====================================================
+# Deal Opportunity Score — motivation override
+# =====================================================
+
+
+class TestDealOpportunityMotivationOverride:
+    """Rich seller-motivation composite must not double-count DOM/market."""
+
+    _BASE = {
+        "income_value": 350_000,
+        "list_price": 475_000,
+        "listing_status": "FOR_SALE",
+        "days_on_market": 60,
+        "market_temperature": "cold",
+        "price_reductions": 2,
+    }
+
+    def test_override_used_directly_no_double_count(self):
+        with_override = calculate_deal_opportunity_score(
+            **self._BASE,
+            motivation_override=68,
+        )
+        without_override = calculate_deal_opportunity_score(**self._BASE)
+        assert with_override["motivation"]["score"] == 68
+        assert with_override["motivation"]["dom_bonus"] == 0
+        assert with_override["motivation"]["market_modifier"] == 0
+        # Without override, cold market + DOM bonuses push score above 68
+        assert without_override["motivation"]["score"] > 68
+
+    def test_higher_override_raises_max_discount(self):
+        low = calculate_deal_opportunity_score(**self._BASE, motivation_override=40)
+        high = calculate_deal_opportunity_score(**self._BASE, motivation_override=80)
+        assert high["max_achievable_discount"] > low["max_achievable_discount"]
+
+    def test_override_capped_at_100(self):
+        result = calculate_deal_opportunity_score(**self._BASE, motivation_override=150)
+        assert result["motivation"]["score"] == 100
 
 
 # =====================================================
