@@ -128,19 +128,22 @@ export function clearMapSnapshot(): void {
 export function markMapViewportForRestore(): void {
   if (typeof window === 'undefined') return
   try {
-    sessionStorage.setItem(MAP_RESTORE_VIEWPORT_KEY, '1')
+    sessionStorage.setItem(MAP_RESTORE_VIEWPORT_KEY, String(Date.now()))
   } catch {
     /* private browsing */
   }
 }
 
-/** True once when returning from Discovery; clears the flag. */
-export function consumeMapViewportRestore(): boolean {
+/** True once when returning from Discovery within the TTL; clears the flag. */
+export function consumeMapViewportRestore(maxAgeMs = 30 * 60 * 1000): boolean {
   if (typeof window === 'undefined') return false
   try {
-    if (sessionStorage.getItem(MAP_RESTORE_VIEWPORT_KEY) !== '1') return false
+    const raw = sessionStorage.getItem(MAP_RESTORE_VIEWPORT_KEY)
     sessionStorage.removeItem(MAP_RESTORE_VIEWPORT_KEY)
-    return true
+    if (!raw) return false
+    const ts = Number(raw)
+    if (!Number.isFinite(ts) || ts <= 0) return false
+    return Date.now() - ts <= maxAgeMs
   } catch {
     return false
   }

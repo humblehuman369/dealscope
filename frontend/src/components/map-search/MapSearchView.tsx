@@ -365,6 +365,59 @@ function LabelGeocoder({
   return null
 }
 
+/** Web Mercator zoom so a circle of `radiusMiles` fits the smaller map dimension. */
+function zoomLevelForRadiusMiles(
+  lat: number,
+  radiusMiles: number,
+  mapWidthPx: number,
+  mapHeightPx: number,
+): number {
+  const minDim = Math.max(Math.min(mapWidthPx, mapHeightPx), 1)
+  const diameterMeters = radiusMiles * 2 * 1609.344
+  const metersPerPixel = diameterMeters / minDim
+  const latRad = (lat * Math.PI) / 180
+  const zoom = Math.log2((156543.03392 * Math.cos(latRad)) / metersPerPixel)
+  return Math.min(21, Math.max(3, Math.round(zoom)))
+}
+
+function pushMapBounds(
+  map: google.maps.Map,
+  onFitted?: (bounds: { north: number; south: number; east: number; west: number }) => void,
+): void {
+  setTimeout(() => {
+    const b = map.getBounds()
+    if (!b || !onFitted) return
+    const ne = b.getNorthEast()
+    const sw = b.getSouthWest()
+    onFitted({
+      north: ne.lat(),
+      south: sw.lat(),
+      east: ne.lng(),
+      west: sw.lng(),
+    })
+  }, 200)
+}
+
+function applyRadiusFit(
+  map: google.maps.Map,
+  center: { lat: number; lng: number },
+  radiusMiles: number,
+  onFitted?: (bounds: { north: number; south: number; east: number; west: number }) => void,
+): boolean {
+  const div = map.getDiv()
+  if (div.clientWidth < 50 || div.clientHeight < 50) return false
+  const zoom = zoomLevelForRadiusMiles(
+    center.lat,
+    radiusMiles,
+    div.clientWidth,
+    div.clientHeight,
+  )
+  map.setCenter(center)
+  map.setZoom(zoom)
+  pushMapBounds(map, onFitted)
+  return true
+}
+
 /**
  * Fits the map viewport to a circular radius (in miles) around `center`.
  * Re-runs when the center or radius changes so async location resolution
@@ -387,40 +440,27 @@ function FitToRadius({
   useEffect(() => {
     if (!map) return
     const fitKey = `${center.lat.toFixed(5)},${center.lng.toFixed(5)},${radiusMiles}`
-    if (lastFittedKeyRef.current === fitKey) return
 
-    const latDelta = radiusMiles / 69
-    const lngDelta = radiusMiles / (69 * Math.cos((center.lat * Math.PI) / 180))
-    const bounds = new google.maps.LatLngBounds(
-      { lat: center.lat - latDelta, lng: center.lng - lngDelta },
-      { lat: center.lat + latDelta, lng: center.lng + lngDelta },
-    )
-
-    const applyFit = () => {
-      if (lastFittedKeyRef.current === fitKey) return
-      lastFittedKeyRef.current = fitKey
-      map.fitBounds(bounds, 0)
-
-      // Push the resolved bounds to the listings hook in case `idle` doesn't fire
-      // (mirrors LabelGeocoder's belt-and-suspenders pattern).
-      setTimeout(() => {
-        const b = map.getBounds()
-        if (!b || !onFittedRef.current) return
-        const ne = b.getNorthEast()
-        const sw = b.getSouthWest()
-        onFittedRef.current({
-          north: ne.lat(),
-          south: sw.lat(),
-          east: ne.lng(),
-          west: sw.lng(),
-        })
-      }, 250)
+    const tryFit = (): boolean => {
+      if (lastFittedKeyRef.current === fitKey) return true
+      const didFit = applyRadiusFit(map, center, radiusMiles, onFittedRef.current)
+      if (didFit) lastFittedKeyRef.current = fitKey
+      return didFit
     }
 
-    // Wait until the map has laid out — fitBounds is unreliable on first paint.
-    const idleListener = google.maps.event.addListenerOnce(map, 'idle', applyFit)
+    if (tryFit()) return
+
+    // Map may already be idle (listener would never fire) or the container may
+    // still be sizing — retry on idle and on resize until the fit lands.
+    const idleListener = google.maps.event.addListenerOnce(map, 'idle', tryFit)
+    const ro = new ResizeObserver(() => {
+      tryFit()
+    })
+    ro.observe(map.getDiv())
+
     return () => {
       google.maps.event.removeListener(idleListener)
+      ro.disconnect()
     }
   }, [map, center.lat, center.lng, radiusMiles])
 
