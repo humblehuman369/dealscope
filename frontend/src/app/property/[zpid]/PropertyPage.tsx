@@ -35,7 +35,7 @@ export default function PropertyPage() {
 
     async function fetchPropertyData() {
       try {
-        const data = await fetchProperty(address)
+        const data = await fetchProperty(address, zpid ? { zpid } : undefined)
         if (cancelled) return
         const responseZpid = (data as any)?.zpid ? String((data as any).zpid) : ''
         if (responseZpid && responseZpid !== zpid) {

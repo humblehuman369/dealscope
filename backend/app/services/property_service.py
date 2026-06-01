@@ -935,8 +935,13 @@ class PropertyService:
             zpid = axesso_data.get("zpid") or raw.get("zpid")
 
             if zpid is not None:
-                zestimate = axesso_data.get("zestimate") or axesso_data.get("Zestimate")
-                if zpid and zestimate is None:
+                # Always enrich with the full property-v2 detail. The lean
+                # search-by-address payload frequently omits homeStatus,
+                # description, priceHistory, agent contact, and even the
+                # Zestimate — all of which live on property-v2. Merge the
+                # detail over the search result, keeping any search-by-address
+                # values the detail lacks (e.g. a Zestimate present only there).
+                try:
                     details_response = await self.zillow.get_property_details(zpid=str(zpid))
                     if details_response.success and details_response.data:
                         details_data = details_response.data
@@ -947,7 +952,12 @@ class PropertyService:
                                 zpid,
                             )
                         else:
-                            axesso_data = self._unwrap_axesso_property(details_data)
+                            detail_unwrapped = self._unwrap_axesso_property(details_data)
+                            merged = dict(axesso_data)
+                            merged.update({k: v for k, v in detail_unwrapped.items() if v is not None})
+                            axesso_data = merged
+                except Exception as e:
+                    logger.warning("property-v2 enrichment failed for zpid %s: %s", zpid, e)
                 return axesso_data, str(zpid) if zpid else None
 
             if attempt < max_attempts - 1:

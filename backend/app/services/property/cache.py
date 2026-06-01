@@ -65,6 +65,18 @@ def _should_invalidate_cache(
 
     legacy_valuation_formula = cached_data.get("valuation_formula_version") != formula_version
 
+    # Degraded listing: we resolved a Zillow id but the lean search-by-address
+    # path cached an entry with no listing_status AND no Zestimate. This is the
+    # signature of a property that is actually listed (property-v2 would return
+    # homeStatus + Zestimate) but was cached from the summary endpoint. Force a
+    # re-fetch so the full detail (status, description, price history) loads.
+    # After re-fetch the Zestimate populates, so this won't loop.
+    degraded_listing = (
+        cached_data.get("zpid") is not None
+        and listing.get("listing_status") is None
+        and valuations.get("zestimate") is None
+    )
+
     zillow_absent = (
         cached_data.get("zpid") is None
         and valuations.get("zestimate") is None
@@ -105,6 +117,7 @@ def _should_invalidate_cache(
         or zillow_stale
         or redfin_stale
         or legacy_valuation_formula
+        or degraded_listing
     )
 
     if not stale:
@@ -117,6 +130,8 @@ def _should_invalidate_cache(
         if redfin_stale
         else "pre-valuation-snapshot-v5"
         if legacy_valuation_formula
+        else "degraded listing (zpid present, status+zestimate missing)"
+        if degraded_listing
         else "insurance_annual missing"
         if missing_insurance
         else "hoa_fees_monthly missing on HOA-likely property"
