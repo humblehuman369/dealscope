@@ -44,10 +44,10 @@ export function MotivatedSellerSignals({
         {chips.map((chip, i) => (
           <span
             key={`${chip}-${i}`}
-            className="px-2 py-0.5 rounded text-[11px] font-medium"
+            className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wide"
             style={{
               background: 'var(--surface-elevated)',
-              color: 'var(--text-secondary)',
+              color: 'var(--status-negative)',
               border: '1px solid var(--border-subtle)',
             }}
           >
