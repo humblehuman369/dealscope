@@ -914,6 +914,17 @@ function StrategyContent() {
       setAppliedPathId(scenario.structureId)
     }
 
+    // Glow the worksheet rows this Option fills in — same accent the in-page
+    // "Apply an Option" button (applyPathPatch) sets. Without this, opening from
+    // Discovery auto-populated the worksheet but left the changed fields un-highlighted.
+    setHighlightedFields(
+      computeHighlightedStateFields(
+        patch,
+        worksheetStateRef.current,
+        currentStrategyTypeRef.current,
+      ),
+    )
+
     // Recompute the verdict panel against the freshly applied overrides. If the
     // property hasn't loaded yet (arriving via URL), recalcVerdict is a no-op, so
     // flag a pending recalc that fires once `propertyInfo` is available.
