@@ -39,6 +39,14 @@ DAYS_PER_YEAR = 365.25
 # used for occupancy-only searches that have no tenure window.
 OWNER_RECORDS_ANY_TENURE_RANGE = "*:36500"
 
+# Owner Leads (owner-records) is a bounded, zoomed-in lead tool — not a
+# state/national scan. Cap its search reach around the viewport center and, when
+# the reach exceeds one cell, tile it into ~OWNER_RECORDS_CELL_RADIUS_MILES cells
+# so results fill the searched area evenly (instead of a single central circle)
+# and get past RentCast's per-call 500-record cap in dense metros.
+OWNER_RECORDS_MAX_RADIUS_MILES = 20.0
+OWNER_RECORDS_CELL_RADIUS_MILES = 10.0
+
 # ─── Listing status canonicalization ─────────────────────────────────────
 # Mirrors frontend/src/lib/dealSignal.ts :: STATUS_MAP. Keep in sync; if these
 # drift the user-visible filter and the server-side filter will disagree.
@@ -415,15 +423,53 @@ class MapSearchService:
                 req.owner_tenure_max_years,
                 req.owner_occupancy,
             )
-            # Fetch long-tenure candidates (RentCast records) and an independent
-            # recently-sold set (Zillow) concurrently. The latter validates that
-            # RentCast's lastSaleDate hasn't gone stale via a resale in the gap —
-            # RentCast can't catch that itself (same dataset), so we use a fresher
-            # MLS-sourced source. Best-effort: if validation fails, rows are left
-            # unflagged rather than dropped.
-            tenure_rows, resale_index = await asyncio.gather(
-                self._fetch_owner_tenure_records(req, center_lat, center_lng, sub_radius),
-                self._fetch_recent_resales(center_lat, center_lng, sub_radius),
+            # Bound the search reach around the viewport center (clamped to the
+            # visible viewport) so Owner Leads stays a zoomed-in tool rather than
+            # scanning an entire state. Tile that bounded region so markers fill
+            # it instead of clustering in a single central circle.
+            search_radius = min(radius, OWNER_RECORDS_MAX_RADIUS_MILES)
+            or_north, or_south, or_east, or_west = self._radius_to_bbox(
+                center_lat, center_lng, search_radius
+            )
+            or_north = min(or_north, req.north)
+            or_south = max(or_south, req.south)
+            or_east = min(or_east, req.east)
+            or_west = max(or_west, req.west)
+
+            if search_radius > OWNER_RECORDS_CELL_RADIUS_MILES:
+                or_grid = 2
+                or_points = _compute_grid_points(or_north, or_south, or_east, or_west, or_grid)
+                cell_diag = _haversine_distance_miles(
+                    or_south,
+                    or_west,
+                    or_south + (or_north - or_south) / or_grid,
+                    or_west + (or_east - or_west) / or_grid,
+                )
+                cell_radius = max(cell_diag / 2, 0.5)
+            else:
+                or_points = [(center_lat, center_lng)]
+                cell_radius = max(search_radius, 0.5)
+
+            # Fetch tenure candidates at each grid cell (RentCast records) plus an
+            # independent recently-sold set (Zillow) concurrently. The latter
+            # validates that RentCast's lastSaleDate hasn't gone stale via a resale
+            # in the gap — RentCast can't catch that itself (same dataset), so we
+            # use a fresher MLS-sourced source. Best-effort: if validation fails,
+            # rows are left unflagged rather than dropped.
+            fetch_results = await asyncio.gather(
+                *[
+                    self._fetch_owner_tenure_records(req, plat, plng, cell_radius)
+                    for plat, plng in or_points
+                ],
+                self._fetch_recent_resales(center_lat, center_lng, search_radius),
+            )
+            resale_index = fetch_results[-1]
+            tenure_rows = [row for sublist in fetch_results[:-1] for row in sublist]
+            logger.info(
+                "Owner-records tiled fetch: %d cells, cell_radius=%.1fmi, %d raw rows",
+                len(or_points),
+                cell_radius,
+                len(tenure_rows),
             )
             tenure_rows = self._annotate_tenure_confidence(tenure_rows, resale_index)
             # Hard-exclude candidates an independent source shows resold recently.

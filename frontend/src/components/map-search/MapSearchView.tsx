@@ -1732,29 +1732,36 @@ export function MapSearchView() {
     </div>
   )
 
+  // Keep the map mounted at all times. The List view renders as an opaque
+  // overlay on top of it (rather than replacing it), so toggling List<->Map
+  // never unmounts <Map>. Unmounting would reset the camera to the page-initial
+  // center/zoom and trigger a fresh search for that viewport — discarding the
+  // results the user was viewing (the "0 of N show" bug, most visible in
+  // bounded Owner Leads searches).
   return (
-    <div className="w-full h-full" style={{ backgroundColor: 'var(--surface-base)' }}>
-      {viewMode === 'map' ? (
-        mapSection
-      ) : (
-        <PropertyListView
-          listings={listings}
-          dealSignals={dealSignals}
-          selectedListingId={selectedListing?.id ?? null}
-          onSelectListing={handleListSelect}
-          isLoading={isLoading}
-          selectedIds={selectedIds}
-          onToggleSelect={handleToggleSelect}
-          onToggleSelectAll={handleToggleSelectAll}
-          onClearSelection={handleClearSelection}
-          onExportCsv={handleExportCsv}
-          onExportExcel={handleExportExcel}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          activeStatuses={filters.listing_statuses}
-          onResetStatuses={() => updateFilters({ listing_statuses: [] })}
-          sortBy={filters.sort_by}
-        />
+    <div className="relative w-full h-full" style={{ backgroundColor: 'var(--surface-base)' }}>
+      {mapSection}
+      {viewMode === 'list' && (
+        <div className="absolute inset-0 z-40">
+          <PropertyListView
+            listings={listings}
+            dealSignals={dealSignals}
+            selectedListingId={selectedListing?.id ?? null}
+            onSelectListing={handleListSelect}
+            isLoading={isLoading}
+            selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
+            onToggleSelectAll={handleToggleSelectAll}
+            onClearSelection={handleClearSelection}
+            onExportCsv={handleExportCsv}
+            onExportExcel={handleExportExcel}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            activeStatuses={filters.listing_statuses}
+            onResetStatuses={() => updateFilters({ listing_statuses: [] })}
+            sortBy={filters.sort_by}
+          />
+        </div>
       )}
     </div>
   )
