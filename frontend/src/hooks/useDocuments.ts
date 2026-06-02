@@ -32,11 +32,12 @@ interface UploadInput {
 }
 
 /**
- * Upload via multipart/form-data. The Documents API uses ``Form()`` fields
- * rather than JSON, so we hand a FormData directly to fetch. Going around
- * ``api.post`` because that helper assumes JSON; the underlying auth +
- * cookie setup uses ``credentials: 'include'`` which fetch inherits via the
- * default ``RequestInit``.
+ * Upload via multipart/form-data. ``apiRequest`` detects the FormData body and
+ * skips JSON encoding, so we route through ``api.post`` to inherit the shared
+ * auth stack: CSRF double-submit header, API base URL, client-type header,
+ * 401 refresh-and-retry, and Capacitor Bearer-token handling. Sending the raw
+ * FormData via ``fetch`` skipped the CSRF header, which the backend rejects
+ * with 403 on every cookie-authenticated upload.
  */
 async function uploadDocument(propertyId: string, body: UploadInput): Promise<PropertyDocument> {
   const fd = new FormData()
@@ -45,22 +46,7 @@ async function uploadDocument(propertyId: string, body: UploadInput): Promise<Pr
   fd.append('property_id', propertyId)
   if (body.description) fd.append('description', body.description)
 
-  const resp = await fetch('/api/v1/documents', {
-    method: 'POST',
-    body: fd,
-    credentials: 'include',
-  })
-  if (!resp.ok) {
-    const text = await resp.text().catch(() => '')
-    let detail = text
-    try {
-      detail = (JSON.parse(text) as { detail?: string }).detail ?? text
-    } catch {
-      // Body wasn't JSON — keep it as raw text.
-    }
-    throw new Error(detail || `Upload failed (${resp.status})`)
-  }
-  return (await resp.json()) as PropertyDocument
+  return api.post<PropertyDocument>('/api/v1/documents', fd)
 }
 
 export function useUploadDocument(propertyId: string) {
