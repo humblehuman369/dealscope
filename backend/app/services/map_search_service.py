@@ -1076,14 +1076,27 @@ class MapSearchService:
                 logger.info("RentCast property records returned no data (saleDateRange=%s)", sale_date_range)
                 return []
 
-            # RentCast /properties may return a list or a wrapped object { properties: [...] }.
-            if isinstance(resp.data, list):
-                raw_records: list[dict[str, Any]] = resp.data
-            else:
-                body = resp.data or {}
-                raw_records = body.get("properties") or body.get("data") or []
-                if not isinstance(raw_records, list):
-                    raw_records = [raw_records] if raw_records else []
+            # Robust extraction: RentCast /properties (records mode) may return
+            # a bare list or a wrapped payload under common keys. Descend into
+            # a single level of nesting if the first candidate is a dict.
+            def _extract_list(payload: Any) -> list[dict[str, Any]]:
+                if isinstance(payload, list):
+                    return [x for x in payload if isinstance(x, dict)]
+                if not isinstance(payload, dict):
+                    return []
+                for key in ("properties", "data", "results", "items"):
+                    cand = payload.get(key)
+                    if isinstance(cand, list):
+                        return [x for x in cand if isinstance(x, dict)]
+                    if isinstance(cand, dict):
+                        # One more level of nesting (e.g., data.properties)
+                        for k2 in ("properties", "data", "results", "items"):
+                            c2 = cand.get(k2)
+                            if isinstance(c2, list):
+                                return [x for x in c2 if isinstance(x, dict)]
+                return []
+
+            raw_records = _extract_list(resp.data)
             results = [
                 self._normalize_owner_tenure_record(item)
                 for item in raw_records
