@@ -256,6 +256,18 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
 
   const columns = useMemo(() => computeColumns(strategy), [strategy])
 
+  // Section-level accordion control for the Active Funnel tier: lets the user
+  // open/close all pre-purchase columns in one click instead of toggling each.
+  const preKeys = useMemo(() => columns.pre.map((_, i) => `pre-${i}`), [columns.pre])
+  const allPreExpanded = preKeys.length > 0 && preKeys.every((k) => expanded.has(k))
+  const toggleAllPre = () =>
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (allPreExpanded) preKeys.forEach((k) => next.delete(k))
+      else preKeys.forEach((k) => next.add(k))
+      return next
+    })
+
   // Bucket properties into columns. Anything that doesn't match the active
   // filter (e.g. a flip Owned when the LTR filter is on) is held aside so
   // it can be surfaced via the count chip instead of disappearing silently.
@@ -395,7 +407,20 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
       <div className="overflow-x-auto pb-1">
         <div className="flex gap-3 min-w-max">
           {/* Tier 1: Pre-purchase funnel */}
-          <TierGroup label="Active Funnel" tone="sky">
+          <TierGroup
+            label="Active Funnel"
+            tone="sky"
+            action={
+              <button
+                type="button"
+                onClick={toggleAllPre}
+                aria-expanded={allPreExpanded}
+                className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] hover:text-[var(--accent-sky)] transition-colors"
+              >
+                {allPreExpanded ? 'Collapse all' : 'Expand all'}
+              </button>
+            }
+          >
             {columns.pre.map((col, i) => {
               const key = `pre-${i}`
               return (
