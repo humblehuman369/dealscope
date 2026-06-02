@@ -242,7 +242,7 @@ function PropertyContextCard({
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-xs" style={{ color: 'var(--text-heading)' }}>
-            Labor Factor
+            Cost Factor
           </span>
           <span
             className="px-1.5 py-0.5 rounded text-xs font-semibold"
@@ -614,6 +614,7 @@ export default function QuickRehabEstimate({
       garage_spaces: propertyData.garage_spaces,
       lot_sqft: propertyData.lot_size,
       hoa_monthly: propertyData.hoa_monthly,
+      regional_factor: costContext?.combined_factor,
     })
 
     return {
@@ -623,7 +624,7 @@ export default function QuickRehabEstimate({
         includeHoldingCosts: includeHolding,
       }),
     }
-  }, [propertyData, condition, contingencyPct, includeHolding])
+  }, [propertyData, condition, contingencyPct, includeHolding, costContext])
 
   useMemo(() => {
     onEstimateChange?.(estimate.total_rehab)

@@ -36,6 +36,13 @@ export interface PropertyInput {
   lot_sqft?: number
   hoa_monthly?: number
   recent_permits?: string[]
+  /**
+   * Blended regional cost factor (labor/material/permit weighted) from the
+   * backend RegionalCostContext. When provided it is the single source of
+   * truth for regional uplift, keeping Quick aligned with the Detailed
+   * builder. Falls back to the zip-based labor factor when absent.
+   */
+  regional_factor?: number
 }
 
 export interface RehabBreakdown {
@@ -282,10 +289,16 @@ const BASE_COSTS = {
 // ASSET CLASS MULTIPLIERS
 // ============================================
 
+// Finish-grade premiums. These reflect higher-end FINISH selections
+// (better cabinets, stone counters, tile) and are applied ONLY to finish
+// line items — never to commodity/system work (roof, HVAC, windows, permits).
+// Previously these were 2.0x / 3.5x and were multiplied across EVERY line
+// item on top of the regional factor, which roughly tripled estimates and
+// produced the "luxury trap" (a normal $750k South-FL home priced as a gut).
 const ASSET_CLASS_MULTIPLIERS: Record<AssetClass, number> = {
   standard: 1.0,
-  luxury: 2.0,
-  ultra_luxury: 3.5,
+  luxury: 1.35,
+  ultra_luxury: 1.8,
 }
 
 // ============================================
@@ -307,14 +320,14 @@ const CONDITION_INTENSITY: Record<PropertyCondition, ConditionFactors> = {
     permit_tier: 'major',
   },
   fair: {
-    wet_room_factor: 0.8,
-    dry_room_factor: 0.9,
+    wet_room_factor: 0.6,
+    dry_room_factor: 0.65,
     systems_check: true,
     permit_tier: 'major',
   },
   good: {
-    wet_room_factor: 0.5,
-    dry_room_factor: 0.6,
+    wet_room_factor: 0.4,
+    dry_room_factor: 0.5,
     systems_check: false,
     permit_tier: 'minor',
   },
@@ -395,9 +408,11 @@ export class RehabIntelligence {
     this.assetClass = assetClass
     this.gradeMultiplier = multiplier
 
-    // Determine location factor
+    // Determine regional cost factor. Prefer the backend's blended factor
+    // (labor/material/permit weighted) so Quick reconciles with the Detailed
+    // builder; fall back to the zip-based labor factor when unavailable.
     const locData = LOCATION_FACTORS[this.zipCode] ?? LOCATION_FACTORS['default']
-    this.locationFactor = locData.factor
+    this.locationFactor = input.regional_factor ?? locData.factor
     this.locationMarket = locData.market
 
     // Get condition factors
@@ -407,15 +422,21 @@ export class RehabIntelligence {
   private determineAssetClass(): { assetClass: AssetClass; multiplier: number } {
     const pricePerSqft = this.sqFt > 0 ? this.arv / this.sqFt : 0
 
-    if (this.arv > 2_000_000 || pricePerSqft > 700) {
+    // Thresholds reflect genuine luxury construction, not normal South-FL
+    // pricing. A dated 2/2 worth $750k (~$430/sqft) is middle-market here and
+    // must NOT be auto-classified as a luxury rehab.
+    if (this.arv > 4_000_000 || pricePerSqft > 1000) {
       return { assetClass: 'ultra_luxury', multiplier: ASSET_CLASS_MULTIPLIERS.ultra_luxury }
-    } else if (this.arv > 750_000 || pricePerSqft > 400) {
+    } else if (this.arv > 1_500_000 || pricePerSqft > 600) {
       return { assetClass: 'luxury', multiplier: ASSET_CLASS_MULTIPLIERS.luxury }
     } else {
       return { assetClass: 'standard', multiplier: ASSET_CLASS_MULTIPLIERS.standard }
     }
   }
 
+  // Finish-grade uplift. Use ONLY for finish-sensitive line items (kitchen,
+  // bathrooms, exterior paint, front door). Commodity/system work multiplies
+  // by this.locationFactor (regional) alone.
   private applyMultipliers(baseCost: number): number {
     return baseCost * this.gradeMultiplier * this.locationFactor
   }
@@ -460,11 +481,9 @@ export class RehabIntelligence {
     // ============================================
     // KITCHEN
     // ============================================
-    if (wetFactor >= 0.8) {
-      breakdown.kitchen = this.applyMultipliers(BASE_COSTS.kitchen_full_remodel)
-    } else {
-      breakdown.kitchen = this.applyMultipliers(BASE_COSTS.kitchen_cosmetic) * wetFactor
-    }
+    // Scope scales continuously with condition: distressed (1.0) = full
+    // remodel, fair (0.6) = mid update, excellent (0.2) = light refresh.
+    breakdown.kitchen = this.applyMultipliers(BASE_COSTS.kitchen_full_remodel) * wetFactor
 
     // ============================================
     // BATHROOMS
@@ -472,15 +491,10 @@ export class RehabIntelligence {
     const fullBaths = Math.max(1, Math.floor(this.bathrooms * 0.67))
     const halfBaths = Math.max(0, this.bathrooms - fullBaths)
 
-    if (wetFactor >= 0.8) {
-      breakdown.bathrooms =
-        fullBaths * this.applyMultipliers(BASE_COSTS.full_bath_remodel) +
-        halfBaths * this.applyMultipliers(BASE_COSTS.half_bath_remodel)
-    } else {
-      breakdown.bathrooms =
-        fullBaths * this.applyMultipliers(BASE_COSTS.full_bath_cosmetic) * wetFactor +
-        halfBaths * this.applyMultipliers(BASE_COSTS.half_bath_cosmetic) * wetFactor
-    }
+    breakdown.bathrooms =
+      (fullBaths * this.applyMultipliers(BASE_COSTS.full_bath_remodel) +
+        halfBaths * this.applyMultipliers(BASE_COSTS.half_bath_remodel)) *
+      wetFactor
 
     // ============================================
     // FLOORING
@@ -519,11 +533,11 @@ export class RehabIntelligence {
     }
 
     if (this.condition === 'distressed' || this.condition === 'fair') {
-      exteriorCost += this.applyMultipliers(BASE_COSTS.landscaping)
+      exteriorCost += BASE_COSTS.landscaping * this.locationFactor
     }
 
     if (this.hasPool && this.propertyAge > 15 && !this.recentPermits.includes('pool')) {
-      const poolCost = this.applyMultipliers(BASE_COSTS.pool_resurface)
+      const poolCost = BASE_COSTS.pool_resurface * this.locationFactor
       exteriorCost += poolCost
       warnings.push({
         item: 'Pool',
@@ -546,14 +560,15 @@ export class RehabIntelligence {
       const roofSqft = this.sqFt * 1.2 * this.stories
       let roofCostPerSqft = BASE_COSTS.roof_shingle_sqft
 
+      // Roof cost is driven by the actual roof material, never by asset class.
+      // (Previously a default-shingle roof was silently repriced as tile for
+      // "luxury" homes — a 2.3x inflation.)
       if (this.roofType === 'tile') {
         roofCostPerSqft = BASE_COSTS.roof_tile_sqft
       } else if (this.roofType === 'metal') {
         roofCostPerSqft = BASE_COSTS.roof_metal_sqft
       } else if (this.roofType === 'flat') {
         roofCostPerSqft = BASE_COSTS.roof_flat_sqft
-      } else if (this.assetClass === 'luxury' || this.assetClass === 'ultra_luxury') {
-        roofCostPerSqft = BASE_COSTS.roof_tile_sqft
       }
 
       breakdown.roof = roofSqft * roofCostPerSqft * this.locationFactor
@@ -677,7 +692,7 @@ export class RehabIntelligence {
       !this.recentPermits.includes('windows')
     ) {
       const windowCount = Math.max(8, Math.floor(this.sqFt / 150))
-      const windowsCost = windowCount * this.applyMultipliers(BASE_COSTS.windows_each)
+      const windowsCost = windowCount * BASE_COSTS.windows_each * this.locationFactor
       windowsDoorsCost += windowsCost
 
       warnings.push({
@@ -694,7 +709,7 @@ export class RehabIntelligence {
       windowsDoorsCost += this.applyMultipliers(BASE_COSTS.front_door)
 
       if (this.garageSpaces > 0) {
-        windowsDoorsCost += this.garageSpaces * this.applyMultipliers(BASE_COSTS.garage_door)
+        windowsDoorsCost += this.garageSpaces * BASE_COSTS.garage_door * this.locationFactor
       }
     }
 
