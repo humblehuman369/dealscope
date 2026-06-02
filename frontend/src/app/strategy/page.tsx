@@ -1045,6 +1045,13 @@ function StrategyContent() {
       return
     }
     const stickyTop = measureStrategyAddressOffset()
+    // The bar is position: sticky. If the page lands already scrolled (e.g. the
+    // browser carried over the Discovery scroll position on client-side nav),
+    // the bar is already pinned, so getBoundingClientRect() returns its stuck
+    // position — we'd compute target === current scrollY and never realign,
+    // leaving the page scrolled past the bar onto the content below it. Reset to
+    // the top first so the bar reports its natural document position.
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
     const barDocTop = bar.getBoundingClientRect().top + window.scrollY
     const target = Math.max(0, barDocTop - stickyTop)
     window.scrollTo({ top: target, left: 0, behavior: 'instant' })
