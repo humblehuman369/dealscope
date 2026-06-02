@@ -673,6 +673,7 @@ function StrategyContent() {
     {},
   )
   const [isRecalculating, setIsRecalculating] = useState(false)
+  const [nextStepsOpen, setNextStepsOpen] = useState(false)
   const [showDealGapVideo, setShowDealGapVideo] = useState(false)
   const [pitchModalStructure, setPitchModalStructure] = useState<DealStructure | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -2975,20 +2976,17 @@ function StrategyContent() {
 
         {/* Next Steps — accordion, closed by default */}
         <section className="px-[1px] sm:px-5" style={{ paddingTop: 8, paddingBottom: 8 }}>
-          <details>
-            <summary
-              style={{
-                cursor: 'pointer',
-                listStyle: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 16,
-              }}
-            >
-              {/* Export links — inline with Next Steps. stopPropagation keeps a
-                  link click from toggling the accordion. */}
-              <div className="flex items-center gap-6">
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 16,
+            }}
+          >
+            {/* Export links — siblings of the toggle (never nested inside it) so
+                interactive elements stay out of the accordion control. */}
+            <div className="flex items-center gap-6">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -3065,7 +3063,21 @@ function StrategyContent() {
                   {isExporting === 'excel' ? 'Generating…' : 'Download Excel'}
                 </button>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setNextStepsOpen((v) => !v)}
+                aria-expanded={nextStepsOpen}
+                aria-controls="next-steps-panel"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  cursor: 'pointer',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                }}
+              >
                 <span
                   style={{
                     color: 'var(--accent-sky)',
@@ -3083,8 +3095,11 @@ function StrategyContent() {
                   height="18"
                   viewBox="0 0 22 22"
                   fill="none"
-                  style={{ flexShrink: 0, transition: 'transform 0.3s ease' }}
-                  className="details-chevron"
+                  style={{
+                    flexShrink: 0,
+                    transition: 'transform 0.3s ease',
+                    transform: nextStepsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
                 >
                   <circle cx="11" cy="11" r="10" stroke="var(--accent-sky)" strokeWidth="1.5" />
                   <path
@@ -3095,9 +3110,10 @@ function StrategyContent() {
                     strokeLinejoin="round"
                   />
                 </svg>
-              </div>
-            </summary>
-            <div style={{ paddingTop: 12 }}>
+              </button>
+            </div>
+            {nextStepsOpen && (
+            <div id="next-steps-panel" style={{ paddingTop: 12 }}>
               <p
                 className={tw.textBody}
                 style={{ color: colors.text.body, marginBottom: 20, lineHeight: 1.55 }}
@@ -3213,11 +3229,7 @@ function StrategyContent() {
                 ))}
               </div>
             </div>
-          </details>
-          <style>{`
-            details summary::-webkit-details-marker { display: none; }
-            details[open] .details-chevron { transform: rotate(180deg); }
-          `}</style>
+            )}
         </section>
 
         {/* Apply a Path — OUTSIDE AuthGate so signed-out users are not clipped by
