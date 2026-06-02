@@ -1244,6 +1244,16 @@ class MapSearchRequest(BaseModel):
             "'owner_occupied' = owner lives there; None = any."
         ),
     )
+    owner_records_for_sale_only: bool = Field(
+        default=False,
+        description=(
+            "Owner Leads on-market variant. When true (and an owner-tenure or "
+            "occupancy filter is active), intersect the qualifying owner set with "
+            "current for-sale listings and return only homes that are BOTH listed "
+            "AND match the tenure/occupancy filter, enriched with owner tenure / "
+            "occupancy. When false, return off-market owner records (default)."
+        ),
+    )
 
 
 class MapListing(BaseModel):

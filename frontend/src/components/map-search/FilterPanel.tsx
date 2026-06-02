@@ -633,6 +633,40 @@ export function FilterPanel({
               </PillButton>
             ))}
           </div>
+          {/* Availability — off-market owner records (default) vs only the
+              subset that is currently for sale (highest-intent for buyers). */}
+          <span
+            className="block text-[10px] font-semibold uppercase tracking-wider pt-1"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
+            Availability
+          </span>
+          <div className="flex flex-wrap gap-1">
+            <PillButton
+              mapLightChrome={mapLightChrome}
+              active={!filters.owner_records_for_sale_only}
+              onClick={() => onChange({ owner_records_for_sale_only: false })}
+              aria-label="Off-market owner leads"
+            >
+              Off-market
+            </PillButton>
+            <PillButton
+              mapLightChrome={mapLightChrome}
+              active={Boolean(filters.owner_records_for_sale_only)}
+              onClick={() => onChange({ owner_records_for_sale_only: true })}
+              aria-label="For-sale homes matching the owner filter"
+            >
+              For sale
+            </PillButton>
+          </div>
+          <p
+            className="text-[10px] leading-snug"
+            style={{
+              color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.body : 'var(--text-secondary)',
+            }}
+          >
+            For sale = only currently-listed homes that match — what active buyers want.
+          </p>
         </div>
 
         {/* Distressed deals */}

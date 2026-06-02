@@ -237,6 +237,7 @@ def _build_cache_key(req: MapSearchRequest) -> str:
             "otmin": req.owner_tenure_min_years,
             "otmax": req.owner_tenure_max_years,
             "occ": req.owner_occupancy,
+            "oros": req.owner_records_for_sale_only,
             "lim": req.limit,
             "off": req.offset,
         },
@@ -450,37 +451,96 @@ class MapSearchService:
                 or_points = [(center_lat, center_lng)]
                 cell_radius = max(search_radius, 0.5)
 
-            # Fetch tenure candidates at each grid cell (RentCast records) plus an
-            # independent recently-sold set (Zillow) concurrently. The latter
-            # validates that RentCast's lastSaleDate hasn't gone stale via a resale
-            # in the gap — RentCast can't catch that itself (same dataset), so we
-            # use a fresher MLS-sourced source. Best-effort: if validation fails,
-            # rows are left unflagged rather than dropped.
-            fetch_results = await asyncio.gather(
-                *[
-                    self._fetch_owner_tenure_records(req, plat, plng, cell_radius)
-                    for plat, plng in or_points
-                ],
-                self._fetch_recent_resales(center_lat, center_lng, search_radius),
-            )
-            resale_index = fetch_results[-1]
-            tenure_rows = [row for sublist in fetch_results[:-1] for row in sublist]
-            logger.info(
-                "Owner-records tiled fetch: %d cells, cell_radius=%.1fmi, %d raw rows",
-                len(or_points),
-                cell_radius,
-                len(tenure_rows),
-            )
-            tenure_rows = self._annotate_tenure_confidence(tenure_rows, resale_index)
-            # Hard-exclude candidates an independent source shows resold recently.
-            # Only drops rows actually flagged "recent_resale"; when validation was
-            # unavailable (confidence is None) nothing is dropped, so we never hide
-            # leads we couldn't verify.
-            before_exclude = len(tenure_rows)
-            tenure_rows = [r for r in tenure_rows if r.tenure_confidence != "recent_resale"]
-            excluded = before_exclude - len(tenure_rows)
-            if excluded:
-                logger.info("Owner-tenure: hard-excluded %d recently-resold candidates", excluded)
+            if req.owner_records_for_sale_only:
+                # On-market variant: intersect the qualifying owner set with
+                # CURRENT for-sale listings so investors see only homes that are
+                # both listed AND match the tenure/occupancy filter. Results render
+                # as for-sale listings enriched with owner tenure / occupancy.
+                tenure_lists = await asyncio.gather(
+                    *[
+                        self._fetch_owner_tenure_records(req, plat, plng, cell_radius)
+                        for plat, plng in or_points
+                    ]
+                )
+                tenure_rows = [row for sublist in tenure_lists for row in sublist]
+
+                for_sale_tasks: list = []
+                for plat, plng in or_points:
+                    for_sale_tasks.append(self._fetch_rentcast(req, "sale", plat, plng, cell_radius))
+                    if self.zillow:
+                        for_sale_tasks.append(
+                            self._fetch_zillow(plat, plng, cell_radius, "forSale", req, None)
+                        )
+                for_sale_lists = await asyncio.gather(*for_sale_tasks, return_exceptions=True)
+                for_sale_rows = [
+                    row
+                    for sublist in for_sale_lists
+                    if not isinstance(sublist, Exception)
+                    for row in sublist
+                ]
+
+                # Index qualifying owner records by normalized address, then keep
+                # for-sale listings whose address matches one — enriching them with
+                # the owner's tenure / occupancy from the matched record.
+                tenure_by_key: dict[str, MapListing] = {}
+                for rec in tenure_rows:
+                    key = self._addr_match_key(rec.address)
+                    if key:
+                        tenure_by_key.setdefault(key, rec)
+
+                matched: list[MapListing] = []
+                for fs in for_sale_rows:
+                    key = self._addr_match_key(fs.address)
+                    rec = tenure_by_key.get(key) if key else None
+                    if rec is not None:
+                        matched.append(
+                            fs.model_copy(
+                                update={
+                                    "owner_years": rec.owner_years,
+                                    "owner_occupied": rec.owner_occupied,
+                                }
+                            )
+                        )
+                tenure_rows = matched
+                logger.info(
+                    "Owner-records for-sale-only: %d cells, %d owner records, %d for-sale listings, %d matched",
+                    len(or_points),
+                    len(tenure_by_key),
+                    len(for_sale_rows),
+                    len(matched),
+                )
+            else:
+                # Off-market variant (default): owner records validated against an
+                # independent recently-sold source (Zillow) to drop stale leads.
+                # RentCast can't catch a resale in the gap itself (same dataset),
+                # so a fresher MLS-sourced source is used. Best-effort: if
+                # validation fails, rows are left unflagged rather than dropped.
+                fetch_results = await asyncio.gather(
+                    *[
+                        self._fetch_owner_tenure_records(req, plat, plng, cell_radius)
+                        for plat, plng in or_points
+                    ],
+                    self._fetch_recent_resales(center_lat, center_lng, search_radius),
+                )
+                resale_index = fetch_results[-1]
+                tenure_rows = [row for sublist in fetch_results[:-1] for row in sublist]
+                logger.info(
+                    "Owner-records tiled fetch: %d cells, cell_radius=%.1fmi, %d raw rows",
+                    len(or_points),
+                    cell_radius,
+                    len(tenure_rows),
+                )
+                tenure_rows = self._annotate_tenure_confidence(tenure_rows, resale_index)
+                # Hard-exclude candidates an independent source shows resold
+                # recently. Only drops rows actually flagged "recent_resale"; when
+                # validation was unavailable (confidence is None) nothing is
+                # dropped, so we never hide leads we couldn't verify.
+                before_exclude = len(tenure_rows)
+                tenure_rows = [r for r in tenure_rows if r.tenure_confidence != "recent_resale"]
+                excluded = before_exclude - len(tenure_rows)
+                if excluded:
+                    logger.info("Owner-tenure: hard-excluded %d recently-resold candidates", excluded)
+
             raw_source_totals = len(tenure_rows)
             for item in tenure_rows:
                 self._merge_listing_into(listings_by_addr, item)

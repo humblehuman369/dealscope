@@ -31,6 +31,7 @@ export interface MapSearchFilters {
   owner_tenure_min_years?: number
   owner_tenure_max_years?: number
   owner_occupancy?: 'owner_occupied' | 'absentee'
+  owner_records_for_sale_only?: boolean
 }
 
 export interface MapBounds {
@@ -113,6 +114,7 @@ export function useMapSearch() {
         owner_tenure_min_years: activeFilters.owner_tenure_min_years,
         owner_tenure_max_years: activeFilters.owner_tenure_max_years,
         owner_occupancy: activeFilters.owner_occupancy,
+        owner_records_for_sale_only: activeFilters.owner_records_for_sale_only || undefined,
         limit: 500,
       }
 
@@ -185,7 +187,8 @@ export function useMapSearch() {
         'include_str_listings' in next ||
         'owner_tenure_min_years' in next ||
         'owner_tenure_max_years' in next ||
-        'owner_occupancy' in next
+        'owner_occupancy' in next ||
+        'owner_records_for_sale_only' in next
 
       setFilters((prev) => {
         const merged = { ...prev, ...next }
