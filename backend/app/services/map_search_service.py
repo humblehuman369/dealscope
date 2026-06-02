@@ -875,28 +875,23 @@ class MapSearchService:
         if not filter_state:
             return None
 
-        # Disable for-sale defaults only when the request is pre-foreclosure
-        # exclusively — that bucket is its own listing type and doesn't need
-        # ``fsba``. Foreclosure/auction REOs ARE agent-listed, so leave
-        # ``fsba`` on (just don't add ``fsbo``/``nc``/``cmsn`` noise).
-        is_pre_only = requested_statuses == {"pre-foreclosure"}
-        if is_pre_only:
-            filter_state.update(
-                {
-                    "fsba": {"value": False},
-                    "fsbo": {"value": False},
-                    "nc": {"value": False},
-                    "cmsn": {"value": False},
-                }
-            )
-        else:
-            filter_state.update(
-                {
-                    "fsbo": {"value": False},
-                    "nc": {"value": False},
-                    "cmsn": {"value": False},
-                }
-            )
+        # Distressed-only inventory: disable the for-sale listing-type defaults
+        # (agent / owner / new-construction / coming-soon) so the response is
+        # limited to the enabled distressed bucket(s). Every returned row is then
+        # a member of that bucket, so _fetch_zillow_distressed can blanket-tag it
+        # without a per-row re-classification. This is required because AXESSO's
+        # search-by-url rows omit the listingSubType/foreclosureTypes fields the
+        # re-classifier needs — leaving fsba on (the old behavior) returned a mix
+        # of actives + distressed that the re-classifier then dropped entirely,
+        # so foreclosure/auction always came back empty.
+        filter_state.update(
+            {
+                "fsba": {"value": False},
+                "fsbo": {"value": False},
+                "nc": {"value": False},
+                "cmsn": {"value": False},
+            }
+        )
 
         state = {
             "pagination": {},
@@ -1652,15 +1647,15 @@ class MapSearchService:
         (``auc`` / ``fore`` / ``pre``), which is the same path Zillow's
         own UI uses.
 
-        For pre-foreclosure-only queries the URL builder disables ``fsba``
-        (the for-sale-by-agent default) and the response is naturally
-        distressed-only, so every row gets tagged ``"Pre-Foreclosure"``.
-
-        For foreclosure / auction queries the URL builder leaves ``fsba``
-        on (REOs and most auction listings are agent-listed sub-types),
-        so the response contains a mix of active + distressed rows. We
-        re-classify each row via :func:`_derive_zillow_status` and keep
-        only those that actually match the requested distressed bucket.
+        The URL builder disables the for-sale listing-type defaults
+        (``fsba``/``fsbo``/``nc``/``cmsn``) and enables only the requested
+        distressed bucket, so the response is naturally distressed-only and
+        every row is tagged with that bucket's label. We do NOT re-classify
+        per row: AXESSO's ``search-by-url`` response omits the
+        ``listingSubType`` / ``foreclosureTypes`` fields, so re-deriving the
+        status would drop every foreclosure / auction row (verified: those two
+        buckets returned 0 results while pre-foreclosure — which was already
+        blanket-tagged — returned rows).
         """
         if not self.zillow:
             return []
@@ -1687,37 +1682,19 @@ class MapSearchService:
                         break
 
             label = self._DISTRESSED_LABELS[status]
-            # Pre-foreclosure URL is distressed-only — blanket-tag every row.
-            # Foreclosure/auction URLs include agent-listed actives — only
-            # keep rows whose derived status matches the requested bucket.
-            blanket_tag = status == "pre-foreclosure"
-
+            # The distressed-only URL constrains Zillow's response to this single
+            # bucket, so blanket-tag every row. Re-deriving per row would drop all
+            # foreclosure/auction rows (AXESSO search-by-url omits the
+            # listingSubType/foreclosureTypes fields the re-classifier needs).
             results: list[MapListing] = []
-            kept_via_derive = 0
             for item in raw_props:
                 if not self._zillow_has_coords(item):
                     continue
                 listing = self._normalize_zillow_listing(item)
-                if blanket_tag:
-                    listing.listing_status = label
-                else:
-                    derived = self._derive_zillow_status(item)
-                    if derived != label:
-                        continue
-                    listing.listing_status = label
-                    kept_via_derive += 1
+                listing.listing_status = label
                 results.append(listing)
 
-            if blanket_tag:
-                logger.info("Zillow %s: %d listings", status, len(results))
-            else:
-                logger.info(
-                    "Zillow %s: %d/%d rows matched %s",
-                    status,
-                    kept_via_derive,
-                    len(raw_props),
-                    label,
-                )
+            logger.info("Zillow %s: %d listings", status, len(results))
             return results
         except Exception:
             logger.exception("Zillow %s listing fetch failed", status)

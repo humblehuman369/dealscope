@@ -211,12 +211,28 @@ export function useMapSearch() {
   const dealSignals = useMemo(() => classifyListings(mergedListings), [mergedListings])
 
   const filteredAndSortedListings = useMemo(() => {
+    // Owner Leads (RentCast records) is a distinct inventory whose rows carry
+    // off-market / for-sale statuses and no days-on-market. The listing-oriented
+    // status and DOM filters don't apply and would drop every row, so skip them
+    // when owner-records mode is active.
+    const ownerRecordsActive =
+      filters.owner_tenure_min_years != null || filters.owner_occupancy != null
     let result = mergedListings
-    result = filterByListingStatus(result, filters.listing_statuses)
-    result = filterByMinDom(result, filters.min_dom, dealSignals)
+    if (!ownerRecordsActive) {
+      result = filterByListingStatus(result, filters.listing_statuses)
+      result = filterByMinDom(result, filters.min_dom, dealSignals)
+    }
     result = sortListings(result, dealSignals, filters.sort_by)
     return result
-  }, [mergedListings, filters.listing_statuses, filters.min_dom, filters.sort_by, dealSignals])
+  }, [
+    mergedListings,
+    filters.listing_statuses,
+    filters.min_dom,
+    filters.sort_by,
+    filters.owner_tenure_min_years,
+    filters.owner_occupancy,
+    dealSignals,
+  ])
 
   return {
     listings: filteredAndSortedListings,

@@ -199,10 +199,24 @@ export function FilterPanel({
   const toggleListingStatus = useCallback(
     (status: string) => {
       const current = filters.listing_statuses
-      const next = current.includes(status)
-        ? current.filter((s) => s !== status)
-        : [...current, status]
-      onChange({ listing_statuses: next })
+      const isAdding = !current.includes(status)
+      const next = isAdding ? [...current, status] : current.filter((s) => s !== status)
+      // Standard status filters and Owner Leads (RentCast records) are mutually
+      // exclusive search modes — owner-records mode replaces standard sources and
+      // ignores listing_statuses, so leaving owner filters set would return
+      // off-market records that the status filter then drops (0 results). Turning
+      // a status on clears Owner Leads + motivated-seller so the search actually runs.
+      onChange({
+        listing_statuses: next,
+        ...(isAdding
+          ? {
+              owner_tenure_min_years: undefined,
+              owner_tenure_max_years: undefined,
+              owner_occupancy: undefined,
+              motivated_seller_search: false,
+            }
+          : {}),
+      })
     },
     [filters.listing_statuses, onChange],
   )
@@ -218,7 +232,9 @@ export function FilterPanel({
       onChange({
         owner_tenure_min_years: min,
         owner_tenure_max_years: max,
-        ...(min != null ? { motivated_seller_search: false } : {}),
+        ...(min != null
+          ? { motivated_seller_search: false, listing_statuses: [] }
+          : {}),
       })
     },
     [onChange],
@@ -228,7 +244,9 @@ export function FilterPanel({
     (value?: 'owner_occupied' | 'absentee') => {
       onChange({
         owner_occupancy: value,
-        ...(value != null ? { motivated_seller_search: false } : {}),
+        ...(value != null
+          ? { motivated_seller_search: false, listing_statuses: [] }
+          : {}),
       })
     },
     [onChange],
