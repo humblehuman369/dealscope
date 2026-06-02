@@ -585,9 +585,9 @@ export function FilterPanel({
                 color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.body : 'var(--text-secondary)',
               }}
             >
-              Off-market homes by how long the owner has held (long tenure = likely high equity)
-              and whether they live there (absentee = landlord/investor). Replaces standard map
-              results while active.
+              Homes by how long the owner has held (long tenure = likely high equity), whether
+              they live there (absentee = landlord/investor) and availability (off-market / for
+              sale). Replaces standard map results while active.
             </p>
           </div>
           {/* Tenure */}
@@ -644,16 +644,27 @@ export function FilterPanel({
           <div className="flex flex-wrap gap-1">
             <PillButton
               mapLightChrome={mapLightChrome}
-              active={!filters.owner_records_for_sale_only}
-              onClick={() => onChange({ owner_records_for_sale_only: false })}
+              active={filters.owner_records_availability === 'any'}
+              onClick={() => onChange({ owner_records_availability: 'any' })}
+              aria-label="Any availability: off-market and for-sale matches"
+            >
+              Any
+            </PillButton>
+            <PillButton
+              mapLightChrome={mapLightChrome}
+              active={
+                !filters.owner_records_availability ||
+                filters.owner_records_availability === 'off_market'
+              }
+              onClick={() => onChange({ owner_records_availability: 'off_market' })}
               aria-label="Off-market owner leads"
             >
               Off-market
             </PillButton>
             <PillButton
               mapLightChrome={mapLightChrome}
-              active={Boolean(filters.owner_records_for_sale_only)}
-              onClick={() => onChange({ owner_records_for_sale_only: true })}
+              active={filters.owner_records_availability === 'for_sale'}
+              onClick={() => onChange({ owner_records_availability: 'for_sale' })}
               aria-label="For-sale homes matching the owner filter"
             >
               For sale

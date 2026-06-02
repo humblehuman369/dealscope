@@ -237,7 +237,7 @@ def _build_cache_key(req: MapSearchRequest) -> str:
             "otmin": req.owner_tenure_min_years,
             "otmax": req.owner_tenure_max_years,
             "occ": req.owner_occupancy,
-            "oros": req.owner_records_for_sale_only,
+            "orav": req.owner_records_availability,
             "lim": req.limit,
             "off": req.offset,
         },
@@ -451,49 +451,66 @@ class MapSearchService:
                 or_points = [(center_lat, center_lng)]
                 cell_radius = max(search_radius, 0.5)
 
-            if req.owner_records_for_sale_only:
-                # On-market variant: intersect the qualifying owner set with
-                # CURRENT for-sale listings so investors see only homes that are
-                # both listed AND match the tenure/occupancy filter. Results render
-                # as for-sale listings enriched with owner tenure / occupancy.
-                tenure_lists = await asyncio.gather(
-                    *[
-                        self._fetch_owner_tenure_records(req, plat, plng, cell_radius)
-                        for plat, plng in or_points
-                    ]
-                )
-                tenure_rows = [row for sublist in tenure_lists for row in sublist]
+            # Availability variants:
+            #   off_market (default) → qualifying owner records not currently listed
+            #   for_sale            → only qualifying owners whose home is listed now
+            #   any                 → both (listed matches + off-market records)
+            availability = req.owner_records_availability
+            need_for_sale = availability in ("for_sale", "any")
+            need_resale = availability in ("off_market", "any")
 
-                for_sale_tasks: list = []
+            # Build all upstream calls into one gather so cells, for-sale lookups,
+            # and the recently-sold validation run concurrently. Group boundaries
+            # are tracked by length so results can be sliced back apart.
+            tenure_tasks: list = [
+                self._fetch_owner_tenure_records(req, plat, plng, cell_radius)
+                for plat, plng in or_points
+            ]
+            for_sale_tasks: list = []
+            if need_for_sale:
                 for plat, plng in or_points:
                     for_sale_tasks.append(self._fetch_rentcast(req, "sale", plat, plng, cell_radius))
                     if self.zillow:
                         for_sale_tasks.append(
                             self._fetch_zillow(plat, plng, cell_radius, "forSale", req, None)
                         )
-                for_sale_lists = await asyncio.gather(*for_sale_tasks, return_exceptions=True)
-                for_sale_rows = [
-                    row
-                    for sublist in for_sale_lists
-                    if not isinstance(sublist, Exception)
-                    for row in sublist
-                ]
 
-                # Index qualifying owner records by normalized address, then keep
-                # for-sale listings whose address matches one — enriching them with
-                # the owner's tenure / occupancy from the matched record.
+            combined: list = [*tenure_tasks, *for_sale_tasks]
+            if need_resale:
+                combined.append(self._fetch_recent_resales(center_lat, center_lng, search_radius))
+
+            gathered = await asyncio.gather(*combined, return_exceptions=True)
+
+            tenure_results = gathered[: len(tenure_tasks)]
+            for_sale_results = gathered[len(tenure_tasks) : len(tenure_tasks) + len(for_sale_tasks)]
+            resale_index = None
+            if need_resale:
+                last = gathered[-1]
+                resale_index = last if not isinstance(last, Exception) else None
+
+            tenure_rows = [
+                row for sub in tenure_results if not isinstance(sub, Exception) for row in sub
+            ]
+            for_sale_rows = [
+                row for sub in for_sale_results if not isinstance(sub, Exception) for row in sub
+            ]
+
+            n_records, n_for_sale = len(tenure_rows), len(for_sale_rows)
+
+            if availability == "for_sale":
+                # Intersection: keep for-sale listings whose address matches a
+                # qualifying owner record, enriched with that owner's tenure/occupancy.
                 tenure_by_key: dict[str, MapListing] = {}
                 for rec in tenure_rows:
                     key = self._addr_match_key(rec.address)
                     if key:
                         tenure_by_key.setdefault(key, rec)
-
-                matched: list[MapListing] = []
+                result_rows: list[MapListing] = []
                 for fs in for_sale_rows:
                     key = self._addr_match_key(fs.address)
                     rec = tenure_by_key.get(key) if key else None
                     if rec is not None:
-                        matched.append(
+                        result_rows.append(
                             fs.model_copy(
                                 update={
                                     "owner_years": rec.owner_years,
@@ -501,45 +518,46 @@ class MapSearchService:
                                 }
                             )
                         )
-                tenure_rows = matched
-                logger.info(
-                    "Owner-records for-sale-only: %d cells, %d owner records, %d for-sale listings, %d matched",
-                    len(or_points),
-                    len(tenure_by_key),
-                    len(for_sale_rows),
-                    len(matched),
-                )
+            elif availability == "any":
+                # Union: for each qualifying owner record, show the live listing
+                # (enriched) when it's currently for sale, otherwise the off-market
+                # record (recent-resale stale leads dropped).
+                for_sale_by_key: dict[str, MapListing] = {}
+                for fs in for_sale_rows:
+                    key = self._addr_match_key(fs.address)
+                    if key:
+                        for_sale_by_key.setdefault(key, fs)
+                annotated = self._annotate_tenure_confidence(tenure_rows, resale_index)
+                result_rows = []
+                for rec in annotated:
+                    key = self._addr_match_key(rec.address)
+                    fs = for_sale_by_key.get(key) if key else None
+                    if fs is not None:
+                        result_rows.append(
+                            fs.model_copy(
+                                update={
+                                    "owner_years": rec.owner_years,
+                                    "owner_occupied": rec.owner_occupied,
+                                }
+                            )
+                        )
+                    elif rec.tenure_confidence != "recent_resale":
+                        result_rows.append(rec)
             else:
-                # Off-market variant (default): owner records validated against an
+                # Off-market (default): owner records validated against an
                 # independent recently-sold source (Zillow) to drop stale leads.
-                # RentCast can't catch a resale in the gap itself (same dataset),
-                # so a fresher MLS-sourced source is used. Best-effort: if
-                # validation fails, rows are left unflagged rather than dropped.
-                fetch_results = await asyncio.gather(
-                    *[
-                        self._fetch_owner_tenure_records(req, plat, plng, cell_radius)
-                        for plat, plng in or_points
-                    ],
-                    self._fetch_recent_resales(center_lat, center_lng, search_radius),
-                )
-                resale_index = fetch_results[-1]
-                tenure_rows = [row for sublist in fetch_results[:-1] for row in sublist]
-                logger.info(
-                    "Owner-records tiled fetch: %d cells, cell_radius=%.1fmi, %d raw rows",
-                    len(or_points),
-                    cell_radius,
-                    len(tenure_rows),
-                )
-                tenure_rows = self._annotate_tenure_confidence(tenure_rows, resale_index)
-                # Hard-exclude candidates an independent source shows resold
-                # recently. Only drops rows actually flagged "recent_resale"; when
-                # validation was unavailable (confidence is None) nothing is
-                # dropped, so we never hide leads we couldn't verify.
-                before_exclude = len(tenure_rows)
-                tenure_rows = [r for r in tenure_rows if r.tenure_confidence != "recent_resale"]
-                excluded = before_exclude - len(tenure_rows)
-                if excluded:
-                    logger.info("Owner-tenure: hard-excluded %d recently-resold candidates", excluded)
+                annotated = self._annotate_tenure_confidence(tenure_rows, resale_index)
+                result_rows = [r for r in annotated if r.tenure_confidence != "recent_resale"]
+
+            logger.info(
+                "Owner-records availability=%s: %d cells, %d records, %d for-sale, %d results",
+                availability,
+                len(or_points),
+                n_records,
+                n_for_sale,
+                len(result_rows),
+            )
+            tenure_rows = result_rows
 
             raw_source_totals = len(tenure_rows)
             for item in tenure_rows:

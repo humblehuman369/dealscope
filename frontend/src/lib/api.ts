@@ -249,8 +249,8 @@ export interface MapSearchRequest {
   owner_tenure_max_years?: number
   /** Owner-occupancy lead filter: 'absentee' (landlord) | 'owner_occupied' | undefined (any). */
   owner_occupancy?: 'owner_occupied' | 'absentee'
-  /** Owner Leads on-market variant: return only currently for-sale homes matching the tenure/occupancy filter. */
-  owner_records_for_sale_only?: boolean
+  /** Owner Leads availability: 'off_market' (default), 'for_sale' (only currently-listed matches), or 'any' (both). */
+  owner_records_availability?: 'any' | 'off_market' | 'for_sale'
 }
 
 export interface MapListing {
