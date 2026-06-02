@@ -1076,7 +1076,14 @@ class MapSearchService:
                 logger.info("RentCast property records returned no data (saleDateRange=%s)", sale_date_range)
                 return []
 
-            raw_records: list[dict[str, Any]] = resp.data if isinstance(resp.data, list) else [resp.data]
+            # RentCast /properties may return a list or a wrapped object { properties: [...] }.
+            if isinstance(resp.data, list):
+                raw_records: list[dict[str, Any]] = resp.data
+            else:
+                body = resp.data or {}
+                raw_records = body.get("properties") or body.get("data") or []
+                if not isinstance(raw_records, list):
+                    raw_records = [raw_records] if raw_records else []
             results = [
                 self._normalize_owner_tenure_record(item)
                 for item in raw_records
