@@ -163,14 +163,15 @@ export default function DealMakerIndexPage() {
             lat: String(pos.coords.latitude),
             lng: String(pos.coords.longitude),
             zoom: '9',
+            from: 'deal-maker',
           })
           router.push(`/map-search?${params.toString()}`)
         },
-        () => router.push('/map-search'),
+        () => router.push('/map-search?from=deal-maker'),
         { timeout: 3000 },
       )
     } else {
-      router.push('/map-search')
+      router.push('/map-search?from=deal-maker')
     }
   }
 

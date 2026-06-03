@@ -7,7 +7,11 @@ import type { MapListing } from '@/lib/api'
 import type { DealSignalResult, SortOption } from '@/lib/dealSignal'
 import { displayListingStatus } from '@/lib/dealSignal'
 import { useListingPhoto } from './listingPhoto'
-import { navigateToDiscoveryFromMap } from './mapDiscoveryNavigation'
+import {
+  navigateToDiscoveryFromMap,
+  useMapSelectionDestination,
+  mapSelectionCtaLabel,
+} from './mapDiscoveryNavigation'
 import { MapViewModeToggle } from './MapViewModeToggle'
 
 const SORT_LABELS: Record<SortOption, string> = {
@@ -86,6 +90,7 @@ function PropertyListRow({
   onSelect: () => void
 }) {
   const router = useRouter()
+  const ctaLabel = mapSelectionCtaLabel(useMapSelectionDestination())
   const ppsqft = formatPricePerSqft(listing.price, listing.sqft)
   const { src: photoSrc, handleError: handlePhotoError } = useListingPhoto(listing, {
     streetViewSize: '160x120',
@@ -232,7 +237,7 @@ function PropertyListRow({
             className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold transition-opacity hover:opacity-90 shrink-0"
             style={{ backgroundColor: 'var(--accent-sky)', color: '#fff' }}
           >
-            Analyze <ArrowRight size={10} aria-hidden />
+            {ctaLabel} <ArrowRight size={10} aria-hidden />
           </button>
         </div>
       </div>

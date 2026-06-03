@@ -6,7 +6,12 @@ import type { MapListing } from '@/lib/api'
 import type { DealSignalResult } from '@/lib/dealSignal'
 import { displayListingStatus } from '@/lib/dealSignal'
 import { useListingPhoto } from './listingPhoto'
-import { buildDiscoverySearchParams, navigateToDiscoveryFromMapPath } from './mapDiscoveryNavigation'
+import {
+  buildDiscoverySearchParams,
+  navigateToDiscoveryFromMapPath,
+  useMapSelectionDestination,
+  mapSelectionCtaLabel,
+} from './mapDiscoveryNavigation'
 
 interface PropertyPreviewCardProps {
   listing: MapListing
@@ -41,6 +46,7 @@ function domColor(dom: number): string {
 
 export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPreviewCardProps) {
   const router = useRouter()
+  const ctaLabel = mapSelectionCtaLabel(useMapSelectionDestination())
   const ppsqft = formatPricePerSqft(listing.price, listing.sqft)
   const { src: photoSrc, handleError: handlePhotoError } = useListingPhoto(listing, {
     streetViewSize: '600x400',
@@ -210,7 +216,7 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-opacity hover:opacity-90"
             style={{ backgroundColor: 'var(--accent-sky)', color: '#fff' }}
           >
-            Analyze <ArrowRight size={12} />
+            {ctaLabel} <ArrowRight size={12} />
           </button>
         </div>
       </div>

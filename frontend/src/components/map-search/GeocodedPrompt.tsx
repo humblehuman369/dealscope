@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { MapPin, ArrowRight, X, Loader2, Bed, Bath, Ruler, Calendar } from 'lucide-react'
-import { navigateToDiscoveryFromMapPath } from './mapDiscoveryNavigation'
+import { navigateToDiscoveryFromMapPath, useMapSelectionDestination } from './mapDiscoveryNavigation'
 
 export interface OffMarketPreview {
   bedrooms?: number | null
@@ -41,6 +41,8 @@ export function GeocodedPrompt({
   isLoadingPreview,
 }: GeocodedPromptProps) {
   const router = useRouter()
+  const ctaLabel =
+    useMapSelectionDestination() === 'deal-maker' ? 'Build Deal' : 'Analyze This Property'
 
   if (!isGeocoding && !address) return null
 
@@ -223,7 +225,7 @@ export function GeocodedPrompt({
             className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-opacity hover:opacity-90"
             style={{ backgroundColor: 'var(--accent-sky)', color: '#fff' }}
           >
-            Analyze This Property <ArrowRight size={14} />
+            {ctaLabel} <ArrowRight size={14} />
           </button>
         </div>
       )}
