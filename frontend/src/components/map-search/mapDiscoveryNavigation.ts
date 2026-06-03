@@ -52,32 +52,29 @@ export function mapSelectionCtaLabel(destination: MapSelectionDestination): stri
 }
 
 /**
- * Open Deal Maker in a new browser window/tab, leaving the map view open in
- * the original window. The selection params (address/city/state/zip) are the
- * same ones Discovery uses; Deal Maker reads `address` and ignores the rest.
+ * Open the selected property in a new browser window/tab, leaving the map view
+ * open in the original window. Falls back to same-window navigation (with map
+ * viewport restore) when the popup is blocked or there's no window — which also
+ * covers mobile/Capacitor webviews where `window.open` can return `null`.
  */
-function openDealMakerWindow(searchParams: URLSearchParams): void {
-  if (typeof window === 'undefined') return
-  window.open(`/deal-maker?${searchParams.toString()}`, '_blank', 'noopener,noreferrer')
+function openInNewWindow(router: MapDiscoveryRouter, path: string): void {
+  const opened =
+    typeof window !== 'undefined' ? window.open(path, '_blank', 'noopener,noreferrer') : null
+  if (!opened) {
+    markMapViewportForRestore()
+    router.push(path)
+  }
 }
 
-/** Navigate to the selected property's destination (Discovery, or Deal Maker in a new window). */
+/** Navigate to the selected property's destination (Discovery or Deal Maker) in a new window. */
 export function navigateToDiscoveryFromMap(router: MapDiscoveryRouter, listing: MapListing): void {
-  const params = buildDiscoverySearchParams(listing)
-  if (getMapSelectionDestination() === 'deal-maker') {
-    openDealMakerWindow(params)
-    return
-  }
-  markMapViewportForRestore()
-  router.push(`/discovery?${params.toString()}`)
+  const query = buildDiscoverySearchParams(listing).toString()
+  const base = getMapSelectionDestination() === 'deal-maker' ? '/deal-maker' : '/discovery'
+  openInNewWindow(router, `${base}?${query}`)
 }
 
 export function navigateToDiscoveryFromMapPath(router: MapDiscoveryRouter, path: string): void {
-  if (getMapSelectionDestination() === 'deal-maker') {
-    const query = path.includes('?') ? path.slice(path.indexOf('?') + 1) : ''
-    openDealMakerWindow(new URLSearchParams(query))
-    return
-  }
-  markMapViewportForRestore()
-  router.push(path)
+  const target =
+    getMapSelectionDestination() === 'deal-maker' ? path.replace(/^[^?]*/, '/deal-maker') : path
+  openInNewWindow(router, target)
 }
