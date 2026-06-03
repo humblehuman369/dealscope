@@ -95,7 +95,10 @@ def _is_reachable(sync_url: str, timeout: float = 2.0) -> bool:
     except ImportError:
         return False
     try:
-        with psycopg.connect(sync_url, connect_timeout=timeout):
+        # libpq requires an integer connect_timeout — passing a float raises
+        # "bad value for connect_timeout", which would silently force the
+        # Docker/testcontainers fallback even when Postgres is reachable.
+        with psycopg.connect(sync_url, connect_timeout=int(timeout)):
             return True
     except Exception:
         return False
