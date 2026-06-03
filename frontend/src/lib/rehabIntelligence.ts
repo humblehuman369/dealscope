@@ -1,4 +1,5 @@
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
+import { unitCost, QUICK_WORK_RATES } from '@/lib/rehabCostBook'
 
 /**
  * RehabIntelligence - Intelligent Rehab Cost Estimation Engine
@@ -206,83 +207,93 @@ const LOCATION_FACTORS: Record<string, LocationData> = {
 // 2025 CONSTRUCTION COSTS - SOUTH FLORIDA
 // ============================================
 
+// Derived from the shared cost book (single source of truth). Shared
+// component costs are pulled at the 'mid' tier (Quick's baseline finish grade;
+// the asset-class finish premium is applied separately in applyMultipliers).
+// Quick-only work rates (per-sqft roof, per-ton HVAC, fixtures, etc.) come from
+// QUICK_WORK_RATES. Update costs in `lib/rehabCostBook.ts`, not here.
 const BASE_COSTS = {
-  // WET ROOMS - Kitchen
-  kitchen_full_remodel: 28000,
-  kitchen_cosmetic: 12000,
-  cabinets: 8000,
-  countertops: 4500,
-  appliances_package: 5500,
-  backsplash: 1500,
-  kitchen_sink_faucet: 1200,
+  // WET ROOMS - Kitchen (composite = sum of mid-tier components)
+  kitchen_full_remodel:
+    unitCost('cabinets', 'mid') +
+    unitCost('countertops', 'mid') +
+    unitCost('appliances', 'mid') +
+    unitCost('backsplash', 'mid') +
+    unitCost('sink_faucet', 'mid'),
+  kitchen_cosmetic: QUICK_WORK_RATES.kitchen_cosmetic,
+  cabinets: unitCost('cabinets', 'mid'),
+  countertops: unitCost('countertops', 'mid'),
+  appliances_package: unitCost('appliances', 'mid'),
+  backsplash: unitCost('backsplash', 'mid'),
+  kitchen_sink_faucet: unitCost('sink_faucet', 'mid'),
 
   // WET ROOMS - Bathrooms
-  full_bath_remodel: 14000,
-  full_bath_cosmetic: 6000,
-  half_bath_remodel: 7000,
-  half_bath_cosmetic: 3000,
-  vanity_sink: 1200,
-  toilet: 450,
-  tub_shower: 3500,
-  shower_glass: 2000,
+  full_bath_remodel: unitCost('full_bath', 'mid'),
+  full_bath_cosmetic: QUICK_WORK_RATES.full_bath_cosmetic,
+  half_bath_remodel: unitCost('half_bath', 'mid'),
+  half_bath_cosmetic: QUICK_WORK_RATES.half_bath_cosmetic,
+  vanity_sink: unitCost('vanity', 'mid'),
+  toilet: unitCost('toilet', 'mid'),
+  tub_shower: unitCost('tub_shower', 'mid'),
+  shower_glass: QUICK_WORK_RATES.shower_glass,
 
   // DRY ROOMS - Flooring (per sqft)
-  flooring_lvp: 7.5,
-  flooring_tile: 12.0,
-  flooring_hardwood: 14.0,
-  flooring_carpet: 5.0,
+  flooring_lvp: unitCost('lvp', 'mid'),
+  flooring_tile: unitCost('tile', 'mid'),
+  flooring_hardwood: unitCost('hardwood', 'mid'),
+  flooring_carpet: unitCost('carpet', 'mid'),
 
   // DRY ROOMS - Walls (per sqft)
-  interior_paint: 3.5,
-  drywall_repair: 650,
-  texture_removal: 4.0,
+  interior_paint: unitCost('interior_paint', 'mid'),
+  drywall_repair: unitCost('drywall_repair', 'mid'),
+  texture_removal: QUICK_WORK_RATES.texture_removal,
 
   // EXTERIOR
-  exterior_paint: 6500,
-  roof_shingle_sqft: 6.0,
-  roof_tile_sqft: 14.0,
-  roof_metal_sqft: 16.0,
-  roof_flat_sqft: 10.0,
-  siding_sqft: 12.0,
-  windows_each: 750,
-  front_door: 2500,
-  garage_door: 2800,
-  landscaping: 4500,
-  pool_resurface: 8500,
-  pool_equipment: 5500,
-  fence_linear_ft: 45,
-  driveway_sqft: 8.0,
+  exterior_paint: unitCost('exterior_paint', 'mid'),
+  roof_shingle_sqft: QUICK_WORK_RATES.roof_shingle_sqft,
+  roof_tile_sqft: QUICK_WORK_RATES.roof_tile_sqft,
+  roof_metal_sqft: QUICK_WORK_RATES.roof_metal_sqft,
+  roof_flat_sqft: QUICK_WORK_RATES.roof_flat_sqft,
+  siding_sqft: QUICK_WORK_RATES.siding_sqft,
+  windows_each: unitCost('windows', 'mid'),
+  front_door: unitCost('front_door', 'mid'),
+  garage_door: QUICK_WORK_RATES.garage_door,
+  landscaping: unitCost('landscaping', 'mid'),
+  pool_resurface: QUICK_WORK_RATES.pool_resurface,
+  pool_equipment: QUICK_WORK_RATES.pool_equipment,
+  fence_linear_ft: QUICK_WORK_RATES.fence_linear_ft,
+  driveway_sqft: QUICK_WORK_RATES.driveway_sqft,
 
   // MAJOR SYSTEMS - HVAC
-  hvac_ton: 3800,
-  hvac_ductwork: 2500,
-  water_heater_tank: 1800,
-  water_heater_tankless: 3500,
+  hvac_ton: QUICK_WORK_RATES.hvac_ton,
+  hvac_ductwork: QUICK_WORK_RATES.hvac_ductwork,
+  water_heater_tank: unitCost('water_heater', 'mid'),
+  water_heater_tankless: QUICK_WORK_RATES.water_heater_tankless,
 
   // MAJOR SYSTEMS - Electrical
-  electrical_panel: 3500,
-  electrical_rewire_sqft: 6.5,
-  gfci_outlets: 180,
-  ceiling_fan: 350,
-  recessed_lights: 225,
+  electrical_panel: unitCost('electrical_panel', 'mid'),
+  electrical_rewire_sqft: QUICK_WORK_RATES.electrical_rewire_sqft,
+  gfci_outlets: QUICK_WORK_RATES.gfci_outlets,
+  ceiling_fan: QUICK_WORK_RATES.ceiling_fan,
+  recessed_lights: QUICK_WORK_RATES.recessed_lights,
 
   // MAJOR SYSTEMS - Plumbing
-  plumbing_repipe_sqft: 8.0,
-  water_line: 3500,
-  sewer_line: 6500,
-  water_softener: 2500,
+  plumbing_repipe_sqft: QUICK_WORK_RATES.plumbing_repipe_sqft,
+  water_line: QUICK_WORK_RATES.water_line,
+  sewer_line: QUICK_WORK_RATES.sewer_line,
+  water_softener: QUICK_WORK_RATES.water_softener,
 
   // STRUCTURAL
-  foundation_repair: 8500,
-  termite_treatment: 1800,
-  mold_remediation_sqft: 25.0,
+  foundation_repair: QUICK_WORK_RATES.foundation_repair,
+  termite_treatment: QUICK_WORK_RATES.termite_treatment,
+  mold_remediation_sqft: QUICK_WORK_RATES.mold_remediation_sqft,
 
   // PERMITS & SOFT COSTS
-  permit_minor: 800,
-  permit_major: 3500,
-  dumpster_load: 650,
-  deep_cleaning: 750,
-  staging: 3500,
+  permit_minor: QUICK_WORK_RATES.permit_minor,
+  permit_major: QUICK_WORK_RATES.permit_major,
+  dumpster_load: unitCost('dumpster', 'mid'),
+  deep_cleaning: unitCost('cleaning', 'mid'),
+  staging: unitCost('staging', 'mid'),
 }
 
 // ============================================

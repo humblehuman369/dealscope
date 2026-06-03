@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { RehabIntelligence } from '@/lib/rehabIntelligence'
+import { REHAB_CATEGORIES } from '@/lib/analytics'
+import { REHAB_UNIT_COSTS } from '@/lib/rehabCostBook'
 
 /**
  * Pricing guardrails for the Quick Estimate engine.
@@ -58,6 +60,15 @@ describe('RehabIntelligence pricing guardrails', () => {
     expect(totals[0]).toBeGreaterThan(totals[1])
     expect(totals[1]).toBeGreaterThan(totals[2])
     expect(totals[2]).toBeGreaterThan(totals[3])
+  })
+
+  it('sources Detailed builder costs from the shared cost book (single source of truth)', () => {
+    const cabinets = REHAB_CATEGORIES.find((c) => c.id === 'kitchen')!.items.find(
+      (i) => i.id === 'cabinets',
+    )!
+    expect(cabinets.lowCost).toBe(REHAB_UNIT_COSTS.cabinets.low)
+    expect(cabinets.midCost).toBe(REHAB_UNIT_COSTS.cabinets.mid)
+    expect(cabinets.highCost).toBe(REHAB_UNIT_COSTS.cabinets.high)
   })
 
   it('only applies the finish-grade premium to luxury homes, not normal ones', () => {
