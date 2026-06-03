@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import {
   Zap,
   AlertTriangle,
   AlertCircle,
+  Check,
   CheckCircle,
   ChevronDown,
   ChevronUp,
@@ -375,30 +376,96 @@ function CapExWarningsCard({ warnings }: { warnings: CapExWarning[] }) {
 // COST BREAKDOWN
 // ============================================
 
-function CostBreakdownCard({ estimate }: { estimate: RehabEstimate }) {
+function CostBreakdownCard({
+  estimate,
+  excludedCategories,
+  onToggleCategory,
+}: {
+  estimate: RehabEstimate
+  excludedCategories: Set<string>
+  onToggleCategory: (key: string) => void
+}) {
   const [expanded, setExpanded] = useState(false)
 
   const breakdown = estimate.breakdown
 
   const categories = [
-    { label: 'Kitchen', value: breakdown.kitchen, icon: '🍳' },
-    { label: 'Bathrooms', value: breakdown.bathrooms, icon: '🚿' },
-    { label: 'Flooring', value: breakdown.flooring, icon: '🏠' },
-    { label: 'Paint & Walls', value: breakdown.paint_walls, icon: '🎨' },
-    { label: 'Exterior', value: breakdown.exterior, icon: '🏡' },
-    { label: 'Roof', value: breakdown.roof, icon: '🔨' },
-    { label: 'HVAC', value: breakdown.hvac, icon: '❄️' },
-    { label: 'Electrical', value: breakdown.electrical, icon: '⚡' },
-    { label: 'Plumbing', value: breakdown.plumbing, icon: '🔧' },
-    { label: 'Windows & Doors', value: breakdown.windows_doors, icon: '🪟' },
-    { label: 'Other', value: breakdown.other, icon: '📦' },
-    { label: 'Permits', value: breakdown.permits, icon: '📋' },
+    { key: 'kitchen', label: 'Kitchen', value: breakdown.kitchen, icon: '🍳' },
+    { key: 'bathrooms', label: 'Bathrooms', value: breakdown.bathrooms, icon: '🚿' },
+    { key: 'flooring', label: 'Flooring', value: breakdown.flooring, icon: '🏠' },
+    { key: 'paint_walls', label: 'Paint & Walls', value: breakdown.paint_walls, icon: '🎨' },
+    { key: 'exterior', label: 'Exterior', value: breakdown.exterior, icon: '🏡' },
+    { key: 'roof', label: 'Roof', value: breakdown.roof, icon: '🔨' },
+    { key: 'hvac', label: 'HVAC', value: breakdown.hvac, icon: '❄️' },
+    { key: 'electrical', label: 'Electrical', value: breakdown.electrical, icon: '⚡' },
+    { key: 'plumbing', label: 'Plumbing', value: breakdown.plumbing, icon: '🔧' },
+    { key: 'windows_doors', label: 'Windows & Doors', value: breakdown.windows_doors, icon: '🪟' },
+    { key: 'other', label: 'Other', value: breakdown.other, icon: '📦' },
+    { key: 'permits', label: 'Permits', value: breakdown.permits, icon: '📋' },
   ]
     .filter((c) => c.value > 0)
-    .sort((a, b) => b.value - a.value)
+    // Sort by natural cost, but push deselected categories to the bottom.
+    .sort((a, b) => {
+      const aEx = excludedCategories.has(a.key)
+      const bEx = excludedCategories.has(b.key)
+      if (aEx !== bEx) return aEx ? 1 : -1
+      return b.value - a.value
+    })
 
   const topCategories = categories.slice(0, 4)
   const remainingCategories = categories.slice(4)
+
+  const renderCategory = (cat: { key: string; label: string; value: number; icon: string }) => {
+    const isExcluded = excludedCategories.has(cat.key)
+    return (
+      <button
+        key={cat.key}
+        type="button"
+        onClick={() => onToggleCategory(cat.key)}
+        aria-pressed={!isExcluded}
+        aria-label={`${isExcluded ? 'Include' : 'Exclude'} ${cat.label}`}
+        className="rounded-lg p-2 flex items-center justify-between text-left transition-opacity"
+        style={{
+          backgroundColor: 'var(--surface-elevated)',
+          opacity: isExcluded ? 0.5 : 1,
+          border: isExcluded
+            ? '1px dashed var(--border-default)'
+            : '1px solid transparent',
+        }}
+      >
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span
+            className="flex items-center justify-center w-4 h-4 rounded shrink-0"
+            style={{
+              border: `1.5px solid ${isExcluded ? 'var(--border-default)' : 'var(--accent-sky)'}`,
+              backgroundColor: isExcluded ? 'transparent' : 'var(--accent-sky)',
+            }}
+          >
+            {!isExcluded && <Check className="w-3 h-3" style={{ color: 'var(--text-inverse)' }} />}
+          </span>
+          <span className="text-sm">{cat.icon}</span>
+          <span
+            className="text-sm truncate"
+            style={{
+              color: 'var(--text-secondary)',
+              textDecoration: isExcluded ? 'line-through' : 'none',
+            }}
+          >
+            {cat.label}
+          </span>
+        </div>
+        <span
+          className="text-sm font-semibold shrink-0"
+          style={{
+            color: 'var(--text-heading)',
+            textDecoration: isExcluded ? 'line-through' : 'none',
+          }}
+        >
+          {formatCurrency(cat.value)}
+        </span>
+      </button>
+    )
+  }
 
   return (
     <div
@@ -431,45 +498,14 @@ function CostBreakdownCard({ estimate }: { estimate: RehabEstimate }) {
       </button>
 
       <div className="px-3 pb-3">
-        <div className="grid grid-cols-2 gap-2">
-          {topCategories.map((cat, idx) => (
-            <div
-              key={idx}
-              className="rounded-lg p-2 flex items-center justify-between"
-              style={{ backgroundColor: 'var(--surface-elevated)' }}
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm">{cat.icon}</span>
-                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {cat.label}
-                </span>
-              </div>
-              <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
-                {formatCurrency(cat.value)}
-              </span>
-            </div>
-          ))}
-        </div>
+        <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>
+          Tap a category to include or exclude it from the estimate.
+        </p>
+        <div className="grid grid-cols-2 gap-2">{topCategories.map(renderCategory)}</div>
 
         {expanded && remainingCategories.length > 0 && (
           <div className="grid grid-cols-2 gap-2 mt-2">
-            {remainingCategories.map((cat, idx) => (
-              <div
-                key={idx}
-                className="rounded-lg p-2 flex items-center justify-between"
-                style={{ backgroundColor: 'var(--surface-elevated)' }}
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">{cat.icon}</span>
-                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    {cat.label}
-                  </span>
-                </div>
-                <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
-                  {formatCurrency(cat.value)}
-                </span>
-              </div>
-            ))}
+            {remainingCategories.map(renderCategory)}
           </div>
         )}
 
@@ -598,6 +634,16 @@ export default function QuickRehabEstimate({
   }
   const [contingencyPct, setContingencyPct] = useState(0.1)
   const [includeHolding, setIncludeHolding] = useState(true)
+  const [excludedCategories, setExcludedCategories] = useState<Set<string>>(new Set())
+
+  const toggleCategory = useCallback((key: string) => {
+    setExcludedCategories((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }, [])
 
   const { estimate, intelligence } = useMemo(() => {
     const ri = new RehabIntelligence({
@@ -615,6 +661,7 @@ export default function QuickRehabEstimate({
       lot_sqft: propertyData.lot_size,
       hoa_monthly: propertyData.hoa_monthly,
       regional_factor: costContext?.combined_factor,
+      excluded_categories: Array.from(excludedCategories),
     })
 
     return {
@@ -624,7 +671,7 @@ export default function QuickRehabEstimate({
         includeHoldingCosts: includeHolding,
       }),
     }
-  }, [propertyData, condition, contingencyPct, includeHolding, costContext])
+  }, [propertyData, condition, contingencyPct, includeHolding, costContext, excludedCategories])
 
   useMemo(() => {
     onEstimateChange?.(estimate.total_rehab)
@@ -688,7 +735,11 @@ export default function QuickRehabEstimate({
       <CapExWarningsCard warnings={estimate.capex_warnings} />
 
       {/* Cost Breakdown */}
-      <CostBreakdownCard estimate={estimate} />
+      <CostBreakdownCard
+        estimate={estimate}
+        excludedCategories={excludedCategories}
+        onToggleCategory={toggleCategory}
+      />
 
       {/* Why This Number */}
       <CostExplanationPanel

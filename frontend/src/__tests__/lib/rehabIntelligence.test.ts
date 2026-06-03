@@ -62,6 +62,42 @@ describe('RehabIntelligence pricing guardrails', () => {
     expect(totals[2]).toBeGreaterThan(totals[3])
   })
 
+  it('excludes deselected categories from the total but keeps their per-category value', () => {
+    const full = new RehabIntelligence({ ...baseProperty, condition: 'fair' }).calculate({
+      contingencyPct: 0.1,
+      includeHoldingCosts: false,
+    })
+    const exRoof = new RehabIntelligence({
+      ...baseProperty,
+      condition: 'fair',
+      excluded_categories: ['roof'],
+    }).calculate({ contingencyPct: 0.1, includeHoldingCosts: false })
+
+    // Roof's per-category value is still reported (for display / re-enabling)...
+    expect(exRoof.breakdown.roof).toBe(full.breakdown.roof)
+    expect(exRoof.breakdown.roof).toBeGreaterThan(0)
+    // ...but it's removed from the construction total.
+    expect(exRoof.breakdown.construction_total).toBeCloseTo(
+      full.breakdown.construction_total - full.breakdown.roof,
+      0,
+    )
+    // Contingency follows the reduced total.
+    expect(exRoof.breakdown.contingency).toBeLessThan(full.breakdown.contingency)
+  })
+
+  it('omits excluded categories from the saved scope (line items)', () => {
+    const ri = new RehabIntelligence({
+      ...baseProperty,
+      condition: 'fair',
+      excluded_categories: ['roof', 'kitchen'],
+    })
+    const items = ri.generateLineItems()
+    expect(items.some((i) => i.itemId === 'roof')).toBe(false)
+    expect(items.some((i) => ['cabinets', 'countertops', 'appliances'].includes(i.itemId))).toBe(
+      false,
+    )
+  })
+
   it('sources Detailed builder costs from the shared cost book (single source of truth)', () => {
     const cabinets = REHAB_CATEGORIES.find((c) => c.id === 'kitchen')!.items.find(
       (i) => i.id === 'cabinets',

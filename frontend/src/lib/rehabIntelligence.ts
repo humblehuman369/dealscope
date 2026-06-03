@@ -44,6 +44,13 @@ export interface PropertyInput {
    * builder. Falls back to the zip-based labor factor when absent.
    */
   regional_factor?: number
+  /**
+   * Cost Breakdown categories the user has deselected (e.g. roof already
+   * replaced). Excluded categories keep their computed per-category value for
+   * display but are removed from the construction total, contingency, holding
+   * costs, and the saved scope.
+   */
+  excluded_categories?: string[]
 }
 
 export interface RehabBreakdown {
@@ -386,6 +393,7 @@ export class RehabIntelligence {
   private lotSqft: number
   private hoaMonthly: number
   private recentPermits: string[]
+  private excludedCategories: Set<string>
 
   private currentYear: number
   private propertyAge: number
@@ -410,6 +418,7 @@ export class RehabIntelligence {
     this.lotSqft = input.lot_sqft ?? this.sqFt * 3
     this.hoaMonthly = input.hoa_monthly ?? 0
     this.recentPermits = (input.recent_permits ?? []).map((p) => p.toLowerCase())
+    this.excludedCategories = new Set(input.excluded_categories ?? [])
 
     this.currentYear = new Date().getFullYear()
     this.propertyAge = this.currentYear - this.yearBuilt
@@ -749,19 +758,24 @@ export class RehabIntelligence {
     // ============================================
     // CALCULATE TOTALS
     // ============================================
+    // Per-category values stay at their natural amount (so the UI can show
+    // and re-enable them); only the total reflects user-deselected categories.
+    const includeCat = (key: keyof RehabBreakdown): number =>
+      this.excludedCategories.has(key) ? 0 : breakdown[key]
+
     breakdown.construction_total =
-      breakdown.kitchen +
-      breakdown.bathrooms +
-      breakdown.flooring +
-      breakdown.paint_walls +
-      breakdown.exterior +
-      breakdown.roof +
-      breakdown.hvac +
-      breakdown.electrical +
-      breakdown.plumbing +
-      breakdown.windows_doors +
-      breakdown.other +
-      breakdown.permits
+      includeCat('kitchen') +
+      includeCat('bathrooms') +
+      includeCat('flooring') +
+      includeCat('paint_walls') +
+      includeCat('exterior') +
+      includeCat('roof') +
+      includeCat('hvac') +
+      includeCat('electrical') +
+      includeCat('plumbing') +
+      includeCat('windows_doors') +
+      includeCat('other') +
+      includeCat('permits')
 
     breakdown.contingency = breakdown.construction_total * contingencyPct
     breakdown.total = breakdown.construction_total + breakdown.contingency
@@ -848,8 +862,11 @@ export class RehabIntelligence {
     const tier: 'low' | 'mid' | 'high' =
       this.assetClass === 'ultra_luxury' ? 'high' : this.assetClass === 'luxury' ? 'mid' : 'low'
 
+    // Honor user-deselected Cost Breakdown categories when building saved scope.
+    const inc = (key: string): boolean => !this.excludedCategories.has(key)
+
     // Kitchen
-    if (breakdown.kitchen > 0) {
+    if (breakdown.kitchen > 0 && inc('kitchen')) {
       items.push({
         itemId: 'cabinets',
         quantity: 1,
@@ -877,7 +894,7 @@ export class RehabIntelligence {
     }
 
     // Bathrooms
-    if (breakdown.bathrooms > 0) {
+    if (breakdown.bathrooms > 0 && inc('bathrooms')) {
       const fullBaths = Math.max(1, Math.floor(this.bathrooms * 0.67))
       items.push({
         itemId: 'full_bath',
@@ -896,7 +913,7 @@ export class RehabIntelligence {
     }
 
     // Flooring
-    if (breakdown.flooring > 0) {
+    if (breakdown.flooring > 0 && inc('flooring')) {
       const flooringSqft = Math.floor(this.sqFt * 0.85 * this.conditionFactors.dry_room_factor)
       const flooringId = this.assetClass === 'standard' ? 'lvp' : 'hardwood'
       items.push({
@@ -908,7 +925,7 @@ export class RehabIntelligence {
     }
 
     // Paint
-    if (breakdown.paint_walls > 0) {
+    if (breakdown.paint_walls > 0 && inc('paint_walls')) {
       const wallSqft = Math.floor(this.sqFt * 3.5 * this.conditionFactors.dry_room_factor)
       items.push({
         itemId: 'interior_paint',
@@ -927,7 +944,7 @@ export class RehabIntelligence {
     }
 
     // Exterior
-    if (breakdown.exterior > 0) {
+    if (breakdown.exterior > 0 && inc('exterior')) {
       items.push({
         itemId: 'exterior_paint',
         quantity: 1,
@@ -943,18 +960,18 @@ export class RehabIntelligence {
     }
 
     // Roof
-    if (breakdown.roof > 0) {
+    if (breakdown.roof > 0 && inc('roof')) {
       items.push({ itemId: 'roof', quantity: 1, tier, cost: Math.round(breakdown.roof) })
     }
 
     // HVAC
-    if (breakdown.hvac > 0) {
+    if (breakdown.hvac > 0 && inc('hvac')) {
       items.push({ itemId: 'hvac', quantity: 1, tier, cost: Math.round(breakdown.hvac) })
     }
 
-    // Water heater
+    // Water heater (part of the Plumbing category)
     const whWarning = estimate.capex_warnings.find((w) => w.item === 'Water Heater')
-    if (whWarning) {
+    if (whWarning && inc('plumbing')) {
       items.push({
         itemId: 'water_heater',
         quantity: 1,
@@ -964,7 +981,7 @@ export class RehabIntelligence {
     }
 
     // Electrical
-    if (breakdown.electrical > 0) {
+    if (breakdown.electrical > 0 && inc('electrical')) {
       items.push({
         itemId: 'electrical_panel',
         quantity: 1,
@@ -975,13 +992,13 @@ export class RehabIntelligence {
 
     // Plumbing
     const plumbingNonWh = breakdown.plumbing - (whWarning?.estimated_cost ?? 0)
-    if (plumbingNonWh > 5000) {
+    if (plumbingNonWh > 5000 && inc('plumbing')) {
       items.push({ itemId: 'plumbing_repipe', quantity: 1, tier, cost: Math.round(plumbingNonWh) })
     }
 
-    // Windows
+    // Windows (part of the Windows & Doors category)
     const windowsWarning = estimate.capex_warnings.find((w) => w.item === 'Windows')
-    if (windowsWarning) {
+    if (windowsWarning && inc('windows_doors')) {
       const windowCount = Math.max(8, Math.floor(this.sqFt / 150))
       items.push({
         itemId: 'windows',
@@ -992,7 +1009,7 @@ export class RehabIntelligence {
     }
 
     // Front door
-    if (breakdown.windows_doors > 0 && breakdown.roof === 0) {
+    if (breakdown.windows_doors > 0 && breakdown.roof === 0 && inc('windows_doors')) {
       items.push({
         itemId: 'front_door',
         quantity: 1,
@@ -1002,23 +1019,25 @@ export class RehabIntelligence {
     }
 
     // Permits
-    if (breakdown.permits > 0) {
+    if (breakdown.permits > 0 && inc('permits')) {
       items.push({ itemId: 'permits', quantity: 1, tier, cost: Math.round(breakdown.permits) })
     }
 
-    // Dumpster & cleaning
-    items.push({
-      itemId: 'dumpster',
-      quantity: 4,
-      tier: 'mid',
-      cost: Math.round(BASE_COSTS.dumpster_load * 4),
-    })
-    items.push({
-      itemId: 'cleaning',
-      quantity: 1,
-      tier,
-      cost: Math.round(BASE_COSTS.deep_cleaning * this.locationFactor),
-    })
+    // Dumpster & cleaning (part of the Other category)
+    if (inc('other')) {
+      items.push({
+        itemId: 'dumpster',
+        quantity: 4,
+        tier: 'mid',
+        cost: Math.round(BASE_COSTS.dumpster_load * 4),
+      })
+      items.push({
+        itemId: 'cleaning',
+        quantity: 1,
+        tier,
+        cost: Math.round(BASE_COSTS.deep_cleaning * this.locationFactor),
+      })
+    }
 
     return items
   }
