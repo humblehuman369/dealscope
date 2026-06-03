@@ -8,7 +8,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, LargeBinary, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -137,3 +137,26 @@ class Document(Base):
                 return f"{size:.1f} {unit}"
             size /= 1024
         return f"{size:.1f} TB"
+
+
+class DocumentBlob(Base):
+    """
+    Raw file bytes for a document, stored in Postgres.
+
+    Kept in a separate table from ``documents`` so metadata/list queries never
+    load megabytes of file data. Keyed by the same path-style ``storage_key``
+    the storage layer generates, so it plugs into the storage abstraction
+    without changing call sites. Used when ``STORAGE_BACKEND=postgres`` —
+    durable on hosts with ephemeral disks (e.g. Railway).
+    """
+
+    __tablename__ = "document_blobs"
+
+    # Matches Document.storage_key — the path-style key the storage layer emits.
+    storage_key: Mapped[str] = mapped_column(String(500), primary_key=True)
+    data: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    content_type: Mapped[str | None] = mapped_column(String(100))
+    byte_size: Mapped[int | None] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )

@@ -11,7 +11,19 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import BinaryIO
 
+from app.core.config import settings
+
 logger = logging.getLogger(__name__)
+
+
+def _build_storage_key(filename: str, path_prefix: str = "") -> str:
+    """Generate a unique, date-organized storage key shared by all backends."""
+    ext = Path(filename).suffix
+    unique_name = f"{uuid.uuid4().hex}{ext}"
+    date_prefix = datetime.now(UTC).strftime("%Y/%m")
+    if path_prefix:
+        return f"{path_prefix}/{date_prefix}/{unique_name}"
+    return f"{date_prefix}/{unique_name}"
 
 
 class StorageBackend(ABC):
@@ -154,18 +166,25 @@ class S3Storage(StorageBackend):
         except ImportError:
             raise ImportError("boto3 is required for S3 storage. Install with: pip install boto3")
 
-        self.bucket_name = bucket_name or os.getenv("AWS_S3_BUCKET")
-        self.region = region or os.getenv("AWS_REGION", "us-east-1")
+        self.bucket_name = bucket_name or os.getenv("AWS_S3_BUCKET") or settings.S3_BUCKET_NAME
+        self.region = region or os.getenv("AWS_REGION") or settings.AWS_REGION
 
         if not self.bucket_name:
             raise ValueError("S3 bucket name is required")
+
+        # Custom endpoint enables S3-compatible providers like Cloudflare R2.
+        endpoint_url = os.getenv("S3_ENDPOINT_URL") or settings.S3_ENDPOINT_URL
 
         # Create S3 client
         self.client = boto3.client(
             "s3",
             region_name=self.region,
-            aws_access_key_id=access_key or os.getenv("AWS_ACCESS_KEY_ID"),
-            aws_secret_access_key=secret_key or os.getenv("AWS_SECRET_ACCESS_KEY"),
+            aws_access_key_id=access_key or os.getenv("AWS_ACCESS_KEY_ID") or settings.AWS_ACCESS_KEY_ID or None,
+            aws_secret_access_key=secret_key
+            or os.getenv("AWS_SECRET_ACCESS_KEY")
+            or settings.AWS_SECRET_ACCESS_KEY
+            or None,
+            endpoint_url=endpoint_url or None,
             config=Config(signature_version="s3v4"),
         )
 
@@ -236,19 +255,115 @@ class S3Storage(StorageBackend):
         return url
 
 
+class PostgresStorage(StorageBackend):
+    """
+    Database-backed storage: file bytes live in the ``document_blobs`` table.
+
+    Durable across redeploys without any external object store — a good fit
+    for low-to-moderate document volume on hosts with ephemeral disks (e.g.
+    Railway). Files are keyed by the same path-style key the local/S3 backends
+    produce, so the rest of the app is unchanged. Migrate to S3/R2 if blob
+    volume starts to dominate the database size.
+    """
+
+    async def upload(
+        self,
+        file: BinaryIO,
+        filename: str,
+        content_type: str,
+        path_prefix: str = "",
+    ) -> str:
+        """Persist file bytes to the document_blobs table."""
+        # Imported lazily to avoid a circular import at module load time
+        # (storage_service is imported deep in the service/router chain).
+        from app.db.session import get_session_factory
+        from app.models.document import DocumentBlob
+
+        key = _build_storage_key(filename, path_prefix)
+        file.seek(0)
+        data = file.read()
+
+        async with get_session_factory()() as session:
+            session.add(
+                DocumentBlob(
+                    storage_key=key,
+                    data=data,
+                    content_type=content_type,
+                    byte_size=len(data),
+                )
+            )
+            await session.commit()
+
+        logger.info(f"Stored document blob in Postgres: {key} ({len(data)} bytes)")
+        return key
+
+    async def download(self, path: str) -> bytes:
+        """Read file bytes back from the document_blobs table."""
+        from sqlalchemy import select
+
+        from app.db.session import get_session_factory
+        from app.models.document import DocumentBlob
+
+        async with get_session_factory()() as session:
+            result = await session.execute(
+                select(DocumentBlob.data).where(DocumentBlob.storage_key == path)
+            )
+            data = result.scalar_one_or_none()
+
+        if data is None:
+            raise FileNotFoundError(f"File not found: {path}")
+        return bytes(data)
+
+    async def delete(self, path: str) -> bool:
+        """Delete the blob row. Returns True when a row was removed."""
+        from sqlalchemy import delete as sa_delete
+
+        from app.db.session import get_session_factory
+        from app.models.document import DocumentBlob
+
+        async with get_session_factory()() as session:
+            result = await session.execute(
+                sa_delete(DocumentBlob).where(DocumentBlob.storage_key == path)
+            )
+            await session.commit()
+
+        deleted = (result.rowcount or 0) > 0
+        if deleted:
+            logger.info(f"Deleted document blob from Postgres: {path}")
+        return deleted
+
+    async def get_url(self, path: str, expires_in: int = 3600) -> str:
+        """
+        Return an API path; blobs are streamed via the documents endpoints
+        (e.g. ``/api/v1/documents/{id}/view`` and ``/download``).
+        """
+        return f"/api/v1/documents/file/{path}"
+
+
 def get_storage_backend() -> StorageBackend:
     """
     Factory function to get the configured storage backend.
 
-    Uses S3 if AWS_S3_BUCKET is configured, otherwise local storage.
+    Selected by ``settings.STORAGE_BACKEND``:
+    - ``postgres`` (aliases: ``database``, ``db``) → PostgresStorage
+    - ``s3`` / ``r2`` → S3Storage (S3 or S3-compatible like Cloudflare R2)
+    - ``local`` (default) → LocalStorage (development)
+
+    Any backend that fails to initialize falls back to local storage so the
+    app still boots; failures are logged.
     """
-    if os.getenv("AWS_S3_BUCKET"):
+    backend = (settings.STORAGE_BACKEND or "local").strip().lower()
+
+    if backend in {"postgres", "database", "db"}:
+        return PostgresStorage()
+
+    if backend in {"s3", "r2"}:
         try:
             return S3Storage()
         except Exception as e:
-            logger.warning(f"Failed to initialize S3 storage: {e}. Falling back to local.")
+            logger.warning(f"Failed to initialize {backend} storage: {e}. Falling back to local.")
 
-    return LocalStorage()
+    return LocalStorage(settings.LOCAL_STORAGE_PATH)
 
 
 # Singleton instance
