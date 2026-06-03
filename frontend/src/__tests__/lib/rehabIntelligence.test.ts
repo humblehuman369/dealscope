@@ -98,6 +98,25 @@ describe('RehabIntelligence pricing guardrails', () => {
     )
   })
 
+  it('adds the front door when roof is deselected (roof retains its display value)', () => {
+    // Aged property: roof is in scope by default, so no standalone front door.
+    const withRoof = new RehabIntelligence({
+      ...baseProperty,
+      condition: 'fair',
+    }).generateLineItems()
+    expect(withRoof.some((i) => i.itemId === 'roof')).toBe(true)
+    expect(withRoof.some((i) => i.itemId === 'front_door')).toBe(false)
+
+    // Deselecting roof means "no roof work" — the front door should now appear.
+    const roofExcluded = new RehabIntelligence({
+      ...baseProperty,
+      condition: 'fair',
+      excluded_categories: ['roof'],
+    }).generateLineItems()
+    expect(roofExcluded.some((i) => i.itemId === 'roof')).toBe(false)
+    expect(roofExcluded.some((i) => i.itemId === 'front_door')).toBe(true)
+  })
+
   it('sources Detailed builder costs from the shared cost book (single source of truth)', () => {
     const cabinets = REHAB_CATEGORIES.find((c) => c.id === 'kitchen')!.items.find(
       (i) => i.id === 'cabinets',

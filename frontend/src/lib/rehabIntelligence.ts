@@ -1008,8 +1008,12 @@ export class RehabIntelligence {
       })
     }
 
-    // Front door
-    if (breakdown.windows_doors > 0 && breakdown.roof === 0 && inc('windows_doors')) {
+    // Front door — added as a standalone item only when no roof work is in
+    // scope. "No roof work" means either none was calculated (breakdown.roof
+    // === 0) or the user deselected the Roof category (!inc('roof')); the
+    // latter keeps its display value, so we must check exclusion explicitly.
+    const roofInScope = breakdown.roof > 0 && inc('roof')
+    if (breakdown.windows_doors > 0 && !roofInScope && inc('windows_doors')) {
       items.push({
         itemId: 'front_door',
         quantity: 1,
