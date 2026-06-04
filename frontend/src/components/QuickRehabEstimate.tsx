@@ -301,59 +301,25 @@ function VerifyChecklistCard({
   onExpandedChange: (expanded: boolean) => void
 }) {
   const cardRef = useRef<HTMLDivElement>(null)
-  const introRef = useRef<HTMLParagraphElement>(null)
-  const pendingScrollCompRef = useRef(false)
-  const heightBeforeCollapseRef = useRef<number | null>(null)
-
-  const requestCollapse = useCallback(
-    (autoFromScroll: boolean) => {
-      if (!expanded || !cardRef.current) return
-      heightBeforeCollapseRef.current = cardRef.current.offsetHeight
-      pendingScrollCompRef.current = autoFromScroll
-      onExpandedChange(false)
-    },
-    [expanded, onExpandedChange],
-  )
-
-  const handleBodyTransitionEnd = useCallback(
-    (e: React.TransitionEvent<HTMLDivElement>) => {
-      if (e.propertyName !== 'grid-template-rows' || expanded) return
-      if (
-        !pendingScrollCompRef.current ||
-        heightBeforeCollapseRef.current == null ||
-        !cardRef.current
-      ) {
-        pendingScrollCompRef.current = false
-        heightBeforeCollapseRef.current = null
-        return
-      }
-      const delta = heightBeforeCollapseRef.current - cardRef.current.offsetHeight
-      pendingScrollCompRef.current = false
-      heightBeforeCollapseRef.current = null
-      if (delta > 0) {
-        window.scrollTo({ top: Math.max(0, window.scrollY - delta) })
-      }
-    },
-    [expanded],
-  )
 
   useEffect(() => {
     if (!expanded) return
-    const intro = introRef.current
-    if (!intro) return
+    const card = cardRef.current
+    if (!card) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
-          requestCollapse(true)
+        // Collapse only after the full card (header + body) has scrolled above the viewport.
+        if (entry.boundingClientRect.bottom <= 0) {
+          onExpandedChange(false)
         }
       },
       { threshold: 0 },
     )
 
-    observer.observe(intro)
+    observer.observe(card)
     return () => observer.disconnect()
-  }, [expanded, requestCollapse, warnings.length])
+  }, [expanded, onExpandedChange, warnings.length])
 
   if (warnings.length === 0) return null
 
@@ -421,15 +387,10 @@ function VerifyChecklistCard({
         className="grid transition-[grid-template-rows] duration-500 ease-in-out"
         style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
         aria-hidden={!expanded}
-        onTransitionEnd={handleBodyTransitionEnd}
       >
         <div className="overflow-hidden min-h-0">
           <div className="px-3 pb-3 pt-2 space-y-2">
-            <p
-              ref={introRef}
-              className="text-xs leading-relaxed"
-              style={{ color: 'var(--text-secondary)' }}
-            >
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               We include these in your estimate based on the home&apos;s age. On your walkthrough or
               inspection, confirm what&apos;s already been replaced — then turn off matching categories
               in the <strong style={{ color: 'var(--text-heading)' }}>Cost Breakdown</strong> below
