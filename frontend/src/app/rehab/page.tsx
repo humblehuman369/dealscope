@@ -157,7 +157,7 @@ function RehabPageContent() {
       className="min-h-screen px-1 sm:px-4 transition-colors"
       style={{ backgroundColor: 'var(--surface-base)' }}
     >
-      <div className="w-full">
+      <div className="w-full max-w-6xl mx-auto">
         <div style={{ backgroundColor: 'var(--surface-card)' }}>
           {/* Header */}
           <div
