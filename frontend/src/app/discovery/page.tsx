@@ -510,6 +510,7 @@ function VerdictContent() {
               beds: propertyData.beds,
               baths: propertyData.baths,
               sqft: propertyData.sqft,
+              yearBuilt: propertyData.yearBuilt,
               price: propertyData.price,
               listingStatus: propertyData.listingStatus || null,
             },

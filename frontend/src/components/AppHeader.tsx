@@ -95,6 +95,7 @@ interface PropertyInfo {
   beds?: number
   baths?: number
   sqft?: number
+  yearBuilt?: number
   price?: number
   zpid?: string
   listingStatus?: string
@@ -372,6 +373,7 @@ export function AppHeader({
           beds: toNumber(parsed.beds),
           baths: toNumber(parsed.baths),
           sqft: toNumber(parsed.sqft),
+          yearBuilt: toNumber(parsed.yearBuilt ?? parsed.year_built),
           price: displayPrice,
           zpid: typeof parsed.zpid === 'string' ? parsed.zpid : undefined,
           listingStatus:
@@ -548,6 +550,7 @@ export function AppHeader({
               property: resolvedProperty
                 ? {
                     square_footage: resolvedProperty.sqft,
+                    year_built: resolvedProperty.yearBuilt,
                     zip_code: resolvedProperty.zip,
                     bedrooms: resolvedProperty.beds,
                     bathrooms: resolvedProperty.baths,

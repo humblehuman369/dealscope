@@ -7,6 +7,13 @@ import dynamic from 'next/dynamic'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { api } from '@/lib/api-client'
 import { API_BASE_URL } from '@/lib/env'
+import { usePropertyData } from '@/hooks/usePropertyData'
+import {
+  mergeRehabPropertySnapshots,
+  rehabPropertySnapshotFromSearchParams,
+  rehabSnapshotFromPropertyResponse,
+  type RehabPropertySnapshot,
+} from '@/lib/rehabNavigation'
 import type { RegionalCostContext } from '@/lib/estimatorTypes'
 
 const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), {
@@ -18,22 +25,6 @@ const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), {
   ),
 })
 
-interface PropertyData {
-  square_footage?: number
-  year_built?: number
-  arv?: number
-  current_value_avm?: number
-  zip_code?: string
-  bedrooms?: number
-  bathrooms?: number
-  has_pool?: boolean
-  roof_type?: string
-  stories?: number
-  garage_spaces?: number
-  lot_size?: number
-  hoa_monthly?: number
-}
-
 function RehabPageContent() {
   const router = useRouter()
   const searchParams = useAppSearchParams()
@@ -44,9 +35,11 @@ function RehabPageContent() {
   const [resolvedSavedPropertyId, setResolvedSavedPropertyId] = useState<string | undefined>(
     savedPropertyIdFromUrl,
   )
-  const [propertyData, setPropertyData] = useState<PropertyData | undefined>(undefined)
+  const [propertyData, setPropertyData] = useState<RehabPropertySnapshot | undefined>(undefined)
   const [costContext, setCostContext] = useState<RegionalCostContext | null>(null)
   const [loading, setLoading] = useState(!!address)
+
+  const { fetchProperty } = usePropertyData()
 
   const savedPropertyId = savedPropertyIdFromUrl ?? resolvedSavedPropertyId
 
@@ -79,12 +72,14 @@ function RehabPageContent() {
   }, [address, savedPropertyIdFromUrl, searchParams, router])
 
   useEffect(() => {
+    let cancelled = false
+
     async function fetchCostContext(zipCode: string) {
       try {
         const res = await fetch(
           `${API_BASE_URL}/api/v1/rehab/cost-context?zip_code=${encodeURIComponent(zipCode)}`,
         )
-        if (res.ok) {
+        if (res.ok && !cancelled) {
           setCostContext(await res.json())
         }
       } catch {
@@ -92,65 +87,45 @@ function RehabPageContent() {
       }
     }
 
-    const sqft = searchParams.get('sqft')
-    const yearBuilt = searchParams.get('year_built')
-    const arv = searchParams.get('arv')
-    const zipCode = searchParams.get('zip_code')
-    const bedrooms = searchParams.get('bedrooms')
-    const bathrooms = searchParams.get('bathrooms')
-    const hasPool = searchParams.get('has_pool')
-    const stories = searchParams.get('stories')
+    async function loadPropertyData() {
+      const urlSnapshot = rehabPropertySnapshotFromSearchParams(searchParams)
 
-    if (sqft || yearBuilt || arv) {
-      setPropertyData({
-        square_footage: sqft ? parseInt(sqft, 10) : undefined,
-        year_built: yearBuilt ? parseInt(yearBuilt, 10) : undefined,
-        arv: arv ? parseFloat(arv) : undefined,
-        zip_code: zipCode || undefined,
-        bedrooms: bedrooms ? parseInt(bedrooms, 10) : undefined,
-        bathrooms: bathrooms ? parseFloat(bathrooms) : undefined,
-        has_pool: hasPool === 'true',
-        stories: stories ? parseInt(stories, 10) : undefined,
-      })
-      if (zipCode) fetchCostContext(zipCode)
-      setLoading(false)
-    } else if (address) {
-      const fetchPropertyData = async () => {
-        try {
-          const response = await fetch(
-            `${API_BASE_URL}/api/v1/property/search?address=${encodeURIComponent(address)}`,
-          )
-
-          if (response.ok) {
-            const data = await response.json()
-            const zip = data.address?.zip_code
-            setPropertyData({
-              square_footage: data.details?.square_footage,
-              year_built: data.details?.year_built,
-              arv: data.valuations?.current_value_avm,
-              current_value_avm: data.valuations?.current_value_avm,
-              zip_code: zip,
-              bedrooms: data.details?.bedrooms,
-              bathrooms: data.details?.bathrooms,
-              has_pool: data.details?.features?.includes('Pool'),
-              stories: data.details?.stories,
-              lot_size: data.details?.lot_size,
-              hoa_monthly: data.financial?.hoa_monthly,
-            })
-            if (zip) fetchCostContext(zip)
-          }
-        } catch (err) {
-          console.error('Failed to fetch property data:', err)
-        } finally {
-          setLoading(false)
-        }
+      if (!address && !urlSnapshot) {
+        setPropertyData(undefined)
+        setLoading(false)
+        return
       }
 
-      fetchPropertyData()
-    } else {
-      setLoading(false)
+      setLoading(true)
+
+      try {
+        let merged = urlSnapshot
+
+        if (address) {
+          const data = await fetchProperty(address)
+          if (cancelled) return
+          merged = mergeRehabPropertySnapshots(urlSnapshot, rehabSnapshotFromPropertyResponse(data))
+        }
+
+        setPropertyData(merged)
+        const zip = merged?.zip_code
+        if (zip) fetchCostContext(zip)
+      } catch (err) {
+        console.error('Failed to fetch property data:', err)
+        if (!cancelled) {
+          setPropertyData(urlSnapshot)
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
-  }, [address, searchParams])
+
+    void loadPropertyData()
+
+    return () => {
+      cancelled = true
+    }
+  }, [address, searchParams, fetchProperty])
 
   return (
     <div

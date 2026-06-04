@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { buildRehabUrl, rehabPropertySnapshotFromSearchParams } from '@/lib/rehabNavigation'
+import {
+  buildRehabUrl,
+  mergeRehabPropertySnapshots,
+  rehabPropertySnapshotFromSearchParams,
+  rehabSnapshotFromPropertyResponse,
+} from '@/lib/rehabNavigation'
 
 describe('buildRehabUrl', () => {
   it('includes address and saved property id', () => {
@@ -37,12 +42,46 @@ describe('rehabPropertySnapshotFromSearchParams', () => {
       zip_code: undefined,
       bedrooms: 3,
       bathrooms: undefined,
-      has_pool: false,
       stories: undefined,
     })
   })
 
   it('returns undefined when no snapshot fields present', () => {
     expect(rehabPropertySnapshotFromSearchParams(new URLSearchParams('address=foo'))).toBeUndefined()
+  })
+})
+
+describe('mergeRehabPropertySnapshots', () => {
+  it('fills year_built from API when missing in URL snapshot', () => {
+    const merged = mergeRehabPropertySnapshots(
+      { square_footage: 3172, arv: 750700 },
+      { year_built: 1998, zip_code: '33414' },
+    )
+    expect(merged).toEqual({
+      square_footage: 3172,
+      year_built: 1998,
+      arv: 750700,
+      zip_code: '33414',
+    })
+  })
+})
+
+describe('rehabSnapshotFromPropertyResponse', () => {
+  it('maps year_built from property search response', () => {
+    const snapshot = rehabSnapshotFromPropertyResponse({
+      address: { zip_code: '33414' },
+      details: {
+        square_footage: 3172,
+        year_built: 1998,
+        bedrooms: 5,
+        bathrooms: 3,
+        has_pool: false,
+        roof_type: 'Tile',
+      },
+      valuations: { current_value_avm: 750700 },
+    })
+    expect(snapshot.year_built).toBe(1998)
+    expect(snapshot.square_footage).toBe(3172)
+    expect(snapshot.roof_type).toBe('Tile')
   })
 })

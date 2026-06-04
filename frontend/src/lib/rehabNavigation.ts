@@ -60,6 +60,67 @@ export function buildRehabUrl(options: BuildRehabUrlOptions): string {
   return qs ? `/rehab?${qs}` : '/rehab'
 }
 
+/** Map a `/api/v1/properties/search` response into estimator inputs. */
+export function rehabSnapshotFromPropertyResponse(
+  data: Record<string, unknown>,
+): RehabPropertySnapshot {
+  const details = data.details as Record<string, unknown> | undefined
+  const address = data.address as Record<string, unknown> | undefined
+  const valuations = data.valuations as Record<string, unknown> | undefined
+  const market = data.market as Record<string, unknown> | undefined
+  const features = details?.features
+  const hasPoolFromFeatures =
+    Array.isArray(features) && features.some((f) => String(f).toLowerCase() === 'pool')
+
+  return {
+    square_footage:
+      typeof details?.square_footage === 'number' ? details.square_footage : undefined,
+    year_built: typeof details?.year_built === 'number' ? details.year_built : undefined,
+    arv:
+      typeof valuations?.current_value_avm === 'number'
+        ? valuations.current_value_avm
+        : undefined,
+    current_value_avm:
+      typeof valuations?.current_value_avm === 'number'
+        ? valuations.current_value_avm
+        : undefined,
+    zip_code: typeof address?.zip_code === 'string' ? address.zip_code : undefined,
+    bedrooms: typeof details?.bedrooms === 'number' ? details.bedrooms : undefined,
+    bathrooms: typeof details?.bathrooms === 'number' ? details.bathrooms : undefined,
+    has_pool: details?.has_pool === true || hasPoolFromFeatures,
+    roof_type: typeof details?.roof_type === 'string' ? details.roof_type : undefined,
+    stories: typeof details?.stories === 'number' ? details.stories : undefined,
+    garage_spaces:
+      typeof details?.garage_spaces === 'number' ? details.garage_spaces : undefined,
+    lot_size: typeof details?.lot_size === 'number' ? details.lot_size : undefined,
+    hoa_monthly:
+      typeof market?.hoa_fees_monthly === 'number' ? market.hoa_fees_monthly : undefined,
+  }
+}
+
+/** Prefer explicit URL overrides; fill gaps from API / saved snapshot. */
+export function mergeRehabPropertySnapshots(
+  primary?: RehabPropertySnapshot,
+  fallback?: RehabPropertySnapshot,
+): RehabPropertySnapshot | undefined {
+  if (!primary && !fallback) return undefined
+  return {
+    square_footage: primary?.square_footage ?? fallback?.square_footage,
+    year_built: primary?.year_built ?? fallback?.year_built,
+    arv: primary?.arv ?? fallback?.arv,
+    current_value_avm: primary?.current_value_avm ?? fallback?.current_value_avm,
+    zip_code: primary?.zip_code ?? fallback?.zip_code,
+    bedrooms: primary?.bedrooms ?? fallback?.bedrooms,
+    bathrooms: primary?.bathrooms ?? fallback?.bathrooms,
+    has_pool: primary?.has_pool ?? fallback?.has_pool,
+    roof_type: primary?.roof_type ?? fallback?.roof_type,
+    stories: primary?.stories ?? fallback?.stories,
+    garage_spaces: primary?.garage_spaces ?? fallback?.garage_spaces,
+    lot_size: primary?.lot_size ?? fallback?.lot_size,
+    hoa_monthly: primary?.hoa_monthly ?? fallback?.hoa_monthly,
+  }
+}
+
 export function rehabPropertySnapshotFromSearchParams(
   searchParams: URLSearchParams,
 ): RehabPropertySnapshot | undefined {
@@ -81,7 +142,7 @@ export function rehabPropertySnapshotFromSearchParams(
     zip_code: zipCode || undefined,
     bedrooms: bedrooms ? parseInt(bedrooms, 10) : undefined,
     bathrooms: bathrooms ? parseFloat(bathrooms) : undefined,
-    has_pool: hasPool === 'true',
+    ...(hasPool === 'true' ? { has_pool: true } : {}),
     stories: stories ? parseInt(stories, 10) : undefined,
   }
 }
