@@ -869,15 +869,17 @@ export default function QuickRehabEstimate({
       <div
         className="rounded-lg p-3 flex justify-between items-center"
         style={{
-          backgroundColor: 'rgba(245,158,11,0.1)',
-          border: '1px solid rgba(245,158,11,0.3)',
+          backgroundColor: 'var(--surface-elevated)',
+          border: '1px solid var(--border-subtle)',
         }}
       >
         <div>
-          <h4 className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+          <h4 className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
             Contingency Reserve
           </h4>
-          <p className="text-xs text-amber-600 dark:text-amber-500">Buffer for unexpected costs</p>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            Buffer for unexpected costs
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <select
@@ -895,7 +897,7 @@ export default function QuickRehabEstimate({
             <option value={0.15}>15%</option>
             <option value={0.2}>20%</option>
           </select>
-          <span className="text-base font-bold text-amber-700 dark:text-amber-400">
+          <span className="text-base font-bold" style={{ color: 'var(--text-heading)' }}>
             {formatCurrency(estimate.breakdown.contingency)}
           </span>
         </div>
