@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useCallback, useRef, type RefObject } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import {
   Zap,
   AlertTriangle,
@@ -295,29 +295,30 @@ function VerifyChecklistCard({
   warnings,
   expanded,
   onExpandedChange,
-  scrollAnchorRef,
 }: {
   warnings: CapExWarning[]
   expanded: boolean
   onExpandedChange: (expanded: boolean) => void
-  scrollAnchorRef: RefObject<HTMLElement | null>
 }) {
+  const introRef = useRef<HTMLParagraphElement>(null)
+
   useEffect(() => {
-    const anchor = scrollAnchorRef.current
-    if (!anchor) return
+    if (!expanded) return
+    const intro = introRef.current
+    if (!intro) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
           onExpandedChange(false)
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0 },
     )
 
-    observer.observe(anchor)
+    observer.observe(intro)
     return () => observer.disconnect()
-  }, [scrollAnchorRef, onExpandedChange])
+  }, [expanded, onExpandedChange, warnings.length])
 
   if (warnings.length === 0) return null
 
@@ -381,7 +382,11 @@ function VerifyChecklistCard({
 
       {expanded && (
         <div className="px-3 pb-3 pt-2 space-y-2">
-          <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+          <p
+            ref={introRef}
+            className="text-xs leading-relaxed"
+            style={{ color: 'var(--text-secondary)' }}
+          >
             We include these in your estimate based on the home&apos;s age. On your walkthrough or
             inspection, confirm what&apos;s already been replaced — then turn off matching categories
             in the <strong style={{ color: 'var(--text-heading)' }}>Cost Breakdown</strong> below
@@ -476,7 +481,7 @@ function CostBreakdownCard({
   excludedCategories: Set<string>
   onToggleCategory: (key: string) => void
 }) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
 
   const breakdown = estimate.breakdown
 
@@ -727,7 +732,6 @@ export default function QuickRehabEstimate({
   const [includeHolding, setIncludeHolding] = useState(true)
   const [excludedCategories, setExcludedCategories] = useState<Set<string>>(new Set())
   const [verifyExpanded, setVerifyExpanded] = useState(true)
-  const costBreakdownRef = useRef<HTMLDivElement>(null)
 
   const toggleCategory = useCallback((key: string) => {
     setExcludedCategories((prev) => {
@@ -829,17 +833,14 @@ export default function QuickRehabEstimate({
         warnings={estimate.capex_warnings}
         expanded={verifyExpanded}
         onExpandedChange={setVerifyExpanded}
-        scrollAnchorRef={costBreakdownRef}
       />
 
       {/* Cost Breakdown */}
-      <div ref={costBreakdownRef}>
-        <CostBreakdownCard
-          estimate={estimate}
-          excludedCategories={excludedCategories}
-          onToggleCategory={toggleCategory}
-        />
-      </div>
+      <CostBreakdownCard
+        estimate={estimate}
+        excludedCategories={excludedCategories}
+        onToggleCategory={toggleCategory}
+      />
 
       {/* Why This Number */}
       <CostExplanationPanel
