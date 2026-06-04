@@ -47,7 +47,7 @@ map of the whole system.
 ### Brand & creative
 | Document | What it's for | Status |
 |---|---|---|
-| [`BRAND_AND_STYLE_GUIDE.md`](./BRAND_AND_STYLE_GUIDE.md) | Full visual system: color tokens, type, surfaces, components (derived from code) | Canonical |
+| [`BRAND_COLOR_AND_STYLE_GUIDE.md`](./BRAND_COLOR_AND_STYLE_GUIDE.md) | **Single source** for visual identity: color, type, surfaces, spacing, components, motion | Canonical |
 | [`LINKEDIN_BRAND_STYLE_GUIDE.md`](./LINKEDIN_BRAND_STYLE_GUIDE.md) | Self-contained brand kit for building LinkedIn assets (logo, banner, About copy) | Canonical |
 
 ### Channel & page
@@ -157,7 +157,7 @@ GRADIENT       linear-gradient(135deg, #0465F2 0%, #0FA4E9 100%)
 FONT           Inter — 700 headlines / 400 body / 600 numbers (tabular)
 VERDICT        Deal #34D399 · Maybe #FBBF24 · Pass #F87171
 ```
-- **Full system (web/app):** [`BRAND_AND_STYLE_GUIDE.md`](./BRAND_AND_STYLE_GUIDE.md)
+- **Full system (web/app):** [`BRAND_COLOR_AND_STYLE_GUIDE.md`](./BRAND_COLOR_AND_STYLE_GUIDE.md)
 - **Social/LinkedIn asset kit:** [`LINKEDIN_BRAND_STYLE_GUIDE.md`](./LINKEDIN_BRAND_STYLE_GUIDE.md)
 
 ### 4.2 Voice in one breath
@@ -293,6 +293,7 @@ Track four layers so you can tell whether a problem is reach, engagement, click-
 
 | Date | Change | By |
 |---|---|---|
+| 2026-06 | Consolidated to single sources: archived the old `BRAND_AND_STYLE_GUIDE.md` (superseded by `BRAND_COLOR_AND_STYLE_GUIDE.md`), 8 dead `verdictiq-style-*.html` prototypes, a stray `MARKETING_GUIDE.docx`, and the Foreclosure.com audit files → `docs/archive/`. Repointed all references. | — |
 | 2026-06 | v1 — created the resource guide; consolidated messaging; reconciled the three taglines; imported the Manus LinkedIn blueprint into the repo library. | — |
 
 *Add a row for every material change. Keep newest at the top.*

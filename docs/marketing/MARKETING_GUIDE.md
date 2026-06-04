@@ -1335,7 +1335,7 @@ Financial numbers always use `tabular-nums` for column alignment.
 
 The complete brand and style guide with exact CSS custom property values,
 Tailwind mappings, shadow definitions, spacing scales, and animation library
-is maintained at: `docs/marketing/BRAND_AND_STYLE_GUIDE.md`
+is maintained at: `docs/marketing/BRAND_COLOR_AND_STYLE_GUIDE.md`
 
 ---
 

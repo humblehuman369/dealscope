@@ -247,7 +247,7 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 
 Link or attach as each becomes available.
 
-- **Brand guidelines / style guide:** [`BRAND_AND_STYLE_GUIDE.md`](./BRAND_AND_STYLE_GUIDE.md)
+- **Brand guidelines / style guide:** [`BRAND_COLOR_AND_STYLE_GUIDE.md`](./BRAND_COLOR_AND_STYLE_GUIDE.md)
 - **Messaging framework / homepage copy spec:** [`HOMEPAGE_PLAN.md`](./HOMEPAGE_PLAN.md)
 - **Product / engineering plan (Four Paths):** [`../feature-plans/FOUR_PATHS.md`](../feature-plans/FOUR_PATHS.md)
 - **Agency-facing campaign guide:** [`MARKETING_GUIDE.md`](./MARKETING_GUIDE.md)
