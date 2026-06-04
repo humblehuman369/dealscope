@@ -444,7 +444,7 @@ function ModeToggle({
         }}
       >
         <Wrench className="w-3.5 h-3.5" />
-        Detailed Builder
+        Build Estimate
       </button>
     </div>
   )
