@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef, type RefObject } from 'react'
 import {
   Zap,
   AlertTriangle,
@@ -291,8 +291,33 @@ function verifyItemEmoji(item: string): string {
   return map[item] ?? '📋'
 }
 
-function VerifyChecklistCard({ warnings }: { warnings: CapExWarning[] }) {
-  const [expanded, setExpanded] = useState(true)
+function VerifyChecklistCard({
+  warnings,
+  expanded,
+  onExpandedChange,
+  scrollAnchorRef,
+}: {
+  warnings: CapExWarning[]
+  expanded: boolean
+  onExpandedChange: (expanded: boolean) => void
+  scrollAnchorRef: RefObject<HTMLElement | null>
+}) {
+  useEffect(() => {
+    const anchor = scrollAnchorRef.current
+    if (!anchor) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          onExpandedChange(false)
+        }
+      },
+      { threshold: 0.1 },
+    )
+
+    observer.observe(anchor)
+    return () => observer.disconnect()
+  }, [scrollAnchorRef, onExpandedChange])
 
   if (warnings.length === 0) return null
 
@@ -306,7 +331,7 @@ function VerifyChecklistCard({ warnings }: { warnings: CapExWarning[] }) {
     >
       <button
         type="button"
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => onExpandedChange(!expanded)}
         className="w-full text-left transition-colors"
         aria-expanded={expanded}
       >
@@ -701,6 +726,8 @@ export default function QuickRehabEstimate({
   const [contingencyPct, setContingencyPct] = useState(0.1)
   const [includeHolding, setIncludeHolding] = useState(true)
   const [excludedCategories, setExcludedCategories] = useState<Set<string>>(new Set())
+  const [verifyExpanded, setVerifyExpanded] = useState(true)
+  const costBreakdownRef = useRef<HTMLDivElement>(null)
 
   const toggleCategory = useCallback((key: string) => {
     setExcludedCategories((prev) => {
@@ -798,14 +825,21 @@ export default function QuickRehabEstimate({
       </div>
 
       {/* Due diligence checklist */}
-      <VerifyChecklistCard warnings={estimate.capex_warnings} />
+      <VerifyChecklistCard
+        warnings={estimate.capex_warnings}
+        expanded={verifyExpanded}
+        onExpandedChange={setVerifyExpanded}
+        scrollAnchorRef={costBreakdownRef}
+      />
 
       {/* Cost Breakdown */}
-      <CostBreakdownCard
-        estimate={estimate}
-        excludedCategories={excludedCategories}
-        onToggleCategory={toggleCategory}
-      />
+      <div ref={costBreakdownRef}>
+        <CostBreakdownCard
+          estimate={estimate}
+          excludedCategories={excludedCategories}
+          onToggleCategory={toggleCategory}
+        />
+      </div>
 
       {/* Why This Number */}
       <CostExplanationPanel
