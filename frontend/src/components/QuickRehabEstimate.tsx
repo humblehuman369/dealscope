@@ -9,12 +9,11 @@ import {
   ChevronUp,
   ClipboardCheck,
   Clock,
-  DollarSign,
   Home,
   Wrench,
-  TrendingUp,
   MapPin,
   Building2,
+  Lightbulb,
 } from 'lucide-react'
 import {
   RehabIntelligence,
@@ -278,6 +277,20 @@ function ageChipLabel(warning: CapExWarning): string {
   return `~${warning.age} yrs`
 }
 
+/** Friendly icon for each verify item — matches Cost Breakdown tone, not alarm styling. */
+function verifyItemEmoji(item: string): string {
+  const map: Record<string, string> = {
+    Roof: '🔨',
+    HVAC: '❄️',
+    'Electrical Panel': '⚡',
+    Plumbing: '🔧',
+    'Water Heater': '💧',
+    Windows: '🪟',
+    Pool: '🏊',
+  }
+  return map[item] ?? '📋'
+}
+
 function VerifyChecklistCard({ warnings }: { warnings: CapExWarning[] }) {
   const [expanded, setExpanded] = useState(true)
 
@@ -294,38 +307,75 @@ function VerifyChecklistCard({ warnings }: { warnings: CapExWarning[] }) {
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full p-3 flex items-center justify-between transition-colors"
+        className="w-full text-left transition-colors"
         aria-expanded={expanded}
       >
-        <div className="flex items-center gap-2">
-          <ClipboardCheck className="w-4 h-4" style={{ color: 'var(--accent-sky)' }} />
-          <span className="text-base font-semibold" style={{ color: 'var(--text-heading)' }}>
-            Things to verify on this property
-          </span>
-          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            ({warnings.length})
-          </span>
+        <div
+          className="px-3 py-3 flex items-center justify-between gap-3"
+          style={{
+            background:
+              'radial-gradient(ellipse at 0% 0%, var(--color-sky-dim) 0%, transparent 70%), var(--surface-card)',
+            borderBottom: expanded ? '1px solid var(--border-subtle)' : undefined,
+          }}
+        >
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <div
+                className="p-1.5 rounded-lg shrink-0"
+                style={{ backgroundColor: 'var(--color-sky-dim)' }}
+              >
+                <ClipboardCheck className="w-4 h-4" style={{ color: 'var(--accent-sky)' }} />
+              </div>
+              <div className="min-w-0">
+                <span className="text-base font-semibold" style={{ color: 'var(--text-heading)' }}>
+                  Things to verify on this property
+                </span>
+                <span className="text-sm ml-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  ({warnings.length})
+                </span>
+              </div>
+            </div>
+            <p className="text-xs mt-1 pl-9 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              Common on older homes — many may already be updated
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {!expanded && (
+              <span className="text-xs hidden sm:inline" style={{ color: 'var(--accent-sky)' }}>
+                Review at walkthrough
+              </span>
+            )}
+            {expanded ? (
+              <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+            ) : (
+              <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+            )}
+          </div>
         </div>
-        {expanded ? (
-          <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-        ) : (
-          <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-        )}
       </button>
 
       {expanded && (
-        <div className="px-3 pb-3 space-y-2">
-          <p className="text-xs leading-relaxed pb-1" style={{ color: 'var(--text-secondary)' }}>
-            Budgeted based on the property&apos;s age. If an item was already updated, deselect it
-            in the Cost Breakdown below.
+        <div className="px-3 pb-3 pt-2 space-y-2">
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            We include these in your estimate based on the home&apos;s age. On your walkthrough or
+            inspection, confirm what&apos;s already been replaced — then turn off matching categories
+            in the <strong style={{ color: 'var(--text-heading)' }}>Cost Breakdown</strong> below
+            to sharpen your number.
           </p>
-          {warnings.map((warning, idx) => (
-            <div
-              key={idx}
-              className="p-2.5 rounded-lg"
-              style={{ backgroundColor: 'var(--surface-elevated)' }}
-            >
-              <div className="flex items-start justify-between gap-3">
+
+          <ul className="space-y-2 list-none m-0 p-0">
+            {warnings.map((warning, idx) => (
+              <li
+                key={idx}
+                className="p-2.5 rounded-lg flex items-start gap-2.5"
+                style={{
+                  backgroundColor: 'var(--surface-elevated)',
+                  borderLeft: '3px solid var(--accent-sky)',
+                }}
+              >
+                <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden>
+                  {verifyItemEmoji(warning.item)}
+                </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
@@ -348,16 +398,33 @@ function VerifyChecklistCard({ warnings }: { warnings: CapExWarning[] }) {
                   >
                     {warning.notes}
                   </p>
+                  <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-label)' }}>
+                    In estimate if needed:{' '}
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      ~{formatCurrency(warning.estimated_cost)}
+                    </span>
+                  </p>
                 </div>
-                <span
-                  className="text-xs shrink-0 text-right max-w-[9rem] leading-snug"
-                  style={{ color: 'var(--text-secondary)' }}
-                >
-                  est. ~{formatCurrency(warning.estimated_cost)} if needed
-                </span>
-              </div>
-            </div>
-          ))}
+              </li>
+            ))}
+          </ul>
+
+          <div
+            className="flex items-start gap-2 rounded-lg px-2.5 py-2 mt-1"
+            style={{
+              backgroundColor: 'var(--color-sky-dim)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            <Lightbulb
+              className="w-3.5 h-3.5 shrink-0 mt-0.5"
+              style={{ color: 'var(--accent-sky)' }}
+            />
+            <p className="text-xs leading-relaxed m-0" style={{ color: 'var(--text-secondary)' }}>
+              <strong style={{ color: 'var(--text-heading)' }}>Already updated?</strong> Tap the
+              matching category in Cost Breakdown to exclude it — your total updates right away.
+            </p>
+          </div>
         </div>
       )}
     </div>
@@ -723,7 +790,7 @@ export default function QuickRehabEstimate({
         <ConditionSelector value={condition} onChange={setCondition} />
       </div>
 
-      {/* CapEx Warnings */}
+      {/* Due diligence checklist */}
       <VerifyChecklistCard warnings={estimate.capex_warnings} />
 
       {/* Cost Breakdown */}
