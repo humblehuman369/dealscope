@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import {
   Zap,
-  AlertTriangle,
   Check,
   ChevronDown,
   ChevronUp,
@@ -625,23 +624,6 @@ function CostBreakdownCard({
             </span>
           </div>
         )}
-
-        {/* Contingency */}
-        <div
-          className="mt-2 p-2 rounded-lg flex items-center justify-between"
-          style={{
-            backgroundColor: 'rgba(245,158,11,0.1)',
-            border: '1px solid rgba(245,158,11,0.3)',
-          }}
-        >
-          <div className="flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-sm text-amber-600 dark:text-amber-400">Contingency (10%)</span>
-          </div>
-          <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-            {formatCurrency(breakdown.contingency)}
-          </span>
-        </div>
       </div>
     </div>
   )
