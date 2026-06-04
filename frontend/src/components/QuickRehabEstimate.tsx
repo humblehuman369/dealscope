@@ -645,7 +645,9 @@ function CostBreakdownCard({
 
       <div className="px-3 pb-3">
         <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>
-          Tap a category to include or exclude it from the estimate.
+          <strong style={{ color: 'var(--text-heading)' }}>Checked</strong> = in your estimate ·{' '}
+          <strong style={{ color: 'var(--text-heading)' }}>Uncheck</strong> to remove it from your
+          total
         </p>
         <div className="grid grid-cols-2 gap-2">{topCategories.map(renderCategory)}</div>
 
