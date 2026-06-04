@@ -712,7 +712,7 @@ export default function QuickRehabEstimate({
               backgroundColor: 'var(--surface-card)',
             }}
           >
-            Switch to Detailed Mode
+            Switch to Build Mode
           </button>
         )}
       </div>
