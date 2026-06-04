@@ -43,9 +43,14 @@ function DashboardContent() {
 
         {/* The centerpiece — Saved Properties Kanban (pre-purchase + post-purchase). */}
         <section className="mb-8">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--text-heading)] mb-3">
-            Pipeline
-          </h2>
+          <div className="mb-3">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--text-heading)]">
+              Pipeline
+            </h2>
+            <p className="mt-1 text-xs text-[var(--text-label)]">
+              Drag a deal to its next stage, or use the ⋯ menu on a card.
+            </p>
+          </div>
           <PipelineKanban
             highlightStage={highlightStage}
             onEmptyAction={() => setShowSearchModal(true)}

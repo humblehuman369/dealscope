@@ -2,7 +2,7 @@
 
 **Prepared by:** Manus AI
 **Date:** June 3, 2026
-**Imported to repo:** June 2026 — part of the marketing reference library. See [`MARKETING_RESOURCE_GUIDE.md`](./MARKETING_RESOURCE_GUIDE.md) for how this fits the broader system.
+**Imported to repo:** June 2026 — part of the marketing reference library. For canonical messaging and copy, use [`MARKETING_PLAYBOOK.md`](./MARKETING_PLAYBOOK.md). For the internal doc index, see [`MARKETING_RESOURCE_GUIDE.md`](./MARKETING_RESOURCE_GUIDE.md).
 **Objective:** Establish an SEO-optimized, conversion-focused LinkedIn Company Page for **DealGapIQ.com** that attracts real estate investors, proptech stakeholders, lender partners, and investor-facing professionals while driving qualified registrations.
 
 ## Executive Summary

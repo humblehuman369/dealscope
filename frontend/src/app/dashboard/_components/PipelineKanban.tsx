@@ -23,7 +23,15 @@ import {
 } from '@/lib/lifecycleStages'
 import type { FlipStage, PropertyStatus, SavedPropertySummary } from '@/types/savedProperty'
 import { buildRehabUrl } from '@/lib/rehabNavigation'
-import { ChevronDown, ChevronRight, MoreHorizontal, Bookmark, ListChecks, Receipt } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronRight,
+  MoreHorizontal,
+  Bookmark,
+  ListChecks,
+  Receipt,
+  GripVertical,
+} from 'lucide-react'
 import { DataBoundary } from '@/components/ui/DataBoundary'
 
 interface PipelineKanbanProps {
@@ -376,6 +384,9 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
     >
       {/* Strategy filter pills — drives which post-purchase columns render. */}
       <div className="flex flex-wrap items-center gap-2 mb-3">
+        <p className="w-full text-[11px] font-semibold uppercase tracking-wide text-[var(--text-label)]">
+          Owned stage view
+        </p>
         {STRATEGY_FILTERS.map((s) => {
           const active = strategy === s
           return (
@@ -845,11 +856,16 @@ function KanbanCard({
       }}
       onDragEnd={() => setIsDragging(false)}
     >
+      {/* Drag affordance — signals the card moves between columns */}
+      <GripVertical
+        aria-hidden
+        className="pointer-events-none absolute top-2 left-1.5 w-4 h-4 text-[var(--text-label)] opacity-50 group-hover:opacity-90 transition-opacity"
+      />
       <button
         onClick={onClick}
         className="w-full text-left rounded-lg p-2.5 bg-[var(--surface-elevated)] border border-[var(--border-default)] hover:border-[var(--border-focus)] transition-all cursor-grab active:cursor-grabbing"
       >
-        <p className="text-sm font-semibold text-[var(--text-heading)] truncate pr-16">
+        <p className="text-sm font-semibold text-[var(--text-heading)] truncate pl-5 pr-16">
           {shortAddress(property)}
         </p>
         {property.address_city && (
