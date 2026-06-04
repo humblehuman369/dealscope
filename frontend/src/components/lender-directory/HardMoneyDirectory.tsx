@@ -13,6 +13,11 @@ import {
   Search, Phone, Mail, Globe, Lock, CheckCircle2, Sparkles, Filter,
   ExternalLink,
 } from 'lucide-react';
+import {
+  DIRECTORY_BASE_CSS,
+  directoryBaseStyles,
+  directoryTokens,
+} from '@/components/directory/directoryStyles';
 
 // -----------------------------------------------------------------------------
 // Types
@@ -252,12 +257,7 @@ export default function HardMoneyDirectory() {
   return (
     <div style={styles.page}>
       <style>{`
-        @keyframes dgiq-toast-in { from { opacity: 0; transform: translateX(-50%) translateY(-12px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        .dgiq-lender-card { transition: border-color 0.2s, box-shadow 0.2s; }
-        .dgiq-lender-card:hover { border-color: #4b5563; }
-        .dgiq-input:focus, .dgiq-select:focus { outline: none; border-color: #0EA5E9 !important; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15); }
-        .dgiq-btn-press { transition: all 0.15s ease; }
-        .dgiq-btn-press:active { transform: scale(0.97); }
+        ${DIRECTORY_BASE_CSS}
         @media (max-width: 1100px) {
           .dgiq-lender-filters { grid-template-columns: repeat(3, 1fr) !important; }
         }
@@ -276,7 +276,7 @@ export default function HardMoneyDirectory() {
             <span>DealGapIQ / Lenders</span>
           </div>
           <h1 style={styles.h1}>
-            Hard Money <span style={{ color: '#0EA5E9' }}>Lender Directory</span>
+            Hard Money <span style={{ color: directoryTokens.accent }}>Lender Directory</span>
           </h1>
           <p style={styles.sub}>
             {data.stats.total_lenders.toLocaleString()} verified private and hard money lenders nationwide.
@@ -362,13 +362,13 @@ export default function HardMoneyDirectory() {
           </div>
 
           <div style={styles.filterRow}>
-            <Filter size={14} style={{ color: '#6b7280' }} />
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: '#9ca3af' }}>
+            <Filter size={14} style={{ color: directoryTokens.muted }} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: directoryTokens.secondary }}>
               <input
                 type="checkbox"
                 checked={includeWebOnly}
                 onChange={(e) => setIncludeWebOnly(e.target.checked)}
-                style={{ accentColor: '#0EA5E9' }}
+                style={{ accentColor: directoryTokens.accent }}
               />
               Include lenders that only accept online applications (no phone listed)
             </label>
@@ -378,13 +378,13 @@ export default function HardMoneyDirectory() {
         <div style={styles.countStrip}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
             <span style={styles.countNum}>{displayCount}</span>
-            <span style={{ fontSize: 14, color: '#9ca3af' }}>
+            <span style={styles.mutedTextMd}>
               {hasPaidAccess ? 'lenders match' : 'verified lenders nationwide'}
             </span>
           </div>
           {hasPaidAccess && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <div style={{ fontSize: 12, color: '#9ca3af' }}>
+              <div style={styles.mutedTextSm}>
                 Save lenders to your dashboard for quick access later
               </div>
               {filtered.length > 0 && (
@@ -400,7 +400,7 @@ export default function HardMoneyDirectory() {
             </div>
           )}
           {!hasPaidAccess && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#FACC15' }}>
+            <div style={styles.paidProBadge}>
               <Lock size={14} />
               <span style={{ fontFamily: 'Space Mono, monospace', letterSpacing: 0.5 }}>PAID PRO ONLY</span>
             </div>
@@ -431,7 +431,7 @@ export default function HardMoneyDirectory() {
           {!subscriptionLoading && !hasPaidAccess && (
             <div style={styles.gateWrap}>
               <div style={styles.gateCardInline}>
-                <div style={styles.gateIcon}><Lock size={24} color="#fff" /></div>
+                <div style={styles.gateIcon}><Lock size={24} color={directoryTokens.accentOnAccent} /></div>
                 <div style={styles.gateEyebrow}>{gateCopy.eyebrow}</div>
                 <h2 style={styles.gateTitle}>{gateCopy.title}</h2>
                 <p style={styles.gateDesc}>{gateCopy.description}</p>
@@ -441,8 +441,8 @@ export default function HardMoneyDirectory() {
                     'Filter by state, product, and minimum loan size',
                     'Save lenders to your dashboard for quick access',
                   ].map((item) => (
-                    <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: '#d1d5db' }}>
-                      <CheckCircle2 size={16} style={{ color: '#0EA5E9', flexShrink: 0 }} />
+                    <div key={item} style={styles.gateFeatureRow}>
+                      <CheckCircle2 size={16} style={{ color: directoryTokens.accent, flexShrink: 0 }} />
                       <span>{item}</span>
                     </div>
                   ))}
@@ -450,7 +450,7 @@ export default function HardMoneyDirectory() {
                 <button type="button" onClick={gateCopy.onClick} className="dgiq-btn-press" style={styles.gateBtn}>
                   <Sparkles size={16} /> {gateCopy.cta}
                 </button>
-                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 10 }}>{gateCopy.footnote}</div>
+                <div style={{ ...styles.footnoteText, marginTop: 10 }}>{gateCopy.footnote}</div>
               </div>
             </div>
           )}
@@ -475,16 +475,16 @@ function PreviewLenderCards() {
   return (
     <>
       {PREVIEW_LENDER_CARDS.map((card) => (
-        <div key={card.title} className="dgiq-lender-card" style={styles.card}>
+        <div key={card.title} className="dgiq-directory-card" style={styles.card}>
           <div style={{ marginBottom: 10 }}>
             <h3 style={{
               fontSize: 15, fontWeight: 700, margin: '0 0 6px', letterSpacing: '-0.01em',
             }}>
               {card.title}
             </h3>
-            <div style={{ fontSize: 12, color: '#9ca3af' }}>Paid Pro contact</div>
+            <div style={styles.mutedTextSm}>Paid Pro contact</div>
           </div>
-          <p style={{ fontSize: 13, color: '#9ca3af', lineHeight: 1.5, margin: '0 0 14px' }}>
+          <p style={{ ...styles.mutedTextSm, lineHeight: 1.5, margin: '0 0 14px' }}>
             Phone, email, and loan terms unlock after paid Pro activation.
           </p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -509,10 +509,10 @@ function LenderCard({
 
   return (
     <div
-      className="dgiq-lender-card"
+      className="dgiq-directory-card"
       style={{
         ...styles.card,
-        boxShadow: '0 0 24px rgba(14, 165, 233, 0.12)',
+        boxShadow: directoryTokens.shadowCard,
       }}
     >
       {showSave && (
@@ -588,7 +588,7 @@ function LenderCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  style={{ color: '#0EA5E9', textDecoration: 'none' }}
+                  style={{ color: directoryTokens.link, textDecoration: 'none' }}
                 >
                   {lender.domain}
                 </a>
@@ -624,10 +624,7 @@ function Field({ label, icon, children }: { label: string; icon?: ReactNode; chi
       <label style={styles.fieldLabel}>{label}</label>
       <div style={{ position: 'relative' }}>
         {icon && (
-          <span style={{
-            position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-            color: '#6b7280', pointerEvents: 'none',
-          }}>{icon}</span>
+          <span style={styles.fieldIcon}>{icon}</span>
         )}
         {children}
       </div>
@@ -637,12 +634,9 @@ function Field({ label, icon, children }: { label: string; icon?: ReactNode; chi
 
 function TermStat({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ background: '#000', padding: '8px 10px', borderRadius: 7 }}>
-      <div style={styles.miniLabel}>{label}</div>
-      <div style={{
-        fontFamily: 'Space Mono, monospace', fontSize: 12, fontWeight: 700,
-        color: '#fff', letterSpacing: '-0.02em', marginTop: 2,
-      }}>{value}</div>
+    <div style={styles.statCell}>
+      <div style={styles.statLabel}>{label}</div>
+      <div style={styles.statValue}>{value}</div>
     </div>
   );
 }
@@ -652,86 +646,19 @@ function TermStat({ label, value }: { label: string; value: string }) {
 // =============================================================================
 
 const styles = {
-  page: {
-    minHeight: '100vh',
-    background: 'var(--surface-base)',
-    color: '#fff',
-    fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, sans-serif',
-    padding: '32px 24px 100px',
-    position: 'relative',
-  },
-  container: { maxWidth: 1280, margin: '0 auto' },
-  eyebrow: {
-    display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 14,
-    fontSize: 11, color: '#0EA5E9', letterSpacing: 2, textTransform: 'uppercase',
-    fontFamily: 'Space Mono, monospace',
-  },
-  eyebrowDot: { width: 6, height: 6, borderRadius: '50%', background: '#0EA5E9', boxShadow: '0 0 12px #0EA5E9' },
-  h1: {
-    fontSize: 'clamp(36px, 5vw, 52px)', fontWeight: 700, lineHeight: 1.05,
-    margin: '0 0 14px', letterSpacing: '-0.02em',
-  },
-  sub: { fontSize: 17, color: '#9ca3af', maxWidth: 720, lineHeight: 1.5, margin: 0 },
-  panel: {
-    background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
-    border: '1px solid #1f2937', borderRadius: 14, padding: 20, marginBottom: 20,
-  },
+  ...directoryBaseStyles,
+  sub: { ...directoryBaseStyles.sub, maxWidth: 720 },
   filterGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(5, 1fr)',
     gap: 16,
     marginBottom: 16,
   },
-  fieldLabel: {
-    display: 'block', fontFamily: 'Space Mono, monospace',
-    fontSize: 10, color: '#6b7280', letterSpacing: 1.4,
-    textTransform: 'uppercase', marginBottom: 7,
-  },
-  input: {
-    width: '100%', background: '#000', color: '#fff',
-    border: '1px solid #1f2937', borderRadius: 9, padding: '12px 14px 12px 42px',
-    fontFamily: 'inherit', fontSize: 14, boxSizing: 'border-box', transition: 'all 0.2s',
-  },
-  select: {
-    width: '100%', background: '#000', color: '#fff',
-    border: '1px solid #1f2937', borderRadius: 9, padding: '12px 14px',
-    fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-    appearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
-  },
-  filterRow: {
-    display: 'flex', alignItems: 'center', gap: 12,
-    paddingTop: 16, borderTop: '1px solid #1f2937',
-  },
-  countStrip: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    marginBottom: 18, padding: '0 4px', flexWrap: 'wrap', gap: 12,
-  },
-  countNum: { fontFamily: 'Space Mono, monospace', fontSize: 30, fontWeight: 700, color: '#0EA5E9' },
-  selectAllBtn: {
-    background: 'transparent', color: '#0EA5E9',
-    border: '1px solid rgba(14, 165, 233, 0.3)', padding: '6px 12px',
-    borderRadius: 7, cursor: 'pointer',
-    fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
-    display: 'inline-flex', alignItems: 'center', gap: 6,
-  },
-  card: {
-    background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
-    border: '1px solid rgba(14, 165, 233, 0.25)', borderRadius: 14, padding: 18,
-    position: 'relative', overflow: 'hidden',
-  },
-  checkbox: {
-    position: 'absolute', top: 14, right: 14,
-    width: 22, height: 22, border: '1.5px solid',
-    borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    transition: 'all 0.15s',
-  },
   badgeNationwide: {
     fontFamily: 'Space Mono, monospace', fontSize: 10, letterSpacing: 0.8,
     textTransform: 'uppercase', padding: '2px 8px', borderRadius: 999,
-    color: '#FACC15', border: '1px solid rgba(250, 204, 21, 0.45)',
-    background: 'rgba(250, 204, 21, 0.08)',
+    color: 'var(--status-warning)', border: '1px solid color-mix(in srgb, var(--status-warning) 45%, transparent)',
+    background: 'color-mix(in srgb, var(--status-warning) 8%, transparent)',
   },
   badgeRegional: {
     fontFamily: 'Space Mono, monospace', fontSize: 10, letterSpacing: 0.8,
@@ -742,77 +669,31 @@ const styles = {
   badgeNoCredit: {
     fontFamily: 'Space Mono, monospace', fontSize: 10, letterSpacing: 0.8,
     textTransform: 'uppercase', padding: '2px 8px', borderRadius: 999,
-    color: '#4ade80', border: '1px solid rgba(74, 222, 128, 0.45)',
-    background: 'rgba(74, 222, 128, 0.08)',
+    color: 'var(--status-positive)', border: '1px solid color-mix(in srgb, var(--status-positive) 45%, transparent)',
+    background: 'color-mix(in srgb, var(--status-positive) 8%, transparent)',
   },
   badgeSoftPull: {
     fontFamily: 'Space Mono, monospace', fontSize: 10, letterSpacing: 0.8,
     textTransform: 'uppercase', padding: '2px 8px', borderRadius: 999,
-    color: '#7dd3fc', border: '1px solid rgba(125, 211, 252, 0.45)',
-    background: 'rgba(125, 211, 252, 0.08)',
+    color: 'var(--status-info)', border: '1px solid color-mix(in srgb, var(--status-info) 45%, transparent)',
+    background: 'color-mix(in srgb, var(--status-info) 8%, transparent)',
   },
   creditScoreLine: {
-    fontSize: 11, color: '#6b7280', marginTop: 6,
-  },
-  contactRow: {
-    display: 'flex', alignItems: 'center', gap: 7, padding: '2px 0',
-    fontSize: 12, color: '#d1d5db',
+    fontSize: 11, color: 'var(--text-muted)', marginTop: 6,
   },
   applyLink: {
     display: 'inline-flex', alignItems: 'center', gap: 6,
-    color: '#0EA5E9', fontWeight: 600, fontSize: 13, textDecoration: 'none',
+    color: 'var(--text-link)', fontWeight: 600, fontSize: 13, textDecoration: 'none',
   },
   termGrid: {
     display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8,
   },
-  miniLabel: {
-    fontFamily: 'Space Mono, monospace', fontSize: 9, color: '#6b7280',
-    letterSpacing: 1.2, textTransform: 'uppercase',
-  },
-  strategyChip: {
-    background: 'rgba(14, 165, 233, 0.1)', color: '#0EA5E9',
-    padding: '2px 9px', borderRadius: 999,
-    fontSize: 11, fontWeight: 600, border: '1px solid rgba(14, 165, 233, 0.22)',
-  },
-  emptyState: {
-    gridColumn: '1 / -1',
-    background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
-    border: '1px solid #1f2937',
-    borderRadius: 14,
-    padding: 24,
-    color: '#9ca3af',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  gateWrap: {
-    position: 'absolute', inset: 0,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: 32, pointerEvents: 'auto',
-  },
-  gateCardInline: {
-    maxWidth: 560, margin: '0 auto',
-    background: 'linear-gradient(180deg, #0a0a0a 0%, #000 100%)',
-    border: '1px solid rgba(14, 165, 233, 0.4)', borderRadius: 18, padding: 32,
-    boxShadow: '0 24px 80px rgba(0,0,0,0.8), 0 0 60px rgba(14, 165, 233, 0.2)',
-    textAlign: 'center',
-  },
-  gateIcon: {
-    width: 52, height: 52, borderRadius: 13, margin: '0 auto 16px',
-    background: 'linear-gradient(135deg, #0EA5E9 0%, #1B2141 100%)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    boxShadow: '0 0 32px rgba(14, 165, 233, 0.4)',
-  },
-  gateEyebrow: {
-    fontFamily: 'Space Mono, monospace', fontSize: 11, color: '#0EA5E9',
-    letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8,
-  },
-  gateTitle: { fontSize: 24, fontWeight: 700, margin: '0 0 12px', letterSpacing: '-0.01em' },
-  gateDesc: { fontSize: 14, color: '#9ca3af', lineHeight: 1.55, margin: '0 0 22px' },
-  gateBtn: {
-    width: '100%', background: '#0EA5E9', color: '#000', border: 'none',
-    padding: '13px 24px', borderRadius: 10, cursor: 'pointer',
-    fontFamily: 'inherit', fontWeight: 700, fontSize: 14,
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+  gateCardInline: directoryBaseStyles.gateCard,
+  checkbox: {
+    position: 'absolute', top: 14, right: 14,
+    width: 22, height: 22, border: '1.5px solid',
+    borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    transition: 'all 0.15s',
   },
   exportRow: {
     display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap',
@@ -822,34 +703,34 @@ const styles = {
     position: 'fixed', bottom: 20, left: '50%',
     transform: 'translateX(-50%)',
     width: 'calc(100% - 48px)', maxWidth: 720,
-    background: 'linear-gradient(180deg, #0a0a0a 0%, #000 100%)',
-    border: '1px solid #0EA5E9', borderRadius: 12,
+    background: 'var(--surface-card)',
+    border: '1px solid var(--accent-sky)', borderRadius: 12,
     padding: '12px 16px', display: 'flex',
     alignItems: 'center', justifyContent: 'space-between',
     gap: 14, flexWrap: 'wrap',
-    boxShadow: '0 12px 40px rgba(0,0,0,0.7), 0 0 40px rgba(14, 165, 233, 0.15)',
+    boxShadow: 'var(--shadow-dropdown)',
     transition: 'transform 0.25s, opacity 0.25s',
     zIndex: 50,
   },
   actionCount: {
-    fontFamily: 'inherit', fontWeight: 700, fontSize: 13, color: '#0EA5E9',
+    fontFamily: 'inherit', fontWeight: 700, fontSize: 13, color: 'var(--accent-sky)',
     display: 'inline-flex', alignItems: 'center', gap: 6,
   },
   actionClear: {
-    background: 'transparent', color: '#9ca3af', border: 'none', cursor: 'pointer',
+    background: 'transparent', color: 'var(--text-secondary)', border: 'none', cursor: 'pointer',
     fontFamily: 'inherit', fontSize: 12, padding: '4px 8px', borderRadius: 5,
   },
   actionBtn: {
-    background: 'transparent', color: '#fff', border: '1px solid #1f2937',
+    background: 'transparent', color: 'var(--text-heading)', border: '1px solid var(--border-default)',
     borderRadius: 8, padding: '9px 14px', cursor: 'pointer',
     fontFamily: 'inherit', fontWeight: 600, fontSize: 12,
     display: 'inline-flex', alignItems: 'center', gap: 6,
   },
   actionBtnPrimary: {
-    background: '#0EA5E9', color: '#000', borderColor: '#0EA5E9',
+    background: 'var(--accent-sky)', color: 'var(--text-inverse)', borderColor: 'var(--accent-sky)',
   },
   actionBtnDisabled: {
-    background: 'transparent', color: '#6b7280', border: '1px solid #1f2937',
+    background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border-default)',
     borderRadius: 8, padding: '9px 14px', cursor: 'not-allowed',
     fontFamily: 'inherit', fontWeight: 600, fontSize: 12,
     display: 'inline-flex', alignItems: 'center', gap: 6, opacity: 0.55,
@@ -857,7 +738,7 @@ const styles = {
   toast: {
     position: 'fixed', top: 16, left: '50%',
     transform: 'translateX(-50%)',
-    background: '#0a0a0a', border: '1px solid #22c55e', color: '#22c55e',
+    background: 'var(--surface-card)', border: '1px solid var(--status-positive)', color: 'var(--status-positive)',
     padding: '10px 18px', borderRadius: 9,
     fontFamily: 'inherit', fontWeight: 600, fontSize: 13,
     display: 'inline-flex', alignItems: 'center', gap: 7,

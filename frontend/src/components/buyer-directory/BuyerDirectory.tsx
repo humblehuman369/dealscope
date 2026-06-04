@@ -21,6 +21,11 @@ import {
   Search, MapPin, Phone, Mail, Globe, Lock, CheckCircle2,
   Sparkles, Filter,
 } from 'lucide-react';
+import {
+  DIRECTORY_BASE_CSS,
+  directoryBaseStyles,
+  directoryTokens,
+} from '@/components/directory/directoryStyles';
 
 // -----------------------------------------------------------------------------
 // Safe preview metadata only. Full buyer records are fetched from the paid API.
@@ -380,14 +385,7 @@ export default function BuyerDirectory() {
 
   return (
     <div style={styles.page}>
-      <style>{`
-        @keyframes dgiq-toast-in { from { opacity: 0; transform: translateX(-50%) translateY(-12px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        .dgiq-card { transition: border-color 0.2s, box-shadow 0.2s; }
-        .dgiq-card:hover { border-color: #4b5563; }
-        .dgiq-input:focus, .dgiq-select:focus { outline: none; border-color: #0EA5E9 !important; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15); }
-        .dgiq-btn-press { transition: all 0.15s ease; }
-        .dgiq-btn-press:active { transform: scale(0.97); }
-      `}</style>
+      <style>{DIRECTORY_BASE_CSS}</style>
 
 
       <div style={styles.container}>
@@ -398,7 +396,7 @@ export default function BuyerDirectory() {
             <span>DealGapIQ / Directory</span>
           </div>
           <h1 style={styles.h1}>
-            Cash Buyer <span style={{ color: '#0EA5E9' }}>Directory</span>
+            Cash Buyer <span style={{ color: directoryTokens.accent }}>Directory</span>
           </h1>
           <p style={styles.sub}>
             Verified fix-and-flippers, BRRRR buyers, and active investors across every major U.S. market.
@@ -412,8 +410,8 @@ export default function BuyerDirectory() {
             {(['city', 'county', 'zip'] as const).map((mode) => (
               <button key={mode} onClick={() => setSearchMode(mode)} className="dgiq-btn-press" style={{
                 ...styles.tab,
-                background: searchMode === mode ? '#0EA5E9' : 'transparent',
-                color: searchMode === mode ? '#000' : '#9ca3af',
+                background: searchMode === mode ? directoryTokens.accent : 'transparent',
+                color: searchMode === mode ? directoryTokens.accentOnAccent : directoryTokens.secondary,
               }}>
                 {mode === 'city' ? 'City + State' : mode === 'county' ? 'County' : 'Zip Code'}
               </button>
@@ -463,15 +461,15 @@ export default function BuyerDirectory() {
 
           {/* Strategy filter */}
           <div style={styles.filterRow}>
-            <Filter size={14} style={{ color: '#6b7280' }} />
+            <Filter size={14} style={{ color: directoryTokens.muted }} />
             <span style={styles.filterLabel}>Strategy</span>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {STRATEGIES.map(s => (
                 <button key={s} onClick={() => setStrategyFilter(s)} style={{
                   ...styles.chip,
-                  background: strategyFilter === s ? 'rgba(14, 165, 233, 0.15)' : 'transparent',
-                  color: strategyFilter === s ? '#0EA5E9' : '#9ca3af',
-                  borderColor: strategyFilter === s ? '#0EA5E9' : '#1f2937',
+                  background: strategyFilter === s ? 'color-mix(in srgb, var(--accent-sky) 15%, transparent)' : 'transparent',
+                  color: strategyFilter === s ? directoryTokens.accent : directoryTokens.secondary,
+                  borderColor: strategyFilter === s ? directoryTokens.accent : directoryTokens.border,
                 }}>
                   {s === 'all' ? 'All Strategies' : s}
                 </button>
@@ -484,19 +482,19 @@ export default function BuyerDirectory() {
         <div style={styles.countStrip}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
             <span style={styles.countNum}>{displayCount}</span>
-            <span style={{ fontSize: 14, color: '#9ca3af' }}>
+            <span style={styles.mutedTextMd}>
               verified buyers {appliedSearch.mode === 'city' && appliedSearch.city ? `in ${appliedSearch.city}, ${appliedSearch.stateCode}` :
                 appliedSearch.mode === 'county' && appliedSearch.county ? `in ${canonicalCountyName(appliedSearch.county)} County` :
                 appliedSearch.mode === 'zip' && appliedSearch.zip ? `near ${appliedSearch.zip}` : 'nationwide'}
             </span>
           </div>
           {hasPaidAccess && (
-            <div style={{ fontSize: 12, color: '#9ca3af' }}>
+            <div style={styles.mutedTextSm}>
               Save buyers to your dashboard for quick access later
             </div>
           )}
           {!hasPaidAccess && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#FACC15' }}>
+            <div style={styles.paidProBadge}>
               <Lock size={14} />
               <span style={{ fontFamily: 'Space Mono, monospace', letterSpacing: 0.5 }}>PAID PRO ONLY</span>
             </div>
@@ -546,7 +544,7 @@ export default function BuyerDirectory() {
           {!subscriptionLoading && !hasPaidAccess && (
             <div style={styles.gateWrap}>
               <div style={styles.gateCard}>
-                <div style={styles.gateIcon}><Lock size={24} color="#fff" /></div>
+                <div style={styles.gateIcon}><Lock size={24} color={directoryTokens.accentOnAccent} /></div>
                 <div style={styles.gateEyebrow}>{gateCopy.eyebrow}</div>
                 <h2 style={styles.gateTitle}>{gateCopy.title}</h2>
                 <p style={styles.gateDesc}>
@@ -557,8 +555,8 @@ export default function BuyerDirectory() {
                     'Verified deal volume (last 12 months)',
                     'Coverage by county and zip code',
                     'Save buyers to your dashboard for quick access'].map(item => (
-                    <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: '#d1d5db' }}>
-                      <CheckCircle2 size={16} style={{ color: '#0EA5E9', flexShrink: 0 }} />
+                    <div key={item} style={styles.gateFeatureRow}>
+                      <CheckCircle2 size={16} style={{ color: directoryTokens.accent, flexShrink: 0 }} />
                       <span>{item}</span>
                     </div>
                   ))}
@@ -566,7 +564,7 @@ export default function BuyerDirectory() {
                 <button onClick={gateCopy.onClick} className="dgiq-btn-press" style={styles.gateBtn}>
                   <Sparkles size={16} /> {gateCopy.cta}
                 </button>
-                <div style={{ fontSize: 12, color: '#6b7280' }}>{gateCopy.footnote}</div>
+                <div style={styles.footnoteText}>{gateCopy.footnote}</div>
               </div>
             </div>
           )}
@@ -589,7 +587,7 @@ export default function BuyerDirectory() {
 
 function BuyerCard({ buyer }: { buyer: Buyer }) {
   return (
-    <div className="dgiq-card" style={styles.card}>
+    <div className="dgiq-directory-card" style={styles.card}>
       {/* Top accent line */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, height: 2,
@@ -620,9 +618,9 @@ function BuyerCard({ buyer }: { buyer: Buyer }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
             <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, letterSpacing: '-0.01em',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{buyer.company}</h3>
-            <CheckCircle2 size={13} style={{ color: '#0EA5E9', flexShrink: 0 }} />
+            <CheckCircle2 size={13} style={{ color: directoryTokens.accent, flexShrink: 0 }} />
           </div>
-          <div style={{ fontSize: 12, color: '#9ca3af' }}>{buyer.owner}</div>
+          <div style={styles.mutedTextSm}>{buyer.owner}</div>
         </div>
       </div>
 
@@ -648,13 +646,13 @@ function BuyerCard({ buyer }: { buyer: Buyer }) {
       {/* Coverage */}
       <div style={{ marginBottom: 14 }}>
         <div style={styles.miniLabel}>Coverage</div>
-        <div style={{ fontSize: 12, color: '#d1d5db' }}>{buyer.coverage.join(' · ')}</div>
+        <div style={{ fontSize: 12, color: directoryTokens.body }}>{buyer.coverage.join(' · ')}</div>
       </div>
 
       {/* Contact */}
-      <div style={{ paddingTop: 12, borderTop: '1px solid #1f2937' }}>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 8, fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>
-          <MapPin size={13} style={{ marginTop: 2, flexShrink: 0, color: '#6b7280' }} />
+      <div style={{ paddingTop: 12, borderTop: `1px solid ${directoryTokens.border}` }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 8, fontSize: 12, color: directoryTokens.secondary, lineHeight: 1.5 }}>
+          <MapPin size={13} style={{ marginTop: 2, flexShrink: 0, color: directoryTokens.muted }} />
           <div>{buyer.street}<br />{buyer.city}, {buyer.state} {buyer.zip}</div>
         </div>
         <ContactRow icon={<Phone size={12} />} value={buyer.phone} />
@@ -669,12 +667,12 @@ function LoadingBuyerCards() {
   return (
     <>
       {[0, 1, 2].map((index) => (
-        <div key={index} style={{ ...styles.card, minHeight: 280, opacity: 0.55 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: '#111827', marginBottom: 16 }} />
-          <div style={{ height: 16, width: '60%', background: '#111827', borderRadius: 999, marginBottom: 10 }} />
-          <div style={{ height: 12, width: '40%', background: '#111827', borderRadius: 999, marginBottom: 20 }} />
-          <div style={{ height: 64, background: '#111827', borderRadius: 8, marginBottom: 16 }} />
-          <div style={{ height: 44, background: '#111827', borderRadius: 8 }} />
+        <div key={index} className="dgiq-directory-card" style={{ ...styles.card, minHeight: 280, opacity: 0.55 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: directoryTokens.surfaceElevated, marginBottom: 16 }} />
+          <div style={{ height: 16, width: '60%', background: directoryTokens.surfaceElevated, borderRadius: 999, marginBottom: 10 }} />
+          <div style={{ height: 12, width: '40%', background: directoryTokens.surfaceElevated, borderRadius: 999, marginBottom: 20 }} />
+          <div style={{ height: 64, background: directoryTokens.surfaceElevated, borderRadius: 8, marginBottom: 16 }} />
+          <div style={{ height: 44, background: directoryTokens.surfaceElevated, borderRadius: 8 }} />
         </div>
       ))}
     </>
@@ -685,7 +683,7 @@ function PreviewBuyerCards() {
   return (
     <>
       {PREVIEW_CARDS.map(card => (
-        <div key={card.title} style={styles.card}>
+        <div key={card.title} className="dgiq-directory-card" style={styles.card}>
           <div style={{
             position: 'absolute', top: 0, left: 0, right: 0, height: 2,
             background: `linear-gradient(90deg, transparent, ${card.accent}, transparent)`,
@@ -703,7 +701,7 @@ function PreviewBuyerCards() {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 3px' }}>{card.title}</h3>
-              <div style={{ fontSize: 12, color: '#9ca3af' }}>Paid Pro contact</div>
+              <div style={styles.mutedTextSm}>Paid Pro contact</div>
             </div>
           </div>
           <p style={styles.cardDesc}>
@@ -731,10 +729,7 @@ function Field({ label, icon, children }: { label: string; icon?: ReactNode; chi
       <label style={styles.fieldLabel}>{label}</label>
       <div style={{ position: 'relative' }}>
         {icon && (
-          <span style={{
-            position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-            color: '#6b7280', pointerEvents: 'none',
-          }}>{icon}</span>
+          <span style={styles.fieldIcon}>{icon}</span>
         )}
         {children}
       </div>
@@ -744,23 +739,17 @@ function Field({ label, icon, children }: { label: string; icon?: ReactNode; chi
 
 function Stat({ label, value, small }: { label: string; value: string | number; small?: boolean }) {
   return (
-    <div style={{ background: '#000', padding: '8px 10px', borderRadius: 7, textAlign: 'center' }}>
-      <div style={{
-        fontFamily: 'Space Mono, monospace', fontSize: 9, color: '#6b7280',
-        letterSpacing: 0.7, textTransform: 'uppercase', marginBottom: 3,
-      }}>{label}</div>
-      <div style={{
-        fontFamily: 'Space Mono, monospace', fontSize: small ? 12 : 14, fontWeight: 700,
-        color: '#fff', letterSpacing: '-0.02em',
-      }}>{value}</div>
+    <div style={{ ...styles.statCell, textAlign: 'center' }}>
+      <div style={{ ...styles.statLabel, letterSpacing: 0.7, marginBottom: 3 }}>{label}</div>
+      <div style={{ ...styles.statValue, fontSize: small ? 12 : 14 }}>{value}</div>
     </div>
   );
 }
 
 function ContactRow({ icon, value }: { icon: ReactNode; value: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '2px 0', fontSize: 12, color: '#d1d5db' }}>
-      <span style={{ color: '#6b7280' }}>{icon}</span>
+    <div style={styles.contactRow}>
+      <span style={{ color: directoryTokens.muted }}>{icon}</span>
       <span>{value}</span>
     </div>
   );
@@ -771,68 +760,29 @@ function ContactRow({ icon, value }: { icon: ReactNode; value: string }) {
 // =============================================================================
 
 const styles = {
-  page: {
-    minHeight: '100vh',
-    background: 'var(--surface-base)',
-    color: '#fff',
-    fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, sans-serif',
-    padding: '32px 24px 100px',
-    position: 'relative',
-  },
-  container: { maxWidth: 1280, margin: '0 auto' },
-  eyebrow: {
-    display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 14,
-    fontSize: 11, color: '#0EA5E9', letterSpacing: 2, textTransform: 'uppercase',
-    fontFamily: 'Space Mono, monospace',
-  },
-  eyebrowDot: { width: 6, height: 6, borderRadius: '50%', background: '#0EA5E9', boxShadow: '0 0 12px #0EA5E9' },
-  h1: {
-    fontSize: 'clamp(36px, 5vw, 52px)', fontWeight: 700, lineHeight: 1.05,
-    margin: '0 0 14px', letterSpacing: '-0.02em',
-  },
-  sub: { fontSize: 17, color: '#9ca3af', maxWidth: 640, lineHeight: 1.5, margin: 0 },
-  panel: {
-    background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
-    border: '1px solid #1f2937', borderRadius: 14, padding: 20, marginBottom: 20,
-  },
+  ...directoryBaseStyles,
+  sub: { ...directoryBaseStyles.sub, maxWidth: 640 },
   tabs: {
     display: 'inline-flex', gap: 4, marginBottom: 18, padding: 4,
-    background: '#000', borderRadius: 10, border: '1px solid #1f2937',
+    background: 'var(--surface-elevated)', borderRadius: 10, border: '1px solid var(--border-default)',
   },
   tab: {
     border: 'none', padding: '8px 16px', borderRadius: 6, cursor: 'pointer',
     fontFamily: 'inherit', fontWeight: 600, fontSize: 13, transition: 'all 0.2s',
   },
-  fieldLabel: {
-    display: 'block', fontFamily: 'Space Mono, monospace',
-    fontSize: 10, color: '#6b7280', letterSpacing: 1.4,
-    textTransform: 'uppercase', marginBottom: 7,
-  },
-  input: {
-    width: '100%', background: '#000', color: '#fff',
-    border: '1px solid #1f2937', borderRadius: 9, padding: '12px 14px 12px 42px',
-    fontFamily: 'inherit', fontSize: 14, boxSizing: 'border-box', transition: 'all 0.2s',
-  },
-  select: {
-    width: '100%', background: '#000', color: '#fff',
-    border: '1px solid #1f2937', borderRadius: 9, padding: '12px 14px',
-    fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-    appearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
-  },
   searchBtn: {
-    background: '#0EA5E9', color: '#000', border: 'none',
+    background: 'var(--accent-sky)', color: 'var(--text-inverse)', border: 'none',
     padding: '12px 24px', borderRadius: 9, cursor: 'pointer',
     fontFamily: 'inherit', fontWeight: 700, fontSize: 14, letterSpacing: 0.3,
     display: 'flex', alignItems: 'center', gap: 8,
   },
   filterRow: {
-    display: 'flex', alignItems: 'center', gap: 12, marginTop: 18,
-    paddingTop: 18, borderTop: '1px solid #1f2937',
+    ...directoryBaseStyles.filterRow,
+    marginTop: 18,
+    paddingTop: 18,
   },
   filterLabel: {
-    fontFamily: 'Space Mono, monospace', fontSize: 11, color: '#6b7280',
+    fontFamily: 'Space Mono, monospace', fontSize: 11, color: 'var(--text-label)',
     letterSpacing: 1, textTransform: 'uppercase',
   },
   chip: {
@@ -840,21 +790,13 @@ const styles = {
     fontFamily: 'inherit', fontSize: 12, fontWeight: 500, transition: 'all 0.2s',
   },
   countStrip: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    marginBottom: 18, padding: '0 4px',
-  },
-  countNum: { fontFamily: 'Space Mono, monospace', fontSize: 30, fontWeight: 700, color: '#0EA5E9' },
-  selectAllBtn: {
-    background: 'transparent', color: '#0EA5E9',
-    border: '1px solid rgba(14, 165, 233, 0.3)', padding: '6px 12px',
-    borderRadius: 7, cursor: 'pointer',
-    fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
-    display: 'inline-flex', alignItems: 'center', gap: 6,
+    ...directoryBaseStyles.countStrip,
+    flexWrap: 'nowrap',
+    gap: 0,
   },
   card: {
-    background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
-    border: '1px solid #1f2937', borderRadius: 14, padding: 18,
-    position: 'relative', overflow: 'hidden', cursor: 'pointer',
+    ...directoryBaseStyles.card,
+    cursor: 'pointer',
   },
   checkbox: {
     position: 'absolute', top: 14, right: 14,
@@ -862,29 +804,9 @@ const styles = {
     borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center',
     transition: 'all 0.15s',
   },
-  cardDesc: { fontSize: 13, color: '#d1d5db', lineHeight: 1.55, margin: '0 0 14px' },
   statStrip: {
     display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1,
-    background: '#1f2937', borderRadius: 8, padding: 1, marginBottom: 14,
-  },
-  miniLabel: {
-    fontFamily: 'Space Mono, monospace', fontSize: 9, color: '#6b7280',
-    letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 6,
-  },
-  strategyChip: {
-    background: 'rgba(14, 165, 233, 0.1)', color: '#0EA5E9',
-    padding: '2px 9px', borderRadius: 999,
-    fontSize: 11, fontWeight: 600, border: '1px solid rgba(14, 165, 233, 0.22)',
-  },
-  emptyState: {
-    gridColumn: '1 / -1',
-    background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
-    border: '1px solid #1f2937',
-    borderRadius: 14,
-    padding: 24,
-    color: '#9ca3af',
-    fontSize: 14,
-    textAlign: 'center',
+    background: 'var(--border-default)', borderRadius: 8, padding: 1, marginBottom: 14,
   },
   loadMoreWrap: {
     display: 'flex',
@@ -893,8 +815,8 @@ const styles = {
   },
   loadMoreBtn: {
     background: 'transparent',
-    color: '#0EA5E9',
-    border: '1px solid rgba(14, 165, 233, 0.35)',
+    color: 'var(--accent-sky)',
+    border: '1px solid color-mix(in srgb, var(--accent-sky) 35%, transparent)',
     borderRadius: 9,
     padding: '10px 18px',
     cursor: 'pointer',
@@ -902,71 +824,44 @@ const styles = {
     fontSize: 13,
     fontWeight: 700,
   },
-  gateWrap: {
-    position: 'absolute', inset: 0,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: 32, pointerEvents: 'auto',
-  },
-  gateCard: {
-    maxWidth: 480, width: '100%',
-    background: 'linear-gradient(180deg, #0a0a0a 0%, #000 100%)',
-    border: '1px solid rgba(14, 165, 233, 0.4)', borderRadius: 18, padding: 32,
-    boxShadow: '0 24px 80px rgba(0,0,0,0.8), 0 0 60px rgba(14, 165, 233, 0.2)',
-    textAlign: 'center',
-  },
-  gateIcon: {
-    width: 52, height: 52, borderRadius: 13, margin: '0 auto 16px',
-    background: 'linear-gradient(135deg, #0EA5E9 0%, #1B2141 100%)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    boxShadow: '0 0 32px rgba(14, 165, 233, 0.4)',
-  },
-  gateEyebrow: {
-    fontFamily: 'Space Mono, monospace', fontSize: 11, color: '#0EA5E9',
-    letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8,
-  },
-  gateTitle: { fontSize: 24, fontWeight: 700, margin: '0 0 12px', letterSpacing: '-0.01em' },
-  gateDesc: { fontSize: 14, color: '#9ca3af', lineHeight: 1.55, margin: '0 0 22px' },
   gateBtn: {
-    width: '100%', background: '#0EA5E9', color: '#000', border: 'none',
-    padding: '13px 24px', borderRadius: 10, cursor: 'pointer',
-    fontFamily: 'inherit', fontWeight: 700, fontSize: 14,
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+    ...directoryBaseStyles.gateBtn,
     marginBottom: 10,
   },
   actionBar: {
     position: 'fixed', bottom: 20, left: '50%',
     transform: 'translateX(-50%)',
     width: 'calc(100% - 48px)', maxWidth: 720,
-    background: 'linear-gradient(180deg, #0a0a0a 0%, #000 100%)',
-    border: '1px solid #0EA5E9', borderRadius: 12,
+    background: 'var(--surface-card)',
+    border: '1px solid var(--accent-sky)', borderRadius: 12,
     padding: '12px 16px', display: 'flex',
     alignItems: 'center', justifyContent: 'space-between',
     gap: 14, flexWrap: 'wrap',
-    boxShadow: '0 12px 40px rgba(0,0,0,0.7), 0 0 40px rgba(14, 165, 233, 0.15)',
+    boxShadow: 'var(--shadow-dropdown)',
     transition: 'transform 0.25s, opacity 0.25s',
     zIndex: 50,
   },
   actionCount: {
-    fontFamily: 'inherit', fontWeight: 700, fontSize: 13, color: '#0EA5E9',
+    fontFamily: 'inherit', fontWeight: 700, fontSize: 13, color: 'var(--accent-sky)',
     display: 'inline-flex', alignItems: 'center', gap: 6,
   },
   actionClear: {
-    background: 'transparent', color: '#9ca3af', border: 'none', cursor: 'pointer',
+    background: 'transparent', color: 'var(--text-secondary)', border: 'none', cursor: 'pointer',
     fontFamily: 'inherit', fontSize: 12, padding: '4px 8px', borderRadius: 5,
   },
   actionBtn: {
-    background: 'transparent', color: '#fff', border: '1px solid #1f2937',
+    background: 'transparent', color: 'var(--text-heading)', border: '1px solid var(--border-default)',
     borderRadius: 8, padding: '9px 14px', cursor: 'pointer',
     fontFamily: 'inherit', fontWeight: 600, fontSize: 12,
     display: 'inline-flex', alignItems: 'center', gap: 6,
   },
   actionBtnPrimary: {
-    background: '#0EA5E9', color: '#000', borderColor: '#0EA5E9',
+    background: 'var(--accent-sky)', color: 'var(--text-inverse)', borderColor: 'var(--accent-sky)',
   },
   toast: {
     position: 'fixed', top: 16, left: '50%',
     transform: 'translateX(-50%)',
-    background: '#0a0a0a', border: '1px solid #22c55e', color: '#22c55e',
+    background: 'var(--surface-card)', border: '1px solid var(--status-positive)', color: 'var(--status-positive)',
     padding: '10px 18px', borderRadius: 9,
     fontFamily: 'inherit', fontWeight: 600, fontSize: 13,
     display: 'inline-flex', alignItems: 'center', gap: 7,
