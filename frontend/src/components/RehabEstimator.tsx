@@ -766,36 +766,9 @@ export default function RehabEstimator({
 
   return (
     <div className="space-y-3">
-      {propertyData && <ModeToggle mode={mode} onModeChange={setMode} />}
-
-      {savedPropertyId ? (
-        <div className="flex rounded-xl border border-[var(--border-default)] p-1 gap-1 bg-[var(--surface-elevated)]">
-          <button
-            type="button"
-            className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
-            style={{
-              backgroundColor: workspaceTab === 'estimate' ? 'var(--surface-card)' : 'transparent',
-              color: 'var(--text-heading)',
-              boxShadow: workspaceTab === 'estimate' ? 'var(--shadow-card)' : undefined,
-            }}
-            onClick={() => setWorkspaceTab('estimate')}
-          >
-            Estimate
-          </button>
-          <button
-            type="button"
-            className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
-            style={{
-              backgroundColor: workspaceTab === 'budget' ? 'var(--surface-card)' : 'transparent',
-              color: 'var(--text-heading)',
-              boxShadow: workspaceTab === 'budget' ? 'var(--shadow-card)' : undefined,
-            }}
-            onClick={() => setWorkspaceTab('budget')}
-          >
-            Budget (actuals)
-          </button>
-        </div>
-      ) : null}
+      {savedPropertyId && (
+        <WorkspaceTabs value={workspaceTab} onChange={setWorkspaceTab} />
+      )}
 
       {savedPropertyId && workspaceTab === 'budget' ? (
         budgetQuery.isLoading ? (
@@ -814,6 +787,8 @@ export default function RehabEstimator({
         )
       ) : (
         <>
+          {propertyData && <ModeToggle mode={mode} onModeChange={setMode} />}
+
           {/* Quick Start Presets */}
           <div>
             <div className="flex items-center gap-2 mb-2">
