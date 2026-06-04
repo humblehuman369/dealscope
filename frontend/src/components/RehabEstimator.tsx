@@ -407,7 +407,46 @@ function CategorySection({
 }
 
 // ============================================
-// MODE TOGGLE
+// WORKSPACE TABS (primary: plan vs. track actuals)
+// ============================================
+
+function WorkspaceTabs({
+  value,
+  onChange,
+}: {
+  value: 'estimate' | 'budget'
+  onChange: (value: 'estimate' | 'budget') => void
+}) {
+  const tabs: { id: 'estimate' | 'budget'; label: string }[] = [
+    { id: 'estimate', label: 'Estimate' },
+    { id: 'budget', label: 'Budget (actuals)' },
+  ]
+  return (
+    <div className="flex rounded-xl border border-[var(--border-default)] p-1 gap-1 bg-[var(--surface-elevated)]">
+      {tabs.map((tab) => {
+        const active = value === tab.id
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
+            style={{
+              backgroundColor: active ? 'var(--surface-card)' : 'transparent',
+              color: 'var(--text-heading)',
+              boxShadow: active ? 'var(--shadow-card)' : undefined,
+            }}
+            onClick={() => onChange(tab.id)}
+          >
+            {tab.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// ============================================
+// MODE TOGGLE (secondary: how to build the estimate)
 // ============================================
 
 function ModeToggle({
@@ -417,35 +456,40 @@ function ModeToggle({
   mode: EstimatorMode
   onModeChange: (mode: EstimatorMode) => void
 }) {
+  const tabs: { id: EstimatorMode; label: string; icon: typeof Zap }[] = [
+    { id: 'quick', label: 'Quick Estimate', icon: Zap },
+    { id: 'detailed', label: 'Build Estimate', icon: Wrench },
+  ]
   return (
-    <div
-      className="flex gap-1 p-1 rounded-lg"
-      style={{ backgroundColor: 'var(--surface-elevated)' }}
-    >
-      <button
-        onClick={() => onModeChange('quick')}
-        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold transition-all"
-        style={{
-          backgroundColor: mode === 'quick' ? 'var(--surface-card)' : 'transparent',
-          color: mode === 'quick' ? 'var(--accent-sky)' : 'var(--text-secondary)',
-          boxShadow: mode === 'quick' ? 'var(--shadow-card)' : 'none',
-        }}
+    <div>
+      <span
+        className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5"
+        style={{ color: 'var(--text-secondary)' }}
       >
-        <Zap className="w-3.5 h-3.5" />
-        Quick Estimate
-      </button>
-      <button
-        onClick={() => onModeChange('detailed')}
-        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold transition-all"
-        style={{
-          backgroundColor: mode === 'detailed' ? 'var(--surface-card)' : 'transparent',
-          color: mode === 'detailed' ? 'var(--accent-sky)' : 'var(--text-secondary)',
-          boxShadow: mode === 'detailed' ? 'var(--shadow-card)' : 'none',
-        }}
-      >
-        <Wrench className="w-3.5 h-3.5" />
-        Build Estimate
-      </button>
+        Estimate method
+      </span>
+      <div className="flex gap-5 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+        {tabs.map((tab) => {
+          const active = mode === tab.id
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onModeChange(tab.id)}
+              aria-pressed={active}
+              className="flex items-center gap-1.5 pb-2 -mb-px border-b-2 text-sm font-semibold transition-colors"
+              style={{
+                color: active ? 'var(--accent-sky)' : 'var(--text-secondary)',
+                borderColor: active ? 'var(--accent-sky)' : 'transparent',
+              }}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {tab.label}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -668,39 +712,11 @@ export default function RehabEstimator({
   ) : null
 
   if (mode === 'quick' && propertyData) {
-    const tabBar = savedPropertyId ? (
-      <div className="flex rounded-xl border border-[var(--border-default)] p-1 gap-1 bg-[var(--surface-elevated)]">
-        <button
-          type="button"
-          className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
-          style={{
-            backgroundColor: workspaceTab === 'estimate' ? 'var(--surface-card)' : 'transparent',
-            color: 'var(--text-heading)',
-            boxShadow: workspaceTab === 'estimate' ? 'var(--shadow-card)' : undefined,
-          }}
-          onClick={() => setWorkspaceTab('estimate')}
-        >
-          Estimate
-        </button>
-        <button
-          type="button"
-          className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
-          style={{
-            backgroundColor: workspaceTab === 'budget' ? 'var(--surface-card)' : 'transparent',
-            color: 'var(--text-heading)',
-            boxShadow: workspaceTab === 'budget' ? 'var(--shadow-card)' : undefined,
-          }}
-          onClick={() => setWorkspaceTab('budget')}
-        >
-          Budget (actuals)
-        </button>
-      </div>
-    ) : null
-
     return (
       <div className="space-y-4">
-        <ModeToggle mode={mode} onModeChange={setMode} />
-        {tabBar}
+        {savedPropertyId && (
+          <WorkspaceTabs value={workspaceTab} onChange={setWorkspaceTab} />
+        )}
         {savedPropertyId && workspaceTab === 'budget' ? (
           budgetQuery.isLoading ? (
             <div className="py-12 text-center text-[var(--text-secondary)]">Loading budget…</div>
@@ -719,6 +735,7 @@ export default function RehabEstimator({
           )
         ) : (
           <>
+            <ModeToggle mode={mode} onModeChange={setMode} />
             <QuickRehabEstimate
               propertyData={propertyData}
               onEstimateChange={onEstimateChange}
