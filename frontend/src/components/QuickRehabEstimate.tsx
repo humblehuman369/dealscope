@@ -400,7 +400,7 @@ function VerifyChecklistCard({
                 className="p-2.5 rounded-lg flex items-start gap-2.5"
                 style={{
                   backgroundColor: 'var(--surface-elevated)',
-                  borderLeft: '3px solid var(--accent-sky)',
+                  borderLeft: '3px solid var(--status-negative)',
                 }}
               >
                 <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden>
