@@ -10,14 +10,13 @@
  * - Optional property address bar (for property-specific pages)
  *
  * Layout:
- * ┌─────────────────────────────────────────────────┐
- * │  DealMakerIQ          [🔍] [👤]                 │  ← Dark navy bar
- * │  by DealGapIQ                                    │
- * ├─────────────────────────────────────────────────┤
- * │  [Analyze]  Details  PriceCheckerIQ  Dashboard         │  ← White tab bar
- * ├─────────────────────────────────────────────────┤
- * │  🏠 1451 Sw 10th St, Boca Raton, FL 33486   ▼  │  ← Property bar (optional)
- * └─────────────────────────────────────────────────┘
+ * ┌──────────────────────────────────────────────────────────────┐
+ * │  [Logo]     [────── Search address ──────]  [Tools][☀][☰]  │  ← Brand bar
+ * ├──────────────────────────────────────────────────────────────┤
+ * │  Discovery | Strategy | Comps | DealMaker | Estimator        │  ← Analysis tabs
+ * ├──────────────────────────────────────────────────────────────┤
+ * │  🏠 1451 Sw 10th St, Boca Raton, FL 33486   ▼               │  ← Property bar (optional)
+ * └──────────────────────────────────────────────────────────────┘
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
@@ -43,6 +42,7 @@ import {
   Users,
   Landmark,
   Kanban,
+  ChevronDown,
 } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
@@ -157,6 +157,25 @@ const NO_PROPERTY_BAR_ROUTES = [
   '/lenders',
 ]
 
+/** Analysis workflow routes — tab bar only appears on these (not dashboard, directory, etc.) */
+const ANALYSIS_WORKFLOW_PREFIXES = [
+  '/discovery',
+  '/strategy',
+  '/property',
+  '/price-intel',
+  '/compare',
+  '/rental-comps',
+  '/deal-maker',
+  '/rehab',
+] as const
+
+function isAnalysisWorkflowRoute(pathname: string): boolean {
+  return ANALYSIS_WORKFLOW_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+}
+
+const MENU_ITEM_CLASS =
+  'flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-[var(--hover-overlay)]'
+
 // Map routes to active tabs
 function getActiveTabFromPath(pathname: string): AppTab | undefined {
   // Homepage: no tab selected
@@ -231,6 +250,8 @@ export function AppHeader({
 
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
+  const [showToolsMenu, setShowToolsMenu] = useState(false)
+  const toolsMenuRef = useRef<HTMLDivElement>(null)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const mobileNavRef = useRef<HTMLDivElement>(null)
   const [scrolledPast, setScrolledPast] = useState(false)
@@ -284,6 +305,19 @@ export function AppHeader({
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showProfileMenu])
+
+  // Close tools menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (toolsMenuRef.current && !toolsMenuRef.current.contains(e.target as Node)) {
+        setShowToolsMenu(false)
+      }
+    }
+    if (showToolsMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showToolsMenu])
 
   // Close mobile nav on outside click
   useEffect(() => {
@@ -424,9 +458,11 @@ export function AppHeader({
     propertySnapshot: savePropertySnapshot,
   })
 
-  // Close mobile nav on navigation
+  // Close menus on navigation
   useEffect(() => {
     setMobileNavOpen(false)
+    setShowToolsMenu(false)
+    setShowProfileMenu(false)
   }, [pathname])
 
   // Determine if header should be hidden - Moved to end of component to prevent React Hook errors
@@ -438,6 +474,15 @@ export function AppHeader({
   const activeTab = activeTabProp ?? getActiveTabFromPath(pathname || '')
   const isInfoPage = pathname?.startsWith('/about') || pathname?.startsWith('/pricing')
   const isHomepage = !pathname || pathname === '/'
+
+  const toolsNavActive =
+    pathname?.startsWith('/directory') ||
+    pathname?.startsWith('/lenders') ||
+    pathname === '/dashboard' ||
+    pathname === '/pipeline'
+
+  const showAnalysisTabs =
+    showTabs && !isInfoPage && !isHomepage && isAnalysisWorkflowRoute(pathname || '')
 
   // Determine if property bar should be shown
   const shouldShowPropertyBar =
@@ -588,12 +633,11 @@ export function AppHeader({
         />
 
         <header className="relative z-50">
-          {/* Brand Bar */}
-          <div className="flex items-center justify-between gap-3 px-4 py-3 pt-safe-header">
-            {/* Left: Logo — themed image (dark/light variants) */}
+          {/* Brand Bar — logo | centered search | tools + theme + account */}
+          <div className="flex items-center gap-2 sm:gap-3 px-4 py-3 pt-safe-header">
             <button
               onClick={handleLogoClick}
-              className="flex items-center cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity p-0"
+              className="shrink-0 flex items-center cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity p-0"
               aria-label="DealGapIQ home"
             >
               <Image
@@ -606,180 +650,252 @@ export function AppHeader({
                 width={1024}
                 height={333}
                 priority
-                className="h-[39px] sm:h-[50px] w-auto select-none"
+                className="h-[36px] sm:h-[44px] w-auto select-none"
                 draggable={false}
               />
             </button>
 
-            {/* Right: About, Pricing, Search, Profile/Login */}
-            <div className="flex items-center gap-2 sm:gap-5">
-              {isHomepage && (
-                <>
-                  <Link
-                    href="/about"
-                    className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                    style={{
-                      color: 'var(--text-heading)',
-                      borderBottom:
-                        pathname === '/about'
-                          ? `2px solid ${colors.brand.teal}`
-                          : '2px solid transparent',
-                      paddingBottom: 2,
-                    }}
-                  >
-                    About
-                  </Link>
-                  <Link
-                    href="/pricing"
-                    className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                    style={{
-                      color: 'var(--text-heading)',
-                      borderBottom:
-                        pathname === '/pricing'
-                          ? `2px solid ${colors.brand.teal}`
-                          : '2px solid transparent',
-                      paddingBottom: 2,
-                    }}
-                  >
-                    Pricing
-                  </Link>
-                  <Link
-                    href="/blog"
-                    className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                    style={{
-                      color: 'var(--text-heading)',
-                      borderBottom: pathname?.startsWith('/blog')
-                        ? `2px solid ${colors.brand.teal}`
-                        : '2px solid transparent',
-                      paddingBottom: 2,
-                    }}
-                  >
-                    Blog
-                  </Link>
-                </>
-              )}
-              {/* Property search button opens modal */}
+            <div className="flex-1 flex justify-center min-w-0 px-1 sm:px-2">
               <button
                 onClick={() => setSearchModalOpen(true)}
-                className="min-h-[36px] sm:min-h-[40px] px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full border transition-colors hover:opacity-90 flex items-center gap-2"
+                className="w-full max-w-xl min-h-[40px] sm:min-h-[44px] px-3 sm:px-4 py-2 rounded-full border transition-colors hover:opacity-90 flex items-center gap-2 justify-start"
                 style={{
                   background: 'var(--surface-elevated)',
                   borderColor: 'var(--border-default)',
                   color: 'var(--text-heading)',
                 }}
-                aria-label="Search properties"
+                aria-label="Search properties by address"
               >
                 <Search
-                  className="w-4 h-4 sm:w-5 sm:h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
                   style={{ color: 'var(--text-secondary)' }}
                 />
-                <span className="hidden sm:inline text-sm font-medium whitespace-nowrap">
-                  Property Search
+                <span
+                  className="text-sm font-medium truncate"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  <span className="sm:hidden">Search address…</span>
+                  <span className="hidden sm:inline">Search address or MLS #…</span>
                 </span>
               </button>
-              <Link
-                href="/directory"
-                className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                style={{
-                  color: 'var(--text-heading)',
-                  borderBottom:
-                    pathname?.startsWith('/directory')
-                      ? `2px solid ${colors.brand.teal}`
-                      : '2px solid transparent',
-                  paddingBottom: 2,
-                }}
-              >
-                Cash Buyers
-              </Link>
-              <Link
-                href="/lenders"
-                className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
-                style={{
-                  color: 'var(--text-heading)',
-                  borderBottom:
-                    pathname?.startsWith('/lenders')
-                      ? `2px solid ${colors.brand.teal}`
-                      : '2px solid transparent',
-                  paddingBottom: 2,
-                }}
-              >
-                Hard Money
-              </Link>
-              {/* Dashboard — visible primary nav for signed-in users. */}
-              {isAuthenticated && (
+            </div>
+
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              {isHomepage && (
                 <>
                   <Link
-                    href="/dashboard"
-                    className="hidden sm:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                    href="/about"
+                    className="hidden lg:inline text-sm font-semibold whitespace-nowrap transition-colors hover:text-[var(--text-heading)]"
                     style={{
-                      color: 'var(--text-heading)',
-                      borderBottom:
-                        pathname === '/dashboard'
-                          ? `2px solid ${colors.brand.teal}`
-                          : '2px solid transparent',
-                      paddingBottom: 2,
+                      color:
+                        pathname === '/about' ? 'var(--text-heading)' : 'var(--text-secondary)',
                     }}
+                    aria-current={pathname === '/about' ? 'page' : undefined}
                   >
-                    Dashboard
+                    About
                   </Link>
                   <Link
-                    href="/pipeline"
-                    className="hidden md:inline text-[14px] sm:text-[18px] font-medium transition-opacity hover:opacity-80"
+                    href="/pricing"
+                    className="hidden lg:inline text-sm font-semibold whitespace-nowrap transition-colors hover:text-[var(--text-heading)]"
                     style={{
-                      color: 'var(--text-heading)',
-                      borderBottom:
-                        pathname === '/pipeline'
-                          ? `2px solid ${colors.brand.teal}`
-                          : '2px solid transparent',
-                      paddingBottom: 2,
+                      color:
+                        pathname === '/pricing' ? 'var(--text-heading)' : 'var(--text-secondary)',
                     }}
+                    aria-current={pathname === '/pricing' ? 'page' : undefined}
                   >
-                    Pipeline
+                    Pricing
+                  </Link>
+                  <Link
+                    href="/blog"
+                    className="hidden lg:inline text-sm font-semibold whitespace-nowrap transition-colors hover:text-[var(--text-heading)]"
+                    style={{
+                      color: pathname?.startsWith('/blog')
+                        ? 'var(--text-heading)'
+                        : 'var(--text-secondary)',
+                    }}
+                    aria-current={pathname?.startsWith('/blog') ? 'page' : undefined}
+                  >
+                    Blog
                   </Link>
                 </>
               )}
-              {/* Theme toggle — always shown directly (no dropdown) */}
+
+              {/* Tools — directories, dashboard, pipeline */}
+              <div className="relative" ref={toolsMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowToolsMenu((prev) => !prev)}
+                  className="min-h-[40px] sm:min-h-[44px] px-2.5 sm:px-3 rounded-full border transition-colors hover:bg-[var(--hover-overlay)] flex items-center gap-1 whitespace-nowrap"
+                  style={{
+                    borderColor: toolsNavActive ? colors.brand.teal : 'var(--border-default)',
+                    color: toolsNavActive ? 'var(--text-heading)' : 'var(--text-secondary)',
+                    background: 'transparent',
+                  }}
+                  aria-label="Tools and directories"
+                  aria-expanded={showToolsMenu}
+                  aria-haspopup="menu"
+                >
+                  <span className="text-sm font-semibold hidden sm:inline">Tools</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${showToolsMenu ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                {showToolsMenu && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-1 w-52 rounded-lg shadow-lg py-1 z-50"
+                    style={{
+                      background: 'var(--surface-elevated)',
+                      border: '1px solid var(--border-default)',
+                    }}
+                  >
+                    <Link
+                      href="/directory"
+                      role="menuitem"
+                      onClick={() => setShowToolsMenu(false)}
+                      className={MENU_ITEM_CLASS}
+                      style={{
+                        color: pathname?.startsWith('/directory')
+                          ? 'var(--text-heading)'
+                          : 'var(--text-secondary)',
+                        fontWeight: pathname?.startsWith('/directory') ? 600 : 400,
+                      }}
+                      aria-current={pathname?.startsWith('/directory') ? 'page' : undefined}
+                    >
+                      <Users className="w-4 h-4 shrink-0" />
+                      <span className="whitespace-nowrap">Cash Buyers</span>
+                    </Link>
+                    <Link
+                      href="/lenders"
+                      role="menuitem"
+                      onClick={() => setShowToolsMenu(false)}
+                      className={MENU_ITEM_CLASS}
+                      style={{
+                        color: pathname?.startsWith('/lenders')
+                          ? 'var(--text-heading)'
+                          : 'var(--text-secondary)',
+                        fontWeight: pathname?.startsWith('/lenders') ? 600 : 400,
+                      }}
+                      aria-current={pathname?.startsWith('/lenders') ? 'page' : undefined}
+                    >
+                      <Landmark className="w-4 h-4 shrink-0" />
+                      <span className="whitespace-nowrap">Hard Money</span>
+                    </Link>
+                    {isAuthenticated && (
+                      <>
+                        <div
+                          className="my-1"
+                          style={{ borderTop: '1px solid var(--border-default)' }}
+                          role="separator"
+                        />
+                        <Link
+                          href="/dashboard"
+                          role="menuitem"
+                          onClick={() => setShowToolsMenu(false)}
+                          className={MENU_ITEM_CLASS}
+                          style={{
+                            color:
+                              pathname === '/dashboard'
+                                ? 'var(--text-heading)'
+                                : 'var(--text-secondary)',
+                            fontWeight: pathname === '/dashboard' ? 600 : 400,
+                          }}
+                          aria-current={pathname === '/dashboard' ? 'page' : undefined}
+                        >
+                          <LayoutDashboard className="w-4 h-4 shrink-0" />
+                          <span className="whitespace-nowrap">Dashboard</span>
+                        </Link>
+                        <Link
+                          href="/pipeline"
+                          role="menuitem"
+                          onClick={() => setShowToolsMenu(false)}
+                          className={MENU_ITEM_CLASS}
+                          style={{
+                            color:
+                              pathname === '/pipeline'
+                                ? 'var(--text-heading)'
+                                : 'var(--text-secondary)',
+                            fontWeight: pathname === '/pipeline' ? 600 : 400,
+                          }}
+                          aria-current={pathname === '/pipeline' ? 'page' : undefined}
+                        >
+                          <Kanban className="w-4 h-4 shrink-0" />
+                          <span className="whitespace-nowrap">Pipeline</span>
+                        </Link>
+                      </>
+                    )}
+                    {!isAuthenticated && (
+                      <>
+                        <div
+                          className="my-1"
+                          style={{ borderTop: '1px solid var(--border-default)' }}
+                          role="separator"
+                        />
+                        <Link
+                          href="/login"
+                          role="menuitem"
+                          onClick={() => setShowToolsMenu(false)}
+                          className={MENU_ITEM_CLASS}
+                          style={{ color: 'var(--accent-sky)', fontWeight: 600 }}
+                        >
+                          <UserCircle className="w-4 h-4 shrink-0" />
+                          <span className="whitespace-nowrap">Log in</span>
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={toggleTheme}
-                className="hidden sm:flex min-w-[44px] min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] items-center justify-center"
+                className="flex min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] items-center justify-center"
                 aria-label={
                   mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
                 }
               >
                 {mounted && theme === 'dark' ? (
-                  <Sun className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: 'var(--text-heading)' }} />
+                  <Sun className="w-5 h-5" style={{ color: 'var(--text-heading)' }} />
                 ) : (
-                  <Moon
-                    className="w-5 h-5 sm:w-6 sm:h-6"
-                    style={{ color: 'var(--text-heading)' }}
-                  />
+                  <Moon className="w-5 h-5" style={{ color: 'var(--text-heading)' }} />
                 )}
               </button>
+
               {isAuthenticated ? (
                 <div className="relative" ref={profileMenuRef}>
                   <button
                     onClick={handleProfileClick}
-                    className="min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] p-1.5 sm:p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
-                    aria-label="Menu"
+                    className="min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
+                    aria-label="Account menu"
                     aria-expanded={showProfileMenu}
-                    aria-haspopup="true"
+                    aria-haspopup="menu"
                   >
-                    <Menu
-                      className="w-5 h-5 sm:w-6 sm:h-6"
-                      style={{ color: 'var(--text-heading)' }}
-                    />
+                    <Menu className="w-5 h-5" style={{ color: 'var(--text-heading)' }} />
                   </button>
 
                   {showProfileMenu && (
-                    <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-navy-900 rounded-lg shadow-lg border border-slate-200 dark:border-navy-700 py-1 z-50">
+                    <div
+                      role="menu"
+                      className="absolute right-0 top-full mt-1 w-52 rounded-lg shadow-lg py-1 z-50"
+                      style={{
+                        background: 'var(--surface-elevated)',
+                        border: '1px solid var(--border-default)',
+                      }}
+                    >
                       {user && (
-                        <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-700">
+                        <div
+                          className="px-3 py-2"
+                          style={{ borderBottom: '1px solid var(--border-default)' }}
+                        >
                           <div className="flex items-center gap-2">
-                            <p className="text-[14px] sm:text-[18px] font-medium text-slate-700 dark:text-slate-300 truncate">
+                            <p
+                              className="text-sm font-medium truncate"
+                              style={{ color: 'var(--text-heading)' }}
+                            >
                               {user.full_name || 'User'}
                             </p>
                             <span
-                              className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] sm:text-[14px] font-semibold uppercase tracking-wide"
+                              className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
                               style={{
                                 background: isPro
                                   ? 'rgba(15,164,233,0.15)'
@@ -790,95 +906,78 @@ export function AppHeader({
                               {isPro ? 'Pro' : 'Starter'}
                             </span>
                           </div>
-                          <p className="text-[12px] sm:text-[16px] text-slate-400 truncate">
+                          <p className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>
                             {user.email}
                           </p>
                         </div>
                       )}
                       <button
-                        onClick={() => {
-                          setShowProfileMenu(false)
-                          router.push('/dashboard')
-                        }}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                      >
-                        <LayoutDashboard className="w-4 h-4" /> Dashboard
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowProfileMenu(false)
-                          router.push('/pipeline')
-                        }}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
-                      >
-                        <Kanban className="w-4 h-4" /> Pipeline
-                      </button>
-                      <Link
-                        href="/directory"
-                        onClick={() => setShowProfileMenu(false)}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                      >
-                        <Users className="w-4 h-4" /> Cash Buyers
-                      </Link>
-                      <Link
-                        href="/lenders"
-                        onClick={() => setShowProfileMenu(false)}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-50 dark:hover:bg-navy-800"
-                      >
-                        <Landmark className="w-4 h-4" /> Hard Money
-                      </Link>
-                      <button
+                        role="menuitem"
                         onClick={() => {
                           setShowProfileMenu(false)
                           router.push('/profile')
                         }}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                        className={MENU_ITEM_CLASS}
+                        style={{ color: 'var(--text-heading)' }}
                       >
                         <UserCircle className="w-4 h-4" /> Profile
                       </button>
                       <button
+                        role="menuitem"
                         onClick={() => {
                           setShowProfileMenu(false)
                           router.push('/search-history')
                         }}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                        className={MENU_ITEM_CLASS}
+                        style={{ color: 'var(--text-secondary)' }}
                       >
                         <History className="w-4 h-4" /> Search History
                       </button>
                       <button
+                        role="menuitem"
                         onClick={() => {
                           setShowProfileMenu(false)
                           router.push('/saved-properties')
                         }}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                        className={MENU_ITEM_CLASS}
+                        style={{ color: 'var(--text-secondary)' }}
                       >
                         <Bookmark className="w-4 h-4" /> Saved Properties
                       </button>
                       <button
+                        role="menuitem"
                         onClick={() => {
                           setShowProfileMenu(false)
                           router.push('/billing')
                         }}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800 transition-colors"
+                        className={MENU_ITEM_CLASS}
+                        style={{ color: 'var(--text-secondary)' }}
                       >
                         <CreditCard className="w-4 h-4" /> Billing
                       </button>
                       {isAdmin && (
                         <button
+                          role="menuitem"
                           onClick={() => {
                             setShowProfileMenu(false)
                             router.push('/admin')
                           }}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                          className={MENU_ITEM_CLASS}
+                          style={{ color: 'var(--accent-sky)' }}
                         >
-                          <ShieldCheck className="w-4 h-4" /> Admin Dashboard
+                          <ShieldCheck className="w-4 h-4" /> Admin
                         </button>
                       )}
-                      <div className="border-t border-slate-100 dark:border-navy-700 mt-1 pt-1">
+                      <div
+                        className="mt-1 pt-1"
+                        style={{ borderTop: '1px solid var(--border-default)' }}
+                      >
                         <button
+                          role="menuitem"
                           onClick={handleLogout}
                           disabled={logoutMutation.isPending}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          className={MENU_ITEM_CLASS}
+                          style={{ color: '#dc2626' }}
                         >
                           <LogOut className="w-4 h-4" /> Sign Out
                         </button>
@@ -890,16 +989,16 @@ export function AppHeader({
                 <>
                   <Link
                     href="/login"
-                    className={`${isHomepage ? 'hidden sm:inline' : ''} text-[14px] sm:text-[18px] font-semibold transition-opacity hover:opacity-80 whitespace-nowrap`}
+                    className={`${isHomepage ? 'hidden sm:inline' : 'hidden min-[420px]:inline'} text-sm font-semibold transition-opacity hover:opacity-80 whitespace-nowrap`}
                     style={{ color: colors.brand.teal }}
                   >
-                    Login / Register
+                    Log in
                   </Link>
                   {isHomepage && (
                     <div className="sm:hidden relative" ref={mobileNavRef}>
                       <button
                         onClick={() => setMobileNavOpen((prev) => !prev)}
-                        className="min-w-[36px] min-h-[36px] p-1.5 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
+                        className="min-w-[40px] min-h-[40px] p-2 rounded-full transition-colors hover:bg-[var(--hover-overlay)] flex items-center justify-center"
                         aria-label="Navigation menu"
                         aria-expanded={mobileNavOpen}
                         aria-haspopup="true"
@@ -914,14 +1013,14 @@ export function AppHeader({
                         <div
                           className="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-lg py-1 z-50"
                           style={{
-                            background: 'var(--surface-card)',
+                            background: 'var(--surface-elevated)',
                             border: '1px solid var(--border-default)',
                           }}
                         >
                           <Link
                             href="/about"
                             onClick={() => setMobileNavOpen(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                            className={MENU_ITEM_CLASS}
                             style={{ color: 'var(--text-heading)' }}
                           >
                             <Info className="w-4 h-4" /> About
@@ -929,7 +1028,7 @@ export function AppHeader({
                           <Link
                             href="/pricing"
                             onClick={() => setMobileNavOpen(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                            className={MENU_ITEM_CLASS}
                             style={{ color: 'var(--text-heading)' }}
                           >
                             <DollarSign className="w-4 h-4" /> Pricing
@@ -937,57 +1036,11 @@ export function AppHeader({
                           <Link
                             href="/blog"
                             onClick={() => setMobileNavOpen(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                            className={MENU_ITEM_CLASS}
                             style={{ color: 'var(--text-heading)' }}
                           >
                             <Info className="w-4 h-4" /> Blog
                           </Link>
-                          <Link
-                            href="/pipeline"
-                            onClick={() => setMobileNavOpen(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                            style={{ color: 'var(--text-heading)' }}
-                          >
-                            <Kanban className="w-4 h-4" /> Pipeline
-                          </Link>
-                          <Link
-                            href="/directory"
-                            onClick={() => setMobileNavOpen(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                            style={{ color: 'var(--text-heading)' }}
-                          >
-                            <Users className="w-4 h-4" /> Cash Buyers
-                          </Link>
-                          <Link
-                            href="/lenders"
-                            onClick={() => setMobileNavOpen(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                            style={{ color: 'var(--text-heading)' }}
-                          >
-                            <Landmark className="w-4 h-4" /> Hard Money
-                          </Link>
-                          <div
-                            style={{ borderTop: '1px solid var(--border-default)' }}
-                            className="my-1"
-                          />
-                          <button
-                            onClick={() => {
-                              toggleTheme()
-                              setMobileNavOpen(false)
-                            }}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-white/5"
-                            style={{ color: 'var(--text-heading)' }}
-                          >
-                            {mounted && theme === 'dark' ? (
-                              <>
-                                <Sun className="w-4 h-4" /> Light Mode
-                              </>
-                            ) : (
-                              <>
-                                <Moon className="w-4 h-4" /> Dark Mode
-                              </>
-                            )}
-                          </button>
                           <div
                             style={{ borderTop: '1px solid var(--border-default)' }}
                             className="my-1"
@@ -995,10 +1048,10 @@ export function AppHeader({
                           <Link
                             href="/login"
                             onClick={() => setMobileNavOpen(false)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm font-semibold transition-colors hover:bg-white/5"
-                            style={{ color: 'var(--accent-sky)' }}
+                            className={MENU_ITEM_CLASS}
+                            style={{ color: 'var(--accent-sky)', fontWeight: 600 }}
                           >
-                            <UserCircle className="w-4 h-4" /> Login / Register
+                            <UserCircle className="w-4 h-4" /> Log in
                           </Link>
                         </div>
                       )}
@@ -1009,10 +1062,12 @@ export function AppHeader({
             </div>
           </div>
 
-          {/* Tab Bar - pure black, hidden on info pages */}
-          {showTabs && !isInfoPage && !isHomepage && (
+          {/* Analysis workflow tabs — only on discovery/strategy/comps/deal-maker/rehab routes */}
+          {showAnalysisTabs && (
             <div
-              className="flex items-stretch overflow-x-auto scrollbar-hide touch-pan-x"
+              role="tablist"
+              aria-label="Property analysis"
+              className="flex items-center justify-center gap-0.5 sm:gap-1 px-2 sm:px-4 overflow-x-auto scrollbar-hide touch-pan-x"
               style={{
                 borderTop: '1px solid var(--border-chrome)',
                 borderBottom: '1px solid var(--border-chrome)',
@@ -1024,22 +1079,24 @@ export function AppHeader({
                 return (
                   <button
                     key={tab.id}
+                    role="tab"
+                    type="button"
+                    aria-selected={isActive}
+                    aria-current={isActive ? 'page' : undefined}
                     onClick={() => handleTabChange(tab.id)}
-                    className={`
-                    flex-1 px-2 sm:px-4 py-[7px] text-[12px] sm:text-[18px] font-medium 
-                    transition-all whitespace-nowrap border-r last:border-r-0
-                  `}
+                    className="flex-1 min-w-0 px-2 sm:px-4 py-2.5 text-xs sm:text-base font-medium transition-colors whitespace-nowrap"
                     style={{
-                      backgroundColor: 'transparent',
                       fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
-                      color: 'var(--text-link)',
-                      borderColor: colors.ui.border,
+                      color: isActive ? 'var(--text-heading)' : 'var(--text-secondary)',
                       borderBottom: isActive
                         ? `2px solid ${colors.brand.teal}`
                         : '2px solid transparent',
                     }}
                   >
-                    {tab.label}
+                    <span className="sm:hidden">
+                      {tab.id === 'price-checker' ? 'Comps' : tab.label}
+                    </span>
+                    <span className="hidden sm:inline">{tab.label}</span>
                   </button>
                 )
               })}
