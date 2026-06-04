@@ -300,7 +300,42 @@ function VerifyChecklistCard({
   expanded: boolean
   onExpandedChange: (expanded: boolean) => void
 }) {
+  const cardRef = useRef<HTMLDivElement>(null)
   const introRef = useRef<HTMLParagraphElement>(null)
+  const pendingScrollCompRef = useRef(false)
+  const heightBeforeCollapseRef = useRef<number | null>(null)
+
+  const requestCollapse = useCallback(
+    (autoFromScroll: boolean) => {
+      if (!expanded || !cardRef.current) return
+      heightBeforeCollapseRef.current = cardRef.current.offsetHeight
+      pendingScrollCompRef.current = autoFromScroll
+      onExpandedChange(false)
+    },
+    [expanded, onExpandedChange],
+  )
+
+  const handleBodyTransitionEnd = useCallback(
+    (e: React.TransitionEvent<HTMLDivElement>) => {
+      if (e.propertyName !== 'grid-template-rows' || expanded) return
+      if (
+        !pendingScrollCompRef.current ||
+        heightBeforeCollapseRef.current == null ||
+        !cardRef.current
+      ) {
+        pendingScrollCompRef.current = false
+        heightBeforeCollapseRef.current = null
+        return
+      }
+      const delta = heightBeforeCollapseRef.current - cardRef.current.offsetHeight
+      pendingScrollCompRef.current = false
+      heightBeforeCollapseRef.current = null
+      if (delta > 0) {
+        window.scrollTo({ top: Math.max(0, window.scrollY - delta) })
+      }
+    },
+    [expanded],
+  )
 
   useEffect(() => {
     if (!expanded) return
@@ -310,7 +345,7 @@ function VerifyChecklistCard({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
-          onExpandedChange(false)
+          requestCollapse(true)
         }
       },
       { threshold: 0 },
@@ -318,16 +353,18 @@ function VerifyChecklistCard({
 
     observer.observe(intro)
     return () => observer.disconnect()
-  }, [expanded, onExpandedChange, warnings.length])
+  }, [expanded, requestCollapse, warnings.length])
 
   if (warnings.length === 0) return null
 
   return (
     <div
+      ref={cardRef}
       className="rounded-xl overflow-hidden"
       style={{
         backgroundColor: 'var(--surface-card)',
         border: '1px solid var(--border-default)',
+        ...(!expanded ? { borderLeft: '3px solid var(--status-negative)' } : {}),
       }}
     >
       <button
@@ -380,90 +417,103 @@ function VerifyChecklistCard({
         </div>
       </button>
 
-      {expanded && (
-        <div className="px-3 pb-3 pt-2 space-y-2">
-          <p
-            ref={introRef}
-            className="text-xs leading-relaxed"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            We include these in your estimate based on the home&apos;s age. On your walkthrough or
-            inspection, confirm what&apos;s already been replaced — then turn off matching categories
-            in the <strong style={{ color: 'var(--text-heading)' }}>Cost Breakdown</strong> below
-            to sharpen your number.
-          </p>
+      <div
+        className="grid transition-[grid-template-rows] duration-500 ease-in-out"
+        style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
+        aria-hidden={!expanded}
+        onTransitionEnd={handleBodyTransitionEnd}
+      >
+        <div className="overflow-hidden min-h-0">
+          <div className="px-3 pb-3 pt-2 space-y-2">
+            <p
+              ref={introRef}
+              className="text-xs leading-relaxed"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              We include these in your estimate based on the home&apos;s age. On your walkthrough or
+              inspection, confirm what&apos;s already been replaced — then turn off matching categories
+              in the <strong style={{ color: 'var(--text-heading)' }}>Cost Breakdown</strong> below
+              to sharpen your number.
+            </p>
 
-          <ul className="space-y-2 list-none m-0 p-0">
-            {warnings.map((warning, idx) => (
-              <li
-                key={idx}
-                className="p-2.5 rounded-lg flex items-start gap-2.5"
-                style={{
-                  backgroundColor: 'var(--surface-elevated)',
-                  borderLeft: '3px solid var(--status-negative)',
-                }}
-              >
-                <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden>
-                  {verifyItemEmoji(warning.item)}
-                </span>
-                <div className="min-w-0 flex-1 flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
-                        {warning.item}
+            <ul className="space-y-2 list-none m-0 p-0">
+              {warnings.map((warning, idx) => (
+                <li
+                  key={idx}
+                  className="p-2.5 rounded-lg flex items-start gap-2.5"
+                  style={{
+                    backgroundColor: 'var(--surface-elevated)',
+                    borderLeft: '3px solid var(--status-negative)',
+                  }}
+                >
+                  <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden>
+                    {verifyItemEmoji(warning.item)}
+                  </span>
+                  <div className="min-w-0 flex-1 flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className="text-sm font-semibold"
+                          style={{ color: 'var(--text-heading)' }}
+                        >
+                          {warning.item}
+                        </span>
+                        <span
+                          className="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                          style={{
+                            backgroundColor: 'var(--surface-card)',
+                            color: 'var(--text-secondary)',
+                            border: '1px solid var(--border-subtle)',
+                          }}
+                        >
+                          {ageChipLabel(warning)}
+                        </span>
+                      </div>
+                      <p
+                        className="text-xs mt-1 leading-relaxed"
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        {warning.notes}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right max-w-[7.5rem]">
+                      <span
+                        className="text-base font-bold leading-tight block"
+                        style={{ color: 'var(--text-heading)' }}
+                      >
+                        ~{formatCurrency(warning.estimated_cost)}
                       </span>
                       <span
-                        className="px-1.5 py-0.5 rounded text-[10px] font-medium"
-                        style={{
-                          backgroundColor: 'var(--surface-card)',
-                          color: 'var(--text-secondary)',
-                          border: '1px solid var(--border-subtle)',
-                        }}
+                        className="text-[10px] block mt-0.5"
+                        style={{ color: 'var(--text-label)' }}
                       >
-                        {ageChipLabel(warning)}
+                        if needed
                       </span>
                     </div>
-                    <p
-                      className="text-xs mt-1 leading-relaxed"
-                      style={{ color: 'var(--text-secondary)' }}
-                    >
-                      {warning.notes}
-                    </p>
                   </div>
-                  <div className="shrink-0 text-right max-w-[7.5rem]">
-                    <span
-                      className="text-base font-bold leading-tight block"
-                      style={{ color: 'var(--text-heading)' }}
-                    >
-                      ~{formatCurrency(warning.estimated_cost)}
-                    </span>
-                    <span className="text-[10px] block mt-0.5" style={{ color: 'var(--text-label)' }}>
-                      if needed
-                    </span>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
 
-          <div
-            className="flex items-start gap-2 rounded-lg px-2.5 py-2 mt-1"
-            style={{
-              backgroundColor: 'var(--color-sky-dim)',
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            <Lightbulb
-              className="w-3.5 h-3.5 shrink-0 mt-0.5"
-              style={{ color: 'var(--accent-sky)' }}
-            />
-            <p className="text-xs leading-relaxed m-0" style={{ color: 'var(--text-secondary)' }}>
-              <strong style={{ color: 'var(--text-heading)' }}>Already updated?</strong> Tap the
-              matching category in Cost Breakdown to exclude it — your total updates right away.
-            </p>
+            <div
+              className="flex items-start gap-2 rounded-lg px-2.5 py-2 mt-1"
+              style={{
+                backgroundColor: 'var(--color-sky-dim)',
+                border: '1px solid var(--border-subtle)',
+              }}
+            >
+              <Lightbulb
+                className="w-3.5 h-3.5 shrink-0 mt-0.5"
+                style={{ color: 'var(--accent-sky)' }}
+              />
+              <p className="text-xs leading-relaxed m-0" style={{ color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--text-heading)' }}>Already updated?</strong> Tap the
+                matching category in Cost Breakdown to exclude it — your total updates right away.
+              </p>
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
