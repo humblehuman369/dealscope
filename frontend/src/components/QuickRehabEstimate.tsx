@@ -4,19 +4,16 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import {
   Zap,
   AlertTriangle,
-  AlertCircle,
   Check,
-  CheckCircle,
   ChevronDown,
   ChevronUp,
+  ClipboardCheck,
   Clock,
   DollarSign,
   Home,
   Wrench,
   TrendingUp,
   MapPin,
-  Flame,
-  Info,
   Building2,
 } from 'lucide-react'
 import {
@@ -272,100 +269,95 @@ function PropertyContextCard({
 }
 
 // ============================================
-// CAPEX WARNINGS
+// VERIFY CHECKLIST (age-based due diligence)
 // ============================================
 
-function CapExWarningsCard({ warnings }: { warnings: CapExWarning[] }) {
+function ageChipLabel(warning: CapExWarning): string {
+  if (warning.item === 'Plumbing' && warning.threshold === 50) return 'Pre-1975'
+  if (warning.item === 'Plumbing' && warning.threshold === 1) return '1978–1995'
+  return `~${warning.age} yrs`
+}
+
+function VerifyChecklistCard({ warnings }: { warnings: CapExWarning[] }) {
   const [expanded, setExpanded] = useState(true)
 
   if (warnings.length === 0) return null
-
-  const criticalCount = warnings.filter((w) => w.priority === 'critical').length
-  const totalCost = warnings.reduce((sum, w) => sum + w.estimated_cost, 0)
-
-  const priorityStyles: Record<string, { bg: string; border: string; color: string }> = {
-    critical: { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)', color: '#ef4444' },
-    high: { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)', color: '#f59e0b' },
-    medium: { bg: 'rgba(234,179,8,0.1)', border: 'rgba(234,179,8,0.3)', color: '#eab308' },
-    low: { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.3)', color: '#3b82f6' },
-  }
-
-  const priorityIcons = {
-    critical: <AlertCircle className="w-3.5 h-3.5" />,
-    high: <AlertTriangle className="w-3.5 h-3.5" />,
-    medium: <Info className="w-3.5 h-3.5" />,
-    low: <CheckCircle className="w-3.5 h-3.5" />,
-  }
 
   return (
     <div
       className="rounded-xl overflow-hidden"
       style={{
-        backgroundColor: 'rgba(239,68,68,0.06)',
-        border: '1px solid rgba(239,68,68,0.25)',
+        backgroundColor: 'var(--surface-card)',
+        border: '1px solid var(--border-default)',
       }}
     >
       <button
+        type="button"
         onClick={() => setExpanded(!expanded)}
         className="w-full p-3 flex items-center justify-between transition-colors"
+        aria-expanded={expanded}
       >
         <div className="flex items-center gap-2">
-          <Flame className="w-4 h-4 text-red-500" />
-          <span className="text-base font-semibold text-red-500">
-            CapEx Warnings ({warnings.length})
+          <ClipboardCheck className="w-4 h-4" style={{ color: 'var(--accent-sky)' }} />
+          <span className="text-base font-semibold" style={{ color: 'var(--text-heading)' }}>
+            Things to verify on this property
           </span>
-          {criticalCount > 0 && (
-            <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs font-bold rounded">
-              {criticalCount} Critical
-            </span>
-          )}
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            ({warnings.length})
+          </span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-base font-bold text-red-500">{formatCurrency(totalCost)}</span>
-          {expanded ? (
-            <ChevronUp className="w-4 h-4 text-red-400" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-red-400" />
-          )}
-        </div>
+        {expanded ? (
+          <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+        ) : (
+          <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+        )}
       </button>
 
       {expanded && (
         <div className="px-3 pb-3 space-y-2">
-          {warnings.map((warning, idx) => {
-            const ps = priorityStyles[warning.priority] || priorityStyles.medium
-            return (
-              <div
-                key={idx}
-                className="p-2.5 rounded-lg"
-                style={{
-                  backgroundColor: ps.bg,
-                  border: `1px solid ${ps.border}`,
-                }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2" style={{ color: ps.color }}>
-                    {priorityIcons[warning.priority as keyof typeof priorityIcons]}
-                    <span
-                      className="text-sm font-semibold"
-                      style={{ color: 'var(--text-heading)' }}
-                    >
+          <p className="text-xs leading-relaxed pb-1" style={{ color: 'var(--text-secondary)' }}>
+            Budgeted based on the property&apos;s age. If an item was already updated, deselect it
+            in the Cost Breakdown below.
+          </p>
+          {warnings.map((warning, idx) => (
+            <div
+              key={idx}
+              className="p-2.5 rounded-lg"
+              style={{ backgroundColor: 'var(--surface-elevated)' }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
                       {warning.item}
                     </span>
+                    <span
+                      className="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                      style={{
+                        backgroundColor: 'var(--surface-card)',
+                        color: 'var(--text-secondary)',
+                        border: '1px solid var(--border-subtle)',
+                      }}
+                    >
+                      {ageChipLabel(warning)}
+                    </span>
                   </div>
-                  <span className="text-sm font-bold" style={{ color: 'var(--text-heading)' }}>
-                    {formatCurrency(warning.estimated_cost)}
-                  </span>
+                  <p
+                    className="text-xs mt-1 leading-relaxed"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    {warning.notes}
+                  </p>
                 </div>
-                <p
-                  className="text-xs mt-1 leading-relaxed"
+                <span
+                  className="text-xs shrink-0 text-right max-w-[9rem] leading-snug"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  {warning.notes}
-                </p>
+                  est. ~{formatCurrency(warning.estimated_cost)} if needed
+                </span>
               </div>
-            )
-          })}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -732,7 +724,7 @@ export default function QuickRehabEstimate({
       </div>
 
       {/* CapEx Warnings */}
-      <CapExWarningsCard warnings={estimate.capex_warnings} />
+      <VerifyChecklistCard warnings={estimate.capex_warnings} />
 
       {/* Cost Breakdown */}
       <CostBreakdownCard

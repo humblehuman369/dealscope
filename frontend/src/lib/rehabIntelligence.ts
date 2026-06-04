@@ -565,7 +565,7 @@ export class RehabIntelligence {
         threshold: 15,
         estimated_cost: poolCost,
         priority: 'medium',
-        notes: 'Pool may need resurfacing. Included in estimate.',
+        notes: 'Pools need periodic resurfacing — check the surface condition.',
       })
     }
 
@@ -599,7 +599,7 @@ export class RehabIntelligence {
         threshold: roofThreshold,
         estimated_cost: breakdown.roof,
         priority: 'critical',
-        notes: `Roof is ${this.propertyAge} years old (${this.roofType}). Replacement budgeted.`,
+        notes: `Typical ${this.roofType} roofs last ~${roofThreshold} yrs; this one is ~${this.propertyAge}. Confirm whether it's been replaced.`,
       })
     }
 
@@ -621,7 +621,7 @@ export class RehabIntelligence {
         threshold: hvacThreshold,
         estimated_cost: breakdown.hvac,
         priority: this.propertyAge > hvacThreshold ? 'critical' : 'high',
-        notes: `HVAC system is ${this.propertyAge} years old. ${tons.toFixed(1)} ton system budgeted.`,
+        notes: `HVAC is ~${this.propertyAge} yrs (systems often last ~15). Check the install date / condenser label.`,
       })
     }
 
@@ -641,7 +641,7 @@ export class RehabIntelligence {
         threshold: CAPEX_AGE_THRESHOLDS.electrical_panel,
         estimated_cost: BASE_COSTS.electrical_panel * this.locationFactor,
         priority: 'high',
-        notes: 'Electrical panel may need upgrade. Verify if fuse box or undersized.',
+        notes: 'Older panels may be a fuse box or undersized — verify panel type and amperage.',
       })
     }
 
@@ -666,7 +666,7 @@ export class RehabIntelligence {
         threshold: 50,
         estimated_cost: plumbingCost,
         priority: 'critical',
-        notes: 'Pre-1975 home may have galvanized pipes. Full repipe budgeted.',
+        notes: 'Pre-1975 homes may have galvanized pipes — verify the piping material.',
       })
     } else if (this.yearBuilt >= 1978 && this.yearBuilt <= 1995) {
       plumbingCost = this.sqFt * BASE_COSTS.plumbing_repipe_sqft * this.locationFactor * 0.7
@@ -676,7 +676,7 @@ export class RehabIntelligence {
         threshold: 1,
         estimated_cost: plumbingCost,
         priority: 'high',
-        notes: '1978-1995 build - verify if polybutylene pipes. Repipe may be needed.',
+        notes: '1978-1995 builds sometimes used polybutylene — verify the piping material.',
       })
     }
 
@@ -696,7 +696,7 @@ export class RehabIntelligence {
         threshold: CAPEX_AGE_THRESHOLDS.water_heater,
         estimated_cost: whCost * this.locationFactor,
         priority: 'medium',
-        notes: 'Water heater likely needs replacement.',
+        notes: 'Water heaters typically last ~12 yrs — check the unit\'s age.',
       })
     }
 
@@ -721,7 +721,7 @@ export class RehabIntelligence {
         threshold: CAPEX_AGE_THRESHOLDS.windows,
         estimated_cost: windowsCost,
         priority: 'high',
-        notes: `Windows are ${this.propertyAge} years old. ${windowCount} impact windows budgeted.`,
+        notes: `Windows are ~${this.propertyAge} yrs — confirm if impact-rated/updated (affects insurance).`,
       })
     }
 
