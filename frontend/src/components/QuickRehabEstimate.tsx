@@ -376,34 +376,41 @@ function VerifyChecklistCard({ warnings }: { warnings: CapExWarning[] }) {
                 <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden>
                   {verifyItemEmoji(warning.item)}
                 </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
-                      {warning.item}
-                    </span>
-                    <span
-                      className="px-1.5 py-0.5 rounded text-[10px] font-medium"
-                      style={{
-                        backgroundColor: 'var(--surface-card)',
-                        color: 'var(--text-secondary)',
-                        border: '1px solid var(--border-subtle)',
-                      }}
+                <div className="min-w-0 flex-1 flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
+                        {warning.item}
+                      </span>
+                      <span
+                        className="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                        style={{
+                          backgroundColor: 'var(--surface-card)',
+                          color: 'var(--text-secondary)',
+                          border: '1px solid var(--border-subtle)',
+                        }}
+                      >
+                        {ageChipLabel(warning)}
+                      </span>
+                    </div>
+                    <p
+                      className="text-xs mt-1 leading-relaxed"
+                      style={{ color: 'var(--text-secondary)' }}
                     >
-                      {ageChipLabel(warning)}
-                    </span>
+                      {warning.notes}
+                    </p>
                   </div>
-                  <p
-                    className="text-xs mt-1 leading-relaxed"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    {warning.notes}
-                  </p>
-                  <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-label)' }}>
-                    In estimate if needed:{' '}
-                    <span style={{ color: 'var(--text-secondary)' }}>
+                  <div className="shrink-0 text-right max-w-[7.5rem]">
+                    <span
+                      className="text-base font-bold leading-tight block"
+                      style={{ color: 'var(--text-heading)' }}
+                    >
                       ~{formatCurrency(warning.estimated_cost)}
                     </span>
-                  </p>
+                    <span className="text-[10px] block mt-0.5" style={{ color: 'var(--text-label)' }}>
+                      if needed
+                    </span>
+                  </div>
                 </div>
               </li>
             ))}
