@@ -121,9 +121,19 @@ export function useSaveRehabEstimate({
 
         const baseline = Math.round(parseFloat(summary.baseline_total))
         if (Number.isFinite(baseline) && baseline > 0) {
-          await api.patch(`/api/v1/properties/saved/${propertyId}/deal-maker`, {
-            rehab_budget: baseline,
-          })
+          // Secondary, best-effort sync: reflect the rehab budget in the Deal
+          // Maker record. The estimate is already saved at this point, so a
+          // failure here (e.g. a freshly-created property with no snapshot to
+          // rebuild a Deal Maker record from) must NOT fail the whole save or
+          // block onSuccess — that would surface a scary "unexpected error"
+          // even though the budget persisted fine.
+          try {
+            await api.patch(`/api/v1/properties/saved/${propertyId}/deal-maker`, {
+              rehab_budget: baseline,
+            })
+          } catch (syncErr) {
+            console.warn('Deal Maker rehab_budget sync failed (non-fatal):', syncErr)
+          }
         }
 
         await Promise.all([
