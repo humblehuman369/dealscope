@@ -705,7 +705,7 @@ export default function RehabEstimator({
       type="button"
       disabled={isSaving || !canSaveNow}
       onClick={() => void handleSaveEstimate()}
-      className="w-full py-3 rounded-xl font-semibold text-[var(--text-inverse)] brand-gradient disabled:opacity-50"
+      className="w-full py-3 rounded-xl font-bold text-white brand-gradient shadow-brand transition-opacity hover:opacity-95 disabled:opacity-50 disabled:hover:opacity-50"
     >
       {isSaving ? 'Saving estimate…' : 'Save estimate to property'}
     </button>

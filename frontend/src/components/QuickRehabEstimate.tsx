@@ -903,40 +903,80 @@ export default function QuickRehabEstimate({
         </div>
       </div>
 
-      {/* Total Summary */}
-      <div className="bg-gradient-to-r from-brand-500 to-sky-600 rounded-xl p-4 space-y-3">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-lg font-bold text-white">Total Rehab Estimate</h2>
-            <div className="flex gap-3 text-xs text-white/80 mt-0.5">
-              <span>Base: {formatCurrency(estimate.breakdown.construction_total)}</span>
-              <span>+</span>
-              <span>Contingency: {formatCurrency(estimate.breakdown.contingency)}</span>
+      {/* Totals + save — single footer panel; gradient reserved for CTA only */}
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{
+          backgroundColor: 'var(--surface-card)',
+          border: '1px solid var(--border-subtle)',
+          boxShadow:
+            '0 0 30px rgba(15,164,233,0.08), 0 0 60px rgba(15,164,233,0.04)',
+        }}
+      >
+        <div className="p-4 space-y-3">
+          <div className="flex justify-between items-start gap-4">
+            <div className="min-w-0">
+              <h2
+                className={`font-bold ${includeHolding && estimate.holding_costs ? 'text-sm' : 'text-base'}`}
+                style={{
+                  color:
+                    includeHolding && estimate.holding_costs
+                      ? 'var(--text-secondary)'
+                      : 'var(--text-heading)',
+                }}
+              >
+                Total Rehab Estimate
+              </h2>
+              <div
+                className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs mt-0.5"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                <span>Base: {formatCurrency(estimate.breakdown.construction_total)}</span>
+                <span>+</span>
+                <span>Contingency: {formatCurrency(estimate.breakdown.contingency)}</span>
+              </div>
+            </div>
+            <div
+              className={`font-bold tabular-nums shrink-0 ${includeHolding && estimate.holding_costs ? 'text-lg' : 'text-2xl'}`}
+              style={{
+                color:
+                  includeHolding && estimate.holding_costs
+                    ? 'var(--text-heading)'
+                    : 'var(--accent-sky)',
+              }}
+            >
+              {formatCurrency(estimate.total_rehab)}
             </div>
           </div>
-          <div className="text-2xl font-bold text-white">
-            {formatCurrency(estimate.total_rehab)}
-          </div>
-        </div>
 
-        {includeHolding && estimate.holding_costs && (
-          <div className="pt-2 border-t border-white/20">
-            <div className="flex justify-between items-center">
-              <div className="text-white/90 text-sm">
-                <span className="font-medium">Total Project Cost</span>
-                <span className="text-white/70 ml-2">
-                  (Rehab + {estimate.holding_costs.duration_months}mo Holding)
-                </span>
+          {includeHolding && estimate.holding_costs && (
+            <div
+              className="pt-3 border-t flex justify-between items-center gap-4"
+              style={{ borderColor: 'var(--border-subtle)' }}
+            >
+              <div className="min-w-0">
+                <div
+                  className="text-sm font-semibold"
+                  style={{ color: 'var(--accent-sky)' }}
+                >
+                  Total Project Cost
+                </div>
+                <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  Rehab + {estimate.holding_costs.duration_months}mo holding
+                </div>
               </div>
-              <div className="text-xl font-bold text-white">
+              <div
+                className="text-2xl font-bold tabular-nums shrink-0"
+                style={{ color: 'var(--accent-sky)' }}
+              >
                 {formatCurrency(estimate.total_project_cost)}
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {saveAction}
+        {saveAction && <div className="px-4 pb-4">{saveAction}</div>}
+      </div>
 
       {/* Action Buttons */}
       <div className="flex gap-2">
