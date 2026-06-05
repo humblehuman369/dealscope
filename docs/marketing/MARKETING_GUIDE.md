@@ -1180,7 +1180,7 @@ and feature marketing:
 
 | Detail | Value |
 |--------|-------|
-| **Legal entity** | DealGapIQ LLC |
+| **Legal entity** | DealGapIQ |
 | **Support email** | support@dealgapiq.com |
 | **Founder** | Brad Geisen, Founder & CEO |
 | **Founder LinkedIn** | https://www.linkedin.com/in/bradgeisen |

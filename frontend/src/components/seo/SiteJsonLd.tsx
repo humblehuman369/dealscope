@@ -12,7 +12,7 @@ const graph = {
       '@type': 'Organization',
       '@id': ORG_ID,
       name: 'DealGapIQ',
-      legalName: 'DealGapIQ LLC',
+      legalName: 'DealGapIQ',
       url: SITE_URL,
       logo: {
         '@type': 'ImageObject',

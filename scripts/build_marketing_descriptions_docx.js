@@ -442,7 +442,7 @@ children.push(
 );
 children.push(
   quoteBlock(
-    "DealGapIQ is available on the web at dealgapiq.com and as native iOS and Android apps featuring Point & Scan — identify and analyze any property just by pointing a phone at it. The platform was founded by Brad Geisen, who spent more than 35 years in real estate data, founding Foreclosure.com, building HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac, and supporting more than 80 organizations through GSE partnerships spanning three decades. Operated by DealGapIQ LLC, the platform runs a freemium model: three free analyses per month with no credit card required, and a Pro tier at $39.99/month or $349.99/year for unlimited analysis and the full underwriting toolkit."
+    "DealGapIQ is available on the web at dealgapiq.com and as native iOS and Android apps featuring Point & Scan — identify and analyze any property just by pointing a phone at it. The platform was founded by Brad Geisen, who spent more than 35 years in real estate data, founding Foreclosure.com, building HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac, and supporting more than 80 organizations through GSE partnerships spanning three decades. Operated by DealGapIQ, the platform runs a freemium model: three free analyses per month with no credit card required, and a Pro tier at $39.99/month or $349.99/year for unlimited analysis and the full underwriting toolkit."
   )
 );
 

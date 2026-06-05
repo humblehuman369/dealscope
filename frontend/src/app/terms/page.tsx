@@ -35,7 +35,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using DealGapIQ (&ldquo;the Service&rdquo;), operated by DealGapIQ LLC
+              By accessing or using DealGapIQ (&ldquo;the Service&rdquo;), operated by DealGapIQ
               (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), you agree to be bound by
               these Terms of Service. If you do not agree, do not use the Service.
             </p>
@@ -104,7 +104,7 @@ export default function TermsOfServicePage() {
             <h2 className="text-lg font-semibold text-white mb-3">7. Intellectual Property</h2>
             <p>
               All content, features, and functionality of the Service — including text, graphics,
-              logos, algorithms, and software — are owned by DealGapIQ LLC and are protected by
+              logos, algorithms, and software — are owned by DealGapIQ and are protected by
               copyright, trademark, and other intellectual property laws.
             </p>
           </section>
@@ -112,7 +112,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">8. Limitation of Liability</h2>
             <p>
-              To the maximum extent permitted by law, DealGapIQ LLC shall not be liable for any
+              To the maximum extent permitted by law, DealGapIQ shall not be liable for any
               indirect, incidental, special, consequential, or punitive damages, or any loss of
               profits, revenue, data, or business opportunities arising from your use of the
               Service. Our total liability shall not exceed the amount you paid for the Service in
@@ -171,7 +171,7 @@ export default function TermsOfServicePage() {
 
         {/* Footer */}
         <div className="mt-16 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-          <p>&copy; 2026 DealGapIQ LLC. All rights reserved.</p>
+          <p>&copy; 2026 DealGapIQ. All rights reserved.</p>
           <div className="flex justify-center gap-6 mt-3">
             <Link href="/privacy" className="hover:text-slate-300 transition-colors">
               Privacy Policy

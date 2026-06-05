@@ -328,7 +328,7 @@ Founded by Brad Geisen, founder of Foreclosure.com (1999), DealGapIQ blends data
       "@type": "Organization",
       "@id": "https://dealgapiq.com/#organization",
       "name": "DealGapIQ",
-      "legalName": "DealGapIQ LLC",
+      "legalName": "DealGapIQ",
       "url": "https://dealgapiq.com",
       "logo": {
         "@type": "ImageObject",

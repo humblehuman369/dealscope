@@ -236,7 +236,7 @@ export default function HelpCenterPage() {
         </div>
 
         <div className="mt-16 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-          <p>&copy; 2026 DealGapIQ LLC. All rights reserved.</p>
+          <p>&copy; 2026 DealGapIQ. All rights reserved.</p>
           <div className="flex justify-center gap-6 mt-3">
             <Link href="/privacy" className="hover:text-slate-300 transition-colors">
               Privacy Policy
