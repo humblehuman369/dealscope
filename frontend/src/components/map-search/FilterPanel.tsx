@@ -4,6 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { AlertTriangle, Bookmark, Gavel, Hammer, Loader2, SlidersHorizontal, Target, X } from 'lucide-react'
 import type { MapSearchFilters } from '@/hooks/useMapSearch'
 import type { SortOption } from '@/lib/dealSignal'
+import { SectionHelpTooltip } from '@/components/map-search/SectionHelpTooltip'
 import {
   type MapOverlayChrome,
   MAP_FILTER_LIGHT_CONTROLS,
@@ -290,6 +291,7 @@ export function FilterPanel({
     return (
       <button
         type="button"
+        data-tour="map-search-filters"
         onClick={onToggle}
         aria-expanded={false}
         aria-haspopup="dialog"
@@ -330,6 +332,7 @@ export function FilterPanel({
   return (
     <div
       id="map-search-filters-panel"
+      data-tour="map-search-filters"
       role="dialog"
       aria-label="Map search filters"
       className="pointer-events-auto absolute top-3 right-3 z-10 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl shadow-xl overflow-hidden"
@@ -590,12 +593,17 @@ export function FilterPanel({
           <div>
             <h3
               id="owner-leads-heading"
-              className="text-xs font-semibold uppercase tracking-wider"
+              className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1"
               style={{
                 color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.heading : 'var(--text-heading)',
               }}
             >
               Owner Leads
+              <SectionHelpTooltip
+                label="Owner Leads"
+                mapLightChrome={mapLightChrome}
+                content="Off-market owners filtered by tenure, occupancy, and availability. Long tenure often means high equity; absentee owners may be more motivated to sell."
+              />
             </h3>
             <p
               className="text-[10px] mt-1 leading-snug"
@@ -718,12 +726,17 @@ export function FilterPanel({
           <div>
             <h3
               id="distressed-deals-heading"
-              className="text-xs font-semibold uppercase tracking-wider"
+              className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1"
               style={{
                 color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.heading : 'var(--text-heading)',
               }}
             >
               Distressed deals
+              <SectionHelpTooltip
+                label="Distressed deals"
+                mapLightChrome={mapLightChrome}
+                content="Foreclosure, auction, and pre-foreclosure listings appear as red pins on the map — often the highest-motivation seller pool."
+              />
             </h3>
             <p
               className="text-[10px] mt-1 leading-snug"
@@ -777,12 +790,17 @@ export function FilterPanel({
           <div>
             <h3
               id="expired-listings-heading"
-              className="text-xs font-semibold uppercase tracking-wider"
+              className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1"
               style={{
                 color: mapLightChrome ? MAP_FILTER_DISTRESSED_LIGHT.heading : 'var(--text-heading)',
               }}
             >
               Expired Listings
+              <SectionHelpTooltip
+                label="Expired listings"
+                mapLightChrome={mapLightChrome}
+                content="Homes that were listed but did not sell — a motivated-seller signal. Verified live and dropped if back on market or sold."
+              />
             </h3>
             <p
               className="text-[10px] mt-1 leading-snug"

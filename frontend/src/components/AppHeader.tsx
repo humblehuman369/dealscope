@@ -43,6 +43,7 @@ import {
   Landmark,
   Kanban,
   ChevronDown,
+  MapPin,
 } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
@@ -484,6 +485,9 @@ export function AppHeader({
   const showAnalysisTabs =
     showTabs && !isInfoPage && !isHomepage && isAnalysisWorkflowRoute(pathname || '')
 
+  const showMapSearchFab =
+    isAnalysisWorkflowRoute(pathname || '') && !pathname?.startsWith('/map-search')
+
   // Determine if property bar should be shown
   const shouldShowPropertyBar =
     showPropertyBarProp !== undefined
@@ -718,6 +722,23 @@ export function AppHeader({
                     Blog
                   </Link>
                 </>
+              )}
+
+              {/* Map Search — desktop nav entry (workbench tour step 6 anchor) */}
+              {!pathname?.startsWith('/map-search') && (
+                <Link
+                  href="/map-search"
+                  data-tour="map-search-nav"
+                  className="hidden sm:flex min-h-[40px] sm:min-h-[44px] px-2.5 sm:px-3 rounded-full border transition-colors hover:bg-[var(--hover-overlay)] items-center gap-1.5 whitespace-nowrap"
+                  style={{
+                    borderColor: 'var(--border-default)',
+                    color: 'var(--text-secondary)',
+                  }}
+                  aria-label="Map Search"
+                >
+                  <MapPin className="w-4 h-4 shrink-0" />
+                  <span className="text-sm font-semibold hidden md:inline">Map</span>
+                </Link>
               )}
 
               {/* Tools — directories, dashboard, pipeline */}
@@ -1081,6 +1102,7 @@ export function AppHeader({
                     key={tab.id}
                     role="tab"
                     type="button"
+                    data-tour={`tab-${tab.id}`}
                     aria-selected={isActive}
                     aria-current={isActive ? 'page' : undefined}
                     onClick={() => handleTabChange(tab.id)}
@@ -1148,6 +1170,25 @@ export function AppHeader({
         })()}
 
       <SearchPropertyModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+
+      {/* Mobile Map Search FAB — workbench tour step 6 anchor on small screens */}
+      {showMapSearchFab && (
+        <Link
+          href="/map-search"
+          data-tour="map-search-fab"
+          className="sm:hidden fixed z-40 flex items-center justify-center w-12 h-12 rounded-full shadow-lg pb-safe"
+          style={{
+            right: 'max(12px, env(safe-area-inset-right, 0px))',
+            bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))',
+            background: 'var(--accent-sky)',
+            color: '#fff',
+            border: '2px solid var(--surface-card)',
+          }}
+          aria-label="Map Search"
+        >
+          <MapPin className="w-5 h-5" />
+        </Link>
+      )}
     </>
   )
 }

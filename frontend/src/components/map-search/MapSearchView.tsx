@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
-
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/context/ThemeContext'
@@ -26,6 +25,7 @@ import {
   Sun,
   Moon,
   ChevronDown,
+  HelpCircle,
 } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
@@ -42,6 +42,11 @@ import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
 import { readMapSnapshot, writeMapSnapshot, clearMapSnapshot, consumeMapViewportRestore } from './mapSearchSnapshot'
 import { getMapOverlaySurface } from './mapOverlayChrome'
 import type { NeighborhoodOverview } from '@/lib/api'
+import { useMapSearchTour } from '@/components/map-search/useMapSearchTour'
+import {
+  isMapTourActiveSession,
+  shouldSkipMapSearchTour,
+} from '@/lib/tourPreferences'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -164,6 +169,7 @@ function MapMarkerLegend({
   }))
   return (
     <div
+      data-tour="map-marker-legend"
       className="absolute bottom-4 left-3 z-10 max-w-[min(92vw,16rem)] pointer-events-auto"
       role="region"
       aria-label="Map marker color legend"
@@ -1019,6 +1025,27 @@ export function MapSearchView() {
     setFiltersOpen((p) => !p)
   }, [clearAutoClose])
 
+  const openFiltersForTour = useCallback(() => {
+    autoCloseArmedRef.current = false
+    clearAutoClose()
+    setFiltersOpen(true)
+  }, [clearAutoClose])
+
+  const skipMapTourAutoStart = shouldSkipMapSearchTour(searchParams)
+  const replayMapTourParam = searchParams.get('replayTour') === 'map'
+
+  const { TourLayer, replay: replayMapTour, tourActive } = useMapSearchTour({
+    ready: geoResolved && !isLoading,
+    skipAutoStart: skipMapTourAutoStart,
+    onOpenFilters: openFiltersForTour,
+  })
+
+  useEffect(() => {
+    if (replayMapTourParam && geoResolved && !isLoading) {
+      replayMapTour()
+    }
+  }, [replayMapTourParam, geoResolved, isLoading, replayMapTour])
+
   const [isDrawing, setIsDrawing] = useState(false)
   // Marker-color legend starts expanded so first-time users immediately see
   // what the colors mean. It auto-collapses the first time the user pans or
@@ -1095,7 +1122,7 @@ export function MapSearchView() {
   }, [])
 
   useEffect(() => {
-    if (!isZoomedIn || hintShownRef.current) {
+    if (!isZoomedIn || hintShownRef.current || tourActive || isMapTourActiveSession()) {
       if (!isZoomedIn) setShowClickHint(false)
       return
     }
@@ -1108,7 +1135,7 @@ export function MapSearchView() {
     setShowClickHint(true)
     const timer = setTimeout(dismissClickHint, 8000)
     return () => clearTimeout(timer)
-  }, [isZoomedIn, dismissClickHint])
+  }, [isZoomedIn, dismissClickHint, tourActive])
 
   const handleMapClick = useCallback(
     async (e: MapMouseEvent) => {
@@ -1368,7 +1395,10 @@ export function MapSearchView() {
   }
 
   const mapSection = (
-    <div className={`relative w-full h-full${isDarkMap ? ' map-search-crisp-dark' : ''}`}>
+    <div
+      data-tour="map-click-target"
+      className={`relative w-full h-full${isDarkMap ? ' map-search-crisp-dark' : ''}`}
+    >
       <APIProvider apiKey={apiKey} libraries={['places', 'drawing', 'marker']}>
         <Map
           defaultCenter={initialCenter}
@@ -1532,6 +1562,22 @@ export function MapSearchView() {
 
       <MapMarkerLegend isDark={isDarkMap} open={legendOpen} onToggle={toggleLegend} />
 
+      {/* Map tour replay */}
+      <button
+        type="button"
+        onClick={() => replayMapTour()}
+        aria-label="Replay map tour"
+        title="Map tour help"
+        className="absolute z-[60] h-9 w-9 rounded-full shadow-lg flex items-center justify-center pointer-events-auto top-14 left-3"
+        style={{
+          backgroundColor: overlaySurface.backgroundColor,
+          color: overlaySurface.primaryText,
+          border: `1px solid ${overlaySurface.borderColor}`,
+        }}
+      >
+        <HelpCircle size={16} />
+      </button>
+
       {/* Per-map theme toggle — right margin, stacked above Google’s bottom-right
           camera/directional control (clear of mid-right zoom +/- stack). */}
       <button
@@ -1684,6 +1730,19 @@ export function MapSearchView() {
 
       {/* Listing count badge — stacked below Filters (top-right). Hidden when
           the filter panel is open or while loading (counter returns after fetch). */}
+      {!isLoading && listings.length === 0 && !filtersOpen && (
+        <div className="absolute top-14 left-3 z-10 max-w-[min(90vw,18rem)]">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event('dealscope:replay-workbench-tour'))}
+            className="text-[11px] font-medium underline text-left"
+            style={{ color: overlaySurface.secondaryText }}
+          >
+            New to the workbench? Take the 60-sec tour →
+          </button>
+        </div>
+      )}
+
       {totalCount > 0 && !isLoading && !filtersOpen && (
         <div className="absolute top-14 right-3 z-10 max-w-[min(90vw,18rem)]">
           <div
@@ -1740,6 +1799,7 @@ export function MapSearchView() {
   // bounded Owner Leads searches).
   return (
     <div className="relative w-full h-full" style={{ backgroundColor: 'var(--surface-base)' }}>
+      {TourLayer}
       {mapSection}
       {viewMode === 'list' && (
         <div className="absolute inset-0 z-40">

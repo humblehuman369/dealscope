@@ -1,0 +1,46 @@
+/* Driver.js theming — matches DealGapIQ surface tokens */
+.driver-popover.dealscope-tour-popover {
+  background: var(--surface-card) !important;
+  color: var(--text-heading) !important;
+  border: 1px solid var(--accent-sky) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-card-hover) !important;
+  max-width: min(92vw, 22rem);
+}
+
+.driver-popover.dealscope-tour-popover .driver-popover-title {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: var(--text-heading) !important;
+}
+
+.driver-popover.dealscope-tour-popover .driver-popover-description {
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  color: var(--text-secondary) !important;
+}
+
+.driver-popover.dealscope-tour-popover .driver-popover-progress-text {
+  font-size: 11px !important;
+  color: var(--text-label) !important;
+}
+
+.driver-popover.dealscope-tour-popover button {
+  border-radius: 8px !important;
+  text-shadow: none !important;
+}
+
+.driver-popover.dealscope-tour-popover .driver-popover-next-btn,
+.driver-popover.dealscope-tour-popover .driver-popover-prev-btn {
+  background: var(--accent-sky) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.driver-popover.dealscope-tour-popover .driver-popover-close-btn {
+  color: var(--text-secondary) !important;
+}
+
+.driver-active.dealscope-tour-active .driver-overlay {
+  backdrop-filter: blur(2px);
+}

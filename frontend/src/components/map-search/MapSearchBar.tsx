@@ -82,6 +82,7 @@ export function MapSearchBar({ onSelect, onClear, overlayChrome }: MapSearchBarP
 
   return (
     <div
+      data-tour="map-search-bar"
       className="flex items-center gap-2 rounded-lg shadow-lg w-full min-w-0"
       style={{
         backgroundColor: chrome?.backgroundColor ?? 'var(--surface-card)',

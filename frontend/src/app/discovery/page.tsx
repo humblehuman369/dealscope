@@ -54,6 +54,7 @@ import {
   resolveMarketPriceFromPropertyResponse,
 } from '@/lib/resolveMarketPrice'
 import { trackEvent } from '@/lib/eventTracking'
+import { WorkbenchTour } from '@/components/tour/WorkbenchTour'
 import {
   buildMotivatedSellerInsights,
   type MotivatedSellerInsight,
@@ -181,6 +182,7 @@ function VerdictContent() {
   const cityParam = searchParams.get('city') || undefined
   const stateParam = searchParams.get('state') || undefined
   const zipCodeParam = searchParams.get('zip_code') || undefined
+  const replayTour = searchParams.get('replayTour') === 'workbench'
 
   // Deal Maker Store (for saved properties)
   const dealMakerStore = useDealMakerStore()
@@ -1318,7 +1320,7 @@ function VerdictContent() {
             }}
           >
             {/* Investment Overview — 3 price cards */}
-            <div>
+            <div data-tour="verdict-gap">
               <h2
                 className="w-full font-bold leading-tight"
                 style={{
@@ -2339,6 +2341,32 @@ function VerdictContent() {
                 .join(', ') || null
             : null
         }
+      />
+
+      <WorkbenchTour
+        ready={!isLoading && !!property && !!analysis}
+        hasAnalysis={!!(addressParam || propertyIdParam)}
+        forceStart={replayTour}
+        onSaveDeal={async () => {
+          if (!property) return
+          const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+          const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+          if (!fullAddress) return
+          const parsed = parseAddressString(fullAddress)
+          try {
+            await api.post('/api/v1/properties/saved', {
+              address_street: parsed.street,
+              address_city: parsed.city || undefined,
+              address_state: parsed.state || undefined,
+              address_zip: parsed.zip || undefined,
+              full_address: fullAddress,
+              zpid: property.zpid ?? undefined,
+              status: 'prospecting',
+            })
+          } catch {
+            /* already saved or auth required */
+          }
+        }}
       />
     </>
   )
