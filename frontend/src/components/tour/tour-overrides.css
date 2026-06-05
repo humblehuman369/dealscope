@@ -1,32 +1,56 @@
-/* Driver.js theming — matches DealGapIQ surface tokens */
+/* Driver.js theming — match TourModal (welcome / close) typography & sizing */
 .driver-popover.dealscope-tour-popover {
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif !important;
   background: var(--surface-card) !important;
   color: var(--text-heading) !important;
   border: 1px solid var(--accent-sky) !important;
-  border-radius: 16px !important;
+  border-radius: 1rem !important; /* rounded-2xl — same as TourModal */
   box-shadow: var(--shadow-card-hover) !important;
-  max-width: min(92vw, 22rem);
+  max-width: min(92vw, 28rem) !important; /* max-w-md — same as TourModal */
+  padding: 1.5rem !important; /* p-6 */
+  -webkit-font-smoothing: antialiased;
 }
 
 .driver-popover.dealscope-tour-popover .driver-popover-title {
-  font-size: 15px !important;
+  font-family: inherit !important;
+  font-size: 1.125rem !important; /* text-lg */
+  line-height: 1.75 !important;
   font-weight: 700 !important;
   color: var(--text-heading) !important;
 }
 
 .driver-popover.dealscope-tour-popover .driver-popover-description {
-  font-size: 13px !important;
-  line-height: 1.5 !important;
+  font-family: inherit !important;
+  font-size: 0.875rem !important; /* text-sm */
+  line-height: 1.625 !important; /* leading-relaxed */
+  font-weight: 400 !important;
   color: var(--text-secondary) !important;
+  margin-top: 0.75rem !important; /* mt-3 */
 }
 
 .driver-popover.dealscope-tour-popover .driver-popover-progress-text {
-  font-size: 11px !important;
+  font-family: inherit !important;
+  font-size: 0.75rem !important; /* text-xs */
+  font-weight: 500 !important;
   color: var(--text-label) !important;
 }
 
-.driver-popover.dealscope-tour-popover button {
-  border-radius: 8px !important;
+.driver-popover.dealscope-tour-popover .driver-popover-footer {
+  margin-top: 1.5rem !important; /* mt-6 */
+}
+
+.driver-popover.dealscope-tour-popover .driver-popover-footer button {
+  font-family: inherit !important;
+  font-size: 0.875rem !important; /* text-sm */
+  font-weight: 600 !important; /* font-semibold */
+  line-height: 1.25 !important;
+  padding: 0.5rem 1rem !important; /* px-4 py-2 */
+  border-radius: 0.5rem !important; /* rounded-lg */
   text-shadow: none !important;
 }
 
@@ -38,9 +62,8 @@
 }
 
 .driver-popover.dealscope-tour-popover .driver-popover-close-btn {
+  font-family: inherit !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
   color: var(--text-secondary) !important;
-}
-
-.driver-active.dealscope-tour-active .driver-overlay {
-  backdrop-filter: blur(2px);
 }
