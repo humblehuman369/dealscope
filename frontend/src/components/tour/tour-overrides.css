@@ -9,7 +9,7 @@
   background: var(--surface-card) !important;
   color: var(--text-heading) !important;
   border: 1px solid var(--accent-sky) !important;
-  border-radius: 1rem !important; /* rounded-2xl — same as TourModal */
+  border-radius: 1.25rem !important; /* rounded-2xl (1.25rem in tailwind.config.js) */
   box-shadow: var(--shadow-card-hover) !important;
   max-width: min(92vw, 28rem) !important; /* max-w-md — same as TourModal */
   padding: 1.5rem !important; /* p-6 */
