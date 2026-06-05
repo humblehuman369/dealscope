@@ -809,7 +809,7 @@ function SiteFooter() {
             structures and scripts.
           </div>
           <div className="mt-8 text-xs text-[var(--text-muted)]">
-            &copy; 2026 DealGapIQ, Inc. Built by investors, for investors.
+            &copy; 2026 DealGapIQ. Built by investors, for investors.
           </div>
         </div>
 
