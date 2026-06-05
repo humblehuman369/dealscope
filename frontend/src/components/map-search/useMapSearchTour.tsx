@@ -1,10 +1,13 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { DriveStep } from 'driver.js'
+import type { MapListing } from '@/lib/api'
 import { TourModal } from '@/components/tour/TourModal'
 import { createTourDriver, scheduleTourAutoAdvance } from '@/components/tour/createTourDriver'
 import { trackEvent } from '@/lib/eventTracking'
+import { api } from '@/lib/api-client'
 import {
   hasSeenMapSearchTour,
   markMapSearchTourSeen,
@@ -12,42 +15,57 @@ import {
   wasWorkbenchTourCompletedThisSession,
   hydrateTourPrefsFromProfile,
 } from '@/lib/tourPreferences'
+import {
+  formatTourListingLabel,
+  getMapTourWelcomeCopy,
+  resolveMapTourPersona,
+  type MapTourPersona,
+} from '@/components/map-search/mapSearchTourHelpers'
+import {
+  mapSelectionCtaLabel,
+  navigateToDiscoveryFromMap,
+  useMapSelectionDestination,
+} from '@/components/map-search/mapDiscoveryNavigation'
 
-const FULL_STEP_MS = [5_000, 8_000, 6_000, 5_000] as const
-const ABBREVIATED_STEP_MS = [5_000, 6_000, 5_000] as const
+const FULL_STEP_MS = [5_000, 9_000, 7_000, 8_000] as const
+const ABBREVIATED_STEP_MS = [9_000, 7_000, 8_000] as const
+
+export type MapTourStepId = 'search' | 'filters' | 'legend' | 'click'
 
 function buildMapSteps(abbreviated: boolean): DriveStep[] {
   const core: DriveStep[] = [
     {
       element: '[data-tour="map-search-bar"]',
       popover: {
-        title: 'Jump to a market',
-        description: 'Search a city, ZIP, or address to pan the map instantly.',
+        title: 'Type a ZIP — own the market',
+        description: 'Search a city, ZIP, or address. The map loads every graded parcel in seconds.',
         side: 'bottom',
       },
     },
     {
       element: '[data-tour="map-search-filters"]',
       popover: {
-        title: 'Filter for opportunity',
+        title: 'Watch motivated sellers appear',
         description:
-          'Foreclosures, expired listings, days-on-market, and price — pins update live.',
+          'Foreclosure filter turning on now — red pins are auctions, pre-foreclosures, and bank-owned leads. Pins update live.',
         side: 'left',
       },
     },
     {
       element: '[data-tour="map-marker-legend"]',
       popover: {
-        title: 'Read the colors',
-        description: 'Colors = opportunity. Red = distressed. Purple = expired.',
+        title: 'Read the opportunity colors',
+        description:
+          'Green = move fast. Red = distressed. Purple = expired off-market. Brighter pins = hotter signals.',
         side: 'top',
       },
     },
     {
       element: '[data-tour="map-click-target"]',
       popover: {
-        title: 'Click any home',
-        description: 'Tap a pin or click any parcel when zoomed in — even off-market.',
+        title: 'Tap one — full Verdict in 15 sec',
+        description:
+          'Click any pin or parcel when zoomed in. Even off-market homes get a full DealGapIQ analysis.',
         side: 'top',
         align: 'center',
       },
@@ -62,20 +80,42 @@ export interface UseMapSearchTourOptions {
   ready: boolean
   skipAutoStart?: boolean
   onOpenFilters?: () => void
-  onReplayRequest?: () => void
+  onTourStep?: (step: MapTourStepId) => void
+  onTourEnd?: () => void
+  suggestedListing?: MapListing | null
+  onHighlightListing?: (listing: MapListing | null) => void
 }
 
 export function useMapSearchTour({
   ready,
   skipAutoStart = false,
   onOpenFilters,
+  onTourStep,
+  onTourEnd,
+  suggestedListing = null,
+  onHighlightListing,
 }: UseMapSearchTourOptions) {
+  const router = useRouter()
+  const destination = useMapSelectionDestination()
+  const analyzeLabel = mapSelectionCtaLabel(destination)
+
   const [phase, setPhase] = useState<'idle' | 'welcome' | 'driving' | 'close'>('idle')
+  const [persona, setPersona] = useState<MapTourPersona>('default')
   const cancelAutoRef = useRef<(() => void) | null>(null)
   const startedRef = useRef(false)
 
   useEffect(() => {
     void hydrateTourPrefsFromProfile()
+    void api
+      .get<{ preferred_strategies?: string[] }>('/api/v1/users/me/profile')
+      .then((profile) => setPersona(resolveMapTourPersona(profile.preferred_strategies)))
+      .catch(() => {})
+  }, [])
+
+  const stepKeysFor = useCallback((abbreviated: boolean): MapTourStepId[] => {
+    return abbreviated
+      ? ['filters', 'legend', 'click']
+      : ['search', 'filters', 'legend', 'click']
   }, [])
 
   const startDriving = useCallback(
@@ -88,12 +128,16 @@ export function useMapSearchTour({
 
       const steps = buildMapSteps(abbreviated)
       const durations = abbreviated ? ABBREVIATED_STEP_MS : FULL_STEP_MS
+      const stepKeys = stepKeysFor(abbreviated)
 
       const driverInstance = createTourDriver(steps, {
         onStepReached: (index) => {
           cancelAutoRef.current?.()
-          trackEvent('map-tour-step', { step: index + 1, abbreviated })
-          if (index === (abbreviated ? 0 : 1)) onOpenFilters?.()
+          const stepId = stepKeys[index]
+          if (stepId) {
+            trackEvent('map-tour-step', { step: index + 1, abbreviated, stepId })
+            onTourStep?.(stepId)
+          }
           cancelAutoRef.current = scheduleTourAutoAdvance(
             driverInstance,
             durations[index] ?? 6_000,
@@ -102,6 +146,10 @@ export function useMapSearchTour({
         onFinished: () => {
           cancelAutoRef.current?.()
           trackEvent('map-tour-completed', { abbreviated })
+          if (suggestedListing) {
+            onHighlightListing?.(suggestedListing)
+          }
+          onTourEnd?.()
           setPhase('close')
         },
         onSkipped: (stepIndex) => {
@@ -109,13 +157,21 @@ export function useMapSearchTour({
           trackEvent('map-tour-skipped', { step: stepIndex + 1 })
           markMapSearchTourSeen({ dontShowAgain: true })
           setMapTourActiveSession(false)
+          onHighlightListing?.(null)
           setPhase('idle')
         },
       })
 
       requestAnimationFrame(() => driverInstance.drive())
     },
-    [onOpenFilters],
+    [
+      onOpenFilters,
+      onTourStep,
+      onTourEnd,
+      onHighlightListing,
+      suggestedListing,
+      stepKeysFor,
+    ],
   )
 
   const replay = useCallback(() => {
@@ -147,17 +203,29 @@ export function useMapSearchTour({
     startDriving(false)
   }, [startDriving])
 
-  const finishClose = useCallback(() => {
-    markMapSearchTourSeen({ dontShowAgain: true })
-    setMapTourActiveSession(false)
-    setPhase('idle')
-  }, [])
+  const finishClose = useCallback(
+    (action: 'explore' | 'analyze') => {
+      markMapSearchTourSeen({ dontShowAgain: true })
+      setMapTourActiveSession(false)
+      onHighlightListing?.(null)
+      setPhase('idle')
+
+      if (action === 'analyze' && suggestedListing) {
+        trackEvent('map-tour-analyze-from-close')
+        navigateToDiscoveryFromMap(router, suggestedListing)
+      }
+    },
+    [onHighlightListing, router, suggestedListing],
+  )
+
+  const welcome = getMapTourWelcomeCopy(persona)
+  const highlightLabel = suggestedListing ? formatTourListingLabel(suggestedListing) : null
 
   const TourLayer = (
     <>
       <TourModal
         open={phase === 'welcome'}
-        title="Hunt deals across any ZIP"
+        title={welcome.title}
         onSkip={() => {
           markMapSearchTourSeen({ dontShowAgain: true })
           setPhase('idle')
@@ -166,31 +234,67 @@ export function useMapSearchTour({
         onPrimary={confirmWelcome}
         primaryLabel="Show Me →"
       >
-        <p>Here&apos;s the 30-second map — find, filter, and analyze from the map.</p>
+        <p>{welcome.body}</p>
       </TourModal>
 
       <TourModal
         open={phase === 'close'}
-        title="You're ready to hunt."
-        onSkip={finishClose}
-        onPrimary={finishClose}
-        primaryLabel="Start exploring →"
+        title={highlightLabel ? 'Your first lead is waiting.' : "You're ready to hunt."}
+        onSkip={() => finishClose('explore')}
+        footer={
+          <>
+            {highlightLabel ? (
+              <p className="mt-2 mb-4" style={{ color: 'var(--text-secondary)' }}>
+                We highlighted <strong style={{ color: 'var(--text-heading)' }}>{highlightLabel}</strong>{' '}
+                on the map — tap it or jump straight to analysis.
+              </p>
+            ) : (
+              <p className="mt-2 mb-4" style={{ color: 'var(--text-secondary)' }}>
+                Pick any pin and run your first map analysis.
+              </p>
+            )}
+            <div className="flex flex-col sm:flex-row gap-2 mb-4">
+              {suggestedListing && (
+                <button
+                  type="button"
+                  onClick={() => finishClose('analyze')}
+                  className="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold"
+                  style={{ background: 'var(--accent-sky)', color: '#fff' }}
+                >
+                  {analyzeLabel} this deal →
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => finishClose('explore')}
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold"
+                style={{
+                  background: 'var(--surface-elevated)',
+                  border: '1px solid var(--border-default)',
+                  color: 'var(--text-heading)',
+                }}
+              >
+                Explore on my own
+              </button>
+            </div>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              New to the workbench?{' '}
+              <button
+                type="button"
+                className="font-semibold hover:underline"
+                style={{ color: 'var(--accent-sky)' }}
+                onClick={() => {
+                  finishClose('explore')
+                  window.dispatchEvent(new Event('dealscope:replay-workbench-tour'))
+                }}
+              >
+                Take the 60-sec workbench tour →
+              </button>
+            </p>
+          </>
+        }
       >
-        <p>Pick a pin and run your first map analysis.</p>
-        <p className="mt-3 text-xs">
-          New to the workbench?{' '}
-          <button
-            type="button"
-            className="font-semibold hover:underline"
-            style={{ color: 'var(--accent-sky)' }}
-            onClick={() => {
-              finishClose()
-              window.dispatchEvent(new Event('dealscope:replay-workbench-tour'))
-            }}
-          >
-            Take the 60-sec workbench tour →
-          </button>
-        </p>
+        <span className="sr-only">Tour complete</span>
       </TourModal>
     </>
   )

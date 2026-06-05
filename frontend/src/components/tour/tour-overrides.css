@@ -67,3 +67,19 @@
   font-weight: 600 !important;
   color: var(--text-secondary) !important;
 }
+
+@keyframes map-tour-marker-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.45);
+  }
+  50% {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 8px rgba(56, 189, 248, 0.15);
+  }
+}
+
+.map-tour-marker-pulse {
+  animation: map-tour-marker-pulse 1.15s ease-in-out infinite;
+}
