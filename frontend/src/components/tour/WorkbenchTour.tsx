@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import type { DriveStep } from 'driver.js'
 import { Star, Camera, MapPin } from 'lucide-react'
 import { TourModal } from './TourModal'
-import { ColdLinkModal } from './ColdLinkModal'
 import { createTourDriver, scheduleTourAutoAdvance } from './createTourDriver'
 import { trackEvent } from '@/lib/eventTracking'
 import {
@@ -107,7 +106,6 @@ export function WorkbenchTour({
 }: WorkbenchTourProps) {
   const router = useRouter()
   const [phase, setPhase] = useState<Phase>('idle')
-  const [coldOpen, setColdOpen] = useState(false)
   const [dontShowAgain, setDontShowAgain] = useState(true)
   const cancelAutoRef = useRef<(() => void) | null>(null)
   const startedRef = useRef(false)
@@ -166,11 +164,7 @@ export function WorkbenchTour({
     if (hasAnalysis) {
       startedRef.current = true
       setPhase('welcome')
-      return
     }
-
-    startedRef.current = true
-    setColdOpen(true)
   }, [ready, hasAnalysis, forceStart])
 
   useEffect(() => {
@@ -200,18 +194,13 @@ export function WorkbenchTour({
 
   return (
     <>
-      <ColdLinkModal
-        open={coldOpen}
-        onClose={() => {
-          setColdOpen(false)
-          markWorkbenchTourSeen({ dontShowAgain: true })
-        }}
-        onStartTour={() => setPhase('welcome')}
-      />
-
       <TourModal
         open={phase === 'welcome'}
-        title="You just analyzed your first property."
+        title={
+          hasAnalysis
+            ? 'You just analyzed your first property.'
+            : 'Meet your investor workbench.'
+        }
         stepLabel="Welcome"
         onSkip={() => {
           markWorkbenchTourSeen({ dontShowAgain: true })
@@ -221,7 +210,11 @@ export function WorkbenchTour({
         onPrimary={() => startDriving()}
         primaryLabel="Show Me →"
       >
-        <p>Here&apos;s everything else you unlocked — in 60 seconds.</p>
+        <p>
+          {hasAnalysis
+            ? "Here's everything else you unlocked — in 60 seconds."
+            : 'Strategy, comps, DealMaker, Estimator, and Map Search — in 60 seconds.'}
+        </p>
       </TourModal>
 
       <TourModal
