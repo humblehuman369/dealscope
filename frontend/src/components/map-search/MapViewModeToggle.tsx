@@ -40,14 +40,23 @@ export function MapViewModeToggle({
         type="button"
         onClick={() => onViewModeChange('list')}
         aria-pressed={viewMode === 'list'}
-        className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold transition-colors"
+        aria-label={`List and download view (${listingCount} properties)`}
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold transition-colors"
         style={{
           backgroundColor: viewMode === 'list' ? 'var(--accent-sky)' : 'transparent',
           color: viewMode === 'list' ? '#fff' : 'var(--text-secondary)',
         }}
       >
-        <List size={16} aria-hidden />
-        List ({listingCount})
+        <List size={16} aria-hidden className="shrink-0" />
+        <span className="flex flex-col items-start leading-tight">
+          <span>List ({listingCount})</span>
+          <span
+            className="text-[10px] font-medium"
+            style={{ opacity: viewMode === 'list' ? 0.9 : 0.75 }}
+          >
+            Download
+          </span>
+        </span>
       </button>
     </div>
   )
