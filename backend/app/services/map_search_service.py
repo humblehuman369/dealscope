@@ -978,7 +978,7 @@ class MapSearchService:
                 logger.info("RentCast %s listings returned no data", listing_type)
                 return []
 
-            raw_listings: list[dict[str, Any]] = resp.data if isinstance(resp.data, list) else [resp.data]
+            raw_listings = self._extract_rentcast_listings(resp.data)
             results = [self._normalize_rentcast_listing(item) for item in raw_listings if self._has_coords(item)]
             logger.info("RentCast %s: %d listings", listing_type, len(results))
             return results
@@ -1304,7 +1304,7 @@ class MapSearchService:
             photo_url=None,
             source="rentcast_records",
             days_on_market=None,
-            year_built=item.get("yearBuilt"),
+            year_built=MapSearchService._extract_year_built(item),
             last_sale_date=str(last_sale_date) if last_sale_date else None,
             last_sale_price=last_sale_price,
             owner_years=owner_years,
@@ -1952,6 +1952,76 @@ class MapSearchService:
         return None
 
     @staticmethod
+    def _extract_year_built(item: dict) -> int | None:
+        """Pull construction year from provider listing/record payloads.
+
+        Map-search responses are lean — Zillow/AXESSO often omit top-level
+        ``yearBuilt`` even when the value exists under ``resoFacts`` or
+        ``hdpData.homeInfo``. RentCast may return ``year_built`` snake_case.
+        """
+        candidates: list[Any] = [
+            item.get("yearBuilt"),
+            item.get("year_built"),
+            item.get("yearConstructed"),
+            item.get("year_constructed"),
+        ]
+
+        for nested_key, home_keys in (
+            ("hdpData", ("yearBuilt", "year_built")),
+            ("hdp_data", ("yearBuilt", "year_built")),
+            ("homeInfo", ("yearBuilt", "year_built")),
+            ("home_info", ("yearBuilt", "year_built")),
+        ):
+            nested = item.get(nested_key)
+            if isinstance(nested, dict):
+                for hk in home_keys:
+                    candidates.append(nested.get(hk))
+                inner = nested.get("homeInfo") or nested.get("home_info")
+                if isinstance(inner, dict):
+                    for hk in home_keys:
+                        candidates.append(inner.get(hk))
+
+        reso = item.get("resoFacts") or item.get("reso_facts")
+        if isinstance(reso, dict):
+            candidates.extend(
+                [
+                    reso.get("yearBuilt"),
+                    reso.get("year_built"),
+                    reso.get("yearBuiltEffective"),
+                ]
+            )
+
+        current_year = datetime.now(UTC).year
+        for val in candidates:
+            if val is None or val == "":
+                continue
+            try:
+                year = int(float(val))
+            except (TypeError, ValueError):
+                continue
+            if 1800 <= year <= current_year + 2:
+                return year
+        return None
+
+    @staticmethod
+    def _extract_rentcast_listings(payload: Any) -> list[dict[str, Any]]:
+        """Normalize RentCast listing endpoints that return bare or wrapped arrays."""
+        if isinstance(payload, list):
+            return [x for x in payload if isinstance(x, dict)]
+        if not isinstance(payload, dict):
+            return []
+        for key in ("listings", "properties", "data", "results", "items"):
+            cand = payload.get(key)
+            if isinstance(cand, list):
+                return [x for x in cand if isinstance(x, dict)]
+            if isinstance(cand, dict):
+                for k2 in ("listings", "properties", "data", "results", "items"):
+                    c2 = cand.get(k2)
+                    if isinstance(c2, list):
+                        return [x for x in c2 if isinstance(x, dict)]
+        return []
+
+    @staticmethod
     def _extract_photo_url(item: dict, *, primary_keys: tuple[str, ...] = ()) -> str | None:
         """Find the best available photo URL on a raw provider listing item.
 
@@ -2078,7 +2148,7 @@ class MapSearchService:
             photo_url=MapSearchService._extract_photo_url(item, primary_keys=("photoUrl", "imgSrc")),
             source="rentcast",
             days_on_market=item.get("daysOnMarket"),
-            year_built=item.get("yearBuilt"),
+            year_built=MapSearchService._extract_year_built(item),
         )
 
     @staticmethod
@@ -2146,7 +2216,7 @@ class MapSearchService:
             photo_url=photo_url,
             source="zillow",
             days_on_market=item.get("daysOnZillow"),
-            year_built=item.get("yearBuilt"),
+            year_built=MapSearchService._extract_year_built(item),
         )
 
     @staticmethod

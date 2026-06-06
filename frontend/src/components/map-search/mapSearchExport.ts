@@ -58,6 +58,16 @@ function formatOwnerOccupied(value: boolean | null | undefined): string {
   return value ? 'Yes' : 'No'
 }
 
+function resolveYearBuilt(listing: MapListing): string {
+  const raw =
+    listing.year_built ??
+    (listing as MapListing & { yearBuilt?: number | string | null }).yearBuilt
+  if (raw == null || raw === '') return ''
+  const year = typeof raw === 'number' ? raw : Number(raw)
+  if (!Number.isFinite(year) || year <= 0) return ''
+  return String(Math.floor(year))
+}
+
 export function buildExportRows(
   listings: MapListing[],
   dealSignals: Map<string, DealSignalResult>,
@@ -77,7 +87,7 @@ export function buildExportRows(
       'Property Type': listing.property_type ?? '',
       Status: listing.listing_status ?? '',
       'Days on Market': listing.days_on_market != null ? String(listing.days_on_market) : '',
-      'Year Built': listing.year_built != null ? String(listing.year_built) : '',
+      'Year Built': resolveYearBuilt(listing),
       'Deal Signal': signal?.label ?? '',
       Latitude: String(listing.latitude),
       Longitude: String(listing.longitude),
