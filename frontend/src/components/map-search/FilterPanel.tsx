@@ -291,7 +291,6 @@ export function FilterPanel({
     return (
       <button
         type="button"
-        data-tour="map-search-filters"
         onClick={onToggle}
         aria-expanded={false}
         aria-haspopup="dialog"
@@ -332,7 +331,6 @@ export function FilterPanel({
   return (
     <div
       id="map-search-filters-panel"
-      data-tour="map-search-filters"
       role="dialog"
       aria-label="Map search filters"
       className="pointer-events-auto absolute top-3 right-3 z-10 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl shadow-xl overflow-hidden"

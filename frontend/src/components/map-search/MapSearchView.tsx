@@ -25,7 +25,6 @@ import {
   Sun,
   Moon,
   ChevronDown,
-  HelpCircle,
 } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
@@ -42,12 +41,6 @@ import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
 import { readMapSnapshot, writeMapSnapshot, clearMapSnapshot, consumeMapViewportRestore } from './mapSearchSnapshot'
 import { getMapOverlaySurface } from './mapOverlayChrome'
 import type { NeighborhoodOverview } from '@/lib/api'
-import { useMapSearchTour, type MapTourStepId } from '@/components/map-search/useMapSearchTour'
-import { pickTourHighlightListing } from '@/components/map-search/mapSearchTourHelpers'
-import {
-  isMapTourActiveSession,
-  shouldSkipMapSearchTour,
-} from '@/lib/tourPreferences'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -170,8 +163,7 @@ function MapMarkerLegend({
   }))
   return (
     <div
-      data-tour="map-marker-legend"
-      className="absolute bottom-4 left-3 z-10 max-w-[min(92vw,16rem)] pointer-events-auto"
+        className="absolute bottom-4 left-3 z-10 max-w-[min(92vw,16rem)] pointer-events-auto"
       role="region"
       aria-label="Map marker color legend"
     >
@@ -531,10 +523,6 @@ interface MapContentProps {
   // camera has settled. Used to auto-collapse the marker-color legend so it
   // stops occupying screen space once the user starts exploring.
   onUserCameraInteraction?: () => void
-  /** Pulse all graded markers during the map tour legend step. */
-  tourLegendPulse?: boolean
-  /** Pulse a specific marker after the tour (close CTA highlight). */
-  tourHighlightListingId?: string | null
 }
 
 function MapContent({
@@ -552,8 +540,6 @@ function MapContent({
   polygon,
   isDarkMap,
   onUserCameraInteraction,
-  tourLegendPulse = false,
-  tourHighlightListingId = null,
 }: MapContentProps) {
   const map = useMap()
 
@@ -764,19 +750,15 @@ function MapContent({
           displayLabel = formatCompactPrice(listing.price)
         }
 
-        const shouldPulse =
-          tourHighlightListingId === listing.id ||
-          (tourLegendPulse && signal != null && !isAirbnb)
-
         return (
           <AdvancedMarker
             key={listing.id}
             position={{ lat: listing.latitude, lng: listing.longitude }}
             onClick={() => onSelectListing(listing)}
-            zIndex={isSelected || tourHighlightListingId === listing.id ? 1000 : undefined}
+            zIndex={isSelected ? 1000 : undefined}
           >
             <div
-              className={`px-1.5 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap cursor-pointer shadow-md transition-transform hover:scale-110${shouldPulse ? ' map-tour-marker-pulse' : ''}`}
+              className="px-1.5 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap cursor-pointer shadow-md transition-transform hover:scale-110"
               style={{
                 backgroundColor: isSelected ? 'var(--accent-sky)' : markerBg,
                 color: isSelected ? '#fff' : markerText,
@@ -1036,23 +1018,6 @@ export function MapSearchView() {
     setFiltersOpen((p) => !p)
   }, [clearAutoClose])
 
-  const openFiltersForTour = useCallback(() => {
-    autoCloseArmedRef.current = false
-    clearAutoClose()
-    setFiltersOpen(true)
-  }, [clearAutoClose])
-
-  const skipMapTourAutoStart = shouldSkipMapSearchTour(searchParams)
-  const replayMapTourParam = searchParams.get('replayTour') === 'map'
-
-  const [tourLegendPulse, setTourLegendPulse] = useState(false)
-  const [tourHighlightListingId, setTourHighlightListingId] = useState<string | null>(null)
-
-  const suggestedTourListing = useMemo(
-    () => pickTourHighlightListing(listings, dealSignals),
-    [listings, dealSignals],
-  )
-
   const [isDrawing, setIsDrawing] = useState(false)
   // Marker-color legend starts expanded so first-time users immediately see
   // what the colors mean. It auto-collapses the first time the user pans or
@@ -1279,70 +1244,8 @@ export function MapSearchView() {
     [clearGeocode],
   )
 
-  const handleTourStep = useCallback(
-    (step: MapTourStepId) => {
-      if (step === 'filters') {
-        openFiltersForTour()
-        requestAnimationFrame(() => {
-          document.getElementById('distressed-deals-heading')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
-          })
-        })
-        const hasDistressed = filters.listing_statuses.some((s) =>
-          ['foreclosure', 'pre-foreclosure', 'auction'].includes(s),
-        )
-        if (!hasDistressed) {
-          updateFilters({
-            listing_statuses: [...filters.listing_statuses, 'foreclosure', 'pre-foreclosure'],
-          })
-        }
-      } else if (step === 'legend') {
-        setTourLegendPulse(true)
-        setFiltersOpen(false)
-      } else {
-        setTourLegendPulse(false)
-      }
-    },
-    [openFiltersForTour, filters.listing_statuses, updateFilters],
-  )
-
-  const handleTourHighlightListing = useCallback(
-    (listing: MapListing | null) => {
-      if (!listing) {
-        setTourHighlightListingId(null)
-        return
-      }
-      setTourHighlightListingId(listing.id)
-      handleMarkerSelect(listing)
-      const zoom = Math.max(currentZoomRef.current, MIN_ZOOM_FOR_GEOCODE)
-      panToRef.current?.(listing.latitude, listing.longitude, zoom)
-    },
-    [handleMarkerSelect],
-  )
-
-  const handleTourEnd = useCallback(() => {
-    setTourLegendPulse(false)
-  }, [])
-
-  const { TourLayer, replay: replayMapTour, tourActive } = useMapSearchTour({
-    ready: geoResolved && !isLoading,
-    skipAutoStart: skipMapTourAutoStart,
-    onOpenFilters: openFiltersForTour,
-    onTourStep: handleTourStep,
-    onTourEnd: handleTourEnd,
-    suggestedListing: suggestedTourListing,
-    onHighlightListing: handleTourHighlightListing,
-  })
-
   useEffect(() => {
-    if (replayMapTourParam && geoResolved && !isLoading) {
-      replayMapTour()
-    }
-  }, [replayMapTourParam, geoResolved, isLoading, replayMapTour])
-
-  useEffect(() => {
-    if (!isZoomedIn || hintShownRef.current || tourActive || isMapTourActiveSession()) {
+    if (!isZoomedIn || hintShownRef.current) {
       if (!isZoomedIn) setShowClickHint(false)
       return
     }
@@ -1355,7 +1258,7 @@ export function MapSearchView() {
     setShowClickHint(true)
     const timer = setTimeout(dismissClickHint, 8000)
     return () => clearTimeout(timer)
-  }, [isZoomedIn, dismissClickHint, tourActive])
+  }, [isZoomedIn, dismissClickHint])
 
   const queryClient = useQueryClient()
 
@@ -1464,10 +1367,7 @@ export function MapSearchView() {
   }
 
   const mapSection = (
-    <div
-      data-tour="map-click-target"
-      className={`relative w-full h-full${isDarkMap ? ' map-search-crisp-dark' : ''}`}
-    >
+    <div className={`relative w-full h-full${isDarkMap ? ' map-search-crisp-dark' : ''}`}>
       <APIProvider apiKey={apiKey} libraries={['places', 'drawing', 'marker']}>
         <Map
           defaultCenter={initialCenter}
@@ -1523,8 +1423,6 @@ export function MapSearchView() {
             polygon={polygon}
             isDarkMap={isDarkMap}
             onUserCameraInteraction={collapseLegend}
-            tourLegendPulse={tourLegendPulse}
-            tourHighlightListingId={tourHighlightListingId}
           />
           {dropPin && (
             <AdvancedMarker position={dropPin}>
@@ -1632,22 +1530,6 @@ export function MapSearchView() {
       </APIProvider>
 
       <MapMarkerLegend isDark={isDarkMap} open={legendOpen} onToggle={toggleLegend} />
-
-      {/* Map tour replay */}
-      <button
-        type="button"
-        onClick={() => replayMapTour()}
-        aria-label="Replay map tour"
-        title="Map tour help"
-        className="absolute z-[60] h-9 w-9 rounded-full shadow-lg flex items-center justify-center pointer-events-auto top-14 left-3"
-        style={{
-          backgroundColor: overlaySurface.backgroundColor,
-          color: overlaySurface.primaryText,
-          border: `1px solid ${overlaySurface.borderColor}`,
-        }}
-      >
-        <HelpCircle size={16} />
-      </button>
 
       {/* Per-map theme toggle — right margin, stacked above Google’s bottom-right
           camera/directional control (clear of mid-right zoom +/- stack). */}
@@ -1801,19 +1683,6 @@ export function MapSearchView() {
 
       {/* Listing count badge — stacked below Filters (top-right). Hidden when
           the filter panel is open or while loading (counter returns after fetch). */}
-      {!isLoading && listings.length === 0 && !filtersOpen && (
-        <div className="absolute top-14 left-3 z-10 max-w-[min(90vw,18rem)]">
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new Event('dealscope:replay-workbench-tour'))}
-            className="text-[11px] font-medium underline text-left"
-            style={{ color: overlaySurface.secondaryText }}
-          >
-            New to the workbench? Take the 60-sec tour →
-          </button>
-        </div>
-      )}
-
       {totalCount > 0 && !isLoading && !filtersOpen && (
         <div className="absolute top-14 right-3 z-10 max-w-[min(90vw,18rem)]">
           <div
@@ -1870,7 +1739,6 @@ export function MapSearchView() {
   // bounded Owner Leads searches).
   return (
     <div className="relative w-full h-full" style={{ backgroundColor: 'var(--surface-base)' }}>
-      {TourLayer}
       {mapSection}
       {viewMode === 'list' && (
         <div className="absolute inset-0 z-40">

@@ -724,11 +724,10 @@ export function AppHeader({
                 </>
               )}
 
-              {/* Map Search — desktop nav entry (workbench tour step 6 anchor) */}
+              {/* Map Search — desktop nav entry */}
               {!pathname?.startsWith('/map-search') && (
                 <Link
                   href="/map-search"
-                  data-tour="map-search-nav"
                   className="hidden sm:flex min-h-[40px] sm:min-h-[44px] px-2.5 sm:px-3 rounded-full border transition-colors hover:bg-[var(--hover-overlay)] items-center gap-1.5 whitespace-nowrap"
                   style={{
                     borderColor: 'var(--border-default)',
@@ -1102,7 +1101,6 @@ export function AppHeader({
                     key={tab.id}
                     role="tab"
                     type="button"
-                    data-tour={`tab-${tab.id}`}
                     aria-selected={isActive}
                     aria-current={isActive ? 'page' : undefined}
                     onClick={() => handleTabChange(tab.id)}
@@ -1171,11 +1169,10 @@ export function AppHeader({
 
       <SearchPropertyModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
 
-      {/* Mobile Map Search FAB — workbench tour step 6 anchor on small screens */}
+      {/* Mobile Map Search FAB */}
       {showMapSearchFab && (
         <Link
           href="/map-search"
-          data-tour="map-search-fab"
           className="sm:hidden fixed z-40 flex items-center justify-center w-12 h-12 rounded-full shadow-lg pb-safe"
           style={{
             right: 'max(12px, env(safe-area-inset-right, 0px))',

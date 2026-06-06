@@ -54,12 +54,7 @@ import {
   resolveMarketPriceFromPropertyResponse,
 } from '@/lib/resolveMarketPrice'
 import { trackEvent } from '@/lib/eventTracking'
-import { WorkbenchTour } from '@/components/tour/WorkbenchTour'
-import {
-  DiscoveryColdLanding,
-  DiscoveryTourReplayBanner,
-} from '@/components/tour'
-import { hasSeenWorkbenchTour } from '@/lib/tourPreferences'
+import { DiscoveryColdLanding } from '@/components/discovery/DiscoveryColdLanding'
 import {
   buildMotivatedSellerInsights,
   type MotivatedSellerInsight,
@@ -187,8 +182,6 @@ function VerdictContent() {
   const cityParam = searchParams.get('city') || undefined
   const stateParam = searchParams.get('state') || undefined
   const zipCodeParam = searchParams.get('zip_code') || undefined
-  const replayTour = searchParams.get('replayTour') === 'workbench'
-
   // Deal Maker Store (for saved properties)
   const dealMakerStore = useDealMakerStore()
   const { hasRecord } = useDealMakerReady()
@@ -939,12 +932,8 @@ function VerdictContent() {
   // navigates with `router.push` rather than `router.back` so the map opens
   // even from longer history chains (verdict A -> verdict B -> back).
   const [hasMapSession, setHasMapSession] = useState(false)
-  const [workbenchTourSeen, setWorkbenchTourSeen] = useState(false)
   useEffect(() => {
     setHasMapSession(hasRestorableMapSnapshot())
-  }, [])
-  useEffect(() => {
-    setWorkbenchTourSeen(hasSeenWorkbenchTour())
   }, [])
 
   const handleBackToMap = useCallback(() => {
@@ -1105,39 +1094,6 @@ function VerdictContent() {
     })
   }, [])
 
-  const handleTourSave = useCallback(async () => {
-    if (!property) return
-    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-    if (!fullAddress) return
-    const parsed = parseAddressString(fullAddress)
-    try {
-      await api.post('/api/v1/properties/saved', {
-        address_street: parsed.street,
-        address_city: parsed.city || undefined,
-        address_state: parsed.state || undefined,
-        address_zip: parsed.zip || undefined,
-        full_address: fullAddress,
-        zpid: property.zpid ?? undefined,
-        status: 'prospecting',
-      })
-    } catch {
-      /* already saved or auth required */
-    }
-  }, [property])
-
-  const isColdDiscovery = error === 'No address provided'
-  const tourReady = isColdDiscovery ? !isLoading : !isLoading && !!property && !!analysis
-
-  const discoveryWorkbenchTour = (
-    <WorkbenchTour
-      ready={tourReady}
-      hasAnalysis={!!(addressParam || propertyIdParam)}
-      forceStart={replayTour}
-      onSaveDeal={handleTourSave}
-    />
-  )
-
   // Loading state — pulsating IQ logo until data arrives.
   // Also covers the case where property loaded from cache but analysis API is still in flight.
   if (isLoading || (!analysis && !error)) {
@@ -1145,12 +1101,7 @@ function VerdictContent() {
   }
 
   if (error === 'No address provided') {
-    return (
-      <>
-        <DiscoveryColdLanding showTourReplay={workbenchTourSeen} />
-        {discoveryWorkbenchTour}
-      </>
-    )
+    return <DiscoveryColdLanding />
   }
 
   // Error state with no property fallback
@@ -1328,8 +1279,6 @@ function VerdictContent() {
             </div>
           )}
 
-          <DiscoveryTourReplayBanner />
-
           {propertyIdParam ? <RehabBudgetBanner propertyId={propertyIdParam} /> : null}
 
           {/* Full-width photo gallery */}
@@ -1369,7 +1318,7 @@ function VerdictContent() {
             }}
           >
             {/* Investment Overview — 3 price cards */}
-            <div data-tour="verdict-gap">
+            <div>
               <h2
                 className="w-full font-bold leading-tight"
                 style={{
@@ -2392,7 +2341,6 @@ function VerdictContent() {
         }
       />
 
-      {discoveryWorkbenchTour}
     </>
   )
 }

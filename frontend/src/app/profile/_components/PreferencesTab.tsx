@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Bell, Palette, Shield, Save, MapPin, Compass } from 'lucide-react'
+import { Bell, Palette, Shield, Save } from 'lucide-react'
 import { api } from '@/lib/api-client'
-import { replayWorkbenchTour } from '@/components/tour'
-import { useRouter } from 'next/navigation'
 
 // ===========================================
 // Preferences Tab — Notifications, Appearance, Security
@@ -68,7 +66,6 @@ function Toggle({
 }
 
 export function PreferencesTab() {
-  const router = useRouter()
   const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS)
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system')
   const [saving, setSaving] = useState(false)
@@ -219,48 +216,6 @@ export function PreferencesTab() {
                 {opt}
               </button>
             ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Product tours */}
-      <div className="relative isolate">
-        <div className="p-5 bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)]">
-          <div className="flex items-center gap-2 mb-4">
-            <Compass className="w-4 h-4 text-[var(--accent-sky)]" />
-            <p className="text-sm font-semibold text-[var(--text-body)] uppercase tracking-wide">
-              Product Tours
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                replayWorkbenchTour()
-                router.push('/discovery?replayTour=workbench')
-              }}
-              className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-left"
-              style={{
-                background: 'var(--surface-elevated)',
-                border: '1px solid var(--border-default)',
-                color: 'var(--text-heading)',
-              }}
-            >
-              Replay workbench tour (60 sec)
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push('/map-search?replayTour=map')}
-              className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-left flex items-center gap-2"
-              style={{
-                background: 'var(--surface-elevated)',
-                border: '1px solid var(--border-default)',
-                color: 'var(--text-heading)',
-              }}
-            >
-              <MapPin className="w-4 h-4 shrink-0" />
-              Replay map tour
-            </button>
           </div>
         </div>
       </div>

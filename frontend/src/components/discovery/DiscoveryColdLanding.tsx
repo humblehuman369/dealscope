@@ -3,14 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { Camera, MapPin, Search, Compass } from 'lucide-react'
 import { trackEvent } from '@/lib/eventTracking'
-import { replayWorkbenchTour } from '@/components/tour'
 
-interface DiscoveryColdLandingProps {
-  /** When true, show the workbench tour replay link (returning users). */
-  showTourReplay?: boolean
-}
-
-export function DiscoveryColdLanding({ showTourReplay = false }: DiscoveryColdLandingProps) {
+export function DiscoveryColdLanding() {
   const router = useRouter()
 
   const nav = (path: string, event: string) => {
@@ -85,40 +79,6 @@ export function DiscoveryColdLanding({ showTourReplay = false }: DiscoveryColdLa
             Browse the Map
           </button>
         </div>
-
-        <p className="mt-8 text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {showTourReplay ? (
-            <>
-              Want a refresher?{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  trackEvent('tour-replay-requested', { source: 'discovery-cold-landing' })
-                  replayWorkbenchTour()
-                }}
-                className="font-semibold hover:underline"
-                style={{ color: 'var(--accent-sky)' }}
-              >
-                Replay the 60-sec workbench tour →
-              </button>
-            </>
-          ) : (
-            <>
-              Want a quick walkthrough first?{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  trackEvent('coldlink-tour-start')
-                  replayWorkbenchTour()
-                }}
-                className="font-semibold hover:underline"
-                style={{ color: 'var(--accent-sky)' }}
-              >
-                Take the 60-sec tour →
-              </button>
-            </>
-          )}
-        </p>
       </div>
     </div>
   )

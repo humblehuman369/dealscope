@@ -46,7 +46,6 @@
     "@vis.gl/react-google-maps": "^1.7.1",
     "baseline-browser-mapping": "^2.10.0",
     "clsx": "^2.1.0",
-    "driver.js": "^1.4.0",
     "exceljs": "^3.4.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.303.0",
