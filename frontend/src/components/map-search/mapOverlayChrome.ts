@@ -130,12 +130,11 @@ export function getMapFilterPanelOpenChrome(lightMap: boolean): MapFilterPanelOp
   }
 
   return {
-    panelBackground: 'rgba(20, 34, 54, 0.98)',
+    panelBackground: '#000000',
     panelBorder: '2px solid rgba(56, 189, 248, 0.58)',
     panelShadow:
       '0 18px 52px rgba(0, 0, 0, 0.58), 0 0 0 1px rgba(56, 189, 248, 0.22), 0 0 36px rgba(15, 164, 233, 0.32)',
-    headerBackground:
-      'linear-gradient(135deg, rgba(15, 164, 233, 0.32) 0%, rgba(56, 189, 248, 0.12) 100%)',
+    headerBackground: '#000000',
     headerBorder: '1px solid rgba(56, 189, 248, 0.45)',
     headerIconColor: '#38bdf8',
     sectionLabel: '#7dd3fc',
