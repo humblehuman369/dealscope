@@ -28,7 +28,7 @@ function motivatedSellerPanelChrome(lightMap: boolean) {
     }
   }
   return {
-    boxBg: `rgba(${r}, ${g}, ${b}, 0.22)`,
+    boxBg: '#000000',
     boxBorder: `1px solid rgba(${r}, ${g}, ${b}, 0.58)`,
     heading: markerHex,
     body: 'rgba(254, 226, 226, 0.94)',
@@ -150,13 +150,13 @@ export function getMapFilterPanelOpenChrome(lightMap: boolean): MapFilterPanelOp
       body: 'rgba(224, 242, 254, 0.94)',
     },
     distressed: {
-      boxBg: 'rgba(239, 68, 68, 0.2)',
+      boxBg: '#000000',
       boxBorder: '1px solid rgba(248, 113, 113, 0.58)',
       heading: '#fca5a5',
       body: 'rgba(254, 226, 226, 0.94)',
     },
     expired: {
-      boxBg: 'rgba(139, 92, 246, 0.2)',
+      boxBg: '#000000',
       boxBorder: '1px solid rgba(167, 139, 250, 0.58)',
       heading: '#c4b5fd',
       body: 'rgba(237, 233, 254, 0.94)',
