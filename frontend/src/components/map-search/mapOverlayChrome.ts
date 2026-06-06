@@ -144,7 +144,7 @@ export function getMapFilterPanelOpenChrome(lightMap: boolean): MapFilterPanelOp
     controlIdleBorder: '1px solid rgba(56, 189, 248, 0.38)',
     motivatedSeller: motivatedSellerPanelChrome(false),
     ownerLeads: {
-      boxBg: 'rgba(56, 189, 248, 0.2)',
+      boxBg: '#000000',
       boxBorder: '1px solid rgba(56, 189, 248, 0.58)',
       heading: '#7dd3fc',
       body: 'rgba(224, 242, 254, 0.94)',
