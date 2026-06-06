@@ -1,8 +1,39 @@
+import { DISTRESSED_MARKER_COLOR, DISTRESSED_MARKER_COLOR_DARK } from '@/lib/dealSignal'
+
 /**
  * Translucent surfaces for floating controls on top of map tiles.
  * Driven by **map** light/dark (`isDarkMap`), not the global app theme, so
  * chrome stays legible when users toggle only the map style.
  */
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const normalized = hex.replace('#', '')
+  return {
+    r: parseInt(normalized.slice(0, 2), 16),
+    g: parseInt(normalized.slice(2, 4), 16),
+    b: parseInt(normalized.slice(4, 6), 16),
+  }
+}
+
+/** Panel callout tints derived from the distressed map-pin palette in dealSignal.ts. */
+function motivatedSellerPanelChrome(lightMap: boolean) {
+  const markerHex = lightMap ? DISTRESSED_MARKER_COLOR : DISTRESSED_MARKER_COLOR_DARK
+  const { r, g, b } = hexToRgb(markerHex)
+  if (lightMap) {
+    return {
+      boxBg: `rgba(${r}, ${g}, ${b}, 0.14)`,
+      boxBorder: `1px solid rgba(${r}, ${g}, ${b}, 0.48)`,
+      heading: markerHex,
+      body: '#991b1b',
+    }
+  }
+  return {
+    boxBg: `rgba(${r}, ${g}, ${b}, 0.22)`,
+    boxBorder: `1px solid rgba(${r}, ${g}, ${b}, 0.58)`,
+    heading: markerHex,
+    body: 'rgba(254, 226, 226, 0.94)',
+  }
+}
 
 export type MapOverlayChrome = {
   backgroundColor: string
@@ -76,12 +107,7 @@ export function getMapFilterPanelOpenChrome(lightMap: boolean): MapFilterPanelOp
       controlIdleBg: '#dff4fc',
       controlIdleText: 'rgba(15, 23, 42, 0.94)',
       controlIdleBorder: '1px solid rgba(15, 164, 233, 0.38)',
-      motivatedSeller: {
-        boxBg: 'rgba(254, 226, 226, 0.92)',
-        boxBorder: '1px solid rgba(239, 68, 68, 0.55)',
-        heading: '#dc2626',
-        body: '#991b1b',
-      },
+      motivatedSeller: motivatedSellerPanelChrome(true),
       ownerLeads: {
         boxBg: 'rgba(224, 242, 254, 0.95)',
         boxBorder: '1px solid rgba(15, 164, 233, 0.5)',
@@ -117,12 +143,7 @@ export function getMapFilterPanelOpenChrome(lightMap: boolean): MapFilterPanelOp
     controlIdleBg: 'rgba(30, 52, 78, 0.94)',
     controlIdleText: 'rgba(255, 255, 255, 0.96)',
     controlIdleBorder: '1px solid rgba(56, 189, 248, 0.38)',
-    motivatedSeller: {
-      boxBg: 'rgba(239, 68, 68, 0.22)',
-      boxBorder: '1px solid rgba(248, 113, 113, 0.62)',
-      heading: '#f87171',
-      body: 'rgba(254, 226, 226, 0.94)',
-    },
+    motivatedSeller: motivatedSellerPanelChrome(false),
     ownerLeads: {
       boxBg: 'rgba(56, 189, 248, 0.2)',
       boxBorder: '1px solid rgba(56, 189, 248, 0.58)',

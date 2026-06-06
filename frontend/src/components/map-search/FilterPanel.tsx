@@ -12,7 +12,7 @@ import {
   Target,
 } from 'lucide-react'
 import type { MapSearchFilters } from '@/hooks/useMapSearch'
-import type { SortOption } from '@/lib/dealSignal'
+import { DISTRESSED_MARKER_COLOR, type SortOption } from '@/lib/dealSignal'
 import { SectionHelpTooltip } from '@/components/map-search/SectionHelpTooltip'
 import {
   type MapOverlayChrome,
@@ -76,7 +76,7 @@ const BEDROOM_OPTIONS = [
 ]
 
 /** Matches map distressed pin color in dealSignal.ts (markerColorForCategory distressed). */
-const DISTRESSED_MARKER_DOT = '#EF4444'
+const DISTRESSED_MARKER_DOT = DISTRESSED_MARKER_COLOR
 
 /** Matches map expired pin color in dealSignal.ts (markerColorForCategory expired). */
 const EXPIRED_MARKER_DOT = '#8B5CF6'

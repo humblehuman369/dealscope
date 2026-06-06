@@ -343,6 +343,10 @@ export function markerColorForCategory(category: DealCategory, isDark = false): 
   return isDark ? CATEGORY_MARKER_HEX_DARK[category] : CATEGORY_MARKER_HEX[category]
 }
 
+/** Distressed / red-flag map pin — shared with filter-panel urgency callouts. */
+export const DISTRESSED_MARKER_COLOR = CATEGORY_MARKER_HEX.distressed
+export const DISTRESSED_MARKER_COLOR_DARK = CATEGORY_MARKER_HEX_DARK.distressed
+
 export function sortListings(
   listings: MapListing[],
   signals: Map<string, DealSignalResult>,
