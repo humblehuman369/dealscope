@@ -52,18 +52,25 @@ export function mapSelectionCtaLabel(destination: MapSelectionDestination): stri
 }
 
 /**
- * Open the selected property in a new browser window/tab, leaving the map view
- * open in the original window. Falls back to same-window navigation (with map
- * viewport restore) when the popup is blocked or there's no window — which also
- * covers mobile/Capacitor webviews where `window.open` can return `null`.
+ * Open the selected property in a new browser tab, leaving map search in the
+ * original tab. Do not pass `noopener` in window.open feature flags — browsers
+ * return `null` when noopener is set, which falsely triggered same-tab fallback.
  */
 function openInNewWindow(router: MapDiscoveryRouter, path: string): void {
-  const opened =
-    typeof window !== 'undefined' ? window.open(path, '_blank', 'noopener,noreferrer') : null
-  if (!opened) {
-    markMapViewportForRestore()
+  if (typeof window === 'undefined') {
     router.push(path)
+    return
   }
+
+  const newTab = window.open(path, '_blank')
+  if (newTab) {
+    newTab.opener = null
+    return
+  }
+
+  // Popup blocked or unsupported (some mobile WebViews) — same-tab fallback only then.
+  markMapViewportForRestore()
+  router.push(path)
 }
 
 /** Navigate to the selected property's destination (Discovery or Deal Maker) in a new window. */
