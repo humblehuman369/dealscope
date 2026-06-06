@@ -486,6 +486,12 @@ class ListingInfo(BaseModel):
     is_owner_occupied: bool | None = None
     is_absentee_owner: bool | None = None
     owner_state: str | None = None
+    # Owner contact (RentCast assessor records — phone/email not provided by API)
+    owner_names: list[str] | None = None
+    owner_type: str | None = None
+    owner_mailing_address: str | None = None
+    owner_phone: str | None = None
+    owner_email: str | None = None
 
     # Engagement / staleness signals (Zillow)
     page_view_count: int | None = None

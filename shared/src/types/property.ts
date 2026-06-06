@@ -247,6 +247,12 @@ export interface ListingInfo {
   is_owner_occupied?: boolean | null;
   is_absentee_owner?: boolean | null;
   owner_state?: string | null;
+  // Owner contact (RentCast assessor records — phone/email not provided by API)
+  owner_names?: string[] | null;
+  owner_type?: string | null;
+  owner_mailing_address?: string | null;
+  owner_phone?: string | null;
+  owner_email?: string | null;
   // Engagement / staleness
   page_view_count?: number | null;
   favorite_count?: number | null;

@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Check, Waves } from 'lucide-react'
 import type { PropertyData } from '@/components/property-details/types'
 import { MotivatedSellerSignals } from '@/components/property-details/MotivatedSellerSignals'
+import { OwnerInfo } from '@/components/property-details/OwnerInfo'
 import { formatCurrencySafe, formatNumberSafe } from '@/utils/formatters'
 
 function formatPropertyType(type: string | null | undefined): string {
@@ -267,6 +268,8 @@ export function PropertyDetailsDropdown({ property }: PropertyDetailsDropdownPro
             )}
           </div>
         )}
+
+        <OwnerInfo owner={property.owner} />
 
         {/* Listing Information */}
         {listingRows.length > 0 && (

@@ -11,7 +11,8 @@ from typing import Any
 # Bumped when Income Value / Deal Gap economics change (must invalidate Redis payloads).
 # v7: listing narrative (description), motivated_keywords, price history/cuts,
 # v8: Zillow enrichment (tax history, nearby schools, walk/transit/bike scores, zestimate trend).
-_PROPERTY_CACHE_FORMULA_VERSION = "8"
+# v9: RentCast owner details (names, type, mailing address) on listing payload.
+_PROPERTY_CACHE_FORMULA_VERSION = "9"
 
 
 def _strip_property_cache_meta(payload: dict[str, Any]) -> dict[str, Any]:

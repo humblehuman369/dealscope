@@ -257,9 +257,22 @@ def test_extract_ownership_absentee_flag() -> None:
 
     normalizer = DataNormalizer()
     normalized: dict = {}
-    rentcast = {"ownerOccupied": False, "owner": {"mailingAddress": {"state": "NY"}}}
+    rentcast = {
+        "ownerOccupied": False,
+        "owner": {
+            "names": ["Jane Investor LLC"],
+            "type": "Organization",
+            "mailingAddress": {
+                "state": "NY",
+                "formattedAddress": "100 Wall St, New York, NY 10005",
+            },
+        },
+    }
     normalizer._extract_ownership(normalized, rentcast)
 
     assert normalized["is_owner_occupied"] is False
     assert normalized["is_absentee_owner"] is True
     assert normalized["owner_state"] == "NY"
+    assert normalized["owner_names"] == ["Jane Investor LLC"]
+    assert normalized["owner_type"] == "Organization"
+    assert normalized["owner_mailing_address"] == "100 Wall St, New York, NY 10005"

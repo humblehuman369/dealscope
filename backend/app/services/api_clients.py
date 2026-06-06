@@ -2122,12 +2122,40 @@ class DataNormalizer:
         if peak_price and latest_price and peak_price > 0 and latest_price < peak_price:
             normalized["total_price_reduction_pct"] = round((peak_price - latest_price) / peak_price, 4)
 
+    def _format_owner_mailing_address(self, mailing: dict[str, Any]) -> str | None:
+        """Build a display mailing address from RentCast owner.mailingAddress."""
+        formatted = mailing.get("formattedAddress")
+        if isinstance(formatted, str) and formatted.strip():
+            return formatted.strip()
+
+        line1 = mailing.get("addressLine1")
+        line2 = mailing.get("addressLine2")
+        city = mailing.get("city")
+        state = mailing.get("state")
+        zip_code = mailing.get("zipCode")
+
+        street_parts = [str(p).strip() for p in (line1, line2) if p and str(p).strip()]
+        street = ", ".join(street_parts)
+        city_state_zip = " ".join(
+            part for part in [city, state] if part and str(part).strip()
+        )
+        if zip_code and str(zip_code).strip():
+            city_state_zip = f"{city_state_zip} {str(zip_code).strip()}".strip()
+
+        if street and city_state_zip:
+            return f"{street}, {city_state_zip}"
+        return street or city_state_zip or None
+
     def _extract_ownership(
         self,
         normalized: dict[str, Any],
         rentcast_data: dict[str, Any] | None,
     ):
-        """Extract owner-occupancy signals from RentCast property records.
+        """Extract owner details and occupancy signals from RentCast property records.
+
+        RentCast ``/properties`` returns ``owner.names``, ``owner.type``,
+        ``owner.mailingAddress`` and ``ownerOccupied``. Phone and email are not
+        part of the property-records schema — those fields stay unset (null).
 
         ``ownerOccupied`` (bool) drives both the owner-occupied counter-signal
         and the absentee-owner motivation signal. Owner mailing state (when
@@ -2143,9 +2171,23 @@ class DataNormalizer:
 
         owner = rentcast_data.get("owner")
         if isinstance(owner, dict):
+            names = owner.get("names")
+            if isinstance(names, list):
+                cleaned_names = [str(n).strip() for n in names if n and str(n).strip()]
+                if cleaned_names:
+                    normalized["owner_names"] = cleaned_names
+
+            owner_type = owner.get("type")
+            if isinstance(owner_type, str) and owner_type.strip():
+                normalized["owner_type"] = owner_type.strip()
+
             mailing = owner.get("mailingAddress")
-            if isinstance(mailing, dict) and mailing.get("state"):
-                normalized["owner_state"] = mailing.get("state")
+            if isinstance(mailing, dict):
+                if mailing.get("state"):
+                    normalized["owner_state"] = mailing.get("state")
+                mailing_address = self._format_owner_mailing_address(mailing)
+                if mailing_address:
+                    normalized["owner_mailing_address"] = mailing_address
 
     def _compute_iq_estimates(
         self,

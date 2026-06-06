@@ -66,6 +66,27 @@ export function normalizePropertyData(
     p.listing?.is_off_market ?? (listingStatus === 'OFF_MARKET' || listingStatus === 'SOLD')
   const displayPrice = p.listing?.list_price ?? price
 
+  const ownerNames = Array.isArray(p.listing?.owner_names)
+    ? p.listing.owner_names.filter((name: unknown) => typeof name === 'string' && name.trim())
+    : []
+  const owner =
+    ownerNames.length > 0 ||
+    p.listing?.owner_type ||
+    p.listing?.owner_mailing_address ||
+    p.listing?.owner_phone ||
+    p.listing?.owner_email ||
+    p.listing?.is_owner_occupied != null
+      ? {
+          names: ownerNames.length > 0 ? ownerNames : undefined,
+          type: p.listing?.owner_type ?? undefined,
+          mailingAddress: p.listing?.owner_mailing_address ?? undefined,
+          phone: p.listing?.owner_phone ?? undefined,
+          email: p.listing?.owner_email ?? undefined,
+          isOwnerOccupied: p.listing?.is_owner_occupied ?? undefined,
+          isAbsenteeOwner: p.listing?.is_absentee_owner ?? undefined,
+        }
+      : undefined
+
   return {
     zpid: p.zpid || zpid,
     address: { streetAddress, city, state, zipcode },
@@ -83,6 +104,7 @@ export function normalizePropertyData(
     timeOnMarket: p.listing?.time_on_market,
     brokerageName: p.listing?.brokerage_name,
     listingAgentName: p.listing?.listing_agent_name,
+    owner,
     listingAgent: p.listing?.listing_agent_name
       ? {
           name: p.listing.listing_agent_name,

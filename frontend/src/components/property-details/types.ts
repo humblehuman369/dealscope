@@ -153,6 +153,17 @@ export interface PropertyListingAgent {
   brokerPhone?: string
 }
 
+/** Property owner details from RentCast assessor records. */
+export interface PropertyOwnerInfo {
+  names?: string[]
+  type?: string
+  mailingAddress?: string
+  phone?: string
+  email?: string
+  isOwnerOccupied?: boolean
+  isAbsenteeOwner?: boolean
+}
+
 export interface PriceHistoryItem {
   date: string
   event: string
@@ -269,6 +280,9 @@ export interface PropertyData {
   // Images
   images: string[]
   totalPhotos?: number
+
+  // Owner Info (RentCast property records)
+  owner?: PropertyOwnerInfo
 
   // Listing Info
   listingAgent?: PropertyListingAgent

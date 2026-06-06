@@ -15,6 +15,7 @@ import {
   NearbySchools,
   ValueTrend,
   ListingInfo,
+  OwnerInfo,
 } from './index'
 
 interface PropertyDetailsClientProps {
@@ -123,6 +124,8 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
                 waterfrontFeatures={property.waterfrontFeatures}
               />
             )}
+
+            <OwnerInfo owner={property.owner} />
 
             <ListingInfo property={property} />
           </div>
