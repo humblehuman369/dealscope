@@ -77,10 +77,10 @@ export function getMapFilterPanelOpenChrome(lightMap: boolean): MapFilterPanelOp
       controlIdleText: 'rgba(15, 23, 42, 0.94)',
       controlIdleBorder: '1px solid rgba(15, 164, 233, 0.38)',
       motivatedSeller: {
-        boxBg: 'rgba(254, 243, 199, 0.85)',
-        boxBorder: '1px solid rgba(245, 158, 11, 0.55)',
-        heading: '#b45309',
-        body: '#92400e',
+        boxBg: 'rgba(254, 226, 226, 0.92)',
+        boxBorder: '1px solid rgba(239, 68, 68, 0.55)',
+        heading: '#dc2626',
+        body: '#991b1b',
       },
       ownerLeads: {
         boxBg: 'rgba(224, 242, 254, 0.95)',
@@ -118,10 +118,10 @@ export function getMapFilterPanelOpenChrome(lightMap: boolean): MapFilterPanelOp
     controlIdleText: 'rgba(255, 255, 255, 0.96)',
     controlIdleBorder: '1px solid rgba(56, 189, 248, 0.38)',
     motivatedSeller: {
-      boxBg: 'rgba(245, 158, 11, 0.2)',
-      boxBorder: '1px solid rgba(251, 191, 36, 0.58)',
-      heading: '#fcd34d',
-      body: 'rgba(254, 243, 199, 0.94)',
+      boxBg: 'rgba(239, 68, 68, 0.22)',
+      boxBorder: '1px solid rgba(248, 113, 113, 0.62)',
+      heading: '#f87171',
+      body: 'rgba(254, 226, 226, 0.94)',
     },
     ownerLeads: {
       boxBg: 'rgba(56, 189, 248, 0.2)',
