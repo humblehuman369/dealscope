@@ -1004,7 +1004,7 @@ export function MapSearchView() {
     autoCloseTimerRef.current = setTimeout(() => {
       setFiltersOpen(false)
       autoCloseArmedRef.current = false
-    }, 5000)
+    }, 10_000)
   }, [clearAutoClose])
 
   useEffect(() => {
