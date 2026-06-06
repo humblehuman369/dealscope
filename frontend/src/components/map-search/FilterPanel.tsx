@@ -1,7 +1,16 @@
 'use client'
 
 import { useCallback, useMemo } from 'react'
-import { AlertTriangle, Bookmark, Gavel, Hammer, Loader2, SlidersHorizontal, Target, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  Bookmark,
+  ChevronDown,
+  Gavel,
+  Hammer,
+  Loader2,
+  SlidersHorizontal,
+  Target,
+} from 'lucide-react'
 import type { MapSearchFilters } from '@/hooks/useMapSearch'
 import type { SortOption } from '@/lib/dealSignal'
 import { SectionHelpTooltip } from '@/components/map-search/SectionHelpTooltip'
@@ -372,10 +381,11 @@ export function FilterPanel({
         <button
           type="button"
           onClick={onToggle}
+          aria-expanded
           className="p-1 rounded hover:opacity-70 transition-opacity flex-shrink-0"
-          aria-label="Close filters"
+          aria-label="Collapse filters"
         >
-          <X size={16} style={{ color: chrome?.secondaryText ?? 'var(--text-secondary)' }} />
+          <ChevronDown size={16} style={{ color: chrome?.secondaryText ?? 'var(--text-secondary)' }} />
         </button>
       </div>
 
