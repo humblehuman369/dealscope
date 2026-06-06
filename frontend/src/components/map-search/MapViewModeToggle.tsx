@@ -5,13 +5,11 @@ import { List, MapIcon } from 'lucide-react'
 interface MapViewModeToggleProps {
   viewMode: 'map' | 'list'
   onViewModeChange: (mode: 'map' | 'list') => void
-  listingCount: number
 }
 
 export function MapViewModeToggle({
   viewMode,
   onViewModeChange,
-  listingCount,
 }: MapViewModeToggleProps) {
   return (
     <div
@@ -40,23 +38,15 @@ export function MapViewModeToggle({
         type="button"
         onClick={() => onViewModeChange('list')}
         aria-pressed={viewMode === 'list'}
-        aria-label={`List and download view (${listingCount} properties)`}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold transition-colors"
+        aria-label="List and download view"
+        className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold transition-colors"
         style={{
           backgroundColor: viewMode === 'list' ? 'var(--accent-sky)' : 'transparent',
           color: viewMode === 'list' ? '#fff' : 'var(--text-secondary)',
         }}
       >
-        <List size={16} aria-hidden className="shrink-0" />
-        <span className="flex flex-col items-start leading-tight">
-          <span>List ({listingCount})</span>
-          <span
-            className="text-[10px] font-medium"
-            style={{ opacity: viewMode === 'list' ? 0.9 : 0.75 }}
-          >
-            Download
-          </span>
-        </span>
+        <List size={16} aria-hidden />
+        List Download
       </button>
     </div>
   )

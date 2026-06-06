@@ -1725,7 +1725,6 @@ export function MapSearchView() {
         <MapViewModeToggle
           viewMode={viewMode}
           onViewModeChange={setViewMode}
-          listingCount={listings.length}
         />
       </div>
     </div>

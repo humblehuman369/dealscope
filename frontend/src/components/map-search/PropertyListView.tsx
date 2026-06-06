@@ -317,7 +317,6 @@ export function PropertyListView({
           <MapViewModeToggle
             viewMode={viewMode}
             onViewModeChange={onViewModeChange}
-            listingCount={0}
           />
         </div>
         <div className="flex items-center justify-center flex-1 p-8">
@@ -390,7 +389,6 @@ export function PropertyListView({
           <MapViewModeToggle
             viewMode={viewMode}
             onViewModeChange={onViewModeChange}
-            listingCount={listings.length}
           />
         </div>
 
