@@ -17,6 +17,9 @@ export default function PropertyPage() {
   const zpid = params.zpid
   const address = searchParams.get('address') || ''
   const strategy = searchParams.get('strategy') ?? undefined
+  const cityParam = searchParams.get('city')?.trim() || undefined
+  const stateParam = searchParams.get('state')?.trim() || undefined
+  const zipCodeParam = searchParams.get('zip_code')?.trim() || undefined
 
   const { fetchProperty } = usePropertyData()
 
@@ -35,7 +38,12 @@ export default function PropertyPage() {
 
     async function fetchPropertyData() {
       try {
-        const data = await fetchProperty(address, zpid ? { zpid } : undefined)
+        const data = await fetchProperty(address, {
+          ...(cityParam ? { city: cityParam } : {}),
+          ...(stateParam ? { state: stateParam } : {}),
+          ...(zipCodeParam ? { zip_code: zipCodeParam } : {}),
+          ...(zpid ? { zpid } : {}),
+        })
         if (cancelled) return
         const responseZpid = (data as any)?.zpid ? String((data as any).zpid) : ''
         if (responseZpid && responseZpid !== zpid) {
@@ -57,7 +65,7 @@ export default function PropertyPage() {
     return () => {
       cancelled = true
     }
-  }, [zpid, address, fetchProperty])
+  }, [zpid, address, cityParam, stateParam, zipCodeParam, fetchProperty])
 
   if (loading) return <PropertyDetailsSkeleton />
 

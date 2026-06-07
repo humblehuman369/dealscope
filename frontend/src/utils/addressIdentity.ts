@@ -1,3 +1,5 @@
+import { parseAddressString } from '@/utils/formatters'
+
 export function canonicalizeAddressForIdentity(address: string): string {
   return address
     .trim()
@@ -143,4 +145,59 @@ export function isInitialOverrideEligible(
 ): boolean {
   if (!overrides) return false
   return overrides.origin === 'dealmaker_edit' || overrides.origin === 'saved_property'
+}
+
+export type PropertyProfileLinkInput = {
+  address: string
+  city?: string
+  state?: string
+  zip?: string
+  zip_code?: string
+  zpid?: string | number | null
+}
+
+/** Build /property profile URL with structured city/state/zip for backend validation. */
+export function buildPropertyProfileHref(input: PropertyProfileLinkInput): string {
+  const parsed = parseAddressString(input.address)
+  const street = (parsed.street || input.address).trim()
+  const city = (input.city ?? parsed.city).trim()
+  let state = (input.state ?? parsed.state).trim()
+  if (/^(?:US|USA)$/i.test(state)) state = ''
+  const zip = (input.zip ?? input.zip_code ?? parsed.zip).trim()
+
+  const params = new URLSearchParams()
+  params.set('address', street)
+  if (city) params.set('city', city)
+  if (/^[A-Za-z]{2}$/.test(state)) params.set('state', state.toUpperCase())
+  if (/^\d{5}(?:-\d{4})?$/.test(zip)) params.set('zip_code', zip)
+
+  const query = params.toString()
+  const zpid = input.zpid != null ? String(input.zpid).trim() : ''
+  if (zpid && zpid !== 'unknown') {
+    return `/property/${encodeURIComponent(zpid)}?${query}`
+  }
+  return `/property?${query}`
+}
+
+export type FetchPropertyAddressOptions = {
+  city?: string
+  state?: string
+  zip_code?: string
+  zpid?: string
+}
+
+/** Read structured address fields from a URLSearchParams (or compatible) object. */
+export function readFetchPropertyOptionsFromSearchParams(
+  params: Pick<URLSearchParams, 'get'>,
+): FetchPropertyAddressOptions {
+  const city = params.get('city')?.trim() || undefined
+  const state = params.get('state')?.trim() || undefined
+  const zip_code = params.get('zip_code')?.trim() || undefined
+  const zpid = params.get('zpid')?.trim() || undefined
+  return {
+    ...(city ? { city } : {}),
+    ...(state && state.length === 2 ? { state } : {}),
+    ...(zip_code ? { zip_code } : {}),
+    ...(zpid ? { zpid } : {}),
+  }
 }

@@ -17,12 +17,19 @@ import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { usePropertyData } from '@/hooks/usePropertyData'
+import {
+  buildPropertyProfileHref,
+} from '@/utils/addressIdentity'
 
 function PropertyRedirector() {
   const router = useRouter()
   const searchParams = useAppSearchParams()
   const addressParam = searchParams.get('address') || ''
   const strategyParam = searchParams.get('strategy') || ''
+  const cityParam = searchParams.get('city')?.trim() || undefined
+  const stateParam = searchParams.get('state')?.trim() || undefined
+  const zipCodeParam = searchParams.get('zip_code')?.trim() || undefined
+  const zpidParam = searchParams.get('zpid')?.trim() || undefined
 
   const [error, setError] = useState<string | null>(null)
 
@@ -37,13 +44,26 @@ function PropertyRedirector() {
 
       try {
         // Use shared hook to ensure cache + validation
-        const data = await fetchProperty(addressParam)
+        const fetchOpts = {
+          ...(cityParam ? { city: cityParam } : {}),
+          ...(stateParam ? { state: stateParam } : {}),
+          ...(zipCodeParam ? { zip_code: zipCodeParam } : {}),
+          ...(zpidParam ? { zpid: zpidParam } : {}),
+        }
+        const data = await fetchProperty(addressParam, fetchOpts)
         const zpid = (data as any).zpid || (data as any).property_id || 'unknown'
+        const addr = (data as any).address
 
-        // Build redirect URL
-        let redirectUrl = `/property/${zpid}?address=${encodeURIComponent(addressParam)}`
+        // Build redirect URL with structured fields so Details links stay valid
+        let redirectUrl = buildPropertyProfileHref({
+          address: addr?.street || addressParam,
+          city: addr?.city || cityParam,
+          state: addr?.state || stateParam,
+          zip_code: addr?.zip_code || zipCodeParam,
+          zpid,
+        })
         if (strategyParam) {
-          redirectUrl += `&strategy=${strategyParam}`
+          redirectUrl += `${redirectUrl.includes('?') ? '&' : '?'}strategy=${encodeURIComponent(strategyParam)}`
         }
 
         // Redirect to new property-details page
@@ -55,7 +75,7 @@ function PropertyRedirector() {
     }
 
     fetchAndRedirect()
-  }, [addressParam, strategyParam, router, fetchProperty])
+  }, [addressParam, strategyParam, cityParam, stateParam, zipCodeParam, zpidParam, router, fetchProperty])
 
   if (error) {
     return (

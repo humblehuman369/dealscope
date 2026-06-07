@@ -53,6 +53,7 @@ import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { buildRehabUrl } from '@/lib/rehabNavigation'
 import { readDealMakerOverrides } from '@/utils/addressIdentity'
+import { parseAddressString } from '@/utils/formatters'
 import { useTheme } from '@/context/ThemeContext'
 
 // ===================
@@ -207,30 +208,12 @@ function parseDisplayAddress(fullAddress: string): {
   state: string
   zipCode: string
 } {
-  const parts = fullAddress
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-  const streetAddress = parts[0] || ''
-  const city = parts.length > 1 ? parts[1] : ''
-  const lastPart = parts.length > 2 ? parts[parts.length - 1] : ''
-  const stateZipMatch = lastPart.match(/^([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/i)
-
-  if (stateZipMatch) {
-    return {
-      streetAddress,
-      city,
-      state: stateZipMatch[1],
-      zipCode: stateZipMatch[2],
-    }
-  }
-
-  const stateMatch = lastPart.match(/^([A-Z]{2})/i)
+  const parsed = parseAddressString(fullAddress)
   return {
-    streetAddress,
-    city,
-    state: stateMatch ? stateMatch[1] : '',
-    zipCode: '',
+    streetAddress: parsed.street,
+    city: parsed.city,
+    state: parsed.state,
+    zipCode: parsed.zip,
   }
 }
 
@@ -360,6 +343,9 @@ export function AppHeader({
   // Decode explicitly to handle double-encoding issues
   const rawAddressFromUrl = searchParams?.get('address') || ''
   const addressFromUrl = fullyDecode(rawAddressFromUrl)
+  const cityFromUrl = fullyDecode(searchParams?.get('city') || '')
+  const stateFromUrl = fullyDecode(searchParams?.get('state') || '')
+  const zipFromUrl = fullyDecode(searchParams?.get('zip_code') || '')
 
   // Also decode propertyAddress prop in case it's passed encoded
   const decodedPropertyAddress = fullyDecode(propertyAddress || '')
@@ -1136,6 +1122,9 @@ export function AppHeader({
         (() => {
           const addrParts = parseDisplayAddress(displayAddress)
           const p = resolvedProperty
+          const barCity = p?.city || cityFromUrl || addrParts.city
+          const barState = p?.state || stateFromUrl || addrParts.state
+          const barZip = p?.zip || zipFromUrl || addrParts.zipCode
           return (
             <div
               ref={addressBarRef}
@@ -1144,9 +1133,9 @@ export function AppHeader({
             >
               <PropertyAddressBar
                 address={p?.address ?? addrParts.streetAddress}
-                city={p?.city ?? addrParts.city}
-                state={p?.state ?? addrParts.state}
-                zip={p?.zip ?? addrParts.zipCode}
+                city={barCity}
+                state={barState}
+                zip={barZip}
                 beds={p?.beds ?? 0}
                 baths={p?.baths ?? 0}
                 sqft={p?.sqft ?? 0}

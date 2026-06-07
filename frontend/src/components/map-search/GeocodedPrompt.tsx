@@ -16,7 +16,10 @@ export interface OffMarketPreview {
 }
 
 interface GeocodedPromptProps {
+  /** Street address used for Discovery / property navigation */
   address: string | null
+  /** Full formatted label shown in the popup (defaults to address) */
+  displayAddress?: string | null
   addressComponents?: { city?: string; state?: string; zip_code?: string }
   isGeocoding: boolean
   onClose: () => void
@@ -34,6 +37,7 @@ function formatValue(n: number): string {
 
 export function GeocodedPrompt({
   address,
+  displayAddress,
   addressComponents,
   isGeocoding,
   onClose,
@@ -43,6 +47,7 @@ export function GeocodedPrompt({
   const router = useRouter()
   const ctaLabel =
     useMapSelectionDestination() === 'deal-maker' ? 'Build Deal' : 'Analyze This Property'
+  const addressLabel = displayAddress ?? address
 
   if (!isGeocoding && !address) return null
 
@@ -101,7 +106,7 @@ export function GeocodedPrompt({
                 className="text-sm font-medium leading-snug"
                 style={{ color: 'var(--text-heading)' }}
               >
-                {address}
+                {addressLabel}
               </p>
             </>
           )}

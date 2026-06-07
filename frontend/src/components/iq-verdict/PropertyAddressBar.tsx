@@ -9,6 +9,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { buildPropertyProfileHref } from '@/utils/addressIdentity'
 
 const barTokens = {
   /** Same harmonized strip as AppHeader */
@@ -161,14 +162,17 @@ export function PropertyAddressBar({
   const fullAddress = [cleanAddress, cleanCity, [cleanState, cleanZip].filter(Boolean).join(' ')]
     .filter(Boolean)
     .join(', ')
-  const encodedAddress = encodeURIComponent(fullAddress)
+
+  const profileHref = buildPropertyProfileHref({
+    address: cleanAddress,
+    city: cleanCity,
+    state: cleanState,
+    zip: cleanZip,
+    zpid,
+  })
 
   const isListed = listingStatus === 'FOR_SALE' || listingStatus === 'PENDING'
   const statusLabel = isListed ? 'Listed' : 'Off-Market'
-
-  const profileHref = zpid
-    ? `/property/${zpid}?address=${encodedAddress}`
-    : `/property?address=${encodedAddress}`
 
   return (
     <div

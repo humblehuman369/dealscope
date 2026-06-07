@@ -213,11 +213,17 @@ export const parseAddressString = (addressString: string): ParsedAddress => {
   // Decode URI component in case it's URL encoded
   const decoded = decodeURIComponent(addressString).trim()
 
-  // Split by comma to get parts
+  // Split by comma to get parts; drop trailing country suffixes (Google Geocoding).
   const parts = decoded
     .split(',')
     .map((p) => p.trim())
     .filter(Boolean)
+  while (
+    parts.length > 0 &&
+    /^(?:USA|US|United States)$/i.test(parts[parts.length - 1])
+  ) {
+    parts.pop()
+  }
 
   if (parts.length === 0) {
     return { street: decoded, city: '', state: '', zip: '' }

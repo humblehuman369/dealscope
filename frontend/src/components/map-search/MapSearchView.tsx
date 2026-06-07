@@ -231,6 +231,7 @@ function MapMarkerLegend({
 
 interface GeocodeResult {
   formatted_address: string
+  street?: string
   city?: string
   state?: string
   zip_code?: string
@@ -259,9 +260,13 @@ async function reverseGeocode(
       result.address_components || []
     const long = (type: string) => components.find((c) => c.types.includes(type))?.long_name
     const short = (type: string) => components.find((c) => c.types.includes(type))?.short_name
+    const streetNumber = long('street_number')
+    const route = long('route')
+    const street = [streetNumber, route].filter(Boolean).join(' ') || undefined
 
     return {
       formatted_address: result.formatted_address,
+      street,
       city: long('locality') || long('sublocality'),
       state: short('administrative_area_level_1'),
       zip_code: long('postal_code'),
@@ -1139,7 +1144,7 @@ export function MapSearchView() {
     let cancelled = false
     setIsLoadingPreview(true)
 
-    fetchProperty(geocodeResult.formatted_address, {
+    fetchProperty(geocodeResult.street ?? geocodeResult.formatted_address, {
       city: geocodeResult.city,
       state: geocodeResult.state,
       zip_code: geocodeResult.zip_code,
@@ -1478,7 +1483,10 @@ export function MapSearchView() {
                 onTouchStart={(e) => e.stopPropagation()}
               >
                 <GeocodedPrompt
-                  address={geocodeResult?.formatted_address ?? null}
+                  address={
+                    geocodeResult?.street ?? geocodeResult?.formatted_address ?? null
+                  }
+                  displayAddress={geocodeResult?.formatted_address ?? null}
                   addressComponents={
                     geocodeResult
                       ? {
