@@ -1,6 +1,5 @@
 import type { MapListing } from '@/lib/api'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
-import { markMapViewportForRestore } from './mapSearchSnapshot'
 
 type MapDiscoveryRouter = { push: (href: string) => void }
 
@@ -53,24 +52,29 @@ export function mapSelectionCtaLabel(destination: MapSelectionDestination): stri
 
 /**
  * Open the selected property in a new browser tab, leaving map search in the
- * original tab. Do not pass `noopener` in window.open feature flags — browsers
- * return `null` when noopener is set, which falsely triggered same-tab fallback.
+ * original tab.
+ *
+ * Uses a synthetic `<a rel="noopener noreferrer">` click instead of
+ * `window.open(..., 'noopener,noreferrer')`. Per the HTML spec, `noopener` and
+ * `noreferrer` (which implies noopener) make `window.open()` return `null` even
+ * when the tab opens successfully — that falsely triggered same-tab fallback.
+ * A noreferrer anchor suppresses the Referer header without relying on that
+ * return value.
  */
 function openInNewWindow(router: MapDiscoveryRouter, path: string): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
     router.push(path)
     return
   }
 
-  const newTab = window.open(path, '_blank')
-  if (newTab) {
-    newTab.opener = null
-    return
-  }
-
-  // Popup blocked or unsupported (some mobile WebViews) — same-tab fallback only then.
-  markMapViewportForRestore()
-  router.push(path)
+  const link = document.createElement('a')
+  link.href = path
+  link.target = '_blank'
+  link.rel = 'noopener noreferrer'
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
 }
 
 /** Navigate to the selected property's destination (Discovery or Deal Maker) in a new window. */
