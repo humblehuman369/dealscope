@@ -2408,6 +2408,7 @@ def create_api_clients(
     realtor_rapidapi_host: str = "realtor-search.p.rapidapi.com",
     mashvisor_api_key: str = "",
     mashvisor_rapidapi_host: str = "mashvisor-api.p.rapidapi.com",
+    mashvisor_enabled: bool = True,
 ) -> tuple[
     RentCastClient, AXESSOClient, DataNormalizer, RedfinClient | None, RealtorClient | None, MashvisorClient | None
 ]:
@@ -2419,6 +2420,10 @@ def create_api_clients(
     realtor = (
         RealtorClient(realtor_api_key, realtor_rapidapi_host) if realtor_api_key and realtor_rapidapi_host else None
     )
-    mashvisor = MashvisorClient(mashvisor_api_key, mashvisor_rapidapi_host) if mashvisor_api_key else None
+    mashvisor = (
+        MashvisorClient(mashvisor_api_key, mashvisor_rapidapi_host)
+        if mashvisor_api_key and mashvisor_enabled
+        else None
+    )
 
     return rentcast, axesso, normalizer, redfin, realtor, mashvisor

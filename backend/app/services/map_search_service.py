@@ -339,7 +339,7 @@ class MapSearchService:
                 fallback_api_key=getattr(settings, "AXESSO_API_KEY_SECONDARY", None),
             )
 
-        if settings.MASHVISOR_RAPIDAPI_KEY:
+        if settings.MASHVISOR_RAPIDAPI_KEY and settings.MASHVISOR_STR_ENABLED:
             self.mashvisor = MashvisorClient(
                 api_key=settings.MASHVISOR_RAPIDAPI_KEY,
                 rapidapi_host=settings.MASHVISOR_RAPIDAPI_HOST,

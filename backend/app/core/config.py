@@ -85,7 +85,7 @@ class Settings(BaseSettings):
     # Mashvisor API via RapidAPI (STR analytics, regulations, market data)
     MASHVISOR_RAPIDAPI_KEY: str = ""
     MASHVISOR_RAPIDAPI_HOST: str = "mashvisor-api.p.rapidapi.com"
-    MASHVISOR_STR_ENABLED: bool = True
+    MASHVISOR_STR_ENABLED: bool = False
 
     ANTHROPIC_API_KEY: str = ""
 

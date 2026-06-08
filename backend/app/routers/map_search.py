@@ -33,7 +33,7 @@ NEIGHBORHOOD_OVERVIEW_CACHE_TTL = 86400  # 24 hours
 
 
 def _get_mashvisor() -> MashvisorClient | None:
-    if not settings.MASHVISOR_RAPIDAPI_KEY:
+    if not settings.MASHVISOR_RAPIDAPI_KEY or not settings.MASHVISOR_STR_ENABLED:
         return None
     return MashvisorClient(
         api_key=settings.MASHVISOR_RAPIDAPI_KEY,

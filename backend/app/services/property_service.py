@@ -93,7 +93,13 @@ class PropertyService:
             realtor_rapidapi_host=settings.REALTOR_RAPIDAPI_HOST,
             mashvisor_api_key=settings.MASHVISOR_RAPIDAPI_KEY,
             mashvisor_rapidapi_host=settings.MASHVISOR_RAPIDAPI_HOST,
+            mashvisor_enabled=settings.MASHVISOR_STR_ENABLED,
         )
+
+        if settings.MASHVISOR_RAPIDAPI_KEY and not settings.MASHVISOR_STR_ENABLED:
+            logger.info(
+                "Mashvisor fetching disabled (MASHVISOR_STR_ENABLED=false); client code retained",
+            )
 
         # Use the comprehensive ZillowClient for Zillow data
         self.zillow = create_zillow_client(
