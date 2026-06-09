@@ -43,7 +43,7 @@ The platform ships as a single React/Next.js application deployed to web (`dealg
 | Multi-source property value | IQ Estimate (proprietary blend), Zillow Zestimate, RentCast AVM, Redfin, Realtor.com | Cross-check listing price against several independent signals |
 | Multi-source rent estimates | IQ Estimate, Zillow RentZestimate, RentCast, Redfin, Mashvisor (per-bedroom traditional rent) | Income-side validation with selectable sources |
 | IQ Estimate Selector | User picks value/rent source; math recalculates instantly client-side | Trust-first transparency — "switch source, watch math change" |
-| Three price anchors | Breakeven, Target Buy, Wholesale (Income Value ladder) | Converts abstract valuation into actionable offer bands |
+| Three price signals | Income Value, Target Buy, and Deal Gap | Converts abstract valuation into actionable offer bands and negotiation distance |
 | Deal Gap % | Verified/target value vs. asking or estimated market price | Single headline metric for deal quality at a glance |
 | Deal Score & Grade | Backend-computed score/grade | Comparable ranking signal across properties |
 | Deal Gap tiers + motivating labels | Six tiers (e.g., Cash-Flow Deal → Structured Deal → Reset Deal) with motivating headline above raw gap | Reframes negative gaps as structurable opportunities without hiding math |
