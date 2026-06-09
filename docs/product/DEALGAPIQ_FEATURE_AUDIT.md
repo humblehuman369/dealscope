@@ -12,6 +12,16 @@ DealGapIQ is a U.S. residential real estate investment platform that converts an
 
 The platform ships as a single React/Next.js application deployed to web (`dealgapiq.com`), iOS, and Android through Capacitor. Financial calculations are backend-owned; the frontend renders validated API responses and preserves trust by showing data provenance and displaying **Unavailable** rather than fabricating missing values.
 
+### Corrections to legacy materials (read before reusing old copy)
+
+These items have appeared incorrectly in earlier decks, scripts, or store listings and are corrected throughout this document:
+
+- **Free tier is 3 analyses/month** (and 3 saved properties), not 5.
+- **Pro pricing is $39.99/mo monthly or $349.99/yr (~$29.17/mo effective)** with a 7-day trial — not "$29 / $39."
+- **Mobile is Capacitor**, not Expo/React Native.
+- **Category is residential real estate investment analysis**, not "deal intelligence / sales enablement."
+- **The three user-facing metrics are Income Value, Target Buy, and Deal Gap.** A separate internal value, **Income Gap**, powers the Verdict engine and is not shown to users — keep it out of user-facing copy.
+
 ---
 
 ## 1. Hierarchical Feature Inventory
@@ -23,9 +33,8 @@ The platform ships as a single React/Next.js application deployed to web (`dealg
 | Sub-feature | Description | User benefit |
 |---|---|---|
 | Address search | Google Places autocomplete with U.S. address validation (`/search`, `SearchPropertyModal`) | Fast, validated entry from any screen |
-| Zillow URL / listing paste | Accepts listing URLs and street addresses | Meets investors where they already browse listings |
 | Map Search entry | "Search on map" with geolocation or geocoded location query | Opens discovery in a geographic context instead of typing addresses |
-| Camera / Point-and-Scan | Mobile camera capture for address/sign reading (`HomeScannerIsland`, Capacitor) | Field workflow: scan a yard sign or listing without manual entry |
+| Camera / Point-and-Scan | Mobile camera capture to scan a property for instant lookup (`SearchPropertyModal` → scan flow, Capacitor); desktop shows an info dialog directing to address entry | Field workflow: scan a yard sign or listing without manual entry |
 | Property detail shell | `/property/[zpid]` with photos, specs, motivated-seller signals | Lightweight property context before deep analysis |
 | Analyzing interstitial | `/analyzing` loading state while backend fetches multi-source data | Sets expectation for ~15–60 second analysis window |
 
@@ -43,12 +52,15 @@ The platform ships as a single React/Next.js application deployed to web (`dealg
 | Multi-source property value | IQ Estimate (proprietary blend), Zillow Zestimate, RentCast AVM, Redfin, Realtor.com | Cross-check listing price against several independent signals |
 | Multi-source rent estimates | IQ Estimate, Zillow RentZestimate, RentCast, Redfin, Mashvisor (per-bedroom traditional rent) | Income-side validation with selectable sources |
 | IQ Estimate Selector | User picks value/rent source; math recalculates instantly client-side | Trust-first transparency — "switch source, watch math change" |
-| Three price signals | Income Value, Target Buy, and Deal Gap | Converts abstract valuation into actionable offer bands and negotiation distance |
-| Deal Gap % | Verified/target value vs. asking or estimated market price | Single headline metric for deal quality at a glance |
+| **Income Value** | Maximum price at which the property still produces positive cash flow under a given strategy (the income ceiling) | Grounds the deal in what income supports, not asking-price hype |
+| **Target Buy** | Price at which the property meets return thresholds for the active strategy | Converts valuation into an actionable offer number |
+| **Deal Gap** | Percentage distance between asking/market price and **Target Buy** (List Price − Target Buy) | Single headline metric for negotiation distance and deal quality |
 | Deal Score & Grade | Backend-computed score/grade | Comparable ranking signal across properties |
 | Deal Gap tiers + motivating labels | Six tiers (e.g., Cash-Flow Deal → Structured Deal → Reset Deal) with motivating headline above raw gap | Reframes negative gaps as structurable opportunities without hiding math |
 | Sweet Spot Zone / Gap Guidance | Visual guidance for where asking price sits vs. targets | Reduces misinterpretation of negative gaps |
 | Score Methodology sheet | Explains how scores are computed | Builds credibility; supports lender/partner conversations |
+
+*Internal note:* a separate **Income Gap** value (List Price − Income Value) drives parts of the Verdict engine. It is intentionally not surfaced as a fourth user metric — the clean three-metric story (Income Value, Target Buy, Deal Gap) is a strategic asset.
 
 #### 1.2.2 Strategy intelligence (Discovery-level)
 
@@ -227,9 +239,12 @@ The platform ships as a single React/Next.js application deployed to web (`dealg
 
 | Sub-feature | Description | User benefit |
 |---|---|---|
-| Cash Buyer Directory | Verified investor contacts by market | Wholesale exit strategy support |
-| Hard Money Lender Directory | Fix & flip, BRRRR, bridge, DSCR products | Financing partner discovery |
+| Cash Buyer Directory | ~2,800+ verified investor contacts by market (live count from `/api/buyers/stats`; marketing fallback when unavailable) | Wholesale exit strategy support |
+| Hard Money Lender Directory | 484 verified lenders — fix & flip, BRRRR, bridge, DSCR products (`lenders.json`) | Financing partner discovery |
 | Save directory contacts | Persist to dashboard saved contacts | Reusable rolodex inside platform |
+| Non-Pro teaser | Total buyer count shown to free users to drive upgrade (`useBuyerDirectoryTeaserTotal`) | Conversion hook |
+
+*Gating note:* directories require **paid Pro** (`isPaidPro`) — excluded from the 7-day trial. Trial users retain other Pro trial features but not directory contacts.
 
 ---
 
@@ -259,7 +274,7 @@ The platform ships as a single React/Next.js application deployed to web (`dealg
 | Profile — Preferences | Notifications and app preferences | User control |
 | Billing page | Plan management, upgrade paths | Self-serve subscription |
 | Stripe checkout (web) | Pro monthly ($39.99) / annual ($349.99, ~$29.17/mo effective) | Web monetization |
-| RevenueCat IAP (iOS/Android) | Native in-app purchases via Capacitor | Mobile monetization |
+| RevenueCat IAP (iOS/Android) | Native in-app purchases via Capacitor; entitlement `DealGapIQ Pro` | Mobile monetization |
 | 7-day Pro trial | Documented on pricing page | Low-risk upgrade path |
 | Usage limits (Starter) | 3 analyses/month, 3 saved properties, 50 API calls/month | Free tier for acquisition |
 | ProGate component | Inline/section/modal gating for Pro features | Clear upgrade prompts at point of need |
@@ -328,6 +343,8 @@ This tab bar appears only on analysis workflow routes, keeping marketing/dashboa
 | Property search | Yes | Yes |
 | Analyses per month | 3 | Unlimited |
 | Discovery + deal score + Deal Gap | Yes | Yes |
+| Income Value · Target Buy · Deal Gap | Yes | Yes |
+| Four Paths + pitch scripts on Discovery | Yes | Yes |
 | Multi-source IQ estimates + source selector | Yes | Yes |
 | Six strategy snapshots | Yes | Yes |
 | Seller Motivation indicator | Yes | Yes |
@@ -345,7 +362,9 @@ This tab bar appears only on analysis workflow routes, keeping marketing/dashboa
 | Buyer/Lender directories | No | Paid Pro only |
 | Search history | Yes | Yes |
 
-*Sources: PricingContent.tsx comparison table, TIER_LIMITS in backend/app/models/subscription.py*
+*Sources: `PricingContent.tsx` comparison table; `TIER_LIMITS` in `backend/app/models/subscription.py`; `FREE_ANALYSES_PER_MONTH` in `frontend/src/constants/subscriptions.ts`.*
+
+*Enforcement note:* this matrix reflects published pricing policy. UI gating uses a mix of `ProGate`, `AuthGate` (sign-in only), and backend usage limits — not every Pro-marketed feature is wrapped in `ProGate`. Verify before legal or commercial commitments.
 
 ---
 
@@ -422,7 +441,7 @@ Many calculators end at the report. DealGapIQ includes:
 - Per-deal tasks, documents, contacts, activity  
 - Rehab budget seeding + receipt parsing + variance tracking  
 - Flip stage tracking post-acquisition  
-- Investor/lender directories for exit/finance partners  
+- Investor directory (~2,800+ cash buyers) and lender directory (484 hard money lenders) for exit/finance partners  
 
 This moves the product toward **deal execution infrastructure**, not just analysis.
 
@@ -478,6 +497,8 @@ These are **observable out-of-scope statements** from product docs:
 3. **Pipeline + rehab tracking** differentiates against pure calculators but is secondary to the synthesis layer in positioning.  
 4. **Trust architecture** (source selector, Unavailable states, methodology page) is a feature, not polish — it supports conversion with skeptical investors.  
 5. **Mobile camera + Capacitor** align with field-acquisition personas (wholesalers, driving-for-dollars) but the core moat is structure + scripts, not scan novelty alone.
+6. **Fix stale external facts before reuse.** Correct any "5 free analyses," "$29/$39," or "Expo" references in decks, scripts, and store listings to 3/month, $39.99 monthly / $349.99 annual (~$29.17/mo), and Capacitor.
+7. **Keep Income Gap internal.** Present only Income Value, Target Buy, and Deal Gap to users; do not conflate Deal Gap with Income Value or Income Gap in user-facing copy.
 
 ---
 
