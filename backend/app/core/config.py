@@ -112,6 +112,12 @@ class Settings(BaseSettings):
     # address within the day do not consume quota. Set to 0 to require login.
     ANON_ANALYSES_PER_DAY: int = 3
 
+    # Run the APScheduler-based job scheduler inside the web process (with a
+    # Redis leader lock so exactly one scheduler runs across workers/replicas).
+    # Set to false when a dedicated Arq worker service is deployed, so jobs
+    # don't double-fire. Job health is surfaced at GET /health/jobs.
+    EMBEDDED_SCHEDULER_ENABLED: bool = True
+
     # ===========================================
     # JWT Authentication
     # ===========================================

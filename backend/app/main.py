@@ -158,11 +158,19 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         logger.warning(f"WeasyPrint: NOT AVAILABLE — PDF exports will fail. Error: {exc}")
 
-    # Background jobs are now handled by the Arq worker process (see
-    # app/tasks/arq_worker.py). The web process no longer runs APScheduler.
-    # Deploy a separate worker container/process with:
-    #     arq app.tasks.arq_worker.WorkerSettings
-    logger.info("Background jobs delegated to Arq worker (web process does not schedule)")
+    # Scheduled jobs (lifecycle emails, billing sweeper, cleanup): run the
+    # embedded scheduler with Redis leader election unless a dedicated Arq
+    # worker is deployed (EMBEDDED_SCHEDULER_ENABLED=false). Job health is
+    # surfaced at GET /health/jobs (dead-man switch for uptime monitoring).
+    if settings.EMBEDDED_SCHEDULER_ENABLED and not settings.is_test:
+        try:
+            from app.tasks.scheduler import start_embedded_scheduler
+
+            await start_embedded_scheduler()
+        except Exception as e:
+            logger.error(f"Failed to start embedded scheduler (jobs will NOT run): {e}")
+    else:
+        logger.info("Embedded scheduler disabled — background jobs delegated to Arq worker")
 
     # Flush stale property caches on deploy so updated extraction logic takes effect
     try:
@@ -192,9 +200,9 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("Shutting down DealGapIQ API...")
     try:
-        from app.tasks.scheduler import stop_scheduler
+        from app.tasks.scheduler import stop_embedded_scheduler
 
-        stop_scheduler()
+        await stop_embedded_scheduler()
     except Exception:
         pass
     if close_db:

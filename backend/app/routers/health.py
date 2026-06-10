@@ -53,6 +53,25 @@ async def health_check():
     }
 
 
+@router.get("/health/jobs", dependencies=[Depends(require_monitoring_token)])
+async def job_health_check():
+    """Dead-man switch for scheduled jobs (lifecycle emails, billing sweeper, cleanup).
+
+    Every job records a heartbeat on success; this endpoint compares each
+    job's last success against its expected cadence. Returns 503 when any
+    job is overdue, so an uptime monitor pointed here turns silent scheduler
+    death into an alert.
+    """
+    from fastapi.responses import JSONResponse
+
+    from app.tasks.heartbeat import evaluate_job_health
+
+    report = await evaluate_job_health()
+    if report["status"] == "degraded":
+        return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content=report)
+    return report
+
+
 @router.get("/health/ready")
 async def readiness_check(db: AsyncSession = Depends(get_db)):
     """

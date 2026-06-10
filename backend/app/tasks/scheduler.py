@@ -1,18 +1,29 @@
-"""
-DEPRECATED — APScheduler scheduler.
+"""Embedded APScheduler with Redis leader election.
 
-Background jobs have been migrated to Arq (see ``app/tasks/arq_worker.py``).
+This is the supported production path for scheduled jobs when no dedicated
+worker service is deployed (single Railway web service). A Redis ``SET NX``
+leader lock guarantees exactly one scheduler across all web workers/replicas.
 
-This module is kept only for local development fallback and will be removed
-in a future release. Production deployments should run::
+Leader lifecycle:
+- Every worker runs a lightweight supervisor loop that tries to acquire the
+  leader lock once a minute.
+- The winner starts APScheduler and renews the lock every 2 minutes
+  (TTL 5 minutes).
+- If the leader dies — including routine gunicorn ``max_requests`` worker
+  recycling — the lock expires and another worker's supervisor loop takes
+  over within ~6 minutes. No job is permanently orphaned.
 
-    arq app.tasks.arq_worker.WorkerSettings
+Every job is wrapped with a dead-man heartbeat (see ``app/tasks/heartbeat.py``)
+surfaced at ``GET /health/jobs``.
 
-as a separate worker process (or container) alongside the web service.
+A dedicated Arq worker (``arq app.tasks.arq_worker.WorkerSettings``) remains
+the preferred path at scale; set ``EMBEDDED_SCHEDULER_ENABLED=false`` when one
+is deployed so jobs don't double-fire.
 """
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 
@@ -20,12 +31,20 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
+from app.tasks.heartbeat import SCHEDULER_HEARTBEAT_ID, record_heartbeat, with_heartbeat
+
 logger = logging.getLogger(__name__)
 
 _scheduler: AsyncIOScheduler | None = None
+_supervisor_task: asyncio.Task | None = None
 
 LEADER_LOCK_KEY = "scheduler:leader"
 LEADER_LOCK_TTL = 300  # 5 minutes
+LEADER_RETRY_INTERVAL = 60  # non-leaders re-attempt acquisition every minute
+
+
+def _lock_value() -> str:
+    return str(os.getpid())
 
 
 async def _try_acquire_leader_lock() -> bool:
@@ -51,7 +70,7 @@ async def _try_acquire_leader_lock() -> bool:
 
         acquired = await cache.redis_client.set(
             LEADER_LOCK_KEY,
-            str(os.getpid()),
+            _lock_value(),
             nx=True,
             ex=LEADER_LOCK_TTL,
         )
@@ -71,7 +90,7 @@ async def _try_acquire_leader_lock() -> bool:
 
 
 async def _renew_leader_lock() -> None:
-    """Renew the leader lock TTL so it doesn't expire while we're alive."""
+    """Renew the leader lock TTL and record the scheduler's own heartbeat."""
     try:
         from app.services.cache_service import get_cache_service
 
@@ -79,32 +98,54 @@ async def _renew_leader_lock() -> None:
         if cache.use_redis and cache.redis_client:
             await cache.redis_client.set(
                 LEADER_LOCK_KEY,
-                str(os.getpid()),
+                _lock_value(),
                 ex=LEADER_LOCK_TTL,
             )
     except Exception:
         pass
+    try:
+        await record_heartbeat(SCHEDULER_HEARTBEAT_ID)
+    except Exception:
+        pass
 
 
-async def try_start_scheduler() -> None:
-    """DEPRECATED — use Arq worker instead.
+async def _release_leader_lock() -> None:
+    """Release the lock on graceful shutdown — but only if we still own it."""
+    try:
+        from app.services.cache_service import get_cache_service
 
-    Acquire leader lock and start scheduler if this worker is the leader.
-    """
-    import warnings
+        cache = get_cache_service()
+        if cache.use_redis and cache.redis_client:
+            owner = await cache.redis_client.get(LEADER_LOCK_KEY)
+            owner_str = owner.decode() if isinstance(owner, bytes) else owner
+            if owner_str == _lock_value():
+                await cache.redis_client.delete(LEADER_LOCK_KEY)
+    except Exception:
+        pass
 
-    warnings.warn(
-        "APScheduler scheduler is deprecated. Run 'arq app.tasks.arq_worker.WorkerSettings' instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    is_leader = await _try_acquire_leader_lock()
-    if not is_leader:
-        logger.info("Another worker holds the scheduler lock — skipping scheduler in this worker (pid=%s)", os.getpid())
+
+async def _supervisor_loop() -> None:
+    """Acquire-or-retry loop. Keeps re-election alive after leader death."""
+    global _scheduler
+    while True:
+        try:
+            if _scheduler is None:
+                if await _try_acquire_leader_lock():
+                    logger.info("Scheduler leader lock acquired (pid=%s)", os.getpid())
+                    _start_scheduler()
+                    await _renew_leader_lock()
+        except Exception as e:
+            logger.error("Scheduler supervisor iteration failed: %s", e)
+        await asyncio.sleep(LEADER_RETRY_INTERVAL)
+
+
+async def start_embedded_scheduler() -> None:
+    """Start the supervisor loop (call once from app lifespan startup)."""
+    global _supervisor_task
+    if _supervisor_task is not None and not _supervisor_task.done():
         return
-
-    logger.info("Scheduler leader lock acquired (pid=%s)", os.getpid())
-    _start_scheduler()
+    _supervisor_task = asyncio.create_task(_supervisor_loop(), name="scheduler-supervisor")
+    logger.info("Embedded scheduler supervisor started (pid=%s)", os.getpid())
 
 
 def _start_scheduler() -> None:
@@ -138,25 +179,25 @@ def _start_scheduler() -> None:
 
     # -- Cleanup jobs --
     _scheduler.add_job(
-        cleanup_expired_sessions,
+        with_heartbeat("cleanup_sessions", cleanup_expired_sessions),
         CronTrigger(minute=0),
         id="cleanup_sessions",
         replace_existing=True,
     )
     _scheduler.add_job(
-        cleanup_expired_tokens,
+        with_heartbeat("cleanup_tokens", cleanup_expired_tokens),
         CronTrigger(minute=5),
         id="cleanup_tokens",
         replace_existing=True,
     )
     _scheduler.add_job(
-        archive_old_audit_logs,
+        with_heartbeat("archive_audit_logs", archive_old_audit_logs),
         CronTrigger(hour=3, minute=0),
         id="archive_audit_logs",
         replace_existing=True,
     )
     _scheduler.add_job(
-        encrypt_plaintext_mfa_secrets,
+        with_heartbeat("encrypt_mfa_secrets", encrypt_plaintext_mfa_secrets),
         CronTrigger(hour=4, minute=0),
         id="encrypt_mfa_secrets",
         replace_existing=True,
@@ -167,7 +208,7 @@ def _start_scheduler() -> None:
     # current_period_end has passed without a webhook transitioning them
     # out of TRIALING/ACTIVE. See Risk #3 in trial-enforcement audit.
     _scheduler.add_job(
-        sweep_expired_subscriptions,
+        with_heartbeat("sweep_expired_subscriptions", sweep_expired_subscriptions),
         CronTrigger(minute=15),
         id="sweep_expired_subscriptions",
         replace_existing=True,
@@ -175,31 +216,31 @@ def _start_scheduler() -> None:
 
     # -- Lifecycle email jobs --
     _scheduler.add_job(
-        send_onboarding_nudges,
+        with_heartbeat("email_onboarding_nudge", send_onboarding_nudges),
         CronTrigger(hour=14, minute=0),
         id="email_onboarding_nudge",
         replace_existing=True,
     )
     _scheduler.add_job(
-        send_reengagement_emails,
+        with_heartbeat("email_reengagement", send_reengagement_emails),
         CronTrigger(hour=15, minute=0),
         id="email_reengagement",
         replace_existing=True,
     )
     _scheduler.add_job(
-        send_winback_emails,
+        with_heartbeat("email_winback", send_winback_emails),
         CronTrigger(hour=15, minute=30),
         id="email_winback",
         replace_existing=True,
     )
     _scheduler.add_job(
-        send_annual_renewal_reminders,
+        with_heartbeat("email_annual_renewal", send_annual_renewal_reminders),
         CronTrigger(hour=16, minute=0),
         id="email_annual_renewal",
         replace_existing=True,
     )
     _scheduler.add_job(
-        send_activity_digests,
+        with_heartbeat("email_activity_digest", send_activity_digests),
         CronTrigger(day_of_week="mon", hour=14, minute=0),
         id="email_activity_digest",
         replace_existing=True,
@@ -213,10 +254,20 @@ def _start_scheduler() -> None:
     )
 
 
-def stop_scheduler() -> None:
-    """Gracefully shut down the scheduler and release the leader lock."""
-    global _scheduler
+async def stop_embedded_scheduler() -> None:
+    """Gracefully stop the supervisor, the scheduler, and release the lock."""
+    global _scheduler, _supervisor_task
+
+    if _supervisor_task is not None:
+        _supervisor_task.cancel()
+        try:
+            await _supervisor_task
+        except (asyncio.CancelledError, Exception):
+            pass
+        _supervisor_task = None
+
     if _scheduler is not None:
         _scheduler.shutdown(wait=False)
         logger.info("APScheduler shut down")
         _scheduler = None
+        await _release_leader_lock()
