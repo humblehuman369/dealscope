@@ -76,6 +76,22 @@ export default function AuthModal() {
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }, [router, pathname, searchParams])
 
+  // Post-REGISTER redirect — new accounts go through the 5-step investor
+  // onboarding first (skippable), carrying the original destination as ?next=
+  // so completion/skip returns the user to what they were doing.
+  const onRegisterSuccess = useCallback(() => {
+    setIsOpen(false)
+    const redirect = searchParams.get('redirect')
+    const isSameOriginPath = !!redirect && redirect.startsWith('/') && !redirect.startsWith('//')
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('auth')
+    params.delete('redirect')
+    const qs = params.toString()
+    const fallback = qs ? `${pathname}?${qs}` : pathname
+    const next = isSameOriginPath ? redirect : fallback
+    router.replace(`/onboarding?next=${encodeURIComponent(next)}`)
+  }, [searchParams, router, pathname])
+
   // Post-login redirect — navigate to the intended destination.
   // searchParams.get() already URL-decodes the value — do NOT
   // call decodeURIComponent again (double-decoding corrupts
@@ -227,7 +243,7 @@ export default function AuthModal() {
         />
       )}
       {view === 'register' && (
-        <RegisterForm onSuccess={onLoginSuccess} onSwitchToLogin={() => setView('login')} />
+        <RegisterForm onSuccess={onRegisterSuccess} onSwitchToLogin={() => setView('login')} />
       )}
       {view === 'forgot-password' && <ForgotPasswordForm onBack={() => setView('login')} />}
     </Modal>

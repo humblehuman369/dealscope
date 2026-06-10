@@ -9,7 +9,7 @@ from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, sta
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from app.core.deps import CurrentUser, DbSession
+from app.core.deps import CurrentUser, DbSession, VerifiedUser
 from app.models.document import DocumentType
 from app.services.document_service import ALLOWED_TYPES, MAX_FILE_SIZE, document_service
 
@@ -63,7 +63,7 @@ class DocumentUpdate(BaseModel):
 
 @router.post("", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED, summary="Upload a document")
 async def upload_document(
-    current_user: CurrentUser,
+    current_user: VerifiedUser,
     db: DbSession,
     file: UploadFile = File(...),
     document_type: str = Form("other"),

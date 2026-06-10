@@ -67,14 +67,11 @@ const STATE_STYLES: Record<
   },
 }
 
-const HIDDEN_ON = [
-  '/discovery',
-  '/strategy',
-  '/pricing',
-  '/register',
-  '/what-is-dealgapiq',
-  '/billing',
-]
+// Discovery and Strategy are deliberately NOT hidden: those are the pages
+// where free users consume their analysis quota, and the visible countdown
+// ("2 of 3 analyses left") is the upgrade nudge leading into the server-side
+// limit screen. Only suppress on conversion/marketing surfaces.
+const HIDDEN_ON = ['/pricing', '/register', '/what-is-dealgapiq', '/billing']
 
 /* ── UsageBar ────────────────────────────────────────────────── */
 

@@ -20,6 +20,7 @@ from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.db.session import get_db
 from app.models.session import UserSession
 from app.models.user import User
@@ -156,11 +157,22 @@ async def get_current_user_optional(
 async def get_current_verified_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    """Ensure the user's email is verified."""
-    if not current_user.is_verified:
+    """Ensure the user's email is verified.
+
+    Enforcement is governed by ``FEATURE_EMAIL_VERIFICATION_REQUIRED`` so dev
+    environments without email delivery keep working. The structured detail
+    lets the frontend surface a resend-verification prompt.
+    """
+    if settings.FEATURE_EMAIL_VERIFICATION_REQUIRED and not current_user.is_verified:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Email verification required",
+            detail={
+                "code": "EMAIL_VERIFICATION_REQUIRED",
+                "message": (
+                    "Please verify your email address to use this feature. "
+                    "Check your inbox for the verification link, or resend it from your profile."
+                ),
+            },
         )
     return current_user
 

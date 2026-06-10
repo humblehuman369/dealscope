@@ -13,7 +13,7 @@ from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.exc import DatabaseError, IntegrityError
 
 from app.core.config import settings
-from app.core.deps import CurrentUser, DbSession
+from app.core.deps import CurrentUser, DbSession, VerifiedUser
 from app.core.schema_guard import is_schema_mismatch, log_schema_mismatch
 from app.models.saved_property import FlipStage as FlipStageORM
 from app.models.saved_property import PropertyStatus
@@ -493,7 +493,7 @@ async def bulk_delete_properties(
 @router.post("", response_model=SavedPropertyResponse, status_code=status.HTTP_201_CREATED, summary="Save a property")
 async def save_property(
     data: SavedPropertyCreate,
-    current_user: CurrentUser,
+    current_user: VerifiedUser,
     db: DbSession,
     background_tasks: BackgroundTasks,
 ):

@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { ChevronRight, ChevronLeft, Check, Sparkles, ArrowRight } from 'lucide-react'
 import { useOnboarding } from './_components/useOnboarding'
 import { ExperienceStep } from './_components/ExperienceStep'
@@ -12,7 +13,16 @@ import { MarketsStep } from './_components/MarketsStep'
 // Onboarding Page — Thin Orchestrator
 // ===========================================
 
+// useOnboarding reads searchParams (?next=) — needs a Suspense boundary.
 export default function OnboardingPage() {
+  return (
+    <Suspense fallback={null}>
+      <OnboardingContent />
+    </Suspense>
+  )
+}
+
+function OnboardingContent() {
   const {
     isAuthenticated,
     isLoading,

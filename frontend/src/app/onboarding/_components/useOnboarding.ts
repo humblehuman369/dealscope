@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import { useSession, useRefreshUser } from '@/hooks/useSession'
 import { apiRequest } from '@/lib/api-client'
 import type { OnboardingData, FinancingType } from './types'
@@ -52,6 +53,13 @@ export function useOnboarding() {
   const { user, isAuthenticated, isLoading } = useSession()
   const refreshUser = useRefreshUser()
   const router = useRouter()
+  const searchParams = useAppSearchParams()
+
+  // Post-signup flows pass the user's original destination as ?next= so
+  // completing (or skipping) onboarding returns them to what they were doing.
+  const nextParam = searchParams.get('next')
+  const postOnboardingPath =
+    nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/search'
 
   const [currentStep, setCurrentStep] = useState(0)
   const [isSaving, setIsSaving] = useState(false)
@@ -218,7 +226,7 @@ export function useOnboarding() {
       if (completed) {
         await apiRequest('/api/v1/users/me/onboarding/complete', { method: 'POST' })
         await refreshUser()
-        router.push('/search')
+        router.push(postOnboardingPath)
         return true
       }
 

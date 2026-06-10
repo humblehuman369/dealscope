@@ -992,7 +992,13 @@ function RegistrationInner() {
         </p>
 
         <button
-          onClick={() => router.replace(plan === 'pro' ? '/billing' : getPostRegisterPath())}
+          onClick={() =>
+            router.replace(
+              plan === 'pro'
+                ? '/billing'
+                : `/onboarding?next=${encodeURIComponent(getPostRegisterPath())}`,
+            )
+          }
           style={{
             minHeight: '48px',
             padding: '14px 32px',
@@ -1010,18 +1016,13 @@ function RegistrationInner() {
             color: '#fff',
           }}
         >
-          {plan === 'pro'
-            ? 'Start Free Trial'
-            : returnToParam
-              ? 'Continue'
-              : 'Analyze Your First Property'}{' '}
-          <ArrowIcon />
+          {plan === 'pro' ? 'Start Free Trial' : 'Continue Setup'} <ArrowIcon />
         </button>
 
         <p style={{ fontSize: '12px', color: '#475569', marginTop: '16px' }}>
           {plan === 'pro'
             ? 'Cancel anytime before the trial ends · No charge today'
-            : 'Enter any address · 60-second analysis'}
+            : '5 quick questions to personalize your analyses · Skip anytime'}
         </p>
       </div>
     )
