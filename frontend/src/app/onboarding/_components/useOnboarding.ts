@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import { useSession, useRefreshUser } from '@/hooks/useSession'
 import { apiRequest } from '@/lib/api-client'
+import { trackEvent } from '@/lib/eventTracking'
 import type { OnboardingData, FinancingType } from './types'
 import { TOTAL_STEPS } from './types'
 
@@ -180,7 +181,11 @@ export function useOnboarding() {
 
   // ── Save & navigation ───────────────────────
 
-  const saveProgress = async (step: number, completed: boolean = false): Promise<boolean> => {
+  const saveProgress = async (
+    step: number,
+    completed: boolean = false,
+    skipped: boolean = false,
+  ): Promise<boolean> => {
     setIsSaving(true)
     if (completed) setIsCompleting(true)
     setError(null)
@@ -225,6 +230,10 @@ export function useOnboarding() {
 
       if (completed) {
         await apiRequest('/api/v1/users/me/onboarding/complete', { method: 'POST' })
+        trackEvent(skipped ? 'onboarding_skipped' : 'onboarding_completed', {
+          strategies: formData.preferred_strategies.join(',') || 'none',
+          experience: formData.investment_experience || 'unset',
+        })
         await refreshUser()
         router.push(postOnboardingPath)
         return true
@@ -254,7 +263,7 @@ export function useOnboarding() {
   }
 
   const skipOnboarding = async () => {
-    await saveProgress(TOTAL_STEPS - 1, true)
+    await saveProgress(TOTAL_STEPS - 1, true, true)
   }
 
   return {

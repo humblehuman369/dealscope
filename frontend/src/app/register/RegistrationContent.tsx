@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useRegister, useLogin } from '@/hooks/useSession'
 import { IS_CAPACITOR } from '@/lib/env'
 import { authApi } from '@/lib/api-client'
+import { trackEvent } from '@/lib/eventTracking'
 import { PriceCents } from '@/components/ui/PriceCents'
 
 // ─── Icons ───
@@ -393,6 +394,12 @@ function RegistrationInner() {
         email: form.email,
         password: form.password,
         fullName: form.firstName,
+      })
+
+      trackEvent('signup_completed', {
+        method: 'page',
+        plan,
+        requires_verification: !!result.requires_verification,
       })
 
       if (result.requires_verification) {

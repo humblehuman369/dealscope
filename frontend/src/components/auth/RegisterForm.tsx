@@ -14,6 +14,7 @@ import {
   setLastTokenRefresh,
 } from '@/hooks/useSession'
 import { setMemoryToken } from '@/lib/api-client'
+import { trackEvent } from '@/lib/eventTracking'
 
 interface RegisterFormProps {
   onSuccess?: () => void
@@ -67,6 +68,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
         fullName: data.fullName,
       })
       if (result.user && result.access_token) {
+        trackEvent('signup_completed', { method: 'modal', requires_verification: false })
         setMemoryToken(result.access_token)
         setLastKnownUser(result.user)
         setLastTokenRefresh()
@@ -82,6 +84,10 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
           router.replace('/billing')
         }
       } else {
+        trackEvent('signup_completed', {
+          method: 'modal',
+          requires_verification: result.requires_verification ?? true,
+        })
         setRequiresVerification(result.requires_verification ?? true)
         setSuccess(true)
       }

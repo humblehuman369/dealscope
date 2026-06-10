@@ -11,6 +11,7 @@ import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, Loader2 } from 'lucide-react'
 import { api } from '@/lib/api-client'
+import { trackEvent } from '@/lib/eventTracking'
 import Link from 'next/link'
 
 const POLL_INTERVAL_MS = 1500
@@ -44,8 +45,13 @@ export default function CheckoutSuccessPage() {
     const interval = setInterval(async () => {
       attempts++
       try {
-        const sub = await api.get<{ tier: string }>('/api/v1/billing/subscription')
+        const sub = await api.get<{ tier: string; status?: string }>(
+          '/api/v1/billing/subscription',
+        )
         if (sub.tier === 'pro') {
+          trackEvent('checkout_completed', {
+            ...(sub.status ? { subscription_status: sub.status } : {}),
+          })
           setStatus('success')
           clearInterval(interval)
           setTimeout(() => router.replace(effectiveRedirect), 1200)

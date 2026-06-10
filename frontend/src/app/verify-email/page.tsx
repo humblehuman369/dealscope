@@ -6,6 +6,7 @@ import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Loader2, ArrowRight } from 'lucide-react'
 import { authApi } from '@/lib/api-client'
+import { trackEvent } from '@/lib/eventTracking'
 
 function VerifyEmailContent() {
   const searchParams = useAppSearchParams()
@@ -28,6 +29,7 @@ function VerifyEmailContent() {
         const data = await authApi.verifyEmail(token)
         setStatus('success')
         setMessage(data.message || 'Email verified successfully!')
+        trackEvent('email_verified')
       } catch (err) {
         setStatus('error')
         if (err instanceof Error && 'status' in err) {

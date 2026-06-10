@@ -767,8 +767,13 @@ function VerdictContent() {
         setError(err instanceof Error ? err.message : 'Failed to load property')
         if (err instanceof ApiError && err.status === 403) {
           const limitType = err.detail?.limit_type
-          if (limitType === 'analyses') setLimitError('free')
-          else if (limitType === 'anonymous_analyses') setLimitError('anonymous')
+          if (limitType === 'analyses') {
+            setLimitError('free')
+            trackEvent('analysis_limit_reached', { kind: 'free_monthly' })
+          } else if (limitType === 'anonymous_analyses') {
+            setLimitError('anonymous')
+            trackEvent('analysis_limit_reached', { kind: 'anonymous_daily' })
+          }
         }
 
         // Parse address from URL parameter to preserve city/state/zip in fallback

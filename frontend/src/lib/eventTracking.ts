@@ -14,6 +14,7 @@
 
 import { track as vercelTrack } from '@vercel/analytics'
 import { hasAnalyticsConsent } from '@/lib/cookieConsent'
+import { capturePostHog } from '@/lib/posthog'
 
 export function trackEvent(
   name: string,
@@ -32,6 +33,8 @@ export function trackEvent(
           )
         : undefined
     vercelTrack(name, filtered)
+    // Fan out to PostHog for identity-stitched funnel analysis.
+    capturePostHog(name, filtered)
   } catch {
     // no-op if analytics not loaded or disabled
   }

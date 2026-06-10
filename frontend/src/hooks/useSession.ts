@@ -20,6 +20,7 @@
 import { useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
+import { resetPostHog } from '@/lib/posthog'
 import {
   authApi,
   ApiError,
@@ -320,6 +321,8 @@ export function useLogout() {
       _lastKnownUser = null
       clearPersistedSession()
       _lastTokenRefreshAt = 0
+      // Unlink this device from the user in analytics (shared-computer safety).
+      resetPostHog()
       queryClient.setQueryData(SESSION_QUERY_KEY, null)
       queryClient.clear()
       router.push('/')
