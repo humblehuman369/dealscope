@@ -779,14 +779,23 @@ async def stripe_webhook(
     success = await billing_service.handle_webhook_event(db, event)
 
     if not success:
-        logger.error(f"Failed to handle webhook event: {event.get('type')}")
-    else:
-        await _mark_webhook_processed("stripe", stripe_event_id)
+        # Return 5xx so Stripe RETRIES the delivery (a 200 here would mark the
+        # event delivered and silently drop it forever). The event is deliberately
+        # NOT marked as processed — marking failures would make the dedup guard
+        # skip the retry and permanently lose the state transition. Handlers are
+        # idempotent upserts (set tier/status), so a partial-failure replay is safe.
+        logger.error(f"Failed to handle webhook event: {event.get('type')} (id={stripe_event_id})")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Webhook processing failed; Stripe will retry",
+        )
+
+    await _mark_webhook_processed("stripe", stripe_event_id)
 
     return WebhookEventResponse(
         received=True,
         event_type=event.get("type"),
-        message="Webhook processed" if success else "Webhook processing failed",
+        message="Webhook processed",
     )
 
 

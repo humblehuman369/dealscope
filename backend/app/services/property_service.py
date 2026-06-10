@@ -904,10 +904,19 @@ class PropertyService:
         )
         verdict_result = None
         if list_price is not None:
+            # Same no-fabrication tax rule as _estimate_taxes: provider data first,
+            # else value x regional rate from the resolved price (never flat 1.2%
+            # of an unrelated number). list_price is guaranteed positive here.
+            response_zip = response.address.zip_code if response.address else None
+            verdict_taxes = (
+                market.property_taxes_annual
+                if market.property_taxes_annual is not None
+                else self._taxes_from_value(list_price, response_zip)
+            )
             verdict_input = IQVerdictInput(
                 list_price=list_price,
                 monthly_rent=monthly_rent,
-                property_taxes=market.property_taxes_annual or (list_price * 0.012),
+                property_taxes=verdict_taxes,
                 insurance=market.insurance_annual,
                 hoa_fees_monthly=market.hoa_fees_monthly,
                 bedrooms=details.bedrooms or 3,
@@ -1361,8 +1370,8 @@ class PropertyService:
             return daily_equivalent * 2.5
         return None
 
-    def _estimate_taxes(self, data: dict) -> float | None:
-        """Estimate annual property taxes as property_value × regional tax rate.
+    def _taxes_from_value(self, property_value: float | None, zip_code: str | None) -> float | None:
+        """Annual property taxes as property_value × regional tax rate.
 
         Mirrors :meth:`_estimate_insurance`: a documented value-derived formula,
         never a flat-dollar invention. The rate comes from the state-level
@@ -1371,23 +1380,26 @@ class PropertyService:
         """
         from app.services.assumptions_service import get_market_adjustments
 
-        property_value = (
-            data.get("value_iq_estimate")
-            or data.get("zestimate")
-            or data.get("current_value_avm")
-            or data.get("list_price")
-        )
         if not property_value:
             return None
 
         tax_rate = 0.012
-        zip_code = data.get("zip_code")
         if zip_code:
             try:
                 tax_rate = get_market_adjustments(str(zip_code)).get("property_tax_rate", 0.012)
             except Exception:
                 logger.warning("Failed to resolve regional tax rate for zip %s", zip_code)
         return round(float(property_value) * tax_rate, 2)
+
+    def _estimate_taxes(self, data: dict) -> float | None:
+        """Estimate annual taxes from the normalized provider dict (see _taxes_from_value)."""
+        property_value = (
+            data.get("value_iq_estimate")
+            or data.get("zestimate")
+            or data.get("current_value_avm")
+            or data.get("list_price")
+        )
+        return self._taxes_from_value(property_value, data.get("zip_code"))
 
     def _estimate_insurance(self, data: dict) -> float | None:
         """Estimate annual insurance as property_value × default insurance_pct.
