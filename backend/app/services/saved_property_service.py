@@ -186,13 +186,17 @@ class SavedPropertyService:
         )
 
         db.add(saved_property)
-        await _adjust_properties_count(db, uuid.UUID(user_id), +1)
         if data.status == PropertyStatus.OWNED and saved_property.flip_stage is None:
             now = datetime.now(UTC)
             saved_property.flip_stage = _first_post_purchase_stage(saved_property.best_strategy)
             saved_property.flip_stage_entered_at = now
             saved_property.acquired_at = now
         try:
+            # _adjust_properties_count runs a query, which autoflushes the
+            # pending INSERT — so a duplicate raises IntegrityError here,
+            # not only at commit(). Keep it inside the try so the error is
+            # still translated to ValueError (HTTP 409), never a 500.
+            await _adjust_properties_count(db, uuid.UUID(user_id), +1)
             await db.commit()
         except IntegrityError as e:
             await db.rollback()
@@ -590,7 +594,9 @@ class SavedPropertyService:
         if not saved_property:
             return False
 
-        db.delete(saved_property)  # delete() is synchronous in SQLAlchemy 2.0
+        # AsyncSession.delete is a coroutine — without await the deletion
+        # never registers and the row silently survives the commit.
+        await db.delete(saved_property)
         await _adjust_properties_count(db, uuid.UUID(user_id), -1)
         await db.commit()
 

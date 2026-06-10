@@ -518,8 +518,11 @@ class TestSellerMotivationVerdictWiring:
                 }
             )
         )
+        # The composite score is authoritative: it REPLACES the DOM/price-cut
+        # heuristic rather than flooring it (see calculate_deal_opportunity_score
+        # motivation_override docs) — so it can land below the heuristic value.
         assert with_rich.opportunity_factors.motivation == 68
-        assert with_rich.opportunity_factors.motivation >= without.opportunity_factors.motivation
+        assert without.opportunity_factors.motivation != 68  # heuristic path differs
 
     def test_price_reductions_raise_motivation_vs_baseline(self):
         baseline = compute_iq_verdict(

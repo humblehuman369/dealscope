@@ -52,11 +52,17 @@ async def _create_property(
         "address_city": "Testville",
         "address_state": "FL",
         "address_zip": "33000",
-        "full_address": "123 Test St, Testville, FL 33000",
         "property_data_snapshot": {"price": 350000},
     }
     if data_overrides:
         defaults.update(data_overrides)
+    # full_address has a per-user unique constraint — keep it in sync with the
+    # (possibly overridden) street so each created property is distinct.
+    defaults.setdefault(
+        "full_address",
+        f"{defaults['address_street']}, {defaults['address_city']}, "
+        f"{defaults['address_state']} {defaults['address_zip']}",
+    )
     create_data = SavedPropertyCreate(**defaults)
     return await service.save_property(db, user_id, create_data)
 
@@ -112,16 +118,18 @@ class TestReadProperty:
                 {"address_street": f"{i} Main St", "external_property_id": f"prop-{i}"},
             )
 
-        props = await service.list_properties(db_session, str(created_user.id))
+        props, total = await service.list_properties(db_session, str(created_user.id))
         assert len(props) == 3
+        assert total == 3
 
     async def test_list_properties_isolation(self, db_session, created_user, service):
         """User A cannot see User B's properties."""
         await _create_property(db_session, service, str(created_user.id))
 
         other_user_id = str(uuid.uuid4())
-        other_props = await service.list_properties(db_session, other_user_id)
+        other_props, other_total = await service.list_properties(db_session, other_user_id)
         assert len(other_props) == 0
+        assert other_total == 0
 
     async def test_list_with_status_filter(self, db_session, created_user, service):
         saved = await _create_property(db_session, service, str(created_user.id))
@@ -129,10 +137,10 @@ class TestReadProperty:
             db_session, str(saved.id), str(created_user.id), ModelPropertyStatus.ARCHIVED
         )
 
-        prospecting = await service.list_properties(
+        prospecting, _ = await service.list_properties(
             db_session, str(created_user.id), status=ModelPropertyStatus.PROSPECTING
         )
-        archived = await service.list_properties(
+        archived, _ = await service.list_properties(
             db_session, str(created_user.id), status=ModelPropertyStatus.ARCHIVED
         )
         assert len(prospecting) == 0
@@ -220,5 +228,5 @@ class TestDeleteProperty:
         count = await service.bulk_delete(db_session, str(created_user.id), ids)
         assert count == 3
 
-        remaining = await service.list_properties(db_session, str(created_user.id))
+        remaining, _ = await service.list_properties(db_session, str(created_user.id))
         assert len(remaining) == 0

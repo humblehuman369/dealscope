@@ -10,13 +10,12 @@ import pytest
 from unittest.mock import patch, AsyncMock, MagicMock
 from fastapi.testclient import TestClient
 from httpx import AsyncClient, ASGITransport
-import os
 
-# Set test environment
-os.environ["ENVIRONMENT"] = "test"
-os.environ["SECRET_KEY"] = "test-secret-key-at-least-32-characters-long-for-testing"
-os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
-
+# NOTE: do NOT mutate os.environ here. ENVIRONMENT / SECRET_KEY / DATABASE_URL
+# are configured once in tests/conftest.py before any app import. Overriding
+# DATABASE_URL at module-import time poisons the session-scoped database_url
+# fixture for the entire test run (it happens during collection, before the
+# Postgres reachability probe).
 from app.main import app
 
 
@@ -35,15 +34,15 @@ class TestHealthEndpoint:
             assert "version" in data
             assert "timestamp" in data
     
-    def test_health_endpoint_includes_dependencies(self):
-        """Health endpoint should include dependency status."""
+    def test_readiness_endpoint_includes_dependency_checks(self):
+        """Readiness endpoint should report database and redis status."""
         with TestClient(app) as client:
-            response = client.get("/health")
-            
+            response = client.get("/health/ready")
+
             data = response.json()
-            assert "dependencies" in data
-            assert "database" in data["dependencies"]
-            assert "redis" in data["dependencies"]
+            assert "checks" in data
+            assert "database" in data["checks"]
+            assert "redis" in data["checks"]
 
 
 class TestRootEndpoint:
@@ -130,76 +129,102 @@ class TestAuthFlow:
             assert response.status_code == 401
 
 
+def _ltr_params(**overrides):
+    """Fully-resolved LTR params (the calculators take no defaults — the
+    assumption_resolver normally supplies every value)."""
+    params = {
+        "purchase_price": 300000,
+        "monthly_rent": 2500,
+        "property_taxes_annual": 3600,
+        "down_payment_pct": 0.20,
+        "interest_rate": 0.06,
+        "loan_term_years": 30,
+        "closing_costs_pct": 0.03,
+        "vacancy_rate": 0.05,
+        "property_management_pct": 0.08,
+        "maintenance_pct": 0.05,
+        "insurance_annual": 3000,
+        "utilities_monthly": 0,
+        "landscaping_annual": 600,
+        "pest_control_annual": 300,
+        "appreciation_rate": 0.03,
+        "rent_growth_rate": 0.03,
+        "expense_growth_rate": 0.02,
+    }
+    params.update(overrides)
+    return params
+
+
 class TestCalculatorValidation:
     """Tests for calculator input validation."""
-    
+
     def test_calculator_rejects_negative_price(self):
         """Calculator should reject negative purchase price."""
         from app.services.calculators import calculate_ltr, CalculationInputError
-        
+
         with pytest.raises(CalculationInputError) as exc_info:
-            calculate_ltr(
-                purchase_price=-100000,
-                monthly_rent=2000,
-                property_taxes_annual=3000
-            )
-        
+            calculate_ltr(**_ltr_params(purchase_price=-100000))
+
         assert "Purchase price" in str(exc_info.value)
-    
+
     def test_calculator_rejects_excessive_interest_rate(self):
         """Calculator should reject interest rate over 30%."""
         from app.services.calculators import calculate_ltr, CalculationInputError
-        
+
         with pytest.raises(CalculationInputError) as exc_info:
-            calculate_ltr(
-                purchase_price=300000,
-                monthly_rent=2000,
-                property_taxes_annual=3000,
-                interest_rate=0.50  # 50% - way too high
-            )
-        
+            calculate_ltr(**_ltr_params(interest_rate=0.50))
+
         assert "Interest rate" in str(exc_info.value)
-    
+
     def test_calculator_accepts_valid_inputs(self):
         """Calculator should accept valid inputs."""
         from app.services.calculators import calculate_ltr
-        
-        result = calculate_ltr(
-            purchase_price=300000,
-            monthly_rent=2500,
-            property_taxes_annual=3600,
-            down_payment_pct=0.20,
-            interest_rate=0.06
-        )
-        
+
+        result = calculate_ltr(**_ltr_params())
+
         assert "monthly_cash_flow" in result
         assert "cash_on_cash_return" in result
         assert "cap_rate" in result
-    
+
     def test_flip_calculator_with_valid_inputs(self):
         """Flip calculator should work with valid inputs."""
         from app.services.calculators import calculate_flip
-        
+
         result = calculate_flip(
             market_value=200000,
             arv=300000,
-            renovation_budget=50000
+            purchase_discount_pct=0.10,
+            hard_money_ltv=0.80,
+            hard_money_rate=0.12,
+            closing_costs_pct=0.03,
+            renovation_budget=50000,
+            contingency_pct=0.10,
+            holding_period_months=6,
+            property_taxes_annual=3000,
+            insurance_annual=2400,
+            utilities_monthly=200,
+            selling_costs_pct=0.07,
+            capital_gains_rate=0.25,
         )
-        
+
         assert "net_profit_before_tax" in result
         assert "roi" in result
         assert "meets_70_rule" in result
-    
+
     def test_wholesale_calculator_with_valid_inputs(self):
         """Wholesale calculator should work with valid inputs."""
         from app.services.calculators import calculate_wholesale
-        
+
         result = calculate_wholesale(
             arv=300000,
             estimated_rehab_costs=50000,
-            assignment_fee=15000
+            assignment_fee=15000,
+            marketing_costs=2000,
+            earnest_money_deposit=1000,
+            arv_discount_pct=0.30,
+            days_to_close=30,
         )
-        
+
         assert "net_profit" in result
         assert "roi" in result
 

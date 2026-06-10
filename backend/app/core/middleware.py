@@ -145,6 +145,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return False, 0
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        # The test suite issues every request from one client IP through a
+        # shared app instance — sliding-window counters would accumulate
+        # across tests and return spurious 429s.
+        if settings.is_test:
+            return await call_next(request)
+
         skip = ("/health", "/docs", "/redoc", "/openapi.json", "/metrics")
         if any(request.url.path.startswith(p) for p in skip):
             return await call_next(request)

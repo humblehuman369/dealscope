@@ -89,26 +89,41 @@ def test_blended_plan_appears_as_fourth():
 
 
 def test_blended_split_realism_weighted_with_missing_component():
-    """When a component returns None / weight 0, the others absorb its share."""
+    """When a component result is missing (weight 0), the others absorb its share."""
+    from app.services.deal_structures.templates import (
+        blended_plan,
+        price_negotiation,
+    )
+
+    ctx = _base_ctx()
+    blended = blended_plan.solve(
+        ctx,
+        price_result=price_negotiation.solve(ctx),
+        seller2nd_result=None,  # weight 0 — price (and the rent fallback) absorb the gap
+        rent_result=None,
+    )
+    assert blended is not None
+    assert blended.monthly_savings > 0
+    assert blended.realism_label in ("Combined plan", "Best-effort combination")
+
+
+def test_blended_returns_none_without_rent():
+    """Zero rent means no LTR cash-flow story — the engine must not fabricate a card."""
     from app.services.deal_structures.templates import (
         blended_plan,
         price_negotiation,
         rent_uplift,
     )
 
-    ctx = _base_ctx(monthly_rent=0)  # rent uplift can't fire (haircut path returns None)
-    rent_result = rent_uplift.solve(ctx)
-    assert rent_result is None
-
+    ctx = _base_ctx(monthly_rent=0)
+    assert rent_uplift.solve(ctx) is None
     blended = blended_plan.solve(
         ctx,
         price_result=price_negotiation.solve(ctx),
         seller2nd_result=None,
-        rent_result=rent_result,
+        rent_result=None,
     )
-    assert blended is not None
-    rent_lever = next(lv for lv in blended.levers if lv.label.lower() == "monthly rent")
-    assert rent_lever.after_label == "$0"
+    assert blended is None
 
 
 def test_blended_caps_bleed_best_effort():

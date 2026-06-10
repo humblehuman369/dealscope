@@ -310,6 +310,11 @@ class Settings(BaseSettings):
         return self.ENVIRONMENT == "production"
 
     @property
+    def is_test(self) -> bool:
+        """Check if running under the test suite."""
+        return self.ENVIRONMENT == "test"
+
+    @property
     def allowed_file_types_list(self) -> list[str]:
         """Parse allowed file types into a list."""
         return [ft.strip().lower() for ft in self.ALLOWED_FILE_TYPES.split(",")]

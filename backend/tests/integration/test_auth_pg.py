@@ -6,6 +6,7 @@ touch ARRAY, JSON, and RETURNING clauses that diverge on SQLite.
 """
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.auth_service import auth_service
@@ -19,9 +20,13 @@ pytestmark = pytest.mark.asyncio
 
 
 async def _seed_member_role(db: AsyncSession) -> Role:
-    role = Role(name="member", description="Standard user")
-    db.add(role)
-    await db.flush()
+    """Return the 'member' role already seeded by Alembic migrations."""
+    result = await db.execute(select(Role).where(Role.name == "member"))
+    role = result.scalar_one_or_none()
+    if role is None:  # pragma: no cover - migrations always seed it
+        role = Role(name="member", description="Standard user")
+        db.add(role)
+        await db.flush()
     return role
 
 

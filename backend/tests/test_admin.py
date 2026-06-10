@@ -13,7 +13,6 @@ from app.services.auth_service import auth_service
 from app.repositories.user_repository import user_repo
 from app.repositories.role_repository import role_repo
 from app.repositories.audit_repository import audit_repo
-from app.models.role import Permission, RolePermission
 
 
 pytestmark = pytest.mark.asyncio
@@ -25,7 +24,12 @@ pytestmark = pytest.mark.asyncio
 
 @pytest.fixture
 async def admin_user(db_session: AsyncSession, seeded_roles):
-    """Create a user with admin role and admin:* permission."""
+    """Create a user with the admin role.
+
+    The Alembic migrations already seed every ``admin:*`` permission and link
+    them to the admin role, so no manual permission inserts are needed (and
+    inserting them again violates ``uq_permissions_codename``).
+    """
     user = await user_repo.create(
         db_session,
         email="admin@dealgapiq.test",
@@ -34,17 +38,7 @@ async def admin_user(db_session: AsyncSession, seeded_roles):
         is_active=True,
         is_verified=True,
     )
-    # Assign admin role
     await role_repo.assign_role(db_session, user.id, seeded_roles["admin"].id)
-
-    # Create admin permissions and link to admin role
-    for codename in ("admin:users", "admin:stats", "admin:assumptions", "admin:metrics"):
-        perm = Permission(codename=codename, description=codename)
-        db_session.add(perm)
-        await db_session.flush()
-        rp = RolePermission(role_id=seeded_roles["admin"].id, permission_id=perm.id)
-        db_session.add(rp)
-
     await db_session.flush()
     return user
 
@@ -71,7 +65,8 @@ async def regular_user(db_session: AsyncSession, seeded_roles):
 
 class TestAdminServiceUserManagement:
     async def test_list_users(self, db_session, admin_user, regular_user):
-        users = await admin_service.list_users(db=db_session)
+        users, total = await admin_service.list_users(db=db_session)
+        assert total >= 2
         assert len(users) >= 2
         emails = {u["email"] for u in users}
         assert "admin@dealgapiq.test" in emails

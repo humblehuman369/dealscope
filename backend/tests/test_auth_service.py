@@ -218,11 +218,14 @@ class TestSessionService:
         session, _ = await session_service.create_session(
             db_session, created_user.id
         )
-        result = await session_service.refresh_session(db_session, session.refresh_token)
+        # Capture before refreshing — refresh_session rotates the token on
+        # this same ORM instance, so reading it afterwards yields the NEW value.
+        old_refresh = session.refresh_token
+        result = await session_service.refresh_session(db_session, old_refresh)
         assert result is not None
         _, new_jwt, new_refresh = result
         assert new_jwt is not None
-        assert new_refresh != session.refresh_token  # rotated
+        assert new_refresh != old_refresh  # rotated
 
     async def test_refresh_revoked_session_fails(self, db_session, created_user):
         session, _ = await session_service.create_session(

@@ -52,7 +52,12 @@ class TestRegistrationFlow:
         resp = await client.post(REGISTER_URL, json=VALID_USER)
         assert resp.status_code in (200, 201)
         body = resp.json()
-        assert body.get("email") or body.get("user", {}).get("email")
+        # With email verification required, register returns a message +
+        # requires_verification instead of an auto-login user payload.
+        if body.get("requires_verification"):
+            assert body.get("message")
+        else:
+            assert body.get("email") or (body.get("user") or {}).get("email")
 
     @patch("app.routers.auth.email_service")
     async def test_duplicate_registration(self, mock_email, client):
@@ -157,7 +162,8 @@ class TestLockout:
                 "password": "SecurePassword123",
             },
         )
-        assert resp.status_code in (400, 401, 403, 429)
+        # 423 Locked is the canonical lockout response
+        assert resp.status_code in (400, 401, 403, 423, 429)
 
 
 # ------------------------------------------------------------------
