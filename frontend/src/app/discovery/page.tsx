@@ -80,6 +80,8 @@ import { mapDealStructuresFromApi } from '@/lib/dealStructures/mapDealStructures
 import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'
 import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
 import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
+import { WorkbenchTour } from '@/components/discovery/WorkbenchTour'
+import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
 
 // Backend analysis response type — canonical shape from @dealscope/shared.
 // The backend serializes both snake_case and camelCase via Pydantic alias_generator,
@@ -264,7 +266,7 @@ function VerdictContent() {
   // when navigating between Verdict ↔ Strategy for the same property
   const { fetchProperty } = usePropertyData()
 
-  const { savedPropertyId } = useSaveProperty({
+  const { savedPropertyId, save: saveProperty } = useSaveProperty({
     displayAddress: addressParam,
     propertySnapshot:
       overrideZpid && typeof overrideZpid === 'string' ? { zpid: overrideZpid } : null,
@@ -288,6 +290,14 @@ function VerdictContent() {
   // Set when the backend rejects the search with a usage-limit 403 —
   // 'free' = monthly Starter cap, 'anonymous' = signed-out daily IP cap.
   const [limitError, setLimitError] = useState<'free' | 'anonymous' | null>(null)
+  const tourReady = Boolean(property && analysis && !error && !limitError)
+  const {
+    phase: tourPhase,
+    joyrideIndex: tourJoyrideIndex,
+    setPhase: setTourPhase,
+    setJoyrideIndex: setTourJoyrideIndex,
+    dismissTour,
+  } = useWorkbenchTour({ ready: tourReady, isAuthenticated })
   const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
   const [motivatedInsights, setMotivatedInsights] = useState<MotivatedSellerInsight[]>([])
   const backendFullAddressRef = useRef('')
@@ -1384,7 +1394,7 @@ function VerdictContent() {
             }}
           >
             {/* Investment Overview — 3 price cards */}
-            <div>
+            <div data-tour="verdict-prices">
               <h2
                 className="w-full font-bold leading-tight"
                 style={{
@@ -2406,6 +2416,17 @@ function VerdictContent() {
             : null
         }
       />
+
+      {tourPhase ? (
+        <WorkbenchTour
+          phase={tourPhase}
+          joyrideIndex={tourJoyrideIndex}
+          onPhaseChange={setTourPhase}
+          onJoyrideIndexChange={setTourJoyrideIndex}
+          onDismiss={dismissTour}
+          onSaveDeal={saveProperty}
+        />
+      ) : null}
 
     </>
   )

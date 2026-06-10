@@ -26,7 +26,9 @@ export function MultiYearProjections() {
     'investment_returns',
   ])
 
-  const [yearsToShow, setYearsToShow] = useState(10)
+  const [yearsToShow, setYearsToShow] = useState(() =>
+    Math.min(projections.length || 10, assumptions.loanTermYears || 10),
+  )
 
   const toggleSection = (id: string) => {
     setExpandedSections((prev) =>

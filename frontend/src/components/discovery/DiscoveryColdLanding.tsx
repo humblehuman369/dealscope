@@ -79,6 +79,18 @@ export function DiscoveryColdLanding() {
             Browse the Map
           </button>
         </div>
+
+        <p className="mt-8 text-sm" style={{ color: 'var(--text-secondary)' }}>
+          Want a quick walkthrough first?{' '}
+          <button
+            type="button"
+            onClick={() => nav('/search', 'coldlink-tour')}
+            className="font-semibold underline-offset-2 hover:underline"
+            style={{ color: 'var(--accent-sky)', background: 'none', border: 'none', padding: 0 }}
+          >
+            Take the 60-sec tour →
+          </button>
+        </p>
       </div>
     </div>
   )

@@ -14,11 +14,7 @@ against an in-memory SQLite database, verifying:
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from app.db.session import get_db
-from app.main import app
 from app.repositories.user_repository import user_repo
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 
 pytestmark = pytest.mark.asyncio
 
@@ -26,20 +22,6 @@ pytestmark = pytest.mark.asyncio
 # ------------------------------------------------------------------
 # Fixtures: wire test DB into the app
 # ------------------------------------------------------------------
-
-@pytest.fixture
-async def client(db_session: AsyncSession, seeded_roles):
-    """AsyncClient that injects the test db_session into the app."""
-
-    async def _override_get_db():
-        yield db_session
-
-    app.dependency_overrides[get_db] = _override_get_db
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
-    app.dependency_overrides.clear()
-
 
 REGISTER_URL = "/api/v1/auth/register"
 LOGIN_URL = "/api/v1/auth/login"

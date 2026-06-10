@@ -2,8 +2,9 @@ import { create } from 'zustand'
 import {
   YearlyProjection,
   ProjectionAssumptions,
-  calculate10YearProjections,
   calculateProjectionSummary,
+  calculateYearProjections,
+  projectionHorizonYears,
   ProjectionSummary,
 } from '@/lib/projections'
 import { defaultsService } from '@/services/defaults'
@@ -233,8 +234,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
   recalculateProjections: () => {
     const { assumptions } = get()
 
-    // Calculate 30-year projections
-    const projections = calculate10YearProjections(assumptions)
+    const projections = calculateYearProjections(assumptions, projectionHorizonYears(assumptions))
 
     // Calculate total cash invested (down payment + closing costs + rehab)
     const downPayment = assumptions.purchasePrice * (assumptions.downPaymentPct / 100)

@@ -47,6 +47,7 @@ import { TargetAssumptions, IQTargetResult } from '@/lib/iqTarget'
 import { useIQAnalysis } from '@/hooks/useIQAnalysis'
 import {
   calculate10YearProjections,
+  calculateProjectionSummary,
   getDefaultProjectionAssumptions,
   YearlyProjection,
 } from '@/lib/projections'
@@ -756,6 +757,7 @@ function DesktopProjectionsTabContent({
   const downPayment = iqTarget.targetPrice * assumptions.downPaymentPct
   const closingCosts = iqTarget.targetPrice * assumptions.closingCostsPct
   const totalCashInvested = downPayment + closingCosts
+  const summary = calculateProjectionSummary(projections, totalCashInvested)
 
   const projectionRows = create10YearProjection(
     year10.cumulativeCashFlow,
@@ -764,6 +766,12 @@ function DesktopProjectionsTabContent({
     year10.totalEquity,
     (year10.totalWealth / totalCashInvested) * 100,
   )
+  projectionRows.push({
+    label: 'Est. IRR (10-yr)',
+    value: formatPercent(summary.irr * 100),
+    isHighlight: true,
+    isPositive: summary.irr >= 0.12,
+  })
 
   return (
     <div className="space-y-4">

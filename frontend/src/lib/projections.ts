@@ -142,8 +142,17 @@ export function calculateLoanBalance(
   return Math.max(0, balance)
 }
 
-export function calculate10YearProjections(assumptions: ProjectionAssumptions): YearlyProjection[] {
+/** Default projection horizon — at least 10 years, up to full loan term (max 30). */
+export function projectionHorizonYears(assumptions: ProjectionAssumptions): number {
+  return Math.min(30, Math.max(10, assumptions.loanTermYears))
+}
+
+export function calculateYearProjections(
+  assumptions: ProjectionAssumptions,
+  years: number = projectionHorizonYears(assumptions),
+): YearlyProjection[] {
   const projections: YearlyProjection[] = []
+  const horizon = Math.max(1, Math.min(30, years))
 
   const downPayment = assumptions.purchasePrice * assumptions.downPaymentPct
   const closingCosts = assumptions.purchasePrice * assumptions.closingCostsPct
@@ -161,7 +170,7 @@ export function calculate10YearProjections(assumptions: ProjectionAssumptions): 
   let cumulativePrincipal = 0
   let previousLoanBalance = loanAmount
 
-  for (let year = 1; year <= 10; year++) {
+  for (let year = 1; year <= horizon; year++) {
     // Property value with appreciation
     const propertyValue =
       assumptions.purchasePrice * Math.pow(1 + assumptions.annualAppreciation, year)
@@ -236,30 +245,47 @@ export function calculate10YearProjections(assumptions: ProjectionAssumptions): 
   return projections
 }
 
+export function calculate10YearProjections(assumptions: ProjectionAssumptions): YearlyProjection[] {
+  return calculateYearProjections(assumptions, 10)
+}
+
 export function calculateProjectionSummary(
   projections: YearlyProjection[],
   totalCashInvested: number,
 ): ProjectionSummary {
-  const year10 = projections[9]
-  const totalCashFlow = year10.cumulativeCashFlow
-  const totalEquityGain = year10.totalEquity - totalCashInvested * 0.97 // Approximate initial equity
+  if (projections.length === 0) {
+    return {
+      totalCashInvested,
+      totalCashFlow: 0,
+      totalEquityGain: 0,
+      totalWealth: 0,
+      avgCashOnCash: 0,
+      avgAnnualReturn: 0,
+      equityMultiple: 0,
+      irr: 0,
+    }
+  }
 
-  const avgCashOnCash = projections.reduce((sum, p) => sum + p.cashOnCash, 0) / 10
-  const avgAnnualReturn = projections.reduce((sum, p) => sum + p.totalReturn, 0) / 10
+  const terminal = projections[projections.length - 1]
+  const totalCashFlow = terminal.cumulativeCashFlow
+  const totalEquityGain = terminal.totalEquity - totalCashInvested * 0.97 // Approximate initial equity
+  const yearCount = projections.length
 
-  // Simple IRR approximation
+  const avgCashOnCash = projections.reduce((sum, p) => sum + p.cashOnCash, 0) / yearCount
+  const avgAnnualReturn = projections.reduce((sum, p) => sum + p.totalReturn, 0) / yearCount
+
   const cashFlows = [-totalCashInvested, ...projections.map((p) => p.cashFlow)]
-  cashFlows[10] += year10.totalEquity // Add equity at sale in year 10
+  cashFlows[cashFlows.length - 1] += terminal.totalEquity
   const irr = approximateIRR(cashFlows)
 
   return {
     totalCashInvested,
     totalCashFlow,
     totalEquityGain,
-    totalWealth: year10.totalWealth,
+    totalWealth: terminal.totalWealth,
     avgCashOnCash,
     avgAnnualReturn,
-    equityMultiple: totalCashInvested > 0 ? year10.totalWealth / totalCashInvested : 0,
+    equityMultiple: totalCashInvested > 0 ? terminal.totalWealth / totalCashInvested : 0,
     irr,
   }
 }

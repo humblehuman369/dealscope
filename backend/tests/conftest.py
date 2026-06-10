@@ -240,6 +240,24 @@ async def created_user(
 
 
 @pytest.fixture
+async def client(db_session: AsyncSession, seeded_roles):
+    """Async HTTP client with the per-test db_session wired into FastAPI deps."""
+
+    from app.db.session import get_db
+    from app.main import app
+    from httpx import ASGITransport, AsyncClient
+
+    async def _override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = _override_get_db
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
 def mock_email_service():
     mock = MagicMock()
     mock.send_verification_email = AsyncMock(return_value={"success": True})
