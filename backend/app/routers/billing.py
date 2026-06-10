@@ -25,10 +25,33 @@ from app.schemas.billing import (
     WebhookEventResponse,
 )
 from app.services.billing_service import billing_service
+from app.services.cache_service import get_cache_service
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/billing", tags=["Billing"])
+
+# Webhook event dedup window. Stripe retries failed deliveries for up to 3
+# days; RevenueCat for ~24h. Seen-and-processed event ids inside this window
+# are acknowledged without re-processing.
+_WEBHOOK_DEDUP_TTL_SECONDS = 3 * 24 * 3600
+
+
+async def _webhook_already_processed(provider: str, event_id: str | None) -> bool:
+    """True when this webhook event id was already successfully processed.
+
+    Redis-backed (falls back to per-process memory when Redis is down — a
+    weaker guarantee, but DB-level idempotency on invoice.paid still applies).
+    """
+    if not event_id:
+        return False
+    return await get_cache_service().exists(f"webhook_evt:{provider}:{event_id}")
+
+
+async def _mark_webhook_processed(provider: str, event_id: str | None) -> None:
+    if not event_id:
+        return
+    await get_cache_service().set(f"webhook_evt:{provider}:{event_id}", 1, ttl_seconds=_WEBHOOK_DEDUP_TTL_SECONDS)
 
 
 # ===========================================
@@ -104,33 +127,17 @@ async def get_usage(current_user: CurrentUser, db: DbSession):
     return await billing_service.get_usage(db, current_user.id)
 
 
-@router.post("/usage/record-analysis", response_model=UsageResponse, summary="Record one property analysis")
+@router.post("/usage/record-analysis", response_model=UsageResponse, summary="Refresh usage after an analysis")
 async def record_analysis(current_user: CurrentUser, db: DbSession):
     """
-    Record one property analysis against the user's monthly limit.
+    DEPRECATED increment path — analysis metering is now enforced server-side
+    by ``POST /api/v1/properties/search`` (one analysis per distinct property).
 
-    Called when a user completes an analysis (e.g. leaves the analyzing screen
-    and lands on the verdict). Starter users' Analyses count increments;
-    Pro users have unlimited analyses so no change. Returns updated usage.
-
-    Returns 403 when the monthly analysis limit has been reached.
+    This endpoint is kept for client compatibility but no longer increments
+    usage (doing so would double-count every analysis). It simply returns the
+    user's current usage so the client can refresh the usage bar.
     """
-    from app.core.exceptions import SubscriptionLimitError
-
-    try:
-        return await billing_service.record_analysis(db, current_user.id)
-    except SubscriptionLimitError as e:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={
-                "code": e.code,
-                "message": f"You've used all {e.limit} free analyses this month. Upgrade to Pro for unlimited.",
-                "limit_type": e.limit_type,
-                "current": e.current,
-                "limit": e.limit,
-                "tier_required": e.tier_required,
-            },
-        )
+    return await billing_service.get_usage(db, current_user.id)
 
 
 @router.post("/sync-iap", response_model=SubscriptionResponse, summary="Sync mobile IAP entitlement")
@@ -562,8 +569,13 @@ async def revenuecat_webhook(
     event = payload.get("event", {})
     event_type = event.get("type", "")
     app_user_id = event.get("app_user_id", "")
+    rc_event_id = event.get("id")
 
     logger.info(f"RevenueCat webhook: type={event_type}, app_user_id={app_user_id}")
+
+    if await _webhook_already_processed("revenuecat", rc_event_id):
+        logger.info("RevenueCat webhook: duplicate event %s, skipping", rc_event_id)
+        return {"received": True, "event_type": event_type, "message": "Duplicate event, skipped"}
 
     if not app_user_id:
         logger.warning("RevenueCat webhook: missing app_user_id")
@@ -718,6 +730,7 @@ async def revenuecat_webhook(
         "last_revenuecat_event_at": datetime.now(UTC).isoformat(),
     }
     await db.commit()
+    await _mark_webhook_processed("revenuecat", rc_event_id)
 
     return {"received": True, "event_type": event_type, "message": f"Processed {event_type}"}
 
@@ -751,11 +764,24 @@ async def stripe_webhook(
             detail="Invalid webhook signature. Ensure STRIPE_WEBHOOK_SECRET is configured correctly.",
         )
 
+    # Skip events already processed (Stripe retries deliveries; some handlers
+    # are not individually idempotent beyond invoice.paid's DB-level dedup).
+    stripe_event_id = event.get("id")
+    if await _webhook_already_processed("stripe", stripe_event_id):
+        logger.info("Stripe webhook: duplicate event %s, skipping", stripe_event_id)
+        return WebhookEventResponse(
+            received=True,
+            event_type=event.get("type"),
+            message="Duplicate event, skipped",
+        )
+
     # Handle the event
     success = await billing_service.handle_webhook_event(db, event)
 
     if not success:
         logger.error(f"Failed to handle webhook event: {event.get('type')}")
+    else:
+        await _mark_webhook_processed("stripe", stripe_event_id)
 
     return WebhookEventResponse(
         received=True,

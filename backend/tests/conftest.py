@@ -168,15 +168,25 @@ async def async_engine(database_url: str):
 async def db_session(async_engine) -> AsyncGenerator[AsyncSession, None]:
     """Per-test session whose work is rolled back on teardown.
 
-    Uses a SAVEPOINT-style transaction nested inside an outer transaction
-    so any commits done by the code under test are still reverted.
+    Binds the session to a connection holding an outer transaction and uses
+    ``join_transaction_mode="create_savepoint"`` so ``commit()`` calls made by
+    the code under test only release a SAVEPOINT. The outer transaction is
+    rolled back at teardown, reverting everything — including committed work.
     """
-    factory = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
-    async with factory() as session:
-        try:
-            yield session
-        finally:
-            await session.rollback()
+    async with async_engine.connect() as connection:
+        outer = await connection.begin()
+        factory = async_sessionmaker(
+            bind=connection,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            join_transaction_mode="create_savepoint",
+        )
+        async with factory() as session:
+            try:
+                yield session
+            finally:
+                await session.rollback()
+        await outer.rollback()
 
 
 @pytest.fixture

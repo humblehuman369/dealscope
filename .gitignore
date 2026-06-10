@@ -78,3 +78,8 @@ backend/*.db
 
 # Generated screenshots
 scripts/screenshots/output/
+
+# Never commit captured auth cookies / curl cookie jars
+cookies.txt
+*.cookies
+cookie-jar*

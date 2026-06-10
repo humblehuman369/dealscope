@@ -11,7 +11,7 @@ import logging
 from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,6 +21,21 @@ from app.db.session import get_db, get_engine
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Health"])
+
+
+def require_monitoring_token(
+    x_monitoring_token: str | None = Header(default=None, alias="X-Monitoring-Token"),
+) -> None:
+    """Gate operational endpoints in production behind a shared monitoring secret.
+
+    Non-production environments are left open for local debugging. In production,
+    responds 404 (not 401/403) to avoid telegraphing the endpoint's existence,
+    matching the cron-endpoint security model.
+    """
+    if not settings.is_production:
+        return
+    if not settings.MONITORING_TOKEN or x_monitoring_token != settings.MONITORING_TOKEN:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 
 
 @router.get("/health")
@@ -81,7 +96,7 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
     }
 
 
-@router.get("/health/deep")
+@router.get("/health/deep", dependencies=[Depends(require_monitoring_token)])
 async def deep_health_check(db: AsyncSession = Depends(get_db)):
     """
     Deep health check endpoint.
@@ -254,20 +269,14 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
     }
 
 
-@router.get("/debug/redfin")
-async def debug_redfin(address: str = "123 Main St, Franklin, TN", key: str = ""):
+@router.get("/debug/redfin", dependencies=[Depends(require_monitoring_token)])
+async def debug_redfin(address: str = "123 Main St, Franklin, TN"):
     """
     Debug endpoint: runs the full Redfin pipeline step-by-step and returns
     the raw response from each stage so you can see the exact shape.
 
-    Requires SECRET_KEY prefix (first 8 chars) as ``key`` query param in production.
+    Production access requires the ``X-Monitoring-Token`` header.
     """
-    if settings.is_production:
-        from fastapi.responses import JSONResponse
-
-        if not key or not settings.SECRET_KEY or key != settings.SECRET_KEY[:8]:
-            return JSONResponse({"error": "disabled in production"}, status_code=403)
-
     from app.services.api_clients import RedfinClient
 
     steps: dict[str, Any] = {"address": address, "timestamp": datetime.now(UTC).isoformat()}
@@ -329,20 +338,14 @@ async def debug_redfin(address: str = "123 Main St, Franklin, TN", key: str = ""
     return steps
 
 
-@router.get("/debug/zillow")
-async def debug_zillow(address: str = "953 Banyan Dr, Delray Beach, FL 33483", key: str = ""):
+@router.get("/debug/zillow", dependencies=[Depends(require_monitoring_token)])
+async def debug_zillow(address: str = "953 Banyan Dr, Delray Beach, FL 33483"):
     """
     Debug endpoint: runs the AXESSO/Zillow pipeline step-by-step and returns
     the raw response from each stage so you can diagnose data-pulling issues.
 
-    Requires SECRET_KEY prefix (first 8 chars) as ``key`` query param in production.
+    Production access requires the ``X-Monitoring-Token`` header.
     """
-    if settings.is_production:
-        from fastapi.responses import JSONResponse
-
-        if not key or not settings.SECRET_KEY or key != settings.SECRET_KEY[:8]:
-            return JSONResponse({"error": "disabled in production"}, status_code=403)
-
     import json
 
     from app.services.zillow_client import create_zillow_client

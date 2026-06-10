@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { AuthGate } from '@/components/auth/AuthGate'
 import { MapSearchView } from '@/components/map-search/MapSearchView'
 
 // SSR-safe layout effect — falls back to useEffect on the server.
@@ -53,7 +54,11 @@ export default function MapSearchPage() {
       className="w-full overflow-hidden"
       style={{ height, backgroundColor: 'var(--surface-base)' }}
     >
-      <MapSearchView />
+      {/* Map search fans out to paid data APIs per viewport move — the backend
+          requires auth on /properties/search-area, so gate the UI to match. */}
+      <AuthGate feature="search the map" mode="section">
+        <MapSearchView />
+      </AuthGate>
     </div>
   )
 }

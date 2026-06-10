@@ -32,7 +32,7 @@ import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { useQueryClient } from '@tanstack/react-query'
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { fetchPropertyPhotos } from '@/services/photoService'
 import { PropertyPhotoGallery } from '@/components/property-details'
@@ -285,6 +285,9 @@ function VerdictContent() {
     return !queryClient.getQueryData(['property-search', canonical, cacheZpid])
   })
   const [error, setError] = useState<string | null>(null)
+  // Set when the backend rejects the search with a usage-limit 403 —
+  // 'free' = monthly Starter cap, 'anonymous' = signed-out daily IP cap.
+  const [limitError, setLimitError] = useState<'free' | 'anonymous' | null>(null)
   const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
   const [motivatedInsights, setMotivatedInsights] = useState<MotivatedSellerInsight[]>([])
   const backendFullAddressRef = useRef('')
@@ -409,6 +412,7 @@ function VerdictContent() {
         const hasCachedProperty = !!queryClient.getQueryData(['property-search', canonical, cacheZpid])
         if (!hasCachedProperty) setIsLoading(true)
         setError(null)
+        setLimitError(null)
 
         // Fetch property data (React Query cache — shared with Strategy page)
         const data = await fetchProperty(addressParam, {
@@ -761,6 +765,11 @@ function VerdictContent() {
       } catch (err) {
         console.error('Error fetching property:', err)
         setError(err instanceof Error ? err.message : 'Failed to load property')
+        if (err instanceof ApiError && err.status === 403) {
+          const limitType = err.detail?.limit_type
+          if (limitType === 'analyses') setLimitError('free')
+          else if (limitType === 'anonymous_analyses') setLimitError('anonymous')
+        }
 
         // Parse address from URL parameter to preserve city/state/zip in fallback
         const parsedFallback = parseAddressString(addressParam)
@@ -1102,6 +1111,58 @@ function VerdictContent() {
 
   if (error === 'No address provided') {
     return <DiscoveryColdLanding />
+  }
+
+  // Usage-limit reached — designed conversion moment, not a generic failure
+  if (limitError && (!property || !analysis)) {
+    const isAnon = limitError === 'anonymous'
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
+        <div className="flex flex-col items-center gap-4 text-center px-4 max-w-md">
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(8,145,178,0.15)' }}
+          >
+            <svg
+              className="w-8 h-8 text-[var(--accent-sky)]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold" style={{ color: 'var(--text-heading)' }}>
+            {isAnon ? "You've used today's free analyses" : "You've used this month's free analyses"}
+          </h2>
+          <p style={{ color: 'var(--text-body)' }}>
+            {isAnon
+              ? 'Create a free account to keep analyzing properties — no credit card required.'
+              : 'Upgrade to Pro for unlimited property analyses, the Deal Maker, comps, and exports.'}
+          </p>
+          <button
+            onClick={() =>
+              router.push(isAnon ? '?auth=register&redirect=/discovery' : '/pricing')
+            }
+            className="mt-2 px-6 py-2.5 bg-[var(--accent-sky)] text-[var(--text-inverse)] rounded-full font-bold hover:bg-[var(--accent-sky-light)] transition-colors"
+          >
+            {isAnon ? 'Create Free Account' : 'Upgrade to Pro'}
+          </button>
+          <button
+            onClick={handleBack}
+            className="text-sm underline"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    )
   }
 
   // Error state with no property fallback

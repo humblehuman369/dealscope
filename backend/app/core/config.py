@@ -101,6 +101,17 @@ class Settings(BaseSettings):
     # Example: "10.0.0.0/8,203.0.113.5,198.51.100.0/24"
     CRON_ALLOWED_IPS: str = ""
 
+    # Shared secret for operational/monitoring endpoints (/metrics, /health/deep,
+    # /health/debug/*) in production. Presented via the X-Monitoring-Token header.
+    # Empty default means these endpoints are disabled in production until configured.
+    MONITORING_TOKEN: str = ""
+
+    # Anonymous (signed-out) property analyses allowed per IP per day. Preserves the
+    # anonymous-first funnel (landing -> search -> verdict without an account) while
+    # capping paid-API spend from unauthenticated traffic. Repeat views of the same
+    # address within the day do not consume quota. Set to 0 to require login.
+    ANON_ANALYSES_PER_DAY: int = 3
+
     # ===========================================
     # JWT Authentication
     # ===========================================
@@ -111,7 +122,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # Access token lifetime; session row is the authority for revocation
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 36500  # Legacy env var; session cookies follow SESSION_DEFAULT_DAYS
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 90  # Legacy env var; session cookies follow SESSION_DEFAULT_DAYS
 
     # ===========================================
     # Cookie Settings (for httpOnly auth cookies)
@@ -126,8 +137,11 @@ class Settings(BaseSettings):
     # ===========================================
     # Session settings
     # ===========================================
-    SESSION_DEFAULT_DAYS: int = 36500  # ~100 years — session lives until logout or revocation
-    SESSION_REMEMBER_ME_DAYS: int = 36500  # Legacy env var; remember_me no longer changes lifetime
+    # Sessions use rolling expiry (extended on every validated request), so this is
+    # an *idle* timeout: active users stay signed in indefinitely, while stolen or
+    # abandoned tokens expire after 90 days of inactivity.
+    SESSION_DEFAULT_DAYS: int = 90
+    SESSION_REMEMBER_ME_DAYS: int = 90  # Legacy env var; remember_me no longer changes lifetime
 
     # ===========================================
     # Account lockout

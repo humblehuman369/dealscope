@@ -471,7 +471,7 @@ function RegistrationInner() {
         }}
       >
         {plan === 'pro'
-          ? `Full Pro access free until ${trialEndDate}.`
+          ? `Create your account, then start your 7-day free trial — no charge until ${trialEndDate}.`
           : 'Get started with 3 free analyses per month.'}
       </p>
 
@@ -982,9 +982,9 @@ function RegistrationInner() {
         >
           {plan === 'pro' ? (
             <>
-              Your Pro trial is active until{' '}
-              <strong style={{ color: '#CBD5E1' }}>{trialEndDate}</strong>. Time to find your first
-              Deal Gap.
+              Your account is ready. Start your 7-day free trial to unlock full Pro access until{' '}
+              <strong style={{ color: '#CBD5E1' }}>{trialEndDate}</strong> — you won&apos;t be
+              charged until then.
             </>
           ) : (
             'Your Starter account is ready. Time to find your first Deal Gap.'
@@ -992,7 +992,7 @@ function RegistrationInner() {
         </p>
 
         <button
-          onClick={() => router.replace(getPostRegisterPath())}
+          onClick={() => router.replace(plan === 'pro' ? '/billing' : getPostRegisterPath())}
           style={{
             minHeight: '48px',
             padding: '14px 32px',
@@ -1010,11 +1010,18 @@ function RegistrationInner() {
             color: '#fff',
           }}
         >
-          {returnToParam ? 'Continue' : 'Analyze Your First Property'} <ArrowIcon />
+          {plan === 'pro'
+            ? 'Start Free Trial'
+            : returnToParam
+              ? 'Continue'
+              : 'Analyze Your First Property'}{' '}
+          <ArrowIcon />
         </button>
 
         <p style={{ fontSize: '12px', color: '#475569', marginTop: '16px' }}>
-          Enter any address · 60-second analysis
+          {plan === 'pro'
+            ? 'Cancel anytime before the trial ends · No charge today'
+            : 'Enter any address · 60-second analysis'}
         </p>
       </div>
     )

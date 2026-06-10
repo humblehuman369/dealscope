@@ -12,7 +12,9 @@ from typing import Any
 # v7: listing narrative (description), motivated_keywords, price history/cuts,
 # v8: Zillow enrichment (tax history, nearby schools, walk/transit/bike scores, zestimate trend).
 # v9: RentCast owner details (names, type, mailing address) on listing payload.
-_PROPERTY_CACHE_FORMULA_VERSION = "9"
+# v10: no-fabrication fixes — taxes now value x regional rate (null when no value),
+#      ADR null when no Mashvisor/LTR signal (was hardcoded $200/$4500 fallbacks).
+_PROPERTY_CACHE_FORMULA_VERSION = "10"
 
 
 def _strip_property_cache_meta(payload: dict[str, Any]) -> dict[str, Any]:

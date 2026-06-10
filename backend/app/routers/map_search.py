@@ -8,7 +8,7 @@ import logging
 from fastapi import APIRouter, HTTPException, Query, status
 
 from app.core.config import settings
-from app.core.deps import OptionalUser
+from app.core.deps import CurrentUser
 from app.schemas.property import (
     HeatmapPolygon,
     HeatmapRequest,
@@ -66,7 +66,7 @@ async def run_map_search(request: MapSearchRequest) -> MapSearchResponse:
 @router.post("/map/heatmap", response_model=HeatmapResponse)
 async def get_heatmap(
     request: HeatmapRequest,
-    current_user: OptionalUser = None,
+    current_user: CurrentUser,
 ):
     """Return investment heatmap polygons for a bounding box from Mashvisor."""
     client = _get_mashvisor()
@@ -150,7 +150,7 @@ async def get_heatmap(
 async def get_neighborhoods(
     state: str,
     city: str,
-    current_user: OptionalUser = None,
+    current_user: CurrentUser,
 ):
     """Return all neighborhoods for a city with lat/lng for map labels."""
     client = _get_mashvisor()
@@ -200,8 +200,8 @@ async def get_neighborhoods(
 @router.get("/map/neighborhood/{neighborhood_id}", response_model=NeighborhoodOverview)
 async def get_neighborhood_overview(
     neighborhood_id: int,
+    current_user: CurrentUser,
     state: str = Query(..., description="Two-letter state code"),
-    current_user: OptionalUser = None,
 ):
     """Return investment scorecard for a single neighborhood."""
     client = _get_mashvisor()

@@ -14,11 +14,16 @@ import { AccountSnapshot } from './_components/AccountSnapshot'
 import { UpcomingTasks } from './_components/UpcomingTasks'
 import { SavedContactsSection } from './_components/SavedContactsSection'
 import { ContinueWorkflowBanner } from '@/components/ui/ContinueWorkflowBanner'
+import { useSearchHistory } from '@/hooks/useSearchHistory'
 
 function DashboardContent() {
   const router = useRouter()
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [highlightStage, setHighlightStage] = useState<PropertyStatus | null>(null)
+
+  // Most recent successful analysis powers the "continue where you left off" banner.
+  const { data: recentSearches } = useSearchHistory({ page: 0, pageSize: 1, successfulOnly: true })
+  const lastSearch = recentSearches?.[0]
 
   useEffect(() => {
     markDashboardVisited()
@@ -31,12 +36,15 @@ function DashboardContent() {
           <DashboardHeader onSearchClick={() => setShowSearchModal(true)} />
         </div>
 
-        {/* High-visibility "Continue where you left off" banner */}
-        <ContinueWorkflowBanner
-          lastProperty="123 Main St, Austin, TX"
-          resumeHref="/deal-maker/123-Main-St-Austin-TX"
-          label="Resume Deal Maker"
-        />
+        {/* High-visibility "Continue where you left off" banner — only when the
+            user actually has a recent analysis to resume. */}
+        {lastSearch && (
+          <ContinueWorkflowBanner
+            lastProperty={lastSearch.search_query}
+            resumeHref={`/discovery?address=${encodeURIComponent(lastSearch.search_query)}`}
+            label="Resume analysis"
+          />
+        )}
 
         {/* Pipeline stats — clickable filters that highlight the kanban column */}
         <PipelineStats activeStage={highlightStage} onSelectStage={setHighlightStage} />

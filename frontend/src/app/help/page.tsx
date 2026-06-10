@@ -24,13 +24,13 @@ const FAQ_DATA: FAQItem[] = [
     category: 'Getting Started',
     question: 'Do I need an account to use DealGapIQ?',
     answer:
-      'No — you can analyze properties without an account. However, creating a free account lets you save properties, build a portfolio, track your search history, and customize your default investment assumptions.',
+      'No — you can run a few analyses without an account. Creating a free Starter account gives you 3 property analyses per month, lets you save up to 3 properties, track your search history, and customize your default investment assumptions.',
   },
   {
     category: 'Getting Started',
     question: 'Is DealGapIQ free?',
     answer:
-      "Yes. DealGapIQ is currently in free beta. All features — including unlimited analyses, PDF reports, and portfolio tracking — are free during the beta period. We'll announce paid tiers before they launch, and beta users will get early-access pricing.",
+      'The Starter plan is free forever: 3 property analyses per month, the full Discovery verdict with all 6 strategy snapshots, and up to 3 saved properties. Pro Investor ($39.99/mo or $349.99/yr) adds unlimited analyses, the Deal Maker, comps, exports, and investor directories — with a 7-day free trial.',
   },
   {
     category: 'Analysis & Scoring',

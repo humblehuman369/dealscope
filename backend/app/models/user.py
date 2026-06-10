@@ -130,7 +130,8 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    saved_directory_contacts: Mapped[list["SavedDirectoryContact"]] = relationship(
+    # SQLAlchemy resolves the string forward reference from the mapper registry
+    saved_directory_contacts: Mapped[list["SavedDirectoryContact"]] = relationship(  # noqa: F821
         "SavedDirectoryContact",
         back_populates="user",
         cascade="all, delete-orphan",

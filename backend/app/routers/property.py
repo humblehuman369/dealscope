@@ -4,18 +4,19 @@ Property router for property search, details, and market data endpoints.
 Extracted from main.py for cleaner architecture.
 """
 
+import hashlib
 import logging
 import re
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from io import BytesIO
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 
+from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession, OptionalUser
-from app.core.exceptions import ExternalAPIError
-from app.services.resilience import CircuitOpenError
+from app.core.exceptions import ExternalAPIError, SubscriptionLimitError
 from app.models.saved_property import SavedProperty
 from app.models.search_history import SearchHistory
 from app.schemas.property import (
@@ -24,8 +25,11 @@ from app.schemas.property import (
     PropertyResponse,
     PropertySearchRequest,
 )
+from app.services.billing_service import billing_service
+from app.services.cache_service import get_cache_service
 from app.services.property_export_service import generate_property_data_report_excel
 from app.services.property_service import property_service
+from app.services.resilience import CircuitOpenError
 from app.services.search_history_service import search_history_service
 
 logger = logging.getLogger(__name__)
@@ -82,12 +86,104 @@ def _build_full_address(request: PropertySearchRequest) -> str:
 # ============================================
 # PROPERTY SEARCH
 # ============================================
-# SEARCH PROPERTY
+# Server-side analysis metering
+#
+# The monthly analysis limit is enforced HERE (not by the client calling
+# /usage/record-analysis). Semantics: one analysis = one distinct property.
+# Re-searching an address the user already analyzed this month is free, so
+# refreshes and Verdict <-> Strategy navigation never burn quota.
+
+
+def _client_ip(request: Request) -> str:
+    """Best-effort client IP extraction behind proxies."""
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _address_fingerprint(full_address: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]", "", full_address.lower())
+    return hashlib.sha256(normalized.encode()).hexdigest()[:16]
+
+
+async def _has_recent_successful_search(db: DbSession, user_id, full_address: str) -> bool:
+    """True when the user already successfully analyzed this address in the last 30 days."""
+    window_start = datetime.now(UTC) - timedelta(days=30)
+    result = await db.execute(
+        select(SearchHistory.id)
+        .where(
+            SearchHistory.user_id == user_id,
+            SearchHistory.search_query == full_address,
+            SearchHistory.was_successful.is_(True),
+            SearchHistory.searched_at >= window_start,
+        )
+        .limit(1)
+    )
+    return result.scalar_one_or_none() is not None
+
+
+def _analysis_limit_http_error(e: SubscriptionLimitError) -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail={
+            "code": e.code,
+            "message": f"You've used all {e.limit} free analyses this month. Upgrade to Pro for unlimited.",
+            "limit_type": e.limit_type,
+            "current": e.current,
+            "limit": e.limit,
+            "tier_required": e.tier_required,
+        },
+    )
+
+
+async def _check_anonymous_quota(http_request: Request, full_address: str) -> tuple[str, str, bool]:
+    """Enforce the per-IP daily cap for signed-out users.
+
+    Returns ``(counter_key, marker_key, is_repeat)``; raises 403 when exhausted.
+    Repeat views of an already-analyzed address never consume quota.
+    """
+    cache = get_cache_service()
+    ip = _client_ip(http_request)
+    today = datetime.now(UTC).strftime("%Y%m%d")
+    counter_key = f"anon_quota:{ip}:{today}"
+    marker_key = f"anon_seen:{ip}:{_address_fingerprint(full_address)}"
+
+    if await cache.exists(marker_key):
+        return counter_key, marker_key, True
+
+    limit = settings.ANON_ANALYSES_PER_DAY
+    used = await cache.get(counter_key) or 0
+    if int(used) >= limit:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "code": "ANONYMOUS_LIMIT_REACHED",
+                "message": (
+                    f"You've used today's {limit} free analyses. "
+                    "Create a free account to keep analyzing properties."
+                ),
+                "limit_type": "anonymous_analyses",
+                "current": int(used),
+                "limit": limit,
+                "tier_required": "free",
+            },
+        )
+    return counter_key, marker_key, False
+
+
+async def _record_anonymous_analysis(counter_key: str, marker_key: str) -> None:
+    """Count one anonymous analysis after a successful fetch (24h windows)."""
+    cache = get_cache_service()
+    used = await cache.get(counter_key) or 0
+    await cache.set(counter_key, int(used) + 1, ttl_seconds=86400)
+    await cache.set(marker_key, 1, ttl_seconds=86400)
 
 
 @router.post("/properties/search", response_model=PropertyResponse)
 async def search_property(
     request: PropertySearchRequest,
+    http_request: Request,
     db: DbSession,
     current_user: OptionalUser = None,
 ):
@@ -97,9 +193,28 @@ async def search_property(
     Fetches data from RentCast and AXESSO APIs, normalizes into unified schema.
     Returns property details, valuations, rental estimates, and data provenance.
     Automatically records the search in the user's search history when authenticated.
+
+    Usage limits are enforced server-side: free-tier users get
+    ``searches_per_month`` distinct properties per month; anonymous users get
+    ``ANON_ANALYSES_PER_DAY`` distinct properties per IP per day. Returns 403
+    with a structured detail payload when the limit is reached.
     """
     full_address = _build_full_address(request)
     search_source = request.search_source or "web"
+
+    # --- Pre-flight metering (cheap checks before the expensive fetch) ---
+    is_repeat = False
+    anon_counter_key: str | None = None
+    anon_marker_key: str | None = None
+    if current_user:
+        is_repeat = await _has_recent_successful_search(db, current_user.id, full_address)
+        if not is_repeat:
+            try:
+                await billing_service.check_analysis_allowance(db, current_user.id)
+            except SubscriptionLimitError as e:
+                raise _analysis_limit_http_error(e)
+    else:
+        anon_counter_key, anon_marker_key, is_repeat = await _check_anonymous_quota(http_request, full_address)
 
     logger.info(f"Searching for property: {full_address}")
 
@@ -194,8 +309,23 @@ async def search_property(
             logger.info(f"Search history recorded for user {current_user.id}")
         except Exception as rec_err:
             logger.error(f"Failed to record search history: {rec_err}", exc_info=True)
+
+        # Count the analysis only after a successful fetch of a new property.
+        if not is_repeat:
+            try:
+                await billing_service.record_analysis(db, current_user.id, property_address=full_address)
+            except SubscriptionLimitError:
+                # Lost a pre-flight race; the data was already fetched, so serve it.
+                logger.warning("Analysis limit race for user %s on %s", current_user.id, full_address)
+            except Exception as usage_err:
+                logger.error(f"Failed to record analysis usage: {usage_err}", exc_info=True)
     else:
         logger.debug("Search history not recorded: no authenticated user")
+        if not is_repeat and anon_counter_key and anon_marker_key:
+            try:
+                await _record_anonymous_analysis(anon_counter_key, anon_marker_key)
+            except Exception as anon_err:
+                logger.warning("Failed to record anonymous analysis quota: %s", anon_err)
 
     return result
 
@@ -204,14 +334,15 @@ async def search_property(
     "/properties/export-report",
     summary="Report of data received from RentCast and AXESSO for a property",
 )
-async def export_property_data_report(request: PropertySearchRequest):
+async def export_property_data_report(request: PropertySearchRequest, current_user: CurrentUser):
     """
     Generate one Excel report with two sheets:
     - **RentCast** — all data we receive from RentCast for this property.
     - **AXESSO** — all data we receive from AXESSO/Zillow for this property.
 
     Request body: same as property search (address, optional city, state, zip_code).
-    Returns a single .xlsx file.
+    Returns a single .xlsx file. Requires authentication (triggers a full
+    RentCast + AXESSO fetch pipeline).
     """
     full_address = _build_full_address(request)
     logger.info(f"Property data report requested for: {full_address}")
@@ -251,10 +382,11 @@ async def get_demo_property():
 @router.post("/properties/search-area", response_model=MapSearchResponse)
 async def search_property_area(
     request: MapSearchRequest,
-    current_user: OptionalUser = None,
+    current_user: CurrentUser,
 ):
     """
-    Map viewport / polygon listing search.
+    Map viewport / polygon listing search. Requires authentication —
+    each cache miss fans out to RentCast/AXESSO (and Mashvisor when enabled).
 
     Registered on the property router (before ``/properties/{property_id}``)
     so POST is not shadowed by the dynamic GET path when the map-search
@@ -341,9 +473,13 @@ async def get_property_photos(zpid: str | None = None, url: str | None = None, p
 
 
 @router.get("/market-data")
-async def get_market_data(location: str = Query(..., description="City, State format (e.g., 'Delray Beach, FL')")):
+async def get_market_data(
+    current_user: CurrentUser,
+    location: str = Query(..., description="City, State format (e.g., 'Delray Beach, FL')"),
+):
     """
-    Get rental market data from Zillow via AXESSO API.
+    Get rental market data from Zillow via AXESSO API. Requires authentication
+    (proxies a paid external API; UI only calls this from auth-gated worksheets).
 
     Args:
         location: City, State format (e.g., "Delray Beach, FL")
@@ -408,6 +544,7 @@ async def get_market_assumptions(
 
 @router.get("/similar-rent")
 async def get_similar_rent(
+    current_user: CurrentUser,
     zpid: str | None = None,
     url: str | None = None,
     address: str | None = None,
@@ -469,6 +606,7 @@ async def get_similar_rent(
 
 @router.get("/rentcast/rental-comps")
 async def get_rentcast_rental_comps(
+    current_user: CurrentUser,
     zpid: str | None = None,
     address: str | None = None,
     limit: int = Query(default=10, ge=1, le=50, description="Number of comps to return"),
@@ -531,6 +669,7 @@ async def get_rentcast_rental_comps(
 
 @router.get("/rentcast/sale-comps")
 async def get_rentcast_sale_comps(
+    current_user: CurrentUser,
     zpid: str | None = None,
     address: str | None = None,
     limit: int = Query(default=10, ge=1, le=50, description="Number of comps to return"),
@@ -595,6 +734,7 @@ async def get_rentcast_sale_comps(
 
 @router.get("/similar-sold")
 async def get_similar_sold(
+    current_user: CurrentUser,
     zpid: str | None = None,
     url: str | None = None,
     address: str | None = None,

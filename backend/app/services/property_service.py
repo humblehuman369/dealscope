@@ -16,6 +16,7 @@ from typing import Any
 
 from app.core.config import settings
 from app.core.formulas import compute_market_price
+from app.data.motivated_seller_keywords import match_motivated_seller_keywords
 from app.schemas.analytics import IQVerdictInput
 from app.schemas.property import (
     Address,
@@ -59,9 +60,8 @@ from app.services.calculators import (
     calculate_str,
     calculate_wholesale,
 )
-from app.data.motivated_seller_keywords import match_motivated_seller_keywords
 from app.services.iq_verdict_service import compute_iq_verdict
-from app.services.resilience import CircuitOpenError, resilient
+from app.services.resilience import resilient
 from app.services.zillow_client import ZillowDataExtractor, create_zillow_client
 
 logger = logging.getLogger(__name__)
@@ -1346,7 +1346,9 @@ class PropertyService:
            supply ``average_daily_rate`` directly (e.g. low sample size).
         2. LTR-derived heuristic (existing behavior): 2.5x daily equivalent
            of monthly LTR rent.
-        3. Hard $200 default — last resort.
+
+        Returns ``None`` when neither signal exists — never fabricates a
+        flat-dollar ADR (UI shows "Unavailable" instead).
         """
         mashvisor_monthly = data.get("str_monthly_revenue_mashvisor")
         if mashvisor_monthly:
@@ -1357,15 +1359,35 @@ class PropertyService:
         if monthly_rent:
             daily_equivalent = monthly_rent / 30
             return daily_equivalent * 2.5
-        return 200
+        return None
 
-    def _estimate_taxes(self, data: dict) -> float:
-        """Estimate annual property taxes."""
-        avm = data.get("current_value_avm")
-        if avm:
-            # Typical 1-1.5% of value
-            return avm * 0.012
-        return 4500  # Default fallback
+    def _estimate_taxes(self, data: dict) -> float | None:
+        """Estimate annual property taxes as property_value × regional tax rate.
+
+        Mirrors :meth:`_estimate_insurance`: a documented value-derived formula,
+        never a flat-dollar invention. The rate comes from the state-level
+        ``MARKET_ADJUSTMENTS`` table (resolved via ZIP) with a 1.2% national
+        default. Returns ``None`` when no property value is available.
+        """
+        from app.services.assumptions_service import get_market_adjustments
+
+        property_value = (
+            data.get("value_iq_estimate")
+            or data.get("zestimate")
+            or data.get("current_value_avm")
+            or data.get("list_price")
+        )
+        if not property_value:
+            return None
+
+        tax_rate = 0.012
+        zip_code = data.get("zip_code")
+        if zip_code:
+            try:
+                tax_rate = get_market_adjustments(str(zip_code)).get("property_tax_rate", 0.012)
+            except Exception:
+                logger.warning("Failed to resolve regional tax rate for zip %s", zip_code)
+        return round(float(property_value) * tax_rate, 2)
 
     def _estimate_insurance(self, data: dict) -> float | None:
         """Estimate annual insurance as property_value × default insurance_pct.
@@ -2019,24 +2041,19 @@ class PropertyService:
             or 0
         )
         monthly_rent = property_data.rentals.monthly_rent_ltr or 0
-        property_taxes = property_data.market.property_taxes_annual or 4500
+        # taxes are estimated upstream (value x regional rate) or None when no
+        # value exists — never substitute a flat-dollar invention here.
+        property_taxes = property_data.market.property_taxes_annual or 0
         hoa = property_data.market.hoa_fees_monthly or 0
-        # Prefer Mashvisor STR data when available; fall back to legacy
-        # defaults (ADR $250, occupancy 75%) only when Mashvisor + AXESSO
-        # both miss. Note: average_daily_rate on rentals is already
-        # Mashvisor-aware (see DataNormalizer._inject_mashvisor_data); the
-        # str_market_stats access here lets us derive ADR from per-bed
-        # monthly revenue when ADR itself is missing.
+        # Prefer Mashvisor STR data when available. When neither Mashvisor nor
+        # AXESSO provides an ADR signal, adr stays None and the STR strategy is
+        # skipped rather than computed from a fabricated nightly rate.
         str_stats_for_defaults = property_data.rentals.str_market_stats
         mash_monthly_for_adr = str_stats_for_defaults.monthly_revenue_per_bed if str_stats_for_defaults else None
-        adr = (
-            property_data.rentals.average_daily_rate
-            or (
-                mash_monthly_for_adr / 30 / (property_data.rentals.occupancy_rate or 0.65)
-                if mash_monthly_for_adr
-                else None
-            )
-            or 250
+        adr = property_data.rentals.average_daily_rate or (
+            mash_monthly_for_adr / 30 / (property_data.rentals.occupancy_rate or 0.65)
+            if mash_monthly_for_adr
+            else None
         )
         occupancy = property_data.rentals.occupancy_rate or 0.75
         if occupancy > 1:
@@ -2080,7 +2097,7 @@ class PropertyService:
             )
             results.ltr = LTRResults(**ltr_result)
 
-        if StrategyType.SHORT_TERM_RENTAL in strategies_to_calc:
+        if StrategyType.SHORT_TERM_RENTAL in strategies_to_calc and adr:
             # Pull Mashvisor's per-bed monthly STR revenue when available so
             # the calculator bypasses the ADR×365×occupancy formula.
             str_stats = property_data.rentals.str_market_stats

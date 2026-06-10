@@ -220,8 +220,10 @@ app = FastAPI(
     Protected endpoints require a Bearer token. Get a token via `/api/v1/auth/login`.
     """,
     version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    # API schema/docs are an enumeration aid for attackers — disabled in production.
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
+    openapi_url=None if settings.is_production else "/openapi.json",
     lifespan=lifespan,
 )
 
@@ -240,13 +242,22 @@ app.add_middleware(
 # Prometheus Metrics
 # ===========================================
 try:
+    from fastapi import Depends
     from prometheus_fastapi_instrumentator import Instrumentator
+
+    from app.routers.health import require_monitoring_token
 
     Instrumentator(
         should_group_status_codes=True,
         should_ignore_untemplated=True,
         excluded_handlers=["/health", "/health/ready", "/health/deep", "/metrics"],
-    ).instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
+    ).instrument(app).expose(
+        app,
+        endpoint="/metrics",
+        include_in_schema=False,
+        # Open in dev; in production requires X-Monitoring-Token (404 otherwise).
+        dependencies=[Depends(require_monitoring_token)],
+    )
     logger.info("Prometheus metrics enabled at /metrics")
 except ImportError:
     logger.info("prometheus-fastapi-instrumentator not installed, metrics disabled")
