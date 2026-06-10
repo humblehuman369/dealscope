@@ -118,6 +118,7 @@ class EmailService:
         text: str | None = None,
         reply_to: str | None = None,
         headers: dict[str, str] | None = None,
+        idempotency_key: str | None = None,
     ) -> dict[str, Any]:
         """Send an email via Resend.
 
@@ -152,7 +153,14 @@ class EmailService:
             # of blocking the event loop. Important when the API call takes
             # >100ms — without this, every concurrent request to the backend
             # stalls until Resend responds.
-            response = await asyncio.to_thread(resend.Emails.send, params)
+            send_kwargs: dict[str, Any] = {}
+            if idempotency_key:
+                send_kwargs["idempotency_key"] = idempotency_key
+            response = await asyncio.to_thread(
+                resend.Emails.send,
+                params,
+                **send_kwargs,
+            )
             message_id = response.get("id") if isinstance(response, dict) else None
             logger.info(f"Email sent to {to}: {message_id or 'unknown'}")
             return {"id": message_id, "success": True}
@@ -397,6 +405,7 @@ class EmailService:
             to=to,
             subject="Verify your email address - DealGapIQ",
             html=html,
+            idempotency_key=f"verify-email/{verification_token}",
         )
 
     async def send_password_reset_email(
@@ -442,6 +451,7 @@ class EmailService:
             to=to,
             subject="Reset your password - DealGapIQ",
             html=html,
+            idempotency_key=f"password-reset/{reset_token}",
         )
 
     async def send_welcome_email(
