@@ -1453,8 +1453,14 @@ class AirROIClient(BaseAPIClient[APIResponse]):
             except (TypeError, ValueError):
                 return None
 
-        adr = _safe_float(data.get("average_daily_rate")) or _safe_float(data.get("adr"))
-        revenue = _safe_float(data.get("revenue")) or _safe_float(data.get("annual_revenue"))
+        # Nullish fallback (not `or`) — a legitimate 0.0 in the primary field
+        # must not fall through to the alternate spelling.
+        adr = _safe_float(data.get("average_daily_rate"))
+        if adr is None:
+            adr = _safe_float(data.get("adr"))
+        revenue = _safe_float(data.get("revenue"))
+        if revenue is None:
+            revenue = _safe_float(data.get("annual_revenue"))
         occupancy = _safe_float(data.get("occupancy"))
         # Defensive: AirROI documents 0-1, but normalize a stray percent value.
         if occupancy is not None and occupancy > 1:
@@ -1488,7 +1494,7 @@ class AirROIClient(BaseAPIClient[APIResponse]):
         result["str_adr"] = adr
         result["str_occupancy_pct"] = occupancy * 100.0 if occupancy is not None else None
         result["str_revenue_annual"] = revenue
-        result["str_monthly_revenue"] = round(revenue / 12.0) if revenue else None
+        result["str_monthly_revenue"] = round(revenue / 12.0) if revenue is not None else None
         result["str_sample_size"] = sample_size
         result["str_confidence"] = confidence
         return result

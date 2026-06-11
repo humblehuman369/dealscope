@@ -102,6 +102,27 @@ def test_parse_estimate_partial_payload_keeps_available_fields():
     assert result["str_confidence"] == "low"
 
 
+def test_parse_estimate_preserves_zero_revenue():
+    """A legitimate 0 revenue must stay 0 — annual and monthly must agree
+    (data-consistency rule: never let 0 fall through truthiness checks)."""
+    result = AirROIClient.parse_estimate(
+        _tutorial_payload(revenue=0, average_daily_rate=0, occupancy=0)
+    )
+    assert result["str_revenue_annual"] == 0
+    assert result["str_monthly_revenue"] == 0
+    assert result["str_adr"] == 0
+    assert result["str_occupancy_pct"] == 0
+
+
+def test_parse_estimate_zero_primary_field_does_not_fall_through():
+    """`revenue: 0` must not fall through to `annual_revenue`."""
+    result = AirROIClient.parse_estimate(
+        {"revenue": 0, "annual_revenue": 99999, "average_daily_rate": 0, "adr": 500}
+    )
+    assert result["str_revenue_annual"] == 0
+    assert result["str_adr"] == 0
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # inject_str_estimate — overlay onto normalized output
 # ─────────────────────────────────────────────────────────────────────────────
