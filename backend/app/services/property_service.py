@@ -586,6 +586,7 @@ class PropertyService:
                 should_invalidate, reason = _should_invalidate_cache(
                     cached_data,
                     redfin_enabled=self.redfin is not None,
+                    str_estimates_enabled=self.airroi is not None,
                     formula_version=_PROPERTY_CACHE_FORMULA_VERSION,
                 )
                 if should_invalidate:

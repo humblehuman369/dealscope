@@ -44,3 +44,63 @@ def test_listed_property_with_zestimate_not_degraded() -> None:
     payload["valuations"] = {"zestimate": 506900}
     should, _ = _should_invalidate_cache(payload, redfin_enabled=False)
     assert should is False
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AirROI STR estimate staleness
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_pre_airroi_version_is_invalidated() -> None:
+    """v10 (pre-AirROI) entries are caught by the formula-version check
+    regardless of STR flags — the go-live invalidation path."""
+    payload = _base_good_payload()
+    payload["valuation_formula_version"] = "10"
+    should, reason = _should_invalidate_cache(payload, redfin_enabled=False)
+    assert should is True
+    assert reason == "pre-valuation-snapshot-v5"
+
+
+def test_str_absent_old_entry_invalidated_when_enabled() -> None:
+    """Current-version entry cached while the AirROI fetch failed: retry
+    after the 4h absent window (mirrors Zillow/Redfin behavior)."""
+    payload = _base_good_payload()
+    payload["fetched_at"] = "2020-01-01T00:00:00+00:00"  # well past 4h
+    payload["rentals"]["str_market_stats"] = None
+    should, reason = _should_invalidate_cache(
+        payload, redfin_enabled=False, str_estimates_enabled=True
+    )
+    assert should is True
+    assert reason == "STR estimate data absent > 4h"
+
+
+def test_str_absent_fresh_entry_not_invalidated() -> None:
+    """No thrash: a fresh (<4h) entry without STR data is served as-is."""
+    payload = _base_good_payload()  # fetched_at 2099 → age never exceeds
+    payload["rentals"]["str_market_stats"] = None
+    should, _ = _should_invalidate_cache(
+        payload, redfin_enabled=False, str_estimates_enabled=True
+    )
+    assert should is False
+
+
+def test_str_absent_ignored_when_estimates_disabled() -> None:
+    """With AirROI off, missing STR data must never force a re-fetch."""
+    payload = _base_good_payload()
+    payload["fetched_at"] = "2020-01-01T00:00:00+00:00"
+    payload["rentals"]["str_market_stats"] = None
+    should, _ = _should_invalidate_cache(
+        payload, redfin_enabled=False, str_estimates_enabled=False
+    )
+    assert should is False
+
+
+def test_str_present_old_entry_not_invalidated() -> None:
+    """Entries that already carry STR data are stable for the full TTL."""
+    payload = _base_good_payload()
+    payload["fetched_at"] = "2020-01-01T00:00:00+00:00"
+    payload["rentals"]["str_market_stats"] = {"median_adr": 265.97, "monthly_revenue_per_bed": 3790}
+    should, _ = _should_invalidate_cache(
+        payload, redfin_enabled=False, str_estimates_enabled=True
+    )
+    assert should is False

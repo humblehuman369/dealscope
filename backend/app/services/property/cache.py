@@ -30,6 +30,7 @@ def _should_invalidate_cache(
     cached_data: dict[str, Any] | None,
     *,
     redfin_enabled: bool = True,
+    str_estimates_enabled: bool = False,
     formula_version: str = _PROPERTY_CACHE_FORMULA_VERSION,
 ) -> tuple[bool, str | None]:
     """Pure, testable predicate: should we discard this cached property payload?
@@ -92,6 +93,11 @@ def _should_invalidate_cache(
         and valuations.get("redfin_estimate") is None
         and not rental_stats_cached.get("redfin_estimate")
     )
+    # STR estimates (AirROI) absent — entries cached while the AirROI fetch
+    # failed (API error, missing coordinates, flag off) have
+    # str_market_stats: null at the CURRENT formula version, so the version
+    # check never retries them. Mirror the Zillow/Redfin 4h absent-retry.
+    str_absent = str_estimates_enabled and not rentals_cached.get("str_market_stats")
 
     def _cache_age_exceeds(seconds: int) -> bool:
         fetched_raw = cached_data.get("fetched_at")
@@ -109,6 +115,7 @@ def _should_invalidate_cache(
 
     zillow_stale = zillow_absent and _cache_age_exceeds(14400)
     redfin_stale = redfin_absent and _cache_age_exceeds(14400)
+    str_stale = str_absent and _cache_age_exceeds(14400)
 
     stale = (
         (
@@ -121,6 +128,7 @@ def _should_invalidate_cache(
         or missing_hoa
         or zillow_stale
         or redfin_stale
+        or str_stale
         or legacy_valuation_formula
         or degraded_listing
     )
@@ -133,6 +141,8 @@ def _should_invalidate_cache(
         if zillow_stale
         else "Redfin data absent > 4h"
         if redfin_stale
+        else "STR estimate data absent > 4h"
+        if str_stale
         else "pre-valuation-snapshot-v5"
         if legacy_valuation_formula
         else "degraded listing (zpid present, status+zestimate missing)"
