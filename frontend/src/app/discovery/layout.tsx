@@ -56,7 +56,7 @@ export default function DiscoveryLayout({ children }: { children: React.ReactNod
           },
           {
             heading: 'How it works',
-            body: 'Discovery blends data from Zillow, RentCast, Redfin, Realtor.com, and Mashvisor with our own IQ Estimate model. We pull the property facts, run the financial math for each strategy with sensible default assumptions (which you can override later in DealMaker), and surface the leverage that the asking price hides. No spreadsheet, no copy-pasting comps.',
+            body: 'Discovery blends data from Zillow, RentCast, Redfin, Realtor.com, and AirROI with our own IQ Estimate model. We pull the property facts, run the financial math for each strategy with sensible default assumptions (which you can override later in DealMaker), and surface the leverage that the asking price hides. No spreadsheet, no copy-pasting comps.',
           },
           {
             heading: 'Who it is for',

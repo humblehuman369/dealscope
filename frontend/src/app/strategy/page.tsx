@@ -965,8 +965,8 @@ function StrategyContent() {
       sqft: propertyInfo.details?.square_footage,
       listPrice: propertyInfo.price,
       zpid: propertyInfo.zpid,
-      // Persist Mashvisor /rental-rates data so the worksheet keeps using
-      // it after save/reload without re-fetching.
+      // Persist the AirROI per-property monthly STR revenue so the worksheet
+      // keeps using it after save/reload without re-fetching.
       monthlyStrRevenuePerBed: strStats?.monthly_revenue_per_bed ?? undefined,
       monthlyStrRevenueSampleSize: strStats?.monthly_revenue_sample_size ?? undefined,
     }
@@ -3432,7 +3432,7 @@ function StrategyContent() {
               </div>
             </div>
 
-            {/* STR Market Intelligence (Mashvisor) */}
+            {/* STR Market Intelligence (AirROI) */}
             {currentStrategyType === 'str' &&
               (propertyInfo?.rentals?.str_market_stats ||
                 propertyInfo?.rentals?.str_regulatory) && (

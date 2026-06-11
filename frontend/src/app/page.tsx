@@ -34,7 +34,7 @@ const HOME_FAQ = [
   {
     question: 'How is DealGapIQ different from a spreadsheet?',
     answer:
-      'DealGapIQ pulls live market data from Zillow, RentCast, Redfin, Realtor.com, and Mashvisor, runs the full pro-forma on our servers, and surfaces a ranked score plus offer scripts. You get lender-ready numbers without building or maintaining your own model.',
+      'DealGapIQ pulls live market data from Zillow, RentCast, Redfin, Realtor.com, and AirROI, runs the full pro-forma on our servers, and surfaces a ranked score plus offer scripts. You get lender-ready numbers without building or maintaining your own model.',
   },
   {
     question: 'Do I need an account to analyze a property?',

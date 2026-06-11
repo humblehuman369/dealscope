@@ -70,7 +70,7 @@ const graph = {
         'Discovery — instant deal score (0–95)',
         'Six-strategy analysis (LTR, STR, BRRRR, Flip, House Hack, Wholesale)',
         'Deal Gap, Target Buy, and Income Value metrics',
-        'Multi-source IQ Estimate (Zillow, RentCast, Redfin, Realtor, Mashvisor)',
+        'Multi-source IQ Estimate (Zillow, RentCast, Redfin, Realtor) with AirROI STR analytics',
         'Editable assumptions and stress-testing',
         'Creative-finance modeling (Subject-To, seller carrybacks, 0% seconds)',
         'Four pre-built offer structures with negotiation scripts',

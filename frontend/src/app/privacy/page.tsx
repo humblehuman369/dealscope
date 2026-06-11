@@ -88,8 +88,11 @@ export default function PrivacyPolicyPage() {
               </li>
               <li>
                 <strong className="text-slate-300">RapidAPI</strong> — Marketplace gateway for
-                property listings, valuations, and market data sourced from Redfin, Realtor.com, and
-                Mashvisor
+                property listings, valuations, and market data sourced from Redfin and Realtor.com
+              </li>
+              <li>
+                <strong className="text-slate-300">AirROI</strong> — Short-term rental revenue,
+                nightly rate, and occupancy analytics
               </li>
               <li>
                 <strong className="text-slate-300">Google Maps</strong> — Mapping and geocoding

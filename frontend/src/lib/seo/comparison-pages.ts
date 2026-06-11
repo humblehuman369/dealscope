@@ -3,7 +3,7 @@ import type { ComparisonPageConfig } from '@/components/comparisons/ComparisonPa
 const BASE = {
   dealgapiqStrengths: [
     'Six-strategy Discovery score with Deal Gap on every address',
-    'Transparent IQ Estimate blending Zillow, RentCast, Redfin, Realtor.com, and Mashvisor',
+    'Transparent IQ Estimate blending Zillow, RentCast, Redfin, and Realtor.com, plus AirROI STR analytics',
     'DealMaker offer scripts and creative-finance structures (Subject-To, seller carry)',
     '60-second first pass before you build a spreadsheet',
   ],
@@ -58,10 +58,10 @@ export const COMPARISON_PAGES: Record<string, ComparisonPageConfig> = {
     },
     headline: 'DealGapIQ vs Mashvisor',
     summary:
-      'Mashvisor is the go-to for Airbnb market research. DealGapIQ ingests Mashvisor rent data as one source, then ranks the property across LTR, STR, BRRRR, flip, house hack, and wholesale with a unified Deal Gap.',
+      'Mashvisor is the go-to for Airbnb market research. DealGapIQ pairs AirROI STR revenue projections with multi-source valuations, then ranks the property across LTR, STR, BRRRR, flip, house hack, and wholesale with a unified Deal Gap.',
     dealgapiqStrengths: [
       ...BASE.dealgapiqStrengths,
-      'Uses Mashvisor STR data inside a broader six-strategy model',
+      'AirROI-powered STR revenue, nightly rate, and occupancy inside a broader six-strategy model',
     ],
     competitorStrengths: [
       'Deep short-term rental market analytics and heatmaps',
@@ -78,7 +78,7 @@ export const COMPARISON_PAGES: Record<string, ComparisonPageConfig> = {
       {
         question: 'Does DealGapIQ use Mashvisor data?',
         answer:
-          'Yes. Mashvisor per-bedroom rent feeds the STR column in IQ Estimate when available for the property.',
+          'No. DealGapIQ sources STR revenue, nightly rate, and occupancy projections from AirROI, and blends Zillow, RentCast, Redfin, and Realtor.com for valuations and rent.',
       },
     ],
   },

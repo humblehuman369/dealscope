@@ -18,7 +18,7 @@ export const STRATEGY_SCHEMA_BY_SLUG: Record<
     description:
       'Airbnb-style income modeling with seasonality, furnishing costs, and platform fees.',
     steps: [
-      { name: 'Estimate ADR', text: 'Use Mashvisor and market comps for nightly rate and occupancy.' },
+      { name: 'Estimate ADR', text: 'Use AirROI and market comps for nightly rate and occupancy.' },
       { name: 'Load operating costs', text: 'Include cleaning, supplies, utilities, and management.' },
       { name: 'Compare to LTR', text: 'See whether STR beats long-term rent on the same property.' },
       { name: 'Price the deal', text: 'Anchor offer to cash flow after furnishing and ramp-up.' },

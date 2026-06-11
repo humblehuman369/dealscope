@@ -63,7 +63,7 @@ export default function DisclosuresPage() {
             <h2 className="text-lg font-semibold text-white mb-3">3. Data-source limitations</h2>
             <p className="mb-3">
               DealGapIQ blends data from multiple third-party providers, including Zillow, RentCast,
-              Redfin, Realtor.com, and Mashvisor, alongside our internally derived IQ Estimate. Each
+              Redfin, Realtor.com, and AirROI, alongside our internally derived IQ Estimate. Each
               provider has its own coverage, refresh cadence, and methodology. Data may be stale,
               incomplete, or inaccurate at the time of analysis. DealGapIQ does not guarantee the
               accuracy, completeness, or timeliness of any data displayed.
