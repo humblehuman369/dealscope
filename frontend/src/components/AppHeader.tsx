@@ -510,9 +510,25 @@ export function AppHeader({
     logoutMutation.mutate()
   }
 
+  // Tab navigation must carry a COMPLETE address. Property-details deep links
+  // put the bare street in `address` with city/state/zip as separate params
+  // (e.g. /property/123?address=2277 Summit Blvd&city=West Palm Beach&state=FL
+  // &zip_code=33406) — navigating with the street alone makes the Discovery
+  // search API reject with "full address required".
+  const navigationAddress = (() => {
+    if (!displayAddress || displayAddress.includes(',')) return displayAddress
+    const addrParts = parseDisplayAddress(displayAddress)
+    const city = resolvedProperty?.city || cityFromUrl || addrParts.city
+    const state = resolvedProperty?.state || stateFromUrl || addrParts.state
+    const zip = resolvedProperty?.zip || zipFromUrl || addrParts.zipCode
+    if (!city && !state && !zip) return displayAddress
+    const stateZip = [state, zip].filter(Boolean).join(' ')
+    return [displayAddress, city, stateZip].filter(Boolean).join(', ')
+  })()
+
   const handleTabChange = (tab: AppTab) => {
     // Build address params for navigation
-    const encodedAddress = encodeURIComponent(displayAddress)
+    const encodedAddress = encodeURIComponent(navigationAddress)
 
     // Check multiple possible sources for zpid
     // 1. From property prop
@@ -532,7 +548,7 @@ export function AppHeader({
     // Fallback: check sessionStorage for current property zpid
     if (!zpid && typeof window !== 'undefined') {
       try {
-        const parsed = readDealMakerOverrides(displayAddress)
+        const parsed = readDealMakerOverrides(navigationAddress)
         if (parsed?.zpid) {
           zpid = String(parsed.zpid)
         }
@@ -543,22 +559,22 @@ export function AppHeader({
 
     switch (tab) {
       case 'analyze':
-        if (displayAddress) {
+        if (navigationAddress) {
           router.push(`/discovery?address=${encodedAddress}`)
         } else {
           router.push('/search')
         }
         break
       case 'strategy':
-        if (displayAddress) {
+        if (navigationAddress) {
           router.push(`/strategy?address=${encodedAddress}`)
         } else {
           router.push('/search')
         }
         break
       case 'price-checker':
-        if (displayAddress) {
-          const compsQuery = new URLSearchParams({ address: displayAddress })
+        if (navigationAddress) {
+          const compsQuery = new URLSearchParams({ address: navigationAddress })
           if (zpid) compsQuery.set('zpid', String(zpid))
           if (resolvedProperty?.latitude != null)
             compsQuery.set('lat', String(resolvedProperty.latitude))
@@ -570,17 +586,17 @@ export function AppHeader({
         }
         break
       case 'deal-maker':
-        if (displayAddress) {
+        if (navigationAddress) {
           router.push(`/deal-maker?address=${encodedAddress}`)
         } else {
           router.push('/deal-maker')
         }
         break
       case 'estimator':
-        if (displayAddress) {
+        if (navigationAddress) {
           router.push(
             buildRehabUrl({
-              address: displayAddress,
+              address: navigationAddress,
               savedPropertyId: savedPropertyId ?? undefined,
               property: resolvedProperty
                 ? {
