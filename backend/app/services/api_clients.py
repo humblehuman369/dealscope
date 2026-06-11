@@ -63,6 +63,7 @@ class APIProvider(StrEnum):
     REDFIN = "redfin"
     REALTOR = "realtor"
     MASHVISOR = "mashvisor"
+    AIRROI = "airroi"
 
 
 @dataclass
@@ -1353,6 +1354,144 @@ class MashvisorClient(BaseAPIClient[APIResponse]):
     async def city_investment(self, state: str, city: str) -> APIResponse:
         """GET /city/investment/{state}/{city} — city-level investment overview."""
         return await self._make_request(f"city/investment/{state}/{city}")
+
+
+class AirROIClient(BaseAPIClient[APIResponse]):
+    """
+    Client for the AirROI API (pay-as-you-go STR analytics).
+
+    One GET /calculator/estimate call returns ML-driven STR projections
+    (annual revenue, ADR, occupancy, comparables) for a lat/lng + bedroom
+    configuration. Replaces the cancelled Mashvisor subscription as the STR
+    data source — a single call where Mashvisor needed five.
+    """
+
+    def __init__(self, api_key: str, base_url: str = "https://api.airroi.com"):
+        super().__init__(
+            api_key=api_key,
+            base_url=base_url,
+            timeout=15.0,
+            connect_timeout=5.0,
+            max_retries=2,
+            enable_circuit_breaker=True,
+        )
+
+    def _get_headers(self) -> dict[str, str]:
+        return {"X-API-KEY": self.api_key, "Accept": "application/json"}
+
+    def _create_response(
+        self,
+        success: bool,
+        data: dict[str, Any] | None,
+        error: str | None,
+        status_code: int | None,
+        raw_response: dict[str, Any] | None = None,
+        **kwargs,
+    ) -> APIResponse:
+        return APIResponse(
+            success=success,
+            data=data,
+            error=error,
+            status_code=status_code,
+            provider=APIProvider.AIRROI,
+            raw_response=raw_response,
+        )
+
+    def _get_provider_name(self) -> str:
+        return "AirROI"
+
+    async def estimate(
+        self,
+        lat: float,
+        lng: float,
+        bedrooms: int,
+        bathrooms: float,
+        guests: int,
+    ) -> APIResponse:
+        """GET /calculator/estimate — STR revenue projection for a location."""
+        return await self._make_request(
+            "calculator/estimate",
+            {
+                "lat": lat,
+                "lng": lng,
+                "bedrooms": bedrooms,
+                "baths": bathrooms,
+                "guests": guests,
+                "currency": "usd",
+            },
+        )
+
+    @staticmethod
+    def parse_estimate(data: Any) -> dict[str, Any]:
+        """Extract STR metrics from a /calculator/estimate response.
+
+        Returns provider-neutral keys consumed by
+        ``DataNormalizer.inject_str_estimate``:
+
+          - ``str_adr``           — projected average daily rate
+          - ``str_occupancy_pct`` — projected occupancy, 0-100 (Mashvisor
+                                    convention; AirROI returns 0-1)
+          - ``str_revenue_annual``— projected annual revenue
+          - ``str_monthly_revenue`` — annual / 12 (per-property monthly)
+          - ``str_sample_size``   — comparable-listing count
+          - ``str_confidence``    — high / medium / low
+
+        AirROI has shipped two response spellings (``revenue`` vs
+        ``annual_revenue``, ``average_daily_rate`` vs ``adr``,
+        ``comparable_listings`` list vs ``comparables`` int) — both are
+        tolerated. Empty dict on unparseable payloads; never fabricates.
+        """
+        result: dict[str, Any] = {}
+        if not isinstance(data, dict):
+            return result
+
+        def _safe_float(v: Any) -> float | None:
+            if v is None or isinstance(v, bool):
+                return None
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return None
+
+        adr = _safe_float(data.get("average_daily_rate")) or _safe_float(data.get("adr"))
+        revenue = _safe_float(data.get("revenue")) or _safe_float(data.get("annual_revenue"))
+        occupancy = _safe_float(data.get("occupancy"))
+        # Defensive: AirROI documents 0-1, but normalize a stray percent value.
+        if occupancy is not None and occupancy > 1:
+            occupancy = occupancy / 100.0
+
+        sample_size: int | None = None
+        comps = data.get("comparable_listings")
+        if isinstance(comps, list):
+            sample_size = len(comps)
+        else:
+            raw_comps = data.get("comparables")
+            try:
+                sample_size = int(raw_comps) if raw_comps is not None else None
+            except (TypeError, ValueError):
+                sample_size = None
+
+        # Prefer AirROI's own confidence label; fall back to the sample-size
+        # tiers used by the prior Mashvisor integration.
+        confidence = data.get("confidence")
+        if confidence not in ("high", "medium", "low"):
+            if sample_size is not None and sample_size >= 30:
+                confidence = "high"
+            elif sample_size is not None and sample_size >= 10:
+                confidence = "medium"
+            else:
+                confidence = "low"
+
+        if adr is None and revenue is None and occupancy is None:
+            return {}
+
+        result["str_adr"] = adr
+        result["str_occupancy_pct"] = occupancy * 100.0 if occupancy is not None else None
+        result["str_revenue_annual"] = revenue
+        result["str_monthly_revenue"] = round(revenue / 12.0) if revenue else None
+        result["str_sample_size"] = sample_size
+        result["str_confidence"] = confidence
+        return result
 
 
 class DataNormalizer:

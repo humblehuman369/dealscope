@@ -83,9 +83,15 @@ class Settings(BaseSettings):
     REALTOR_RAPIDAPI_HOST: str = "realtor-search.p.rapidapi.com"
 
     # Mashvisor API via RapidAPI (STR analytics, regulations, market data)
+    # Account cancelled — code retained for reference; do not re-enable.
     MASHVISOR_RAPIDAPI_KEY: str = ""
     MASHVISOR_RAPIDAPI_HOST: str = "mashvisor-api.p.rapidapi.com"
     MASHVISOR_STR_ENABLED: bool = False
+
+    # AirROI API (STR analytics via /calculator/estimate, pay-as-you-go)
+    AIRROI_API_KEY: str = ""
+    AIRROI_API_URL: str = "https://api.airroi.com"
+    AIRROI_STR_ENABLED: bool = False
 
     ANTHROPIC_API_KEY: str = ""
 
