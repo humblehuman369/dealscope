@@ -61,7 +61,11 @@ import {
 } from '@/lib/motivatedSellerInsights'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
-import { buildVerdictAnalysisPayload, type VerdictPayloadBase } from '@/utils/verdictPayload'
+import {
+  buildVerdictAnalysisPayload,
+  toOccupancyFraction,
+  type VerdictPayloadBase,
+} from '@/utils/verdictPayload'
 import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { useDealSnapshot } from '@/hooks/useDealSnapshot'
@@ -490,8 +494,14 @@ function VerdictContent() {
           propertyTaxes: propertyTaxes ?? undefined,
           insurance: insurance ?? undefined,
           averageDailyRate: averageDailyRate ?? undefined,
-          // Use null check (not truthy check) to properly handle 0% occupancy
-          occupancyRate: occupancyRate != null ? occupancyRate / 100 : undefined,
+          // Backend emits occupancy as a 0-1 fraction; the old `/100` here
+          // corrupted 0.75 into 0.0075. toOccupancyFraction handles either
+          // convention and preserves a legitimate 0.
+          occupancyRate: toOccupancyFraction(occupancyRate) ?? undefined,
+          // AirROI per-property monthly STR revenue — drives canonical STR
+          // revenue in both the offline calculator and the verdict payload.
+          mashvisorMonthlyStrRevenue:
+            data.rentals?.str_market_stats?.monthly_revenue_per_bed ?? undefined,
           arv: arv ?? undefined,
           latitude: data.address?.latitude ?? undefined,
           longitude: data.address?.longitude ?? undefined,
@@ -635,6 +645,7 @@ function VerdictContent() {
           arv: arvForCalc,
           averageDailyRate: propertyData.averageDailyRate ?? null,
           occupancyRate: propertyData.occupancyRate ?? null,
+          monthlyStrRevenue: propertyData.mashvisorMonthlyStrRevenue ?? null,
           isListed: !!isListed,
           zestimate: zestimate ?? undefined,
           currentValueAvm: currentAvm ?? undefined,

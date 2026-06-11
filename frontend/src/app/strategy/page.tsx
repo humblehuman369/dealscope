@@ -72,6 +72,7 @@ import {
 import {
   buildVerdictAnalysisPayload,
   buildVerdictBaseFromPropertyResponse,
+  toOccupancyFraction,
   type VerdictPayloadBase,
 } from '@/utils/verdictPayload'
 import { mapPropertyToIQSources } from '@/utils/propertySourceMapper'
@@ -1171,8 +1172,14 @@ function StrategyContent() {
       bathrooms: propInfo?.details?.bathrooms || 2,
       sqft: propInfo?.details?.square_footage || 1500,
       arv: propInfo?.arv ?? null,
-      averageDailyRate: propInfo?.averageDailyRate ?? null,
-      occupancyRate: propInfo?.occupancyRate ?? null,
+      // STR inputs live on the PropertyResponse `rentals` object (AirROI-fed),
+      // not top-level — reading top-level silently sent null and forced the
+      // backend onto its rent-heuristic ADR + 65% occupancy defaults.
+      averageDailyRate: propInfo?.averageDailyRate ?? propInfo?.rentals?.average_daily_rate ?? null,
+      occupancyRate: toOccupancyFraction(
+        propInfo?.occupancyRate ?? propInfo?.rentals?.occupancy_rate,
+      ),
+      monthlyStrRevenue: propInfo?.rentals?.str_market_stats?.monthly_revenue_per_bed ?? null,
       isListed: propInfo?._isListed ?? undefined,
       zestimate: v.zestimate ?? undefined,
       currentValueAvm: v.current_value_avm ?? undefined,

@@ -6,6 +6,19 @@ import {
 
 export { isListedStatus }
 
+/**
+ * Normalize an occupancy value of unknown convention to a 0-1 fraction.
+ *
+ * The backend has historically emitted `rentals.occupancy_rate` as a 0-1
+ * fraction (e.g. 0.75, and AirROI injection stores 0-1), while some frontend
+ * paths assumed percent and divided by 100 — corrupting 0.75 into 0.0075.
+ * Values > 1 are treated as percent; 0 is preserved (legitimate 0% occupancy).
+ */
+export function toOccupancyFraction(value: number | null | undefined): number | null {
+  if (value == null || !Number.isFinite(value)) return null
+  return value > 1 ? value / 100 : value
+}
+
 export interface VerdictSourceOverrides {
   price?: number
   monthlyRent?: number
@@ -32,6 +45,12 @@ export interface VerdictPayloadBase {
   arv?: number | null
   averageDailyRate?: number | null
   occupancyRate?: number | null
+  /**
+   * Per-property monthly STR revenue from `str_market_stats.monthly_revenue_per_bed`
+   * (AirROI estimate). When present, the backend STR strategy uses this × 12 as
+   * canonical annual revenue instead of ADR × 365 × occupancy.
+   */
+  monthlyStrRevenue?: number | null
   isListed?: boolean
   zestimate?: number | null
   currentValueAvm?: number | null
@@ -111,7 +130,8 @@ export function buildVerdictAnalysisPayload(
     sqft: base.sqft,
     arv: arv ?? undefined,
     average_daily_rate: base.averageDailyRate ?? undefined,
-    occupancy_rate: base.occupancyRate ?? undefined,
+    occupancy_rate: toOccupancyFraction(base.occupancyRate) ?? undefined,
+    mashvisor_monthly_str_revenue: base.monthlyStrRevenue ?? undefined,
     is_listed: base.isListed ?? undefined,
     zestimate: base.zestimate ?? undefined,
     current_value_avm: base.currentValueAvm ?? undefined,
@@ -243,7 +263,8 @@ export function buildVerdictBaseFromPropertyResponse(
     sqft: data?.details?.square_footage || 1500,
     arv: data?.valuations?.arv ?? null,
     averageDailyRate: data?.rentals?.average_daily_rate ?? null,
-    occupancyRate: data?.rentals?.occupancy_rate != null ? data.rentals.occupancy_rate / 100 : null,
+    occupancyRate: toOccupancyFraction(data?.rentals?.occupancy_rate),
+    monthlyStrRevenue: data?.rentals?.str_market_stats?.monthly_revenue_per_bed ?? null,
     isListed: listed,
     zestimate,
     currentValueAvm: currentAvm,
