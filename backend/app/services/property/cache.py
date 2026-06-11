@@ -14,7 +14,9 @@ from typing import Any
 # v9: RentCast owner details (names, type, mailing address) on listing payload.
 # v10: no-fabrication fixes — taxes now value x regional rate (null when no value),
 #      ADR null when no Mashvisor/LTR signal (was hardcoded $200/$4500 fallbacks).
-_PROPERTY_CACHE_FORMULA_VERSION = "10"
+# v11: AirROI STR estimates go-live — invalidate pre-AirROI entries so
+#      str_market_stats / ADR / occupancy populate without waiting out the TTL.
+_PROPERTY_CACHE_FORMULA_VERSION = "11"
 
 
 def _strip_property_cache_meta(payload: dict[str, Any]) -> dict[str, Any]:
