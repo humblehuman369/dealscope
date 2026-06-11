@@ -434,32 +434,35 @@ class BillingService:
         """
         limits = TIER_LIMITS[tier]
 
-        async with db.begin():
-            # Re-fetch inside the transaction to guarantee the object is attached
-            result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
-            subscription = result.scalar_one_or_none()
+        # The session may already have an autobegun transaction (e.g. the admin
+        # endpoint fetched the target user first), so ``async with db.begin()``
+        # would raise ``InvalidRequestError: A transaction is already begun``.
+        # Follow the explicit-commit policy documented on ``get_db``.
+        result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
+        subscription = result.scalar_one_or_none()
 
-            if not subscription:
-                free_limits = TIER_LIMITS[SubscriptionTier.FREE]
-                subscription = Subscription(
-                    user_id=user_id,
-                    tier=SubscriptionTier.FREE,
-                    status=SubscriptionStatus.ACTIVE,
-                    properties_limit=free_limits["properties_limit"],
-                    searches_per_month=free_limits["searches_per_month"],
-                    api_calls_per_month=free_limits["api_calls_per_month"],
-                    usage_reset_date=datetime.now(UTC),
-                )
-                db.add(subscription)
+        if not subscription:
+            free_limits = TIER_LIMITS[SubscriptionTier.FREE]
+            subscription = Subscription(
+                user_id=user_id,
+                tier=SubscriptionTier.FREE,
+                status=SubscriptionStatus.ACTIVE,
+                properties_limit=free_limits["properties_limit"],
+                searches_per_month=free_limits["searches_per_month"],
+                api_calls_per_month=free_limits["api_calls_per_month"],
+                usage_reset_date=datetime.now(UTC),
+            )
+            db.add(subscription)
 
-            subscription.tier = tier
-            subscription.status = SubscriptionStatus.ACTIVE
-            subscription.properties_limit = limits["properties_limit"]
-            subscription.searches_per_month = limits["searches_per_month"]
-            subscription.api_calls_per_month = limits["api_calls_per_month"]
-            subscription.cancel_at_period_end = False
-            subscription.canceled_at = None
+        subscription.tier = tier
+        subscription.status = SubscriptionStatus.ACTIVE
+        subscription.properties_limit = limits["properties_limit"]
+        subscription.searches_per_month = limits["searches_per_month"]
+        subscription.api_calls_per_month = limits["api_calls_per_month"]
+        subscription.cancel_at_period_end = False
+        subscription.canceled_at = None
 
+        await db.commit()
         await db.refresh(subscription)
         logger.info("Admin granted %s tier to user %s", tier.value, user_id)
         return subscription
@@ -475,33 +478,35 @@ class BillingService:
         """
         free_limits = TIER_LIMITS[SubscriptionTier.FREE]
 
-        async with db.begin():
-            result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
-            subscription = result.scalar_one_or_none()
+        # Same autobegun-transaction caveat as ``grant_subscription`` — use
+        # explicit commit instead of ``async with db.begin()``.
+        result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
+        subscription = result.scalar_one_or_none()
 
-            if not subscription:
-                subscription = Subscription(
-                    user_id=user_id,
-                    tier=SubscriptionTier.FREE,
-                    status=SubscriptionStatus.ACTIVE,
-                    properties_limit=free_limits["properties_limit"],
-                    searches_per_month=free_limits["searches_per_month"],
-                    api_calls_per_month=free_limits["api_calls_per_month"],
-                    usage_reset_date=datetime.now(UTC),
-                )
-                db.add(subscription)
+        if not subscription:
+            subscription = Subscription(
+                user_id=user_id,
+                tier=SubscriptionTier.FREE,
+                status=SubscriptionStatus.ACTIVE,
+                properties_limit=free_limits["properties_limit"],
+                searches_per_month=free_limits["searches_per_month"],
+                api_calls_per_month=free_limits["api_calls_per_month"],
+                usage_reset_date=datetime.now(UTC),
+            )
+            db.add(subscription)
 
-            subscription.tier = SubscriptionTier.FREE
-            subscription.status = SubscriptionStatus.ACTIVE
-            subscription.properties_limit = free_limits["properties_limit"]
-            subscription.searches_per_month = free_limits["searches_per_month"]
-            subscription.api_calls_per_month = free_limits["api_calls_per_month"]
-            subscription.cancel_at_period_end = False
-            subscription.canceled_at = None
-            subscription.searches_used = 0
-            subscription.api_calls_used = 0
-            subscription.usage_reset_date = datetime.now(UTC)
+        subscription.tier = SubscriptionTier.FREE
+        subscription.status = SubscriptionStatus.ACTIVE
+        subscription.properties_limit = free_limits["properties_limit"]
+        subscription.searches_per_month = free_limits["searches_per_month"]
+        subscription.api_calls_per_month = free_limits["api_calls_per_month"]
+        subscription.cancel_at_period_end = False
+        subscription.canceled_at = None
+        subscription.searches_used = 0
+        subscription.api_calls_used = 0
+        subscription.usage_reset_date = datetime.now(UTC)
 
+        await db.commit()
         await db.refresh(subscription)
         logger.info("Admin revoked subscription for user %s (downgraded to free)", user_id)
         return subscription

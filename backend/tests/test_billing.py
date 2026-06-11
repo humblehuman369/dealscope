@@ -12,6 +12,7 @@ from app.models.subscription import (
     SubscriptionTier,
 )
 from app.services.billing_service import BillingService
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 pytestmark = pytest.mark.asyncio
@@ -114,3 +115,52 @@ class TestGetOrCreateSubscription:
 
         assert result.tier == SubscriptionTier.FREE
         assert result.user_id == created_user.id
+
+
+# ------------------------------------------------------------------
+# grant/revoke subscription — regression coverage for the admin
+# "Failed to update subscription" toast on PATCH
+# /api/v1/admin/users/{id}/subscription.
+#
+# Repro: the admin endpoint queries the target user first, autobeginning
+# a transaction on the session. The old ``async with db.begin():`` in
+# grant_subscription / revoke_subscription then raised
+# ``InvalidRequestError: A transaction is already begun`` → 500.
+# ------------------------------------------------------------------
+
+
+class TestGrantRevokeSubscription:
+    async def test_grant_pro_with_transaction_already_begun(
+        self,
+        db_session: AsyncSession,
+        created_user,
+    ):
+        """Granting Pro after a prior query on the same session must not raise."""
+        # Simulate the admin endpoint's preceding user lookup (autobegins txn)
+        await db_session.execute(select(Subscription).where(Subscription.user_id == created_user.id))
+
+        service = BillingService()
+        result = await service.grant_subscription(db_session, created_user.id, SubscriptionTier.PRO)
+
+        pro_limits = TIER_LIMITS[SubscriptionTier.PRO]
+        assert result.tier == SubscriptionTier.PRO
+        assert result.status == SubscriptionStatus.ACTIVE
+        assert result.properties_limit == pro_limits["properties_limit"]
+
+    async def test_revoke_back_to_free_with_transaction_already_begun(
+        self,
+        db_session: AsyncSession,
+        created_user,
+    ):
+        """Revoking Pro after a prior query on the same session must not raise."""
+        service = BillingService()
+        await service.grant_subscription(db_session, created_user.id, SubscriptionTier.PRO)
+
+        await db_session.execute(select(Subscription).where(Subscription.user_id == created_user.id))
+        result = await service.revoke_subscription(db_session, created_user.id)
+
+        free_limits = TIER_LIMITS[SubscriptionTier.FREE]
+        assert result.tier == SubscriptionTier.FREE
+        assert result.status == SubscriptionStatus.ACTIVE
+        assert result.properties_limit == free_limits["properties_limit"]
+        assert result.searches_used == 0
