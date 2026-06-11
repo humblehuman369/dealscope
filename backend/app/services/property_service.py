@@ -49,7 +49,7 @@ from app.schemas.property import (
     WholesaleResults,
     ZestimateHistoryPoint,
 )
-from app.services.api_clients import create_api_clients
+from app.services.api_clients import AirROIClient, create_api_clients
 from app.services.cache_service import CacheService, get_cache_service
 from app.services.calculators import (
     calculate_brrrr,
@@ -99,6 +99,17 @@ class PropertyService:
         if settings.MASHVISOR_RAPIDAPI_KEY and not settings.MASHVISOR_STR_ENABLED:
             logger.info(
                 "Mashvisor fetching disabled (MASHVISOR_STR_ENABLED=false); client code retained",
+            )
+
+        # AirROI — STR revenue/ADR/occupancy estimates (replaces Mashvisor)
+        self.airroi = (
+            AirROIClient(settings.AIRROI_API_KEY, settings.AIRROI_API_URL)
+            if settings.AIRROI_API_KEY and settings.AIRROI_STR_ENABLED
+            else None
+        )
+        if settings.AIRROI_API_KEY and not settings.AIRROI_STR_ENABLED:
+            logger.info(
+                "AirROI fetching disabled (AIRROI_STR_ENABLED=false); set to true to enable STR estimates",
             )
 
         # Use the comprehensive ZillowClient for Zillow data
@@ -441,6 +452,63 @@ class PropertyService:
         elapsed_ms = (time.perf_counter() - t0) * 1000
         return merged if merged else None, elapsed_ms
 
+    async def _fetch_str_estimate_provider(
+        self, normalized: dict[str, Any]
+    ) -> tuple[dict[str, Any] | None, float]:
+        """Fetch the STR revenue estimate (AirROI /calculator/estimate).
+
+        Runs *after* normalization because the request needs the canonical
+        lat/lng and bedroom count from the merged provider data. Skips when
+        disabled or when coordinates are unavailable — never guesses a
+        location, never fabricates data.
+        """
+        if not self.airroi or not settings.AIRROI_STR_ENABLED:
+            return None, 0.0
+
+        lat = normalized.get("latitude")
+        lng = normalized.get("longitude")
+        if lat is None or lng is None:
+            logger.info("AirROI: no coordinates available — skipping STR estimate")
+            return None, 0.0
+
+        try:
+            beds = int(normalized.get("bedrooms") or 3)
+        except (TypeError, ValueError):
+            beds = 3
+        try:
+            baths = float(normalized.get("bathrooms") or 2)
+        except (TypeError, ValueError):
+            baths = 2.0
+        guests = max(beds * 2, 2)  # standard STR convention: 2 guests per bedroom
+
+        t0 = time.perf_counter()
+        try:
+            resp = await self.airroi.estimate(
+                lat=float(lat),
+                lng=float(lng),
+                bedrooms=beds,
+                bathrooms=baths,
+                guests=guests,
+            )
+            elapsed_ms = (time.perf_counter() - t0) * 1000
+            if not resp.success or not resp.data:
+                logger.error("AirROI estimate failed: %s", resp.error)
+                return None, elapsed_ms
+            parsed = AirROIClient.parse_estimate(resp.data)
+            if parsed:
+                logger.info(
+                    "AirROI STR: ADR=$%s, occupancy=%s%%, annual=$%s, comps=%s, confidence=%s",
+                    parsed.get("str_adr"),
+                    parsed.get("str_occupancy_pct"),
+                    parsed.get("str_revenue_annual"),
+                    parsed.get("str_sample_size"),
+                    parsed.get("str_confidence"),
+                )
+            return parsed or None, elapsed_ms
+        except Exception as e:
+            logger.error("Error fetching AirROI estimate: %s", e)
+            return None, (time.perf_counter() - t0) * 1000
+
     async def search_property(
         self,
         address: str,
@@ -575,6 +643,15 @@ class PropertyService:
                 normalized["state"] = rentcast_data["state"]
             if rentcast_data.get("zipCode"):
                 normalized["zip_code"] = rentcast_data["zipCode"]
+
+        # STR revenue estimate (AirROI) — needs the canonical lat/lng +
+        # bedrooms from normalized data, so it runs after the provider merge
+        # rather than inside the parallel gather above.
+        str_estimate_data, airroi_ms = await self._fetch_str_estimate_provider(normalized)
+        if airroi_ms > 0:
+            timings["airroi_ms"] = airroi_ms
+        if str_estimate_data:
+            self.normalizer.inject_str_estimate(normalized, provenance, str_estimate_data, timestamp)
 
         # Calculate data quality
         data_quality = self.normalizer.calculate_data_quality(normalized, provenance)

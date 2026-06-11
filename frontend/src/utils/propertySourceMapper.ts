@@ -7,15 +7,14 @@ export const SOURCE_META: Record<DataSourceId, { label: string; color: string }>
   rentcast: { label: 'RentCast', color: '#b7791f' },
   redfin: { label: 'Redfin', color: '#EF5350' },
   realtor: { label: 'Realtor', color: '#D92228' },
-  mashvisor: { label: 'Mashvisor', color: '#06B6D4' },
   my_value: { label: 'My Value', color: 'var(--accent-teal)' },
   my_rent: { label: 'My Rent', color: 'var(--accent-teal)' },
 }
 
-// Per-column source lists. Realtor.com is value-only (no rent API); Mashvisor
-// is rent-only (sourced from /rental-rates traditional, bedroom-matched).
+// Per-column source lists. Realtor.com is value-only (no rent API); rent has
+// no 5th source since Mashvisor was retired (account cancelled).
 export const VALUE_SOURCE_IDS: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
-export const RENT_SOURCE_IDS: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'mashvisor']
+export const RENT_SOURCE_IDS: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin']
 // Kept for back-compat with consumers that don't care which column. Prefer
 // the column-specific lists above when iterating for value or rent UIs.
 export const ALL_SOURCE_IDS: DataSourceId[] = [
@@ -24,7 +23,6 @@ export const ALL_SOURCE_IDS: DataSourceId[] = [
   'rentcast',
   'redfin',
   'realtor',
-  'mashvisor',
 ]
 
 /**
@@ -61,7 +59,6 @@ export function mapPropertyToIQSources(
       zillow: rentalStats?.zillow_estimate ?? null,
       rentcast: rentalStats?.rentcast_estimate ?? null,
       redfin: rentalStats?.redfin_estimate ?? null,
-      mashvisor: rentalStats?.mashvisor_estimate ?? null,
     },
   }
 }
@@ -78,8 +75,8 @@ export interface SourceEstimate {
  * ordered array of SourceEstimates, filtering out null values when requested.
  *
  * Iterates only over the IDs valid for the given column when `column` is
- * specified — so callers don't need to know that Mashvisor only lives on rent
- * and Realtor.com only on value.
+ * specified — so callers don't need to know that Realtor.com only lives on
+ * the value column.
  */
 export function toSourceEstimates(
   group: IQEstimateSources['value'] | IQEstimateSources['rent'],

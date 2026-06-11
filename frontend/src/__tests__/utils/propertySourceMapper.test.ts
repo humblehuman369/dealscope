@@ -37,4 +37,9 @@ describe('mapPropertyToIQSources', () => {
     expect(sources.value.my_value).toBeUndefined()
     expect(sources.rent.my_rent).toBeUndefined()
   })
+
+  it('does not include the retired mashvisor source in the rent group', () => {
+    const sources = mapPropertyToIQSources(minimalProperty)
+    expect('mashvisor' in sources.rent).toBe(false)
+  })
 })

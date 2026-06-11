@@ -8,11 +8,14 @@ alwaysApply: false
 
 ## Multi-Source Model
 
-Both **Property Value** and **Monthly Rent** display **5 selectable sources** each.
-The two columns share IQ + Zillow + RentCast + Redfin, but the 5th source differs:
+**Property Value** displays **5 selectable sources**; **Monthly Rent** displays **4**.
+The two columns share IQ + Zillow + RentCast + Redfin; the value column adds:
 
 - **Value column** uses `Realtor.com` (their API exposes a home-value estimate but no rent).
-- **Rent column** uses `Mashvisor` (per-bedroom monthly rent from `/rental-rates?source=traditional`).
+- **Rent column** has no 5th source — Mashvisor was retired (account cancelled, June 2026).
+  `rental_stats.mashvisor_estimate` remains in the backend schema as a permanently-null field.
+  STR data (ADR/occupancy/revenue) now comes from AirROI, which feeds `str_market_stats`
+  but is not a rent-column source.
 
 | Source | Description | Backend Field (rent) | Backend Field (value) |
 |--------|-------------|---------------------|----------------------|
@@ -21,7 +24,6 @@ The two columns share IQ + Zillow + RentCast + Redfin, but the 5th source differ
 | RentCast | Raw RentCast value | `rental_stats.rentcast_estimate` | `valuations.rentcast_avm` |
 | Redfin | Redfin estimate | `rental_stats.redfin_estimate` | `valuations.redfin_estimate` |
 | Realtor.com | Realtor.com estimate (value only) | — (not provided by Realtor API) | `valuations.realtor_estimate` |
-| Mashvisor | Per-bedroom monthly rent (rent only) | `rental_stats.mashvisor_estimate` | — (not used in value column) |
 
 ## Selection Rules
 
@@ -29,8 +31,8 @@ The two columns share IQ + Zillow + RentCast + Redfin, but the 5th source differ
 2. User can click to select a different source — handled by `handleSelect`, bypasses `resolveDefaults`
 3. On page load or property change, selection resets to IQ Estimate
 4. Selection persists in `sessionStorage` (key: `iq_source_selection`) for within-session use
-5. Stale `sessionStorage` selections (e.g. `'realtor'` for rent from before the swap) are
-   silently ignored: `resolveRent` falls through to IQ when the stored ID isn't in the
+5. Stale `sessionStorage` selections from retired rent sources (`'realtor'`, `'mashvisor'`)
+   are silently ignored: `resolveRent` falls through to IQ when the stored ID isn't in the
    rent column's source list
 
 ### `resolveDefaults` logic
@@ -44,7 +46,7 @@ if (group[sel] != null) return sel
 if (group.zillow != null) return 'zillow'
 if (group.rentcast != null) return 'rentcast'
 if (group.redfin != null) return 'redfin'
-// rent column: mashvisor; value column: realtor
+// value column additionally tries realtor before this point
 return 'iq'
 ```
 

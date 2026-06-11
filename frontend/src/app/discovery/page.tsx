@@ -310,7 +310,7 @@ function VerdictContent() {
   // IQ Estimate 3-value sources (populated from API response)
   const [iqSources, setIqSources] = useState<IQEstimateSources>({
     value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
-    rent: { iq: null, zillow: null, rentcast: null, redfin: null, mashvisor: null },
+    rent: { iq: null, zillow: null, rentcast: null, redfin: null },
   })
   const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false)
   const dataSourcesRef = useRef<HTMLDivElement>(null)
@@ -413,7 +413,7 @@ function VerdictContent() {
       setMotivatedInsights([])
       setIqSources({
         value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
-        rent: { iq: null, zillow: null, rentcast: null, redfin: null, mashvisor: null },
+        rent: { iq: null, zillow: null, rentcast: null, redfin: null },
       })
 
       try {

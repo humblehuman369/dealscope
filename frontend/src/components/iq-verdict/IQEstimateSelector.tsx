@@ -17,7 +17,6 @@ export type DataSourceId =
   | 'rentcast'
   | 'redfin'
   | 'realtor'
-  | 'mashvisor'
   | 'my_value'
   | 'my_rent'
 
@@ -27,10 +26,9 @@ interface SourceValue {
 }
 
 // Value and rent columns can have different source lists. Realtor.com is
-// only present in the value column (their API doesn't expose rent estimates);
-// Mashvisor is only present in the rent column (sourced from the per-bedroom
-// /rental-rates traditional endpoint). `Partial<Record<...>>` lets each
-// column declare just the IDs it actually carries.
+// only present in the value column (their API doesn't expose rent estimates).
+// `Partial<Record<...>>` lets each column declare just the IDs it actually
+// carries.
 export interface IQEstimateSources {
   value: Partial<Record<DataSourceId, number | null>>
   rent: Partial<Record<DataSourceId, number | null>>
@@ -54,7 +52,6 @@ const SOURCE_META: Record<DataSourceId, { label: string; color: string }> = {
   rentcast: { label: 'RentCast', color: '#F59E0B' },
   redfin: { label: 'Redfin', color: '#A02B2D' },
   realtor: { label: 'Realtor.com', color: '#D92228' },
-  mashvisor: { label: 'Mashvisor', color: '#06B6D4' },
   my_value: { label: 'My Value', color: 'var(--accent-teal)' },
   my_rent: { label: 'My Rent', color: 'var(--accent-teal)' },
 }
@@ -207,11 +204,9 @@ function resolveDefaults(
     if (group.zillow != null) return 'zillow'
     if (group.rentcast != null) return 'rentcast'
     if (group.redfin != null) return 'redfin'
-    // Mashvisor replaced Realtor.com on the rent side; older sessionStorage
-    // entries with `'realtor'` for rent are filtered upstream by the column-
-    // specific source-id list, so this fallthrough order intentionally
-    // mirrors the new rent column composition.
-    if (group.mashvisor != null) return 'mashvisor'
+    // Stale sessionStorage entries from retired rent sources ('realtor',
+    // 'mashvisor') are tolerated: `group[sel]` is undefined for them, so
+    // selection falls through to IQ here.
     return 'iq'
   }
   return {
@@ -271,15 +266,14 @@ export function IQEstimateSelector({
     'redfin',
     'realtor',
   ]
-  // Rent column swap: Realtor.com (no rent API) replaced by Mashvisor
-  // /rental-rates traditional (per-bedroom monthly rent benchmark).
+  // Rent column: Realtor.com has no rent API and Mashvisor was retired
+  // (account cancelled), so rent shows 4 sources vs value's 5.
   const rentSourceIds: DataSourceId[] = [
     ...(sources.rent.my_rent != null ? (['my_rent'] as const) : []),
     'iq',
     'zillow',
     'rentcast',
     'redfin',
-    'mashvisor',
   ]
 
   return (
@@ -339,7 +333,7 @@ export function IQEstimateSelector({
           </div>
         </div>
 
-        {/* Monthly Rent column (5 sources: IQ, Zillow, RentCast, Redfin, Mashvisor) */}
+        {/* Monthly Rent column (4 sources: IQ, Zillow, RentCast, Redfin) */}
         <div>
           <p
             className={`text-[12px] sm:text-[16px] font-bold uppercase tracking-wide pl-1 ${compact ? 'mb-1' : 'mb-1.5'}`}

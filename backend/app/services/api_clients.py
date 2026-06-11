@@ -1879,6 +1879,92 @@ class DataNormalizer:
                     "conflict_flag": False,
                 }
 
+    def inject_str_estimate(
+        self,
+        normalized: dict[str, Any],
+        provenance: dict[str, Any],
+        str_data: dict[str, Any] | None,
+        timestamp: datetime,
+    ):
+        """Overlay a provider-agnostic STR estimate (currently AirROI) onto
+        normalized output.
+
+        Called by PropertyService *after* ``normalize()`` because the AirROI
+        request itself needs the canonical lat/lng + bedrooms produced by
+        FIELD_MAPPING. Writes the legacy ``*_mashvisor`` STR key names so all
+        downstream consumers (PropertyResponse builders, ``_estimate_adr``,
+        worksheets, frontend STRMarketStats) keep working unchanged — only the
+        provenance ``source`` reflects the real provider.
+
+        Mirrors ``_inject_mashvisor_data`` semantics: medium/high confidence
+        data overrides AXESSO-sourced ``occupancy_rate`` / ``average_daily_rate``.
+        Never fabricates — absent input leaves the Mashvisor None-fill intact.
+        """
+        if not str_data:
+            return
+
+        ts = timestamp.isoformat()
+        confidence = str_data.get("str_confidence", "low")
+        prov_confidence = confidence if confidence in ("high", "medium", "low") else "low"
+
+        adr = str_data.get("str_adr")
+        occ_pct = str_data.get("str_occupancy_pct")
+        revenue_annual = str_data.get("str_revenue_annual")
+        monthly_revenue = str_data.get("str_monthly_revenue")
+        sample_size = str_data.get("str_sample_size")
+
+        field_values = {
+            "str_adr_mashvisor": adr,
+            "str_occupancy_mashvisor": occ_pct,
+            "str_revenue_annual": revenue_annual,
+            "str_sample_size": sample_size,
+            "str_confidence": confidence,
+            # Per-property monthly revenue — canonical STR worksheet fallback
+            # (STRMarketStats.monthly_revenue_per_bed).
+            "str_monthly_revenue_mashvisor": monthly_revenue,
+            "str_monthly_revenue_sample_size": sample_size,
+            "str_monthly_revenue_confidence": confidence if monthly_revenue is not None else None,
+        }
+
+        for field, val in field_values.items():
+            if val is None:
+                continue  # keep the Mashvisor None-fill / provenance as-is
+            normalized[field] = val
+            provenance[field] = {
+                "source": "airroi",
+                "fetched_at": ts,
+                "confidence": prov_confidence,
+                "raw_values": {"airroi": val},
+                "conflict_flag": False,
+            }
+
+        # Override AXESSO STR fields when the estimate has med/high confidence
+        if confidence in ("high", "medium"):
+
+            def _prior_axesso_value(field: str) -> Any:
+                prev = provenance.get(field) or {}
+                prev_raw = prev.get("raw_values") or {}
+                return prev_raw.get("axesso")
+
+            if occ_pct is not None:
+                normalized["occupancy_rate"] = occ_pct / 100.0  # stored 0-1
+                provenance["occupancy_rate"] = {
+                    "source": "airroi",
+                    "fetched_at": ts,
+                    "confidence": prov_confidence,
+                    "raw_values": {"airroi": occ_pct, "axesso": _prior_axesso_value("occupancy_rate")},
+                    "conflict_flag": False,
+                }
+            if adr is not None:
+                normalized["average_daily_rate"] = adr
+                provenance["average_daily_rate"] = {
+                    "source": "airroi",
+                    "fetched_at": ts,
+                    "confidence": prov_confidence,
+                    "raw_values": {"airroi": adr, "axesso": _prior_axesso_value("average_daily_rate")},
+                    "conflict_flag": False,
+                }
+
     def _extract_property_features(
         self,
         normalized: dict[str, Any],

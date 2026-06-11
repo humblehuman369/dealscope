@@ -82,11 +82,11 @@ export function buildMarketConsensus(
   const poolValues: number[] = []
 
   // Column-specific source list. Realtor.com is value-only (no rent API);
-  // Mashvisor is rent-only (sourced from /rental-rates traditional).
+  // rent has no 4th provider since Mashvisor was retired.
   const sourceIds: DataSourceId[] =
     mode === 'value'
       ? ['zillow', 'rentcast', 'redfin', 'realtor']
-      : ['zillow', 'rentcast', 'redfin', 'mashvisor']
+      : ['zillow', 'rentcast', 'redfin']
 
   for (const id of sourceIds) {
     const v = sourceGroup[id]
