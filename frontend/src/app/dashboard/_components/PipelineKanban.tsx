@@ -654,7 +654,7 @@ function TierGroup({
   return (
     <div className="flex flex-col">
       {showHeader ? (
-        <div className="flex items-center justify-between gap-2 mb-1.5 px-1">
+        <div className="flex items-center gap-3 mb-1.5 px-1">
           {label ? (
             <p className={`text-[10px] font-bold uppercase tracking-wide ${toneClass}`}>{label}</p>
           ) : (
