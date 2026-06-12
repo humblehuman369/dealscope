@@ -537,6 +537,8 @@ function VerdictContent() {
               yearBuilt: propertyData.yearBuilt,
               price: propertyData.price,
               listingStatus: propertyData.listingStatus || null,
+              latitude: propertyData.latitude,
+              longitude: propertyData.longitude,
             },
             { origin: 'verdict_sync' },
           )

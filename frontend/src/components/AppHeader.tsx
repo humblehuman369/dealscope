@@ -399,6 +399,8 @@ export function AppHeader({
           zpid: typeof parsed.zpid === 'string' ? parsed.zpid : undefined,
           listingStatus:
             typeof parsed.listingStatus === 'string' ? parsed.listingStatus : undefined,
+          latitude: toNumber(parsed.latitude),
+          longitude: toNumber(parsed.longitude),
         })
         return
       }
@@ -1170,6 +1172,8 @@ export function AppHeader({
                 price={p?.price ?? 0}
                 listingStatus={p?.listingStatus ?? 'OFF_MARKET'}
                 zpid={p?.zpid}
+                latitude={p?.latitude}
+                longitude={p?.longitude}
                 bookmarked={isSaved}
                 onBookmarkClick={
                   isAuthenticated

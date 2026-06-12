@@ -7,9 +7,14 @@
  * Includes a visible "Property Details" link so users can navigate to the full profile.
  */
 
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { MapPin } from 'lucide-react'
 import { buildPropertyProfileHref } from '@/utils/addressIdentity'
+import { trackEvent } from '@/lib/eventTracking'
+
+const PROPERTY_MAP_ZOOM = 15
 
 const barTokens = {
   /** Same harmonized strip as AppHeader */
@@ -43,6 +48,8 @@ interface PropertyAddressBarProps {
   detailsCollapsed?: boolean
   /** When true, hide the detail chips (beds/baths/sqft/status) — shown during initial data fetch */
   loading?: boolean
+  latitude?: number
+  longitude?: number
 }
 
 /** Safely decode a string that might be URL-encoded (single or double). */
@@ -147,7 +154,10 @@ export function PropertyAddressBar({
   onBookmarkClick,
   detailsCollapsed,
   loading,
+  latitude,
+  longitude,
 }: PropertyAddressBarProps) {
+  const router = useRouter()
   const [internalBookmarked, setInternalBookmarked] = useState(false)
   const isControlled = onBookmarkClick != null
   const bookmarked = isControlled ? (bookmarkedProp ?? false) : internalBookmarked
@@ -173,6 +183,33 @@ export function PropertyAddressBar({
 
   const isListed = listingStatus === 'FOR_SALE' || listingStatus === 'PENDING'
   const statusLabel = isListed ? 'Listed' : 'Off-Market'
+
+  const openMapSearch = useCallback(() => {
+    trackEvent('map_search_opened', {
+      source: 'property_address_bar',
+      has_coordinates: latitude != null && longitude != null,
+    })
+
+    const params = new URLSearchParams()
+    if (latitude != null && longitude != null) {
+      params.set('lat', String(latitude))
+      params.set('lng', String(longitude))
+      params.set('zoom', String(PROPERTY_MAP_ZOOM))
+      if (fullAddress) params.set('label', fullAddress)
+    } else if (fullAddress) {
+      params.set('label', fullAddress)
+    }
+
+    const qs = params.toString()
+    router.push(qs ? `/map-search?${qs}` : '/map-search')
+  }, [fullAddress, latitude, longitude, router])
+
+  const actionButtonStyle = {
+    color: 'var(--accent-sky)',
+    background: 'rgba(15,164,233,0.08)',
+    border: '1px solid rgba(15,164,233,0.2)',
+    whiteSpace: 'nowrap' as const,
+  }
 
   return (
     <div
@@ -251,12 +288,7 @@ export function PropertyAddressBar({
             <Link
               href={profileHref}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all hover:brightness-125"
-              style={{
-                color: 'var(--accent-sky)',
-                background: 'rgba(15,164,233,0.08)',
-                border: '1px solid rgba(15,164,233,0.2)',
-                whiteSpace: 'nowrap',
-              }}
+              style={actionButtonStyle}
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path
@@ -268,6 +300,17 @@ export function PropertyAddressBar({
               </svg>
               Details
             </Link>
+
+            <button
+              type="button"
+              onClick={openMapSearch}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all hover:brightness-125"
+              style={actionButtonStyle}
+              aria-label="View property on map search"
+            >
+              <MapPin size={14} strokeWidth={2.25} aria-hidden />
+              Map
+            </button>
 
             <button
               type="button"
