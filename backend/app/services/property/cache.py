@@ -23,6 +23,7 @@ def _strip_property_cache_meta(payload: dict[str, Any]) -> dict[str, Any]:
     """Remove cache-only keys before ``PropertyResponse`` validation."""
     out = dict(payload)
     out.pop("valuation_formula_version", None)
+    out.pop("str_estimate_source", None)
     return out
 
 
@@ -97,7 +98,13 @@ def _should_invalidate_cache(
     # failed (API error, missing coordinates, flag off) have
     # str_market_stats: null at the CURRENT formula version, so the version
     # check never retries them. Mirror the Zillow/Redfin 4h absent-retry.
-    str_absent = str_estimates_enabled and not rentals_cached.get("str_market_stats")
+    # Exception: str_estimate_source == "provider" marks a deliberate cost
+    # skip (AXESSO supplied ADR/occupancy) — those entries must NOT churn.
+    str_absent = (
+        str_estimates_enabled
+        and not rentals_cached.get("str_market_stats")
+        and cached_data.get("str_estimate_source") != "provider"
+    )
 
     def _cache_age_exceeds(seconds: int) -> bool:
         fetched_raw = cached_data.get("fetched_at")

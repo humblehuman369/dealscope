@@ -151,8 +151,17 @@ export default function MethodologyPage() {
                 market metrics.
               </li>
               <li>
-                <strong className="text-slate-200">AirROI</strong> &mdash; short-term rental
-                revenue, nightly rate, and occupancy analytics.
+                <strong className="text-slate-200">
+                  <a
+                    href="https://www.airroi.com"
+                    target="_blank"
+                    rel="noopener"
+                    className="hover:underline"
+                  >
+                    AirROI
+                  </a>
+                </strong>{' '}
+                &mdash; short-term rental revenue, nightly rate, and occupancy analytics.
               </li>
               <li>
                 <strong className="text-slate-200">IQ Estimate</strong> &mdash; our own model,

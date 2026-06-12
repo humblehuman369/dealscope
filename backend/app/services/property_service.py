@@ -75,6 +75,35 @@ from app.services.property.cache import (
 )
 
 
+# AirROI /calculator/estimate responses are market projections, not live
+# listing data — a 7-day dedupe cache (keyed on coords + bedroom config)
+# means repeat searches and property-cache invalidations don't re-bill the
+# $0.20/call endpoint.
+_AIRROI_ESTIMATE_CACHE_TTL = 7 * 86400
+
+
+def _has_plausible_provider_str_data(normalized: dict[str, Any]) -> bool:
+    """True when a listing provider (AXESSO) already supplied a usable
+    ADR + occupancy pair, making the paid AirROI estimate call unnecessary.
+
+    Plausibility bounds guard against bogus provider values (e.g. a monthly
+    figure landing in the nightly-rate field) silently suppressing the
+    AirROI fetch:
+      - ADR within $30–$2,000/night
+      - occupancy within (0, 1] fraction or (1, 100] percent
+    """
+    adr = normalized.get("average_daily_rate")
+    occ = normalized.get("occupancy_rate")
+    if isinstance(adr, bool) or isinstance(occ, bool):
+        return False
+    if not isinstance(adr, (int, float)) or not isinstance(occ, (int, float)):
+        return False
+    if not (30 <= float(adr) <= 2000):
+        return False
+    occ_f = float(occ)
+    return 0 < occ_f <= 100
+
+
 class PropertyService:
     """
     Main service for property data operations.
@@ -481,6 +510,19 @@ class PropertyService:
             baths = 2.0
         guests = max(beds * 2, 2)  # standard STR convention: 2 guests per bedroom
 
+        # Dedupe layer: estimates are comp-based market projections, stable on
+        # a weekly timescale. ~110m coordinate rounding means the same property
+        # (and immediate neighbors with the same bedroom config) share one
+        # paid call for 7 days — even across property-cache invalidations.
+        dedupe_key = f"airroi:estimate:{float(lat):.3f}:{float(lng):.3f}:{beds}:{baths:g}"
+        try:
+            cached_estimate = await self._cache.get(dedupe_key)
+            if cached_estimate:
+                logger.info("AirROI estimate cache hit: %s", dedupe_key)
+                return cached_estimate, 0.0
+        except Exception:
+            pass  # cache failures must never block the fetch
+
         t0 = time.perf_counter()
         try:
             resp = await self.airroi.estimate(
@@ -504,6 +546,10 @@ class PropertyService:
                     parsed.get("str_sample_size"),
                     parsed.get("str_confidence"),
                 )
+                try:
+                    await self._cache.set(dedupe_key, parsed, ttl_seconds=_AIRROI_ESTIMATE_CACHE_TTL)
+                except Exception:
+                    pass
             return parsed or None, elapsed_ms
         except Exception as e:
             logger.error("Error fetching AirROI estimate: %s", e)
@@ -648,11 +694,22 @@ class PropertyService:
         # STR revenue estimate (AirROI) — needs the canonical lat/lng +
         # bedrooms from normalized data, so it runs after the provider merge
         # rather than inside the parallel gather above.
-        str_estimate_data, airroi_ms = await self._fetch_str_estimate_provider(normalized)
-        if airroi_ms > 0:
-            timings["airroi_ms"] = airroi_ms
-        if str_estimate_data:
-            self.normalizer.inject_str_estimate(normalized, provenance, str_estimate_data, timestamp)
+        #
+        # Cost control: /calculator/estimate is a PAID call ($0.20 standard).
+        # When a listing provider (AXESSO) already supplied a plausible
+        # ADR + occupancy pair, skip the paid call — only buy data we can't
+        # get from providers we already pay for.
+        str_estimate_source: str | None = None
+        if _has_plausible_provider_str_data(normalized):
+            str_estimate_source = "provider"
+            logger.info("AirROI: provider ADR/occupancy present — skipping paid estimate call")
+        else:
+            str_estimate_data, airroi_ms = await self._fetch_str_estimate_provider(normalized)
+            if airroi_ms > 0:
+                timings["airroi_ms"] = airroi_ms
+            if str_estimate_data:
+                self.normalizer.inject_str_estimate(normalized, provenance, str_estimate_data, timestamp)
+                str_estimate_source = "airroi"
 
         # Calculate data quality
         data_quality = self.normalizer.calculate_data_quality(normalized, provenance)
@@ -907,6 +964,10 @@ class PropertyService:
             try:
                 serialized = response.model_dump()
                 serialized["valuation_formula_version"] = _PROPERTY_CACHE_FORMULA_VERSION
+                # Cache-only meta: lets the staleness check distinguish
+                # "STR data deliberately skipped (provider had it)" from
+                # "AirROI fetch failed — retry after 4h".
+                serialized["str_estimate_source"] = str_estimate_source
                 # Shorter TTL when Zillow or Redfin data is absent so APIs
                 # are retried sooner (4 h vs default 24 h).
                 _has_zillow = response.zpid is not None or (

@@ -104,3 +104,16 @@ def test_str_present_old_entry_not_invalidated() -> None:
         payload, redfin_enabled=False, str_estimates_enabled=True
     )
     assert should is False
+
+
+def test_str_provider_skip_not_invalidated() -> None:
+    """str_estimate_source == 'provider' marks a deliberate cost skip
+    (AXESSO supplied ADR/occupancy) — must not churn every 4h."""
+    payload = _base_good_payload()
+    payload["fetched_at"] = "2020-01-01T00:00:00+00:00"
+    payload["rentals"]["str_market_stats"] = None
+    payload["str_estimate_source"] = "provider"
+    should, _ = _should_invalidate_cache(
+        payload, redfin_enabled=False, str_estimates_enabled=True
+    )
+    assert should is False

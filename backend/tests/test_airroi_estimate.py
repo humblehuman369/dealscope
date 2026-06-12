@@ -15,6 +15,7 @@ from datetime import UTC, datetime
 import pytest
 
 from app.services.api_clients import AirROIClient, DataNormalizer
+from app.services.property_service import _has_plausible_provider_str_data
 
 # ─────────────────────────────────────────────────────────────────────────────
 # parse_estimate — response parsing
@@ -195,3 +196,40 @@ def test_inject_never_touches_ltr_rent_blend():
     # STR-only and must not leak into the IQ rent blend.
     assert normalized["rental_mashvisor_estimate"] is None
     assert normalized["rental_iq_estimate"] is None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# _has_plausible_provider_str_data — provider-first cost skip
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_provider_str_data_skips_when_plausible():
+    assert _has_plausible_provider_str_data({"average_daily_rate": 250, "occupancy_rate": 0.7})
+    # Percent-convention occupancy is also accepted
+    assert _has_plausible_provider_str_data({"average_daily_rate": 250, "occupancy_rate": 75})
+
+
+def test_provider_str_data_requires_both_fields():
+    assert not _has_plausible_provider_str_data({"average_daily_rate": 250})
+    assert not _has_plausible_provider_str_data({"occupancy_rate": 0.7})
+    assert not _has_plausible_provider_str_data({})
+
+
+def test_provider_str_data_rejects_implausible_values():
+    # A monthly figure in the nightly-rate field must not suppress AirROI
+    assert not _has_plausible_provider_str_data(
+        {"average_daily_rate": 2800, "occupancy_rate": 0.7}
+    )
+    assert not _has_plausible_provider_str_data({"average_daily_rate": 5, "occupancy_rate": 0.7})
+    assert not _has_plausible_provider_str_data(
+        {"average_daily_rate": 250, "occupancy_rate": 0}
+    )
+    assert not _has_plausible_provider_str_data(
+        {"average_daily_rate": 250, "occupancy_rate": 150}
+    )
+    assert not _has_plausible_provider_str_data(
+        {"average_daily_rate": "250", "occupancy_rate": 0.7}
+    )
+    assert not _has_plausible_provider_str_data(
+        {"average_daily_rate": True, "occupancy_rate": 0.7}
+    )
