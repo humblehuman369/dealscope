@@ -56,8 +56,10 @@ export default function MapSearchPage() {
     >
       {/* Map search fans out to paid data APIs per viewport move — the backend
           requires auth on /properties/search-area, so gate the UI to match. */}
-      <AuthGate feature="search the map" mode="section">
-        <MapSearchView />
+      <AuthGate feature="search the map" mode="section" fullHeight>
+        <div className="h-full min-h-0">
+          <MapSearchView />
+        </div>
       </AuthGate>
     </div>
   )

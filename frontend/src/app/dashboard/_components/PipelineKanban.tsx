@@ -875,11 +875,14 @@ function KanbanCard({
         onClick={onClick}
         className="w-full text-left rounded-lg p-2.5 bg-[var(--surface-elevated)] border border-[var(--border-default)] hover:border-[var(--border-focus)] transition-all cursor-grab active:cursor-grabbing"
       >
-        <p className="text-sm font-semibold text-[var(--text-heading)] break-words pl-5 pr-16">
+        {/* Top row is reserved for the absolutely-positioned grip icon,
+            tasks badge, and status menu — the address starts below it so
+            it gets the full card width. */}
+        <p className="pt-4 text-sm font-semibold text-[var(--text-heading)] break-words">
           {shortAddress(property)}
         </p>
         {property.address_city && (
-          <p className="text-[11px] text-[var(--text-label)] truncate pl-5">
+          <p className="text-[11px] text-[var(--text-label)] truncate">
             {property.address_city}
             {property.address_state ? `, ${property.address_state}` : ''}
             {property.address_zip ? ` ${property.address_zip}` : ''}

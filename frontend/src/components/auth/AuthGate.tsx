@@ -25,11 +25,13 @@ interface AuthGateProps {
   feature?: string
   /** "section" = blurred content + overlay CTA. "inline" = replace with sign-in link/button. */
   mode?: 'section' | 'inline'
+  /** When true (section mode), child fills the parent height instead of capping at 320px. */
+  fullHeight?: boolean
   /** Custom fallback instead of default sign-in prompt */
   fallback?: React.ReactNode
 }
 
-export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthGateProps) {
+export function AuthGate({ children, feature, mode = 'inline', fullHeight, fallback }: AuthGateProps) {
   const { isAuthenticated, isLoading } = useSession()
   const pathname = useAppPathname()
   const searchParams = useAppSearchParams()
@@ -43,11 +45,15 @@ export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthG
   signInParams.set('redirect', fullPath)
   const signInUrl = `${pathname}?${signInParams.toString()}`
 
-  if (isAuthenticated) return <>{children}</>
+  if (isAuthenticated) {
+    return <div className={fullHeight ? 'h-full min-h-0' : undefined}>{children}</div>
+  }
 
   if (isLoading) {
     return (
-      <div className="opacity-30 pointer-events-none select-none animate-pulse">{children}</div>
+      <div className={`opacity-30 pointer-events-none select-none animate-pulse${fullHeight ? ' h-full min-h-0' : ''}`}>
+        {children}
+      </div>
     )
   }
 
@@ -73,8 +79,15 @@ export function AuthGate({ children, feature, mode = 'inline', fallback }: AuthG
   }
 
   return (
-    <div className="relative overflow-hidden" style={{ maxHeight: 320 }}>
-      <div className="blur-sm pointer-events-none select-none opacity-40">{children}</div>
+    <div
+      className={`relative overflow-hidden${fullHeight ? ' h-full min-h-0' : ''}`}
+      style={fullHeight ? undefined : { maxHeight: 320 }}
+    >
+      <div
+        className={`blur-sm pointer-events-none select-none opacity-40${fullHeight ? ' h-full min-h-0' : ''}`}
+      >
+        {children}
+      </div>
       {/* Gradient fade — reinforces "there's more behind the gate" */}
       <div
         className="absolute inset-x-0 bottom-0 h-32 pointer-events-none"

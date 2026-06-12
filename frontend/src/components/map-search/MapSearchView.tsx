@@ -516,10 +516,16 @@ interface PropertyFocusPoint {
   label: string | null
 }
 
+function isValidMapCoord(lat: number, lng: number): boolean {
+  return Number.isFinite(lat) && Number.isFinite(lng)
+}
+
 function listingMatchesPropertyFocus(
   listing: MapListing,
   focus: PropertyFocusPoint,
 ): boolean {
+  if (!isValidMapCoord(focus.lat, focus.lng)) return false
+  if (!isValidMapCoord(listing.latitude, listing.longitude)) return false
   return (
     haversineDistance(focus.lat, focus.lng, listing.latitude, listing.longitude) <=
     PROPERTY_FOCUS_MATCH_MILES
@@ -795,6 +801,8 @@ function MapContent({
         const isFocusProperty =
           propertyFocus != null && listingMatchesPropertyFocus(listing, propertyFocus)
 
+        if (!isValidMapCoord(listing.latitude, listing.longitude)) return null
+
         if (isFocusProperty) {
           const priceLabel = formatCompactPrice(listing.price)
           return (
@@ -860,6 +868,7 @@ function MapContent({
         )
       })}
       {propertyFocus &&
+        isValidMapCoord(propertyFocus.lat, propertyFocus.lng) &&
         !listings.some((listing) => listingMatchesPropertyFocus(listing, propertyFocus)) && (
           <AdvancedMarker
             position={{ lat: propertyFocus.lat, lng: propertyFocus.lng }}
@@ -1344,14 +1353,22 @@ export function MapSearchView() {
     [clearGeocode],
   )
 
-  const propertyFocusAppliedRef = useRef(false)
+  const propertyFocusAppliedKeyRef = useRef<string | null>(null)
   useEffect(() => {
-    if (!propertyFocus || listings.length === 0 || propertyFocusAppliedRef.current) return
+    if (!propertyFocus) {
+      propertyFocusAppliedKeyRef.current = null
+      return
+    }
+    if (listings.length === 0) return
+
+    const focusKey = `${propertyFocus.lat},${propertyFocus.lng}`
+    if (propertyFocusAppliedKeyRef.current === focusKey) return
+
     const match = listings.find((listing) =>
       listingMatchesPropertyFocus(listing, propertyFocus),
     )
     if (match) {
-      propertyFocusAppliedRef.current = true
+      propertyFocusAppliedKeyRef.current = focusKey
       setSelectedListing(match)
     }
   }, [propertyFocus, listings])
@@ -1555,7 +1572,8 @@ export function MapSearchView() {
               both mobile and desktop so users get an immediate inline
               preview of the clicked property; the right-column card
               highlight remains as a secondary anchor on desktop. */}
-          {selectedListing && (
+          {selectedListing &&
+            isValidMapCoord(selectedListing.latitude, selectedListing.longitude) && (
             <AdvancedMarker
               position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
               anchorPoint={AdvancedMarkerAnchorPoint.TOP}
