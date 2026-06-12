@@ -875,13 +875,14 @@ function KanbanCard({
         onClick={onClick}
         className="w-full text-left rounded-lg p-2.5 bg-[var(--surface-elevated)] border border-[var(--border-default)] hover:border-[var(--border-focus)] transition-all cursor-grab active:cursor-grabbing"
       >
-        <p className="text-sm font-semibold text-[var(--text-heading)] truncate pl-5 pr-16">
+        <p className="text-sm font-semibold text-[var(--text-heading)] break-words pl-5 pr-16">
           {shortAddress(property)}
         </p>
         {property.address_city && (
-          <p className="text-[11px] text-[var(--text-label)] truncate">
+          <p className="text-[11px] text-[var(--text-label)] truncate pl-5">
             {property.address_city}
             {property.address_state ? `, ${property.address_state}` : ''}
+            {property.address_zip ? ` ${property.address_zip}` : ''}
           </p>
         )}
         <div className="mt-2 flex items-center justify-between gap-2">
