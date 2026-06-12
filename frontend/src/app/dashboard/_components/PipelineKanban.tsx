@@ -426,9 +426,19 @@ export function PipelineKanban({ highlightStage, onEmptyAction }: PipelineKanban
                 type="button"
                 onClick={toggleAllPre}
                 aria-expanded={allPreExpanded}
-                className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] hover:text-[var(--accent-sky)] transition-colors"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide transition-all hover:brightness-125"
+                style={{
+                  color: 'var(--accent-sky)',
+                  background: 'rgba(15,164,233,0.08)',
+                  border: '1px solid rgba(15,164,233,0.2)',
+                }}
               >
                 {allPreExpanded ? 'Collapse all' : 'Expand all'}
+                {allPreExpanded ? (
+                  <ChevronDown size={11} strokeWidth={2.5} aria-hidden />
+                ) : (
+                  <ChevronRight size={11} strokeWidth={2.5} aria-hidden />
+                )}
               </button>
             }
           >
