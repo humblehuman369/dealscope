@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Home, Satellite, Eye } from 'lucide-react'
 import { ImageGallery, ImageGallerySkeleton } from './ImageGallery'
 import { PhotoLightbox } from './PhotoLightbox'
@@ -111,6 +111,16 @@ export function PropertyPhotoGallery({
   const closeLightbox = useCallback(() => {
     setLightboxIndex(null)
   }, [])
+
+  const displayPhotos = useMemo(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
+    if (!apiKey || latitude == null || longitude == null) return photos
+    const mapUrl =
+      `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}` +
+      `&zoom=15&size=640x427&scale=2&maptype=roadmap` +
+      `&markers=color:red%7C${latitude},${longitude}&key=${apiKey}`
+    return [...photos, mapUrl]
+  }, [photos, latitude, longitude])
 
   if (state === 'loading') {
     return <ImageGallerySkeleton />
@@ -258,14 +268,18 @@ export function PropertyPhotoGallery({
   return (
     <>
       <ImageGallery
-        images={photos}
-        totalPhotos={photos.length}
+        images={displayPhotos}
+        totalPhotos={displayPhotos.length}
         views={views}
         hideThumbnails={hideThumbnails}
         onImageClick={openLightbox}
       />
       {lightboxIndex !== null && (
-        <PhotoLightbox images={photos} initialIndex={lightboxIndex} onClose={closeLightbox} />
+        <PhotoLightbox
+          images={displayPhotos}
+          initialIndex={lightboxIndex}
+          onClose={closeLightbox}
+        />
       )}
     </>
   )
