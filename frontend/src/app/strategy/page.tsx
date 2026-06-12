@@ -2582,18 +2582,10 @@ function StrategyContent() {
     }
   }
 
-  const streetAddress =
-    propertyInfo?.address?.street ??
-    parsed.street ??
-    (addressParam.split(',')[0]?.trim() || '')
-  const strategyOptionLabels = strategyFilteredPaths
-    .slice(0, 4)
-    .map((p) => p.familyLabel || p.headline || 'Strategy')
   const strategyUnlockOverlay = (
     <StrategyUnlockPanel
       signInUrl={strategySignInUrl}
-      optionLabels={strategyOptionLabels}
-      streetAddress={streetAddress}
+      optionCount={strategyFilteredPaths.slice(0, 4).length}
       buyerTotalLabel={formatBuyerDirectoryLabel(null)}
       lenderTotalLabel={formatLenderDirectoryTotal()}
     />
