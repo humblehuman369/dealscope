@@ -1,11 +1,15 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Home, Satellite, Eye } from 'lucide-react'
 import { ImageGallery, ImageGallerySkeleton } from './ImageGallery'
 import { PhotoLightbox } from './PhotoLightbox'
 import { fetchPropertyPhotos, zillowListingUrl } from '@/services/photoService'
 import { buildStreetViewUrl, resolveBestStreetView, type StreetViewParams } from '@/lib/streetView'
+import { trackEvent } from '@/lib/eventTracking'
+
+const PROPERTY_MAP_ZOOM = 15
 
 type GalleryState = 'loading' | 'loaded' | 'unavailable'
 
@@ -36,6 +40,7 @@ export function PropertyPhotoGallery({
   latitude,
   longitude,
 }: PropertyPhotoGalleryProps) {
+  const router = useRouter()
   const [state, setState] = useState<GalleryState>(initialImages.length > 0 ? 'loaded' : 'loading')
   const [photos, setPhotos] = useState<string[]>(initialImages)
   const [streetViewFailed, setStreetViewFailed] = useState(false)
@@ -104,10 +109,6 @@ export function PropertyPhotoGallery({
     }
   }, [state, smartStreetView, streetViewFailed, latitude, longitude])
 
-  const openLightbox = useCallback((index: number) => {
-    setLightboxIndex(index)
-  }, [])
-
   const closeLightbox = useCallback(() => {
     setLightboxIndex(null)
   }, [])
@@ -121,6 +122,42 @@ export function PropertyPhotoGallery({
       `&markers=color:red%7C${latitude},${longitude}&key=${apiKey}`
     return [...photos, mapUrl]
   }, [photos, latitude, longitude])
+
+  const mapTileIndex =
+    displayPhotos.length > photos.length && latitude != null && longitude != null
+      ? photos.length
+      : undefined
+
+  const openMapSearch = useCallback(() => {
+    trackEvent('map_search_opened', {
+      source: 'property_photo_gallery_map_tile',
+      has_coordinates: latitude != null && longitude != null,
+    })
+
+    const params = new URLSearchParams()
+    if (latitude != null && longitude != null) {
+      params.set('lat', String(latitude))
+      params.set('lng', String(longitude))
+      params.set('zoom', String(PROPERTY_MAP_ZOOM))
+      if (address) params.set('label', address)
+    } else if (address) {
+      params.set('label', address)
+    }
+
+    const qs = params.toString()
+    router.push(qs ? `/map-search?${qs}` : '/map-search')
+  }, [address, latitude, longitude, router])
+
+  const handleImageClick = useCallback(
+    (index: number) => {
+      if (mapTileIndex != null && index === mapTileIndex) {
+        openMapSearch()
+        return
+      }
+      setLightboxIndex(index)
+    },
+    [mapTileIndex, openMapSearch],
+  )
 
   if (state === 'loading') {
     return <ImageGallerySkeleton />
@@ -272,11 +309,12 @@ export function PropertyPhotoGallery({
         totalPhotos={displayPhotos.length}
         views={views}
         hideThumbnails={hideThumbnails}
-        onImageClick={openLightbox}
+        mapTileIndex={mapTileIndex}
+        onImageClick={handleImageClick}
       />
       {lightboxIndex !== null && (
         <PhotoLightbox
-          images={displayPhotos}
+          images={photos}
           initialIndex={lightboxIndex}
           onClose={closeLightbox}
         />

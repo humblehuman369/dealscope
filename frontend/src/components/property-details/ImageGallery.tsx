@@ -8,6 +8,7 @@ import {
   Camera,
   ImageOff,
   GalleryHorizontalEnd,
+  MapPin,
 } from 'lucide-react'
 import { formatNumber } from './utils'
 
@@ -16,6 +17,8 @@ interface ImageGalleryProps {
   totalPhotos: number
   views?: number
   hideThumbnails?: boolean
+  /** When set, this index is a map tile that opens map search instead of the lightbox */
+  mapTileIndex?: number
   onImageClick?: (index: number) => void
 }
 
@@ -34,6 +37,7 @@ export function ImageGallery({
   totalPhotos,
   views,
   hideThumbnails,
+  mapTileIndex,
   onImageClick,
 }: ImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -69,9 +73,12 @@ export function ImageGallery({
         imageError={imageError}
         onImageError={handleImageError}
         onImageClick={onImageClick}
+        mapTileIndex={mapTileIndex}
       />
     )
   }
+
+  const isMapSlide = mapTileIndex != null && currentIndex === mapTileIndex
 
   return (
     <div className="space-y-3">
@@ -80,11 +87,28 @@ export function ImageGallery({
         className="relative rounded-[14px] overflow-hidden cursor-pointer"
         style={{ aspectRatio: '3/2', backgroundColor: 'var(--surface-elevated)' }}
         onClick={() => onImageClick?.(currentIndex)}
+        role="button"
+        tabIndex={0}
+        aria-label={
+          isMapSlide
+            ? 'View property location on map search'
+            : `View photo ${currentIndex + 1}`
+        }
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onImageClick?.(currentIndex)
+          }
+        }}
       >
         {currentVisible ? (
           <img
             src={rawImages[currentIndex]}
-            alt={`Property photo ${currentIndex + 1}`}
+            alt={
+              isMapSlide
+                ? 'Property location map'
+                : `Property photo ${currentIndex + 1}`
+            }
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
             onError={() => handleImageError(currentIndex)}
@@ -97,6 +121,8 @@ export function ImageGallery({
             </span>
           </div>
         )}
+
+        {isMapSlide && <MapTileBadge />}
 
         {/* Top Bar - Views & Photo Counter */}
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
@@ -213,6 +239,7 @@ interface DesktopMosaicProps {
   imageError: Record<number, boolean>
   onImageError: (index: number) => void
   onImageClick?: (index: number) => void
+  mapTileIndex?: number
 }
 
 /**
@@ -274,12 +301,81 @@ function DesktopMosaic({
   imageError,
   onImageError,
   onImageClick,
+  mapTileIndex,
 }: DesktopMosaicProps) {
   const containerStyle = {
     height: 400,
     backgroundColor: 'var(--surface-elevated)',
   } as const
   const containerClass = 'grid gap-1.5 rounded-[14px] overflow-hidden'
+
+  // When a map tile is appended and there are many listing photos, pin the
+  // map in the last mosaic slot so it stays visible instead of hiding
+  // behind "+N more".
+  if (
+    mapTileIndex != null &&
+    mapTileIndex < images.length &&
+    images.length > 5
+  ) {
+    const listingPhotos = images.slice(0, mapTileIndex)
+    const mapImage = images[mapTileIndex]
+    const hiddenPhotoCount = Math.max(0, listingPhotos.length - 4)
+
+    return (
+      <div
+        className={`${containerClass} grid-rows-2`}
+        style={{ ...containerStyle, gridTemplateColumns: '3fr 1fr 1fr' }}
+      >
+        <MosaicCell
+          image={listingPhotos[0]}
+          index={0}
+          failed={imageError[0]}
+          onError={onImageError}
+          onClick={onImageClick}
+          className="row-span-2"
+          mapTileIndex={mapTileIndex}
+        >
+          <HeroBadges views={views} totalPhotos={totalPhotos} />
+        </MosaicCell>
+        {[1, 2].map((i) => (
+          <MosaicCell
+            key={i}
+            image={listingPhotos[i]}
+            index={i}
+            failed={imageError[i]}
+            onError={onImageError}
+            onClick={onImageClick}
+            mapTileIndex={mapTileIndex}
+          />
+        ))}
+        <MosaicCell
+          image={listingPhotos[3]}
+          index={3}
+          failed={imageError[3]}
+          onError={onImageError}
+          onClick={onImageClick}
+          mapTileIndex={mapTileIndex}
+        >
+          {hiddenPhotoCount > 0 && (
+            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1 z-10">
+              <GalleryHorizontalEnd size={20} style={{ color: 'var(--text-heading)' }} />
+              <span className="text-sm font-semibold" style={{ color: 'var(--text-heading)' }}>
+                +{hiddenPhotoCount} more
+              </span>
+            </div>
+          )}
+        </MosaicCell>
+        <MosaicCell
+          image={mapImage}
+          index={mapTileIndex}
+          failed={imageError[mapTileIndex]}
+          onError={onImageError}
+          onClick={onImageClick}
+          mapTileIndex={mapTileIndex}
+        />
+      </div>
+    )
+  }
 
   if (images.length === 1) {
     return (
@@ -290,6 +386,7 @@ function DesktopMosaic({
           failed={imageError[0]}
           onError={onImageError}
           onClick={onImageClick}
+          mapTileIndex={mapTileIndex}
         >
           <HeroBadges views={views} totalPhotos={totalPhotos} />
         </MosaicCell>
@@ -306,6 +403,7 @@ function DesktopMosaic({
           failed={imageError[0]}
           onError={onImageError}
           onClick={onImageClick}
+          mapTileIndex={mapTileIndex}
         >
           <HeroBadges views={views} totalPhotos={totalPhotos} />
         </MosaicCell>
@@ -315,6 +413,7 @@ function DesktopMosaic({
           failed={imageError[1]}
           onError={onImageError}
           onClick={onImageClick}
+          mapTileIndex={mapTileIndex}
         />
       </div>
     )
@@ -333,6 +432,7 @@ function DesktopMosaic({
           onError={onImageError}
           onClick={onImageClick}
           className="row-span-2"
+          mapTileIndex={mapTileIndex}
         >
           <HeroBadges views={views} totalPhotos={totalPhotos} />
         </MosaicCell>
@@ -342,6 +442,7 @@ function DesktopMosaic({
           failed={imageError[1]}
           onError={onImageError}
           onClick={onImageClick}
+          mapTileIndex={mapTileIndex}
         />
         <MosaicCell
           image={images[2]}
@@ -349,6 +450,7 @@ function DesktopMosaic({
           failed={imageError[2]}
           onError={onImageError}
           onClick={onImageClick}
+          mapTileIndex={mapTileIndex}
         />
       </div>
     )
@@ -367,6 +469,7 @@ function DesktopMosaic({
           onError={onImageError}
           onClick={onImageClick}
           className="row-span-2"
+          mapTileIndex={mapTileIndex}
         >
           <HeroBadges views={views} totalPhotos={totalPhotos} />
         </MosaicCell>
@@ -376,6 +479,7 @@ function DesktopMosaic({
           failed={imageError[1]}
           onError={onImageError}
           onClick={onImageClick}
+          mapTileIndex={mapTileIndex}
         />
         <MosaicCell
           image={images[2]}
@@ -383,6 +487,7 @@ function DesktopMosaic({
           failed={imageError[2]}
           onError={onImageError}
           onClick={onImageClick}
+          mapTileIndex={mapTileIndex}
         />
         <MosaicCell
           image={images[3]}
@@ -391,6 +496,7 @@ function DesktopMosaic({
           onError={onImageError}
           onClick={onImageClick}
           className="col-span-2"
+          mapTileIndex={mapTileIndex}
         />
       </div>
     )
@@ -411,6 +517,7 @@ function DesktopMosaic({
         onError={onImageError}
         onClick={onImageClick}
         className="row-span-2"
+        mapTileIndex={mapTileIndex}
       >
         <HeroBadges views={views} totalPhotos={totalPhotos} />
       </MosaicCell>
@@ -424,6 +531,7 @@ function DesktopMosaic({
             failed={imageError[i]}
             onError={onImageError}
             onClick={onImageClick}
+            mapTileIndex={mapTileIndex}
           >
             {isLastVisible && (
               <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1 z-10">
@@ -441,6 +549,26 @@ function DesktopMosaic({
 }
 
 /* ------------------------------------------------------------------ */
+/*  Map tile badge                                                     */
+/* ------------------------------------------------------------------ */
+
+function MapTileBadge() {
+  return (
+    <div className="absolute inset-x-0 bottom-0 flex items-end justify-center pb-3 pointer-events-none z-10">
+      <div
+        className="px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-1.5"
+        style={{ backgroundColor: 'var(--surface-overlay)' }}
+      >
+        <MapPin size={14} style={{ color: 'var(--accent-sky)' }} aria-hidden />
+        <span className="text-xs font-semibold" style={{ color: 'var(--accent-sky)' }}>
+          View on map
+        </span>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
 /*  MosaicCell                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -452,6 +580,7 @@ interface MosaicCellProps {
   onClick?: (index: number) => void
   className?: string
   children?: React.ReactNode
+  mapTileIndex?: number
 }
 
 function MosaicCell({
@@ -462,18 +591,23 @@ function MosaicCell({
   onClick,
   className = '',
   children,
+  mapTileIndex,
 }: MosaicCellProps) {
+  const isMapTile = mapTileIndex != null && index === mapTileIndex
+
   return (
     <button
       type="button"
       className={`relative overflow-hidden group cursor-pointer ${className}`}
       onClick={() => onClick?.(index)}
-      aria-label={`View photo ${index + 1}`}
+      aria-label={
+        isMapTile ? 'View property location on map search' : `View photo ${index + 1}`
+      }
     >
       {image && !failed ? (
         <img
           src={image}
-          alt={`Property photo ${index + 1}`}
+          alt={isMapTile ? 'Property location map' : `Property photo ${index + 1}`}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           referrerPolicy="no-referrer"
           onError={() => onError(index)}
@@ -489,6 +623,7 @@ function MosaicCell({
       {/* Subtle hover overlay */}
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
       {children}
+      {isMapTile && <MapTileBadge />}
     </button>
   )
 }
