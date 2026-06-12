@@ -382,11 +382,13 @@ async def get_demo_property():
 @router.post("/properties/search-area", response_model=MapSearchResponse)
 async def search_property_area(
     request: MapSearchRequest,
-    current_user: CurrentUser,
+    current_user: OptionalUser = None,
 ):
     """
-    Map viewport / polygon listing search. Requires authentication —
-    each cache miss fans out to RentCast/AXESSO (and Mashvisor when enabled).
+    Map viewport / polygon listing search. Open to anonymous users so the
+    map is a top-of-funnel discovery surface; API costs are controlled by
+    the viewport-keyed Redis cache (10-min TTL) and the per-IP anonymous
+    quota on the property-analysis endpoint downstream.
 
     Registered on the property router (before ``/properties/{property_id}``)
     so POST is not shadowed by the dynamic GET path when the map-search
