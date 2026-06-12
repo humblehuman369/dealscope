@@ -25,9 +25,11 @@ import {
   Sun,
   Moon,
   ChevronDown,
+  Flag,
 } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
+import { haversineDistance } from '@/lib/api/comps-transform-utils'
 import type { MapListing } from '@/lib/api'
 import { markerColorForCategory, type DealCategory, type DealSignalResult } from '@/lib/dealSignal'
 import { FilterPanel } from './FilterPanel'
@@ -505,6 +507,62 @@ function formatCount(n: number): string {
   return String(n)
 }
 
+/** Max distance (mi) to treat a map listing as the focused property pin. */
+const PROPERTY_FOCUS_MATCH_MILES = 0.05
+
+interface PropertyFocusPoint {
+  lat: number
+  lng: number
+  label: string | null
+}
+
+function listingMatchesPropertyFocus(
+  listing: MapListing,
+  focus: PropertyFocusPoint,
+): boolean {
+  return (
+    haversineDistance(focus.lat, focus.lng, listing.latitude, listing.longitude) <=
+    PROPERTY_FOCUS_MATCH_MILES
+  )
+}
+
+function PropertyFocusPin({ subtitle }: { subtitle?: string | null }) {
+  return (
+    <div className="flex flex-col items-center">
+      <div
+        className="relative flex items-center justify-center w-9 h-9 rounded-full shadow-lg"
+        style={{
+          backgroundColor: '#F59E0B',
+          border: '2.5px solid #fff',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(245, 158, 11, 0.35)',
+        }}
+      >
+        <Flag size={16} color="#fff" fill="#fff" strokeWidth={2} aria-hidden />
+      </div>
+      <div
+        className="w-0 h-0 -mt-px"
+        style={{
+          borderLeft: '7px solid transparent',
+          borderRight: '7px solid transparent',
+          borderTop: '9px solid #F59E0B',
+        }}
+      />
+      {subtitle ? (
+        <div
+          className="mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap max-w-[160px] truncate shadow-md"
+          style={{
+            backgroundColor: 'var(--surface-card)',
+            color: 'var(--text-heading)',
+            border: '1px solid var(--border-default)',
+          }}
+        >
+          {subtitle}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 // ──────────────────────────────────────────────
 // Inner map content — must be a child of <Map>
 // ──────────────────────────────────────────────
@@ -529,6 +587,7 @@ interface MapContentProps {
   // camera has settled. Used to auto-collapse the marker-color legend so it
   // stops occupying screen space once the user starts exploring.
   onUserCameraInteraction?: () => void
+  propertyFocus?: PropertyFocusPoint | null
 }
 
 function MapContent({
@@ -546,6 +605,7 @@ function MapContent({
   polygon,
   isDarkMap,
   onUserCameraInteraction,
+  propertyFocus,
 }: MapContentProps) {
   const map = useMap()
 
@@ -732,6 +792,25 @@ function MapContent({
         const isAirbnb = listing.source === 'mashvisor_airbnb'
         const signal = dealSignals.get(listing.id)
         const isSelected = selectedListing?.id === listing.id
+        const isFocusProperty =
+          propertyFocus != null && listingMatchesPropertyFocus(listing, propertyFocus)
+
+        if (isFocusProperty) {
+          const priceLabel = formatCompactPrice(listing.price)
+          return (
+            <AdvancedMarker
+              key={listing.id}
+              position={{ lat: listing.latitude, lng: listing.longitude }}
+              onClick={() => onSelectListing(listing)}
+              anchorPoint={AdvancedMarkerAnchorPoint.BOTTOM}
+              zIndex={1200}
+            >
+              <PropertyFocusPin
+                subtitle={priceLabel !== '?' ? priceLabel : 'This property'}
+              />
+            </AdvancedMarker>
+          )
+        }
 
         let markerBg: string
         let markerText: string
@@ -780,6 +859,16 @@ function MapContent({
           </AdvancedMarker>
         )
       })}
+      {propertyFocus &&
+        !listings.some((listing) => listingMatchesPropertyFocus(listing, propertyFocus)) && (
+          <AdvancedMarker
+            position={{ lat: propertyFocus.lat, lng: propertyFocus.lng }}
+            anchorPoint={AdvancedMarkerAnchorPoint.BOTTOM}
+            zIndex={1200}
+          >
+            <PropertyFocusPin subtitle="This property" />
+          </AdvancedMarker>
+        )}
     </>
   )
 }
@@ -850,6 +939,11 @@ export function MapSearchView() {
 
   const locationLabel = searchParams.get('label') ?? null
   const needsGeocode = !!locationLabel && !paramCenter
+
+  const propertyFocus = useMemo((): PropertyFocusPoint | null => {
+    if (searchParams.get('focus') !== 'property' || !paramCenter) return null
+    return { lat: paramCenter.lat, lng: paramCenter.lng, label: locationLabel }
+  }, [searchParams, paramCenter, locationLabel])
 
   // Tab-session map snapshot — read once on mount. URL params take precedence:
   // arriving via a deep link with explicit lat/lng or `label` is treated as a
@@ -1250,6 +1344,18 @@ export function MapSearchView() {
     [clearGeocode],
   )
 
+  const propertyFocusAppliedRef = useRef(false)
+  useEffect(() => {
+    if (!propertyFocus || listings.length === 0 || propertyFocusAppliedRef.current) return
+    const match = listings.find((listing) =>
+      listingMatchesPropertyFocus(listing, propertyFocus),
+    )
+    if (match) {
+      propertyFocusAppliedRef.current = true
+      setSelectedListing(match)
+    }
+  }, [propertyFocus, listings])
+
   useEffect(() => {
     if (!isZoomedIn || hintShownRef.current) {
       if (!isZoomedIn) setShowClickHint(false)
@@ -1429,6 +1535,7 @@ export function MapSearchView() {
             polygon={polygon}
             isDarkMap={isDarkMap}
             onUserCameraInteraction={collapseLegend}
+            propertyFocus={propertyFocus}
           />
           {dropPin && (
             <AdvancedMarker position={dropPin}>

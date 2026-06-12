@@ -139,6 +139,7 @@ export function PropertyPhotoGallery({
       params.set('lat', String(latitude))
       params.set('lng', String(longitude))
       params.set('zoom', String(PROPERTY_MAP_ZOOM))
+      params.set('focus', 'property')
       if (address) params.set('label', address)
     } else if (address) {
       params.set('label', address)
