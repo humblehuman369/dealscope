@@ -21,6 +21,14 @@ import {
   trackTourStepReached,
   type WorkbenchTourPhase,
 } from '@/lib/workbenchTour'
+import {
+  formatBuyerDirectoryLabel,
+  formatLenderDirectoryTotal,
+} from '@/lib/directory-promo'
+
+/** Custom events used by the tooltip to pause/resume the auto-advance timer on hover. */
+export const TOUR_HOVER_PAUSE_EVENT = 'dealgapiq:tour-hover-pause'
+export const TOUR_HOVER_RESUME_EVENT = 'dealgapiq:tour-hover-resume'
 
 interface WorkbenchTourProps {
   phase: WorkbenchTourPhase
@@ -51,7 +59,24 @@ function TourTooltip({
         border: '1px solid var(--accent-sky)',
         color: 'var(--text-heading)',
       }}
+      onPointerEnter={() => window.dispatchEvent(new CustomEvent(TOUR_HOVER_PAUSE_EVENT))}
+      onPointerLeave={() => window.dispatchEvent(new CustomEvent(TOUR_HOVER_RESUME_EVENT))}
+      onTouchStart={() => window.dispatchEvent(new CustomEvent(TOUR_HOVER_PAUSE_EVENT))}
     >
+      {/* Progress bar — reduces perceived tour length vs. text-only step counter */}
+      <div
+        className="h-1 rounded-full mb-3 overflow-hidden"
+        style={{ background: 'var(--border-default)' }}
+        aria-hidden
+      >
+        <div
+          className="h-full rounded-full transition-all duration-300"
+          style={{
+            width: `${(stepNumber / size) * 100}%`,
+            background: 'var(--accent-sky)',
+          }}
+        />
+      </div>
       <div className="flex items-center justify-between gap-3 mb-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
           Step {stepNumber} of {size}
@@ -123,10 +148,11 @@ function WelcomeModal({
           className="text-xl font-bold mb-2"
           style={{ color: 'var(--text-heading)' }}
         >
-          You just analyzed your first property.
+          Your first deal analysis is done.
         </h2>
         <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-          Here&apos;s everything else you unlocked — in 60 seconds.
+          60 seconds. Six tools. One number that tells you exactly what to offer. Let&apos;s walk
+          it.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
@@ -189,10 +215,11 @@ function CloseModal({
           className="text-xl font-bold mb-2"
           style={{ color: 'var(--text-heading)' }}
         >
-          That&apos;s the workbench.
+          You&apos;ve got the workbench. Now work a deal.
         </h2>
         <p className="text-sm mb-5" style={{ color: 'var(--text-secondary)' }}>
-          Save this property to track it, scan another, or hunt deals across an entire ZIP.
+          Save this property and DealGapIQ keeps the numbers fresh — and alerts you when anything
+          changes.
         </p>
         <div className="flex flex-col gap-2.5 mb-5">
           <button
@@ -225,8 +252,32 @@ function CloseModal({
               color: 'var(--text-heading)',
             }}
           >
-            📍 Browse the Map
+            📍 Hunt the Map
           </button>
+        </div>
+        {/* Pro seed — same visual treatment as the Strategy unlock panel's exit-network strip */}
+        <div
+          className="rounded-xl px-3.5 py-2.5 mb-5 text-left"
+          style={{
+            background: 'var(--color-sky-dim)',
+            border: '1px solid var(--accent-sky)',
+          }}
+        >
+          <p className="text-[12px] leading-snug m-0" style={{ color: 'var(--text-body)' }}>
+            When you&apos;re ready to close:{' '}
+            <span className="font-bold" style={{ color: 'var(--text-heading)' }}>
+              Pro
+            </span>{' '}
+            connects you to{' '}
+            <span className="font-bold" style={{ color: 'var(--text-heading)' }}>
+              {formatBuyerDirectoryLabel(null)} verified cash buyers
+            </span>{' '}
+            and{' '}
+            <span className="font-bold" style={{ color: 'var(--text-heading)' }}>
+              {formatLenderDirectoryTotal()} hard money lenders
+            </span>
+            .
+          </p>
         </div>
         <label className="flex items-center justify-center gap-2 text-sm text-[var(--text-secondary)] cursor-pointer">
           <input
@@ -260,17 +311,21 @@ export function WorkbenchTour({
   const router = useRouter()
   const [runJoyride, setRunJoyride] = useState(false)
   const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** Remaining ms + start timestamp for the active step's timer, so hover can pause/resume it. */
+  const timerStateRef = useRef<{ index: number; remaining: number; startedAt: number } | null>(
+    null,
+  )
 
   const steps: Step[] = useMemo(
     () => [
       {
         target: '[data-tour="verdict-prices"]',
-        title: '🎯 This is your Verdict.',
+        title: '🎯 Start here: your three numbers.',
         content: (
           <p>
-            Three numbers say it all — Target Buy is your profit price. Income Value is break-even.
-            Market is what the seller wants. The <strong>Deal Gap</strong> between them is your
-            negotiation room.
+            Target Buy is the price where this deal makes money. Income Value is break-even.
+            Market Price is what the seller wants. The gap between them is your{' '}
+            <strong>negotiation room</strong> — and every tool here exists to close it.
           </p>
         ),
         disableBeacon: true,
@@ -278,52 +333,62 @@ export function WorkbenchTour({
       },
       {
         target: '[data-tour="tab-strategy"]',
-        title: '📊 Same property, six ways to profit.',
+        title: '📊 One property. Six ways to profit.',
         content: (
           <p>
-            Long-term, short-term, BRRRR, flip, house hack, wholesale — full proforma for each,
-            side by side.
+            Rental, short-term, BRRRR, flip, house hack, wholesale — full numbers for each, side
+            by side. A property that fails as a rental can still win as a flip. Never leave money
+            on the table.
+            <br />
+            <em>Click the tab to try it.</em>
           </p>
         ),
         placement: 'bottom',
       },
       {
         target: '[data-tour="tab-comps"]',
-        title: '🏛️ Want a real valuation?',
+        title: '🏛️ Prove your number to a lender.',
         content: (
           <p>
-            Live comps, your-pick adjustments, confidence score, and a professional PDF to use for
-            funding.
+            Pull live comps, make your own adjustments, and export a professional valuation PDF —
+            the kind you hand to a lender or partner to back your offer.
           </p>
         ),
         placement: 'bottom',
       },
       {
         target: '[data-tour="tab-deal-maker"]',
-        title: '🛠️ Structure the offer before you write it.',
-        content: <p>Change loan type, down payment, or rent — every metric recalculates live.</p>,
+        title: '🛠️ Test the offer before you make it.',
+        content: (
+          <p>
+            Drop the rate, raise the down payment, add seller financing — every metric
+            recalculates live. Walk into the negotiation already knowing which terms make this
+            deal work.
+            <br />
+            <em>Click the tab to try it.</em>
+          </p>
+        ),
         placement: 'bottom',
       },
       {
         target: '[data-tour="tab-estimator"]',
-        title: '🔨 Need rehab numbers?',
+        title: '🔨 Rehab numbers without waiting on a contractor.',
         content: (
           <p>
-            Local construction pricing built in. Pick a preset or itemize — kitchen, bath, systems,
-            the works.
+            Local construction pricing built in. Pick a preset or itemize — kitchen, bath, roof,
+            systems — and your flip and BRRRR numbers update automatically.
           </p>
         ),
         placement: 'bottom',
       },
       {
         target: mapSearchTourTarget(),
-        title: "🗺️ Don't have an address? Hunt the whole market.",
+        title: '🗺️ No address? Hunt the whole market.',
         content: (
           <p>
-            Map Search shows every parcel pre-graded green / yellow / red — with foreclosure,
-            pre-foreclosure, auction, and 90-day-stale filters built in.
-            <br />
-            <em>Pro tip: this is how flippers and wholesalers find their next deal.</em>
+            Every parcel pre-graded green / yellow / red. Filter for foreclosures,
+            pre-foreclosures, auctions, and listings gone stale — the deals flippers and
+            wholesalers fight over.
           </p>
         ),
         placement: 'top',
@@ -337,15 +402,18 @@ export function WorkbenchTour({
       clearTimeout(autoAdvanceRef.current)
       autoAdvanceRef.current = null
     }
+    timerStateRef.current = null
   }, [])
 
   const scheduleAutoAdvance = useCallback(
-    (index: number) => {
+    (index: number, durationOverride?: number) => {
       clearAutoAdvance()
       if (phase !== 'steps') return
-      const duration = WORKBENCH_TOUR_STEP_DURATIONS_MS[index]
+      const duration = durationOverride ?? WORKBENCH_TOUR_STEP_DURATIONS_MS[index]
       if (duration == null) return
+      timerStateRef.current = { index, remaining: duration, startedAt: Date.now() }
       autoAdvanceRef.current = setTimeout(() => {
+        timerStateRef.current = null
         if (index >= steps.length - 1) {
           setRunJoyride(false)
           onPhaseChange('close')
@@ -356,6 +424,31 @@ export function WorkbenchTour({
     },
     [clearAutoAdvance, onJoyrideIndexChange, onPhaseChange, phase, steps.length],
   )
+
+  // Pause the auto-advance timer while the user is reading (pointer over the
+  // tooltip), then resume with whatever time was left. Touch only pauses —
+  // mobile users advance manually via Next.
+  useEffect(() => {
+    const handlePause = () => {
+      const state = timerStateRef.current
+      if (!state || !autoAdvanceRef.current) return
+      clearTimeout(autoAdvanceRef.current)
+      autoAdvanceRef.current = null
+      state.remaining = Math.max(0, state.remaining - (Date.now() - state.startedAt))
+    }
+    const handleResume = () => {
+      const state = timerStateRef.current
+      if (!state || autoAdvanceRef.current) return
+      // Give slow readers a floor so resume never advances instantly.
+      scheduleAutoAdvance(state.index, Math.max(state.remaining, 2000))
+    }
+    window.addEventListener(TOUR_HOVER_PAUSE_EVENT, handlePause)
+    window.addEventListener(TOUR_HOVER_RESUME_EVENT, handleResume)
+    return () => {
+      window.removeEventListener(TOUR_HOVER_PAUSE_EVENT, handlePause)
+      window.removeEventListener(TOUR_HOVER_RESUME_EVENT, handleResume)
+    }
+  }, [scheduleAutoAdvance])
 
   useEffect(() => {
     if (phase === 'steps') {
