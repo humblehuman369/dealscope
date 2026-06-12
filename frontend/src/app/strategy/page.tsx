@@ -1501,17 +1501,6 @@ function StrategyContent() {
     [scheduleRecalc, markWorksheetDirty, scrollStrategyToOptionCard],
   )
 
-  const handlePathButtonClick = useCallback(
-    (structure: DealStructure, idx: number) => {
-      if (!isAuthenticated) {
-        router.push(strategySignInUrl)
-        return
-      }
-      applyPathPatch(structure, idx)
-    },
-    [isAuthenticated, router, strategySignInUrl, applyPathPatch],
-  )
-
   /**
    * Strip every key the path mapper might have written from `inlineOverrides`,
    * persist the cleared state, and trigger a recalc so the worksheet returns
@@ -3026,7 +3015,8 @@ function StrategyContent() {
             )
           })()}
 
-        {/* Next Steps — accordion, closed by default */}
+        {/* Next Steps — authenticated only; anon users see the unlock panel instead */}
+        {isAuthenticated && (
         <section className="px-[1px] sm:px-5" style={{ paddingTop: 8, paddingBottom: 8 }}>
           <div
             style={{
@@ -3285,10 +3275,10 @@ function StrategyContent() {
             </div>
             )}
         </section>
+        )}
 
-        {/* Apply a Path — OUTSIDE AuthGate so signed-out users are not clipped by
-            AuthGate section maxHeight (~320px); paths still apply overrides + recalc. */}
-        {displayDealStructurePaths.length > 0 && optionsHiddenForStrategy && (
+        {/* Apply a Path — authenticated only */}
+        {isAuthenticated && displayDealStructurePaths.length > 0 && optionsHiddenForStrategy && (
           <section className="px-[1px] sm:px-5 pt-2 pb-2">
             <div
               className="rounded-xl px-4 py-3 flex items-start gap-3"
@@ -3312,7 +3302,8 @@ function StrategyContent() {
             </div>
           </section>
         )}
-        {displayDealStructurePaths.length > 0 &&
+        {isAuthenticated &&
+          displayDealStructurePaths.length > 0 &&
           !optionsHiddenForStrategy &&
           strategyFilteredPaths.length > 0 && (
             <section className="px-[1px] sm:px-5 pt-2 pb-2">
@@ -3323,28 +3314,14 @@ function StrategyContent() {
                 <div className="mb-2">
                   <div className="flex items-center justify-between mb-2 gap-3">
                     <div className="flex flex-col">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3
-                          className="text-sm font-bold uppercase tracking-wider"
-                          style={{ color: 'var(--text-heading)' }}
-                        >
-                          {appliedPathId
-                            ? 'Apply an Option to the Worksheet'
-                            : 'Start here — pick an Option'}
-                        </h3>
-                        {!isAuthenticated && (
-                          <span
-                            className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                            style={{
-                              background: 'var(--color-sky-dim)',
-                              color: 'var(--accent-sky)',
-                              border: '1px solid var(--accent-sky)',
-                            }}
-                          >
-                            Free
-                          </span>
-                        )}
-                      </div>
+                      <h3
+                        className="text-sm font-bold uppercase tracking-wider"
+                        style={{ color: 'var(--text-heading)' }}
+                      >
+                        {appliedPathId
+                          ? 'Apply an Option to the Worksheet'
+                          : 'Start here — pick an Option'}
+                      </h3>
                       <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                         {optionsSubtitle}
                       </p>
@@ -3379,7 +3356,7 @@ function StrategyContent() {
                       structure={p}
                       index={i}
                       active={appliedPathId === p.id}
-                      onClick={handlePathButtonClick}
+                      onClick={applyPathPatch}
                     />
                   ))}
                   </div>
