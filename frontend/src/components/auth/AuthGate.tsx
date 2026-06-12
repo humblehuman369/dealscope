@@ -29,9 +29,18 @@ interface AuthGateProps {
   fullHeight?: boolean
   /** Custom fallback instead of default sign-in prompt */
   fallback?: React.ReactNode
+  /** Custom overlay for section mode (replaces default pill CTA). */
+  overlay?: React.ReactNode
 }
 
-export function AuthGate({ children, feature, mode = 'inline', fullHeight, fallback }: AuthGateProps) {
+export function AuthGate({
+  children,
+  feature,
+  mode = 'inline',
+  fullHeight,
+  fallback,
+  overlay,
+}: AuthGateProps) {
   const { isAuthenticated, isLoading } = useSession()
   const pathname = useAppPathname()
   const searchParams = useAppSearchParams()
@@ -78,10 +87,12 @@ export function AuthGate({ children, feature, mode = 'inline', fullHeight, fallb
     )
   }
 
+  const sectionMaxHeight = overlay ? 560 : 320
+
   return (
     <div
       className={`relative overflow-hidden${fullHeight ? ' h-full min-h-0' : ''}`}
-      style={fullHeight ? undefined : { maxHeight: 320 }}
+      style={fullHeight ? undefined : { maxHeight: sectionMaxHeight }}
     >
       <div
         className={`blur-sm pointer-events-none select-none opacity-40${fullHeight ? ' h-full min-h-0' : ''}`}
@@ -94,22 +105,26 @@ export function AuthGate({ children, feature, mode = 'inline', fullHeight, fallb
         style={{ background: 'linear-gradient(to bottom, transparent, var(--surface-base))' }}
       />
       {/* CTA — pinned near top so it's immediately visible */}
-      <div className="absolute inset-0 flex flex-col items-center pt-10">
-        <Link
-          href={signInUrl}
-          className="flex items-center gap-2.5 px-6 py-3 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:scale-[1.03]"
-          style={{
-            background: 'var(--accent-sky)',
-            color: '#fff',
-            boxShadow: '0 4px 24px rgba(8,145,178,0.4)',
-          }}
-        >
-          <LogIn size={15} />
-          {label}
-        </Link>
-        <p className="mt-3 text-xs" style={{ color: 'var(--text-label)' }}>
-          Free account — no credit card required
-        </p>
+      <div className="absolute inset-0 flex flex-col items-center pt-6 sm:pt-8 px-2">
+        {overlay ?? (
+          <>
+            <Link
+              href={signInUrl}
+              className="flex items-center gap-2.5 px-6 py-3 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:scale-[1.03]"
+              style={{
+                background: 'var(--accent-sky)',
+                color: '#fff',
+                boxShadow: '0 4px 24px rgba(8,145,178,0.4)',
+              }}
+            >
+              <LogIn size={15} />
+              {label}
+            </Link>
+            <p className="mt-3 text-xs" style={{ color: 'var(--text-label)' }}>
+              Free account — no credit card required
+            </p>
+          </>
+        )}
       </div>
     </div>
   )

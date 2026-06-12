@@ -19,7 +19,7 @@ import {
   useRef,
   Suspense,
 } from 'react'
-import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { useAppPathname, useAppSearchParams } from '@/hooks/useAppNavigation'
 import { ScreenErrorBoundary } from '@/components/ErrorBoundary'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
@@ -82,6 +82,11 @@ import {
   effectiveMonthlyRentFromRecord,
 } from '@/lib/dealMakerOverrides'
 import { AuthGate } from '@/components/auth/AuthGate'
+import { StrategyUnlockPanel } from '@/components/auth/StrategyUnlockPanel'
+import {
+  formatBuyerDirectoryLabel,
+  formatLenderDirectoryTotal,
+} from '@/lib/directory-promo'
 import {
   parseStrategyWorksheetSection,
   strategyWorksheetAnchorId,
@@ -624,6 +629,7 @@ function toStrategyType(backendId: string): StrategyType {
 
 function StrategyContent() {
   const router = useRouter()
+  const pathname = useAppPathname()
   const searchParams = useAppSearchParams()
   const queryClient = useQueryClient()
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
@@ -631,6 +637,17 @@ function StrategyContent() {
   const { openAuthModal } = useAuthModal()
 
   const addressParam = searchParams.get('address') || ''
+  const strategySignInUrl = useMemo(() => {
+    const cleanParams = new URLSearchParams(searchParams.toString())
+    cleanParams.delete('auth')
+    cleanParams.delete('redirect')
+    const cleanQs = cleanParams.toString()
+    const fullPath = cleanQs ? `${pathname}?${cleanQs}` : pathname
+    const signInParams = new URLSearchParams(cleanQs)
+    signInParams.set('auth', 'required')
+    signInParams.set('redirect', fullPath)
+    return `${pathname}?${signInParams.toString()}`
+  }, [pathname, searchParams])
   const conditionParam = searchParams.get('condition')
   const locationParam = searchParams.get('location')
   const strategyParam = searchParams.get('strategy')
@@ -1482,6 +1499,17 @@ function StrategyContent() {
       }
     },
     [scheduleRecalc, markWorksheetDirty, scrollStrategyToOptionCard],
+  )
+
+  const handlePathButtonClick = useCallback(
+    (structure: DealStructure, idx: number) => {
+      if (!isAuthenticated) {
+        router.push(strategySignInUrl)
+        return
+      }
+      applyPathPatch(structure, idx)
+    },
+    [isAuthenticated, router, strategySignInUrl, applyPathPatch],
   )
 
   /**
@@ -2565,6 +2593,23 @@ function StrategyContent() {
     }
   }
 
+  const streetAddress =
+    propertyInfo?.address?.street ??
+    parsed.street ??
+    (addressParam.split(',')[0]?.trim() || '')
+  const strategyOptionLabels = strategyFilteredPaths
+    .slice(0, 4)
+    .map((p) => p.familyLabel || p.headline || 'Strategy')
+  const strategyUnlockOverlay = (
+    <StrategyUnlockPanel
+      signInUrl={strategySignInUrl}
+      optionLabels={strategyOptionLabels}
+      streetAddress={streetAddress}
+      buyerTotalLabel={formatBuyerDirectoryLabel(null)}
+      lenderTotalLabel={formatLenderDirectoryTotal()}
+    />
+  )
+
   return (
     <div
       className="strategy-page-shell min-h-screen"
@@ -2993,6 +3038,7 @@ function StrategyContent() {
           >
             {/* Export links — siblings of the toggle (never nested inside it) so
                 interactive elements stay out of the accordion control. */}
+            {isAuthenticated && (
             <div className="flex items-center gap-6">
                 <button
                   type="button"
@@ -3070,6 +3116,7 @@ function StrategyContent() {
                   {isExporting === 'excel' ? 'Generating…' : 'Download Excel'}
                 </button>
               </div>
+            )}
               <button
                 type="button"
                 onClick={() => setNextStepsOpen((v) => !v)}
@@ -3276,14 +3323,28 @@ function StrategyContent() {
                 <div className="mb-2">
                   <div className="flex items-center justify-between mb-2 gap-3">
                     <div className="flex flex-col">
-                      <h3
-                        className="text-sm font-bold uppercase tracking-wider"
-                        style={{ color: 'var(--text-heading)' }}
-                      >
-                        {appliedPathId
-                          ? 'Apply an Option to the Worksheet'
-                          : 'Start here — pick an Option'}
-                      </h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3
+                          className="text-sm font-bold uppercase tracking-wider"
+                          style={{ color: 'var(--text-heading)' }}
+                        >
+                          {appliedPathId
+                            ? 'Apply an Option to the Worksheet'
+                            : 'Start here — pick an Option'}
+                        </h3>
+                        {!isAuthenticated && (
+                          <span
+                            className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                            style={{
+                              background: 'var(--color-sky-dim)',
+                              color: 'var(--accent-sky)',
+                              border: '1px solid var(--accent-sky)',
+                            }}
+                          >
+                            Free
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                         {optionsSubtitle}
                       </p>
@@ -3318,7 +3379,7 @@ function StrategyContent() {
                       structure={p}
                       index={i}
                       active={appliedPathId === p.id}
-                      onClick={applyPathPatch}
+                      onClick={handlePathButtonClick}
                     />
                   ))}
                   </div>
@@ -3339,7 +3400,11 @@ function StrategyContent() {
           )}
 
         {/* Financial Breakdown — requires free (logged-in) tier */}
-        <AuthGate feature="view the full strategy breakdown" mode="section">
+        <AuthGate
+          feature="view the full strategy breakdown"
+          mode="section"
+          overlay={strategyUnlockOverlay}
+        >
           <section className="px-[1px] sm:px-5 pt-2 pb-6">
             {/* Strategy Tabs — matches DealMaker page styling, per-strategy color coded */}
             {sortedStrategies.length > 1 &&
