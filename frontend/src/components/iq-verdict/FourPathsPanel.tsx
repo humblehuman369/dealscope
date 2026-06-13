@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { trackEvent } from '@/lib/eventTracking'
+import { trackEvent, trackActivation } from '@/lib/eventTracking'
 import {
   dismissFamily,
   dismissedCount,
@@ -73,6 +73,12 @@ export function FourPathsPanel({
   }
 
   const pathsSig = visiblePaths.map((p) => p.id).join('|')
+
+  // North-star activation: first time a user actually sees the Four Paths
+  // structures — the creative-finance "aha" available on the free tier.
+  useEffect(() => {
+    if (visiblePaths.length > 0) trackActivation('four_paths')
+  }, [visiblePaths.length])
 
   useEffect(() => {
     if (visiblePaths.length === 0) return

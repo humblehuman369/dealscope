@@ -284,8 +284,8 @@ export default function PricingContent() {
 
   const faqs = [
     {
-      q: "I've never analyzed a real estate deal before. Is this too advanced for me?",
-      a: 'Not at all — DealGapIQ was designed for people learning the numbers. Every metric includes a plain-language explanation, so you understand what cap rate, cash-on-cash return, and DSCR mean and why they matter. The Starter plan lets you practice on real properties for free.',
+      q: 'How fast can I underwrite a deal and make an offer?',
+      a: 'About 60 seconds. Search any address and DealGapIQ returns Income Value, Target Buy, and the Deal Gap across all six strategies — plus four offer paths and a negotiation script. Pro unlocks editable assumptions, comps, and the Cash Buyer and Hard Money directories so you can move from analysis to a fundable offer in one place.',
     },
     {
       q: 'What happens after my 7-day trial?',
@@ -304,8 +304,8 @@ export default function PricingContent() {
       a: "Pro includes downloadable Excel proformas with full amortization schedules, 10-year projections, and strategy-specific worksheets. Use ours or export the data into yours — either way, you'll have institutional-quality numbers.",
     },
     {
-      q: 'I only own one property. Is this for me?',
-      a: "If you're evaluating your next purchase, absolutely. One bad deal costs more than years of Pro. Even experienced investors miss deals hiding in plain sight — DealGapIQ finds them in 60 seconds.",
+      q: 'How many deals do I need to be doing for Pro to pay off?',
+      a: 'One. A single mispriced offer or missed creative-finance structure costs more than a year of Pro. If you analyze multiple deals a month, the unlimited analyses, editable assumptions, and the Cash Buyer and Hard Money directories pay for themselves on the first closing.',
     },
     {
       q: 'What is the Deal Gap?',
@@ -461,7 +461,8 @@ export default function PricingContent() {
             lineHeight: 1.6,
           }}
         >
-          Built for aspiring investors, first-time buyers, and small portfolio owners (1–20 units).
+          Built for active deal-doers — wholesalers, BRRRR and creative-finance investors, and
+          small portfolio builders closing real deals.
         </p>
         <div
           className="pricing-trust-grid"
@@ -477,8 +478,8 @@ export default function PricingContent() {
               text: 'Every analysis blends data from Zillow, RentCast, Redfin, and Realtor.com — not a single estimate. You choose which source to trust.',
             },
             {
-              title: 'Built to teach you underwriting',
-              text: 'Plain-language explanations on every metric. Learn cap rates, DSCR, and cash-on-cash returns by analyzing real properties, not textbooks.',
+              title: 'Underwrite every deal with confidence',
+              text: 'Cap rate, DSCR, and cash-on-cash on every property — with the full logic behind each number, so you can defend the offer you make.',
             },
             {
               title: 'Institutional-grade output',
@@ -564,7 +565,7 @@ export default function PricingContent() {
               margin: '0 0 10px 0',
             }}
           >
-            Learn the numbers and screen your first deals — no risk, no cost.
+            Screen real deals and see the Deal Gap on any property — no risk, no cost.
           </p>
           <p style={{ fontSize: '13px', color: 'var(--text-label)', margin: '0 0 28px 0' }}>
             Always free. No credit card required.

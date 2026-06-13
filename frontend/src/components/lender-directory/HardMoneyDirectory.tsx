@@ -2,9 +2,10 @@
 
 // DealGapIQ — Hard Money Lender Directory (Pro members)
 
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSubscription } from '@/hooks/useSubscription';
+import { trackActivation } from '@/lib/eventTracking';
 import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import { SaveDirectoryContactButton } from '@/components/SaveDirectoryContactButton';
 import { buildLenderSnapshot } from '@/types/savedDirectoryContact';
@@ -186,6 +187,12 @@ export default function HardMoneyDirectory() {
 
   const hasPaidAccess = isPaidPro;
   const noCreditCheckCount = data.stats.no_credit_check_count ?? 0;
+
+  // North-star activation: a signed-in user engaging the proprietary lender
+  // directory is a strong "aha"/intent signal (deduped per device).
+  useEffect(() => {
+    if (isAuthenticated) trackActivation('lender_directory');
+  }, [isAuthenticated]);
 
   const filtered = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();

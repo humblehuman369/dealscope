@@ -2,10 +2,11 @@
 
 // DealGapIQ — Cash Buyer Directory (Pro members only)
 
-import { useState, useMemo, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useState, useMemo, type CSSProperties, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
+import { trackActivation } from '@/lib/eventTracking';
 import { ApiError, api } from '@/lib/api-client';
 import {
   buildBuyersListPath,
@@ -275,6 +276,12 @@ export default function BuyerDirectory() {
     isAuthenticated,
     isLoading: subscriptionLoading,
   } = useSubscription();
+
+  // North-star activation: a signed-in user engaging the proprietary cash-buyer
+  // directory is a strong "aha"/intent signal (deduped per device).
+  useEffect(() => {
+    if (isAuthenticated) trackActivation('buyer_directory');
+  }, [isAuthenticated]);
 
   const [searchMode, setSearchMode] = useState<SearchMode>('city');
   const [city, setCity] = useState('Tampa');
