@@ -1,47 +1,39 @@
 <wizard-report>
 # PostHog post-wizard report
 
-The wizard has completed a deep integration of PostHog analytics into DealGapIQ's FastAPI backend. A new `posthog_client` singleton module was created and wired into the FastAPI lifespan for startup initialization and graceful shutdown. User identification (via `posthog_client.set()`) fires at every login and registration event, linking the user's UUID as the distinct ID and recording email/name as person properties. Twelve event captures were added across six router files, covering the full user journey from signup through core product usage to subscription conversion and churn.
+The wizard has completed a deep integration of PostHog analytics into the DealGapIQ FastAPI backend. The `posthog_client.py` singleton and lifespan wiring were already in place from a prior pass; this session supplemented the existing coverage by adding six new business-critical events across four routers, confirmed environment variables are correctly set, and built a new dashboard with five insights covering user growth, conversion, engagement, churn, and feature usage.
 
 | Event | Description | File |
 |---|---|---|
-| `user_registered` | New user completes registration via email, Google OAuth, or Apple Sign In | `backend/app/routers/auth.py` |
-| `user_logged_in` | User successfully authenticates (password, Google, or Apple) | `backend/app/routers/auth.py` |
-| `property_searched` | User runs a property analysis search — the core top-of-funnel action | `backend/app/routers/property.py` |
-| `analysis_limit_reached` | User's search is blocked due to exhausted monthly analysis quota | `backend/app/routers/property.py` |
+| `user_registered` | New user signs up (email, Google, or Apple) | `backend/app/routers/auth.py` |
+| `user_logged_in` | User authenticates successfully | `backend/app/routers/auth.py` |
+| `user_logged_out` | User explicitly logs out *(added)* | `backend/app/routers/auth.py` |
+| `email_verified` | User confirms their email address *(added)* | `backend/app/routers/auth.py` |
+| `subscription_checkout_started` | Stripe checkout session initiated | `backend/app/routers/billing.py` |
+| `subscription_trial_started` | Pro trial begins via Stripe SetupIntent | `backend/app/routers/billing.py` |
+| `subscription_upgraded` | Subscription moves to Pro (Stripe webhook or RevenueCat INITIAL_PURCHASE/RENEWAL) *(added)* | `backend/app/routers/billing.py` |
+| `subscription_canceled` | User cancels their subscription | `backend/app/routers/billing.py` |
+| `analysis_limit_reached` | Free-tier user hits monthly analysis cap | `backend/app/routers/property.py` |
+| `property_searched` | User searches for a property | `backend/app/routers/property.py` |
 | `property_saved` | User saves a property to their portfolio | `backend/app/routers/saved_properties.py` |
-| `deal_maker_updated` | User adjusts Deal Maker assumptions on a saved property | `backend/app/routers/saved_properties.py` |
-| `worksheet_calculated` | User runs a strategy worksheet calculation (LTR, STR, BRRRR, Flip, House Hack, Wholesale) | `backend/app/routers/worksheet.py` |
-| `proforma_exported` | User downloads a proforma Excel or PDF for a property | `backend/app/routers/proforma.py` |
-| `loi_generated` | User generates a Letter of Intent document for a wholesale deal | `backend/app/routers/loi.py` |
-| `subscription_checkout_started` | User initiates Stripe checkout to upgrade to Pro | `backend/app/routers/billing.py` |
-| `subscription_trial_started` | User successfully starts a Pro subscription (including 7-day trial) | `backend/app/routers/billing.py` |
-| `subscription_canceled` | User cancels their Pro subscription | `backend/app/routers/billing.py` |
-
-**Files modified:**
-- `backend/app/core/config.py` — added `POSTHOG_PROJECT_TOKEN`, `POSTHOG_HOST`, `POSTHOG_DISABLED` settings
-- `backend/app/core/posthog_client.py` — new file: PostHog singleton client with fault-tolerant import
-- `backend/app/main.py` — initialize PostHog in lifespan startup, flush on shutdown
-- `backend/app/routers/auth.py` — user identification + `user_registered` + `user_logged_in`
-- `backend/app/routers/property.py` — `property_searched` + `analysis_limit_reached`
-- `backend/app/routers/saved_properties.py` — `property_saved` + `deal_maker_updated`
-- `backend/app/routers/billing.py` — `subscription_checkout_started` + `subscription_trial_started` + `subscription_canceled`
-- `backend/app/routers/proforma.py` — `proforma_exported` (Excel and PDF paths)
-- `backend/app/routers/loi.py` — `loi_generated`
-- `backend/app/routers/worksheet.py` — `worksheet_calculated` (all 6 strategies)
-- `backend/requirements.txt` — added `posthog>=3.0.0`
-- `backend/.env` — added `POSTHOG_PROJECT_TOKEN`, `POSTHOG_HOST`, `POSTHOG_DISABLED`
+| `property_status_updated` | User advances a property through the pipeline *(added)* | `backend/app/routers/saved_properties.py` |
+| `property_deleted` | User removes a property from their portfolio *(added)* | `backend/app/routers/saved_properties.py` |
+| `deal_maker_updated` | User runs a Deal Maker analysis on a saved property | `backend/app/routers/saved_properties.py` |
+| `worksheet_calculated` | User calculates a strategy worksheet (ltr/str/brrrr/flip/house_hack/wholesale) | `backend/app/routers/worksheet.py` |
+| `loi_generated` | User generates a Letter of Intent | `backend/app/routers/loi.py` |
+| `proforma_generated` | User generates a financial proforma via POST *(added)* | `backend/app/routers/proforma.py` |
+| `proforma_exported` | User downloads a proforma as Excel or PDF | `backend/app/routers/proforma.py` |
 
 ## Next steps
 
-We've built a dashboard and five insights to monitor user behavior from day one:
+We've built some insights and a dashboard for you to keep an eye on user behavior, based on the events we just instrumented:
 
-- **Dashboard**: [Analytics basics (wizard)](https://us.posthog.com/project/463676/dashboard/1709764)
-  - [New Signups & Logins](https://us.posthog.com/project/463676/insights/VWneIGBm) — daily registrations vs logins trend
-  - [Property Search Activity](https://us.posthog.com/project/463676/insights/HPMZpKc9) — total searches and unique searchers per day
-  - [Subscription Conversion Funnel](https://us.posthog.com/project/463676/insights/qmdTessw) — registration → checkout → trial start conversion
-  - [Feature Usage Trends](https://us.posthog.com/project/463676/insights/bEhqbFnH) — worksheet calculations, proforma exports, LOI generation
-  - [Subscription Health: Trials vs Cancellations](https://us.posthog.com/project/463676/insights/OsmyEeLh) — weekly new trials vs cancellations for churn monitoring
+- [Analytics basics (wizard) — Dashboard](https://us.posthog.com/project/463676/dashboard/1709811)
+- [New User Registrations](https://us.posthog.com/project/463676/insights/2tmrkcgo) — daily unique registrations
+- [Signup to Pro Conversion Funnel](https://us.posthog.com/project/463676/insights/51pMZs4E) — registration → property searched → saved → Pro upgrade
+- [Core Engagement Trends](https://us.posthog.com/project/463676/insights/ZRqVRWFH) — searches, saves, and deal analysis over time
+- [Subscription Cancellations](https://us.posthog.com/project/463676/insights/BIWWuVzI) — weekly churn signal
+- [Worksheet Usage by Strategy](https://us.posthog.com/project/463676/insights/Gkp469oC) — which investment strategies users run most
 
 ### Agent skill
 

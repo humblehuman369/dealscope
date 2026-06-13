@@ -1502,6 +1502,12 @@ async def delete_saved_property(
     except Exception as e:
         logger.warning("Failed to unmark search history as saved: %s", e)
 
+    if posthog_client is not None:
+        try:
+            posthog_client.capture(distinct_id=str(current_user.id), event="property_deleted")
+        except Exception:
+            pass
+
 
 # ===========================================
 # Adjustment History
