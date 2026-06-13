@@ -462,6 +462,15 @@ class BillingService:
         subscription.cancel_at_period_end = False
         subscription.canceled_at = None
 
+        # A comp is not time-bound and has no Stripe billing period. Clear any
+        # stale trial/period dates left over from a prior trial or canceled
+        # subscription so the billing sweeper never treats this as an expired
+        # paid/trial record. The comp persists until an admin revokes it.
+        subscription.current_period_start = None
+        subscription.current_period_end = None
+        subscription.trial_start = None
+        subscription.trial_end = None
+
         await db.commit()
         await db.refresh(subscription)
         logger.info("Admin granted %s tier to user %s", tier.value, user_id)

@@ -2,7 +2,7 @@
 Tests for billing/subscription service — tier limits and subscription management.
 """
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from app.models.subscription import (
@@ -164,3 +164,137 @@ class TestGrantRevokeSubscription:
         assert result.status == SubscriptionStatus.ACTIVE
         assert result.properties_limit == free_limits["properties_limit"]
         assert result.searches_used == 0
+
+    async def test_grant_pro_clears_stale_period_and_trial_dates(
+        self,
+        db_session: AsyncSession,
+        created_user,
+    ):
+        """An admin comp must not carry over a prior trial/subscription billing
+        period, otherwise the billing sweeper would treat it as an expired paid
+        record and silently downgrade it. Regression for: granted Pro resetting
+        to Free after the hourly sweeper runs."""
+        past = datetime.now(UTC) - timedelta(days=40)
+        stale = Subscription(
+            user_id=created_user.id,
+            tier=SubscriptionTier.FREE,
+            status=SubscriptionStatus.CANCELED,
+            properties_limit=3,
+            searches_per_month=3,
+            api_calls_per_month=50,
+            current_period_start=past,
+            current_period_end=past,
+            trial_start=past,
+            trial_end=past,
+            usage_reset_date=past,
+        )
+        db_session.add(stale)
+        await db_session.flush()
+
+        service = BillingService()
+        result = await service.grant_subscription(db_session, created_user.id, SubscriptionTier.PRO)
+
+        assert result.tier == SubscriptionTier.PRO
+        assert result.status == SubscriptionStatus.ACTIVE
+        assert result.current_period_start is None
+        assert result.current_period_end is None
+        assert result.trial_start is None
+        assert result.trial_end is None
+
+
+# ------------------------------------------------------------------
+# Billing sweeper — admin comps must survive the hourly safety-net
+# sweep. The sweeper exists only to compensate for lost Stripe
+# webhooks, so it must never downgrade a subscription that has no
+# Stripe subscription id (i.e. an admin-granted comp).
+#
+# Regression for: "Grant Pro" in the admin dashboard reverting to
+# Free after the user's session ends (the hourly sweeper ran).
+# ------------------------------------------------------------------
+
+
+def _bind_sweeper_to_test_session(monkeypatch, db_session: AsyncSession) -> None:
+    """Point the sweeper's session factory at the per-test session so its
+    queries and commits run inside the test's rolled-back transaction."""
+    from contextlib import asynccontextmanager
+
+    @asynccontextmanager
+    async def _ctx():
+        yield db_session
+
+    monkeypatch.setattr(
+        "app.tasks.billing_sweeper.get_session_factory",
+        lambda: _ctx,
+    )
+
+
+class TestBillingSweeperComps:
+    async def test_comp_with_stale_period_is_not_swept(
+        self,
+        db_session: AsyncSession,
+        created_user,
+        monkeypatch,
+    ):
+        """A Pro comp (no stripe_subscription_id) with a stale current_period_end
+        must NOT be downgraded by the sweeper."""
+        from app.tasks.billing_sweeper import sweep_expired_subscriptions
+
+        past = datetime.now(UTC) - timedelta(days=40)
+        pro_limits = TIER_LIMITS[SubscriptionTier.PRO]
+        comp = Subscription(
+            user_id=created_user.id,
+            tier=SubscriptionTier.PRO,
+            status=SubscriptionStatus.ACTIVE,
+            stripe_subscription_id=None,  # comp — no Stripe backing
+            properties_limit=pro_limits["properties_limit"],
+            searches_per_month=pro_limits["searches_per_month"],
+            api_calls_per_month=pro_limits["api_calls_per_month"],
+            current_period_end=past,  # stale, but irrelevant for a comp
+            updated_at=past,  # older than the recent-update gate
+            usage_reset_date=past,
+        )
+        db_session.add(comp)
+        await db_session.flush()
+
+        _bind_sweeper_to_test_session(monkeypatch, db_session)
+        counts = await sweep_expired_subscriptions()
+
+        assert counts["paid_swept"] == 0
+        await db_session.refresh(comp)
+        assert comp.tier == SubscriptionTier.PRO
+        assert comp.status == SubscriptionStatus.ACTIVE
+
+    async def test_stripe_backed_stale_paid_is_still_swept(
+        self,
+        db_session: AsyncSession,
+        created_user,
+        monkeypatch,
+    ):
+        """Sanity: the guard must not disable legitimate sweeping of a
+        Stripe-backed subscription whose paid period clearly ended."""
+        from app.tasks.billing_sweeper import sweep_expired_subscriptions
+
+        past = datetime.now(UTC) - timedelta(days=40)
+        pro_limits = TIER_LIMITS[SubscriptionTier.PRO]
+        paid = Subscription(
+            user_id=created_user.id,
+            tier=SubscriptionTier.PRO,
+            status=SubscriptionStatus.ACTIVE,
+            stripe_subscription_id="sub_test_stale",
+            properties_limit=pro_limits["properties_limit"],
+            searches_per_month=pro_limits["searches_per_month"],
+            api_calls_per_month=pro_limits["api_calls_per_month"],
+            current_period_end=past,
+            updated_at=past,
+            usage_reset_date=past,
+        )
+        db_session.add(paid)
+        await db_session.flush()
+
+        _bind_sweeper_to_test_session(monkeypatch, db_session)
+        counts = await sweep_expired_subscriptions()
+
+        assert counts["paid_swept"] == 1
+        await db_session.refresh(paid)
+        assert paid.tier == SubscriptionTier.FREE
+        assert paid.status == SubscriptionStatus.CANCELED

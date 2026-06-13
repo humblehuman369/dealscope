@@ -63,9 +63,15 @@ async def sweep_expired_subscriptions() -> dict[str, int]:
             # TRIALING + trial_end well past + not touched recently.
             # The recent-update gate avoids racing with an in-flight webhook
             # that may already be processing the trial-end transition.
+            # The stripe_subscription_id gate ensures we only ever sweep
+            # Stripe-backed subscriptions — this sweeper exists solely to
+            # compensate for lost/late Stripe webhooks. Admin-granted comps
+            # have no Stripe subscription and must never be downgraded here;
+            # they persist until an admin explicitly revokes them.
             trials_q = select(Subscription).where(
                 and_(
                     Subscription.status == SubscriptionStatus.TRIALING,
+                    Subscription.stripe_subscription_id.isnot(None),
                     Subscription.trial_end.isnot(None),
                     Subscription.trial_end < trial_cutoff,
                     Subscription.updated_at < recent_cutoff,
@@ -86,10 +92,15 @@ async def sweep_expired_subscriptions() -> dict[str, int]:
             # PRO + ACTIVE + current_period_end well past + not touched recently.
             # Excludes PAST_DUE (those are inside Stripe's retry window) and
             # CANCELED/INCOMPLETE/etc. (those are end-of-life states).
+            # The stripe_subscription_id gate ensures admin-granted comps
+            # (which have no Stripe subscription and no real billing period)
+            # are never swept — even if a stale current_period_end lingers
+            # from a prior trial/subscription. Comps persist until revoked.
             paid_q = select(Subscription).where(
                 and_(
                     Subscription.tier == SubscriptionTier.PRO,
                     Subscription.status == SubscriptionStatus.ACTIVE,
+                    Subscription.stripe_subscription_id.isnot(None),
                     Subscription.current_period_end.isnot(None),
                     Subscription.current_period_end < paid_cutoff,
                     Subscription.updated_at < recent_cutoff,
