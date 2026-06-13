@@ -69,6 +69,11 @@ export function trackPageView(path?: string): void {
  */
 export function trackActivation(source: string): void {
   if (typeof window === 'undefined') return
+  // Gate on consent BEFORE setting the dedup flag. Otherwise a user without
+  // analytics consent would set the flag while trackEvent() silently drops the
+  // event — and granting consent later would never record activation because
+  // the flag is already present.
+  if (!hasAnalyticsConsent()) return
   try {
     if (window.localStorage.getItem(ACTIVATION_FLAG)) return
     window.localStorage.setItem(ACTIVATION_FLAG, '1')
