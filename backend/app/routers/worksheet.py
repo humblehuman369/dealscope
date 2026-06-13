@@ -11,7 +11,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.core.defaults import OPERATING
-from app.core.deps import DbSession
+from app.core.deps import DbSession, OptionalUser
+from app.core.posthog_client import posthog_client
 from app.services.assumption_resolver import resolve_assumptions
 from app.services.calculators import (
     calculate_brrrr,
@@ -187,7 +188,7 @@ class WholesaleWorksheetInput(BaseModel):
 
 
 @router.post("/api/v1/worksheet/ltr/calculate")
-async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession):
+async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession, current_user: OptionalUser = None):
     """Calculate LTR worksheet metrics."""
     try:
         a = await resolve_assumptions(db)
@@ -256,6 +257,16 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession):
         annual_cash_flow = result["annual_cash_flow"]
         coc_return = (annual_cash_flow / total_cash_needed * 100) if total_cash_needed > 0 else 0
 
+        if posthog_client is not None and current_user is not None:
+            try:
+                posthog_client.capture(
+                    distinct_id=str(current_user.id),
+                    event="worksheet_calculated",
+                    properties={"strategy": "ltr"},
+                )
+            except Exception:
+                pass
+
         return {
             "gross_income": result["effective_gross_income"],
             "annual_gross_rent": result["annual_gross_rent"],
@@ -314,7 +325,7 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession):
 
 
 @router.post("/api/v1/worksheet/str/calculate")
-async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
+async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession, current_user: OptionalUser = None):
     """Calculate STR worksheet metrics."""
     try:
         a = await resolve_assumptions(db)
@@ -423,6 +434,12 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
             deal_score += 10
         deal_score = min(100, max(0, round(deal_score)))
 
+        if posthog_client is not None and current_user is not None:
+            try:
+                posthog_client.capture(distinct_id=str(current_user.id), event="worksheet_calculated", properties={"strategy": "str"})
+            except Exception:
+                pass
+
         return {
             "gross_revenue": gross_revenue,
             "rental_revenue": result["rental_revenue"],
@@ -470,7 +487,7 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession):
 
 
 @router.post("/api/v1/worksheet/brrrr/calculate")
-async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSession):
+async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSession, current_user: OptionalUser = None):
     """Calculate BRRRR worksheet metrics."""
     try:
         a = await resolve_assumptions(db)
@@ -578,6 +595,12 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
             deal_score += 10
         deal_score = min(100, max(0, round(deal_score)))
 
+        if posthog_client is not None and current_user is not None:
+            try:
+                posthog_client.capture(distinct_id=str(current_user.id), event="worksheet_calculated", properties={"strategy": "brrrr"})
+            except Exception:
+                pass
+
         return {
             "purchase_price": result["purchase_price"],
             "purchase_costs": input_data.purchase_costs,
@@ -632,7 +655,7 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSessi
 
 
 @router.post("/api/v1/worksheet/flip/calculate")
-async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
+async def calculate_flip_worksheet(input_data: FlipWorksheetInput, current_user: OptionalUser = None):
     """Calculate Fix & Flip worksheet metrics."""
     try:
         ins_annual = (
@@ -731,6 +754,12 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
             deal_score += 10
         deal_score = min(100, max(0, round(deal_score)))
 
+        if posthog_client is not None and current_user is not None:
+            try:
+                posthog_client.capture(distinct_id=str(current_user.id), event="worksheet_calculated", properties={"strategy": "flip"})
+            except Exception:
+                pass
+
         return {
             "purchase_price": result["purchase_price"],
             "purchase_costs": input_data.purchase_costs,
@@ -769,7 +798,7 @@ async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
 
 
 @router.post("/api/v1/worksheet/househack/calculate")
-async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
+async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput, current_user: OptionalUser = None):
     """Calculate House Hack worksheet metrics."""
     try:
         ins_annual = (
@@ -839,6 +868,12 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
         target_coc_price = input_data.purchase_price * 0.93
         fha_max_price = input_data.fha_max_price or 472030
 
+        if posthog_client is not None and current_user is not None:
+            try:
+                posthog_client.capture(distinct_id=str(current_user.id), event="worksheet_calculated", properties={"strategy": "house_hack"})
+            except Exception:
+                pass
+
         return {
             "your_housing_cost": your_housing_cost,
             "rental_income": effective_rental_income,
@@ -889,7 +924,7 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
 
 
 @router.post("/api/v1/worksheet/wholesale/calculate")
-async def calculate_wholesale_worksheet(input_data: WholesaleWorksheetInput, db: DbSession):
+async def calculate_wholesale_worksheet(input_data: WholesaleWorksheetInput, db: DbSession, current_user: OptionalUser = None):
     """Calculate Wholesale worksheet metrics."""
     try:
         mao = (input_data.arv * 0.70) - input_data.rehab_costs
@@ -926,6 +961,12 @@ async def calculate_wholesale_worksheet(input_data: WholesaleWorksheetInput, db:
         if input_data.investor_price < mao:
             deal_score += 10
         deal_score = min(100, max(0, round(deal_score)))
+
+        if posthog_client is not None and current_user is not None:
+            try:
+                posthog_client.capture(distinct_id=str(current_user.id), event="worksheet_calculated", properties={"strategy": "wholesale"})
+            except Exception:
+                pass
 
         return {
             "contract_price": input_data.contract_price,

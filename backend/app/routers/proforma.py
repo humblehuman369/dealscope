@@ -11,8 +11,8 @@ from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 
 from app.core.deps import OptionalUser, ProUser
 from app.core.exceptions import ExternalAPIError
+from app.core.posthog_client import posthog_client
 from app.schemas.appraisal_report import AppraisalReportRequest, NarrativesPayload
-from app.services.resilience import CircuitOpenError
 from app.schemas.proforma import (
     FinancialProforma,
     ProformaExportResponse,
@@ -27,6 +27,7 @@ from app.services.proforma_exporter import ProformaExcelExporter
 from app.services.proforma_generator import generate_proforma_data
 from app.services.property_report_pdf import PropertyReportPDFExporter
 from app.services.property_service import property_service
+from app.services.resilience import CircuitOpenError
 from app.services.str_exporter import STRExcelExporter
 from app.services.wholesale_exporter import WholesaleExcelExporter
 
@@ -90,6 +91,16 @@ async def generate_proforma(
             purchase_price_override=request.purchase_price,
             monthly_rent_override=request.monthly_rent,
         )
+
+        if posthog_client is not None and current_user is not None:
+            try:
+                posthog_client.capture(
+                    distinct_id=str(current_user.id),
+                    event="proforma_generated",
+                    properties={"strategy": request.strategy, "format": request.format},
+                )
+            except Exception:
+                pass
 
         if request.format == "json":
             # Return raw JSON data
@@ -289,6 +300,16 @@ async def download_proforma_excel(
 
         buffer = exporter.generate()
 
+        if posthog_client is not None and current_user is not None:
+            try:
+                posthog_client.capture(
+                    distinct_id=str(current_user.id),
+                    event="proforma_exported",
+                    properties={"strategy": strategy, "format": "xlsx"},
+                )
+            except Exception:
+                pass
+
         # Create filename
         address_slug = property_data.address.street.replace(" ", "_")[:30] if property_data.address else property_id
         filename = f"DealGapIQ_{strategy.upper()}_Proforma_{address_slug}_{datetime.now().strftime('%Y%m%d')}.xlsx"
@@ -386,6 +407,16 @@ async def download_proforma_pdf(
                 status_code=status.HTTP_501_NOT_IMPLEMENTED,
                 detail="PDF export is temporarily unavailable. The server is missing required system libraries. Please try again later or contact support.",
             )
+
+        if posthog_client is not None and current_user is not None:
+            try:
+                posthog_client.capture(
+                    distinct_id=str(current_user.id),
+                    event="proforma_exported",
+                    properties={"strategy": strategy, "format": "pdf"},
+                )
+            except Exception:
+                pass
 
         # Create filename
         address_slug = property_data.address.street.replace(" ", "_")[:30] if property_data.address else property_id

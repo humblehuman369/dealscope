@@ -17,6 +17,7 @@ from sqlalchemy import select
 from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession, OptionalUser
 from app.core.exceptions import ExternalAPIError, SubscriptionLimitError
+from app.core.posthog_client import posthog_client
 from app.models.saved_property import SavedProperty
 from app.models.search_history import SearchHistory
 from app.schemas.property import (
@@ -212,6 +213,15 @@ async def search_property(
             try:
                 await billing_service.check_analysis_allowance(db, current_user.id)
             except SubscriptionLimitError as e:
+                if posthog_client is not None:
+                    try:
+                        posthog_client.capture(
+                            distinct_id=str(current_user.id),
+                            event="analysis_limit_reached",
+                            properties={"limit": e.limit, "current": e.current},
+                        )
+                    except Exception:
+                        pass
                 raise _analysis_limit_http_error(e)
     else:
         anon_counter_key, anon_marker_key, is_repeat = await _check_anonymous_quota(http_request, full_address)
@@ -319,6 +329,22 @@ async def search_property(
                 logger.warning("Analysis limit race for user %s on %s", current_user.id, full_address)
             except Exception as usage_err:
                 logger.error(f"Failed to record analysis usage: {usage_err}", exc_info=True)
+
+        if posthog_client is not None:
+            try:
+                details = result.details
+                posthog_client.capture(
+                    distinct_id=str(current_user.id),
+                    event="property_searched",
+                    properties={
+                        "is_repeat": is_repeat,
+                        "search_source": search_source,
+                        "property_type": details.property_type if details else None,
+                        "bedrooms": details.bedrooms if details else None,
+                    },
+                )
+            except Exception:
+                pass
     else:
         logger.debug("Search history not recorded: no authenticated user")
         if not is_repeat and anon_counter_key and anon_marker_key:

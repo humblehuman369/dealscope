@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.core.deps import get_current_user_optional
+from app.core.posthog_client import posthog_client
 from app.schemas.loi import (
     BuyerInfo,
     ContingencyType,
@@ -53,6 +54,17 @@ async def generate_loi(request: GenerateLOIRequest, current_user: dict | None = 
         loi_doc = loi_service.generate_loi(request)
 
         logger.info(f"LOI generated successfully: {loi_doc.id}")
+
+        if posthog_client is not None and current_user is not None:
+            try:
+                user_id = current_user.get("id") or current_user.get("sub") if isinstance(current_user, dict) else str(getattr(current_user, "id", "unknown"))
+                posthog_client.capture(
+                    distinct_id=str(user_id),
+                    event="loi_generated",
+                    properties={"format": str(request.format)},
+                )
+            except Exception:
+                pass
 
         return loi_doc
 

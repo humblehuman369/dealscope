@@ -67,6 +67,13 @@ class Settings(BaseSettings):
     SENTRY_PROFILES_SAMPLE_RATE: float = 0.1  # 10% of profiled transactions
 
     # ===========================================
+    # PostHog Analytics
+    # ===========================================
+    POSTHOG_PROJECT_TOKEN: str = ""
+    POSTHOG_HOST: str = "https://us.i.posthog.com"
+    POSTHOG_DISABLED: bool = False
+
+    # ===========================================
     # API Keys (External Services)
     # ===========================================
     RENTCAST_API_KEY: str = ""

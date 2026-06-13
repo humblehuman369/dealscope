@@ -14,6 +14,7 @@ from sqlalchemy.exc import DatabaseError, IntegrityError
 
 from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession, VerifiedUser
+from app.core.posthog_client import posthog_client
 from app.core.schema_guard import is_schema_mismatch, log_schema_mismatch
 from app.models.saved_property import FlipStage as FlipStageORM
 from app.models.saved_property import PropertyStatus
@@ -640,6 +641,19 @@ async def save_property(
             background_tasks.add_task(_send_save_notification)
         except Exception as notify_exc:
             logger.warning("Failed to queue save notification: %s", notify_exc)
+
+        if posthog_client is not None:
+            try:
+                posthog_client.capture(
+                    distinct_id=str(current_user.id),
+                    event="property_saved",
+                    properties={
+                        "address_state": saved.address_state,
+                        "address_city": saved.address_city,
+                    },
+                )
+            except Exception:
+                pass
 
         # Build response
         try:
@@ -1283,6 +1297,16 @@ async def update_saved_property(
     if not saved:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
 
+    if posthog_client is not None and data.status is not None:
+        try:
+            posthog_client.capture(
+                distinct_id=str(current_user.id),
+                event="property_status_updated",
+                properties={"new_status": data.status.value if hasattr(data.status, "value") else str(data.status)},
+            )
+        except Exception:
+            pass
+
     # Reconstruct DealMakerRecord from stored dict
     deal_maker = None
     if saved.deal_maker_record:
@@ -1363,6 +1387,20 @@ async def update_deal_maker(
             saved.best_coc_return = Decimal(str(round(coc, 4)))
     await db.commit()
     await db.refresh(saved)
+
+    if posthog_client is not None:
+        try:
+            strategy = updates.model_dump(exclude_unset=True).get("strategy_type")
+            posthog_client.capture(
+                distinct_id=str(current_user.id),
+                event="deal_maker_updated",
+                properties={
+                    "strategy_type": strategy,
+                    "has_metrics": metrics is not None,
+                },
+            )
+        except Exception:
+            pass
 
     # Return response with convenience fields
 

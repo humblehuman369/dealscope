@@ -113,6 +113,14 @@ async def lifespan(app: FastAPI):
     """Initialize services on startup and cleanup on shutdown."""
     # Startup
     logger.info("Starting DealGapIQ API lifespan...")
+
+    # Initialize PostHog analytics
+    try:
+        from app.core.posthog_client import init_posthog
+        init_posthog()
+    except Exception as e:
+        logger.warning(f"PostHog initialization failed (non-fatal): {e}")
+
     logger.info(f"RentCast API configured: {'Yes' if settings.RENTCAST_API_KEY else 'No'}")
     logger.info(
         f"AXESSO API configured: {'Yes' if settings.AXESSO_API_KEY else 'No'}"
@@ -199,6 +207,11 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     logger.info("Shutting down DealGapIQ API...")
+    try:
+        from app.core.posthog_client import shutdown_posthog
+        shutdown_posthog()
+    except Exception:
+        pass
     try:
         from app.tasks.scheduler import stop_embedded_scheduler
 

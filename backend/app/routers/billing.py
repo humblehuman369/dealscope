@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 
 from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession, require_permission
+from app.core.posthog_client import posthog_client
 from app.schemas.billing import (
     CancelSubscriptionRequest,
     CancelSubscriptionResponse,
@@ -275,6 +276,19 @@ async def cancel_subscription(data: CancelSubscriptionRequest, current_user: Cur
 
     subscription = await billing_service.get_subscription(db, current_user.id)
 
+    if posthog_client is not None:
+        try:
+            posthog_client.capture(
+                distinct_id=str(current_user.id),
+                event="subscription_canceled",
+                properties={
+                    "cancel_immediately": data.cancel_immediately,
+                    "reason": data.reason,
+                },
+            )
+        except Exception:
+            pass
+
     return CancelSubscriptionResponse(
         success=True,
         message=message,
@@ -296,7 +310,7 @@ async def create_checkout_session(data: CreateCheckoutRequest, current_user: Cur
     Returns a URL to redirect the user to Stripe's hosted checkout page.
     """
     try:
-        return await billing_service.create_checkout_session(
+        result = await billing_service.create_checkout_session(
             db,
             current_user,
             price_id=data.price_id or None,
@@ -306,6 +320,20 @@ async def create_checkout_session(data: CreateCheckoutRequest, current_user: Cur
             return_to=data.return_to,
             skip_trial=data.skip_trial,
         )
+        if posthog_client is not None:
+            try:
+                posthog_client.capture(
+                    distinct_id=str(current_user.id),
+                    event="subscription_checkout_started",
+                    properties={
+                        "price_id": data.price_id,
+                        "lookup_key": data.lookup_key,
+                        "skip_trial": data.skip_trial,
+                    },
+                )
+            except Exception:
+                pass
+        return result
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -357,6 +385,20 @@ async def create_subscription(data: CreateSubscriptionRequest, current_user: Cur
             price_id=data.price_id,
             lookup_key=data.lookup_key,
         )
+        if posthog_client is not None:
+            try:
+                posthog_client.capture(
+                    distinct_id=str(current_user.id),
+                    event="subscription_trial_started",
+                    properties={
+                        "subscription_id": result.get("subscription_id"),
+                        "status": result.get("status"),
+                        "has_trial": result.get("trial_end") is not None,
+                        "price_id": data.price_id,
+                    },
+                )
+            except Exception:
+                pass
         return CreateSubscriptionResponse(
             subscription_id=result["subscription_id"],
             status=result["status"],
@@ -646,6 +688,20 @@ async def revenuecat_webhook(
             period_type or "unknown",
         )
 
+        if posthog_client is not None:
+            try:
+                posthog_client.capture(
+                    distinct_id=str(user_id),
+                    event="subscription_upgraded",
+                    properties={
+                        "source": "revenuecat",
+                        "event_type": event_type,
+                        "is_trial": is_trial_period,
+                    },
+                )
+            except Exception:
+                pass
+
         if user and event_type == "INITIAL_PURCHASE":
             try:
                 trial_end_str = None
@@ -791,6 +847,27 @@ async def stripe_webhook(
         )
 
     await _mark_webhook_processed("stripe", stripe_event_id)
+
+    stripe_event_type = event.get("type", "")
+    if posthog_client is not None and stripe_event_type in (
+        "customer.subscription.created",
+        "customer.subscription.updated",
+    ):
+        try:
+            sub_obj = event.get("data", {}).get("object", {})
+            customer_id = sub_obj.get("customer")
+            if customer_id:
+                posthog_client.capture(
+                    distinct_id=customer_id,
+                    event="subscription_upgraded",
+                    properties={
+                        "source": "stripe",
+                        "stripe_event_type": stripe_event_type,
+                        "status": sub_obj.get("status"),
+                    },
+                )
+        except Exception:
+            pass
 
     return WebhookEventResponse(
         received=True,

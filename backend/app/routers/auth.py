@@ -25,6 +25,7 @@ from app.core.deps import (
     CurrentUser,
     DbSession,
 )
+from app.core.posthog_client import posthog_client
 from app.repositories.role_repository import role_repo
 from app.repositories.session_repository import session_repo
 from app.schemas.auth import (
@@ -68,6 +69,21 @@ def _fire_and_forget(coro: Coroutine[Any, Any, Any]) -> None:
     task = asyncio.create_task(coro)
     _BACKGROUND_TASKS.add(task)
     task.add_done_callback(_BACKGROUND_TASKS.discard)
+
+
+def _ph_identify_and_capture(user, event: str, properties: dict | None = None) -> None:
+    """Identify the user in PostHog and capture an event. Never raises."""
+    if posthog_client is None:
+        return
+    try:
+        uid = str(user.id)
+        posthog_client.set(distinct_id=uid, properties={
+            "email": user.email,
+            "name": user.full_name,
+        })
+        posthog_client.capture(distinct_id=uid, event=event, properties=properties or {})
+    except Exception as exc:
+        logger.warning("PostHog capture failed for %s: %s", event, exc)
 
 
 # ------------------------------------------------------------------
@@ -236,6 +252,8 @@ async def register(body: UserRegister, request: Request, response: Response, db:
         await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+    _ph_identify_and_capture(user, "user_registered", {"signup_method": "email"})
 
     # Notify admins of the new signup (fire-and-forget; never blocks signup)
     _fire_and_forget(
@@ -601,6 +619,9 @@ async def google_callback(request: Request, response: Response, db: DbSession):
                 ip_address=_client_ip(request),
             )
         )
+        _ph_identify_and_capture(user, "user_registered", {"signup_method": "google"})
+    else:
+        _ph_identify_and_capture(user, "user_logged_in", {"login_method": "google"})
 
     if mobile_redirect:
         try:
@@ -810,6 +831,9 @@ async def apple_callback(request: Request, response: Response, db: DbSession):
                 ip_address=_client_ip(request),
             )
         )
+        _ph_identify_and_capture(user, "user_registered", {"signup_method": "apple"})
+    else:
+        _ph_identify_and_capture(user, "user_logged_in", {"login_method": "apple"})
 
     if mobile_redirect:
         try:
@@ -873,6 +897,8 @@ async def login(body: UserLogin, request: Request, response: Response, db: DbSes
         ip_address=_client_ip(request),
         user_agent=request.headers.get("User-Agent"),
     )
+
+    _ph_identify_and_capture(user, "user_logged_in", {"login_method": "password"})
 
     user_resp = await _build_user_response(db, user)
     return LoginResponse(
@@ -967,14 +993,20 @@ async def refresh_token(request: Request, response: Response, db: DbSession, bod
 @router.post("/logout", response_model=AuthMessage)
 async def logout(request: Request, response: Response, db: DbSession, session: CurrentSession):
     """Revoke the current session and clear cookies."""
+    user_id = session.user_id
     await auth_service.logout(
         db,
         session.id,
-        user_id=session.user_id,
+        user_id=user_id,
         ip_address=_client_ip(request),
     )
     await db.commit()
     _clear_auth_cookies(response)
+    if posthog_client is not None:
+        try:
+            posthog_client.capture(distinct_id=str(user_id), event="user_logged_out")
+        except Exception:
+            pass
     return AuthMessage(message="Logged out successfully")
 
 
@@ -1007,6 +1039,12 @@ async def verify_email(body: EmailVerification, request: Request, db: DbSession)
         await email_service.send_welcome_email(to=user.email, user_name=user.full_name or user.email)
     except Exception:
         pass
+
+    if posthog_client is not None:
+        try:
+            posthog_client.capture(distinct_id=str(user.id), event="email_verified")
+        except Exception:
+            pass
 
     return AuthMessage(message="Email verified successfully")
 
