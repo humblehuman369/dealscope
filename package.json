@@ -13,6 +13,7 @@
     "lint": "cd frontend && npm run lint",
     "typecheck:shared": "cd shared && npx tsc --noEmit",
     "install:mobile": "cd mobile && npm install",
+    "posthog:setup": "node scripts/posthog-setup.mjs",
     "screenshots": "npx tsx scripts/screenshots/capture.ts",
     "screenshots:frame": "npx tsx scripts/screenshots/frame.ts",
     "screenshots:all": "npx tsx scripts/screenshots/capture.ts && npx tsx scripts/screenshots/frame.ts"
