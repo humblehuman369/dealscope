@@ -880,11 +880,26 @@ async def stripe_webhook(
         "customer.subscription.updated",
     ):
         try:
+            from sqlalchemy import select
+
+            from app.models.subscription import Subscription
+
             sub_obj = event.get("data", {}).get("object", {})
             customer_id = sub_obj.get("customer")
-            if customer_id:
+            # Key on our user id (not the Stripe customer id) so this stitches to
+            # the same person as the web funnel (frontend identifies on user.id).
+            # Prefer subscription metadata; fall back to a lookup by customer id.
+            resolved_user_id = (sub_obj.get("metadata") or {}).get("user_id")
+            if not resolved_user_id and customer_id:
+                res = await db.execute(
+                    select(Subscription).where(Subscription.stripe_customer_id == customer_id)
+                )
+                sub_row = res.scalar_one_or_none()
+                if sub_row:
+                    resolved_user_id = str(sub_row.user_id)
+            if resolved_user_id:
                 posthog_client.capture(
-                    distinct_id=customer_id,
+                    distinct_id=str(resolved_user_id),
                     event="subscription_upgraded",
                     properties={
                         "source": "stripe",
