@@ -303,7 +303,7 @@ async def send_annual_renewal_reminders() -> int:
                     continue
 
                 renewal_date = sub.current_period_end.strftime("%B %d, %Y") if sub.current_period_end else "soon"
-                amount_display = "$348.00"  # annual Pro price
+                amount_display = "$349.99"  # annual Pro price
 
                 resp = await email_service.send_annual_renewal_reminder_email(
                     to=user.email,
