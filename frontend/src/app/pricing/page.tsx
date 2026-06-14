@@ -5,7 +5,7 @@ import PricingContent from './PricingContent'
 export const metadata: Metadata = {
   title: 'Pricing — DealGapIQ',
   description:
-    'Know your number before you make the offer. DealGapIQ pricing: Starter free forever, Pro from $29.17/mo (annual) or $39.99/mo with a 7-day free trial.',
+    'Know your number before you make the offer. DealGapIQ pricing: Starter free forever, Pro from $29.17/mo (annual) or $34.99/mo with a 7-day free trial.',
   alternates: { canonical: '/pricing' },
   openGraph: {
     title: 'Pricing — DealGapIQ',
@@ -85,15 +85,15 @@ const PRICING_JSONLD = {
             '@id': `${SITE_URL}/pricing#pro-monthly`,
             name: 'Pro (Monthly)',
             description:
-              'Pro plan billed monthly at $39.99/month with 7-day free trial. Same features as Pro Annual.',
-            price: '39.99',
+              'Pro plan billed monthly at $34.99/month with 7-day free trial. Same features as Pro Annual.',
+            price: '34.99',
             priceCurrency: 'USD',
             availability: 'https://schema.org/InStock',
             category: 'subscription',
             url: `${SITE_URL}/pricing`,
             priceSpecification: {
               '@type': 'UnitPriceSpecification',
-              price: '39.99',
+              price: '34.99',
               priceCurrency: 'USD',
               unitText: 'MONTH',
               referenceQuantity: {

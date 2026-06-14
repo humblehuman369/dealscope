@@ -17,7 +17,7 @@ import { IS_CAPACITOR, IS_IOS, IS_ANDROID } from '@/lib/env'
 import { useRevenueCat, type RCPackage } from '@/hooks/useRevenueCat'
 import { PriceCents } from '@/components/ui/PriceCents'
 
-const FALLBACK_PRICE_MONTHLY = '$39.99'
+const FALLBACK_PRICE_MONTHLY = '$34.99'
 const FALLBACK_PRICE_ANNUAL = '$349.99'
 
 interface PricingPlan {
@@ -106,7 +106,7 @@ export function UpgradeModal({
 
   const displayPriceMonthly = IS_CAPACITOR
     ? (rcPkgMonthly?.product.priceString ?? FALLBACK_PRICE_MONTHLY)
-    : `$${proPlan ? proPlan.price_monthly / 100 : 39.99}`
+    : `$${proPlan ? proPlan.price_monthly / 100 : 34.99}`
   const displayPriceAnnual = IS_CAPACITOR
     ? (rcPkgAnnual?.product.priceString ?? FALLBACK_PRICE_ANNUAL)
     : `$${proPlan ? proPlan.price_yearly / 100 : 349.99}`
@@ -244,7 +244,7 @@ export function UpgradeModal({
                 color: '#fff',
               }}
             >
-              Save 27%
+              Save 17%
             </span>
           )}
         </div>
@@ -265,7 +265,7 @@ export function UpgradeModal({
                 {IS_CAPACITOR ? (
                   <PriceCents>{annual ? displayPriceAnnual : displayPriceMonthly}</PriceCents>
                 ) : (
-                  <PriceCents>{`$${annual ? (proPlan ? (proPlan.price_yearly / 100 / 12).toFixed(2) : '29.17') : proPlan ? proPlan.price_monthly / 100 : 39.99}`}</PriceCents>
+                  <PriceCents>{`$${annual ? (proPlan ? (proPlan.price_yearly / 100 / 12).toFixed(2) : '29.17') : proPlan ? proPlan.price_monthly / 100 : 34.99}`}</PriceCents>
                 )}
               </span>
             )}

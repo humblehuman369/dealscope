@@ -65,7 +65,7 @@ function getPlans(isAnnual: boolean): PlanConfig[] {
     {
       id: 'pro',
       name: 'Pro',
-      price: isAnnual ? '$29.17' : '$39.99',
+      price: isAnnual ? '$29.17' : '$34.99',
       period: '/month',
       note: isAnnual
         ? 'Billed annually at $349.99 · Cancel anytime · 7-day free trial'
@@ -293,7 +293,7 @@ function BillingContent() {
                 marginBottom: '0.5rem',
               }}
             >
-              <PriceCents>{isAnnual ? '$29.17' : '$39.99'}</PriceCents>/mo vs. one bad deal
+              <PriceCents>{isAnnual ? '$29.17' : '$34.99'}</PriceCents>/mo vs. one bad deal
             </div>
             <div style={{ fontSize: '1rem', lineHeight: 1.75 }}>
               The average investor who skips proper underwriting overpays by{' '}
@@ -384,7 +384,7 @@ function BillingContent() {
                     borderRadius: 6,
                   }}
                 >
-                  SAVE 27%
+                  SAVE 17%
                 </span>
               </button>
             </div>

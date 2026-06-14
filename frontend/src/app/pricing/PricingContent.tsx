@@ -385,7 +385,7 @@ export default function PricingContent() {
             fontStyle: 'italic',
           }}
         >
-          One bad deal costs thousands. DealGapIQ Pro costs $39.99/mo.
+          One bad deal costs thousands. DealGapIQ Pro costs $34.99/mo.
         </p>
 
         {/* ─── TOGGLE ─── */}
@@ -444,7 +444,7 @@ export default function PricingContent() {
                 borderRadius: '6px',
               }}
             >
-              SAVE 27%
+              SAVE 17%
             </span>
           </button>
         </div>
@@ -673,7 +673,7 @@ export default function PricingContent() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', margin: '0 0 2px 0' }}>
             <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-label)' }}>$</span>
             <span style={{ fontSize: '48px', fontWeight: 800, letterSpacing: '-2px' }}>
-              <PriceCents>{isAnnual ? '29.17' : '39.99'}</PriceCents>
+              <PriceCents>{isAnnual ? '29.17' : '34.99'}</PriceCents>
             </span>
             <span style={{ fontSize: '15px', color: 'var(--text-label)', fontWeight: 500 }}>
               /mo
@@ -682,13 +682,13 @@ export default function PricingContent() {
           {isAnnual ? (
             <p style={{ fontSize: '12px', color: 'var(--text-label)', margin: '0 0 10px 0' }}>
               Billed annually at $349.99 &middot;{' '}
-              <span style={{ color: 'var(--accent-sky)', fontWeight: 600 }}>Save $130/yr</span>
+              <span style={{ color: 'var(--accent-sky)', fontWeight: 600 }}>Save $70/yr</span>
             </p>
           ) : (
             <p style={{ fontSize: '12px', color: 'var(--text-label)', margin: '0 0 10px 0' }}>
               Billed monthly &middot;{' '}
               <span style={{ color: 'var(--text-secondary)' }}>
-                Switch to annual &amp; save 27%
+                Switch to annual &amp; save 17%
               </span>
             </p>
           )}
@@ -1496,7 +1496,7 @@ export default function PricingContent() {
               whiteSpace: 'nowrap',
             }}
           >
-            Pro — ${isAnnual ? '29.17' : '39.99'}/mo
+            Pro — ${isAnnual ? '29.17' : '34.99'}/mo
           </p>
           <p style={{ fontSize: '10px', color: 'var(--text-label)', margin: 0 }}>
             7-day free trial
