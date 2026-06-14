@@ -665,7 +665,7 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
             featured
             title="Pro"
             subtitle="For active deal makers"
-            price="$39"
+            price="$34"
             priceSuffix="/mo"
             subprice="or $29/mo billed annually"
             features={[

@@ -113,16 +113,16 @@ const graph = {
         {
           '@type': 'Offer',
           name: 'Pro (Monthly)',
-          price: '39.99',
+          price: '34.99',
           priceCurrency: 'USD',
           category: 'subscription',
-          description: 'Pro plan billed monthly at $39.99/month.',
+          description: 'Pro plan billed monthly at $34.99/month.',
           eligibleRegion: { '@type': 'Country', name: 'US' },
           availability: 'https://schema.org/InStock',
           url: `${SITE_URL}/pricing`,
           priceSpecification: {
             '@type': 'UnitPriceSpecification',
-            price: '39.99',
+            price: '34.99',
             priceCurrency: 'USD',
             unitText: 'MONTH',
             referenceQuantity: {

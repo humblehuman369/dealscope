@@ -250,7 +250,7 @@ class Settings(BaseSettings):
         return s.rstrip("/")
 
     # ===========================================
-    # Stripe (Billing) — 2-tier model: Free + Pro ($39.99/mo or $29.17/mo annual)
+    # Stripe (Billing) — 2-tier model: Free + Pro ($34.99/mo or $29.17/mo annual)
     # ===========================================
     STRIPE_SECRET_KEY: str = ""
     STRIPE_PUBLISHABLE_KEY: str = ""

@@ -8,7 +8,7 @@ Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blend
 
 - [Homepage](https://dealgapiq.com/): product overview and instant property scanner
 - [About](https://dealgapiq.com/about): founder story, methodology philosophy, and the three proprietary metrics (Target Buy, Income Value, Deal Gap)
-- [Pricing](https://dealgapiq.com/pricing): Starter (free) and Pro ($29.17/mo billed annually, or $39.99/mo, with 7-day free trial)
+- [Pricing](https://dealgapiq.com/pricing): Starter (free) and Pro ($29.17/mo billed annually, or $34.99/mo, with 7-day free trial)
 - [What is DealGapIQ](https://dealgapiq.com/what-is-dealgapiq): plain-English overview of the platform
 
 ## Product

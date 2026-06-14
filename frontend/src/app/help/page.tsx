@@ -30,7 +30,7 @@ const FAQ_DATA: FAQItem[] = [
     category: 'Getting Started',
     question: 'Is DealGapIQ free?',
     answer:
-      'The Starter plan is free forever: 10 property analyses per month, the full Discovery verdict with all 6 strategy snapshots, and up to 10 saved properties. Pro Investor ($39.99/mo or $349.99/yr) adds unlimited analyses, the Deal Maker, comps, exports, and investor directories — with a 7-day free trial.',
+      'The Starter plan is free forever: 10 property analyses per month, the full Discovery verdict with all 6 strategy snapshots, and up to 10 saved properties. Pro Investor ($34.99/mo or $349.99/yr) adds unlimited analyses, the Deal Maker, comps, exports, and investor directories — with a 7-day free trial.',
   },
   {
     category: 'Analysis & Scoring',

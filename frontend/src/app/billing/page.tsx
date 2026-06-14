@@ -107,7 +107,7 @@ function getPlans(isAnnual: boolean): PlanConfig[] {
 const FAQ_ITEMS = [
   {
     q: 'What happens when my trial ends?',
-    a: "You'll be charged $349.99/yr (annual) or $39.99/mo (monthly). Cancel before the trial ends and you're never charged.",
+    a: "You'll be charged $349.99/yr (annual) or $34.99/mo (monthly). Cancel before the trial ends and you're never charged.",
   },
   {
     q: 'Can I switch back to Starter?',
