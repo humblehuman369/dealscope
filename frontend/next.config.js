@@ -35,7 +35,7 @@ if (!isCapacitor) {
   const scriptSrc = [
     "script-src 'self' 'unsafe-inline'",
     isDev && "'unsafe-eval'",
-    'https://*.sentry.io https://*.sentry-cdn.com https://*.vercel-scripts.com https://*.vercel-insights.com https://vercel.live https://maps.googleapis.com https://*.google.com https://*.gstatic.com https://js.stripe.com https://us.i.posthog.com https://us-assets.i.posthog.com',
+    'https://*.sentry.io https://*.sentry-cdn.com https://*.vercel-scripts.com https://*.vercel-insights.com https://vercel.live https://maps.googleapis.com https://*.google.com https://*.gstatic.com https://js.stripe.com https://eu.i.posthog.com https://eu-assets.i.posthog.com',
   ].filter(Boolean).join(' ')
 
   nextConfig.headers = async () => [
