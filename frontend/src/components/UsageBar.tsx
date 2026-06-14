@@ -69,7 +69,7 @@ const STATE_STYLES: Record<
 
 // Discovery and Strategy are deliberately NOT hidden: those are the pages
 // where free users consume their analysis quota, and the visible countdown
-// ("2 of 3 analyses left") is the upgrade nudge leading into the server-side
+// ("2 of 10 analyses left") is the upgrade nudge leading into the server-side
 // limit screen. Only suppress on conversion/marketing surfaces.
 const HIDDEN_ON = ['/pricing', '/register', '/what-is-dealgapiq', '/billing']
 

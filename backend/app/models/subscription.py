@@ -72,8 +72,8 @@ class Subscription(Base):
     trial_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Usage limits based on tier (defaults match TIER_LIMITS[FREE])
-    properties_limit: Mapped[int] = mapped_column(Integer, default=3)  # Starter: 3
-    searches_per_month: Mapped[int] = mapped_column(Integer, default=3)  # Starter: 3 analyses/mo
+    properties_limit: Mapped[int] = mapped_column(Integer, default=10)  # Starter: 10
+    searches_per_month: Mapped[int] = mapped_column(Integer, default=10)  # Starter: 10 analyses/mo
     api_calls_per_month: Mapped[int] = mapped_column(Integer, default=50)  # Starter: 50
 
     # Usage tracking (reset monthly)
@@ -176,8 +176,12 @@ class PaymentHistory(Base):
 # Tier configurations for easy reference
 TIER_LIMITS = {
     SubscriptionTier.FREE: {
-        "properties_limit": 3,
-        "searches_per_month": 3,
+        # Breadth, not depth: free users get a generous analysis/save allowance so
+        # they reach the "aha" (Four Paths, directories) before any wall. The paid
+        # conversion levers are DEPTH (editable inputs, comps, exports, directories),
+        # which stay Pro-only. Tune these two numbers to balance activation vs. data COGS.
+        "properties_limit": 10,
+        "searches_per_month": 10,
         "api_calls_per_month": 50,
         "features": ["basic_analysis", "save_properties", "iq_verdict", "strategy_snapshots", "seller_motivation"],
     },

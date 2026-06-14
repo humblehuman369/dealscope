@@ -118,14 +118,14 @@ class BillingService:
                 price_yearly=0,
                 stripe_price_id_monthly=None,
                 stripe_price_id_yearly=None,
-                properties_limit=3,
-                searches_per_month=3,
+                properties_limit=10,
+                searches_per_month=10,
                 api_calls_per_month=50,
                 features=[
                     PlanFeature(
-                        name="3 Property Analyses/month",
-                        description="Analyze up to 3 properties per month",
-                        limit="3/month",
+                        name="10 Property Analyses/month",
+                        description="Analyze up to 10 properties per month",
+                        limit="10/month",
                     ),
                     PlanFeature(
                         name="Deal Gap + Income Value + Target Buy",

@@ -652,7 +652,7 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
             subtitle="For serious explorers"
             price="$0"
             features={[
-              '3 discoveries per month',
+              '10 discoveries per month',
               'Full 4-path analysis',
               'Negotiation scripts',
               'PDF export',

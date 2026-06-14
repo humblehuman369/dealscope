@@ -872,7 +872,7 @@ class EmailService:
         <td style="padding: 16px; background-color: {self.NESTED_BG}; border: 1px solid {self.BORDER}; border-radius: 12px;">
             <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0 0 8px 0;">Your Starter plan includes:</p>
             <ul style="font-size: 14px; color: {self.TXT_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
-                <li>3 property analyses per month</li>
+                <li>10 property analyses per month</li>
                 <li>Deal Gap, Income Value, and Target Buy metrics</li>
                 <li>Discovery Score</li>
                 <li>All 6 strategy snapshots</li>

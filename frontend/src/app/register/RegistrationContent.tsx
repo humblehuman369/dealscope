@@ -183,7 +183,7 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
         'Side-by-side deal comparison',
       ]
     : [
-        '3 property analyses per month',
+        '10 property analyses per month',
         'Deal Gap + Income Value + Target Buy',
         'Discovery score',
         'All 6 strategy snapshots',
