@@ -75,17 +75,32 @@ Many users run a discovery before creating an account (no login required for fir
 
 ---
 
-## 5. Retention proxy (for Phase 2 / first-renewal work)
+## 5. Retention & first-renewal (real server-side events)
 
-Until a dedicated `subscription_renewed` event exists, approximate retention with a **Retention insight**:
+Lifecycle events are now emitted **server-side** from the billing webhooks (Stripe via
+`billing_service.py`, RevenueCat via `billing.py`), keyed by user id so they stitch to the
+web funnel. Use these for true retention metrics:
 
-- **Type:** Retention
-- **Cohortizing event:** `checkout_completed` (first paid)
-- **Returning event:** `verdict_viewed` (any active product use)
-- **Period:** Weekly, 8+ weeks
-- **Read:** weeks-2-to-4 retention is the leading indicator for first-renewal survival, the dominant LTV lever in the assessment.
+| Event | Meaning | Fires from |
+|---|---|---|
+| `trial_converted` | Trial → first paid (the conversion milestone) | Stripe `_handle_subscription_updated` (trialing→active); RevenueCat `RENEWAL` after trial |
+| `subscription_renewed` | Recurring paid renewal (excludes $0 trial-start) | Stripe `_handle_invoice_paid` (`billing_reason=subscription_cycle`); RevenueCat `RENEWAL` |
+| `subscription_canceled` | Cancel requested (access until period end) — intent to churn | Stripe `_handle_subscription_updated`; RevenueCat `CANCELLATION` |
+| `subscription_expired` | Paid access ended, reverted to free — actual churn | Stripe `_handle_subscription_deleted`; RevenueCat `EXPIRATION`/`NON_RENEWING_PURCHASE` |
 
-> Backlog: add an explicit `subscription_renewed` event (fired from the Stripe/RevenueCat renewal webhook handlers in `backend/app/routers/billing.py`) to measure true first-renewal rate.
+Each event carries a `source` property (`stripe` | `revenuecat`).
+
+**Dashboard tiles to add:**
+- **Trial → paid conversion %** — Funnel: `checkout_started` → `trial_converted`.
+- **First-renewal rate** — Funnel: `trial_converted` → `subscription_renewed` (14–35 day window). The dominant LTV lever.
+- **Cancellations vs renewals** — Trends: `subscription_renewed`, `subscription_canceled`, `subscription_expired` (weekly), broken down by `source`.
+
+**Retention insight (still useful for engagement-retention):**
+- **Type:** Retention · **Cohortizing event:** `trial_converted` · **Returning event:** `verdict_viewed` · **Period:** Weekly, 8+ weeks.
+
+> Note: a trial conversion emits both `trial_converted` and (on the first paid cycle)
+> `subscription_renewed`. Use `trial_converted` for the conversion metric and
+> `subscription_renewed` for ongoing renewal retention.
 
 ---
 

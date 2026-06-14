@@ -27,12 +27,32 @@ from app.schemas.billing import (
     PricingPlan,
     UsageResponse,
 )
+from app.core.posthog_client import posthog_client
 from app.services.email_service import email_service
 
 logger = logging.getLogger(__name__)
 
 # Max length for return_to in Stripe metadata (Stripe max 500 per value; keep headroom)
 _MAX_RETURN_TO_LEN = 400
+
+
+def _capture_lifecycle(user_id: Any, event: str, properties: dict[str, Any] | None = None) -> None:
+    """Emit a subscription-lifecycle event to PostHog, keyed by user id so it
+    stitches to the same person as the frontend funnel (which identifies on user.id).
+
+    Never raises — analytics must not break billing. `source` defaults to 'stripe';
+    callers can override it in ``properties``.
+    """
+    if posthog_client is None or user_id is None:
+        return
+    try:
+        posthog_client.capture(
+            distinct_id=str(user_id),
+            event=event,
+            properties={"source": "stripe", **(properties or {})},
+        )
+    except Exception:
+        pass
 
 
 def _safe_return_to(raw: str | None) -> str | None:
@@ -1031,6 +1051,7 @@ class BillingService:
         existing = result.scalar_one_or_none()
         was_cancel_at_period_end = existing.cancel_at_period_end if existing else False
         was_tier = existing.tier if existing else None
+        was_status = existing.status if existing else None
 
         await self._sync_subscription(db, data)
 
@@ -1045,6 +1066,15 @@ class BillingService:
             return
 
         now_cancel_at_period_end = data.get("cancel_at_period_end", False)
+
+        # Trial → paid conversion: status moved from trialing to active. This is
+        # the cleanest first-renewal/conversion signal for the north-star funnel.
+        if was_status == SubscriptionStatus.TRIALING and data.get("status") == "active":
+            _capture_lifecycle(user_id, "trial_converted")
+
+        # Cancel requested (access continues until period end): intent-to-churn signal.
+        if now_cancel_at_period_end and not was_cancel_at_period_end:
+            _capture_lifecycle(user_id, "subscription_canceled", {"at_period_end": True})
 
         # Cancel-at-period-end transition just detected
         if now_cancel_at_period_end and not was_cancel_at_period_end:
@@ -1136,6 +1166,9 @@ class BillingService:
             await db.commit()
             logger.info(f"Subscription deleted, downgraded user {user_id} to free tier")
 
+            # Actual churn — paid access ended and user reverted to free.
+            _capture_lifecycle(user_id, "subscription_expired")
+
             user = await self._get_user_for_email(db, user_id)
             if user:
                 await email_service.send_subscription_canceled_email(
@@ -1199,6 +1232,15 @@ class BillingService:
             await db.commit()
 
             logger.info(f"Invoice paid for user {subscription.user_id}")
+
+            # Recurring paid renewal (excludes the $0 trial-start invoice, which has
+            # billing_reason 'subscription_create'). Drives retention/first-renewal metrics.
+            if data.get("billing_reason") == "subscription_cycle" and amount_paid > 0:
+                _capture_lifecycle(
+                    subscription.user_id,
+                    "subscription_renewed",
+                    {"amount": amount_paid, "currency": currency, "tier": subscription.tier.value},
+                )
 
             if amount_paid > 0:
                 user = await self._get_user_for_email(db, subscription.user_id)

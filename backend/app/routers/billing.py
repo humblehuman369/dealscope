@@ -55,6 +55,21 @@ async def _mark_webhook_processed(provider: str, event_id: str | None) -> None:
     await get_cache_service().set(f"webhook_evt:{provider}:{event_id}", 1, ttl_seconds=_WEBHOOK_DEDUP_TTL_SECONDS)
 
 
+def _rc_capture(user_id, event: str, properties: dict | None = None) -> None:
+    """Emit a RevenueCat (mobile) lifecycle event to PostHog, keyed by user id so
+    it stitches to the same person as the web funnel. Never raises."""
+    if posthog_client is None or user_id is None:
+        return
+    try:
+        posthog_client.capture(
+            distinct_id=str(user_id),
+            event=event,
+            properties={"source": "revenuecat", **(properties or {})},
+        )
+    except Exception:
+        pass
+
+
 # ===========================================
 # Public Endpoints
 # ===========================================
@@ -650,6 +665,9 @@ async def revenuecat_webhook(
     free_limits = TIER_LIMITS[SubscriptionTier.FREE]
     from datetime import UTC, datetime
 
+    # Status before this event mutates it — used to detect trial → paid conversion.
+    prior_status = subscription.status
+
     if event_type in ("INITIAL_PURCHASE", "RENEWAL", "PRODUCT_CHANGE", "UNCANCELLATION"):
         # RevenueCat sends period_type on every entitlement-changing event.
         # Values: TRIAL, NORMAL, INTRO, PROMOTIONAL, PREPAID. Only TRIAL/INTRO
@@ -702,6 +720,12 @@ async def revenuecat_webhook(
             except Exception:
                 pass
 
+        # Distinct retention signals (mirror the Stripe side).
+        if event_type == "RENEWAL" and not is_trial_period:
+            if prior_status == SubscriptionStatus.TRIALING:
+                _rc_capture(user_id, "trial_converted")
+            _rc_capture(user_id, "subscription_renewed")
+
         if user and event_type == "INITIAL_PURCHASE":
             try:
                 trial_end_str = None
@@ -727,6 +751,7 @@ async def revenuecat_webhook(
         subscription.cancel_at_period_end = True
         subscription.canceled_at = datetime.now(UTC)
         logger.info(f"RevenueCat: user {user_id} cancelled (access until period end)")
+        _rc_capture(user_id, "subscription_canceled", {"at_period_end": True})
 
         if user and subscription.current_period_end:
             try:
@@ -746,6 +771,7 @@ async def revenuecat_webhook(
         subscription.api_calls_per_month = free_limits["api_calls_per_month"]
         subscription.cancel_at_period_end = False
         logger.info(f"RevenueCat: user {user_id} expired, downgraded to Free")
+        _rc_capture(user_id, "subscription_expired")
 
         if user:
             try:
