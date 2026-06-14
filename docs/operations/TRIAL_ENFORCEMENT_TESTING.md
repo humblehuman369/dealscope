@@ -178,7 +178,7 @@ fixes deployed.
 |---|---|---|
 | 1 | Open DealGapIQ on iPhone, sign in (or create account) | Logged in |
 | 2 | Navigate to pricing / upgrade | Sees Apple's StoreKit purchase sheet |
-| 3 | Tap `Subscribe` (Monthly $39.99) | Sandbox prompts for sandbox tester credentials |
+| 3 | Tap `Subscribe` (Monthly $34.99) | Sandbox prompts for sandbox tester credentials |
 | 4 | Enter sandbox tester email + password | Purchase completes (Sandbox always succeeds with test cards) |
 | 5 | Check **backend logs** for the RevenueCat webhook | Should see: `RevenueCat: upgraded user X to Pro (TRIALING, period_type=TRIAL)` ← **This is the line that validates Risk #2.** If you see `period_type=NORMAL` or `period_type=unknown` instead, the fix didn't deploy correctly. |
 | 6 | Query DB | `tier=pro`, `status=trialing`, `trial_start` and `trial_end` are BOTH populated (not null) |
@@ -291,7 +291,7 @@ loophole).
 ## Phase 5: Final smoke test on production (OPTIONAL, 5 min)
 
 Once Phases 1–3 pass, you can do one real signup as belt-and-suspenders.
-Use **Monthly** tier (not Annual) so worst-case exposure is $39.
+Use **Monthly** tier (not Annual) so worst-case exposure is $34.
 
 | Step | Action |
 |---|---|

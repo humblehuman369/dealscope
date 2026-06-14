@@ -18,13 +18,13 @@ code and this file, **the App Store Connect UI is ground truth**, not this doc.
 - **RevenueCat Project ID:** `projd3d13e41`
 - **RevenueCat Entitlement:** `DealGapIQ Pro`
 - **RevenueCat Offering:** `default`
-- **Stripe Pricing (must match):** $39.99/month, $349.99/year ($29.17/mo billed annually)
+- **Stripe Pricing (must match):** $34.99/month, $349.99/year ($29.17/mo billed annually)
 
 ### Live subscription products (App Store Connect)
 
 | Reference Name | Product ID | Duration | Price |
 |----------------|-----------|----------|-------|
-| DealGapIQ Monthly | `com.monthly.dealgapiq` | 1 Month | $39.99 |
+| DealGapIQ Monthly | `com.monthly.dealgapiq` | 1 Month | $34.99 |
 | DealGapIQ Yearly  | `com.yearly.dealgapiq`  | 1 Year  | $349.99 |
 
 These match the `IOS_MONTHLY_PRODUCT_ID` / `IOS_YEARLY_PRODUCT_ID` constants in
@@ -106,7 +106,7 @@ IMPORTANT: Use this product ID since `com.dealgapiq.mobile.pro.monthly` and
 
 **Subscription Pricing:**
 - Base country: United States
-- Price: **$39.99/month** (Apple price tier that returns exactly $39.99 via StoreKit)
+- Price: **$34.99/month** (Apple price tier that returns exactly $34.99 via StoreKit)
 
 **App Store Localization:**
 
