@@ -86,6 +86,7 @@ import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnaps
 import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 import { WorkbenchTour } from '@/components/discovery/WorkbenchTour'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
+import { useReviewPrompt } from '@/hooks/useReviewPrompt'
 
 // Backend analysis response type — canonical shape from @dealscope/shared.
 // The backend serializes both snake_case and camelCase via Pydantic alias_generator,
@@ -372,6 +373,16 @@ function VerdictContent() {
     isPro,
     queryClient,
   ])
+
+  // Native in-app review prompt at the peak-satisfaction moment: the first
+  // verdict the user receives. No-op on web; requested once per device (the
+  // hook + the OS both throttle), so this can safely fire on every verdict.
+  const requestReview = useReviewPrompt()
+  useEffect(() => {
+    if (!isLoading && property && analysis && (addressParam || propertyIdParam)) {
+      void requestReview()
+    }
+  }, [isLoading, property, analysis, addressParam, propertyIdParam, requestReview])
 
   // Load from dealMakerStore for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property

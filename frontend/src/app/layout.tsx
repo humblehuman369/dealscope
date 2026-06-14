@@ -57,6 +57,12 @@ const canonicalBase =
 const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
 const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
 
+// Apple Smart App Banner: renders <meta name="apple-itunes-app"> so iOS Safari
+// surfaces a native "Get / Open" banner to web visitors. Driven by the numeric
+// App Store ID (App Store Connect → App Information → Apple ID), which is not
+// derivable from the bundle id. When unset, no banner is emitted (no broken tag).
+const appleAppId = process.env.NEXT_PUBLIC_APPLE_APP_ID
+
 export const metadata: Metadata = {
   metadataBase: new URL(canonicalBase),
   title: defaultTitle,
@@ -87,6 +93,7 @@ export const metadata: Metadata = {
     ...(googleVerification ? { google: googleVerification } : {}),
     ...(bingVerification ? { other: { 'msvalidate.01': bingVerification } } : {}),
   },
+  ...(appleAppId ? { itunes: { appId: appleAppId } } : {}),
 }
 
 export const viewport: Viewport = {
