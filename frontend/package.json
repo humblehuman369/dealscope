@@ -50,7 +50,7 @@
     "exceljs": "^3.4.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.303.0",
-    "next": "^16.2.6",
+    "next": "^16.2.9",
     "posthog-js": "^1.384.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
