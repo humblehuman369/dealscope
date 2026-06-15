@@ -1195,6 +1195,11 @@ input[type="range"]::-moz-range-thumb {
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Hide web-only "Get the App" CTAs inside the installed app */
+  html.capacitor .dgiq-hide-in-capacitor {
+    display: none !important;
+  }
+
   html.capacitor body {
     -webkit-user-select: none;
     user-select: none;

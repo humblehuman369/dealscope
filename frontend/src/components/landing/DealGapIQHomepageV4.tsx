@@ -21,6 +21,7 @@ import {
   X,
 } from 'lucide-react'
 import { DirectoriesPromoSection } from '@/components/landing/DirectoriesPromoSection'
+import { GetTheAppButton } from '@/components/GetTheAppButton'
 import { useBuyerDirectoryTeaserTotal } from '@/hooks/useBuyerDirectoryTeaserTotal'
 import { formatLenderDirectoryTotal } from '@/lib/directory-promo'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -344,6 +345,11 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
                 Watch 60-second demo
               </SecondaryButton>
             </div>
+            <GetTheAppButton
+              source="hero"
+              label="Also on iOS & Android — get the app"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent-sky)] transition-colors hover:brightness-110"
+            />
             <p className="text-xs text-[var(--text-muted)]">
               Inside Pro:{' '}
               <span style={{ color: '#0EA5E9' }}>2,812+</span> verified cash buyers ·{' '}
@@ -808,6 +814,11 @@ function SiteFooter() {
             The only tool that turns maybe listings into signed contracts with clear offer
             structures and scripts.
           </div>
+          <GetTheAppButton
+            source="footer"
+            label="Get the App"
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-[var(--border-default)] px-4 py-2 text-sm font-semibold text-[var(--text-heading)] transition-colors hover:border-[var(--accent-sky)] hover:text-[var(--accent-sky)]"
+          />
           <div className="mt-8 text-xs text-[var(--text-muted)]">
             &copy; 2026 DealGapIQ. Built by investors, for investors.
           </div>
