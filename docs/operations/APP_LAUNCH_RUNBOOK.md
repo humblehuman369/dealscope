@@ -56,13 +56,30 @@ These go live the moment you deploy — no app store review needed.
 
 ## Phase 3 — App Store Optimization Go-Live (Week 1)
 
-Publish the conversion-optimized listing from the marketing plan.
+**Source of truth = the asset pack in `frontend/public/app-store/`** (already
+production-ready: 8 ordered screenshots, icon, feature graphics, and finalized
+copy). All copy below is character-validated. Paste exactly.
 
-- [ ] **Title / Subtitle (Apple):** `DealGapIQ: Property Analysis` / `Score any deal in 60 seconds`. *Verify:* each ≤ 30 chars.
-- [ ] **Keyword field (Apple, 100 chars):** `rental,flip,brrrr,realestate,investor,roi,cashflow,cap,rate,arv,comps,wholesale,proforma,landlord`. *Verify:* no spaces after commas; no words repeated from the title.
-- [ ] **Play title + short description:** `DealGapIQ: Property Analysis` / `Score any rental, flip, or BRRRR deal in 60 seconds. See the Deal Gap instantly.` *Verify:* short description ≤ 80 chars.
-- [ ] **Play long description:** publish the keyword-weighted draft (Deal Gap → six strategies → multi-source IQ Estimate → Point & Scan → offer tools → founder authority → pricing).
-- [ ] **Screenshots (6, both stores):** Deal Gap verdict → 60-sec multi-strategy → Point & Scan → multi-source IQ Estimate → seller script → founder trust card. *Verify:* captions in top third, real numbers, dark UI, portrait 9:16.
+### Apple — App Store Connect
+
+- [ ] **App Name / Title (≤30):** `DealGapIQ: Real Estate Deals` (28). Full rationale + alternates: `connect/copy/keywords.md`.
+- [ ] **Subtitle (≤30):** `Every US deal, pre-scored.` (26). Source: `connect/copy/subtitle.md`.
+- [ ] **Keyword field (≤100):** `foreclosure,preforeclosure,auction,rental,flip,brrrr,wholesale,investor,roi,cashflow,arv,comps` (94). Source: `connect/copy/keywords.md`. *Verify:* no spaces after commas.
+- [ ] **Promotional Text (≤170):** see `connect/copy/promotional-text.md` (investor's-lens primary).
+- [ ] **App Icon:** `connect/icon-1024x1024-v2-fullbleed.png`.
+- [ ] **Screenshots ×8 (6.9", 1290×2796):** upload `connect/screenshots/01–08-*.png` in numbered order. Rationale: `connect/README.md`.
+
+### Google Play — Console
+
+- [ ] **Title (≤30):** `DealGapIQ: Real Estate Deals`.
+- [ ] **Short description (≤80):** `Every US listing pre-scored DEAL, MAYBE or PASS. See the Deal Gap in seconds.` (77). Source: `play-store/copy/description.md`.
+- [ ] **Full description (≤4000):** paste from `play-store/copy/description.md` (keyword-weighted; pricing $34.99 / $349.99).
+- [ ] **Feature graphic (1024×500):** `play-store/feature-graphic-1024x500-v5-discover-deals.png` (remove old promo video or recut — see `play-store/README.md`).
+
+### Both stores
+
+- [ ] **App Preview video (optional, high impact):** produce per `connect/copy/app-preview-video-brief.md`.
+- [ ] **Generate the in-app icon size variants** from the 1024 icon and replace in the Xcode `AppIcon.appiconset` (so the home-screen icon matches the listing — see `connect/README.md`).
 - [ ] **Submit for review.** *Verify:* status = "Waiting for Review" (Apple) / "In review" (Google).
 
 ---
