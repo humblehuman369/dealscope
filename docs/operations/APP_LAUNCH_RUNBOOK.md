@@ -28,7 +28,7 @@ Confirm the foundation is solid before anything ships.
 
 - [ ] **Pricing is consistent.** Confirm $34.99 / $349.99 in App Store Connect, Play Console, Stripe, RevenueCat, and marketing copy. *Verify:* no reference to $39.99 remains.
 - [ ] **Apple App ID is live in Vercel.** `NEXT_PUBLIC_APPLE_APP_ID` is set in Production env. *Verify:* after deploy, view-source on `dealgapiq.com` shows `<meta name="apple-itunes-app" content="app-id=...">`.
-- [ ] **Native builds include the review plugin.** `npx cap sync` ran clean for both platforms. *Verify:* `frontend/ios/App/Podfile.lock` and `frontend/android` reference `in-app-review`.
+- [ ] **Native builds include the review plugin.** `npx cap sync` ran clean for both platforms. *Verify:* `frontend/ios/App/CapApp-SPM/Package.swift` (this project uses Swift Package Manager, not CocoaPods) and `frontend/android/capacitor.settings.gradle` both reference `in-app-review`.
 - [ ] **Quality gates green.** *Verify:* `npm run typecheck`, `npm run lint`, `npm run theme:check`, `npm run build` all pass in `frontend/`.
 - [ ] **Analytics events fire.** *Verify:* in PostHog you can see `verdict_viewed`, `get_app_clicked`, and (on a native build) `review_prompt_requested`.
 
