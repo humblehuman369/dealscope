@@ -11,6 +11,7 @@ import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { FileText, Plus, Sparkles, X } from 'lucide-react'
 import { DataBoundary } from '@/components/ui/DataBoundary'
+import { ApiError } from '@/lib/api-client'
 import { buildRehabUrl } from '@/lib/rehabNavigation'
 import {
   useAddBudgetExpense,
@@ -36,20 +37,26 @@ function varianceClass(v: number): string {
 export function BudgetPanel({ propertyId }: { propertyId: string }) {
   const summary = useRehabBudgetSummary(propertyId)
 
+  // A 404 means no budget has been created yet — that's an empty state, not an
+  // error. Only surface a real failure (network, 5xx, etc.) as an error.
+  const noBudgetYet =
+    summary.isError && summary.error instanceof ApiError && summary.error.status === 404
+
   return (
     <DataBoundary
       isLoading={summary.isLoading}
-      error={summary.isError ? 'Could not load this budget' : null}
+      error={summary.isError && !noBudgetYet ? 'Could not load this budget' : null}
       onRetry={() => summary.refetch()}
       isEmpty={!summary.isLoading && !summary.data}
-      emptyTitle="No budget yet"
-      emptyDescription="Build a rehab estimate in the Estimator, save it to this property, then log paid expenses here."
+      emptyTitle="No budget created yet"
+      emptyDescription="Build a rehab estimate in the Estimator and save it to this property to start tracking budget vs. actual spend."
       emptyAction={
         <Link
           href={buildRehabUrl({ savedPropertyId: propertyId })}
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--accent-sky)] hover:underline"
+          className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-[var(--text-inverse)] brand-gradient transition-opacity hover:opacity-90"
         >
-          Open Rehab Estimator
+          <Plus className="w-4 h-4" />
+          Create a Budget
         </Link>
       }
     >
