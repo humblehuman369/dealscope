@@ -153,13 +153,15 @@ class EmailService:
             # of blocking the event loop. Important when the API call takes
             # >100ms — without this, every concurrent request to the backend
             # stalls until Resend responds.
-            send_kwargs: dict[str, Any] = {}
-            if idempotency_key:
-                send_kwargs["idempotency_key"] = idempotency_key
+            #
+            # SDK signature is Emails.send(params, options) — the idempotency
+            # key is a member of the SendOptions dict passed positionally, NOT
+            # a keyword arg on send(). Passing it as a kwarg raises TypeError.
+            options = {"idempotency_key": idempotency_key} if idempotency_key else None
             response = await asyncio.to_thread(
                 resend.Emails.send,
                 params,
-                **send_kwargs,
+                options,
             )
             message_id = response.get("id") if isinstance(response, dict) else None
             logger.info(f"Email sent to {to}: {message_id or 'unknown'}")
