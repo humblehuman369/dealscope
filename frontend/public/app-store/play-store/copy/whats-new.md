@@ -8,9 +8,14 @@ Wrap in the language tag Play expects (`<en-US>…</en-US>`) if editing raw.
 
 ---
 
-## Recommended (462 / 500 — paste verbatim)
+## Recommended (462 / 500 content — paste verbatim, INCLUDING the language tags)
+
+Play rejects release notes that aren't wrapped in a language tag ("text outside
+language tags / 0 languages"). Wrap in `<en-US>…</en-US>` (the 500-char limit
+applies to the content, not the tags):
 
 ```
+<en-US>
 New in this release:
 • Map Search filters — Expired listings, Motivated Sellers, Owner Tenure, Occupancy, Days on Market
 • Distressed Deals — foreclosures, pre-foreclosures & auctions scored alongside MLS
@@ -19,4 +24,5 @@ New in this release:
 • Pro: 2,800+ verified cash buyers & 484+ hard money lenders
 
 Have feedback? We read every review.
+</en-US>
 ```
