@@ -17,28 +17,25 @@ also user-facing: existing users read it in the Updates tab.
 
 ---
 
-## Recommended (paste verbatim — then TRIM to what's genuinely new since your last release)
+## Recommended (paste verbatim — actual 2.2.0 changelog)
 
 ```
-This release makes DealGapIQ faster and sharper for serious investors:
+New in this release:
 
-• Point & Scan — analyze any house just by pointing your phone at it
+• Map Search — filter by Expired Listings, Motivated Sellers, Owner Tenure, Occupancy Status, and Days on Market to surface off-radar opportunities
+• Distressed Deals Search — foreclosures, pre-foreclosures, and auction properties scored alongside MLS listings
 • Four offer paths on every deal — including creative finance structures — each with a ready-to-send negotiation script
-• Sharper IQ Estimates — value and rent cross-referenced across Zillow, RentCast, Redfin, Realtor.com, and county records
-• Off-MLS coverage — foreclosures, pre-foreclosures, and auction properties scored alongside MLS listings
-• DealMaker — adjust purchase price, financing, and expenses with live metric updates
-• Verified cash buyer and hard money lender directories (Pro)
-• Faster analysis, a refreshed design, and bug fixes throughout
+• Pipeline Management — move deals through a funnel with AI deal guidance at every stage
+• Portfolio Tracking — keep a running record of the properties you own
+• Budget Tracking — plan and track rehab budgets, powered by the Estimator
+• Enhanced Dashboard — a faster, clearer home base for your deals
+• Investor Profile — refined preferences that tailor analysis to your strategy
+• Pro Directories — 2,800+ verified cash buyers and 484+ hard money lenders
 
 Thanks for using DealGapIQ. Have feedback? We read every review.
 ```
 
-> **Important:** the bullets above reflect DealGapIQ's full feature set. Keep
-> only the lines that are **actually new or improved since your last App Store
-> release** — listing already-shipped features as "new" is fine in spirit but
-> cleaner if you scope it to real changes. If most of these did ship in earlier
-> versions, lead with the genuinely new items and collapse the rest into the
-> "Faster analysis… and bug fixes" line.
+Character count: ~760 / 4000 — plenty of headroom.
 
 ---
 
