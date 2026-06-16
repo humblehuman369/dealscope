@@ -575,7 +575,7 @@ cost."
 Full underwriting power."
 
 **Annual pricing:** ~$29.17/month billed annually -- "Save 17%" / "Save
-$130/yr"
+$70/yr"
 
 **Tagline:** "Free shows you the verdict. Pro gives you the tools to close
 the deal."
@@ -1441,7 +1441,7 @@ A: Yes. Two clicks. No tricks.
 | "Your data stays yours. We never share or sell." | Privacy trust |
 | "Your deal flow is yours alone." | Privacy trust (expanded) |
 | "Save 17%" | Annual toggle |
-| "Save $130/yr" | Annual value |
+| "Save $70/yr" | Annual value |
 | "Every assumption editable" | Transparency |
 | "Cross-referenced from 5 data sources" | Data credibility |
 | "Professional use only. Not financial advice." | Compliance |
