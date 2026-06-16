@@ -24,18 +24,25 @@ New in this release:
 
 • Map Search — filter by Expired Listings, Motivated Sellers, Owner Tenure, Occupancy Status, and Days on Market to surface off-radar opportunities
 • Distressed Deals Search — foreclosures, pre-foreclosures, and auction properties scored alongside MLS listings
-• Four offer paths on every deal — including creative finance structures — each with a ready-to-send negotiation script
-• Pipeline Management — move deals through a funnel with AI deal guidance at every stage
+• Guided offers on every deal — DealGapIQ recommends the strongest deal structure across four paths (including creative finance) and writes a custom script telling you exactly what to say when you present your offer to the seller
+• Guided Pipeline — move deals through your funnel with recommended next steps and task tracking at every stage
+• Rehab Estimator + Budget Tracking — build a rehab estimate and track spending against your budget
 • Portfolio Tracking — keep a running record of the properties you own
-• Budget Tracking — plan and track rehab budgets, powered by the Estimator
 • Enhanced Dashboard — a faster, clearer home base for your deals
-• Investor Profile — refined preferences that tailor analysis to your strategy
+• Investor Profile — preferences that tailor every recommendation to your strategy
 • Pro Directories — 2,800+ verified cash buyers and 484+ hard money lenders
 
 Thanks for using DealGapIQ. Have feedback? We read every review.
 ```
 
-Character count: ~760 / 4000 — plenty of headroom.
+Character count: ~940 / 4000 — plenty of headroom.
+
+> **On "AI":** the bare label "AI deal guidance" was replaced with a concrete
+> description of what the guidance *does* (recommends a structure + writes the
+> seller script). This is reviewer-findable and accurate however the engine is
+> built. Only re-add the word "AI" (e.g. "AI-written seller script") if the
+> recommendation/script is genuinely LLM-generated AND visible in the app — Apple
+> may ask you to substantiate an "AI" claim, but never a concrete-function one.
 
 ---
 
