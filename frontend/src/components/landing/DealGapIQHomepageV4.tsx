@@ -671,9 +671,9 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
             featured
             title="Pro"
             subtitle="For active deal makers"
-            price="$34"
+            price="$34.99"
             priceSuffix="/mo"
-            subprice="or $29/mo billed annually"
+            subprice="or $29.17/mo billed annually"
             features={[
               'Unlimited discoveries',
               `Cash Buyer Directory (${buyerTotalLabel} verified contacts)`,

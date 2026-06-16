@@ -62,7 +62,7 @@ relative to the investor's goals. This single number turns real estate from a
 |-----------|--------|
 | **Model** | Freemium SaaS |
 | **Free tier** | 3 property analyses/month, no credit card required |
-| **Pro tier** | $39.99/month or $349.99/year (save 27%) |
+| **Pro tier** | $34.99/month or $349.99/year (save 17%) |
 | **Trial** | 7-day free trial on Pro (full access) |
 | **Platforms** | Web (dealgapiq.com), iOS (App Store), Android (Play Store) |
 | **Founded by** | Brad Geisen -- founder of Foreclosure.com, builder of HomePath.com (Fannie Mae) and HomeSteps.com (Freddie Mac) |
@@ -366,7 +366,7 @@ CTAs.
 > property cash flow?'"
 
 **Urgent without being pushy:**
-> "One bad deal costs thousands. DealGapIQ Pro costs $39.99/mo."
+> "One bad deal costs thousands. DealGapIQ Pro costs $34.99/mo."
 
 **Credible and specific:**
 > "Cross-referenced from 5 data sources. We don't guess. We aggregate,
@@ -398,7 +398,7 @@ a clear verdict, not just data.
 | **CTA-oriented** | "Stop Browsing Like a Buyer. Start Thinking Like an Investor." |
 | **Concept-driven** | "Every Property Has a Deal Gap. Only DealGapIQ Measures It." |
 | **Educational** | "The only question that matters: 'Is this actually a deal?'" |
-| **Fear/risk** | "One bad deal costs thousands. DealGapIQ Pro costs $39.99/mo." |
+| **Fear/risk** | "One bad deal costs thousands. DealGapIQ Pro costs $34.99/mo." |
 | **Behavioral shift** | "Stop guessing. Start calculating." |
 | **Manifesto** | "You're not asking 'do I love this kitchen?' You're asking 'does this property cash flow?'" |
 
@@ -464,7 +464,7 @@ These facts should be woven into campaigns wherever possible:
 - **6 investment strategies** analyzed simultaneously
 - **60 seconds** from address entry to full investment verdict
 - **3 free analyses/month** with no credit card required
-- **$39.99/month** for unlimited Pro access (or $29.17/mo billed annually)
+- **$34.99/month** for unlimited Pro access (or $29.17/mo billed annually)
 - **7-day free trial** with full Pro access
 - **35+ years** of real estate data experience (founder)
 - **Built HomePath.com** for Fannie Mae and **HomeSteps.com** for Freddie Mac
@@ -569,12 +569,12 @@ cost."
 **CTA:** "Start Free"  
 **Microcopy:** "No credit card. No commitment."
 
-#### Pro Investor ($39.99/month or $349.99/year)
+#### Pro Investor ($34.99/month or $349.99/year)
 
 **Positioning:** "For active investors analyzing multiple deals every month.
 Full underwriting power."
 
-**Annual pricing:** ~$29.17/month billed annually -- "Save 27%" / "Save
+**Annual pricing:** ~$29.17/month billed annually -- "Save 17%" / "Save
 $130/yr"
 
 **Tagline:** "Free shows you the verdict. Pro gives you the tools to close
@@ -616,7 +616,7 @@ Anonymous visit → Analyze a property (no account needed)
         ↓
    7-day free trial (Pro) → Full access
         ↓
-   Convert to paid → $39.99/mo or $349.99/yr
+   Convert to paid → $34.99/mo or $349.99/yr
 ```
 
 **Key friction-removal decisions:**
@@ -624,7 +624,7 @@ Anonymous visit → Analyze a property (no account needed)
 - Free tier requires NO credit card
 - Pro trial is 7 days with full access
 - Cancel is "2 clicks, no retention tricks"
-- Annual option saves 27% (presented prominently)
+- Annual option saves 17% (presented prominently)
 
 ### 7.3 Conversion Copy
 
@@ -632,10 +632,10 @@ Anonymous visit → Analyze a property (no account needed)
 > "Know Your Number Before You Make the Offer"
 
 **Value justification:**
-> "One bad deal costs thousands. DealGapIQ Pro costs $39.99/mo."
+> "One bad deal costs thousands. DealGapIQ Pro costs $34.99/mo."
 
 **Annual upsell:**
-> "Switch to annual & save 27%"
+> "Switch to annual & save 17%"
 
 **Risk reversal:**
 > "Cancel anytime. No lock-in contracts."  
@@ -1371,7 +1371,7 @@ with verified data from five sources.
 
 **Q: I'm only looking at one property. Is Pro worth it?**
 A: If it's your next purchase, one bad deal costs years of recovery. DealGapIQ
-Pro costs $39.99/month and tells you in 15 seconds whether that property works
+Pro costs $34.99/month and tells you in 15 seconds whether that property works
 at that price.
 
 **Q: What is the Deal Gap?**
@@ -1397,7 +1397,7 @@ A: Yes. Two clicks. No tricks.
 | "Stop Browsing Like a Buyer. Start Thinking Like an Investor." | CTA, behavioral |
 | "Every Property Has a Deal Gap. Only DealGapIQ Measures It." | Brand awareness |
 | "The only question that matters: 'Is this actually a deal?'" | Educational, hook |
-| "One bad deal costs thousands. DealGapIQ Pro costs $39.99/mo." | Conversion, risk |
+| "One bad deal costs thousands. DealGapIQ Pro costs $34.99/mo." | Conversion, risk |
 | "Stop guessing. Start calculating." | CTA, concise |
 | "Know Your Number Before You Make the Offer" | Pricing page, conversion |
 | "Real Analytics for Real Estate Investors" | SEO, generic hero |
@@ -1440,7 +1440,7 @@ A: Yes. Two clicks. No tricks.
 | "7-day free trial on Pro. Full access." | Trial description |
 | "Your data stays yours. We never share or sell." | Privacy trust |
 | "Your deal flow is yours alone." | Privacy trust (expanded) |
-| "Save 27%" | Annual toggle |
+| "Save 17%" | Annual toggle |
 | "Save $130/yr" | Annual value |
 | "Every assumption editable" | Transparency |
 | "Cross-referenced from 5 data sources" | Data credibility |

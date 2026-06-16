@@ -383,7 +383,7 @@ def build_dashboard(wb):
     for c, h in enumerate(headers, 1):
         ws.cell(row=r, column=c, value=h)
     style_header_row(ws, r, len(headers))
-    for row_data in [("Starter (Free)", 0, 0, 0), ("Pro", 39.99, 349.99, 29.17)]:
+    for row_data in [("Starter (Free)", 0, 0, 0), ("Pro", 34.99, 349.99, 29.17)]:
         r += 1
         for c, v in enumerate(row_data, 1):
             cell = ws.cell(row=r, column=c, value=v)
@@ -867,7 +867,7 @@ def build_sensitivity(wb):
         ws.cell(row=r, column=4, value=snet * 50).number_format = acct_fmt
         ws.cell(row=r, column=5, value=snet * 50 * 12).number_format = acct_fmt
         style_data_row(ws, r, len(h2), i % 2 == 1)
-        if price == 39.99:
+        if price == 34.99:
             for c in range(1, len(h2) + 1):
                 ws.cell(row=r, column=c).fill = blue_fill
                 ws.cell(row=r, column=c).font = bold_font
