@@ -14,7 +14,6 @@ import {
   type BuyerListResponse,
   type BuyerStatsResponse,
 } from '@/lib/buyers-api';
-import buyersData from '@/data/buyers.json';
 import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import { SaveDirectoryContactButton } from '@/components/SaveDirectoryContactButton';
 import { buildBuyerSnapshot } from '@/types/savedDirectoryContact';
@@ -39,8 +38,6 @@ const PREVIEW_CARDS = [
   { initials: 'SF', accent: '#FACC15', title: 'South Florida Investor', strategies: ['Fix & Flip'] },
 ];
 
-const BUYERS = buyersData as Array<{ state: string }>;
-
 const US_STATES = new Set([
   'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA',
   'HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
@@ -49,13 +46,7 @@ const US_STATES = new Set([
   'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'
 ]);
 
-const STATES = Array.from(
-  new Set(
-    BUYERS
-      .map((b) => b.state)
-      .filter((s) => s && US_STATES.has(s))
-  )
-).sort();
+const STATES = Array.from(US_STATES).sort();
 
 const STRATEGIES = ['all', 'Fix & Flip', 'BRRRR', 'Buy & Hold', 'Wholesale'] as const;
 const PAGE_SIZE = 60;
