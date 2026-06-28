@@ -76,19 +76,3 @@ export function buildHowToJsonLd(options: {
     })),
   }
 }
-
-export function buildProductJsonLd(options: {
-  name: string
-  description: string
-  url: string
-}) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: options.name,
-    description: options.description,
-    url: options.url,
-    brand: { '@type': 'Brand', name: 'DealGapIQ' },
-    category: 'Real Estate Investment Software',
-  }
-}
