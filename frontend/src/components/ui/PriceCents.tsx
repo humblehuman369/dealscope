@@ -1,10 +1,15 @@
 import React from 'react'
 
 /**
- * Renders a price string with cents as a smaller superscript (no decimal point).
+ * Renders a price string with cents as a smaller superscript.
  *
- *   <PriceCents>29.17</PriceCents>   →  29<sup>17</sup>
- *   <PriceCents>$39.99</PriceCents>  →  $39<sup>99</sup>
+ * The decimal point is kept in the output: without it the text content of
+ * "$29.17" is "$2917", which is what screen readers announce, what copy/paste
+ * produces, and what users misread when the superscript styling is subtle
+ * (the "annual Pro shows $2,917/mo" bug).
+ *
+ *   <PriceCents>29.17</PriceCents>   →  29.<sup>17</sup>
+ *   <PriceCents>$39.99</PriceCents>  →  $39.<sup>99</sup>
  *   <PriceCents>Free</PriceCents>    →  Free  (passthrough)
  */
 export function PriceCents({ children }: { children: string }) {
@@ -16,7 +21,7 @@ export function PriceCents({ children }: { children: string }) {
 
   return (
     <>
-      {dollars}
+      {dollars}.
       <span
         style={{
           fontSize: '0.45em',
