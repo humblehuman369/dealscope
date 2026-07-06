@@ -2,15 +2,21 @@
  * Comps API HTTP client — single place for comps requests.
  *
  * Calls the backend comps endpoints (/api/v1/similar-sold, /api/v1/similar-rent).
- * Handles retry (502/503/504), timeout, abort, and error normalization.
- * NEVER throws — always returns a typed response for UI handling.
+ * Delegates each request to the shared authenticated `apiRequest` client so
+ * comps use the exact same auth as the rest of the app: Bearer token on
+ * Capacitor (cookies don't work in the WebView) and cookies with a silent
+ * 401 refresh-and-retry on web. A raw fetch here previously sent no auth at
+ * all on mobile and treated the expired-cookie 401 as fatal on web, which
+ * made the entire Comps feature error out.
+ *
+ * Adds comps-specific retry (502/503/504 and network errors), timeout, abort,
+ * and error normalization. NEVER throws — always returns a typed response for
+ * UI handling.
  */
 
-import { API_BASE_URL } from '@/lib/env'
+import { apiRequest, ApiError } from '@/lib/api-client'
 
 export interface AxessoClientConfig {
-  baseUrl: string
-  apiKey: string
   defaultTimeout: number
   maxRetries: number
   retryableStatuses: number[]
@@ -26,24 +32,19 @@ export interface AxessoResponse<T> {
 }
 
 const DEFAULT_CONFIG: AxessoClientConfig = {
-  baseUrl: API_BASE_URL,
-  apiKey: typeof process !== 'undefined' ? (process.env.NEXT_PUBLIC_AXESSO_API_KEY ?? '') : '',
   defaultTimeout: 15_000,
   maxRetries: 3,
   retryableStatuses: [502, 503, 504],
 }
 
-function buildUrl(baseUrl: string, endpoint: string, params: Record<string, string>): string {
+function buildPath(endpoint: string, params: Record<string, string>): string {
   const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
   const search = new URLSearchParams()
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== '') search.append(k, v)
   })
   const qs = search.toString()
-  const pathWithQuery = qs ? `${path}?${qs}` : path
-  if (!baseUrl || baseUrl === '') return pathWithQuery
-  const base = baseUrl.replace(/\/$/, '')
-  return `${base}${pathWithQuery}`
+  return qs ? `${path}?${qs}` : path
 }
 
 function logAttempt(
@@ -81,30 +82,14 @@ export async function axessoGet<T>(
   signal?: AbortSignal,
 ): Promise<AxessoResponse<T>> {
   const cfg = { ...DEFAULT_CONFIG, ...config }
-
-  // When using direct AXESSO base URL, key is required. Our backend proxy does not need a key.
-  const isDirectAxesso = cfg.baseUrl.includes('axesso')
-  if (isDirectAxesso && !cfg.apiKey) {
-    return {
-      ok: false,
-      data: null,
-      status: 0,
-      error: 'API key not configured for comps.',
-      attempts: 0,
-      durationMs: 0,
-    }
-  }
+  const path = buildPath(endpoint, params)
 
   const startTotal = performance.now()
   let lastStatus = 0
   let lastError: string | null = null
-  let lastData: T | null = null
 
   for (let attempt = 1; attempt <= cfg.maxRetries; attempt++) {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), cfg.defaultTimeout)
     if (signal?.aborted) {
-      clearTimeout(timeoutId)
       return {
         ok: false,
         data: null,
@@ -114,93 +99,37 @@ export async function axessoGet<T>(
         durationMs: Math.round(performance.now() - startTotal),
       }
     }
-    signal?.addEventListener('abort', () => controller.abort(), { once: true })
-    const requestSignal = controller.signal
-
-    const url = buildUrl(cfg.baseUrl, endpoint, params)
-    const headers: Record<string, string> = {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    }
-    if (cfg.apiKey) {
-      headers['Ocp-Apim-Subscription-Key'] = cfg.apiKey
-    }
 
     const start = performance.now()
     try {
-      const res = await fetch(url, {
-        method: 'GET',
-        headers,
-        signal: requestSignal,
-        credentials: 'include',
-      })
-      clearTimeout(timeoutId)
+      // apiRequest attaches auth (Bearer/cookies), refreshes on 401, and
+      // throws ApiError with the HTTP status on failure.
+      const data = await apiRequest<T>(path, { signal, timeoutMs: cfg.defaultTimeout })
       const durationMs = Math.round(performance.now() - start)
-      lastStatus = res.status
-
-      const data = (await res.json().catch(() => null)) as T | null
-
-      logAttempt(endpoint, params, attempt, res.status, durationMs, null)
-
-      if (res.ok) {
-        return {
-          ok: true,
-          data: data ?? null,
-          status: res.status,
-          error: null,
-          attempts: attempt,
-          durationMs: Math.round(performance.now() - startTotal),
-        }
+      logAttempt(endpoint, params, attempt, 200, durationMs, null)
+      return {
+        ok: true,
+        data: data ?? null,
+        status: 200,
+        error: null,
+        attempts: attempt,
+        durationMs: Math.round(performance.now() - startTotal),
       }
-
-      lastData = null
-      const errBody =
-        data && typeof data === 'object' && 'error' in data
-          ? (data as { error?: string }).error
-          : null
-      lastError = typeof errBody === 'string' ? errBody : res.statusText || `HTTP ${res.status}`
-
-      if (res.status === 404 || res.status === 401 || res.status === 429) {
-        return {
-          ok: false,
-          data: null,
-          status: res.status,
-          error: lastError,
-          attempts: attempt,
-          durationMs: Math.round(performance.now() - startTotal),
-        }
-      }
-
-      if (!cfg.retryableStatuses.includes(res.status) || attempt >= cfg.maxRetries) {
-        return {
-          ok: false,
-          data: null,
-          status: res.status,
-          error: lastError,
-          attempts: attempt,
-          durationMs: Math.round(performance.now() - startTotal),
-        }
-      }
-
-      const delayMs = attempt * 2000
-      await new Promise((r) => setTimeout(r, delayMs))
     } catch (err) {
-      clearTimeout(timeoutId)
       const durationMs = Math.round(performance.now() - start)
-      const isAbort = err instanceof Error && err.name === 'AbortError'
-      lastError = isAbort
-        ? 'Request timed out or aborted'
-        : err instanceof Error
-          ? err.message
-          : String(err)
-      lastStatus = 0
-      logAttempt(endpoint, params, attempt, 0, durationMs, lastError)
+      lastStatus = err instanceof ApiError ? err.status : 0
+      lastError = err instanceof Error ? err.message : String(err)
+      logAttempt(endpoint, params, attempt, lastStatus, durationMs, lastError)
 
-      if (attempt >= cfg.maxRetries) {
+      // Status 0 = network error / timeout (retryable, matching previous
+      // behavior); otherwise only retry the configured statuses.
+      const retryable =
+        !signal?.aborted && (lastStatus === 0 || cfg.retryableStatuses.includes(lastStatus))
+      if (!retryable || attempt >= cfg.maxRetries) {
         return {
           ok: false,
           data: null,
-          status: 0,
+          status: lastStatus,
           error: lastError,
           attempts: attempt,
           durationMs: Math.round(performance.now() - startTotal),
@@ -213,7 +142,7 @@ export async function axessoGet<T>(
 
   return {
     ok: false,
-    data: lastData,
+    data: null,
     status: lastStatus,
     error: lastError || 'Request failed after retries',
     attempts: cfg.maxRetries,

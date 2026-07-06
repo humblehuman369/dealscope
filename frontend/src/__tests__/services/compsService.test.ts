@@ -6,6 +6,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { fetchSaleComps } from '@/lib/api/sale-comps'
 import { fetchRentComps } from '@/lib/api/rent-comps'
+import { clearMemoryToken } from '@/lib/api-client'
 
 describe('comps API (sale-comps)', () => {
   let fetchMock: ReturnType<typeof vi.fn>
@@ -102,6 +103,7 @@ describe('comps API (sale-comps)', () => {
           ok: false,
           status: 404,
           json: async () => ({}),
+          text: async () => '{}',
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -214,6 +216,7 @@ describe('comps API (rent-comps)', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    clearMemoryToken()
   })
 
   describe('fetchRentComps', () => {
@@ -255,11 +258,13 @@ describe('comps API (rent-comps)', () => {
           ok: false,
           status: 500,
           json: async () => ({ error: 'Internal error' }),
+          text: async () => JSON.stringify({ error: 'Internal error' }),
         })
         .mockResolvedValueOnce({
           ok: false,
           status: 500,
           json: async () => ({ error: 'Internal error' }),
+          text: async () => JSON.stringify({ error: 'Internal error' }),
         })
 
       const result = await fetchRentComps({ zpid: '456' })
@@ -267,6 +272,64 @@ describe('comps API (rent-comps)', () => {
       expect(result.ok).toBe(false)
       expect(result.data).toBeNull()
       expect(result.status).toBe(500)
+    })
+
+    it('recovers from an expired session: 401 → silent refresh → authorized retry', async () => {
+      fetchMock
+        // Initial comps request rejected (expired access token)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          json: async () => ({}),
+          text: async () => '{}',
+        })
+        // Silent token refresh succeeds
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ access_token: 'fresh-token' }),
+        })
+        // Retried comps request succeeds
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true, results: [{ zpid: '1', address: {}, price: 2100 }] }),
+        })
+
+      const result = await fetchRentComps({ zpid: '456' })
+
+      expect(result.ok).toBe(true)
+      expect(result.data).not.toBeNull()
+      expect(result.data!.length).toBe(1)
+      expect(fetchMock).toHaveBeenCalledTimes(3)
+      expect(fetchMock.mock.calls[1][0]).toEqual(expect.stringContaining('/api/v1/auth/refresh'))
+      const retryHeaders = (fetchMock.mock.calls[2][1] as RequestInit).headers as Record<
+        string,
+        string
+      >
+      expect(retryHeaders['Authorization']).toBe('Bearer fresh-token')
+    })
+
+    it('skips a malformed comp instead of failing the whole list', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          success: true,
+          results: [
+            { zpid: '1', address: {}, price: 2000, datePosted: 'not-a-real-date' },
+            { zpid: '2', address: {}, price: 2200 },
+          ],
+        }),
+      })
+
+      const result = await fetchRentComps({ zpid: '456' })
+
+      expect(result.ok).toBe(true)
+      expect(result.data).not.toBeNull()
+      // The comp with the unparseable date is dropped; the valid one survives.
+      expect(result.data!.length).toBe(1)
+      expect(result.data![0].zpid).toBe('2')
     })
   })
 })

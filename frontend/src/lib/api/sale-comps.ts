@@ -61,7 +61,30 @@ export function transformSaleComps(
   const subjectBaths = subject?.baths ?? 0
   const subjectYear = subject?.yearBuilt ?? 0
 
-  const comps: SaleComp[] = list.map((item: unknown, index: number) => {
+  const comps: SaleComp[] = []
+  list.forEach((item: unknown, index: number) => {
+    // Guarded per item: one malformed comp (e.g. an unparseable date) must
+    // skip that comp, not throw and blank the entire Comps feature.
+    try {
+      comps.push(transformSaleCompItem(item, index, subject, hasSubjectCoords))
+    } catch {
+      /* skip malformed comp */
+    }
+  })
+
+  comps.sort((a, b) => b.similarityScore - a.similarityScore)
+  return comps
+}
+
+function transformSaleCompItem(
+  item: unknown,
+  index: number,
+  subject: SubjectProperty | undefined,
+  hasSubjectCoords: boolean,
+): SaleComp {
+  const subjectLat = subject?.latitude ?? null
+  const subjectLon = subject?.longitude ?? null
+  {
     const wrapper = item && typeof item === 'object' ? (item as Record<string, unknown>) : null
     const wrapperDistance = wrapper?.distance ?? wrapper?.distanceMiles
     const comp = (
@@ -189,10 +212,7 @@ export function transformSaleComps(
       zillowUrl: comp?.url ? toStr(comp.url) : null,
       ...(lotSize !== undefined && { lotSize }),
     }
-  })
-
-  comps.sort((a, b) => b.similarityScore - a.similarityScore)
-  return comps
+  }
 }
 
 /**
