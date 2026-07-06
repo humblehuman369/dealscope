@@ -15,7 +15,6 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
-  Star,
   Lock,
   Users,
   X,
@@ -89,7 +88,7 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
       <main>
         <HeroSection onStart={runDiscovery} onDemo={() => setShowDemoVideo(true)} />
         <QuickStatsBar />
-        <TestimonialsSection />
+        <FounderTrustSection />
         <DirectoriesPromoSection />
         <FeaturesSection />
         <HowItWorksSection onStart={runDiscovery} />
@@ -258,6 +257,8 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
 
 function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => void }) {
   const [subcopyExpanded, setSubcopyExpanded] = useState(false)
+  const { buyerTotalLabel } = useBuyerDirectoryTeaserTotal()
+  const lenderTotalLabel = formatLenderDirectoryTotal()
 
   const investorPill = (
     <div className="inline-flex items-center gap-2 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]/80 px-3 py-1 text-xs font-bold text-[var(--accent-sky)] backdrop-blur-md md:px-4 md:py-1.5 md:text-sm">
@@ -352,8 +353,8 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
             />
             <p className="text-xs text-[var(--text-muted)]">
               Inside Pro:{' '}
-              <span style={{ color: '#0EA5E9' }}>2,812+</span> verified cash buyers ·{' '}
-              <span style={{ color: '#0EA5E9' }}>484+</span> hard money lenders
+              <span style={{ color: '#0EA5E9' }}>{buyerTotalLabel}</span> verified cash buyers ·{' '}
+              <span style={{ color: '#0EA5E9' }}>{lenderTotalLabel}</span> hard money lenders
             </p>
           </div>
         </div>
@@ -399,79 +400,53 @@ function QuickStatsBar() {
   )
 }
 
-function TestimonialsSection() {
-  const testimonials = [
-    {
-      initials: 'MR',
-      name: 'Marcus Rivera',
-      role: 'BRRRR Investor - Tampa, FL - 14 deals',
-      rating: 4.5,
-      quote:
-        'The negotiation scripts are insane. I used the seller-carry template and got a 0% 2nd on a property the listing agent said was firm. Closed 18 days later.',
-    },
-    {
-      initials: 'PP',
-      name: 'Priya Patel',
-      role: 'Creative Finance Investor - Austin, TX - 7 deals',
-      rating: 5,
-      quote:
-        'I was about to walk away from a $465k listing. DealGapIQ showed me a blended structure with rent verification + seller carry. My offer was accepted same day.',
-    },
-    {
-      initials: 'DT',
-      name: 'Derek Thompson',
-      role: 'Wholesaler + Investor - Phoenix, AZ - 29 deals',
-      rating: 5,
-      quote:
-        "Finally a tool that doesn't just tell me the numbers - it tells me what to say on the phone. I've used the scripts on 4 deals now. My win rate went from 11% to 41%.",
-    },
-    {
-      initials: 'AK',
-      name: 'Aisha Khan',
-      role: 'New Investor - Orlando, FL - 3 deals',
-      rating: 5,
-      quote:
-        'As a new investor I was terrified of creative finance. The 4-path system made it dead simple. Ran my first discovery on a Zillow lead and had a full strategy in under 2 minutes.',
-    },
+function FounderTrustSection() {
+  const creds = [
+    'Founded Foreclosure.com',
+    'Built HomePath.com for Fannie Mae',
+    'Built HomeSteps.com for Freddie Mac',
+    '30+ Year GSE Partnership',
   ]
 
   return (
     <section id="trust" className="mx-auto max-w-7xl px-6 py-16">
       <div className="mb-12 text-center">
-        <SectionEyebrow>Real Results From Real Investors</SectionEyebrow>
+        <SectionEyebrow>Who Built This</SectionEyebrow>
         <h2
           className="mx-auto mt-4 max-w-4xl text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
           style={DISPLAY_STYLE}
         >
-          &quot;DealGapIQ paid for itself on the first deal.&quot;
+          From the founder of Foreclosure.com.
         </h2>
-        <p className="mx-auto mt-3 max-w-md text-lg text-[var(--text-secondary)] md:text-xl">
-          Join investors who stopped guessing and started closing.
-        </p>
       </div>
 
-      {/* TODO(brad): swap with real testimonials data */}
-      <div data-fake-marker="testimonials" className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {testimonials.map((testimonial) => (
-          <div
-            key={testimonial.name}
-            className="rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-7 shadow-[var(--shadow-card)]"
-          >
-            <StarRating rating={testimonial.rating} />
-            <p className="mt-4 text-[15px] leading-snug text-[var(--text-body)]">
-              &quot;{testimonial.quote}&quot;
-            </p>
-            <div className="mt-6 flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] text-xs font-black text-[var(--accent-sky)]">
-                {testimonial.initials}
-              </div>
-              <div>
-                <div className="font-bold text-[var(--text-heading)]">{testimonial.name}</div>
-                <div className="text-xs text-[var(--text-muted)]">{testimonial.role}</div>
-              </div>
-            </div>
+      <div className="mx-auto max-w-3xl rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-8 shadow-[var(--shadow-card)] md:p-10">
+        <p className="text-lg leading-relaxed text-[var(--text-body)] md:text-xl">
+          &quot;I built the pricing tools the banks used on foreclosures. I founded
+          Foreclosure.com, and my team built HomePath for Fannie Mae and HomeSteps for Freddie
+          Mac. Foreclosure.com still powers BiggerPockets&apos; foreclosure search today.
+          DealGapIQ is the tool I always wanted as an investor.&quot;
+        </p>
+        <div className="mt-8 flex items-center gap-4">
+          {/* TODO(brad): replace initials block with founder photo asset */}
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] text-lg font-black text-[var(--accent-sky)]">
+            BG
           </div>
-        ))}
+          <div>
+            <div className="font-bold text-[var(--text-heading)]">Brad Geisen</div>
+            <div className="text-xs text-[var(--text-muted)]">Founder &amp; CEO, DealGapIQ</div>
+          </div>
+        </div>
+        <div className="mt-8 flex flex-wrap gap-3">
+          {creds.map((cred) => (
+            <span
+              key={cred}
+              className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1.5 text-xs font-bold text-[var(--accent-sky)]"
+            >
+              {cred}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -522,14 +497,13 @@ function FeaturesSection() {
             className="mt-3 text-[clamp(1.75rem,5vw,3rem)] text-[var(--text-heading)] md:text-5xl"
             style={DISPLAY_STYLE}
           >
-            Every property can be a deal - at the right price{' '}
-            <span className="italic text-[var(--accent-sky)]">or</span>{' '}
-            terms.
+            The gap <span className="italic text-[var(--accent-sky)]">is</span> the deal.
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)] md:text-xl">
-            We uncover the hidden value others miss and give you the exact offer structures to win
-            with almost no competition. Most tools stop at the numbers. We give you four complete
-            offer paths, including creative finance structures most investors never consider.
+            Other tools help you mail 10,000 strangers hoping one is desperate. DealGapIQ works
+            the other way. Pick any property. We show you the exact gap between its price and
+            what it&apos;s worth to an investor — then show you four ways to close it. You
+            don&apos;t need a motivated seller. You need the right structure and the right number.
           </p>
         </div>
 
@@ -700,14 +674,17 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
 
 function ComparisonSection() {
   const rows = [
-    ['Multi-Source Valuation', 'X', 'Partial', 'Full (6 sources)'],
-    ['Deal Gap Detection', 'X', 'X', 'Yes - with target buy price'],
-    ['Pre-Built Offer Structures', 'X', 'X', '4 paths including creative'],
-    ['Negotiation Scripts', 'X', 'X', 'Yes - tailored to path & seller'],
-    ['Creative Finance Modeling', 'X', 'X', 'Sub2 - Seller carry - 0% 2nds'],
-    ['Verified Cash Buyer Directory', 'X', 'X', 'Cash Wholesale Buyers'],
-    ['Hard Money Lender Directory', 'X', 'X', 'Approved in 24 hrs'],
-    ['No Signup To Try', 'Yes', 'X', 'Yes - instant'],
+    ['Multi-Source Valuation', 'X', 'Partial', 'Partial', 'Full (6 sources)'],
+    ['Deal Gap Detection', 'X', 'X', 'X', 'Yes - with target buy price'],
+    ['Pre-Built Offer Structures', 'X', 'X', 'X', '4 paths including creative'],
+    ['Negotiation Scripts', 'X', 'X', 'X', 'Yes - tailored to path & seller'],
+    ['Creative Finance Modeling', 'X', 'X', 'X', 'Sub2 - Seller carry - 0% 2nds'],
+    ['Works Without a Mailing List', '—', '—', 'X', 'Yes - any property qualifies'],
+    ['No Per-Record Fees', '—', '—', 'X', 'Yes - flat monthly price'],
+    ['Tells You What to Offer', 'X', 'Partial', 'X', 'Target Buy + 4 offer paths'],
+    ['Verified Cash Buyer Directory', 'X', 'X', 'Partial', 'Cash Wholesale Buyers'],
+    ['Hard Money Lender Directory', 'X', 'X', 'X', 'Approved in 24 hrs'],
+    ['No Signup To Try', 'Yes', 'X', 'X', 'Yes - instant'],
   ]
 
   return (
@@ -720,7 +697,7 @@ function ComparisonSection() {
 
       <div className="overflow-hidden rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-sm">
+          <table className="w-full min-w-[920px] text-sm">
             <thead>
               <tr className="border-b border-[var(--border-default)] bg-[var(--surface-section)]">
                 <th className="w-1/3 px-8 py-5 text-left font-bold text-[var(--text-heading)]">
@@ -732,17 +709,21 @@ function ComparisonSection() {
                 <th className="px-6 py-5 text-center font-bold text-[var(--text-muted)]">
                   Investor Calculators
                 </th>
+                <th className="px-6 py-5 text-center font-bold text-[var(--text-muted)]">
+                  List &amp; Mail Platforms
+                </th>
                 <th className="bg-[var(--color-teal-dim)] px-6 py-5 text-center font-bold text-[var(--accent-sky)]">
                   DealGapIQ
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-default)]">
-              {rows.map(([capability, listing, calc, iq]) => (
+              {rows.map(([capability, listing, calc, listMail, iq]) => (
                 <tr key={capability}>
                   <td className="px-8 py-5 font-semibold text-[var(--text-body)]">{capability}</td>
                   <CompareCell value={listing} />
                   <CompareCell value={calc} />
+                  <CompareCell value={listMail} />
                   <td className="bg-[var(--color-teal-dim)] px-6 py-5 text-center font-bold text-[var(--accent-sky)]">
                     {iq}
                   </td>
@@ -940,20 +921,6 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
   )
 }
 
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex gap-1 text-[var(--status-positive)]" aria-label={`${rating} star rating`}>
-      {Array.from({ length: 5 }).map((_, index) => (
-        <Star
-          key={index}
-          className="h-4 w-4 fill-current"
-          style={{ opacity: index + 1 <= Math.floor(rating) ? 1 : 0.55 }}
-        />
-      ))}
-    </div>
-  )
-}
-
 function PathCard({
   num,
   title,
@@ -1122,15 +1089,18 @@ function PricingCard({
 function CompareCell({ value }: { value: string }) {
   const isNo = value === 'X'
   const isPartial = value === 'Partial'
+  const isNotApplicable = value === '—'
 
   return (
     <td
       className={`px-6 py-5 text-center ${
-        isNo
-          ? 'text-[var(--status-negative)]'
-          : isPartial
-            ? 'text-[var(--status-warning)]'
-            : 'text-[var(--status-positive)]'
+        isNotApplicable
+          ? 'text-[var(--text-muted)]'
+          : isNo
+            ? 'text-[var(--status-negative)]'
+            : isPartial
+              ? 'text-[var(--status-warning)]'
+              : 'text-[var(--status-positive)]'
       }`}
     >
       {value}
