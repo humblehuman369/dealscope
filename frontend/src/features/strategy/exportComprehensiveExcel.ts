@@ -2,6 +2,7 @@
  * Strategy page — comprehensive Excel proforma (all 6 strategies + financial tabs).
  */
 
+import { apiFetchRaw } from '@/lib/api-client'
 import type { StrategyType } from '@/features/deal-maker/components/types'
 
 export interface ComprehensiveExcelParams {
@@ -13,22 +14,17 @@ export interface ComprehensiveExcelParams {
   includeSensitivity?: boolean
 }
 
-function csrfHeaders(): Record<string, string> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  const csrfMatch = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
-  if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
-  return headers
-}
-
 export async function downloadComprehensiveExcel(
   params: ComprehensiveExcelParams,
 ): Promise<void> {
   const url = `/api/v1/reports/property/${encodeURIComponent(params.propertyId)}/comprehensive-excel`
 
-  const response = await fetch(url, {
+  // apiFetchRaw attaches auth (Bearer on Capacitor, cookies + CSRF on web)
+  // and silently refreshes + retries on 401 so an expired access token
+  // never bounces a signed-in user to the login prompt.
+  const response = await apiFetchRaw(url, {
     method: 'POST',
-    headers: csrfHeaders(),
-    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       address: params.address,
       active_strategy: params.activeStrategy,

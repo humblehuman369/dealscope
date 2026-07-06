@@ -14,8 +14,7 @@
  * Import from `api-client.ts` for auth methods and the generic CRUD client.
  */
 
-import { apiRequest } from '@/lib/api-client'
-import { API_BASE_URL, IS_CAPACITOR } from '@/lib/env'
+import { apiRequest, apiFetchRaw } from '@/lib/api-client'
 import type { PropertyResponse } from '@dealscope/shared'
 
 // Re-export so existing consumers can still import from this file
@@ -372,39 +371,6 @@ export interface NeighborhoodListResponse {
 }
 
 // ------------------------------------------------------------------
-// Authenticated blob fetch — used for file downloads (Excel, PDF)
-// that need auth headers but return binary data (not JSON).
-// ------------------------------------------------------------------
-
-function getCsrfToken(): string | null {
-  if (typeof document === 'undefined') return null
-  const match = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
-  return match ? match.split('=')[1] : null
-}
-
-function getMemoryToken(): string | null {
-  if (IS_CAPACITOR && typeof localStorage !== 'undefined') {
-    return localStorage.getItem('dgiq_access_token')
-  }
-  return null
-}
-
-async function fetchWithAuth(url: string): Promise<Response> {
-  const headers: Record<string, string> = {}
-
-  const token = getMemoryToken()
-  if (token) headers['Authorization'] = `Bearer ${token}`
-
-  const csrf = getCsrfToken()
-  if (csrf) headers['X-CSRF-Token'] = csrf
-
-  return fetch(url, {
-    credentials: IS_CAPACITOR ? 'omit' : 'include',
-    headers,
-  })
-}
-
-// ------------------------------------------------------------------
 // Domain API methods — all delegate to apiRequest from api-client.ts
 // ------------------------------------------------------------------
 
@@ -526,8 +492,10 @@ export const api = {
       if (params.capitalGainsTaxRate)
         searchParams.set('capital_gains_tax_rate', String(params.capitalGainsTaxRate))
 
-      const url = `${API_BASE_URL}/api/v1/proforma/property/${params.propertyId}/excel?${searchParams}`
-      const response = await fetchWithAuth(url)
+      const url = `/api/v1/proforma/property/${params.propertyId}/excel?${searchParams}`
+      // Authenticated download (Bearer on Capacitor, cookies on web) with
+      // silent 401 refresh-retry so the session survives the export.
+      const response = await apiFetchRaw(url)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -558,8 +526,8 @@ export const api = {
       if (params.capitalGainsTaxRate)
         searchParams.set('capital_gains_tax_rate', String(params.capitalGainsTaxRate))
 
-      const url = `${API_BASE_URL}/api/v1/proforma/property/${params.propertyId}/pdf?${searchParams}`
-      const response = await fetchWithAuth(url)
+      const url = `/api/v1/proforma/property/${params.propertyId}/pdf?${searchParams}`
+      const response = await apiFetchRaw(url)
 
       if (!response.ok) {
         const errorText = await response.text()

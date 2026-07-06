@@ -264,6 +264,78 @@ describe('API Client', () => {
     })
   })
 
+  describe('apiFetchRaw (binary downloads)', () => {
+    it('returns the raw Response and attaches CSRF on POST', async () => {
+      Object.defineProperty(document, 'cookie', {
+        writable: true,
+        value: 'csrf_token=dl-csrf-456',
+      })
+
+      const rawResponse = { ok: true, status: 200, blob: async () => new Blob() }
+      fetchMock.mockResolvedValueOnce(rawResponse)
+
+      const { apiFetchRaw } = await import('@/lib/api-client')
+      const response = await apiFetchRaw('/api/v1/reports/property/x/comprehensive-excel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      })
+
+      expect(response).toBe(rawResponse)
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/v1/reports/property/x/comprehensive-excel',
+        expect.objectContaining({
+          method: 'POST',
+          credentials: 'include',
+          body: '{}',
+          headers: expect.objectContaining({
+            'X-CSRF-Token': 'dl-csrf-456',
+            'Content-Type': 'application/json',
+          }),
+        }),
+      )
+    })
+
+    it('recovers from an expired session: 401 → silent refresh → authorized retry', async () => {
+      fetchMock
+        // Download rejected (expired access token)
+        .mockResolvedValueOnce({ ok: false, status: 401 })
+        // Silent token refresh succeeds
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ access_token: 'fresh-dl-token' }),
+        })
+        // Retried download succeeds
+        .mockResolvedValueOnce({ ok: true, status: 200, blob: async () => new Blob() })
+
+      const { apiFetchRaw, clearMemoryToken } = await import('@/lib/api-client')
+      const response = await apiFetchRaw('/api/v1/proforma/property/x/excel?address=1+Main+St')
+
+      expect(response.ok).toBe(true)
+      expect(fetchMock).toHaveBeenCalledTimes(3)
+      expect(fetchMock.mock.calls[1][0]).toEqual(expect.stringContaining('/api/v1/auth/refresh'))
+      const retryHeaders = fetchMock.mock.calls[2][1].headers as Record<string, string>
+      expect(retryHeaders['Authorization']).toBe('Bearer fresh-dl-token')
+
+      clearMemoryToken()
+    })
+
+    it('returns the 401 Response unchanged when refresh fails (caller shows sign-in message)', async () => {
+      const unauthorized = { ok: false, status: 401 }
+      fetchMock
+        .mockResolvedValueOnce(unauthorized)
+        // Refresh fails
+        .mockResolvedValueOnce({ ok: false, status: 401 })
+
+      const { apiFetchRaw } = await import('@/lib/api-client')
+      const response = await apiFetchRaw('/api/v1/proforma/property/x/excel')
+
+      expect(response.status).toBe(401)
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+    })
+  })
+
   describe('api convenience methods', () => {
     it('api.get makes GET request', async () => {
       fetchMock.mockResolvedValueOnce({

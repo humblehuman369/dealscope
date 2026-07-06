@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Download, FileSpreadsheet, FileText, ChevronDown, Loader2 } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/env'
+import { apiFetchRaw } from '@/lib/api-client'
 import { ProGate } from '@/components/ProGate'
 
 interface DownloadReportButtonProps {
@@ -34,19 +34,14 @@ export default function DownloadReportButton({
       // Build URL based on whether it's a saved property or cached property
       let url: string
       if (savedPropertyId) {
-        url = `${API_BASE_URL}/api/v1/reports/saved/${savedPropertyId}/excel`
+        url = `/api/v1/reports/saved/${savedPropertyId}/excel`
       } else {
-        url = `${API_BASE_URL}/api/v1/reports/property/${propertyId}/${format}`
+        url = `/api/v1/reports/property/${propertyId}/${format}`
       }
 
-      const headers: Record<string, string> = {}
-      const csrfMatch = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
-      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
-
-      const response = await fetch(url, {
-        headers,
-        credentials: 'include',
-      })
+      // Authenticated download with silent 401 refresh-retry — keeps the
+      // session alive instead of surfacing a bogus "please sign in".
+      const response = await apiFetchRaw(url)
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { FileText, Table, Loader2, X, Check } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/env'
+import { apiFetchRaw } from '@/lib/api-client'
 
 interface WorksheetExportProps {
   propertyId: string
@@ -21,10 +21,6 @@ export function WorksheetExport({ propertyId, propertyAddress }: WorksheetExport
     setError(null)
 
     try {
-      const headers: Record<string, string> = {}
-      const csrfMatch = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='))
-      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch.split('=')[1]
-
       let url: string
 
       if (format === 'excel') {
@@ -44,12 +40,14 @@ export function WorksheetExport({ propertyId, propertyAddress }: WorksheetExport
         if (assumptions.insurance > 0) params.set('insurance', String(assumptions.insurance))
         if (assumptions.landValuePercent > 0)
           params.set('land_value_percent', String(assumptions.landValuePercent))
-        url = `${API_BASE_URL}/api/v1/proforma/property/${propertyId}/excel?${params}`
+        url = `/api/v1/proforma/property/${propertyId}/excel?${params}`
       } else {
-        url = `${API_BASE_URL}/api/v1/reports/property/${propertyId}/csv`
+        url = `/api/v1/reports/property/${propertyId}/csv`
       }
 
-      const response = await fetch(url, { headers, credentials: 'include' })
+      // Authenticated download with silent 401 refresh-retry — keeps the
+      // session alive instead of surfacing a bogus "please sign in".
+      const response = await apiFetchRaw(url)
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))

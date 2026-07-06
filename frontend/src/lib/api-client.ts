@@ -416,6 +416,75 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
 }
 
 // ------------------------------------------------------------------
+// Authenticated raw fetch — binary downloads (Excel, PDF, CSV)
+// ------------------------------------------------------------------
+
+export interface RawFetchOptions {
+  method?: string
+  body?: BodyInit
+  headers?: Record<string, string>
+  signal?: AbortSignal
+}
+
+/**
+ * Authenticated fetch that returns the raw Response, for file downloads
+ * where callers need blob() and the Content-Disposition header.
+ *
+ * Applies the exact same auth as apiRequest — Bearer token on Capacitor
+ * (cookies are not stored in the WebView), cookies + CSRF on web — and
+ * retries once after a silent token refresh on 401. Without this, a
+ * download made after the 30-minute access token expired surfaced a
+ * "please sign in" error to an actively signed-in user, and the re-login
+ * it provoked revoked their existing session (one session per client type).
+ *
+ * No timeout is imposed: report generation can legitimately take a minute.
+ */
+export async function apiFetchRaw(endpoint: string, options: RawFetchOptions = {}): Promise<Response> {
+  const { method = 'GET', body, headers = {}, signal } = options
+
+  const requestHeaders: Record<string, string> = { ...headers }
+  if (!requestHeaders[CLIENT_TYPE_HEADER]) {
+    requestHeaders[CLIENT_TYPE_HEADER] = getClientType()
+  }
+  const memToken = getMemoryToken()
+  if (memToken && !requestHeaders['Authorization']) {
+    requestHeaders['Authorization'] = `Bearer ${memToken}`
+  }
+  if (method !== 'GET') {
+    const csrf = getCsrfToken()
+    if (csrf && !requestHeaders['X-CSRF-Token']) {
+      requestHeaders['X-CSRF-Token'] = csrf
+    }
+  }
+
+  const doFetch = (hdrs: Record<string, string>) =>
+    fetch(`${API_BASE_URL}${endpoint}`, {
+      method,
+      headers: hdrs,
+      credentials: IS_CAPACITOR ? 'omit' : 'include',
+      signal,
+      ...(body !== undefined ? { body } : {}),
+    })
+
+  let response = await doFetch(requestHeaders)
+
+  // 401 → silent token refresh, then retry once with fresh credentials.
+  if (response.status === 401) {
+    const refreshed = await refreshTokens()
+    if (refreshed) {
+      const retryHeaders = { ...requestHeaders }
+      const freshToken = getMemoryToken()
+      if (freshToken) {
+        retryHeaders['Authorization'] = `Bearer ${freshToken}`
+      }
+      response = await doFetch(retryHeaders)
+    }
+  }
+
+  return response
+}
+
+// ------------------------------------------------------------------
 // Auth-specific calls (used by useSession hook)
 // ------------------------------------------------------------------
 
