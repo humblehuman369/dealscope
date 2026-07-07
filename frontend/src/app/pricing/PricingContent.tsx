@@ -202,12 +202,17 @@ const COMPARISON_DATA: ComparisonCategory[] = [
       {
         name: 'Cash Buyer Directory — verified investor contacts by market',
         free: false,
-        pro: 'Paid Pro only',
+        pro: 'Included (trial too)',
       },
       {
         name: 'Hard Money Lender Directory — fix & flip, BRRRR, bridge, DSCR',
         free: false,
-        pro: 'Paid Pro only',
+        pro: 'Included (trial too)',
+      },
+      {
+        name: 'Directory CSV / print exports',
+        free: false,
+        pro: 'After first payment',
       },
       { name: 'Save directory contacts to dashboard', free: false, pro: 'Paid Pro only' },
     ],

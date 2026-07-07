@@ -15,7 +15,6 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
-  Lock,
   Users,
   X,
 } from 'lucide-react'
@@ -659,13 +658,13 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
             ]}
             cta="Start 7-day Pro trial - no card required"
             onClick={onPro}
-            lockedFeatureIndices={[1, 2]}
           />
         </div>
         <p className="mx-auto mt-6 max-w-lg text-xs text-[var(--text-muted)]">
-          Cash Buyer and Hard Money directories unlock with{' '}
-          <strong className="font-semibold text-[var(--text-secondary)]">paid Pro</strong> only — not
-          included in the 7-day trial.
+          Trial includes full directory access.{' '}
+          <strong className="font-semibold text-[var(--text-secondary)]">
+            Exports unlock with your first payment.
+          </strong>
         </p>
       </div>
     </section>
@@ -993,7 +992,6 @@ function PricingCard({
   features,
   cta,
   featured,
-  lockedFeatureIndices,
   onClick,
 }: {
   title: string
@@ -1004,11 +1002,8 @@ function PricingCard({
   features: string[]
   cta: string
   featured?: boolean
-  /** Feature row indices that show a paid-only lock icon (e.g. directories). */
-  lockedFeatureIndices?: number[]
   onClick: () => void
 }) {
-  const lockedSet = new Set(lockedFeatureIndices ?? [])
   return (
     <div
       className={`relative overflow-hidden rounded-3xl border p-8 text-left ${featured ? 'pt-12' : ''}`}
@@ -1051,16 +1046,9 @@ function PricingCard({
         </div>
       </div>
       <ul className="mt-6 space-y-3 text-sm text-[var(--text-body)]">
-        {features.map((feature, index) => (
+        {features.map((feature) => (
           <li key={feature} className="flex items-start gap-3">
-            {lockedSet.has(index) ? (
-              <Lock
-                className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent-sky)]"
-                aria-hidden
-              />
-            ) : (
-              <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--status-positive)]" />
-            )}
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--status-positive)]" />
             <span>{feature}</span>
           </li>
         ))}

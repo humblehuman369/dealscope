@@ -54,7 +54,7 @@ const HOME_FAQ = [
   {
     question: 'Does Pro include the Cash Buyer and Hard Money directories?',
     answer:
-      'Yes — both directories are included with a paid Pro subscription (monthly or annual). They are not included in the free tier or the 7-day Pro trial; billing starts immediately when you upgrade specifically to unlock directory access.',
+      'Yes — both directories are included with Pro, and the 7-day trial includes full directory access: search, filter, and open buyer and lender records. CSV and print exports unlock with your first payment.',
   },
   {
     question: 'What is in the Cash Buyer Directory?',
