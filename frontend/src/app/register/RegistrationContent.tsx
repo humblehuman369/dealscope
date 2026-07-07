@@ -479,7 +479,7 @@ function RegistrationInner() {
       >
         {plan === 'pro'
           ? `Create your account, then start your 7-day free trial — no charge until ${trialEndDate}.`
-          : 'Get started with 3 free analyses per month.'}
+          : 'Get started with 10 free analyses per month.'}
       </p>
 
       {/* Sign in with Apple */}

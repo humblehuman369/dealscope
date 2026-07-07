@@ -27,4 +27,5 @@ export const PRO_ENTITLEMENT_ID = 'DealGapIQ Pro'
 export const IOS_MONTHLY_PRODUCT_ID = 'com.monthly.dealgapiq'
 export const IOS_YEARLY_PRODUCT_ID = 'com.yearly.dealgapiq'
 
-export const FREE_ANALYSES_PER_MONTH = 3
+// Must match TIER_LIMITS[FREE]["searches_per_month"] in backend/app/models/subscription.py
+export const FREE_ANALYSES_PER_MONTH = 10

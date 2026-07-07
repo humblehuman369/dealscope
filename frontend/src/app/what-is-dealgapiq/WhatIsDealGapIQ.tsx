@@ -1094,7 +1094,7 @@ export default function WhatIsDealGapIQ() {
           </svg>
         </Link>
         <div style={{ fontSize: '0.82rem', color: t.textMuted, marginTop: '1rem' }}>
-          3 free analyses per month · No credit card required
+          10 free analyses per month · No credit card required
         </div>
       </div>
 
