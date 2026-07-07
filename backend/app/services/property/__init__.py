@@ -22,8 +22,8 @@ from app.services.property.cache import (
 from app.services.property.orchestrator import PropertyService
 
 __all__ = [
+    "_PROPERTY_CACHE_FORMULA_VERSION",
     "PropertyService",
     "_should_invalidate_cache",
     "_strip_property_cache_meta",
-    "_PROPERTY_CACHE_FORMULA_VERSION",
 ]

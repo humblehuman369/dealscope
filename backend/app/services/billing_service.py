@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.posthog_client import posthog_client
 from app.models.subscription import (
     TIER_LIMITS,
     PaymentHistory,
@@ -27,7 +28,6 @@ from app.schemas.billing import (
     PricingPlan,
     UsageResponse,
 )
-from app.core.posthog_client import posthog_client
 from app.services.email_service import email_service
 
 logger = logging.getLogger(__name__)

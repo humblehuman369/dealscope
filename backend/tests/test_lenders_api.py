@@ -1,11 +1,12 @@
-"""Tests for /api/lenders — pagination cap, filters, and the paid gate (Task 3.1)."""
+"""Tests for /api/lenders — pagination cap, filters, gates, and exports (3.1/3.3/3.4)."""
 
 import uuid
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
-from app.routers.lenders import _require_paid_lenders, get_lender_stats
+from app.routers import lenders as lenders_router
+from app.routers.lenders import export_lenders, get_lender_stats, list_lenders
 from app.services.entitlements import Entitlement
 from app.services.lenders_service import (
     MAX_PAGE_SIZE,
@@ -18,6 +19,19 @@ from fastapi import HTTPException
 
 def _user():
     return SimpleNamespace(id=uuid.uuid4(), email="user@example.com")
+
+
+def _list_kwargs(**overrides):
+    kwargs = dict(
+        state=None,
+        product=None,
+        min_loan=None,
+        credit=None,
+        q=None,
+        include_web_only=True,
+    )
+    kwargs.update(overrides)
+    return kwargs
 
 
 # ---------------------------------------------------------------------------
@@ -77,51 +91,143 @@ def test_get_lender_by_id_roundtrip():
 
 
 # ---------------------------------------------------------------------------
-# Router gate: resolves through the ONE entitlement helper
+# Router: view gates + trial redaction (Task 3.3)
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("entitlement", [Entitlement.FREE, Entitlement.TRIAL])
-async def test_non_paid_gets_401_pro_required_with_total(monkeypatch, entitlement):
-    monkeypatch.setattr(
-        "app.routers.lenders.resolve_entitlement", AsyncMock(return_value=entitlement)
-    )
+async def test_free_list_gets_403(monkeypatch):
+    async def deny(*args, **kwargs):
+        raise HTTPException(status_code=403, detail={"error": "PRO_REQUIRED"})
+
+    monkeypatch.setattr(lenders_router, "require_view_access", deny)
 
     with pytest.raises(HTTPException) as exc:
-        await _require_paid_lenders(SimpleNamespace(), _user())
+        await list_lenders(
+            current_user=_user(), db=SimpleNamespace(), page=1, limit=25, **_list_kwargs()
+        )
 
-    assert exc.value.status_code == 401
-    assert exc.value.detail["error"] == "PRO_REQUIRED"
-    assert exc.value.detail["total"] == lender_total()
+    assert exc.value.status_code == 403
 
 
-async def test_paid_passes_gate(monkeypatch):
+async def test_trial_list_is_redacted(monkeypatch):
     monkeypatch.setattr(
-        "app.routers.lenders.resolve_entitlement", AsyncMock(return_value=Entitlement.PAID)
+        lenders_router, "require_view_access", AsyncMock(return_value=Entitlement.TRIAL)
     )
-    # Must not raise.
-    await _require_paid_lenders(SimpleNamespace(), _user())
+
+    response = await list_lenders(
+        current_user=_user(), db=SimpleNamespace(), page=1, limit=25, **_list_kwargs()
+    )
+
+    assert response.contactsRedacted is True
+    assert len(response.lenders) > 0
+    for lender in response.lenders:
+        assert not lender.phone
+        assert not lender.email
+        assert not lender.website
+        assert not lender.domain
 
 
-async def test_stats_teaser_for_non_paid(monkeypatch):
+async def test_paid_list_keeps_contacts(monkeypatch):
     monkeypatch.setattr(
-        "app.routers.lenders.resolve_entitlement", AsyncMock(return_value=Entitlement.TRIAL)
+        lenders_router, "require_view_access", AsyncMock(return_value=Entitlement.PAID)
+    )
+
+    response = await list_lenders(
+        current_user=_user(), db=SimpleNamespace(), page=1, limit=25, **_list_kwargs()
+    )
+
+    assert response.contactsRedacted is False
+    assert any(lender.phone or lender.email for lender in response.lenders)
+
+
+async def test_stats_teaser_for_free(monkeypatch):
+    monkeypatch.setattr(
+        lenders_router, "resolve_entitlement", AsyncMock(return_value=Entitlement.FREE)
     )
 
     response = await get_lender_stats(current_user=_user(), db=SimpleNamespace())
 
     assert response.status_code == 401
     assert b'"total"' in response.body
-    # Teaser must not include breakdowns.
     assert b"byState" not in response.body
 
 
-async def test_stats_full_for_paid(monkeypatch):
+@pytest.mark.parametrize("entitlement", [Entitlement.TRIAL, Entitlement.PAID])
+async def test_stats_full_for_trial_and_paid(monkeypatch, entitlement):
     monkeypatch.setattr(
-        "app.routers.lenders.resolve_entitlement", AsyncMock(return_value=Entitlement.PAID)
+        lenders_router, "resolve_entitlement", AsyncMock(return_value=entitlement)
     )
 
     stats = await get_lender_stats(current_user=_user(), db=SimpleNamespace())
 
     assert stats.total == lender_total()
-    assert stats.byState  # breakdowns included for paid users
+    assert stats.byState
+
+
+# ---------------------------------------------------------------------------
+# Router: export gates + meters (Task 3.4)
+# ---------------------------------------------------------------------------
+
+
+def _patch_export(monkeypatch, *, used: int):
+    monkeypatch.setattr(
+        lenders_router, "require_paid_export", AsyncMock(return_value=None)
+    )
+    monkeypatch.setattr(lenders_router, "get_export_usage", AsyncMock(return_value=used))
+    add_usage = AsyncMock(return_value=used)
+    monkeypatch.setattr(lenders_router, "add_export_usage", add_usage)
+    return add_usage
+
+
+async def test_export_caps_at_200_records(monkeypatch):
+    add_usage = _patch_export(monkeypatch, used=0)
+
+    response = await export_lenders(
+        current_user=_user(), db=SimpleNamespace(), fmt="csv", **_list_kwargs()
+    )
+
+    assert response.headers["X-Export-Records"] == "200"
+    # header + 200 data rows
+    assert response.body.decode("utf-8").strip().count("\n") == 200
+    add_usage.assert_awaited_once()
+    assert add_usage.await_args.args[-1] == 200
+
+
+async def test_export_respects_monthly_remaining(monkeypatch):
+    """950 of 1,000 used → this export is capped at the remaining 50 records."""
+    _patch_export(monkeypatch, used=950)
+
+    response = await export_lenders(
+        current_user=_user(), db=SimpleNamespace(), fmt="csv", **_list_kwargs()
+    )
+
+    assert response.headers["X-Export-Records"] == "50"
+
+
+async def test_export_blocked_at_monthly_ceiling(monkeypatch):
+    _patch_export(monkeypatch, used=1_000)
+
+    with pytest.raises(HTTPException) as exc:
+        await export_lenders(
+            current_user=_user(), db=SimpleNamespace(), fmt="csv", **_list_kwargs()
+        )
+
+    assert exc.value.status_code == 429
+    assert exc.value.detail["error"] == "EXPORT_LIMIT_REACHED"
+    assert (
+        exc.value.detail["message"]
+        == "You've hit this month's export limit. It resets on your billing date."
+    )
+
+
+async def test_print_export_follows_same_caps(monkeypatch):
+    _patch_export(monkeypatch, used=0)
+
+    response = await export_lenders(
+        current_user=_user(), db=SimpleNamespace(), fmt="print", **_list_kwargs()
+    )
+
+    assert response.headers["X-Export-Records"] == "200"
+    body = response.body.decode("utf-8")
+    assert "<table>" in body
+    assert "window.print()" in body

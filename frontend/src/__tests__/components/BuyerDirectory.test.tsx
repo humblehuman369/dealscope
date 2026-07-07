@@ -93,12 +93,48 @@ describe('BuyerDirectory paid access', () => {
   it('does not fetch buyer contacts for anonymous users', () => {
     renderDirectory()
 
-    expect(screen.getByText('Sign in to unlock paid buyer access')).toBeTruthy()
+    expect(screen.getByText('Sign in to browse verified cash buyers')).toBeTruthy()
     expect(screen.getByText('Verified Palm Beach Buyer')).toBeTruthy()
     expect(mockApiGet).not.toHaveBeenCalled()
   })
 
-  it('loads directory total for trialing users via stats', async () => {
+  it('trial users view the directory with redacted contacts and can reveal them', async () => {
+    mockUseSubscription.mockReturnValue({
+      isPaidPro: false,
+      isTrialing: true,
+      isAuthenticated: true,
+      isLoading: false,
+    })
+    mockApiGet.mockImplementation((path: string) => {
+      if (path === '/api/buyers/stats') {
+        return Promise.resolve({ total: 2812, byState: [] })
+      }
+      if (path === '/api/buyers/1') {
+        return Promise.resolve(sampleBuyer)
+      }
+      return Promise.resolve({
+        buyers: [{ ...sampleBuyer, phone: '', email: '', website: '', street: '' }],
+        total: 1,
+        page: 1,
+        limit: 25,
+        totalPages: 1,
+        contactsRedacted: true,
+      })
+    })
+
+    renderDirectory()
+
+    // Trial sees the record without contact fields...
+    await waitFor(() => expect(screen.getByText('Revival Home Buyer')).toBeTruthy())
+    expect(screen.queryByText('(813) 548-3674')).toBeNull()
+
+    // ...and reveals contacts through the server-counted detail endpoint.
+    fireEvent.click(screen.getByRole('button', { name: /view contact info/i }))
+    await waitFor(() => expect(mockApiGet).toHaveBeenCalledWith('/api/buyers/1'))
+    expect(await screen.findByText('(813) 548-3674')).toBeTruthy()
+  })
+
+  it('shows the daily limit message when the server returns 429', async () => {
     mockUseSubscription.mockReturnValue({
       isPaidPro: false,
       isTrialing: true,
@@ -106,18 +142,35 @@ describe('BuyerDirectory paid access', () => {
       isLoading: false,
     })
     const { ApiError } = await import('@/lib/api-client')
-    mockApiGet.mockRejectedValue(
-      new ApiError('Cash Buyer Directory requires DealGapIQ Pro', 401, 'PRO_REQUIRED', {
-        total: 2812,
-      }),
-    )
+    mockApiGet.mockImplementation((path: string) => {
+      if (path === '/api/buyers/stats') {
+        return Promise.resolve({ total: 2812, byState: [] })
+      }
+      if (path === '/api/buyers/1') {
+        return Promise.reject(
+          new ApiError('Daily view limit reached — resets tomorrow.', 429, 'VIEW_LIMIT_REACHED', {
+            message: 'Daily view limit reached — resets tomorrow.',
+          }),
+        )
+      }
+      return Promise.resolve({
+        buyers: [{ ...sampleBuyer, phone: '', email: '', website: '', street: '' }],
+        total: 1,
+        page: 1,
+        limit: 25,
+        totalPages: 1,
+        contactsRedacted: true,
+      })
+    })
 
     renderDirectory()
+    await waitFor(() => expect(screen.getByText('Revival Home Buyer')).toBeTruthy())
 
-    await waitFor(() =>
-      expect(mockApiGet).toHaveBeenCalledWith('/api/buyers/stats'),
-    )
-    expect(screen.getByText('Cash Buyer Directory requires paid Pro')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: /view contact info/i }))
+
+    expect(
+      await screen.findByText('Daily view limit reached — resets tomorrow.'),
+    ).toBeTruthy()
   })
 
   it('fetches paginated buyers for paid active users', async () => {

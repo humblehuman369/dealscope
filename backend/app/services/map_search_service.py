@@ -1123,7 +1123,7 @@ class MapSearchService:
                         self.zillow.search_by_address(candidate.address),
                         timeout=EXPIRED_VALIDATION_TIMEOUT_S,
                     )
-                except (TimeoutError, asyncio.TimeoutError):
+                except TimeoutError:
                     return candidate  # couldn't verify → not confirmed relisted → keep
                 except Exception:
                     logger.debug("Expired validation lookup failed for %s", candidate.address)
@@ -1475,7 +1475,7 @@ class MapSearchService:
                 index[key] = self._zillow_sold_date_to_iso(sold_raw)
             logger.info("Recent-resale validation: %d recently-sold addresses in viewport", len(index))
             return index
-        except (TimeoutError, asyncio.TimeoutError):
+        except TimeoutError:
             logger.warning(
                 "Recent-resale validation timed out after %.0fs — skipping (rows kept)",
                 RECENT_RESALE_TIMEOUT_S,

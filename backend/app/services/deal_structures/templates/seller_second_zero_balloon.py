@@ -13,12 +13,12 @@ from app.services.deal_structures.cashflow import (
     rent_for_target_cash_flow,
 )
 from app.services.deal_structures.context import StructureContext
-from app.services.deal_structures.templates.rent_uplift import MAX_REALISTIC_BUMP_PCT
 from app.services.deal_structures.formatting import (
     fmt_money,
     fmt_money_precise,
     fmt_monthly,
 )
+from app.services.deal_structures.templates.rent_uplift import MAX_REALISTIC_BUMP_PCT
 
 FAMILY = "financing"
 FAMILY_LABEL = "Creative finance"

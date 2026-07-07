@@ -57,6 +57,8 @@ export interface LenderListResponse {
   page: number
   limit: number
   totalPages: number
+  /** True on trial responses — contact fields are blanked; reveal via detail endpoint. */
+  contactsRedacted?: boolean
 }
 
 export interface LenderStatsResponse {
@@ -80,15 +82,30 @@ export interface AppliedLenderFilters {
   includeWebOnly: boolean
 }
 
-export function buildLendersListPath(filters: AppliedLenderFilters, page: number): string {
-  const params = new URLSearchParams()
-  params.set('page', String(page))
-  params.set('limit', String(LENDERS_PAGE_SIZE))
+function applyLenderFilterParams(params: URLSearchParams, filters: AppliedLenderFilters): void {
   if (filters.state) params.set('state', filters.state)
   if (filters.product) params.set('product', filters.product)
   if (filters.minLoan) params.set('min_loan', filters.minLoan)
   if (filters.credit) params.set('credit', filters.credit)
   if (filters.search.trim()) params.set('q', filters.search.trim())
   if (!filters.includeWebOnly) params.set('include_web_only', 'false')
+}
+
+export function buildLendersListPath(filters: AppliedLenderFilters, page: number): string {
+  const params = new URLSearchParams()
+  params.set('page', String(page))
+  params.set('limit', String(LENDERS_PAGE_SIZE))
+  applyLenderFilterParams(params, filters)
   return `/api/lenders?${params.toString()}`
+}
+
+/** Server-side export (paid only; 200 records/export, 1,000/billing cycle). */
+export function buildLendersExportPath(
+  filters: AppliedLenderFilters,
+  fmt: 'csv' | 'print',
+): string {
+  const params = new URLSearchParams()
+  params.set('fmt', fmt)
+  applyLenderFilterParams(params, filters)
+  return `/api/lenders/export?${params.toString()}`
 }

@@ -297,37 +297,6 @@ async def _count_strict_buyers(db: AsyncSession) -> int:
     return await count_strict_buyers(db)
 
 
-def _has_paid_pro_access(subscription) -> bool:
-    """Same check as get_current_paid_pro_user (paid active Pro only)."""
-    from app.models.subscription import SubscriptionStatus
-
-    return bool(
-        subscription
-        and subscription.is_premium()
-        and subscription.status == SubscriptionStatus.ACTIVE
-    )
-
-
-async def require_paid_pro_buyers(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    """Paid Pro gate for buyer list/detail — 401 with PRO_REQUIRED + total for upgrade CTA."""
-    from app.services.billing_service import billing_service
-
-    subscription = await billing_service.get_subscription(db, current_user.id)
-    if _has_paid_pro_access(subscription):
-        return current_user
-
-    total = await _count_strict_buyers(db)
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail={
-            "error": "PRO_REQUIRED",
-            "message": PRO_BUYERS_MESSAGE,
-            "total": total,
-        },
-    )
-
-
-PaidProBuyersUser = Annotated[User, Depends(require_paid_pro_buyers)]
+# NOTE: buyer/lender directory gates now resolve through the single
+# entitlement helper (app.services.entitlements) via
+# app.services.directory_gates — see Tasks 3.2 / 3.3.

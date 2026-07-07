@@ -66,26 +66,38 @@ async def has_settled_charge(db: AsyncSession, user_id: uuid.UUID) -> bool:
     return bool(result.scalar())
 
 
+async def resolve_entitlement_with_subscription(
+    db: AsyncSession, user_id: uuid.UUID
+) -> tuple[Entitlement, Subscription | None]:
+    """Resolve entitlement and return the subscription row alongside it.
+
+    The subscription is needed by callers that anchor metering periods on the
+    billing date (Task 3.4 export meter).
+    """
+    result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
+    subscription = result.scalar_one_or_none()
+
+    if subscription is None or not subscription.is_premium() or not subscription.is_active():
+        return Entitlement.FREE, subscription
+
+    # ACTIVE means the first charge settled (Stripe), the store charged
+    # (RevenueCat non-trial period), or an admin comp — all paid.
+    if subscription.status == SubscriptionStatus.ACTIVE:
+        return Entitlement.PAID, subscription
+
+    # TRIALING: paid only when a settled charge is already on record
+    # (e.g. a returning subscriber); otherwise it is a trial.
+    if await has_settled_charge(db, user_id):
+        return Entitlement.PAID, subscription
+
+    return Entitlement.TRIAL, subscription
+
+
 async def resolve_entitlement(db: AsyncSession, user_id: uuid.UUID) -> Entitlement:
     """Resolve a user to ``free``, ``trial``, or ``paid``.
 
     This is the ONE entitlement helper (Task 3.2). All directory / export /
     metering gates must call this instead of re-deriving subscription status.
     """
-    result = await db.execute(select(Subscription).where(Subscription.user_id == user_id))
-    subscription = result.scalar_one_or_none()
-
-    if subscription is None or not subscription.is_premium() or not subscription.is_active():
-        return Entitlement.FREE
-
-    # ACTIVE means the first charge settled (Stripe), the store charged
-    # (RevenueCat non-trial period), or an admin comp — all paid.
-    if subscription.status == SubscriptionStatus.ACTIVE:
-        return Entitlement.PAID
-
-    # TRIALING: paid only when a settled charge is already on record
-    # (e.g. a returning subscriber); otherwise it is a trial.
-    if await has_settled_charge(db, user_id):
-        return Entitlement.PAID
-
-    return Entitlement.TRIAL
+    entitlement, _ = await resolve_entitlement_with_subscription(db, user_id)
+    return entitlement

@@ -33,6 +33,9 @@ class BuyerListResponse(BaseModel):
     page: int
     limit: int
     totalPages: int = Field(serialization_alias="totalPages")
+    # Trial responses blank direct-contact fields; opening a record via the
+    # detail endpoint (25/day server-side cap) returns the full record.
+    contactsRedacted: bool = Field(False, serialization_alias="contactsRedacted")
 
     model_config = {"populate_by_name": True}
 

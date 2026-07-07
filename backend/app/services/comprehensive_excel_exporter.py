@@ -10,6 +10,7 @@ from typing import Any
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
+
 from app.schemas.proforma import FinancialProforma
 from app.services.proforma_exporter import ProformaExcelExporter
 from app.services.report_service import ReportService, report_service

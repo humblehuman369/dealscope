@@ -11,10 +11,9 @@ import logging
 
 from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.core.formulas import calculate_buy_price
+from app.core.regions import resolve_investor_probability_region
 from app.core.valuation import ValuationInputs, build_valuation_snapshot, estimate_income_value
 from app.core.valuation.rates import normalize_annual_rate
-from app.schemas.valuation import ValuationSnapshot
-from app.core.regions import resolve_investor_probability_region
 from app.schemas.analytics import (
     DealFactor,
     DealScoreFactors,
@@ -29,13 +28,13 @@ from app.schemas.analytics import (
     StrategyResult,
 )
 from app.schemas.property import AllAssumptions
+from app.schemas.valuation import ValuationSnapshot
 from app.services.calculators import calculate_monthly_mortgage
 from app.services.calculators.common import (
     bank_loan_after_seller_carry,
     calculate_cap_rate,
     calculate_cash_on_cash,
     calculate_dscr,
-    cash_needed_after_seller,
     combined_bank_and_seller_pi,
 )
 from app.services.deal_structures import compute_deal_structures

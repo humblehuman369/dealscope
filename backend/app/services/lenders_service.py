@@ -96,6 +96,36 @@ def _matches(
     return True
 
 
+def filter_lenders(
+    *,
+    state: str | None = None,
+    product: str | None = None,
+    min_loan: int | None = None,
+    credit: str | None = None,
+    q: str | None = None,
+    include_web_only: bool = True,
+) -> list[LenderOut]:
+    """Full filtered list — server-side use only (export slicing, pagination).
+
+    Never returned to a client whole: list responses paginate at
+    ``MAX_PAGE_SIZE`` and exports slice to the metered cap.
+    """
+    lenders, _ = _load_lenders_file()
+    return [
+        lender
+        for lender in lenders
+        if _matches(
+            lender,
+            state=state,
+            product=product,
+            min_loan=min_loan,
+            credit=credit,
+            q=q,
+            include_web_only=include_web_only,
+        )
+    ]
+
+
 def list_lenders_page(
     *,
     state: str | None = None,
@@ -109,21 +139,14 @@ def list_lenders_page(
 ) -> tuple[list[LenderOut], int, int]:
     """Filtered, paginated lender list. Returns (lenders, total, total_pages)."""
     limit = max(1, min(limit, MAX_PAGE_SIZE))
-    lenders, _ = _load_lenders_file()
-
-    filtered = [
-        lender
-        for lender in lenders
-        if _matches(
-            lender,
-            state=state,
-            product=product,
-            min_loan=min_loan,
-            credit=credit,
-            q=q,
-            include_web_only=include_web_only,
-        )
-    ]
+    filtered = filter_lenders(
+        state=state,
+        product=product,
+        min_loan=min_loan,
+        credit=credit,
+        q=q,
+        include_web_only=include_web_only,
+    )
 
     total = len(filtered)
     total_pages = math.ceil(total / limit) if total else 0

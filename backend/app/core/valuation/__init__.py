@@ -5,9 +5,9 @@ from app.core.valuation.noi import NOIInputs, NOIResult, compute_noi
 from app.core.valuation.snapshot import VALUATION_FORMULA_VERSION, ValuationInputs, build_valuation_snapshot
 
 __all__ = [
+    "VALUATION_FORMULA_VERSION",
     "NOIInputs",
     "NOIResult",
-    "VALUATION_FORMULA_VERSION",
     "ValuationInputs",
     "build_valuation_snapshot",
     "compute_noi",

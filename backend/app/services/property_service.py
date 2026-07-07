@@ -74,7 +74,6 @@ from app.services.property.cache import (
     _strip_property_cache_meta,
 )
 
-
 # AirROI /calculator/estimate responses are market projections, not live
 # listing data — a 7-day dedupe cache (keyed on coords + bedroom config)
 # means repeat searches and property-cache invalidations don't re-bill the

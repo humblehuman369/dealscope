@@ -18,6 +18,8 @@ export interface BuyerListResponse {
   page: number
   limit: number
   totalPages: number
+  /** True on trial responses — contact fields are blanked; reveal via detail endpoint. */
+  contactsRedacted?: boolean
 }
 
 export interface BuyerStatsResponse {
@@ -50,4 +52,26 @@ export function buildBuyersListPath(
 
 export function formatBuyerTotal(total: number): string {
   return total.toLocaleString('en-US')
+}
+
+/** Server-side export (paid only; 200 records/export, 1,000/billing cycle). */
+export function buildBuyersExportPath(
+  applied: AppliedBuyerSearch,
+  strategy: string,
+  fmt: 'csv' | 'print',
+): string {
+  const params = new URLSearchParams()
+  params.set('fmt', fmt)
+  if (strategy !== 'all') {
+    params.set('strategy', strategy)
+  }
+  if (applied.mode === 'city') {
+    if (applied.city.trim()) params.set('city', applied.city.trim())
+    if (applied.stateCode.trim()) params.set('state', applied.stateCode.trim())
+  } else if (applied.mode === 'county') {
+    if (applied.county.trim()) params.set('county', applied.county.trim())
+  } else if (applied.mode === 'zip' && applied.zip.trim()) {
+    params.set('zip', applied.zip.trim())
+  }
+  return `/api/buyers/export?${params.toString()}`
 }

@@ -37,15 +37,14 @@ from app.schemas.deal_maker import (
     DealMakerRecordUpdate,
     InitialAssumptions,
 )
-from app.schemas.valuation import ValuationSnapshot
 from app.schemas.property import AllAssumptions
+from app.schemas.valuation import ValuationSnapshot
 from app.services.assumptions_service import get_market_adjustments
 from app.services.calculators import (
     calculate_cap_rate,
     calculate_cash_on_cash,
     calculate_dscr,
     calculate_grm,
-    calculate_monthly_mortgage,
 )
 
 logger = logging.getLogger(__name__)
