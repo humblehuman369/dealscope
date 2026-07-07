@@ -4,12 +4,22 @@
 
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
 import { trackActivation } from '@/lib/eventTracking';
+import { ApiError, api } from '@/lib/api-client';
+import {
+  buildLendersListPath,
+  type AppliedLenderFilters,
+  type CreditCheckPolicy,
+  type Lender,
+  type LenderListResponse,
+  type LenderStatsResponse,
+} from '@/lib/lenders-api';
+import { LENDER_DIRECTORY_TOTAL } from '@/lib/directory-promo';
 import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import { SaveDirectoryContactButton } from '@/components/SaveDirectoryContactButton';
 import { buildLenderSnapshot } from '@/types/savedDirectoryContact';
-import lendersData from '@/data/lenders.json';
 import {
   Search, Phone, Mail, Globe, Lock, CheckCircle2, Sparkles, Filter,
   ExternalLink,
@@ -19,63 +29,6 @@ import {
   directoryBaseStyles,
   directoryTokens,
 } from '@/components/directory/directoryStyles';
-
-// -----------------------------------------------------------------------------
-// Types
-// -----------------------------------------------------------------------------
-
-interface LenderDisplay {
-  loan_range: string | null;
-  max_ltv: string | null;
-  max_arv: string | null;
-  interest_rate: string | null;
-  points: string | null;
-  term: string | null;
-}
-
-type CreditCheckPolicy = 'none' | 'soft_pull' | 'hard_pull';
-
-interface Lender {
-  id: number;
-  domain: string;
-  company_name: string;
-  website: string;
-  phone: string | null;
-  email: string | null;
-  contact_type: 'phone_email' | 'phone_only' | 'email_only' | 'web_only';
-  city: string | null;
-  state: string | null;
-  states_served: string[];
-  states_served_count: number;
-  nationwide: boolean;
-  loan_products: string[];
-  description: string | null;
-  min_loan_amount: number | null;
-  max_loan_amount: number | null;
-  display: LenderDisplay;
-  nmls_id: string | null;
-  aapl_member: boolean | null;
-  year_founded: number | null;
-  credit_check_policy?: CreditCheckPolicy | null;
-  min_credit_score?: number | null;
-  no_credit_check?: boolean;
-}
-
-interface LendersFile {
-  generated_at: string;
-  stats: {
-    total_lenders: number;
-    by_contact_type: Record<string, number>;
-    by_state: Record<string, number>;
-    by_product: Record<string, number>;
-    by_credit_policy?: Record<string, number>;
-    no_credit_check_count?: number;
-    nationwide_count: number;
-  };
-  lenders: Lender[];
-}
-
-const data = lendersData as LendersFile;
 
 const PREVIEW_LENDER_CARDS = [
   { title: 'Verified Hard Money Lender', products: ['Fix & Flip', 'Bridge'] },
@@ -123,11 +76,6 @@ function creditPolicyLabel(policy: CreditCheckPolicy | null | undefined): string
   if (policy === 'soft_pull') return 'Soft pull';
   if (policy === 'hard_pull') return 'Hard pull';
   return '';
-}
-
-function lenderNoCreditCheck(lender: Lender): boolean {
-  if (lender.no_credit_check != null) return lender.no_credit_check;
-  return lender.credit_check_policy === 'none' || lender.credit_check_policy === 'soft_pull';
 }
 
 function escapeCsvCell(value: string): string {
@@ -182,11 +130,9 @@ export default function HardMoneyDirectory() {
   const [minLoanFilter, setMinLoanFilter] = useState('');
   const [creditFilter, setCreditFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [includeWebOnly, setIncludeWebOnly] = useState(true);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
-
-  const hasPaidAccess = isPaidPro;
-  const noCreditCheckCount = data.stats.no_credit_check_count ?? 0;
 
   // North-star activation: a signed-in user engaging the proprietary lender
   // directory is a strong "aha"/intent signal (deduped per device).
@@ -194,38 +140,81 @@ export default function HardMoneyDirectory() {
     if (isAuthenticated) trackActivation('lender_directory');
   }, [isAuthenticated]);
 
-  const filtered = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    const minLoan = minLoanFilter ? parseInt(minLoanFilter, 10) : NaN;
+  // Debounce the name search so typing doesn't refetch per keystroke.
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
 
-    return data.lenders.filter((l) => {
-      if (stateFilter && !l.states_served.includes(stateFilter)) return false;
-      if (productFilter && !l.loan_products.includes(productFilter)) return false;
-      if (!Number.isNaN(minLoan) && l.max_loan_amount !== null && l.max_loan_amount < minLoan) {
-        return false;
-      }
-      if (creditFilter === 'no_credit_check' && !lenderNoCreditCheck(l)) return false;
-      if (creditFilter === 'soft_pull' && l.credit_check_policy !== 'soft_pull') return false;
-      if (
-        creditFilter === 'no_min_score'
-        && (l.min_credit_score != null || !lenderNoCreditCheck(l))
-      ) {
-        return false;
-      }
-      if (term) {
-        if (!l.company_name.toLowerCase().includes(term) && !l.domain.toLowerCase().includes(term)) {
-          return false;
+  // Directory totals — non-paid users receive a 401 carrying { total } only.
+  const { data: statsData } = useQuery({
+    queryKey: ['lender-directory-stats'],
+    queryFn: async (): Promise<LenderStatsResponse | { total: number }> => {
+      try {
+        return await api.get<LenderStatsResponse>('/api/lenders/stats');
+      } catch (error) {
+        if (
+          error instanceof ApiError &&
+          error.status === 401 &&
+          typeof error.detail?.total === 'number'
+        ) {
+          return { total: error.detail.total as number };
         }
+        throw error;
       }
-      if (!includeWebOnly && l.contact_type === 'web_only') return false;
-      return true;
-    });
-  }, [stateFilter, productFilter, minLoanFilter, creditFilter, searchTerm, includeWebOnly]);
+    },
+    enabled: isAuthenticated && !subscriptionLoading,
+    retry: false,
+  });
+  const stats = statsData && 'byState' in statsData ? statsData : null;
 
-  const displayLenders = hasPaidAccess ? filtered : [];
-  const displayCount = hasPaidAccess
-    ? filtered.length
-    : data.stats.total_lenders.toLocaleString();
+  const appliedFilters: AppliedLenderFilters = useMemo(
+    () => ({
+      state: stateFilter,
+      product: productFilter,
+      minLoan: minLoanFilter,
+      credit: creditFilter,
+      search: debouncedSearch,
+      includeWebOnly,
+    }),
+    [stateFilter, productFilter, minLoanFilter, creditFilter, debouncedSearch, includeWebOnly],
+  );
+
+  const {
+    data: lenderPages,
+    isLoading: lendersLoading,
+    isError: lendersErrored,
+    error: lendersError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['lenders', appliedFilters],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      api.get<LenderListResponse>(buildLendersListPath(appliedFilters, pageParam)),
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
+    enabled: isPaidPro,
+    retry: false,
+  });
+
+  const loadedLenders = useMemo(
+    () => lenderPages?.pages.flatMap((page) => page.lenders) ?? [],
+    [lenderPages],
+  );
+  const listTotal = lenderPages?.pages[0]?.total ?? 0;
+  const lendersForbidden =
+    lendersError instanceof ApiError &&
+    (lendersError.code === 'PRO_REQUIRED' || lendersError.status === 401);
+  const hasPaidAccess = isPaidPro && !lendersForbidden;
+
+  const directoryTotal = statsData?.total ?? LENDER_DIRECTORY_TOTAL;
+  const totalLabel = directoryTotal.toLocaleString();
+  const noCreditCheckCount = stats?.noCreditCheckCount ?? 0;
+
+  const displayLenders = hasPaidAccess ? loadedLenders : [];
+  const displayCount = hasPaidAccess ? listTotal : totalLabel;
 
   const openSignIn = () => {
     router.push('/lenders?auth=required&redirect=/lenders');
@@ -253,7 +242,7 @@ export default function HardMoneyDirectory() {
         }
       : {
           eyebrow: 'Paid Pro Required',
-          title: `Unlock ${data.stats.total_lenders.toLocaleString()} verified lenders`,
+          title: `Unlock ${totalLabel} verified lenders`,
           description:
             'Full contact info and save-to-dashboard are available to paid Pro subscribers.',
           cta: 'Upgrade to paid Pro',
@@ -286,7 +275,7 @@ export default function HardMoneyDirectory() {
             Hard Money <span style={{ color: directoryTokens.accent }}>Lender Directory</span>
           </h1>
           <p style={styles.sub}>
-            {data.stats.total_lenders.toLocaleString()} verified private and hard money lenders nationwide.
+            {totalLabel} verified private and hard money lenders nationwide.
             Filter by state, loan product, and loan size to find financing for your next deal.
           </p>
         </div>
@@ -303,7 +292,7 @@ export default function HardMoneyDirectory() {
                 <option value="">All states</option>
                 {US_STATES.map((s) => (
                   <option key={s} value={s}>
-                    {s} ({data.stats.by_state[s] ?? 0})
+                    {stats ? `${s} (${stats.byState[s] ?? 0})` : s}
                   </option>
                 ))}
               </select>
@@ -319,7 +308,7 @@ export default function HardMoneyDirectory() {
                 <option value="">All products</option>
                 {Object.entries(PRODUCT_LABELS).map(([code, label]) => (
                   <option key={code} value={code}>
-                    {label} ({data.stats.by_product[code] ?? 0})
+                    {stats ? `${label} (${stats.byProduct[code] ?? 0})` : label}
                   </option>
                 ))}
               </select>
@@ -350,7 +339,7 @@ export default function HardMoneyDirectory() {
                   No credit check ({noCreditCheckCount})
                 </option>
                 <option value="soft_pull">
-                  Soft pull only ({data.stats.by_credit_policy?.soft_pull ?? 0})
+                  Soft pull only ({stats?.byCreditPolicy?.soft_pull ?? 0})
                 </option>
                 <option value="no_min_score">No minimum score</option>
               </select>
@@ -394,14 +383,14 @@ export default function HardMoneyDirectory() {
               <div style={styles.mutedTextSm}>
                 Save lenders to your dashboard for quick access later
               </div>
-              {filtered.length > 0 && (
+              {loadedLenders.length > 0 && (
                 <button
                   type="button"
                   className="dgiq-btn-press"
                   style={styles.selectAllBtn}
-                  onClick={() => downloadLendersCsv(filtered)}
+                  onClick={() => downloadLendersCsv(loadedLenders)}
                 >
-                  Download CSV ({filtered.length})
+                  Download CSV ({loadedLenders.length})
                 </button>
               )}
             </div>
@@ -424,16 +413,40 @@ export default function HardMoneyDirectory() {
             userSelect: hasPaidAccess ? 'auto' : 'none',
             transition: 'filter 0.4s ease',
           }}>
-            {hasPaidAccess && displayLenders.length === 0 && (
+            {hasPaidAccess && lendersLoading && (
+              <div style={styles.emptyState}>Loading lenders…</div>
+            )}
+            {hasPaidAccess && lendersErrored && !lendersForbidden && (
+              <div style={styles.emptyState}>
+                Could not load the lender directory. Refresh and try again.
+              </div>
+            )}
+            {hasPaidAccess && !lendersLoading && !lendersErrored && displayLenders.length === 0 && (
               <div style={styles.emptyState}>
                 No lenders match these filters. Try widening your criteria.
               </div>
             )}
-            {hasPaidAccess && displayLenders.map((lender) => (
+            {hasPaidAccess && !lendersLoading && displayLenders.map((lender) => (
               <LenderCard key={lender.id} lender={lender} showSave={hasPaidAccess} />
             ))}
             {!hasPaidAccess && <PreviewLenderCards />}
           </div>
+
+          {hasPaidAccess && !lendersLoading && !lendersErrored && hasNextPage && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
+              <button
+                type="button"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="dgiq-btn-press"
+                style={styles.selectAllBtn}
+              >
+                {isFetchingNextPage
+                  ? 'Loading…'
+                  : `Load more lenders (${loadedLenders.length} of ${listTotal})`}
+              </button>
+            </div>
+          )}
 
           {!subscriptionLoading && !hasPaidAccess && (
             <div style={styles.gateWrap}>
@@ -527,7 +540,7 @@ function LenderCard({
           <SaveDirectoryContactButton
             entityType="lender"
             entityId={lender.id}
-            snapshot={buildLenderSnapshot(lender)}
+            snapshot={buildLenderSnapshot({ ...lender, display: lender.display ?? undefined })}
           />
         </div>
       )}
@@ -606,12 +619,12 @@ function LenderCard({
       </div>
 
       <div style={styles.termGrid}>
-        {lender.display.loan_range && <TermStat label="Loan size" value={lender.display.loan_range} />}
-        {lender.display.max_ltv && <TermStat label="Max LTV" value={lender.display.max_ltv} />}
-        {lender.display.max_arv && <TermStat label="Max ARV" value={lender.display.max_arv} />}
-        {lender.display.interest_rate && <TermStat label="Rate" value={lender.display.interest_rate} />}
-        {lender.display.term && <TermStat label="Term" value={lender.display.term} />}
-        {lender.display.points && <TermStat label="Points" value={lender.display.points} />}
+        {lender.display?.loan_range && <TermStat label="Loan size" value={lender.display.loan_range} />}
+        {lender.display?.max_ltv && <TermStat label="Max LTV" value={lender.display.max_ltv} />}
+        {lender.display?.max_arv && <TermStat label="Max ARV" value={lender.display.max_arv} />}
+        {lender.display?.interest_rate && <TermStat label="Rate" value={lender.display.interest_rate} />}
+        {lender.display?.term && <TermStat label="Term" value={lender.display.term} />}
+        {lender.display?.points && <TermStat label="Points" value={lender.display.points} />}
       </div>
 
       {products.length > 0 && (
