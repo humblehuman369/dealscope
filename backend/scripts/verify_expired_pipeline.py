@@ -98,7 +98,7 @@ async def main() -> int:
     from app.services.api_clients import RedfinClient, RentCastClient
 
     rentcast = RentCastClient(api_key=rc_key)
-    redfin = RedfinClient(api_key=rf_key, rapidapi_host=os.environ.get("RAPIDAPI_HOST", "redfin-com-data.p.rapidapi.com"))
+    redfin = RedfinClient(api_key=rf_key, rapidapi_host=os.environ.get("RAPIDAPI_HOST", "redfin-base.p.rapidapi.com"))
 
     loc = {}
     if args.city:
@@ -141,13 +141,9 @@ async def main() -> int:
         addr = rec.get("formattedAddress") or rec.get("addressLine1") or ""
         async with sem:
             try:
-                ac = await redfin.auto_complete(addr)
-                url = redfin._extract_url_from_autocomplete(ac.data) if ac.success else None
-                if not url:
+                det = await redfin.resolve_detail(addr)
+                if det is None:
                     return addr, "UNKNOWN (not on Redfin)", ""
-                det = await redfin.get_details(url)
-                if not det.success or not det.data:
-                    return addr, "UNKNOWN (no details)", ""
                 token, display = _redfin_status(det.data)
                 return addr, _classify(token, display), display or token or ""
             except Exception as e:  # noqa: BLE001

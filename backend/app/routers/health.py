@@ -330,26 +330,28 @@ async def debug_redfin(address: str = "123 Main St, Franklin, TN"):
             summary["data_type"] = type(raw).__name__
         return summary
 
-    # Step 1: auto-complete
-    ac_resp = await client.auto_complete(address)
-    steps["step1_auto_complete"] = _summarize(ac_resp)
-    if not ac_resp.success or not ac_resp.data:
-        steps["result"] = "FAILED at step 1 (auto-complete)"
-        return steps
-    url_path = client._extract_url_from_autocomplete(ac_resp.data)
-    steps["step1_extracted_url"] = url_path
-    if not url_path:
-        steps["result"] = "FAILED: no URL found in auto-complete response"
+    # Step 1: detail lookup by address
+    det_resp = await client.get_detail(address)
+    steps["step1_detail"] = _summarize(det_resp)
+    if not det_resp.success or not det_resp.data:
+        steps["result"] = "FAILED at step 1 (detail)"
         return steps
 
-    # Step 2: details
-    det_resp = await client.get_details(url_path)
-    steps["step2_details"] = _summarize(det_resp)
-    if not det_resp.success or not det_resp.data:
-        steps["result"] = "FAILED at step 2 (details)"
-        return steps
+    # Step 2: follow suggestion when the address didn't match directly
+    if not client._has_detail_payload(det_resp.data):
+        suggestion_url = client._extract_suggestion_url(det_resp.data)
+        steps["step1_suggestion_url"] = suggestion_url
+        if not suggestion_url:
+            steps["result"] = "FAILED: no data and no suggestions in detail response"
+            return steps
+        det_resp = await client.get_detail(suggestion_url)
+        steps["step2_detail_via_suggestion"] = _summarize(det_resp)
+        if not det_resp.success or not client._has_detail_payload(det_resp.data):
+            steps["result"] = "FAILED at step 2 (detail via suggestion)"
+            return steps
+
     parsed = client._parse_details_response(det_resp.data)
-    steps["step2_parsed"] = parsed
+    steps["parsed"] = parsed
     steps["result"] = (
         "SUCCESS" if (parsed.get("redfin_estimate") or parsed.get("redfin_rental_estimate")) else "PARSED_BUT_EMPTY"
     )

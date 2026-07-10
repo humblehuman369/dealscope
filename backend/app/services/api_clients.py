@@ -402,11 +402,14 @@ class AXESSOClient(BaseAPIClient[APIResponse]):
 
 class RedfinClient(BaseAPIClient[APIResponse]):
     """
-    Client for Redfin API via RapidAPI (redfin-com-data.p.rapidapi.com).
+    Client for Redfin API via RapidAPI (redfin-base.p.rapidapi.com).
 
-    Two-step flow:
-      1. GET /properties/auto-complete?query=<address> → extract ``url`` from first match
-      2. GET /properties/details?url=<url>             → extract value + rental estimates
+    Single-endpoint flow:
+      GET /redfin/detail?location=<address | locationId | full redfin.com URL>
+
+    The endpoint resolves addresses directly. When the input doesn't match
+    exactly, the response carries ``status: false`` plus a ``Suggestions``
+    list with property ``url`` paths — retry with the full redfin.com URL.
 
     Response paths (verified against live API):
       Value:  data.aboveTheFold.addressSectionInfo.avmInfo.predictedValue
@@ -443,7 +446,7 @@ class RedfinClient(BaseAPIClient[APIResponse]):
     def __init__(
         self,
         api_key: str,
-        rapidapi_host: str = "redfin-com-data.p.rapidapi.com",
+        rapidapi_host: str = "redfin-base.p.rapidapi.com",
     ):
         base_url = f"https://{rapidapi_host.rstrip('/')}"
         super().__init__(
@@ -484,63 +487,38 @@ class RedfinClient(BaseAPIClient[APIResponse]):
     def _get_provider_name(self) -> str:
         return "REDFIN"
 
-    async def auto_complete(self, query: str) -> APIResponse:
-        """GET /properties/auto-complete?query=."""
+    async def get_detail(self, location: str) -> APIResponse:
+        """GET /redfin/detail?location=<address | locationId | full redfin URL>."""
         return await self._make_request(
-            "properties/auto-complete",
-            params={"query": query},
-        )
-
-    async def get_details(self, url_path: str) -> APIResponse:
-        """GET /properties/details?url=<redfin-url-path>."""
-        return await self._make_request(
-            "properties/details",
-            params={"url": url_path},
+            "redfin/detail",
+            params={"location": location},
         )
 
     @staticmethod
-    def _extract_url_from_autocomplete(data: Any) -> str | None:
+    def _has_detail_payload(data: Any) -> bool:
+        """True when the response body carries an actual detail payload."""
+        return isinstance(data, dict) and isinstance(data.get("data"), dict)
+
+    @staticmethod
+    def _extract_suggestion_url(data: Any) -> str | None:
         """
-        Extract the Redfin URL path from auto-complete response.
+        Extract the best property URL from a no-match response's Suggestions.
 
-        Primary shape:
-          { "data": [ { "rows": [ { "url": "/TN/Franklin/...", ... } ] } ] }
+        Shape:
+          { "status": false, "data": null,
+            "Suggestions": [ { "url": "/TX/Brownsville/...", "searchType": "Addresses", ... } ] }
 
-        Also handles wrapped responses where ``data`` is a dict containing
-        a nested list under various keys (``data``, ``sections``, ``categories``).
+        Returns a full redfin.com URL (the detail endpoint accepts full URLs
+        but not bare short paths).
         """
         if not isinstance(data, dict):
             return None
-
-        def _scan_categories(categories: list) -> str | None:
-            for category in categories:
-                if not isinstance(category, dict):
-                    continue
-                rows = category.get("rows")
-                if not isinstance(rows, list):
-                    continue
-                for row in rows:
-                    if isinstance(row, dict) and row.get("url"):
-                        return str(row["url"])
+        suggestions = data.get("Suggestions")
+        if not isinstance(suggestions, list):
             return None
-
-        top = data.get("data")
-        if isinstance(top, list):
-            return _scan_categories(top)
-
-        if isinstance(top, dict):
-            for key in ("data", "sections", "categories"):
-                nested = top.get(key)
-                if isinstance(nested, list):
-                    result = _scan_categories(nested)
-                    if result:
-                        return result
-            rows = top.get("rows")
-            if isinstance(rows, list):
-                for row in rows:
-                    if isinstance(row, dict) and row.get("url"):
-                        return str(row["url"])
-
+        for item in suggestions:
+            if isinstance(item, dict) and item.get("url"):
+                return f"https://www.redfin.com{item['url']}"
         return None
 
     @staticmethod
@@ -552,7 +530,7 @@ class RedfinClient(BaseAPIClient[APIResponse]):
         to the ``addressSectionInfo`` "Last Sold Price" block when no event
         history is present. Returns ``{}`` when nothing usable is found.
 
-        NOTE: exact paths vary across redfin-com-data response versions, so this
+        NOTE: exact paths vary across redfin-base response versions, so this
         is written defensively and should be validated against a live response.
         """
         # 1) Property-history events — pick the latest one tagged as a sale.
@@ -666,66 +644,68 @@ class RedfinClient(BaseAPIClient[APIResponse]):
                         variants.append(new_street + rest)
         return variants
 
+    async def resolve_detail(self, address: str) -> APIResponse | None:
+        """
+        Resolve an address to a detail response, following suggestions.
+
+        1. GET /redfin/detail?location=<address>
+        2. If no payload but the response carries Suggestions, retry with the
+           first suggestion's full redfin.com URL.
+        3. If neither, retry with common street-suffix substitutions
+           (e.g. Cir → Ct) to handle data-source mismatches.
+
+        Returns the APIResponse holding a detail payload, or None.
+        """
+        resp = await self.get_detail(address)
+        if not resp.success:
+            logger.warning("Redfin detail FAILED: success=%s, error=%s", resp.success, resp.error)
+            return None
+        if self._has_detail_payload(resp.data):
+            return resp
+
+        suggestion_url = self._extract_suggestion_url(resp.data)
+        if suggestion_url:
+            retry = await self.get_detail(suggestion_url)
+            if retry.success and self._has_detail_payload(retry.data):
+                logger.info("Redfin suggestion retry OK: %s", suggestion_url)
+                return retry
+
+        for variant in self._address_suffix_variants(address):
+            retry = await self.get_detail(variant)
+            if not retry.success:
+                continue
+            if self._has_detail_payload(retry.data):
+                logger.info("Redfin suffix retry OK: %r", variant)
+                return retry
+            suggestion_url = self._extract_suggestion_url(retry.data)
+            if suggestion_url:
+                followed = await self.get_detail(suggestion_url)
+                if followed.success and self._has_detail_payload(followed.data):
+                    logger.info("Redfin suffix+suggestion retry OK: %r → %s", variant, suggestion_url)
+                    return followed
+
+        logger.warning(
+            "Redfin detail FAILED: no match for %r (message=%s)",
+            address,
+            resp.data.get("message") if isinstance(resp.data, dict) else None,
+        )
+        return None
+
     async def get_property_estimate(self, address: str) -> dict[str, Any] | None:
         """
-        Two-step lookup: auto-complete(address) → details(url).
+        Single-endpoint lookup: /redfin/detail?location=<address>.
 
         Returns dict with redfin_estimate and redfin_rental_estimate, or None.
-        If the initial autocomplete finds no match, retries with common street
-        suffix substitutions (e.g. Cir → Ct) to handle data-source mismatches.
+        Falls back to the response's Suggestions and to common street-suffix
+        substitutions when the address doesn't match directly.
         """
-        # Step 1: auto-complete → extract URL path
-        ac_resp = await self.auto_complete(address)
-        if not ac_resp.success or not ac_resp.data:
-            logger.warning(
-                "Redfin step 1 FAILED: auto-complete success=%s, error=%s",
-                ac_resp.success,
-                ac_resp.error,
-            )
-            return None
-
-        url_path = self._extract_url_from_autocomplete(ac_resp.data)
-
-        # Retry with street-suffix variants when autocomplete returns no URL
-        if not url_path:
-            for variant in self._address_suffix_variants(address):
-                ac_retry = await self.auto_complete(variant)
-                if ac_retry.success and ac_retry.data:
-                    url_path = self._extract_url_from_autocomplete(ac_retry.data)
-                    if url_path:
-                        logger.info("Redfin suffix retry OK: %r → url=%s", variant, url_path)
-                        break
-
-        if not url_path:
-            import json as _json
-
-            _preview = ""
-            try:
-                _preview = _json.dumps(ac_resp.data, default=str)[:500]
-            except Exception:
-                _preview = str(type(ac_resp.data))
-            logger.warning(
-                "Redfin step 1 FAILED: no URL found in auto-complete response (keys=%s, preview=%s)",
-                list(ac_resp.data.keys()) if isinstance(ac_resp.data, dict) else type(ac_resp.data).__name__,
-                _preview,
-            )
-            return None
-        logger.info("Redfin step 1 OK: auto-complete → url=%s", url_path)
-
-        # Step 2: details → extract value + rental
-        det_resp = await self.get_details(url_path)
-        if not det_resp.success or not det_resp.data:
-            logger.warning(
-                "Redfin step 2 FAILED: details(%s) success=%s, error=%s",
-                url_path,
-                det_resp.success,
-                det_resp.error,
-            )
+        det_resp = await self.resolve_detail(address)
+        if det_resp is None:
             return None
 
         parsed = self._parse_details_response(det_resp.data)
         logger.info(
-            "Redfin step 2 OK: details → redfin_estimate=%s, redfin_rental_estimate=%s, last_sale=%s",
+            "Redfin detail OK: redfin_estimate=%s, redfin_rental_estimate=%s, last_sale=%s",
             parsed.get("redfin_estimate"),
             parsed.get("redfin_rental_estimate"),
             parsed.get("redfin_last_sale_date"),
@@ -2634,7 +2614,7 @@ def create_api_clients(
     axesso_api_key: str,
     axesso_url: str,
     redfin_api_key: str = "",
-    redfin_rapidapi_host: str = "redfin-com-data.p.rapidapi.com",
+    redfin_rapidapi_host: str = "redfin-base.p.rapidapi.com",
     realtor_api_key: str = "",
     realtor_rapidapi_host: str = "realtor-search.p.rapidapi.com",
     mashvisor_api_key: str = "",

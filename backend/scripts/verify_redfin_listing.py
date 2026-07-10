@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-One-off: probe what the Redfin API (redfin-com-data RapidAPI) actually returns
+One-off: probe what the Redfin API (redfin-base RapidAPI) actually returns
 for a property — to test whether Redfin can serve the expired/off-market use case.
 
 Answers two questions empirically:
@@ -14,9 +14,9 @@ Answers two questions empirically:
 Usage:
   REDFIN_API_KEY=<key> python scripts/verify_redfin_listing.py "953 Banyan Dr, Delray Beach, FL 33483"
 
-  # Raw mode — hit any redfin-com-data endpoint and dump the JSON (to test search):
+  # Raw mode — hit any redfin-base endpoint and dump the JSON (to test search):
   REDFIN_API_KEY=<key> python scripts/verify_redfin_listing.py \
-      --endpoint properties/search-by-region --param regionId=4_3244 --param status=Active
+      --endpoint redfin/detail --param location=5065-Eloy-St-78521
 """
 from __future__ import annotations
 
@@ -84,7 +84,7 @@ async def _raw_mode(args, key: str, host: str) -> int:
 
 
 async def _address_mode(args, key: str, host: str) -> int:
-    # Reuse the production RedfinClient (auto-complete -> details two-step).
+    # Reuse the production RedfinClient (single detail endpoint with suggestion follow-up).
     from app.services.api_clients import RedfinClient
 
     client = RedfinClient(api_key=key, rapidapi_host=host)
@@ -92,29 +92,11 @@ async def _address_mode(args, key: str, host: str) -> int:
     print(f"Redfin probe: {args.address}")
     print("=" * 70)
 
-    ac = await client.auto_complete(args.address)
-    print(f"[auto-complete] success={ac.success} status={ac.status_code} error={ac.error}")
-    if not ac.success or not ac.data:
+    det = await client.resolve_detail(args.address)
+    if det is None:
         print("  → address not found on Redfin; cannot continue.")
         return 1
-
-    url_path = client._extract_url_from_autocomplete(ac.data)
-    if not url_path:
-        for variant in client._address_suffix_variants(args.address):
-            retry = await client.auto_complete(variant)
-            if retry.success and retry.data:
-                url_path = client._extract_url_from_autocomplete(retry.data)
-                if url_path:
-                    break
-    if not url_path:
-        print("  → no Redfin URL found in auto-complete response.")
-        return 1
-    print(f"[auto-complete] url={url_path}")
-
-    det = await client.get_details(url_path)
-    print(f"[details] success={det.success} status={det.status_code} error={det.error}")
-    if not det.success or not det.data:
-        return 1
+    print(f"[detail] success={det.success} status={det.status_code} error={det.error}")
 
     payload = det.data.get("data") if isinstance(det.data, dict) else None
     payload = payload if isinstance(payload, dict) else (det.data if isinstance(det.data, dict) else {})
@@ -166,8 +148,8 @@ async def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("address", nargs="?", default=None)
     ap.add_argument("--api-key", default=None)
-    ap.add_argument("--host", default=os.environ.get("RAPIDAPI_HOST", "redfin-com-data.p.rapidapi.com"))
-    ap.add_argument("--endpoint", default=None, help="Raw mode: hit this redfin-com-data path and dump JSON")
+    ap.add_argument("--host", default=os.environ.get("RAPIDAPI_HOST", "redfin-base.p.rapidapi.com"))
+    ap.add_argument("--endpoint", default=None, help="Raw mode: hit this redfin-base path and dump JSON")
     ap.add_argument("--param", action="append", help="Raw mode query param k=v (repeatable)")
     args = ap.parse_args()
 

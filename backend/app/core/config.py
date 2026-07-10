@@ -84,7 +84,7 @@ class Settings(BaseSettings):
     AXESSO_URL: str = "https://api.axesso.de/zil"
 
     REDFIN_API_KEY: str = ""
-    RAPIDAPI_HOST: str = "redfin-com-data.p.rapidapi.com"
+    RAPIDAPI_HOST: str = "redfin-base.p.rapidapi.com"
 
     REALTOR_API_KEY: str = ""
     REALTOR_RAPIDAPI_HOST: str = "realtor-search.p.rapidapi.com"
