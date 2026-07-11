@@ -255,12 +255,14 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
 }
 
 function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => void }) {
-  const router = useRouter()
+  const [subcopyExpanded, setSubcopyExpanded] = useState(false)
+  const { buyerTotalLabel } = useBuyerDirectoryTeaserTotal()
+  const lenderTotalLabel = formatLenderDirectoryTotal()
 
   const investorPill = (
     <div className="inline-flex items-center gap-2 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]/80 px-3 py-1 text-xs font-bold text-[var(--accent-sky)] backdrop-blur-md md:px-4 md:py-1.5 md:text-sm">
       <span className="h-2 w-2 rounded-full bg-[var(--accent-sky)] animate-pulse" />
-      <span>Not a listing site. A deal decision engine.</span>
+      <span>Built by an Investor for Investors</span>
     </div>
   )
 
@@ -291,72 +293,69 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
                 className="hero-v4-blend__headline text-[var(--text-heading)]"
                 style={HEADLINE_STYLE}
               >
-                See Every Property
+                Stop scrolling
                 <br />
-                <span className="text-[var(--accent-sky)]">Through an Investor&apos;s Lens</span>
+                listings.
+                <br />
+                <span className="text-[var(--accent-sky)]">
+                  Start spotting real
+                  <br />
+                  deals.
+                </span>
+                <br />
+                Know what to offer.
               </h1>
 
               <div className="mt-3 md:hidden">{investorPill}</div>
 
               <p className="hero-v4-blend__sub max-w-xl text-[var(--text-body)]">
-                Every listing is designed to sell you. DealGapIQ answers the only question
-                that matters to an investor:{' '}
-                <span className="text-[var(--text-heading)]">is this a good deal?</span>
+                The Discovery tells you the gap.
+                <br />
+                We tell you how to close it.
+                <span
+                  className={`hero-v4-blend__sub-detail text-[var(--text-secondary)] ${
+                    subcopyExpanded ? 'hero-v4-blend__sub-detail--open' : ''
+                  }`}
+                >
+                  <br className="hidden md:block" />
+                  <span className="md:inline">
+                    {' '}
+                    Most tools stop at the numbers. We give you four complete offer paths,
+                    including creative finance structures most investors never consider.
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  className="hero-v4-blend__sub-read-more md:hidden"
+                  aria-expanded={subcopyExpanded}
+                  onClick={() => setSubcopyExpanded((open) => !open)}
+                >
+                  {subcopyExpanded ? 'Show less' : 'Read more'}
+                </button>
               </p>
             </div>
 
             <div className="hero-v4-blend__cta hero-v4-blend__animate-in hero-v4-blend__animate-in--delay">
               <PrimaryButton onClick={onStart} size="md" className="hero-v4-blend__cta-primary">
-                Analyze Any Property
+                Run Free Discovery
                 <Search className="h-4 w-4" />
               </PrimaryButton>
-              <SecondaryButton
-                onClick={() => router.push('/what-is-dealgapiq')}
-                className="hero-v4-blend__cta-secondary"
-              >
-                What is DealGapIQ?
-              </SecondaryButton>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              <button
-                type="button"
-                onClick={onDemo}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent-sky)] transition-colors hover:brightness-110"
-              >
+              <SecondaryButton onClick={onDemo} className="hero-v4-blend__cta-secondary">
                 <Play className="h-4 w-4 fill-current" />
                 Watch 60-second demo
-              </button>
-              <GetTheAppButton
-                source="hero"
-                label="Also on iOS & Android — get the app"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent-sky)] transition-colors hover:brightness-110"
-              />
+              </SecondaryButton>
             </div>
+            <GetTheAppButton
+              source="hero"
+              label="Also on iOS & Android — get the app"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent-sky)] transition-colors hover:brightness-110"
+            />
             <p className="text-xs text-[var(--text-muted)]">
-              Built for first-time investors. Trusted by experienced buyers.
+              Inside Pro:{' '}
+              <span style={{ color: '#0EA5E9' }}>{buyerTotalLabel}</span> verified cash buyers ·{' '}
+              <span style={{ color: '#0EA5E9' }}>{lenderTotalLabel}</span> hard money lenders
             </p>
           </div>
-
-          <aside
-            className="hero-v4-blend__proof-card hero-v4-blend__animate-in hero-v4-blend__animate-in--delay"
-            aria-label="Example analysis: Target Buy $492,529, Deal Gap minus 11.2 percent"
-          >
-            <div className="hero-v4-blend__proof-row">
-              <span className="hero-v4-blend__proof-label">Target Buy</span>
-              <span className="hero-v4-blend__proof-value">$492,529</span>
-            </div>
-            <div className="hero-v4-blend__proof-row">
-              <span className="hero-v4-blend__proof-label">Deal Gap</span>
-              <span className="hero-v4-blend__proof-value hero-v4-blend__proof-value--gap">
-                &minus;11.2%
-              </span>
-            </div>
-            <div className="hero-v4-blend__proof-bar" aria-hidden="true">
-              <span className="hero-v4-blend__proof-dot hero-v4-blend__proof-dot--target" />
-              <span className="hero-v4-blend__proof-dot hero-v4-blend__proof-dot--income" />
-              <span className="hero-v4-blend__proof-dot hero-v4-blend__proof-dot--market" />
-            </div>
-          </aside>
         </div>
       </div>
     </section>
