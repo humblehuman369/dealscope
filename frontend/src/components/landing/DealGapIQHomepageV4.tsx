@@ -2,7 +2,6 @@
 
 import React, { Suspense, useState } from 'react'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -27,7 +26,8 @@ import { useSession } from '@/hooks/useSession'
 import { MarketingUserMenu, MarketingUserMenuMobileLinks } from '@/components/layout/MarketingUserMenu'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { ExploreDealGapIQSection } from '@/components/seo/ExploreDealGapIQSection'
-import './hero-blend.css'
+import { HeroSampleResult } from '@/components/landing/HeroSampleResult'
+import './hero-v5.css'
 
 interface Props {
   onPointAndScan?: () => void
@@ -122,7 +122,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
   ]
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-[var(--border-default)] bg-[var(--surface-base)]">
+    <nav className="hero-v5-nav sticky top-0 z-50 bg-[var(--surface-base)]">
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex h-20 items-center justify-between gap-6">
           <Link
@@ -255,96 +255,43 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
 }
 
 function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => void }) {
-  const [subcopyExpanded, setSubcopyExpanded] = useState(false)
   const { buyerTotalLabel } = useBuyerDirectoryTeaserTotal()
   const lenderTotalLabel = formatLenderDirectoryTotal()
 
-  const investorPill = (
-    <div className="inline-flex items-center gap-2 rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)]/80 px-3 py-1 text-xs font-bold text-[var(--accent-sky)] backdrop-blur-md md:px-4 md:py-1.5 md:text-sm">
-      <span className="h-2 w-2 rounded-full bg-[var(--accent-sky)] animate-pulse" />
-      <span>Built by an Investor for Investors</span>
-    </div>
-  )
-
   return (
-    <section className="hero-v4-blend" aria-labelledby="hero-heading">
-      <div className="hero-v4-blend__canvas">
-        <div className="hero-v4-blend__media">
-          <Image
-            src="/images/phone-house-hero.png"
-            alt="DealGapIQ analyzing a residential property on a phone, with a suburban home in the background"
-            fill
-            priority
-            sizes="100vw"
-            className="hero-v4-blend__photo"
-          />
-          <div className="hero-v4-blend__sky-glow" aria-hidden="true" />
-        </div>
-        <div className="hero-v4-blend__scrim" aria-hidden="true" />
-        <div className="hero-v4-blend__edge-fade" aria-hidden="true" />
+    <section className="hero-v5" aria-labelledby="hero-heading">
+      <div className="hero-v5__grid">
+        <div>
+          <span className="hero-v5__badge">Built by an Investor for Investors</span>
 
-        <div className="hero-v4-blend__content">
-          <div className="hero-v4-blend__copy space-y-5 md:space-y-6 lg:space-y-8">
-            <div className="hidden md:block">{investorPill}</div>
+          <h1 id="hero-heading" className="hero-v5__headline">
+            Stop scrolling listings.
+            <br />
+            <span className="hero-v5__headline-accent">Start spotting real deals.</span>
+            <br />
+            Know what to offer.
+          </h1>
 
-            <div className="hero-v4-blend__animate-in">
-              <h1
-                id="hero-heading"
-                className="hero-v4-blend__headline text-[var(--text-heading)]"
-                style={HEADLINE_STYLE}
-              >
-                Stop scrolling
-                <br />
-                listings.
-                <br />
-                <span className="text-[var(--accent-sky)]">
-                  Start spotting real
-                  <br />
-                  deals.
-                </span>
-                <br />
-                Know what to offer.
-              </h1>
+          <p className="hero-v5__subhead">
+            <span className="hero-v5__subhead-lead">
+              The Discovery tells you the gap. We tell you how to close it.
+            </span>
+            Most tools stop at the numbers. We give you four complete offer paths, including
+            creative finance structures most investors never consider.
+          </p>
 
-              <div className="mt-3 md:hidden">{investorPill}</div>
+          <div className="hero-v5__cta-row">
+            <button type="button" onClick={onStart} className="hero-v5__cta-primary">
+              Run Free Discovery
+              <Search className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={onDemo} className="hero-v5__cta-secondary">
+              <Play className="h-4 w-4 fill-current" />
+              Watch 60-second demo
+            </button>
+          </div>
 
-              <p className="hero-v4-blend__sub max-w-xl text-[var(--text-body)]">
-                The Discovery tells you the gap.
-                <br />
-                We tell you how to close it.
-                <span
-                  className={`hero-v4-blend__sub-detail text-[var(--text-secondary)] ${
-                    subcopyExpanded ? 'hero-v4-blend__sub-detail--open' : ''
-                  }`}
-                >
-                  <br className="hidden md:block" />
-                  <span className="md:inline">
-                    {' '}
-                    Most tools stop at the numbers. We give you four complete offer paths,
-                    including creative finance structures most investors never consider.
-                  </span>
-                </span>
-                <button
-                  type="button"
-                  className="hero-v4-blend__sub-read-more md:hidden"
-                  aria-expanded={subcopyExpanded}
-                  onClick={() => setSubcopyExpanded((open) => !open)}
-                >
-                  {subcopyExpanded ? 'Show less' : 'Read more'}
-                </button>
-              </p>
-            </div>
-
-            <div className="hero-v4-blend__cta hero-v4-blend__animate-in hero-v4-blend__animate-in--delay">
-              <PrimaryButton onClick={onStart} size="md" className="hero-v4-blend__cta-primary">
-                Run Free Discovery
-                <Search className="h-4 w-4" />
-              </PrimaryButton>
-              <SecondaryButton onClick={onDemo} className="hero-v4-blend__cta-secondary">
-                <Play className="h-4 w-4 fill-current" />
-                Watch 60-second demo
-              </SecondaryButton>
-            </div>
+          <div className="mt-6 space-y-3">
             <GetTheAppButton
               source="hero"
               label="Also on iOS & Android — get the app"
@@ -352,11 +299,15 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
             />
             <p className="text-xs text-[var(--text-muted)]">
               Inside Pro:{' '}
-              <span style={{ color: '#0EA5E9' }}>{buyerTotalLabel}</span> verified cash buyers ·{' '}
-              <span style={{ color: '#0EA5E9' }}>{lenderTotalLabel}</span> hard money lenders
+              <span className="text-[var(--accent-sky)]">{buyerTotalLabel}</span> verified cash
+              buyers ·{' '}
+              <span className="text-[var(--accent-sky)]">{lenderTotalLabel}</span> hard money
+              lenders
             </p>
           </div>
         </div>
+
+        <HeroSampleResult />
       </div>
     </section>
   )
