@@ -151,11 +151,11 @@ SPEC: list[tuple[str, str, str, str, str, str]] = [
     ("updated_at", "provenance", "new", "TIMESTAMPTZ NOT NULL", "",
      "NEW. Standard column on cash_buyers; match it."),
     # -- separate reference dataset --------------------------------------
-    ("zip_county_crosswalk", "reference_data", "new", "separate table: zip_county_xwalk", "ZIP filter (BLOCKER)",
-     "NEW, NOT a lender column. A ZIP -> (county, state) table is what makes a ZIP box work: resolve "
-     "the typed ZIP, then match against counties_served/states_served. Source: HUD USPS ZIP crosswalk "
-     "or Census ZCTA. ~42k rows. Note backend/app/data/landlord_insurance/county_rates.json already "
-     "carries county+state+FIPS and can supply canonical county spellings."),
+    ("zip_crosswalk", "reference_data", "built", "app/data/zip_crosswalk.json", "ZIP search (DONE)",
+     "NOT a lender column. ZIP -> (state, counties) for 42,570 ZIPs; 33,774 carry a county. Source: "
+     "US Census 2020 ZCTA-to-County relationship file, topped up with USPS-only ZIPs. Rebuild with "
+     "backend/scripts/build_zip_crosswalk.py. This already unblocks ZIP search; county filtering "
+     "still waits on counties_served."),
 ]
 
 

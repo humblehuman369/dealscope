@@ -10,6 +10,8 @@ from app.routers.lenders import export_lenders, get_lender_stats, list_lenders
 from app.services.entitlements import Entitlement
 from app.services.lenders_service import (
     MAX_PAGE_SIZE,
+    _locality_rank,
+    filter_lenders,
     get_lender_by_id,
     lender_total,
     list_lenders_page,
@@ -88,6 +90,49 @@ def test_get_lender_by_id_roundtrip():
     assert get_lender_by_id(lender.id) is not None
     assert get_lender_by_id(lender.id).company_name == lender.company_name
     assert get_lender_by_id(-1) is None
+
+
+# ---------------------------------------------------------------------------
+# Service: locality ordering when a state is selected
+# ---------------------------------------------------------------------------
+
+
+def test_state_results_are_ordered_local_first():
+    lenders = filter_lenders(state="FL")
+    ranks = [_locality_rank(lender, "FL") for lender in lenders]
+    assert ranks == sorted(ranks)
+
+
+def test_in_state_hq_lenders_lead_the_results():
+    lenders = filter_lenders(state="FL")
+    assert any(lender.state == "FL" for lender in lenders)
+    assert lenders[0].state == "FL"
+
+
+def test_nationwide_lenders_rank_below_regional_ones():
+    """Among out-of-state lenders, a regional focus outranks a national one.
+
+    An in-state HQ still wins outright, nationwide or not — being headquartered
+    where the deal is remains the strongest locality signal.
+    """
+    out_of_state = [lender for lender in filter_lenders(state="FL") if lender.state != "FL"]
+    first_nationwide = next(i for i, lender in enumerate(out_of_state) if lender.nationwide)
+    last_regional = max(i for i, lender in enumerate(out_of_state) if not lender.nationwide)
+    assert first_nationwide > last_regional
+
+
+def test_in_state_hq_outranks_out_of_state_regional():
+    lenders = filter_lenders(state="FL")
+    first_out_of_state = next(i for i, lender in enumerate(lenders) if lender.state != "FL")
+    assert all(lender.state == "FL" for lender in lenders[:first_out_of_state])
+
+
+def test_locality_ordering_preserves_the_filtered_set():
+    """Sorting must reorder results, never add or drop them."""
+    ordered = filter_lenders(state="FL")
+    assert {lender.id for lender in ordered} == {
+        lender.id for lender in filter_lenders() if "FL" in lender.states_served
+    }
 
 
 # ---------------------------------------------------------------------------

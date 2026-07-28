@@ -96,6 +96,20 @@ def _matches(
     return True
 
 
+def _locality_rank(lender: LenderOut, state: str) -> int:
+    """Order lenders by how local they are to ``state``.
+
+    Coverage is state-level, so every match is equally "licensed here". What
+    differentiates them is focus: a lender headquartered in the state, then one
+    that serves a handful of states including this one, then a national shop.
+    """
+    if lender.state == state:
+        return 0
+    if not lender.nationwide:
+        return 1
+    return 2
+
+
 def filter_lenders(
     *,
     state: str | None = None,
@@ -111,7 +125,7 @@ def filter_lenders(
     ``MAX_PAGE_SIZE`` and exports slice to the metered cap.
     """
     lenders, _ = _load_lenders_file()
-    return [
+    matched = [
         lender
         for lender in lenders
         if _matches(
@@ -124,6 +138,11 @@ def filter_lenders(
             include_web_only=include_web_only,
         )
     ]
+    if state:
+        # Sorting has to happen here rather than client-side: the client only
+        # ever sees one page.
+        matched.sort(key=lambda lender: (_locality_rank(lender, state), lender.company_name))
+    return matched
 
 
 def list_lenders_page(

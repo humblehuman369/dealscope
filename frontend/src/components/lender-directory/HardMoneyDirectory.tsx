@@ -16,6 +16,12 @@ import {
   type LenderListResponse,
   type LenderStatsResponse,
 } from '@/lib/lenders-api';
+import {
+  buildZipLookupPath,
+  formatZipLocation,
+  normalizeZip,
+  type ZipLocation,
+} from '@/lib/geo-api';
 import { runDirectoryExport } from '@/lib/directory-export-client';
 import { LENDER_DIRECTORY_TOTAL } from '@/lib/directory-promo';
 import { UpgradeModal } from '@/components/billing/UpgradeModal';
@@ -91,6 +97,8 @@ export default function HardMoneyDirectory() {
   const [creditFilter, setCreditFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [zipInput, setZipInput] = useState('');
+  const [debouncedZip, setDebouncedZip] = useState('');
   const [includeWebOnly, setIncludeWebOnly] = useState(true);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
@@ -105,6 +113,47 @@ export default function HardMoneyDirectory() {
     const id = setTimeout(() => setDebouncedSearch(searchTerm), 300);
     return () => clearTimeout(id);
   }, [searchTerm]);
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedZip(zipInput), 300);
+    return () => clearTimeout(id);
+  }, [zipInput]);
+
+  // Lender coverage is licensed state by state, so a ZIP is only a friendlier
+  // way to pick the state — it resolves, then drives the same state filter.
+  const lookupZip = normalizeZip(debouncedZip);
+  const {
+    data: zipLocation,
+    isFetching: zipResolving,
+    isError: zipUnrecognized,
+  } = useQuery({
+    queryKey: ['zip-location', lookupZip],
+    queryFn: () => api.get<ZipLocation>(buildZipLookupPath(lookupZip as string)),
+    enabled: !!lookupZip && isAuthenticated && !subscriptionLoading,
+    retry: false,
+    staleTime: Infinity,
+  });
+
+  const resolvedState = zipLocation?.state;
+  useEffect(() => {
+    if (resolvedState) setStateFilter(resolvedState);
+  }, [resolvedState]);
+
+  // Picking a state by hand retires the ZIP so the two can never disagree.
+  const handleStateChange = (value: string) => {
+    setStateFilter(value);
+    setZipInput('');
+    setDebouncedZip('');
+  };
+
+  const zipHint = useMemo(() => {
+    const id = 'dgiq-zip-hint';
+    if (!lookupZip) return null;
+    if (zipResolving) return { id, text: 'Looking up…', tone: 'neutral' as const };
+    if (zipUnrecognized) return { id, text: 'ZIP not recognized', tone: 'error' as const };
+    if (zipLocation) return { id, text: formatZipLocation(zipLocation), tone: 'neutral' as const };
+    return null;
+  }, [lookupZip, zipResolving, zipUnrecognized, zipLocation]);
 
   // Directory totals — non-paid users receive a 401 carrying { total } only.
   const { data: statsData } = useQuery({
@@ -253,7 +302,7 @@ export default function HardMoneyDirectory() {
     <div style={styles.page}>
       <style>{`
         ${DIRECTORY_BASE_CSS}
-        @media (max-width: 1100px) {
+        @media (max-width: 1280px) {
           .dgiq-lender-filters { grid-template-columns: repeat(3, 1fr) !important; }
         }
         @media (max-width: 900px) {
@@ -275,18 +324,34 @@ export default function HardMoneyDirectory() {
           </h1>
           <p style={styles.sub}>
             {totalLabel} verified private and hard money lenders nationwide.
-            Filter by state, loan product, and loan size to find financing for your next deal.
+            Enter your deal&rsquo;s ZIP code, then filter by loan product and size to find
+            financing. Lenders are licensed state by state, so results cover the whole state.
           </p>
         </div>
 
         <div style={styles.panel}>
           <div className="dgiq-lender-filters" style={styles.filterGrid}>
+            <Field label="Deal ZIP code" hint={zipHint}>
+              <input
+                className="dgiq-input"
+                style={styles.input}
+                type="text"
+                inputMode="numeric"
+                autoComplete="postal-code"
+                maxLength={10}
+                value={zipInput}
+                onChange={(e) => setZipInput(e.target.value)}
+                placeholder="e.g. 33460"
+                aria-describedby="dgiq-zip-hint"
+              />
+            </Field>
+
             <Field label="State">
               <select
                 className="dgiq-select"
                 style={styles.select}
                 value={stateFilter}
-                onChange={(e) => setStateFilter(e.target.value)}
+                onChange={(e) => handleStateChange(e.target.value)}
               >
                 <option value="">All states</option>
                 {US_STATES.map((s) => (
@@ -374,7 +439,13 @@ export default function HardMoneyDirectory() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
             <span style={styles.countNum}>{displayCount}</span>
             <span style={styles.mutedTextMd}>
-              {hasViewAccess ? 'lenders match' : 'verified lenders nationwide'}
+              {!hasViewAccess
+                ? 'verified lenders nationwide'
+                : stateFilter
+                  // Coverage is licensed state by state — say so rather than
+                  // implying we matched the ZIP itself.
+                  ? `lenders licensed in ${stateFilter}`
+                  : 'lenders match'}
             </span>
           </div>
           {hasViewAccess && (
@@ -456,6 +527,7 @@ export default function HardMoneyDirectory() {
               <LenderCard
                 key={lender.id}
                 lender={revealedContacts[lender.id] ?? lender}
+                localState={stateFilter}
                 showSave={!contactsRedacted || !!revealedContacts[lender.id]}
                 redacted={contactsRedacted && !revealedContacts[lender.id]}
                 revealing={revealingId === lender.id}
@@ -491,7 +563,7 @@ export default function HardMoneyDirectory() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24, textAlign: 'left' }}>
                   {[
                     'Phone, email, and apply-online links for every lender',
-                    'Filter by state, product, and minimum loan size',
+                    'Search by deal ZIP code, loan product, and minimum loan size',
                     'Save lenders to your dashboard for quick access',
                   ].map((item) => (
                     <div key={item} style={styles.gateFeatureRow}>
@@ -553,18 +625,22 @@ function PreviewLenderCards() {
 
 function LenderCard({
   lender,
+  localState,
   showSave,
   redacted = false,
   revealing = false,
   onReveal,
 }: {
   lender: Lender;
+  /** Currently filtered state, used to flag lenders headquartered in it. */
+  localState: string;
   showSave: boolean;
   redacted?: boolean;
   revealing?: boolean;
   onReveal?: () => void;
 }) {
   const products = lender.loan_products.map(productLabel);
+  const isLocal = !!localState && lender.state === localState;
 
   return (
     <div
@@ -599,9 +675,11 @@ function LenderCard({
               {lender.states_served_count} state{lender.states_served_count === 1 ? '' : 's'}
             </span>
           ) : null}
-          {lender.state && !lender.nationwide && (
+          {isLocal ? (
+            <span style={styles.badgeLocal}>Based in {lender.state}</span>
+          ) : lender.state && !lender.nationwide ? (
             <span style={styles.badgeRegional}>HQ {lender.state}</span>
-          )}
+          ) : null}
           {lender.credit_check_policy === 'none' && (
             <span style={styles.badgeNoCredit}>No Credit Check</span>
           )}
@@ -687,7 +765,17 @@ function LenderCard({
   );
 }
 
-function Field({ label, icon, children }: { label: string; icon?: ReactNode; children: ReactNode }) {
+function Field({
+  label,
+  icon,
+  hint,
+  children,
+}: {
+  label: string;
+  icon?: ReactNode;
+  hint?: { id: string; text: string; tone: 'neutral' | 'error' } | null;
+  children: ReactNode;
+}) {
   return (
     <div>
       <label style={styles.fieldLabel}>{label}</label>
@@ -697,6 +785,18 @@ function Field({ label, icon, children }: { label: string; icon?: ReactNode; chi
         )}
         {children}
       </div>
+      {hint && (
+        <div
+          id={hint.id}
+          role="status"
+          style={{
+            ...styles.fieldHint,
+            color: hint.tone === 'error' ? 'var(--status-negative)' : directoryTokens.accent,
+          }}
+        >
+          {hint.text}
+        </div>
+      )}
     </div>
   );
 }
@@ -719,9 +819,21 @@ const styles = {
   sub: { ...directoryBaseStyles.sub, maxWidth: 720 },
   filterGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(5, 1fr)',
+    gridTemplateColumns: 'repeat(6, 1fr)',
     gap: 16,
     marginBottom: 16,
+  },
+  fieldHint: {
+    fontSize: 11,
+    marginTop: 5,
+    minHeight: 14,
+    lineHeight: 1.3,
+  },
+  badgeLocal: {
+    fontFamily: 'Space Mono, monospace', fontSize: 10, letterSpacing: 0.8,
+    textTransform: 'uppercase', padding: '2px 8px', borderRadius: 999,
+    color: 'var(--status-positive)', border: '1px solid color-mix(in srgb, var(--status-positive) 55%, transparent)',
+    background: 'color-mix(in srgb, var(--status-positive) 12%, transparent)',
   },
   badgeNationwide: {
     fontFamily: 'Space Mono, monospace', fontSize: 10, letterSpacing: 0.8,
