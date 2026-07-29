@@ -7,7 +7,6 @@ Postgres migration.
 """
 
 import uuid
-from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -27,40 +26,9 @@ from app.services.lenders_service import (
     list_lenders_page,
 )
 from fastapi import HTTPException
-from scripts.seed_lenders import load_lenders, row_values
-from sqlalchemy import delete, insert, update
+from sqlalchemy import update
 
 pytestmark = pytest.mark.asyncio
-
-
-@pytest.fixture(scope="session")
-async def seeded_lenders(async_engine) -> int:
-    """Load the real dataset once per session, committed so every test sees it.
-
-    Replaces the table's contents outright rather than upserting, so the row set
-    is exactly the dataset no matter what a previous run left behind. Safe
-    because the test database is disposable by design — conftest already runs
-    migrations against it.
-    """
-    rows = load_lenders()
-    now = datetime.now(UTC)
-    async with async_engine.begin() as conn:
-        await conn.execute(delete(Lender))
-        await conn.execute(
-            insert(Lender),
-            [
-                {
-                    "id": row["id"],
-                    "domain": row["domain"],
-                    **row_values(row),
-                    "is_active": True,
-                    "created_at": now,
-                    "updated_at": now,
-                }
-                for row in rows
-            ],
-        )
-    return len(rows)
 
 
 def _user():

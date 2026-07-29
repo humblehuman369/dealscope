@@ -9,6 +9,7 @@ from app.models.budget import BudgetExpense, BudgetLine, RehabBudget
 from app.models.cash_buyer import CashBuyer
 from app.models.contact import ContactRole, PropertyContact
 from app.models.device_token import DevicePlatform, DeviceToken
+from app.models.directory_service_area import DirectoryServiceArea
 from app.models.directory_usage import DirectoryUsageCounter
 from app.models.document import Document, DocumentType
 from app.models.geo_county import GeoCounty
@@ -35,6 +36,7 @@ __all__ = [
     "DevicePlatform",
     "DeviceToken",
     "DirectoryEntityType",
+    "DirectoryServiceArea",
     "DirectoryUsageCounter",
     "Document",
     "DocumentType",

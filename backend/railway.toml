@@ -15,7 +15,7 @@ dockerfilePath = "Dockerfile"
 # idempotent upserts sourced from files committed to the image, so a repeat
 # run is a sub-second no-op, and a failure blocking the deploy is correct
 # for the same reason a failed migration is: the new code expects the data.
-preDeployCommand = "alembic upgrade head && python -m scripts.seed_geo_counties && python -m scripts.seed_lenders"
+preDeployCommand = "alembic upgrade head && python -m scripts.seed_geo_counties && python -m scripts.seed_lenders && python -m scripts.backfill_service_area"
 
 # fix_alembic.py runs `alembic upgrade head` again as a defense-in-depth
 # safety net (no-op if preDeployCommand already ran), and also handles the

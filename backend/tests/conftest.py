@@ -22,6 +22,7 @@ from __future__ import annotations
 import asyncio
 import os
 from collections.abc import AsyncGenerator, Generator
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
@@ -71,9 +72,12 @@ from app.models import (  # noqa: F401
     UserSession,
     VerificationToken,
 )
+from app.models.lender import Lender
 from app.repositories.role_repository import role_repo
 from app.repositories.user_repository import user_repo
 from app.services.auth_service import auth_service
+from scripts.seed_lenders import load_lenders, row_values
+from sqlalchemy import delete, insert
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 
@@ -208,6 +212,39 @@ async def seeded_roles(db_session: AsyncSession) -> dict:
             f"Found: {sorted(roles.keys())}"
         )
     return roles
+
+
+@pytest.fixture(scope="session")
+async def seeded_lenders(async_engine) -> int:
+    """Load the real lender dataset once per session, committed so tests see it.
+
+    Replaces the table's contents outright rather than upserting, so the row set
+    is exactly the dataset no matter what a previous run left behind. Safe
+    because the test database is disposable by design — this module already runs
+    migrations against it.
+
+    Shared via conftest because both the lender API tests and the service-area
+    backfill tests need real lender rows to assert against.
+    """
+    rows = load_lenders()
+    now = datetime.now(UTC)
+    async with async_engine.begin() as conn:
+        await conn.execute(delete(Lender))
+        await conn.execute(
+            insert(Lender),
+            [
+                {
+                    "id": row["id"],
+                    "domain": row["domain"],
+                    **row_values(row),
+                    "is_active": True,
+                    "created_at": now,
+                    "updated_at": now,
+                }
+                for row in rows
+            ],
+        )
+    return len(rows)
 
 
 @pytest.fixture
