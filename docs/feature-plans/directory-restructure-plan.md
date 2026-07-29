@@ -9,6 +9,78 @@ apart from the buyer default-location fix, which shipped with Stage 1.
 
 ---
 
+## 0. Where this stands — read first
+
+Stages 1–4 are done and on `main`. **The whole backend half of this plan is
+finished.** The only work left is Stage 5, the frontend consolidation (§4).
+
+### The shape it landed in
+
+Both directories now answer through one pipeline. A directory is described by a
+`DirectorySpec` and everything else is shared:
+
+```
+routers/lenders.py ─┐
+                    ├─► services/directory_pipeline.py ─► directory_gates
+routers/buyers.py ──┘        (gate_view, stats_teaser,     directory_usage
+                              guard, run_export,           directory_export
+                              MAX_PAGE_SIZE, SPEC)         entitlements
+                                     │
+        lenders_service.py ──────────┴────────── buyers_service.py
+                    │                                    │
+              lenders table                      cash_buyers table
+                    └──────► directory_service_area ◄─────┘
+                                  │
+                       geo_counties + geo_cities
+```
+
+A router holds only its query parameters, its export columns, and its spec.
+`app/services/buyer_directory_service.py` no longer exists.
+
+### Invariants that are easy to break
+
+- **Do not rename the `lenders` / `buyers` keys** in the list responses. The
+  frontends read `page.lenders` (`HardMoneyDirectory.tsx:213`) and `page.buyers`
+  (`BuyerDirectory.tsx:339`). This is why `DirectoryListResponse` shares only the
+  pagination fields and is a base class rather than a generic.
+- **`MAX_PAGE_SIZE` is defined once**, in `directory_pipeline`. `lenders_service`
+  re-exports it. Do not reintroduce a second literal `25`.
+- **The gates take `count_total` as a callable**, not an `int`, and await it only
+  when refusing. Passing a number again would restore a `COUNT(*)` on every
+  authorised request. Pinned by
+  `test_an_authorised_request_never_counts_the_directory`.
+- **Both directories are paid-only.** `FREE` and `TRIAL` both get 403 with
+  different copy. There is no redaction path and no trial view allowance.
+- **Never fabricate data** (see `.cursor/rules/data-consistency.mdc`). Unresolved
+  buyer coverage stays unresolved and is reported, not guessed.
+- **`railway.toml :: preDeployCommand` order matters** — geo counties, then geo
+  cities, then lenders, then buyers, then the service-area backfill. The backfill
+  needs every table above it populated.
+
+### Verifying locally
+
+`backend/.venv` is Python 3.11, matching CI. Postgres comes from
+`make test-db-up`. Then:
+
+```
+cd backend && uv run pytest -q            # 684 passing as of 2026-07-29
+cd backend && uv run ruff check app tests
+cd frontend && npm run typecheck && npm run test:run && npm run theme:check
+```
+
+To prove an API contract did not move, dump `app.openapi()` before and after and
+diff it — that is how Stage 4's "zero response-shape diffs" claim was verified.
+
+### Operational note
+
+**Commits appear in this repo without being asked for.** During Stage 4 two
+commits (`11c3829c`, `2e4bb77e`) were authored as `Humble Human` while work was
+in progress; the repo has no git hooks, so an external automation or the IDE is
+doing it. Check `git log` and `git status` before assuming your working tree is
+uncommitted, and do not treat a clean tree as evidence that nothing changed.
+
+---
+
 ## 1. Why
 
 Lenders and cash buyers are one product feature — *find a counterparty who covers this

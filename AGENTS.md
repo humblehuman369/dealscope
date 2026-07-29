@@ -165,6 +165,23 @@ Before every production deployment:
 | Build                             | `npm run build`                      |
 | Capacitor iOS dev                 | `npm run cap:dev`                    |
 | Capacitor Android dev             | `npm run cap:dev:android`            |
+| Backend tests (Python 3.11 + Postgres) | `make test-db-up` then `cd backend && uv run pytest -q` |
+
+---
+
+## 11. Lender + Cash Buyer Directories
+
+Both directories are one feature served by one backend pipeline. Before touching
+`/api/lenders`, `/api/buyers`, `HardMoneyDirectory.tsx` or `BuyerDirectory.tsx`,
+read **§0 of `docs/feature-plans/directory-restructure-plan.md`** — it carries the
+current state, the architecture diagram, and the invariants that are easy to break
+(the `lenders`/`buyers` response keys the frontends depend on, the single
+`MAX_PAGE_SIZE`, the lazy teaser count, paid-only access, and the seed ordering in
+`railway.toml`).
+
+Backend stages 1–4 are complete. Stage 5 — consolidating the two ~1,000-line
+directory components behind a shared `useDirectoryList` hook and shared
+`DirectoryField` / `DirectoryGate` primitives — is the remaining work.
 
 ---
 
