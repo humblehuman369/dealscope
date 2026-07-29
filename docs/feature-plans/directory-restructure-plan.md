@@ -1,9 +1,9 @@
 # Directory Restructure Plan — Lenders + Cash Buyers
 
-**Status:** Stage 1 (paid-only enforcement), Stage 2 (lenders → Postgres),
-Stage 3 (`directory_service_area`, `geo_cities`, buyer coverage matching) and
-Stage 4 (shared backend pipeline) are **implemented**. Stage 5 remains proposed
-apart from the buyer default-location fix, which shipped with Stage 1.
+**Status:** all five stages are **implemented** — Stage 1 (paid-only enforcement),
+Stage 2 (lenders → Postgres), Stage 3 (`directory_service_area`, `geo_cities`,
+buyer coverage matching), Stage 4 (shared backend pipeline) and Stage 5 (shared
+frontend primitives).
 **Author:** architecture review, 2026-07-29
 **Scope:** `/api/lenders`, `/api/buyers`, and the two frontend directories
 
@@ -11,18 +11,16 @@ apart from the buyer default-location fix, which shipped with Stage 1.
 
 ## 0. Where this stands — read first
 
-Stages 1–4 are done and on `main`. **The whole backend half of this plan is
-finished.** The only work left is Stage 5, the frontend consolidation (§4) —
-start there, and note that its highest-value item is a correctness fix rather
-than a refactor: `BuyerDirectory.tsx` still resolves city/ZIP searches to counties
-client-side from Florida-only tables plus whichever buyers are loaded in the
-current pages, which Stage 3 made obsolete.
+**This plan is complete.** Both halves of the feature now answer through one
+pipeline: `directory_pipeline` on the backend, and `useDirectoryList` plus the
+`components/directory/` primitives on the frontend.
 
-Also outstanding but **not blocking and not part of any stage**: regenerating the
+Still outstanding but **not blocking and not part of any stage**: regenerating the
 lender dataset (Stage 2 unblocked it; two known data-quality bugs in §Stage 2 were
 deliberately left for it), lender county filtering (waiting on `counties_served`
-in that regenerated dataset), and the 746-string tail in
-`docs/geo/coverage-unmatched.csv`.
+in that regenerated dataset), the 746-string tail in
+`docs/geo/coverage-unmatched.csv`, and the one open product question from Stage 5
+(buyers require a Search click while lenders filter live).
 
 ### The shape it landed in
 
@@ -46,6 +44,20 @@ routers/buyers.py ──┘        (gate_view, stats_teaser,     directory_usage
 
 A router holds only its query parameters, its export columns, and its spec.
 `app/services/buyer_directory_service.py` no longer exists.
+
+The frontend mirrors that split. Each component owns its filters, its record
+card, and its gate spec; everything else is shared:
+
+```
+HardMoneyDirectory.tsx ─┐
+                        ├─► useDirectoryList (paging + access flags)
+BuyerDirectory.tsx ─────┘
+            │
+            └──► components/directory/  DirectoryField
+                                        DirectoryGate + DirectoryGateSpec
+                                        DirectoryCardSkeletons
+                                        directoryStyles (tokens + base styles)
+```
 
 ### Invariants that are easy to break
 
@@ -660,54 +672,64 @@ The redaction inconsistency noted in review (lenders blank to `None`, buyers to
 
 ---
 
-### Stage 5 — Consolidate the frontend — THE ONLY STAGE LEFT
+### Stage 5 — Consolidate the frontend — DONE 2026-07-29
 
-State verified 2026-07-29: **un-started**, except that `directoryStyles.ts` (320
-lines) is already shared by both components and the buyer `Tampa, FL` default was
-removed with Stage 1. Components are now 888 (`HardMoneyDirectory.tsx`) and 937
-(`BuyerDirectory.tsx`) lines, roughly 70% parallel.
+`BuyerDirectory.tsx` went 937 → 657 lines and `HardMoneyDirectory.tsx` 888 → 795,
+against 256 lines of new shared code (three components plus one hook) and 244
+lines of the lender test file that did not exist. Net −343 in the two components.
 
-| File | Change | State |
-|---|---|---|
-| `src/hooks/useDirectoryList.ts` | **new** — the shared `useInfiniteQuery` + access-flag block (duplicated at `HardMoneyDirectory.tsx:213` and `BuyerDirectory.tsx:339`) | does not exist |
-| ~~`src/hooks/useRevealContact.ts`~~ | not needed — Stage 1 deleted the reveal flow from both components | n/a |
-| `src/components/directory/DirectoryField.tsx` | **new** — replaces the two local `Field` components (lender's has a `hint` prop, buyer's does not) | does not exist |
-| `src/components/directory/DirectoryGate.tsx` | **new** — shared gate shell; bullets stay per-directory | does not exist |
-| `src/lib/buyers-api.ts` | export a real `Buyer` type | still `buyers: unknown[]` at line 16 |
-| `src/components/buyer-directory/BuyerDirectory.tsx` | delete the client-side county inference, lines ~59–260 — see below | still present |
-| `src/__tests__/components/HardMoneyDirectory.test.tsx` | **new** — buyers have tests, lenders have none | does not exist |
+| File | Change |
+|---|---|
+| `src/hooks/useDirectoryList.ts` | **new** — the shared `useInfiniteQuery` + access-flag block. Owns `useSubscription`, so each component reads one source of truth for `hasAccess` / `viewForbidden` |
+| `src/components/directory/DirectoryField.tsx` | **new** — replaces both local `Field` components; the lender's `hint` prop becomes the optional `DirectoryFieldHint` |
+| `src/components/directory/DirectoryGate.tsx` | **new** — the whole paid-only overlay, including the three-way copy ternary that was duplicated. `DirectoryGateSpec` supplies the four strings that actually differ; bullets stay per-directory |
+| `src/components/directory/DirectoryCardSkeletons.tsx` | **new** — the buyer loading skeleton, now used by both |
+| `src/lib/buyers-api.ts` | `Buyer` is a real exported interface mirroring `BuyerOut`; `BuyerListResponse.buyers` is `Buyer[]`, not `unknown[]` |
+| `src/components/buyer-directory/BuyerDirectory.tsx` | client-side county inference deleted (~200 lines) |
+| `src/__tests__/components/HardMoneyDirectory.test.tsx` | **new** — 5 tests: anonymous, trialing, paid pagination, filter params, ZIP→state |
 
-#### The county inference is a bug, not just duplication
+**The county inference was already dead code, not a live bug.** The section this
+replaces called it a correctness fix on the grounds that `getCountiesForCity` /
+`getCountiesForZip` resolved counties from Florida-only tables plus whatever
+buyers happened to be loaded. Both are true of the code, but nothing called
+either function — searches already sent `city` / `state` / `county` / `zip`
+straight to the API, which is what Stage 3 made authoritative. Only
+`canonicalCountyName` was still reachable, and only to label the result count;
+it is now a four-line `formatCountyLabel` that tidies the user's own input
+instead of matching it against 19 Florida county names.
 
-`getCountiesForCity` (line 215) and `getCountiesForZip` (line 235) resolve a
-search's counties from two sources, both wrong:
+**Field labels were not associated with their controls.** Both local `Field`
+components rendered a bare `<label>` as a sibling of the input, so no directory
+filter was reachable by label for a screen reader — or for
+`getByLabelText`. `DirectoryField` now requires a `controlId` and renders
+`htmlFor`, with a matching `id` on all ten controls. This is why the new lender
+tests can drive the filters the way a user does.
 
-1. `CITY_TO_COUNTY_BY_STATE` / `ZIP_TO_COUNTY_BY_STATE` /
-   `ZIP_PREFIX_TO_COUNTY_BY_STATE` (lines 59–108) — **Florida only**. Outside FL
-   they contribute nothing.
-2. **The buyers currently loaded into the client's pages.** Both functions take
-   `buyers: Buyer[]` and harvest `buyer.coverage[]` from whichever records happen
-   to be in the loaded pages, so the county a search resolves to depends on how
-   far the user has scrolled.
+Three copy strings moved, all in the same direction — shorter and consistent:
+the lender sign-in gate says "lender directory" rather than "hard money lender
+directory" (the page heading already says it), and the buyer unlock headline
+says "verified cash buyers" rather than "verified buyers".
 
-Stage 3 built the authoritative replacement — `county_fips_for_search` +
-`directory_service_area`, resolving 90.6% of coverage strings server-side, with
-`/api/v1/geo/zip/{zip_code}` for the ZIP half. The frontend should send `city` /
-`zip` / `county` to the API and let the backend resolve them. Deleting this is a
-correctness fix and can be done independently of the rest of Stage 5.
+UX divergences:
 
-UX divergences to settle, not silently preserve:
+- **Settled:** the buyer `Tampa, FL` default was removed with Stage 1; the first
+  view is nationwide for both. Lenders now show skeleton cards while loading
+  instead of a "Loading lenders…" text line.
+- **Still open, deliberately:** buyers require a **Search** click while lenders
+  filter live. Live filtering is better for lenders' six independent selects and
+  worse for a city/state pair that is meaningless half-typed, so this is a product
+  decision, not a consolidation one.
+- **Cosmetic, left alone:** grid min-width 300px (buyers) vs 320px (lenders),
+  subtitle max-width 640px vs 720px.
 
-- **Done (2026-07-29):** the buyer `Tampa, FL` default is removed; the first view is
-  nationwide, matching lenders' empty-filter behaviour. An "All states" option was
-  added to the state select so nationwide is selectable again after a search.
-- Buyers still require a **Search** click while lenders filter live. Open question.
-- Buyers show skeleton cards while loading; lenders show a text line.
-- Grid min-width 300px vs 320px; subtitle max-width 640px vs 720px.
+Both components still carry pre-existing dead style keys from the deleted
+multi-select/action-bar flow (`actionBar`, `actionBtn*`, `toast`, `checkbox`,
+`exportRow`). Untouched here — unrelated to this stage.
 
-**Verify:** `npm run typecheck`, `npm run test:run`, `npm run theme:check`,
-`npm run build` per `AGENTS.md` §9. Add a `HardMoneyDirectory.test.tsx` — buyers have
-tests, lenders have none.
+**Verified:** `npm run typecheck` clean, `npm run test:run` 237 passing (was 232),
+`npm run theme:check` clean, `npm run lint` 0 errors (the one warning in
+`HardMoneyDirectory.tsx:179` is the pre-existing ZIP→state effect), `npm run build`
+clean with no bundle-budget warnings.
 
 ---
 

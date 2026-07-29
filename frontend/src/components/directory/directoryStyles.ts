@@ -317,4 +317,11 @@ export const directoryBaseStyles = {
     color: 'var(--text-muted)',
     pointerEvents: 'none',
   },
+  fieldHint: {
+    fontSize: 11,
+    marginTop: 5,
+    // Reserved so a hint appearing does not shift the row it sits in.
+    minHeight: 14,
+    lineHeight: 1.3,
+  },
 } as Record<string, CSSProperties>;

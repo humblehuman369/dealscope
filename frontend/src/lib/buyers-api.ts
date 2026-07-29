@@ -12,8 +12,31 @@ export interface AppliedBuyerSearch {
   zip: string
 }
 
+/** Mirrors `BuyerOut` in backend/app/schemas/buyers.py. */
+export interface Buyer {
+  id: number
+  initials: string
+  accent: string
+  company: string
+  owner: string
+  street: string
+  city: string
+  state: string
+  zip: string
+  phone: string
+  email: string
+  website: string
+  coverage: string[]
+  description: string
+  deals: number
+  years: number
+  response: string
+  strategies: string[]
+  buyerType?: string | null
+}
+
 export interface BuyerListResponse {
-  buyers: unknown[]
+  buyers: Buyer[]
   total: number
   page: number
   limit: number

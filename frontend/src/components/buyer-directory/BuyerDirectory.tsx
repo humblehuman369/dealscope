@@ -2,16 +2,17 @@
 
 // DealGapIQ — Cash Buyer Directory (Pro members only)
 
-import { useEffect, useState, useMemo, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useQuery } from '@tanstack/react-query';
+import { useDirectoryList } from '@/hooks/useDirectoryList';
 import { trackActivation } from '@/lib/eventTracking';
 import { ApiError, api } from '@/lib/api-client';
 import {
   buildBuyersExportPath,
   buildBuyersListPath,
   formatBuyerTotal,
+  type Buyer,
   type BuyerListResponse,
   type BuyerStatsResponse,
 } from '@/lib/buyers-api';
@@ -20,14 +21,16 @@ import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import { SaveDirectoryContactButton } from '@/components/SaveDirectoryContactButton';
 import { buildBuyerSnapshot } from '@/types/savedDirectoryContact';
 import {
-  Search, MapPin, Phone, Mail, Globe, Lock, CheckCircle2,
-  Sparkles, Filter,
+  Search, MapPin, Phone, Mail, Globe, Lock, CheckCircle2, Filter,
 } from 'lucide-react';
 import {
   DIRECTORY_BASE_CSS,
   directoryBaseStyles,
   directoryTokens,
 } from '@/components/directory/directoryStyles';
+import { DirectoryCardSkeletons } from '@/components/directory/DirectoryCardSkeletons';
+import { DirectoryField } from '@/components/directory/DirectoryField';
+import { DirectoryGate, type DirectoryGateSpec } from '@/components/directory/DirectoryGate';
 
 // -----------------------------------------------------------------------------
 // Safe preview metadata only. Full buyer records are fetched from the paid API.
@@ -54,208 +57,29 @@ const STRATEGIES = ['all', 'Fix & Flip', 'BRRRR', 'Buy & Hold', 'Wholesale'] as 
 // Server page ceiling is 25 (gating plan spec).
 const PAGE_SIZE = 25;
 
-// Local county lookups keep the mock directory behaving like market search until
-// the backend exposes geocoded county metadata for each query.
-const CITY_TO_COUNTY_BY_STATE: Record<string, Record<string, string>> = {
-  FL: {
-    'boca raton': 'Palm Beach',
-    'boynton beach': 'Palm Beach',
-    'delray beach': 'Palm Beach',
-    'fort lauderdale': 'Broward',
-    hollywood: 'Broward',
-    jacksonville: 'Duval',
-    melbourne: 'Brevard',
-    miami: 'Miami-Dade',
-    'north miami beach': 'Miami-Dade',
-    orlando: 'Orange',
-    'palm beach': 'Palm Beach',
-    tampa: 'Hillsborough',
-    'west palm beach': 'Palm Beach',
-  },
-};
-
-const ZIP_TO_COUNTY_BY_STATE: Record<string, Record<string, string>> = {
-  FL: {
-    '32202': 'Duval',
-    '32803': 'Orange',
-    '32901': 'Brevard',
-    '33021': 'Broward',
-    '33142': 'Miami-Dade',
-    '33162': 'Miami-Dade',
-    '33309': 'Broward',
-    '33432': 'Palm Beach',
-    '33602': 'Hillsborough',
-    '33609': 'Hillsborough',
-  },
-};
-
-const ZIP_PREFIX_TO_COUNTY_BY_STATE: Record<string, Record<string, string>> = {
-  FL: {
-    '322': 'Duval',
-    '328': 'Orange',
-    '329': 'Brevard',
-    '330': 'Broward',
-    '331': 'Miami-Dade',
-    '333': 'Broward',
-    '334': 'Palm Beach',
-    '336': 'Hillsborough',
-  },
-};
-
 type SearchMode = 'city' | 'county' | 'zip';
 type StrategyFilter = (typeof STRATEGIES)[number];
 
-interface Buyer {
-  id: number;
-  initials: string;
-  accent: string;
-  company: string;
-  owner: string;
-  street: string;
-  city: string;
-  state: string;
-  zip: string;
-  phone: string;
-  email: string;
-  website: string;
-  coverage: string[];
-  description: string;
-  deals: number;
-  years: number;
-  response: string;
-  strategies: string[];
-}
+const GATE_SPEC: DirectoryGateSpec = {
+  records: 'verified cash buyers',
+  directoryName: 'buyer directory',
+  entity: 'buyer',
+  bullets: [
+    'Phone, email, and website for every buyer',
+    'Verified deal volume (last 12 months)',
+    'Coverage by county and zip code',
+    'Save buyers to your dashboard for quick access',
+  ],
+};
 
-const KNOWN_COUNTIES = [
-  'Brevard',
-  'Broward',
-  'Duval',
-  'Hillsborough',
-  'Indian River',
-  'Lake',
-  'Manatee',
-  'Martin',
-  'Miami-Dade',
-  'Nassau',
-  'Orange',
-  'Palm Beach',
-  'Pasco',
-  'Pinellas',
-  'Polk',
-  'Seminole',
-  'St. Johns',
-  'St. Lucie',
-  'Volusia',
-];
+const selectBuyers = (page: BuyerListResponse) => page.buyers;
 
-function normalizeSearchValue(value: string) {
+/** Tidies the user's own county input for the result label: "duval county" → "Duval". */
+function formatCountyLabel(value: string) {
   return value
     .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function normalizeCountyName(value: string) {
-  return normalizeSearchValue(value).replace(/\s+county$/, '');
-}
-
-function canonicalCountyName(value: string) {
-  const normalized = normalizeCountyName(value);
-  if (!normalized) return '';
-
-  return KNOWN_COUNTIES.find(county => normalizeCountyName(county) === normalized) ?? value.trim().replace(/\s+county$/i, '');
-}
-
-function countyMatches(county: string, query: string) {
-  const countyName = normalizeCountyName(county);
-  const queryName = normalizeCountyName(query);
-  return !!queryName && (countyName === queryName || countyName.includes(queryName));
-}
-
-function buyerCoversCounty(buyer: Buyer, county: string) {
-  return buyer.coverage.some(coverageCounty => countyMatches(coverageCounty, county));
-}
-
-function getStaticCountyForCity(cityName: string, state: string) {
-  const normalizedCity = normalizeSearchValue(cityName);
-  if (!normalizedCity) return '';
-
-  const cityMap = CITY_TO_COUNTY_BY_STATE[state] ?? {};
-  if (cityMap[normalizedCity]) return cityMap[normalizedCity];
-
-  const matchedCounties = Array.from(new Set(
-    Object.entries(cityMap)
-      .filter(([city]) => city.includes(normalizedCity) || normalizedCity.includes(city))
-      .map(([, county]) => county),
-  ));
-
-  return matchedCounties.length === 1 ? matchedCounties[0] : '';
-}
-
-function getStaticCountyForZip(zipCode: string) {
-  const zip = zipCode.trim();
-  if (!zip) return '';
-
-  for (const countiesByState of Object.values(ZIP_TO_COUNTY_BY_STATE)) {
-    if (countiesByState[zip]) return countiesByState[zip];
-  }
-
-  if (zip.length < 3) return '';
-
-  const prefix = zip.slice(0, 3);
-  for (const countiesByState of Object.values(ZIP_PREFIX_TO_COUNTY_BY_STATE)) {
-    if (countiesByState[prefix]) return countiesByState[prefix];
-  }
-
-  return '';
-}
-
-function getCountiesForCity(cityName: string, state: string, buyers: Buyer[]) {
-  const normalizedCity = normalizeSearchValue(cityName);
-  if (!normalizedCity) return [];
-
-  const counties = new Set<string>();
-  const staticCounty = getStaticCountyForCity(cityName, state);
-  if (staticCounty) counties.add(staticCounty);
-
-  buyers.forEach(buyer => {
-    if (state && buyer.state !== state) return;
-    const buyerCity = normalizeSearchValue(buyer.city);
-    if (!buyerCity) return;
-    if (buyerCity.includes(normalizedCity) || normalizedCity.includes(buyerCity)) {
-      buyer.coverage.forEach(county => counties.add(canonicalCountyName(county)));
-    }
-  });
-
-  return Array.from(counties).filter(Boolean);
-}
-
-function getCountiesForZip(zipCode: string, buyers: Buyer[]) {
-  const zip = zipCode.trim();
-  if (!zip) return { counties: [] as string[], state: '' };
-
-  const counties = new Set<string>();
-  const states = new Set<string>();
-  const staticCounty = getStaticCountyForZip(zip);
-  if (staticCounty) counties.add(staticCounty);
-
-  const matchingBuyers = buyers.filter(buyer => {
-    if (!buyer.zip) return false;
-    if (buyer.zip.startsWith(zip)) return true;
-    return zip.length >= 3 && buyer.zip.startsWith(zip.slice(0, 3));
-  });
-
-  matchingBuyers.forEach(buyer => {
-    if (buyer.state) states.add(buyer.state);
-    buyer.coverage.forEach(county => counties.add(canonicalCountyName(county)));
-  });
-
-  return {
-    counties: Array.from(counties).filter(Boolean),
-    state: states.size === 1 ? Array.from(states)[0] : '',
-  };
+    .replace(/\s+county$/i, '')
+    .replace(/\b[a-z]/g, char => char.toUpperCase());
 }
 
 // =============================================================================
@@ -264,18 +88,6 @@ function getCountiesForZip(zipCode: string, buyers: Buyer[]) {
 
 export default function BuyerDirectory() {
   const router = useRouter();
-  const {
-    isPaidPro,
-    isTrialing,
-    isAuthenticated,
-    isLoading: subscriptionLoading,
-  } = useSubscription();
-
-  // North-star activation: a signed-in user engaging the proprietary cash-buyer
-  // directory is a strong "aha"/intent signal (deduped per device).
-  useEffect(() => {
-    if (isAuthenticated) trackActivation('buyer_directory');
-  }, [isAuthenticated]);
 
   const [searchMode, setSearchMode] = useState<SearchMode>('city');
   const [city, setCity] = useState('');
@@ -292,6 +104,31 @@ export default function BuyerDirectory() {
   });
   const [strategyFilter, setStrategyFilter] = useState<StrategyFilter>('all');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+
+  const {
+    records: buyers,
+    total: listTotal,
+    isLoading: buyersLoading,
+    isError: buyersErrored,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    viewForbidden,
+    hasAccess,
+    isTrialing,
+    isAuthenticated,
+    subscriptionLoading,
+  } = useDirectoryList<BuyerListResponse, Buyer>({
+    queryKey: ['buyers', appliedSearch, strategyFilter],
+    buildPath: (page) => buildBuyersListPath(appliedSearch, strategyFilter, page, PAGE_SIZE),
+    selectRecords: selectBuyers,
+  });
+
+  // North-star activation: a signed-in user engaging the proprietary cash-buyer
+  // directory is a strong "aha"/intent signal (deduped per device).
+  useEffect(() => {
+    if (isAuthenticated) trackActivation('buyer_directory');
+  }, [isAuthenticated]);
 
   const { data: statsData } = useQuery({
     queryKey: ['buyer-directory-stats'],
@@ -313,41 +150,6 @@ export default function BuyerDirectory() {
     retry: false,
   });
 
-  const {
-    data: buyerPages,
-    isLoading: buyersLoading,
-    isError: buyersErrored,
-    error: buyersError,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ['buyers', appliedSearch, strategyFilter],
-    initialPageParam: 1,
-    queryFn: ({ pageParam }) =>
-      api.get<BuyerListResponse>(
-        buildBuyersListPath(appliedSearch, strategyFilter, pageParam, PAGE_SIZE),
-      ),
-    getNextPageParam: (lastPage) =>
-      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
-    // UX hint only — the directory is paid-only and the server enforces it.
-    enabled: isAuthenticated && !subscriptionLoading && isPaidPro,
-    retry: false,
-  });
-
-  const buyers = useMemo(
-    () => (buyerPages?.pages.flatMap(page => page.buyers) as Buyer[]) ?? [],
-    [buyerPages],
-  );
-  const listTotal = buyerPages?.pages[0]?.total ?? 0;
-  const viewForbidden =
-    buyersError instanceof ApiError &&
-    (buyersError.code === 'PRO_REQUIRED' ||
-      buyersError.code === 'DIRECTORY_PAID_ONLY' ||
-      buyersError.status === 401 ||
-      buyersError.status === 403);
-  // The directory is paid-only: viewing and exporting share one gate.
-  const hasAccess = isPaidPro && !viewForbidden;
   const directoryTotal = statsData?.total;
   const displayTotalLabel =
     typeof directoryTotal === 'number' ? formatBuyerTotal(directoryTotal) : PREVIEW_BUYER_COUNT_FALLBACK;
@@ -377,37 +179,6 @@ export default function BuyerDirectory() {
   const openSignIn = () => {
     router.push('/directory?auth=required&redirect=/directory');
   };
-
-  const gateCopy = !isAuthenticated
-    ? {
-        eyebrow: 'Sign In Required',
-        title: 'Sign in to browse verified cash buyers',
-        description: 'Create an account or sign in to search and view the buyer directory.',
-        cta: 'Sign in to continue',
-        onClick: openSignIn,
-        footnote: 'The directory requires a paid subscription.',
-      }
-    : isTrialing
-      ? {
-          // A trialing user already picked Pro, so "upgrade" would confuse them —
-          // what they need is for billing to start.
-          eyebrow: 'Paid Feature',
-          title: `Unlock ${displayTotalLabel} verified buyers`,
-          description:
-            'The buyer directory is not included in the free trial. Start billing now to get full search, filters, contact details, and exports.',
-          cta: 'Start paid Pro',
-          onClick: () => setUpgradeModalOpen(true),
-          footnote: 'Billing starts today. Cancel anytime.',
-        }
-      : {
-          eyebrow: 'Paid Pro Required',
-          title: `Unlock ${displayTotalLabel} verified buyers`,
-          description:
-            'Full search, filters, buyer contact details, and exports come with a paid Pro subscription.',
-          cta: 'Start paid Pro',
-          onClick: () => setUpgradeModalOpen(true),
-          footnote: 'Billing starts today. Cancel anytime.',
-        };
 
   return (
     <div style={styles.page}>
@@ -454,30 +225,30 @@ export default function BuyerDirectory() {
             <div style={{ display: 'grid', gridTemplateColumns: searchMode === 'city' ? '1fr 140px' : '1fr', gap: 12 }}>
               {searchMode === 'city' && (
                 <>
-                  <Field label="City" icon={<MapPin size={16} />}>
-                    <input className="dgiq-input" style={styles.input}
+                  <DirectoryField label="City" controlId="buyer-city" icon={<MapPin size={16} />}>
+                    <input id="buyer-city" className="dgiq-input" style={styles.input}
                       value={city} onChange={e => setCity(e.target.value)} placeholder="Tampa, Miami, Orlando..." />
-                  </Field>
-                  <Field label="State">
-                    <select className="dgiq-select" style={styles.select}
+                  </DirectoryField>
+                  <DirectoryField label="State" controlId="buyer-state">
+                    <select id="buyer-state" className="dgiq-select" style={styles.select}
                       value={stateCode} onChange={e => setStateCode(e.target.value)}>
                       <option value="">All states</option>
                       {stateOptions.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
-                  </Field>
+                  </DirectoryField>
                 </>
               )}
               {searchMode === 'county' && (
-                <Field label="County name" icon={<MapPin size={16} />}>
-                  <input className="dgiq-input" style={styles.input}
+                <DirectoryField label="County name" controlId="buyer-county" icon={<MapPin size={16} />}>
+                  <input id="buyer-county" className="dgiq-input" style={styles.input}
                     value={county} onChange={e => setCounty(e.target.value)} placeholder="Hillsborough, Broward, Palm Beach..." />
-                </Field>
+                </DirectoryField>
               )}
               {searchMode === 'zip' && (
-                <Field label="Zip code" icon={<MapPin size={16} />}>
-                  <input className="dgiq-input" style={styles.input}
+                <DirectoryField label="Zip code" controlId="buyer-zip" icon={<MapPin size={16} />}>
+                  <input id="buyer-zip" className="dgiq-input" style={styles.input}
                     value={zip} onChange={e => setZip(e.target.value)} placeholder="33602" maxLength={5} />
-                </Field>
+                </DirectoryField>
               )}
             </div>
             <button type="submit" className="dgiq-btn-press" style={styles.searchBtn}>
@@ -511,7 +282,7 @@ export default function BuyerDirectory() {
             <span style={styles.countNum}>{displayCount}</span>
             <span style={styles.mutedTextMd}>
               verified buyers {appliedSearch.mode === 'city' && appliedSearch.city ? `in ${appliedSearch.city}, ${appliedSearch.stateCode}` :
-                appliedSearch.mode === 'county' && appliedSearch.county ? `in ${canonicalCountyName(appliedSearch.county)} County` :
+                appliedSearch.mode === 'county' && appliedSearch.county ? `in ${formatCountyLabel(appliedSearch.county)} County` :
                 appliedSearch.mode === 'zip' && appliedSearch.zip ? `near ${appliedSearch.zip}` : 'nationwide'}
             </span>
           </div>
@@ -566,7 +337,7 @@ export default function BuyerDirectory() {
             userSelect: hasAccess ? 'auto' : 'none',
             transition: 'filter 0.4s ease',
           }}>
-            {hasAccess && buyersLoading && <LoadingBuyerCards />}
+            {hasAccess && buyersLoading && <DirectoryCardSkeletons />}
             {hasAccess && buyersErrored && !viewForbidden && (
               <div style={styles.emptyState}>Could not load buyer directory. Refresh and try again.</div>
             )}
@@ -596,31 +367,14 @@ export default function BuyerDirectory() {
 
           {/* Pro upgrade overlay */}
           {!subscriptionLoading && !hasAccess && (
-            <div style={styles.gateWrap}>
-              <div style={styles.gateCard}>
-                <div style={styles.gateIcon}><Lock size={24} color={directoryTokens.accentOnAccent} /></div>
-                <div style={styles.gateEyebrow}>{gateCopy.eyebrow}</div>
-                <h2 style={styles.gateTitle}>{gateCopy.title}</h2>
-                <p style={styles.gateDesc}>
-                  {gateCopy.description}
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24, textAlign: 'left' }}>
-                  {['Phone, email, and website for every buyer',
-                    'Verified deal volume (last 12 months)',
-                    'Coverage by county and zip code',
-                    'Save buyers to your dashboard for quick access'].map(item => (
-                    <div key={item} style={styles.gateFeatureRow}>
-                      <CheckCircle2 size={16} style={{ color: directoryTokens.accent, flexShrink: 0 }} />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-                <button onClick={gateCopy.onClick} className="dgiq-btn-press" style={styles.gateBtn}>
-                  <Sparkles size={16} /> {gateCopy.cta}
-                </button>
-                <div style={styles.footnoteText}>{gateCopy.footnote}</div>
-              </div>
-            </div>
+            <DirectoryGate
+              spec={GATE_SPEC}
+              totalLabel={displayTotalLabel}
+              isAuthenticated={isAuthenticated}
+              isTrialing={isTrialing}
+              onSignIn={openSignIn}
+              onStartPaid={() => setUpgradeModalOpen(true)}
+            />
           )}
         </div>
       </div>
@@ -717,22 +471,6 @@ function BuyerCard({ buyer }: { buyer: Buyer }) {
   );
 }
 
-function LoadingBuyerCards() {
-  return (
-    <>
-      {[0, 1, 2].map((index) => (
-        <div key={index} className="dgiq-directory-card" style={{ ...styles.card, minHeight: 280, opacity: 0.55 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: directoryTokens.surfaceElevated, marginBottom: 16 }} />
-          <div style={{ height: 16, width: '60%', background: directoryTokens.surfaceElevated, borderRadius: 999, marginBottom: 10 }} />
-          <div style={{ height: 12, width: '40%', background: directoryTokens.surfaceElevated, borderRadius: 999, marginBottom: 20 }} />
-          <div style={{ height: 64, background: directoryTokens.surfaceElevated, borderRadius: 8, marginBottom: 16 }} />
-          <div style={{ height: 44, background: directoryTokens.surfaceElevated, borderRadius: 8 }} />
-        </div>
-      ))}
-    </>
-  );
-}
-
 function PreviewBuyerCards() {
   return (
     <>
@@ -774,20 +512,6 @@ function PreviewBuyerCards() {
         </div>
       ))}
     </>
-  );
-}
-
-function Field({ label, icon, children }: { label: string; icon?: ReactNode; children: ReactNode }) {
-  return (
-    <div>
-      <label style={styles.fieldLabel}>{label}</label>
-      <div style={{ position: 'relative' }}>
-        {icon && (
-          <span style={styles.fieldIcon}>{icon}</span>
-        )}
-        {children}
-      </div>
-    </div>
   );
 }
 
@@ -877,10 +601,6 @@ const styles = {
     fontFamily: 'inherit',
     fontSize: 13,
     fontWeight: 700,
-  },
-  gateBtn: {
-    ...directoryBaseStyles.gateBtn,
-    marginBottom: 10,
   },
   actionBar: {
     position: 'fixed', bottom: 20, left: '50%',

@@ -2,10 +2,10 @@
 
 // DealGapIQ — Hard Money Lender Directory (Pro members)
 
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useQuery } from '@tanstack/react-query';
+import { useDirectoryList } from '@/hooks/useDirectoryList';
 import { trackActivation } from '@/lib/eventTracking';
 import { ApiError, api } from '@/lib/api-client';
 import {
@@ -28,14 +28,16 @@ import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import { SaveDirectoryContactButton } from '@/components/SaveDirectoryContactButton';
 import { buildLenderSnapshot } from '@/types/savedDirectoryContact';
 import {
-  Search, Phone, Mail, Globe, Lock, CheckCircle2, Sparkles, Filter,
-  ExternalLink,
+  Search, Phone, Mail, Globe, Lock, Filter, ExternalLink,
 } from 'lucide-react';
 import {
   DIRECTORY_BASE_CSS,
   directoryBaseStyles,
   directoryTokens,
 } from '@/components/directory/directoryStyles';
+import { DirectoryCardSkeletons } from '@/components/directory/DirectoryCardSkeletons';
+import { DirectoryField, type DirectoryFieldHint } from '@/components/directory/DirectoryField';
+import { DirectoryGate, type DirectoryGateSpec } from '@/components/directory/DirectoryGate';
 
 const PREVIEW_LENDER_CARDS = [
   { title: 'Verified Hard Money Lender', products: ['Fix & Flip', 'Bridge'] },
@@ -74,6 +76,19 @@ const MIN_LOAN_OPTIONS = [
   { value: '10000000', label: '$10M+' },
 ] as const;
 
+const GATE_SPEC: DirectoryGateSpec = {
+  records: 'verified lenders',
+  directoryName: 'lender directory',
+  entity: 'lender',
+  bullets: [
+    'Phone, email, and apply-online links for every lender',
+    'Search by deal ZIP code, loan product, and minimum loan size',
+    'Save lenders to your dashboard for quick access',
+  ],
+};
+
+const selectLenders = (page: LenderListResponse) => page.lenders;
+
 function productLabel(code: string) {
   return PRODUCT_LABELS[code] ?? code;
 }
@@ -84,12 +99,6 @@ function productLabel(code: string) {
 
 export default function HardMoneyDirectory() {
   const router = useRouter();
-  const {
-    isPaidPro,
-    isTrialing,
-    isAuthenticated,
-    isLoading: subscriptionLoading,
-  } = useSubscription();
 
   const [stateFilter, setStateFilter] = useState('');
   const [productFilter, setProductFilter] = useState('');
@@ -102,12 +111,6 @@ export default function HardMoneyDirectory() {
   const [includeWebOnly, setIncludeWebOnly] = useState(true);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
-  // North-star activation: a signed-in user engaging the proprietary lender
-  // directory is a strong "aha"/intent signal (deduped per device).
-  useEffect(() => {
-    if (isAuthenticated) trackActivation('lender_directory');
-  }, [isAuthenticated]);
-
   // Debounce the name search so typing doesn't refetch per keystroke.
   useEffect(() => {
     const id = setTimeout(() => setDebouncedSearch(searchTerm), 300);
@@ -118,6 +121,43 @@ export default function HardMoneyDirectory() {
     const id = setTimeout(() => setDebouncedZip(zipInput), 300);
     return () => clearTimeout(id);
   }, [zipInput]);
+
+  const appliedFilters: AppliedLenderFilters = useMemo(
+    () => ({
+      state: stateFilter,
+      product: productFilter,
+      minLoan: minLoanFilter,
+      credit: creditFilter,
+      search: debouncedSearch,
+      includeWebOnly,
+    }),
+    [stateFilter, productFilter, minLoanFilter, creditFilter, debouncedSearch, includeWebOnly],
+  );
+
+  const {
+    records: loadedLenders,
+    total: listTotal,
+    isLoading: lendersLoading,
+    isError: lendersErrored,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    viewForbidden,
+    hasAccess,
+    isTrialing,
+    isAuthenticated,
+    subscriptionLoading,
+  } = useDirectoryList<LenderListResponse, Lender>({
+    queryKey: ['lenders', appliedFilters],
+    buildPath: (page) => buildLendersListPath(appliedFilters, page),
+    selectRecords: selectLenders,
+  });
+
+  // North-star activation: a signed-in user engaging the proprietary lender
+  // directory is a strong "aha"/intent signal (deduped per device).
+  useEffect(() => {
+    if (isAuthenticated) trackActivation('lender_directory');
+  }, [isAuthenticated]);
 
   // Lender coverage is licensed state by state, so a ZIP is only a friendlier
   // way to pick the state — it resolves, then drives the same state filter.
@@ -146,12 +186,12 @@ export default function HardMoneyDirectory() {
     setDebouncedZip('');
   };
 
-  const zipHint = useMemo(() => {
+  const zipHint = useMemo<DirectoryFieldHint | null>(() => {
     const id = 'dgiq-zip-hint';
     if (!lookupZip) return null;
-    if (zipResolving) return { id, text: 'Looking up…', tone: 'neutral' as const };
-    if (zipUnrecognized) return { id, text: 'ZIP not recognized', tone: 'error' as const };
-    if (zipLocation) return { id, text: formatZipLocation(zipLocation), tone: 'neutral' as const };
+    if (zipResolving) return { id, text: 'Looking up…', tone: 'neutral' };
+    if (zipUnrecognized) return { id, text: 'ZIP not recognized', tone: 'error' };
+    if (zipLocation) return { id, text: formatZipLocation(zipLocation), tone: 'neutral' };
     return null;
   }, [lookupZip, zipResolving, zipUnrecognized, zipLocation]);
 
@@ -176,52 +216,6 @@ export default function HardMoneyDirectory() {
     retry: false,
   });
   const stats = statsData && 'byState' in statsData ? statsData : null;
-
-  const appliedFilters: AppliedLenderFilters = useMemo(
-    () => ({
-      state: stateFilter,
-      product: productFilter,
-      minLoan: minLoanFilter,
-      credit: creditFilter,
-      search: debouncedSearch,
-      includeWebOnly,
-    }),
-    [stateFilter, productFilter, minLoanFilter, creditFilter, debouncedSearch, includeWebOnly],
-  );
-
-  const {
-    data: lenderPages,
-    isLoading: lendersLoading,
-    isError: lendersErrored,
-    error: lendersError,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ['lenders', appliedFilters],
-    initialPageParam: 1,
-    queryFn: ({ pageParam }) =>
-      api.get<LenderListResponse>(buildLendersListPath(appliedFilters, pageParam)),
-    getNextPageParam: (lastPage) =>
-      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
-    // UX hint only — the directory is paid-only and the server enforces it.
-    enabled: isAuthenticated && !subscriptionLoading && isPaidPro,
-    retry: false,
-  });
-
-  const loadedLenders = useMemo(
-    () => lenderPages?.pages.flatMap((page) => page.lenders) ?? [],
-    [lenderPages],
-  );
-  const listTotal = lenderPages?.pages[0]?.total ?? 0;
-  const viewForbidden =
-    lendersError instanceof ApiError &&
-    (lendersError.code === 'PRO_REQUIRED' ||
-      lendersError.code === 'DIRECTORY_PAID_ONLY' ||
-      lendersError.status === 401 ||
-      lendersError.status === 403);
-  // The directory is paid-only: viewing and exporting share one gate.
-  const hasAccess = isPaidPro && !viewForbidden;
 
   const directoryTotal = statsData?.total ?? LENDER_DIRECTORY_TOTAL;
   const totalLabel = directoryTotal.toLocaleString();
@@ -248,38 +242,6 @@ export default function HardMoneyDirectory() {
   const openSignIn = () => {
     router.push('/lenders?auth=required&redirect=/lenders');
   };
-
-  const gateCopy = !isAuthenticated
-    ? {
-        eyebrow: 'Sign In Required',
-        title: 'Sign in to browse verified lenders',
-        description:
-          'Create an account or sign in to search and view the hard money lender directory.',
-        cta: 'Sign in to continue',
-        onClick: openSignIn,
-        footnote: 'The directory requires a paid subscription.',
-      }
-    : isTrialing
-      ? {
-          // A trialing user already picked Pro, so "upgrade" would confuse them —
-          // what they need is for billing to start.
-          eyebrow: 'Paid Feature',
-          title: `Unlock ${totalLabel} verified lenders`,
-          description:
-            'The lender directory is not included in the free trial. Start billing now to get full search, filters, contact details, and exports.',
-          cta: 'Start paid Pro',
-          onClick: () => setUpgradeModalOpen(true),
-          footnote: 'Billing starts today. Cancel anytime.',
-        }
-      : {
-          eyebrow: 'Paid Pro Required',
-          title: `Unlock ${totalLabel} verified lenders`,
-          description:
-            'Full search, filters, lender contact details, and exports come with a paid Pro subscription.',
-          cta: 'Start paid Pro',
-          onClick: () => setUpgradeModalOpen(true),
-          footnote: 'Billing starts today. Cancel anytime.',
-        };
 
   return (
     <div style={styles.page}>
@@ -314,8 +276,9 @@ export default function HardMoneyDirectory() {
 
         <div style={styles.panel}>
           <div className="dgiq-lender-filters" style={styles.filterGrid}>
-            <Field label="Deal ZIP code" hint={zipHint}>
+            <DirectoryField label="Deal ZIP code" controlId="lender-zip" hint={zipHint}>
               <input
+                id="lender-zip"
                 className="dgiq-input"
                 style={styles.input}
                 type="text"
@@ -327,10 +290,11 @@ export default function HardMoneyDirectory() {
                 placeholder="e.g. 33460"
                 aria-describedby="dgiq-zip-hint"
               />
-            </Field>
+            </DirectoryField>
 
-            <Field label="State">
+            <DirectoryField label="State" controlId="lender-state">
               <select
+                id="lender-state"
                 className="dgiq-select"
                 style={styles.select}
                 value={stateFilter}
@@ -343,10 +307,11 @@ export default function HardMoneyDirectory() {
                   </option>
                 ))}
               </select>
-            </Field>
+            </DirectoryField>
 
-            <Field label="Loan product">
+            <DirectoryField label="Loan product" controlId="lender-product">
               <select
+                id="lender-product"
                 className="dgiq-select"
                 style={styles.select}
                 value={productFilter}
@@ -359,10 +324,11 @@ export default function HardMoneyDirectory() {
                   </option>
                 ))}
               </select>
-            </Field>
+            </DirectoryField>
 
-            <Field label="Lender funds at least">
+            <DirectoryField label="Lender funds at least" controlId="lender-min-loan">
               <select
+                id="lender-min-loan"
                 className="dgiq-select"
                 style={styles.select}
                 value={minLoanFilter}
@@ -372,10 +338,11 @@ export default function HardMoneyDirectory() {
                   <option key={opt.value || 'any'} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
-            </Field>
+            </DirectoryField>
 
-            <Field label="Credit policy">
+            <DirectoryField label="Credit policy" controlId="lender-credit">
               <select
+                id="lender-credit"
                 className="dgiq-select"
                 style={styles.select}
                 value={creditFilter}
@@ -390,10 +357,11 @@ export default function HardMoneyDirectory() {
                 </option>
                 <option value="no_min_score">No minimum score</option>
               </select>
-            </Field>
+            </DirectoryField>
 
-            <Field label="Search by name" icon={<Search size={16} />}>
+            <DirectoryField label="Search by name" controlId="lender-search" icon={<Search size={16} />}>
               <input
+                id="lender-search"
                 className="dgiq-input"
                 style={styles.input}
                 type="text"
@@ -401,7 +369,7 @@ export default function HardMoneyDirectory() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="e.g. Kiavi, Lima One"
               />
-            </Field>
+            </DirectoryField>
           </div>
 
           <div style={styles.filterRow}>
@@ -481,9 +449,7 @@ export default function HardMoneyDirectory() {
             userSelect: hasAccess ? 'auto' : 'none',
             transition: 'filter 0.4s ease',
           }}>
-            {hasAccess && lendersLoading && (
-              <div style={styles.emptyState}>Loading lenders…</div>
-            )}
+            {hasAccess && lendersLoading && <DirectoryCardSkeletons />}
             {hasAccess && lendersErrored && !viewForbidden && (
               <div style={styles.emptyState}>
                 Could not load the lender directory. Refresh and try again.
@@ -521,30 +487,14 @@ export default function HardMoneyDirectory() {
           )}
 
           {!subscriptionLoading && !hasAccess && (
-            <div style={styles.gateWrap}>
-              <div style={styles.gateCardInline}>
-                <div style={styles.gateIcon}><Lock size={24} color={directoryTokens.accentOnAccent} /></div>
-                <div style={styles.gateEyebrow}>{gateCopy.eyebrow}</div>
-                <h2 style={styles.gateTitle}>{gateCopy.title}</h2>
-                <p style={styles.gateDesc}>{gateCopy.description}</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24, textAlign: 'left' }}>
-                  {[
-                    'Phone, email, and apply-online links for every lender',
-                    'Search by deal ZIP code, loan product, and minimum loan size',
-                    'Save lenders to your dashboard for quick access',
-                  ].map((item) => (
-                    <div key={item} style={styles.gateFeatureRow}>
-                      <CheckCircle2 size={16} style={{ color: directoryTokens.accent, flexShrink: 0 }} />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-                <button type="button" onClick={gateCopy.onClick} className="dgiq-btn-press" style={styles.gateBtn}>
-                  <Sparkles size={16} /> {gateCopy.cta}
-                </button>
-                <div style={{ ...styles.footnoteText, marginTop: 10 }}>{gateCopy.footnote}</div>
-              </div>
-            </div>
+            <DirectoryGate
+              spec={GATE_SPEC}
+              totalLabel={totalLabel}
+              isAuthenticated={isAuthenticated}
+              isTrialing={isTrialing}
+              onSignIn={openSignIn}
+              onStartPaid={() => setUpgradeModalOpen(true)}
+            />
           )}
         </div>
       </div>
@@ -712,42 +662,6 @@ function LenderCard({
   );
 }
 
-function Field({
-  label,
-  icon,
-  hint,
-  children,
-}: {
-  label: string;
-  icon?: ReactNode;
-  hint?: { id: string; text: string; tone: 'neutral' | 'error' } | null;
-  children: ReactNode;
-}) {
-  return (
-    <div>
-      <label style={styles.fieldLabel}>{label}</label>
-      <div style={{ position: 'relative' }}>
-        {icon && (
-          <span style={styles.fieldIcon}>{icon}</span>
-        )}
-        {children}
-      </div>
-      {hint && (
-        <div
-          id={hint.id}
-          role="status"
-          style={{
-            ...styles.fieldHint,
-            color: hint.tone === 'error' ? 'var(--status-negative)' : directoryTokens.accent,
-          }}
-        >
-          {hint.text}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function TermStat({ label, value }: { label: string; value: string }) {
   return (
     <div style={styles.statCell}>
@@ -769,12 +683,6 @@ const styles = {
     gridTemplateColumns: 'repeat(6, 1fr)',
     gap: 16,
     marginBottom: 16,
-  },
-  fieldHint: {
-    fontSize: 11,
-    marginTop: 5,
-    minHeight: 14,
-    lineHeight: 1.3,
   },
   badgeLocal: {
     fontFamily: 'Space Mono, monospace', fontSize: 10, letterSpacing: 0.8,
@@ -816,7 +724,6 @@ const styles = {
   termGrid: {
     display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8,
   },
-  gateCardInline: directoryBaseStyles.gateCard,
   checkbox: {
     position: 'absolute', top: 14, right: 14,
     width: 22, height: 22, border: '1.5px solid',

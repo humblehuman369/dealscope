@@ -179,9 +179,11 @@ current state, the architecture diagram, and the invariants that are easy to bre
 `MAX_PAGE_SIZE`, the lazy teaser count, paid-only access, and the seed ordering in
 `railway.toml`).
 
-Backend stages 1–4 are complete. Stage 5 — consolidating the two ~1,000-line
-directory components behind a shared `useDirectoryList` hook and shared
-`DirectoryField` / `DirectoryGate` primitives — is the remaining work.
+All five stages are complete. On the frontend that means both components now sit
+on `useDirectoryList` (paging + access flags) and the `components/directory/`
+primitives (`DirectoryField`, `DirectoryGate`, `DirectoryCardSkeletons`,
+`directoryStyles`). Put shared directory behaviour there rather than in either
+component.
 
 ---
 
