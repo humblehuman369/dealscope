@@ -12,7 +12,17 @@ apart from the buyer default-location fix, which shipped with Stage 1.
 ## 0. Where this stands — read first
 
 Stages 1–4 are done and on `main`. **The whole backend half of this plan is
-finished.** The only work left is Stage 5, the frontend consolidation (§4).
+finished.** The only work left is Stage 5, the frontend consolidation (§4) —
+start there, and note that its highest-value item is a correctness fix rather
+than a refactor: `BuyerDirectory.tsx` still resolves city/ZIP searches to counties
+client-side from Florida-only tables plus whichever buyers are loaded in the
+current pages, which Stage 3 made obsolete.
+
+Also outstanding but **not blocking and not part of any stage**: regenerating the
+lender dataset (Stage 2 unblocked it; two known data-quality bugs in §Stage 2 were
+deliberately left for it), lender county filtering (waiting on `counties_served`
+in that regenerated dataset), and the 746-string tail in
+`docs/geo/coverage-unmatched.csv`.
 
 ### The shape it landed in
 
@@ -650,18 +660,41 @@ The redaction inconsistency noted in review (lenders blank to `None`, buyers to
 
 ---
 
-### Stage 5 — Consolidate the frontend
+### Stage 5 — Consolidate the frontend — THE ONLY STAGE LEFT
 
-Two components, ~950 and ~1,000 lines, roughly 70% parallel.
+State verified 2026-07-29: **un-started**, except that `directoryStyles.ts` (320
+lines) is already shared by both components and the buyer `Tampa, FL` default was
+removed with Stage 1. Components are now 888 (`HardMoneyDirectory.tsx`) and 937
+(`BuyerDirectory.tsx`) lines, roughly 70% parallel.
 
-| File | Change |
-|---|---|
-| `src/hooks/useDirectoryList.ts` | **new** — the shared `useInfiniteQuery` + access-flag block (duplicated at `HardMoneyDirectory.tsx:217` and `BuyerDirectory.tsx:342`) |
-| ~~`src/hooks/useRevealContact.ts`~~ | not needed — Stage 1 deletes the reveal flow from both components |
-| `src/components/directory/DirectoryField.tsx` | **new** — replaces the two local `Field` components (lender's has a `hint` prop, buyer's does not) |
-| `src/components/directory/DirectoryGate.tsx` | **new** — shared gate shell; bullets stay per-directory |
-| `src/lib/buyers-api.ts` | export a real `Buyer` type; today it declares `buyers: unknown[]` while the component keeps a private interface |
-| `src/components/buyer-directory/BuyerDirectory.tsx` | delete lines ~59–259, unused Florida county/city/ZIP maps superseded by the geo API |
+| File | Change | State |
+|---|---|---|
+| `src/hooks/useDirectoryList.ts` | **new** — the shared `useInfiniteQuery` + access-flag block (duplicated at `HardMoneyDirectory.tsx:213` and `BuyerDirectory.tsx:339`) | does not exist |
+| ~~`src/hooks/useRevealContact.ts`~~ | not needed — Stage 1 deleted the reveal flow from both components | n/a |
+| `src/components/directory/DirectoryField.tsx` | **new** — replaces the two local `Field` components (lender's has a `hint` prop, buyer's does not) | does not exist |
+| `src/components/directory/DirectoryGate.tsx` | **new** — shared gate shell; bullets stay per-directory | does not exist |
+| `src/lib/buyers-api.ts` | export a real `Buyer` type | still `buyers: unknown[]` at line 16 |
+| `src/components/buyer-directory/BuyerDirectory.tsx` | delete the client-side county inference, lines ~59–260 — see below | still present |
+| `src/__tests__/components/HardMoneyDirectory.test.tsx` | **new** — buyers have tests, lenders have none | does not exist |
+
+#### The county inference is a bug, not just duplication
+
+`getCountiesForCity` (line 215) and `getCountiesForZip` (line 235) resolve a
+search's counties from two sources, both wrong:
+
+1. `CITY_TO_COUNTY_BY_STATE` / `ZIP_TO_COUNTY_BY_STATE` /
+   `ZIP_PREFIX_TO_COUNTY_BY_STATE` (lines 59–108) — **Florida only**. Outside FL
+   they contribute nothing.
+2. **The buyers currently loaded into the client's pages.** Both functions take
+   `buyers: Buyer[]` and harvest `buyer.coverage[]` from whichever records happen
+   to be in the loaded pages, so the county a search resolves to depends on how
+   far the user has scrolled.
+
+Stage 3 built the authoritative replacement — `county_fips_for_search` +
+`directory_service_area`, resolving 90.6% of coverage strings server-side, with
+`/api/v1/geo/zip/{zip_code}` for the ZIP half. The frontend should send `city` /
+`zip` / `county` to the API and let the backend resolve them. Deleting this is a
+correctness fix and can be done independently of the rest of Stage 5.
 
 UX divergences to settle, not silently preserve:
 
