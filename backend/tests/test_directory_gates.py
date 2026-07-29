@@ -15,6 +15,11 @@ def _user():
     return SimpleNamespace(id=uuid.uuid4())
 
 
+def _total(count: int):
+    """The teaser count is a callable so it is only paid for on a refusal."""
+    return AsyncMock(return_value=count)
+
+
 def _patch_entitlement(monkeypatch, entitlement, subscription=None):
     monkeypatch.setattr(
         directory_gates,
@@ -33,7 +38,7 @@ async def test_free_cannot_view(monkeypatch):
 
     with pytest.raises(HTTPException) as exc:
         await require_view_access(
-            SimpleNamespace(), _user(), pro_message="Pro required", teaser_total=484
+            SimpleNamespace(), _user(), pro_message="Pro required", count_total=_total(484)
         )
 
     assert exc.value.status_code == 403
@@ -47,7 +52,7 @@ async def test_trial_cannot_view(monkeypatch):
 
     with pytest.raises(HTTPException) as exc:
         await require_view_access(
-            SimpleNamespace(), _user(), pro_message="Pro required", teaser_total=484
+            SimpleNamespace(), _user(), pro_message="Pro required", count_total=_total(484)
         )
 
     assert exc.value.status_code == 403
@@ -64,7 +69,7 @@ async def test_trial_gets_different_copy_than_free(monkeypatch):
         _patch_entitlement(monkeypatch, entitlement)
         with pytest.raises(HTTPException) as exc:
             await require_view_access(
-                SimpleNamespace(), _user(), pro_message="Pro required", teaser_total=484
+                SimpleNamespace(), _user(), pro_message="Pro required", count_total=_total(484)
             )
         errors[entitlement] = exc.value.detail["message"]
 
@@ -76,10 +81,23 @@ async def test_paid_can_view(monkeypatch):
 
     assert (
         await require_view_access(
-            SimpleNamespace(), _user(), pro_message="Pro required", teaser_total=484
+            SimpleNamespace(), _user(), pro_message="Pro required", count_total=_total(484)
         )
         is None
     )
+
+
+async def test_an_authorised_request_never_counts_the_directory(monkeypatch):
+    """The count exists only to fill the teaser on a 403. Computing it eagerly
+    billed every paid request for a COUNT(*) that was then discarded."""
+    _patch_entitlement(monkeypatch, Entitlement.PAID)
+    count_total = _total(484)
+
+    await require_view_access(
+        SimpleNamespace(), _user(), pro_message="Pro required", count_total=count_total
+    )
+
+    count_total.assert_not_awaited()
 
 
 # ---------------------------------------------------------------------------
@@ -92,7 +110,7 @@ async def test_paid_export_allowed_returns_subscription(monkeypatch):
     _patch_entitlement(monkeypatch, Entitlement.PAID, subscription)
 
     result = await require_paid_export(
-        SimpleNamespace(), _user(), pro_message="Pro required", teaser_total=484
+        SimpleNamespace(), _user(), pro_message="Pro required", count_total=_total(484)
     )
     assert result is subscription
 
@@ -102,7 +120,7 @@ async def test_trial_export_blocked_with_first_payment_copy(monkeypatch):
 
     with pytest.raises(HTTPException) as exc:
         await require_paid_export(
-            SimpleNamespace(), _user(), pro_message="Pro required", teaser_total=484
+            SimpleNamespace(), _user(), pro_message="Pro required", count_total=_total(484)
         )
 
     assert exc.value.status_code == 403
@@ -115,7 +133,7 @@ async def test_free_export_blocked_with_pro_teaser(monkeypatch):
 
     with pytest.raises(HTTPException) as exc:
         await require_paid_export(
-            SimpleNamespace(), _user(), pro_message="Pro required", teaser_total=484
+            SimpleNamespace(), _user(), pro_message="Pro required", count_total=_total(484)
         )
 
     assert exc.value.status_code == 403

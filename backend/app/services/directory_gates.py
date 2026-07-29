@@ -9,6 +9,7 @@ resolve through the single entitlement helper.
 from __future__ import annotations
 
 import uuid
+from collections.abc import Awaitable, Callable
 from typing import Protocol
 
 from fastapi import HTTPException, status
@@ -31,12 +32,16 @@ async def require_view_access(
     user: _HasId,
     *,
     pro_message: str,
-    teaser_total: int,
+    count_total: Callable[[], Awaitable[int]],
 ) -> None:
     """Paid only. Free and trial both get 403, with copy matching where they are.
 
     A trialing user already picked a plan and needs their first payment to
     settle, so telling them to "upgrade to Pro" would be wrong and confusing.
+
+    ``count_total`` is awaited only on the refusal paths, where the teaser is
+    actually rendered. It used to be an eagerly-computed argument, which billed
+    every authorised request for a ``COUNT(*)`` nobody read.
     """
     entitlement, _ = await resolve_entitlement_with_subscription(db, user.id)
     if entitlement == Entitlement.PAID:
@@ -47,7 +52,7 @@ async def require_view_access(
             detail={
                 "error": "DIRECTORY_PAID_ONLY",
                 "message": DIRECTORY_PAID_ONLY_MESSAGE,
-                "total": teaser_total,
+                "total": await count_total(),
             },
         )
     raise HTTPException(
@@ -55,7 +60,7 @@ async def require_view_access(
         detail={
             "error": "PRO_REQUIRED",
             "message": pro_message,
-            "total": teaser_total,
+            "total": await count_total(),
         },
     )
 
@@ -65,7 +70,7 @@ async def require_paid_export(
     user: _HasId,
     *,
     pro_message: str,
-    teaser_total: int,
+    count_total: Callable[[], Awaitable[int]],
 ) -> Subscription | None:
     """Exports are paid-only — enforced before any file bytes are generated.
 
@@ -88,6 +93,6 @@ async def require_paid_export(
         detail={
             "error": "PRO_REQUIRED",
             "message": pro_message,
-            "total": teaser_total,
+            "total": await count_total(),
         },
     )

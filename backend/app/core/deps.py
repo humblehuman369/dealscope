@@ -288,15 +288,6 @@ DbSession = Annotated[AsyncSession, Depends(get_db)]
 ProUser = Annotated[User, Depends(get_current_pro_user)]
 PaidProUser = Annotated[User, Depends(get_current_paid_pro_user)]
 
-PRO_BUYERS_MESSAGE = "Cash Buyer Directory requires DealGapIQ Pro"
-
-
-async def _count_strict_buyers(db: AsyncSession) -> int:
-    from app.services.buyers_service import count_strict_buyers
-
-    return await count_strict_buyers(db)
-
-
 # NOTE: buyer/lender directory gates now resolve through the single
 # entitlement helper (app.services.entitlements) via
 # app.services.directory_gates — see Tasks 3.2 / 3.3.

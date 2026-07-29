@@ -5,41 +5,59 @@ Access model (resolved via the single entitlement helper):
   - trial: 403 DIRECTORY_PAID_ONLY — the directory is not part of the trial
   - paid:  full search / filter / view, plus CSV / print exports capped at
            200 records per export and 1,000 per monthly billing cycle
+
+The access, pagination and export mechanics live in ``directory_pipeline`` and
+are shared with /api/lenders. What stays here is what is actually specific to
+buyers: the query parameters, and the export columns.
 """
 
 from __future__ import annotations
 
-import logging
-from datetime import UTC, datetime
+from fastapi import APIRouter, HTTPException, Query, status
 
-from fastapi import APIRouter, HTTPException, Query, Response, status
-from fastapi.responses import HTMLResponse, JSONResponse
-
-from app.core.deps import PRO_BUYERS_MESSAGE, CurrentUser, DbSession, _count_strict_buyers
+from app.core.deps import CurrentUser, DbSession
 from app.schemas.buyers import BuyerListResponse, BuyerOut, BuyerStatsResponse
 from app.services.buyers_service import (
     BuyerListFilters,
     buyer_stats,
+    count_strict_buyers,
     get_buyer_by_id,
     list_buyers_page,
 )
-from app.services.directory_export import build_csv, build_print_html
-from app.services.directory_gates import require_paid_export, require_view_access
-from app.services.directory_usage import (
-    EXPORT_LIMIT_MESSAGE,
-    EXPORT_MAX_RECORDS,
-    MONTHLY_EXPORT_RECORD_LIMIT,
-    add_export_usage,
-    get_export_usage,
+from app.services.directory_pipeline import (
+    MAX_PAGE_SIZE,
+    DirectorySpec,
+    gate_view,
+    guard,
+    run_export,
+    stats_teaser,
 )
-from app.services.entitlements import Entitlement, resolve_entitlement
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/buyers", tags=["Buyers"])
 
-# Plan spec: list pagination is capped at 25 records per page.
-MAX_PAGE_SIZE = 25
+PRO_BUYERS_MESSAGE = "Cash Buyer Directory requires DealGapIQ Pro"
+
+
+def _export_row(buyer: BuyerOut) -> list[str]:
+    return [
+        buyer.company, buyer.owner, buyer.phone, buyer.email, buyer.website,
+        buyer.street, buyer.city, buyer.state, buyer.zip,
+        "; ".join(buyer.coverage), "; ".join(buyer.strategies),
+        str(buyer.deals), str(buyer.years), buyer.response,
+    ]
+
+
+SPEC = DirectorySpec(
+    slug="buyers",
+    export_title="DealGapIQ — Cash Buyer Directory Export",
+    pro_message=PRO_BUYERS_MESSAGE,
+    count_total=count_strict_buyers,
+    export_headers=(
+        "Company", "Owner", "Phone", "Email", "Website", "Street", "City", "State", "Zip",
+        "Coverage", "Strategies", "Deals (12mo)", "Years", "Response",
+    ),
+    export_row=_export_row,
+)
 
 
 @router.get(
@@ -55,21 +73,10 @@ MAX_PAGE_SIZE = 25
 )
 async def get_buyer_stats(current_user: CurrentUser, db: DbSession):
     """Directory totals. Free tier: 401 with { total } only (marketing teaser)."""
-    try:
-        entitlement = await resolve_entitlement(db, current_user.id)
-        if entitlement == Entitlement.FREE:
-            total = await _count_strict_buyers(db)
-            return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"total": total})
-
-        return await buyer_stats(db)
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error("buyer stats error: %s", e, exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to load buyer stats",
-        ) from e
+    teaser = await stats_teaser(db, current_user, SPEC)
+    if teaser is not None:
+        return teaser
+    return await guard("buyer stats", lambda: buyer_stats(db))
 
 
 @router.get(
@@ -105,35 +112,19 @@ async def list_cash_buyers(
     limit: int = Query(MAX_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
 ):
     """Filterable, paginated buyer list (max 25/page, paid subscribers only)."""
-    await require_view_access(
-        db,
-        current_user,
-        pro_message=PRO_BUYERS_MESSAGE,
-        teaser_total=await _count_strict_buyers(db),
+    await gate_view(db, current_user, SPEC)
+    filters = BuyerListFilters(city=city, state=state, county=county, zip=zip, strategy=strategy)
+    buyers, total, total_pages = await guard(
+        "buyers",
+        lambda: list_buyers_page(db, filters=filters, page=page, limit=limit),
     )
-    try:
-        filters = BuyerListFilters(city=city, state=state, county=county, zip=zip, strategy=strategy)
-        buyers, total, total_pages = await list_buyers_page(
-            db,
-            filters=filters,
-            page=page,
-            limit=limit,
-        )
-        return BuyerListResponse(
-            buyers=buyers,
-            total=total,
-            page=page,
-            limit=limit,
-            totalPages=total_pages,
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error("list cash buyers error: %s", e, exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to load buyers",
-        ) from e
+    return BuyerListResponse(
+        buyers=buyers,
+        total=total,
+        page=page,
+        limit=limit,
+        totalPages=total_pages,
+    )
 
 
 @router.get(
@@ -155,67 +146,13 @@ async def export_cash_buyers(
     strategy: str | None = Query(None),
 ):
     """Export the current filtered set — server-gated BEFORE any file is generated."""
-    subscription = await require_paid_export(
-        db,
-        current_user,
-        pro_message=PRO_BUYERS_MESSAGE,
-        teaser_total=await _count_strict_buyers(db),
-    )
-
-    used = await get_export_usage(db, current_user.id, subscription)
-    remaining = MONTHLY_EXPORT_RECORD_LIMIT - used
-    if remaining <= 0:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail={"error": "EXPORT_LIMIT_REACHED", "message": EXPORT_LIMIT_MESSAGE},
-        )
-
     filters = BuyerListFilters(city=city, state=state, county=county, zip=zip, strategy=strategy)
-    export_cap = min(EXPORT_MAX_RECORDS, remaining)
-    buyers, _total, _pages = await list_buyers_page(db, filters=filters, page=1, limit=export_cap)
 
-    headers = [
-        "Company", "Owner", "Phone", "Email", "Website", "Street", "City", "State", "Zip",
-        "Coverage", "Strategies", "Deals (12mo)", "Years", "Response",
-    ]
-    rows = [
-        [
-            b.company, b.owner, b.phone, b.email, b.website, b.street, b.city, b.state, b.zip,
-            "; ".join(b.coverage), "; ".join(b.strategies), str(b.deals), str(b.years), b.response,
-        ]
-        for b in buyers
-    ]
+    async def fetch(cap: int):
+        buyers, _total, _pages = await list_buyers_page(db, filters=filters, page=1, limit=cap)
+        return buyers
 
-    new_total = await add_export_usage(db, current_user.id, subscription, len(rows))
-    logger.info(
-        "buyer export: user=%s fmt=%s records=%s cycle_total=%s",
-        current_user.id, fmt, len(rows), new_total,
-    )
-
-    meter_headers = {
-        "X-Export-Records": str(len(rows)),
-        "X-Export-Cycle-Used": str(new_total),
-        "X-Export-Cycle-Limit": str(MONTHLY_EXPORT_RECORD_LIMIT),
-    }
-    if fmt == "print":
-        html = build_print_html(
-            "DealGapIQ — Cash Buyer Directory Export",
-            f"{len(rows)} records · exported {datetime.now(UTC).strftime('%B %d, %Y')}",
-            headers,
-            rows,
-        )
-        return HTMLResponse(content=html, headers=meter_headers)
-
-    csv_content = build_csv(headers, rows)
-    filename = f"dealgapiq-buyers-{datetime.now(UTC).strftime('%Y%m%d')}.csv"
-    return Response(
-        content=csv_content,
-        media_type="text/csv; charset=utf-8",
-        headers={
-            "Content-Disposition": f'attachment; filename="{filename}"',
-            **meter_headers,
-        },
-    )
+    return await run_export(db, current_user, SPEC, fmt=fmt, fetch=fetch)
 
 
 @router.get(
@@ -229,25 +166,8 @@ async def export_cash_buyers(
 )
 async def get_cash_buyer(buyer_id: int, current_user: CurrentUser, db: DbSession):
     """Single full record, paid subscribers only."""
-    await require_view_access(
-        db,
-        current_user,
-        pro_message=PRO_BUYERS_MESSAGE,
-        teaser_total=await _count_strict_buyers(db),
-    )
-    try:
-        buyer = await get_buyer_by_id(db, buyer_id)
-        if buyer is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Buyer not found",
-            )
-        return buyer
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error("get cash buyer %s error: %s", buyer_id, e, exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to load buyer",
-        ) from e
+    await gate_view(db, current_user, SPEC)
+    buyer = await guard("buyer", lambda: get_buyer_by_id(db, buyer_id))
+    if buyer is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Buyer not found")
+    return buyer

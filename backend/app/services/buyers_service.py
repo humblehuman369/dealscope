@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, replace
+from typing import NotRequired, TypedDict
 
 from sqlalchemy import Select, func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,10 +12,64 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.cash_buyer import CashBuyer
 from app.models.directory_service_area import DirectoryServiceArea
 from app.schemas.buyers import BuyerOut, BuyerStatsResponse, StateCount
-from app.services.buyer_directory_service import row_to_buyer_record
 from app.services.geo_matching import county_fips_for_search
 
 STRICT_FILTER = CashBuyer.passes_strict_filter.is_(True)
+
+
+class BuyerRecord(TypedDict):
+    id: int
+    initials: str
+    accent: str
+    company: str
+    owner: str
+    street: str
+    city: str
+    state: str
+    zip: str
+    phone: str
+    email: str
+    website: str
+    coverage: list[str]
+    description: str
+    deals: int
+    years: int
+    response: str
+    strategies: list[str]
+    buyerType: NotRequired[str]
+
+
+def row_to_buyer_record(row: CashBuyer) -> BuyerRecord:
+    """Flatten a row into the wire shape the API has always returned.
+
+    The column names and the JSON keys diverged long ago (``company_name`` vs
+    ``company``, ``response_time`` vs ``response``), and nullable columns are
+    surfaced as empty strings rather than nulls. Both are load-bearing for the
+    frontend, so the mapping is explicit rather than derived from the model.
+    """
+    buyer: BuyerRecord = {
+        "id": row.id,
+        "initials": row.initials or "",
+        "accent": row.accent or "#0EA5E9",
+        "company": row.company_name,
+        "owner": row.owner_name or "",
+        "street": row.street or "",
+        "city": row.city or "",
+        "state": row.state or "",
+        "zip": row.zip or "",
+        "phone": row.phone,
+        "email": row.email or "",
+        "website": row.website or "",
+        "coverage": list(row.coverage or []),
+        "description": row.description or "",
+        "deals": row.deals if row.deals is not None else 0,
+        "years": row.years if row.years is not None else 0,
+        "response": row.response_time or "",
+        "strategies": list(row.strategies or []),
+    }
+    if row.buyer_type:
+        buyer["buyerType"] = row.buyer_type
+    return buyer
 
 
 @dataclass(frozen=True)

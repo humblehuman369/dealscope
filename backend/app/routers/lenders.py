@@ -5,30 +5,27 @@ Access model (resolved via the single entitlement helper):
   - trial: 403 DIRECTORY_PAID_ONLY — the directory is not part of the trial
   - paid:  full search / filter / view, plus CSV / print exports capped at
            200 records per export and 1,000 per monthly billing cycle
+
+The access, pagination and export mechanics live in ``directory_pipeline`` and
+are shared with /api/buyers. What stays here is what is actually specific to
+lenders: the query parameters, and the export columns.
 """
 
 from __future__ import annotations
 
-import logging
-from datetime import UTC, datetime
-
-from fastapi import APIRouter, HTTPException, Query, Response, status
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import APIRouter, HTTPException, Query, status
 
 from app.core.deps import CurrentUser, DbSession
 from app.schemas.lenders import LenderListResponse, LenderOut, LenderStatsResponse
-from app.services.directory_export import build_csv, build_print_html
-from app.services.directory_gates import require_paid_export, require_view_access
-from app.services.directory_usage import (
-    EXPORT_LIMIT_MESSAGE,
-    EXPORT_MAX_RECORDS,
-    MONTHLY_EXPORT_RECORD_LIMIT,
-    add_export_usage,
-    get_export_usage,
-)
-from app.services.entitlements import Entitlement, resolve_entitlement
-from app.services.lenders_service import (
+from app.services.directory_pipeline import (
     MAX_PAGE_SIZE,
+    DirectorySpec,
+    gate_view,
+    guard,
+    run_export,
+    stats_teaser,
+)
+from app.services.lenders_service import (
     LenderListFilters,
     filter_lenders,
     get_lender_by_id,
@@ -37,11 +34,37 @@ from app.services.lenders_service import (
     list_lenders_page,
 )
 
-logger = logging.getLogger(__name__)
-
 router = APIRouter(prefix="/api/lenders", tags=["Lenders"])
 
 PRO_LENDERS_MESSAGE = "Hard Money Lender Directory requires DealGapIQ Pro"
+
+
+def _export_row(lender: LenderOut) -> list[str]:
+    return [
+        lender.company_name,
+        lender.domain,
+        lender.phone or "",
+        lender.email or "",
+        lender.website,
+        lender.state or "",
+        "; ".join(lender.states_served),
+        "; ".join(lender.loan_products),
+        lender.credit_check_policy or "",
+        str(lender.min_credit_score) if lender.min_credit_score is not None else "",
+    ]
+
+
+SPEC = DirectorySpec(
+    slug="lenders",
+    export_title="DealGapIQ — Hard Money Lender Directory Export",
+    pro_message=PRO_LENDERS_MESSAGE,
+    count_total=lender_total,
+    export_headers=(
+        "Company", "Domain", "Phone", "Email", "Website", "HQ State", "States Served",
+        "Loan Products", "Credit Policy", "Min Credit Score",
+    ),
+    export_row=_export_row,
+)
 
 
 @router.get(
@@ -57,13 +80,10 @@ PRO_LENDERS_MESSAGE = "Hard Money Lender Directory requires DealGapIQ Pro"
 )
 async def get_lender_stats(current_user: CurrentUser, db: DbSession):
     """Directory totals. Free tier: 401 with { total } only (marketing teaser)."""
-    entitlement = await resolve_entitlement(db, current_user.id)
-    if entitlement == Entitlement.FREE:
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"total": await lender_total(db)},
-        )
-    return await lender_stats(db)
+    teaser = await stats_teaser(db, current_user, SPEC)
+    if teaser is not None:
+        return teaser
+    return await guard("lender stats", lambda: lender_stats(db))
 
 
 @router.get(
@@ -100,41 +120,19 @@ async def list_lenders(
     limit: int = Query(MAX_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
 ):
     """Filterable, paginated lender list (max 25/page, paid subscribers only)."""
-    await require_view_access(
-        db,
-        current_user,
-        pro_message=PRO_LENDERS_MESSAGE,
-        teaser_total=await lender_total(db),
+    await gate_view(db, current_user, SPEC)
+    filters = _filters(state, product, min_loan, credit, q, include_web_only)
+    lenders, total, total_pages = await guard(
+        "lenders",
+        lambda: list_lenders_page(db, filters=filters, page=page, limit=limit),
     )
-    try:
-        lenders, total, total_pages = await list_lenders_page(
-            db,
-            filters=LenderListFilters(
-                state=state.strip().upper() if state else None,
-                product=product,
-                min_loan=min_loan,
-                credit=credit,
-                q=q,
-                include_web_only=include_web_only,
-            ),
-            page=page,
-            limit=limit,
-        )
-        return LenderListResponse(
-            lenders=lenders,
-            total=total,
-            page=page,
-            limit=limit,
-            totalPages=total_pages,
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error("list lenders error: %s", e, exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to load lenders",
-        ) from e
+    return LenderListResponse(
+        lenders=lenders,
+        total=total,
+        page=page,
+        limit=limit,
+        totalPages=total_pages,
+    )
 
 
 @router.get(
@@ -157,86 +155,13 @@ async def export_lenders(
     include_web_only: bool = Query(True),
 ):
     """Export the current filtered set — server-gated BEFORE any file is generated."""
-    subscription = await require_paid_export(
+    filters = _filters(state, product, min_loan, credit, q, include_web_only)
+    return await run_export(
         db,
         current_user,
-        pro_message=PRO_LENDERS_MESSAGE,
-        teaser_total=await lender_total(db),
-    )
-
-    used = await get_export_usage(db, current_user.id, subscription)
-    remaining = MONTHLY_EXPORT_RECORD_LIMIT - used
-    if remaining <= 0:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail={"error": "EXPORT_LIMIT_REACHED", "message": EXPORT_LIMIT_MESSAGE},
-        )
-
-    export_cap = min(EXPORT_MAX_RECORDS, remaining)
-    # Capped in SQL rather than sliced after the fact, so the database never
-    # materialises rows the export isn't allowed to include.
-    lenders = await filter_lenders(
-        db,
-        filters=LenderListFilters(
-            state=state.strip().upper() if state else None,
-            product=product,
-            min_loan=min_loan,
-            credit=credit,
-            q=q,
-            include_web_only=include_web_only,
-        ),
-        limit=export_cap,
-    )
-
-    headers = [
-        "Company", "Domain", "Phone", "Email", "Website", "HQ State", "States Served",
-        "Loan Products", "Credit Policy", "Min Credit Score",
-    ]
-    rows = [
-        [
-            lender.company_name,
-            lender.domain,
-            lender.phone or "",
-            lender.email or "",
-            lender.website,
-            lender.state or "",
-            "; ".join(lender.states_served),
-            "; ".join(lender.loan_products),
-            lender.credit_check_policy or "",
-            str(lender.min_credit_score) if lender.min_credit_score is not None else "",
-        ]
-        for lender in lenders
-    ]
-
-    new_total = await add_export_usage(db, current_user.id, subscription, len(rows))
-    logger.info(
-        "lender export: user=%s fmt=%s records=%s cycle_total=%s",
-        current_user.id, fmt, len(rows), new_total,
-    )
-
-    meter_headers = {
-        "X-Export-Records": str(len(rows)),
-        "X-Export-Cycle-Used": str(new_total),
-        "X-Export-Cycle-Limit": str(MONTHLY_EXPORT_RECORD_LIMIT),
-    }
-    if fmt == "print":
-        html = build_print_html(
-            "DealGapIQ — Hard Money Lender Directory Export",
-            f"{len(rows)} records · exported {datetime.now(UTC).strftime('%B %d, %Y')}",
-            headers,
-            rows,
-        )
-        return HTMLResponse(content=html, headers=meter_headers)
-
-    csv_content = build_csv(headers, rows)
-    filename = f"dealgapiq-lenders-{datetime.now(UTC).strftime('%Y%m%d')}.csv"
-    return Response(
-        content=csv_content,
-        media_type="text/csv; charset=utf-8",
-        headers={
-            "Content-Disposition": f'attachment; filename="{filename}"',
-            **meter_headers,
-        },
+        SPEC,
+        fmt=fmt,
+        fetch=lambda cap: filter_lenders(db, filters=filters, limit=cap),
     )
 
 
@@ -248,13 +173,27 @@ async def export_lenders(
 )
 async def get_lender(lender_id: int, current_user: CurrentUser, db: DbSession):
     """Single full record, paid subscribers only."""
-    await require_view_access(
-        db,
-        current_user,
-        pro_message=PRO_LENDERS_MESSAGE,
-        teaser_total=await lender_total(db),
-    )
-    lender = await get_lender_by_id(db, lender_id)
+    await gate_view(db, current_user, SPEC)
+    lender = await guard("lender", lambda: get_lender_by_id(db, lender_id))
     if lender is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lender not found")
     return lender
+
+
+def _filters(
+    state: str | None,
+    product: str | None,
+    min_loan: int | None,
+    credit: str | None,
+    q: str | None,
+    include_web_only: bool,
+) -> LenderListFilters:
+    """Shared by list and export so the two can never drift apart."""
+    return LenderListFilters(
+        state=state.strip().upper() if state else None,
+        product=product,
+        min_loan=min_loan,
+        credit=credit,
+        q=q,
+        include_web_only=include_web_only,
+    )

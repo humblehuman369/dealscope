@@ -15,6 +15,7 @@ from app.models.lender import Lender
 from app.routers import lenders as lenders_router
 from app.routers.lenders import export_lenders, get_lender_stats, list_lenders
 from app.schemas.lenders import LenderOut
+from app.services import directory_pipeline
 from app.services.entitlements import Entitlement
 from app.services.lenders_service import (
     MAX_PAGE_SIZE,
@@ -232,7 +233,7 @@ async def test_free_list_gets_403(monkeypatch, db_session, seeded_lenders):
     async def deny(*args, **kwargs):
         raise HTTPException(status_code=403, detail={"error": "PRO_REQUIRED"})
 
-    monkeypatch.setattr(lenders_router, "require_view_access", deny)
+    monkeypatch.setattr(lenders_router, "gate_view", deny)
 
     with pytest.raises(HTTPException) as exc:
         await list_lenders(
@@ -248,7 +249,7 @@ async def test_trial_list_gets_403(monkeypatch, db_session, seeded_lenders):
     async def deny(*args, **kwargs):
         raise HTTPException(status_code=403, detail={"error": "DIRECTORY_PAID_ONLY"})
 
-    monkeypatch.setattr(lenders_router, "require_view_access", deny)
+    monkeypatch.setattr(lenders_router, "gate_view", deny)
 
     with pytest.raises(HTTPException) as exc:
         await list_lenders(
@@ -261,7 +262,7 @@ async def test_trial_list_gets_403(monkeypatch, db_session, seeded_lenders):
 
 async def test_paid_list_keeps_contacts(monkeypatch, db_session, seeded_lenders):
     """Paid responses are never redacted — there is no redaction path left."""
-    monkeypatch.setattr(lenders_router, "require_view_access", AsyncMock(return_value=None))
+    monkeypatch.setattr(lenders_router, "gate_view", AsyncMock(return_value=None))
 
     response = await list_lenders(
         current_user=_user(), db=db_session, page=1, limit=25, **_list_kwargs()
@@ -273,7 +274,7 @@ async def test_paid_list_keeps_contacts(monkeypatch, db_session, seeded_lenders)
 
 async def test_stats_teaser_for_free(monkeypatch, db_session, seeded_lenders):
     monkeypatch.setattr(
-        lenders_router, "resolve_entitlement", AsyncMock(return_value=Entitlement.FREE)
+        directory_pipeline, "resolve_entitlement", AsyncMock(return_value=Entitlement.FREE)
     )
 
     response = await get_lender_stats(current_user=_user(), db=db_session)
@@ -286,7 +287,7 @@ async def test_stats_teaser_for_free(monkeypatch, db_session, seeded_lenders):
 @pytest.mark.parametrize("entitlement", [Entitlement.TRIAL, Entitlement.PAID])
 async def test_stats_full_for_trial_and_paid(monkeypatch, db_session, seeded_lenders, entitlement):
     monkeypatch.setattr(
-        lenders_router, "resolve_entitlement", AsyncMock(return_value=entitlement)
+        directory_pipeline, "resolve_entitlement", AsyncMock(return_value=entitlement)
     )
 
     stats = await get_lender_stats(current_user=_user(), db=db_session)
@@ -315,12 +316,13 @@ async def test_stats_are_computed_from_the_table(db_session, seeded_lenders):
 
 
 def _patch_export(monkeypatch, *, used: int):
+    """Stub the gate and the meter — both now live in the shared pipeline."""
     monkeypatch.setattr(
-        lenders_router, "require_paid_export", AsyncMock(return_value=None)
+        directory_pipeline, "require_paid_export", AsyncMock(return_value=None)
     )
-    monkeypatch.setattr(lenders_router, "get_export_usage", AsyncMock(return_value=used))
+    monkeypatch.setattr(directory_pipeline, "get_export_usage", AsyncMock(return_value=used))
     add_usage = AsyncMock(return_value=used)
-    monkeypatch.setattr(lenders_router, "add_export_usage", add_usage)
+    monkeypatch.setattr(directory_pipeline, "add_export_usage", add_usage)
     return add_usage
 
 

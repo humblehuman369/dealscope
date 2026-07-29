@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from app.schemas.directory import DirectoryListResponse
+
 
 class BuyerOut(BaseModel):
     id: int
@@ -27,14 +29,8 @@ class BuyerOut(BaseModel):
     buyerType: str | None = None
 
 
-class BuyerListResponse(BaseModel):
+class BuyerListResponse(DirectoryListResponse):
     buyers: list[BuyerOut]
-    total: int
-    page: int
-    limit: int
-    totalPages: int = Field(serialization_alias="totalPages")
-
-    model_config = {"populate_by_name": True}
 
 
 class StateCount(BaseModel):

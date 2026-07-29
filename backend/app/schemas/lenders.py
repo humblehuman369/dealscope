@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
+from app.schemas.directory import DirectoryListResponse
+
 
 class LenderDisplay(BaseModel):
     """Pre-formatted display strings generated with the dataset."""
@@ -59,14 +61,8 @@ class LenderOut(BaseModel):
         return len(self.states_served)
 
 
-class LenderListResponse(BaseModel):
+class LenderListResponse(DirectoryListResponse):
     lenders: list[LenderOut]
-    total: int
-    page: int
-    limit: int
-    totalPages: int = Field(serialization_alias="totalPages")
-
-    model_config = {"populate_by_name": True}
 
 
 class LenderStatsResponse(BaseModel):

@@ -18,9 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.lender import Lender
 from app.schemas.lenders import LenderOut, LenderStatsResponse
-
-# Hard page-size ceiling (plan: max 25 records per page).
-MAX_PAGE_SIZE = 25
+from app.services.directory_pipeline import MAX_PAGE_SIZE
 
 ACTIVE_FILTER = Lender.is_active.is_(True)
 
