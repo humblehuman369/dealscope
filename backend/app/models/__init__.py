@@ -12,6 +12,7 @@ from app.models.device_token import DevicePlatform, DeviceToken
 from app.models.directory_service_area import DirectoryServiceArea
 from app.models.directory_usage import DirectoryUsageCounter
 from app.models.document import Document, DocumentType
+from app.models.geo_city import GeoCity
 from app.models.geo_county import GeoCounty
 from app.models.lender import Lender
 from app.models.role import Permission, Role, RolePermission, UserRole
@@ -41,6 +42,7 @@ __all__ = [
     "Document",
     "DocumentType",
     "FlipStage",
+    "GeoCity",
     "GeoCounty",
     "Lender",
     "PaymentHistory",

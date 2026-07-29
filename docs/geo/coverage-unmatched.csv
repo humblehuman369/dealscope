@@ -1,2136 +1,747 @@
 state,coverage_string,occurrences,reason
-TX,San Antonio,32,no county of this name in the state
-TX,Fort Worth,30,no county of this name in the state
-FL,Orlando,24,no county of this name in the state
-MD,Baltimore,22,"ambiguous — matches 2 counties: 24005,24510"
-FL,Tampa,21,no county of this name in the state
-GA,Atlanta,20,no county of this name in the state
-MO,St. Louis,20,"ambiguous — matches 2 counties: 29189,29510"
-FL,Jacksonville,19,no county of this name in the state
-OH,Cincinnati,19,no county of this name in the state
-OH,Dayton,19,no county of this name in the state
-TX,Arlington,17,no county of this name in the state
-VA,Fairfax,16,"ambiguous — matches 2 counties: 51059,51600"
-FL,Miami,15,no county of this name in the state
-NC,Greensboro,15,no county of this name in the state
-NC,Charlotte,15,no county of this name in the state
-OH,Cleveland,15,no county of this name in the state
-OH,Columbus,15,no county of this name in the state
-TN,Nashville,15,no county of this name in the state
-FL,Fort Lauderdale,14,no county of this name in the state
-NC,Raleigh,14,no county of this name in the state
-OH,Akron,14,no county of this name in the state
-TN,Chattanooga,14,no county of this name in the state
-GA,Alpharetta,13,no county of this name in the state
-IL,Chicago,13,no county of this name in the state
-TN,Memphis,13,no county of this name in the state
-WA,Seattle,13,no county of this name in the state
-WA,Tacoma,13,no county of this name in the state
-NE,Omaha,12,no county of this name in the state
-OK,Oklahoma City,12,no county of this name in the state
-TN,Knoxville,12,no county of this name in the state
-UT,Salt Lake City,12,no county of this name in the state
-AL,Birmingham,11,no county of this name in the state
-MD,Baltimore County,11,"ambiguous — matches 2 counties: 24005,24510"
-MO,Kansas City,11,no county of this name in the state
-AR,Little Rock,10,no county of this name in the state
-AZ,Phoenix,10,no county of this name in the state
-CA,San Jose,10,no county of this name in the state
-FL,Boca Raton,10,no county of this name in the state
-GA,Augusta,10,no county of this name in the state
-MO,St. Louis County,10,"ambiguous — matches 2 counties: 29189,29510"
-FL,West Palm Beach,9,no county of this name in the state
-IL,Aurora,9,no county of this name in the state
-KY,Louisville,9,no county of this name in the state
-NC,Fayetteville,9,no county of this name in the state
-NM,Albuquerque,9,no county of this name in the state
-TN,Murfreesboro,9,no county of this name in the state
-AZ,Tucson,8,no county of this name in the state
-CO,Aurora,8,no county of this name in the state
-FL,Cape Coral,8,no county of this name in the state
-MI,Detroit,8,no county of this name in the state
-MN,Minneapolis,8,no county of this name in the state
-OH,Toledo,8,no county of this name in the state
-AR,Bentonville,7,no county of this name in the state
-CA,Bakersfield,7,no county of this name in the state
-CO,Lakewood,7,no county of this name in the state
-LA,Baton Rouge,7,no county of this name in the state
-LA,New Orleans,7,no county of this name in the state
-MA,Boston,7,no county of this name in the state
-MI,Grand Rapids,7,no county of this name in the state
-NY,Rochester,7,no county of this name in the state
-OH,Kenton,7,no county of this name in the state
-PA,Pittsburgh,7,no county of this name in the state
-SC,Columbia,7,no county of this name in the state
-TX,Plano,7,no county of this name in the state
-VA,Richmond,7,"ambiguous — matches 2 counties: 51159,51760"
-VA,Hampton Roads,7,no county of this name in the state
-??,Atlanta,7,"buyer has no state, cannot scope the lookup"
-AR,Bella Vista,6,no county of this name in the state
-AR,Cabot,6,no county of this name in the state
-AZ,Mesa,6,no county of this name in the state
-AZ,Chandler,6,no county of this name in the state
-CA,Oakland,6,no county of this name in the state
-CO,Arvada,6,no county of this name in the state
-CO,Fort Collins,6,no county of this name in the state
-GA,Acworth,6,no county of this name in the state
-GA,Roswell,6,no county of this name in the state
-GA,Sandy Springs,6,no county of this name in the state
-KS,Kansas City,6,no county of this name in the state
-KY,Lexington,6,no county of this name in the state
-NC,High Point,6,no county of this name in the state
-OH,Barberton,6,no county of this name in the state
-OH,Canton,6,no county of this name in the state
-PA,Allentown,6,no county of this name in the state
-PA,Harrisburg,6,no county of this name in the state
-TN,Clarksville,6,no county of this name in the state
-UT,Provo,6,no county of this name in the state
-MI,Ann Arbor,6,no county of this name in the state
-OK,Norman,6,no county of this name in the state
-??,Montgomery,6,"buyer has no state, cannot scope the lookup"
-??,Dallas,6,"buyer has no state, cannot scope the lookup"
-AR,Fayetteville,5,no county of this name in the state
-AZ,Tempe,5,no county of this name in the state
-AZ,Scottsdale,5,no county of this name in the state
-AZ,Peoria,5,no county of this name in the state
-CA,Stockton,5,no county of this name in the state
-CT,Bridgeport,5,no county of this name in the state
-CT,Stamford,5,no county of this name in the state
-FL,Hollywood,5,no county of this name in the state
-FL,Boynton Beach,5,no county of this name in the state
-FL,St. Petersburg,5,no county of this name in the state
-GA,Marietta,5,no county of this name in the state
-IL,Elgin,5,no county of this name in the state
-IN,Indianapolis,5,no county of this name in the state
-MD,Baltimore City,5,no county of this name in the state
-MI,Auburn Hills,5,no county of this name in the state
-MI,Lansing,5,no county of this name in the state
-MI,Dearborn,5,no county of this name in the state
-MN,Eagan,5,no county of this name in the state
-NC,Cary,5,no county of this name in the state
-NC,Wilmington,5,no county of this name in the state
-NC,Kernersville,5,no county of this name in the state
-NC,Winston-Salem,5,no county of this name in the state
-NE,Bellevue,5,no county of this name in the state
-NV,Las Vegas,5,no county of this name in the state
-OK,Broken Arrow,5,no county of this name in the state
-OK,Edmond,5,no county of this name in the state
-OR,Portland,5,no county of this name in the state
-OR,Salem,5,no county of this name in the state
-PA,Reading,5,no county of this name in the state
-TN,DeSoto,5,no county of this name in the state
-TN,Cleveland,5,no county of this name in the state
-TN,East Ridge,5,no county of this name in the state
-TN,Alcoa,5,no county of this name in the state
-TX,Frisco,5,no county of this name in the state
-TX,McAllen,5,no county of this name in the state
-TX,Baytown,5,no county of this name in the state
-TX,Abilene,5,no county of this name in the state
-TX,Alamo Heights,5,no county of this name in the state
-TX,Boerne,5,no county of this name in the state
-TX,Schertz,5,no county of this name in the state
-UT,Ogden,5,no county of this name in the state
-VA,Midlothian,5,no county of this name in the state
-WI,Madison,5,no county of this name in the state
-CO,Colorado Springs,5,no county of this name in the state
-PA,West Chester,5,no county of this name in the state
-AR,Rogers,4,no county of this name in the state
-AR,Springdale,4,no county of this name in the state
-AZ,Gilbert,4,no county of this name in the state
-AZ,Glendale,4,no county of this name in the state
-CA,Hayward,4,no county of this name in the state
-FL,Pensacola,4,no county of this name in the state
-FL,Kissimmee,4,no county of this name in the state
-GA,Brookhaven,4,no county of this name in the state
-GA,Athens,4,no county of this name in the state
-GA,Lawrenceville,4,no county of this name in the state
-GA,Columbus,4,no county of this name in the state
-IL,Joliet,4,no county of this name in the state
-IN,Fort Wayne,4,no county of this name in the state
-KS,Olathe,4,no county of this name in the state
-KS,Overland Park,4,no county of this name in the state
-KY,Bowling Green,4,no county of this name in the state
-KY,Covington,4,no county of this name in the state
-MA,Springfield,4,no county of this name in the state
-MA,Cambridge,4,no county of this name in the state
-MD,Prince George’s,4,no county of this name in the state
-MI,Allen Park,4,no county of this name in the state
-MN,Bloomington,4,no county of this name in the state
-MN,Burnsville,4,no county of this name in the state
-MN,Apple Valley,4,no county of this name in the state
-MO,Independence,4,no county of this name in the state
-MO,Blue Springs,4,no county of this name in the state
-NC,Asheboro,4,no county of this name in the state
-NC,Burlington,4,no county of this name in the state
-NC,Winston Salem,4,no county of this name in the state
-NC,Greenville,4,no county of this name in the state
-NC,Clayton,4,no county of this name in the state
-NC,Apex,4,no county of this name in the state
-NY,Brooklyn,4,no county of this name in the state
-OH,Brunswick,4,no county of this name in the state
-OH,Lancaster,4,no county of this name in the state
-OH,Kettering,4,no county of this name in the state
-OK,Bethany,4,no county of this name in the state
-OK,Midwest City,4,no county of this name in the state
-TN,Brentwood,4,no county of this name in the state
-TN,Ooltewah,4,no county of this name in the state
-TN,Catoosa,4,no county of this name in the state
-TX,Round Rock,4,no county of this name in the state
-TX,Mesquite,4,no county of this name in the state
-TX,Bedford,4,no county of this name in the state
-TX,McKinney,4,no county of this name in the state
-TX,Katy,4,no county of this name in the state
-TX,Converse,4,no county of this name in the state
-TX,New Braunfels,4,no county of this name in the state
-VA,Glen Allen,4,no county of this name in the state
-VA,Chester,4,no county of this name in the state
-WA,Bellevue,4,no county of this name in the state
-FL,Fort Myers,4,no county of this name in the state
-IL,Naperville,4,no county of this name in the state
-OH,Parma,4,no county of this name in the state
-OH,Beavercreek,4,no county of this name in the state
-TX,Corpus Christi,4,no county of this name in the state
-??,Fairfax,4,"buyer has no state, cannot scope the lookup"
-??,Loudoun,4,"buyer has no state, cannot scope the lookup"
-??,Denver,4,"buyer has no state, cannot scope the lookup"
-??,Queens,4,"buyer has no state, cannot scope the lookup"
-??,Anne Arundel,4,"buyer has no state, cannot scope the lookup"
-??,Birmingham,4,"buyer has no state, cannot scope the lookup"
-??,Chicago,4,"buyer has no state, cannot scope the lookup"
-??,Orange,4,"buyer has no state, cannot scope the lookup"
-??,Los Angeles,4,"buyer has no state, cannot scope the lookup"
-MS,Biloxi,4,no county of this name in the state
-??,Houston,4,"buyer has no state, cannot scope the lookup"
-??,Baltimore,4,"buyer has no state, cannot scope the lookup"
-??,Phoenix,4,"buyer has no state, cannot scope the lookup"
-??,San Diego,4,"buyer has no state, cannot scope the lookup"
-AL,Hoover,3,no county of this name in the state
-AL,Alabaster,3,no county of this name in the state
-AL,Pelham,3,no county of this name in the state
-AR,Centerton,3,no county of this name in the state
-AR,Sherwood,3,no county of this name in the state
-AR,Jacksonville,3,no county of this name in the state
-AR,Alexander,3,no county of this name in the state
-AR,Bryant,3,no county of this name in the state
-CA,Fremont,3,no county of this name in the state
-CA,Berkeley,3,no county of this name in the state
-CO,Englewood,3,no county of this name in the state
-CO,Highlands Ranch,3,no county of this name in the state
-CO,Thornton,3,no county of this name in the state
-CO,Westminster,3,no county of this name in the state
-CT,Norwalk,3,no county of this name in the state
-FL,Port St Lucie,3,no county of this name in the state
-FL,Sanford,3,no county of this name in the state
-FL,Gainesville,3,no county of this name in the state
-FL,Bonita Springs,3,no county of this name in the state
-FL,Brandon,3,no county of this name in the state
-GA,Buford,3,no county of this name in the state
-GA,Cartersville,3,no county of this name in the state
-GA,Duluth,3,no county of this name in the state
-GA,Miami,3,no county of this name in the state
-GA,Phoenix,3,no county of this name in the state
-GA,Dallas,3,no county of this name in the state
-ID,Eagle,3,no county of this name in the state
-ID,Emmett,3,no county of this name in the state
-IN,Anderson,3,no county of this name in the state
-IN,Fishers,3,no county of this name in the state
-IN,Beech Grove,3,no county of this name in the state
-KS,Andover,3,no county of this name in the state
-KS,Derby,3,no county of this name in the state
-KY,Elizabethtown,3,no county of this name in the state
-KY,Owensboro,3,no county of this name in the state
-LA,Metairie,3,no county of this name in the state
-MA,Framingham,3,no county of this name in the state
-MD,Prince George’s County,3,no county of this name in the state
-MI,Troy,3,no county of this name in the state
-MI,Sterling Heights,3,no county of this name in the state
-MI,Eastpointe,3,no county of this name in the state
-MN,Brooklyn Park,3,no county of this name in the state
-MN,Eden Prairie,3,no county of this name in the state
-MN,St. Paul,3,no county of this name in the state
-MO,St Louis,3,"ambiguous — matches 2 counties: 29189,29510"
-MO,Affton,3,no county of this name in the state
-MO,Columbia,3,no county of this name in the state
-MO,Florissant,3,no county of this name in the state
-NC,Asheville,3,no county of this name in the state
-NC,York,3,no county of this name in the state
-NC,Archdale,3,no county of this name in the state
-NC,King,3,no county of this name in the state
-NC,Rocky Mount,3,no county of this name in the state
-NC,Jacksonville,3,no county of this name in the state
-NC,Wake Forest,3,no county of this name in the state
-NC,Mooresville,3,no county of this name in the state
-NE,Papillion,3,no county of this name in the state
-NJ,Newark,3,no county of this name in the state
-NJ,Jersey City,3,no county of this name in the state
-NJ,Paterson,3,no county of this name in the state
-NM,Rio Rancho,3,no county of this name in the state
-NY,Buffalo,3,no county of this name in the state
-OH,Fairlawn,3,no county of this name in the state
-OH,Middletown,3,no county of this name in the state
-OH,Campbell,3,no county of this name in the state
-OH,Lakewood,3,no county of this name in the state
-OH,Canal Winchester,3,no county of this name in the state
-OH,Huber Heights,3,no county of this name in the state
-OH,Fairborn,3,no county of this name in the state
-OH,Green,3,no county of this name in the state
-OK,Del City,3,no county of this name in the state
-PA,Bethlehem,3,no county of this name in the state
-RI,Cranston,3,no county of this name in the state
-SC,Mount Pleasant,3,no county of this name in the state
-SC,Goose Creek,3,no county of this name in the state
-SC,Summerville,3,no county of this name in the state
-TN,East Brainerd,3,no county of this name in the state
-TN,Maryville,3,no county of this name in the state
-TX,Georgetown,3,no county of this name in the state
-TX,Cedar Park,3,no county of this name in the state
-TX,Carrollton,3,no county of this name in the state
-TX,Conroe,3,no county of this name in the state
-TX,Amarillo,3,no county of this name in the state
-TX,San Angelo,3,no county of this name in the state
-TX,Canyon Lake,3,no county of this name in the state
-TX,San Marcos,3,no county of this name in the state
-WA,Everett,3,no county of this name in the state
-WA,Gig Harbor,3,no county of this name in the state
-WV,Charleston,3,no county of this name in the state
-CA,Anaheim,3,no county of this name in the state
-CA,Clovis,3,no county of this name in the state
-CA,Lodi,3,no county of this name in the state
-CO,Centennial,3,no county of this name in the state
-FL,Lakeland,3,no county of this name in the state
-FL,Cooper City,3,no county of this name in the state
-FL,Delray Beach,3,no county of this name in the state
-IN,Bloomington,3,no county of this name in the state
-IN,Greenfield,3,no county of this name in the state
-NC,Concord,3,no county of this name in the state
-NC,Kannapolis,3,no county of this name in the state
-NY,Staten Island,3,no county of this name in the state
-NY,Syracuse,3,no county of this name in the state
-OK,Yukon,3,no county of this name in the state
-OK,Mustang,3,no county of this name in the state
-OR,Beaverton,3,no county of this name in the state
-TX,Garland,3,no county of this name in the state
-TX,League City,3,no county of this name in the state
-TX,Sugar Land,3,no county of this name in the state
-UT,Layton,3,no county of this name in the state
-VA,Annandale,3,no county of this name in the state
-WI,Appleton,3,no county of this name in the state
-??,Prince William,3,"buyer has no state, cannot scope the lookup"
-??,Colorado Springs,3,"buyer has no state, cannot scope the lookup"
-??,Nassau,3,"buyer has no state, cannot scope the lookup"
-??,Suffolk,3,"buyer has no state, cannot scope the lookup"
-??,Baldwin,3,"buyer has no state, cannot scope the lookup"
-??,Austin,3,"buyer has no state, cannot scope the lookup"
-MI,Warren,3,no county of this name in the state
-MS,Hattiesburg,3,no county of this name in the state
-OR,Eugene,3,no county of this name in the state
-??,New York,3,"buyer has no state, cannot scope the lookup"
-??,Philadelphia,3,"buyer has no state, cannot scope the lookup"
-AL,Calera,2,no county of this name in the state
-AL,Huntsville,2,no county of this name in the state
-AL,Auburn,2,no county of this name in the state
-AR,Cave Springs,2,no county of this name in the state
-AR,Farmington,2,no county of this name in the state
-AZ,Surprise,2,no county of this name in the state
-AZ,Tolleson,2,no county of this name in the state
-CA,Long Beach,2,no county of this name in the state
-CA,Concord,2,no county of this name in the state
-CA,Antioch,2,no county of this name in the state
-CA,Castro Valley,2,no county of this name in the state
-CO,Greeley,2,no county of this name in the state
-CT,Middletown,2,no county of this name in the state
-CT,Manchester,2,no county of this name in the state
-CT,Bristol,2,no county of this name in the state
-CT,Farmington,2,no county of this name in the state
-CT,Avon,2,no county of this name in the state
-DC,Washington,2,no county of this name in the state
-DC,Montgomery,2,no county of this name in the state
-EN,Birmingham,2,no county of this name in the state
-EN,Bradford,2,no county of this name in the state
-EN,Bristol,2,no county of this name in the state
-ET,Addis Ababa,2,no county of this name in the state
-FL,Deerfield Beach,2,no county of this name in the state
-FL,Deltona,2,no county of this name in the state
-FL,Aventura,2,no county of this name in the state
-FL,Bradenton,2,no county of this name in the state
-FL,Davenport,2,no county of this name in the state
-FL,Clermont,2,no county of this name in the state
-FL,High Springs,2,no county of this name in the state
-FL,Daytona Beach,2,no county of this name in the state
-FL,Tallahassee,2,no county of this name in the state
-GA,Canton,2,no county of this name in the state
-GA,Smyrna,2,no county of this name in the state
-GA,Johns Creek,2,no county of this name in the state
-GA,Aiken,2,no county of this name in the state
-GA,Los Angeles,2,no county of this name in the state
-GA,Philadelphia,2,no county of this name in the state
-GA,San Antonio,2,no county of this name in the state
-GA,San Diego,2,no county of this name in the state
-GA,Norcross,2,no county of this name in the state
-IA,Ankeny,2,no county of this name in the state
-IA,Clive,2,no county of this name in the state
-IA,Grimes,2,no county of this name in the state
-IA,Johnston,2,no county of this name in the state
-ID,Caldwell,2,no county of this name in the state
-ID,Coeur d'Alene,2,no county of this name in the state
-IL,Cicero,2,no county of this name in the state
-IL,Rockford,2,no county of this name in the state
-IL,Springfield,2,no county of this name in the state
-IN,Noblesville,2,no county of this name in the state
-IN,Speedway,2,no county of this name in the state
-KS,Platte,2,no county of this name in the state
-KS,Independence,2,no county of this name in the state
-KS,Blue Springs,2,no county of this name in the state
-KS,Newton,2,no county of this name in the state
-KY,Frankfort,2,no county of this name in the state
-LA,Denham Springs,2,no county of this name in the state
-LA,Marrero,2,no county of this name in the state
-MA,Lowell,2,no county of this name in the state
-MA,Braintree,2,no county of this name in the state
-MA,Needham,2,no county of this name in the state
-MA,Newton,2,no county of this name in the state
-MA,Haverhill,2,no county of this name in the state
-MA,Peabody,2,no county of this name in the state
-MA,Agawam,2,no county of this name in the state
-MD,St. Mary’s,2,no county of this name in the state
-MI,Flint,2,no county of this name in the state
-MI,Holland,2,no county of this name in the state
-MI,Clawson,2,no county of this name in the state
-MN,Saint Paul,2,no county of this name in the state
-MN,Blaine,2,no county of this name in the state
-MN,Coon Rapids,2,no county of this name in the state
-MO,Ballwin,2,no county of this name in the state
-MO,Chesterfield,2,no county of this name in the state
-MO,Wyandotte,2,no county of this name in the state
-MO,Leavenworth,2,no county of this name in the state
-MO,Belton,2,no county of this name in the state
-MO,Raytown,2,no county of this name in the state
-MS,Oxford,2,no county of this name in the state
-NC,Eden,2,no county of this name in the state
-NC,Reidsville,2,no county of this name in the state
-NC,Matthews,2,no county of this name in the state
-NC,Lancaster,2,no county of this name in the state
-NC,Chapel Hill,2,no county of this name in the state
-NC,Garner,2,no county of this name in the state
-NC,Holly Springs,2,no county of this name in the state
-NC,Louisburg,2,no county of this name in the state
-NE,La Vista,2,no county of this name in the state
-NE,Ralston,2,no county of this name in the state
-NE,Pottawattamie,2,no county of this name in the state
-NE,Council Bluffs,2,no county of this name in the state
-NM,Las Cruces,2,no county of this name in the state
-NM,Clovis,2,no county of this name in the state
-NM,Los Lunas,2,no county of this name in the state
-NV,Henderson,2,no county of this name in the state
-NY,Bergen,2,no county of this name in the state
-NY,Hudson,2,no county of this name in the state
-NY,Passaic,2,no county of this name in the state
-NY,Poughkeepsie,2,no county of this name in the state
-OH,Bath,2,no county of this name in the state
-OH,Blue Ash,2,no county of this name in the state
-OH,West Chester,2,no county of this name in the state
-OH,Springboro,2,no county of this name in the state
-OH,Miamisburg,2,no county of this name in the state
-OH,Brookville,2,no county of this name in the state
-OH,Elyria,2,no county of this name in the state
-OH,Marysville,2,no county of this name in the state
-OH,Pickerington,2,no county of this name in the state
-OH,Dublin,2,no county of this name in the state
-OH,Gahanna,2,no county of this name in the state
-OH,Grove City,2,no county of this name in the state
-OH,Tipp City,2,no county of this name in the state
-OH,Troy,2,no county of this name in the state
-OH,Vandalia,2,no county of this name in the state
-OH,Englewood,2,no county of this name in the state
-OH,Alliance,2,no county of this name in the state
-OH,Mentor,2,no county of this name in the state
-OK,Blanchard,2,no county of this name in the state
-OK,Chickasha,2,no county of this name in the state
-OK,Jones,2,no county of this name in the state
-OK,Owasso,2,no county of this name in the state
-OK,Bixby,2,no county of this name in the state
-OR,Clark,2,no county of this name in the state
-OR,Keizer,2,no county of this name in the state
-PA,Norristown,2,no county of this name in the state
-PA,Wilkes-Barre,2,no county of this name in the state
-RI,East Providence,2,no county of this name in the state
-SC,West Ashley,2,no county of this name in the state
-SC,Charlotte,2,no county of this name in the state
-SC,Taylors,2,no county of this name in the state
-SC,Greer,2,no county of this name in the state
-SC,Simpsonville,2,no county of this name in the state
-SC,Richmond,2,no county of this name in the state
-SC,Rock Hill,2,no county of this name in the state
-TN,Harrison,2,no county of this name in the state
-TN,Whitfield,2,no county of this name in the state
-TN,Spring Hill,2,no county of this name in the state
-TN,Farragut,2,no county of this name in the state
-TN,Pigeon Forge,2,no county of this name in the state
-TN,Desoto,2,no county of this name in the state
-TN,Bartlett,2,no county of this name in the state
-TN,Columbia,2,no county of this name in the state
-TN,Hendersonville,2,no county of this name in the state
-TN,Smyrna,2,no county of this name in the state
-TX,Leander,2,no county of this name in the state
-TX,Pflugerville,2,no county of this name in the state
-TX,Hutto,2,no county of this name in the state
-TX,San Diego,2,no county of this name in the state
-TX,Brownsville,2,no county of this name in the state
-TX,Harlingen,2,no county of this name in the state
-TX,Cypress,2,no county of this name in the state
-TX,Deer Park,2,no county of this name in the state
-TX,Friendswood,2,no county of this name in the state
-TX,Humble,2,no county of this name in the state
-TX,Angleton,2,no county of this name in the state
-TX,Mission,2,no county of this name in the state
-TX,Addison,2,no county of this name in the state
-TX,Cedar Hill,2,no county of this name in the state
-TX,Farmers Branch,2,no county of this name in the state
-TX,Odessa,2,no county of this name in the state
-TX,Castle Hills,2,no county of this name in the state
-TX,Castroville,2,no county of this name in the state
-TX,Helotes,2,no county of this name in the state
-TX,Bulverde,2,no county of this name in the state
-TX,DFW,2,no county of this name in the state
-UT,Bluffdale,2,no county of this name in the state
-UT,Kearns,2,no county of this name in the state
-UT,Magna,2,no county of this name in the state
-UT,St. George,2,no county of this name in the state
-VA,Prince George’s,2,no county of this name in the state
-VA,Howard,2,no county of this name in the state
-VA,Anne Arundel,2,no county of this name in the state
-VA,null,2,no county of this name in the state
-VA,Warrenton,2,no county of this name in the state
-VA,Roanoke,2,"ambiguous — matches 2 counties: 51161,51770"
-VA,Franklin,2,"ambiguous — matches 2 counties: 51067,51620"
-WA,Spanaway,2,no county of this name in the state
-WA,Redmond,2,no county of this name in the state
-WA,Renton,2,no county of this name in the state
-WA,Auburn,2,no county of this name in the state
-WA,Kootenai,2,no county of this name in the state
-WA,Pullman,2,no county of this name in the state
-WA,Federal Way,2,no county of this name in the state
-WI,Oshkosh,2,no county of this name in the state
-WI,West Allis,2,no county of this name in the state
-WI,Wauwatosa,2,no county of this name in the state
-WV,Bridgeport,2,no county of this name in the state
-WV,Clarksburg,2,no county of this name in the state
-WV,Morgantown,2,no county of this name in the state
-AL,Trussville,2,no county of this name in the state
-CA,Galt,2,no county of this name in the state
-CA,Brentwood,2,no county of this name in the state
-CA,Manteca,2,no county of this name in the state
-CT,Waterbury,2,no county of this name in the state
-DE,Wilmington,2,no county of this name in the state
-FL,Palm Bay,2,no county of this name in the state
-FL,Pembroke Pines,2,no county of this name in the state
-FL,Port St. Lucie,2,no county of this name in the state
-FL,Clearwater,2,no county of this name in the state
-FL,St Petersburg,2,no county of this name in the state
-FL,Ocala,2,no county of this name in the state
-FL,Arcadia,2,no county of this name in the state
-FL,Miami Gardens,2,no county of this name in the state
-FL,Naples,2,no county of this name in the state
-FL,Coconut Creek,2,no county of this name in the state
-FL,Coral Springs,2,no county of this name in the state
-GA,Austell,2,no county of this name in the state
-GA,Cumming,2,no county of this name in the state
-GA,Americus,2,no county of this name in the state
-GA,Carrollton,2,no county of this name in the state
-IA,Council Bluffs,2,no county of this name in the state
-IL,Geneva,2,no county of this name in the state
-IL,Schaumburg,2,no county of this name in the state
-IN,Evansville,2,no county of this name in the state
-IN,Muncie,2,no county of this name in the state
-IN,New Castle,2,no county of this name in the state
-IN,Pendleton,2,no county of this name in the state
-IN,Richmond,2,no county of this name in the state
-IN,Greenwood,2,no county of this name in the state
-IN,Lafayette,2,no county of this name in the state
-KS,Arkansas City,2,no county of this name in the state
-KS,Bel Aire,2,no county of this name in the state
-KS,Dodge City,2,no county of this name in the state
-KY,Cold Spring,2,no county of this name in the state
-KY,Georgetown,2,no county of this name in the state
-KY,Northern Kentucky,2,no county of this name in the state
-LA,Breaux Bridge,2,no county of this name in the state
-MA,Brockton,2,no county of this name in the state
-MA,New Bedford,2,no county of this name in the state
-MA,Fall River,2,no county of this name in the state
-MD,Annapolis,2,no county of this name in the state
-MI,Adrian,2,no county of this name in the state
-MI,Battle Creek,2,no county of this name in the state
-MN,Woodbury,2,no county of this name in the state
-MS,Horn Lake,2,no county of this name in the state
-MS,Byram,2,no county of this name in the state
-MS,Ocean Springs,2,no county of this name in the state
-NC,Rural Hall,2,no county of this name in the state
-NC,Harrisburg,2,no county of this name in the state
-NC,Huntersville,2,no county of this name in the state
-NC,Monroe,2,no county of this name in the state
-NC,Rock Hill,2,no county of this name in the state
-NC,Gastonia,2,no county of this name in the state
-NC,Walkertown,2,no county of this name in the state
-NC,Lewisville,2,no county of this name in the state
-NC,Clemmons,2,no county of this name in the state
-NC,Statesville,2,no county of this name in the state
-NC,Lexington,2,no county of this name in the state
-NE,Grand Island,2,no county of this name in the state
-NE,Fremont,2,no county of this name in the state
-OH,Massillon,2,no county of this name in the state
-OH,North Canton,2,no county of this name in the state
-OH,Stow,2,no county of this name in the state
-OH,Fairview Park,2,no county of this name in the state
-OK,Moore,2,no county of this name in the state
-OR,Gresham,2,no county of this name in the state
-OR,Hillsboro,2,no county of this name in the state
-OR,Albany,2,no county of this name in the state
-PA,Eagleville,2,no county of this name in the state
-PA,Collegeville,2,no county of this name in the state
-PA,Easton,2,no county of this name in the state
-PA,Carlisle,2,no county of this name in the state
-PA,Camp Hill,2,no county of this name in the state
-PA,Elizabethtown,2,no county of this name in the state
-PA,Enola,2,no county of this name in the state
-PA,Scranton,2,no county of this name in the state
-TN,Walker,2,no county of this name in the state
-TN,Collegedale,2,no county of this name in the state
-TN,Athens,2,no county of this name in the state
-TN,Oak Ridge,2,no county of this name in the state
-TN,Lenoir City,2,no county of this name in the state
-TN,Clinton,2,no county of this name in the state
-TX,Allen,2,no county of this name in the state
-TX,Coppell,2,no county of this name in the state
-TX,Irving,2,no county of this name in the state
-TX,Cibolo,2,no county of this name in the state
-TX,Alief,2,no county of this name in the state
-TX,Missouri City,2,no county of this name in the state
-TX,Pasadena,2,no county of this name in the state
-TX,Grand Prairie,2,no county of this name in the state
-TX,Universal City,2,no county of this name in the state
-TX,Seguin,2,no county of this name in the state
-TX,Pearland,2,no county of this name in the state
-TX,Spring,2,no county of this name in the state
-UT,Orem,2,no county of this name in the state
-VA,Burke,2,no county of this name in the state
-VA,Centreville,2,no county of this name in the state
-VA,Chantilly,2,no county of this name in the state
-VA,Dale City,2,no county of this name in the state
-WA,Olympia,2,no county of this name in the state
-WA,Puyallup,2,no county of this name in the state
-WA,Vancouver,2,no county of this name in the state
-WI,Green Bay,2,no county of this name in the state
-WI,Menomonee Falls,2,no county of this name in the state
-WI,Mequon,2,no county of this name in the state
-??,Westchester,2,"buyer has no state, cannot scope the lookup"
-??,Arlington,2,"buyer has no state, cannot scope the lookup"
-??,Alexandria,2,"buyer has no state, cannot scope the lookup"
-??,Prince George's,2,"buyer has no state, cannot scope the lookup"
-??,Chesapeake,2,"buyer has no state, cannot scope the lookup"
-??,Richmond,2,"buyer has no state, cannot scope the lookup"
-??,Albany,2,"buyer has no state, cannot scope the lookup"
-??,Davidson,2,"buyer has no state, cannot scope the lookup"
-??,Hamilton,2,"buyer has no state, cannot scope the lookup"
-??,Prince Georges,2,"buyer has no state, cannot scope the lookup"
-??,Mecklenburg,2,"buyer has no state, cannot scope the lookup"
-??,Charlotte,2,"buyer has no state, cannot scope the lookup"
-??,Maryland,2,"buyer has no state, cannot scope the lookup"
-??,Virginia,2,"buyer has no state, cannot scope the lookup"
-??,Prince George’s,2,"buyer has no state, cannot scope the lookup"
-??,Mobile,2,"buyer has no state, cannot scope the lookup"
-??,Hillsborough,2,"buyer has no state, cannot scope the lookup"
-??,Pinellas,2,"buyer has no state, cannot scope the lookup"
-??,Riverside,2,"buyer has no state, cannot scope the lookup"
-??,San Bernardino,2,"buyer has no state, cannot scope the lookup"
-AR,North Little Rock,2,no county of this name in the state
-FL,Greenacres,2,no county of this name in the state
-IN,Brownsburg,2,no county of this name in the state
-IN,Hammond,2,no county of this name in the state
-MS,Gulfport,2,no county of this name in the state
-MS,Southaven,2,no county of this name in the state
-MS,Olive Branch,2,no county of this name in the state
-MS,Tupelo,2,no county of this name in the state
-MS,Meridian,2,no county of this name in the state
-TX,Lewisville,2,no county of this name in the state
-??,Miami,2,"buyer has no state, cannot scope the lookup"
-??,Orlando,2,"buyer has no state, cannot scope the lookup"
-??,Oakland,2,"buyer has no state, cannot scope the lookup"
-??,Fairfax County,2,"buyer has no state, cannot scope the lookup"
-??,Loudoun County,2,"buyer has no state, cannot scope the lookup"
-??,San Antonio,2,"buyer has no state, cannot scope the lookup"
-??,New Jersey,2,"buyer has no state, cannot scope the lookup"
-??,Tampa,2,"buyer has no state, cannot scope the lookup"
-??,Nashville,2,"buyer has no state, cannot scope the lookup"
-??,Jacksonville,2,"buyer has no state, cannot scope the lookup"
-??,Bucks,2,"buyer has no state, cannot scope the lookup"
-??,Erie,2,"buyer has no state, cannot scope the lookup"
-??,Columbus,2,"buyer has no state, cannot scope the lookup"
-??,Caldwell,2,"buyer has no state, cannot scope the lookup"
-??,Cleveland,2,"buyer has no state, cannot scope the lookup"
-??,Aurora,2,"buyer has no state, cannot scope the lookup"
-??,Lubbock,2,"buyer has no state, cannot scope the lookup"
-??,Sacramento,2,"buyer has no state, cannot scope the lookup"
-??,Miami-Dade,2,"buyer has no state, cannot scope the lookup"
-??,Bronx,2,"buyer has no state, cannot scope the lookup"
-??,Salt Lake City,2,"buyer has no state, cannot scope the lookup"
-ID,Meridian,2,no county of this name in the state
-ID,Nampa,2,no county of this name in the state
-NJ,Trenton,2,no county of this name in the state
-VA,Ashburn,2,no county of this name in the state
-AL,Gardendale,1,no county of this name in the state
-AL,Pinson,1,no county of this name in the state
-AL,Hueytown,1,no county of this name in the state
-AL,Prattville,1,no county of this name in the state
-AL,Millbrook,1,no county of this name in the state
-AL,Wetumpka,1,no county of this name in the state
-AL,Opelika,1,no county of this name in the state
-AR,Siloam Springs,1,no county of this name in the state
-AR,Pea Ridge,1,no county of this name in the state
-AR,Avoca,1,no county of this name in the state
-AR,Decatur,1,no county of this name in the state
-AR,Elkins,1,no county of this name in the state
-AR,Beebe,1,no county of this name in the state
-AR,Maumelle,1,no county of this name in the state
-CA,Miami-Dade,1,no county of this name in the state
-CA,Cook,1,no county of this name in the state
-CA,Clark,1,no county of this name in the state
-CA,Suffolk,1,no county of this name in the state
-CA,Harris,1,no county of this name in the state
-CA,Salt Lake,1,no county of this name in the state
-CA,Modesto,1,no county of this name in the state
-CA,Lake Tahoe,1,no county of this name in the state
-CA,Citrus Heights,1,no county of this name in the state
-CA,Rancho Cordova,1,no county of this name in the state
-CA,Carmichael,1,no county of this name in the state
-CA,Elk Grove,1,no county of this name in the state
-CA,North Sacramento,1,no county of this name in the state
-CA,East Sacramento,1,no county of this name in the state
-CA,South Sacramento,1,no county of this name in the state
-CA,Vallejo,1,no county of this name in the state
-CA,Pittsburg,1,no county of this name in the state
-CA,Fairfield,1,no county of this name in the state
-CA,Richmond,1,no county of this name in the state
-CA,Albany,1,no county of this name in the state
-CA,Atherton,1,no county of this name in the state
-CA,Belmont,1,no county of this name in the state
-CA,Burlingame,1,no county of this name in the state
-CA,Campbell,1,no county of this name in the state
-CH,Bedfordshire,1,no county of this name in the state
-CH,Berkshire,1,no county of this name in the state
-CH,Bristol,1,no county of this name in the state
-CH,Buckinghamshire,1,no county of this name in the state
-CH,Cambridgeshire,1,no county of this name in the state
-CH,Cheshire,1,no county of this name in the state
-CH,Cornwall,1,no county of this name in the state
-CH,County Durham,1,no county of this name in the state
-CO,Commerce City,1,no county of this name in the state
-CO,Littleton,1,no county of this name in the state
-CO,Loveland,1,no county of this name in the state
-CO,Longmont,1,no county of this name in the state
-CO,Windsor,1,no county of this name in the state
-CO,Johnstown,1,no county of this name in the state
-CO,Berthoud,1,no county of this name in the state
-CO,Wichita,1,no county of this name in the state
-CO,Lafayette,1,no county of this name in the state
-CO,Columbine,1,no county of this name in the state
-CT,East Haven,1,no county of this name in the state
-CT,Hamden,1,no county of this name in the state
-CT,Stratford,1,no county of this name in the state
-CT,West Haven,1,no county of this name in the state
-CT,Vernon,1,no county of this name in the state
-CT,Plainville,1,no county of this name in the state
-CT,New Britain,1,no county of this name in the state
-CT,Meriden,1,no county of this name in the state
-CT,Washington,1,no county of this name in the state
-DC,Prince George's,1,no county of this name in the state
-DC,Baltimore,1,no county of this name in the state
-DC,Prince George’s County,1,no county of this name in the state
-DC,Montgomery County,1,no county of this name in the state
-DC,Howard County,1,no county of this name in the state
-DC,Anne Arundel County,1,no county of this name in the state
-DC,Charles County,1,no county of this name in the state
-DC,Fairfax County,1,no county of this name in the state
-DC,Arlington County,1,no county of this name in the state
-DC,Loudoun County,1,no county of this name in the state
-EN,Bournemouth,1,no county of this name in the state
-EN,Leeds,1,no county of this name in the state
-EN,London,1,no county of this name in the state
-EN,Manchester,1,no county of this name in the state
-EN,Sheffield,1,no county of this name in the state
-EN,Aberdeen,1,no county of this name in the state
-EN,Bolton,1,no county of this name in the state
-EN,Cardiff,1,no county of this name in the state
-EN,Doncaster,1,no county of this name in the state
-EN,Edinburgh,1,no county of this name in the state
-FL,DeBary,1,no county of this name in the state
-FL,Orange City,1,no county of this name in the state
-FL,Dade,1,no county of this name in the state
-FL,Autauga,1,no county of this name in the state
-FL,Baldwin,1,no county of this name in the state
-FL,Barbour,1,no county of this name in the state
-FL,Bibb,1,no county of this name in the state
-FL,Blount,1,no county of this name in the state
-FL,Bullock,1,no county of this name in the state
-FL,Butler,1,no county of this name in the state
-FL,Suffolk,1,no county of this name in the state
-FL,Belle Glade,1,no county of this name in the state
-FL,Tampa Bay,1,no county of this name in the state
-FL,St. Cloud,1,no county of this name in the state
-FL,Meadow Woods,1,no county of this name in the state
-FL,Miami Dade,1,no county of this name in the state
-FL,Butler Beach,1,no county of this name in the state
-FL,Dunnellon,1,no county of this name in the state
-FL,Fleming Island,1,no county of this name in the state
-FL,Fort McCoy,1,no county of this name in the state
-FL,Green Cove Springs,1,no county of this name in the state
-FL,Hawthorne,1,no county of this name in the state
-GA,Bronx,1,no county of this name in the state
-GA,Brooklyn,1,no county of this name in the state
-GA,Buffalo,1,no county of this name in the state
-GA,Chester,1,no county of this name in the state
-GA,Detroit,1,no county of this name in the state
-GA,Pennsauken,1,no county of this name in the state
-GA,Sanford,1,no county of this name in the state
-GA,Hernando,1,no county of this name in the state
-GA,Pasco,1,no county of this name in the state
-GA,Conyers,1,no county of this name in the state
-GA,Albany,1,no county of this name in the state
-GA,Blairsville,1,no county of this name in the state
-GA,Blue Ridge,1,no county of this name in the state
-GA,Kennesaw,1,no county of this name in the state
-GA,Douglasville,1,no county of this name in the state
-GA,Dunwoody,1,no county of this name in the state
-GA,East Point,1,no county of this name in the state
-GA,Mableton,1,no county of this name in the state
-GA,Statesboro,1,no county of this name in the state
-GA,Valdosta,1,no county of this name in the state
-GA,Covington,1,no county of this name in the state
-GA,Stockbridge,1,no county of this name in the state
-GA,John's Creek,1,no county of this name in the state
-GA,Holly Springs,1,no county of this name in the state
-GB,London,1,no county of this name in the state
-GB,Manchester,1,no county of this name in the state
-GB,Birmingham,1,no county of this name in the state
-GB,Newcastle,1,no county of this name in the state
-GB,Bristol,1,no county of this name in the state
-GB,Reading,1,no county of this name in the state
-GB,Slough,1,no county of this name in the state
-GB,Milton Keynes,1,no county of this name in the state
-HI,Waipahu,1,no county of this name in the state
-IA,Sarpy,1,no county of this name in the state
-IA,Douglas,1,no county of this name in the state
-IA,Burt,1,no county of this name in the state
-IA,West Des Moines,1,no county of this name in the state
-IA,Urbandale,1,no county of this name in the state
-IA,Norwalk,1,no county of this name in the state
-ID,Cascade,1,no county of this name in the state
-ID,Donnelly,1,no county of this name in the state
-ID,Garden City,1,no county of this name in the state
-IL,DeWitt,1,no county of this name in the state
-IL,Acworth,1,no county of this name in the state
-IL,Alpharetta,1,no county of this name in the state
-IL,Atlanta,1,no county of this name in the state
-IL,Austell,1,no county of this name in the state
-IL,Avondale Estates,1,no county of this name in the state
-IL,Berkeley Lake,1,no county of this name in the state
-IL,Braselton,1,no county of this name in the state
-IL,Nashville,1,no county of this name in the state
-IL,Memphis,1,no county of this name in the state
-IL,Knoxville,1,no county of this name in the state
-IL,Chattanooga,1,no county of this name in the state
-IL,Lake County (Indiana),1,no county of this name in the state
-IL,Kenosha County (Wisconsin),1,no county of this name in the state
-IL,Bolingbrook,1,no county of this name in the state
-IL,Oak Lawn,1,no county of this name in the state
-IL,Romeoville,1,no county of this name in the state
-IL,Grand Boulevard,1,no county of this name in the state
-IL,Berwyn,1,no county of this name in the state
-IL,Elmhurst,1,no county of this name in the state
-IL,Oswego,1,no county of this name in the state
-IL,Riverside,1,no county of this name in the state
-IL,Orland Park,1,no county of this name in the state
-IL,Bloomington,1,no county of this name in the state
-IL,Decatur,1,no county of this name in the state
-IL,Quad Cities,1,no county of this name in the state
-IL,Rock Falls,1,no county of this name in the state
-IL,Lansing,1,no county of this name in the state
-IL,Homewood,1,no county of this name in the state
-IL,Flossmoor,1,no county of this name in the state
-IL,Waukegan,1,no county of this name in the state
-IL,Hoffman Estates,1,no county of this name in the state
-IN,null,1,no county of this name in the state
-IN,La Porte,1,no county of this name in the state
-KS,Cass,1,no county of this name in the state
-KS,Belton,1,no county of this name in the state
-KS,Buckner,1,no county of this name in the state
-KS,Excelsior Springs,1,no county of this name in the state
-KS,Gladstone,1,no county of this name in the state
-KS,Grain Valley,1,no county of this name in the state
-KS,Paola,1,no county of this name in the state
-KS,Goddard,1,no county of this name in the state
-KS,Haysville,1,no county of this name in the state
-KS,Hutchinson,1,no county of this name in the state
-KS,Maize,1,no county of this name in the state
-LA,Huntsville,1,no county of this name in the state
-LA,Gulfport,1,no county of this name in the state
-LA,Daphne,1,no county of this name in the state
-LA,Smyrna,1,no county of this name in the state
-LA,Luling,1,no county of this name in the state
-LA,Destrehan,1,no county of this name in the state
-LA,Prairieville,1,no county of this name in the state
-LA,Kenner,1,no county of this name in the state
-LA,Harvey,1,no county of this name in the state
-LA,Gretna,1,no county of this name in the state
-LA,Slidell,1,no county of this name in the state
-LA,Monroe,1,no county of this name in the state
-LA,West Monroe,1,no county of this name in the state
-LA,Ruston,1,no county of this name in the state
-LA,Calhoun,1,no county of this name in the state
-MA,Hingham,1,no county of this name in the state
-MA,Milton,1,no county of this name in the state
-MA,Watertown,1,no county of this name in the state
-MA,Meredith,1,no county of this name in the state
-MA,Providence,1,no county of this name in the state
-MA,Natick,1,no county of this name in the state
-MA,Medford,1,no county of this name in the state
-MA,Acton,1,no county of this name in the state
-MA,Palmer,1,no county of this name in the state
-MA,Burlington,1,no county of this name in the state
-MA,Woburn,1,no county of this name in the state
-MD,AA County,1,no county of this name in the state
-MD,PG County,1,no county of this name in the state
-MD,Baltimore City County,1,no county of this name in the state
-MD,Queen Anne’s County,1,no county of this name in the state
-MD,Fairfax,1,no county of this name in the state
-MD,Loudoun,1,no county of this name in the state
-MI,Burton,1,no county of this name in the state
-MI,Grand Blanc,1,no county of this name in the state
-MI,Rochester,1,no county of this name in the state
-MI,Livonia,1,no county of this name in the state
-MI,Saugatuck,1,no county of this name in the state
-MI,Grand Haven,1,no county of this name in the state
-MI,South Haven,1,no county of this name in the state
-MI,Zeeland,1,no county of this name in the state
-MI,Memphis,1,no county of this name in the state
-MI,San Jose,1,no county of this name in the state
-MI,Chicago,1,no county of this name in the state
-MI,Jacksonville,1,no county of this name in the state
-MI,Orlando,1,no county of this name in the state
-MI,San Diego,1,no county of this name in the state
-MI,Lancaster,1,no county of this name in the state
-MI,Port Huron,1,no county of this name in the state
-MI,Center Line,1,no county of this name in the state
-MI,Ferndale,1,no county of this name in the state
-MI,Grosse Pointe,1,no county of this name in the state
-MN,Brooklyn Center,1,no county of this name in the state
-MN,Champlin,1,no county of this name in the state
-MN,Crystal,1,no county of this name in the state
-MN,Edina,1,no county of this name in the state
-MN,Golden Valley,1,no county of this name in the state
-MN,Lakeville,1,no county of this name in the state
-MN,Byron,1,no county of this name in the state
-MN,Claremont,1,no county of this name in the state
-MN,Dodge Center,1,no county of this name in the state
-MN,New Brighton,1,no county of this name in the state
-MN,Cottage Grove,1,no county of this name in the state
-MO,Brentwood,1,no county of this name in the state
-MO,Cottleville,1,no county of this name in the state
-MO,Crestwood,1,no county of this name in the state
-MO,Creve Coeur,1,no county of this name in the state
-MO,Dardenne Prairie,1,no county of this name in the state
-MO,Boonville,1,no county of this name in the state
-MO,Cameron,1,no county of this name in the state
-MO,Carrollton,1,no county of this name in the state
-MO,Chillicothe,1,no county of this name in the state
-MO,Excelsior Springs,1,no county of this name in the state
-MO,Kearney,1,no county of this name in the state
-MO,Lees Summit,1,no county of this name in the state
-MO,North Kansas City,1,no county of this name in the state
-MO,Parkville,1,no county of this name in the state
-MO,Platte City,1,no county of this name in the state
-MO,Lee’s Summit,1,no county of this name in the state
-MO,Grandview,1,no county of this name in the state
-MO,Raymore,1,no county of this name in the state
-MO,Smithville,1,no county of this name in the state
-MO,Southern Illinois,1,no county of this name in the state
-MO,Bourbon,1,no county of this name in the state
-MO,St. Louis City,1,no county of this name in the state
-MO,Fenton,1,no county of this name in the state
-MO,Kirkwood,1,no county of this name in the state
-MO,Peveley,1,no county of this name in the state
-MO,Lake Saint Louis,1,no county of this name in the state
-MS,Shelby Co.,1,no county of this name in the state
-MS,Vancleave,1,no county of this name in the state
-NC,Stallings,1,no county of this name in the state
-NC,Indian Trail,1,no county of this name in the state
-NC,Pineville,1,no county of this name in the state
-NC,Mint Hill,1,no county of this name in the state
-NC,Chester,1,no county of this name in the state
-NC,York County,1,no county of this name in the state
-NC,Brown Summit,1,no county of this name in the state
-NC,Elon,1,no county of this name in the state
-NC,Oak Ridge,1,no county of this name in the state
-NC,Summerfield,1,no county of this name in the state
-NC,New Bern,1,no county of this name in the state
-NC,Raleigh-Durham,1,no county of this name in the state
-NC,Knightdale,1,no county of this name in the state
-NC,Willow Spring,1,no county of this name in the state
-NC,Martinsville,1,no county of this name in the state
-NC,Henry,1,no county of this name in the state
-NC,Boone,1,no county of this name in the state
-NE,Hickman,1,no county of this name in the state
-NE,Blair,1,no county of this name in the state
-NE,Bennington,1,no county of this name in the state
-NH,Auburn,1,no county of this name in the state
-NH,Bow,1,no county of this name in the state
-NH,Candia,1,no county of this name in the state
-NH,Claremont,1,no county of this name in the state
-NH,Concord,1,no county of this name in the state
-NH,Conway,1,no county of this name in the state
-NH,Derry,1,no county of this name in the state
-NH,Dover,1,no county of this name in the state
-NJ,Elizabeth,1,no county of this name in the state
-NJ,East Orange,1,no county of this name in the state
-NJ,Clifton,1,no county of this name in the state
-NJ,Long Branch,1,no county of this name in the state
-NJ,Bucks,1,no county of this name in the state
-NJ,Maplewood,1,no county of this name in the state
-NJ,Millburn,1,no county of this name in the state
-NJ,South Orange,1,no county of this name in the state
-NJ,Verona,1,no county of this name in the state
-NJ,Boonton,1,no county of this name in the state
-NJ,Cedar Knolls,1,no county of this name in the state
-NJ,Chatham,1,no county of this name in the state
-NJ,Dover,1,no county of this name in the state
-NJ,null,1,no county of this name in the state
-NM,Edgewood,1,no county of this name in the state
-NM,Moriarty,1,no county of this name in the state
-NV,Boulder City,1,no county of this name in the state
-NV,Enterprise,1,no county of this name in the state
-NV,North Las Vegas,1,no county of this name in the state
-NV,Paradise,1,no county of this name in the state
-NV,Spring Valley,1,no county of this name in the state
-NV,Summerlin South,1,no county of this name in the state
-NY,Union,1,no county of this name in the state
-NY,Bristol,1,no county of this name in the state
-NY,Kent,1,no county of this name in the state
-NY,Newport,1,no county of this name in the state
-NY,Providence,1,no county of this name in the state
-NY,Victor,1,no county of this name in the state
-OH,Wadsworth,1,no county of this name in the state
-OH,Norton,1,no county of this name in the state
-OH,Tallmadge,1,no county of this name in the state
-OH,Magadore,1,no county of this name in the state
-OH,Batavia,1,no county of this name in the state
-OH,Cheviot,1,no county of this name in the state
-OH,Delhi,1,no county of this name in the state
-OH,North College Hill,1,no county of this name in the state
-OH,Norwood,1,no county of this name in the state
-OH,Lebanon,1,no county of this name in the state
-OH,Trotwood,1,no county of this name in the state
-OH,Boone,1,no county of this name in the state
-OH,North Ridgeville,1,no county of this name in the state
-OH,Lewis Center,1,no county of this name in the state
-OH,New Albany,1,no county of this name in the state
-OH,Newark,1,no county of this name in the state
-OH,Pataskala,1,no county of this name in the state
-OH,Circleville,1,no county of this name in the state
-OH,Grandview,1,no county of this name in the state
-OH,Euclid,1,no county of this name in the state
-OH,Ashville,1,no county of this name in the state
-OH,Baltimore,1,no county of this name in the state
-OH,Bremen,1,no county of this name in the state
-OH,Buckeye Lake,1,no county of this name in the state
-OH,Caroll,1,no county of this name in the state
-OH,Atwater,1,no county of this name in the state
-OH,Aurora,1,no county of this name in the state
-OH,Bolivar,1,no county of this name in the state
-OH,Brecksville,1,no county of this name in the state
-OH,Brimfield,1,no county of this name in the state
-OH,Beach City,1,no county of this name in the state
-OH,Berea,1,no county of this name in the state
-OK,El Reno,1,no county of this name in the state
-OK,Arcadia,1,no county of this name in the state
-OK,Collinville,1,no county of this name in the state
-OK,Claremore,1,no county of this name in the state
-OK,Sapulpa,1,no county of this name in the state
-ON,Hamilton,1,no county of this name in the state
-ON,Haldimand County,1,no county of this name in the state
-PA,Levittown,1,no county of this name in the state
-PA,North Wales,1,no county of this name in the state
-PA,Westmorland,1,no county of this name in the state
-SC,North Charleston,1,no county of this name in the state
-SC,Moncks Corner,1,no county of this name in the state
-SC,Ladson,1,no county of this name in the state
-SC,Gaston,1,no county of this name in the state
-SC,Irmo,1,no county of this name in the state
-SC,Travelers Rest,1,no county of this name in the state
-SC,Fountain Inn,1,no county of this name in the state
-SC,Piedmont,1,no county of this name in the state
-SC,Knox,1,no county of this name in the state
-SC,Mauldin,1,no county of this name in the state
-SC,Brunswick,1,no county of this name in the state
-SC,Rocky Mount,1,no county of this name in the state
-SC,Thomasville,1,no county of this name in the state
-SC,Woodleaf,1,no county of this name in the state
-SC,Hickory,1,no county of this name in the state
-SC,Shelby,1,no county of this name in the state
-SC,High Point,1,no county of this name in the state
-TN,Lafayette,1,no county of this name in the state
-TN,Hixson,1,no county of this name in the state
-TN,Springfield,1,no county of this name in the state
-TN,Adams,1,no county of this name in the state
-TN,Ashland City,1,no county of this name in the state
-TN,Pleasant View,1,no county of this name in the state
-TN,Dunlap,1,no county of this name in the state
-TN,Kingsport,1,no county of this name in the state
-TN,Blountville,1,no county of this name in the state
-TN,Bristol,1,no county of this name in the state
-TN,Johnson City,1,no county of this name in the state
-TN,Greeneville,1,no county of this name in the state
-TN,Church Hill,1,no county of this name in the state
-TN,Rogersville,1,no county of this name in the state
-TN,Mount Carmel,1,no county of this name in the state
-TN,Powell,1,no county of this name in the state
-TN,Lawrenceburg,1,no county of this name in the state
-TN,Crittenden,1,no county of this name in the state
-TN,New Orleans,1,no county of this name in the state
-TN,Jonesboro,1,no county of this name in the state
-TN,Southaven,1,no county of this name in the state
-TN,Little Rock,1,no county of this name in the state
-TN,Arlington,1,no county of this name in the state
-TN,Collierville,1,no county of this name in the state
-TN,Cordova,1,no county of this name in the state
-TN,Germantown,1,no county of this name in the state
-TN,Millington,1,no county of this name in the state
-TN,Lakeland,1,no county of this name in the state
-TN,Graves,1,no county of this name in the state
-TN,Bellevue,1,no county of this name in the state
-TN,Goodlettsville,1,no county of this name in the state
-TN,Inglewood,1,no county of this name in the state
-TN,Antioch,1,no county of this name in the state
-TN,Lewisburg,1,no county of this name in the state
-TN,Shelbyville,1,no county of this name in the state
-TN,Tullahoma,1,no county of this name in the state
-TN,Manchester,1,no county of this name in the state
-TN,McMinnville,1,no county of this name in the state
-TX,Hillsborough,1,no county of this name in the state
-TX,Pinellas,1,no county of this name in the state
-TX,Miami-Dade,1,no county of this name in the state
-TX,Kyle,1,no county of this name in the state
-TX,Bella,1,no county of this name in the state
-TX,San Francisco,1,no county of this name in the state
-TX,Dublin,1,no county of this name in the state
-TX,Sacramento,1,no county of this name in the state
-TX,Walnut Creek,1,no county of this name in the state
-TX,East Palo Alto,1,no county of this name in the state
-TX,Studio City,1,no county of this name in the state
-TX,Pipe Creek,1,no county of this name in the state
-TX,Tarpley,1,no county of this name in the state
-TX,Utopia,1,no county of this name in the state
-TX,Vanderpool,1,no county of this name in the state
-TX,Hondo,1,no county of this name in the state
-TX,Comfort,1,no county of this name in the state
-TX,Benbrook,1,no county of this name in the state
-TX,Cleburne,1,no county of this name in the state
-TX,Huntsville,1,no county of this name in the state
-TX,Livingston,1,no county of this name in the state
-TX,Atlanta,1,no county of this name in the state
-TX,Beaumont,1,no county of this name in the state
-TX,Bellaire,1,no county of this name in the state
-TX,Lakeway,1,no county of this name in the state
-TX,Buda,1,no county of this name in the state
-TX,Copperas Cove,1,no county of this name in the state
-TX,San Juan,1,no county of this name in the state
-TX,Alamo,1,no county of this name in the state
-TX,Pharr,1,no county of this name in the state
-TX,Mercedes,1,no county of this name in the state
-TX,Highland Village,1,no county of this name in the state
-TX,Balcones Heights,1,no county of this name in the state
-TX,Garden Ridge,1,no county of this name in the state
-TX,Stone Oak,1,no county of this name in the state
-TX,Terrell Hills,1,no county of this name in the state
-TX,Shavano Park,1,no county of this name in the state
-TX,Hollywood Park,1,no county of this name in the state
-TX,Monte Vista,1,no county of this name in the state
-TX,Temple,1,no county of this name in the state
-TX,Manor,1,no county of this name in the state
-TX,Trophy Club,1,no county of this name in the state
-UT,Cottonwood,1,no county of this name in the state
-UT,Centerville,1,no county of this name in the state
-UT,Draper,1,no county of this name in the state
-UT,Herriman,1,no county of this name in the state
-UT,Midvale,1,no county of this name in the state
-UT,Cedar City,1,no county of this name in the state
-UT,Logan,1,no county of this name in the state
-VA,Alexandria City,1,no county of this name in the state
-VA,Baltimore,1,no county of this name in the state
-VA,Charles,1,no county of this name in the state
-VA,Richmond County,1,"ambiguous — matches 2 counties: 51159,51760"
-VA,Amelia Court House,1,no county of this name in the state
-VA,Mechanicsville,1,no county of this name in the state
-VA,Highland Springs,1,no county of this name in the state
-VA,Stuarts Draft,1,no county of this name in the state
-VA,Fishersville,1,no county of this name in the state
-VA,Yorktown,1,no county of this name in the state
-WA,South King,1,no county of this name in the state
-WA,Edmonds,1,no county of this name in the state
-WA,Lacey,1,no county of this name in the state
-WA,Millwood,1,no county of this name in the state
-WA,Colfax,1,no county of this name in the state
-WA,Richland,1,no county of this name in the state
-WA,Benton City,1,no county of this name in the state
-WA,Sunnyside,1,no county of this name in the state
-WA,Issaquah,1,no county of this name in the state
-WI,Middleton,1,no county of this name in the state
-WI,Monona,1,no county of this name in the state
-WI,Stoughton,1,no county of this name in the state
-WI,Sun Prairie,1,no county of this name in the state
-WI,Verona,1,no county of this name in the state
-WI,Whitefish Bay,1,no county of this name in the state
-WV,Fairmont,1,no county of this name in the state
-WV,Wheeling,1,no county of this name in the state
-WV,Martinsburg,1,no county of this name in the state
-WV,Hagerstown,1,no county of this name in the state
-WV,Winchester,1,no county of this name in the state
-AL,Dothan,1,no county of this name in the state
-AL,Vestavia Hills,1,no county of this name in the state
-AL,Chelsea,1,no county of this name in the state
-AL,Lexington,1,no county of this name in the state
-AL,Louisville,1,no county of this name in the state
-AL,Columbus,1,no county of this name in the state
-AL,Cincinnati,1,no county of this name in the state
-AR,McDonald,1,no county of this name in the state
-AR,Barry,1,no county of this name in the state
-AR,Adair,1,no county of this name in the state
-AR,Delaware,1,no county of this name in the state
-AR,Ottawa,1,no county of this name in the state
-AZ,Flagstaff,1,no county of this name in the state
-AZ,Sun City,1,no county of this name in the state
-AZ,Chino Valley,1,no county of this name in the state
-AZ,Apache Junction,1,no county of this name in the state
-AZ,Rimrock,1,no county of this name in the state
-AZ,Wake,1,no county of this name in the state
-AZ,Greenville,1,no county of this name in the state
-AZ,Spartanburg,1,no county of this name in the state
-AZ,Charleston,1,no county of this name in the state
-AZ,Broward,1,no county of this name in the state
-AZ,Hillsborough,1,no county of this name in the state
-AZ,Palm Beach,1,no county of this name in the state
-CA,Sanger,1,no county of this name in the state
-CA,Antelope,1,no county of this name in the state
-CA,Arden-Arcade,1,no county of this name in the state
-CA,Davis,1,no county of this name in the state
-CA,Fair Oaks,1,no county of this name in the state
-CA,Folsom,1,no county of this name in the state
-CA,Oxnard,1,no county of this name in the state
-CA,Atlanta,1,no county of this name in the state
-CA,Charlotte,1,no county of this name in the state
-CA,Raleigh,1,no county of this name in the state
-CA,Nashville,1,no county of this name in the state
-CA,New York,1,no county of this name in the state
-CA,Philadelphia,1,no county of this name in the state
-CA,Boston,1,no county of this name in the state
-CA,Newark,1,no county of this name in the state
-CA,Buffalo,1,no county of this name in the state
-CA,Pittsburgh,1,no county of this name in the state
-CA,Baltimore,1,no county of this name in the state
-CA,Providence,1,no county of this name in the state
-CA,Carlsbad,1,no county of this name in the state
-CA,Chino,1,no county of this name in the state
-CA,Corona,1,no county of this name in the state
-CA,Downey,1,no county of this name in the state
-CA,El Monte,1,no county of this name in the state
-CA,Ceres,1,no county of this name in the state
-CA,Garden Acres,1,no county of this name in the state
-CA,Escalon,1,no county of this name in the state
-CA,French Camp,1,no county of this name in the state
-CA,Lathrop,1,no county of this name in the state
-CA,Selma,1,no county of this name in the state
-CA,Taft,1,no county of this name in the state
-CA,Delano,1,no county of this name in the state
-CA,Armona,1,no county of this name in the state
-CT,South Windsor,1,no county of this name in the state
-DC,Anne Arundel,1,no county of this name in the state
-DC,Charles,1,no county of this name in the state
-DC,Howard,1,no county of this name in the state
-DC,Prince Georges,1,no county of this name in the state
-DC,Saint Mary’s,1,no county of this name in the state
-EN,Merseyside,1,no county of this name in the state
-FL,Otsego,1,no county of this name in the state
-FL,Central,1,no county of this name in the state
-FL,Fort Walton Beach,1,no county of this name in the state
-FL,Saint Petersburg,1,no county of this name in the state
-FL,Ft. Lauderdale,1,no county of this name in the state
-FL,Jacksonville Beach,1,no county of this name in the state
-FL,Bonifay,1,no county of this name in the state
-FL,Bristol,1,no county of this name in the state
-FL,Chipley,1,no county of this name in the state
-FL,Clewiston,1,no county of this name in the state
-FL,Crawfordville,1,no county of this name in the state
-FL,Hialeah,1,no county of this name in the state
-FL,Sunrise,1,no county of this name in the state
-FL,Davie,1,no county of this name in the state
-FL,Leesburg,1,no county of this name in the state
-FL,Carol City,1,no county of this name in the state
-FL,Coral Gables,1,no county of this name in the state
-FL,Dania Beach,1,no county of this name in the state
-FL,Plantation,1,no county of this name in the state
-FL,Siesta Key,1,no county of this name in the state
-FL,Spring Hill,1,no county of this name in the state
-FL,Erie,1,no county of this name in the state
-FL,Cuyahoga,1,no county of this name in the state
-FL,Dunedin,1,no county of this name in the state
-FL,Largo,1,no county of this name in the state
-FL,North Lauderdale,1,no county of this name in the state
-FL,Southwest Ranches,1,no county of this name in the state
-FL,Winter Haven,1,no county of this name in the state
-FL,Haines City,1,no county of this name in the state
-FL,Poinciana,1,no county of this name in the state
-GA,College Park,1,no county of this name in the state
-GA,Ball Ground,1,no county of this name in the state
-GA,Dawsonville,1,no county of this name in the state
-GA,Onondaga,1,no county of this name in the state
-GA,Oneida,1,no county of this name in the state
-GA,Cairo,1,no county of this name in the state
-GA,Chamblee,1,no county of this name in the state
-GA,Suwanee,1,no county of this name in the state
-GA,Sugar Hill,1,no county of this name in the state
-GA,Nashville,1,no county of this name in the state
-GA,Charlotte,1,no county of this name in the state
-GA,Austin,1,no county of this name in the state
-GA,Edgefield,1,no county of this name in the state
-GA,Savannah,1,no county of this name in the state
-GA,Warner Robins,1,no county of this name in the state
-GA,Bonaire,1,no county of this name in the state
-GA,Byron,1,no county of this name in the state
-GA,Centerville,1,no county of this name in the state
-GA,Dacula,1,no county of this name in the state
-GA,South Fulton,1,no county of this name in the state
-GA,Stonecrest,1,no county of this name in the state
-GA,Peachtree Corners,1,no county of this name in the state
-GA,Hamilton,1,no county of this name in the state
-GA,Charleston,1,no county of this name in the state
-GA,Denver,1,no county of this name in the state
-GA,Jacksonville,1,no county of this name in the state
-GA,Little Rock,1,no county of this name in the state
-GA,New Orleans,1,no county of this name in the state
-GA,Orlando,1,no county of this name in the state
-GA,Bremen,1,no county of this name in the state
-GA,Fairburn,1,no county of this name in the state
-IA,Harlan,1,no county of this name in the state
-IA,Oakland,1,no county of this name in the state
-IA,Glenwood,1,no county of this name in the state
-IA,Underwood,1,no county of this name in the state
-IA,Waterloo,1,no county of this name in the state
-IA,Iowa City,1,no county of this name in the state
-IA,Sioux City,1,no county of this name in the state
-IA,Davenport,1,no county of this name in the state
-IA,Cedar Rapids,1,no county of this name in the state
-IA,Altoona,1,no county of this name in the state
-IA,Indianola,1,no county of this name in the state
-IA,Newton,1,no county of this name in the state
-IL,Belleville,1,no county of this name in the state
-IL,Yorkville,1,no county of this name in the state
-IL,Lombard,1,no county of this name in the state
-IL,St. Charles,1,no county of this name in the state
-IL,Batavia,1,no county of this name in the state
-IL,Hanover Park,1,no county of this name in the state
-IL,Bartlett,1,no county of this name in the state
-IL,Carol Stream,1,no county of this name in the state
-IL,Glendale Heights,1,no county of this name in the state
-IL,West Chicago,1,no county of this name in the state
-IL,Wheaton,1,no county of this name in the state
-IN,Austin,1,no county of this name in the state
-IN,Haynies Corner,1,no county of this name in the state
-IN,Ballard,1,no county of this name in the state
-IN,Culver,1,no county of this name in the state
-IN,Tepe Park,1,no county of this name in the state
-IN,Olde Towne,1,no county of this name in the state
-IN,Poplar Grove,1,no county of this name in the state
-IN,Reitz Hill,1,no county of this name in the state
-IN,Southport,1,no county of this name in the state
-IN,Whiteland,1,no county of this name in the state
-IN,Trafalgar,1,no county of this name in the state
-KS,Augusta,1,no county of this name in the state
-KS,El Dorado,1,no county of this name in the state
-KS,Bonner Springs,1,no county of this name in the state
-KS,Chanute,1,no county of this name in the state
-KS,Coffeyville,1,no county of this name in the state
-KS,Colby,1,no county of this name in the state
-KS,Lawrence,1,no county of this name in the state
-KS,Topeka,1,no county of this name in the state
-KS,Lee’s Summit,1,no county of this name in the state
-KS,Lenexa,1,no county of this name in the state
-KY,Alexandria,1,no county of this name in the state
-KY,Bellevue,1,no county of this name in the state
-KY,Dayton,1,no county of this name in the state
-KY,Florence,1,no county of this name in the state
-KY,Independence,1,no county of this name in the state
-KY,Newport,1,no county of this name in the state
-KY,Lawrenceburg,1,no county of this name in the state
-KY,Shelbyville,1,no county of this name in the state
-KY,Owenton,1,no county of this name in the state
-KY,Versailles,1,no county of this name in the state
-KY,Richmond,1,no county of this name in the state
-LA,Mid City South,1,no county of this name in the state
-LA,Garden District,1,no county of this name in the state
-LA,Sherwood Forest,1,no county of this name in the state
-LA,Scotlandville,1,no county of this name in the state
-LA,Highlands,1,no county of this name in the state
-LA,Gardere,1,no county of this name in the state
-LA,Oak Hills Place,1,no county of this name in the state
-LA,Baker,1,no county of this name in the state
-LA,Central,1,no county of this name in the state
-LA,Covington,1,no county of this name in the state
-LA,Chalmette,1,no county of this name in the state
-LA,Gonzales,1,no county of this name in the state
-LA,Lake Charles,1,no county of this name in the state
-MA,Amesbury,1,no county of this name in the state
-MA,Attleboro,1,no county of this name in the state
-MA,Beverly,1,no county of this name in the state
-MA,Bridgewater,1,no county of this name in the state
-MA,Dedham,1,no county of this name in the state
-MA,Wellesley,1,no county of this name in the state
-MA,Randolph,1,no county of this name in the state
-MA,Dorchester,1,no county of this name in the state
-MA,Somerset,1,no county of this name in the state
-MA,Swansea,1,no county of this name in the state
-MA,Westport,1,no county of this name in the state
-MA,Dartmouth,1,no county of this name in the state
-MA,Taunton,1,no county of this name in the state
-MA,Acushnet,1,no county of this name in the state
-MA,Rockingham,1,no county of this name in the state
-MA,Hillsborough,1,no county of this name in the state
-MA,York,1,no county of this name in the state
-MD,Rockville,1,no county of this name in the state
-MD,Gaithersburg,1,no county of this name in the state
-MD,Columbia,1,no county of this name in the state
-MD,Silver Spring,1,no county of this name in the state
-MI,Bay City,1,no county of this name in the state
-MI,Berkley,1,no county of this name in the state
-MI,Birmingham,1,no county of this name in the state
-MI,Clinton Township,1,no county of this name in the state
-MI,Farmington,1,no county of this name in the state
-MI,Ypsilanti,1,no county of this name in the state
-MI,Tecumseh,1,no county of this name in the state
-MI,Saline,1,no county of this name in the state
-MI,Plymouth,1,no county of this name in the state
-MI,Chelsea,1,no county of this name in the state
-MI,Pinckney,1,no county of this name in the state
-MI,Southfield,1,no county of this name in the state
-MN,Plymouth,1,no county of this name in the state
-MN,Rochester,1,no county of this name in the state
-MN,Duluth,1,no county of this name in the state
-MN,St Paul,1,no county of this name in the state
-MO,Overland Park,1,no county of this name in the state
-MO,Olathe,1,no county of this name in the state
-MS,Brandon,1,no county of this name in the state
-MS,Canton,1,no county of this name in the state
-MS,Clinton,1,no county of this name in the state
-MS,Florence,1,no county of this name in the state
-MS,Flowood,1,no county of this name in the state
-MS,Shelby,1,no county of this name in the state
-NC,Becton Park,1,no county of this name in the state
-NC,Ballantyne,1,no county of this name in the state
-NC,Dilworth,1,no county of this name in the state
-NC,Eagle Lake,1,no county of this name in the state
-NC,Elizabeth,1,no county of this name in the state
-NC,Highland Creek,1,no county of this name in the state
-NC,Trinity,1,no county of this name in the state
-NC,Mount Holly,1,no county of this name in the state
-NC,Fuquay-Varina,1,no county of this name in the state
-NC,Butner,1,no county of this name in the state
-NC,Creedmoor,1,no county of this name in the state
-NC,Bethania,1,no county of this name in the state
-NC,Pfafftown,1,no county of this name in the state
-NC,Thomasville,1,no county of this name in the state
-NE,Sioux City,1,no county of this name in the state
-NJ,Fords,1,no county of this name in the state
-NJ,Gibbstown,1,no county of this name in the state
-NJ,Matawan,1,no county of this name in the state
-NJ,Phillipsburg,1,no county of this name in the state
-NJ,Morristown,1,no county of this name in the state
-NY,Troy,1,no county of this name in the state
-NY,Mount Vernon,1,no county of this name in the state
-NY,Morris,1,no county of this name in the state
-NY,Sussex,1,no county of this name in the state
-NY,Hunterdon,1,no county of this name in the state
-NY,Manhattan,1,no county of this name in the state
-NY,Astoria,1,no county of this name in the state
-NY,Canarsie,1,no county of this name in the state
-NY,New York City,1,no county of this name in the state
-NY,Watertown,1,no county of this name in the state
-NY,Binghamton,1,no county of this name in the state
-NY,Yonkers,1,no county of this name in the state
-OH,Colerain,1,no county of this name in the state
-OH,Deer Park,1,no county of this name in the state
-OH,Forest Park,1,no county of this name in the state
-OH,Madeira,1,no county of this name in the state
-OH,Madisonville,1,no county of this name in the state
-OH,Eastlake,1,no county of this name in the state
-OH,Columbia Station,1,no county of this name in the state
-OH,Brooklyn,1,no county of this name in the state
-OH,Mayfield,1,no county of this name in the state
-OH,Hilliard,1,no county of this name in the state
-OH,Reynoldsburg,1,no county of this name in the state
-OH,Fort Lauderdale,1,no county of this name in the state
-OH,Fort Myers,1,no county of this name in the state
-OH,Tampa,1,no county of this name in the state
-OH,Apopka,1,no county of this name in the state
-OH,Atlanta,1,no county of this name in the state
-OH,Camden,1,no county of this name in the state
-OH,Charleston,1,no county of this name in the state
-OH,Charlotte,1,no county of this name in the state
-OH,Chicago,1,no county of this name in the state
-OH,Columbia,1,no county of this name in the state
-OH,Piqua,1,no county of this name in the state
-OK,Lawton,1,no county of this name in the state
-OK,Altus,1,no county of this name in the state
-OK,Anadarko,1,no county of this name in the state
-OK,Bartlesville,1,no county of this name in the state
-OK,Catoosa,1,no county of this name in the state
-OK,Guthrie,1,no county of this name in the state
-OK,Tinker,1,no county of this name in the state
-OK,Newcastle,1,no county of this name in the state
-OK,Harrah,1,no county of this name in the state
-OK,Forest Park,1,no county of this name in the state
-OK,Valley Brook,1,no county of this name in the state
-OK,Nicoma Park,1,no county of this name in the state
-OK,Nichols Hills,1,no county of this name in the state
-OK,Piedmont,1,no county of this name in the state
-ON,Southern Ontario,1,no county of this name in the state
-ON,Niagara,1,no county of this name in the state
-OR,Milwaukie,1,no county of this name in the state
-OR,Corvallis,1,no county of this name in the state
-OR,Cowlitz,1,no county of this name in the state
-OR,Aumsville,1,no county of this name in the state
-OR,Dallas,1,no county of this name in the state
-OR,Independence,1,no county of this name in the state
-OR,Monmouth,1,no county of this name in the state
-PA,Lansdale,1,no county of this name in the state
-PA,Phoenixville,1,no county of this name in the state
-PA,Mechanicsburg,1,no county of this name in the state
-PA,Middletown,1,no county of this name in the state
-PA,Dillsburg,1,no county of this name in the state
-PA,Ephrata,1,no county of this name in the state
-PA,Hershey,1,no county of this name in the state
-PA,Burlington,1,no county of this name in the state
-PA,Camden,1,no county of this name in the state
-PA,Abington,1,no county of this name in the state
-PA,Ambler,1,no county of this name in the state
-PA,Blue Bell,1,no county of this name in the state
-PA,Bridgeport,1,no county of this name in the state
-PA,Conshohocken,1,no county of this name in the state
-PA,Elkins Park,1,no county of this name in the state
-PA,Havertown,1,no county of this name in the state
-PA,Drexel Hill,1,no county of this name in the state
-PA,Ardmore,1,no county of this name in the state
-PA,Bryn Mawr,1,no county of this name in the state
-PA,Bala Cynwyd,1,no county of this name in the state
-PA,Cherry Hill,1,no county of this name in the state
-PA,Livingston,1,no county of this name in the state
-PA,Jersey City,1,no county of this name in the state
-PA,Princeton,1,no county of this name in the state
-PA,Trenton,1,no county of this name in the state
-PA,Uniontown,1,no county of this name in the state
-PA,Harford,1,no county of this name in the state
-PA,Baltimore,1,no county of this name in the state
-PA,Carroll,1,no county of this name in the state
-PA,Howard,1,no county of this name in the state
-PA,Anne Arundel,1,no county of this name in the state
-RI,Warwick,1,no county of this name in the state
-RI,Pawtucket,1,no county of this name in the state
-RI,North Providence,1,no county of this name in the state
-RI,Johnston,1,no county of this name in the state
-RI,Lincoln,1,no county of this name in the state
-SC,Chapin,1,no county of this name in the state
-SC,James Island,1,no county of this name in the state
-SC,Hilton Head,1,no county of this name in the state
-SC,Conway,1,no county of this name in the state
-SC,Myrtle Beach,1,no county of this name in the state
-SC,Hendersonville,1,no county of this name in the state
-SC,Asheville,1,no county of this name in the state
-SC,Marlton,1,no county of this name in the state
-TN,Dade,1,no county of this name in the state
-TN,Charleston,1,no county of this name in the state
-TN,Eagleton Village,1,no county of this name in the state
-TN,McDonald,1,no county of this name in the state
-TN,Brainerd,1,no county of this name in the state
-TN,Lookout Mountain,1,no county of this name in the state
-TN,Middle Valley,1,no county of this name in the state
-TN,Jonesborough,1,no county of this name in the state
-TN,Blaine,1,no county of this name in the state
-TN,Claxton,1,no county of this name in the state
-TN,Corryton,1,no county of this name in the state
-TN,Dandridge,1,no county of this name in the state
-TN,Sevierville,1,no county of this name in the state
-TN,Miami,1,no county of this name in the state
-TN,Fort Lauderdale,1,no county of this name in the state
-TN,West Palm Beach,1,no county of this name in the state
-TN,Orlando,1,no county of this name in the state
-TN,Jacksonville,1,no county of this name in the state
-TN,Tampa,1,no county of this name in the state
-TX,Dallas CAD,1,no county of this name in the state
-TX,Tarrant CAD,1,no county of this name in the state
-TX,Collin CAD,1,no county of this name in the state
-TX,Denton CAD,1,no county of this name in the state
-TX,Kaufman CAD,1,no county of this name in the state
-TX,Rockwall CAD,1,no county of this name in the state
-TX,Harris CAD,1,no county of this name in the state
-TX,Fort Bend CAD,1,no county of this name in the state
-TX,North Bethesda,1,no county of this name in the state
-TX,Birmingham,1,no county of this name in the state
-TX,Phoenix,1,no county of this name in the state
-TX,Los Angeles,1,no county of this name in the state
-TX,San Jose,1,no county of this name in the state
-TX,Chicago,1,no county of this name in the state
-TX,Indianapolis,1,no county of this name in the state
-TX,Rockville,1,no county of this name in the state
-TX,Alvin,1,no county of this name in the state
-TX,Athens,1,no county of this name in the state
-TX,Aubrey,1,no county of this name in the state
-TX,Portland,1,no county of this name in the state
-TX,Gregory,1,no county of this name in the state
-TX,Ingleside on the Bay,1,no county of this name in the state
-TX,Ingleside,1,no county of this name in the state
-TX,Tierra Grande,1,no county of this name in the state
-TX,Odem,1,no county of this name in the state
-TX,Aransas Pass,1,no county of this name in the state
-TX,Colleyville,1,no county of this name in the state
-TX,Dalworthington Gardens,1,no county of this name in the state
-TX,DeSoto,1,no county of this name in the state
-TX,Sunnyvale,1,no county of this name in the state
-TX,Horizon City,1,no county of this name in the state
-TX,Socorro,1,no county of this name in the state
-TX,San Elizario,1,no county of this name in the state
-TX,Fabens,1,no county of this name in the state
-TX,Clint,1,no county of this name in the state
-TX,Anthony,1,no county of this name in the state
-TX,Canutillo,1,no county of this name in the state
-TX,Adkins,1,no county of this name in the state
-TX,Liberty Hill,1,no county of this name in the state
-TX,Greenville,1,no county of this name in the state
-TX,Webster,1,no county of this name in the state
-TX,Sugarland,1,no county of this name in the state
-TX,Hurst,1,no county of this name in the state
-TX,Euless,1,no county of this name in the state
-TX,Killeen,1,no county of this name in the state
-TX,Edinburg,1,no county of this name in the state
-TX,West,1,no county of this name in the state
-TX,Richardson,1,no county of this name in the state
-TX,Sachse,1,no county of this name in the state
-TX,Oklahoma City,1,no county of this name in the state
-TX,Kansas City,1,no county of this name in the state
-TX,Nashville,1,no county of this name in the state
-TX,Leon Valley,1,no county of this name in the state
-TX,Kirby,1,no county of this name in the state
-TX,Floresville,1,no county of this name in the state
-TX,Richmond,1,no county of this name in the state
-TX,Channelview,1,no county of this name in the state
-TX,Mont Belvieu,1,no county of this name in the state
-TX,Weatherford,1,no county of this name in the state
-TX,mcallen,1,no county of this name in the state
-UK,St Helens,1,no county of this name in the state
-UT,North Salt Lake,1,no county of this name in the state
-UT,South Salt Lake,1,no county of this name in the state
-UT,Cottonwood Heights,1,no county of this name in the state
-UT,Roy,1,no county of this name in the state
-UT,Sandy,1,no county of this name in the state
-VA,Clifton,1,no county of this name in the state
-VA,Ballston,1,no county of this name in the state
-VA,Prince George's,1,no county of this name in the state
-VA,Bristow,1,no county of this name in the state
-VA,Woodbridge,1,no county of this name in the state
-VA,Dumfries,1,no county of this name in the state
-VA,Triangle,1,no county of this name in the state
-VA,Fairfax County,1,"ambiguous — matches 2 counties: 51059,51600"
-VA,Locust Grove,1,no county of this name in the state
-VA,Manquin,1,no county of this name in the state
-VA,Ashland,1,no county of this name in the state
-VA,Doswell,1,no county of this name in the state
-VA,District of Columbia,1,no county of this name in the state
-VA,Afton,1,no county of this name in the state
-VA,Nellysford,1,no county of this name in the state
-VA,Maryland,1,no county of this name in the state
-VA,Ohio,1,no county of this name in the state
-VA,Virginia,1,no county of this name in the state
-WA,Sammamish,1,no county of this name in the state
-WA,Ohio,1,no county of this name in the state
-WA,Atlanta,1,no county of this name in the state
-WA,Washington,1,no county of this name in the state
-WA,Texas,1,no county of this name in the state
-WA,Pennsylvania,1,no county of this name in the state
-WA,Lakewood,1,no county of this name in the state
-WA,University Place,1,no county of this name in the state
-WA,Fife,1,no county of this name in the state
-WI,Beloit,1,no county of this name in the state
-WI,Greendale,1,no county of this name in the state
-WI,Fox Point,1,no county of this name in the state
-WI,Chippewa Falls,1,no county of this name in the state
-WI,Menomonie,1,no county of this name in the state
-WI,Hudson,1,no county of this name in the state
-WI,New Richmond,1,no county of this name in the state
-WI,River Falls,1,no county of this name in the state
-WI,Ellsworth,1,no county of this name in the state
-WI,Baldwin,1,no county of this name in the state
-WS,West Sussex,1,no county of this name in the state
-WS,Kent,1,no county of this name in the state
-WS,Surrey,1,no county of this name in the state
-WV,Akron,1,no county of this name in the state
-WV,Charles Town,1,no county of this name in the state
-WV,Cincinnati,1,no county of this name in the state
-WV,Cleveland,1,no county of this name in the state
-WV,Columbus,1,no county of this name in the state
-WY,Burien,1,no county of this name in the state
-??,Putnam,1,"buyer has no state, cannot scope the lookup"
-??,Dutchess,1,"buyer has no state, cannot scope the lookup"
-??,Rockland,1,"buyer has no state, cannot scope the lookup"
-??,Fairfield,1,"buyer has no state, cannot scope the lookup"
-??,Clarke,1,"buyer has no state, cannot scope the lookup"
-??,Jackson,1,"buyer has no state, cannot scope the lookup"
-??,Oconee,1,"buyer has no state, cannot scope the lookup"
-??,Barrow,1,"buyer has no state, cannot scope the lookup"
-??,Fredericksburg,1,"buyer has no state, cannot scope the lookup"
-??,Newport News,1,"buyer has no state, cannot scope the lookup"
-??,Norfolk,1,"buyer has no state, cannot scope the lookup"
-??,Portsmouth,1,"buyer has no state, cannot scope the lookup"
-??,Hampton,1,"buyer has no state, cannot scope the lookup"
-??,Savannah,1,"buyer has no state, cannot scope the lookup"
-??,Kansas City,1,"buyer has no state, cannot scope the lookup"
-??,Currituck,1,"buyer has no state, cannot scope the lookup"
-??,Camden,1,"buyer has no state, cannot scope the lookup"
-??,Pasquotank,1,"buyer has no state, cannot scope the lookup"
-??,Perquimans,1,"buyer has no state, cannot scope the lookup"
-??,Derby,1,"buyer has no state, cannot scope the lookup"
-??,Wichita,1,"buyer has no state, cannot scope the lookup"
-??,Norfolk County,1,"buyer has no state, cannot scope the lookup"
-??,Worcester,1,"buyer has no state, cannot scope the lookup"
-??,Rutland,1,"buyer has no state, cannot scope the lookup"
-??,Middletown,1,"buyer has no state, cannot scope the lookup"
-??,Newburgh,1,"buyer has no state, cannot scope the lookup"
-??,Poughkeepsie,1,"buyer has no state, cannot scope the lookup"
-??,Rochester,1,"buyer has no state, cannot scope the lookup"
-??,Shelby,1,"buyer has no state, cannot scope the lookup"
-??,Knox,1,"buyer has no state, cannot scope the lookup"
-??,Benton,1,"buyer has no state, cannot scope the lookup"
-??,Cobb,1,"buyer has no state, cannot scope the lookup"
-??,Jefferson,1,"buyer has no state, cannot scope the lookup"
-??,Orleans,1,"buyer has no state, cannot scope the lookup"
-??,Airway Heights,1,"buyer has no state, cannot scope the lookup"
-??,Asotin,1,"buyer has no state, cannot scope the lookup"
-??,Bellingham,1,"buyer has no state, cannot scope the lookup"
-??,Blaine,1,"buyer has no state, cannot scope the lookup"
-??,Buckley,1,"buyer has no state, cannot scope the lookup"
-??,Burbank,1,"buyer has no state, cannot scope the lookup"
-??,Camas,1,"buyer has no state, cannot scope the lookup"
-??,Carnation,1,"buyer has no state, cannot scope the lookup"
-??,Fulton,1,"buyer has no state, cannot scope the lookup"
-??,Escambia,1,"buyer has no state, cannot scope the lookup"
-??,Lake,1,"buyer has no state, cannot scope the lookup"
-??,Porter,1,"buyer has no state, cannot scope the lookup"
-??,Boston,1,"buyer has no state, cannot scope the lookup"
-??,Denton,1,"buyer has no state, cannot scope the lookup"
-??,Henry,1,"buyer has no state, cannot scope the lookup"
-??,Newton,1,"buyer has no state, cannot scope the lookup"
-??,Rockdale,1,"buyer has no state, cannot scope the lookup"
-??,Spalding,1,"buyer has no state, cannot scope the lookup"
-??,Monroe,1,"buyer has no state, cannot scope the lookup"
-??,Lamar,1,"buyer has no state, cannot scope the lookup"
-??,Clayton,1,"buyer has no state, cannot scope the lookup"
-??,Walton,1,"buyer has no state, cannot scope the lookup"
-??,"Washington, DC",1,"buyer has no state, cannot scope the lookup"
-??,Limestone,1,"buyer has no state, cannot scope the lookup"
-??,Madison,1,"buyer has no state, cannot scope the lookup"
-??,Elmore,1,"buyer has no state, cannot scope the lookup"
-??,Lee,1,"buyer has no state, cannot scope the lookup"
-??,Russell,1,"buyer has no state, cannot scope the lookup"
-??,River Falls,1,"buyer has no state, cannot scope the lookup"
-??,New Richmond,1,"buyer has no state, cannot scope the lookup"
-??,Hudson,1,"buyer has no state, cannot scope the lookup"
-??,Menomonie,1,"buyer has no state, cannot scope the lookup"
-??,Chippewa Falls,1,"buyer has no state, cannot scope the lookup"
-??,Eau Claire,1,"buyer has no state, cannot scope the lookup"
-??,Amery,1,"buyer has no state, cannot scope the lookup"
-??,Rensselaer,1,"buyer has no state, cannot scope the lookup"
-??,Schenectady,1,"buyer has no state, cannot scope the lookup"
-??,Saratoga,1,"buyer has no state, cannot scope the lookup"
-??,St. Louis,1,"buyer has no state, cannot scope the lookup"
-??,St. Charles,1,"buyer has no state, cannot scope the lookup"
-AR,Jonesboro,1,no county of this name in the state
-AR,Fort Smith,1,no county of this name in the state
-AR,Pine Bluff,1,no county of this name in the state
-AR,Tulsa,1,no county of this name in the state
-AR,Carthage,1,no county of this name in the state
-AR,Prairie Grove,1,no county of this name in the state
-CT,Ansonia,1,no county of this name in the state
-CT,Bantam,1,no county of this name in the state
-CT,Barkhamsted,1,no county of this name in the state
-CT,Beacon Falls,1,no county of this name in the state
-CT,Berlin,1,no county of this name in the state
-CT,Bethany,1,no county of this name in the state
-CT,Bethel,1,no county of this name in the state
-FL,Haverhill,1,no county of this name in the state
-FL,Hypoluxo,1,no county of this name in the state
-FL,Loxahatchee,1,no county of this name in the state
-FL,Jupiter,1,no county of this name in the state
-FL,Alva,1,no county of this name in the state
-FL,Captiva,1,no county of this name in the state
-FL,Englewood,1,no county of this name in the state
-FL,Estero,1,no county of this name in the state
-FL,Fort Myers Beach,1,no county of this name in the state
-FL,Town ‘N’ Country,1,no county of this name in the state
-FL,Plant City,1,no county of this name in the state
-FL,Valrico,1,no county of this name in the state
-FL,South Tampa,1,no county of this name in the state
-FL,Riverview,1,no county of this name in the state
-IN,Avon,1,no county of this name in the state
-IN,South Bend,1,no county of this name in the state
-IN,Carmel,1,no county of this name in the state
-KS,Park City,1,no county of this name in the state
-MA,Lynn,1,no county of this name in the state
-MA,Quincy,1,no county of this name in the state
-MA,Salem,1,no county of this name in the state
-MA,Saugus,1,no county of this name in the state
-MA,East Brookfield,1,no county of this name in the state
-MA,North Brookfield,1,no county of this name in the state
-MA,Spencer,1,no county of this name in the state
-MA,Warren,1,no county of this name in the state
-MA,Sturbridge,1,no county of this name in the state
-MD,Atlanta,1,no county of this name in the state
-MD,Charlotte,1,no county of this name in the state
-MD,Chicago,1,no county of this name in the state
-MD,Columbus,1,no county of this name in the state
-MD,Dallas,1,no county of this name in the state
-MD,Denver,1,no county of this name in the state
-MD,Detroit,1,no county of this name in the state
-MO,St Louis County,1,"ambiguous — matches 2 counties: 29189,29510"
-MO,St Louis City,1,no county of this name in the state
-NE,Hastings,1,no county of this name in the state
-NE,Norfolk,1,no county of this name in the state
-NJ,South Jersey,1,no county of this name in the state
-NY,Green,1,no county of this name in the state
-NY,Chester,1,no county of this name in the state
-NY,Goshen,1,no county of this name in the state
-NY,Middletown,1,no county of this name in the state
-NY,Newburgh,1,no county of this name in the state
-NY,Port Jervis,1,no county of this name in the state
-NY,Walden,1,no county of this name in the state
-OR,Roseburg,1,no county of this name in the state
-OR,Bend,1,no county of this name in the state
-OR,Medford,1,no county of this name in the state
-PA,Lehigh Valley,1,no county of this name in the state
-PA,Kent,1,no county of this name in the state
-PA,Upper Darby,1,no county of this name in the state
-PA,Bensalem,1,no county of this name in the state
-RI,Charlestown,1,no county of this name in the state
-RI,Coventry,1,no county of this name in the state
-RI,Greenwich,1,no county of this name in the state
-RI,Narragansett,1,no county of this name in the state
-RI,North Kingstown,1,no county of this name in the state
-RI,South Kingstown,1,no county of this name in the state
-TX,Mission Bend,1,no county of this name in the state
-TX,Little Elm,1,no county of this name in the state
-UT,West Valley,1,no county of this name in the state
-UT,Taylorsville,1,no county of this name in the state
-WA,Bonney Lake,1,no county of this name in the state
-WA,Burton,1,no county of this name in the state
-WA,Dupont,1,no county of this name in the state
-WA,Bellingham,1,no county of this name in the state
-NU,Kent,1,no county of this name in the state
-??,Cook,1,"buyer has no state, cannot scope the lookup"
-??,DuPage,1,"buyer has no state, cannot scope the lookup"
-??,Kane,1,"buyer has no state, cannot scope the lookup"
-??,McHenry,1,"buyer has no state, cannot scope the lookup"
-??,West Midlands,1,"buyer has no state, cannot scope the lookup"
-??,Portland,1,"buyer has no state, cannot scope the lookup"
-??,Aloha,1,"buyer has no state, cannot scope the lookup"
-??,Beaverton,1,"buyer has no state, cannot scope the lookup"
-??,Corvallis,1,"buyer has no state, cannot scope the lookup"
-??,Eugene,1,"buyer has no state, cannot scope the lookup"
-??,Gresham,1,"buyer has no state, cannot scope the lookup"
-??,Hillsboro,1,"buyer has no state, cannot scope the lookup"
-??,Lake Oswego,1,"buyer has no state, cannot scope the lookup"
-??,Lakeland,1,"buyer has no state, cannot scope the lookup"
-??,Melbourne,1,"buyer has no state, cannot scope the lookup"
-??,Shorewood,1,"buyer has no state, cannot scope the lookup"
-??,Brookfield,1,"buyer has no state, cannot scope the lookup"
-??,Washington,1,"buyer has no state, cannot scope the lookup"
-??,San Francisco,1,"buyer has no state, cannot scope the lookup"
-??,Prince William County,1,"buyer has no state, cannot scope the lookup"
-??,Montgomery County,1,"buyer has no state, cannot scope the lookup"
-??,Prince George’s County,1,"buyer has no state, cannot scope the lookup"
-??,Baltimore County,1,"buyer has no state, cannot scope the lookup"
-??,Howard County,1,"buyer has no state, cannot scope the lookup"
-??,Duval County,1,"buyer has no state, cannot scope the lookup"
-??,Southern California,1,"buyer has no state, cannot scope the lookup"
-??,Connecticut,1,"buyer has no state, cannot scope the lookup"
-??,select counties,1,"buyer has no state, cannot scope the lookup"
-??,Kent,1,"buyer has no state, cannot scope the lookup"
-??,Sussex,1,"buyer has no state, cannot scope the lookup"
-??,New Castle,1,"buyer has no state, cannot scope the lookup"
-??,Coventry,1,"buyer has no state, cannot scope the lookup"
-??,Wolverhampton,1,"buyer has no state, cannot scope the lookup"
-??,Dudley,1,"buyer has no state, cannot scope the lookup"
-??,Sandwell,1,"buyer has no state, cannot scope the lookup"
-??,Walsall,1,"buyer has no state, cannot scope the lookup"
-??,Solihull,1,"buyer has no state, cannot scope the lookup"
-??,Sutton Coldfield,1,"buyer has no state, cannot scope the lookup"
-??,Knoxville,1,"buyer has no state, cannot scope the lookup"
-??,Chattanooga,1,"buyer has no state, cannot scope the lookup"
-??,Memphis,1,"buyer has no state, cannot scope the lookup"
-??,Greensboro,1,"buyer has no state, cannot scope the lookup"
-??,Lansing,1,"buyer has no state, cannot scope the lookup"
-??,Kalamazoo,1,"buyer has no state, cannot scope the lookup"
-??,Muskegon,1,"buyer has no state, cannot scope the lookup"
-??,Indianapolis,1,"buyer has no state, cannot scope the lookup"
-??,Greenfield,1,"buyer has no state, cannot scope the lookup"
-??,Falls Church,1,"buyer has no state, cannot scope the lookup"
-??,Stafford,1,"buyer has no state, cannot scope the lookup"
-??,Alexander,1,"buyer has no state, cannot scope the lookup"
-??,Burke,1,"buyer has no state, cannot scope the lookup"
-??,Cabarrus,1,"buyer has no state, cannot scope the lookup"
-??,Catawba,1,"buyer has no state, cannot scope the lookup"
-??,Gaston,1,"buyer has no state, cannot scope the lookup"
-??,Iredell,1,"buyer has no state, cannot scope the lookup"
-??,Pennsylvania,1,"buyer has no state, cannot scope the lookup"
-??,Georgia,1,"buyer has no state, cannot scope the lookup"
-??,Florida,1,"buyer has no state, cannot scope the lookup"
-??,Essex County,1,"buyer has no state, cannot scope the lookup"
-??,Passaic County,1,"buyer has no state, cannot scope the lookup"
-??,Westchester County,1,"buyer has no state, cannot scope the lookup"
-??,Chula Vista,1,"buyer has no state, cannot scope the lookup"
-??,Arvada,1,"buyer has no state, cannot scope the lookup"
-??,Centennial,1,"buyer has no state, cannot scope the lookup"
-??,Lakewood,1,"buyer has no state, cannot scope the lookup"
-??,Littleton,1,"buyer has no state, cannot scope the lookup"
-??,Alexandria County,1,"buyer has no state, cannot scope the lookup"
-??,Arlington County,1,"buyer has no state, cannot scope the lookup"
-??,Falls Church County,1,"buyer has no state, cannot scope the lookup"
-??,Manassas County,1,"buyer has no state, cannot scope the lookup"
-??,Boulder County,1,"buyer has no state, cannot scope the lookup"
-??,Glendale,1,"buyer has no state, cannot scope the lookup"
-??,Mesa,1,"buyer has no state, cannot scope the lookup"
-??,Casa Grande,1,"buyer has no state, cannot scope the lookup"
-??,Maricopa,1,"buyer has no state, cannot scope the lookup"
-??,El Paso,1,"buyer has no state, cannot scope the lookup"
-??,Fort Worth,1,"buyer has no state, cannot scope the lookup"
-??,Amarillo,1,"buyer has no state, cannot scope the lookup"
-??,Delaware,1,"buyer has no state, cannot scope the lookup"
-??,Chester,1,"buyer has no state, cannot scope the lookup"
-??,Main Line,1,"buyer has no state, cannot scope the lookup"
-??,Hunterdon,1,"buyer has no state, cannot scope the lookup"
-??,Mercer,1,"buyer has no state, cannot scope the lookup"
-??,null,1,"buyer has no state, cannot scope the lookup"
-??,Cardiff,1,"buyer has no state, cannot scope the lookup"
-??,Bristol,1,"buyer has no state, cannot scope the lookup"
-??,Manchester,1,"buyer has no state, cannot scope the lookup"
-??,Liverpool,1,"buyer has no state, cannot scope the lookup"
-??,London,1,"buyer has no state, cannot scope the lookup"
-??,Glasgow,1,"buyer has no state, cannot scope the lookup"
-??,Nottingham,1,"buyer has no state, cannot scope the lookup"
-??,Placer,1,"buyer has no state, cannot scope the lookup"
-??,Nevada,1,"buyer has no state, cannot scope the lookup"
-??,Yuba,1,"buyer has no state, cannot scope the lookup"
-??,El Dorado,1,"buyer has no state, cannot scope the lookup"
-??,Del Norte,1,"buyer has no state, cannot scope the lookup"
-??,Humboldt,1,"buyer has no state, cannot scope the lookup"
-??,Mendocino,1,"buyer has no state, cannot scope the lookup"
-??,Boise,1,"buyer has no state, cannot scope the lookup"
-??,Meridian,1,"buyer has no state, cannot scope the lookup"
-??,Kuna,1,"buyer has no state, cannot scope the lookup"
-??,Nampa,1,"buyer has no state, cannot scope the lookup"
-??,Middleton,1,"buyer has no state, cannot scope the lookup"
-??,Casper,1,"buyer has no state, cannot scope the lookup"
-??,Cheyenne,1,"buyer has no state, cannot scope the lookup"
-??,Suburbs,1,"buyer has no state, cannot scope the lookup"
-??,Duval,1,"buyer has no state, cannot scope the lookup"
-??,Franklin,1,"buyer has no state, cannot scope the lookup"
-??,Kings,1,"buyer has no state, cannot scope the lookup"
-??,Winnipeg,1,"buyer has no state, cannot scope the lookup"
-??,Calgary,1,"buyer has no state, cannot scope the lookup"
-??,Edmonton,1,"buyer has no state, cannot scope the lookup"
-??,Toronto,1,"buyer has no state, cannot scope the lookup"
-??,Delaware County,1,"buyer has no state, cannot scope the lookup"
-??,Chester County,1,"buyer has no state, cannot scope the lookup"
-??,Kent County,1,"buyer has no state, cannot scope the lookup"
-??,New Castle County,1,"buyer has no state, cannot scope the lookup"
-??,Tarrant,1,"buyer has no state, cannot scope the lookup"
-??,Inland Empire,1,"buyer has no state, cannot scope the lookup"
-??,Oklahoma City,1,"buyer has no state, cannot scope the lookup"
-??,Salt Lake,1,"buyer has no state, cannot scope the lookup"
-??,Charles,1,"buyer has no state, cannot scope the lookup"
-??,Howard,1,"buyer has no state, cannot scope the lookup"
-??,Frederick,1,"buyer has no state, cannot scope the lookup"
-??,Waterloo,1,"buyer has no state, cannot scope the lookup"
-??,Ventura,1,"buyer has no state, cannot scope the lookup"
-??,Niagara,1,"buyer has no state, cannot scope the lookup"
-??,San Jose,1,"buyer has no state, cannot scope the lookup"
-??,Albuquerque,1,"buyer has no state, cannot scope the lookup"
-??,Bozeman,1,"buyer has no state, cannot scope the lookup"
-??,Spokane,1,"buyer has no state, cannot scope the lookup"
-??,Broward,1,"buyer has no state, cannot scope the lookup"
-??,Palm Beach,1,"buyer has no state, cannot scope the lookup"
-??,Sarasota,1,"buyer has no state, cannot scope the lookup"
-??,Manatee,1,"buyer has no state, cannot scope the lookup"
-AR,Bauxite,1,no county of this name in the state
-AR,Cammack Village,1,no county of this name in the state
-AZ,Prescott,1,no county of this name in the state
-CA,Dublin,1,no county of this name in the state
-CA,Livermore,1,no county of this name in the state
-CA,Milpitas,1,no county of this name in the state
-CA,Alhambra,1,no county of this name in the state
-CA,Atwater Village,1,no county of this name in the state
-CA,Boyle Heights,1,no county of this name in the state
-CA,Burbank,1,no county of this name in the state
-CA,Canoga Park,1,no county of this name in the state
-CA,Carson,1,no county of this name in the state
-CA,Chatsworth,1,no county of this name in the state
-CO,Castle Rock,1,no county of this name in the state
-CT,Danbury,1,no county of this name in the state
-DE,Milford,1,no county of this name in the state
-DE,Smyrna,1,no county of this name in the state
-DE,Hockessin,1,no county of this name in the state
-DE,Glasgow,1,no county of this name in the state
-DE,Bear,1,no county of this name in the state
-DE,Middletown,1,no county of this name in the state
-DE,Newark,1,no county of this name in the state
-FL,Apopka,1,no county of this name in the state
-FL,Ormond Beach,1,no county of this name in the state
-FL,Hobe Sound,1,no county of this name in the state
-FL,Pace,1,no county of this name in the state
-FL,Auburndale,1,no county of this name in the state
-FL,New Port Richey,1,no county of this name in the state
-FL,Hallandale Beach,1,no county of this name in the state
-GA,Milton,1,no county of this name in the state
-GA,Woodstock,1,no county of this name in the state
-GA,Buckhead,1,no county of this name in the state
-GA,Adel,1,no county of this name in the state
-GA,Bainbridge,1,no county of this name in the state
-GA,Belvedere Park,1,no county of this name in the state
-GA,Braselton,1,no county of this name in the state
-ID,Kuna,1,no county of this name in the state
-ID,Middleton,1,no county of this name in the state
-ID,Ammon,1,no county of this name in the state
-ID,Blackfoot,1,no county of this name in the state
-ID,Burley,1,no county of this name in the state
-ID,Chubbuck,1,no county of this name in the state
-ID,Hailey,1,no county of this name in the state
-ID,Hayden,1,no county of this name in the state
-IL,Carpentersville,1,no county of this name in the state
-IL,West Dundee,1,no county of this name in the state
-IL,Des Plaines,1,no county of this name in the state
-IL,Milwaukee,1,no county of this name in the state
-IN,Angola,1,no county of this name in the state
-IN,Brazil,1,no county of this name in the state
-IN,Bright,1,no county of this name in the state
-IN,Cedar Lake,1,no county of this name in the state
-IN,Chesterton,1,no county of this name in the state
-IN,Connersville,1,no county of this name in the state
-IN,Gary,1,no county of this name in the state
-IN,East Chicago,1,no county of this name in the state
-IN,Merrillville,1,no county of this name in the state
-IN,Crown Point,1,no county of this name in the state
-IN,Schererville,1,no county of this name in the state
-IN,Highland,1,no county of this name in the state
-IN,Munster,1,no county of this name in the state
-KY,Bardstown,1,no county of this name in the state
-KY,Buckner,1,no county of this name in the state
-KY,Campbellsville,1,no county of this name in the state
-KY,Corbin,1,no county of this name in the state
-KY,Cynthiana,1,no county of this name in the state
-KY,Douglass Hills,1,no county of this name in the state
-KY,Erlanger,1,no county of this name in the state
-KY,Jeffersontown,1,no county of this name in the state
-KY,Nicholasville,1,no county of this name in the state
-KY,Hopkinsville,1,no county of this name in the state
-LA,Bayou Blue,1,no county of this name in the state
-LA,Bayou Cane,1,no county of this name in the state
-LA,Belle Chasse,1,no county of this name in the state
-LA,Bogalusa,1,no county of this name in the state
-LA,Bossier City,1,no county of this name in the state
-LA,Broussard,1,no county of this name in the state
-LA,Brownfields,1,no county of this name in the state
-LA,Shreveport,1,no county of this name in the state
-MD,Adelphi,1,no county of this name in the state
-MD,Arbutus,1,no county of this name in the state
-MD,Aspen Hill,1,no county of this name in the state
-MD,Ballenger Creek,1,no county of this name in the state
-MD,Bel Air North,1,no county of this name in the state
-MD,Bel Air South,1,no county of this name in the state
-MD,Beltsville,1,no county of this name in the state
-MI,Royal Oak,1,no county of this name in the state
-MI,Bloomfield,1,no county of this name in the state
-MI,Bloomfield Hills,1,no county of this name in the state
-MI,Chesterfield,1,no county of this name in the state
-MI,Dearborn Heights,1,no county of this name in the state
-MI,Beecher,1,no county of this name in the state
-MI,Belding,1,no county of this name in the state
-MN,Twin Cities,1,no county of this name in the state
-MO,O’Fallon,1,no county of this name in the state
-MO,Joplin,1,no county of this name in the state
-MO,Branson,1,no county of this name in the state
-MO,Springfield,1,no county of this name in the state
-MO,Barnhart,1,no county of this name in the state
-MO,Bellefontaine Neighbors,1,no county of this name in the state
-MO,Black Jack,1,no county of this name in the state
-MO,Bonne Terre,1,no county of this name in the state
-MS,Petal,1,no county of this name in the state
-MS,Purvis,1,no county of this name in the state
-MS,Columbia,1,no county of this name in the state
-MS,Collins,1,no county of this name in the state
-MS,Oak Grove,1,no county of this name in the state
-MS,Ellisville,1,no county of this name in the state
-MS,Sumrall,1,no county of this name in the state
-MS,Laurel,1,no county of this name in the state
-MS,Amory,1,no county of this name in the state
-MS,Bay St. Louis,1,no county of this name in the state
-MS,Booneville,1,no county of this name in the state
-MS,Clarksdale,1,no county of this name in the state
-MS,D'Iberville,1,no county of this name in the state
-MS,Diamondhead,1,no county of this name in the state
-NC,Winston‑Salem,1,no county of this name in the state
-NC,Aberdeen,1,no county of this name in the state
-NC,Albemarle,1,no county of this name in the state
-NC,Belmont,1,no county of this name in the state
-NC,Black Mountain,1,no county of this name in the state
-NC,Cornelius,1,no county of this name in the state
-NJ,Cherry Hill,1,no county of this name in the state
-NJ,Sicklerville,1,no county of this name in the state
-NJ,Northern NJ,1,no county of this name in the state
-NM,Gallup,1,no county of this name in the state
-NM,Carlsbad,1,no county of this name in the state
-NM,Alamogordo,1,no county of this name in the state
-NM,Hobbs,1,no county of this name in the state
-OH,Amherst,1,no county of this name in the state
-OH,Austintown,1,no county of this name in the state
-OH,Avon Lake,1,no county of this name in the state
-OH,Beckett Ridge,1,no county of this name in the state
-OH,Bedford Heights,1,no county of this name in the state
-OH,Bellbrook,1,no county of this name in the state
-OH,Carlisle,1,no county of this name in the state
-OH,Centerville,1,no county of this name in the state
-OH,Clayton,1,no county of this name in the state
-OK,Benton,1,no county of this name in the state
-ON,Durham Region,1,no county of this name in the state
-ON,Halton Region,1,no county of this name in the state
-PA,Emmaus,1,no county of this name in the state
-PA,Hazleton,1,no county of this name in the state
-PA,Hellertown,1,no county of this name in the state
-PA,Johnstown,1,no county of this name in the state
-PA,Lewistown,1,no county of this name in the state
-PA,Macungie,1,no county of this name in the state
-PA,New Castle,1,no county of this name in the state
-PA,Cecil,1,no county of this name in the state
-SC,Upstate,1,no county of this name in the state
-TX,The Colony,1,no county of this name in the state
-UT,Bountiful,1,no county of this name in the state
-VA,Richmond City,1,no county of this name in the state
-VA,Abingdon,1,no county of this name in the state
-VA,Aquia Harbour,1,no county of this name in the state
-VA,Bailey's Crossroads,1,no county of this name in the state
-VA,Bensley,1,no county of this name in the state
-VA,Big Stone Gap,1,no county of this name in the state
-VA,Blacksburg,1,no county of this name in the state
-WI,Janesville,1,no county of this name in the state
-WV,Parkersburg,1,no county of this name in the state
+VA,Hampton Roads,7,no county or place of this name in the state
+??,Atlanta,7,"entity has no state, so the lookup cannot be scoped"
+KY,Lexington,6,no county or place of this name in the state
+??,Montgomery,6,"entity has no state, so the lookup cannot be scoped"
+??,Dallas,6,"entity has no state, so the lookup cannot be scoped"
+TN,DeSoto,5,no county or place of this name in the state
+TN,Catoosa,4,no county or place of this name in the state
+TX,Mesquite,4,2 same-named places in different counties
+??,Fairfax,4,"entity has no state, so the lookup cannot be scoped"
+??,Loudoun,4,"entity has no state, so the lookup cannot be scoped"
+??,Denver,4,"entity has no state, so the lookup cannot be scoped"
+??,Queens,4,"entity has no state, so the lookup cannot be scoped"
+??,Anne Arundel,4,"entity has no state, so the lookup cannot be scoped"
+??,Birmingham,4,"entity has no state, so the lookup cannot be scoped"
+??,Chicago,4,"entity has no state, so the lookup cannot be scoped"
+??,Orange,4,"entity has no state, so the lookup cannot be scoped"
+??,Los Angeles,4,"entity has no state, so the lookup cannot be scoped"
+??,Houston,4,"entity has no state, so the lookup cannot be scoped"
+??,Baltimore,4,"entity has no state, so the lookup cannot be scoped"
+??,Phoenix,4,"entity has no state, so the lookup cannot be scoped"
+??,San Diego,4,"entity has no state, so the lookup cannot be scoped"
+GA,Miami,3,no county or place of this name in the state
+GA,Phoenix,3,no county or place of this name in the state
+NC,York,3,no county or place of this name in the state
+TN,East Brainerd,3,no county or place of this name in the state
+??,Prince William,3,"entity has no state, so the lookup cannot be scoped"
+??,Colorado Springs,3,"entity has no state, so the lookup cannot be scoped"
+??,Nassau,3,"entity has no state, so the lookup cannot be scoped"
+??,Suffolk,3,"entity has no state, so the lookup cannot be scoped"
+??,Baldwin,3,"entity has no state, so the lookup cannot be scoped"
+??,Austin,3,"entity has no state, so the lookup cannot be scoped"
+??,New York,3,"entity has no state, so the lookup cannot be scoped"
+??,Philadelphia,3,"entity has no state, so the lookup cannot be scoped"
+CT,Farmington,2,no county or place of this name in the state
+CT,Avon,2,no county or place of this name in the state
+DC,Montgomery,2,no county or place of this name in the state
+EN,Birmingham,2,no county or place of this name in the state
+EN,Bradford,2,no county or place of this name in the state
+EN,Bristol,2,no county or place of this name in the state
+ET,Addis Ababa,2,no county or place of this name in the state
+GA,Aiken,2,no county or place of this name in the state
+GA,Los Angeles,2,no county or place of this name in the state
+GA,Philadelphia,2,no county or place of this name in the state
+GA,San Antonio,2,no county or place of this name in the state
+GA,San Diego,2,no county or place of this name in the state
+KS,Platte,2,no county or place of this name in the state
+KS,Blue Springs,2,no county or place of this name in the state
+MA,Braintree,2,no county or place of this name in the state
+MA,Agawam,2,no county or place of this name in the state
+MO,Wyandotte,2,no county or place of this name in the state
+MO,Leavenworth,2,no county or place of this name in the state
+NC,Lancaster,2,no county or place of this name in the state
+NE,Pottawattamie,2,no county or place of this name in the state
+NE,Council Bluffs,2,no county or place of this name in the state
+NY,Passaic,2,no county or place of this name in the state
+OH,Bath,2,no county or place of this name in the state
+OH,West Chester,2,no county or place of this name in the state
+OR,Clark,2,no county or place of this name in the state
+SC,West Ashley,2,no county or place of this name in the state
+SC,Charlotte,2,no county or place of this name in the state
+SC,Richmond,2,no county or place of this name in the state
+TN,Whitfield,2,no county or place of this name in the state
+TN,Desoto,2,no county or place of this name in the state
+TX,Cypress,2,no county or place of this name in the state
+TX,DFW,2,no county or place of this name in the state
+UT,Kearns,2,no county or place of this name in the state
+UT,Magna,2,no county or place of this name in the state
+VA,Prince George’s,2,no county or place of this name in the state
+VA,Howard,2,no county or place of this name in the state
+VA,Anne Arundel,2,no county or place of this name in the state
+VA,null,2,no county or place of this name in the state
+WA,Kootenai,2,no county or place of this name in the state
+KY,Northern Kentucky,2,no county or place of this name in the state
+NC,Rock Hill,2,no county or place of this name in the state
+PA,Eagleville,2,2 same-named places in different counties
+TN,Walker,2,no county or place of this name in the state
+TX,Alief,2,no county or place of this name in the state
+??,Westchester,2,"entity has no state, so the lookup cannot be scoped"
+??,Arlington,2,"entity has no state, so the lookup cannot be scoped"
+??,Alexandria,2,"entity has no state, so the lookup cannot be scoped"
+??,Prince George's,2,"entity has no state, so the lookup cannot be scoped"
+??,Chesapeake,2,"entity has no state, so the lookup cannot be scoped"
+??,Richmond,2,"entity has no state, so the lookup cannot be scoped"
+??,Albany,2,"entity has no state, so the lookup cannot be scoped"
+??,Davidson,2,"entity has no state, so the lookup cannot be scoped"
+??,Hamilton,2,"entity has no state, so the lookup cannot be scoped"
+??,Prince Georges,2,"entity has no state, so the lookup cannot be scoped"
+??,Mecklenburg,2,"entity has no state, so the lookup cannot be scoped"
+??,Charlotte,2,"entity has no state, so the lookup cannot be scoped"
+??,Maryland,2,"entity has no state, so the lookup cannot be scoped"
+??,Virginia,2,"entity has no state, so the lookup cannot be scoped"
+??,Prince George’s,2,"entity has no state, so the lookup cannot be scoped"
+??,Mobile,2,"entity has no state, so the lookup cannot be scoped"
+??,Hillsborough,2,"entity has no state, so the lookup cannot be scoped"
+??,Pinellas,2,"entity has no state, so the lookup cannot be scoped"
+??,Riverside,2,"entity has no state, so the lookup cannot be scoped"
+??,San Bernardino,2,"entity has no state, so the lookup cannot be scoped"
+??,Miami,2,"entity has no state, so the lookup cannot be scoped"
+??,Orlando,2,"entity has no state, so the lookup cannot be scoped"
+??,Oakland,2,"entity has no state, so the lookup cannot be scoped"
+??,Fairfax County,2,"entity has no state, so the lookup cannot be scoped"
+??,Loudoun County,2,"entity has no state, so the lookup cannot be scoped"
+??,San Antonio,2,"entity has no state, so the lookup cannot be scoped"
+??,New Jersey,2,"entity has no state, so the lookup cannot be scoped"
+??,Tampa,2,"entity has no state, so the lookup cannot be scoped"
+??,Nashville,2,"entity has no state, so the lookup cannot be scoped"
+??,Jacksonville,2,"entity has no state, so the lookup cannot be scoped"
+??,Bucks,2,"entity has no state, so the lookup cannot be scoped"
+??,Erie,2,"entity has no state, so the lookup cannot be scoped"
+??,Columbus,2,"entity has no state, so the lookup cannot be scoped"
+??,Caldwell,2,"entity has no state, so the lookup cannot be scoped"
+??,Cleveland,2,"entity has no state, so the lookup cannot be scoped"
+??,Aurora,2,"entity has no state, so the lookup cannot be scoped"
+??,Lubbock,2,"entity has no state, so the lookup cannot be scoped"
+??,Sacramento,2,"entity has no state, so the lookup cannot be scoped"
+??,Miami-Dade,2,"entity has no state, so the lookup cannot be scoped"
+??,Bronx,2,"entity has no state, so the lookup cannot be scoped"
+??,Salt Lake City,2,"entity has no state, so the lookup cannot be scoped"
+CA,Miami-Dade,1,no county or place of this name in the state
+CA,Cook,1,no county or place of this name in the state
+CA,Clark,1,no county or place of this name in the state
+CA,Suffolk,1,no county or place of this name in the state
+CA,Harris,1,no county or place of this name in the state
+CA,Salt Lake,1,no county or place of this name in the state
+CA,Lake Tahoe,1,no county or place of this name in the state
+CA,North Sacramento,1,no county or place of this name in the state
+CA,East Sacramento,1,no county or place of this name in the state
+CA,South Sacramento,1,no county or place of this name in the state
+CH,Bedfordshire,1,no county or place of this name in the state
+CH,Berkshire,1,no county or place of this name in the state
+CH,Bristol,1,no county or place of this name in the state
+CH,Buckinghamshire,1,no county or place of this name in the state
+CH,Cambridgeshire,1,no county or place of this name in the state
+CH,Cheshire,1,no county or place of this name in the state
+CH,Cornwall,1,no county or place of this name in the state
+CH,County Durham,1,no county or place of this name in the state
+CO,all 64 counties,1,no county or place of this name in the state
+CO,Wichita,1,no county or place of this name in the state
+CT,Hamden,1,no county or place of this name in the state
+CT,Stratford,1,no county or place of this name in the state
+CT,Vernon,1,no county or place of this name in the state
+CT,Plainville,1,no county or place of this name in the state
+CT,Washington,1,no county or place of this name in the state
+DC,Prince George's,1,no county or place of this name in the state
+DC,Baltimore,1,no county or place of this name in the state
+DC,Prince George’s County,1,no county or place of this name in the state
+DC,Montgomery County,1,no county or place of this name in the state
+DC,Howard County,1,no county or place of this name in the state
+DC,Anne Arundel County,1,no county or place of this name in the state
+DC,Charles County,1,no county or place of this name in the state
+DC,Fairfax County,1,no county or place of this name in the state
+DC,Arlington County,1,no county or place of this name in the state
+DC,Loudoun County,1,no county or place of this name in the state
+EN,Bournemouth,1,no county or place of this name in the state
+EN,Leeds,1,no county or place of this name in the state
+EN,London,1,no county or place of this name in the state
+EN,Manchester,1,no county or place of this name in the state
+EN,Sheffield,1,no county or place of this name in the state
+EN,Aberdeen,1,no county or place of this name in the state
+EN,Bolton,1,no county or place of this name in the state
+EN,Cardiff,1,no county or place of this name in the state
+EN,Doncaster,1,no county or place of this name in the state
+EN,Edinburgh,1,no county or place of this name in the state
+FL,Dade,1,no county or place of this name in the state
+FL,Autauga,1,no county or place of this name in the state
+FL,Barbour,1,no county or place of this name in the state
+FL,Bibb,1,no county or place of this name in the state
+FL,Blount,1,no county or place of this name in the state
+FL,Bullock,1,no county or place of this name in the state
+FL,Butler,1,no county or place of this name in the state
+FL,Suffolk,1,no county or place of this name in the state
+FL,Tampa Bay,1,no county or place of this name in the state
+FL,Fort McCoy,1,no county or place of this name in the state
+GA,Bronx,1,no county or place of this name in the state
+GA,Brooklyn,1,no county or place of this name in the state
+GA,Buffalo,1,no county or place of this name in the state
+GA,Detroit,1,no county or place of this name in the state
+GA,Pennsauken,1,no county or place of this name in the state
+GA,Sanford,1,no county or place of this name in the state
+GA,Hernando,1,no county or place of this name in the state
+GA,Pasco,1,no county or place of this name in the state
+GB,London,1,no county or place of this name in the state
+GB,Manchester,1,no county or place of this name in the state
+GB,Birmingham,1,no county or place of this name in the state
+GB,Newcastle,1,no county or place of this name in the state
+GB,Bristol,1,no county or place of this name in the state
+GB,Reading,1,no county or place of this name in the state
+GB,Slough,1,no county or place of this name in the state
+GB,Milton Keynes,1,no county or place of this name in the state
+IA,Sarpy,1,no county or place of this name in the state
+IA,Douglas,1,no county or place of this name in the state
+IL,DeWitt,1,no county or place of this name in the state
+IL,Acworth,1,no county or place of this name in the state
+IL,Alpharetta,1,no county or place of this name in the state
+IL,Austell,1,no county or place of this name in the state
+IL,Avondale Estates,1,no county or place of this name in the state
+IL,Berkeley Lake,1,no county or place of this name in the state
+IL,Braselton,1,no county or place of this name in the state
+IL,Memphis,1,no county or place of this name in the state
+IL,Chattanooga,1,no county or place of this name in the state
+IL,Lake County (Indiana),1,no county or place of this name in the state
+IL,Kenosha County (Wisconsin),1,no county or place of this name in the state
+IL,Grand Boulevard,1,no county or place of this name in the state
+IL,Quad Cities,1,no county or place of this name in the state
+IN,null,1,no county or place of this name in the state
+KS,Cass,1,no county or place of this name in the state
+KS,Belton,1,no county or place of this name in the state
+KS,Buckner,1,no county or place of this name in the state
+KS,Excelsior Springs,1,no county or place of this name in the state
+KS,Gladstone,1,no county or place of this name in the state
+KS,Grain Valley,1,no county or place of this name in the state
+LA,Huntsville,1,no county or place of this name in the state
+LA,Gulfport,1,no county or place of this name in the state
+LA,Daphne,1,no county or place of this name in the state
+LA,Smyrna,1,no county or place of this name in the state
+MA,Watertown,1,no county or place of this name in the state
+MA,Meredith,1,no county or place of this name in the state
+MA,Providence,1,no county or place of this name in the state
+MA,Natick,1,no county or place of this name in the state
+MA,Acton,1,no county or place of this name in the state
+MA,Palmer,1,no county or place of this name in the state
+MD,AA County,1,no county or place of this name in the state
+MD,PG County,1,no county or place of this name in the state
+MD,Baltimore City County,1,no county or place of this name in the state
+MD,Fairfax,1,no county or place of this name in the state
+MD,Loudoun,1,no county or place of this name in the state
+MI,San Jose,1,no county or place of this name in the state
+MI,Chicago,1,no county or place of this name in the state
+MI,Jacksonville,1,no county or place of this name in the state
+MI,Orlando,1,no county or place of this name in the state
+MI,San Diego,1,no county or place of this name in the state
+MI,Lancaster,1,no county or place of this name in the state
+MO,Southern Illinois,1,no county or place of this name in the state
+MO,Peveley,1,no county or place of this name in the state
+MO,Lake Saint Louis,1,no county or place of this name in the state
+NC,Chester,1,no county or place of this name in the state
+NC,York County,1,no county or place of this name in the state
+NC,Brown Summit,1,no county or place of this name in the state
+NC,Raleigh-Durham,1,no county or place of this name in the state
+NC,Willow Spring,1,no county or place of this name in the state
+NC,Martinsville,1,no county or place of this name in the state
+NC,Henry,1,no county or place of this name in the state
+NH,Auburn,1,no county or place of this name in the state
+NH,Bow,1,no county or place of this name in the state
+NH,Candia,1,no county or place of this name in the state
+NJ,Bucks,1,no county or place of this name in the state
+NJ,Maplewood,1,no county or place of this name in the state
+NJ,Millburn,1,no county or place of this name in the state
+NJ,South Orange,1,no county or place of this name in the state
+NJ,Verona,1,no county or place of this name in the state
+NJ,null,1,no county or place of this name in the state
+NY,Union,1,no county or place of this name in the state
+NY,All of ENG,1,no county or place of this name in the state
+NY,All of WLS,1,no county or place of this name in the state
+NY,Bristol,1,no county or place of this name in the state
+NY,Kent,1,no county or place of this name in the state
+NY,Providence,1,no county or place of this name in the state
+OH,Magadore,1,no county or place of this name in the state
+OH,Delhi,1,no county or place of this name in the state
+OH,Boone,1,no county or place of this name in the state
+OH,Lewis Center,1,no county or place of this name in the state
+OH,Caroll,1,no county or place of this name in the state
+OK,Collinville,1,no county or place of this name in the state
+ON,Hamilton,1,no county or place of this name in the state
+ON,Haldimand County,1,no county or place of this name in the state
+PA,Westmorland,1,no county or place of this name in the state
+SC,Knox,1,no county or place of this name in the state
+SC,Brunswick,1,no county or place of this name in the state
+SC,Rocky Mount,1,no county or place of this name in the state
+SC,Thomasville,1,no county or place of this name in the state
+SC,Woodleaf,1,no county or place of this name in the state
+SC,Hickory,1,no county or place of this name in the state
+SC,Shelby,1,no county or place of this name in the state
+SC,High Point,1,no county or place of this name in the state
+TN,Hixson,1,no county or place of this name in the state
+TN,Crittenden,1,no county or place of this name in the state
+TN,New Orleans,1,no county or place of this name in the state
+TN,Jonesboro,1,no county or place of this name in the state
+TN,Southaven,1,no county or place of this name in the state
+TN,Little Rock,1,no county or place of this name in the state
+TN,Cordova,1,no county or place of this name in the state
+TN,Graves,1,no county or place of this name in the state
+TN,Bellevue,1,no county or place of this name in the state
+TN,Inglewood,1,no county or place of this name in the state
+TN,Antioch,1,no county or place of this name in the state
+TX,Hillsborough,1,no county or place of this name in the state
+TX,Pinellas,1,no county or place of this name in the state
+TX,Miami-Dade,1,no county or place of this name in the state
+TX,Bella,1,no county or place of this name in the state
+TX,San Francisco,1,no county or place of this name in the state
+TX,Sacramento,1,no county or place of this name in the state
+TX,Walnut Creek,1,no county or place of this name in the state
+TX,East Palo Alto,1,no county or place of this name in the state
+TX,Studio City,1,no county or place of this name in the state
+TX,Pipe Creek,1,no county or place of this name in the state
+TX,Tarpley,1,no county or place of this name in the state
+TX,Vanderpool,1,no county or place of this name in the state
+TX,San Juan,1,2 same-named places in different counties
+TX,Stone Oak,1,no county or place of this name in the state
+TX,Monte Vista,1,no county or place of this name in the state
+UT,Cottonwood,1,no county or place of this name in the state
+VA,Baltimore,1,no county or place of this name in the state
+VA,Charles,1,no county or place of this name in the state
+WA,South King,1,no county or place of this name in the state
+WV,Hagerstown,1,no county or place of this name in the state
+WV,Winchester,1,no county or place of this name in the state
+AL,Columbus,1,no county or place of this name in the state
+AL,Cincinnati,1,no county or place of this name in the state
+AR,McDonald,1,no county or place of this name in the state
+AR,Barry,1,no county or place of this name in the state
+AR,Adair,1,no county or place of this name in the state
+AR,Delaware,1,no county or place of this name in the state
+AR,Ottawa,1,no county or place of this name in the state
+AZ,Rimrock,1,no county or place of this name in the state
+AZ,Wake,1,no county or place of this name in the state
+AZ,Greenville,1,no county or place of this name in the state
+AZ,Spartanburg,1,no county or place of this name in the state
+AZ,Charleston,1,no county or place of this name in the state
+AZ,Broward,1,no county or place of this name in the state
+AZ,Hillsborough,1,no county or place of this name in the state
+AZ,Palm Beach,1,no county or place of this name in the state
+CA,Atlanta,1,no county or place of this name in the state
+CA,Charlotte,1,no county or place of this name in the state
+CA,Raleigh,1,no county or place of this name in the state
+CA,Nashville,1,no county or place of this name in the state
+CA,New York,1,no county or place of this name in the state
+CA,Philadelphia,1,no county or place of this name in the state
+CA,Boston,1,no county or place of this name in the state
+CA,Buffalo,1,no county or place of this name in the state
+CA,Pittsburgh,1,no county or place of this name in the state
+CA,Baltimore,1,no county or place of this name in the state
+CA,Providence,1,no county or place of this name in the state
+CT,South Windsor,1,no county or place of this name in the state
+DC,Anne Arundel,1,no county or place of this name in the state
+DC,Charles,1,no county or place of this name in the state
+DC,Howard,1,no county or place of this name in the state
+DC,Prince Georges,1,no county or place of this name in the state
+DC,Saint Mary’s,1,no county or place of this name in the state
+EN,Merseyside,1,no county or place of this name in the state
+FL,Otsego,1,no county or place of this name in the state
+FL,Central,1,no county or place of this name in the state
+FL,Ft. Lauderdale,1,no county or place of this name in the state
+FL,Carol City,1,no county or place of this name in the state
+FL,Plantation,1,2 same-named places in different counties
+FL,Erie,1,no county or place of this name in the state
+FL,Cuyahoga,1,no county or place of this name in the state
+GA,Onondaga,1,no county or place of this name in the state
+GA,Oneida,1,no county or place of this name in the state
+GA,Charlotte,1,no county or place of this name in the state
+GA,Austin,1,no county or place of this name in the state
+GA,Edgefield,1,no county or place of this name in the state
+GA,Bonaire,1,no county or place of this name in the state
+GA,Charleston,1,no county or place of this name in the state
+GA,Denver,1,no county or place of this name in the state
+GA,Little Rock,1,no county or place of this name in the state
+GA,New Orleans,1,no county or place of this name in the state
+GA,Orlando,1,no county or place of this name in the state
+IN,Haynies Corner,1,no county or place of this name in the state
+IN,Ballard,1,no county or place of this name in the state
+IN,Tepe Park,1,no county or place of this name in the state
+IN,Olde Towne,1,no county or place of this name in the state
+IN,Poplar Grove,1,no county or place of this name in the state
+IN,Reitz Hill,1,no county or place of this name in the state
+KS,Lee’s Summit,1,no county or place of this name in the state
+LA,Mid City South,1,no county or place of this name in the state
+LA,Garden District,1,no county or place of this name in the state
+LA,Sherwood Forest,1,no county or place of this name in the state
+LA,Scotlandville,1,no county or place of this name in the state
+LA,Highlands,1,no county or place of this name in the state
+MA,Amesbury,1,no county or place of this name in the state
+MA,Bridgewater,1,no county or place of this name in the state
+MA,Randolph,1,no county or place of this name in the state
+MA,Dorchester,1,no county or place of this name in the state
+MA,Swansea,1,no county or place of this name in the state
+MA,Westport,1,no county or place of this name in the state
+MA,Dartmouth,1,no county or place of this name in the state
+MA,Acushnet,1,no county or place of this name in the state
+MA,Rockingham,1,no county or place of this name in the state
+MA,Hillsborough,1,no county or place of this name in the state
+MA,York,1,no county or place of this name in the state
+MI,Clinton Township,1,no county or place of this name in the state
+MO,Overland Park,1,no county or place of this name in the state
+MO,Olathe,1,no county or place of this name in the state
+NC,Becton Park,1,no county or place of this name in the state
+NC,Ballantyne,1,no county or place of this name in the state
+NC,Dilworth,1,no county or place of this name in the state
+NC,Eagle Lake,1,no county or place of this name in the state
+NC,Elizabeth,1,no county or place of this name in the state
+NC,Highland Creek,1,no county or place of this name in the state
+NC,Pfafftown,1,no county or place of this name in the state
+NE,Sioux City,1,no county or place of this name in the state
+NY,Sussex,1,no county or place of this name in the state
+NY,Hunterdon,1,no county or place of this name in the state
+NY,Astoria,1,no county or place of this name in the state
+NY,Canarsie,1,no county or place of this name in the state
+NY,New York City,1,no county or place of this name in the state
+OH,Colerain,1,no county or place of this name in the state
+OH,Madisonville,1,no county or place of this name in the state
+OH,Columbia Station,1,no county or place of this name in the state
+OH,Fort Lauderdale,1,no county or place of this name in the state
+OH,Fort Myers,1,no county or place of this name in the state
+OH,Tampa,1,no county or place of this name in the state
+OH,Apopka,1,no county or place of this name in the state
+OH,Atlanta,1,no county or place of this name in the state
+OH,Charleston,1,no county or place of this name in the state
+OH,Charlotte,1,no county or place of this name in the state
+OH,Chicago,1,no county or place of this name in the state
+OH,Columbia,1,no county or place of this name in the state
+OK,Tinker,1,no county or place of this name in the state
+ON,Southern Ontario,1,no county or place of this name in the state
+ON,Niagara,1,no county or place of this name in the state
+OR,Cowlitz,1,no county or place of this name in the state
+PA,Middletown,1,2 same-named places in different counties
+PA,Camden,1,no county or place of this name in the state
+PA,Abington,1,no county or place of this name in the state
+PA,Havertown,1,no county or place of this name in the state
+PA,Cherry Hill,1,no county or place of this name in the state
+PA,Livingston,1,no county or place of this name in the state
+PA,Jersey City,1,no county or place of this name in the state
+PA,Princeton,1,no county or place of this name in the state
+PA,Trenton,1,no county or place of this name in the state
+PA,Uniontown,1,2 same-named places in different counties
+PA,Harford,1,no county or place of this name in the state
+PA,Baltimore,1,no county or place of this name in the state
+PA,Carroll,1,no county or place of this name in the state
+PA,Anne Arundel,1,no county or place of this name in the state
+RI,North Providence,1,no county or place of this name in the state
+RI,Johnston,1,no county or place of this name in the state
+RI,Lincoln,1,no county or place of this name in the state
+SC,Hilton Head,1,no county or place of this name in the state
+SC,Hendersonville,1,no county or place of this name in the state
+SC,Asheville,1,no county or place of this name in the state
+SC,Marlton,1,no county or place of this name in the state
+TN,Dade,1,no county or place of this name in the state
+TN,Brainerd,1,no county or place of this name in the state
+TN,Claxton,1,no county or place of this name in the state
+TN,Corryton,1,no county or place of this name in the state
+TN,Miami,1,no county or place of this name in the state
+TN,Fort Lauderdale,1,no county or place of this name in the state
+TN,West Palm Beach,1,no county or place of this name in the state
+TN,Orlando,1,no county or place of this name in the state
+TN,Jacksonville,1,no county or place of this name in the state
+TN,Tampa,1,no county or place of this name in the state
+TX,Dallas CAD,1,no county or place of this name in the state
+TX,Tarrant CAD,1,no county or place of this name in the state
+TX,Collin CAD,1,no county or place of this name in the state
+TX,Denton CAD,1,no county or place of this name in the state
+TX,Kaufman CAD,1,no county or place of this name in the state
+TX,Rockwall CAD,1,no county or place of this name in the state
+TX,Harris CAD,1,no county or place of this name in the state
+TX,Fort Bend CAD,1,no county or place of this name in the state
+TX,North Bethesda,1,no county or place of this name in the state
+TX,Birmingham,1,no county or place of this name in the state
+TX,Phoenix,1,no county or place of this name in the state
+TX,San Jose,1,no county or place of this name in the state
+TX,Chicago,1,no county or place of this name in the state
+TX,Indianapolis,1,no county or place of this name in the state
+TX,Rockville,1,no county or place of this name in the state
+TX,Adkins,1,no county or place of this name in the state
+TX,Sugarland,1,no county or place of this name in the state
+TX,Oklahoma City,1,no county or place of this name in the state
+TX,Kansas City,1,no county or place of this name in the state
+TX,Nashville,1,no county or place of this name in the state
+UK,St Helens,1,no county or place of this name in the state
+VA,Ballston,1,no county or place of this name in the state
+VA,Prince George's,1,no county or place of this name in the state
+VA,Bristow,1,no county or place of this name in the state
+VA,Locust Grove,1,no county or place of this name in the state
+VA,Manquin,1,no county or place of this name in the state
+VA,Doswell,1,no county or place of this name in the state
+VA,District of Columbia,1,no county or place of this name in the state
+VA,Maryland,1,no county or place of this name in the state
+VA,Ohio,1,no county or place of this name in the state
+VA,Virginia,1,no county or place of this name in the state
+WA,Ohio,1,no county or place of this name in the state
+WA,Atlanta,1,no county or place of this name in the state
+WA,Washington,1,no county or place of this name in the state
+WA,Texas,1,no county or place of this name in the state
+WA,Pennsylvania,1,no county or place of this name in the state
+WS,West Sussex,1,no county or place of this name in the state
+WS,Kent,1,no county or place of this name in the state
+WS,Surrey,1,no county or place of this name in the state
+WV,Akron,1,no county or place of this name in the state
+WV,Cincinnati,1,no county or place of this name in the state
+WV,Cleveland,1,no county or place of this name in the state
+WV,Columbus,1,no county or place of this name in the state
+WY,Burien,1,no county or place of this name in the state
+??,Putnam,1,"entity has no state, so the lookup cannot be scoped"
+??,Dutchess,1,"entity has no state, so the lookup cannot be scoped"
+??,Rockland,1,"entity has no state, so the lookup cannot be scoped"
+??,Fairfield,1,"entity has no state, so the lookup cannot be scoped"
+??,Clarke,1,"entity has no state, so the lookup cannot be scoped"
+??,Jackson,1,"entity has no state, so the lookup cannot be scoped"
+??,Oconee,1,"entity has no state, so the lookup cannot be scoped"
+??,Barrow,1,"entity has no state, so the lookup cannot be scoped"
+??,Fredericksburg,1,"entity has no state, so the lookup cannot be scoped"
+??,Newport News,1,"entity has no state, so the lookup cannot be scoped"
+??,Norfolk,1,"entity has no state, so the lookup cannot be scoped"
+??,Portsmouth,1,"entity has no state, so the lookup cannot be scoped"
+??,Hampton,1,"entity has no state, so the lookup cannot be scoped"
+??,Savannah,1,"entity has no state, so the lookup cannot be scoped"
+??,Kansas City,1,"entity has no state, so the lookup cannot be scoped"
+??,Currituck,1,"entity has no state, so the lookup cannot be scoped"
+??,Camden,1,"entity has no state, so the lookup cannot be scoped"
+??,Pasquotank,1,"entity has no state, so the lookup cannot be scoped"
+??,Perquimans,1,"entity has no state, so the lookup cannot be scoped"
+??,Derby,1,"entity has no state, so the lookup cannot be scoped"
+??,Wichita,1,"entity has no state, so the lookup cannot be scoped"
+??,Norfolk County,1,"entity has no state, so the lookup cannot be scoped"
+??,Worcester,1,"entity has no state, so the lookup cannot be scoped"
+??,Rutland,1,"entity has no state, so the lookup cannot be scoped"
+??,Middletown,1,"entity has no state, so the lookup cannot be scoped"
+??,Newburgh,1,"entity has no state, so the lookup cannot be scoped"
+??,Poughkeepsie,1,"entity has no state, so the lookup cannot be scoped"
+??,Rochester,1,"entity has no state, so the lookup cannot be scoped"
+??,Shelby,1,"entity has no state, so the lookup cannot be scoped"
+??,Knox,1,"entity has no state, so the lookup cannot be scoped"
+??,Benton,1,"entity has no state, so the lookup cannot be scoped"
+??,Cobb,1,"entity has no state, so the lookup cannot be scoped"
+??,Jefferson,1,"entity has no state, so the lookup cannot be scoped"
+??,Orleans,1,"entity has no state, so the lookup cannot be scoped"
+??,Airway Heights,1,"entity has no state, so the lookup cannot be scoped"
+??,Asotin,1,"entity has no state, so the lookup cannot be scoped"
+??,Bellingham,1,"entity has no state, so the lookup cannot be scoped"
+??,Blaine,1,"entity has no state, so the lookup cannot be scoped"
+??,Buckley,1,"entity has no state, so the lookup cannot be scoped"
+??,Burbank,1,"entity has no state, so the lookup cannot be scoped"
+??,Camas,1,"entity has no state, so the lookup cannot be scoped"
+??,Carnation,1,"entity has no state, so the lookup cannot be scoped"
+??,Fulton,1,"entity has no state, so the lookup cannot be scoped"
+??,Escambia,1,"entity has no state, so the lookup cannot be scoped"
+??,Lake,1,"entity has no state, so the lookup cannot be scoped"
+??,Porter,1,"entity has no state, so the lookup cannot be scoped"
+??,Boston,1,"entity has no state, so the lookup cannot be scoped"
+??,Denton,1,"entity has no state, so the lookup cannot be scoped"
+??,Henry,1,"entity has no state, so the lookup cannot be scoped"
+??,Newton,1,"entity has no state, so the lookup cannot be scoped"
+??,Rockdale,1,"entity has no state, so the lookup cannot be scoped"
+??,Spalding,1,"entity has no state, so the lookup cannot be scoped"
+??,Monroe,1,"entity has no state, so the lookup cannot be scoped"
+??,Lamar,1,"entity has no state, so the lookup cannot be scoped"
+??,Clayton,1,"entity has no state, so the lookup cannot be scoped"
+??,Walton,1,"entity has no state, so the lookup cannot be scoped"
+??,"Washington, DC",1,"entity has no state, so the lookup cannot be scoped"
+??,Limestone,1,"entity has no state, so the lookup cannot be scoped"
+??,Madison,1,"entity has no state, so the lookup cannot be scoped"
+??,Elmore,1,"entity has no state, so the lookup cannot be scoped"
+??,Lee,1,"entity has no state, so the lookup cannot be scoped"
+??,Russell,1,"entity has no state, so the lookup cannot be scoped"
+??,River Falls,1,"entity has no state, so the lookup cannot be scoped"
+??,New Richmond,1,"entity has no state, so the lookup cannot be scoped"
+??,Hudson,1,"entity has no state, so the lookup cannot be scoped"
+??,Menomonie,1,"entity has no state, so the lookup cannot be scoped"
+??,Chippewa Falls,1,"entity has no state, so the lookup cannot be scoped"
+??,Eau Claire,1,"entity has no state, so the lookup cannot be scoped"
+??,Amery,1,"entity has no state, so the lookup cannot be scoped"
+??,Rensselaer,1,"entity has no state, so the lookup cannot be scoped"
+??,Schenectady,1,"entity has no state, so the lookup cannot be scoped"
+??,Saratoga,1,"entity has no state, so the lookup cannot be scoped"
+??,St. Louis,1,"entity has no state, so the lookup cannot be scoped"
+??,St. Charles,1,"entity has no state, so the lookup cannot be scoped"
+AR,Tulsa,1,no county or place of this name in the state
+CT,Barkhamsted,1,no county or place of this name in the state
+CT,Beacon Falls,1,no county or place of this name in the state
+CT,Berlin,1,no county or place of this name in the state
+CT,Bethany,1,no county or place of this name in the state
+FL,Loxahatchee,1,no county or place of this name in the state
+FL,South Tampa,1,no county or place of this name in the state
+MD,Atlanta,1,no county or place of this name in the state
+MD,Charlotte,1,no county or place of this name in the state
+MD,Chicago,1,no county or place of this name in the state
+MD,Columbus,1,no county or place of this name in the state
+MD,Dallas,1,no county or place of this name in the state
+MD,Denver,1,no county or place of this name in the state
+MD,Detroit,1,no county or place of this name in the state
+NJ,South Jersey,1,no county or place of this name in the state
+NY,Green,1,no county or place of this name in the state
+OK,all counties in Oklahoma,1,no county or place of this name in the state
+PA,Lehigh Valley,1,no county or place of this name in the state
+PA,Kent,1,no county or place of this name in the state
+PA,Upper Darby,1,no county or place of this name in the state
+PA,Bensalem,1,no county or place of this name in the state
+RI,Coventry,1,no county or place of this name in the state
+RI,Greenwich,1,no county or place of this name in the state
+RI,Narragansett,1,no county or place of this name in the state
+RI,North Kingstown,1,no county or place of this name in the state
+RI,South Kingstown,1,no county or place of this name in the state
+UT,West Valley,1,no county or place of this name in the state
+WA,Burton,1,no county or place of this name in the state
+NU,Kent,1,no county or place of this name in the state
+??,Cook,1,"entity has no state, so the lookup cannot be scoped"
+??,DuPage,1,"entity has no state, so the lookup cannot be scoped"
+??,Kane,1,"entity has no state, so the lookup cannot be scoped"
+??,McHenry,1,"entity has no state, so the lookup cannot be scoped"
+??,West Midlands,1,"entity has no state, so the lookup cannot be scoped"
+??,Portland,1,"entity has no state, so the lookup cannot be scoped"
+??,Aloha,1,"entity has no state, so the lookup cannot be scoped"
+??,Beaverton,1,"entity has no state, so the lookup cannot be scoped"
+??,Corvallis,1,"entity has no state, so the lookup cannot be scoped"
+??,Eugene,1,"entity has no state, so the lookup cannot be scoped"
+??,Gresham,1,"entity has no state, so the lookup cannot be scoped"
+??,Hillsboro,1,"entity has no state, so the lookup cannot be scoped"
+??,Lake Oswego,1,"entity has no state, so the lookup cannot be scoped"
+??,Lakeland,1,"entity has no state, so the lookup cannot be scoped"
+??,Melbourne,1,"entity has no state, so the lookup cannot be scoped"
+??,Shorewood,1,"entity has no state, so the lookup cannot be scoped"
+??,Brookfield,1,"entity has no state, so the lookup cannot be scoped"
+??,Washington,1,"entity has no state, so the lookup cannot be scoped"
+??,San Francisco,1,"entity has no state, so the lookup cannot be scoped"
+??,Prince William County,1,"entity has no state, so the lookup cannot be scoped"
+??,Montgomery County,1,"entity has no state, so the lookup cannot be scoped"
+??,Prince George’s County,1,"entity has no state, so the lookup cannot be scoped"
+??,Baltimore County,1,"entity has no state, so the lookup cannot be scoped"
+??,Howard County,1,"entity has no state, so the lookup cannot be scoped"
+??,Duval County,1,"entity has no state, so the lookup cannot be scoped"
+??,Southern California,1,"entity has no state, so the lookup cannot be scoped"
+??,Connecticut,1,"entity has no state, so the lookup cannot be scoped"
+??,select counties,1,"entity has no state, so the lookup cannot be scoped"
+??,Kent,1,"entity has no state, so the lookup cannot be scoped"
+??,Sussex,1,"entity has no state, so the lookup cannot be scoped"
+??,New Castle,1,"entity has no state, so the lookup cannot be scoped"
+??,Coventry,1,"entity has no state, so the lookup cannot be scoped"
+??,Wolverhampton,1,"entity has no state, so the lookup cannot be scoped"
+??,Dudley,1,"entity has no state, so the lookup cannot be scoped"
+??,Sandwell,1,"entity has no state, so the lookup cannot be scoped"
+??,Walsall,1,"entity has no state, so the lookup cannot be scoped"
+??,Solihull,1,"entity has no state, so the lookup cannot be scoped"
+??,Sutton Coldfield,1,"entity has no state, so the lookup cannot be scoped"
+??,Knoxville,1,"entity has no state, so the lookup cannot be scoped"
+??,Chattanooga,1,"entity has no state, so the lookup cannot be scoped"
+??,Memphis,1,"entity has no state, so the lookup cannot be scoped"
+??,Greensboro,1,"entity has no state, so the lookup cannot be scoped"
+??,Lansing,1,"entity has no state, so the lookup cannot be scoped"
+??,Kalamazoo,1,"entity has no state, so the lookup cannot be scoped"
+??,Muskegon,1,"entity has no state, so the lookup cannot be scoped"
+??,Indianapolis,1,"entity has no state, so the lookup cannot be scoped"
+??,Greenfield,1,"entity has no state, so the lookup cannot be scoped"
+??,Falls Church,1,"entity has no state, so the lookup cannot be scoped"
+??,Stafford,1,"entity has no state, so the lookup cannot be scoped"
+??,Alexander,1,"entity has no state, so the lookup cannot be scoped"
+??,Burke,1,"entity has no state, so the lookup cannot be scoped"
+??,Cabarrus,1,"entity has no state, so the lookup cannot be scoped"
+??,Catawba,1,"entity has no state, so the lookup cannot be scoped"
+??,Gaston,1,"entity has no state, so the lookup cannot be scoped"
+??,Iredell,1,"entity has no state, so the lookup cannot be scoped"
+??,Pennsylvania,1,"entity has no state, so the lookup cannot be scoped"
+??,Georgia,1,"entity has no state, so the lookup cannot be scoped"
+??,Florida,1,"entity has no state, so the lookup cannot be scoped"
+??,Essex County,1,"entity has no state, so the lookup cannot be scoped"
+??,Passaic County,1,"entity has no state, so the lookup cannot be scoped"
+??,Westchester County,1,"entity has no state, so the lookup cannot be scoped"
+??,Chula Vista,1,"entity has no state, so the lookup cannot be scoped"
+??,Arvada,1,"entity has no state, so the lookup cannot be scoped"
+??,Centennial,1,"entity has no state, so the lookup cannot be scoped"
+??,Lakewood,1,"entity has no state, so the lookup cannot be scoped"
+??,Littleton,1,"entity has no state, so the lookup cannot be scoped"
+??,Alexandria County,1,"entity has no state, so the lookup cannot be scoped"
+??,Arlington County,1,"entity has no state, so the lookup cannot be scoped"
+??,Falls Church County,1,"entity has no state, so the lookup cannot be scoped"
+??,Manassas County,1,"entity has no state, so the lookup cannot be scoped"
+??,Boulder County,1,"entity has no state, so the lookup cannot be scoped"
+??,Glendale,1,"entity has no state, so the lookup cannot be scoped"
+??,Mesa,1,"entity has no state, so the lookup cannot be scoped"
+??,Casa Grande,1,"entity has no state, so the lookup cannot be scoped"
+??,Maricopa,1,"entity has no state, so the lookup cannot be scoped"
+??,El Paso,1,"entity has no state, so the lookup cannot be scoped"
+??,Fort Worth,1,"entity has no state, so the lookup cannot be scoped"
+??,Amarillo,1,"entity has no state, so the lookup cannot be scoped"
+??,Delaware,1,"entity has no state, so the lookup cannot be scoped"
+??,Chester,1,"entity has no state, so the lookup cannot be scoped"
+??,Main Line,1,"entity has no state, so the lookup cannot be scoped"
+??,Hunterdon,1,"entity has no state, so the lookup cannot be scoped"
+??,Mercer,1,"entity has no state, so the lookup cannot be scoped"
+??,null,1,"entity has no state, so the lookup cannot be scoped"
+??,Cardiff,1,"entity has no state, so the lookup cannot be scoped"
+??,Bristol,1,"entity has no state, so the lookup cannot be scoped"
+??,Manchester,1,"entity has no state, so the lookup cannot be scoped"
+??,Liverpool,1,"entity has no state, so the lookup cannot be scoped"
+??,London,1,"entity has no state, so the lookup cannot be scoped"
+??,Glasgow,1,"entity has no state, so the lookup cannot be scoped"
+??,Nottingham,1,"entity has no state, so the lookup cannot be scoped"
+??,Placer,1,"entity has no state, so the lookup cannot be scoped"
+??,Nevada,1,"entity has no state, so the lookup cannot be scoped"
+??,Yuba,1,"entity has no state, so the lookup cannot be scoped"
+??,El Dorado,1,"entity has no state, so the lookup cannot be scoped"
+??,Del Norte,1,"entity has no state, so the lookup cannot be scoped"
+??,Humboldt,1,"entity has no state, so the lookup cannot be scoped"
+??,Mendocino,1,"entity has no state, so the lookup cannot be scoped"
+??,Boise,1,"entity has no state, so the lookup cannot be scoped"
+??,Meridian,1,"entity has no state, so the lookup cannot be scoped"
+??,Kuna,1,"entity has no state, so the lookup cannot be scoped"
+??,Nampa,1,"entity has no state, so the lookup cannot be scoped"
+??,Middleton,1,"entity has no state, so the lookup cannot be scoped"
+??,Casper,1,"entity has no state, so the lookup cannot be scoped"
+??,Cheyenne,1,"entity has no state, so the lookup cannot be scoped"
+??,Suburbs,1,"entity has no state, so the lookup cannot be scoped"
+??,Duval,1,"entity has no state, so the lookup cannot be scoped"
+??,Franklin,1,"entity has no state, so the lookup cannot be scoped"
+??,Kings,1,"entity has no state, so the lookup cannot be scoped"
+??,Winnipeg,1,"entity has no state, so the lookup cannot be scoped"
+??,Calgary,1,"entity has no state, so the lookup cannot be scoped"
+??,Edmonton,1,"entity has no state, so the lookup cannot be scoped"
+??,Toronto,1,"entity has no state, so the lookup cannot be scoped"
+??,Delaware County,1,"entity has no state, so the lookup cannot be scoped"
+??,Chester County,1,"entity has no state, so the lookup cannot be scoped"
+??,Kent County,1,"entity has no state, so the lookup cannot be scoped"
+??,New Castle County,1,"entity has no state, so the lookup cannot be scoped"
+??,Tarrant,1,"entity has no state, so the lookup cannot be scoped"
+??,Inland Empire,1,"entity has no state, so the lookup cannot be scoped"
+??,Oklahoma City,1,"entity has no state, so the lookup cannot be scoped"
+??,Salt Lake,1,"entity has no state, so the lookup cannot be scoped"
+??,Charles,1,"entity has no state, so the lookup cannot be scoped"
+??,Howard,1,"entity has no state, so the lookup cannot be scoped"
+??,Frederick,1,"entity has no state, so the lookup cannot be scoped"
+??,Waterloo,1,"entity has no state, so the lookup cannot be scoped"
+??,Ventura,1,"entity has no state, so the lookup cannot be scoped"
+??,Niagara,1,"entity has no state, so the lookup cannot be scoped"
+??,San Jose,1,"entity has no state, so the lookup cannot be scoped"
+??,Albuquerque,1,"entity has no state, so the lookup cannot be scoped"
+??,Bozeman,1,"entity has no state, so the lookup cannot be scoped"
+??,Spokane,1,"entity has no state, so the lookup cannot be scoped"
+??,Broward,1,"entity has no state, so the lookup cannot be scoped"
+??,Palm Beach,1,"entity has no state, so the lookup cannot be scoped"
+??,Sarasota,1,"entity has no state, so the lookup cannot be scoped"
+??,Manatee,1,"entity has no state, so the lookup cannot be scoped"
+CA,Atwater Village,1,no county or place of this name in the state
+CA,Boyle Heights,1,no county or place of this name in the state
+CA,Burbank,1,2 same-named places in different counties
+CA,Canoga Park,1,no county or place of this name in the state
+CA,Chatsworth,1,no county or place of this name in the state
+GA,Buckhead,1,2 same-named places in different counties
+IL,Milwaukee,1,no county or place of this name in the state
+IN,Highland,1,2 same-named places in different counties
+MI,Bloomfield,1,no county or place of this name in the state
+MI,Chesterfield,1,no county or place of this name in the state
+MN,Twin Cities,1,no county or place of this name in the state
+NC,Winston‑Salem,1,no county or place of this name in the state
+NJ,Cherry Hill,1,no county or place of this name in the state
+NJ,Northern NJ,1,no county or place of this name in the state
+NJ,all 21 New Jersey counties,1,no county or place of this name in the state
+OH,Centerville,1,2 same-named places in different counties
+OK,Benton,1,no county or place of this name in the state
+ON,Durham Region,1,no county or place of this name in the state
+ON,Halton Region,1,no county or place of this name in the state
+PA,Cecil,1,no county or place of this name in the state
+SC,Upstate,1,no county or place of this name in the state

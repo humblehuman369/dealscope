@@ -72,12 +72,20 @@ from app.models import (  # noqa: F401
     UserSession,
     VerificationToken,
 )
+from app.models.cash_buyer import CashBuyer
+from app.models.geo_city import GeoCity
+from app.models.geo_county import GeoCounty
 from app.models.lender import Lender
 from app.repositories.role_repository import role_repo
 from app.repositories.user_repository import user_repo
 from app.services.auth_service import auth_service
+from scripts.seed_cash_buyers import load_buyers
+from scripts.seed_cash_buyers import row_values as buyer_row_values
+from scripts.seed_geo_cities import load_cities
+from scripts.seed_geo_counties import load_counties
 from scripts.seed_lenders import load_lenders, row_values
 from sqlalchemy import delete, insert
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 
@@ -245,6 +253,75 @@ async def seeded_lenders(async_engine) -> int:
             ],
         )
     return len(rows)
+
+
+@pytest.fixture(scope="session")
+async def seeded_geo(async_engine) -> tuple[int, int]:
+    """Load the real county and place reference data once per session.
+
+    Coverage resolution is only meaningful against the full gazetteer — a
+    handful of hand-written counties would let a matching bug pass by never
+    presenting it with a name collision. Roughly 35k rows, loaded once.
+
+    Upserts rather than replacing the tables: ``directory_service_area`` holds a
+    foreign key to ``geo_counties``, so clearing it out would fail against any
+    coverage rows a previous run committed.
+    """
+    now = datetime.now(UTC)
+    counties = load_counties()
+    cities = load_cities()
+
+    async def upsert(conn, model, key, rows, chunk=4_000):
+        for start in range(0, len(rows), chunk):
+            batch = [
+                {**row, "created_at": now, "updated_at": now}
+                for row in rows[start : start + chunk]
+            ]
+            statement = pg_insert(model).values(batch)
+            await conn.execute(
+                statement.on_conflict_do_update(
+                    index_elements=[key],
+                    set_={
+                        column: statement.excluded[column]
+                        for column in batch[0]
+                        if column != key
+                    },
+                )
+            )
+
+    async with async_engine.begin() as conn:
+        await upsert(conn, GeoCounty, "fips", counties)
+        await upsert(conn, GeoCity, "geoid", cities)
+    return len(counties), len(cities)
+
+
+@pytest.fixture(scope="session")
+async def seeded_buyers(async_engine) -> int:
+    """Load the real cash buyer dataset once per session, committed so tests see it.
+
+    Same rationale as ``seeded_lenders``: coverage strings in the wild are the
+    thing under test, so the fixture uses the shipped dataset rather than
+    invented rows.
+    """
+    buyers = load_buyers()
+    now = datetime.now(UTC)
+    async with async_engine.begin() as conn:
+        await conn.execute(delete(CashBuyer))
+        await conn.execute(
+            insert(CashBuyer),
+            [
+                {
+                    "id": row["id"],
+                    "phone": row["phone"].strip(),
+                    **buyer_row_values(row),
+                    "passes_strict_filter": True,
+                    "created_at": now,
+                    "updated_at": now,
+                }
+                for row in buyers
+            ],
+        )
+    return len(buyers)
 
 
 @pytest.fixture

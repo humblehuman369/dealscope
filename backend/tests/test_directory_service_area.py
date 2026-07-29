@@ -6,9 +6,16 @@ ever diverges, lender search results silently change.
 """
 
 import pytest
+from app.models.cash_buyer import CashBuyer
 from app.models.directory_service_area import DirectoryServiceArea
+from app.models.geo_county import GeoCounty
 from app.models.lender import Lender
-from scripts.backfill_service_area import SOURCE_LENDER_STATES, backfill_lender_states
+from scripts.backfill_service_area import (
+    SOURCE_BUYER_COVERAGE,
+    SOURCE_LENDER_STATES,
+    backfill_buyer_coverage,
+    backfill_lender_states,
+)
 from sqlalchemy import delete, func, select, text
 from sqlalchemy.exc import IntegrityError
 
@@ -227,3 +234,151 @@ async def test_county_rows_must_reference_a_real_county(db_session):
             )
         )
     await db_session.rollback()
+
+
+# ---------------------------------------------------------------------------
+# Buyer coverage — derived from prose, so the bar is that it never invents
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+async def buyers_backfilled(db_session, seeded_geo, seeded_buyers):
+    await backfill_buyer_coverage(db_session, dry_run=False)
+    await db_session.flush()
+    return seeded_buyers
+
+
+async def test_every_listed_buyer_is_reachable_in_its_own_state(db_session, buyers_backfilled):
+    """The equivalence that lets a state lookup move off ``cash_buyers.state``.
+
+    Buyer state rows come from the column, not from coverage text, so this must
+    hold for all of them regardless of how much prose resolved.
+    """
+    from_column = {
+        (row[0], row[1])
+        for row in (
+            await db_session.execute(
+                select(CashBuyer.id, CashBuyer.state).where(
+                    CashBuyer.passes_strict_filter.is_(True), CashBuyer.state.is_not(None)
+                )
+            )
+        ).all()
+    }
+    from_table = {
+        (row[0], row[1])
+        for row in (
+            await db_session.execute(
+                select(DirectoryServiceArea.entity_id, DirectoryServiceArea.state).where(
+                    DirectoryServiceArea.entity_type == "buyer",
+                    DirectoryServiceArea.scope == "state",
+                )
+            )
+        ).all()
+    }
+    assert from_column - from_table == set()
+
+
+async def test_county_rows_are_in_the_state_they_claim(db_session, buyers_backfilled):
+    """A FIPS starts with its state's code, so a row naming FL and carrying a
+    Georgia county is detectable — and would mean the resolver crossed a state
+    line, which it must never do."""
+    mismatched = (
+        await db_session.execute(
+            select(func.count())
+            .select_from(DirectoryServiceArea)
+            .join(GeoCounty, GeoCounty.fips == DirectoryServiceArea.county_fips)
+            .where(
+                DirectoryServiceArea.entity_type == "buyer",
+                DirectoryServiceArea.scope == "county",
+                GeoCounty.state != DirectoryServiceArea.state,
+            )
+        )
+    ).scalar_one()
+    assert mismatched == 0
+
+
+async def test_coverage_produces_counties_for_most_buyers(db_session, buyers_backfilled):
+    """A guard on the pipeline as a whole: if a data or parsing change quietly
+    stopped resolving coverage, every county row would vanish and only this
+    would notice."""
+    with_counties = (
+        await db_session.execute(
+            select(func.count(func.distinct(DirectoryServiceArea.entity_id))).where(
+                DirectoryServiceArea.entity_type == "buyer",
+                DirectoryServiceArea.scope == "county",
+            )
+        )
+    ).scalar_one()
+    assert with_counties > 0.75 * buyers_backfilled
+
+
+async def test_a_known_buyer_gets_the_counties_its_coverage_names(db_session, buyers_backfilled):
+    """Spot-check one real row end to end rather than trusting aggregates."""
+    buyer_id = (
+        await db_session.execute(
+            select(CashBuyer.id).where(CashBuyer.phone == "(205) 564-9746")
+        )
+    ).scalar_one()
+
+    fips = {
+        row[0]
+        for row in (
+            await db_session.execute(
+                select(DirectoryServiceArea.county_fips).where(
+                    DirectoryServiceArea.entity_type == "buyer",
+                    DirectoryServiceArea.entity_id == buyer_id,
+                    DirectoryServiceArea.scope == "county",
+                )
+            )
+        ).all()
+    }
+    # coverage is ["Jefferson", "Shelby", "St. Clair"], all Alabama counties.
+    assert fips == {"01073", "01117", "01115"}
+
+
+async def test_buyer_backfill_is_idempotent(db_session, buyers_backfilled):
+    before = (
+        await db_session.execute(select(func.count()).select_from(DirectoryServiceArea))
+    ).scalar_one()
+
+    await backfill_buyer_coverage(db_session, dry_run=False)
+    await db_session.flush()
+
+    after = (
+        await db_session.execute(select(func.count()).select_from(DirectoryServiceArea))
+    ).scalar_one()
+    assert after == before
+
+
+async def test_each_pass_only_rebuilds_its_own_rows(db_session, seeded_lenders, buyers_backfilled):
+    """The two derivations share a table; re-running one must not erase the other."""
+    await backfill_lender_states(db_session, dry_run=False)
+    await db_session.flush()
+    lender_rows = (
+        await db_session.execute(
+            select(func.count())
+            .select_from(DirectoryServiceArea)
+            .where(DirectoryServiceArea.source == SOURCE_LENDER_STATES)
+        )
+    ).scalar_one()
+
+    await backfill_buyer_coverage(db_session, dry_run=False)
+    await db_session.flush()
+
+    still_there = (
+        await db_session.execute(
+            select(func.count())
+            .select_from(DirectoryServiceArea)
+            .where(DirectoryServiceArea.source == SOURCE_LENDER_STATES)
+        )
+    ).scalar_one()
+    assert still_there == lender_rows > 0
+
+    buyer_rows = (
+        await db_session.execute(
+            select(func.count())
+            .select_from(DirectoryServiceArea)
+            .where(DirectoryServiceArea.source == SOURCE_BUYER_COVERAGE)
+        )
+    ).scalar_one()
+    assert buyer_rows > 0

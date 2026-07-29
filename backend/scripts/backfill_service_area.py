@@ -5,13 +5,15 @@ Run from the backend/ directory so the app package resolves:
     cd backend && python -m scripts.backfill_service_area [--dry-run]
 
 Idempotent per derivation pass: each pass deletes the rows carrying its own
-``source`` tag and rebuilds them, so re-running never duplicates and a later pass
-(city-derived buyer coverage) can be added without disturbing what is here.
+``source`` tag and rebuilds them, so re-running never duplicates and one pass can
+be re-derived without disturbing the other.
 
-Currently implements the lender half only. Buyer coverage is deliberately absent:
-36% of ``cash_buyers.coverage[]`` entries are city names ("San Antonio",
-"Orlando", "Atlanta") with no city -> county reference table to resolve them, and
-guessing is worse than not matching. See the restructure plan, Stage 3.
+Two passes:
+
+* ``lender_states_served`` — mechanical, from ``lenders.states_served``.
+* ``buyer_coverage`` — resolves ``cash_buyers.coverage[]`` prose through
+  ``app.services.geo_matching``. Unresolvable strings are skipped and counted;
+  ``scripts/report_buyer_coverage_gaps.py`` lists them individually.
 """
 
 from __future__ import annotations
@@ -19,17 +21,24 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+from collections import Counter
 from datetime import UTC, datetime
 
 from app.db.session import close_db, get_session_factory
+from app.models.cash_buyer import CashBuyer
 from app.models.directory_service_area import DirectoryServiceArea
 from app.models.lender import Lender
+from app.services.geo_matching import CoverageResolver
 from sqlalchemy import delete, func, insert, select
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("backfill_service_area")
 
 SOURCE_LENDER_STATES = "lender_states_served"
+SOURCE_BUYER_COVERAGE = "buyer_coverage"
+
+# Keeps each INSERT under Postgres' 65,535 bind-parameter ceiling.
+CHUNK_SIZE = 5_000
 
 
 async def backfill_lender_states(session, dry_run: bool) -> int:
@@ -99,10 +108,88 @@ async def backfill_lender_states(session, dry_run: bool) -> int:
     return len(rows)
 
 
+async def backfill_buyer_coverage(session, dry_run: bool) -> int:
+    """Resolve ``cash_buyers.coverage[]`` prose into state and county rows.
+
+    The buyer's own state is always emitted, mirroring the existing state filter
+    (``cash_buyers.state = ?``) so that lookup stays equivalent. Coverage strings
+    add county rows on top. Anything that does not resolve cleanly is skipped and
+    counted — see ``scripts/report_buyer_coverage_gaps.py`` for the itemised list.
+    """
+    resolver = await CoverageResolver.from_db(session)
+    buyers = (
+        await session.execute(select(CashBuyer.id, CashBuyer.state, CashBuyer.coverage))
+    ).all()
+
+    now = datetime.now(UTC)
+    seen: set[tuple[str, str | None, str | None]] = set()
+    rows: list[dict[str, object]] = []
+    outcomes: Counter = Counter()
+
+    def add(entity_id: int, scope: str, state: str | None, county_fips: str | None) -> None:
+        key = (f"{entity_id}:{scope}", state, county_fips)
+        if key in seen:
+            return
+        seen.add(key)
+        rows.append(
+            {
+                "entity_type": "buyer",
+                "entity_id": entity_id,
+                "scope": scope,
+                "state": state,
+                "county_fips": county_fips,
+                "source": SOURCE_BUYER_COVERAGE,
+                "created_at": now,
+            }
+        )
+
+    for buyer_id, buyer_state, coverage in buyers:
+        state = (buyer_state or "").strip().upper()[:2] or None
+        if state:
+            add(buyer_id, "state", state, None)
+
+        for raw in coverage or []:
+            resolution = resolver.resolve(raw, state)
+            outcomes[resolution.kind] += 1
+            if resolution.kind == "nationwide":
+                add(buyer_id, "nationwide", None, None)
+            elif resolution.kind == "state" and resolution.state:
+                add(buyer_id, "state", resolution.state, None)
+            elif resolution.kind == "county":
+                for fips in resolution.county_fips:
+                    add(buyer_id, "county", resolution.state, fips)
+
+    resolved = outcomes["county"] + outcomes["state"] + outcomes["nationwide"]
+    total = sum(outcomes.values())
+    logger.info(
+        "Buyers: %s | coverage strings %s | resolved %s (%.1f%%) | ambiguous %s | unmatched %s",
+        len(buyers),
+        total,
+        resolved,
+        (100 * resolved / total) if total else 0.0,
+        outcomes["ambiguous"],
+        outcomes["unmatched"],
+    )
+    logger.info("Buyer rows to write: %s", len(rows))
+
+    if dry_run:
+        return len(rows)
+
+    await session.execute(
+        delete(DirectoryServiceArea).where(
+            DirectoryServiceArea.source == SOURCE_BUYER_COVERAGE
+        )
+    )
+    for start in range(0, len(rows), CHUNK_SIZE):
+        await session.execute(insert(DirectoryServiceArea), rows[start : start + CHUNK_SIZE])
+    return len(rows)
+
+
 async def run(dry_run: bool) -> None:
     session_factory = get_session_factory()
     async with session_factory() as session:
         await backfill_lender_states(session, dry_run)
+        await backfill_buyer_coverage(session, dry_run)
 
         if dry_run:
             logger.info("Dry run — nothing written.")
