@@ -13,6 +13,11 @@ interface AssumptionsState {
   propertyId: string | null
   pendingUpdates: DealMakerUpdate
   lastGoodState: DealMakerUpdate
+  /**
+   * The payload of the save that failed. Rollback clears `pendingUpdates`, so
+   * without this there would be nothing left for the toast's Retry to resend.
+   */
+  failedUpdates: DealMakerUpdate
   isSaving: boolean
   isDirty: boolean
   error: string | null
@@ -33,12 +38,23 @@ export const useAssumptionsStore = create<AssumptionsState>((set, get) => ({
   propertyId: null,
   pendingUpdates: {},
   lastGoodState: {},
+  failedUpdates: {},
   isSaving: false,
   isDirty: false,
   error: null,
 
   setPropertyId: (id) => {
-    set({ propertyId: id, pendingUpdates: {}, isDirty: false, error: null })
+    // This store is a singleton shared by every property, so the recovery state
+    // has to be dropped with the rest: a stale lastGoodState would let
+    // revertToLastGood replay the previous property's numbers into this deal.
+    set({
+      propertyId: id,
+      pendingUpdates: {},
+      lastGoodState: {},
+      failedUpdates: {},
+      isDirty: false,
+      error: null,
+    })
   },
 
   updateField: (field, value) => {
@@ -88,18 +104,20 @@ export const useAssumptionsStore = create<AssumptionsState>((set, get) => ({
       return
     }
 
+    const attempted = { ...pendingUpdates }
     set({ isSaving: true, error: null })
 
     try {
       await apiRequest(`/api/v1/properties/saved/${propertyId}/deal-maker`, {
         method: 'PATCH',
-        body: pendingUpdates,
+        body: attempted,
       })
 
       // On success, clear pending state. Snapshot invalidation is handled by caller.
       set({
         pendingUpdates: {},
         lastGoodState: {},
+        failedUpdates: {},
         isSaving: false,
         isDirty: false,
         error: null,
@@ -110,6 +128,7 @@ export const useAssumptionsStore = create<AssumptionsState>((set, get) => ({
       // Rollback to last known good state (optimistic update failure)
       set({
         pendingUpdates: { ...lastGoodState },
+        failedUpdates: attempted,
         isSaving: false,
         isDirty: true, // Allow user to retry
         error: message,
@@ -146,17 +165,24 @@ export const useAssumptionsStore = create<AssumptionsState>((set, get) => ({
   },
 
   retryLastSave: () => {
-    // Re-trigger a save using the current pendingUpdates
-    const { isSaving } = get()
-    if (!isSaving) {
-      get().saveToBackend()
-    }
+    const { isSaving, pendingUpdates, failedUpdates } = get()
+    if (isSaving) return
+
+    // Retry means "send the edit that failed", not "send whatever is pending" —
+    // rollback has already emptied the latter, so reading it alone would make
+    // the toast's Retry a no-op on the first edit to a property.
+    set({
+      pendingUpdates: { ...pendingUpdates, ...failedUpdates },
+      isDirty: true,
+    })
+    get().saveToBackend()
   },
 
   revertToLastGood: () => {
     const { lastGoodState } = get()
     set({
       pendingUpdates: { ...lastGoodState },
+      failedUpdates: {},
       isDirty: Object.keys(lastGoodState).length > 0,
       error: null,
     })
@@ -170,6 +196,8 @@ export const useAssumptionsStore = create<AssumptionsState>((set, get) => ({
     set({
       propertyId: null,
       pendingUpdates: {},
+      lastGoodState: {},
+      failedUpdates: {},
       isSaving: false,
       isDirty: false,
       error: null,

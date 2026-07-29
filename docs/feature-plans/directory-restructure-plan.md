@@ -103,10 +103,16 @@ BuyerDirectory.tsx ─────┘
 `make test-db-up`. Then:
 
 ```
-cd backend && uv run pytest -q            # 684 passing as of 2026-07-29
+make test-db-up && make test-backend      # 690 passing as of 2026-07-29
 cd backend && uv run ruff check app tests
 cd frontend && npm run typecheck && npm run test:run && npm run theme:check
 ```
+
+Run the backend suite through `make test-backend`, not a bare `pytest`. The
+target supplies `DATABASE_URL`; without it the DB-backed fixtures fall back to
+the psycopg2 driver, and 139 tests error with `ModuleNotFoundError: No module
+named 'psycopg2'` — a red herring, since psycopg2 is not a dependency and the
+real problem is the unset URL.
 
 To prove an API contract did not move, dump `app.openapi()` before and after and
 diff it — that is how Stage 4's "zero response-shape diffs" claim was verified.

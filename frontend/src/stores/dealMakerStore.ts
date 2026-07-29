@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { toast } from 'sonner'
 import { PriceTarget } from '@/lib/priceUtils'
 import { apiRequest } from '@/lib/api-client'
 
@@ -310,6 +311,16 @@ export interface DealMakerState {
   isDirty: boolean
   pendingUpdates: DealMakerUpdate
 
+  /**
+   * The last server-confirmed record. Edits update `record` optimistically, so
+   * this is what a failed save reverts to — otherwise the screen keeps showing
+   * numbers the backend never accepted, and Verdict/Strategy go on to
+   * recalculate from the stale server values without anything looking wrong.
+   */
+  lastGoodRecord: DealMakerRecord | null
+  /** Payload of the failed save, retained so Retry has something to resend. */
+  failedUpdates: DealMakerUpdate
+
   // Actions
   loadRecord: (propertyId: string) => Promise<void>
   updateField: <K extends keyof DealMakerUpdate>(field: K, value: DealMakerUpdate[K]) => void
@@ -317,6 +328,8 @@ export interface DealMakerState {
   saveToBackend: () => Promise<void>
   /** Flush debounced save and await completion (e.g. before navigating away). */
   flushAndSave: () => Promise<void>
+  /** Resend the payload of the save that failed. Backs the Retry toast action. */
+  retryLastSave: () => void
   debouncedSave: () => void
   reset: () => void
   setActivePriceTarget: (target: PriceTarget) => void
@@ -345,6 +358,8 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
   error: null,
   isDirty: false,
   pendingUpdates: {},
+  lastGoodRecord: null,
+  failedUpdates: {},
 
   loadRecord: async (propertyId: string) => {
     set({ isLoading: true, error: null })
@@ -357,6 +372,8 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
       set({
         propertyId,
         record: data.record,
+        lastGoodRecord: data.record,
+        failedUpdates: {},
         isLoading: false,
         isDirty: false,
         pendingUpdates: {},
@@ -427,12 +444,13 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
   },
 
   saveToBackend: async () => {
-    const { propertyId, pendingUpdates, isDirty } = get()
+    const { propertyId, pendingUpdates, isDirty, lastGoodRecord } = get()
 
     if (!propertyId || !isDirty || Object.keys(pendingUpdates).length === 0) {
       return
     }
 
+    const attempted = { ...pendingUpdates }
     set({ isSaving: true })
 
     try {
@@ -440,13 +458,15 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
         `/api/v1/properties/saved/${propertyId}/deal-maker`,
         {
           method: 'PATCH',
-          body: pendingUpdates,
+          body: attempted,
         },
       )
 
       // Update with server response (includes recalculated metrics)
       set({
         record: data.record,
+        lastGoodRecord: data.record,
+        failedUpdates: {},
         isSaving: false,
         isDirty: false,
         pendingUpdates: {},
@@ -454,12 +474,42 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
       })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to save Deal Maker record'
+
+      // Roll the optimistic edit back to the last server-confirmed record. Left
+      // in place, it would disagree with what Verdict and Strategy compute.
       set({
+        record: lastGoodRecord,
+        failedUpdates: attempted,
+        pendingUpdates: {},
+        isDirty: false,
         error: message,
         isSaving: false,
       })
-      console.error('Failed to save Deal Maker record:', error)
+
+      toast.error('Changes could not be saved. Reverted to last saved values.', {
+        action: {
+          label: 'Retry',
+          onClick: () => get().retryLastSave(),
+        },
+        duration: 6000,
+      })
+
+      console.error('Failed to save Deal Maker record (rolled back):', error)
     }
+  },
+
+  retryLastSave: () => {
+    const { isSaving, record, pendingUpdates, failedUpdates } = get()
+    if (isSaving || !record || Object.keys(failedUpdates).length === 0) return
+
+    // Reapply the failed edit optimistically so the user's work is not lost,
+    // then go through the normal save path.
+    set({
+      record: { ...record, ...failedUpdates },
+      pendingUpdates: { ...pendingUpdates, ...failedUpdates },
+      isDirty: true,
+    })
+    get().saveToBackend()
   },
 
   debouncedSave: () => {
@@ -486,6 +536,8 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
     set({
       propertyId: null,
       record: null,
+      lastGoodRecord: null,
+      failedUpdates: {},
       activePriceTarget: 'targetBuy' as PriceTarget,
       isLoading: false,
       isSaving: false,

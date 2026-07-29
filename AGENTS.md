@@ -33,19 +33,36 @@ This document is the single source of truth for frontend architecture, state own
 - **Validation**: `validatePropertyResponse()` + `finiteOrNull()` on all numeric fields
 - **Usage**: Every page that needs valuations, rent, or market data must use this hook.
 
-### Deal Maker / Worksheet State (Post-Phase 2)
-The original monolithic `dealMakerStore` has been decomposed:
+### Deal Maker / Worksheet State
+
+**`stores/dealMakerStore.ts` owns the live read/write path.** `DealMakerScreen`,
+`discovery/page.tsx` and `AnalysisIQScreen` all read and edit through it. Edits
+go through `updateField` / `updateMultipleFields`, which update `record`
+optimistically and schedule a debounced PATCH.
 
 | Hook / Store                  | Responsibility                              | Persistence          | Used By |
 |-------------------------------|---------------------------------------------|----------------------|---------|
-| `useDealSnapshot(propertyId)` | Immutable record loaded from backend        | React Query          | DealMaker, Worksheets |
-| `useAssumptions(propertyId)`  | User-editable overrides + optimistic updates| Zustand + debounced PATCH | DealMaker sliders, forms |
+| `useDealMakerStore()`         | Record load + user edits + debounced save   | Zustand + debounced PATCH | DealMaker, Discovery, AnalysisIQ |
+| `useDealSnapshot(propertyId)` | Immutable record loaded from backend        | React Query          | Worksheets |
 | `useCalculatedMetrics(...)`   | Derived financial metrics                   | React Query          | Metric cards, graphs |
 
-**Optimistic Update Contract (useAssumptions)**
-- Every `updateField` / `updateMultipleFields` captures `lastGoodState`.
-- On save failure → automatic rollback + Sonner toast with "Retry" action.
-- `retryLastSave()` and `revertToLastGood()` are exposed for recovery UI.
+The Phase 2 decomposition was only partly carried out: `hooks/useAssumptions.ts`
+exists and is tested but **has no production consumers**, and
+`features/deal-maker/hooks/` (referenced by `features/README.md`) was never
+created. Treat `dealMakerStore` as the store to change until one of those is
+finished — and do not add a second writer for the same record.
+
+**Optimistic Update Contract (`dealMakerStore`)**
+- `record` is updated optimistically; `lastGoodRecord` holds the last
+  server-confirmed record.
+- On save failure → `record` reverts to `lastGoodRecord`, pending updates are
+  dropped, and a Sonner toast fires with a "Retry" action.
+- `retryLastSave()` resends `failedUpdates`, so a rollback never costs the user
+  the edit.
+- The invariant under test: after a failed save, what the screen renders equals
+  what Verdict and Strategy would compute from the server record. A divergence
+  there is a wrong number shown confidently.
+- Covered by `src/__tests__/stores/dealMakerStore.test.ts`.
 
 ### Session / Auth
 - `useSession()` — React Query + localStorage indicator; session ends on logout/revocation.
@@ -126,14 +143,17 @@ These components live in `components/ui/PropertyStates.tsx` and respect `--surfa
 
 ## 8. Testing & Coverage Targets (Phase 5+)
 
-Current baseline (as of May 2026):
-- 153 tests passing
+Current baseline (as of July 2026):
+- 263 tests passing (`npm run test:run`)
 - Strong coverage on `lib/*`, `utils/*`, services
-- New hooks (`useAssumptions`, `useDealSnapshot`, `usePropertyData`) need dedicated tests to reach ≥80% on financial paths.
+- Optimistic rollback is covered for both `dealMakerStore` (the live path) and
+  `hooks/useAssumptions`.
+- `useDealSnapshot` and `usePropertyData` still need dedicated tests to reach
+  ≥80% on financial paths.
 
 **Required before Phase 5 sign-off**
-- Add unit tests for optimistic rollback behavior
-- Add integration test for `usePropertyData` + `useAssumptions` interaction
+- Add tests for `useDealSnapshot` and `usePropertyData`
+- Add integration test for `usePropertyData` + `dealMakerStore` interaction
 
 ---
 
@@ -165,7 +185,12 @@ Before every production deployment:
 | Build                             | `npm run build`                      |
 | Capacitor iOS dev                 | `npm run cap:dev`                    |
 | Capacitor Android dev             | `npm run cap:dev:android`            |
-| Backend tests (Python 3.11 + Postgres) | `make test-db-up` then `cd backend && uv run pytest -q` |
+| Backend tests (Python 3.11 + Postgres) | `make test-db-up` then `make test-backend` |
+
+Use `make test-backend` rather than a bare `pytest`: the target supplies
+`DATABASE_URL`, and without it 139 DB-backed tests error with a misleading
+`ModuleNotFoundError: No module named 'psycopg2'` (psycopg2 is not a dependency —
+the unset URL is what selects that driver).
 
 ---
 
