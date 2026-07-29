@@ -40,6 +40,19 @@ logger = logging.getLogger("seed_lenders")
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "app" / "data" / "lenders.json"
 
+# Ratio fields are stored as fractions (0.925 means 92.5%), so anything above 1.0
+# is a unit error in the source — typically a dollar amount landing in a ratio
+# column. Mapped to the `display` key that renders it, because `display` is a
+# pre-formatted presentation cache: leaving a rejected value's string in place
+# would still put "50000000%" on the lender card. Points are counts, not ratios
+# (they run up to 10.0), and are deliberately absent.
+RATIO_FIELDS = {
+    "max_ltv": "max_ltv",
+    "max_arv": "max_arv",
+    "min_interest_rate": "interest_rate",
+    "max_interest_rate": "interest_rate",
+}
+
 # Columns copied straight across from the dataset. `id` and `domain` are handled
 # separately because they carry identity semantics, and `states_served_count` is
 # dropped — it is cardinality(states_served) and storing it invites drift.
@@ -101,8 +114,45 @@ def load_lenders() -> list[dict[str, Any]]:
     return lenders
 
 
+def reject_impossible_ratios(values: dict[str, Any]) -> list[str]:
+    """Null out ratio values outside [0, 1] and drop the strings that render them.
+
+    Never repaired or rescaled — 500000.0 could equally mean 0.5, 0.75, or a max
+    loan amount in the wrong column, and guessing would put a fabricated term on
+    a financial card. The field becomes null and the UI omits it. Returns the
+    rejected fields so the caller can report them.
+    """
+    rejected = []
+    for field, display_key in RATIO_FIELDS.items():
+        value = values.get(field)
+        if value is None:
+            continue
+        # 0.0 is kept: subsidised programs really do publish 0% rates, and a
+        # zero is not the unit error this guards against. A non-number cannot be
+        # a ratio either, and rejecting it here beats a TypeError that would fail
+        # the whole pre-deploy seed.
+        if not isinstance(value, (int, float)) or isinstance(value, bool) or not 0 <= value <= 1:
+            values[field] = None
+            display = values.get("display")
+            if isinstance(display, dict):
+                display.pop(display_key, None)
+            rejected.append(f"{field}={value!r}")
+    return rejected
+
+
 def row_values(row: dict[str, Any]) -> dict[str, Any]:
-    return {field: row.get(field) for field in FIELDS}
+    values: dict[str, Any] = {field: row.get(field) for field in FIELDS}
+    # Copy `display` before editing — the value is still the parsed dataset's dict.
+    if isinstance(values.get("display"), dict):
+        values["display"] = dict(values["display"])
+    rejected = reject_impossible_ratios(values)
+    if rejected:
+        logger.warning(
+            "%s: rejected out-of-range ratio(s) %s — stored as null",
+            row.get("domain", "unknown"),
+            ", ".join(rejected),
+        )
+    return values
 
 
 async def seed(dry_run: bool) -> None:

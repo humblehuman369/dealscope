@@ -15,12 +15,30 @@ frontend primitives).
 pipeline: `directory_pipeline` on the backend, and `useDirectoryList` plus the
 `components/directory/` primitives on the frontend.
 
-Still outstanding but **not blocking and not part of any stage**: regenerating the
-lender dataset (Stage 2 unblocked it; two known data-quality bugs in §Stage 2 were
-deliberately left for it), lender county filtering (waiting on `counties_served`
-in that regenerated dataset), the 746-string tail in
-`docs/geo/coverage-unmatched.csv`, and the one open product question from Stage 5
-(buyers require a Search click while lenders filter live).
+Still outstanding but **not blocking and not part of any stage**:
+
+- **Regenerating the lender dataset.** Stage 2 unblocked it; the field-by-field
+  target is `docs/lenders/lender-data-spec.csv`. That spec is stale on three rows
+  — it lists `is_active`, `created_at` and `updated_at` as new and 0% populated,
+  but all three shipped with Stage 2 and are on the `Lender` model. Correct it
+  before planning against it.
+- **Lender county filtering**, waiting on `counties_served` from that dataset.
+  This is the only dimension where buyers are more precise than lenders.
+- **The 746-string tail in `docs/geo/coverage-unmatched.csv`** — 931 occurrences.
+  Measured 2026-07-29, and it is not cheap: 386 occurrences (274 strings) fail
+  only because the buyer record has no state, and those 121 buyers have **no
+  city and no ZIP either**, so nothing is derivable from `zip_crosswalk.json` or
+  anywhere else. Recovering them means re-scraping addresses, not better
+  matching. The remaining 531 need per-string curation ("Hampton Roads" has no
+  legal geography; "DeSoto" on a Tennessee buyer is in Mississippi).
+- **One open product question from Stage 5**: buyers require a Search click while
+  lenders filter live.
+- **Frontend financial-hook tests.** `AGENTS.md` §8 lists these as required
+  before Phase 5 sign-off; no test file references `useAssumptions`,
+  `useDealSnapshot` or `usePropertyData`. Unrelated to this plan, but it is the
+  largest untested surface adjacent to it.
+- **The Stage 0 pre-flight query** is still worth running once against production
+  to confirm no saved lender contact references an id outside 1–484.
 
 ### The shape it landed in
 
@@ -340,10 +358,39 @@ The live aggregate now coalesces, so the response shape is unchanged.
 Two pre-existing data-quality bugs surfaced and were **left as-is** rather than
 silently corrected, since the dataset is regenerated offline:
 
-| Lender | Field | Value | Problem |
-|---|---|---|---|
-| `oakwoodlending.com` (id 446) | `max_arv` | `500000.0` | dollar amount in a ratio field (others are 0.5–0.95) |
-| one record | `year_founded` | `25` | not a plausible year |
+| Lender | Field | Value | Problem | Status |
+|---|---|---|---|---|
+| `oakwoodlending.com` (id 446) | `max_arv` | `500000.0` | dollar amount in a ratio field (others are 0.5–0.95) | **Contained 2026-07-29** — see below |
+| `rentalhomefinancing.com` (id 216) | `year_founded` | `25` | not a plausible year | Open. Nothing renders `year_founded`, so it is invisible; leave for the regeneration |
+
+#### The `max_arv` unit error was reaching the card (fixed 2026-07-29)
+
+Deferring it to the regeneration was the wrong call: `display` is a
+pre-formatted presentation cache, so the bad value shipped as the string
+`"50000000%"` and every paid user viewing `oakwoodlending.com` saw
+**Max ARV 50000000%** on a financial card.
+
+`seed_lenders.row_values()` now rejects `max_ltv`, `max_arv`,
+`min_interest_rate` and `max_interest_rate` outside `[0, 1]`, nulling the column
+*and* dropping the matching `display` key, with a warning naming the domain and
+field. Never rescaled — `500000.0` could equally mean `0.5`, `0.75` or a loan
+amount in the wrong column, so the card omits the stat rather than assert a
+guess. `min_points` / `max_points` are counts (up to `10.0`) and are excluded.
+
+Two decisions worth keeping:
+
+- **`0.0` is valid.** An exclusive lower bound also rejected
+  `investinvermont.org` and `emetropolitan.com`, which publish genuine 0% rates
+  — a subsidised state programme, not a unit error. Deleting a true term is the
+  same failure as inventing one. Pinned by a test.
+- **The guard lives in `row_values()`**, which `tests/conftest.py` already
+  imports to build lender fixtures, so the API tests exercise the same path as
+  the seed. Because `seed_lenders` runs in `railway.toml :: preDeployCommand`,
+  production self-heals on the next deploy with no migration or backfill.
+
+Across the shipped 484 records the rule fires on exactly one field, asserted in
+`tests/test_lender_seed_ratios.py` so a regenerated dataset that introduces more
+fails loudly instead of quietly nulling terms.
 
 Also added beyond the plan: `_lender_exists()` is wired into `save_contact`, closing
 the asymmetry where only buyers were validated. And `LIKE` metacharacters (`%`, `_`)
