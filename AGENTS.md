@@ -96,12 +96,23 @@ market table — a market average is only a guess at what they want.
   drives the "customised by you" indicators, so deep-copy before merging.
 - Covered by `backend/tests/test_assumption_resolution_chain.py`.
 
-**Known gap:** `PropertyService._estimate_insurance` still reads
-`OPERATING.insurance_pct` from `defaults.py`, so admin edits to `insurance_pct`
-do not move `market.insurance_annual`. `search_property` takes no DB session and
-its response is Redis-cached for 24h keyed by address only — making it per-user
-would fragment a shared cache. The calculators recompute insurance from the
-resolved `insurance_pct`, so analysis is unaffected.
+**Insurance is admin-driven but not per-user.** `market.insurance_annual` is
+`property_value × insurance_pct`, where the percentage comes from the admin
+dashboard via `PropertyService._resolve_insurance_pct()`. Two constraints to
+respect if you touch it:
+
+- **Never pass the percentage in from a caller.** The derived figure is written
+  into the address-keyed property cache that every caller shares, so one caller
+  omitting it would poison the value for all of them. PropertyService resolves it
+  itself, with its own short-lived session.
+- **It cannot be per-user** while the property response is cached by address
+  alone. `insurance_pct` is deliberately not in the user-editable set.
+
+The figure is recomputed on every cache read rather than trusted from the cache,
+so an admin change applies immediately instead of after the 24h TTL. That is also
+why a null `insurance_annual` is *not* a cache-staleness trigger any more — a
+re-fetch cannot supply what the recompute already can, and for a property with no
+value it would invalidate on every request forever.
 
 ### Session / Auth
 - `useSession()` — React Query + localStorage indicator; session ends on logout/revocation.

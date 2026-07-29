@@ -64,7 +64,6 @@ def _should_invalidate_cache(
     missing_iq_fields = has_source_value and (
         valuations.get("value_iq_estimate") is None and not rental_stats_cached
     )
-    missing_insurance = market_cached.get("insurance_annual") is None
 
     ptype = str(details_cached.get("property_type") or "").lower()
     hoa_likely = any(tok in ptype for tok in ("condo", "town", "co-op", "coop", "multi", "apartment"))
@@ -131,7 +130,11 @@ def _should_invalidate_cache(
             and valuations.get("market_price") in (None, 1)
         )
         or missing_iq_fields
-        or missing_insurance
+        # A null insurance_annual is deliberately NOT a staleness signal:
+        # PropertyService recomputes it from the cached property value on every
+        # read, so a re-fetch cannot supply anything the recompute does not. When
+        # the property genuinely has no value to derive from, re-fetching would
+        # return null again and invalidate on the next request forever.
         or missing_hoa
         or zillow_stale
         or redfin_stale
@@ -154,8 +157,6 @@ def _should_invalidate_cache(
         if legacy_valuation_formula
         else "degraded listing (zpid present, status+zestimate missing)"
         if degraded_listing
-        else "insurance_annual missing"
-        if missing_insurance
         else "hoa_fees_monthly missing on HOA-likely property"
         if missing_hoa
         else "IQ estimate data missing"

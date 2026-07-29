@@ -15,8 +15,10 @@ from datetime import UTC, datetime
 from typing import Any
 
 from app.core.config import settings
+from app.core.defaults import OPERATING
 from app.core.formulas import compute_market_price
 from app.data.motivated_seller_keywords import match_motivated_seller_keywords
+from app.db.session import get_session_factory
 from app.schemas.analytics import IQVerdictInput
 from app.schemas.property import (
     Address,
@@ -50,6 +52,7 @@ from app.schemas.property import (
     ZestimateHistoryPoint,
 )
 from app.services.api_clients import AirROIClient, create_api_clients
+from app.services.assumptions_service import get_default_assumptions
 from app.services.cache_service import CacheService, get_cache_service
 from app.services.calculators import (
     calculate_brrrr,
@@ -73,6 +76,22 @@ from app.services.property.cache import (
     _should_invalidate_cache,
     _strip_property_cache_meta,
 )
+
+
+def _coalesce_pct(insurance_pct: float | None) -> float:
+    """The supplied percentage, or the schema constant when none was resolved."""
+    return OPERATING.insurance_pct if insurance_pct is None else insurance_pct
+
+
+def _insurance_from_value(property_value: float | None, insurance_pct: float) -> float | None:
+    """Annual insurance as ``property_value × insurance_pct``.
+
+    Returns ``None`` when there is no value to derive from — the UI shows
+    "Unavailable" rather than a fabricated dollar amount.
+    """
+    if not property_value:
+        return None
+    return round(float(property_value) * insurance_pct, 2)
 
 # AirROI /calculator/estimate responses are market projections, not live
 # listing data — a 7-day dedupe cache (keyed on coords + bedroom config)
@@ -170,6 +189,9 @@ class PropertyService:
         cached = await self._cache.get(f"prop_id:{property_id}")
         if cached:
             try:
+                # Same recompute as the search cache-hit path: exports must not
+                # quote an insurance figure the admin percentage has moved past.
+                cached = self._apply_insurance_to_cached(cached, await self._resolve_insurance_pct())
                 return PropertyResponse(**_strip_property_cache_meta(cached))
             except Exception as e:
                 logger.warning("Failed to deserialize cached property %s: %s", property_id, e)
@@ -572,6 +594,8 @@ class PropertyService:
         timings: dict[str, float] = {}
         property_id = self._generate_property_id(address)
         timestamp = datetime.now(UTC)
+        # Resolved once for both the cache-hit and fresh-build paths below.
+        insurance_pct = await self._resolve_insurance_pct()
         rentcast_data: dict[str, Any] = {}
         axesso_data: dict[str, Any] | None = None
         axesso_export_for_return: dict[str, Any] | None = None
@@ -614,7 +638,6 @@ class PropertyService:
                     valuations.get("value_iq_estimate") is None and not rental_stats_cached
                 )
                 market_cached = cached_data.get("market") or {}
-                missing_insurance = market_cached.get("insurance_annual") is None
                 legacy_valuation_formula = (
                     cached_data.get("valuation_formula_version") != _PROPERTY_CACHE_FORMULA_VERSION
                 )
@@ -641,6 +664,7 @@ class PropertyService:
                     logger.info(f"Cache hit for property: {address}")
                     try:
                         cached_data = self._apply_market_price_to_cached(cached_data)
+                        cached_data = self._apply_insurance_to_cached(cached_data, insurance_pct)
                         timings["total_ms"] = (time.perf_counter() - t0) * 1000
                         logger.info("search_property timings (cache hit): %s", timings)
                         return PropertyResponse(**_strip_property_cache_meta(cached_data))
@@ -876,7 +900,7 @@ class PropertyService:
             ),
             market=MarketData(
                 property_taxes_annual=normalized.get("property_taxes_annual") or self._estimate_taxes(normalized),
-                insurance_annual=self._estimate_insurance(normalized),
+                insurance_annual=self._estimate_insurance(normalized, insurance_pct),
                 hoa_fees_monthly=normalized.get("hoa_fees_monthly", 0),
                 # Mortgage rates for frontend
                 mortgage_rate_arm5=normalized.get("mortgage_rate_arm5"),
@@ -1539,23 +1563,63 @@ class PropertyService:
         )
         return self._taxes_from_value(property_value, data.get("zip_code"))
 
-    def _estimate_insurance(self, data: dict) -> float | None:
-        """Estimate annual insurance as property_value × default insurance_pct.
+    async def _resolve_insurance_pct(self) -> float:
+        """The admin dashboard's ``operating.insurance_pct``.
 
-        Uses :data:`app.core.defaults.OPERATING.insurance_pct` (1% by default).
+        Resolved here rather than passed in by callers: the value lands in the
+        address-keyed property cache that every caller shares, so a single
+        caller that forgot to supply it would poison the cached figure for all
+        the others. Opens its own short-lived session (the same pattern as
+        ``storage_service``); ``get_default_assumptions`` reads Redis first, so
+        a warm cache costs no query.
+
+        Falls back to the schema constant if the lookup fails — a degraded DB
+        should not strip insurance out of every property response.
+        """
+        try:
+            async with get_session_factory()() as session:
+                assumptions = await get_default_assumptions(session)
+            return assumptions.operating.insurance_pct
+        except Exception as e:
+            logger.warning("Failed to resolve admin insurance_pct, using schema default: %s", e)
+            return OPERATING.insurance_pct
+
+    def _estimate_insurance(self, data: dict, insurance_pct: float | None = None) -> float | None:
+        """Estimate annual insurance as property_value × insurance_pct.
+
+        ``insurance_pct`` should come from :meth:`_resolve_insurance_pct` so the
+        admin's configured value applies; it defaults to the schema constant.
         Returns ``None`` when no property value is available (no fabrication).
         """
-        from app.core.defaults import OPERATING
-
         market_price = (
             data.get("value_iq_estimate")
             or data.get("zestimate")
             or data.get("current_value_avm")
             or data.get("list_price")
         )
-        if not market_price:
-            return None
-        return round(float(market_price) * OPERATING.insurance_pct, 2)
+        return _insurance_from_value(market_price, _coalesce_pct(insurance_pct))
+
+    def _apply_insurance_to_cached(
+        self, cached_data: dict[str, Any], insurance_pct: float | None
+    ) -> dict[str, Any]:
+        """Recompute ``market.insurance_annual`` on a cached response.
+
+        The figure is a pure function of property value × percentage, so it is
+        recomputed on the way out instead of being trusted from the cache. That
+        way an admin changing the percentage takes effect immediately rather
+        than after the 24h property TTL expires.
+        """
+        market = (cached_data.get("market") or {}).copy()
+        valuations = cached_data.get("valuations") or {}
+        listing = cached_data.get("listing") or {}
+        property_value = (
+            valuations.get("value_iq_estimate")
+            or valuations.get("zestimate")
+            or valuations.get("current_value_avm")
+            or listing.get("list_price")
+        )
+        market["insurance_annual"] = _insurance_from_value(property_value, _coalesce_pct(insurance_pct))
+        return {**cached_data, "market": market}
 
     async def _resolve_zpid_from_address(self, address: str) -> str | None:
         """Resolve a Zillow zpid from a full address."""

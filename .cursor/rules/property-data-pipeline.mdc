@@ -84,12 +84,18 @@ const data = await fetchProperty(address)  // cached via React Query
 `PropertyService.search_property()` invalidates Redis cache when:
 1. Off-market property missing zestimate and market_price
 2. **Source data exists but IQ estimate fields are missing** (pre-IQ-Estimate cached data)
-3. **`market.insurance_annual` is missing** (stale or pre-standardization cache)
+
+A missing `market.insurance_annual` is **not** a staleness signal. It is recomputed
+from the cached property value on every read (`_apply_insurance_to_cached`), so a
+provider re-fetch cannot supply anything the recompute does not — and for a
+property with no value at all it would invalidate on every request forever.
 
 ## Property insurance (annual)
 
-- **Single formula:** `insurance_annual = property_value × OPERATING.insurance_pct` (default **1%** in `app.core.defaults.OPERATING`). `property_value` uses the first available: `value_iq_estimate` → `zestimate` → `current_value_avm` → `list_price` in `PropertyService._estimate_insurance()`.
-- **No** third-party insurance APIs, county/ACS tables, or per-ZIP `insurance_rate` in `MARKET_ADJUSTMENTS`. User-editable **insurance** is the global `operating.insurance_pct` in admin/defaults (not regional overrides).
+- **Single formula:** `insurance_annual = property_value × insurance_pct`. `property_value` uses the first available: `value_iq_estimate` → `zestimate` → `current_value_avm` → `list_price` in `PropertyService._estimate_insurance()`.
+- **The percentage is the admin dashboard's `operating.insurance_pct`**, resolved by `PropertyService._resolve_insurance_pct()` (falling back to the `app.core.defaults.OPERATING` constant of **1%** only if that lookup fails). It is resolved *inside* PropertyService, never passed in by callers: the derived figure lands in the address-keyed property cache that every caller shares, so one caller omitting it would poison the value for all of them.
+- It is **not per-user.** `insurance_pct` is deliberately absent from the user-editable set in `DefaultsEditor`, and the property response is cached by address across all users. Per-user insurance would require a per-user cache key.
+- **No** third-party insurance APIs, county/ACS tables, or per-ZIP `insurance_rate` in `MARKET_ADJUSTMENTS`.
 - When no property value exists, **`insurance_annual` is `null`** — UI shows **Unavailable**; do not fabricate a dollar amount.
 - **Frontend:** canonical field is `PropertyResponse.market.insurance_annual`. Helpers live in `frontend/src/lib/insurance.ts` (`getAnnualInsurance`, `OPERATING_INSURANCE_PCT` for numeric worksheet placeholders only).
 
