@@ -194,9 +194,14 @@ describe('BuyerDirectory paid access', () => {
     expect(mockApiGet).toHaveBeenCalledWith(
       expect.stringContaining('/api/buyers?'),
     )
-    expect(mockApiGet).toHaveBeenCalledWith(
-      expect.stringMatching(/city=Tampa/),
-    )
+
+    // The first view is nationwide: no location filter is sent until the user
+    // actually searches.
+    const listPath = mockApiGet.mock.calls
+      .map(([path]) => String(path))
+      .find((path) => path.startsWith('/api/buyers?'))
+    expect(listPath).toBeDefined()
+    expect(listPath).not.toMatch(/[?&](city|state|county|zip)=/)
   })
 
   it('supports county searches via API query params', async () => {

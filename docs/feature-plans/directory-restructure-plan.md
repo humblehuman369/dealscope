@@ -1,6 +1,6 @@
 # Directory Restructure Plan — Lenders + Cash Buyers
 
-**Status:** proposed, nothing implemented
+**Status:** proposed. Only the buyer `Tampa, FL` default removal (Stage 5) is implemented.
 **Author:** architecture review, 2026-07-29
 **Scope:** `/api/lenders`, `/api/buyers`, and the two frontend directories
 
@@ -79,19 +79,45 @@ def _coverage_ilike(pattern: str):
 `coverage[]` is free text, the pattern is `%name%`, and a leading wildcard makes the
 GIN index useless. `geo_counties` (3,230 rows, FIPS-keyed) now makes a real fix possible.
 
-### 2.4 Pooled usage caps — a product decision, not a defect
+### 2.4 Both directories are paid-only, and the code does not enforce it
 
-`directory_usage_counters` keys on `(user, kind, period)` with no directory dimension,
-so a trial user's 25 daily record opens and 1,000 monthly export records are shared
-across both directories. I called this a bug in review; the service docstring shows it
-was deliberate:
+**Product policy (confirmed 2026-07-29): neither directory is part of the free trial.
+Access requires a paid subscription.**
 
-> Limits (plan defaults, confirmed in the task brief):
-> - Trial record-detail opens: 25 per user per UTC day.
+The code implements an older spec. `require_view_access` admits `TRIAL` alongside
+`PAID`, and only `FREE` gets a 403:
 
-So this is a decision to confirm, not a defect to fix. It still deserves a decision,
-because users experience one directory eating the other's budget. Stage 1 is written
-as reversible either way.
+```python
+# app/services/directory_gates.py:37
+"""Trial and paid may view; free gets 403 with the upgrade teaser."""
+entitlement, _ = await resolve_entitlement_with_subscription(db, user.id)
+if entitlement == Entitlement.FREE:
+    raise HTTPException(status_code=403, …)
+return entitlement
+```
+
+`Entitlement.TRIAL` is reachable: `billing_service.py:695` and `:791` set
+`trial_period_days = 7`, and a trialing subscription without a settled charge resolves
+to `TRIAL` (`entitlements.py:93`).
+
+So a trial user currently gets full search and filtering of both directories plus 25
+contact reveals per day — up to 175 full lender/buyer contacts across a 7-day trial,
+pooled across the two directories. Exports and saved contacts are correctly blocked to
+paid, so the leak is confined to viewing and revealing.
+
+Correcting this **removes** work rather than adding it:
+
+| Becomes dead once directories are paid-only | Location |
+|---|---|
+| `enforce_detail_view_cap` (trial-only by definition) | `directory_gates.py:51` |
+| `KIND_DETAIL_VIEW` counters and the 25/day limit | `directory_usage.py:26,30` |
+| `_redact_lender` / `_redact_buyer` and `contactsRedacted` | `routers/lenders.py:51`, `routers/buyers.py:50` |
+| The per-record "View contact info" reveal flow | both frontend components |
+| The `contactsRedacted` field on both list responses | `schemas/lenders.py:62`, `schemas/buyers.py` |
+
+The pooled-cap question raised in review therefore disappears: with no trial access
+there is no view cap to dimension. Export metering (200/export, 1,000/cycle) is
+unaffected because it was always paid-only.
 
 ---
 
@@ -138,23 +164,36 @@ Run via the documented pattern in `backend/scripts/diag_prod_schema.sh`:
 
 ---
 
-### Stage 1 — Decide and implement the usage-cap dimension
+### Stage 1 — Enforce paid-only access (closes a revenue leak)
 
-**Goal:** make the shared-vs-per-directory cap explicit rather than incidental.
-
-If per-directory is chosen, `kind` already carries the dimension — no schema change
-needed, just new kind values (`detail_view:lender`, `detail_view:buyer`) plus a
-migration to rewrite existing rows, or accept a one-day reset.
+**Goal:** make the code match the policy in §2.4. Highest priority — it is live revenue
+leakage, independent of every other stage, and it deletes code rather than adding it.
 
 | File | Change |
 |---|---|
-| `app/services/directory_usage.py` | `record_detail_view(db, user_id, directory)`; derive `kind` |
-| `app/services/directory_gates.py` | thread `directory` through `enforce_detail_view_cap` |
-| `app/routers/lenders.py`, `app/routers/buyers.py` | pass their directory |
-| `backend/tests/test_directory_usage.py` | cap isolation between directories |
+| `app/services/directory_gates.py` | `require_view_access`: 403 unless `PAID`. Trial gets `EXPORTS_PAID_ONLY`-style copy ("unlocks with your first payment") rather than the generic upgrade teaser — a trialing user already chose a plan and needs different words than a free user |
+| `app/services/directory_gates.py` | delete `enforce_detail_view_cap` |
+| `app/services/directory_usage.py` | delete `record_detail_view`, `KIND_DETAIL_VIEW`, `DAILY_DETAIL_VIEW_LIMIT`, `VIEW_LIMIT_MESSAGE`, `daily_period_key` |
+| `app/routers/lenders.py`, `app/routers/buyers.py` | drop the detail-view cap call, the redact helpers, and `contactsRedacted` |
+| `app/schemas/lenders.py`, `app/schemas/buyers.py` | drop `contactsRedacted` |
+| `HardMoneyDirectory.tsx`, `BuyerDirectory.tsx` | gate on `isPaidPro` only; delete the reveal flow, `revealedContacts`, `viewLimitNotice`, `revealingId` |
+| `src/lib/lenders-api.ts`, `src/lib/buyers-api.ts` | drop `contactsRedacted` |
+| `backend/tests/test_lenders_api.py`, `test_buyers_api.py` | trial must now 403 on list, detail, and export |
+| `frontend/.../BuyerDirectory.test.tsx` | replace the trial-reveal and view-limit tests with a trial-is-blocked test |
 
-**Verify:** opening 25 lender details leaves the buyer cap untouched; existing
-export-metering tests still pass.
+Leave `directory_usage_counters` in place — the table still meters exports. Only the
+`detail_view` rows become vestigial; they age out by period key on their own.
+
+**Decide before implementing:** does a trialing user see the gate with upgrade copy, or
+should `/lenders` and `/directory` be hidden from navigation during a trial? The first
+is honest and can convert; the second avoids advertising something they can't use.
+
+**Verify:**
+- A trialing user receives 403 on `GET /api/lenders`, `/api/buyers`, both detail
+  endpoints, and both export endpoints.
+- A paid user's responses no longer contain `contactsRedacted` and contacts are never
+  blanked.
+- No remaining references to `KIND_DETAIL_VIEW` or `contactsRedacted` anywhere.
 
 ---
 
@@ -328,14 +367,14 @@ Only now is the code on both sides genuinely the same.
 
 | File | Change |
 |---|---|
-| `app/services/directory_pipeline.py` | **new** — shared list/export/meter flow: `require_view_access` → page → redact → `contactsRedacted`; and the ~70-line export block currently duplicated in both routers |
+| `app/services/directory_pipeline.py` | **new** — shared list/export/meter flow: `require_view_access` → page → respond; and the ~70-line export block currently duplicated in both routers |
 | `app/schemas/directory.py` | **new** — generic `DirectoryListResponse[T]`; `LenderListResponse`/`BuyerListResponse` become aliases so the wire format is unchanged |
 | `app/routers/lenders.py`, `app/routers/buyers.py` | shrink to filter parsing + a pipeline call |
 | `app/services/buyer_directory_service.py` | **delete**; move `row_to_buyer_record` to `buyers_service.py`. It is dead except that one helper and carries a stale 2,812-row JSON fallback |
 | `MAX_PAGE_SIZE` | single definition (currently in `lenders_service.py` **and** `routers/buyers.py:47`) |
 
-Also reconcile redaction: lenders blank to `None`, buyers to `""`. Pick one — `None`
-with `exclude_none=False` — so the frontend stops handling both.
+The redaction inconsistency noted in review (lenders blank to `None`, buyers to `""`)
+needs no reconciliation here — Stage 1 deletes both paths.
 
 **Verify:** both directories' API tests pass with zero response-shape diffs.
 
@@ -348,7 +387,7 @@ Two components, ~950 and ~1,000 lines, roughly 70% parallel.
 | File | Change |
 |---|---|
 | `src/hooks/useDirectoryList.ts` | **new** — the shared `useInfiniteQuery` + access-flag block (duplicated at `HardMoneyDirectory.tsx:217` and `BuyerDirectory.tsx:342`) |
-| `src/hooks/useRevealContact.ts` | **new** — the reveal + 429 handling, currently character-identical in both files (`HardMoneyDirectory.tsx:241`, `BuyerDirectory.tsx:363`) |
+| ~~`src/hooks/useRevealContact.ts`~~ | not needed — Stage 1 deletes the reveal flow from both components |
 | `src/components/directory/DirectoryField.tsx` | **new** — replaces the two local `Field` components (lender's has a `hint` prop, buyer's does not) |
 | `src/components/directory/DirectoryGate.tsx` | **new** — shared gate shell; bullets stay per-directory |
 | `src/lib/buyers-api.ts` | export a real `Buyer` type; today it declares `buyers: unknown[]` while the component keeps a private interface |
@@ -356,7 +395,10 @@ Two components, ~950 and ~1,000 lines, roughly 70% parallel.
 
 UX divergences to settle, not silently preserve:
 
-- Buyers default to `Tampa, FL` and require a **Search** click; lenders filter live.
+- **Done (2026-07-29):** the buyer `Tampa, FL` default is removed; the first view is
+  nationwide, matching lenders' empty-filter behaviour. An "All states" option was
+  added to the state select so nationwide is selectable again after a search.
+- Buyers still require a **Search** click while lenders filter live. Open question.
 - Buyers show skeleton cards while loading; lenders show a text line.
 - Grid min-width 300px vs 320px; subtitle max-width 640px vs 720px.
 
@@ -375,8 +417,10 @@ Stage 2 (lenders → Postgres)  MUST precede  the lender dataset regeneration
 Regenerating first means migrating ids twice and reconciling saved contacts against a
 file whose ids have already moved.
 
-Stage 1 is independent. Stage 3 depends on Stage 2 only for lender rows; the buyer
-half can proceed immediately. Stages 4 and 5 depend on Stage 2.
+Stage 1 is independent of everything and should go first: it is live revenue leakage,
+and every later stage gets smaller once the trial-viewing paths are deleted. Stage 3
+depends on Stage 2 only for lender rows; the buyer half can proceed immediately.
+Stages 4 and 5 depend on Stage 2.
 
 ---
 

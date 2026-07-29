@@ -278,14 +278,15 @@ export default function BuyerDirectory() {
   }, [isAuthenticated]);
 
   const [searchMode, setSearchMode] = useState<SearchMode>('city');
-  const [city, setCity] = useState('Tampa');
-  const [stateCode, setStateCode] = useState('FL');
+  const [city, setCity] = useState('');
+  const [stateCode, setStateCode] = useState('');
   const [county, setCounty] = useState('');
   const [zip, setZip] = useState('');
+  // No location default: the first view is nationwide, ranked by deal volume.
   const [appliedSearch, setAppliedSearch] = useState({
     mode: 'city' as SearchMode,
-    city: 'Tampa',
-    stateCode: 'FL',
+    city: '',
+    stateCode: '',
     county: '',
     zip: '',
   });
@@ -476,6 +477,7 @@ export default function BuyerDirectory() {
                   <Field label="State">
                     <select className="dgiq-select" style={styles.select}
                       value={stateCode} onChange={e => setStateCode(e.target.value)}>
+                      <option value="">All states</option>
                       {stateOptions.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </Field>
