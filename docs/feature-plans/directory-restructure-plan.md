@@ -1,8 +1,9 @@
 # Directory Restructure Plan — Lenders + Cash Buyers
 
-**Status:** Stage 1 (paid-only enforcement), Stage 2 (lenders → Postgres) and
-Stage 3 (`directory_service_area`, `geo_cities`, buyer coverage matching) are
-**implemented**. Stage 4 and the rest of Stage 5 remain proposed.
+**Status:** Stage 1 (paid-only enforcement), Stage 2 (lenders → Postgres),
+Stage 3 (`directory_service_area`, `geo_cities`, buyer coverage matching) and
+Stage 4 (shared backend pipeline) are **implemented**. Stage 5 remains proposed
+apart from the buyer default-location fix, which shipped with Stage 1.
 **Author:** architecture review, 2026-07-29
 **Scope:** `/api/lenders`, `/api/buyers`, and the two frontend directories
 
@@ -521,22 +522,59 @@ location = resolve_zip(zip_code)          # existing app/services/zip_geo.py
 
 ---
 
-### Stage 4 — Consolidate the backend pipeline
+### Stage 4 — Consolidate the backend pipeline — DONE 2026-07-29
 
 Only now is the code on both sides genuinely the same.
 
 | File | Change |
 |---|---|
-| `app/services/directory_pipeline.py` | **new** — shared list/export/meter flow: `require_view_access` → page → respond; and the ~70-line export block currently duplicated in both routers |
-| `app/schemas/directory.py` | **new** — generic `DirectoryListResponse[T]`; `LenderListResponse`/`BuyerListResponse` become aliases so the wire format is unchanged |
-| `app/routers/lenders.py`, `app/routers/buyers.py` | shrink to filter parsing + a pipeline call |
-| `app/services/buyer_directory_service.py` | **delete**; move `row_to_buyer_record` to `buyers_service.py`. It is dead except that one helper and carries a stale 2,812-row JSON fallback |
-| `MAX_PAGE_SIZE` | single definition (currently in `lenders_service.py` **and** `routers/buyers.py:47`) |
+| `app/services/directory_pipeline.py` | **new** — shared gate/list/export/meter flow, plus the ~70-line export block that was duplicated in both routers |
+| `app/schemas/directory.py` | **new** — `DirectoryListResponse` carrying the pagination envelope |
+| `app/routers/lenders.py`, `app/routers/buyers.py` | shrunk to filter parsing, export columns, and a pipeline call (260→199 and 253→173 lines) |
+| `app/services/buyer_directory_service.py` | **deleted**; `row_to_buyer_record` moved to `buyers_service.py` |
+| `MAX_PAGE_SIZE` | one definition, in `directory_pipeline`; `lenders_service` re-exports it |
 
-The redaction inconsistency noted in review (lenders blank to `None`, buyers to `""`)
-needs no reconciliation here — Stage 1 deletes both paths.
+Net −274 lines. 683 tests pass.
 
-**Verify:** both directories' API tests pass with zero response-shape diffs.
+**Verified: zero response-shape diffs.** The OpenAPI schema for all eight
+directory paths was captured before and after and diffed. The only difference is
+the order of entries in two `required` arrays — same fields, same types, same
+properties — because base-class fields now serialise first. `required` is a set
+semantically and JSON key order is insignificant, so no client can observe it.
+
+**Three deviations from the plan above.**
+
+*`DirectoryListResponse` is a base class, not a generic.* The plan called for a
+generic `DirectoryListResponse[T]` with `LenderListResponse`/`BuyerListResponse`
+as aliases, but a single generic has one field name for its records, and the two
+frontends read `page.lenders` and `page.buyers` respectively
+(`HardMoneyDirectory.tsx:213`, `BuyerDirectory.tsx:339`). Aliasing would have
+renamed one of them. The pagination four (`total`, `page`, `limit`, `totalPages`)
+are shared on the base; each subclass keeps its own record list under its own
+name.
+
+*The teaser count is now lazy, and that is a behaviour change.* Both gates took
+`teaser_total: int`, so every call site ran `await lender_total(db)` — a
+`COUNT(*)` — *before* the gate, to fill in a 403 body that a paid user never
+sees. Consolidating made it obvious, and the gates now take
+`count_total: Callable[[], Awaitable[int]]` awaited only on the refusal paths.
+Every authorised list, detail and export request is one query lighter. Pinned by
+`test_an_authorised_request_never_counts_the_directory`.
+
+*Error handling is now uniform.* Buyers wrapped list, detail and stats in
+try/except → 500; lenders wrapped only list. Both now route through `guard()`.
+The only observable change is on the failure path, where an unhandled exception
+in lender stats or lender detail previously produced a bare 500 and now produces
+one with the same `"Failed to load ..."` body the buyer endpoints always returned.
+
+Two clean-ups fell out of the deletion. `PRO_BUYERS_MESSAGE` lived in
+`core/deps.py` while `PRO_LENDERS_MESSAGE` lived in its router; both now sit
+beside their own directory's spec. And `deps._count_strict_buyers` — a wrapper
+whose only purpose was a function-body import dodging a circular dependency —
+is gone, along with the inline import.
+
+The redaction inconsistency noted in review (lenders blank to `None`, buyers to
+`""`) needed no reconciliation — Stage 1 had already deleted both paths.
 
 ---
 

@@ -173,6 +173,31 @@ def test_apply_filters_strict_only():
     assert "passes_strict_filter" in compiled
 
 
+async def test_export_writes_real_rows_from_the_table(monkeypatch, db_session, seeded_buyers):
+    """The export flow is shared with lenders, but the columns are not.
+
+    Everything above stubs the page fetch, so this is the only check that a buyer
+    actually survives the trip through the spec's row mapper and into CSV.
+    """
+    monkeypatch.setattr(
+        directory_pipeline, "require_paid_export", AsyncMock(return_value=None)
+    )
+    monkeypatch.setattr(directory_pipeline, "get_export_usage", AsyncMock(return_value=0))
+    monkeypatch.setattr(directory_pipeline, "add_export_usage", AsyncMock(return_value=200))
+
+    response = await export_cash_buyers(
+        current_user=_user(), db=db_session, fmt="csv", **_list_kwargs()
+    )
+
+    body = response.body.decode("utf-8")
+    header, first, *_ = body.splitlines()
+    assert header.startswith("Company,Owner,Phone")
+    assert first.count(",") >= 13
+    assert response.headers["X-Export-Records"] == "200"
+    assert "attachment" in response.headers["Content-Disposition"]
+    assert "dealgapiq-buyers-" in response.headers["Content-Disposition"]
+
+
 # ---------------------------------------------------------------------------
 # Row -> wire mapping (moved here when buyer_directory_service was deleted)
 # ---------------------------------------------------------------------------
