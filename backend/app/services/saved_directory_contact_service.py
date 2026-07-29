@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.cash_buyer import CashBuyer
+from app.models.lender import Lender
 from app.models.saved_directory_contact import DirectoryEntityType, SavedDirectoryContact
 from app.schemas.saved_directory_contact import SavedDirectoryContactCreate
 
@@ -80,15 +81,27 @@ class SavedDirectoryContactService:
         result = await db.execute(select(CashBuyer.id).where(CashBuyer.id == entity_id))
         return result.scalar_one_or_none() is not None
 
+    async def _lender_exists(self, db: AsyncSession, entity_id: int) -> bool:
+        result = await db.execute(
+            select(Lender.id).where(Lender.id == entity_id, Lender.is_active.is_(True))
+        )
+        return result.scalar_one_or_none() is not None
+
     async def save_contact(
         self,
         db: AsyncSession,
         user_id: str,
         data: SavedDirectoryContactCreate,
     ) -> SavedDirectoryContact:
+        # Both sides are validated now that lenders are a real table. Previously
+        # only buyers were checked, so a saved lender could reference an id that
+        # no longer existed and the stored snapshot kept it looking valid.
         if data.entity_type == DirectoryEntityType.BUYER.value:
             if not await self._buyer_exists(db, data.entity_id):
                 raise ValueError("buyer not found")
+        elif data.entity_type == DirectoryEntityType.LENDER.value:
+            if not await self._lender_exists(db, data.entity_id):
+                raise ValueError("lender not found")
 
         existing = await self.check_saved(db, user_id, data.entity_type, data.entity_id)
         if existing:

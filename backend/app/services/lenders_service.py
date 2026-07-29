@@ -1,181 +1,228 @@
-"""Hard-money lender directory — server-side data access.
+"""Hard-money lender directory — Postgres queries for /api/lenders.
 
-Task 3.1: lender records moved out of the client bundle. The dataset is
-static (regenerated offline), so it is served from ``app/data/lenders.json``
-mirroring the buyer directory's JSON pattern. Every list response is
-paginated — no endpoint returns the full dataset.
+The dataset lives in the ``lenders`` table, seeded from ``app/data/lenders.json``
+by ``scripts/seed_lenders.py``. It moved out of an in-memory JSON load so lender
+coverage can join to ``geo_counties``, carry stable ids, and be filtered in SQL
+the way the buyer directory already is.
+
+Every list response is paginated — no endpoint returns the full dataset.
 """
 
 from __future__ import annotations
 
-import json
-import logging
 import math
-from functools import lru_cache
-from pathlib import Path
-from typing import Any
+from dataclasses import dataclass
 
+from sqlalchemy import Select, case, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.lender import Lender
 from app.schemas.lenders import LenderOut, LenderStatsResponse
-
-logger = logging.getLogger(__name__)
-
-LENDERS_DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "lenders.json"
 
 # Hard page-size ceiling (plan: max 25 records per page).
 MAX_PAGE_SIZE = 25
 
+ACTIVE_FILTER = Lender.is_active.is_(True)
 
-@lru_cache(maxsize=1)
-def _load_lenders_file() -> tuple[tuple[LenderOut, ...], LenderStatsResponse]:
-    """Load and validate the lender dataset once per process."""
-    with LENDERS_DATA_PATH.open(encoding="utf-8") as f:
-        data: dict[str, Any] = json.load(f)
+# Credit policies that mean "we won't pull your credit". Mirrors the previous
+# in-memory rule: the explicit flag wins, and these policies imply it when the
+# flag is absent.
+_NO_PULL_POLICIES = ("none", "soft_pull")
 
-    raw_lenders = data.get("lenders")
-    if not isinstance(raw_lenders, list):
-        raise ValueError("Lender dataset must contain a 'lenders' list")
 
-    lenders = tuple(LenderOut.model_validate(item) for item in raw_lenders)
+@dataclass(frozen=True)
+class LenderListFilters:
+    state: str | None = None
+    product: str | None = None
+    min_loan: int | None = None
+    credit: str | None = None
+    q: str | None = None
+    include_web_only: bool = True
 
-    raw_stats = data.get("stats") or {}
-    stats = LenderStatsResponse(
-        total=len(lenders),
-        byState=raw_stats.get("by_state") or {},
-        byProduct=raw_stats.get("by_product") or {},
-        byCreditPolicy=raw_stats.get("by_credit_policy") or {},
-        noCreditCheckCount=raw_stats.get("no_credit_check_count") or 0,
-        nationwideCount=raw_stats.get("nationwide_count") or 0,
+
+def _like_escape(term: str) -> str:
+    """Neutralise LIKE wildcards so search stays a literal substring match.
+
+    The in-memory predicate this replaced used Python's ``in``, where ``%`` and
+    ``_`` are ordinary characters. Passing them through to LIKE unescaped would
+    quietly turn a user's search string into a pattern.
+    """
+    return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def _no_credit_check_clause():
+    """SQL form of ``no_credit_check if set, else policy in (none, soft_pull)``."""
+    return case(
+        (Lender.no_credit_check.is_not(None), Lender.no_credit_check),
+        else_=Lender.credit_check_policy.in_(_NO_PULL_POLICIES),
     )
-    return lenders, stats
 
 
-def lender_total() -> int:
-    lenders, _ = _load_lenders_file()
-    return len(lenders)
+def _apply_filters(stmt: Select, filters: LenderListFilters) -> Select:
+    stmt = stmt.where(ACTIVE_FILTER)
+
+    if filters.state:
+        stmt = stmt.where(Lender.states_served.contains([filters.state]))
+
+    if filters.product:
+        stmt = stmt.where(Lender.loan_products.contains([filters.product]))
+
+    # Only excludes a lender whose stated ceiling is below the requested loan;
+    # an unknown ceiling is not evidence that they won't lend that much.
+    if filters.min_loan is not None:
+        stmt = stmt.where(
+            or_(
+                Lender.max_loan_amount.is_(None),
+                Lender.max_loan_amount >= filters.min_loan,
+            )
+        )
+
+    if filters.credit == "no_credit_check":
+        stmt = stmt.where(_no_credit_check_clause())
+    elif filters.credit == "soft_pull":
+        stmt = stmt.where(Lender.credit_check_policy == "soft_pull")
+    elif filters.credit == "no_min_score":
+        stmt = stmt.where(Lender.min_credit_score.is_(None), _no_credit_check_clause())
+
+    if filters.q:
+        term = filters.q.strip().lower()
+        if term:
+            pattern = f"%{_like_escape(term)}%"
+            stmt = stmt.where(
+                or_(
+                    func.lower(Lender.company_name).like(pattern, escape="\\"),
+                    func.lower(Lender.domain).like(pattern, escape="\\"),
+                )
+            )
+
+    if not filters.include_web_only:
+        stmt = stmt.where(Lender.contact_type != "web_only")
+
+    return stmt
 
 
-def lender_stats() -> LenderStatsResponse:
-    _, stats = _load_lenders_file()
-    return stats
-
-
-def _no_credit_check(lender: LenderOut) -> bool:
-    if lender.no_credit_check is not None:
-        return lender.no_credit_check
-    return lender.credit_check_policy in ("none", "soft_pull")
-
-
-def _matches(
-    lender: LenderOut,
-    *,
-    state: str | None,
-    product: str | None,
-    min_loan: int | None,
-    credit: str | None,
-    q: str | None,
-    include_web_only: bool,
-) -> bool:
-    if state and state not in lender.states_served:
-        return False
-    if product and product not in lender.loan_products:
-        return False
-    if min_loan is not None and lender.max_loan_amount is not None and lender.max_loan_amount < min_loan:
-        return False
-    if credit == "no_credit_check" and not _no_credit_check(lender):
-        return False
-    if credit == "soft_pull" and lender.credit_check_policy != "soft_pull":
-        return False
-    if credit == "no_min_score" and (lender.min_credit_score is not None or not _no_credit_check(lender)):
-        return False
-    if q:
-        term = q.strip().lower()
-        if term and term not in lender.company_name.lower() and term not in lender.domain.lower():
-            return False
-    if not include_web_only and lender.contact_type == "web_only":
-        return False
-    return True
-
-
-def _locality_rank(lender: LenderOut, state: str) -> int:
+def _locality_order(state: str):
     """Order lenders by how local they are to ``state``.
 
     Coverage is state-level, so every match is equally "licensed here". What
     differentiates them is focus: a lender headquartered in the state, then one
     that serves a handful of states including this one, then a national shop.
     """
-    if lender.state == state:
-        return 0
-    if not lender.nationwide:
-        return 1
-    return 2
+    return case(
+        (Lender.state == state, 0),
+        (Lender.nationwide.is_(False), 1),
+        else_=2,
+    )
 
 
-def filter_lenders(
+def _order_by(stmt: Select, state: str | None) -> Select:
+    """Stable ordering. Id breaks ties so pagination can't repeat or skip rows."""
+    if state:
+        return stmt.order_by(_locality_order(state), Lender.company_name, Lender.id)
+    return stmt.order_by(Lender.id)
+
+
+async def lender_total(db: AsyncSession) -> int:
+    stmt = select(func.count()).select_from(Lender).where(ACTIVE_FILTER)
+    return int((await db.execute(stmt)).scalar_one())
+
+
+async def lender_stats(db: AsyncSession) -> LenderStatsResponse:
+    """Directory aggregates, computed live rather than read from a frozen block."""
+    total = await lender_total(db)
+
+    by_state_stmt = (
+        select(func.unnest(Lender.states_served).label("st"), func.count())
+        .where(ACTIVE_FILTER)
+        .group_by("st")
+    )
+    by_state = {
+        state: int(count) for state, count in (await db.execute(by_state_stmt)).all() if state
+    }
+
+    by_product_stmt = (
+        select(func.unnest(Lender.loan_products).label("product"), func.count())
+        .where(ACTIVE_FILTER)
+        .group_by("product")
+    )
+    by_product = {
+        product: int(count)
+        for product, count in (await db.execute(by_product_stmt)).all()
+        if product
+    }
+
+    # A missing policy is reported as "unknown" rather than dropped, matching the
+    # convention the dataset's own stats block used.
+    policy_label = func.coalesce(Lender.credit_check_policy, "unknown").label("policy")
+    by_policy_stmt = select(policy_label, func.count()).where(ACTIVE_FILTER).group_by(policy_label)
+    by_credit_policy = {
+        policy: int(count) for policy, count in (await db.execute(by_policy_stmt)).all()
+    }
+
+    no_credit_check_stmt = (
+        select(func.count()).select_from(Lender).where(ACTIVE_FILTER, _no_credit_check_clause())
+    )
+    no_credit_check_count = int((await db.execute(no_credit_check_stmt)).scalar_one())
+
+    nationwide_stmt = (
+        select(func.count())
+        .select_from(Lender)
+        .where(ACTIVE_FILTER, Lender.nationwide.is_(True))
+    )
+    nationwide_count = int((await db.execute(nationwide_stmt)).scalar_one())
+
+    return LenderStatsResponse(
+        total=total,
+        byState=by_state,
+        byProduct=by_product,
+        byCreditPolicy=by_credit_policy,
+        noCreditCheckCount=no_credit_check_count,
+        nationwideCount=nationwide_count,
+    )
+
+
+async def filter_lenders(
+    db: AsyncSession,
     *,
-    state: str | None = None,
-    product: str | None = None,
-    min_loan: int | None = None,
-    credit: str | None = None,
-    q: str | None = None,
-    include_web_only: bool = True,
+    filters: LenderListFilters,
+    limit: int | None = None,
 ) -> list[LenderOut]:
-    """Full filtered list — server-side use only (export slicing, pagination).
+    """Filtered list in display order — server-side use only (exports).
 
     Never returned to a client whole: list responses paginate at
-    ``MAX_PAGE_SIZE`` and exports slice to the metered cap.
+    ``MAX_PAGE_SIZE`` and exports pass the metered cap as ``limit``.
     """
-    lenders, _ = _load_lenders_file()
-    matched = [
-        lender
-        for lender in lenders
-        if _matches(
-            lender,
-            state=state,
-            product=product,
-            min_loan=min_loan,
-            credit=credit,
-            q=q,
-            include_web_only=include_web_only,
-        )
-    ]
-    if state:
-        # Sorting has to happen here rather than client-side: the client only
-        # ever sees one page.
-        matched.sort(key=lambda lender: (_locality_rank(lender, state), lender.company_name))
-    return matched
+    stmt = _order_by(_apply_filters(select(Lender), filters), filters.state)
+    if limit is not None:
+        stmt = stmt.limit(limit)
+    rows = (await db.execute(stmt)).scalars().all()
+    return [LenderOut.model_validate(row) for row in rows]
 
 
-def list_lenders_page(
+async def list_lenders_page(
+    db: AsyncSession,
     *,
-    state: str | None = None,
-    product: str | None = None,
-    min_loan: int | None = None,
-    credit: str | None = None,
-    q: str | None = None,
-    include_web_only: bool = True,
+    filters: LenderListFilters,
     page: int = 1,
     limit: int = MAX_PAGE_SIZE,
 ) -> tuple[list[LenderOut], int, int]:
     """Filtered, paginated lender list. Returns (lenders, total, total_pages)."""
     limit = max(1, min(limit, MAX_PAGE_SIZE))
-    filtered = filter_lenders(
-        state=state,
-        product=product,
-        min_loan=min_loan,
-        credit=credit,
-        q=q,
-        include_web_only=include_web_only,
-    )
+    filtered = _apply_filters(select(Lender), filters)
 
-    total = len(filtered)
+    count_stmt = select(func.count()).select_from(filtered.subquery())
+    total = int((await db.execute(count_stmt)).scalar_one())
+
+    rows_stmt = _order_by(filtered, filters.state).offset((page - 1) * limit).limit(limit)
+    rows = (await db.execute(rows_stmt)).scalars().all()
+
     total_pages = math.ceil(total / limit) if total else 0
-    offset = (page - 1) * limit
-    return filtered[offset : offset + limit], total, total_pages
+    return [LenderOut.model_validate(row) for row in rows], total, total_pages
 
 
-def get_lender_by_id(lender_id: int) -> LenderOut | None:
-    lenders, _ = _load_lenders_file()
-    for lender in lenders:
-        if lender.id == lender_id:
-            return lender
-    return None
+async def get_lender_by_id(db: AsyncSession, lender_id: int) -> LenderOut | None:
+    stmt = select(Lender).where(Lender.id == lender_id, ACTIVE_FILTER)
+    row = (await db.execute(stmt)).scalar_one_or_none()
+    if row is None:
+        return None
+    return LenderOut.model_validate(row)

@@ -29,6 +29,7 @@ from app.services.directory_usage import (
 from app.services.entitlements import Entitlement, resolve_entitlement
 from app.services.lenders_service import (
     MAX_PAGE_SIZE,
+    LenderListFilters,
     filter_lenders,
     get_lender_by_id,
     lender_stats,
@@ -60,9 +61,9 @@ async def get_lender_stats(current_user: CurrentUser, db: DbSession):
     if entitlement == Entitlement.FREE:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"total": lender_total()},
+            content={"total": await lender_total(db)},
         )
-    return lender_stats()
+    return await lender_stats(db)
 
 
 @router.get(
@@ -103,16 +104,19 @@ async def list_lenders(
         db,
         current_user,
         pro_message=PRO_LENDERS_MESSAGE,
-        teaser_total=lender_total(),
+        teaser_total=await lender_total(db),
     )
     try:
-        lenders, total, total_pages = list_lenders_page(
-            state=state.strip().upper() if state else None,
-            product=product,
-            min_loan=min_loan,
-            credit=credit,
-            q=q,
-            include_web_only=include_web_only,
+        lenders, total, total_pages = await list_lenders_page(
+            db,
+            filters=LenderListFilters(
+                state=state.strip().upper() if state else None,
+                product=product,
+                min_loan=min_loan,
+                credit=credit,
+                q=q,
+                include_web_only=include_web_only,
+            ),
             page=page,
             limit=limit,
         )
@@ -157,7 +161,7 @@ async def export_lenders(
         db,
         current_user,
         pro_message=PRO_LENDERS_MESSAGE,
-        teaser_total=lender_total(),
+        teaser_total=await lender_total(db),
     )
 
     used = await get_export_usage(db, current_user.id, subscription)
@@ -169,14 +173,20 @@ async def export_lenders(
         )
 
     export_cap = min(EXPORT_MAX_RECORDS, remaining)
-    lenders = filter_lenders(
-        state=state.strip().upper() if state else None,
-        product=product,
-        min_loan=min_loan,
-        credit=credit,
-        q=q,
-        include_web_only=include_web_only,
-    )[:export_cap]
+    # Capped in SQL rather than sliced after the fact, so the database never
+    # materialises rows the export isn't allowed to include.
+    lenders = await filter_lenders(
+        db,
+        filters=LenderListFilters(
+            state=state.strip().upper() if state else None,
+            product=product,
+            min_loan=min_loan,
+            credit=credit,
+            q=q,
+            include_web_only=include_web_only,
+        ),
+        limit=export_cap,
+    )
 
     headers = [
         "Company", "Domain", "Phone", "Email", "Website", "HQ State", "States Served",
@@ -242,9 +252,9 @@ async def get_lender(lender_id: int, current_user: CurrentUser, db: DbSession):
         db,
         current_user,
         pro_message=PRO_LENDERS_MESSAGE,
-        teaser_total=lender_total(),
+        teaser_total=await lender_total(db),
     )
-    lender = get_lender_by_id(lender_id)
+    lender = await get_lender_by_id(db, lender_id)
     if lender is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lender not found")
     return lender

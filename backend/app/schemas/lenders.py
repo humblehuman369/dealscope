@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 
 class LenderDisplay(BaseModel):
@@ -17,6 +17,9 @@ class LenderDisplay(BaseModel):
 
 
 class LenderOut(BaseModel):
+    # Validated straight off the ``Lender`` ORM row.
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     domain: str
     company_name: str
@@ -27,7 +30,6 @@ class LenderOut(BaseModel):
     city: str | None = None
     state: str | None = None
     states_served: list[str] = []
-    states_served_count: int = 0
     nationwide: bool = False
     loan_products: list[str] = []
     description: str | None = None
@@ -49,6 +51,12 @@ class LenderOut(BaseModel):
     credit_check_policy: str | None = None
     min_credit_score: int | None = None
     no_credit_check: bool | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def states_served_count(self) -> int:
+        """Derived rather than stored — a persisted copy only drifts."""
+        return len(self.states_served)
 
 
 class LenderListResponse(BaseModel):

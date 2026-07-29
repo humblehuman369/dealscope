@@ -1,8 +1,12 @@
 """Tests for ZIP -> state/county resolution behind the directory geo search."""
 
+import json
+from pathlib import Path
+
 import pytest
-from app.services.lenders_service import filter_lenders
 from app.services.zip_geo import _load_crosswalk, normalize_zip, resolve_zip, zip_count
+
+LENDERS_DATA_PATH = Path(__file__).resolve().parents[1] / "app" / "data" / "lenders.json"
 
 
 # ---------------------------------------------------------------------------
@@ -90,7 +94,14 @@ def test_crosswalk_covers_the_whole_country():
 
 
 def test_every_state_a_lender_serves_is_reachable_by_zip():
-    """A ZIP search must be able to reach every state the directory covers."""
-    served = {state for lender in filter_lenders() for state in lender.states_served}
+    """A ZIP search must be able to reach every state the directory covers.
+
+    Reads the seed file rather than the table: this checks the two static
+    datasets agree, so a bad crosswalk is caught before it is ever seeded.
+    """
+    dataset = json.loads(LENDERS_DATA_PATH.read_text(encoding="utf-8"))
+    served = {
+        state for lender in dataset["lenders"] for state in lender.get("states_served", [])
+    }
     reachable = {entry[0] for entry in _load_crosswalk().values()}
     assert served - reachable == set()

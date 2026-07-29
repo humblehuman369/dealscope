@@ -1,7 +1,8 @@
 # Directory Restructure Plan — Lenders + Cash Buyers
 
-**Status:** Stage 1 (paid-only enforcement) is **implemented**, along with the buyer
-`Tampa, FL` default removal from Stage 5. Stages 2–4 remain proposed.
+**Status:** Stage 1 (paid-only enforcement) and Stage 2 (lenders → Postgres) are
+**implemented**, along with the buyer `Tampa, FL` default removal from Stage 5.
+Stages 3–4 remain proposed; the rest of Stage 5 remains proposed.
 **Author:** architecture review, 2026-07-29
 **Scope:** `/api/lenders`, `/api/buyers`, and the two frontend directories
 
@@ -163,6 +164,12 @@ Run via the documented pattern in `backend/scripts/diag_prod_schema.sh`:
 
 **Verify:** counts known and recorded in this document before Stage 2 begins.
 
+**Superseded for Stage 2 (2026-07-29), still worth running.** Stage 2 shipped taking
+the id-preserving path unconditionally, which is correct under either answer — the
+counts would only have told us whether preservation could be *relaxed*, and it was
+not needed. Run it anyway to confirm no saved lender contact references an id outside
+1–484, which would indicate drift predating this work.
+
 ---
 
 ### Stage 1 — Enforce paid-only access (closes a revenue leak) — DONE 2026-07-29
@@ -206,9 +213,53 @@ is honest and can convert; the second avoids advertising something they can't us
 
 ---
 
-### Stage 2 — Lenders into Postgres (the unblocking stage)
+### Stage 2 — Lenders into Postgres (the unblocking stage) — DONE 2026-07-29
 
 **Goal:** lender parity with buyers, stable identity, joinable geography.
+
+Shipped as specified except for three points where the data contradicted the plan.
+All three were found by profiling `lenders.json` before writing the migration.
+
+**1. Rates and ratios are `DOUBLE PRECISION`, not `NUMERIC(5,2)`.** The plan assumed
+these were percentages (`75.00`). They are fractions: `max_ltv` `0.925` means 92.5%,
+and `min_interest_rate` carries up to 6 decimal places. `NUMERIC(5,2)` would have
+silently rounded **188 values** (126 `min_interest_rate`, 59 `max_interest_rate`,
+3 `max_ltv`) and **overflowed** on `max_arv = 500000.0`, failing the seed outright.
+These fields are only displayed and filtered, never summed, so float is safe here.
+
+**2. Unfiltered result order changed, deliberately.** The old order was `lenders.json`
+file order — a shuffled accident of dataset generation, with no meaning. It is now
+`ORDER BY id`. Result **sets** are identical for all 26 verified filter combinations,
+and every **state-filtered** combination preserves its exact previous ordering, since
+locality ranking is the only ordering that carried intent. 14 unfiltered/non-state
+combinations return the same rows in a different sequence. Freezing the old shuffle
+would have required a `sort_order` column existing solely to preserve an accident.
+*Open question: unfiltered browsing may be better served alphabetically by
+`company_name` than by `id`. Not changed here — it is a product decision, not a
+migration one.*
+
+**3. `stats.byCreditPolicy` maps NULL to `"unknown"`.** The frozen block counted the
+141 lenders with no stated policy under `unknown`; a naive `GROUP BY` dropped them.
+The live aggregate now coalesces, so the response shape is unchanged.
+
+Two pre-existing data-quality bugs surfaced and were **left as-is** rather than
+silently corrected, since the dataset is regenerated offline:
+
+| Lender | Field | Value | Problem |
+|---|---|---|---|
+| `oakwoodlending.com` (id 446) | `max_arv` | `500000.0` | dollar amount in a ratio field (others are 0.5–0.95) |
+| one record | `year_founded` | `25` | not a plausible year |
+
+Also added beyond the plan: `_lender_exists()` is wired into `save_contact`, closing
+the asymmetry where only buyers were validated. And `LIKE` metacharacters (`%`, `_`)
+are escaped in the search filter — the in-memory predicate used Python `in`, where
+they are literal, so passing them through unescaped would have turned a user's search
+string into a pattern.
+
+**Verified:** 484/484 records field-identical to the pre-migration JSON responses;
+identical result sets across 26 filter combinations and 15 pagination cases; stats
+identical; migration applies and rolls back cleanly; a from-empty database runs
+35 migrations then both seeds; full backend suite 603 passed.
 
 #### Migration `20260730_0001_add_lenders.py` (down_revision `20260729_0001`)
 
@@ -437,11 +488,11 @@ Stages 4 and 5 depend on Stage 2.
 
 | Risk | Mitigation |
 |---|---|
-| Saved lender contacts break | Preserve ids on seed; Stage 0 measures the blast radius first |
-| Lender API behaviour drifts in the rewrite | `test_lenders_api.py` already pins filter + locality semantics; capture before/after responses |
+| Saved lender contacts break | **Closed by Stage 2.** Ids preserved on seed, `UNIQUE(domain)` added, refreshes update by domain and never touch a stored id, and a new-domain id collision aborts the seed instead of guessing |
+| Lender API behaviour drifts in the rewrite | **Closed by Stage 2.** Responses were captured from the JSON implementation before the rewrite and diffed after: 484/484 records field-identical, 26 filter combinations and 15 pagination cases identical |
 | Buyer coverage backfill mismatches | Never guess; log unmatched and ambiguous names for review |
 | Seed failure blocks deploys | It already can — the seed is chained into `preDeployCommand`. Keep seeds idempotent and validate the data file in CI |
-| Local verification is limited | The backend venv resolves to Python 3.9 against a 3.11+ project. Fix it before Stage 2 |
+| Local verification is limited | **Closed 2026-07-29.** `backend/.venv` now runs Python 3.11 (matching CI), and `make test-db-up` provides a Postgres mirroring CI's, so the full suite runs locally |
 
 ## 7. Explicitly out of scope
 
