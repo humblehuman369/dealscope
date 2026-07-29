@@ -326,7 +326,9 @@ async def get_user_assumptions(current_user: CurrentUser, db: DbSession):
     """
     Get the current user's saved default assumptions.
 
-    These override system defaults when calculating investment metrics.
+    These are the top layer of the resolution chain in
+    ``app.services.assumption_resolver`` — they override the admin dashboard
+    defaults and the regional market table for this user.
     Returns:
     - **assumptions**: User's custom default values
     - **has_customizations**: Whether user has any custom defaults set
@@ -354,7 +356,12 @@ async def update_user_assumptions(data: UserAssumptionsUpdate, current_user: Cur
     """
     Update the current user's default assumptions.
 
-    These values will override system defaults in all calculations.
+    These override the admin dashboard defaults everywhere assumptions are
+    resolved for a signed-in user: the IQ Verdict, deal score, worksheets,
+    Excel exports, and the baseline locked into newly created Deal Maker
+    records. Properties saved before the change keep their locked baseline —
+    `initial_assumptions` is deliberately immutable so past analyses stay
+    reproducible.
 
     Example request body:
     ```json

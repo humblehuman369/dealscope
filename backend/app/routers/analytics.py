@@ -10,7 +10,7 @@ import logging
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 
-from app.core.deps import DbSession
+from app.core.deps import DbSession, OptionalUser
 from app.schemas.analytics import (
     DealScoreInput,
     DealScoreResponse,
@@ -18,6 +18,7 @@ from app.schemas.analytics import (
     IQVerdictResponse,
 )
 from app.schemas.property import AnalyticsRequest, AnalyticsResponse
+from app.services.assumption_resolver import resolve_assumptions
 from app.services.assumptions_service import get_default_assumptions as get_db_default_assumptions
 from app.services.iq_verdict_service import compute_deal_score, compute_iq_verdict
 from app.services.property_service import property_service
@@ -33,12 +34,18 @@ router = APIRouter(tags=["Analytics"])
 
 
 @router.post("/api/v1/analysis/verdict", response_model=IQVerdictResponse)
-async def calculate_iq_verdict(input_data: IQVerdictInput, db: DbSession):
-    """Calculate IQ Verdict multi-strategy analysis."""
-    try:
-        from app.services.assumption_resolver import resolve_assumptions
+async def calculate_iq_verdict(
+    input_data: IQVerdictInput,
+    db: DbSession,
+    current_user: OptionalUser = None,
+):
+    """Calculate IQ Verdict multi-strategy analysis.
 
-        assumptions = await resolve_assumptions(db)
+    Signed-in users are scored against the defaults they saved in their profile;
+    anonymous callers get the admin defaults.
+    """
+    try:
+        assumptions = await resolve_assumptions(db, user=current_user)
         result = compute_iq_verdict(input_data, assumptions=assumptions)
 
         response_dict = result.model_dump(mode="json", by_alias=True)
@@ -63,12 +70,14 @@ async def calculate_iq_verdict(input_data: IQVerdictInput, db: DbSession):
 
 
 @router.post("/api/v1/worksheet/deal-score", response_model=DealScoreResponse)
-async def calculate_deal_score(input_data: DealScoreInput, db: DbSession):
+async def calculate_deal_score(
+    input_data: DealScoreInput,
+    db: DbSession,
+    current_user: OptionalUser = None,
+):
     """Calculate IQ Verdict Score (Deal Opportunity Score)."""
     try:
-        from app.services.assumption_resolver import resolve_assumptions
-
-        assumptions = await resolve_assumptions(db)
+        assumptions = await resolve_assumptions(db, user=current_user)
         return compute_deal_score(input_data, assumptions=assumptions)
     except Exception as e:
         logger.error(f"Deal Score calculation error: {e}")

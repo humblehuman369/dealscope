@@ -64,6 +64,45 @@ finished — and do not add a second writer for the same record.
   there is a wrong number shown confidently.
 - Covered by `src/__tests__/stores/dealMakerStore.test.ts`.
 
+### Assumption Defaults (two configurable layers)
+
+Admins set the platform baseline; each user can override it for their own
+analyses. One function resolves the whole chain —
+`backend/app/services/assumption_resolver.py :: resolve_assumption_layers()`.
+Never re-implement this order anywhere else.
+
+| # | Layer | Source | Editable at |
+|---|-------|--------|-------------|
+| 1 | Schema defaults | `app/core/defaults.py` constants | code only |
+| 2 | Admin defaults | `admin_assumption_defaults` table | `/admin` → Assumptions |
+| 3 | ZIP market | `MARKET_ADJUSTMENTS` (vacancy, appreciation) | code only |
+| 4 | User defaults | `user_profiles.default_assumptions` | `/profile?tab=investor` |
+| 5 | Per-request | e.g. a Deal Maker record's own fields | the deal screen |
+
+Higher number wins. A user's explicit choice deliberately outranks the regional
+market table — a market average is only a guess at what they want.
+
+**Rules when touching this**
+- Pass `user=` to `resolve_assumptions(db, user=...)` on any authenticated path,
+  or that user silently gets admin defaults while their sliders show their own.
+- `initial_assumptions` on a Deal Maker record is **locked at creation**, so
+  `create_record` must receive `resolved=`. Changing your defaults does not
+  re-baseline properties you already saved; that keeps past analyses
+  reproducible.
+- Growth rates (`appreciation_rate`, `rent_growth_rate`, `expense_growth_rate`)
+  are **top-level** on `AllAssumptions`. Writing them under a `"growth"` key
+  makes them silently vanish.
+- `system_defaults` is reported to the frontend as the pre-user baseline that
+  drives the "customised by you" indicators, so deep-copy before merging.
+- Covered by `backend/tests/test_assumption_resolution_chain.py`.
+
+**Known gap:** `PropertyService._estimate_insurance` still reads
+`OPERATING.insurance_pct` from `defaults.py`, so admin edits to `insurance_pct`
+do not move `market.insurance_annual`. `search_property` takes no DB session and
+its response is Redis-cached for 24h keyed by address only — making it per-user
+would fragment a shared cache. The calculators recompute insurance from the
+resolved `insurance_pct`, so analysis is unaffected.
+
 ### Session / Auth
 - `useSession()` — React Query + localStorage indicator; session ends on logout/revocation.
 - Tokens are HTTP-only cookies (web) or memory (Capacitor).

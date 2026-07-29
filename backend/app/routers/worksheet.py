@@ -191,7 +191,7 @@ class WholesaleWorksheetInput(BaseModel):
 async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession, current_user: OptionalUser = None):
     """Calculate LTR worksheet metrics."""
     try:
-        a = await resolve_assumptions(db)
+        a = await resolve_assumptions(db, user=current_user)
         f, o = a.financing, a.operating
         dp = input_data.down_payment_pct if input_data.down_payment_pct is not None else f.down_payment_pct
         ir = input_data.interest_rate if input_data.interest_rate is not None else f.interest_rate
@@ -328,7 +328,7 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput, db: DbSession, 
 async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession, current_user: OptionalUser = None):
     """Calculate STR worksheet metrics."""
     try:
-        a = await resolve_assumptions(db)
+        a = await resolve_assumptions(db, user=current_user)
         f, o, s = a.financing, a.operating, a.str_assumptions
         dp = input_data.down_payment_pct if input_data.down_payment_pct is not None else f.down_payment_pct
         ir = input_data.interest_rate if input_data.interest_rate is not None else f.interest_rate
@@ -490,7 +490,7 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput, db: DbSession, 
 async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput, db: DbSession, current_user: OptionalUser = None):
     """Calculate BRRRR worksheet metrics."""
     try:
-        a = await resolve_assumptions(db)
+        a = await resolve_assumptions(db, user=current_user)
         o = a.operating
         ia = (
             input_data.insurance_annual
@@ -931,7 +931,7 @@ async def calculate_wholesale_worksheet(input_data: WholesaleWorksheetInput, db:
         assignment_fee = input_data.investor_price - input_data.contract_price - input_data.marketing_costs
         post_tax_profit = assignment_fee * (1 - input_data.tax_rate)
 
-        a = await resolve_assumptions(db)
+        a = await resolve_assumptions(db, user=current_user)
         result = calculate_wholesale(
             arv=input_data.arv,
             estimated_rehab_costs=input_data.rehab_costs,

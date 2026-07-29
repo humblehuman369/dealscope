@@ -53,6 +53,9 @@ import {
   YearlyProjection,
 } from '@/lib/projections'
 import { OPERATING_INSURANCE_PCT } from '@/lib/insurance'
+import { useDefaults } from '@/hooks/useDefaults'
+import { pick } from '@/features/deal-maker/components/strategyDefaults'
+import type { AllAssumptions } from '@/stores/index'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 
 // ============================================
@@ -121,28 +124,42 @@ interface StrategyAnalyticsContainerProps {
 // HELPER FUNCTIONS
 // ============================================
 
-function createDefaultAssumptions(property: PropertyData): TargetAssumptions {
+/**
+ * Seed the tuning sliders from the resolved defaults (admin values overlaid with
+ * the signed-in user's own), falling back to constants only for first paint and
+ * for the few fields no assumption layer covers.
+ */
+function createDefaultAssumptions(
+  property: PropertyData,
+  defaults?: AllAssumptions | null,
+): TargetAssumptions {
+  const f = defaults?.financing
+  const o = defaults?.operating
+  const r = defaults?.rehab
+  const fl = defaults?.flip
+
   const arv = property.arv || property.listPrice * 1.15
-  const rehabCost = arv * 0.05
+  const rehabCost = arv * pick(r?.renovation_budget_pct, 0.05)
 
   return {
     listPrice: property.listPrice,
-    downPaymentPct: 0.2,
-    interestRate: 0.0725,
-    loanTermYears: 30,
-    closingCostsPct: 0.03,
+    downPaymentPct: pick(f?.down_payment_pct, 0.2),
+    interestRate: pick(f?.interest_rate, 0.06),
+    loanTermYears: pick(f?.loan_term_years, 30),
+    closingCostsPct: pick(f?.closing_costs_pct, 0.03),
     monthlyRent: property.monthlyRent || 0,
     averageDailyRate: property.averageDailyRate || 150,
     occupancyRate: property.occupancyRate || 0.7,
-    vacancyRate: 0.05,
+    vacancyRate: pick(o?.vacancy_rate, 0.01),
     propertyTaxes: property.propertyTaxes || property.listPrice * 0.012,
-    insurance: property.insurance ?? property.listPrice * OPERATING_INSURANCE_PCT,
-    managementPct: 0.08,
-    maintenancePct: 0.05,
+    insurance:
+      property.insurance ?? property.listPrice * pick(o?.insurance_pct, OPERATING_INSURANCE_PCT),
+    managementPct: pick(o?.property_management_pct, 0),
+    maintenancePct: pick(o?.maintenance_pct, 0.05),
     rehabCost,
     arv,
-    holdingPeriodMonths: 6,
-    sellingCostsPct: 0.08,
+    holdingPeriodMonths: pick(fl?.holding_period_months, 6),
+    sellingCostsPct: pick(fl?.selling_costs_pct, 0.08),
     roomsRented: Math.max(1, (property.bedrooms || 3) - 1),
     totalBedrooms: property.bedrooms || 3,
     wholesaleFeePct: 0.007,
@@ -161,11 +178,22 @@ export function StrategyAnalyticsContainer({
   // Store the original list price - this never changes and is used for slider min/max
   const originalListPrice = useMemo(() => property.listPrice, [property.listPrice])
 
+  // Render-then-update: seed with fallbacks for instant paint, then re-seed once
+  // the resolved defaults (admin + this user's own) arrive.
+  const { defaults: resolvedDefaults } = useDefaults(property.zipCode || undefined)
+
   // State
   const [activeStrategy, setActiveStrategy] = useState<StrategyId | null>(initialStrategy || null)
   const [activeSubTab, setActiveSubTab] = useState<SubTabId>('metrics')
   const [compareView, setCompareView] = useState<'target' | 'list'>('target')
-  const [assumptions, setAssumptions] = useState(() => createDefaultAssumptions(property))
+  // Only the user's slider edits are stored; the baseline is derived. Layering
+  // edits over the defaults means a late-arriving defaults response can never
+  // clobber what the user already changed, without an effect to race it.
+  const [edits, setEdits] = useState<Partial<TargetAssumptions>>({})
+  const assumptions = useMemo(
+    () => ({ ...createDefaultAssumptions(property, resolvedDefaults), ...edits }),
+    [property, resolvedDefaults, edits],
+  )
 
   // Check sessionStorage to see if welcome modal has been shown this session
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
@@ -207,7 +235,7 @@ export function StrategyAnalyticsContainer({
 
   // Update assumption handler
   const updateAssumption = useCallback((key: keyof TargetAssumptions, value: number) => {
-    setAssumptions((prev) => ({
+    setEdits((prev) => ({
       ...prev,
       [key]: value,
     }))

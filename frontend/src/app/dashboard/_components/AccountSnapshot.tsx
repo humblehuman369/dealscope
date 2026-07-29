@@ -10,6 +10,7 @@ import {
   LogOut,
   ChevronRight,
   Trophy,
+  SlidersHorizontal,
 } from 'lucide-react'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -109,6 +110,12 @@ export function AccountSnapshot() {
           icon={<UserCircle className="w-5 h-5" />}
           title="Profile"
           description="Account, business, investor preferences"
+        />
+        <AccountCard
+          href="/profile?tab=investor"
+          icon={<SlidersHorizontal className="w-5 h-5" />}
+          title="Investment Assumptions"
+          description="Set your own defaults for every new analysis"
         />
         <AccountCard
           href="/saved-properties"

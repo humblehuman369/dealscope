@@ -85,8 +85,10 @@ class DealMakerService:
         """Resolve initial assumptions from DB defaults + market adjustments.
 
         ``resolved`` should be an AllAssumptions object produced by
-        assumption_resolver.  When not provided, falls back to Pydantic
-        schema defaults (which still reference defaults.py singletons).
+        assumption_resolver, which has already layered the admin defaults, the
+        ZIP market table and the user's own saved defaults.  When not provided,
+        falls back to Pydantic schema defaults (which still reference
+        defaults.py singletons) and the market table is applied here instead.
         """
         a = resolved or AllAssumptions()
         f = a.financing
@@ -104,7 +106,7 @@ class DealMakerService:
             maintenance_pct=o.maintenance_pct,
             management_pct=o.property_management_pct,
             insurance_pct=o.insurance_pct,
-            capex_pct=0.05,
+            capex_pct=o.capex_pct,
             appreciation_rate=a.appreciation_rate,
             rent_growth_rate=a.rent_growth_rate,
             expense_growth_rate=a.expense_growth_rate,
@@ -114,13 +116,25 @@ class DealMakerService:
 
         if zip_code:
             market = get_market_adjustments(zip_code)
-            assumptions_dict = assumptions.model_dump(exclude={"vacancy_rate", "appreciation_rate", "market_region"})
-            assumptions = InitialAssumptions(
-                **assumptions_dict,
-                vacancy_rate=market.get("vacancy_rate", o.vacancy_rate),
-                appreciation_rate=market.get("appreciation_rate", a.appreciation_rate),
-                market_region=market.get("region"),
-            )
+            if resolved is not None:
+                # The resolver already applied this market and then let the
+                # user's own defaults override it. Re-applying the regional
+                # average here would overwrite their explicit choice.
+                assumptions_dict = assumptions.model_dump(exclude={"market_region"})
+                assumptions = InitialAssumptions(
+                    **assumptions_dict,
+                    market_region=market.get("region"),
+                )
+            else:
+                assumptions_dict = assumptions.model_dump(
+                    exclude={"vacancy_rate", "appreciation_rate", "market_region"}
+                )
+                assumptions = InitialAssumptions(
+                    **assumptions_dict,
+                    vacancy_rate=market.get("vacancy_rate", o.vacancy_rate),
+                    appreciation_rate=market.get("appreciation_rate", a.appreciation_rate),
+                    market_region=market.get("region"),
+                )
 
         assumptions_dict = assumptions.model_dump(exclude={"str_defaults", "brrrr_defaults", "flip_defaults"})
         assumptions = InitialAssumptions(
@@ -286,6 +300,7 @@ class DealMakerService:
         cls,
         data: DealMakerRecordCreate,
         zip_code: str | None = None,
+        resolved: AllAssumptions | None = None,
     ) -> DealMakerRecord:
         """
         Create a new DealMakerRecord from property data.
@@ -294,10 +309,14 @@ class DealMakerService:
         1. User first views a property
         2. User saves a property to their portfolio
 
-        The initial_assumptions are locked at this moment and never re-fetched.
+        The initial_assumptions are locked at this moment and never re-fetched,
+        so ``resolved`` needs to carry the admin defaults and the user's own
+        saved defaults — whatever is passed here becomes that user's permanent
+        baseline for this property. Callers should supply it via
+        ``assumption_resolver.resolve_assumptions(db, user=...)``.
         """
         # Resolve defaults ONCE
-        initial = cls.resolve_initial_assumptions(zip_code or data.zip_code)
+        initial = cls.resolve_initial_assumptions(zip_code or data.zip_code, resolved)
 
         # Create record with property data + resolved defaults
         record = DealMakerRecord(
@@ -454,12 +473,15 @@ class DealMakerService:
         cls,
         property_data: dict[str, Any],
         zip_code: str | None = None,
+        resolved: AllAssumptions | None = None,
     ) -> DealMakerRecord:
         """
         Create a DealMakerRecord from raw property data (e.g., from PropertyResponse).
 
         This is a convenience method that extracts the relevant fields from
-        a property data dict and creates the record.
+        a property data dict and creates the record. Pass ``resolved`` so the
+        locked baseline reflects the admin and user defaults; see
+        :meth:`create_record`.
         """
         create_data = DealMakerRecordCreate(
             list_price=property_data.get("listPrice") or property_data.get("list_price") or 0,
@@ -475,7 +497,7 @@ class DealMakerService:
             zip_code=zip_code or property_data.get("zipCode") or property_data.get("zip_code"),
         )
 
-        return cls.create_record(create_data, zip_code)
+        return cls.create_record(create_data, zip_code, resolved)
 
 
 # Singleton instance for convenience

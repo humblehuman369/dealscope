@@ -45,6 +45,7 @@ from app.schemas.saved_property import (
 )
 from app.schemas.task import TaskCreate, TaskOut, TaskReorderRequest, TaskUpdate, UpcomingTaskOut
 from app.schemas.timeline import NoteCreate, TimelineEvent
+from app.services.assumption_resolver import resolve_assumptions
 from app.services.billing_service import billing_service
 from app.services.budget_service import budget_service
 from app.services.contact_service import contact_service
@@ -528,9 +529,14 @@ async def save_property(
         if not data.deal_maker_record and data.property_data_snapshot:
             try:
                 zip_code = data.address_zip or data.property_data_snapshot.get("zipCode")
+                # initial_assumptions is locked here for the life of the record,
+                # so it has to be this user's resolved baseline, not the
+                # hardcoded module defaults.
+                resolved = await resolve_assumptions(db, user=current_user, zip_code=zip_code)
                 deal_maker_record_obj = DealMakerService.create_from_property_data(
                     property_data=data.property_data_snapshot,
                     zip_code=zip_code,
+                    resolved=resolved,
                 )
             except Exception as e:
                 # Log the error but don't fail the save operation
@@ -1364,9 +1370,11 @@ async def update_deal_maker(
             rent = updates_dict["monthly_rent_override"]
             snapshot["monthlyRent"] = rent
             snapshot["rent_estimate"] = rent
+        resolved = await resolve_assumptions(db, user=current_user, zip_code=zip_code)
         record = DealMakerService.create_from_property_data(
             property_data=snapshot,
             zip_code=zip_code,
+            resolved=resolved,
         )
 
     # Apply updates and recalculate metrics
@@ -1444,9 +1452,11 @@ async def get_deal_maker(
         zip_code = saved.address_zip or (
             saved.property_data_snapshot.get("zipCode") if saved.property_data_snapshot else None
         )
+        resolved = await resolve_assumptions(db, user=current_user, zip_code=zip_code)
         record = DealMakerService.create_from_property_data(
             property_data=saved.property_data_snapshot or {},
             zip_code=zip_code,
+            resolved=resolved,
         )
 
         saved.deal_maker_record = sanitize_for_json_storage(DealMakerService.to_dict(record))

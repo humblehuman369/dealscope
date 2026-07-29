@@ -10,11 +10,11 @@ from pydantic import BaseModel
 
 from app.core.defaults import get_all_defaults
 from app.core.deps import DbSession, OptionalUser
+from app.services.assumption_resolver import resolve_assumption_layers
 from app.services.assumptions_service import (
     get_default_assumptions,
     get_market_adjustments,
 )
-from app.services.user_service import user_service
 
 logger = logging.getLogger(__name__)
 
@@ -35,17 +35,6 @@ class ResolvedDefaultsResponse(BaseModel):
     resolved: dict[str, Any]
     zip_code: str | None = None
     region: str | None = None
-
-
-def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
-    """Deep merge two dictionaries."""
-    result = {**base}
-    for key, value in override.items():
-        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
-            result[key] = _deep_merge(result[key], value)
-        else:
-            result[key] = value
-    return result
 
 
 # ===========================================
@@ -121,59 +110,33 @@ async def get_resolved_defaults(
     }
     ```
     """
-    # Layer 1+2: schema defaults overlaid with admin's DB-backed customizations.
-    # `get_default_assumptions(db)` returns the latest admin record (or schema
-    # defaults if no admin row exists), so this single call captures both.
-    schema_defaults = get_all_defaults()
-    if db is not None:
-        try:
-            admin_assumptions = await get_default_assumptions(db)
-            system_defaults = admin_assumptions.model_dump(by_alias=True)
-        except Exception as e:
-            logger.warning(f"Failed to load admin assumptions, using schema defaults: {e}")
-            system_defaults = schema_defaults
-    else:
-        system_defaults = schema_defaults
+    if db is None:
+        schema_defaults = get_all_defaults()
+        return ResolvedDefaultsResponse(
+            system_defaults=schema_defaults,
+            resolved=schema_defaults,
+            zip_code=zip_code,
+        )
 
-    resolved = {**system_defaults}
-
-    # Apply market adjustments if ZIP code provided
-    market_adjustments = None
-    region = None
-    if zip_code:
-        market_adjustments = get_market_adjustments(zip_code)
-        if market_adjustments:
-            region = market_adjustments.get("region")
-            # Apply relevant market adjustments to operating defaults
-            if "operating" not in resolved:
-                resolved["operating"] = {}
-            if "growth" not in resolved:
-                resolved["growth"] = {}
-
-            if "vacancy_rate" in market_adjustments:
-                resolved["operating"]["vacancy_rate"] = market_adjustments["vacancy_rate"]
-            if "appreciation_rate" in market_adjustments:
-                resolved["growth"]["appreciation_rate"] = market_adjustments["appreciation_rate"]
-
-    # Apply user overrides if authenticated
-    user_overrides = None
-    if current_user and db:
-        try:
-            profile = await user_service.get_or_create_profile(db, str(current_user.id))
-            if profile and profile.default_assumptions:
-                user_overrides = profile.default_assumptions
-                # Deep merge user overrides
-                resolved = _deep_merge(resolved, user_overrides)
-        except Exception as e:
-            logger.warning(f"Failed to load user assumptions: {e}")
+    try:
+        layers = await resolve_assumption_layers(db, user=current_user, zip_code=zip_code)
+    except Exception as e:
+        # Seeding the UI with schema defaults beats failing the whole screen.
+        logger.warning(f"Failed to resolve assumptions, using schema defaults: {e}")
+        schema_defaults = get_all_defaults()
+        return ResolvedDefaultsResponse(
+            system_defaults=schema_defaults,
+            resolved=schema_defaults,
+            zip_code=zip_code,
+        )
 
     return ResolvedDefaultsResponse(
-        system_defaults=system_defaults,
-        market_adjustments=market_adjustments,
-        user_overrides=user_overrides,
-        resolved=resolved,
+        system_defaults=layers.system_defaults,
+        market_adjustments=layers.market_adjustments,
+        user_overrides=layers.user_overrides,
+        resolved=layers.assumptions.model_dump(by_alias=True),
         zip_code=zip_code,
-        region=region,
+        region=layers.region,
     )
 
 

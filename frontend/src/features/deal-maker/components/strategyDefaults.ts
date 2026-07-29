@@ -51,7 +51,7 @@ import type { AllAssumptions } from '@/stores/index'
  * `undefined` admin values defer to the fallback so partial responses
  * (e.g. legacy persisted store missing a field) still render correctly.
  */
-function pick<T extends number | undefined>(
+export function pick<T extends number | undefined>(
   adminValue: T | null | undefined,
   fallback: number,
 ): number {

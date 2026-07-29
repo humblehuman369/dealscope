@@ -8,6 +8,7 @@ import { BusinessTab } from './_components/BusinessTab'
 import { InvestorTab } from './_components/InvestorTab'
 import { PreferencesTab } from './_components/PreferencesTab'
 import { AuthGuard } from '@/components/auth/AuthGuard'
+import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import type { TabType } from './_components/types'
 
 // ===========================================
@@ -27,8 +28,17 @@ const tabs = [
   { id: 'preferences' as TabType, label: 'Preferences', icon: Bell },
 ]
 
+function isTabType(value: string | null): value is TabType {
+  return tabs.some((tab) => tab.id === value)
+}
+
 function ProfileContent() {
-  const [activeTab, setActiveTab] = useState<TabType>('account')
+  // `?tab=investor` lets other screens deep-link straight to the assumptions
+  // editor instead of dropping the user on Account to hunt for it.
+  const requestedTab = useAppSearchParams().get('tab')
+  const [activeTab, setActiveTab] = useState<TabType>(
+    isTabType(requestedTab) ? requestedTab : 'account',
+  )
 
   const {
     user,

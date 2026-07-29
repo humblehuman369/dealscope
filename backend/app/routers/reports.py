@@ -99,7 +99,7 @@ async def download_comprehensive_excel(
             except Exception as e:
                 logger.warning("Could not merge saved deal_maker_record: %s", e)
 
-    assumptions = await resolve_assumptions(db)
+    assumptions = await resolve_assumptions(db, user=current_user)
     user_keys = apply_verdict_input_to_assumptions(assumptions, verdict_input)
     patched_property = patch_property_from_verdict_input(property_data, verdict_input)
     purchase_price = resolve_purchase_price(verdict_input, assumptions)
