@@ -23,13 +23,13 @@ content/assets/   # Marketing / content assets (e.g. screenshots)
 
 ## Quick start (local)
 
-**Prerequisites:** Node 18+, Python 3.12+, optional Docker.
+**Prerequisites:** Node 18+, Python 3.11 (matches CI), optional Docker.
 
 ```bash
 # Backend
 cd backend
-python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -r requirements.txt
+uv venv --python 3.11 --seed .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+uv pip install -r requirements.txt
 cp .env.example .env   # add API keys
 uvicorn app.main:app --reload --port 8000
 
@@ -39,9 +39,27 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
+`uv` (`brew install uv`) is the quickest way to get 3.11 without a system Python;
+substitute `python3.11 -m venv .venv` and `pip install` if you'd rather not use it.
+Or just run `make setup`, which does both halves.
+
 Set `NEXT_PUBLIC_API_URL` for production builds so Next.js rewrites target your public API (see `frontend/README.md`).
 
 **Docker (all services):** from repo root, copy `backend/.env`, then `docker-compose up -d` (see [`docs/operations/DEPLOYMENT.md`](docs/operations/DEPLOYMENT.md)).
+
+## Running tests
+
+The frontend suite is self-contained. The backend suite needs Postgres, so start
+the throwaway one that mirrors CI first:
+
+```bash
+make test-db-up     # postgres:16-alpine on port 5433, same credentials as CI
+make test           # backend + frontend
+make check          # full pre-deploy gate (see AGENTS.md §9)
+```
+
+Without a database, backend tests that need one error out during fixture setup
+while the rest still pass. `make help` lists every target.
 
 ## Documentation
 

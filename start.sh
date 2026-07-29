@@ -30,19 +30,37 @@ MODE=${1:-all}
 start_backend() {
     echo -e "${YELLOW}Starting Backend (FastAPI)...${NC}"
     cd backend
-    
-    # Check if virtual environment exists
-    if [ ! -d "venv" ]; then
-        echo "Creating virtual environment..."
-        python3 -m venv venv
+
+    # Pin 3.11 to match CI and pyproject's requires-python. Naming the version
+    # explicitly matters: a bare `python3` is 3.9 on stock macOS, which builds a
+    # venv the app cannot run.
+    if [ ! -d ".venv" ]; then
+        echo "Creating virtual environment (Python 3.11)..."
+        # --seed installs pip, so the `pip install` below always resolves inside
+        # the venv rather than falling through to the system Python.
+        if command -v uv >/dev/null 2>&1; then
+            uv venv --python 3.11 --seed .venv
+        elif command -v python3.11 >/dev/null 2>&1; then
+            python3.11 -m venv .venv
+        else
+            echo -e "${RED}No Python 3.11 found.${NC}"
+            echo "Install one of:"
+            echo "  brew install uv            # manages its own interpreters"
+            echo "  brew install python@3.11"
+            exit 1
+        fi
     fi
-    
+
     # Activate virtual environment
-    source venv/bin/activate
-    
+    source .venv/bin/activate
+
     # Install dependencies
     echo "Installing dependencies..."
-    pip install -r requirements.txt -q
+    if command -v uv >/dev/null 2>&1; then
+        uv pip install -r requirements.txt -q
+    else
+        pip install -r requirements.txt -q
+    fi
     
     # Start server
     echo -e "${GREEN}Backend running at http://localhost:8000${NC}"

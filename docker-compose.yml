@@ -31,6 +31,28 @@ services:
       timeout: 5s
       retries: 5
 
+  # Throwaway database for the backend test suite. Image and credentials match
+  # the Postgres service in .github/workflows/ci.yml so local runs and CI agree.
+  # Deliberately volume-less: every run starts from a clean schema.
+  #
+  # Host port 5433 keeps it clear of the app `db` above, so both can run at once.
+  # Started only via its profile: `docker compose --profile test up -d test-db`.
+  test-db:
+    image: postgres:16-alpine
+    container_name: dealgapiq-test-db
+    profiles: ["test"]
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test_db
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   # FastAPI Backend
   backend:
     build:
