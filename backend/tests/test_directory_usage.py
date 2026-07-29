@@ -1,27 +1,19 @@
-"""Tests for directory usage limits and the billing-cycle period key (Task 3.4)."""
+"""Tests for directory export limits and the billing-cycle period key."""
 
 from datetime import UTC, datetime
 from types import SimpleNamespace
 
 from app.services.directory_usage import (
-    DAILY_DETAIL_VIEW_LIMIT,
     EXPORT_MAX_RECORDS,
     MONTHLY_EXPORT_RECORD_LIMIT,
     billing_cycle_key,
-    daily_period_key,
 )
 
 
 def test_plan_limits():
-    """Limits confirmed in the task brief: 25/day views, 200/export, 1,000/month."""
-    assert DAILY_DETAIL_VIEW_LIMIT == 25
+    """Export limits: 200 records per export, 1,000 per billing cycle."""
     assert EXPORT_MAX_RECORDS == 200
     assert MONTHLY_EXPORT_RECORD_LIMIT == 1_000
-
-
-def test_daily_period_key_is_utc_date():
-    now = datetime(2026, 7, 6, 23, 59, tzinfo=UTC)
-    assert daily_period_key(now) == "2026-07-06"
 
 
 def _sub(period_start: datetime | None):

@@ -154,35 +154,33 @@ async def test_free_list_gets_403(monkeypatch):
     assert exc.value.status_code == 403
 
 
-async def test_trial_list_is_redacted(monkeypatch):
-    monkeypatch.setattr(
-        lenders_router, "require_view_access", AsyncMock(return_value=Entitlement.TRIAL)
-    )
+async def test_trial_list_gets_403(monkeypatch):
+    """The directory is not part of the free trial."""
 
-    response = await list_lenders(
-        current_user=_user(), db=SimpleNamespace(), page=1, limit=25, **_list_kwargs()
-    )
+    async def deny(*args, **kwargs):
+        raise HTTPException(status_code=403, detail={"error": "DIRECTORY_PAID_ONLY"})
 
-    assert response.contactsRedacted is True
-    assert len(response.lenders) > 0
-    for lender in response.lenders:
-        assert not lender.phone
-        assert not lender.email
-        assert not lender.website
-        assert not lender.domain
+    monkeypatch.setattr(lenders_router, "require_view_access", deny)
+
+    with pytest.raises(HTTPException) as exc:
+        await list_lenders(
+            current_user=_user(), db=SimpleNamespace(), page=1, limit=25, **_list_kwargs()
+        )
+
+    assert exc.value.status_code == 403
+    assert exc.value.detail["error"] == "DIRECTORY_PAID_ONLY"
 
 
 async def test_paid_list_keeps_contacts(monkeypatch):
-    monkeypatch.setattr(
-        lenders_router, "require_view_access", AsyncMock(return_value=Entitlement.PAID)
-    )
+    """Paid responses are never redacted — there is no redaction path left."""
+    monkeypatch.setattr(lenders_router, "require_view_access", AsyncMock(return_value=None))
 
     response = await list_lenders(
         current_user=_user(), db=SimpleNamespace(), page=1, limit=25, **_list_kwargs()
     )
 
-    assert response.contactsRedacted is False
     assert any(lender.phone or lender.email for lender in response.lenders)
+    assert all(lender.domain for lender in response.lenders)
 
 
 async def test_stats_teaser_for_free(monkeypatch):

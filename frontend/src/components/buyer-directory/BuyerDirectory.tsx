@@ -330,8 +330,8 @@ export default function BuyerDirectory() {
       ),
     getNextPageParam: (lastPage) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
-    // UX hint only — trial and paid may view; the server enforces every gate.
-    enabled: isAuthenticated && !subscriptionLoading && (isPaidPro || isTrialing),
+    // UX hint only — the directory is paid-only and the server enforces it.
+    enabled: isAuthenticated && !subscriptionLoading && isPaidPro,
     retry: false,
   });
 
@@ -340,52 +340,23 @@ export default function BuyerDirectory() {
     [buyerPages],
   );
   const listTotal = buyerPages?.pages[0]?.total ?? 0;
-  const contactsRedacted = buyerPages?.pages[0]?.contactsRedacted === true;
   const viewForbidden =
     buyersError instanceof ApiError &&
     (buyersError.code === 'PRO_REQUIRED' ||
+      buyersError.code === 'DIRECTORY_PAID_ONLY' ||
       buyersError.status === 401 ||
       buyersError.status === 403);
-  // View free (trial included), export paid — mirrors the server's entitlement.
-  const hasViewAccess = (isPaidPro || isTrialing) && !viewForbidden;
-  const hasPaidAccess = isPaidPro && !viewForbidden;
+  // The directory is paid-only: viewing and exporting share one gate.
+  const hasAccess = isPaidPro && !viewForbidden;
   const directoryTotal = statsData?.total;
   const displayTotalLabel =
     typeof directoryTotal === 'number' ? formatBuyerTotal(directoryTotal) : PREVIEW_BUYER_COUNT_FALLBACK;
   const stateOptions = STATES;
 
-  // Trial contact reveals (server-counted, 25/day) + export state.
-  const [revealedContacts, setRevealedContacts] = useState<Record<number, Buyer>>({});
-  const [viewLimitNotice, setViewLimitNotice] = useState<string | null>(null);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
   const [exporting, setExporting] = useState<'csv' | 'print' | null>(null);
-  const [revealingId, setRevealingId] = useState<number | null>(null);
-
-  const revealContact = async (id: number) => {
-    setRevealingId(id);
-    try {
-      const full = await api.get<Buyer>(`/api/buyers/${id}`);
-      setRevealedContacts(prev => ({ ...prev, [id]: full }));
-      setViewLimitNotice(null);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 429) {
-        setViewLimitNotice(
-          (err.detail?.message as string) ?? 'Daily view limit reached — resets tomorrow.',
-        );
-      } else {
-        setViewLimitNotice('Could not load contact info. Please try again.');
-      }
-    } finally {
-      setRevealingId(null);
-    }
-  };
 
   const handleExport = async (fmt: 'csv' | 'print') => {
-    if (!hasPaidAccess) {
-      // Trial UX copy (server enforces regardless).
-      setExportNotice('Exports unlock with your first payment.');
-      return;
-    }
     setExporting(fmt);
     setExportNotice(null);
     const result = await runDirectoryExport(
@@ -401,7 +372,7 @@ export default function BuyerDirectory() {
     setAppliedSearch({ mode: searchMode, city, stateCode, county, zip });
   };
 
-  const displayCount = hasViewAccess ? listTotal : displayTotalLabel;
+  const displayCount = hasAccess ? listTotal : displayTotalLabel;
 
   const openSignIn = () => {
     router.push('/directory?auth=required&redirect=/directory');
@@ -414,16 +385,29 @@ export default function BuyerDirectory() {
         description: 'Create an account or sign in to search and view the buyer directory.',
         cta: 'Sign in to continue',
         onClick: openSignIn,
-        footnote: 'Exports unlock with your first payment.',
+        footnote: 'The directory requires a paid subscription.',
       }
-    : {
-        eyebrow: 'Pro Required',
-        title: `Unlock ${displayTotalLabel} verified buyers`,
-        description: 'Full search, filters, and buyer records are available on Pro. Exports unlock with your first payment.',
-        cta: 'Upgrade to Pro',
-        onClick: () => setUpgradeModalOpen(true),
-        footnote: 'Trial includes full directory viewing.',
-      };
+    : isTrialing
+      ? {
+          // A trialing user already picked Pro, so "upgrade" would confuse them —
+          // what they need is for billing to start.
+          eyebrow: 'Paid Feature',
+          title: `Unlock ${displayTotalLabel} verified buyers`,
+          description:
+            'The buyer directory is not included in the free trial. Start billing now to get full search, filters, contact details, and exports.',
+          cta: 'Start paid Pro',
+          onClick: () => setUpgradeModalOpen(true),
+          footnote: 'Billing starts today. Cancel anytime.',
+        }
+      : {
+          eyebrow: 'Paid Pro Required',
+          title: `Unlock ${displayTotalLabel} verified buyers`,
+          description:
+            'Full search, filters, buyer contact details, and exports come with a paid Pro subscription.',
+          cta: 'Start paid Pro',
+          onClick: () => setUpgradeModalOpen(true),
+          footnote: 'Billing starts today. Cancel anytime.',
+        };
 
   return (
     <div style={styles.page}>
@@ -531,22 +515,19 @@ export default function BuyerDirectory() {
                 appliedSearch.mode === 'zip' && appliedSearch.zip ? `near ${appliedSearch.zip}` : 'nationwide'}
             </span>
           </div>
-          {hasViewAccess && (
+          {hasAccess && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              {hasPaidAccess && (
-                <div style={styles.mutedTextSm}>
-                  Save buyers to your dashboard for quick access later
-                </div>
-              )}
+              <div style={styles.mutedTextSm}>
+                Save buyers to your dashboard for quick access later
+              </div>
               <button
                 type="button"
                 className="dgiq-btn-press"
                 style={styles.exportBtn}
                 disabled={exporting !== null}
                 onClick={() => handleExport('csv')}
-                title={hasPaidAccess ? 'Download CSV (up to 200 records)' : 'Exports unlock with your first payment.'}
+                title="Download CSV (up to 200 records)"
               >
-                {!hasPaidAccess && <Lock size={12} />}
                 {exporting === 'csv' ? 'Exporting…' : 'Download CSV'}
               </button>
               <button
@@ -555,14 +536,13 @@ export default function BuyerDirectory() {
                 style={styles.exportBtn}
                 disabled={exporting !== null}
                 onClick={() => handleExport('print')}
-                title={hasPaidAccess ? 'Print / save as PDF (up to 200 records)' : 'Exports unlock with your first payment.'}
+                title="Print / save as PDF (up to 200 records)"
               >
-                {!hasPaidAccess && <Lock size={12} />}
                 {exporting === 'print' ? 'Preparing…' : 'Print / PDF'}
               </button>
             </div>
           )}
-          {!hasViewAccess && (
+          {!hasAccess && (
             <div style={styles.paidProBadge}>
               <Lock size={14} />
               <span style={{ fontFamily: 'Space Mono, monospace', letterSpacing: 0.5 }}>PRO ONLY</span>
@@ -570,17 +550,9 @@ export default function BuyerDirectory() {
           )}
         </div>
 
-        {/* Trial / export notices (server-enforced; these are UX echoes) */}
+        {/* Export notice (server-enforced; this is a UX echo) */}
         {exportNotice && (
           <div style={styles.noticeStrip} role="status">{exportNotice}</div>
-        )}
-        {viewLimitNotice && (
-          <div style={styles.noticeStrip} role="status">{viewLimitNotice}</div>
-        )}
-        {hasViewAccess && contactsRedacted && !viewLimitNotice && (
-          <div style={styles.noticeStrip} role="note">
-            Trial: tap “View contact info” on a buyer to reveal their details — up to 25 per day.
-          </div>
         )}
 
         {/* Cards grid (with Pro gate overlay) */}
@@ -589,30 +561,24 @@ export default function BuyerDirectory() {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
             gap: 16,
-            filter: hasViewAccess ? 'none' : 'blur(8px)',
-            pointerEvents: hasViewAccess ? 'auto' : 'none',
-            userSelect: hasViewAccess ? 'auto' : 'none',
+            filter: hasAccess ? 'none' : 'blur(8px)',
+            pointerEvents: hasAccess ? 'auto' : 'none',
+            userSelect: hasAccess ? 'auto' : 'none',
             transition: 'filter 0.4s ease',
           }}>
-            {hasViewAccess && buyersLoading && <LoadingBuyerCards />}
-            {hasViewAccess && buyersErrored && !viewForbidden && (
+            {hasAccess && buyersLoading && <LoadingBuyerCards />}
+            {hasAccess && buyersErrored && !viewForbidden && (
               <div style={styles.emptyState}>Could not load buyer directory. Refresh and try again.</div>
             )}
-            {hasViewAccess && !buyersLoading && !buyersErrored && buyers.length === 0 && (
+            {hasAccess && !buyersLoading && !buyersErrored && buyers.length === 0 && (
               <div style={styles.emptyState}>No buyers found. Try a nearby city, county, or zip code.</div>
             )}
-            {hasViewAccess && !buyersLoading && !buyersErrored && buyers.map(b => (
-              <BuyerCard
-                key={b.id}
-                buyer={revealedContacts[b.id] ?? b}
-                redacted={contactsRedacted && !revealedContacts[b.id]}
-                revealing={revealingId === b.id}
-                onReveal={() => revealContact(b.id)}
-              />
+            {hasAccess && !buyersLoading && !buyersErrored && buyers.map(b => (
+              <BuyerCard key={b.id} buyer={b} />
             ))}
-            {!hasViewAccess && <PreviewBuyerCards />}
+            {!hasAccess && <PreviewBuyerCards />}
           </div>
-          {hasViewAccess && !buyersLoading && !buyersErrored && hasNextPage && (
+          {hasAccess && !buyersLoading && !buyersErrored && hasNextPage && (
             <div style={styles.loadMoreWrap}>
               <button
                 type="button"
@@ -629,7 +595,7 @@ export default function BuyerDirectory() {
           )}
 
           {/* Pro upgrade overlay */}
-          {!subscriptionLoading && !hasViewAccess && (
+          {!subscriptionLoading && !hasAccess && (
             <div style={styles.gateWrap}>
               <div style={styles.gateCard}>
                 <div style={styles.gateIcon}><Lock size={24} color={directoryTokens.accentOnAccent} /></div>
@@ -673,17 +639,7 @@ export default function BuyerDirectory() {
 // SUB-COMPONENTS
 // =============================================================================
 
-function BuyerCard({
-  buyer,
-  redacted = false,
-  revealing = false,
-  onReveal,
-}: {
-  buyer: Buyer;
-  redacted?: boolean;
-  revealing?: boolean;
-  onReveal?: () => void;
-}) {
+function BuyerCard({ buyer }: { buyer: Buyer }) {
   return (
     <div className="dgiq-directory-card" style={styles.card}>
       {/* Top accent line */}
@@ -693,15 +649,13 @@ function BuyerCard({
         opacity: 0.5,
       }} />
 
-      {!redacted && (
-        <div style={{ position: 'absolute', top: 14, right: 14 }}>
-          <SaveDirectoryContactButton
-            entityType="buyer"
-            entityId={buyer.id}
-            snapshot={buildBuyerSnapshot(buyer)}
-          />
-        </div>
-      )}
+      <div style={{ position: 'absolute', top: 14, right: 14 }}>
+        <SaveDirectoryContactButton
+          entityType="buyer"
+          entityId={buyer.id}
+          snapshot={buildBuyerSnapshot(buyer)}
+        />
+      </div>
 
       {/* Header */}
       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 14, paddingRight: 32 }}>
@@ -751,27 +705,13 @@ function BuyerCard({
 
       {/* Contact */}
       <div style={{ paddingTop: 12, borderTop: `1px solid ${directoryTokens.border}` }}>
-        {redacted ? (
-          <button
-            type="button"
-            className="dgiq-btn-press"
-            style={styles.revealBtn}
-            disabled={revealing}
-            onClick={onReveal}
-          >
-            <Lock size={12} /> {revealing ? 'Loading…' : 'View contact info'}
-          </button>
-        ) : (
-          <>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 8, fontSize: 12, color: directoryTokens.secondary, lineHeight: 1.5 }}>
-              <MapPin size={13} style={{ marginTop: 2, flexShrink: 0, color: directoryTokens.muted }} />
-              <div>{buyer.street}<br />{buyer.city}, {buyer.state} {buyer.zip}</div>
-            </div>
-            <ContactRow icon={<Phone size={12} />} value={buyer.phone} />
-            <ContactRow icon={<Mail size={12} />} value={buyer.email} />
-            <ContactRow icon={<Globe size={12} />} value={buyer.website} />
-          </>
-        )}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 8, fontSize: 12, color: directoryTokens.secondary, lineHeight: 1.5 }}>
+          <MapPin size={13} style={{ marginTop: 2, flexShrink: 0, color: directoryTokens.muted }} />
+          <div>{buyer.street}<br />{buyer.city}, {buyer.state} {buyer.zip}</div>
+        </div>
+        <ContactRow icon={<Phone size={12} />} value={buyer.phone} />
+        <ContactRow icon={<Mail size={12} />} value={buyer.email} />
+        <ContactRow icon={<Globe size={12} />} value={buyer.website} />
       </div>
     </div>
   );
@@ -993,13 +933,5 @@ const styles = {
     background: 'color-mix(in srgb, var(--accent-sky) 8%, transparent)',
     border: '1px solid color-mix(in srgb, var(--accent-sky) 30%, transparent)',
     borderRadius: 9, fontSize: 13, color: 'var(--text-body)',
-  },
-  revealBtn: {
-    background: 'transparent', color: 'var(--accent-sky)',
-    border: '1px solid color-mix(in srgb, var(--accent-sky) 35%, transparent)',
-    borderRadius: 8, padding: '8px 12px', cursor: 'pointer',
-    fontFamily: 'inherit', fontWeight: 600, fontSize: 12,
-    display: 'inline-flex', alignItems: 'center', gap: 6, width: '100%',
-    justifyContent: 'center',
   },
 } as Record<string, CSSProperties>;

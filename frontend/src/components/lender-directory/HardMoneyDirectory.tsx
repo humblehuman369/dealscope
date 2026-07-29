@@ -204,8 +204,8 @@ export default function HardMoneyDirectory() {
       api.get<LenderListResponse>(buildLendersListPath(appliedFilters, pageParam)),
     getNextPageParam: (lastPage) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
-    // UX hint only — trial and paid may view; the server enforces every gate.
-    enabled: isAuthenticated && !subscriptionLoading && (isPaidPro || isTrialing),
+    // UX hint only — the directory is paid-only and the server enforces it.
+    enabled: isAuthenticated && !subscriptionLoading && isPaidPro,
     retry: false,
   });
 
@@ -214,55 +214,26 @@ export default function HardMoneyDirectory() {
     [lenderPages],
   );
   const listTotal = lenderPages?.pages[0]?.total ?? 0;
-  const contactsRedacted = lenderPages?.pages[0]?.contactsRedacted === true;
   const viewForbidden =
     lendersError instanceof ApiError &&
     (lendersError.code === 'PRO_REQUIRED' ||
+      lendersError.code === 'DIRECTORY_PAID_ONLY' ||
       lendersError.status === 401 ||
       lendersError.status === 403);
-  // View free (trial included), export paid — mirrors the server's entitlement.
-  const hasViewAccess = (isPaidPro || isTrialing) && !viewForbidden;
-  const hasPaidAccess = isPaidPro && !viewForbidden;
+  // The directory is paid-only: viewing and exporting share one gate.
+  const hasAccess = isPaidPro && !viewForbidden;
 
   const directoryTotal = statsData?.total ?? LENDER_DIRECTORY_TOTAL;
   const totalLabel = directoryTotal.toLocaleString();
   const noCreditCheckCount = stats?.noCreditCheckCount ?? 0;
 
-  const displayLenders = hasViewAccess ? loadedLenders : [];
-  const displayCount = hasViewAccess ? listTotal : totalLabel;
+  const displayLenders = hasAccess ? loadedLenders : [];
+  const displayCount = hasAccess ? listTotal : totalLabel;
 
-  // Trial contact reveals (server-counted, 25/day) + export state.
-  const [revealedContacts, setRevealedContacts] = useState<Record<number, Lender>>({});
-  const [viewLimitNotice, setViewLimitNotice] = useState<string | null>(null);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
   const [exporting, setExporting] = useState<'csv' | 'print' | null>(null);
-  const [revealingId, setRevealingId] = useState<number | null>(null);
-
-  const revealContact = async (id: number) => {
-    setRevealingId(id);
-    try {
-      const full = await api.get<Lender>(`/api/lenders/${id}`);
-      setRevealedContacts(prev => ({ ...prev, [id]: full }));
-      setViewLimitNotice(null);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 429) {
-        setViewLimitNotice(
-          (err.detail?.message as string) ?? 'Daily view limit reached — resets tomorrow.',
-        );
-      } else {
-        setViewLimitNotice('Could not load contact info. Please try again.');
-      }
-    } finally {
-      setRevealingId(null);
-    }
-  };
 
   const handleExport = async (fmt: 'csv' | 'print') => {
-    if (!hasPaidAccess) {
-      // Trial UX copy (server enforces regardless).
-      setExportNotice('Exports unlock with your first payment.');
-      return;
-    }
     setExporting(fmt);
     setExportNotice(null);
     const result = await runDirectoryExport(
@@ -286,17 +257,29 @@ export default function HardMoneyDirectory() {
           'Create an account or sign in to search and view the hard money lender directory.',
         cta: 'Sign in to continue',
         onClick: openSignIn,
-        footnote: 'Exports unlock with your first payment.',
+        footnote: 'The directory requires a paid subscription.',
       }
-    : {
-        eyebrow: 'Pro Required',
-        title: `Unlock ${totalLabel} verified lenders`,
-        description:
-          'Full search, filters, and lender records are available on Pro. Exports unlock with your first payment.',
-        cta: 'Upgrade to Pro',
-        onClick: () => setUpgradeModalOpen(true),
-        footnote: 'Trial includes full directory viewing.',
-      };
+    : isTrialing
+      ? {
+          // A trialing user already picked Pro, so "upgrade" would confuse them —
+          // what they need is for billing to start.
+          eyebrow: 'Paid Feature',
+          title: `Unlock ${totalLabel} verified lenders`,
+          description:
+            'The lender directory is not included in the free trial. Start billing now to get full search, filters, contact details, and exports.',
+          cta: 'Start paid Pro',
+          onClick: () => setUpgradeModalOpen(true),
+          footnote: 'Billing starts today. Cancel anytime.',
+        }
+      : {
+          eyebrow: 'Paid Pro Required',
+          title: `Unlock ${totalLabel} verified lenders`,
+          description:
+            'Full search, filters, lender contact details, and exports come with a paid Pro subscription.',
+          cta: 'Start paid Pro',
+          onClick: () => setUpgradeModalOpen(true),
+          footnote: 'Billing starts today. Cancel anytime.',
+        };
 
   return (
     <div style={styles.page}>
@@ -439,7 +422,7 @@ export default function HardMoneyDirectory() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
             <span style={styles.countNum}>{displayCount}</span>
             <span style={styles.mutedTextMd}>
-              {!hasViewAccess
+              {!hasAccess
                 ? 'verified lenders nationwide'
                 : stateFilter
                   // Coverage is licensed state by state — say so rather than
@@ -448,22 +431,19 @@ export default function HardMoneyDirectory() {
                   : 'lenders match'}
             </span>
           </div>
-          {hasViewAccess && (
+          {hasAccess && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              {hasPaidAccess && (
-                <div style={styles.mutedTextSm}>
-                  Save lenders to your dashboard for quick access later
-                </div>
-              )}
+              <div style={styles.mutedTextSm}>
+                Save lenders to your dashboard for quick access later
+              </div>
               <button
                 type="button"
                 className="dgiq-btn-press"
                 style={styles.exportBtn}
                 disabled={exporting !== null}
                 onClick={() => handleExport('csv')}
-                title={hasPaidAccess ? 'Download CSV (up to 200 records)' : 'Exports unlock with your first payment.'}
+                title="Download CSV (up to 200 records)"
               >
-                {!hasPaidAccess && <Lock size={12} />}
                 {exporting === 'csv' ? 'Exporting…' : 'Download CSV'}
               </button>
               <button
@@ -472,14 +452,13 @@ export default function HardMoneyDirectory() {
                 style={styles.exportBtn}
                 disabled={exporting !== null}
                 onClick={() => handleExport('print')}
-                title={hasPaidAccess ? 'Print / save as PDF (up to 200 records)' : 'Exports unlock with your first payment.'}
+                title="Print / save as PDF (up to 200 records)"
               >
-                {!hasPaidAccess && <Lock size={12} />}
                 {exporting === 'print' ? 'Preparing…' : 'Print / PDF'}
               </button>
             </div>
           )}
-          {!hasViewAccess && (
+          {!hasAccess && (
             <div style={styles.paidProBadge}>
               <Lock size={14} />
               <span style={{ fontFamily: 'Space Mono, monospace', letterSpacing: 0.5 }}>PRO ONLY</span>
@@ -487,17 +466,9 @@ export default function HardMoneyDirectory() {
           )}
         </div>
 
-        {/* Trial / export notices (server-enforced; these are UX echoes) */}
+        {/* Export notice (server-enforced; this is a UX echo) */}
         {exportNotice && (
           <div style={styles.noticeStrip} role="status">{exportNotice}</div>
-        )}
-        {viewLimitNotice && (
-          <div style={styles.noticeStrip} role="status">{viewLimitNotice}</div>
-        )}
-        {hasViewAccess && contactsRedacted && !viewLimitNotice && (
-          <div style={styles.noticeStrip} role="note">
-            Trial: tap “View contact info” on a lender to reveal their details — up to 25 per day.
-          </div>
         )}
 
         <div style={{ position: 'relative' }}>
@@ -505,39 +476,35 @@ export default function HardMoneyDirectory() {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
             gap: 16,
-            filter: hasViewAccess ? 'none' : 'blur(8px)',
-            pointerEvents: hasViewAccess ? 'auto' : 'none',
-            userSelect: hasViewAccess ? 'auto' : 'none',
+            filter: hasAccess ? 'none' : 'blur(8px)',
+            pointerEvents: hasAccess ? 'auto' : 'none',
+            userSelect: hasAccess ? 'auto' : 'none',
             transition: 'filter 0.4s ease',
           }}>
-            {hasViewAccess && lendersLoading && (
+            {hasAccess && lendersLoading && (
               <div style={styles.emptyState}>Loading lenders…</div>
             )}
-            {hasViewAccess && lendersErrored && !viewForbidden && (
+            {hasAccess && lendersErrored && !viewForbidden && (
               <div style={styles.emptyState}>
                 Could not load the lender directory. Refresh and try again.
               </div>
             )}
-            {hasViewAccess && !lendersLoading && !lendersErrored && displayLenders.length === 0 && (
+            {hasAccess && !lendersLoading && !lendersErrored && displayLenders.length === 0 && (
               <div style={styles.emptyState}>
                 No lenders match these filters. Try widening your criteria.
               </div>
             )}
-            {hasViewAccess && !lendersLoading && displayLenders.map((lender) => (
+            {hasAccess && !lendersLoading && displayLenders.map((lender) => (
               <LenderCard
                 key={lender.id}
-                lender={revealedContacts[lender.id] ?? lender}
+                lender={lender}
                 localState={stateFilter}
-                showSave={!contactsRedacted || !!revealedContacts[lender.id]}
-                redacted={contactsRedacted && !revealedContacts[lender.id]}
-                revealing={revealingId === lender.id}
-                onReveal={() => revealContact(lender.id)}
               />
             ))}
-            {!hasViewAccess && <PreviewLenderCards />}
+            {!hasAccess && <PreviewLenderCards />}
           </div>
 
-          {hasViewAccess && !lendersLoading && !lendersErrored && hasNextPage && (
+          {hasAccess && !lendersLoading && !lendersErrored && hasNextPage && (
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
               <button
                 type="button"
@@ -553,7 +520,7 @@ export default function HardMoneyDirectory() {
             </div>
           )}
 
-          {!subscriptionLoading && !hasViewAccess && (
+          {!subscriptionLoading && !hasAccess && (
             <div style={styles.gateWrap}>
               <div style={styles.gateCardInline}>
                 <div style={styles.gateIcon}><Lock size={24} color={directoryTokens.accentOnAccent} /></div>
@@ -626,18 +593,10 @@ function PreviewLenderCards() {
 function LenderCard({
   lender,
   localState,
-  showSave,
-  redacted = false,
-  revealing = false,
-  onReveal,
 }: {
   lender: Lender;
   /** Currently filtered state, used to flag lenders headquartered in it. */
   localState: string;
-  showSave: boolean;
-  redacted?: boolean;
-  revealing?: boolean;
-  onReveal?: () => void;
 }) {
   const products = lender.loan_products.map(productLabel);
   const isLocal = !!localState && lender.state === localState;
@@ -650,17 +609,15 @@ function LenderCard({
         boxShadow: directoryTokens.shadowCard,
       }}
     >
-      {showSave && (
-        <div style={{ position: 'absolute', top: 14, right: 14 }}>
-          <SaveDirectoryContactButton
-            entityType="lender"
-            entityId={lender.id}
-            snapshot={buildLenderSnapshot({ ...lender, display: lender.display ?? undefined })}
-          />
-        </div>
-      )}
+      <div style={{ position: 'absolute', top: 14, right: 14 }}>
+        <SaveDirectoryContactButton
+          entityType="lender"
+          entityId={lender.id}
+          snapshot={buildLenderSnapshot({ ...lender, display: lender.display ?? undefined })}
+        />
+      </div>
 
-      <div style={{ marginBottom: 10, paddingRight: showSave ? 32 : 0 }}>
+      <div style={{ marginBottom: 10, paddingRight: 32 }}>
         <h3 style={{
           fontSize: 15, fontWeight: 700, margin: '0 0 6px', letterSpacing: '-0.01em',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -695,17 +652,7 @@ function LenderCard({
       </div>
 
       <div style={{ marginBottom: 14 }}>
-        {redacted ? (
-          <button
-            type="button"
-            className="dgiq-btn-press"
-            style={styles.revealBtn}
-            disabled={revealing}
-            onClick={onReveal}
-          >
-            <Lock size={12} /> {revealing ? 'Loading…' : 'View contact info'}
-          </button>
-        ) : lender.contact_type === 'web_only' ? (
+        {lender.contact_type === 'web_only' ? (
           <a
             href={lender.website}
             target="_blank"
@@ -937,13 +884,5 @@ const styles = {
     background: 'color-mix(in srgb, var(--accent-sky) 8%, transparent)',
     border: '1px solid color-mix(in srgb, var(--accent-sky) 30%, transparent)',
     borderRadius: 9, fontSize: 13, color: 'var(--text-body)',
-  },
-  revealBtn: {
-    background: 'transparent', color: 'var(--accent-sky)',
-    border: '1px solid color-mix(in srgb, var(--accent-sky) 35%, transparent)',
-    borderRadius: 8, padding: '8px 12px', cursor: 'pointer',
-    fontFamily: 'inherit', fontWeight: 600, fontSize: 12,
-    display: 'inline-flex', alignItems: 'center', gap: 6, width: '100%',
-    justifyContent: 'center',
   },
 } as Record<string, CSSProperties>;

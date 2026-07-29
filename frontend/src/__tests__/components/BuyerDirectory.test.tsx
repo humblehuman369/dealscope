@@ -98,79 +98,28 @@ describe('BuyerDirectory paid access', () => {
     expect(mockApiGet).not.toHaveBeenCalled()
   })
 
-  it('trial users view the directory with redacted contacts and can reveal them', async () => {
+  it('blocks trialing users — the directory is not part of the free trial', async () => {
     mockUseSubscription.mockReturnValue({
       isPaidPro: false,
       isTrialing: true,
       isAuthenticated: true,
       isLoading: false,
     })
-    mockApiGet.mockImplementation((path: string) => {
-      if (path === '/api/buyers/stats') {
-        return Promise.resolve({ total: 2812, byState: [] })
-      }
-      if (path === '/api/buyers/1') {
-        return Promise.resolve(sampleBuyer)
-      }
-      return Promise.resolve({
-        buyers: [{ ...sampleBuyer, phone: '', email: '', website: '', street: '' }],
-        total: 1,
-        page: 1,
-        limit: 25,
-        totalPages: 1,
-        contactsRedacted: true,
-      })
-    })
+    mockApiGet.mockResolvedValue({ total: 2812, byState: [] })
 
     renderDirectory()
 
-    // Trial sees the record without contact fields...
-    await waitFor(() => expect(screen.getByText('Revival Home Buyer')).toBeTruthy())
-    expect(screen.queryByText('(813) 548-3674')).toBeNull()
+    // The gate explains why and offers to start billing, rather than telling a
+    // user who already picked Pro to "upgrade".
+    expect(await screen.findByText(/not included in the free trial/i)).toBeTruthy()
+    expect(screen.getByRole('button', { name: /start paid pro/i })).toBeTruthy()
 
-    // ...and reveals contacts through the server-counted detail endpoint.
-    fireEvent.click(screen.getByRole('button', { name: /view contact info/i }))
-    await waitFor(() => expect(mockApiGet).toHaveBeenCalledWith('/api/buyers/1'))
-    expect(await screen.findByText('(813) 548-3674')).toBeTruthy()
-  })
-
-  it('shows the daily limit message when the server returns 429', async () => {
-    mockUseSubscription.mockReturnValue({
-      isPaidPro: false,
-      isTrialing: true,
-      isAuthenticated: true,
-      isLoading: false,
-    })
-    const { ApiError } = await import('@/lib/api-client')
-    mockApiGet.mockImplementation((path: string) => {
-      if (path === '/api/buyers/stats') {
-        return Promise.resolve({ total: 2812, byState: [] })
-      }
-      if (path === '/api/buyers/1') {
-        return Promise.reject(
-          new ApiError('Daily view limit reached — resets tomorrow.', 429, 'VIEW_LIMIT_REACHED', {
-            message: 'Daily view limit reached — resets tomorrow.',
-          }),
-        )
-      }
-      return Promise.resolve({
-        buyers: [{ ...sampleBuyer, phone: '', email: '', website: '', street: '' }],
-        total: 1,
-        page: 1,
-        limit: 25,
-        totalPages: 1,
-        contactsRedacted: true,
-      })
-    })
-
-    renderDirectory()
-    await waitFor(() => expect(screen.getByText('Revival Home Buyer')).toBeTruthy())
-
-    fireEvent.click(screen.getByRole('button', { name: /view contact info/i }))
-
-    expect(
-      await screen.findByText('Daily view limit reached — resets tomorrow.'),
-    ).toBeTruthy()
+    // No buyer records are requested, and no reveal affordance is offered.
+    const listCalls = mockApiGet.mock.calls
+      .map(([path]) => String(path))
+      .filter((path) => path.startsWith('/api/buyers?'))
+    expect(listCalls).toEqual([])
+    expect(screen.queryByRole('button', { name: /view contact info/i })).toBeNull()
   })
 
   it('fetches paginated buyers for paid active users', async () => {

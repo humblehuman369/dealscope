@@ -1,11 +1,10 @@
 """Cash buyer directory — paginated Postgres API (/api/buyers).
 
-Access model (Tasks 3.3 / 3.4, resolved via the single entitlement helper):
+Access model (resolved via the single entitlement helper):
   - free:  403 PRO_REQUIRED (stats teaser still returns { total } only)
-  - trial: full search/filter/view; list responses redact direct-contact
-           fields; record-detail opens are counted server-side, 25/day
-  - paid:  full view access, no cap; CSV / print exports (paid-only) capped
-           at 200 records per export and 1,000 per monthly billing cycle
+  - trial: 403 DIRECTORY_PAID_ONLY — the directory is not part of the trial
+  - paid:  full search / filter / view, plus CSV / print exports capped at
+           200 records per export and 1,000 per monthly billing cycle
 """
 
 from __future__ import annotations
@@ -25,11 +24,7 @@ from app.services.buyers_service import (
     list_buyers_page,
 )
 from app.services.directory_export import build_csv, build_print_html
-from app.services.directory_gates import (
-    enforce_detail_view_cap,
-    require_paid_export,
-    require_view_access,
-)
+from app.services.directory_gates import require_paid_export, require_view_access
 from app.services.directory_usage import (
     EXPORT_LIMIT_MESSAGE,
     EXPORT_MAX_RECORDS,
@@ -45,11 +40,6 @@ router = APIRouter(prefix="/api/buyers", tags=["Buyers"])
 
 # Plan spec: list pagination is capped at 25 records per page.
 MAX_PAGE_SIZE = 25
-
-
-def _redact_buyer(buyer: BuyerOut) -> BuyerOut:
-    """Blank direct-contact fields for trial list responses."""
-    return buyer.model_copy(update={"phone": "", "email": "", "website": "", "street": ""})
 
 
 @router.get(
@@ -114,8 +104,8 @@ async def list_cash_buyers(
     page: int = Query(1, ge=1),
     limit: int = Query(MAX_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
 ):
-    """Filterable, paginated buyer list (max 25/page; trial sees redacted contacts)."""
-    entitlement = await require_view_access(
+    """Filterable, paginated buyer list (max 25/page, paid subscribers only)."""
+    await require_view_access(
         db,
         current_user,
         pro_message=PRO_BUYERS_MESSAGE,
@@ -129,16 +119,12 @@ async def list_cash_buyers(
             page=page,
             limit=limit,
         )
-        redact = entitlement == Entitlement.TRIAL
-        if redact:
-            buyers = [_redact_buyer(b) for b in buyers]
         return BuyerListResponse(
             buyers=buyers,
             total=total,
             page=page,
             limit=limit,
             totalPages=total_pages,
-            contactsRedacted=redact,
         )
     except HTTPException:
         raise
@@ -242,14 +228,13 @@ async def export_cash_buyers(
     summary="Get cash buyer by id",
 )
 async def get_cash_buyer(buyer_id: int, current_user: CurrentUser, db: DbSession):
-    """Single full record; trial opens are counted server-side (25/day)."""
-    entitlement = await require_view_access(
+    """Single full record, paid subscribers only."""
+    await require_view_access(
         db,
         current_user,
         pro_message=PRO_BUYERS_MESSAGE,
         teaser_total=await _count_strict_buyers(db),
     )
-    await enforce_detail_view_cap(db, current_user, entitlement)
     try:
         buyer = await get_buyer_by_id(db, buyer_id)
         if buyer is None:

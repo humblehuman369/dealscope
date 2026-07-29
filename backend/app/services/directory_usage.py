@@ -1,13 +1,16 @@
-"""Directory usage counters — trial view caps and paid export metering.
+"""Directory usage counters — paid export metering.
 
-Tasks 3.3 / 3.4. All counting is server-side and atomic (Postgres upsert on
-the unique (user, kind, period) key), so concurrent requests can never
-double-spend a cap, and restarts never reset a meter.
+All counting is server-side and atomic (Postgres upsert on the unique
+(user, kind, period) key), so concurrent requests can never double-spend a cap,
+and restarts never reset a meter.
 
-Limits (plan defaults, confirmed in the task brief):
-  - Trial record-detail opens: 25 per user per UTC day.
+Limits:
   - Paid CSV / print exports: 200 records per export, 1,000 records per
     monthly billing cycle ("resets on your billing date").
+
+The trial record-detail cap that once lived here is gone: both directories are
+paid-only, so there is no trial viewing left to meter. Existing ``detail_view``
+rows are harmless and age out by period key.
 """
 
 from __future__ import annotations
@@ -23,21 +26,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.directory_usage import DirectoryUsageCounter
 from app.models.subscription import Subscription
 
-DAILY_DETAIL_VIEW_LIMIT = 25
 EXPORT_MAX_RECORDS = 200
 MONTHLY_EXPORT_RECORD_LIMIT = 1_000
 
-KIND_DETAIL_VIEW = "detail_view"
 KIND_EXPORT_RECORDS = "export_records"
 
-VIEW_LIMIT_MESSAGE = "Daily view limit reached — resets tomorrow."
 EXPORT_LIMIT_MESSAGE = "You've hit this month's export limit. It resets on your billing date."
 EXPORTS_PAID_ONLY_MESSAGE = "Exports unlock with your first payment."
-
-
-def daily_period_key(now: datetime | None = None) -> str:
-    """UTC-date key for trial view caps — 'resets tomorrow' means UTC midnight."""
-    return (now or datetime.now(UTC)).astimezone(UTC).date().isoformat()
+DIRECTORY_PAID_ONLY_MESSAGE = "The directories unlock with your first payment."
 
 
 def billing_cycle_key(subscription: Subscription | None, now: datetime | None = None) -> str:
@@ -112,16 +108,6 @@ async def get_counter(
     result = await db.execute(stmt)
     value = result.scalar_one_or_none()
     return int(value) if value is not None else 0
-
-
-async def record_detail_view(db: AsyncSession, user_id: uuid.UUID) -> tuple[bool, int]:
-    """Count one record-detail open for today. Returns (allowed, used_today).
-
-    Increment-then-check keeps the operation atomic; a rejected request may
-    push the counter past the limit, which only makes the cap stricter.
-    """
-    total = await _increment_counter(db, user_id, KIND_DETAIL_VIEW, daily_period_key(), 1)
-    return total <= DAILY_DETAIL_VIEW_LIMIT, min(total, DAILY_DETAIL_VIEW_LIMIT)
 
 
 async def get_export_usage(

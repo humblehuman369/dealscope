@@ -1,9 +1,9 @@
-"""Directory access gates (Task 3.3) — every rule enforced server-side.
+"""Directory access gates — every rule enforced server-side.
 
-View free-tier: 403. Trial: full search/filter/view with record-detail opens
-capped at 25/day (counted server-side). Paid: uncapped viewing. Exports:
-paid only, checked here BEFORE any file is generated (Task 3.4 meters the
-records). All decisions resolve through the single entitlement helper.
+Both directories are paid-only: viewing requires a settled charge, so free and
+trial are refused alike. Exports are likewise paid-only and checked here BEFORE
+any file is generated (the export meter then counts records). All decisions
+resolve through the single entitlement helper.
 """
 
 from __future__ import annotations
@@ -16,9 +16,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.subscription import Subscription
 from app.services.directory_usage import (
+    DIRECTORY_PAID_ONLY_MESSAGE,
     EXPORTS_PAID_ONLY_MESSAGE,
-    VIEW_LIMIT_MESSAGE,
-    record_detail_view,
 )
 from app.services.entitlements import Entitlement, resolve_entitlement_with_subscription
 
@@ -33,38 +32,32 @@ async def require_view_access(
     *,
     pro_message: str,
     teaser_total: int,
-) -> Entitlement:
-    """Trial and paid may view; free gets 403 with the upgrade teaser."""
+) -> None:
+    """Paid only. Free and trial both get 403, with copy matching where they are.
+
+    A trialing user already picked a plan and needs their first payment to
+    settle, so telling them to "upgrade to Pro" would be wrong and confusing.
+    """
     entitlement, _ = await resolve_entitlement_with_subscription(db, user.id)
-    if entitlement == Entitlement.FREE:
+    if entitlement == Entitlement.PAID:
+        return
+    if entitlement == Entitlement.TRIAL:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={
-                "error": "PRO_REQUIRED",
-                "message": pro_message,
+                "error": "DIRECTORY_PAID_ONLY",
+                "message": DIRECTORY_PAID_ONLY_MESSAGE,
                 "total": teaser_total,
             },
         )
-    return entitlement
-
-
-async def enforce_detail_view_cap(
-    db: AsyncSession,
-    user: _HasId,
-    entitlement: Entitlement,
-) -> None:
-    """Count a trial user's record-detail open; 429 past 25/day. Paid is uncapped."""
-    if entitlement != Entitlement.TRIAL:
-        return
-    allowed, _used = await record_detail_view(db, user.id)
-    if not allowed:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail={
-                "error": "VIEW_LIMIT_REACHED",
-                "message": VIEW_LIMIT_MESSAGE,
-            },
-        )
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail={
+            "error": "PRO_REQUIRED",
+            "message": pro_message,
+            "total": teaser_total,
+        },
+    )
 
 
 async def require_paid_export(

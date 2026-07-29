@@ -66,34 +66,29 @@ async def test_free_list_gets_403(monkeypatch):
     assert exc.value.detail["error"] == "PRO_REQUIRED"
 
 
-async def test_trial_list_is_redacted(monkeypatch):
-    monkeypatch.setattr(
-        buyers_router, "require_view_access", AsyncMock(return_value=Entitlement.TRIAL)
-    )
+async def test_trial_list_gets_403(monkeypatch):
+    """The directory is not part of the free trial."""
+
+    async def deny(*args, **kwargs):
+        raise HTTPException(
+            status_code=403, detail={"error": "DIRECTORY_PAID_ONLY", "total": 2812}
+        )
+
+    monkeypatch.setattr(buyers_router, "require_view_access", deny)
     monkeypatch.setattr(buyers_router, "_count_strict_buyers", AsyncMock(return_value=2812))
-    monkeypatch.setattr(
-        buyers_router, "list_buyers_page", AsyncMock(return_value=([_buyer()], 1, 1))
-    )
 
-    response = await list_cash_buyers(
-        current_user=_user(), db=SimpleNamespace(), page=1, limit=25, **_list_kwargs()
-    )
+    with pytest.raises(HTTPException) as exc:
+        await list_cash_buyers(
+            current_user=_user(), db=SimpleNamespace(), page=1, limit=25, **_list_kwargs()
+        )
 
-    assert response.contactsRedacted is True
-    buyer = response.buyers[0]
-    assert buyer.phone == ""
-    assert buyer.email == ""
-    assert buyer.website == ""
-    assert buyer.street == ""
-    # Non-contact fields stay visible for honest trial browsing.
-    assert buyer.company == "Acme Buyers"
-    assert buyer.city == "Tampa"
+    assert exc.value.status_code == 403
+    assert exc.value.detail["error"] == "DIRECTORY_PAID_ONLY"
 
 
 async def test_paid_list_keeps_contacts(monkeypatch):
-    monkeypatch.setattr(
-        buyers_router, "require_view_access", AsyncMock(return_value=Entitlement.PAID)
-    )
+    """Paid responses are never redacted — there is no redaction path left."""
+    monkeypatch.setattr(buyers_router, "require_view_access", AsyncMock(return_value=None))
     monkeypatch.setattr(buyers_router, "_count_strict_buyers", AsyncMock(return_value=2812))
     monkeypatch.setattr(
         buyers_router, "list_buyers_page", AsyncMock(return_value=([_buyer()], 1, 1))
@@ -103,8 +98,10 @@ async def test_paid_list_keeps_contacts(monkeypatch):
         current_user=_user(), db=SimpleNamespace(), page=1, limit=25, **_list_kwargs()
     )
 
-    assert response.contactsRedacted is False
-    assert response.buyers[0].phone == "(555) 555-0100"
+    buyer = response.buyers[0]
+    assert buyer.phone == "(555) 555-0100"
+    assert buyer.email
+    assert buyer.street
 
 
 async def test_stats_teaser_for_free(monkeypatch):

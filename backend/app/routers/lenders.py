@@ -1,11 +1,10 @@
 """Hard money lender directory — authenticated, paginated API (/api/lenders).
 
-Access model (Tasks 3.3 / 3.4, resolved via the single entitlement helper):
+Access model (resolved via the single entitlement helper):
   - free:  403 PRO_REQUIRED (stats teaser still returns { total } only)
-  - trial: full search/filter/view; list responses redact direct-contact
-           fields; record-detail opens are counted server-side, 25/day
-  - paid:  full view access, no cap; CSV / print exports (paid-only) capped
-           at 200 records per export and 1,000 per monthly billing cycle
+  - trial: 403 DIRECTORY_PAID_ONLY — the directory is not part of the trial
+  - paid:  full search / filter / view, plus CSV / print exports capped at
+           200 records per export and 1,000 per monthly billing cycle
 """
 
 from __future__ import annotations
@@ -19,11 +18,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from app.core.deps import CurrentUser, DbSession
 from app.schemas.lenders import LenderListResponse, LenderOut, LenderStatsResponse
 from app.services.directory_export import build_csv, build_print_html
-from app.services.directory_gates import (
-    enforce_detail_view_cap,
-    require_paid_export,
-    require_view_access,
-)
+from app.services.directory_gates import require_paid_export, require_view_access
 from app.services.directory_usage import (
     EXPORT_LIMIT_MESSAGE,
     EXPORT_MAX_RECORDS,
@@ -46,15 +41,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/lenders", tags=["Lenders"])
 
 PRO_LENDERS_MESSAGE = "Hard Money Lender Directory requires DealGapIQ Pro"
-
-
-def _redact_lender(lender: LenderOut) -> LenderOut:
-    """Blank direct-contact fields for trial list responses.
-
-    Domain/website are contact vectors too (for web-only lenders they are the
-    only one), so they are redacted alongside phone and email.
-    """
-    return lender.model_copy(update={"phone": None, "email": None, "website": "", "domain": ""})
 
 
 @router.get(
@@ -112,8 +98,8 @@ async def list_lenders(
     page: int = Query(1, ge=1),
     limit: int = Query(MAX_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
 ):
-    """Filterable, paginated lender list (max 25/page; trial sees redacted contacts)."""
-    entitlement = await require_view_access(
+    """Filterable, paginated lender list (max 25/page, paid subscribers only)."""
+    await require_view_access(
         db,
         current_user,
         pro_message=PRO_LENDERS_MESSAGE,
@@ -130,16 +116,12 @@ async def list_lenders(
             page=page,
             limit=limit,
         )
-        redact = entitlement == Entitlement.TRIAL
-        if redact:
-            lenders = [_redact_lender(lender) for lender in lenders]
         return LenderListResponse(
             lenders=lenders,
             total=total,
             page=page,
             limit=limit,
             totalPages=total_pages,
-            contactsRedacted=redact,
         )
     except HTTPException:
         raise
@@ -251,21 +233,17 @@ async def export_lenders(
 @router.get(
     "/{lender_id}",
     response_model=LenderOut,
-    responses={
-        403: {"description": "Pro required (free tier)"},
-        429: {"description": "Trial daily view limit reached"},
-    },
+    responses={403: {"description": "Paid subscription required"}},
     summary="Get lender by id",
 )
 async def get_lender(lender_id: int, current_user: CurrentUser, db: DbSession):
-    """Single full record; trial opens are counted server-side (25/day)."""
-    entitlement = await require_view_access(
+    """Single full record, paid subscribers only."""
+    await require_view_access(
         db,
         current_user,
         pro_message=PRO_LENDERS_MESSAGE,
         teaser_total=lender_total(),
     )
-    await enforce_detail_view_cap(db, current_user, entitlement)
     lender = get_lender_by_id(lender_id)
     if lender is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lender not found")

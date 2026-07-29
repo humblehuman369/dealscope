@@ -18,8 +18,6 @@ export interface BuyerListResponse {
   page: number
   limit: number
   totalPages: number
-  /** True on trial responses — contact fields are blanked; reveal via detail endpoint. */
-  contactsRedacted?: boolean
 }
 
 export interface BuyerStatsResponse {

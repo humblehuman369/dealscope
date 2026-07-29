@@ -1,6 +1,7 @@
 # Directory Restructure Plan — Lenders + Cash Buyers
 
-**Status:** proposed. Only the buyer `Tampa, FL` default removal (Stage 5) is implemented.
+**Status:** Stage 1 (paid-only enforcement) is **implemented**, along with the buyer
+`Tampa, FL` default removal from Stage 5. Stages 2–4 remain proposed.
 **Author:** architecture review, 2026-07-29
 **Scope:** `/api/lenders`, `/api/buyers`, and the two frontend directories
 
@@ -164,10 +165,18 @@ Run via the documented pattern in `backend/scripts/diag_prod_schema.sh`:
 
 ---
 
-### Stage 1 — Enforce paid-only access (closes a revenue leak)
+### Stage 1 — Enforce paid-only access (closes a revenue leak) — DONE 2026-07-29
 
-**Goal:** make the code match the policy in §2.4. Highest priority — it is live revenue
-leakage, independent of every other stage, and it deletes code rather than adding it.
+**Goal:** make the code match the policy in §2.4. Highest priority — it was live revenue
+leakage, independent of every other stage, and it deleted code rather than adding it.
+
+Confirmation that paid-only was always the intent: both components already passed
+`paidOnlyFeature` to `UpgradeModal`, which sets `skip_trial: true` at checkout and
+renders "requires a paid Pro subscription. Billing starts today." Only the server-side
+view gate was left behind.
+
+Trialing users now get a distinct gate ("not included in the free trial" / "Start paid
+Pro") instead of the free tier's "upgrade" copy, since they have already chosen a plan.
 
 | File | Change |
 |---|---|
