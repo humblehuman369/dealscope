@@ -2195,10 +2195,13 @@ export function getValueColor(color: string): string {
   switch (color) {
     case 'cyan':
       return 'var(--accent-sky)'
+    // Sign-coded metrics: teal = favorable (green), rose = unfavorable (red).
+    // Uses the same status tokens as the worksheet totals and the
+    // Off-Market/Listed label in PropertyAddressBar so all reds/greens match.
     case 'teal':
-      return 'var(--accent-sky)'
+      return 'var(--status-positive)'
     case 'rose':
-      return '#F43F5E'
+      return 'var(--status-negative)'
     default:
       return '#FFFFFF'
   }
