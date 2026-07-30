@@ -465,7 +465,11 @@ function BuyerCard({ buyer }: { buyer: Buyer }) {
         </div>
         <ContactRow icon={<Phone size={12} />} value={buyer.phone} />
         <ContactRow icon={<Mail size={12} />} value={buyer.email} />
-        <ContactRow icon={<Globe size={12} />} value={buyer.website} />
+        <ContactRow
+          icon={<Globe size={12} />}
+          value={buyer.website}
+          href={buyerWebsiteHref(buyer.website)}
+        />
       </div>
     </div>
   );
@@ -524,13 +528,41 @@ function Stat({ label, value, small }: { label: string; value: string | number; 
   );
 }
 
-function ContactRow({ icon, value }: { icon: ReactNode; value: string }) {
+function buyerWebsiteHref(website: string): string | undefined {
+  const raw = website.trim()
+  if (!raw) return undefined
+  if (/^https?:\/\//i.test(raw)) return raw
+  return `https://${raw}`
+}
+
+function ContactRow({
+  icon,
+  value,
+  href,
+}: {
+  icon: ReactNode
+  value: string
+  href?: string
+}) {
+  if (!value) return null
   return (
     <div style={styles.contactRow}>
       <span style={{ color: directoryTokens.muted }}>{icon}</span>
-      <span>{value}</span>
+      {href ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          style={{ color: directoryTokens.link, textDecoration: 'none', wordBreak: 'break-all' }}
+        >
+          {value}
+        </a>
+      ) : (
+        <span>{value}</span>
+      )}
     </div>
-  );
+  )
 }
 
 // =============================================================================

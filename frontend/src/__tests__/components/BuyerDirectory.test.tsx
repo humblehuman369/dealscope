@@ -144,6 +144,10 @@ describe('BuyerDirectory paid access', () => {
       expect.stringContaining('/api/buyers?'),
     )
 
+    const websiteLink = screen.getByRole('link', { name: 'revivalhomebuyer.com' })
+    expect(websiteLink.getAttribute('href')).toBe('https://revivalhomebuyer.com')
+    expect(websiteLink.getAttribute('target')).toBe('_blank')
+
     // The first view is nationwide: no location filter is sent until the user
     // actually searches.
     const listPath = mockApiGet.mock.calls
