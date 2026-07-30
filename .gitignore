@@ -11,6 +11,9 @@ frontend/out/
 # EAS build inspect output (generated, can be large)
 **/eas-archive/
 
+# UX audit artifacts (screenshots, Playwright harness, downloaded browsers)
+.cursor-ux-audit/
+
 # OS files
 .DS_Store
 Thumbs.db
