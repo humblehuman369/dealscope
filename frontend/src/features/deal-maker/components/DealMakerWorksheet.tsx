@@ -181,6 +181,14 @@ function NegRow({ label, value }: { label: string; value: string }) {
 function TotalRow({ label, value }: { label: string; value: string }) {
   // Section summary bar. Deliberately neutral (no accent blue): blue is
   // reserved for interactive slider rows, so totals must not compete with it.
+  // The value is sign-coded: negative amounts red, positive green, zero neutral.
+  const isNegative = value.includes('-')
+  const isPositive = !isNegative && (parseFloat(value.replace(/[^0-9.]/g, '')) > 0 || value.includes('∞'))
+  const valueColor = isNegative
+    ? 'var(--status-negative)'
+    : isPositive
+      ? 'var(--status-positive)'
+      : C.heading
   return (
     <div
       className="flex w-full items-center gap-2 rounded-md py-2 pl-4 pr-1 mt-1.5"
@@ -193,7 +201,7 @@ function TotalRow({ label, value }: { label: string; value: string }) {
         {label}
       </span>
       <div className={`flex justify-end shrink-0 ${WS_VALUE_COL}`}>
-        <span className="w-full font-bold tabular-nums text-[0.95rem] text-right" style={{ color: C.heading }}>
+        <span className="w-full font-bold tabular-nums text-[0.95rem] text-right" style={{ color: valueColor }}>
           {value}
         </span>
       </div>
