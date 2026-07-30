@@ -1,0 +1,1645 @@
+{
+  "note": "Filtered apply \u2014 product investor pages only; blogs/FAQs/media/vs-articles excluded. Production needs seed_lenders / redeploy.",
+  "applied": 286,
+  "rejected_from_raw_upgrades": 44,
+  "example_1floridalending": [
+    "1floridalending.com",
+    "https://1floridalending.com",
+    "https://1floridalending.com/lending/investor",
+    109
+  ],
+  "changes": [
+    {
+      "domain": "14thstreetcapital.com",
+      "from": "https://14thstreetcapital.com",
+      "to": "https://14thstreetcapital.com/fix-and-flip-loans"
+    },
+    {
+      "domain": "1floridalending.com",
+      "from": "https://1floridalending.com",
+      "to": "https://1floridalending.com/lending/investor"
+    },
+    {
+      "domain": "1stnwm.com",
+      "from": "https://1stnwm.com",
+      "to": "https://1stnwm.com/hard-money-loans"
+    },
+    {
+      "domain": "aafundcorp.com",
+      "from": "https://aafundcorp.com",
+      "to": "https://aafundcorp.com/hard-money-loans-phoenix"
+    },
+    {
+      "domain": "atozcapitallending.com",
+      "from": "https://atozcapitallending.com",
+      "to": "https://atozcapitallending.com/hard-money"
+    },
+    {
+      "domain": "coloansonline.com",
+      "from": "https://coloansonline.com",
+      "to": "https://coloansonline.com/hard-money-lenders-colorado-springs"
+    },
+    {
+      "domain": "abelfunding.com",
+      "from": "https://abelfunding.com",
+      "to": "https://abelfunding.com/commercial-financing/fix-flip-line-credit"
+    },
+    {
+      "domain": "accolend.com",
+      "from": "https://accolend.com",
+      "to": "https://accolend.com/lending/investor"
+    },
+    {
+      "domain": "accunet.com",
+      "from": "https://accunet.com",
+      "to": "https://accunet.com/bridge-loans"
+    },
+    {
+      "domain": "actiumlending.com",
+      "from": "https://actiumlending.com",
+      "to": "https://actiumlending.com/hard-money-loans"
+    },
+    {
+      "domain": "actiumpartners.com",
+      "from": "https://actiumpartners.com",
+      "to": "https://actiumpartners.com/hard-money-loans"
+    },
+    {
+      "domain": "advestfunding.com",
+      "from": "https://advestfunding.com",
+      "to": "https://advestfunding.com/hard-money-lender-in-new-jersey.php"
+    },
+    {
+      "domain": "harddmoneyloans.com",
+      "from": "https://harddmoneyloans.com",
+      "to": "https://harddmoneyloans.com/hard-money-refinance"
+    },
+    {
+      "domain": "advancedinvestmentcorp.com",
+      "from": "https://advancedinvestmentcorp.com",
+      "to": "https://advancedinvestmentcorp.com/hard-money-glossary"
+    },
+    {
+      "domain": "acalending.com",
+      "from": "https://acalending.com",
+      "to": "https://acalending.com/hard-money-lending-california"
+    },
+    {
+      "domain": "allegiancecu.org",
+      "from": "https://allegiancecu.org",
+      "to": "https://allegiancecu.org/bridge-loan-oklahoma"
+    },
+    {
+      "domain": "alphafunding.com",
+      "from": "https://alphafunding.com",
+      "to": "https://alphafunding.com/hard-money-lending-new-york"
+    },
+    {
+      "domain": "alphafundingcorp.com",
+      "from": "https://alphafundingcorp.com",
+      "to": "https://alphafundingcorp.com/lending/hard-money"
+    },
+    {
+      "domain": "alpinecommercialfunding.com",
+      "from": "https://alpinecommercialfunding.com",
+      "to": "https://alpinecommercialfunding.com/hard-money-lending"
+    },
+    {
+      "domain": "ahlend.com",
+      "from": "https://ahlend.com",
+      "to": "https://ahlend.com/hard-money-loan-cost-calculator"
+    },
+    {
+      "domain": "americanherohomeloans.com",
+      "from": "https://americanherohomeloans.com",
+      "to": "https://americanherohomeloans.com/dscr-loans-for-real-estate-investors"
+    },
+    {
+      "domain": "americanloans.com",
+      "from": "https://americanloans.com",
+      "to": "https://americanloans.com/bridge-loan-private-lending"
+    },
+    {
+      "domain": "angeloakms.com",
+      "from": "https://angeloakms.com",
+      "to": "https://angeloakms.com/programs/investor-cash-flow-mortgage-program"
+    },
+    {
+      "domain": "apartmentloanstore.com",
+      "from": "https://apartmentloanstore.com",
+      "to": "https://apartmentloanstore.com/tools/dscr-calculator"
+    },
+    {
+      "domain": "apexmoneylending.com",
+      "from": "https://apexmoneylending.com",
+      "to": "https://apexmoneylending.com/glossary/hard-money-loans"
+    },
+    {
+      "domain": "applewoodfund.com",
+      "from": "https://applewoodfund.com",
+      "to": "https://applewoodfund.com/hard-money-private-lender-construction-loans-in-arizona"
+    },
+    {
+      "domain": "arcprivatelending.com",
+      "from": "https://arcprivatelending.com",
+      "to": "https://arcprivatelending.com/hard-money-loans"
+    },
+    {
+      "domain": "archwestcapital.com",
+      "from": "https://archwestcapital.com",
+      "to": "https://archwestcapital.com/fix-and-flip-atlanta-ga"
+    },
+    {
+      "domain": "arkad.capital",
+      "from": "https://arkad.capital",
+      "to": "https://arkad.capital/fix-and-flip-blueprint"
+    },
+    {
+      "domain": "ablfunding.com",
+      "from": "https://ablfunding.com",
+      "to": "https://ablfunding.com/loan-programs/dscr-rental-loans"
+    },
+    {
+      "domain": "associateshomeloan.com",
+      "from": "https://associateshomeloan.com",
+      "to": "https://associateshomeloan.com/hard-money-loans"
+    },
+    {
+      "domain": "avatarfinancial.com",
+      "from": "https://avatarfinancial.com",
+      "to": "https://avatarfinancial.com/bridge-loan-for-texas-asset"
+    },
+    {
+      "domain": "belending.com",
+      "from": "https://belending.com",
+      "to": "https://belending.com/hard-money-lender"
+    },
+    {
+      "domain": "beaufort.mortgage",
+      "from": "https://beaufort.mortgage",
+      "to": "https://beaufort.mortgage/dscr-investment-loans-sc"
+    },
+    {
+      "domain": "makeabeeline.com",
+      "from": "https://makeabeeline.com",
+      "to": "https://makeabeeline.com/investmentpropertyloans/dscr"
+    },
+    {
+      "domain": "belcanto-capital.com",
+      "from": "https://belcanto-capital.com",
+      "to": "https://belcanto-capital.com/hard-money-lender-cincinnati-ohio"
+    },
+    {
+      "domain": "bendmortgagebrokers.com",
+      "from": "https://bendmortgagebrokers.com",
+      "to": "https://bendmortgagebrokers.com/loan-program/dscr-loans"
+    },
+    {
+      "domain": "bcpmortgage.com",
+      "from": "https://bcpmortgage.com",
+      "to": "https://bcpmortgage.com/hard-money-mortgages"
+    },
+    {
+      "domain": "benworthcapital.com",
+      "from": "https://benworthcapital.com",
+      "to": "https://benworthcapital.com/hard-money"
+    },
+    {
+      "domain": "bestlendingco.com",
+      "from": "https://bestlendingco.com",
+      "to": "https://bestlendingco.com/hard-money-lender-san-diego-county"
+    },
+    {
+      "domain": "north-dakota.bizloanfast.com",
+      "from": "https://north-dakota.bizloanfast.com",
+      "to": "https://north-dakota.bizloanfast.com/funding/hard-money-lending"
+    },
+    {
+      "domain": "blackdiamondmortgage.com",
+      "from": "https://blackdiamondmortgage.com",
+      "to": "https://blackdiamondmortgage.com/dscr-investor-loan-options"
+    },
+    {
+      "domain": "blue-inc.com",
+      "from": "https://blue-inc.com",
+      "to": "https://blue-inc.com/property/bridge-loans"
+    },
+    {
+      "domain": "blueberryfunding.com",
+      "from": "https://blueberryfunding.com",
+      "to": "https://blueberryfunding.com/bridge-loans"
+    },
+    {
+      "domain": "boathousecfg.com",
+      "from": "https://boathousecfg.com",
+      "to": "https://boathousecfg.com/hard-money-loans"
+    },
+    {
+      "domain": "bradloans.com",
+      "from": "https://bradloans.com",
+      "to": "https://bradloans.com/hard-money-lender-reviews-phoenix"
+    },
+    {
+      "domain": "breakwatercommercialcapital.com",
+      "from": "https://breakwatercommercialcapital.com",
+      "to": "https://breakwatercommercialcapital.com/loan-types/hard-money-loans-maine"
+    },
+    {
+      "domain": "breclawlenders.com",
+      "from": "https://breclawlenders.com",
+      "to": "https://breclawlenders.com/hard-money-loans"
+    },
+    {
+      "domain": "brickwoodmortgage.com",
+      "from": "https://brickwoodmortgage.com",
+      "to": "https://brickwoodmortgage.com/dscr-lenders-south-carolina"
+    },
+    {
+      "domain": "brookviewfinancial.com",
+      "from": "https://brookviewfinancial.com",
+      "to": "https://brookviewfinancial.com/fix-flip-loans"
+    },
+    {
+      "domain": "californiahardmoneydirect.net",
+      "from": "https://californiahardmoneydirect.net",
+      "to": "https://californiahardmoneydirect.net/hard-money-loans/private-money-loans"
+    },
+    {
+      "domain": "joemetzler.com",
+      "from": "https://joemetzler.com",
+      "to": "https://joemetzler.com/dscr-loan"
+    },
+    {
+      "domain": "hardmoneylasvegas.com",
+      "from": "https://hardmoneylasvegas.com",
+      "to": "https://hardmoneylasvegas.com/hard-money-loans"
+    },
+    {
+      "domain": "capitalfund1.com",
+      "from": "https://capitalfund1.com",
+      "to": "https://capitalfund1.com/hard-money-lender-reviews"
+    },
+    {
+      "domain": "capitalfunding.com",
+      "from": "https://capitalfunding.com",
+      "to": "https://capitalfunding.com/services/hard-money-program-bridge-loan"
+    },
+    {
+      "domain": "capitalinvestorsdirect.com",
+      "from": "https://capitalinvestorsdirect.com",
+      "to": "https://capitalinvestorsdirect.com/cre-loans/fix-and-flip-loan-lending"
+    },
+    {
+      "domain": "capitalton.com",
+      "from": "https://capitalton.com",
+      "to": "https://capitalton.com/hard-money-loans"
+    },
+    {
+      "domain": "capstonelending.com",
+      "from": "https://capstonelending.com",
+      "to": "https://capstonelending.com/service-areas/austin/hard-money"
+    },
+    {
+      "domain": "centerstreetlending.com",
+      "from": "https://centerstreetlending.com",
+      "to": "https://centerstreetlending.com/loans/fix-and-flip"
+    },
+    {
+      "domain": "cetanfunds.com",
+      "from": "https://cetanfunds.com",
+      "to": "https://cetanfunds.com/fix-and-flip-loans-in-eugene-oregon"
+    },
+    {
+      "domain": "clearhouselending.com",
+      "from": "https://clearhouselending.com",
+      "to": "https://clearhouselending.com/development-specialty/hard-money"
+    },
+    {
+      "domain": "colonial-capital.com",
+      "from": "https://colonial-capital.com",
+      "to": "https://colonial-capital.com/bridge-loans-in-arizona-how-colonial-helped-post-covid-entrepreneurs-bridge-their-property-finance-needs"
+    },
+    {
+      "domain": "coloradofixandfliploans.com",
+      "from": "https://coloradofixandfliploans.com",
+      "to": "https://coloradofixandfliploans.com/fix-and-flip-loans-colorado"
+    },
+    {
+      "domain": "constlending.com",
+      "from": "https://constlending.com",
+      "to": "https://constlending.com/borrow/fix-and-flip"
+    },
+    {
+      "domain": "cplinvestments.com",
+      "from": "https://cplinvestments.com",
+      "to": "https://cplinvestments.com/hard-money-lenders"
+    },
+    {
+      "domain": "craft3.org",
+      "from": "https://craft3.org",
+      "to": "https://craft3.org/business-loans/bridge-loans"
+    },
+    {
+      "domain": "crebrid.com",
+      "from": "https://crebrid.com",
+      "to": "https://crebrid.com/loans/fix-and-flip"
+    },
+    {
+      "domain": "crowdlending.com",
+      "from": "https://crowdlending.com",
+      "to": "https://crowdlending.com/hard-money"
+    },
+    {
+      "domain": "ctcmortgage.com",
+      "from": "https://ctcmortgage.com",
+      "to": "https://ctcmortgage.com/dscr-loans"
+    },
+    {
+      "domain": "custommortgageinc.com",
+      "from": "https://custommortgageinc.com",
+      "to": "https://custommortgageinc.com/programs/hard-money-bridge"
+    },
+    {
+      "domain": "daracap.com",
+      "from": "https://daracap.com",
+      "to": "https://daracap.com/hard-money-loan"
+    },
+    {
+      "domain": "dealstreetcapital.com",
+      "from": "https://dealstreetcapital.com",
+      "to": "https://dealstreetcapital.com/hard-money-loan-calculator"
+    },
+    {
+      "domain": "dfw-hardmoney.com",
+      "from": "https://dfw-hardmoney.com",
+      "to": "https://dfw-hardmoney.com/hard-money-lenders-nashville-loans-tennessee"
+    },
+    {
+      "domain": "dfwinvestorlending.com",
+      "from": "https://dfwinvestorlending.com",
+      "to": "https://dfwinvestorlending.com/hard-money"
+    },
+    {
+      "domain": "directlendingokc.com",
+      "from": "https://directlendingokc.com",
+      "to": "https://directlendingokc.com/dscr"
+    },
+    {
+      "domain": "drewmortgage.com",
+      "from": "https://drewmortgage.com",
+      "to": "https://drewmortgage.com/fix-and-flip-loan-programs-in-massachusetts"
+    },
+    {
+      "domain": "eastsidefunding.com",
+      "from": "https://eastsidefunding.com",
+      "to": "https://eastsidefunding.com/programs/fix-flip"
+    },
+    {
+      "domain": "easystreetcap.com",
+      "from": "https://easystreetcap.com",
+      "to": "https://easystreetcap.com/hard-money-denver"
+    },
+    {
+      "domain": "elixirmortgagelending.com",
+      "from": "https://elixirmortgagelending.com",
+      "to": "https://elixirmortgagelending.com/hard-money-loan"
+    },
+    {
+      "domain": "emortgagehi.com",
+      "from": "https://emortgagehi.com",
+      "to": "https://emortgagehi.com/loan-programs/dscr-loans"
+    },
+    {
+      "domain": "equitymax.com",
+      "from": "https://equitymax.com",
+      "to": "https://equitymax.com/fix-and-flip-loans"
+    },
+    {
+      "domain": "expresscapitalfinancing.com",
+      "from": "https://expresscapitalfinancing.com",
+      "to": "https://expresscapitalfinancing.com/loan-programs/fix-and-flip-loans"
+    },
+    {
+      "domain": "ezrafinancial.com",
+      "from": "https://ezrafinancial.com",
+      "to": "https://ezrafinancial.com/fix-and-flip-lending"
+    },
+    {
+      "domain": "fairviewlending.com",
+      "from": "https://fairviewlending.com",
+      "to": "https://fairviewlending.com/hard-money-loan-programs/commercial-hard-money-loans"
+    },
+    {
+      "domain": "fpllending.com",
+      "from": "https://fpllending.com",
+      "to": "https://fpllending.com/investment-loan-options/fix-flip-investment-loan"
+    },
+    {
+      "domain": "fbfloans.com",
+      "from": "https://fbfloans.com",
+      "to": "https://fbfloans.com/dscr"
+    },
+    {
+      "domain": "figure.com",
+      "from": "https://figure.com",
+      "to": "https://figure.com/dscr-loan"
+    },
+    {
+      "domain": "fixfliploansflorida.com",
+      "from": "https://fixfliploansflorida.com",
+      "to": "https://fixfliploansflorida.com/private-money-lenders"
+    },
+    {
+      "domain": "fixandflipfinancing.com",
+      "from": "https://fixandflipfinancing.com",
+      "to": "https://fixandflipfinancing.com/site/hard-money-lender-indiana"
+    },
+    {
+      "domain": "fixfliploans.com",
+      "from": "https://fixfliploans.com",
+      "to": "https://fixfliploans.com/fix-flip-funding"
+    },
+    {
+      "domain": "fortefinancial.com",
+      "from": "https://fortefinancial.com",
+      "to": "https://fortefinancial.com/fix-and-flip-loans"
+    },
+    {
+      "domain": "fscinvest.com",
+      "from": "https://fscinvest.com",
+      "to": "https://fscinvest.com/hard-money-lenders-pennsylvania"
+    },
+    {
+      "domain": "friendlyrehabfunds.com",
+      "from": "https://friendlyrehabfunds.com",
+      "to": "https://friendlyrehabfunds.com/dscr-loan"
+    },
+    {
+      "domain": "fundingpilot.com",
+      "from": "https://fundingpilot.com",
+      "to": "https://fundingpilot.com/hard-money-loans"
+    },
+    {
+      "domain": "gauntletfunding.com",
+      "from": "https://gauntletfunding.com",
+      "to": "https://gauntletfunding.com/hard-money-loans"
+    },
+    {
+      "domain": "geltfinancial.com",
+      "from": "https://geltfinancial.com",
+      "to": "https://geltfinancial.com/lending/hard-money-loans"
+    },
+    {
+      "domain": "getbreadnow.com",
+      "from": "https://getbreadnow.com",
+      "to": "https://getbreadnow.com/nearme/hard-money-lender-alabama"
+    },
+    {
+      "domain": "gokapital.com",
+      "from": "https://gokapital.com",
+      "to": "https://gokapital.com/hard-money-lenders"
+    },
+    {
+      "domain": "goldquestgroup.com",
+      "from": "https://goldquestgroup.com",
+      "to": "https://goldquestgroup.com/hard-money-loan-houston"
+    },
+    {
+      "domain": "gglendinggroup.com",
+      "from": "https://gglendinggroup.com",
+      "to": "https://gglendinggroup.com/hard-money-bridge-loan"
+    },
+    {
+      "domain": "greatjonescap.com",
+      "from": "https://greatjonescap.com",
+      "to": "https://greatjonescap.com/hard-money-loans"
+    },
+    {
+      "domain": "greenbridgeloans.com",
+      "from": "https://greenbridgeloans.com",
+      "to": "https://greenbridgeloans.com/hard-money-loan-commercial"
+    },
+    {
+      "domain": "gregrusselloregon.com",
+      "from": "https://gregrusselloregon.com",
+      "to": "https://gregrusselloregon.com/types-of-loans/hard-money-loans"
+    },
+    {
+      "domain": "gregrussellidaho.com",
+      "from": "https://gregrussellidaho.com",
+      "to": "https://gregrussellidaho.com/types-of-loans/hard-money-loans"
+    },
+    {
+      "domain": "gregrussellloans.com",
+      "from": "https://gregrussellloans.com",
+      "to": "https://gregrussellloans.com/types-of-loans/hard-money-loans"
+    },
+    {
+      "domain": "griffinfunding.com",
+      "from": "https://griffinfunding.com",
+      "to": "https://griffinfunding.com/non-qm-mortgages/private-money-loans"
+    },
+    {
+      "domain": "blog.lending.groundfloor.com",
+      "from": "https://blog.lending.groundfloor.com",
+      "to": "https://blog.lending.groundfloor.com/hard-money-loans-explained-real-estate-investor-options"
+    },
+    {
+      "domain": "guaranteemc.com",
+      "from": "https://guaranteemc.com",
+      "to": "https://guaranteemc.com/loan-options/fix-flip-home-loan"
+    },
+    {
+      "domain": "gustancho.com",
+      "from": "https://gustancho.com",
+      "to": "https://gustancho.com/hard-money-lending-in-chicago"
+    },
+    {
+      "domain": "hardmoneybankers.com",
+      "from": "https://hardmoneybankers.com",
+      "to": "https://hardmoneybankers.com/investor-loans-in-columbia-maryland"
+    },
+    {
+      "domain": "hardmoneygeorgia.com",
+      "from": "https://hardmoneygeorgia.com",
+      "to": "https://hardmoneygeorgia.com/hard-money-lending"
+    },
+    {
+      "domain": "hardmoneylenderdirect.com",
+      "from": "https://hardmoneylenderdirect.com",
+      "to": "https://hardmoneylenderdirect.com/hard-money-loan-programs"
+    },
+    {
+      "domain": "hardmoneylendersarizona.com",
+      "from": "https://hardmoneylendersarizona.com",
+      "to": "https://hardmoneylendersarizona.com/service-areas/hard-money-lenders-in-avondale-az"
+    },
+    {
+      "domain": "hardmoneylenderscalifornia.com",
+      "from": "https://hardmoneylenderscalifornia.com",
+      "to": "https://hardmoneylenderscalifornia.com/hard-money-loan-programs/fix-flip-rehab-loans"
+    },
+    {
+      "domain": "hardmoneyloansolutions.com",
+      "from": "https://hardmoneyloansolutions.com",
+      "to": "https://hardmoneyloansolutions.com/hard-money-loan-types"
+    },
+    {
+      "domain": "hardmoneynewjersey.com",
+      "from": "https://hardmoneynewjersey.com",
+      "to": "https://hardmoneynewjersey.com/hard-money-calculator.php"
+    },
+    {
+      "domain": "hardmoneynm.com",
+      "from": "https://hardmoneynm.com",
+      "to": "https://hardmoneynm.com/hard-money-loans"
+    },
+    {
+      "domain": "hardmoneypartner.com",
+      "from": "https://hardmoneypartner.com",
+      "to": "https://portal.hardmoneypartner.com/hardmoneypartner/application"
+    },
+    {
+      "domain": "hardmoneycompany.com",
+      "from": "https://hardmoneycompany.com",
+      "to": "https://hardmoneycompany.com/loan-types/hard-money-bridge-loans-commercial-residential-lender"
+    },
+    {
+      "domain": "hcsequity.com",
+      "from": "https://hcsequity.com",
+      "to": "https://hcsequity.com/hard-money-loans"
+    },
+    {
+      "domain": "hardmoola.com",
+      "from": "https://hardmoola.com",
+      "to": "https://hardmoola.com/hard-money-lenders-long-beach"
+    },
+    {
+      "domain": "homebldrai.com",
+      "from": "https://homebldrai.com",
+      "to": "https://homebldrai.com/investment-loans"
+    },
+    {
+      "domain": "hopkinsfinancial.com",
+      "from": "https://hopkinsfinancial.com",
+      "to": "https://hopkinsfinancial.com/hard-money-lenders-oregon"
+    },
+    {
+      "domain": "housemaxfunding.com",
+      "from": "https://housemaxfunding.com",
+      "to": "https://housemaxfunding.com/fix-flip-loans"
+    },
+    {
+      "domain": "idmortgagebroker.com",
+      "from": "https://idmortgagebroker.com",
+      "to": "https://idmortgagebroker.com/hard-money-loans-california"
+    },
+    {
+      "domain": "ihflend.com",
+      "from": "https://ihflend.com",
+      "to": "https://ihflend.com/loan-options/featured/hard-money-loan"
+    },
+    {
+      "domain": "ihlend.com",
+      "from": "https://ihlend.com",
+      "to": "https://ihlend.com/hard-money-lending"
+    },
+    {
+      "domain": "indicatecapital.com",
+      "from": "https://indicatecapital.com",
+      "to": "https://indicatecapital.com/denver-co-real-estate-private-lender/hard-money-loan"
+    },
+    {
+      "domain": "infinitycapitalfinance.com",
+      "from": "https://infinitycapitalfinance.com",
+      "to": "https://infinitycapitalfinance.com/hard-money-real-estate-lending-maryland"
+    },
+    {
+      "domain": "insightcommercialcapital.com",
+      "from": "https://insightcommercialcapital.com",
+      "to": "https://insightcommercialcapital.com/hard-money-loans-st-paul"
+    },
+    {
+      "domain": "instalend.com",
+      "from": "https://instalend.com",
+      "to": "https://instalend.com/hard-money-loans"
+    },
+    {
+      "domain": "insulacapitalgroup.com",
+      "from": "https://insulacapitalgroup.com",
+      "to": "https://insulacapitalgroup.com/hard-money-loan-exit-strategies-planning-your-repayment-for-successful-loan-closure"
+    },
+    {
+      "domain": "integritylending.com",
+      "from": "https://integritylending.com",
+      "to": "https://integritylending.com/dscr-loans"
+    },
+    {
+      "domain": "icfunding.org",
+      "from": "https://icfunding.org",
+      "to": "https://icfunding.org/mortgage-loan-programs/fix-and-flip-financing-built-for-investors-who-move-fast"
+    },
+    {
+      "domain": "investmentpropertyloanexchange.com",
+      "from": "https://investmentpropertyloanexchange.com",
+      "to": "https://investmentpropertyloanexchange.com/investment-loans-for-real-estate"
+    },
+    {
+      "domain": "investorlending.com",
+      "from": "https://investorlending.com",
+      "to": "https://investorlending.com/hard-money-loan"
+    },
+    {
+      "domain": "investorpropertyloan.com",
+      "from": "https://investorpropertyloan.com",
+      "to": "https://investorpropertyloan.com/fix-and-flip"
+    },
+    {
+      "domain": "investorschoicelending.com",
+      "from": "https://investorschoicelending.com",
+      "to": "https://investorschoicelending.com/loan-program/hard-money-loans"
+    },
+    {
+      "domain": "commercialrealestate.loans",
+      "from": "https://commercialrealestate.loans",
+      "to": "https://commercialrealestate.loans/fix-and-flip-loans"
+    },
+    {
+      "domain": "apartment.loans",
+      "from": "https://apartment.loans",
+      "to": "https://apartment.loans/hard-money-apartment-loans"
+    },
+    {
+      "domain": "jeffersonreversemortgage.com",
+      "from": "https://jeffersonreversemortgage.com",
+      "to": "https://jeffersonreversemortgage.com/investor-loans/hard-money"
+    },
+    {
+      "domain": "kcinvestorfunding.com",
+      "from": "https://kcinvestorfunding.com",
+      "to": "https://kcinvestorfunding.com/hard-money-lending-for-passive-investors-safe-short-term-and-secured"
+    },
+    {
+      "domain": "kiavi.com",
+      "from": "https://kiavi.com",
+      "to": "https://kiavi.com/loans/bridge-loans"
+    },
+    {
+      "domain": "kingjameslending.com",
+      "from": "https://kingjameslending.com",
+      "to": "https://kingjameslending.com/fix-flip-loans-and-buy-fix-and-hold"
+    },
+    {
+      "domain": "lantzmanlending.com",
+      "from": "https://lantzmanlending.com",
+      "to": "https://lantzmanlending.com/hard-money-second-mortgages"
+    },
+    {
+      "domain": "launchfg.com",
+      "from": "https://launchfg.com",
+      "to": "https://launchfg.com/hard-money"
+    },
+    {
+      "domain": "lbcmortgage.com",
+      "from": "https://lbcmortgage.com",
+      "to": "https://lbcmortgage.com/investment-property-loans/hard-money-loans"
+    },
+    {
+      "domain": "ledgertc.com",
+      "from": "https://ledgertc.com",
+      "to": "https://ledgertc.com/fix-and-flip"
+    },
+    {
+      "domain": "legacyg.com",
+      "from": "https://legacyg.com",
+      "to": "https://legacyg.com/borrowers/bridge-loan"
+    },
+    {
+      "domain": "legacy-lend.com",
+      "from": "https://legacy-lend.com",
+      "to": "https://legacy-lend.com/lending/investor"
+    },
+    {
+      "domain": "lendding.com",
+      "from": "https://lendding.com",
+      "to": "https://lendding.com/hard-money"
+    },
+    {
+      "domain": "lendingarizona.net",
+      "from": "https://lendingarizona.net",
+      "to": "https://lendingarizona.net/loan-options/fix-flip-home-loan"
+    },
+    {
+      "domain": "lendingbeeinc.com",
+      "from": "https://lendingbeeinc.com",
+      "to": "https://lendingbeeinc.com/hard-money-loans-distressed-properties-california"
+    },
+    {
+      "domain": "lendinghq.com",
+      "from": "https://lendinghq.com",
+      "to": "http://lendinghq.com/hard-money-loans-private-lenders-charleston-sc"
+    },
+    {
+      "domain": "lendingone.com",
+      "from": "https://lendingone.com",
+      "to": "https://lendingone.com/insight/hard-money-lenders"
+    },
+    {
+      "domain": "lendmire.com",
+      "from": "https://lendmire.com",
+      "to": "https://lendmire.com/hard-money-cash-out-refinance"
+    },
+    {
+      "domain": "lendsure.com",
+      "from": "https://lendsure.com",
+      "to": "https://lendsure.com/specialty-loan-solutions/fix-and-flip-financing"
+    },
+    {
+      "domain": "lightspeedlending.com",
+      "from": "https://lightspeedlending.com",
+      "to": "https://lightspeedlending.com/hard-money-loans"
+    },
+    {
+      "domain": "limaone.com",
+      "from": "https://limaone.com",
+      "to": "https://limaone.com/hard-money-fix-n-flip"
+    },
+    {
+      "domain": "littlecityinvestments.com",
+      "from": "https://littlecityinvestments.com",
+      "to": "https://littlecityinvestments.com/texas-real-estate-loans/hard-money-loans-for-real-estate/fix-and-flip-loans"
+    },
+    {
+      "domain": "lm2investments.com",
+      "from": "https://lm2investments.com",
+      "to": "https://lm2investments.com/hard-money-loan-process"
+    },
+    {
+      "domain": "lpnola.com",
+      "from": "https://lpnola.com",
+      "to": "https://lpnola.com/fix-flip"
+    },
+    {
+      "domain": "locklincapital.com",
+      "from": "https://locklincapital.com",
+      "to": "https://locklincapital.com/hard-money-a-time-game"
+    },
+    {
+      "domain": "lonestarfinancing.com",
+      "from": "https://lonestarfinancing.com",
+      "to": "https://lonestarfinancing.com/dscr-loans-texas"
+    },
+    {
+      "domain": "longleaflending.com",
+      "from": "https://longleaflending.com",
+      "to": "https://longleaflending.com/loan-products/fix-and-flip-loans"
+    },
+    {
+      "domain": "loopwholefunding.com",
+      "from": "https://loopwholefunding.com",
+      "to": "https://loopwholefunding.com/fix-and-flip-loan.php"
+    },
+    {
+      "domain": "lynkmortgage.com",
+      "from": "https://lynkmortgage.com",
+      "to": "https://lynkmortgage.com/fix-and-flip-loans"
+    },
+    {
+      "domain": "mmprivatelending.com",
+      "from": "https://mmprivatelending.com",
+      "to": "https://mmprivatelending.com/hard-money-lender"
+    },
+    {
+      "domain": "mach1lending.com",
+      "from": "https://mach1lending.com",
+      "to": "https://mach1lending.com/investor-friendly"
+    },
+    {
+      "domain": "malvecapital.com",
+      "from": "https://malvecapital.com",
+      "to": "https://malvecapital.com/loan-types/hard-money-loans"
+    },
+    {
+      "domain": "martinimortgagegroup.com",
+      "from": "https://martinimortgagegroup.com",
+      "to": "https://martinimortgagegroup.com/loan-options/dscr-loan"
+    },
+    {
+      "domain": "marylandprivatemortgage.com",
+      "from": "https://marylandprivatemortgage.com",
+      "to": "https://marylandprivatemortgage.com/hard-money-loans/fix-and-flip-loans"
+    },
+    {
+      "domain": "mvplender.com",
+      "from": "https://mvplender.com",
+      "to": "https://mvplender.com/hard-money-lender-acton-ma"
+    },
+    {
+      "domain": "phoenixhardmoney.com",
+      "from": "https://phoenixhardmoney.com",
+      "to": "https://phoenixhardmoney.com/hard-money-lender-chandler-az"
+    },
+    {
+      "domain": "metroprivatelending.com",
+      "from": "https://metroprivatelending.com",
+      "to": "https://metroprivatelending.com/hard-money-loan-calculator"
+    },
+    {
+      "domain": "emetropolitan.com",
+      "from": "https://emetropolitan.com",
+      "to": "https://emetropolitan.com/loan-programs/dscr-loan"
+    },
+    {
+      "domain": "michiganmortgagesolutions.com",
+      "from": "https://michiganmortgagesolutions.com",
+      "to": "https://michiganmortgagesolutions.com/investor-loans/fix-and-flip-loans"
+    },
+    {
+      "domain": "moderndaylending.com",
+      "from": "https://moderndaylending.com",
+      "to": "https://moderndaylending.com/services/investor-loans"
+    },
+    {
+      "domain": "monroefundingcorp.com",
+      "from": "https://monroefundingcorp.com",
+      "to": "https://monroefundingcorp.com/hard-money-lending"
+    },
+    {
+      "domain": "montanapromortgage.com",
+      "from": "https://montanapromortgage.com",
+      "to": "https://montanapromortgage.com/loan-programs/dscr-loans"
+    },
+    {
+      "domain": "montegra.com",
+      "from": "https://montegra.com",
+      "to": "https://montegra.com/hard-money-loan-types"
+    },
+    {
+      "domain": "mortgagevintage.com",
+      "from": "https://mortgagevintage.com",
+      "to": "https://mortgagevintage.com/hard-money-loans-trust-deed-investments-test-measure-iterate"
+    },
+    {
+      "domain": "munozghezlan.com",
+      "from": "https://munozghezlan.com",
+      "to": "https://munozghezlan.com/dscr-loan"
+    },
+    {
+      "domain": "mybridgeloan.com",
+      "from": "https://mybridgeloan.com",
+      "to": "https://mybridgeloan.com/dscr-loan"
+    },
+    {
+      "domain": "myerscapitalhawaii.com",
+      "from": "https://myerscapitalhawaii.com",
+      "to": "https://myerscapitalhawaii.com/investment-property-loans/dscr-loans"
+    },
+    {
+      "domain": "myerscapitalvirginia.com",
+      "from": "https://myerscapitalvirginia.com",
+      "to": "https://myerscapitalvirginia.com/specialty-financing/fix-and-flip-loans"
+    },
+    {
+      "domain": "nationalprivatelending.com",
+      "from": "https://nationalprivatelending.com",
+      "to": "https://nationalprivatelending.com/fix-flip-loans"
+    },
+    {
+      "domain": "nelsonfunding.com",
+      "from": "https://nelsonfunding.com",
+      "to": "https://nelsonfunding.com/types-of-loans/bridge-loans/hard-money-bridge-loans"
+    },
+    {
+      "domain": "newfundingresources.com",
+      "from": "https://newfundingresources.com",
+      "to": "https://newfundingresources.com/hard-money-loan-servicing"
+    },
+    {
+      "domain": "newsilver.com",
+      "from": "https://newsilver.com",
+      "to": "https://newsilver.com/hard-money-lending/arizona-2"
+    },
+    {
+      "domain": "newfi.com",
+      "from": "https://newfi.com",
+      "to": "https://newfi.com/dscr-loans"
+    },
+    {
+      "domain": "newmarkinvestment.com",
+      "from": "https://newmarkinvestment.com",
+      "to": "https://newmarkinvestment.com/hardmoney"
+    },
+    {
+      "domain": "mortgageguydan.com",
+      "from": "https://mortgageguydan.com",
+      "to": "https://mortgageguydan.com/fix-flip"
+    },
+    {
+      "domain": "noblemortgage.com",
+      "from": "https://noblemortgage.com",
+      "to": "https://noblemortgage.com/investment-loan-process"
+    },
+    {
+      "domain": "norfolkcapital.com",
+      "from": "https://norfolkcapital.com",
+      "to": "https://norfolkcapital.com/hard-money-loans-boston"
+    },
+    {
+      "domain": "residentialbridgeloanlenders.com",
+      "from": "https://residentialbridgeloanlenders.com",
+      "to": "https://residentialbridgeloanlenders.com/hard-money-bridge-loans"
+    },
+    {
+      "domain": "northcoastfinancialinc.com",
+      "from": "https://northcoastfinancialinc.com",
+      "to": "https://northcoastfinancialinc.com/hard-money-loans-real-estate"
+    },
+    {
+      "domain": "northoakinvestment.com",
+      "from": "https://northoakinvestment.com",
+      "to": "https://northoakinvestment.com/fix-flip-to-new-construction"
+    },
+    {
+      "domain": "nwprivatelending.com",
+      "from": "https://nwprivatelending.com",
+      "to": "https://nwprivatelending.com/hard-money-loans-we-offer/fix-and-flip-loans"
+    },
+    {
+      "domain": "nqmf.com",
+      "from": "https://nqmf.com",
+      "to": "https://nqmf.com/dscr-loans-for-first-time-real-estate-investors-in-south-carolina"
+    },
+    {
+      "domain": "nvcapcorp.com",
+      "from": "https://nvcapcorp.com",
+      "to": "https://nvcapcorp.com/hard-money-rental-property-loans"
+    },
+    {
+      "domain": "coloradoloanpro.com",
+      "from": "https://coloradoloanpro.com",
+      "to": "https://coloradoloanpro.com/lending/investor"
+    },
+    {
+      "domain": "onewesthardmoney.com",
+      "from": "https://onewesthardmoney.com",
+      "to": "https://onewesthardmoney.com/hard-money-cash-out-refinance"
+    },
+    {
+      "domain": "onyxcapitallending.com",
+      "from": "https://onyxcapitallending.com",
+      "to": "https://onyxcapitallending.com/hard-money-loan"
+    },
+    {
+      "domain": "optimuscapitalcorp.com",
+      "from": "https://optimuscapitalcorp.com",
+      "to": "https://optimuscapitalcorp.com/investor-loans"
+    },
+    {
+      "domain": "pacesfunding.com",
+      "from": "https://pacesfunding.com",
+      "to": "https://pacesfunding.com/hard-money-loans-for-real-estate-investors"
+    },
+    {
+      "domain": "pacifichomeloans.com",
+      "from": "https://pacifichomeloans.com",
+      "to": "https://pacifichomeloans.com/private-money"
+    },
+    {
+      "domain": "bestwashingtonlender.com",
+      "from": "https://bestwashingtonlender.com",
+      "to": "https://bestwashingtonlender.com/hard-money-hotel-loans"
+    },
+    {
+      "domain": "parkplacefinance.com",
+      "from": "https://parkplacefinance.com",
+      "to": "https://parkplacefinance.com/hard-money"
+    },
+    {
+      "domain": "payettefinancial.com",
+      "from": "https://payettefinancial.com",
+      "to": "https://payettefinancial.com/hard-money-loans.html"
+    },
+    {
+      "domain": "calhardmoney.com",
+      "from": "https://calhardmoney.com",
+      "to": "https://calhardmoney.com/hard-money.php"
+    },
+    {
+      "domain": "peakviewmortgage.com",
+      "from": "https://peakviewmortgage.com",
+      "to": "https://peakviewmortgage.com/bridge-loans"
+    },
+    {
+      "domain": "pimlicogroup.com",
+      "from": "https://pimlicogroup.com",
+      "to": "https://pimlicogroup.com/hard-money-loans"
+    },
+    {
+      "domain": "precisioncapital.net",
+      "from": "https://precisioncapital.net",
+      "to": "https://precisioncapital.net/private-money-loans"
+    },
+    {
+      "domain": "pricecapitalgroup.com",
+      "from": "https://pricecapitalgroup.com",
+      "to": "https://pricecapitalgroup.com/media/private-money-lending-deals-the-route-ep2"
+    },
+    {
+      "domain": "delawaremortgageloans.net",
+      "from": "https://delawaremortgageloans.net",
+      "to": "https://delawaremortgageloans.net/fix-flip-loans"
+    },
+    {
+      "domain": "privatecapitalinvestors.com",
+      "from": "https://privatecapitalinvestors.com",
+      "to": "https://privatecapitalinvestors.com/commercial-real-estate-loan-programs/hard-money-commercial-real-estate-loans"
+    },
+    {
+      "domain": "privatecapitallenders.com",
+      "from": "https://privatecapitallenders.com",
+      "to": "https://privatecapitallenders.com/cre-lending/hard-money-loans"
+    },
+    {
+      "domain": "privatecapitalnw.com",
+      "from": "https://privatecapitalnw.com",
+      "to": "https://privatecapitalnw.com/fix-and-flip-loans"
+    },
+    {
+      "domain": "chicagorehabloans.com",
+      "from": "https://chicagorehabloans.com",
+      "to": "https://chicagorehabloans.com/lending/investor"
+    },
+    {
+      "domain": "privatemoneyhawaii.com",
+      "from": "https://privatemoneyhawaii.com",
+      "to": "https://privatemoneyhawaii.com/hard-money-loan-lenders-in-hawaii-2025-rates-terms"
+    },
+    {
+      "domain": "prmcapital.net",
+      "from": "https://prmcapital.net",
+      "to": "https://prmcapital.net/fix-and-flip-residential-financing"
+    },
+    {
+      "domain": "propertyfliploan.com",
+      "from": "https://propertyfliploan.com",
+      "to": "https://propertyfliploan.com/hard-money-loans-worcester-county-md"
+    },
+    {
+      "domain": "quicklendcapital.com",
+      "from": "https://quicklendcapital.com",
+      "to": "https://quicklendcapital.com/products/fix-and-flip"
+    },
+    {
+      "domain": "blog.raacap.com",
+      "from": "https://blog.raacap.com",
+      "to": "https://blog.raacap.com/hard-money-lenders-smoot-wy-wyoming-private-money-lenders"
+    },
+    {
+      "domain": "raincitycapital.com",
+      "from": "https://raincitycapital.com",
+      "to": "https://raincitycapital.com/lending/investor"
+    },
+    {
+      "domain": "raleighmortgagegroup.com",
+      "from": "https://raleighmortgagegroup.com",
+      "to": "https://raleighmortgagegroup.com/lending/investor"
+    },
+    {
+      "domain": "raygreen.com",
+      "from": "https://raygreen.com",
+      "to": "https://raygreen.com/hard-money-bridge-loan-connecticut"
+    },
+    {
+      "domain": "rbiprivatelending.com",
+      "from": "https://rbiprivatelending.com",
+      "to": "https://rbiprivatelending.com/lending/investor"
+    },
+    {
+      "domain": "recasafinancial.com",
+      "from": "https://recasafinancial.com",
+      "to": "https://recasafinancial.com/hard-money"
+    },
+    {
+      "domain": "fundwithredrock.com",
+      "from": "https://fundwithredrock.com",
+      "to": "https://fundwithredrock.com/hard-money-loans"
+    },
+    {
+      "domain": "rehabfinancial.com",
+      "from": "https://rehabfinancial.com",
+      "to": "https://rehabfinancial.com/hard-money-lenders"
+    },
+    {
+      "domain": "rehablend.com",
+      "from": "https://rehablend.com",
+      "to": "https://rehablend.com/home/hard-money-loan-private-money-colorado"
+    },
+    {
+      "domain": "rgccap.com",
+      "from": "https://rgccap.com",
+      "to": "https://rgccap.com/fix-and-flip-loan"
+    },
+    {
+      "domain": "ridgestreetcap.com",
+      "from": "https://ridgestreetcap.com",
+      "to": "https://ridgestreetcap.com/hard-money-lenders-florida"
+    },
+    {
+      "domain": "rivercitybankky.com",
+      "from": "https://rivercitybankky.com",
+      "to": "https://rivercitybankky.com/bridge-loans"
+    },
+    {
+      "domain": "riverbendcorporation.com",
+      "from": "https://riverbendcorporation.com",
+      "to": "https://riverbendcorporation.com/lending/investor"
+    },
+    {
+      "domain": "rmmc.com",
+      "from": "https://rmmc.com",
+      "to": "https://rmmc.com/loan-program/dscr-mortgage-loans"
+    },
+    {
+      "domain": "rtibridgeloans.com",
+      "from": "https://rtibridgeloans.com",
+      "to": "https://rtibridgeloans.com/hard-money-loans"
+    },
+    {
+      "domain": "rubiconmortgagefund.com",
+      "from": "https://rubiconmortgagefund.com",
+      "to": "https://rubiconmortgagefund.com/hard-money-2nd-trust-deed-loan-on-san-francisco-4-unit-property"
+    },
+    {
+      "domain": "sachemlending.com",
+      "from": "https://sachemlending.com",
+      "to": "https://sachemlending.com/lending/investor"
+    },
+    {
+      "domain": "sammamishmortgage.com",
+      "from": "https://sammamishmortgage.com",
+      "to": "https://sammamishmortgage.com/fix-flip-buy-hold-investment-real-estate"
+    },
+    {
+      "domain": "sdcfinance.com",
+      "from": "https://sdcfinance.com",
+      "to": "https://sdcfinance.com/fix-and-flip"
+    },
+    {
+      "domain": "bridgeloan.io",
+      "from": "https://bridgeloan.io",
+      "to": "https://bridgeloan.io/bridge-loans"
+    },
+    {
+      "domain": "selecthomeloans.com",
+      "from": "https://selecthomeloans.com",
+      "to": "https://selecthomeloans.com/dscr"
+    },
+    {
+      "domain": "shermanbridge.com",
+      "from": "https://shermanbridge.com",
+      "to": "https://shermanbridge.com/hard-money-loans/alabama"
+    },
+    {
+      "domain": "simplendingfinancial.com",
+      "from": "https://simplendingfinancial.com",
+      "to": "https://simplendingfinancial.com/fix-and-flip"
+    },
+    {
+      "domain": "socotracapital.com",
+      "from": "https://socotracapital.com",
+      "to": "https://socotracapital.com/loan-options/hard-money-loan-types"
+    },
+    {
+      "domain": "hardmoneyfirst.com",
+      "from": "https://hardmoneyfirst.com",
+      "to": "https://hardmoneyfirst.com/loan-programs/hard-money-loans"
+    },
+    {
+      "domain": "privatemoneyloans.vegas",
+      "from": "https://privatemoneyloans.vegas",
+      "to": "https://privatemoneyloans.vegas/private-money"
+    },
+    {
+      "domain": "stormfieldcapital.com",
+      "from": "https://stormfieldcapital.com",
+      "to": "https://stormfieldcapital.com/loan-programs/fix-and-flip"
+    },
+    {
+      "domain": "strattonequities.com",
+      "from": "https://strattonequities.com",
+      "to": "https://strattonequities.com/investor-loan-programs"
+    },
+    {
+      "domain": "stronginvestorloans.com",
+      "from": "https://stronginvestorloans.com",
+      "to": "https://stronginvestorloans.com/program/fix-flip-loans"
+    },
+    {
+      "domain": "sunsetequityfunding.com",
+      "from": "https://sunsetequityfunding.com",
+      "to": "https://sunsetequityfunding.com/fix-and-flip-loan"
+    },
+    {
+      "domain": "swellprivatelending.com",
+      "from": "https://swellprivatelending.com",
+      "to": "https://swellprivatelending.com/lending/investor"
+    },
+    {
+      "domain": "synergylenders.com",
+      "from": "https://synergylenders.com",
+      "to": "https://synergylenders.com/fix-and-flip"
+    },
+    {
+      "domain": "talimarfinancial.com",
+      "from": "https://talimarfinancial.com",
+      "to": "https://talimarfinancial.com/hard-money-loan-programs"
+    },
+    {
+      "domain": "taylormadelendingllc.com",
+      "from": "https://taylormadelendingllc.com",
+      "to": "https://taylormadelendingllc.com/lending/investor"
+    },
+    {
+      "domain": "templeviewcap.com",
+      "from": "https://templeviewcap.com",
+      "to": "https://templeviewcap.com/programs/dscr-loan-program"
+    },
+    {
+      "domain": "texas-hardmoney.com",
+      "from": "https://texas-hardmoney.com",
+      "to": "https://texas-hardmoney.com/hard-money/direct-lenders/san-antonio"
+    },
+    {
+      "domain": "texfunding.com",
+      "from": "https://texfunding.com",
+      "to": "https://texfunding.com/hard-money-loans-texas"
+    },
+    {
+      "domain": "txpremiermortgage.com",
+      "from": "https://txpremiermortgage.com",
+      "to": "https://txpremiermortgage.com/dscr-loans-in-texas"
+    },
+    {
+      "domain": "thefundinglane.com",
+      "from": "https://thefundinglane.com",
+      "to": "https://thefundinglane.com/lending/investor"
+    },
+    {
+      "domain": "thehardmoneyco.com",
+      "from": "https://thehardmoneyco.com",
+      "to": "https://thehardmoneyco.com/fix-and-flip"
+    },
+    {
+      "domain": "theinvestorsedge.com",
+      "from": "https://theinvestorsedge.com",
+      "to": "https://theinvestorsedge.com/hard-money-loans"
+    },
+    {
+      "domain": "themortgagebureau.com",
+      "from": "https://themortgagebureau.com",
+      "to": "https://themortgagebureau.com/fix-flip-home-loan"
+    },
+    {
+      "domain": "retail.thelender.com",
+      "from": "https://retail.thelender.com",
+      "to": "https://retail.thelender.com/dscr-investor-loan"
+    },
+    {
+      "domain": "tnbank.bank",
+      "from": "https://tnbank.bank",
+      "to": "https://tnbank.bank/loans/home-loans/bridge-loans.html"
+    },
+    {
+      "domain": "tritalent.com",
+      "from": "https://tritalent.com",
+      "to": "https://tritalent.com/loan-programs/hard-money-real-estate-loans"
+    },
+    {
+      "domain": "truebridgeloans.com",
+      "from": "https://truebridgeloans.com",
+      "to": "https://truebridgeloans.com/investor-loans"
+    },
+    {
+      "domain": "trussfinancialgroup.com",
+      "from": "https://trussfinancialgroup.com",
+      "to": "https://trussfinancialgroup.com/hard-money-mortgages"
+    },
+    {
+      "domain": "adamzmortgageteam.com",
+      "from": "https://adamzmortgageteam.com",
+      "to": "https://adamzmortgageteam.com/dscr-loans"
+    },
+    {
+      "domain": "unitasfunding.com",
+      "from": "https://unitasfunding.com",
+      "to": "https://unitasfunding.com/dscr"
+    },
+    {
+      "domain": "urbancitywidedevelopment.com",
+      "from": "https://urbancitywidedevelopment.com",
+      "to": "https://urbancitywidedevelopment.com/Private-money"
+    },
+    {
+      "domain": "usahardmoneylenders.com",
+      "from": "https://usahardmoneylenders.com",
+      "to": "https://usahardmoneylenders.com/lending/investor"
+    },
+    {
+      "domain": "valorlending.com",
+      "from": "https://valorlending.com",
+      "to": "https://valorlending.com/investor-loans-for-new-or-experienced-valor-lending-group"
+    },
+    {
+      "domain": "blog.vaster.com",
+      "from": "https://blog.vaster.com",
+      "to": "https://blog.vaster.com/hard-money-loan"
+    },
+    {
+      "domain": "venuscomcapital.com",
+      "from": "https://venuscomcapital.com",
+      "to": "https://venuscomcapital.com/lending/investor"
+    },
+    {
+      "domain": "veristonecapital.com",
+      "from": "https://veristonecapital.com",
+      "to": "https://veristonecapital.com/loan-programs/bridge-loans"
+    },
+    {
+      "domain": "vfindloans.com",
+      "from": "https://vfindloans.com",
+      "to": "https://vfindloans.com/hard-money-loans-owner-occupied"
+    },
+    {
+      "domain": "vipcapitalfunding.com",
+      "from": "https://vipcapitalfunding.com",
+      "to": "https://vipcapitalfunding.com/bridge-loans/california-5"
+    },
+    {
+      "domain": "visiolending.com",
+      "from": "https://visiolending.com",
+      "to": "https://visiolending.com/dscr-loans"
+    },
+    {
+      "domain": "4062200077.com",
+      "from": "https://4062200077.com",
+      "to": "https://4062200077.com/dscr"
+    },
+    {
+      "domain": "y2lending.com",
+      "from": "https://y2lending.com",
+      "to": "https://y2lending.com/hard-money-fix-and-flip-funding"
+    },
+    {
+      "domain": "yieldi.com",
+      "from": "https://yieldi.com",
+      "to": "https://yieldi.com/hard-money-loan-programs"
+    },
+    {
+      "domain": "zeuslending.com",
+      "from": "https://zeuslending.com",
+      "to": "https://zeuslending.com/hard-money-loans"
+    }
+  ],
+  "rejected_sample": [
+    {
+      "domain": "amplend.net",
+      "url": "https://amplend.net/investors-checklist-when-purchasing-real-estate",
+      "score": 24
+    },
+    {
+      "domain": "battleborncap.com",
+      "url": "https://battleborncap.com/investors",
+      "score": 32
+    },
+    {
+      "domain": "bostontrustcorp.com",
+      "url": "https://bostontrustcorp.com/bridge-loans",
+      "score": 26
+    },
+    {
+      "domain": "cplenders.com",
+      "url": "https://cplenders.com/investors",
+      "score": 24
+    },
+    {
+      "domain": "catalystfdg.com",
+      "url": "https://catalystfdg.com/investor-blog/hard-money-loans-for-fix-and-flip-investors-in-texas-the-questions-investors-are-asking-in-2026",
+      "score": 70
+    },
+    {
+      "domain": "centrallending.com",
+      "url": "https://centrallending.com/bridge-loan",
+      "score": 26
+    },
+    {
+      "domain": "citycreekmortgage.com",
+      "url": "https://citycreekmortgage.com/markets/investors-await-fed-minute-release",
+      "score": 24
+    },
+    {
+      "domain": "coloradohardmoney.com",
+      "url": "https://coloradohardmoney.com/hard-money-faq",
+      "score": 38
+    },
+    {
+      "domain": "corevestfinance.com",
+      "url": "https://corevestfinance.com/press/investor-interest-levels-off-investor-purchases-stabilizing-amidst-covid-market-frenzy",
+      "score": 40
+    },
+    {
+      "domain": "creditsuite.com",
+      "url": "https://creditsuite.com/blog/hard-money-loans-100-financing",
+      "score": 31
+    },
+    {
+      "domain": "crossroadsinvestmentlending.com",
+      "url": "https://crossroadsinvestmentlending.com/hard-money-business-loans-a-comprehensive-guide",
+      "score": 46
+    },
+    {
+      "domain": "districtlending.com",
+      "url": "https://districtlending.com/dscr-appraisals-guide",
+      "score": 28
+    },
+    {
+      "domain": "dkclending.com",
+      "url": "https://dkclending.com/video_category/hard-money",
+      "score": 46
+    },
+    {
+      "domain": "georgiahardmoney.com",
+      "url": "https://georgiahardmoney.com/hard-money-faq",
+      "score": 38
+    },
+    {
+      "domain": "fastdscrloans.com",
+      "url": "https://fastdscrloans.com/faqs/dscr",
+      "score": 43
+    },
+    {
+      "domain": "fctd.com",
+      "url": "https://fctd.com/hard-money-fix-and-flip-financing-a-complete-overview",
+      "score": 53
+    },
+    {
+      "domain": "firstequityfundingllc.com",
+      "url": "https://firstequityfundingllc.com/dscr-overview-loan-programs-benefits-and-how-to-qualify",
+      "score": 43
+    },
+    {
+      "domain": "bankfirstfed.com",
+      "url": "https://bankfirstfed.com/lending/home-loans/bridge-loans.html",
+      "score": 20
+    },
+    {
+      "domain": "myiralender.com",
+      "url": "https://myiralender.com/investor-real-estate-loans",
+      "score": 24
+    },
+    {
+      "domain": "hardmoneylenders.io",
+      "url": "https://hardmoneylenders.io/uncategorized-en/fix-and-flip-loans-for-beginners-the-complete-first-loan-guide",
+      "score": 53
+    },
+    {
+      "domain": "jakenfinancegroup.com",
+      "url": "https://jakenfinancegroup.com/hard-money-lender-comparison-focus-states-2026",
+      "score": 86
+    },
+    {
+      "domain": "jvmlending.com",
+      "url": "https://jvmlending.com/loan-types/bridge-loan",
+      "score": 26
+    },
+    {
+      "domain": "lendsurehomeloans.com",
+      "url": "https://lendsurehomeloans.com/blog/investor-loans-retirees",
+      "score": 52
+    },
+    {
+      "domain": "longhorninvestments.com",
+      "url": "https://longhorninvestments.com/hard-money-loans-for-new-investors-a-starter-guide",
+      "score": 54
+    },
+    {
+      "domain": "masshardmoney.com",
+      "url": "https://masshardmoney.com/2025/02/hard-money-loan-over-a-conventional-loan",
+      "score": 43
+    },
+    {
+      "domain": "mcgowanmortgages.com",
+      "url": "https://mcgowanmortgages.com/learn/loan-options/dscr-loans",
+      "score": 35
+    },
+    {
+      "domain": "massprivatelending.com",
+      "url": "https://massprivatelending.com/investors",
+      "score": 32
+    },
+    {
+      "domain": "myoakleaf.com",
+      "url": "https://myoakleaf.com/portfolio-mortgage/investor-rehab-loan",
+      "score": 24
+    },
+    {
+      "domain": "pacificprivatemoney.com",
+      "url": "https://pacificprivatemoney.com/hard-money-lenders-california-guide",
+      "score": 52
+    },
+    {
+      "domain": "peersense.com",
+      "url": "https://peersense.com/learn/hard-money-exit-strategy",
+      "score": 70
+    },
+    {
+      "domain": "pinefinancialgroup.com",
+      "url": "https://pinefinancialgroup.com/pine-videos/hard-money-for-the-real-estate-investor-webinar",
+      "score": 54
+    },
+    {
+      "domain": "premiumhardmoney.com",
+      "url": "https://premiumhardmoney.com/2022/01/hard-money-can-get-your-construction-project-off-the-ground",
+      "score": 46
+    },
+    {
+      "domain": "primeplusmortgages.com",
+      "url": "https://primeplusmortgages.com/investor-notes",
+      "score": 50
+    },
+    {
+      "domain": "privatemoni.com",
+      "url": "https://privatemoni.com/learning-center/hard-money-vs-conventional",
+      "score": 46
+    },
+    {
+      "domain": "privatemoneylenders.com",
+      "url": "https://privatemoneylenders.com/investors",
+      "score": 30
+    },
+    {
+      "domain": "randysantaloans.com",
+      "url": "https://randysantaloans.com/investors",
+      "score": 52
+    },
+    {
+      "domain": "rentalhomefinancing.com",
+      "url": "https://rentalhomefinancing.com/investment-loan-education-center.html",
+      "score": 87
+    },
+    {
+      "domain": "rockeastfunding.com",
+      "url": "https://rockeastfunding.com/hard-money-blog",
+      "score": 38
+    },
+    {
+      "domain": "sharestates.com",
+      "url": "https://sharestates.com/blog/2022/04/18/hard-money-loans-everything-you-need-to-know",
+      "score": 31
+    },
+    {
+      "domain": "sprivatelending.com",
+      "url": "https://sprivatelending.com/2025/12/dscr-loan-terms-explained-30-year-interest-only-arm-options-in-atlanta",
+      "score": 43
+    }
+  ]
+}
