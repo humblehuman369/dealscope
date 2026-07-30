@@ -1178,6 +1178,54 @@ function VerdictContent() {
   // Loading state — pulsating IQ logo until data arrives.
   // Also covers the case where property loaded from cache but analysis API is still in flight.
   if (isLoading || (!analysis && !error)) {
+    if (loadTimedOut) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-[var(--surface-base)]">
+          <div className="flex flex-col items-center gap-4 text-center px-4 max-w-md">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(8,145,178,0.15)' }}
+            >
+              <svg
+                className="w-8 h-8 text-[var(--accent-sky)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold" style={{ color: 'var(--text-heading)' }}>
+              This is taking longer than expected
+            </h2>
+            <p className="max-w-md" style={{ color: 'var(--text-body)' }}>
+              The analysis didn&apos;t come back in time. It may be a slow connection or a
+              temporary issue on our side.
+            </p>
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={retryAnalysis}
+                className="px-6 py-2 bg-[var(--accent-sky)] text-[var(--text-inverse)] rounded-full font-bold hover:bg-[var(--accent-sky-light)] transition-colors"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={handleBack}
+                className="px-6 py-2 rounded-full font-bold transition-colors hover:bg-[var(--surface-elevated)]"
+                style={{ border: '1px solid var(--border-default)', color: 'var(--text-heading)' }}
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
     return <IQLoadingLogo />
   }
 
