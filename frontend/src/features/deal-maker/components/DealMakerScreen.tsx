@@ -23,7 +23,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDealMakerStore, useDealMakerDerived, useDealMakerReady } from '@/stores/dealMakerStore'
 import { useDefaults } from '@/hooks/useDefaults'
-import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity'
+import { canonicalizeAddressForIdentity, isInitialOverrideEligible, readDealMakerOverrides } from '@/utils/addressIdentity'
 import {
   // Strategy types & defaults
   StrategyType,
@@ -211,9 +211,67 @@ export function DealMakerScreen({
     setLocalBRRRRState(buildBRRRRState(property, listPrice, adminDefaults))
   }, [adminDefaults, isSavedPropertyMode, property, listPrice])
 
+  // Apply Comp Appraisal / Est. After Repair values written by PriceChecker
+  // "Apply to Deal" into local slider state when this property is not yet loaded
+  // from a saved DealMakerRecord (saved mode reads those fields from the store).
+  const sessionOverridesAppliedKeyRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (isSavedPropertyMode) return
+    const fullAddr = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
+    const key = canonicalizeAddressForIdentity(fullAddr)
+    if (!key || sessionOverridesAppliedKeyRef.current === key) return
+    const stored = readDealMakerOverrides(key)
+    if (!stored || !isInitialOverrideEligible(stored)) return
+    sessionOverridesAppliedKeyRef.current = key
+
+    const arv = typeof stored.arv === 'number' && stored.arv > 0 ? Math.round(stored.arv) : null
+    const rent =
+      typeof stored.monthlyRent === 'number' && stored.monthlyRent > 0
+        ? Math.round(stored.monthlyRent)
+        : null
+    const buy =
+      typeof stored.listPrice === 'number' && stored.listPrice > 0
+        ? Math.round(stored.listPrice)
+        : typeof stored.price === 'number' && stored.price > 0
+          ? Math.round(stored.price)
+          : null
+
+    if (arv == null && rent == null && buy == null) return
+
+    setLocalLTRState((prev) => ({
+      ...prev,
+      ...(buy != null ? { buyPrice: buy } : {}),
+      ...(arv != null ? { arv } : {}),
+      ...(rent != null ? { monthlyRent: rent } : {}),
+    }))
+    setLocalSTRState((prev) => ({
+      ...prev,
+      ...(buy != null ? { buyPrice: buy } : {}),
+      ...(arv != null ? { arv } : {}),
+    }))
+    setLocalFlipState((prev) => ({
+      ...prev,
+      ...(buy != null ? { purchasePrice: buy } : {}),
+      ...(arv != null ? { arv } : {}),
+    }))
+    setLocalBRRRRState((prev) => ({
+      ...prev,
+      ...(buy != null ? { purchasePrice: buy } : {}),
+      ...(arv != null ? { arv } : {}),
+      ...(rent != null ? { postRehabMonthlyRent: rent } : {}),
+    }))
+    setLocalHouseHackState((prev) => ({
+      ...prev,
+      ...(buy != null ? { purchasePrice: buy } : {}),
+    }))
+    setLocalWholesaleState((prev) => ({
+      ...prev,
+      ...(arv != null ? { arv } : {}),
+    }))
+  }, [isSavedPropertyMode, property.address, property.city, property.state, property.zipCode])
+
   // Load Deal Maker record from backend for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property
-  // This handles navigation between different saved properties
   useEffect(() => {
     if (isSavedPropertyMode && savedPropertyId) {
       const isWrongProperty = dealMakerStore.propertyId !== savedPropertyId

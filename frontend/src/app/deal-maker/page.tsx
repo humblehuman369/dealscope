@@ -308,6 +308,7 @@ export default function DealMakerIndexPage() {
           property={propertyData}
           listPrice={propertyData.price}
           initialStrategy={initialStrategy}
+          savedPropertyId={savedPropertyId ?? undefined}
           backTo={backTo}
         />
       </AuthGate>

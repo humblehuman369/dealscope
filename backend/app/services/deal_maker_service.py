@@ -383,14 +383,16 @@ class DealMakerService:
             if value is not None:
                 record_dict[key] = value
 
-        # Appraiser "Apply to Deal" for market value on off-market / zero-list saves:
-        # seed buy_price and list_price when they are still zero so metrics stay finite.
+        # Appraiser "Apply to Deal" for market value:
+        # - Always refresh list_price so the record's market basis matches.
+        # - Seed buy_price when it is still zero (off-market / empty saves) so
+        #   metrics stay finite. Callers that also send buy_price (comps Apply)
+        #   already wrote it in the loop above.
         mv_override = updates_dict.get("market_value_override")
         if mv_override is not None and mv_override > 0:
+            record_dict["list_price"] = mv_override
             if (record_dict.get("buy_price") or 0) <= 0:
                 record_dict["buy_price"] = mv_override
-            if (record_dict.get("list_price") or 0) <= 0:
-                record_dict["list_price"] = mv_override
 
         # Update timestamp
         record_dict["updated_at"] = datetime.now(UTC)

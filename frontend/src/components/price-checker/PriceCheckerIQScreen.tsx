@@ -1438,6 +1438,7 @@ export function PriceCheckerIQScreen({
                   </div>
                   <div className="mt-auto flex justify-end pt-1">
                     <button
+                      type="button"
                       onClick={isSale ? handleApplyMarketValue : handleApplyMarketRent}
                       disabled={
                         isApplying ||
@@ -1516,6 +1517,7 @@ export function PriceCheckerIQScreen({
                   </div>
                   <div className="mt-auto flex justify-end pt-1">
                     <button
+                      type="button"
                       onClick={isSale ? handleApplyArv : handleApplyImprovedRent}
                       disabled={
                         isApplying ||

@@ -185,3 +185,27 @@ def test_update_record_seeds_buy_price_from_market_value_override_when_zero():
     assert updated.market_value_override == 848_586
     assert updated.buy_price == 848_586
     assert updated.list_price == 848_586
+
+
+def test_update_record_refreshes_list_price_even_when_buy_price_is_set():
+    """Comp Appraisal Apply updates the market basis without clobbering a
+    buy_price that was already explicitly sent in the same PATCH."""
+    record = _minimal_record(buy_price=340_000, list_price=400_000)
+    updated = DealMakerService.update_record(
+        record,
+        DealMakerRecordUpdate(market_value_override=425_000, buy_price=425_000),
+    )
+    assert updated.market_value_override == 425_000
+    assert updated.buy_price == 425_000
+    assert updated.list_price == 425_000
+
+
+def test_update_record_keeps_existing_buy_price_when_only_market_override_sent():
+    record = _minimal_record(buy_price=340_000, list_price=400_000)
+    updated = DealMakerService.update_record(
+        record,
+        DealMakerRecordUpdate(market_value_override=425_000),
+    )
+    assert updated.market_value_override == 425_000
+    assert updated.buy_price == 340_000
+    assert updated.list_price == 425_000

@@ -11,6 +11,7 @@ import type { PropertySnapshot } from '@/hooks/useSaveProperty'
 import { parseAddressString } from '@/utils/formatters'
 import { canonicalizeAddressForIdentity, writeDealMakerOverrides } from '@/utils/addressIdentity'
 import type { DealMakerUpdate } from '@/stores/dealMakerStore'
+import { useDealMakerStore } from '@/stores/dealMakerStore'
 import type { PropertyResponse } from '@dealscope/shared'
 
 export interface ApplyToDealPayload {
@@ -45,7 +46,13 @@ function buildPatchBody(payload: ApplyToDealPayload): DealMakerUpdate {
   const mv = finitePositive(payload.marketValueOverride)
   const rent = finitePositive(payload.monthlyRentOverride)
   const arv = finitePositive(payload.arv)
-  if (mv != null) body.market_value_override = mv
+  if (mv != null) {
+    body.market_value_override = mv
+    // Comp Appraisal "Apply to Deal" must move the worksheet Buy Price too —
+    // otherwise the value is saved as an override Strategy can see, while Deal
+    // Maker keeps showing the old offer price and looks like the button failed.
+    body.buy_price = mv
+  }
   if (rent != null) {
     body.monthly_rent_override = rent
     body.monthly_rent = rent
@@ -197,6 +204,14 @@ export function useApplyToDeal({
         writeDealMakerOverrides(displayAddress, buildSessionPatch(payload), {
           origin: 'dealmaker_edit',
         })
+
+        // Discovery / Deal Maker keep a live Zustand copy of the record. If that
+        // copy is for this property, reload it so Apply to Deal is visible
+        // without a full page refresh.
+        const store = useDealMakerStore.getState()
+        if (store.propertyId === propertyId) {
+          await store.loadRecord(propertyId)
+        }
 
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ['deal-maker', 'snapshot', propertyId] }),
