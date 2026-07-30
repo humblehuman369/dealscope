@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import Image from 'next/image'
 
 import './hero-v5.css'
 
@@ -62,7 +63,14 @@ export function HeroSampleResult({
       >
         <div className="hero-sample-result__property hero-sample-result__anim" style={delayStyle(0)}>
           <div className="hero-sample-result__photo" aria-hidden="true">
-            <span className="hero-sample-result__photo-glow" />
+            <Image
+              src="/images/hero-sample-house.jpg"
+              alt=""
+              width={112}
+              height={112}
+              className="hero-sample-result__photo-img"
+              priority
+            />
           </div>
           <div className="hero-sample-result__property-copy">
             <div className="hero-sample-result__mono-label">Discovery</div>

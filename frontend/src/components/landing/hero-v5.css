@@ -246,27 +246,14 @@
   flex-shrink: 0;
   overflow: hidden;
   border: 1px solid var(--border-default);
-  background:
-    linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--accent-brand-blue) 35%, var(--surface-elevated)) 0%,
-      color-mix(in srgb, var(--accent-sky) 18%, var(--surface-elevated)) 55%,
-      var(--surface-elevated) 100%
-    );
+  background: var(--surface-card);
 }
 
-.hero-sample-result__photo-glow {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, transparent 40%, color-mix(in srgb, var(--surface-base) 45%, transparent) 100%),
-    repeating-linear-gradient(
-      -18deg,
-      transparent,
-      transparent 7px,
-      color-mix(in srgb, var(--text-heading) 4%, transparent) 7px,
-      color-mix(in srgb, var(--text-heading) 4%, transparent) 8px
-    );
+.hero-sample-result__photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .hero-sample-result__property-copy {
@@ -497,12 +484,7 @@
 .hero-sample-result__path--featured {
   grid-column: 1 / -1;
   border-color: color-mix(in srgb, var(--accent-sky) 45%, var(--border-default));
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--accent-sky) 12%, transparent) 0%,
-      color-mix(in srgb, var(--accent-brand-blue) 8%, transparent) 100%
-    );
+  background: var(--surface-section);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-sky) 18%, transparent);
   animation-name: hero-sample-rise-featured;
 }
@@ -552,7 +534,7 @@
 }
 
 .hero-sample-result__path--featured .hero-sample-result__path-detail {
-  color: color-mix(in srgb, var(--accent-sky-light) 70%, var(--text-secondary));
+  color: var(--text-secondary);
 }
 
 .hero-sample-result__foot {
