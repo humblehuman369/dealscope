@@ -175,6 +175,11 @@ function getStrategyIcon(strategyId: string): string {
   return icons[strategyId] || '📊'
 }
 
+// How long the pulsating loading logo may run before the page surfaces a
+// recovery screen. A hung fetch or a silently swallowed processing error
+// otherwise leaves the spinner up forever with no way out.
+const ANALYSIS_LOAD_TIMEOUT_MS = 60_000
+
 function VerdictContent() {
   const router = useRouter()
   const searchParams = useAppSearchParams()
@@ -292,6 +297,10 @@ function VerdictContent() {
     return !queryClient.getQueryData(['property-search', canonical, cacheZpid])
   })
   const [error, setError] = useState<string | null>(null)
+  // True when the loading state has exceeded ANALYSIS_LOAD_TIMEOUT_MS.
+  const [loadTimedOut, setLoadTimedOut] = useState(false)
+  // Incremented by the timeout screen's "Try Again" to re-run the fetch effect.
+  const [retryNonce, setRetryNonce] = useState(0)
   // Set when the backend rejects the search with a usage-limit 403 —
   // 'free' = monthly Starter cap, 'anonymous' = signed-out daily IP cap.
   const [limitError, setLimitError] = useState<'free' | 'anonymous' | null>(null)
@@ -795,6 +804,11 @@ function VerdictContent() {
           }
         } catch (analysisErr) {
           console.error('Error fetching analysis:', analysisErr)
+          // Without an error the page renders the loading logo indefinitely
+          // (isLoading is false but analysis never arrives).
+          if (generation === fetchGenerationRef.current) {
+            setError('We could not process the analysis for this property. Please try again.')
+          }
         }
       } catch (err) {
         console.error('Error fetching property:', err)
@@ -845,7 +859,26 @@ function VerdictContent() {
     overrideInsurance,
     overrideArv,
     urlMarketValue,
+    retryNonce,
   ])
+
+  // Watchdog for the loading state: if neither data nor an error arrives
+  // within the timeout, show a recovery screen instead of spinning forever.
+  const awaitingAnalysis = isLoading || (!analysis && !error)
+  useEffect(() => {
+    if (!awaitingAnalysis) {
+      setLoadTimedOut(false)
+      return
+    }
+    const timer = window.setTimeout(() => setLoadTimedOut(true), ANALYSIS_LOAD_TIMEOUT_MS)
+    return () => window.clearTimeout(timer)
+  }, [awaitingAnalysis, addressParam, propertyIdParam, retryNonce])
+
+  const retryAnalysis = useCallback(() => {
+    setLoadTimedOut(false)
+    setError(null)
+    setRetryNonce((n) => n + 1)
+  }, [])
 
   // Parse backend analysis response into IQAnalysisResult
   const parseAnalysisResponse = useCallback(
