@@ -107,6 +107,7 @@ def _build_saved_property_response(
         custom_occupancy_rate=saved.custom_occupancy_rate,
         custom_assumptions=saved.custom_assumptions or {},
         deal_maker_record=deal_maker,
+        comp_analysis=saved.comp_analysis,
         notes=saved.notes,
         best_strategy=best_strategy,
         best_cash_flow=best_cash_flow,
@@ -1392,8 +1393,20 @@ async def update_deal_maker(
             saved.best_cash_flow = Decimal(str(round(annual_cf, 2)))
         coc = metrics.cash_on_cash
         if coc is not None and math.isfinite(coc):
-            saved.best_coc_return = Decimal(str(round(coc, 4)))
-    await db.commit()
+            # DB column is Numeric(5,4) with a sanity-range CHECK; clamp so an
+            # extreme ratio (tiny cash basis) can't blow up the whole PATCH.
+            saved.best_coc_return = Decimal(str(round(max(-10.0, min(coc, 100.0)), 4)))
+    try:
+        await db.commit()
+    except (IntegrityError, DatabaseError) as db_error:
+        # A constraint rejection must surface as an actionable error, not the
+        # generic global-handler 500 ("An unexpected error occurred").
+        await db.rollback()
+        logger.error(f"Failed to persist Deal Maker update for {property_id}: {db_error!s}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not save Deal Maker values. Please try again or contact support.",
+        )
     await db.refresh(saved)
 
     if posthog_client is not None:

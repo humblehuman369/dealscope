@@ -14,7 +14,7 @@
  * - Bottom action bar (Search, Save, Analyze, Share)
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   MapPin,
@@ -62,6 +62,7 @@ import {
 } from '@/utils/appraisalCalculations'
 import { formatCurrency, formatCompactCurrency } from '@/utils/formatters'
 import { buildAppraisalPayload, downloadAppraisalReportPDF } from '@/lib/api/appraisal-report'
+import { api } from '@/lib/api-client'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { useDealSnapshot } from '@/hooks/useDealSnapshot'
@@ -97,6 +98,21 @@ export interface PriceCheckerProperty {
 interface PriceCheckerIQScreenProps {
   property: PriceCheckerProperty
   initialView?: 'sale' | 'rent'
+}
+
+/** Comp selections + value overrides persisted on the saved property. */
+interface PersistedCompAnalysis {
+  version: 1
+  sale: {
+    selected_ids: string[]
+    override_market: number | null
+    override_arv: number | null
+  }
+  rent: {
+    selected_ids: string[]
+    override_market: number | null
+    override_improved: number | null
+  }
 }
 
 // Sale and rent comps use API types SaleComp and RentComp
@@ -967,6 +983,127 @@ export function PriceCheckerIQScreen({
     }
     init()
   }, [hasValidSubject, subjectKey]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ------------------------------------------------------------------
+  // Comp state persistence: selections + overrides are stored on the
+  // saved property (comp_analysis) so they survive reloads and are
+  // available from the dashboard.
+  // ------------------------------------------------------------------
+  const [restoredCompState, setRestoredCompState] = useState<PersistedCompAnalysis | null>(null)
+  const [compRestoreDone, setCompRestoreDone] = useState(false)
+  const compRestoreRequestedRef = useRef(false)
+  const saleSelectionRestoredRef = useRef(false)
+  const rentSelectionRestoredRef = useRef(false)
+  // JSON of the state as last seen on the server — prevents redundant PATCHes
+  const lastPersistedCompStateRef = useRef<string | null>(null)
+
+  const compAnalysisState = useMemo<PersistedCompAnalysis>(
+    () => ({
+      version: 1,
+      sale: {
+        selected_ids: [...saleSelected].map(String),
+        override_market: saleOverrideMarket,
+        override_arv: saleOverrideArv,
+      },
+      rent: {
+        selected_ids: [...rentSelected].map(String),
+        override_market: rentOverrideMarket,
+        override_improved: rentOverrideImproved,
+      },
+    }),
+    [
+      saleSelected,
+      saleOverrideMarket,
+      saleOverrideArv,
+      rentSelected,
+      rentOverrideMarket,
+      rentOverrideImproved,
+    ],
+  )
+
+  // Reset persistence bookkeeping when the subject property changes
+  useEffect(() => {
+    compRestoreRequestedRef.current = false
+    saleSelectionRestoredRef.current = false
+    rentSelectionRestoredRef.current = false
+    lastPersistedCompStateRef.current = null
+    setRestoredCompState(null)
+    setCompRestoreDone(false)
+  }, [subjectKey])
+
+  // Load persisted comp state once the saved-property id is known
+  useEffect(() => {
+    if (!resolvedSavedPropertyId || compRestoreRequestedRef.current) return
+    compRestoreRequestedRef.current = true
+    api
+      .get<{ comp_analysis?: PersistedCompAnalysis | null }>(
+        `/api/v1/properties/saved/${resolvedSavedPropertyId}`,
+      )
+      .then((detail) => {
+        const saved = detail?.comp_analysis
+        if (saved?.version === 1) {
+          lastPersistedCompStateRef.current = JSON.stringify(saved)
+          setRestoredCompState(saved)
+          if (saved.sale.override_market != null) setSaleOverrideMarket(saved.sale.override_market)
+          if (saved.sale.override_arv != null) setSaleOverrideArv(saved.sale.override_arv)
+          if (saved.rent.override_market != null) setRentOverrideMarket(saved.rent.override_market)
+          if (saved.rent.override_improved != null) {
+            setRentOverrideImproved(saved.rent.override_improved)
+          }
+        }
+      })
+      .catch(() => {
+        /* restore is best-effort; the page still works with defaults */
+      })
+      .finally(() => setCompRestoreDone(true))
+  }, [resolvedSavedPropertyId])
+
+  // Re-apply persisted selections once comps have arrived (ids must match the
+  // freshly fetched set; comps that no longer come back are simply dropped)
+  useEffect(() => {
+    if (!restoredCompState) return
+    if (!saleSelectionRestoredRef.current && saleComps.length > 0) {
+      saleSelectionRestoredRef.current = true
+      const ids = new Set(restoredCompState.sale.selected_ids)
+      const matched = saleComps.filter((c) => ids.has(String(c.id))).map((c) => c.id)
+      if (matched.length > 0) setSaleSelected(new Set(matched))
+    }
+    if (!rentSelectionRestoredRef.current && rentComps.length > 0) {
+      rentSelectionRestoredRef.current = true
+      const ids = new Set(restoredCompState.rent.selected_ids)
+      const matched = rentComps.filter((c) => ids.has(String(c.id))).map((c) => c.id)
+      if (matched.length > 0) setRentSelected(new Set(matched))
+    }
+  }, [restoredCompState, saleComps, rentComps])
+
+  // Debounced auto-save whenever selections/overrides change on a saved
+  // property. Gated on restore completion so defaults never race the
+  // server state, and skipped while nothing differs from what's stored.
+  useEffect(() => {
+    if (!resolvedSavedPropertyId || !compRestoreDone) return
+    if (saleComps.length === 0 && rentComps.length === 0) return
+    const serialized = JSON.stringify(compAnalysisState)
+    if (serialized === lastPersistedCompStateRef.current) return
+    const timer = window.setTimeout(() => {
+      api
+        .patch(`/api/v1/properties/saved/${resolvedSavedPropertyId}`, {
+          comp_analysis: compAnalysisState,
+        })
+        .then(() => {
+          lastPersistedCompStateRef.current = serialized
+        })
+        .catch(() => {
+          /* retried automatically on the next state change */
+        })
+    }, 1200)
+    return () => window.clearTimeout(timer)
+  }, [
+    compAnalysisState,
+    resolvedSavedPropertyId,
+    compRestoreDone,
+    saleComps.length,
+    rentComps.length,
+  ])
 
   // Load source estimates from shared property cache for consensus rail
   useEffect(() => {

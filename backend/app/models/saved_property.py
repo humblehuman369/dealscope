@@ -147,6 +147,11 @@ class SavedProperty(Base):
         JSON, default=None
     )  # DealMakerRecord schema - see schemas/deal_maker.py
 
+    # Comp Appraisal state (Comps page): selected comp ids + value overrides,
+    # persisted so the user's comp selections/adjustments survive reloads.
+    # Shape: {"version": 1, "sale": {"selected_ids": [...], ...}, "rent": {...}}
+    comp_analysis: Mapped[dict | None] = mapped_column(JSON, default=None)
+
     # Notes
     notes: Mapped[str | None] = mapped_column(Text)
 

@@ -140,6 +140,12 @@ class SavedPropertyUpdate(SavedPropertyBase):
         description="Central analysis record - replaces custom_assumptions",
     )
 
+    # Comp Appraisal state (selected comp ids + overrides) from the Comps page
+    comp_analysis: dict[str, Any] | None = Field(
+        None,
+        description="Comps page state: selected comp ids and value overrides",
+    )
+
     from pydantic import model_validator
 
     @model_validator(mode="after")
@@ -148,7 +154,7 @@ class SavedPropertyUpdate(SavedPropertyBase):
         import json
 
         _max = 524_288
-        for field_name in ("custom_assumptions",):
+        for field_name in ("custom_assumptions", "comp_analysis"):
             val = getattr(self, field_name, None)
             if val is not None:
                 size = len(json.dumps(val, default=str))
@@ -250,6 +256,9 @@ class SavedPropertyResponse(SavedPropertySummary):
     deal_maker_record: DealMakerRecord | None = Field(
         None, description="Central analysis record with property data + assumptions + user adjustments"
     )
+
+    # Comp Appraisal state (selected comp ids + overrides) from the Comps page
+    comp_analysis: dict[str, Any] | None = None
 
     # Notes
     notes: str | None

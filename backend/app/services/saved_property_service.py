@@ -421,7 +421,12 @@ class SavedPropertyService:
                 old_value = getattr(saved_property, field)
                 if old_value != value:
                     # Create adjustment record (skip for large JSON fields)
-                    if field not in ("deal_maker_record", "property_data_snapshot", "last_analytics_result"):
+                    if field not in (
+                        "deal_maker_record",
+                        "property_data_snapshot",
+                        "last_analytics_result",
+                        "comp_analysis",
+                    ):
                         adjustment = PropertyAdjustment(
                             property_id=saved_property.id,
                             adjustment_type=field,
