@@ -179,12 +179,17 @@ function NegRow({ label, value }: { label: string; value: string }) {
 }
 
 function TotalRow({ label, value }: { label: string; value: string }) {
+  // Section summary bar. Deliberately neutral (no accent blue): blue is
+  // reserved for interactive slider rows, so totals must not compete with it.
   return (
     <div
-      className="flex w-full items-center gap-2 py-2 pl-4 pr-1 mt-1"
-      style={{ borderTop: `2px solid ${C.blue}`, borderBottom: `2px solid ${C.blue}` }}
+      className="flex w-full items-center gap-2 rounded-md py-2 pl-4 pr-1 mt-1.5"
+      style={{
+        background: 'var(--surface-elevated)',
+        border: '1px solid var(--border-default)',
+      }}
     >
-      <span className="min-w-0 flex-1 font-semibold tabular-nums text-[0.95rem]" style={{ color: C.heading }}>
+      <span className="min-w-0 flex-1 font-semibold text-[0.95rem]" style={{ color: C.heading }}>
         {label}
       </span>
       <div className={`flex justify-end shrink-0 ${WS_VALUE_COL}`}>
