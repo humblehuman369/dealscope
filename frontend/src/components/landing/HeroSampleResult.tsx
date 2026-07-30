@@ -1,156 +1,160 @@
+import type { CSSProperties } from 'react'
+
 import './hero-v5.css'
 
 /**
- * Static sample Discovery result card for the homepage hero.
- * Not live data — structured so props can later feed a real Discovery response.
+ * Homepage hero product stage — Gap-led Discovery moment + Four Paths climax.
+ * Static demo numbers (not live data). Mirrors Discovery Investment Overview
+ * language so the first impression matches what "Run Free Discovery" delivers.
  */
-
-type StrategyStatus = 'positive' | 'warning' | 'negative'
-
-interface StrategyChip {
-  label: string
-  /** CSS variable for the strategy identity dot, e.g. 'var(--strategy-ltr)' */
-  dotToken: string
-  status: StrategyStatus
-}
 
 interface OfferPath {
   num: string
   label: string
+  detail: string
+  featured?: boolean
 }
 
 interface HeroSampleResultProps {
   addressLine?: string
-  subLine?: string
-  dealScore?: string
+  cityLine?: string
+  askingPrice?: string
   incomeValue?: string
   targetBuy?: string
   dealGap?: string
+  dealGapPct?: string
   paths?: OfferPath[]
-  strategies?: StrategyChip[]
 }
 
-const STATUS_GLYPH: Record<StrategyStatus, string> = {
-  positive: '\u2713',
-  warning: '~',
-  negative: '\u2717',
-}
-
-/* Path names follow the real Discovery deal-structure families
-   (Price Cut, More Equity, Creative Finance, Blended Plan). */
+/* Path names follow Discovery deal-structure families. */
 const DEFAULT_PATHS: OfferPath[] = [
-  { num: '01', label: 'Price Cut' },
-  { num: '02', label: 'More Equity' },
-  { num: '03', label: 'Creative Finance' },
-  { num: '04', label: 'Blended Plan' },
+  { num: '01', label: 'Price Cut', detail: 'Negotiate to $241,700' },
+  { num: '02', label: 'More Equity', detail: '~31% down closes the gap' },
+  { num: '03', label: 'Creative Finance', detail: 'Seller carry / Sub2 structures' },
+  {
+    num: '04',
+    label: 'Blended Plan',
+    detail: 'The structure most investors miss',
+    featured: true,
+  },
 ]
 
-const DEFAULT_STRATEGIES: StrategyChip[] = [
-  { label: 'LTR', dotToken: 'var(--strategy-ltr)', status: 'positive' },
-  { label: 'STR', dotToken: 'var(--strategy-str)', status: 'positive' },
-  { label: 'BRRRR', dotToken: 'var(--strategy-brrrr)', status: 'warning' },
-  { label: 'Flip', dotToken: 'var(--strategy-flip)', status: 'negative' },
-  { label: 'House Hack', dotToken: 'var(--strategy-house-hack)', status: 'positive' },
-  { label: 'Wholesale', dotToken: 'var(--strategy-wholesale)', status: 'warning' },
-]
+function delayStyle(ms: number): CSSProperties {
+  return { animationDelay: `${ms}ms` }
+}
 
 export function HeroSampleResult({
   addressLine = '4172 Maplewood Dr',
-  subLine = 'Birmingham, AL 35216 \u00a0\u00b7\u00a0 Asking $284,900',
-  dealScore = '82',
+  cityLine = 'Birmingham, AL 35216',
+  askingPrice = '$284,900',
   incomeValue = '$268,400',
   targetBuy = '$241,700',
   dealGap = '\u2212$43,200',
+  dealGapPct = '\u221215.2%',
   paths = DEFAULT_PATHS,
-  strategies = DEFAULT_STRATEGIES,
 }: HeroSampleResultProps) {
   return (
     <div className="hero-v5__card-wrap">
       <div
         className="hero-sample-result"
         role="img"
-        aria-label="Sample Discovery result showing the deal gap and four offer paths for a property"
+        aria-label={`Sample Discovery result for ${addressLine}: Deal Gap ${dealGap} (${dealGapPct}) with four offer paths to close it`}
       >
-        <div className="hero-sample-result__top">
-          <div>
-            <div className="hero-sample-result__mono-label">Discovery Result</div>
+        <div className="hero-sample-result__property hero-sample-result__anim" style={delayStyle(0)}>
+          <div className="hero-sample-result__photo" aria-hidden="true">
+            <span className="hero-sample-result__photo-glow" />
+          </div>
+          <div className="hero-sample-result__property-copy">
+            <div className="hero-sample-result__mono-label">Discovery</div>
             <div className="hero-sample-result__addr">{addressLine}</div>
-            <div className="hero-sample-result__addr-sub">{subLine}</div>
-          </div>
-          <div className="hero-sample-result__verdict">
-            <div className="hero-sample-result__score">{dealScore}</div>
-            <div className="hero-sample-result__score-label">Deal Score</div>
-          </div>
-        </div>
-
-        <div className="hero-sample-result__metrics">
-          <div className="hero-sample-result__metric">
-            <span className="hero-sample-result__metric-name">Income Value</span>
-            <div>
-              <div className="hero-sample-result__metric-val hero-sample-result__metric-val--income">
-                {incomeValue}
-              </div>
-              <div className="hero-sample-result__metric-note">
-                max price, cash flow stays positive
-              </div>
-            </div>
-          </div>
-          <div className="hero-sample-result__metric">
-            <span className="hero-sample-result__metric-name">Target Buy</span>
-            <div>
-              <div className="hero-sample-result__metric-val hero-sample-result__metric-val--target">
-                {targetBuy}
-              </div>
-              <div className="hero-sample-result__metric-note">hits your return threshold</div>
-            </div>
-          </div>
-          <div className="hero-sample-result__metric">
-            <span className="hero-sample-result__metric-name">Deal Gap</span>
-            <div>
-              <div className="hero-sample-result__metric-val hero-sample-result__metric-val--gap">
-                {dealGap}
-              </div>
-              <div className="hero-sample-result__metric-note">asking vs. what works</div>
+            <div className="hero-sample-result__addr-sub">
+              {cityLine}
+              <span className="hero-sample-result__asking">Asking {askingPrice}</span>
             </div>
           </div>
         </div>
 
-        <div className="hero-sample-result__gap-bar" aria-hidden="true">
-          <div className="hero-sample-result__gap-fill-ok" />
-          <div className="hero-sample-result__gap-fill-neg" />
+        <div className="hero-sample-result__gap hero-sample-result__anim" style={delayStyle(120)}>
+          <div className="hero-sample-result__gap-label">Deal Gap</div>
+          <div className="hero-sample-result__gap-row">
+            <span className="hero-sample-result__gap-amount">{dealGap}</span>
+            <span className="hero-sample-result__gap-pct">{dealGapPct}</span>
+          </div>
+          <div className="hero-sample-result__gap-note">Asking vs. Target Buy — what works for your return</div>
         </div>
 
-        <div className="hero-sample-result__mono-label">4 Offer Paths to Close It</div>
-        <div className="hero-sample-result__paths">
-          {paths.map((path) => (
-            <div key={path.num} className="hero-sample-result__path">
-              <span className="hero-sample-result__path-num">{path.num}</span>
-              {path.label}
-            </div>
-          ))}
+        <div className="hero-sample-result__prices hero-sample-result__anim" style={delayStyle(220)}>
+          <div className="hero-sample-result__price">
+            <span className="hero-sample-result__price-name">Target Buy</span>
+            <span className="hero-sample-result__price-val hero-sample-result__price-val--target">{targetBuy}</span>
+            <span className="hero-sample-result__price-sub">Profit Zone</span>
+          </div>
+          <div className="hero-sample-result__price">
+            <span className="hero-sample-result__price-name">Income Value</span>
+            <span className="hero-sample-result__price-val hero-sample-result__price-val--income">{incomeValue}</span>
+            <span className="hero-sample-result__price-sub">Break-Even</span>
+          </div>
+          <div className="hero-sample-result__price">
+            <span className="hero-sample-result__price-name">Asking</span>
+            <span className="hero-sample-result__price-val hero-sample-result__price-val--market">{askingPrice}</span>
+            <span className="hero-sample-result__price-sub">Market Reality</span>
+          </div>
         </div>
 
-        <div className="hero-sample-result__mono-label">6 Strategies Scanned</div>
-        <div className="hero-sample-result__chips">
-          {strategies.map((chip) => (
-            <span key={chip.label} className="hero-sample-result__chip">
-              <span
-                className="hero-sample-result__chip-dot"
-                style={{ background: chip.dotToken }}
-              />
-              {chip.label}{' '}
-              <span
-                className={`hero-sample-result__chip-glyph hero-sample-result__chip-glyph--${chip.status}`}
-              >
-                {STATUS_GLYPH[chip.status]}
-              </span>
+        <div
+          className="hero-sample-result__scale hero-sample-result__anim"
+          style={delayStyle(300)}
+          aria-hidden="true"
+        >
+          <div className="hero-sample-result__scale-track">
+            <span
+              className="hero-sample-result__scale-marker hero-sample-result__scale-marker--target"
+              style={{ left: '18%' }}
+            >
+              <span className="hero-sample-result__scale-dot" />
+              Target
             </span>
+            <span
+              className="hero-sample-result__scale-marker hero-sample-result__scale-marker--income"
+              style={{ left: '48%' }}
+            >
+              <span className="hero-sample-result__scale-dot" />
+              Income
+            </span>
+            <span
+              className="hero-sample-result__scale-marker hero-sample-result__scale-marker--market"
+              style={{ left: '92%' }}
+            >
+              <span className="hero-sample-result__scale-dot" />
+              Asking
+            </span>
+            <div className="hero-sample-result__scale-fill" />
+          </div>
+        </div>
+
+        <div className="hero-sample-result__paths-head hero-sample-result__anim" style={delayStyle(380)}>
+          <span className="hero-sample-result__mono-label">4 Offer Paths to Close It</span>
+          <span className="hero-sample-result__paths-kicker">Most tools stop here. We keep going.</span>
+        </div>
+
+        <div className="hero-sample-result__paths">
+          {paths.map((path, index) => (
+            <div
+              key={path.num}
+              className={`hero-sample-result__path hero-sample-result__anim${path.featured ? ' hero-sample-result__path--featured' : ''}`}
+              style={delayStyle(460 + index * 90)}
+            >
+              <span className="hero-sample-result__path-num">{path.num}</span>
+              <div className="hero-sample-result__path-body">
+                <span className="hero-sample-result__path-label">{path.label}</span>
+                <span className="hero-sample-result__path-detail">{path.detail}</span>
+              </div>
+            </div>
           ))}
         </div>
 
-        <div className="hero-sample-result__foot">
-          <span>Assumptions editable · Math shown</span>
-          <span className="hero-sample-result__foot-mono">SCAN 0:47s</span>
+        <div className="hero-sample-result__foot hero-sample-result__anim" style={delayStyle(820)}>
+          <span>5 sources · under 60s · math shown</span>
         </div>
       </div>
     </div>
