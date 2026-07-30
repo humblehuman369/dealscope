@@ -11,7 +11,11 @@ Strategy:
   2. As a one-off historical safety net, ensure auth columns exist for very
      old databases that pre-date the auth migration. This path only runs when
      the auth columns are genuinely missing.
-  3. Exec into start.py once schema state is good.
+  3. If the ``lenders`` table exists but has zero rows, run
+     ``scripts.seed_lenders`` once. Migrations create the shape; preDeploy is
+     the primary seed path — this only heals the empty-table gap when
+     Alembic ran via startCommand without the pre-deploy seed.
+  4. Exec into start.py once schema state is good.
 
 Important: DO NOT add any TRUNCATE / DELETE / data-destruction logic here.
 This script runs on every Railway boot. Anything destructive becomes a
@@ -309,6 +313,83 @@ def _run_alembic_upgrade_fatal() -> None:
     sys.exit(1)
 
 
+def _table_row_count(url: str, table: str) -> int | None:
+    """Return COUNT(*) for ``table``, or None if the table is missing / unreachable.
+
+    Used only as a boot-time emptiness check for reference-data tables that
+    migrations create empty and seeds are supposed to fill. Never invents rows.
+    """
+    try:
+        import psycopg
+
+        conn_url = url
+        if "railway.internal" in conn_url and "sslmode=" not in conn_url:
+            sep = "&" if "?" in conn_url else "?"
+            conn_url = f"{conn_url}{sep}sslmode=disable"
+
+        with psycopg.connect(conn_url, autocommit=True, connect_timeout=10) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT 1 FROM information_schema.tables "
+                    "WHERE table_schema = 'public' AND table_name = %s",
+                    (table,),
+                )
+                if cur.fetchone() is None:
+                    return None
+                # Table name is a fixed literal from the caller, never user input.
+                cur.execute(f"SELECT COUNT(*) FROM {table}")
+                row = cur.fetchone()
+                return int(row[0]) if row else 0
+    except Exception as e:
+        log.error("Could not count rows in %s: %s", table, e)
+        return None
+
+
+def _run_module_fatal(module: str) -> None:
+    """Run ``python -m <module>`` and exit non-zero on failure."""
+    log.info("Running `python -m %s` ...", module)
+    result = subprocess.run(
+        [sys.executable, "-m", module],
+        capture_output=True,
+        text=True,
+        cwd=SCRIPT_DIR,
+    )
+    if result.stdout.strip():
+        log.info("%s stdout: %s", module, result.stdout.strip())
+    if result.returncode == 0:
+        log.info("%s succeeded.", module)
+        return
+    log.error(
+        "%s FAILED — stderr: %s | stdout: %s",
+        module,
+        result.stderr.strip(),
+        result.stdout.strip(),
+    )
+    sys.exit(1)
+
+
+def _ensure_lenders_seeded(url: str) -> None:
+    """If the lenders table exists but has zero rows, seed it from lenders.json.
+
+    ``preDeployCommand`` is the primary path. This is a boot-time safety net for
+    the case where Alembic created an empty ``lenders`` table (via startCommand)
+    but the pre-deploy seed never ran — which leaves Hard Money with a live
+    schema and no directory data. Idempotent: a populated table is a no-op.
+    """
+    count = _table_row_count(url, "lenders")
+    if count is None:
+        log.warning("lenders table not found after upgrade — skipping seed check.")
+        return
+    if count > 0:
+        log.info("lenders table has %s row(s) — seed not needed.", count)
+        return
+    log.warning(
+        "lenders table is empty — seeding from app/data/lenders.json "
+        "(preDeploy seed likely did not run)."
+    )
+    _run_module_fatal("scripts.seed_lenders")
+
+
 def main() -> None:
     db_url = _get_database_url()
     if not db_url:
@@ -353,6 +434,9 @@ def main() -> None:
     # Standard path (also runs after recovery): bring the DB all the way to
     # head. Failure is fatal — no silent stamps, no early returns.
     _run_alembic_upgrade_fatal()
+
+    # Reference data: migration creates the shape; seed fills it. Heal empty.
+    _ensure_lenders_seeded(db_url)
 
 
 if __name__ == "__main__":
