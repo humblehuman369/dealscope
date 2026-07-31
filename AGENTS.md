@@ -194,16 +194,17 @@ These components live in `components/ui/PropertyStates.tsx` and respect `--surfa
 ## 8. Testing & Coverage Targets (Phase 5+)
 
 Current baseline (as of July 2026):
-- 263 tests passing (`npm run test:run`)
+- 275 tests passing (`npm run test:run`)
 - Strong coverage on `lib/*`, `utils/*`, services
 - Optimistic rollback is covered for both `dealMakerStore` (the live path) and
   `hooks/useAssumptions`.
-- `useDealSnapshot` and `usePropertyData` still need dedicated tests to reach
-  ≥80% on financial paths.
+- `usePropertyData` + `dealMakerStore` interaction is covered by
+  `src/__tests__/hooks/usePropertyData.test.tsx` (shared cache, address
+  canonicalization, numeric sanitization, edits surviving property refetches).
+- `useDealSnapshot` still needs dedicated tests to reach ≥80% on financial paths.
 
 **Required before Phase 5 sign-off**
-- Add tests for `useDealSnapshot` and `usePropertyData`
-- Add integration test for `usePropertyData` + `dealMakerStore` interaction
+- Add tests for `useDealSnapshot`
 
 ---
 
