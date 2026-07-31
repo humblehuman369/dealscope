@@ -4,7 +4,7 @@
  * PathButton — compact button card rendered above the DealMaker worksheet on the
  * Strategy page. Each button corresponds to one Three Paths `DealStructure`;
  * clicking it applies the structure's `pre_loaded_record` levers to the
- * worksheet via `applyPathPatch` (in `app/strategy/page.tsx`).
+ * worksheet via `applyPathPatch` (in `features/strategy-workbench/components/StrategyWorkbench.tsx`).
  *
  * Visual contract:
  * - Always-visible label (`Option N`) so users can scan four cards at a glance.

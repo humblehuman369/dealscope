@@ -35,6 +35,12 @@ const FORBIDDEN_BG_BLACK_RE = /\bbg-black\b(?!\/)/
 const HIGH_CHURN_PAGES = [
   'app/discovery/page.tsx',
   'app/strategy/page.tsx',
+  'features/strategy-workbench/components/StrategyWorkbench.tsx',
+  'features/strategy-workbench/components/DealGapBar.tsx',
+  'features/strategy-workbench/components/NextStepsSection.tsx',
+  'features/strategy-workbench/components/OptionsSection.tsx',
+  'features/strategy-workbench/components/BenchmarksSection.tsx',
+  'features/strategy-workbench/components/SaveCtaSection.tsx',
   'app/property/[zpid]/page.tsx',
   'app/profile/page.tsx',
   'app/page.tsx',

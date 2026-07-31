@@ -1,6 +1,6 @@
 # R4 — Collapse Discovery + Strategy into One Progressive Page
 
-**Status:** Proposal (not started)
+**Status:** Stage 1 complete (July 2026) — `<StrategyWorkbench>` extracted to `frontend/src/features/strategy-workbench/`, `/strategy` is a thin shell. Stages 2–4 not started.
 **Author:** UX audit roadmap item R4, drafted July 2026
 **Prerequisite reading:** none — this document is self-contained.
 
