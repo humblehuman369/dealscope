@@ -146,6 +146,13 @@ class SavedPropertyUpdate(SavedPropertyBase):
         description="Comps page state: selected comp ids and value overrides",
     )
 
+    # Owned-property actuals (actual rent / all-in expenses) for
+    # underwriting-vs-reality variance on the deal page
+    actuals: dict[str, Any] | None = Field(
+        None,
+        description="Actual performance: {monthly_rent, monthly_expenses, updated_at}",
+    )
+
     from pydantic import model_validator
 
     @model_validator(mode="after")
@@ -154,7 +161,7 @@ class SavedPropertyUpdate(SavedPropertyBase):
         import json
 
         _max = 524_288
-        for field_name in ("custom_assumptions", "comp_analysis"):
+        for field_name in ("custom_assumptions", "comp_analysis", "actuals"):
             val = getattr(self, field_name, None)
             if val is not None:
                 size = len(json.dumps(val, default=str))
@@ -259,6 +266,9 @@ class SavedPropertyResponse(SavedPropertySummary):
 
     # Comp Appraisal state (selected comp ids + overrides) from the Comps page
     comp_analysis: dict[str, Any] | None = None
+
+    # Owned-property actuals for underwriting-vs-reality variance
+    actuals: dict[str, Any] | None = None
 
     # Notes
     notes: str | None

@@ -426,6 +426,7 @@ class SavedPropertyService:
                         "property_data_snapshot",
                         "last_analytics_result",
                         "comp_analysis",
+                        "actuals",
                     ):
                         adjustment = PropertyAdjustment(
                             property_id=saved_property.id,

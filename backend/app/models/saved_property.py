@@ -19,6 +19,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.budget import RehabBudget
     from app.models.contact import PropertyContact
+    from app.models.offer import PropertyOffer
     from app.models.document import Document
     from app.models.task import PropertyTask
     from app.models.user import User
@@ -152,6 +153,23 @@ class SavedProperty(Base):
     # Shape: {"version": 1, "sale": {"selected_ids": [...], ...}, "rent": {...}}
     comp_analysis: Mapped[dict | None] = mapped_column(JSON, default=None)
 
+    # Generated deal memo. Shape: {"text": str, "source": "ai"|"template",
+    # "generated_at": iso8601}. Regenerated on demand, kept so the memo
+    # survives reloads without re-spending an AI call.
+    deal_memo: Mapped[dict | None] = mapped_column(JSON, default=None)
+
+    # Owned-property actuals for underwriting-vs-reality comparison.
+    # Shape: {"monthly_rent": float, "monthly_expenses": float, "updated_at": iso8601}.
+    # monthly_expenses is all-in (including debt service) so actual cash flow
+    # is simply rent - expenses with no hidden assumptions.
+    actuals: Mapped[dict | None] = mapped_column(JSON, default=None)
+
+    # Gap Alerts: last list price observed by the daily price-check job and
+    # when it last ran for this property. A drop vs. this baseline (or the
+    # save-time snapshot when unset) triggers a "deal gap improved" push.
+    last_known_list_price: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
+    price_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
     # Notes
     notes: Mapped[str | None] = mapped_column(Text)
 
@@ -200,6 +218,12 @@ class SavedProperty(Base):
         back_populates="saved_property",
         cascade="all, delete-orphan",
         order_by="PropertyContact.created_at",
+    )
+    offers: Mapped[list["PropertyOffer"]] = relationship(
+        "PropertyOffer",
+        back_populates="saved_property",
+        cascade="all, delete-orphan",
+        order_by="PropertyOffer.offer_date.desc()",
     )
 
     def get_display_name(self) -> str:

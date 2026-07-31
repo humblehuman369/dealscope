@@ -94,6 +94,15 @@ export interface SavedPropertyStats {
   by_status: Record<string, number>
 }
 
+/** Recorded actual performance for an owned property.
+    `monthly_expenses` is all-in (including debt service) so actual cash flow
+    is simply rent minus expenses — no hidden assumptions. */
+export interface PropertyActuals {
+  monthly_rent?: number | null
+  monthly_expenses?: number | null
+  updated_at?: string | null
+}
+
 export interface SavedProperty {
   // Core identification
   id: string
@@ -143,6 +152,9 @@ export interface SavedProperty {
 
   // Deal Maker Record - the central analysis data structure
   deal_maker_record: Record<string, any> | null
+
+  // Owned-property actuals for underwriting-vs-reality variance
+  actuals?: PropertyActuals | null
 
   // Analytics cache
   last_analytics_result: Record<string, any> | null

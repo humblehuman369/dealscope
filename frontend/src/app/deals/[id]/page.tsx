@@ -25,6 +25,7 @@ import {
   ExternalLink,
   FileText,
   FolderOpen,
+  BadgeDollarSign,
   ListChecks,
   Receipt,
   StickyNote,
@@ -35,7 +36,10 @@ import { DataBoundary } from '@/components/ui/DataBoundary'
 import { ActivityPanel } from '@/components/deal/ActivityPanel'
 import { BudgetPanel } from '@/components/deal/BudgetPanel'
 import { ContactsPanel } from '@/components/deal/ContactsPanel'
+import { ActualsCard } from '@/components/deal/ActualsCard'
+import { DealMemoCard } from '@/components/deal/DealMemoCard'
 import { DocumentsPanel } from '@/components/deal/DocumentsPanel'
+import { OffersPanel } from '@/components/deal/OffersPanel'
 import { TasksPanel } from '@/components/deal/TasksPanel'
 import { useTasks } from '@/hooks/useTasks'
 import { useTimeline } from '@/hooks/useTimeline'
@@ -45,8 +49,8 @@ import { STAGE_LABELS } from '@/lib/lifecycleStages'
 import { buildRehabUrl } from '@/lib/rehabNavigation'
 import type { SavedProperty } from '@/types/savedProperty'
 
-type Tab = 'overview' | 'tasks' | 'budget' | 'documents' | 'contacts' | 'activity'
-const TABS: Tab[] = ['overview', 'tasks', 'budget', 'documents', 'contacts', 'activity']
+type Tab = 'overview' | 'tasks' | 'offers' | 'budget' | 'documents' | 'contacts' | 'activity'
+const TABS: Tab[] = ['overview', 'tasks', 'offers', 'budget', 'documents', 'contacts', 'activity']
 
 /**
  * The deal detail page consumes the canonical `SavedProperty` shape via the
@@ -152,6 +156,7 @@ function DealPageContent({ propertyId }: { propertyId: string }) {
                     }
                   />
                 )}
+                {tab === 'offers' && <OffersPanel propertyId={propertyId} />}
                 {tab === 'budget' && (
                   <div className="p-5">
                     <BudgetPanel propertyId={propertyId} />
@@ -311,6 +316,7 @@ function HeaderStat({
 const TAB_ICONS: Record<Tab, React.ComponentType<{ className?: string }>> = {
   overview: BarChart3,
   tasks: ListChecks,
+  offers: BadgeDollarSign,
   budget: Receipt,
   documents: FolderOpen,
   contacts: Users,
@@ -320,6 +326,7 @@ const TAB_ICONS: Record<Tab, React.ComponentType<{ className?: string }>> = {
 const TAB_LABELS: Record<Tab, string> = {
   overview: 'Overview',
   tasks: 'Tasks',
+  offers: 'Offers',
   budget: 'Budget',
   documents: 'Documents',
   contacts: 'Contacts',
@@ -366,6 +373,8 @@ function OverviewTab({ deal, onJumpTab }: { deal: DealDetail; onJumpTab: (t: Tab
       <FinancialsCard deal={deal} onSeeBudget={() => onJumpTab('budget')} />
       <TopTasksCard propertyId={deal.id} onSeeAll={() => onJumpTab('tasks')} />
       <RecentActivityCard propertyId={deal.id} onSeeAll={() => onJumpTab('activity')} />
+      {deal.status === 'owned' && <ActualsCard deal={deal} />}
+      <DealMemoCard propertyId={deal.id} />
     </div>
   )
 }

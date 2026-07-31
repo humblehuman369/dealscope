@@ -15,6 +15,7 @@ from app.models.document import Document, DocumentType
 from app.models.geo_city import GeoCity
 from app.models.geo_county import GeoCounty
 from app.models.lender import Lender
+from app.models.offer import OfferStatus, PropertyOffer
 from app.models.role import Permission, Role, RolePermission, UserRole
 from app.models.saved_directory_contact import DirectoryEntityType, SavedDirectoryContact
 from app.models.saved_property import FlipStage, PropertyAdjustment, PropertyStatus, SavedProperty
@@ -45,10 +46,12 @@ __all__ = [
     "GeoCity",
     "GeoCounty",
     "Lender",
+    "OfferStatus",
     "PaymentHistory",
     "Permission",
     "PropertyAdjustment",
     "PropertyContact",
+    "PropertyOffer",
     "PropertyStatus",
     "PropertyTask",
     "RehabBudget",

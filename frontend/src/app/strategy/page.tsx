@@ -32,6 +32,7 @@ import { api } from '@/lib/api-client'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { useDefaults } from '@/hooks/useDefaults'
+import { usePersona } from '@/hooks/usePersona'
 import { parseAddressString } from '@/utils/formatters'
 import {
   canonicalizeAddressForIdentity,
@@ -361,7 +362,7 @@ const STRATEGY_LABEL: Record<string, string> = {
  * Trigger uses the active strategy's color so the page reads as color-coded
  * without the visual noise of six full-width pills.
  */
-type StrategyOption = { id: string; label: string; color: string }
+type StrategyOption = { id: string; label: string; color: string; preferred?: boolean }
 
 function StrategySelectDropdown({
   options,
@@ -486,6 +487,18 @@ function StrategySelectDropdown({
                     }}
                   />
                   <span className="truncate flex-1">{opt.label}</span>
+                  {opt.preferred && (
+                    <span
+                      className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
+                      style={{
+                        background: 'var(--surface-elevated)',
+                        color: 'var(--text-secondary)',
+                        border: '1px solid var(--border-default)',
+                      }}
+                    >
+                      Your strategy
+                    </span>
+                  )}
                   {isActive && (
                     <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden>
                       <path
@@ -635,6 +648,7 @@ function StrategyContent() {
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
+  const { preferredStrategyIds } = usePersona()
 
   const addressParam = searchParams.get('address') || ''
   const strategySignInUrl = useMemo(() => {
@@ -3386,9 +3400,14 @@ function StrategyContent() {
                   { id: 'house-hack', label: 'House Hack', color: '#14b8a6' },
                   { id: 'wholesale', label: 'Wholesale', color: '#84cc16' },
                 ]
+                const preferred = new Set(preferredStrategyIds)
                 const available = STRATEGY_DISPLAY.filter((s) =>
                   sortedStrategies.some((ss) => ss.id === s.id),
                 )
+                  .map((s) => ({ ...s, preferred: preferred.has(s.id) }))
+                  // Persona-aware ordering: the user's onboarding strategies
+                  // surface first in the picker; everything stays selectable.
+                  .sort((a, b) => Number(b.preferred) - Number(a.preferred))
                 return (
                   <StrategySelectDropdown
                     options={available}

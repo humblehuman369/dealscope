@@ -18,6 +18,7 @@ from fastapi import APIRouter, Header, HTTPException, Request, status
 
 from app.core.config import settings
 from app.core.deps import DbSession
+from app.services.gap_alert_jobs import send_gap_alerts
 from app.services.notification_jobs import send_overdue_task_digests
 
 logger = logging.getLogger(__name__)
@@ -89,4 +90,22 @@ async def overdue_task_notifications(
     _enforce_cron_token(x_cron_token, client_ip=client_ip)
     result = await send_overdue_task_digests(db)
     logger.info("overdue-task digest run: %s", result)
+    return result
+
+
+@router.post(
+    "/gap-alerts",
+    summary="Re-check list prices on pipeline properties and push price-drop alerts",
+)
+async def gap_alerts(
+    request: Request,
+    db: DbSession,
+    x_cron_token: str | None = Header(default=None, alias="X-Cron-Token"),
+    max_checks: int = 25,
+):
+    client_ip = _get_client_ip(request)
+    _enforce_cron_token(x_cron_token, client_ip=client_ip)
+    # Clamp so a bad cron config can't burn the provider quota in one run.
+    result = await send_gap_alerts(db, max_checks=max(1, min(max_checks, 200)))
+    logger.info("gap-alert run: %s", result)
     return result

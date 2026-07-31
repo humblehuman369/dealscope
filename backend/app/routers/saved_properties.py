@@ -28,6 +28,7 @@ from app.schemas.budget import (
     ReceiptUploadResponse,
 )
 from app.schemas.contact import ContactCreate, ContactOut, ContactUpdate
+from app.schemas.offer import OfferCreate, OfferOut, OfferUpdate
 from app.schemas.deal_maker import (
     DealMakerRecordUpdate,
     DealMakerResponse,
@@ -50,8 +51,10 @@ from app.services.billing_service import billing_service
 from app.services.budget_service import budget_service
 from app.services.contact_service import contact_service
 from app.services.deal_maker_service import DealMakerService
+from app.services.deal_memo_service import generate_memo
 from app.services.document_service import ALLOWED_TYPES as DOC_ALLOWED_TYPES
 from app.services.document_service import document_service
+from app.services.offer_service import offer_service
 from app.services.receipt_parser_service import receipt_parser_service
 from app.services.saved_property_service import sanitize_for_json_storage, saved_property_service
 from app.services.search_history_service import search_history_service
@@ -108,6 +111,7 @@ def _build_saved_property_response(
         custom_assumptions=saved.custom_assumptions or {},
         deal_maker_record=deal_maker,
         comp_analysis=saved.comp_analysis,
+        actuals=saved.actuals,
         notes=saved.notes,
         best_strategy=best_strategy,
         best_cash_flow=best_cash_flow,
@@ -1094,6 +1098,132 @@ async def seed_property_tasks(
     if created is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
     return [_task_to_out(t) for t in created]
+
+
+# ===========================================
+# Deal Memo
+# ===========================================
+
+
+@router.get(
+    "/{property_id}/memo",
+    summary="Get the stored deal memo for a saved property (null if never generated)",
+)
+async def get_deal_memo(
+    property_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    prop = await saved_property_service.get_by_id(db, property_id, str(current_user.id))
+    if prop is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    return {"memo": prop.deal_memo}
+
+
+@router.post(
+    "/{property_id}/memo",
+    summary="Generate (or regenerate) the deal memo from the property's own numbers",
+)
+async def generate_deal_memo(
+    property_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    prop = await saved_property_service.get_by_id(db, property_id, str(current_user.id))
+    if prop is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    memo = await generate_memo(prop)
+    prop.deal_memo = memo
+    await db.commit()
+    return {"memo": memo}
+
+
+# ===========================================
+# Property Offers
+# ===========================================
+
+
+def _offer_to_out(o) -> OfferOut:
+    return OfferOut(
+        id=str(o.id),
+        saved_property_id=str(o.saved_property_id),
+        amount=o.amount,
+        counter_amount=o.counter_amount,
+        status=o.status,
+        offer_date=o.offer_date,
+        expires_at=o.expires_at,
+        notes=o.notes,
+        created_at=o.created_at,
+        updated_at=o.updated_at,
+    )
+
+
+@router.get(
+    "/{property_id}/offers",
+    response_model=list[OfferOut],
+    summary="List offers for a saved property (newest first)",
+)
+async def list_property_offers(
+    property_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    offers = await offer_service.list_for_property(db, property_id, str(current_user.id))
+    if offers is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    return [_offer_to_out(o) for o in offers]
+
+
+@router.post(
+    "/{property_id}/offers",
+    response_model=OfferOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Log an offer on a saved property",
+)
+async def create_property_offer(
+    property_id: str,
+    body: OfferCreate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    offer = await offer_service.create(db, property_id, str(current_user.id), body)
+    if offer is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    return _offer_to_out(offer)
+
+
+@router.patch(
+    "/{property_id}/offers/{offer_id}",
+    response_model=OfferOut,
+    summary="Update an offer (status, counter, amount, notes)",
+)
+async def update_property_offer(
+    property_id: str,
+    offer_id: str,
+    body: OfferUpdate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    offer = await offer_service.update(db, offer_id, str(current_user.id), body)
+    if offer is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Offer not found")
+    return _offer_to_out(offer)
+
+
+@router.delete(
+    "/{property_id}/offers/{offer_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete an offer",
+)
+async def delete_property_offer(
+    property_id: str,
+    offer_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    ok = await offer_service.delete(db, offer_id, str(current_user.id))
+    if not ok:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Offer not found")
 
 
 # ===========================================
