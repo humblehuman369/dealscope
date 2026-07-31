@@ -1499,7 +1499,7 @@ function VerdictContent() {
 
   const fmtShort = (v: number) => `$${Math.round(v).toLocaleString()}`
 
-  /** Comps tab in nav — PriceCheckerIQ at /price-intel (same params as AnalysisNav "Comps" link). */
+  /** Comps tab in nav — PriceCheckerIQ at /price-intel. */
   const navigateToComps = () => {
     if (!property) return
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
