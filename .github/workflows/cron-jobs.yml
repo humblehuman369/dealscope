@@ -1,0 +1,67 @@
+name: Scheduled backend jobs
+
+# Fires the backend's cron-gated job endpoints (backend/app/routers/jobs.py).
+# The backend authenticates these calls via the X-Cron-Token header, which
+# must match the CRON_SECRET env var on the Railway backend service.
+#
+# One-time setup (both must hold the SAME value):
+#   1. Railway  → backend service → Variables → CRON_SECRET=<random 32+ chars>
+#   2. GitHub   → repo Settings → Secrets and variables → Actions →
+#      New repository secret → CRON_SECRET=<same value>
+#
+# Optional: repo variable BACKEND_URL overrides the default Railway URL.
+
+on:
+  schedule:
+    # 11:00 UTC ≈ 6-7am ET — price data has refreshed overnight; the push
+    # lands at the start of the investor's day.
+    - cron: '0 11 * * *'
+  # Manual trigger for testing and catch-up runs.
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: backend-cron-jobs
+  cancel-in-progress: false
+
+jobs:
+  gap-alerts:
+    name: Gap Alerts (price-drop pushes)
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/v1/jobs/gap-alerts
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL || 'https://dealscope-production.up.railway.app' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET repository secret is not set — see workflow header for setup."
+            exit 1
+          fi
+          http_code=$(curl -sS -o response.json -w "%{http_code}" \
+            -X POST "$BACKEND_URL/api/v1/jobs/gap-alerts" \
+            -H "X-Cron-Token: $CRON_SECRET")
+          echo "HTTP $http_code"
+          cat response.json
+          [ "$http_code" = "200" ] || exit 1
+
+  overdue-task-digest:
+    name: Overdue task digest pushes
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/v1/jobs/overdue-task-notifications
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL || 'https://dealscope-production.up.railway.app' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET repository secret is not set — see workflow header for setup."
+            exit 1
+          fi
+          http_code=$(curl -sS -o response.json -w "%{http_code}" \
+            -X POST "$BACKEND_URL/api/v1/jobs/overdue-task-notifications" \
+            -H "X-Cron-Token: $CRON_SECRET")
+          echo "HTTP $http_code"
+          cat response.json
+          [ "$http_code" = "200" ] || exit 1
