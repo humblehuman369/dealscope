@@ -1551,7 +1551,7 @@ function StrategyContent() {
         message={error || 'We couldn’t load the property data needed for strategy comparison.'}
         actionLabel="Try Again"
         onAction={() => window.location.reload()}
-        secondaryActionLabel="Back to Verdict"
+        secondaryActionLabel="Back to Discovery"
         onSecondaryAction={handleBack}
       />
     )

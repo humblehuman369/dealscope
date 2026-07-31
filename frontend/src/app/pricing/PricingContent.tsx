@@ -8,6 +8,7 @@ import { UpgradeModal } from '@/components/billing/UpgradeModal'
 import { IS_CAPACITOR, IS_IOS, IS_ANDROID } from '@/lib/env'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { PriceCents } from '@/components/ui/PriceCents'
+import { DIRECTORY_ACCESS_NOTE, PRO_FEATURES, STARTER_FEATURES } from '@/lib/planFeatures'
 
 const CheckIcon: React.FC<{ color?: string }> = ({ color = 'var(--accent-sky)' }) => (
   <svg
@@ -176,7 +177,7 @@ const COMPARISON_DATA: ComparisonCategory[] = [
       { name: 'Market Consensus engine', free: false, pro: true },
       { name: 'Nearby ZIP code market comparisons', free: false, pro: true },
       { name: 'Quick Rehab Estimator with regional costs', free: false, pro: true },
-      { name: 'Interactive Map Search for listings', free: false, pro: true },
+      { name: 'Interactive Map Search for listings', free: true, pro: true },
     ],
   },
   {
@@ -202,12 +203,12 @@ const COMPARISON_DATA: ComparisonCategory[] = [
       {
         name: 'Cash Buyer Directory — verified investor contacts by market',
         free: false,
-        pro: 'Included (trial too)',
+        pro: 'After first payment',
       },
       {
         name: 'Hard Money Lender Directory — fix & flip, BRRRR, bridge, DSCR',
         free: false,
-        pro: 'Included (trial too)',
+        pro: 'After first payment',
       },
       {
         name: 'Directory CSV / print exports',
@@ -259,33 +260,8 @@ export default function PricingContent() {
     return () => observer.disconnect()
   }, [])
 
-  const starterFeatures: string[] = [
-    'Property search',
-    '10 property analyses per month',
-    'Discovery with deal score & plain-language explanations',
-    'Income Value, Target Buy & Deal Gap on every property',
-    'Multi-source IQ Estimates — Zillow, RentCast, Redfin, Realtor',
-    'All 6 strategy snapshots — LTR, STR, BRRRR, Flip, House Hack, Wholesale',
-    'Seller Motivation indicator',
-    'Save up to 10 properties to DealGapIQ pipeline',
-  ]
-
-  const proFeatures: string[] = [
-    'Unlimited property analyses',
-    'Full calculation breakdown — see every number behind Discovery',
-    'Editable assumptions & stress testing — adjust rent, rates, and expenses',
-    'Comps — professional sale & rental comparables with adjusted valuation',
-    'Market Consensus engine — aggregate view across all data sources',
-    'Sensitivity analysis — see how deal metrics shift across scenarios',
-    'Interactive Map Search — browse and analyze listings on a map',
-    '10-year financial proforma projections',
-    'Deal Maker interactive worksheet with real-time recalculation',
-    'Downloadable Excel proforma & strategy-specific worksheets',
-    'PDF property reports',
-    'DealGapIQ pipeline with unlimited saves & side-by-side deal comparison',
-    'Cash Buyer Directory — direct access to verified cash buyers by market',
-    'Hard Money Lender Directory — 484+ lenders with phone, email, and web contacts',
-  ]
+  const starterFeatures = STARTER_FEATURES
+  const proFeatures = PRO_FEATURES
 
   const faqs = [
     {
@@ -805,7 +781,8 @@ export default function PricingContent() {
       >
         {[
           'Cancel anytime. No lock-in contracts',
-          '7-day free trial on Pro. Full access',
+          '7-day free trial on Pro',
+          DIRECTORY_ACCESS_NOTE,
           'Your data stays yours. We never share or sell',
         ].map((text, i) => (
           <div

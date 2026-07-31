@@ -21,6 +21,11 @@ import { DirectoriesPromoSection } from '@/components/landing/DirectoriesPromoSe
 import { GetTheAppButton } from '@/components/GetTheAppButton'
 import { useBuyerDirectoryTeaserTotal } from '@/hooks/useBuyerDirectoryTeaserTotal'
 import { formatLenderDirectoryTotal } from '@/lib/directory-promo'
+import {
+  DIRECTORY_ACCESS_NOTE,
+  HOMEPAGE_FREE_FEATURES,
+  homepageProFeatures,
+} from '@/lib/planFeatures'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSession } from '@/hooks/useSession'
 import { MarketingUserMenu, MarketingUserMenuMobileLinks } from '@/components/layout/MarketingUserMenu'
@@ -581,12 +586,7 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
             title="Free"
             subtitle="For serious explorers"
             price="$0"
-            features={[
-              '10 discoveries per month',
-              'Full 4-path analysis',
-              'Negotiation scripts',
-              'PDF export',
-            ]}
+            features={HOMEPAGE_FREE_FEATURES}
             cta="Start free - no card needed"
             onClick={onFree}
           />
@@ -598,23 +598,14 @@ function PricingSection({ onFree, onPro }: { onFree: () => void; onPro: () => vo
             price="$34.99"
             priceSuffix="/mo"
             subprice="or $29.17/mo billed annually"
-            features={[
-              'Unlimited discoveries',
-              `Cash Buyer Directory (${buyerTotalLabel} verified contacts)`,
-              `Hard Money Lender Directory (${lenderTotalLabel} lenders)`,
-              'Priority data sources + live MLS sync',
-              'Team collaboration & shared workspaces',
-              'Advanced creative finance templates',
-              'Priority support + deal review calls',
-            ]}
+            features={homepageProFeatures(buyerTotalLabel, lenderTotalLabel)}
             cta="Start 7-day Pro trial - no card required"
             onClick={onPro}
           />
         </div>
         <p className="mx-auto mt-6 max-w-lg text-xs text-[var(--text-muted)]">
-          Trial includes full directory access.{' '}
           <strong className="font-semibold text-[var(--text-secondary)]">
-            Exports unlock with your first payment.
+            {DIRECTORY_ACCESS_NOTE}
           </strong>
         </p>
       </div>

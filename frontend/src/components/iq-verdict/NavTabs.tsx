@@ -28,7 +28,7 @@ interface NavTabsProps {
 const DEFAULT_TABS: NavTab[] = [
   { id: 'analyze', label: 'Discovery' },
   { id: 'details', label: 'Details' },
-  { id: 'price-checker', label: 'PriceCheckerIQ' },
+  { id: 'price-checker', label: 'Comps' },
 ]
 
 export function NavTabs({

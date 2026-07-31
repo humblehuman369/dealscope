@@ -18,7 +18,7 @@ import {
 import type { DealMakerPropertyData } from '@/features/deal-maker/components/DealMakerScreen'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { InfoDialog } from '@/components/ui/ConfirmDialog'
-import { AuthGate } from '@/components/auth/AuthGate'
+import { ProGate } from '@/components/auth/ProGate'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'
@@ -303,7 +303,7 @@ export default function DealMakerIndexPage() {
 
   if (addressParam && propertyData) {
     return (
-      <AuthGate feature="adjust deal inputs" mode="section">
+      <ProGate feature="adjust deal inputs" mode="section">
         <DealMakerScreen
           property={propertyData}
           listPrice={propertyData.price}
@@ -311,12 +311,12 @@ export default function DealMakerIndexPage() {
           savedPropertyId={savedPropertyId ?? undefined}
           backTo={backTo}
         />
-      </AuthGate>
+      </ProGate>
     )
   }
 
   return (
-    <AuthGate feature="deal maker" mode="section">
+    <ProGate feature="use the Deal Maker" mode="section">
       <div className="min-h-screen bg-[var(--surface-base)] px-4 sm:px-6 pt-6 sm:pt-10">
         <div className="w-full max-w-lg mx-auto">
           <div className="text-center mb-6 sm:mb-8">
@@ -563,6 +563,6 @@ export default function DealMakerIndexPage() {
         title="Scan is a Mobile Feature"
         description="Point your phone camera at any property for instant analysis. On desktop, use 'Enter Address' to search by location."
       />
-    </AuthGate>
+    </ProGate>
   )
 }

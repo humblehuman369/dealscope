@@ -39,7 +39,7 @@ const HOME_FAQ = [
   {
     question: 'Do I need an account to analyze a property?',
     answer:
-      'No. You can run Discovery on any address without signing in. A free account lets you save properties, customize default assumptions, and export reports.',
+      'No. You can run Discovery on any address without signing in. A free account lets you save properties and customize your default assumptions.',
   },
   {
     question: 'What is the Deal Gap?',
@@ -54,7 +54,7 @@ const HOME_FAQ = [
   {
     question: 'Does Pro include the Cash Buyer and Hard Money directories?',
     answer:
-      'Yes — both directories are included with Pro, and the 7-day trial includes full directory access: search, filter, and open buyer and lender records. CSV and print exports unlock with your first payment.',
+      'Yes — both directories are included with Pro. During the 7-day trial you can preview the directories; full access to buyer and lender records, plus CSV and print exports, unlocks with your first payment.',
   },
   {
     question: 'What is in the Cash Buyer Directory?',

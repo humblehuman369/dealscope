@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { useAppParams, useAppSearchParams } from '@/hooks/useAppNavigation'
 import type { DealMakerPropertyData } from '@/features/deal-maker/components/DealMakerScreen'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
-import { AuthGate } from '@/components/auth/AuthGate'
+import { ProGate } from '@/components/auth/ProGate'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 
 // DealMakerScreen is ~1,500+ lines with 6 strategy calculators.
@@ -82,8 +82,8 @@ export default function DealMakerRoutePage() {
   }
 
   return (
-    <AuthGate feature="adjust deal inputs" mode="section">
+    <ProGate feature="adjust deal inputs" mode="section">
       <DealMakerScreen property={property} listPrice={listPrice} />
-    </AuthGate>
+    </ProGate>
   )
 }

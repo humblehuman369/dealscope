@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { NOINDEX_FOLLOW } from '@/lib/seo/metadata'
 
 export const metadata: Metadata = {
-  title: 'Rehab — DealGapIQ',
+  title: 'Rehab Estimator — DealGapIQ',
   robots: NOINDEX_FOLLOW,
 }
 
