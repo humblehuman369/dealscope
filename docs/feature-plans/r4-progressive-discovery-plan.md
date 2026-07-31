@@ -1,6 +1,6 @@
 # R4 — Collapse Discovery + Strategy into One Progressive Page
 
-**Status:** Stage 1 complete (July 2026) — `<StrategyWorkbench>` extracted to `frontend/src/features/strategy-workbench/`, `/strategy` is a thin shell. Stages 2–4 not started.
+**Status:** Stages 1–2 complete (July 2026). Stage 1: `<StrategyWorkbench>` extracted to `frontend/src/features/strategy-workbench/`, `/strategy` is a thin shell. Stage 2: Discovery embeds the workbench via `next/dynamic` behind `NEXT_PUBLIC_PROGRESSIVE_DISCOVERY=1` (§7 decisions: everyone starts collapsed with the persona strategy auto-selected; gating reuses the workbench's built-in AuthGate/Pro gates for route parity). Stages 3–4 not started.
 **Author:** UX audit roadmap item R4, drafted July 2026
 **Prerequisite reading:** none — this document is self-contained.
 

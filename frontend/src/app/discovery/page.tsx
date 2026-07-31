@@ -80,7 +80,12 @@ import { DealStructuresNarrative } from '@/components/iq-verdict/DealStructuresN
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
-import { buildStrategyUrlWithScenario } from '@/lib/dealStructures/loadScenario'
+import {
+  buildScenarioPayload,
+  buildStrategyUrlWithScenario,
+  writeLastAppliedScenario,
+} from '@/lib/dealStructures/loadScenario'
+import { encodeScenario } from '@/lib/dealStructures/scenarioPayload'
 import { mapDealStructuresFromApi } from '@/lib/dealStructures/mapDealStructures'
 import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'
 import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
@@ -88,12 +93,41 @@ import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 import { WorkbenchTour } from '@/components/discovery/WorkbenchTour'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
 import { useReviewPrompt } from '@/hooks/useReviewPrompt'
+import { usePersona } from '@/hooks/usePersona'
+import dynamic from 'next/dynamic'
 
 // Backend analysis response type — canonical shape from @dealscope/shared.
 // The backend serializes both snake_case and camelCase via Pydantic alias_generator,
 // so parseAnalysisResponse below handles both casings with nullish coalescing.
 // See: shared/src/types/verdict.ts
 import type { IQVerdictResponse } from '@dealscope/shared'
+
+// R4 Stage 2: Level 3 workbench embeds below the verdict behind a temporary
+// env flag (removed in Stage 4 once /strategy is retired). Flag off = today's
+// behavior: CTAs router.push to /strategy.
+const PROGRESSIVE_DISCOVERY = process.env.NEXT_PUBLIC_PROGRESSIVE_DISCOVERY === '1'
+
+// Fixed height reserves layout while the dynamic chunk loads, so the
+// scroll-into-view anchor is stable and there is no jank on expand.
+function WorkbenchSkeleton() {
+  return (
+    <div
+      aria-hidden
+      className="mx-0 sm:mx-5 mt-4 rounded-none sm:rounded-[14px] animate-pulse"
+      style={{
+        height: 720,
+        background: 'var(--surface-card)',
+        border: '1px solid var(--border-default)',
+      }}
+    />
+  )
+}
+
+// Lazy — Discovery's initial bundle must not pay for the workbench (250 KB budget).
+const StrategyWorkbench = dynamic(
+  () => import('@/features/strategy-workbench').then((m) => m.StrategyWorkbench),
+  { ssr: false, loading: () => <WorkbenchSkeleton /> },
+)
 
 function InsightItem({
   title,
@@ -331,6 +365,18 @@ function VerdictContent() {
   const dataSourcesRef = useRef<HTMLDivElement>(null)
   const [showDealGapVideo, setShowDealGapVideo] = useState(false)
   const [showAllInsights, setShowAllInsights] = useState(true)
+
+  // Level 3 workbench (R4 Stage 2). Null = collapsed. The workbench mounts
+  // only when this is set ({request && <StrategyWorkbench/>}), never via
+  // conditional hooks — see React #310 note below.
+  const [workbenchRequest, setWorkbenchRequest] = useState<{
+    address: string
+    strategyId: string | null
+    section: StrategyWorksheetSection | null
+    scenario: string | null
+  } | null>(null)
+  const workbenchSectionRef = useRef<HTMLDivElement>(null)
+  const { preferredStrategyIds } = usePersona()
 
   // Stores the static analysis inputs so the verdict can be re-calculated
   // when the user switches data source without re-fetching property data
@@ -1121,6 +1167,18 @@ function VerdictContent() {
         fullAddress = backendFullAddressRef.current
       }
 
+      if (PROGRESSIVE_DISCOVERY) {
+        setWorkbenchRequest((prev) => ({
+          address: fullAddress,
+          // Decision §7.1: auto-select (not auto-expand) the persona strategy.
+          // Prop is initial-only, so preserving prev keeps a user's later pick.
+          strategyId: prev?.strategyId ?? preferredStrategyIds[0] ?? null,
+          section: section ?? null,
+          scenario: prev?.scenario ?? null,
+        }))
+        return
+      }
+
       const params = new URLSearchParams({ address: fullAddress })
       if (conditionParam) params.set('condition', conditionParam)
       if (locationParam) params.set('location', locationParam)
@@ -1128,7 +1186,7 @@ function VerdictContent() {
 
       router.push(`/strategy?${params.toString()}`)
     },
-    [property, conditionParam, locationParam, router],
+    [property, conditionParam, locationParam, router, preferredStrategyIds],
   )
 
   const openThreePathInStrategy = useCallback(
@@ -1144,6 +1202,19 @@ function VerdictContent() {
         structure_id: structure.id,
         family: structure.family,
       })
+
+      if (PROGRESSIVE_DISCOVERY) {
+        const payload = buildScenarioPayload(structure, index)
+        writeLastAppliedScenario(payload)
+        setWorkbenchRequest((prev) => ({
+          address: fullAddress,
+          strategyId: prev?.strategyId ?? preferredStrategyIds[0] ?? null,
+          section: null,
+          scenario: encodeScenario(payload),
+        }))
+        return
+      }
+
       const url = buildStrategyUrlWithScenario({
         address: fullAddress,
         structure,
@@ -1153,7 +1224,7 @@ function VerdictContent() {
       })
       router.push(url)
     },
-    [property, conditionParam, locationParam, router],
+    [property, conditionParam, locationParam, router, preferredStrategyIds],
   )
 
   const navigateToAppraiser = useCallback(() => {
@@ -1174,6 +1245,33 @@ function VerdictContent() {
         dataSourcesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }, 120)
     })
+  }, [])
+
+  // Bring the expanded (or re-targeted) workbench into view. The dynamic chunk
+  // shows a fixed-height skeleton, so the anchor exists as soon as state is set.
+  useEffect(() => {
+    if (!workbenchRequest) return
+    requestAnimationFrame(() => {
+      workbenchSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }, [workbenchRequest])
+
+  // Sign-in URL with a redirect back here — same shape the /strategy shell builds.
+  const workbenchSignInUrl = useMemo(() => {
+    const cleanParams = new URLSearchParams(searchParams.toString())
+    cleanParams.delete('auth')
+    cleanParams.delete('redirect')
+    const cleanQs = cleanParams.toString()
+    const fullPath = cleanQs ? `/discovery?${cleanQs}` : '/discovery'
+    const signInParams = new URLSearchParams(cleanQs)
+    signInParams.set('auth', 'required')
+    signInParams.set('redirect', fullPath)
+    return `/discovery?${signInParams.toString()}`
+  }, [searchParams])
+
+  // Embedded equivalent of the /strategy shell stripping ?scenario from the URL.
+  const handleWorkbenchScenarioConsumed = useCallback(() => {
+    setWorkbenchRequest((prev) => (prev ? { ...prev, scenario: null } : prev))
   }, [])
 
   // Loading state — pulsating IQ logo until data arrives.
@@ -2480,6 +2578,28 @@ function VerdictContent() {
               ))}
             </div>
           </section>
+
+          {/* Level 3 — embedded Strategy Workbench (R4 Stage 2, flag-gated).
+              Mount/unmount only — never conditional hooks (React #310). */}
+          {PROGRESSIVE_DISCOVERY && workbenchRequest && (
+            <div
+              ref={workbenchSectionRef}
+              id="discovery-workbench"
+              style={{ scrollMarginTop: 16 }}
+            >
+              <StrategyWorkbench
+                address={workbenchRequest.address}
+                strategyId={workbenchRequest.strategyId}
+                condition={conditionParam}
+                location={locationParam}
+                initialSection={workbenchRequest.section}
+                scenarioParam={workbenchRequest.scenario}
+                onScenarioConsumed={handleWorkbenchScenarioConsumed}
+                signInUrl={workbenchSignInUrl}
+                embedded
+              />
+            </div>
+          )}
 
           {/* Trust Strip */}
           <div
