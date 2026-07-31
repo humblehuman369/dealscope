@@ -82,6 +82,11 @@ if (!isCapacitor) {
     { source: '/verdict-iq', destination: '/discovery', permanent: true },
     { source: '/compare', destination: '/price-intel?view=sale', permanent: true },
     { source: '/rental-comps', destination: '/price-intel?view=rent', permanent: true },
+    // R2 (one verdict system): retired surfaces that shipped competing
+    // verdict vocabularies (A+–F grades, STRONG–POOR labels, achievability
+    // gauges). Deal Gap % on Discovery is the single headline verdict.
+    { source: '/deal-gap', destination: '/', permanent: true },
+    { source: '/worksheet/:path*', destination: '/pipeline', permanent: true },
   ]
 
   nextConfig.rewrites = async () => {
