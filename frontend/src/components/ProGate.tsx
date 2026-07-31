@@ -139,7 +139,7 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
     <>
       <div className="relative">
         <div className="blur-sm pointer-events-none select-none opacity-50">{children}</div>
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
           <button
             type="button"
             onClick={openUpgrade}
@@ -153,6 +153,10 @@ export function ProGate({ children, feature, mode = 'inline', fallback }: ProGat
             <Lock size={14} />
             {feature ? `Unlock ${feature}` : 'Upgrade to Pro'}
           </button>
+          {/* Risk-reducer — gates should sell, not just block */}
+          <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+            7-day free trial · cancel anytime
+          </p>
         </div>
       </div>
       <UpgradeModal

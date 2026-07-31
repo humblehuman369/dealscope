@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
@@ -51,13 +52,25 @@ function DashboardContent() {
 
         {/* The centerpiece — Saved Properties Kanban (pre-purchase + post-purchase). */}
         <section className="mb-8">
-          <div className="mb-3">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--text-heading)]">
-              Pipeline
-            </h2>
-            <p className="mt-1 text-xs text-[var(--text-label)]">
-              Drag a deal to its next stage, or use the ⋯ menu on a card.
-            </p>
+          <div className="mb-3 flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--text-heading)]">
+                Pipeline
+              </h2>
+              <p className="mt-1 text-xs text-[var(--text-label)]">
+                Drag a deal to its next stage, or use the ⋯ menu on a card.
+              </p>
+            </div>
+            <Link
+              href="/compare"
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-[var(--hover-overlay)]"
+              style={{
+                border: '1px solid var(--border-default)',
+                color: 'var(--accent-sky)',
+              }}
+            >
+              Compare deals side-by-side →
+            </Link>
           </div>
           <PipelineKanban
             highlightStage={highlightStage}

@@ -18,7 +18,7 @@ import {
 import type { DealMakerPropertyData } from '@/features/deal-maker/components/DealMakerScreen'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { InfoDialog } from '@/components/ui/ConfirmDialog'
-import { ProGate } from '@/components/auth/ProGate'
+import { ProGate } from '@/components/ProGate'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { parseAddressString } from '@/utils/formatters'

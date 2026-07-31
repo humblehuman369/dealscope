@@ -80,13 +80,15 @@ if (!isCapacitor) {
     { source: '/verdict', destination: '/discovery', permanent: true },
     { source: '/analysis-iq', destination: '/discovery', permanent: true },
     { source: '/verdict-iq', destination: '/discovery', permanent: true },
-    { source: '/compare', destination: '/price-intel?view=sale', permanent: true },
+    // NOTE: /compare is a real page (side-by-side saved-property comparison,
+    // a marketed Pro feature) — do not redirect it away again. A previous
+    // redirect to /price-intel shadowed the route and made it unreachable.
     { source: '/rental-comps', destination: '/price-intel?view=rent', permanent: true },
     // R2 (one verdict system): retired surfaces that shipped competing
     // verdict vocabularies (A+–F grades, STRONG–POOR labels, achievability
     // gauges). Deal Gap % on Discovery is the single headline verdict.
     { source: '/deal-gap', destination: '/', permanent: true },
-    { source: '/worksheet/:path*', destination: '/pipeline', permanent: true },
+    { source: '/worksheet/:path*', destination: '/dashboard', permanent: true },
   ]
 
   nextConfig.rewrites = async () => {

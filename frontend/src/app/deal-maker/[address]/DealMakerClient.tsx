@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { useAppParams, useAppSearchParams } from '@/hooks/useAppNavigation'
 import type { DealMakerPropertyData } from '@/features/deal-maker/components/DealMakerScreen'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
-import { ProGate } from '@/components/auth/ProGate'
+import { ProGate } from '@/components/ProGate'
 import { IQLoadingLogo } from '@/components/ui/IQLoadingLogo'
 
 // DealMakerScreen is ~1,500+ lines with 6 strategy calculators.

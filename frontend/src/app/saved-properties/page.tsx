@@ -10,9 +10,10 @@
  */
 
 import { Suspense, useState } from 'react'
+import Link from 'next/link'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import { useRouter } from 'next/navigation'
-import { Bookmark, History, Search } from 'lucide-react'
+import { Bookmark, Columns, History, Search } from 'lucide-react'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { SavedPropertiesPanel } from './_components/SavedPropertiesPanel'
@@ -52,14 +53,24 @@ function PageContent() {
               Everything you&apos;ve looked at and everything you&apos;ve kept, in one place.
             </p>
           </div>
-          <button
-            onClick={() => setShowSearchModal(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] rounded-lg font-semibold text-sm transition-all"
-            style={{ boxShadow: 'var(--shadow-card)' }}
-          >
-            <Search className="w-4 h-4" />
-            Search New Property
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/compare"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors hover:bg-[var(--hover-overlay)]"
+              style={{ border: '1px solid var(--border-default)', color: 'var(--accent-sky)' }}
+            >
+              <Columns className="w-4 h-4" />
+              Compare Deals
+            </Link>
+            <button
+              onClick={() => setShowSearchModal(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-sky)] hover:bg-[var(--accent-sky-light)] text-[var(--text-inverse)] rounded-lg font-semibold text-sm transition-all"
+              style={{ boxShadow: 'var(--shadow-card)' }}
+            >
+              <Search className="w-4 h-4" />
+              Search New Property
+            </button>
+          </div>
         </div>
 
         {/* Tab nav */}
