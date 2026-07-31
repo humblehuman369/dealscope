@@ -46,6 +46,7 @@ import {
 } from '@/utils/addressIdentity'
 import { PriceTarget } from '@/lib/priceUtils'
 import { ScoreMethodologySheet } from '@/components/iq-verdict/ScoreMethodologySheet'
+import { FinancingProvenanceNote } from '@/components/iq-verdict/FinancingProvenanceNote'
 import { InfoPopover } from '@/components/ui/InfoPopover'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { FALLBACK_PROPERTY } from '@/lib/constants/property-defaults'
@@ -2112,6 +2113,9 @@ function VerdictContent() {
                   onShowPitch={(s) => setPitchModalStructure(s)}
                 />
               )}
+
+              {/* Assumption provenance — whose inputs produced this number */}
+              <FinancingProvenanceNote />
 
               {/* How Deal Gap works */}
               <div className="mt-3">
