@@ -46,11 +46,11 @@ optimistically and schedule a debounced PATCH.
 | `useDealSnapshot(propertyId)` | Immutable record loaded from backend        | React Query          | Worksheets |
 | `useCalculatedMetrics(...)`   | Derived financial metrics                   | React Query          | Metric cards, graphs |
 
-The Phase 2 decomposition was only partly carried out: `hooks/useAssumptions.ts`
-exists and is tested but **has no production consumers**, and
-`features/deal-maker/hooks/` (referenced by `features/README.md`) was never
-created. Treat `dealMakerStore` as the store to change until one of those is
-finished — and do not add a second writer for the same record.
+The Phase 2 decomposition is settled (July 2026): `dealMakerStore` is the
+single writer for the record; `useDealSnapshot` and `useCalculatedMetrics`
+are the read-side hooks. The orphaned `hooks/useAssumptions.ts` (a verbatim
+duplicate of the store's write path with no production consumers) was deleted —
+do not reintroduce a second writer for the same record.
 
 **Optimistic Update Contract (`dealMakerStore`)**
 - `record` is updated optimistically; `lastGoodRecord` holds the last
@@ -125,7 +125,7 @@ value it would invalidate on every request forever.
 **Allowed**
 ```ts
 import { DealMakerScreen } from '@/features/deal-maker/components'
-import { useAssumptions } from '@/hooks/useAssumptions'
+import { useDealSnapshot } from '@/hooks/useDealSnapshot'
 import { LoadingProperty, ErrorProperty } from '@/components/ui/PropertyStates'
 ```
 
@@ -194,17 +194,18 @@ These components live in `components/ui/PropertyStates.tsx` and respect `--surfa
 ## 8. Testing & Coverage Targets (Phase 5+)
 
 Current baseline (as of July 2026):
-- 275 tests passing (`npm run test:run`)
+- 271 tests passing (`npm run test:run`)
 - Strong coverage on `lib/*`, `utils/*`, services
-- Optimistic rollback is covered for both `dealMakerStore` (the live path) and
-  `hooks/useAssumptions`.
+- Optimistic rollback is covered for `dealMakerStore` (the single write path).
 - `usePropertyData` + `dealMakerStore` interaction is covered by
   `src/__tests__/hooks/usePropertyData.test.tsx` (shared cache, address
   canonicalization, numeric sanitization, edits surviving property refetches).
-- `useDealSnapshot` still needs dedicated tests to reach ≥80% on financial paths.
+- `useDealSnapshot` is covered by `src/__tests__/hooks/useDealSnapshot.test.tsx`
+  (shared cache per propertyId, disabled/no-id gating, invalidation refetch,
+  error surfacing).
 
-**Required before Phase 5 sign-off**
-- Add tests for `useDealSnapshot`
+**Phase 5 sign-off requirements: complete** (July 2026). New financial-path
+hooks must ship with tests to keep the ≥80% bar.
 
 ---
 

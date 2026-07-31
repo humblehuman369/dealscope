@@ -19,8 +19,8 @@ export interface UseCalculatedMetricsOptions {
  *
  * Consumers can combine:
  *   const snapshot = useDealSnapshot(id)
- *   const assumptions = useAssumptions(id)
- *   const metrics = useCalculatedMetrics(id, assumptions.pendingUpdates)
+ *   const metrics = useCalculatedMetrics(id, pendingUpdates)
+ * where pendingUpdates are the unsaved edits held by dealMakerStore.
  */
 export function useCalculatedMetrics(
   propertyId: string | null,
