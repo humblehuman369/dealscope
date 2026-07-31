@@ -162,7 +162,6 @@ const NO_PROPERTY_BAR_ROUTES = [
 /** Analysis workflow routes — tab bar only appears on these (not dashboard, directory, etc.) */
 const ANALYSIS_WORKFLOW_PREFIXES = [
   '/discovery',
-  '/strategy',
   '/property',
   '/price-intel',
   '/compare',
@@ -183,7 +182,6 @@ function getActiveTabFromPath(pathname: string): AppTab | undefined {
   // Homepage: no tab selected
   if (pathname === '/' || pathname === '') return undefined
   if (pathname.startsWith('/discovery')) return 'analyze'
-  if (pathname.startsWith('/strategy')) return 'strategy'
   if (pathname.startsWith('/property')) return undefined
   if (pathname.startsWith('/price-intel')) return 'price-checker'
   if (pathname.startsWith('/compare')) return 'price-checker'
@@ -569,7 +567,7 @@ export function AppHeader({
         break
       case 'strategy':
         if (navigationAddress) {
-          router.push(`/strategy?address=${encodedAddress}`)
+          router.push(`/discovery?address=${encodedAddress}&view=workbench`)
         } else {
           router.push('/search')
         }

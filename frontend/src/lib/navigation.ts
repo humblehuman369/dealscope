@@ -81,9 +81,10 @@ export const ROUTES = {
   },
 
   strategy: (ctx: NavContext) => {
-    const params = new URLSearchParams({ address: ctx.address || '' })
+    // Strategy workbench lives on Discovery (R4) — ?view=workbench expands it.
+    const params = new URLSearchParams({ address: ctx.address || '', view: 'workbench' })
     if (ctx.propertyId) params.set('propertyId', ctx.propertyId)
-    return `/strategy?${params.toString()}`
+    return `/discovery?${params.toString()}`
   },
 
   dealMaker: (ctx: NavContext) => `/deal-maker/${encodeURIComponent(ctx.address || '')}`,

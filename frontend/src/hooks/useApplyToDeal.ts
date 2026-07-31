@@ -225,8 +225,11 @@ export function useApplyToDeal({
           action: {
             label: 'View in Strategy',
             onClick: () => {
-              const strategyParams = new URLSearchParams({ address: displayAddress })
-              window.location.href = `/strategy?${strategyParams.toString()}`
+              const strategyParams = new URLSearchParams({
+                address: displayAddress,
+                view: 'workbench',
+              })
+              window.location.href = `/discovery?${strategyParams.toString()}`
             },
           },
         })

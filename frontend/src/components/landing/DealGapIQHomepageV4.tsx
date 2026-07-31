@@ -752,7 +752,6 @@ function SiteFooter() {
           links={[
             { href: '#how-it-works', label: 'How it Works' },
             { href: '/discovery', label: 'Discovery' },
-            { href: '/strategy', label: 'Strategy' },
             { href: '/deal-maker', label: 'DealMaker' },
             { href: '/directory', label: 'Cash Buyer Directory' },
             { href: '/lenders', label: 'Hard Money Lenders' },

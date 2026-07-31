@@ -247,7 +247,7 @@ function DealHeader({ deal }: { deal: DealDetail }) {
             Deal Report
           </Link>
           <Link
-            href={`/strategy?address=${encodeURIComponent(buildVerdictAddress(deal))}`}
+            href={`/discovery?address=${encodeURIComponent(buildVerdictAddress(deal))}&view=workbench`}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] transition-colors no-underline"
           >
             <BarChart3 className="w-4 h-4" />

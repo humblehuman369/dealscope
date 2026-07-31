@@ -80,6 +80,10 @@ if (!isCapacitor) {
     { source: '/verdict', destination: '/discovery', permanent: true },
     { source: '/analysis-iq', destination: '/discovery', permanent: true },
     { source: '/verdict-iq', destination: '/discovery', permanent: true },
+    // R4 (progressive discovery): the Strategy page merged into Discovery.
+    // Unmatched query params (address, strategy, condition, location, section,
+    // scenario) pass through to the destination automatically.
+    { source: '/strategy', destination: '/discovery?view=workbench', permanent: true },
     // NOTE: /compare is a real page (side-by-side saved-property comparison,
     // a marketed Pro feature) — do not redirect it away again. A previous
     // redirect to /price-intel shadowed the route and made it unreachable.

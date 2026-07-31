@@ -20,8 +20,9 @@ export function AnalysisNav() {
   const params = searchParams.toString()
   const address = searchParams.get('address') || ''
 
-  const isVerdict = pathname === '/discovery'
-  const isStrategy = pathname === '/strategy'
+  // Strategy is the workbench view of the merged Discovery page (R4).
+  const isStrategy = pathname === '/discovery' && searchParams.get('view') === 'workbench'
+  const isVerdict = pathname === '/discovery' && !isStrategy
 
   // Resolve zpid and optional snapshot — check URL params first, then sessionStorage
   const zpidFromUrl = searchParams.get('zpid') || ''
@@ -72,9 +73,23 @@ export function AnalysisNav() {
   // Only show on analysis pages
   if (!isVerdict && !isStrategy) return null
 
+  const discoveryParams = new URLSearchParams(params)
+  discoveryParams.delete('view')
+  const strategyParams = new URLSearchParams(params)
+  strategyParams.set('view', 'workbench')
   const primaryTabs = [
-    { label: 'Discovery', href: `/discovery?${params}`, active: isVerdict, icon: verdictIcon },
-    { label: 'Strategy', href: `/strategy?${params}`, active: isStrategy, icon: strategyIcon },
+    {
+      label: 'Discovery',
+      href: `/discovery?${discoveryParams.toString()}`,
+      active: isVerdict,
+      icon: verdictIcon,
+    },
+    {
+      label: 'Strategy',
+      href: `/discovery?${strategyParams.toString()}`,
+      active: isStrategy,
+      icon: strategyIcon,
+    },
   ]
 
   // Build secondary nav links (Property Profile needs zpid)

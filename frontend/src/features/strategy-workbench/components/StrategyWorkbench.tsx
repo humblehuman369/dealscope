@@ -4,10 +4,10 @@
  * StrategyWorkbench — the full financial deep-dive for a property (Deal Gap bar,
  * strategy picker, DealMaker worksheet, deal-structure Options, benchmarks).
  *
- * Extracted from `app/strategy/page.tsx` (R4 Stage 1). The `/strategy` route is
- * now a thin shell around this component; Stage 2 embeds the same component in
- * Discovery behind progressive disclosure. URL parsing and auth-redirect
- * construction live in the route shell — everything else the workbench needs
+ * Extracted from the old `app/strategy/page.tsx` (R4 Stage 1) and now embedded
+ * exclusively in Discovery as Level 3 of progressive disclosure (R4 Stage 4 —
+ * `/strategy` 301s to `/discovery?view=workbench`). URL parsing and auth-redirect
+ * construction live in the host page — everything else the workbench needs
  * comes from shared state (`usePropertyData`, `useDealSnapshot`, session hooks).
  *
  * IMPORTANT: every early return must stay BELOW the hooks (React #310 has
@@ -22,7 +22,6 @@ import {
   useMemo,
   useRef,
 } from 'react'
-import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
@@ -133,10 +132,8 @@ export interface StrategyWorkbenchProps {
   scenarioParam?: string | null
   /** Called once a scenario payload has been applied so the host can strip it from the URL. */
   onScenarioConsumed?: () => void
-  /** Sign-in URL with a redirect back to this view (built by the route shell). */
+  /** Sign-in URL with a redirect back to this view (built by the host page). */
   signInUrl: string
-  /** True when rendered inside another page (Discovery Level 3) — suppresses page chrome. */
-  embedded?: boolean
 }
 
 export function StrategyWorkbench({
@@ -148,9 +145,7 @@ export function StrategyWorkbench({
   scenarioParam = null,
   onScenarioConsumed,
   signInUrl,
-  embedded = false,
 }: StrategyWorkbenchProps) {
-  const router = useRouter()
   const queryClient = useQueryClient()
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const { isPro } = useSubscription()
@@ -862,10 +857,6 @@ export function StrategyWorkbench({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional narrow deps
   }, [addressParam, conditionParam, locationParam, initialOverrides, toPayloadBase, fetchProperty])
 
-  const handleBack = useCallback(() => {
-    router.push(`/discovery?address=${encodeURIComponent(resolvedAddress)}`)
-  }, [router, resolvedAddress])
-
   const handleStrategyChange = useCallback(
     (strategyIdArg: string) => {
       setSelectedStrategyId(strategyIdArg)
@@ -1059,8 +1050,6 @@ export function StrategyWorkbench({
         message={error || 'We couldn’t load the property data needed for strategy comparison.'}
         actionLabel="Try Again"
         onAction={() => window.location.reload()}
-        secondaryActionLabel="Back to Discovery"
-        onSecondaryAction={handleBack}
       />
     )
   }
@@ -1510,7 +1499,7 @@ export function StrategyWorkbench({
 
   return (
     <div
-      className={embedded ? 'strategy-page-shell' : 'strategy-page-shell min-h-screen'}
+      className="strategy-page-shell"
       style={{
         fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
       }}

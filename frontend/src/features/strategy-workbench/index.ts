@@ -1,9 +1,9 @@
 /**
- * Strategy Workbench — public API barrel (R4 Stage 1).
+ * Strategy Workbench — public API barrel (R4).
  *
- * The workbench is the full financial deep-dive previously inlined in
- * `app/strategy/page.tsx`. The `/strategy` route renders it as a thin shell;
- * Stage 2 embeds the same component in Discovery behind progressive disclosure.
+ * The workbench is the full financial deep-dive that used to be the /strategy
+ * page. It now renders exclusively as Level 3 of the Discovery page
+ * (`/discovery?view=workbench`); the old route 301s there.
  */
 
 export { StrategyWorkbench } from './components/StrategyWorkbench'

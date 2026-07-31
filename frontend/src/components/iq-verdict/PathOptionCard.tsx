@@ -60,7 +60,7 @@ export const FAMILY_ACCENT: Record<StructureFamily, string> = {
 const SUMMARY_LINKS: Array<{ token: string; href: string }> = [
   { token: 'Comps page', href: '/price-intel' },
   { token: 'Comps', href: '/price-intel' },
-  { token: 'Strategy worksheet', href: '/strategy' },
+  { token: 'Strategy worksheet', href: '/discovery' },
 ]
 
 export function renderSummaryWithLinks(summary: string): ReactNode {

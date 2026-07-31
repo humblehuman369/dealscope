@@ -1,6 +1,6 @@
 # R4 — Collapse Discovery + Strategy into One Progressive Page
 
-**Status:** Stages 1–2 complete (July 2026). Stage 1: `<StrategyWorkbench>` extracted to `frontend/src/features/strategy-workbench/`, `/strategy` is a thin shell. Stage 2: Discovery embeds the workbench via `next/dynamic` behind `NEXT_PUBLIC_PROGRESSIVE_DISCOVERY=1` (§7 decisions: everyone starts collapsed with the persona strategy auto-selected; gating reuses the workbench's built-in AuthGate/Pro gates for route parity). Stages 3–4 not started.
+**Status:** COMPLETE (July 2026) — all four stages shipped; the soak was skipped (pre-launch, user call). `<StrategyWorkbench>` lives in `frontend/src/features/strategy-workbench/` and renders exclusively as Level 3 of `/discovery` (lazy via `next/dynamic`, expanded by CTAs or `?view=workbench`). `/strategy` was deleted and 301s to `/discovery?view=workbench` with params passed through (covered by `src/__tests__/lib/strategyRedirect.test.ts`). §7 decisions: everyone starts collapsed with the persona strategy auto-selected; gating reuses the workbench's built-in AuthGate/Pro gates. The `NEXT_PUBLIC_PROGRESSIVE_DISCOVERY` flag was removed with the seam.
 **Author:** UX audit roadmap item R4, drafted July 2026
 **Prerequisite reading:** none — this document is self-contained.
 

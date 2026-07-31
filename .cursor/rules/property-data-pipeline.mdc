@@ -63,7 +63,7 @@ PropertyResponse (JSON)
         ↓
 Frontend: usePropertyData() hook  →  React Query cache (5 min TTL)
         ↓
-Verdict page + Strategy page  →  IQEstimateSelector component
+Discovery verdict + embedded Strategy workbench  →  IQEstimateSelector component
 ```
 
 ## Frontend Shared Cache

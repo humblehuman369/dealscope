@@ -13,7 +13,6 @@ const STATIC_ROUTES: StaticEntry[] = [
   { path: '/', priority: 1.0, changeFrequency: 'weekly' },
   { path: '/learn', priority: 0.85, changeFrequency: 'weekly' },
   { path: '/discovery', priority: 0.9, changeFrequency: 'weekly' },
-  { path: '/strategy', priority: 0.9, changeFrequency: 'weekly' },
   { path: '/deal-maker', priority: 0.9, changeFrequency: 'weekly' },
   { path: '/pricing', priority: 0.9, changeFrequency: 'monthly' },
   { path: '/methodology', priority: 0.8, changeFrequency: 'monthly' },

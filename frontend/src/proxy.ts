@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const INDEXABLE_TOOL_PATHS = new Set(['/discovery', '/strategy'])
+const INDEXABLE_TOOL_PATHS = new Set(['/discovery'])
 
 const APEX_HOST = 'dealgapiq.com'
 
@@ -68,7 +68,6 @@ export const config = {
   matcher: [
     '/',
     '/discovery',
-    '/strategy',
     '/((?!_next/static|_next/image|favicon.ico|images|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

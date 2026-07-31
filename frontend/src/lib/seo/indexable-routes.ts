@@ -3,8 +3,7 @@ export const INDEXABLE_SITE_SECTIONS = [
   {
     title: 'Product',
     links: [
-      { href: '/discovery', label: 'Discovery — instant deal score' },
-      { href: '/strategy', label: 'Strategy — full financial deep-dive' },
+      { href: '/discovery', label: 'Discovery — instant deal score & strategy deep-dive' },
       { href: '/deal-maker', label: 'DealMaker — assumptions & offer scripts' },
       { href: '/directory', label: 'Cash Buyer Directory' },
       { href: '/lenders', label: 'Hard Money Lender Directory' },

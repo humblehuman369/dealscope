@@ -60,7 +60,7 @@ export default function DealMakerLayout({ children }: { children: React.ReactNod
         ]}
         relatedLinks={[
           { href: '/discovery', label: 'Start with Discovery' },
-          { href: '/strategy', label: 'See the full Strategy breakdown' },
+          { href: '/discovery', label: 'See the full Strategy breakdown in Discovery' },
           { href: '/glossary/subject-to-financing', label: 'Glossary: Subject-To' },
           { href: '/pricing', label: 'Pricing & free trial' },
         ]}

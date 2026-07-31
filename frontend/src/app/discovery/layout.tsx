@@ -64,7 +64,6 @@ export default function DiscoveryLayout({ children }: { children: React.ReactNod
           },
         ]}
         relatedLinks={[
-          { href: '/strategy', label: 'See the full Strategy breakdown' },
           { href: '/deal-maker', label: 'Open DealMaker for offer scripts' },
           { href: '/pricing', label: 'Pricing & free trial' },
           { href: '/glossary/subject-to-financing', label: 'Glossary: Subject-To financing' },

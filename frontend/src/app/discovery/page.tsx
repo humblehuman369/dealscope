@@ -79,12 +79,11 @@ import {
 import { DealStructuresNarrative } from '@/components/iq-verdict/DealStructuresNarrative'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
-import type { StrategyWorksheetSection } from '@/components/iq-verdict/strategyWorksheetSection'
 import {
-  buildScenarioPayload,
-  buildStrategyUrlWithScenario,
-  writeLastAppliedScenario,
-} from '@/lib/dealStructures/loadScenario'
+  parseStrategyWorksheetSection,
+  type StrategyWorksheetSection,
+} from '@/components/iq-verdict/strategyWorksheetSection'
+import { buildScenarioPayload, writeLastAppliedScenario } from '@/lib/dealStructures/loadScenario'
 import { encodeScenario } from '@/lib/dealStructures/scenarioPayload'
 import { mapDealStructuresFromApi } from '@/lib/dealStructures/mapDealStructures'
 import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'
@@ -101,11 +100,6 @@ import dynamic from 'next/dynamic'
 // so parseAnalysisResponse below handles both casings with nullish coalescing.
 // See: shared/src/types/verdict.ts
 import type { IQVerdictResponse } from '@dealscope/shared'
-
-// R4 Stage 2: Level 3 workbench embeds below the verdict behind a temporary
-// env flag (removed in Stage 4 once /strategy is retired). Flag off = today's
-// behavior: CTAs router.push to /strategy.
-const PROGRESSIVE_DISCOVERY = process.env.NEXT_PUBLIC_PROGRESSIVE_DISCOVERY === '1'
 
 // Fixed height reserves layout while the dynamic chunk loads, so the
 // scroll-into-view anchor is stable and there is no jank on expand.
@@ -1167,26 +1161,16 @@ function VerdictContent() {
         fullAddress = backendFullAddressRef.current
       }
 
-      if (PROGRESSIVE_DISCOVERY) {
-        setWorkbenchRequest((prev) => ({
-          address: fullAddress,
-          // Decision §7.1: auto-select (not auto-expand) the persona strategy.
-          // Prop is initial-only, so preserving prev keeps a user's later pick.
-          strategyId: prev?.strategyId ?? preferredStrategyIds[0] ?? null,
-          section: section ?? null,
-          scenario: prev?.scenario ?? null,
-        }))
-        return
-      }
-
-      const params = new URLSearchParams({ address: fullAddress })
-      if (conditionParam) params.set('condition', conditionParam)
-      if (locationParam) params.set('location', locationParam)
-      if (section) params.set('section', section)
-
-      router.push(`/strategy?${params.toString()}`)
+      setWorkbenchRequest((prev) => ({
+        address: fullAddress,
+        // R4 §7.1: auto-select (not auto-expand) the persona strategy.
+        // Prop is initial-only, so preserving prev keeps a user's later pick.
+        strategyId: prev?.strategyId ?? preferredStrategyIds[0] ?? null,
+        section: section ?? null,
+        scenario: prev?.scenario ?? null,
+      }))
     },
-    [property, conditionParam, locationParam, router, preferredStrategyIds],
+    [property, preferredStrategyIds],
   )
 
   const openThreePathInStrategy = useCallback(
@@ -1203,28 +1187,16 @@ function VerdictContent() {
         family: structure.family,
       })
 
-      if (PROGRESSIVE_DISCOVERY) {
-        const payload = buildScenarioPayload(structure, index)
-        writeLastAppliedScenario(payload)
-        setWorkbenchRequest((prev) => ({
-          address: fullAddress,
-          strategyId: prev?.strategyId ?? preferredStrategyIds[0] ?? null,
-          section: null,
-          scenario: encodeScenario(payload),
-        }))
-        return
-      }
-
-      const url = buildStrategyUrlWithScenario({
+      const payload = buildScenarioPayload(structure, index)
+      writeLastAppliedScenario(payload)
+      setWorkbenchRequest((prev) => ({
         address: fullAddress,
-        structure,
-        pathIndex: index,
-        condition: conditionParam,
-        location: locationParam,
-      })
-      router.push(url)
+        strategyId: prev?.strategyId ?? preferredStrategyIds[0] ?? null,
+        section: null,
+        scenario: encodeScenario(payload),
+      }))
     },
-    [property, conditionParam, locationParam, router, preferredStrategyIds],
+    [property, preferredStrategyIds],
   )
 
   const navigateToAppraiser = useCallback(() => {
@@ -1246,6 +1218,33 @@ function VerdictContent() {
       }, 120)
     })
   }, [])
+
+  // URL-driven expansion — deep links that used to hit /strategy now arrive as
+  // /discovery?view=workbench&… (301 in next.config.js, params passed through).
+  // Only auto-expands when collapsed, so it never clobbers in-page state.
+  const viewParam = searchParams.get('view')
+  const strategyUrlParam = searchParams.get('strategy')
+  const scenarioUrlParam = searchParams.get('scenario')
+  const sectionUrlParam = searchParams.get('section')
+  useEffect(() => {
+    if (viewParam !== 'workbench' || !addressParam) return
+    setWorkbenchRequest(
+      (prev) =>
+        prev ?? {
+          address: addressParam,
+          strategyId: strategyUrlParam ?? preferredStrategyIds[0] ?? null,
+          section: parseStrategyWorksheetSection(sectionUrlParam),
+          scenario: scenarioUrlParam,
+        },
+    )
+  }, [
+    viewParam,
+    addressParam,
+    strategyUrlParam,
+    sectionUrlParam,
+    scenarioUrlParam,
+    preferredStrategyIds,
+  ])
 
   // Bring the expanded (or re-targeted) workbench into view. The dynamic chunk
   // shows a fixed-height skeleton, so the anchor exists as soon as state is set.
@@ -1269,10 +1268,16 @@ function VerdictContent() {
     return `/discovery?${signInParams.toString()}`
   }, [searchParams])
 
-  // Embedded equivalent of the /strategy shell stripping ?scenario from the URL.
+  // Once applied, a scenario must not re-apply on reload — clear it from both
+  // the expansion state and the URL (deep links carry it as ?scenario=).
   const handleWorkbenchScenarioConsumed = useCallback(() => {
     setWorkbenchRequest((prev) => (prev ? { ...prev, scenario: null } : prev))
-  }, [])
+    if (searchParams.get('scenario') != null) {
+      const nextParams = new URLSearchParams(searchParams.toString())
+      nextParams.delete('scenario')
+      router.replace(`/discovery?${nextParams.toString()}`, { scroll: false })
+    }
+  }, [searchParams, router])
 
   // Loading state — pulsating IQ logo until data arrives.
   // Also covers the case where property loaded from cache but analysis API is still in flight.
@@ -2579,9 +2584,9 @@ function VerdictContent() {
             </div>
           </section>
 
-          {/* Level 3 — embedded Strategy Workbench (R4 Stage 2, flag-gated).
+          {/* Level 3 — embedded Strategy Workbench (R4).
               Mount/unmount only — never conditional hooks (React #310). */}
-          {PROGRESSIVE_DISCOVERY && workbenchRequest && (
+          {workbenchRequest && (
             <div
               ref={workbenchSectionRef}
               id="discovery-workbench"
@@ -2596,7 +2601,6 @@ function VerdictContent() {
                 scenarioParam={workbenchRequest.scenario}
                 onScenarioConsumed={handleWorkbenchScenarioConsumed}
                 signInUrl={workbenchSignInUrl}
-                embedded
               />
             </div>
           )}

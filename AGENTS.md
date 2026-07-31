@@ -60,8 +60,8 @@ finished — and do not add a second writer for the same record.
 - `retryLastSave()` resends `failedUpdates`, so a rollback never costs the user
   the edit.
 - The invariant under test: after a failed save, what the screen renders equals
-  what Verdict and Strategy would compute from the server record. A divergence
-  there is a wrong number shown confidently.
+  what the Discovery verdict and the embedded Strategy workbench would compute
+  from the server record. A divergence there is a wrong number shown confidently.
 - Covered by `src/__tests__/stores/dealMakerStore.test.ts`.
 
 ### Assumption Defaults (two configurable layers)

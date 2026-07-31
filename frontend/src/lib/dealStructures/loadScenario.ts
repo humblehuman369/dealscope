@@ -197,9 +197,14 @@ export function buildStrategyUrlWithScenario(opts: {
   const encoded = encodeScenario(payload)
   writeLastAppliedScenario(payload)
 
-  const params = new URLSearchParams({ address: opts.address, scenario: encoded })
+  // The strategy workbench lives on Discovery (R4) — ?view=workbench expands it.
+  const params = new URLSearchParams({
+    address: opts.address,
+    view: 'workbench',
+    scenario: encoded,
+  })
   if (opts.condition) params.set('condition', opts.condition)
   if (opts.location) params.set('location', opts.location)
 
-  return `/strategy?${params.toString()}`
+  return `/discovery?${params.toString()}`
 }
