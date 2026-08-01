@@ -31,10 +31,12 @@ async function synthesize(text, outPath) {
     body: JSON.stringify({
       text,
       model_id: MODEL_ID,
+      // Softer, calmer read for the investor-journey cut:
+      // higher stability = steadier pacing, lower style = less announcer punch
       voice_settings: {
-        stability: 0.4,
+        stability: 0.55,
         similarity_boost: 0.75,
-        style: 0.2,
+        style: 0.1,
         use_speaker_boost: true,
       },
     }),

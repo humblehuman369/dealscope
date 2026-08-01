@@ -1,50 +1,50 @@
 [
   {
     "id": "01-hook",
-    "caption": "Listing sites end at price. DealGapIQ keeps going.",
+    "caption": "The good deals aren't gone.",
     "minDurationSec": 40,
-    "elevenLabsText": "Listing sites end at price. <break time=\"0.35s\" /> Investor calculators end at cash flow. <break time=\"0.55s\" /> Neither tells you how to close a deal that doesn't pencil at asking. <break time=\"0.55s\" /> That's where most tools stop. <break time=\"0.35s\" /> DealGapIQ keeps going. <break time=\"0.65s\" /> Paste any US address. <break time=\"0.3s\" /> Search on the map. <break time=\"0.3s\" /> Or use your phone to scan. <break time=\"0.5s\" /> No signup. No credit card. <break time=\"0.5s\" /> In about fifteen seconds you get a multi-source verdict, six strategies ranked side by side, and — when the numbers are tight — four ways to structure the offer, with a negotiation script for each."
+    "elevenLabsText": "Every investor knows the feeling. <break time=\"0.6s\" /> Another evening of scrolling listings — and nothing pencils at asking. <break time=\"0.6s\" /> It starts to feel like the good deals are gone. <break time=\"0.7s\" /> They're not. <break time=\"0.45s\" /> Most of them are hiding inside properties that don't work — yet. <break time=\"0.6s\" /> This is the story of one address, and how it becomes a deal. <break time=\"0.55s\" /> Paste it in. <break time=\"0.3s\" /> No signup. No credit card. <break time=\"0.45s\" /> In a few moments, you'll see the whole picture."
   },
   {
     "id": "02-analyze",
-    "caption": "Live data. IQ Estimate. Never invent a number.",
+    "caption": "Real numbers. Honest answers.",
     "minDurationSec": 28,
-    "elevenLabsText": "I'm going to run a real property. <break time=\"0.4s\" /> Behind the scenes we're pulling live data — Zillow, RentCast, Redfin, Realtor.com — and blending what we can into an IQ Estimate. <break time=\"0.55s\" /> If a source is missing, we show Unavailable. <break time=\"0.35s\" /> We never invent a number."
+    "elevenLabsText": "So let's run one — a real property, live. <break time=\"0.5s\" /> While it works, DealGapIQ gathers real numbers — Zillow, RentCast, Redfin, Realtor.com — and blends them into one honest IQ Estimate. <break time=\"0.6s\" /> If a source doesn't have the answer, we simply say so. <break time=\"0.4s\" /> Because a decision this big deserves the truth."
   },
   {
     "id": "03-verdict",
-    "caption": "Deal Gap = the focus. We show you options.",
-    "minDurationSec": 40,
-    "elevenLabsText": "This is your Verdict. <break time=\"0.5s\" /> Three numbers say it all. <break time=\"0.35s\" /> Target Buy — the price that hits your return thresholds. <break time=\"0.35s\" /> Income Value — the max you can pay and still cash-flow positive. <break time=\"0.35s\" /> Market Price — what the seller wants. <break time=\"0.55s\" /> The Deal Gap between them is the focus. <break time=\"0.35s\" /> Walk away. Negotiate. Or write the offer. <break time=\"0.4s\" /> We show you options."
+    "caption": "Three numbers. Suddenly, clarity.",
+    "minDurationSec": 42,
+    "elevenLabsText": "And here it is — your Verdict. <break time=\"0.55s\" /> Three numbers, and suddenly everything is calmer. <break time=\"0.5s\" /> Target Buy — the price where this property meets your goals. <break time=\"0.4s\" /> Income Value — the most you can pay and still sleep at night. <break time=\"0.4s\" /> Market Price — what the seller is asking. <break time=\"0.6s\" /> The space between them is your Deal Gap. <break time=\"0.55s\" /> Walk away, negotiate, or write the offer — every one of those is a good outcome, because now it's an informed one."
   },
   {
     "id": "04-trust-strategies",
-    "caption": "Transparent sources. Six strategies.",
+    "caption": "What does this property want to be?",
     "minDurationSec": 35,
-    "elevenLabsText": "Every metric shows its source. <break time=\"0.3s\" /> Switch the estimate — watch the math change. <break time=\"0.5s\" /> Nothing here is a black box. <break time=\"0.55s\" /> Same property — six ways to profit. <break time=\"0.35s\" /> Long-term rental. Short-term. B-R-R-R. Flip. House hack. Wholesale. <break time=\"0.5s\" /> Ranked so you see which strategy fits this asset — without six separate spreadsheets."
+    "elevenLabsText": "Every number here shows where it came from. <break time=\"0.35s\" /> Switch the source — watch the math follow. <break time=\"0.4s\" /> Nothing hidden. Nothing invented. <break time=\"0.6s\" /> And maybe this property isn't the rental you imagined. <break time=\"0.4s\" /> Maybe it's a flip. <break time=\"0.3s\" /> A house hack. <break time=\"0.3s\" /> Your first B-R-R-R. <break time=\"0.5s\" /> Six strategies, scored side by side — so the property can tell you what it wants to be."
   },
   {
     "id": "05-four-paths",
-    "caption": "A negative gap is a structure problem.",
-    "minDurationSec": 50,
-    "elevenLabsText": "Here's the part most tools never reach. <break time=\"0.55s\" /> A negative gap isn't a dead deal. <break time=\"0.3s\" /> It's a structure problem. <break time=\"0.55s\" /> DealGapIQ builds four paths to close the gap: a price ask, a capital ask, financing — Subject-To, seller carry, creative structures — income re-verification, and a Blended Plan that combines smaller asks into one credible package. <break time=\"0.55s\" /> A six-percent price cut can be a no. <break time=\"0.35s\" /> Two percent plus seller carry plus verified rent can be the same math — and a yes."
+    "caption": "The deal you almost walked past.",
+    "minDurationSec": 55,
+    "elevenLabsText": "Now — the moment that changes everything. <break time=\"0.6s\" /> The gap is negative. <break time=\"0.4s\" /> This is where most journeys end. <break time=\"0.35s\" /> A sigh. A closed tab. Back to scrolling. <break time=\"0.6s\" /> Not this time. <break time=\"0.6s\" /> DealGapIQ opens four paths to close the gap: a thoughtful price ask, a capital ask, creative financing — like seller carry, or Subject-To — and re-verifying the income. <break time=\"0.55s\" /> Then it blends the smallest asks into one fair, credible package. <break time=\"0.6s\" /> A six-percent price cut might be a no. <break time=\"0.4s\" /> Two percent, plus seller carry, plus verified rent — that can be the same math. <break time=\"0.35s\" /> And a yes. <break time=\"0.6s\" /> The deal you almost walked past just came back to life."
   },
   {
     "id": "06-pitch",
-    "caption": "Pitch script — ready to dial.",
-    "minDurationSec": 40,
-    "elevenLabsText": "And we don't stop at the spreadsheet. <break time=\"0.5s\" /> For each path you get a pitch script: who to call, how to frame it, the opener, the ask, and what's in it for the seller. <break time=\"0.5s\" /> Print it. Email it. Copy it to your phone before you dial. <break time=\"0.5s\" /> From “does it pencil?” to “how do I actually get this under contract?”"
+    "caption": "You'll have the words.",
+    "minDurationSec": 38,
+    "elevenLabsText": "Maybe you've never made that call before. <break time=\"0.4s\" /> That's okay. <break time=\"0.55s\" /> For every path, you get the words: who to call, how to open, what to ask for — and what the seller gains by saying yes. <break time=\"0.55s\" /> Because the best negotiations aren't battles. <break time=\"0.35s\" /> They're two people finding the same answer. <break time=\"0.55s\" /> Print it. Email it. Carry it on your phone. <break time=\"0.4s\" /> You'll walk in prepared — and it shows."
   },
   {
     "id": "07-deal-maker",
-    "caption": "Live worksheet. Same math as the Verdict.",
-    "minDurationSec": 40,
-    "elevenLabsText": "Deal Maker is the interactive worksheet. <break time=\"0.35s\" /> Change purchase price. Down payment. Rent. Loan type. <break time=\"0.5s\" /> Every metric recalculates live — and it stays consistent with the Verdict you just saw. <break time=\"0.5s\" /> Same math. Same record. <break time=\"0.35s\" /> When you're ready for a lender, export to Excel."
+    "caption": "Shape it until it feels right.",
+    "minDurationSec": 35,
+    "elevenLabsText": "When you're ready, make the deal your own. <break time=\"0.5s\" /> In Deal Maker, slide the purchase price. <break time=\"0.3s\" /> The down payment. <break time=\"0.3s\" /> The rent. <break time=\"0.5s\" /> Every number updates live — the same math, the same record as your Verdict. <break time=\"0.55s\" /> Shape it until it feels right. <break time=\"0.55s\" /> And when it does, export it to Excel and take it to your lender with confidence."
   },
   {
     "id": "08-close",
-    "caption": "Hunt the market. Deal decision engine.",
+    "caption": "Your next deal is out there.",
     "minDurationSec": 40,
-    "elevenLabsText": "Don't have an address yet? <break time=\"0.35s\" /> Hunt the whole market. <break time=\"0.5s\" /> Map Search pre-grades parcels — with foreclosure, pre-foreclosure, and auction filters. Beyond the MLS. <break time=\"0.55s\" /> DealGapIQ isn't a listing site. <break time=\"0.35s\" /> It's a deal decision engine. <break time=\"0.5s\" /> Start free — ten analyses a month, no credit card. <break time=\"0.35s\" /> Go Pro when you want the full workbench. <break time=\"0.55s\" /> The price tag isn't the deal. <break time=\"0.35s\" /> The structure is. <break time=\"0.45s\" /> We analyze. You decide. <break time=\"0.45s\" /> DealGapIQ.com"
+    "elevenLabsText": "And tomorrow? <break time=\"0.5s\" /> There's a map full of possibilities — whole neighborhoods pre-graded green, yellow, and red, with off-market opportunities most people never see. <break time=\"0.6s\" /> Your next deal is out there. <break time=\"0.4s\" /> DealGapIQ helps you recognize it. <break time=\"0.6s\" /> Start free — ten analyses a month, no credit card. <break time=\"0.55s\" /> Because the price tag isn't the deal. <break time=\"0.4s\" /> The structure is. <break time=\"0.5s\" /> We analyze. You decide. <break time=\"0.5s\" /> DealGapIQ.com"
   }
 ]

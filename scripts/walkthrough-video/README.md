@@ -24,7 +24,7 @@ node scripts/walkthrough-video/assemble.mjs
 open scripts/walkthrough-video/output/sales-demo.mp4
 ```
 
-Script source: `frontend/docs/vo-script-sales-demo-6min.md`  
+Script source: `frontend/docs/vo-script-investor-journey-4min.md` (investor-journey cut; supersedes `vo-script-sales-demo-6min.md`)  
 Scene data: `scenes.json`  
 Final deliverable: `output/sales-demo.mp4`
 
