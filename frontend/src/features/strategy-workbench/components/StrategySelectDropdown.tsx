@@ -15,10 +15,13 @@ export function StrategySelectDropdown({
   options,
   activeId,
   onChange,
+  groupPreferred = false,
 }: {
   options: StrategyOption[]
   activeId: string
   onChange: (id: string) => void
+  /** R7: visually separate the user's onboarding strategies from the rest. */
+  groupPreferred?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -105,10 +108,23 @@ export function StrategySelectDropdown({
             boxShadow: '0 12px 32px rgba(0,0,0,0.35)',
           }}
         >
-          {options.map((opt) => {
+          {options.map((opt, idx) => {
             const isActive = opt.id === activeId
+            const startsUnpreferredGroup =
+              groupPreferred && !opt.preferred && idx > 0 && options[idx - 1].preferred
             return (
               <li key={opt.id}>
+                {startsUnpreferredGroup && (
+                  <div
+                    className="mx-3 mt-1 mb-0.5 pt-1.5 text-[9px] font-semibold uppercase tracking-wide border-t"
+                    style={{
+                      color: 'var(--text-label)',
+                      borderColor: 'var(--border-default)',
+                    }}
+                  >
+                    More strategies
+                  </div>
+                )}
                 <button
                   type="button"
                   role="option"

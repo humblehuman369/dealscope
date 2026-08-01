@@ -15,7 +15,14 @@ export interface BenchmarkRow {
   status: string
 }
 
-export function BenchmarksSection({ benchmarks }: { benchmarks: BenchmarkRow[] }) {
+export function BenchmarksSection({
+  benchmarks,
+  dense = false,
+}: {
+  benchmarks: BenchmarkRow[]
+  /** R7 dense mode: experienced investors skip the explainer prose. */
+  dense?: boolean
+}) {
   return (
     <section
       className="px-[1px] sm:px-5 py-8 border-t"
@@ -34,17 +41,19 @@ export function BenchmarksSection({ benchmarks }: { benchmarks: BenchmarkRow[] }
         </p>
         <h2
           className={tw.textHeading}
-          style={{ color: colors.text.primary, marginBottom: 6 }}
+          style={{ color: colors.text.primary, marginBottom: dense ? 12 : 6 }}
         >
           How Does This Stack Up?
         </h2>
-        <p
-          className={tw.textBody}
-          style={{ color: colors.text.body, marginBottom: 28, lineHeight: 1.55 }}
-        >
-          We compare this deal against the numbers experienced investors actually look for.
-          Green means this deal meets or beats the benchmark.
-        </p>
+        {!dense && (
+          <p
+            className={tw.textBody}
+            style={{ color: colors.text.body, marginBottom: 28, lineHeight: 1.55 }}
+          >
+            We compare this deal against the numbers experienced investors actually look for.
+            Green means this deal meets or beats the benchmark.
+          </p>
+        )}
         <table className="w-full">
           <thead>
             <tr className="border-b" style={{ borderColor: colors.ui.border }}>

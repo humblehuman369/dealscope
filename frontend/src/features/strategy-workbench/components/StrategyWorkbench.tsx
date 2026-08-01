@@ -100,6 +100,9 @@ import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import { trackEvent } from '@/lib/eventTracking'
 import { StrategySelectDropdown } from './StrategySelectDropdown'
+import { InfoPopover } from '@/components/ui/InfoPopover'
+import { METRIC_GLOSSARY } from '../lib/metricGlossary'
+import { orderPathsForPersona } from '../lib/orderPathsForPersona'
 import { DealGapBar } from './DealGapBar'
 import { NextStepsSection } from './NextStepsSection'
 import { OptionsSection } from './OptionsSection'
@@ -150,7 +153,16 @@ export function StrategyWorkbench({
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
-  const { preferredStrategyIds } = usePersona()
+  const {
+    preferredStrategyIds,
+    experience,
+    isNovice,
+    isLoading: personaLoading,
+  } = usePersona()
+  // R7: experienced investors get a denser page — explanatory prose collapses
+  // and creative deal structures lead. Beginners get glossary popovers and
+  // benchmark targets inline. Anonymous users render exactly as before.
+  const denseMode = experience === 'advanced' || experience === 'expert'
 
   const addressParam = address
   const conditionParam = condition
@@ -314,23 +326,28 @@ export function StrategyWorkbench({
 
   useEffect(() => {
     if (displayDealStructurePaths.length === 0) return
+    // Wait for the persona before locking so the expert creative-first order
+    // (R7) is what gets frozen, not the pre-profile default.
+    if (personaLoading) return
     setLockedPathOrder((prev) => {
       if (prev.length === 0) {
-        return displayDealStructurePaths.map((p) => p.id)
+        return orderPathsForPersona(displayDealStructurePaths, experience).map((p) => p.id)
       }
       const known = new Set(prev)
       const additions = displayDealStructurePaths.map((p) => p.id).filter((id) => !known.has(id))
       return additions.length > 0 ? [...prev, ...additions] : prev
     })
-  }, [displayDealStructurePaths])
+  }, [displayDealStructurePaths, personaLoading, experience])
 
   const orderedDealStructurePaths = useMemo(() => {
-    if (lockedPathOrder.length === 0) return displayDealStructurePaths
+    if (lockedPathOrder.length === 0) {
+      return orderPathsForPersona(displayDealStructurePaths, experience)
+    }
     const byId = new Map(displayDealStructurePaths.map((p) => [p.id, p]))
     return lockedPathOrder
       .map((id) => byId.get(id))
       .filter((p): p is DealStructure => p !== undefined)
-  }, [displayDealStructurePaths, lockedPathOrder])
+  }, [displayDealStructurePaths, lockedPathOrder, experience])
 
   /** Fire once per address when the Strategy page surfaces path buttons. */
   const pathsRenderedAddressRef = useRef<string | null>(null)
@@ -1307,6 +1324,14 @@ export function StrategyWorkbench({
           : []),
       ]
 
+  // R7: novices see each key metric's benchmark target right in the bar,
+  // instead of having to connect it to the benchmarks table further down.
+  const KEY_BAR_BENCHMARK_SOURCE: Record<string, string> = isFlipOrWholesale
+    ? { 'COC Return': 'ROI', 'Annual Profit': 'Profit' }
+    : { 'CAP Rate': 'Cap Rate', 'COC Return': 'Cash-on-Cash' }
+  const benchmarkForKeyMetric = (label: string) =>
+    isNovice ? (benchmarks.find((b) => b.metric === KEY_BAR_BENCHMARK_SOURCE[label]) ?? null) : null
+
   const worksheetMetrics = buildWorksheetMetrics({
     currentStrategyType,
     worksheetState,
@@ -1579,6 +1604,7 @@ export function StrategyWorkbench({
                     options={available}
                     activeId={activeStrategyId}
                     onChange={handleStrategyChange}
+                    groupPreferred={isNovice && preferredStrategyIds.length > 0}
                   />
                 )
               })()}
@@ -1626,28 +1652,72 @@ export function StrategyWorkbench({
                     value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—',
                     negative: cocVal !== null && cocVal < 0,
                   },
-                ].map((m, i) => (
-                  <div key={i} className="flex flex-col text-center items-center py-0.5 sm:py-1">
-                    <span
-                      className="text-[10px] sm:text-xs uppercase tracking-wider"
-                      style={{ color: 'var(--text-body)' }}
+                ].map((m, i) => {
+                  const glossary = isNovice ? METRIC_GLOSSARY[m.label] : undefined
+                  const keyBenchmark = benchmarkForKeyMetric(m.label)
+                  return (
+                    <div
+                      key={i}
+                      className="flex flex-col text-center items-center py-0.5 sm:py-1"
                     >
-                      {m.label}
-                    </span>
-                    <span
-                      className="text-[13px] sm:text-base font-semibold tabular-nums"
-                      style={{
-                        color: m.negative
-                          ? 'var(--status-negative)'
-                          : m.highlight
-                            ? 'var(--accent-sky)'
-                            : 'var(--text-heading)',
-                      }}
-                    >
-                      {m.value}
-                    </span>
-                  </div>
-                ))}
+                      {glossary ? (
+                        <InfoPopover
+                          ariaLabel={`What does ${m.label} mean?`}
+                          label={
+                            <span
+                              className="text-[10px] sm:text-xs uppercase tracking-wider underline decoration-dotted underline-offset-2"
+                              style={{ color: 'var(--text-body)' }}
+                            >
+                              {m.label}
+                            </span>
+                          }
+                          content={
+                            <p
+                              className="text-xs leading-relaxed text-left normal-case"
+                              style={{ color: 'var(--text-body)' }}
+                            >
+                              {glossary}
+                            </p>
+                          }
+                          className="inline-flex"
+                          panelClassName="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 w-56 rounded-lg border border-[var(--border-default)] bg-[var(--chart-tooltip)] px-3 py-2.5 shadow-lg"
+                        />
+                      ) : (
+                        <span
+                          className="text-[10px] sm:text-xs uppercase tracking-wider"
+                          style={{ color: 'var(--text-body)' }}
+                        >
+                          {m.label}
+                        </span>
+                      )}
+                      <span
+                        className="text-[13px] sm:text-base font-semibold tabular-nums"
+                        style={{
+                          color: m.negative
+                            ? 'var(--status-negative)'
+                            : m.highlight
+                              ? 'var(--accent-sky)'
+                              : 'var(--text-heading)',
+                        }}
+                      >
+                        {m.value}
+                      </span>
+                      {keyBenchmark && (
+                        <span
+                          className="text-[9px] font-medium tabular-nums"
+                          style={{
+                            color:
+                              keyBenchmark.status === 'good'
+                                ? 'var(--status-positive)'
+                                : 'var(--status-negative)',
+                          }}
+                        >
+                          Target {keyBenchmark.target}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
@@ -1800,7 +1870,7 @@ export function StrategyWorkbench({
           </section>
 
           {/* Benchmarks — same width and rounded corners as Try Another Strategy card above */}
-          <BenchmarksSection benchmarks={benchmarks} />
+          <BenchmarksSection benchmarks={benchmarks} dense={denseMode} />
         </AuthGate>
 
         {/* Save CTA — property bookmark + worksheet persistence for dashboard */}
