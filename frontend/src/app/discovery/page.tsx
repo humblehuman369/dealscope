@@ -1169,8 +1169,15 @@ function VerdictContent() {
         section: section ?? null,
         scenario: prev?.scenario ?? null,
       }))
+      // Keep the URL in sync so refresh / sign-in redirect re-open Level 3.
+      const nextParams = new URLSearchParams(searchParams.toString())
+      nextParams.set('view', 'workbench')
+      nextParams.set('address', fullAddress)
+      if (section) nextParams.set('section', section)
+      else nextParams.delete('section')
+      router.replace(`/discovery?${nextParams.toString()}`, { scroll: false })
     },
-    [property, preferredStrategyIds],
+    [property, preferredStrategyIds, searchParams, router],
   )
 
   const openThreePathInStrategy = useCallback(
@@ -1189,14 +1196,21 @@ function VerdictContent() {
 
       const payload = buildScenarioPayload(structure, index)
       writeLastAppliedScenario(payload)
+      const encoded = encodeScenario(payload)
       setWorkbenchRequest((prev) => ({
         address: fullAddress,
         strategyId: prev?.strategyId ?? preferredStrategyIds[0] ?? null,
         section: null,
-        scenario: encodeScenario(payload),
+        scenario: encoded,
       }))
+      const nextParams = new URLSearchParams(searchParams.toString())
+      nextParams.set('view', 'workbench')
+      nextParams.set('address', fullAddress)
+      nextParams.set('scenario', encoded)
+      nextParams.delete('section')
+      router.replace(`/discovery?${nextParams.toString()}`, { scroll: false })
     },
-    [property, preferredStrategyIds],
+    [property, preferredStrategyIds, searchParams, router],
   )
 
   const navigateToAppraiser = useCallback(() => {
@@ -1255,13 +1269,28 @@ function VerdictContent() {
     })
   }, [workbenchRequest])
 
+  // Collapse Level 3 and return to the Discovery verdict. Clears view=workbench
+  // so a refresh does not re-expand.
+  const collapseWorkbench = useCallback(() => {
+    setWorkbenchRequest(null)
+    if (searchParams.get('view') == null && searchParams.get('scenario') == null) return
+    const nextParams = new URLSearchParams(searchParams.toString())
+    nextParams.delete('view')
+    nextParams.delete('scenario')
+    nextParams.delete('section')
+    const qs = nextParams.toString()
+    router.replace(qs ? `/discovery?${qs}` : '/discovery', { scroll: false })
+  }, [searchParams, router])
+
   // Sign-in URL with a redirect back here — same shape the /strategy shell builds.
   const workbenchSignInUrl = useMemo(() => {
     const cleanParams = new URLSearchParams(searchParams.toString())
     cleanParams.delete('auth')
     cleanParams.delete('redirect')
+    // Return to the expanded workbench after sign-in.
+    if (cleanParams.get('view') !== 'workbench') cleanParams.set('view', 'workbench')
     const cleanQs = cleanParams.toString()
-    const fullPath = cleanQs ? `/discovery?${cleanQs}` : '/discovery'
+    const fullPath = cleanQs ? `/discovery?${cleanQs}` : '/discovery?view=workbench'
     const signInParams = new URLSearchParams(cleanQs)
     signInParams.set('auth', 'required')
     signInParams.set('redirect', fullPath)
@@ -1566,6 +1595,53 @@ function VerdictContent() {
 
           {propertyIdParam ? <RehabBudgetBanner propertyId={propertyIdParam} /> : null}
 
+          {/* When Level 3 is open, collapse the verdict so Strategy does not
+              stack a second full page (and a second Deal Gap overview) under it. */}
+          {workbenchRequest ? (
+            <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-0">
+              <button
+                type="button"
+                onClick={collapseWorkbench}
+                className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+                aria-label="Back to Discovery overview"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back to Discovery overview
+              </button>
+              <h2
+                className="mt-3 font-bold leading-tight"
+                style={{
+                  color: 'var(--text-heading)',
+                  fontSize: 'clamp(18px, 2vw, 24px)',
+                }}
+              >
+                Strategy Workbench
+              </h2>
+              <p
+                className="mt-1 text-sm leading-relaxed"
+                style={{ color: 'var(--text-body)' }}
+              >
+                Full financial breakdown for this property — pick a strategy, apply an
+                Option, and watch the numbers update.
+              </p>
+            </div>
+          ) : null}
+
+          {!workbenchRequest && (
+          <>
           {/* Full-width photo gallery */}
           <section className="mx-0 sm:mx-5 mt-6">
             {property.zpid ? (
@@ -2583,6 +2659,8 @@ function VerdictContent() {
               ))}
             </div>
           </section>
+          </>
+          )}
 
           {/* Level 3 — embedded Strategy Workbench (R4).
               Mount/unmount only — never conditional hooks (React #310). */}
@@ -2601,27 +2679,30 @@ function VerdictContent() {
                 scenarioParam={workbenchRequest.scenario}
                 onScenarioConsumed={handleWorkbenchScenarioConsumed}
                 signInUrl={workbenchSignInUrl}
+                embedded
               />
             </div>
           )}
 
-          {/* Trust Strip */}
-          <div
-            className="px-3 sm:px-5 py-5 text-center border-t"
-            style={{ borderColor: 'var(--border-subtle)' }}
-          >
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-body)' }}>
-              DealGap IQ analyzes{' '}
-              <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>
-                rental income, expenses, market conditions
-              </span>{' '}
-              and{' '}
-              <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>
-                comparable sales
-              </span>{' '}
-              to calculate every Deal Gap. No guesswork — just data.
-            </p>
-          </div>
+          {/* Trust Strip — verdict-only; clutter under Level 3 */}
+          {!workbenchRequest && (
+            <div
+              className="px-3 sm:px-5 py-5 text-center border-t"
+              style={{ borderColor: 'var(--border-subtle)' }}
+            >
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-body)' }}>
+                DealGap IQ analyzes{' '}
+                <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>
+                  rental income, expenses, market conditions
+                </span>{' '}
+                and{' '}
+                <span className="font-semibold" style={{ color: 'var(--accent-sky)' }}>
+                  comparable sales
+                </span>{' '}
+                to calculate every Deal Gap. No guesswork — just data.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

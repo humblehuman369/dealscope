@@ -137,6 +137,12 @@ export interface StrategyWorkbenchProps {
   onScenarioConsumed?: () => void
   /** Sign-in URL with a redirect back to this view (built by the host page). */
   signInUrl: string
+  /**
+   * True when rendered as Discovery Level 3. Suppresses the Deal Gap bar
+   * (already shown in the verdict) and its page-top scroll alignment so the
+   * workbench does not look like a second Discovery page stacked underneath.
+   */
+  embedded?: boolean
 }
 
 export function StrategyWorkbench({
@@ -148,6 +154,7 @@ export function StrategyWorkbench({
   scenarioParam = null,
   onScenarioConsumed,
   signInUrl,
+  embedded = false,
 }: StrategyWorkbenchProps) {
   const queryClient = useQueryClient()
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
@@ -622,8 +629,10 @@ export function StrategyWorkbench({
   }, [measureStrategyAddressOffset])
 
   // Initial load: align Deal Gap bar under the sticky property address bar.
+  // Skip when embedded — Discovery owns scroll-into-view for Level 3, and the
+  // Deal Gap bar is not rendered so this effect would jump the page to top.
   const shouldScrollToDealGapBar =
-    !worksheetSectionParam && !isLoading && !!data
+    !embedded && !worksheetSectionParam && !isLoading && !!data
 
   useLayoutEffect(() => {
     if (!shouldScrollToDealGapBar) return
@@ -1532,16 +1541,19 @@ export function StrategyWorkbench({
       {/* Header and property bar are provided by AppHeader in layout */}
 
       <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
-        {/* Deal Gap Price Cards + Scale Bar — synced with Verdict page */}
-        <DealGapBar
-          listPrice={listPrice}
-          targetPrice={targetPrice}
-          incomeValue={dealGapIncomeValue}
-          listingStatus={propertyInfo?.listingStatus}
-          isRecalculating={isRecalculating}
-          valuationSnap={valuationSnap}
-          onWatchVideo={() => setShowDealGapVideo(true)}
-        />
+        {/* Deal Gap bar — standalone only. Discovery already renders Investment
+            Overview; repeating it here looks like the page duplicated. */}
+        {!embedded && (
+          <DealGapBar
+            listPrice={listPrice}
+            targetPrice={targetPrice}
+            incomeValue={dealGapIncomeValue}
+            listingStatus={propertyInfo?.listingStatus}
+            isRecalculating={isRecalculating}
+            valuationSnap={valuationSnap}
+            onWatchVideo={() => setShowDealGapVideo(true)}
+          />
+        )}
 
         {/* Next Steps — authenticated only; anon users see the unlock panel instead */}
         {isAuthenticated && (
