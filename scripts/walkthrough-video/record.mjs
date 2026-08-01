@@ -1,5 +1,6 @@
 /**
  * Record live sales-demo scenes against production.
+ * Uses interval screenshots + system ffmpeg (avoids Playwright recordVideo/ffmpeg-mac issues).
  *
  *   node scripts/walkthrough-video/record.mjs
  *   node scripts/walkthrough-video/record.mjs --base-url https://dealgapiq.com --headed
@@ -27,6 +28,8 @@ const DEMO_EMAIL = getArg('email') ?? process.env.DEMO_EMAIL ?? 'review@dealgapi
 const DEMO_PASSWORD = getArg('password') ?? process.env.DEMO_PASSWORD ?? 'Review$1234';
 const DEMO_ADDRESS = getArg('address') ?? '4407 Deer Creek Blvd, Austin, TX 78757';
 const VIEWPORT = { width: 1920, height: 1080 };
+const CAPTURE_MS = 400;
+const FPS = 1000 / CAPTURE_MS; // 2.5
 
 async function dismissChrome(page) {
   try {
@@ -85,35 +88,97 @@ async function waitForVerdict(page) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+function resolveBrowserExecutable() {
+  const candidates = [
+    '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+    path.join(
+      process.env.HOME || '',
+      'Library/Caches/ms-playwright/chromium-1217/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing',
+    ),
+  ];
+  return candidates.find((p) => {
+    if (!fs.existsSync(p)) return false;
+    if (p.includes('Chrome for Testing')) {
+      return fs.existsSync(
+        path.join(path.dirname(p), '../Frameworks/Google Chrome for Testing Framework.framework'),
+      );
+    }
+    return true;
+  });
+}
+
 async function recordScene(browser, storageStatePath, scene, action, targetSec) {
-  const sceneDir = path.join(SCENES_DIR, `_rec_${scene.id}`);
-  fs.rmSync(sceneDir, { recursive: true, force: true });
-  fs.mkdirSync(sceneDir, { recursive: true });
+  const framesDir = path.join(SCENES_DIR, `_frames_${scene.id}`);
+  fs.rmSync(framesDir, { recursive: true, force: true });
+  fs.mkdirSync(framesDir, { recursive: true });
 
   const context = await browser.newContext({
     viewport: VIEWPORT,
     colorScheme: 'dark',
-    recordVideo: { dir: sceneDir, size: VIEWPORT },
     storageState: storageStatePath,
   });
   const page = await context.newPage();
+
+  let capturing = true;
+  let frame = 0;
+  const captureLoop = (async () => {
+    while (capturing) {
+      try {
+        if (!page.isClosed()) {
+          const fp = path.join(framesDir, `f${String(frame).padStart(5, '0')}.jpg`);
+          await page.screenshot({ path: fp, type: 'jpeg', quality: 78 });
+          frame += 1;
+        }
+      } catch {
+        // ignore navigation races
+      }
+      await sleep(CAPTURE_MS);
+    }
+  })();
+
   const started = Date.now();
   try {
     await action(page);
     const elapsed = (Date.now() - started) / 1000;
     if (elapsed < targetSec) await sleep((targetSec - elapsed) * 1000);
   } finally {
-    await page.close();
+    capturing = false;
+    await captureLoop;
+    try {
+      if (!page.isClosed()) {
+        const fp = path.join(framesDir, `f${String(frame).padStart(5, '0')}.jpg`);
+        await page.screenshot({ path: fp, type: 'jpeg', quality: 78 });
+        frame += 1;
+      }
+    } catch {
+      // ignore
+    }
     await context.close();
   }
 
-  const webm = fs.readdirSync(sceneDir).find((f) => f.endsWith('.webm'));
-  if (!webm) throw new Error(`No webm recorded for ${scene.id}`);
-  const src = path.join(sceneDir, webm);
+  const needed = Math.max(frame, Math.ceil(targetSec * FPS));
+  if (frame === 0) throw new Error(`No frames captured for ${scene.id}`);
+  const last = path.join(framesDir, `f${String(frame - 1).padStart(5, '0')}.jpg`);
+  while (frame < needed) {
+    fs.copyFileSync(last, path.join(framesDir, `f${String(frame).padStart(5, '0')}.jpg`));
+    frame += 1;
+  }
+
   const dest = path.join(SCENES_DIR, `${scene.id}.mp4`);
-  execSync(`ffmpeg -y -i "${src}" -c:v libx264 -pix_fmt yuv420p -an "${dest}"`, { stdio: 'pipe' });
-  fs.rmSync(sceneDir, { recursive: true, force: true });
-  console.log(`   ✓ ${scene.id}.mp4`);
+  execSync(
+    [
+      'ffmpeg -y',
+      `-framerate ${FPS}`,
+      `-i "${path.join(framesDir, 'f%05d.jpg')}"`,
+      '-c:v libx264 -pix_fmt yuv420p -preset fast -crf 20',
+      `"${dest}"`,
+    ].join(' '),
+    { stdio: 'pipe' },
+  );
+  fs.rmSync(framesDir, { recursive: true, force: true });
+  console.log(`   ✓ ${scene.id}.mp4 (${frame} frames)`);
 }
 
 async function sceneHook(page) {
@@ -296,9 +361,18 @@ async function main() {
   console.log(`   Address:  ${DEMO_ADDRESS}`);
   console.log(`   Scenes:   ${scenes.map((s) => s.id).join(', ')}\n`);
 
+  const executablePath = resolveBrowserExecutable();
+  if (!executablePath) {
+    throw new Error(
+      'No usable browser found. Install Brave/Chrome, or run: npx playwright install chromium',
+    );
+  }
+  console.log(`   → Using browser: ${executablePath}`);
+
   const browser = await chromium.launch({
     headless: !HEADED,
-    args: ['--disable-web-security'],
+    executablePath,
+    args: ['--disable-web-security', '--autoplay-policy=no-user-gesture-required'],
   });
 
   const warm = await browser.newContext({ viewport: VIEWPORT, colorScheme: 'dark' });

@@ -16,15 +16,7 @@ function probeDuration(file) {
   return parseFloat(out);
 }
 
-function escapeDrawtext(text) {
-  return text
-    .replace(/\\/g, '\\\\')
-    .replace(/:/g, '\\:')
-    .replace(/'/g, "\\'")
-    .replace(/%/g, '\\%');
-}
-
-function buildSceneClip(sceneId, caption, workDir) {
+function buildSceneClip(sceneId, _caption, workDir, minDurationSec = 0) {
   const videoIn = path.join(SCENES_DIR, `${sceneId}.mp4`);
   const audioIn = path.join(SCENES_DIR, `${sceneId}.wav`);
   if (!fs.existsSync(videoIn)) throw new Error(`Missing video: ${videoIn}`);
@@ -32,19 +24,19 @@ function buildSceneClip(sceneId, caption, workDir) {
 
   const audioDur = probeDuration(audioIn);
   const videoDur = probeDuration(videoIn);
-  const target = Math.max(audioDur + 0.35, 1);
+  // Pad to scene budget so the cut lands near ~6 min even when VO is brisk
+  const target = Math.max(audioDur + 0.35, minDurationSec, 1);
   const out = path.join(workDir, `${sceneId}-mux.mp4`);
-  const captionEsc = escapeDrawtext(caption);
+  const audioPad = Math.max(0, target - audioDur);
 
+  // Note: Homebrew ffmpeg often lacks libfreetype drawtext — captions ride on VO.
   const filter = [
     `[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,`,
     `pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,`,
     `tpad=stop_mode=clone:stop_duration=${Math.max(0, target - videoDur).toFixed(3)},`,
-    `trim=duration=${target.toFixed(3)},setpts=PTS-STARTPTS,`,
-    `drawbox=x=0:y=ih-110:w=iw:h=110:color=black@0.55:t=fill,`,
-    `drawtext=text='${captionEsc}':fontcolor=white:fontsize=36:`,
-    `x=(w-text_w)/2:y=h-70:font=Helvetica`,
-    `[v]`,
+    `trim=duration=${target.toFixed(3)},setpts=PTS-STARTPTS`,
+    `[v];`,
+    `[1:a]apad=pad_dur=${audioPad.toFixed(3)},atrim=0:${target.toFixed(3)},asetpts=PTS-STARTPTS[a]`,
   ].join('');
 
   const cmd = [
@@ -52,11 +44,10 @@ function buildSceneClip(sceneId, caption, workDir) {
     `-i "${videoIn}"`,
     `-i "${audioIn}"`,
     `-filter_complex "${filter}"`,
-    '-map "[v]" -map 1:a',
+    '-map "[v]" -map "[a]"',
     `-t ${target.toFixed(3)}`,
     '-c:v libx264 -pix_fmt yuv420p -preset fast -crf 18',
     '-c:a aac -b:a 192k',
-    '-shortest',
     `"${out}"`,
   ].join(' ');
 
@@ -75,7 +66,7 @@ function main() {
   const muxed = [];
   for (const scene of scenes) {
     process.stdout.write(`   → ${scene.id} ... `);
-    const clip = buildSceneClip(scene.id, scene.caption, workDir);
+    const clip = buildSceneClip(scene.id, scene.caption, workDir, scene.minDurationSec);
     muxed.push(clip);
     const dur = probeDuration(clip);
     console.log(`✓ ${dur.toFixed(1)}s`);

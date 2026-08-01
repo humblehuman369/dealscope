@@ -22,7 +22,7 @@
 | The three numbers | Deal Gap is **the focus**, not “negotiation room”; add **We show you options.** | Deal Gap is the decision moment; DealGapIQ supplies the paths |
 | On-screen text (Verdict) | `Deal Gap = the focus` (was `= negotiation room`) | Align overlay with VO |
 
-Companion short cuts (unchanged by this revision): `vo-script-60s.md`, `vo-script-60s-elevenlabs.md`, `public/app-store/connect/copy/app-preview-video-brief.md`.
+Companion short cuts: `vo-script-sales-demo-6min.md` (sales demo), `vo-script-60s.md`, `vo-script-60s-elevenlabs.md`, `public/app-store/connect/copy/app-preview-video-brief.md`. Pipeline: `scripts/walkthrough-video/`.
 
 ---
 

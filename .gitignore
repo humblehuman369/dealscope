@@ -82,6 +82,9 @@ backend/*.db
 # Generated screenshots
 scripts/screenshots/output/
 
+# Generated walkthrough / sales-demo video artifacts
+scripts/walkthrough-video/output/
+
 # Never commit captured auth cookies / curl cookie jars
 cookies.txt
 *.cookies
