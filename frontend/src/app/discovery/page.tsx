@@ -1634,8 +1634,12 @@ function VerdictContent() {
                 className="mt-1 text-sm leading-relaxed"
                 style={{ color: 'var(--text-body)' }}
               >
-                Full financial breakdown for this property — pick a strategy, apply an
-                Option, and watch the numbers update.
+                {analysis?.dealStructures?.hasPaths &&
+                (analysis.dealStructures.paths?.length ?? 0) > 0
+                  ? 'We’ll show you how to make this deal work — pick an Option, then tune the worksheet.'
+                  : dealGapPct > 0
+                    ? 'Change price, financing, or income in the worksheet until the Deal Gap closes.'
+                    : 'The baseline works — stress-test assumptions, try another strategy, then save.'}
               </p>
             </div>
           ) : null}
@@ -2680,6 +2684,7 @@ function VerdictContent() {
                 onScenarioConsumed={handleWorkbenchScenarioConsumed}
                 signInUrl={workbenchSignInUrl}
                 embedded
+                initialDealStructures={analysis?.dealStructures ?? null}
               />
             </div>
           )}

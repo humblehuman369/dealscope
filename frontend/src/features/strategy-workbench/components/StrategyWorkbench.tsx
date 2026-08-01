@@ -96,10 +96,14 @@ import type {
   LTRDealMakerState,
 } from '@/features/deal-maker/components/types'
 import type { InlineDealMakerValues } from '@/components/strategy/InlineDealMakerPanel'
-import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
+import type {
+  DealStructure,
+  DealStructuresPayload,
+} from '@/components/iq-verdict/FourPathsPanel'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import { trackEvent } from '@/lib/eventTracking'
 import { StrategySelectDropdown } from './StrategySelectDropdown'
+import { WorkbenchGuidance } from './WorkbenchGuidance'
 import { InfoPopover } from '@/components/ui/InfoPopover'
 import { METRIC_GLOSSARY } from '../lib/metricGlossary'
 import { orderPathsForPersona } from '../lib/orderPathsForPersona'
@@ -143,6 +147,12 @@ export interface StrategyWorkbenchProps {
    * workbench does not look like a second Discovery page stacked underneath.
    */
   embedded?: boolean
+  /**
+   * Deal-structure Options already loaded on Discovery. Seeds the Options strip
+   * immediately so collapsing the verdict does not make the four paths vanish
+   * while the workbench's own verdict fetch is in flight.
+   */
+  initialDealStructures?: DealStructuresPayload | null
 }
 
 export function StrategyWorkbench({
@@ -155,6 +165,7 @@ export function StrategyWorkbench({
   onScenarioConsumed,
   signInUrl,
   embedded = false,
+  initialDealStructures = null,
 }: StrategyWorkbenchProps) {
   const queryClient = useQueryClient()
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
@@ -307,8 +318,15 @@ export function StrategyWorkbench({
   useEffect(() => {
     if (dealStructurePaths.length > 0) {
       setCachedDealStructurePaths(dealStructurePaths)
+      return
     }
-  }, [dealStructurePaths])
+    // Seed from Discovery so Options survive the Level-3 expand before our
+    // own /verdict response arrives (and survive recasts that omit paths).
+    const seeded = initialDealStructures?.paths
+    if (seeded && seeded.length > 0) {
+      setCachedDealStructurePaths(seeded)
+    }
+  }, [dealStructurePaths, initialDealStructures])
 
   const displayDealStructurePaths = useMemo(
     () => (dealStructurePaths.length > 0 ? dealStructurePaths : cachedDealStructurePaths),
@@ -1555,6 +1573,43 @@ export function StrategyWorkbench({
           />
         )}
 
+        {/* Strategy framing — what to do next (keeps this distinct from DealMaker) */}
+        {embedded && (
+          <WorkbenchGuidance
+            dealGapPct={dealGapPct}
+            optionCount={strategyFilteredPaths.slice(0, 4).length}
+            isAuthenticated={isAuthenticated}
+          />
+        )}
+
+        {/* Options lead the workbench — same four paths Discovery showed. Visible
+            to everyone; applying requires sign-in so the worksheet can receive them. */}
+        <OptionsSection
+          hasPaths={displayDealStructurePaths.length > 0}
+          optionsHiddenForStrategy={optionsHiddenForStrategy}
+          strategyFilteredPaths={strategyFilteredPaths}
+          appliedPathId={appliedPathId}
+          optionsSubtitle={optionsSubtitle}
+          appliedPathEntry={isAuthenticated ? appliedPathEntry : null}
+          propertyState={propertyInfo?.state ?? parsed.state ?? null}
+          onSwitchToLongTerm={() => handleStrategyChange('long-term-rental')}
+          onClearPath={clearAppliedPath}
+          onApplyPath={(structure, idx) => {
+            if (!isAuthenticated) {
+              openAuthModal('register')
+              return
+            }
+            applyPathPatch(structure, idx)
+          }}
+          onShowPitch={(structure) => {
+            if (!isAuthenticated) {
+              openAuthModal('register')
+              return
+            }
+            setPitchModalStructure(structure)
+          }}
+        />
+
         {/* Next Steps — authenticated only; anon users see the unlock panel instead */}
         {isAuthenticated && (
           <NextStepsSection
@@ -1565,23 +1620,6 @@ export function StrategyWorkbench({
             onDownloadExcel={() => {
               void handleComprehensiveExcelDownload()
             }}
-          />
-        )}
-
-        {/* Apply a Path — authenticated only */}
-        {isAuthenticated && (
-          <OptionsSection
-            hasPaths={displayDealStructurePaths.length > 0}
-            optionsHiddenForStrategy={optionsHiddenForStrategy}
-            strategyFilteredPaths={strategyFilteredPaths}
-            appliedPathId={appliedPathId}
-            optionsSubtitle={optionsSubtitle}
-            appliedPathEntry={appliedPathEntry}
-            propertyState={propertyInfo?.state ?? parsed.state ?? null}
-            onSwitchToLongTerm={() => handleStrategyChange('long-term-rental')}
-            onClearPath={clearAppliedPath}
-            onApplyPath={applyPathPatch}
-            onShowPitch={setPitchModalStructure}
           />
         )}
 
