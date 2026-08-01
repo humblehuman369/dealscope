@@ -79,6 +79,12 @@ export interface SavedPropertySummary {
   has_rehab_budget?: boolean
   /** Seeded baseline total (decimal string), when ``has_rehab_budget``. */
   rehab_budget_baseline?: string | null
+  /**
+   * Owned-property performance actuals (rent / all-in expenses). Populated on
+   * list responses so /portfolio can show underwriting-vs-reality without a
+   * detail fetch. Distinct from rehab budget spend tracking.
+   */
+  actuals?: PropertyActuals | null
   /** Open (incomplete) task count — drives the kanban card task badge. */
   task_count_open?: number
   /** Subset of open tasks whose due_date is in the past. */

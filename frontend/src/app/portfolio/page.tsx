@@ -1,13 +1,13 @@
 'use client'
 
 /**
- * Portfolio — closed deals as a track record.
+ * Portfolio — closed deals as a track record + assumptions-vs-actuals (R11).
  *
  * Shows every saved property whose lifecycle reached a terminal post-purchase
  * stage (Sold for flips/wholesale; Held for BRRRR / LTR / STR / House Hack).
- * Filter by Sold/Held, sort by recency / sale price / days-to-close. Each
- * card opens the full deal workflow page and a short Report link routes
- * straight to the printable summary.
+ * Filter by Sold/Held, sort by recency / sale price / days-to-close. Held cards
+ * surface underwriting-vs-reality cash-flow variance when actuals are logged
+ * on the deal page; Sold cards surface rehab budget variance when available.
  */
 
 import { useMemo, useState } from 'react'
@@ -18,6 +18,7 @@ import { DataBoundary } from '@/components/ui/DataBoundary'
 import { useSavedProperties } from '@/hooks/useSavedProperties'
 import { STRATEGY_LABELS } from '@/lib/savedPropertyStatus'
 import { STAGE_LABELS } from '@/lib/lifecycleStages'
+import { actualMonthlyCashFlow, cashFlowVariancePct } from '@/lib/portfolioActuals'
 import type { FlipStage, SavedPropertySummary } from '@/types/savedProperty'
 
 const TERMINAL_STAGES: ReadonlySet<FlipStage> = new Set(['Sold', 'Held'])
@@ -134,12 +135,30 @@ function PortfolioContent() {
       dayCounts.length > 0
         ? Math.round(dayCounts.reduce((s, d) => s + d, 0) / dayCounts.length)
         : null
+
+    // R11 — average cash-flow variance for Held deals that have logged actuals.
+    const cfVariances = held
+      .map((p) =>
+        cashFlowVariancePct(
+          actualMonthlyCashFlow(p.actuals),
+          p.best_cash_flow != null ? Number(p.best_cash_flow) : null,
+        ),
+      )
+      .filter((v): v is number => v !== null)
+    const avgCfVariancePct =
+      cfVariances.length > 0
+        ? cfVariances.reduce((s, v) => s + v, 0) / cfVariances.length
+        : null
+    const heldWithActuals = cfVariances.length
+
     return {
       totalDeals: closed.length,
       soldCount: sold.length,
       heldCount: held.length,
       totalSaleValue,
       avgDaysToClose: avgDays,
+      avgCfVariancePct,
+      heldWithActuals,
     }
   }, [closed])
 
@@ -158,7 +177,8 @@ function PortfolioContent() {
             Portfolio
           </h1>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Your track record — every deal that closed or moved into long-term hold.
+            Your track record — every deal that closed or moved into long-term hold. Log
+            actual rent and expenses on Held deals to see how underwriting compared to reality.
           </p>
         </header>
 
@@ -175,7 +195,7 @@ function PortfolioContent() {
             <>
               {/* Aggregate stats */}
               <section
-                className="rounded-2xl p-5 mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4"
+                className="rounded-2xl p-5 mb-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"
                 style={{
                   background: 'var(--surface-card)',
                   border: '1px solid var(--border-default)',
@@ -192,6 +212,26 @@ function PortfolioContent() {
                   label="Avg days to close"
                   hint="Sold deals only"
                   value={stats.avgDaysToClose != null ? `${stats.avgDaysToClose}d` : '—'}
+                />
+                <Stat
+                  label="CF vs underwriting"
+                  hint={
+                    stats.heldWithActuals > 0
+                      ? `${stats.heldWithActuals} held with actuals`
+                      : 'Log actuals on a Held deal'
+                  }
+                  value={
+                    stats.avgCfVariancePct != null
+                      ? `${stats.avgCfVariancePct >= 0 ? '+' : ''}${stats.avgCfVariancePct.toFixed(1)}%`
+                      : '—'
+                  }
+                  tone={
+                    stats.avgCfVariancePct == null
+                      ? undefined
+                      : stats.avgCfVariancePct >= 0
+                        ? 'positive'
+                        : 'negative'
+                  }
                 />
               </section>
 
@@ -252,13 +292,31 @@ function PortfolioContent() {
   )
 }
 
-function Stat({ label, hint, value }: { label: string; hint?: string; value: string }) {
+function Stat({
+  label,
+  hint,
+  value,
+  tone,
+}: {
+  label: string
+  hint?: string
+  value: string
+  tone?: 'positive' | 'negative'
+}) {
+  const valueColor =
+    tone === 'positive'
+      ? 'var(--status-positive)'
+      : tone === 'negative'
+        ? 'var(--status-negative)'
+        : 'var(--text-heading)'
   return (
     <div>
       <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)]">
         {label}
       </p>
-      <p className="text-2xl font-bold tabular-nums text-[var(--text-heading)]">{value}</p>
+      <p className="text-2xl font-bold tabular-nums" style={{ color: valueColor }}>
+        {value}
+      </p>
       {hint && <p className="text-[10px] text-[var(--text-label)] mt-0.5">{hint}</p>}
     </div>
   )
@@ -272,6 +330,14 @@ function PortfolioCard({ property: p }: { property: SavedPropertySummary }) {
     : null
   const days = daysBetween(p.saved_at, terminalDate(p))
   const salePrice = stage === 'Sold' ? Number(p.sold_price ?? 0) : null
+
+  const projectedCf = p.best_cash_flow != null ? Number(p.best_cash_flow) : null
+  const actualCf = stage === 'Held' ? actualMonthlyCashFlow(p.actuals) : null
+  const cfVariance = cashFlowVariancePct(actualCf, projectedCf)
+  const budgetVar =
+    stage === 'Sold' && p.budget_variance_pct != null && p.budget_variance_pct !== ''
+      ? Number(p.budget_variance_pct)
+      : null
 
   return (
     <article className="rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--border-focus)] transition-all overflow-hidden flex flex-col">
@@ -319,12 +385,79 @@ function PortfolioCard({ property: p }: { property: SavedPropertySummary }) {
               <dd className="font-bold tabular-nums text-[var(--text-heading)]">{days}d</dd>
             </div>
           )}
+          {stage === 'Held' && (
+            <div className="col-span-2">
+              <dt className="text-[10px] uppercase tracking-wide text-[var(--text-label)]">
+                Cash flow vs underwriting
+              </dt>
+              <dd className="mt-0.5">
+                {actualCf !== null ? (
+                  <span className="inline-flex items-baseline gap-2 flex-wrap">
+                    <span className="font-bold tabular-nums text-[var(--text-heading)]">
+                      {fmtMoneyFull(actualCf)}
+                      <span className="text-[10px] font-medium text-[var(--text-label)]">
+                        {' '}
+                        / mo actual
+                      </span>
+                    </span>
+                    <span className="text-[11px] text-[var(--text-label)] tabular-nums">
+                      underwrote {fmtMoneyFull(projectedCf)}
+                    </span>
+                    {cfVariance !== null && (
+                      <span
+                        className="text-[11px] font-semibold tabular-nums"
+                        style={{
+                          color:
+                            cfVariance >= 0
+                              ? 'var(--status-positive)'
+                              : 'var(--status-negative)',
+                        }}
+                      >
+                        {cfVariance >= 0 ? '+' : ''}
+                        {cfVariance.toFixed(1)}%
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-semibold text-[var(--accent-sky)]">
+                    Log actuals →
+                  </span>
+                )}
+              </dd>
+            </div>
+          )}
+          {stage === 'Sold' && budgetVar !== null && Number.isFinite(budgetVar) && (
+            <div className="col-span-2">
+              <dt className="text-[10px] uppercase tracking-wide text-[var(--text-label)]">
+                Rehab budget vs actual spend
+              </dt>
+              <dd
+                className="font-bold tabular-nums"
+                style={{
+                  color: budgetVar <= 0 ? 'var(--status-positive)' : 'var(--status-negative)',
+                }}
+              >
+                {budgetVar > 0 ? '+' : ''}
+                {budgetVar.toFixed(1)}%
+              </dd>
+            </div>
+          )}
         </dl>
       </Link>
-      <div className="border-t border-[var(--border-default)] px-4 py-2 text-right">
+      <div className="border-t border-[var(--border-default)] px-4 py-2 flex items-center justify-between gap-2">
+        {stage === 'Held' && actualCf === null ? (
+          <Link
+            href={`/deals/${p.id}`}
+            className="text-[11px] font-semibold text-[var(--accent-sky)] no-underline hover:underline"
+          >
+            Log rent &amp; expenses
+          </Link>
+        ) : (
+          <span />
+        )}
         <Link
           href={`/deals/${p.id}/report`}
-          className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--text-label)] hover:text-[var(--accent-sky)] no-underline"
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--text-label)] hover:text-[var(--accent-sky)] no-underline ml-auto"
         >
           <FileText className="w-3 h-3" />
           {stage === 'Sold' ? 'Final profit statement' : 'Deal report'}

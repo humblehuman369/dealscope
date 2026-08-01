@@ -51,3 +51,11 @@ async def test_actuals_round_trip(auth_client):
     detail = await auth_client.get(f"/api/v1/properties/saved/{pid}")
     assert detail.status_code == 200, detail.text
     assert detail.json()["actuals"]["monthly_expenses"] == 1900
+
+    # R11 — list summaries carry actuals so /portfolio can show variance.
+    listed = await auth_client.get("/api/v1/properties/saved?status=owned")
+    assert listed.status_code == 200, listed.text
+    row = next((p for p in listed.json() if p["id"] == pid), None)
+    assert row is not None
+    assert row["actuals"]["monthly_rent"] == 2300
+    assert row["actuals"]["monthly_expenses"] == 1900

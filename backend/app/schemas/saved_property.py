@@ -215,6 +215,10 @@ class SavedPropertySummary(BaseModel):
     has_rehab_budget: bool = False
     rehab_budget_baseline: str | None = None
 
+    # Owned-property performance actuals (rent / all-in expenses). Surfaced on
+    # /portfolio so Held deals show underwriting-vs-reality without a detail fetch.
+    actuals: dict[str, Any] | None = None
+
     # Open task counts — drive the task badge on each kanban card. Computed
     # in a single GROUP BY query in the list endpoint.
     task_count_open: int = 0

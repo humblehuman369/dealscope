@@ -323,6 +323,7 @@ async def list_saved_properties(
             budget_variance_pct=owned_variance.get(str(p.id)),
             has_rehab_budget=budget_has.get(str(p.id), False),
             rehab_budget_baseline=budget_baseline.get(str(p.id)),
+            actuals=p.actuals,
             task_count_open=task_counts.get(str(p.id), {}).get("open", 0),
             task_count_overdue=task_counts.get(str(p.id), {}).get("overdue", 0),
         )
@@ -417,6 +418,7 @@ async def list_active_flips_endpoint(
                 budget_variance_pct=variance_pct,
                 has_rehab_budget=has_budget,
                 rehab_budget_baseline=baseline,
+                actuals=p.actuals,
             )
         )
     return out

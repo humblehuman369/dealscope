@@ -44,7 +44,9 @@ export function ActualsCard({ deal }: { deal: SavedProperty }) {
     mutationFn: (actuals: PropertyActuals) =>
       api.patch(`/api/v1/properties/saved/${deal.id}`, { actuals }),
     onSuccess: () => {
+      // Detail + list — Portfolio reads actuals from the summary list.
       qc.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.detail(deal.id) })
+      qc.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.lists() })
       setEditing(false)
     },
   })
