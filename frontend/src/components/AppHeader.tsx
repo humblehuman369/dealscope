@@ -11,7 +11,7 @@
  *
  * Layout:
  * ┌──────────────────────────────────────────────────────────────┐
- * │  [Logo]     [────── Search address ──────]  [Tools][☀][☰]  │  ← Brand bar
+ * │  [Logo]  [── Search ──] [Scan][Map][Tools][☀][☰]           │  ← Brand bar
  * ├──────────────────────────────────────────────────────────────┤
  * │  Discovery | Strategy | Comps | DealMaker | Estimator        │  ← Analysis tabs
  * ├──────────────────────────────────────────────────────────────┤
@@ -25,7 +25,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
-  Search,
   Menu,
   LogOut,
   UserCircle,
@@ -44,9 +43,12 @@ import {
   Kanban,
   ChevronDown,
   MapPin,
+  Camera,
 } from 'lucide-react'
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
-import { SearchPropertyModal } from '@/components/SearchPropertyModal'
+import { HeaderPropertySearch } from '@/components/HeaderPropertySearch'
+import { InfoDialog } from '@/components/ui/ConfirmDialog'
+import { IS_CAPACITOR } from '@/lib/env'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -495,7 +497,27 @@ export function AppHeader({
     router.push('/')
   }
 
-  const [searchModalOpen, setSearchModalOpen] = useState(false)
+  const [showScanInfo, setShowScanInfo] = useState(false)
+
+  const handleScanProperty = () => {
+    if (IS_CAPACITOR) {
+      router.push('/?scan=true')
+      return
+    }
+
+    // Mobile/tablet: open camera scan. Desktop: explain that scan is mobile-only.
+    const isMobile =
+      typeof window !== 'undefined' &&
+      (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        ('ontouchstart' in window && navigator.maxTouchPoints > 1 && window.innerWidth < 1400))
+
+    if (isMobile) {
+      router.push('/?scan=true')
+      return
+    }
+
+    setShowScanInfo(true)
+  }
 
   const handleProfileClick = () => {
     if (!isAuthenticated) {
@@ -662,28 +684,7 @@ export function AppHeader({
             </button>
 
             <div className="flex-1 flex justify-center min-w-0 px-1 sm:px-2">
-              <button
-                onClick={() => setSearchModalOpen(true)}
-                className="w-full max-w-xl min-h-[40px] sm:min-h-[44px] px-3 sm:px-4 py-2 rounded-full border transition-colors hover:opacity-90 flex items-center gap-2 justify-start"
-                style={{
-                  background: 'var(--surface-elevated)',
-                  borderColor: 'var(--border-default)',
-                  color: 'var(--text-heading)',
-                }}
-                aria-label="Search properties by address"
-              >
-                <Search
-                  className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
-                  style={{ color: 'var(--text-secondary)' }}
-                />
-                <span
-                  className="text-sm font-medium truncate"
-                  style={{ color: 'var(--text-secondary)' }}
-                >
-                  <span className="sm:hidden">Search address…</span>
-                  <span className="hidden sm:inline">Search address or MLS #…</span>
-                </span>
-              </button>
+              <HeaderPropertySearch />
             </div>
 
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
@@ -725,6 +726,22 @@ export function AppHeader({
                   </Link>
                 </>
               )}
+
+              {/* Scan Property — opens camera scan on mobile; info dialog on desktop */}
+              <button
+                type="button"
+                onClick={handleScanProperty}
+                className="min-h-[40px] sm:min-h-[44px] px-2.5 sm:px-3 rounded-full border transition-colors hover:bg-[var(--hover-overlay)] flex items-center gap-1.5 whitespace-nowrap"
+                style={{
+                  borderColor: 'var(--border-default)',
+                  color: 'var(--text-secondary)',
+                  background: 'transparent',
+                }}
+                aria-label="Scan Property"
+              >
+                <Camera className="w-4 h-4 shrink-0" />
+                <span className="text-sm font-semibold hidden md:inline">Scan</span>
+              </button>
 
               {/* Map Search — desktop nav entry */}
               {!pathname?.startsWith('/map-search') && (
@@ -1186,7 +1203,12 @@ export function AppHeader({
           )
         })()}
 
-      <SearchPropertyModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      <InfoDialog
+        open={showScanInfo}
+        onClose={() => setShowScanInfo(false)}
+        title="Scan is a Mobile Feature"
+        description="Point your phone camera at any property for instant analysis. On desktop, use the address search bar to look up a property by location."
+      />
 
       {/* Mobile Map Search FAB */}
       {showMapSearchFab && (
