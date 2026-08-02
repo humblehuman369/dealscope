@@ -439,6 +439,8 @@ export function AppHeader({
       sqft: resolvedProperty.sqft,
       listPrice: resolvedProperty.price,
       zpid: resolvedProperty.zpid,
+      latitude: resolvedProperty.latitude,
+      longitude: resolvedProperty.longitude,
     }
   }, [resolvedProperty, displayAddress])
 

@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -97,6 +97,10 @@ class SavedProperty(Base):
     address_state: Mapped[str | None] = mapped_column(String(10))
     address_zip: Mapped[str | None] = mapped_column(String(20))
     full_address: Mapped[str | None] = mapped_column(String(500), index=True)
+
+    # Coordinates for My Deal Map pins (nullable — backfilled via geocode when missing)
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # Cached Property Data (snapshot at save time)
     property_data_snapshot: Mapped[dict | None] = mapped_column(JSON, default=dict)  # Full PropertyResponse cached

@@ -18,6 +18,8 @@ export interface PropertySnapshot {
   listPrice?: number
   zpid?: string
   listingStatus?: string
+  latitude?: number
+  longitude?: number
   // Mashvisor /rental-rates per-bed monthly STR revenue from
   // STRMarketStats.monthly_revenue_per_bed. Persisted in the snapshot so
   // the STR worksheet has Mashvisor data after save/reload without
@@ -96,6 +98,8 @@ export function useSaveProperty({
       if (propertySnapshot.sqft !== undefined) snapshot.sqft = propertySnapshot.sqft
       if (propertySnapshot.listPrice !== undefined) snapshot.listPrice = propertySnapshot.listPrice
       if (propertySnapshot.zpid !== undefined) snapshot.zpid = propertySnapshot.zpid
+      if (propertySnapshot.latitude !== undefined) snapshot.latitude = propertySnapshot.latitude
+      if (propertySnapshot.longitude !== undefined) snapshot.longitude = propertySnapshot.longitude
       if (propertySnapshot.monthlyStrRevenuePerBed !== undefined) {
         snapshot.monthlyStrRevenuePerBed = propertySnapshot.monthlyStrRevenuePerBed
       }
@@ -112,6 +116,8 @@ export function useSaveProperty({
         address_zip: parsed.zip || undefined,
         full_address: displayAddress,
         zpid: propertySnapshot?.zpid ?? undefined,
+        latitude: propertySnapshot?.latitude ?? undefined,
+        longitude: propertySnapshot?.longitude ?? undefined,
         property_data_snapshot: Object.keys(snapshot).length > 0 ? snapshot : undefined,
         status: 'prospecting',
       })

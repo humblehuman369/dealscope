@@ -4,6 +4,8 @@ import React, { useState, useCallback, useRef } from 'react'
 import { APIProvider, Map, AdvancedMarker, type MapMouseEvent } from '@vis.gl/react-google-maps'
 import { X, MapPin, Loader2, Home, ArrowRight, Navigation, LocateFixed } from 'lucide-react'
 import { reverseGeocodeProperty, type GeocodedProperty } from '@/lib/reverseGeocode'
+import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLayer'
+import { useSession } from '@/hooks/useSession'
 
 const MAP_ID = 'DEMO_MAP_ID'
 const PARCEL_ZOOM = 18
@@ -33,7 +35,9 @@ export function MapPropertyPicker({
   const [selectedProperty, setSelectedProperty] = useState<GeocodedProperty | null>(null)
   const [isGeocoding, setIsGeocoding] = useState(false)
   const [tapPin, setTapPin] = useState<{ lat: number; lng: number } | null>(null)
+  const [showMyDeals, setShowMyDeals] = useState(false)
   const mapRef = useRef<google.maps.Map | null>(null)
+  const { isAuthenticated } = useSession()
 
   const handleMapClick = useCallback(
     async (e: MapMouseEvent) => {
@@ -161,8 +165,18 @@ export function MapPropertyPicker({
                 </div>
               </AdvancedMarker>
             )}
+            <MyDealMapLayer enabled={showMyDeals} />
           </Map>
         </APIProvider>
+
+        {isAuthenticated && (
+          <div className="absolute top-4 right-4 z-10">
+            <MyDealLayerToggle
+              active={showMyDeals}
+              onClick={() => setShowMyDeals((v) => !v)}
+            />
+          </div>
+        )}
 
         {/* Re-center button */}
         <button

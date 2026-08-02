@@ -175,6 +175,8 @@ class SavedPropertyService:
             address_zip=data.address_zip,
             full_address=data.full_address
             or f"{data.address_street}, {data.address_city}, {data.address_state} {data.address_zip}",
+            latitude=data.latitude,
+            longitude=data.longitude,
             property_data_snapshot=property_snapshot,
             deal_maker_record=deal_maker_dict,
             status=data.status,
@@ -362,6 +364,20 @@ class SavedPropertyService:
 
         result = await db.execute(query)
         return result.scalar() or 0
+
+    async def list_map_pins(self, db: AsyncSession, user_id: str) -> list[SavedProperty]:
+        """Return all saved properties for the My Deal Map layer.
+
+        Defers the large property_data_snapshot blob. Deal Gap anchors are
+        extracted from ``deal_maker_record`` by the router.
+        """
+        result = await db.execute(
+            select(SavedProperty)
+            .options(defer(SavedProperty.property_data_snapshot))
+            .where(SavedProperty.user_id == uuid.UUID(user_id))
+            .order_by(SavedProperty.saved_at.desc())
+        )
+        return list(result.scalars().all())
 
     async def get_stats(self, db: AsyncSession, user_id: str) -> dict:
         """Get statistics about saved properties using GROUP BY (single query)."""

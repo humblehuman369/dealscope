@@ -40,6 +40,7 @@ from app.schemas.saved_property import (
     PropertyAdjustmentCreate,
     PropertyAdjustmentResponse,
     SavedPropertyCreate,
+    SavedPropertyMapPin,
     SavedPropertyResponse,
     SavedPropertySummary,
     SavedPropertyUpdate,
@@ -329,6 +330,76 @@ async def list_saved_properties(
         )
         for p in properties
     ]
+
+
+def _finite_or_none(value: object) -> float | None:
+    if value is None:
+        return None
+    try:
+        n = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(n):
+        return None
+    return n
+
+
+def _map_pin_from_saved(prop) -> SavedPropertyMapPin:
+    """Build a My Deal Map pin, extracting TARGET / INCOME / MARKET from the deal record."""
+    dm = prop.deal_maker_record if isinstance(prop.deal_maker_record, dict) else {}
+    metrics = dm.get("cached_metrics") if isinstance(dm.get("cached_metrics"), dict) else {}
+
+    market = _finite_or_none(dm.get("market_value_override"))
+    if market is None:
+        market = _finite_or_none(dm.get("list_price"))
+    target = _finite_or_none(dm.get("buy_price"))
+    income = _finite_or_none(metrics.get("income_value"))
+    deal_gap_pct = _finite_or_none(metrics.get("deal_gap_pct"))
+    cash_flow = _finite_or_none(prop.best_cash_flow)
+
+    return SavedPropertyMapPin(
+        id=str(prop.id),
+        address_street=prop.address_street,
+        address_city=prop.address_city,
+        address_state=prop.address_state,
+        address_zip=prop.address_zip,
+        full_address=prop.full_address,
+        nickname=prop.nickname,
+        status=prop.status,
+        latitude=_finite_or_none(prop.latitude),
+        longitude=_finite_or_none(prop.longitude),
+        target_price=target,
+        income_value=income,
+        market_price=market,
+        deal_gap_pct=deal_gap_pct,
+        best_strategy=prop.best_strategy,
+        best_cash_flow=cash_flow,
+    )
+
+
+@router.get(
+    "/map-pins",
+    response_model=list[SavedPropertyMapPin],
+    summary="My Deal Map pins for all saved properties",
+)
+async def list_saved_property_map_pins(
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    """Return every saved property as a map pin with DealGapIQ anchors.
+
+    Used by the My Deal Map layer on Map Search, Comps, and property location
+    maps. Properties without stored coordinates are still returned so the
+    client can geocode and backfill.
+    """
+    try:
+        rows = await saved_property_service.list_map_pins(db, str(current_user.id))
+    except Exception as exc:
+        if not is_schema_mismatch(exc):
+            raise
+        log_schema_mismatch("GET /properties/saved/map-pins", exc)
+        return []
+    return [_map_pin_from_saved(p) for p in rows]
 
 
 @router.get("/stats", summary="Get saved properties statistics")

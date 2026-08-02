@@ -4,6 +4,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps'
 import { MapPin, Maximize2, X, Plus, Minus, School, BarChart3, Layers } from 'lucide-react'
+import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLayer'
+import { useSession } from '@/hooks/useSession'
+
+const COMPS_MAP_ID = 'DEMO_MAP_ID'
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -684,6 +688,8 @@ function FullscreenMapModal({
   const [showNearby, setShowNearby] = useState(false)
   const [showSchools, setShowSchools] = useState(false)
   const [showStats, setShowStats] = useState(false)
+  const [showMyDeals, setShowMyDeals] = useState(false)
+  const { isAuthenticated } = useSession()
 
   useEffect(() => {
     const prev = document.body.style.overflow
@@ -741,6 +747,12 @@ function FullscreenMapModal({
 
           {/* Layer toggles */}
           <div className="flex items-center gap-1">
+            {isAuthenticated && (
+              <MyDealLayerToggle
+                active={showMyDeals}
+                onClick={() => setShowMyDeals((v) => !v)}
+              />
+            )}
             <LayerToggle
               active={showNearby}
               onClick={() => setShowNearby((v) => !v)}
@@ -776,10 +788,11 @@ function FullscreenMapModal({
 
       {/* Map */}
       <div className="flex-1 min-h-0 relative">
-        <APIProvider apiKey={apiKey} libraries={['places']}>
+        <APIProvider apiKey={apiKey} libraries={['places', 'marker']}>
           <Map
             defaultCenter={center}
             defaultZoom={14}
+            mapId={COMPS_MAP_ID}
             gestureHandling="greedy"
             disableDefaultUI
             zoomControl={false}
@@ -799,6 +812,7 @@ function FullscreenMapModal({
               searchRadiusMiles={searchRadiusMiles}
               onExpandSearch={onExpandSearch}
             />
+            <MyDealMapLayer enabled={showMyDeals} />
           </Map>
         </APIProvider>
         {expanding && <ExpandingSearchChip />}
@@ -876,6 +890,8 @@ export function CompsProximityMap({
   const validComps = comps.filter((c) => isFiniteCoord(c.latitude, c.longitude))
   const hasAnyPoints = hasSubject || validComps.length > 0
   const [modalOpen, setModalOpen] = useState(false)
+  const [showMyDealsInline, setShowMyDealsInline] = useState(false)
+  const { isAuthenticated } = useSession()
 
   if (!apiKey || !hasAnyPoints) {
     const placeholder = (
@@ -906,10 +922,11 @@ export function CompsProximityMap({
 
   const mapContent = (
     <div className={`relative ${className ?? 'h-56'}`}>
-      <APIProvider apiKey={apiKey} libraries={['places']}>
+      <APIProvider apiKey={apiKey} libraries={['places', 'marker']}>
         <Map
           defaultCenter={center}
           defaultZoom={14}
+          mapId={COMPS_MAP_ID}
           gestureHandling="cooperative"
           disableDefaultUI
           zoomControl={false}
@@ -929,25 +946,33 @@ export function CompsProximityMap({
             searchRadiusMiles={searchRadiusMiles}
             onExpandSearch={onExpandSearch}
           />
+          <MyDealMapLayer enabled={showMyDealsInline} />
         </Map>
       </APIProvider>
 
       {expanding && <ExpandingSearchChip />}
 
-      {/* Expand button */}
-      <button
-        type="button"
-        onClick={() => setModalOpen(true)}
-        className="absolute top-3 right-3 z-10 p-1.5 rounded-lg shadow-lg transition-colors hover:brightness-125"
-        style={{
-          backgroundColor: 'var(--surface-card)',
-          border: '1px solid var(--border-default)',
-          color: 'var(--text-heading)',
-        }}
-        aria-label="Expand map to fullscreen"
-      >
-        <Maximize2 size={14} />
-      </button>
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+        {isAuthenticated && (
+          <MyDealLayerToggle
+            active={showMyDealsInline}
+            onClick={() => setShowMyDealsInline((v) => !v)}
+          />
+        )}
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          className="p-1.5 rounded-lg shadow-lg transition-colors hover:brightness-125"
+          style={{
+            backgroundColor: 'var(--surface-card)',
+            border: '1px solid var(--border-default)',
+            color: 'var(--text-heading)',
+          }}
+          aria-label="Expand map to fullscreen"
+        >
+          <Maximize2 size={14} />
+        </button>
+      </div>
     </div>
   )
 

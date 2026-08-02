@@ -527,6 +527,8 @@ export function StrategyWorkbench({
       sqft: propertyInfo.details?.square_footage,
       listPrice: propertyInfo.price,
       zpid: propertyInfo.zpid,
+      latitude: addr.latitude ?? undefined,
+      longitude: addr.longitude ?? undefined,
       // Persist the AirROI per-property monthly STR revenue so the worksheet
       // keeps using it after save/reload without re-fetching.
       monthlyStrRevenuePerBed: strStats?.monthly_revenue_per_bed ?? undefined,

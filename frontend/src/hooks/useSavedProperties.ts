@@ -23,13 +23,19 @@ import type { RehabBudgetSummary } from '@/types/rehabBudget'
 import type {
   ActiveFlipSummary,
   SavedProperty,
+  SavedPropertyMapPin,
   SavedPropertySummary,
   SavedPropertyStats,
   PropertyStatus,
 } from '@/types/savedProperty'
 
 // Re-export types for consumer convenience
-export type { SavedProperty, SavedPropertySummary, SavedPropertyStats }
+export type {
+  SavedProperty,
+  SavedPropertyMapPin,
+  SavedPropertySummary,
+  SavedPropertyStats,
+}
 
 // ─── Query keys ────────────────────────────────────────────
 
@@ -42,6 +48,8 @@ export const SAVED_PROPERTIES_KEYS = {
   /** A specific list query (page + filters). */
   list: (params: { page: number; pageSize: number; status: string; search: string }) =>
     [...SAVED_PROPERTIES_KEYS.lists(), params] as const,
+  /** My Deal Map pins (all saved properties with Deal Gap anchors). */
+  mapPins: () => [...SAVED_PROPERTIES_KEYS.all, 'map-pins'] as const,
   /** Stats query. */
   stats: () => [...SAVED_PROPERTIES_KEYS.all, 'stats'] as const,
   /** All detail queries (used to invalidate every per-id detail at once). */
@@ -93,6 +101,19 @@ export function useSavedPropertyStats() {
     queryKey: SAVED_PROPERTIES_KEYS.stats(),
     queryFn: () => api.get<SavedPropertyStats>('/api/v1/properties/saved/stats'),
     staleTime: 30_000,
+  })
+}
+
+/**
+ * Fetch all saved-property map pins for the My Deal Map layer.
+ * Disabled when the caller is not authenticated / layer is off.
+ */
+export function useSavedPropertyMapPins(enabled = true) {
+  return useQuery({
+    queryKey: SAVED_PROPERTIES_KEYS.mapPins(),
+    queryFn: () => api.get<SavedPropertyMapPin[]>('/api/v1/properties/saved/map-pins'),
+    enabled,
+    staleTime: 60_000,
   })
 }
 

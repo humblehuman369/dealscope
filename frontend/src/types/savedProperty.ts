@@ -68,6 +68,8 @@ export interface SavedPropertySummary {
   best_strategy: string | null
   best_cash_flow: number | null
   best_coc_return: number | null
+  latitude?: number | null
+  longitude?: number | null
   saved_at: string
   last_viewed_at: string | null
   updated_at: string
@@ -89,6 +91,29 @@ export interface SavedPropertySummary {
   task_count_open?: number
   /** Subset of open tasks whose due_date is in the past. */
   task_count_overdue?: number
+}
+
+/** Pin payload for the My Deal Map layer — GET /api/v1/properties/saved/map-pins */
+export interface SavedPropertyMapPin {
+  id: string
+  address_street: string
+  address_city: string | null
+  address_state: string | null
+  address_zip: string | null
+  full_address: string | null
+  nickname: string | null
+  status: PropertyStatus
+  latitude: number | null
+  longitude: number | null
+  /** TARGET — target buy / purchase price */
+  target_price: number | null
+  /** INCOME — income-supported value */
+  income_value: number | null
+  /** MARKET — asking / market price */
+  market_price: number | null
+  deal_gap_pct: number | null
+  best_strategy: string | null
+  best_cash_flow: number | null
 }
 
 /** Active flips pipeline row — GET .../saved/active-flips */
@@ -122,6 +147,8 @@ export interface SavedProperty {
   address_state: string | null
   address_zip: string | null
   full_address: string | null
+  latitude?: number | null
+  longitude?: number | null
 
   // User customization
   nickname: string | null

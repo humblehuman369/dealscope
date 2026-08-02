@@ -73,6 +73,8 @@ class SavedPropertyCreate(SavedPropertyBase):
     address_state: str | None = Field(None, max_length=10)
     address_zip: str | None = Field(None, max_length=20)
     full_address: str | None = Field(None, max_length=500)
+    latitude: float | None = Field(None, ge=-90, le=90, description="Subject latitude for My Deal Map")
+    longitude: float | None = Field(None, ge=-180, le=180, description="Subject longitude for My Deal Map")
 
     # Property data snapshot — capped to prevent oversized payloads.
     # A typical property snapshot is ~5-15 KB; 512 KB is generous headroom.
@@ -122,6 +124,8 @@ class SavedPropertyUpdate(SavedPropertyBase):
 
     status: PropertyStatus | None = None
     display_order: int | None = None
+    latitude: float | None = Field(None, ge=-90, le=90)
+    longitude: float | None = Field(None, ge=-180, le=180)
 
     # Custom value adjustments (DEPRECATED - use deal_maker_record)
     custom_purchase_price: Decimal | None = Field(None, ge=0, le=100_000_000)
@@ -174,6 +178,31 @@ class SavedPropertyUpdate(SavedPropertyBase):
         return self
 
 
+class SavedPropertyMapPin(BaseModel):
+    """Lightweight pin payload for the My Deal Map layer."""
+
+    id: str
+    address_street: str
+    address_city: str | None = None
+    address_state: str | None = None
+    address_zip: str | None = None
+    full_address: str | None = None
+    nickname: str | None = None
+    status: PropertyStatus
+    latitude: float | None = None
+    longitude: float | None = None
+    # DealGapIQ three anchors (TARGET / INCOME / MARKET)
+    target_price: float | None = None
+    income_value: float | None = None
+    market_price: float | None = None
+    deal_gap_pct: float | None = None
+    best_strategy: str | None = None
+    best_cash_flow: float | None = None
+
+    class Config:
+        from_attributes = True
+
+
 class SavedPropertySummary(BaseModel):
     """Summary view of saved property for list views."""
 
@@ -187,6 +216,8 @@ class SavedPropertySummary(BaseModel):
     tags: list[str] | None
     color_label: str | None
     priority: int | None
+    latitude: float | None = None
+    longitude: float | None = None
 
     flip_stage: FlipStage | None = None
     flip_stage_entered_at: datetime | None = None

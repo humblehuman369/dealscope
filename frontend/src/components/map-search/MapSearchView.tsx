@@ -43,6 +43,7 @@ import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
 import { requestTourReplay } from '@/lib/workbenchTour'
 import { readMapSnapshot, writeMapSnapshot, clearMapSnapshot, consumeMapViewportRestore } from './mapSearchSnapshot'
 import { getMapOverlaySurface } from './mapOverlayChrome'
+import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLayer'
 import type { NeighborhoodOverview } from '@/lib/api'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
@@ -1098,6 +1099,7 @@ export function MapSearchView() {
   } = useMapSearch()
 
   const [selectedListing, setSelectedListing] = useState<MapListing | null>(null)
+  const [showMyDeals, setShowMyDeals] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(true)
   const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const autoCloseArmedRef = useRef(true)
@@ -1554,6 +1556,12 @@ export function MapSearchView() {
             onUserCameraInteraction={collapseLegend}
             propertyFocus={propertyFocus}
           />
+          <MyDealMapLayer
+            enabled={showMyDeals}
+            onPinSelect={(pin) => {
+              if (pin) setSelectedListing(null)
+            }}
+          />
           {dropPin && (
             <AdvancedMarker position={dropPin}>
               <div
@@ -1690,22 +1698,30 @@ export function MapSearchView() {
             <MapSearchBar onSelect={handleSearchSelect} overlayChrome={overlaySurface} />
           </div>
         )}
-        <FilterPanel
-          filters={filters}
-          onChange={updateFilters}
-          totalCount={totalCount}
-          isLoading={isLoading}
-          isOpen={filtersOpen}
-          onToggle={toggleFilters}
-          canSaveDefaultView={!!user}
-          onSaveDefaultView={handleSaveDefaultLocation}
-          savingDefaultView={savingDefault}
-          overlayChrome={overlaySurface}
-          dockCollapsedInline={!filtersOpen}
-          mapLightChrome={!isDarkMap}
-          onPanelMouseEnter={clearAutoClose}
-          onPanelMouseLeave={scheduleAutoClose}
-        />
+        <div className="pointer-events-auto flex flex-col items-end gap-2 shrink-0">
+          {!!user && (
+            <MyDealLayerToggle
+              active={showMyDeals}
+              onClick={() => setShowMyDeals((v) => !v)}
+            />
+          )}
+          <FilterPanel
+            filters={filters}
+            onChange={updateFilters}
+            totalCount={totalCount}
+            isLoading={isLoading}
+            isOpen={filtersOpen}
+            onToggle={toggleFilters}
+            canSaveDefaultView={!!user}
+            onSaveDefaultView={handleSaveDefaultLocation}
+            savingDefaultView={savingDefault}
+            overlayChrome={overlaySurface}
+            dockCollapsedInline={!filtersOpen}
+            mapLightChrome={!isDarkMap}
+            onPanelMouseEnter={clearAutoClose}
+            onPanelMouseLeave={scheduleAutoClose}
+          />
+        </div>
       </div>
 
       {/* Save-default-location confirmation toast — top-center keeps it clear

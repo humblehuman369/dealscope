@@ -1,9 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps'
 import { MapPin, Maximize2 } from 'lucide-react'
 import { trackEvent } from '@/lib/eventTracking'
+import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLayer'
+import { useSession } from '@/hooks/useSession'
 
 interface LocationMapProps {
   latitude?: number
@@ -12,11 +15,14 @@ interface LocationMapProps {
 }
 
 const PROPERTY_MAP_ZOOM = 15
+const PROPERTY_MAP_ID = 'DEMO_MAP_ID'
 
 export function LocationMap({ latitude, longitude, address }: LocationMapProps) {
   const router = useRouter()
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const hasCoordinates = latitude != null && longitude != null
+  const { isAuthenticated } = useSession()
+  const [showMyDeals, setShowMyDeals] = useState(false)
 
   const cardStyle = {
     backgroundColor: 'var(--surface-base)',
@@ -44,52 +50,44 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
     router.push(qs ? `/map-search?${qs}` : '/map-search')
   }
 
-  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.currentTarget.style.border = '1px solid var(--border-focus)'
-    e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)'
-  }
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.currentTarget.style.border = '1px solid var(--border-subtle)'
-    e.currentTarget.style.boxShadow = 'var(--shadow-card)'
-  }
-
   const headerRow = (
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center justify-between mb-4 gap-2">
       <span
         className="text-xs font-bold uppercase tracking-[0.12em]"
         style={{ color: 'var(--accent-sky)' }}
       >
         Location
       </span>
-      <span
-        className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.08em]"
-        style={{ color: 'var(--accent-sky)' }}
-      >
-        View on map
-        <Maximize2 size={11} strokeWidth={2.5} />
-      </span>
+      <div className="flex items-center gap-2">
+        {isAuthenticated && hasCoordinates && apiKey && (
+          <MyDealLayerToggle active={showMyDeals} onClick={() => setShowMyDeals((v) => !v)} />
+        )}
+        <button
+          type="button"
+          onClick={handleOpenMapSearch}
+          className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors hover:brightness-110"
+          style={{ color: 'var(--accent-sky)' }}
+        >
+          View on map
+          <Maximize2 size={11} strokeWidth={2.5} />
+        </button>
+      </div>
     </div>
   )
 
   if (!hasCoordinates || !apiKey) {
     return (
-      <button
-        type="button"
-        onClick={handleOpenMapSearch}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        className="rounded-[14px] p-5 w-full text-left transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-sky)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-base)]"
-        style={cardStyle}
-        aria-label={`View ${address} and nearby listings on the map`}
-      >
+      <div className="rounded-[14px] p-5" style={cardStyle}>
         {headerRow}
-        <div
-          className="h-48 rounded-xl flex items-center justify-center"
+        <button
+          type="button"
+          onClick={handleOpenMapSearch}
+          className="h-48 rounded-xl flex items-center justify-center w-full transition-colors hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-sky)]"
           style={{
             backgroundColor: 'var(--surface-elevated)',
             border: `1px solid var(--border-subtle)`,
           }}
+          aria-label={`View ${address} and nearby listings on the map`}
         >
           <div className="text-center px-4">
             <MapPin size={24} className="mx-auto mb-2" style={{ color: 'var(--text-secondary)' }} />
@@ -105,44 +103,40 @@ export function LocationMap({ latitude, longitude, address }: LocationMapProps) 
               </p>
             )}
           </div>
-        </div>
+        </button>
         <p className="text-xs mt-3 text-center" style={{ color: 'var(--text-secondary)' }}>
           Tap to explore nearby listings
         </p>
-      </button>
+      </div>
     )
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleOpenMapSearch}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className="rounded-[14px] p-5 w-full text-left transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-sky)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-base)]"
-      style={cardStyle}
-      aria-label={`View ${address} and nearby listings on the map`}
-    >
+    <div className="rounded-[14px] p-5" style={cardStyle}>
       {headerRow}
-      <div className="h-48 rounded-xl overflow-hidden relative" style={{ pointerEvents: 'none' }}>
-        <APIProvider apiKey={apiKey} libraries={['places']}>
+      <div
+        className="h-48 rounded-xl overflow-hidden relative"
+        style={{ border: '1px solid var(--border-subtle)' }}
+      >
+        <APIProvider apiKey={apiKey} libraries={['places', 'marker']}>
           <Map
             defaultCenter={{ lat: latitude, lng: longitude }}
             defaultZoom={PROPERTY_MAP_ZOOM}
-            gestureHandling="none"
+            mapId={PROPERTY_MAP_ID}
+            gestureHandling="cooperative"
             disableDefaultUI={true}
             clickableIcons={false}
-            keyboardShortcuts={false}
             style={{ width: '100%', height: '100%' }}
           >
             <Marker position={{ lat: latitude, lng: longitude }} />
+            <MyDealMapLayer enabled={showMyDeals} />
           </Map>
         </APIProvider>
       </div>
       <p className="text-xs mt-3 text-center" style={{ color: 'var(--text-secondary)' }}>
         {address}
       </p>
-    </button>
+    </div>
   )
 }
 
