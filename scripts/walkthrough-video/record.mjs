@@ -31,6 +31,20 @@ const VIEWPORT = { width: 1920, height: 1080 };
 const CAPTURE_MS = 400;
 const FPS = 1000 / CAPTURE_MS; // 2.5
 
+async function dismissTour(page) {
+  // Workbench tour welcome dialog (z-[10000]) intercepts all pointer events
+  const dialog = page.locator('[role="dialog"][aria-labelledby*="workbench-tour"]');
+  if (await dialog.isVisible({ timeout: 2500 }).catch(() => false)) {
+    const skip = dialog.locator('button:has-text("Skip")').first();
+    if (await skip.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await skip.click().catch(() => {});
+    } else {
+      await page.keyboard.press('Escape').catch(() => {});
+    }
+    await page.waitForTimeout(600);
+  }
+}
+
 async function dismissChrome(page) {
   try {
     const accept = page.locator('button:has-text("Accept all"), button:has-text("Accept")').first();
@@ -46,6 +60,7 @@ async function dismissChrome(page) {
       content: `[class*="cookie"], [id*="cookie"], [class*="consent"] { display: none !important; }`,
     })
     .catch(() => {});
+  await dismissTour(page);
 }
 
 async function login(page) {
@@ -62,9 +77,19 @@ async function login(page) {
   }
   await email.fill(DEMO_EMAIL);
   await password.fill(DEMO_PASSWORD);
-  await page.locator('button:has-text("Sign In"), button:has-text("Log In"), button[type="submit"]').first().click();
+  // Only the credentials form uses type="submit" — "Sign in with Apple" /
+  // "Continue with Google" are type="button" and must not be matched
+  await page.locator('button[type="submit"]').first().click();
   try {
-    await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 20000 });
+    await page.waitForURL(
+      (url) => url.hostname.endsWith('dealgapiq.com') && !url.pathname.includes('/login'),
+      { timeout: 20000 },
+    );
+    // Let the /auth/authorize token exchange finish before trusting the session
+    await page
+      .waitForURL((url) => !url.pathname.startsWith('/auth'), { timeout: 15000 })
+      .catch(() => {});
+    await page.waitForTimeout(1500);
     console.log(`   ✓ Logged in → ${new URL(page.url()).pathname}`);
     return true;
   } catch {
@@ -380,8 +405,11 @@ async function main() {
   const ok = await login(warmPage);
   const statePath = path.join(SCENES_DIR, '_storage.json');
   if (ok) {
-    await warm.storageState({ path: statePath });
+    // Save state only after an authenticated verdict has rendered, so scene
+    // contexts inherit the full session (and the dismissed-tour flag)
     await waitForVerdict(warmPage);
+    await dismissTour(warmPage);
+    await warm.storageState({ path: statePath });
   } else {
     console.log('   ⚠ Continuing without auth — some scenes may be gated');
   }
