@@ -569,7 +569,7 @@ const CompCard = ({
           )}
           <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-[var(--surface-card)]/90 backdrop-blur-sm shadow-sm">
             <span className="text-[10px] font-semibold text-[var(--accent-sky)] tabular-nums">
-              {comp.distanceMiles?.toFixed(2)} mi
+              {comp.distanceMiles?.toFixed(2)} mi{comp.direction ? ` ${comp.direction}` : ''}
             </span>
           </div>
         </div>

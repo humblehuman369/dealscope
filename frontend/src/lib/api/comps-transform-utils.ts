@@ -15,6 +15,24 @@ export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
+const COMPASS_POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] as const
+
+/**
+ * 8-point compass direction from subject to comp using the initial great-circle
+ * bearing (straight line, not driving route). Fannie Mae appraisal reporting
+ * expects each comparable's distance and direction, e.g. "1.75 mi NW".
+ */
+export function compassDirection(lat1: number, lon1: number, lat2: number, lon2: number): string {
+  const toRad = Math.PI / 180
+  const dLon = (lon2 - lon1) * toRad
+  const y = Math.sin(dLon) * Math.cos(lat2 * toRad)
+  const x =
+    Math.cos(lat1 * toRad) * Math.sin(lat2 * toRad) -
+    Math.sin(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.cos(dLon)
+  const bearingDeg = ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360
+  return COMPASS_POINTS[Math.round(bearingDeg / 45) % 8]
+}
+
 /**
  * Similarity score 0–100 for a sale comp vs subject.
  * Used for rent comps with the same formula (beds, baths, sqft, yearBuilt, distance).

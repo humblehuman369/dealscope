@@ -22,6 +22,16 @@ interface CompsProximityMapProps {
   hideHeader?: boolean
   /** Override the default map container height class (default: "h-56"). */
   className?: string
+  /** Current effective comp search radius in miles (default 0.5). */
+  searchRadiusMiles?: number
+  /**
+   * When provided, zooming/panning the map beyond the current search radius
+   * requests a wider comp search (quantized to 1/2/5 mi steps). The subject
+   * must be in view for expansion to trigger.
+   */
+  onExpandSearch?: (radiusMiles: number) => void
+  /** True while a wider comp search is in flight — shows a loading chip. */
+  expanding?: boolean
 }
 
 interface NearbyProperty {
@@ -474,6 +484,10 @@ async function fetchCensusData(lat: number, lng: number): Promise<NeighborhoodSt
 
 // ─── MapMarkers (shared between inline + modal) ─────────────────────
 
+const EXPAND_RADIUS_STEPS_MI = [1, 2, 5]
+const PROGRAMMATIC_MOVE_WINDOW_MS = 1000
+const EXPAND_DEBOUNCE_MS = 700
+
 function MapMarkers({
   subject,
   comps,
@@ -482,6 +496,8 @@ function MapMarkers({
   showSchools,
   showStats,
   onCloseStats,
+  searchRadiusMiles,
+  onExpandSearch,
 }: CompsProximityMapProps & {
   showNearbyProperties: boolean
   showSchools: boolean
@@ -501,6 +517,18 @@ function MapMarkers({
     ? { lat: subject.latitude!, lng: subject.longitude! }
     : geocodedPos
 
+  // Camera bookkeeping: distinguish our own setCenter/setZoom/fitBounds calls
+  // from user gestures, so (a) we stop auto-refitting once the user has taken
+  // control of the view and (b) viewport-driven comp expansion never fires
+  // from a programmatic camera move.
+  const programmaticMoveAtRef = useRef(0)
+  const userInteractedRef = useRef(false)
+  const expandTimerRef = useRef<number | null>(null)
+  const subjectPosRef = useRef(subjectPos)
+  subjectPosRef.current = subjectPos
+  const searchRadiusRef = useRef(searchRadiusMiles ?? 0.5)
+  searchRadiusRef.current = searchRadiusMiles ?? 0.5
+
   useEffect(() => {
     if (hasDirectCoords || !map || !subject.address) return
     const geocoder = new google.maps.Geocoder()
@@ -514,11 +542,15 @@ function MapMarkers({
 
   useEffect(() => {
     if (!map) return
+    // Once the user pans/zooms, new comps (e.g. from an expanded search) must
+    // not yank the camera back — markers just appear in place.
+    if (userInteractedRef.current) return
     const points: google.maps.LatLngLiteral[] = []
     if (subjectPos) points.push(subjectPos)
     validComps.forEach((c) => points.push({ lat: c.latitude, lng: c.longitude }))
 
     if (points.length === 0) return
+    programmaticMoveAtRef.current = Date.now()
     if (points.length === 1) {
       map.setCenter(points[0])
       map.setZoom(15)
@@ -529,6 +561,43 @@ function MapMarkers({
     points.forEach((p) => bounds.extend(p))
     map.fitBounds(bounds, { top: 60, right: 60, bottom: 60, left: 60 })
   }, [map, subjectPos, validComps])
+
+  // Dynamic comp loading: when the user zooms out or pans so the viewport
+  // covers more than the current search radius (subject still in view),
+  // request a wider search quantized to the next step.
+  useEffect(() => {
+    if (!map || !onExpandSearch) return
+    const listeners = [
+      map.addListener('dragstart', () => {
+        userInteractedRef.current = true
+      }),
+      map.addListener('zoom_changed', () => {
+        if (Date.now() - programmaticMoveAtRef.current > PROGRAMMATIC_MOVE_WINDOW_MS) {
+          userInteractedRef.current = true
+        }
+      }),
+      map.addListener('idle', () => {
+        if (!userInteractedRef.current) return
+        if (Date.now() - programmaticMoveAtRef.current < PROGRAMMATIC_MOVE_WINDOW_MS) return
+        const bounds = map.getBounds()
+        const subjPos = subjectPosRef.current
+        if (!bounds || !subjPos || !bounds.contains(subjPos)) return
+        const center = bounds.getCenter()
+        const ne = bounds.getNorthEast()
+        const halfDiagonalMi = haversineMi(center.lat(), center.lng(), ne.lat(), ne.lng())
+        const desired =
+          EXPAND_RADIUS_STEPS_MI.find((s) => s >= halfDiagonalMi) ??
+          EXPAND_RADIUS_STEPS_MI[EXPAND_RADIUS_STEPS_MI.length - 1]
+        if (desired <= searchRadiusRef.current) return
+        if (expandTimerRef.current != null) window.clearTimeout(expandTimerRef.current)
+        expandTimerRef.current = window.setTimeout(() => onExpandSearch(desired), EXPAND_DEBOUNCE_MS)
+      }),
+    ]
+    return () => {
+      listeners.forEach((l) => l.remove())
+      if (expandTimerRef.current != null) window.clearTimeout(expandTimerRef.current)
+    }
+  }, [map, onExpandSearch])
 
   if (!map) return null
 
@@ -598,6 +667,9 @@ function FullscreenMapModal({
   activeView,
   center,
   onClose,
+  searchRadiusMiles,
+  onExpandSearch,
+  expanding,
 }: CompsProximityMapProps & {
   center: google.maps.LatLngLiteral
   onClose: () => void
@@ -724,12 +796,34 @@ function FullscreenMapModal({
               showSchools={showSchools}
               showStats={showStats}
               onCloseStats={() => setShowStats(false)}
+              searchRadiusMiles={searchRadiusMiles}
+              onExpandSearch={onExpandSearch}
             />
           </Map>
         </APIProvider>
+        {expanding && <ExpandingSearchChip />}
       </div>
     </div>,
     document.body,
+  )
+}
+
+function ExpandingSearchChip() {
+  return (
+    <div
+      className="absolute top-3 left-3 z-10 px-2.5 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1.5 shadow-lg"
+      style={{
+        backgroundColor: 'var(--surface-card)',
+        border: '1px solid var(--border-default)',
+        color: 'var(--text-heading)',
+      }}
+    >
+      <span
+        className="w-3 h-3 border-2 rounded-full animate-spin inline-block"
+        style={{ borderColor: 'var(--accent-sky)', borderTopColor: 'transparent' }}
+      />
+      Searching wider area…
+    </div>
   )
 }
 
@@ -773,6 +867,9 @@ export function CompsProximityMap({
   activeView,
   hideHeader = false,
   className,
+  searchRadiusMiles,
+  onExpandSearch,
+  expanding,
 }: CompsProximityMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const hasSubject = isFiniteCoord(subject.latitude, subject.longitude)
@@ -829,9 +926,13 @@ export function CompsProximityMap({
             showSchools={false}
             showStats={false}
             onCloseStats={() => {}}
+            searchRadiusMiles={searchRadiusMiles}
+            onExpandSearch={onExpandSearch}
           />
         </Map>
       </APIProvider>
+
+      {expanding && <ExpandingSearchChip />}
 
       {/* Expand button */}
       <button
@@ -857,6 +958,9 @@ export function CompsProximityMap({
       activeView={activeView}
       center={center}
       onClose={() => setModalOpen(false)}
+      searchRadiusMiles={searchRadiusMiles}
+      onExpandSearch={onExpandSearch}
+      expanding={expanding}
     />
   ) : null
 

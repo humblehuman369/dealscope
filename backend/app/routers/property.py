@@ -640,11 +640,18 @@ async def get_rentcast_rental_comps(
     limit: int = Query(default=10, ge=1, le=50, description="Number of comps to return"),
     offset: int = Query(default=0, ge=0, description="Number of comps to skip"),
     exclude_zpids: str | None = Query(default=None, description="Comma-separated IDs to exclude"),
+    max_radius: float | None = Query(
+        default=None, ge=0.5, le=25, description="Max comp distance in miles (expanded search)"
+    ),
+    days_old: int | None = Query(
+        default=None, ge=1, le=3650, description="Max days since comp was last on market"
+    ),
 ):
     """
     Get rental comps from RentCast.
 
     Accepts a direct address or zpid (resolved to an address before calling RentCast).
+    ``max_radius`` widens the comparable search radius for rural/thin markets.
     """
     try:
         if not zpid and not address:
@@ -672,6 +679,8 @@ async def get_rentcast_rental_comps(
             limit=limit,
             offset=offset,
             exclude_zpids=exclude_list,
+            max_radius=max_radius,
+            days_old=days_old,
         )
         logger.info(
             "RentCast rental comps response",
@@ -703,6 +712,12 @@ async def get_rentcast_sale_comps(
     limit: int = Query(default=10, ge=1, le=50, description="Number of comps to return"),
     offset: int = Query(default=0, ge=0, description="Number of comps to skip"),
     exclude_zpids: str | None = Query(default=None, description="Comma-separated IDs to exclude"),
+    max_radius: float | None = Query(
+        default=None, ge=0.5, le=25, description="Max comp distance in miles (expanded search)"
+    ),
+    days_old: int | None = Query(
+        default=None, ge=1, le=3650, description="Max days since comp was last on market"
+    ),
 ):
     """
     Get sale comps from RentCast.
@@ -737,6 +752,8 @@ async def get_rentcast_sale_comps(
             limit=limit,
             offset=offset,
             exclude_zpids=exclude_list,
+            max_radius=max_radius,
+            days_old=days_old,
         )
         logger.info(
             "RentCast sale comps response",

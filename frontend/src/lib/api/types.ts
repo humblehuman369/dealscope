@@ -12,6 +12,14 @@ export interface CompsIdentifier {
   exclude_zpids?: string
   subject_lat?: number
   subject_lon?: number
+  /**
+   * Max comp distance in miles (expanded search for rural/thin markets).
+   * When set, the fetch routes directly to RentCast — the only provider
+   * with a radius parameter.
+   */
+  max_radius?: number
+  /** Max days since a comp was last on market (RentCast only). */
+  days_old?: number
 }
 
 // === Subject Property (for distance + similarity calculations) ===
@@ -50,6 +58,8 @@ export interface SaleComp {
   saleDate: string
   daysAgo: number
   distanceMiles: number
+  /** Compass direction from subject to comp (e.g. "NW"), straight-line per Fannie Mae reporting. Empty when coords unavailable. */
+  direction: string
   similarityScore: number
   propertyType: string
   latitude: number
@@ -76,6 +86,8 @@ export interface RentComp {
   listingDate: string
   daysAgo: number
   distanceMiles: number
+  /** Compass direction from subject to comp (e.g. "NW"), straight-line per Fannie Mae reporting. Empty when coords unavailable. */
+  direction: string
   similarityScore: number
   propertyType: string
   latitude: number

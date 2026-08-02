@@ -4,7 +4,7 @@
  */
 
 import { axessoGet, type AxessoResponse } from './axesso-client'
-import { haversineDistance, calculateSimilarity } from './comps-transform-utils'
+import { haversineDistance, calculateSimilarity, compassDirection } from './comps-transform-utils'
 import type { CompsIdentifier, RentComp, SubjectProperty } from './types'
 
 const ZILLOW_RENT_ENDPOINT = '/api/v1/similar-rent'
@@ -185,6 +185,10 @@ function transformRentCompItem(
         ? haversineDistance(subjectLat as number, subjectLon as number, lat, lon)
         : null
     const distanceMiles = haversineDist ?? toNum(comp?.distance ?? comp?.distanceMiles ?? 0)
+    const direction =
+      hasSubjectCoords && hasCompCoords
+        ? compassDirection(subjectLat as number, subjectLon as number, lat, lon)
+        : ''
     const beds = Math.floor(toNum(comp?.bedrooms ?? comp?.beds ?? comp?.bd ?? 0))
     const baths = toNum(comp?.bathrooms ?? comp?.baths ?? comp?.ba ?? 0)
     const yearBuilt = Math.floor(toNum(comp?.yearBuilt ?? comp?.yearConstructed ?? 0))
@@ -264,6 +268,7 @@ function transformRentCompItem(
       listingDate,
       daysAgo,
       distanceMiles: Math.round(distanceMiles * 100) / 100,
+      direction,
       similarityScore,
       propertyType: toStr(comp?.propertyType ?? comp?.homeType ?? ''),
       latitude: lat,
@@ -303,16 +308,19 @@ export async function fetchRentComps(
   }
   if (params.limit === undefined) params.limit = '10'
   if (params.offset === undefined) params.offset = '0'
+  if (identifier.max_radius != null) params.max_radius = String(identifier.max_radius)
+  if (identifier.days_old != null) params.days_old = String(identifier.days_old)
+
+  // Expanded-radius search: Zillow similar-rent has no radius parameter, so
+  // radius-bounded requests route directly to RentCast (which supports maxRadius).
+  const isRadiusSearch = identifier.max_radius != null
 
   // Try Zillow first (returns photos via AXESSO)
-  const zillowRes = await axessoGet<BackendCompsResponse>(
-    ZILLOW_RENT_ENDPOINT,
-    params,
-    undefined,
-    options?.signal,
-  )
+  const zillowRes = isRadiusSearch
+    ? null
+    : await axessoGet<BackendCompsResponse>(ZILLOW_RENT_ENDPOINT, params, undefined, options?.signal)
 
-  if (zillowRes.ok && zillowRes.data) {
+  if (zillowRes?.ok && zillowRes.data) {
     const body = zillowRes.data as BackendCompsResponse
     if (body.success !== false) {
       const transformed = transformRentComps(zillowRes.data, subject)
@@ -327,8 +335,8 @@ export async function fetchRentComps(
     }
   }
 
-  // Zillow returned nothing — fall back to RentCast (reliable, has distance, no photos)
-  if (process.env.NODE_ENV !== 'production') {
+  // Zillow returned nothing (or radius search skipped it) — use RentCast
+  if (process.env.NODE_ENV !== 'production' && !isRadiusSearch) {
     console.log('[comps_api] Zillow rent comps empty, falling back to RentCast')
   }
 

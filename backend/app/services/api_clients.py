@@ -177,8 +177,15 @@ class RentCastClient(BaseAPIClient[APIResponse]):
         bedrooms: int | None = None,
         bathrooms: float | None = None,
         square_footage: int | None = None,
+        max_radius: float | None = None,
+        days_old: int | None = None,
+        comp_count: int | None = None,
     ) -> APIResponse:
-        """Get AVM value estimate."""
+        """Get AVM value estimate.
+
+        ``max_radius`` (miles), ``days_old`` and ``comp_count`` (5-25) control the
+        comparable-selection pool. When omitted, RentCast applies its own defaults.
+        """
         params = {"address": address}
         if property_type:
             params["propertyType"] = property_type
@@ -188,6 +195,12 @@ class RentCastClient(BaseAPIClient[APIResponse]):
             params["bathrooms"] = bathrooms
         if square_footage:
             params["squareFootage"] = square_footage
+        if max_radius is not None:
+            params["maxRadius"] = max(0.5, min(max_radius, 100.0))
+        if days_old is not None:
+            params["daysOld"] = max(1, days_old)
+        if comp_count is not None:
+            params["compCount"] = max(5, min(comp_count, 25))
 
         return await self._make_request("avm/value", params)
 
@@ -198,8 +211,15 @@ class RentCastClient(BaseAPIClient[APIResponse]):
         bedrooms: int | None = None,
         bathrooms: float | None = None,
         square_footage: int | None = None,
+        max_radius: float | None = None,
+        days_old: int | None = None,
+        comp_count: int | None = None,
     ) -> APIResponse:
-        """Get rent estimate for long-term rental."""
+        """Get rent estimate for long-term rental.
+
+        ``max_radius`` (miles), ``days_old`` and ``comp_count`` (5-25) control the
+        comparable-selection pool. When omitted, RentCast applies its own defaults.
+        """
         params = {"address": address}
         if property_type:
             params["propertyType"] = property_type
@@ -209,6 +229,12 @@ class RentCastClient(BaseAPIClient[APIResponse]):
             params["bathrooms"] = bathrooms
         if square_footage:
             params["squareFootage"] = square_footage
+        if max_radius is not None:
+            params["maxRadius"] = max(0.5, min(max_radius, 100.0))
+        if days_old is not None:
+            params["daysOld"] = max(1, days_old)
+        if comp_count is not None:
+            params["compCount"] = max(5, min(comp_count, 25))
 
         # RentCast long-term rent AVM endpoint returns the valuation plus comparables[].
         return await self._make_request("avm/rent/long-term", params)

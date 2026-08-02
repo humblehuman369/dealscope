@@ -3,7 +3,7 @@
  */
 
 import { axessoGet, type AxessoResponse } from './axesso-client'
-import { haversineDistance, calculateSimilarity } from './comps-transform-utils'
+import { haversineDistance, calculateSimilarity, compassDirection } from './comps-transform-utils'
 import type { CompsIdentifier, SaleComp, SubjectProperty } from './types'
 
 const SIMILAR_SOLD_ENDPOINT = '/api/v1/similar-sold'
@@ -135,6 +135,10 @@ function transformSaleCompItem(
         : null
     const distanceMiles =
       haversineDist ?? toNum(comp?.distance ?? comp?.distanceMiles ?? wrapperDistance ?? 0)
+    const direction =
+      hasSubjectCoords && hasCompCoords
+        ? compassDirection(subjectLat as number, subjectLon as number, lat, lon)
+        : ''
     const beds = Math.floor(toNum(comp?.bedrooms ?? comp?.beds ?? comp?.bd ?? 0))
     const baths = toNum(comp?.bathrooms ?? comp?.baths ?? comp?.ba ?? 0)
     const yearBuilt = Math.floor(toNum(comp?.yearBuilt ?? comp?.yearConstructed ?? 0))
@@ -204,6 +208,7 @@ function transformSaleCompItem(
       saleDate,
       daysAgo,
       distanceMiles: Math.round(distanceMiles * 100) / 100,
+      direction,
       similarityScore,
       propertyType: toStr(comp?.propertyType ?? comp?.homeType ?? ''),
       latitude: lat,
@@ -247,14 +252,15 @@ export async function fetchSaleComps(
   if (params.limit === undefined) params.limit = '10'
   if (params.offset === undefined) params.offset = '0'
 
-  const axessoRes = await axessoGet<BackendCompsResponse>(
-    SIMILAR_SOLD_ENDPOINT,
-    params,
-    undefined,
-    options?.signal,
-  )
+  // Expanded-radius search: Zillow similar-sold has no radius parameter, so
+  // radius-bounded requests route directly to RentCast (which supports maxRadius).
+  const isRadiusSearch = identifier.max_radius != null
 
-  if (axessoRes.ok && axessoRes.data) {
+  const axessoRes = isRadiusSearch
+    ? null
+    : await axessoGet<BackendCompsResponse>(SIMILAR_SOLD_ENDPOINT, params, undefined, options?.signal)
+
+  if (axessoRes?.ok && axessoRes.data) {
     const body = axessoRes.data as BackendCompsResponse
     if (body.success !== false) {
       const transformed = transformSaleComps(axessoRes.data, subject)
@@ -288,6 +294,8 @@ export async function fetchSaleComps(
   if (identifier.limit != null) rcParams.limit = String(identifier.limit)
   if (identifier.offset != null) rcParams.offset = String(identifier.offset)
   if (identifier.exclude_zpids) rcParams.exclude_zpids = identifier.exclude_zpids
+  if (identifier.max_radius != null) rcParams.max_radius = String(identifier.max_radius)
+  if (identifier.days_old != null) rcParams.days_old = String(identifier.days_old)
 
   const rcRes = await axessoGet<BackendCompsResponse>(
     RENTCAST_SALE_ENDPOINT,
@@ -299,7 +307,7 @@ export async function fetchSaleComps(
   if (!rcRes.ok || !rcRes.data) {
     // Surface the original AXESSO failure if RentCast also failed, so callers
     // see the most useful upstream error context.
-    return axessoRes.ok ? { ...rcRes, data: null } : { ...axessoRes, data: null }
+    return axessoRes && !axessoRes.ok ? { ...axessoRes, data: null } : { ...rcRes, data: null }
   }
 
   const rcBody = rcRes.data as BackendCompsResponse

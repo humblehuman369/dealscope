@@ -161,6 +161,37 @@ const getFreshnessBadge = (dateString: string, isSale: boolean) => {
 }
 
 // ============================================
+// EXPANDED SEARCH RADIUS
+// ============================================
+// Fannie Mae comp-selection guidance: most comparable wins over closest.
+// Typical ranges — urban ~0.5–1 mi, suburban 1–3 mi, rural wider still.
+const RADIUS_STEPS_MI = [1, 2, 5] as const
+
+// Dedupe key for merging expanded-radius results into the existing list.
+// Providers differ (AXESSO zpids vs RentCast ids), so match on normalized
+// address first and fall back to id.
+function compDedupeKey(c: SaleComp | RentComp): string {
+  const addr = `${c.address} ${c.zip}`.toLowerCase().replace(/[^a-z0-9]/g, '')
+  return addr || String(c.id)
+}
+
+function mergeCompLists<T extends SaleComp | RentComp>(existing: T[], incoming: T[]): T[] {
+  const seen = new Set<string>()
+  existing.forEach((c) => {
+    seen.add(compDedupeKey(c))
+    seen.add(`id:${c.id}`)
+  })
+  const merged = [...existing]
+  for (const c of incoming) {
+    if (seen.has(compDedupeKey(c)) || seen.has(`id:${c.id}`)) continue
+    seen.add(compDedupeKey(c))
+    seen.add(`id:${c.id}`)
+    merged.push(c)
+  }
+  return merged
+}
+
+// ============================================
 // DATA TRANSFORMATION
 // ============================================
 // Map SaleComp or RentComp to CompProperty for appraisal calculations
@@ -347,7 +378,7 @@ function CompCard({
             )}
             <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-black/80 backdrop-blur-sm">
               <span className="text-[10px] font-semibold text-[var(--accent-sky-light)] tabular-nums">
-                {comp.distanceMiles.toFixed(2)} mi
+                {comp.distanceMiles.toFixed(2)} mi{comp.direction ? ` ${comp.direction}` : ''}
               </span>
             </div>
           </div>
@@ -782,6 +813,12 @@ export function PriceCheckerIQScreen({
   const [rentOverrideMarket, setRentOverrideMarket] = useState<number | null>(null)
   const [rentOverrideImproved, setRentOverrideImproved] = useState<number | null>(null)
 
+  // Expanded search radius (miles) per view — null means the provider default
+  // (roughly hyper-local). Expansion is one-way; Reset/Refresh All restores it.
+  const [saleSearchRadius, setSaleSearchRadius] = useState<number | null>(null)
+  const [rentSearchRadius, setRentSearchRadius] = useState<number | null>(null)
+  const [expandingRadius, setExpandingRadius] = useState(false)
+
   // Original comps snapshot -- stored on initial fetch so user can reset
   const [originalSaleComps, setOriginalSaleComps] = useState<SaleComp[]>([])
   const [originalSaleSelected, setOriginalSaleSelected] = useState<Set<string | number>>(new Set())
@@ -961,6 +998,61 @@ export function PriceCheckerIQScreen({
     [buildIdentifier, subjectForComps],
   )
 
+  const activeSearchRadius = isSale ? saleSearchRadius : rentSearchRadius
+
+  // Expand the comp search to a wider radius (RentCast maxRadius path) and
+  // merge new comps into the existing list, preserving selections. Triggered
+  // by the radius control or by zooming/panning the proximity map outward.
+  const expandSearchRadius = useCallback(
+    async (radiusMiles: number) => {
+      const current = isSale ? saleSearchRadius : rentSearchRadius
+      if (current != null && radiusMiles <= current) return
+      setExpandingRadius(true)
+      try {
+        const identifier = buildIdentifier(0, [])
+        identifier.limit = 25
+        identifier.max_radius = radiusMiles
+
+        let addedCount = 0
+        if (isSale) {
+          setSaleSearchRadius(radiusMiles)
+          const result = await fetchSaleCompsApi(identifier, subjectForComps ?? undefined)
+          if (result.ok && result.data && result.data.length > 0) {
+            const merged = mergeCompLists(saleComps, result.data)
+            addedCount = merged.length - saleComps.length
+            if (addedCount > 0) setSaleComps(merged)
+          }
+        } else {
+          setRentSearchRadius(radiusMiles)
+          const result = await fetchRentCompsApi(identifier, subjectForComps ?? undefined)
+          if (result.ok && result.data && result.data.length > 0) {
+            const merged = mergeCompLists(rentComps, result.data)
+            addedCount = merged.length - rentComps.length
+            if (addedCount > 0) setRentComps(merged)
+          }
+        }
+
+        setSaveMessage(
+          addedCount > 0
+            ? `Added ${addedCount} comp${addedCount === 1 ? '' : 's'} within ${radiusMiles} mi`
+            : `No additional comps found within ${radiusMiles} mi`,
+        )
+        setTimeout(() => setSaveMessage(null), 2500)
+      } finally {
+        setExpandingRadius(false)
+      }
+    },
+    [
+      isSale,
+      saleSearchRadius,
+      rentSearchRadius,
+      saleComps,
+      rentComps,
+      buildIdentifier,
+      subjectForComps,
+    ],
+  )
+
   // Initial fetch when we have a valid subject; re-run when property identity changes (e.g. navigate A → B)
   useEffect(() => {
     if (!hasValidSubject) return
@@ -1029,6 +1121,8 @@ export function PriceCheckerIQScreen({
     lastPersistedCompStateRef.current = null
     setRestoredCompState(null)
     setCompRestoreDone(false)
+    setSaleSearchRadius(null)
+    setRentSearchRadius(null)
   }, [subjectKey])
 
   // Load persisted comp state once the saved-property id is known
@@ -1162,6 +1256,7 @@ export function PriceCheckerIQScreen({
   // Refresh all -- fetches brand new comps from the API
   const handleRefreshAll = async () => {
     if (isSale) {
+      setSaleSearchRadius(null)
       const fetched = await fetchSaleComps()
       setSaleComps(fetched)
       setSaleOffset(0)
@@ -1169,6 +1264,7 @@ export function PriceCheckerIQScreen({
       setSaleOverrideMarket(null)
       setSaleOverrideArv(null)
     } else {
+      setRentSearchRadius(null)
       const fetched = await fetchRentComps()
       setRentComps(fetched)
       setRentOffset(0)
@@ -1186,12 +1282,14 @@ export function PriceCheckerIQScreen({
       setSaleOffset(0)
       setSaleOverrideMarket(null)
       setSaleOverrideArv(null)
+      setSaleSearchRadius(null)
     } else {
       setRentComps(originalRentComps)
       setRentSelected(new Set(originalRentSelected))
       setRentOffset(0)
       setRentOverrideMarket(null)
       setRentOverrideImproved(null)
+      setRentSearchRadius(null)
     }
     setSaveMessage('Restored original comps')
     setTimeout(() => setSaveMessage(null), 2000)
@@ -1764,6 +1862,9 @@ export function PriceCheckerIQScreen({
                     comps={mapComps}
                     activeView={activeView}
                     hideHeader
+                    searchRadiusMiles={activeSearchRadius ?? 0.5}
+                    onExpandSearch={expandSearchRadius}
+                    expanding={expandingRadius}
                   />
                 </div>
               )}
@@ -1908,6 +2009,9 @@ export function PriceCheckerIQScreen({
                   activeView={activeView}
                   hideHeader
                   className="h-full"
+                  searchRadiusMiles={activeSearchRadius ?? 0.5}
+                  onExpandSearch={expandSearchRadius}
+                  expanding={expandingRadius}
                 />
               </div>
             </div>
@@ -2104,6 +2208,51 @@ export function PriceCheckerIQScreen({
                             : 'FAIR'}
                       </span>
                     </div>
+
+                    {/* Expand search radius — Fannie Mae favors most comparable over
+                        closest: ~0.5–1 mi urban, 1–3 mi suburban, wider rural. */}
+                    <div className="mt-2 pt-2 border-t border-[var(--border-subtle)] flex items-center justify-between gap-2">
+                      <span
+                        className="text-xs text-[var(--text-heading)]"
+                        title="Fannie Mae comp guidance: urban ~0.5–1 mi, suburban 1–3 mi. Expand when nearby sales are thin."
+                      >
+                        Search radius
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <span
+                          className={`px-2.5 py-1 text-[11px] font-medium rounded-md border ${
+                            activeSearchRadius == null
+                              ? 'bg-[var(--accent-sky)]/15 border-[var(--border-focus)] text-[var(--accent-sky-light)]'
+                              : 'border-[var(--border-subtle)] text-[var(--text-label)]'
+                          }`}
+                        >
+                          Default
+                        </span>
+                        {RADIUS_STEPS_MI.map((r) => {
+                          const isActive = activeSearchRadius === r
+                          const alreadyCovered = activeSearchRadius != null && r < activeSearchRadius
+                          return (
+                            <button
+                              key={r}
+                              type="button"
+                              onClick={() => expandSearchRadius(r)}
+                              disabled={expandingRadius || isActive || alreadyCovered}
+                              className={`px-2.5 py-1 text-[11px] font-medium rounded-md border transition-colors whitespace-nowrap ${
+                                isActive
+                                  ? 'bg-[var(--accent-sky)]/15 border-[var(--border-focus)] text-[var(--accent-sky-light)]'
+                                  : 'border-[var(--border-subtle)] text-[var(--text-body)] hover:border-[var(--border-focus)] disabled:opacity-40'
+                              }`}
+                              title={`Search comps up to ${r} mi from the subject`}
+                            >
+                              {r} mi
+                            </button>
+                          )
+                        })}
+                        {expandingRadius && (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin text-[var(--accent-sky-light)]" />
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2170,6 +2319,9 @@ export function PriceCheckerIQScreen({
                         activeView={activeView}
                         hideHeader
                         className="h-full"
+                        searchRadiusMiles={activeSearchRadius ?? 0.5}
+                        onExpandSearch={expandSearchRadius}
+                        expanding={expandingRadius}
                       />
                     </div>
                   </div>

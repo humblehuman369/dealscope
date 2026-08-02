@@ -1781,12 +1781,16 @@ class PropertyService:
         limit: int = 10,
         offset: int = 0,
         exclude_zpids: list[str] | None = None,
+        max_radius: float | None = None,
+        days_old: int | None = None,
     ) -> dict[str, Any]:
         """
         Fetch rental comps from RentCast.
 
         Uses RentCast's rent estimate endpoint and returns the comparables payload
-        when present in the response.
+        when present in the response. When ``max_radius`` (miles) is provided the
+        comp pool is widened to RentCast's max (25 comps) within that radius —
+        used by the expandable comps search for rural/thin markets.
         """
         try:
             resolved_address = (address or "").strip() or None
@@ -1807,7 +1811,12 @@ class PropertyService:
                     "fetched_at": datetime.now(UTC).isoformat(),
                 }
 
-            result = await self.rentcast.get_rent_estimate(address=resolved_address)
+            result = await self.rentcast.get_rent_estimate(
+                address=resolved_address,
+                max_radius=max_radius,
+                days_old=days_old,
+                comp_count=25 if max_radius is not None else None,
+            )
             if not result.success or not result.data:
                 logger.warning(
                     "RentCast rental comps upstream failure",
@@ -1976,13 +1985,17 @@ class PropertyService:
         limit: int = 10,
         offset: int = 0,
         exclude_zpids: list[str] | None = None,
+        max_radius: float | None = None,
+        days_old: int | None = None,
     ) -> dict[str, Any]:
         """
         Fetch sale comps from RentCast (fallback when AXESSO similar-sold lacks prices).
 
         Uses RentCast's value AVM endpoint and surfaces the ``comparables`` payload
         when present. Mirrors :meth:`get_rentcast_rental_comps` but for sold/listed
-        sale comparables.
+        sale comparables. When ``max_radius`` (miles) is provided the comp pool is
+        widened to RentCast's max (25 comps) within that radius — used by the
+        expandable comps search for rural/thin markets.
         """
         try:
             resolved_address = (address or "").strip() or None
@@ -2003,7 +2016,12 @@ class PropertyService:
                     "fetched_at": datetime.now(UTC).isoformat(),
                 }
 
-            result = await self.rentcast.get_value_estimate(address=resolved_address)
+            result = await self.rentcast.get_value_estimate(
+                address=resolved_address,
+                max_radius=max_radius,
+                days_old=days_old,
+                comp_count=25 if max_radius is not None else None,
+            )
             if not result.success or not result.data:
                 logger.warning(
                     "RentCast sale comps upstream failure",
