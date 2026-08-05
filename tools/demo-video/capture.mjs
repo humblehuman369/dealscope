@@ -37,17 +37,18 @@ async function hideChrome(page) {
       [class*="consent-banner"] {
         display: none !important;
       }
-      *, *::before, *::after { animation-play-state: paused !important; }
     `,
   });
   await page.evaluate(() => {
     document.querySelectorAll('div, section, aside').forEach((el) => {
+      const style = window.getComputedStyle(el);
+      // Only consider floating banner-sized elements, never page wrappers
+      if (style.position !== 'fixed' && style.position !== 'sticky') return;
+      const rect = el.getBoundingClientRect();
+      if (rect.height > window.innerHeight * 0.4) return;
       const text = el.textContent || '';
-      if (text.includes('We use essential cookies') || (text.includes('cookie') && el.querySelector('button'))) {
-        const rect = el.getBoundingClientRect();
-        if (rect.width > window.innerWidth * 0.8 && rect.bottom > window.innerHeight * 0.7) {
-          el.style.display = 'none';
-        }
+      if (text.toLowerCase().includes('cookie') && el.querySelector('button')) {
+        el.style.display = 'none';
       }
     });
   });
@@ -56,6 +57,30 @@ async function hideChrome(page) {
 async function settle(page, extra = 1500) {
   await page.waitForLoadState('networkidle').catch(() => {});
   await page.waitForTimeout(extra);
+}
+
+// Hide full-screen modal overlays (signup prompts, gates) that block content.
+async function stripOverlays(page) {
+  await page.evaluate(() => {
+    document.querySelectorAll('div').forEach((el) => {
+      const s = window.getComputedStyle(el);
+      if (s.position !== 'fixed') return;
+      const z = parseInt(s.zIndex || '0', 10);
+      const rect = el.getBoundingClientRect();
+      if (z >= 40 && rect.width > window.innerWidth * 0.5 && rect.height > window.innerHeight * 0.5) {
+        el.style.display = 'none';
+      }
+    });
+  });
+  await page.waitForTimeout(400);
+}
+
+async function dismissOnboarding(page) {
+  const skip = page.locator('button:has-text("Skip")').first();
+  if (await skip.isVisible({ timeout: 4000 }).catch(() => false)) {
+    await skip.click();
+    await page.waitForTimeout(1200);
+  }
 }
 
 async function shot(page, name) {
@@ -90,7 +115,10 @@ async function login(page) {
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
-  const browser = await chromium.launch({ headless: true });
+  // Drive the system-installed Google Chrome; the Playwright-managed browser
+  // build in the local cache mismatches the installed Playwright version and
+  // produces black screenshots.
+  const browser = await chromium.launch({ headless: true, channel: 'chrome' });
   const context = await browser.newContext({
     viewport: { width: 1600, height: 1000 },
     deviceScaleFactor: 2,
@@ -112,13 +140,23 @@ async function main() {
   await page.goto(`${BASE_URL}/search`, { waitUntil: 'domcontentloaded' });
   await settle(page, 2000);
   await hideChrome(page);
-  const input = page
-    .locator('input[placeholder*="address" i], input[placeholder*="search" i], input[type="search"]')
-    .first();
-  if (await input.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await input.click();
-    await input.pressSequentially(DEMO_ADDRESS, { delay: 20 });
-    await page.waitForTimeout(1500);
+  // The search page opens a "How would you like to search" modal.
+  // Pick "Enter Address or search", then type the demo address.
+  try {
+    const enterAddress = page.locator('text=Enter Address or search').first();
+    if (await enterAddress.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await enterAddress.click();
+      await page.waitForTimeout(1000);
+    }
+    const input = page
+      .locator('div.fixed input, [role="dialog"] input, input[placeholder*="address" i], input[type="search"]')
+      .last();
+    if (await input.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await input.pressSequentially(DEMO_ADDRESS, { delay: 30, timeout: 10000 });
+      await page.waitForTimeout(1800);
+    }
+  } catch {
+    console.log('  WARN could not type demo address; capturing as-is');
   }
   await shot(page, 'search.png');
 
@@ -132,20 +170,46 @@ async function main() {
     waitUntil: 'domcontentloaded',
   });
   console.log('  waiting for analysis...');
-  await page.waitForSelector('text=Deal Gap', { timeout: 60000 }).catch(() => {});
-  await page.waitForTimeout(3000);
+  await page.waitForSelector('text=Investment Overview', { timeout: 90000 }).catch(() => {});
+  await page.waitForTimeout(4000);
+  await dismissOnboarding(page);
   await hideChrome(page);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(800);
   await shot(page, 'verdict.png');
+
+  // The Investment Overview (deal gap numbers) sits below the street view photo.
+  // Scroll it to a fixed offset from the top so the video crop is deterministic.
+  const overview = page.locator('text=Investment Overview').first();
+  if (await overview.isVisible().catch(() => false)) {
+    await overview.evaluate((el) => {
+      const y = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo(0, Math.max(0, y - 110));
+    });
+    await page.waitForTimeout(1200);
+    await shot(page, 'verdict-metrics.png');
+  }
+
+  // Third shot: the "ways to make this work" section with the 4 option cards.
+  const ways = page.locator('text=WAYS TO MAKE THIS WORK').first();
+  if (await ways.isVisible().catch(() => false)) {
+    await ways.evaluate((el) => {
+      const y = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo(0, Math.max(0, y - 130));
+    });
+    await page.waitForTimeout(1200);
+    await shot(page, 'verdict-options.png');
+  }
 
   // 4. Strategy
   console.log('[4/5] strategy');
   await page.goto(`${BASE_URL}/strategy?address=${encodeURIComponent(DEMO_ADDRESS)}`, {
     waitUntil: 'domcontentloaded',
   });
-  await page.waitForSelector('text=Deal Gap', { timeout: 60000 }).catch(() => {});
+  await page.waitForSelector('text=Options that close the gap', { timeout: 90000 }).catch(() => {});
   await page.waitForTimeout(3000);
+  await dismissOnboarding(page);
+  await stripOverlays(page);
   await hideChrome(page);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(800);
@@ -155,6 +219,18 @@ async function main() {
   console.log('[5/5] directory');
   await page.goto(`${BASE_URL}/directory`, { waitUntil: 'domcontentloaded' });
   await settle(page, 2500);
+  await stripOverlays(page);
+  // Hide the inline sign-in gate card so the crop has a clean lower edge
+  // (the blurred teaser cards behind it stay visible).
+  await page.evaluate(() => {
+    const marker = 'Sign in to browse verified cash buyers';
+    const matches = Array.from(document.querySelectorAll('div, section')).filter(
+      (el) => (el.textContent || '').includes(marker) && el.offsetHeight < window.innerHeight * 0.9,
+    );
+    const deepest = matches[matches.length - 1];
+    if (deepest) deepest.style.display = 'none';
+  });
+  await page.waitForTimeout(400);
   await hideChrome(page);
   await shot(page, 'directory.png');
 

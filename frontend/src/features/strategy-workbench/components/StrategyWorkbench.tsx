@@ -1953,7 +1953,7 @@ export function StrategyWorkbench({
       <VideoModal
         open={showDealGapVideo}
         onClose={() => setShowDealGapVideo(false)}
-        src="/videos/what-is-dealgapiq-v3.mp4"
+        src="/videos/what-is-dealgapiq-v4.mp4"
         title="What is Deal Gap?"
       />
 

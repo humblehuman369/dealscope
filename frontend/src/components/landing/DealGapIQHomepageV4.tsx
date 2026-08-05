@@ -107,7 +107,7 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
       <VideoModal
         open={showDemoVideo}
         onClose={() => setShowDemoVideo(false)}
-        src="/videos/what-is-dealgapiq-v3.mp4"
+        src="/videos/what-is-dealgapiq-v4.mp4"
         title="What is DealGapIQ?"
       />
     </div>
