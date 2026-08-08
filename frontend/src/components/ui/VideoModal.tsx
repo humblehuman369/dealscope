@@ -17,6 +17,8 @@ export interface VideoModalProps {
  * Escape, focus trap, return-focus and body scroll lock. This component
  * only owns the video-specific concerns:
  *   - Pause + reset playback when the modal closes (so reopening starts fresh)
+ *   - Explicit play() on open (autoPlay alone can lose the user-gesture window
+ *     after the open state updates asynchronously)
  *   - Larger panel size (`xl` ≈ 800px max-width) appropriate for 16:9 video
  *   - Letterbox background via the `--surface-media-letterbox` token
  *   - The `<video>` element is the autofocus target so keyboard controls
@@ -24,6 +26,22 @@ export interface VideoModalProps {
  */
 export function VideoModal({ open, onClose, src, title }: VideoModalProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  // Start playback when the modal opens. Relying only on the autoPlay
+  // attribute is flaky: React's setState mounts the <video> outside the
+  // original click's user-activation window in some browsers.
+  useEffect(() => {
+    if (!open) return
+    const v = videoRef.current
+    if (!v) return
+    v.currentTime = 0
+    const playPromise = v.play()
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // Autoplay with sound blocked — controls remain so the user can press play.
+      })
+    }
+  }, [open, src])
 
   // Reset playback when the modal closes so reopening doesn't resume
   // mid-video at the previous timestamp.
@@ -58,7 +76,7 @@ export function VideoModal({ open, onClose, src, title }: VideoModalProps) {
         style={{
           width: 32,
           height: 32,
-          background: 'rgba(0,0,0,0.55)',
+          background: 'rgba(0, 0, 0, 0.55)',
           border: 'none',
           color: '#fff',
         }}
@@ -86,6 +104,7 @@ export function VideoModal({ open, onClose, src, title }: VideoModalProps) {
         controls
         autoPlay
         playsInline
+        preload="metadata"
         className="w-full block"
         style={{ aspectRatio: '16/9', background: 'var(--surface-media-letterbox)' }}
       />

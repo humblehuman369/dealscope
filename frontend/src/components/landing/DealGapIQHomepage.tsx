@@ -194,7 +194,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
               preload="auto"
               playsInline
               controls={isDealGapVideoPlaying}
-              src="/videos/what-is-dealgapiq-v4.mp4"
+              src="/videos/what-is-dealgapiq.mp4"
               onLoadedData={handleDealGapVideoLoadedData}
               onEnded={handleDealGapVideoEnded}
               onPause={() => {
