@@ -2,7 +2,7 @@
 
 **ASC page name:** `Foreclosure & Auction`  
 **Slug:** `foreclosure`  
-**CPP URL:** `TODO_ASC_URL_foreclosure`
+**CPP URL:** `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=c041b519-e7e5-44e0-b0d7-ba1b51cf4a48`
 
 ---
 

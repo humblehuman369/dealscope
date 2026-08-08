@@ -2,7 +2,7 @@
 
 **ASC page name:** `Rental Cash Flow`  
 **Slug:** `rental`  
-**CPP URL:** `TODO_ASC_URL_rental`
+**CPP URL:** `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=e912a790-137f-4464-91d6-825cbc72c0e6`
 
 ---
 

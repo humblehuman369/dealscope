@@ -2,7 +2,7 @@
 
 **ASC page name:** `Deal Gap`  
 **Slug:** `deal-gap`  
-**CPP URL:** `TODO_ASC_URL_deal-gap`
+**CPP URL:** `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=46069324-ea01-437e-835a-b0c4cd5d2c62`
 
 ---
 

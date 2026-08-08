@@ -2,7 +2,7 @@
 
 **ASC page name:** `vs Calculators`  
 **Slug:** `competitor`  
-**CPP URL:** `TODO_ASC_URL_competitor`
+**CPP URL:** `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=9d35e2ad-b4b5-42a8-8cba-639ceff4c2dc`
 
 > Competitor **brand names belong only in ASA keyword targeting** — never in promotional text or screenshot headlines.
 

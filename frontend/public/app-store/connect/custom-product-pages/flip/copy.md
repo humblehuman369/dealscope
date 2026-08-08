@@ -2,7 +2,7 @@
 
 **ASC page name:** `Fix & Flip`  
 **Slug:** `flip`  
-**CPP URL:** `TODO_ASC_URL_flip`
+**CPP URL:** `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=20507c64-832d-4061-a0aa-34ca1755d96c`
 
 ---
 

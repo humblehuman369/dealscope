@@ -1,0 +1,37 @@
+[
+  {
+    "slug": "deal-gap",
+    "name": "Deal Gap",
+    "id": "46069324-ea01-437e-835a-b0c4cd5d2c62",
+    "url": "https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=46069324-ea01-437e-835a-b0c4cd5d2c62",
+    "localization_id": "11c142d9-4c22-427d-ac46-616551806936"
+  },
+  {
+    "slug": "foreclosure",
+    "name": "Foreclosure & Auction",
+    "id": "c041b519-e7e5-44e0-b0d7-ba1b51cf4a48",
+    "url": "https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=c041b519-e7e5-44e0-b0d7-ba1b51cf4a48",
+    "localization_id": "91cdc6ae-408e-4143-81d6-035686c66ea8"
+  },
+  {
+    "slug": "rental",
+    "name": "Rental Cash Flow",
+    "id": "e912a790-137f-4464-91d6-825cbc72c0e6",
+    "url": "https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=e912a790-137f-4464-91d6-825cbc72c0e6",
+    "localization_id": "47735d3a-d01a-4069-b1f5-456a428edb67"
+  },
+  {
+    "slug": "flip",
+    "name": "Fix & Flip",
+    "id": "20507c64-832d-4061-a0aa-34ca1755d96c",
+    "url": "https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=20507c64-832d-4061-a0aa-34ca1755d96c",
+    "localization_id": "9a4d1d32-3e43-41d2-ae32-539f0415b4be"
+  },
+  {
+    "slug": "competitor",
+    "name": "vs Calculators",
+    "id": "9d35e2ad-b4b5-42a8-8cba-639ceff4c2dc",
+    "url": "https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=9d35e2ad-b4b5-42a8-8cba-639ceff4c2dc",
+    "localization_id": "93d0b38f-77db-46d5-8b69-3f60c97081a0"
+  }
+]

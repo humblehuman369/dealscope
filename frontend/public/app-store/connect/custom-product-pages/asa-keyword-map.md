@@ -8,14 +8,14 @@ After ASC approves each CPP, paste the unique product-page URL in the **CPP URL*
 | ASA campaign / ad group | Match | Keywords (starter) | CPP | CPP URL |
 |---|---|---|---|---|
 | Brand defense | Exact | `dealgapiq`, `deal gap iq`, `deal gap` | Default listing *(or Deal Gap)* | _(default)_ |
-| Core discovery | Broad → Exact winners | `real estate deals`, `investment property`, `property analysis`, `real estate investing app` | **Deal Gap** | `TODO_ASC_URL_deal-gap` |
-| Distressed / off-MLS | Exact + Broad | `foreclosure`, `pre foreclosure`, `preforeclosure`, `foreclosure listings`, `auction homes`, `tax auction`, `off market properties` | **Foreclosure & Auction** | `TODO_ASC_URL_foreclosure` |
-| Rental / cash flow | Exact + Broad | `rental property`, `cash flow`, `cashflow`, `roi calculator`, `rental analysis`, `cap rate`, `landlord` | **Rental Cash Flow** | `TODO_ASC_URL_rental` |
-| Flip / ARV | Exact + Broad | `fix and flip`, `house flipping`, `arv`, `comps`, `rehab estimator` | **Fix & Flip** | `TODO_ASC_URL_flip` |
-| BRRRR (→ Flip CPP) | Exact | `brrrr`, `brrrr calculator`, `brrrr method` | **Fix & Flip** | `TODO_ASC_URL_flip` |
-| Wholesale (→ Flip CPP) | Exact | `wholesale real estate`, `wholesaling houses`, `assignment fee` | **Fix & Flip** | `TODO_ASC_URL_flip` |
-| Competitor conquest | Exact | `dealcheck`, `mashvisor`, `propstream`, `biggerpockets`, `rehab estimator` | **vs Calculators** | `TODO_ASC_URL_competitor` |
-| Search Match | Apple | _(discovery)_ | **Deal Gap** | `TODO_ASC_URL_deal-gap` |
+| Core discovery | Broad → Exact winners | `real estate deals`, `investment property`, `property analysis`, `real estate investing app` | **Deal Gap** | `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=46069324-ea01-437e-835a-b0c4cd5d2c62` |
+| Distressed / off-MLS | Exact + Broad | `foreclosure`, `pre foreclosure`, `preforeclosure`, `foreclosure listings`, `auction homes`, `tax auction`, `off market properties` | **Foreclosure & Auction** | `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=c041b519-e7e5-44e0-b0d7-ba1b51cf4a48` |
+| Rental / cash flow | Exact + Broad | `rental property`, `cash flow`, `cashflow`, `roi calculator`, `rental analysis`, `cap rate`, `landlord` | **Rental Cash Flow** | `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=e912a790-137f-4464-91d6-825cbc72c0e6` |
+| Flip / ARV | Exact + Broad | `fix and flip`, `house flipping`, `arv`, `comps`, `rehab estimator` | **Fix & Flip** | `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=20507c64-832d-4061-a0aa-34ca1755d96c` |
+| BRRRR (→ Flip CPP) | Exact | `brrrr`, `brrrr calculator`, `brrrr method` | **Fix & Flip** | `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=20507c64-832d-4061-a0aa-34ca1755d96c` |
+| Wholesale (→ Flip CPP) | Exact | `wholesale real estate`, `wholesaling houses`, `assignment fee` | **Fix & Flip** | `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=20507c64-832d-4061-a0aa-34ca1755d96c` |
+| Competitor conquest | Exact | `dealcheck`, `mashvisor`, `propstream`, `biggerpockets`, `rehab estimator` | **vs Calculators** | `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=9d35e2ad-b4b5-42a8-8cba-639ceff4c2dc` |
+| Search Match | Apple | _(discovery)_ | **Deal Gap** | `https://apps.apple.com/us/app/dealgapiq-real-estate-deals/id6759636866?ppid=46069324-ea01-437e-835a-b0c4cd5d2c62` |
 
 ## Suggested daily budget split (~$45)
 
