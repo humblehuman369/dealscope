@@ -17,19 +17,25 @@ Usage:
     python3 apply_screenshot_brand.py
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 THIS_DIR = Path(__file__).resolve().parent
 SCREENSHOTS_DIR = THIS_DIR / "screenshots"
-ASSETS_DIR = Path(
-    "/Users/bradgeisen/.cursor/projects/Users-bradgeisen-IQ-Data-dealscope/assets"
-)
+ASSETS_DIR = THIS_DIR / "assets" / "raw"
+CPP_DIR = THIS_DIR / "custom-product-pages"
 WORDMARK_PATH = (
     THIS_DIR.parent / "play-store" / "assets" / "dealgapiq-wordmark-darkmode.png"
 )
-FONT_PATH = "/tmp/dm-sans-fonts/DMSans-Variable.ttf"
+HERO_SCREENSHOT_PATH = THIS_DIR / "assets" / "hero-screenshot-strategy-tab.png"
+_FONT_CANDIDATES = (
+    THIS_DIR / "assets" / "fonts" / "DMSans-Variable.ttf",
+    Path("/tmp/dm-sans-fonts/DMSans-Variable.ttf"),
+)
+FONT_PATH = next((str(p) for p in _FONT_CANDIDATES if p.is_file()), str(_FONT_CANDIDATES[0]))
 
 TARGET_W = 1290
 TARGET_H = 2796
@@ -417,7 +423,7 @@ def add_feature_badge(canvas: Image.Image, target_y: int, label: str) -> int:
 
 
 def build_screenshot(
-    output_name: str,
+    output_path: Path,
     raw_image_name: str,
     crop_box: tuple,
     headline_lines: list,
@@ -435,6 +441,10 @@ def build_screenshot(
     wordmark_w: int = 560,
     badge_offset: int = 28,
 ) -> None:
+    ai_path = ASSETS_DIR / raw_image_name
+    if not ai_path.is_file():
+        raise FileNotFoundError(f"Missing AI raw plate: {ai_path}")
+
     canvas = build_navy_canvas()
     add_radial_cyan_glow(canvas, TARGET_W // 2, 1500, 950, intensity=0.22)
 
@@ -449,7 +459,7 @@ def build_screenshot(
 
     composite_visual(
         canvas,
-        ai_path=ASSETS_DIR / raw_image_name,
+        ai_path=ai_path,
         target_y=end_y + visual_top_offset,
         target_h=visual_h,
         width_pct=visual_width_pct,
@@ -460,44 +470,39 @@ def build_screenshot(
     wm_y = add_wordmark(canvas, target_y=TARGET_H - wordmark_y_from_bottom, target_w=wordmark_w)
     add_off_mls_badge(canvas, target_y=wm_y + badge_offset)
 
-    output_path = SCREENSHOTS_DIR / output_name
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert("RGB").save(output_path, "PNG", optimize=True)
-    print(f"Wrote: {output_path.name}  ({TARGET_W}x{TARGET_H})")
+    print(f"Wrote: {output_path.relative_to(THIS_DIR)}  ({TARGET_W}x{TARGET_H})")
 
 
-HERO_SCREENSHOT_PATH = THIS_DIR / "assets" / "hero-screenshot-strategy-tab.png"
+def build_hero_phone_frame(
+    output_path: Path,
+    headline_lines: list,
+    subhead_lines: list,
+    headline_size: int = 126,
+    headline_top_y: int = 160,
+) -> None:
+    """Hero / decision frame: real Strategy-tab screenshot inside a phone mockup."""
+    if not HERO_SCREENSHOT_PATH.is_file():
+        raise FileNotFoundError(f"Missing hero source: {HERO_SCREENSHOT_PATH}")
 
-
-def build_hero_with_real_screenshot() -> None:
-    """Hero screenshot using the real app screen captured on device.
-
-    Tighter v2 layout: bigger phone (1000px wide vs 900px), smaller top margin,
-    wordmark sized up for stronger bottom anchor, all dead space squeezed out
-    so the phone dominates the middle 60% of the canvas.
-    """
     canvas = build_navy_canvas()
     add_radial_cyan_glow(canvas, TARGET_W // 2, 1500, 980, intensity=0.24)
 
     end_y = add_headline(
         canvas,
-        ["Discover Deals", "Like an Investor"],
-        top_y=160,
-        font_size=126,
+        headline_lines,
+        top_y=headline_top_y,
+        font_size=headline_size,
         line_gap=8,
     )
-
-    end_y = add_subhead(
-        canvas,
-        "Every US Listing Analyzed for Profit",
-        end_y + 32,
-        font_size=44,
-    )
-    end_y = add_subhead(
-        canvas,
-        "MLS  \u00b7  Foreclosures  \u00b7  Auctions  \u00b7  Pre-Foreclosures",
-        end_y + 10,
-        font_size=40,
-    )
+    for i, line in enumerate(subhead_lines):
+        end_y = add_subhead(
+            canvas,
+            line,
+            end_y + (32 if i == 0 else 10),
+            font_size=44 if i == 0 else 40,
+        )
 
     phone = build_phone_with_screenshot(
         screenshot_path=HERO_SCREENSHOT_PATH,
@@ -512,15 +517,77 @@ def build_hero_with_real_screenshot() -> None:
         glow_intensity=140,
     )
     composite_phone_mockup(canvas, phone, target_y=end_y + 40)
-
     add_wordmark(canvas, target_y=TARGET_H - 230, target_w=640)
 
-    output_path = SCREENSHOTS_DIR / "01-hero-investors-lens.png"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert("RGB").save(output_path, "PNG", optimize=True)
-    print(f"Wrote: {output_path.name}  ({TARGET_W}x{TARGET_H})  [real screenshot, v2]")
+    print(f"Wrote: {output_path.relative_to(THIS_DIR)}  ({TARGET_W}x{TARGET_H})  [phone hero]")
 
 
-SCREENSHOT_CONFIGS = [
+def build_capture_phone_frame(
+    output_path: Path,
+    source_name: str,
+    headline_lines: list,
+    subhead: str,
+    headline_size: int = 120,
+    headline_top_y: int = 180,
+    phone_width: int = 920,
+    crop_box: tuple | None = (0, 0, 1290, 2200),
+) -> None:
+    """Branded frame from a full-bleed Playwright capture (1290×2796)."""
+    source = ASSETS_DIR / source_name
+    if not source.is_file():
+        raise FileNotFoundError(f"Missing capture source: {source}")
+
+    canvas = build_navy_canvas()
+    add_radial_cyan_glow(canvas, TARGET_W // 2, 1500, 950, intensity=0.22)
+
+    end_y = add_headline(
+        canvas,
+        headline_lines,
+        top_y=headline_top_y,
+        font_size=headline_size,
+        line_gap=10,
+    )
+    end_y = add_subhead(canvas, subhead, end_y + 28, font_size=44)
+
+    phone = build_phone_with_screenshot(
+        screenshot_path=source,
+        crop_box=crop_box,
+        phone_width=phone_width,
+        bezel_px=14,
+        bezel_color=(20, 22, 28, 255),
+        corner_radius_pct=0.10,
+        add_dynamic_island=True,
+        add_glow=True,
+        glow_pad=70,
+        glow_intensity=120,
+    )
+    composite_phone_mockup(canvas, phone, target_y=end_y + 36)
+    wm_y = add_wordmark(canvas, target_y=TARGET_H - 230, target_w=560)
+    add_off_mls_badge(canvas, target_y=wm_y + 24)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    canvas.convert("RGB").save(output_path, "PNG", optimize=True)
+    print(f"Wrote: {output_path.relative_to(THIS_DIR)}  ({TARGET_W}x{TARGET_H})  [phone capture]")
+
+
+def copy_plate(source_name: str, output_path: Path) -> None:
+    """Copy a finished default-listing plate into a CPP slot (headlines already baked in)."""
+    source = SCREENSHOTS_DIR / source_name
+    if not source.is_file():
+        raise FileNotFoundError(f"Missing default plate: {source}")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    Image.open(source).convert("RGB").save(output_path, "PNG", optimize=True)
+    print(f"Copied: {output_path.relative_to(THIS_DIR)}  ← {source_name}")
+
+
+# ---------------------------------------------------------------------------
+# Default listing plates (AI-composited). Regenerated when raws exist; otherwise
+# the checked-in PNGs in screenshots/ are left untouched.
+# ---------------------------------------------------------------------------
+
+AI_PLATE_CONFIGS = [
     {
         "output_name": "02-search-color-coded.png",
         "raw_image_name": "screenshot-02-search-raw.png",
@@ -586,12 +653,181 @@ SCREENSHOT_CONFIGS = [
     },
 ]
 
+# Named reusable frames for CPP assembly.
+# kind: "hero" | "capture" | "plate"
+FRAME_LIBRARY = {
+    "hero-default": {
+        "kind": "hero",
+        "headline_lines": ["Discover Deals", "Like an Investor"],
+        "subhead_lines": [
+            "Every US Listing Analyzed for Profit",
+            "MLS  \u00b7  Foreclosures  \u00b7  Auctions  \u00b7  Pre-Foreclosures",
+        ],
+    },
+    "hero-deal-gap": {
+        "kind": "hero",
+        "headline_lines": ["See the Deal Gap.", "Know what to offer."],
+        "subhead_lines": [
+            "Every US listing pre-scored for profit",
+            "Target Buy  \u00b7  Income Value  \u00b7  Market Price",
+        ],
+        "headline_size": 118,
+    },
+    "hero-decision": {
+        "kind": "hero",
+        "headline_lines": ["Math is easy.", "The decision isn't."],
+        "subhead_lines": [
+            "Pre-scored DEAL, MAYBE, or PASS",
+            "See the Deal Gap before you offer",
+        ],
+        "headline_size": 120,
+    },
+    "verdict-cashflow": {
+        "kind": "capture",
+        "source_name": "phone-03-verdict.png",
+        "headline_lines": ["Find cash-flowing", "rentals fast."],
+        "subhead": "Income Value and Target Buy on every listing.",
+        "headline_size": 118,
+    },
+    "dealmaker-arv": {
+        "kind": "capture",
+        "source_name": "phone-04-strategy.png",
+        "headline_lines": ["Model rehab.", "See ARV profit."],
+        "subhead": "Adjust price, rehab, ARV \u2014 profit updates live.",
+        "headline_size": 120,
+    },
+    "plate-search": {"kind": "plate", "plate": "02-search-color-coded.png"},
+    "plate-verdict": {"kind": "plate", "plate": "03-verdict-three-cards.png"},
+    "plate-pills": {"kind": "plate", "plate": "04-pills-deal-maybe-pass.png"},
+    "plate-coverage": {"kind": "plate", "plate": "05-coverage-beyond-mls.png"},
+    "plate-comps": {"kind": "plate", "plate": "06-comps-no-spreadsheet.png"},
+    "plate-dealmaker": {"kind": "plate", "plate": "07-dealmaker-scenarios.png"},
+    "plate-heatmap": {"kind": "plate", "plate": "08-neighborhoods-heatmap.png"},
+}
+
+# Each CPP: ordered list of (output_filename, frame_library_key)
+CPP_VARIANTS = {
+    "deal-gap": [
+        ("01-hero-deal-gap.png", "hero-deal-gap"),
+        ("02-verdict-three-cards.png", "plate-verdict"),
+        ("03-pills-deal-maybe-pass.png", "plate-pills"),
+        ("04-search-color-coded.png", "plate-search"),
+        ("05-coverage-beyond-mls.png", "plate-coverage"),
+        ("06-comps-no-spreadsheet.png", "plate-comps"),
+        ("07-dealmaker-scenarios.png", "plate-dealmaker"),
+        ("08-neighborhoods-heatmap.png", "plate-heatmap"),
+    ],
+    "foreclosure": [
+        ("01-coverage-beyond-mls.png", "plate-coverage"),
+        ("02-search-color-coded.png", "plate-search"),
+        ("03-hero-deal-gap.png", "hero-deal-gap"),
+        ("04-verdict-three-cards.png", "plate-verdict"),
+        ("05-pills-deal-maybe-pass.png", "plate-pills"),
+        ("06-comps-no-spreadsheet.png", "plate-comps"),
+        ("07-dealmaker-scenarios.png", "plate-dealmaker"),
+        ("08-neighborhoods-heatmap.png", "plate-heatmap"),
+    ],
+    "rental": [
+        ("01-verdict-cashflow.png", "verdict-cashflow"),
+        ("02-dealmaker-scenarios.png", "plate-dealmaker"),
+        ("03-pills-deal-maybe-pass.png", "plate-pills"),
+        ("04-search-color-coded.png", "plate-search"),
+        ("05-coverage-beyond-mls.png", "plate-coverage"),
+        ("06-comps-no-spreadsheet.png", "plate-comps"),
+        ("07-hero-deal-gap.png", "hero-deal-gap"),
+        ("08-neighborhoods-heatmap.png", "plate-heatmap"),
+    ],
+    "flip": [
+        ("01-comps-no-spreadsheet.png", "plate-comps"),
+        ("02-dealmaker-arv.png", "dealmaker-arv"),
+        ("03-verdict-three-cards.png", "plate-verdict"),
+        ("04-pills-deal-maybe-pass.png", "plate-pills"),
+        ("05-search-color-coded.png", "plate-search"),
+        ("06-coverage-beyond-mls.png", "plate-coverage"),
+        ("07-hero-deal-gap.png", "hero-deal-gap"),
+        ("08-neighborhoods-heatmap.png", "plate-heatmap"),
+    ],
+    "competitor": [
+        ("01-hero-decision.png", "hero-decision"),
+        ("02-pills-deal-maybe-pass.png", "plate-pills"),
+        ("03-coverage-beyond-mls.png", "plate-coverage"),
+        ("04-verdict-three-cards.png", "plate-verdict"),
+        ("05-search-color-coded.png", "plate-search"),
+        ("06-comps-no-spreadsheet.png", "plate-comps"),
+        ("07-dealmaker-scenarios.png", "plate-dealmaker"),
+        ("08-neighborhoods-heatmap.png", "plate-heatmap"),
+    ],
+}
+
+
+def render_frame(frame_key: str, output_path: Path) -> None:
+    cfg = FRAME_LIBRARY[frame_key]
+    kind = cfg["kind"]
+    if kind == "hero":
+        build_hero_phone_frame(
+            output_path,
+            headline_lines=cfg["headline_lines"],
+            subhead_lines=cfg["subhead_lines"],
+            headline_size=cfg.get("headline_size", 126),
+            headline_top_y=cfg.get("headline_top_y", 160),
+        )
+    elif kind == "capture":
+        build_capture_phone_frame(
+            output_path,
+            source_name=cfg["source_name"],
+            headline_lines=cfg["headline_lines"],
+            subhead=cfg["subhead"],
+            headline_size=cfg.get("headline_size", 120),
+            headline_top_y=cfg.get("headline_top_y", 180),
+        )
+    elif kind == "plate":
+        copy_plate(cfg["plate"], output_path)
+    else:
+        raise ValueError(f"Unknown frame kind: {kind!r} for {frame_key}")
+
+
+def build_default_listing() -> None:
+    SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
+    build_hero_phone_frame(
+        SCREENSHOTS_DIR / "01-hero-investors-lens.png",
+        headline_lines=["Discover Deals", "Like an Investor"],
+        subhead_lines=[
+            "Every US Listing Analyzed for Profit",
+            "MLS  \u00b7  Foreclosures  \u00b7  Auctions  \u00b7  Pre-Foreclosures",
+        ],
+    )
+    for cfg in AI_PLATE_CONFIGS:
+        raw = ASSETS_DIR / cfg["raw_image_name"]
+        out = SCREENSHOTS_DIR / cfg["output_name"]
+        if raw.is_file():
+            build_screenshot(output_path=out, **{k: v for k, v in cfg.items() if k != "output_name"})
+        elif out.is_file():
+            print(f"Kept existing plate: {out.name}  (no AI raw at {raw.name})")
+        else:
+            raise FileNotFoundError(
+                f"Missing both AI raw ({raw}) and existing plate ({out})"
+            )
+
+
+def build_custom_product_pages() -> None:
+    for slug, slots in CPP_VARIANTS.items():
+        out_dir = CPP_DIR / slug / "screenshots"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        print(f"\n=== CPP: {slug} ===")
+        for filename, frame_key in slots:
+            render_frame(frame_key, out_dir / filename)
+
 
 def main() -> None:
-    SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
-    build_hero_with_real_screenshot()
-    for cfg in SCREENSHOT_CONFIGS:
-        build_screenshot(**cfg)
+    if not Path(FONT_PATH).is_file():
+        raise FileNotFoundError(
+            f"DM Sans not found. Place DMSans-Variable.ttf at "
+            f"{_FONT_CANDIDATES[0]} or /tmp/dm-sans-fonts/"
+        )
+    print(f"Font: {FONT_PATH}")
+    build_default_listing()
+    build_custom_product_pages()
+    print("\nDone — default listing + 5 Custom Product Pages.")
 
 
 if __name__ == "__main__":

@@ -109,7 +109,7 @@ Point the founder's owned reach (LinkedIn, YouTube, podcasts) at the app — the
 
 **Gate:** do not scale paid until new screenshots are live AND rating ≥ 10 reviews / ≥ 4.0★. Run discovery-budget only until then.
 
-- [ ] **Apple Search Ads** (~$45/day total): Brand defense $5, Core discovery $20, Competitor conquesting $10, Search Match $10. Use a Custom Product Page with the Deal-Gap-led screenshot. *Verify:* CPI tracked per keyword.
+- [ ] **Apple Search Ads** (~$45/day total): Brand defense $5, Core discovery $20, Competitor conquesting $10, Search Match $10. Pair each ad group with a Custom Product Page from `frontend/public/app-store/connect/custom-product-pages/` (Deal Gap, Foreclosure & Auction, Rental Cash Flow, Fix & Flip, vs Calculators — see `asa-keyword-map.md`). *Verify:* CPI tracked per keyword + CPP.
 - [ ] **Google App Campaign** ($25/day): supply 5 headlines, 5 descriptions, 6 screenshots, 1 portrait video, the icon. Switch bid goal to "first analysis completed" after ~30 installs. *Verify:* assets approved, campaign serving.
 - [ ] **Apply guardrails:** pause any keyword > $8 CPI or > $60 cost-per-trial at the 7-day read; reallocate to winners.
 

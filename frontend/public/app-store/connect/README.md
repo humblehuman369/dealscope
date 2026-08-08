@@ -5,6 +5,8 @@ Production-ready visual and copy assets for the **iOS App Store** (App Store Con
 > **Status:** Ready to upload. All assets at native Apple-spec resolution.
 >
 > **Companion folder:** `../play-store/` for the Google Play Store equivalents.
+>
+> **Custom Product Pages (ASA):** [`custom-product-pages/`](custom-product-pages/) — five intent-matched pages (Deal Gap, Foreclosure, Rental, Flip, vs Calculators). Regenerate with `python3 apply_screenshot_brand.py`.
 
 ---
 
