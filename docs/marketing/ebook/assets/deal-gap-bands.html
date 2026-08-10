@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Deal Gap Bands — The Deal Gap</title>
+  <style>
+    :root {
+      --ink: #0b1220;
+      --muted: #5b6577;
+      --line: #d7dde8;
+      --paper: #ffffff;
+      --bg: #f8fafc;
+      --green: #15803d;
+      --green-bg: #dcfce7;
+      --amber: #b45309;
+      --amber-bg: #ffedd5;
+      --red: #b91c1c;
+      --red-bg: #fee2e2;
+      --sky: #0369a1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      color: var(--ink);
+      background: var(--bg);
+      padding: 32px 20px 48px;
+    }
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 36px 40px 40px;
+    }
+    h1 {
+      font-size: 1.75rem;
+      margin: 0 0 0.25rem;
+      letter-spacing: -0.02em;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 0 0 1.5rem;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .meter {
+      display: grid;
+      grid-template-columns: 1.1fr 1.4fr 1.6fr;
+      height: 28px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 0 0 0.5rem;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: white;
+    }
+    .meter span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .m-a { background: var(--green); }
+    .m-b { background: var(--amber); }
+    .m-c { background: var(--red); }
+    .scale {
+      display: grid;
+      grid-template-columns: 1.1fr 1.4fr 1.6fr;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 1.75rem;
+    }
+    .scale span { text-align: center; }
+    .bands { display: grid; gap: 12px; }
+    .band {
+      border-radius: 8px;
+      padding: 16px 18px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .band.a { background: var(--green-bg); border: 1px solid #86efac; }
+    .band.b { background: var(--amber-bg); border: 1px solid #fdba74; }
+    .band.c { background: var(--red-bg); border: 1px solid #fca5a5; }
+    .band h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1rem;
+    }
+    .band.a h2 { color: var(--green); }
+    .band.b h2 { color: var(--amber); }
+    .band.c h2 { color: var(--red); }
+    .band p {
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      color: var(--ink);
+    }
+    .note {
+      margin: 1.75rem 0 0;
+      padding: 14px 16px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .note strong { color: var(--sky); }
+    .footer {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .footer a { color: var(--sky); }
+    @media print {
+      body { background: white; padding: 0; }
+      .page { border: none; max-width: none; padding: 0.5in; }
+    }
+    @media (max-width: 640px) {
+      .page { padding: 24px; }
+      .meter, .scale { grid-template-columns: 1fr; height: auto; }
+      .meter span { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Reading the Deal Gap</h1>
+    <p class="sub">Effort bands for new investors — not false precision</p>
+
+    <div class="meter" aria-hidden="true">
+      <span class="m-a">0–5%</span>
+      <span class="m-b">5–15%</span>
+      <span class="m-c">15%+</span>
+    </div>
+    <div class="scale" aria-hidden="true">
+      <span>Closer</span>
+      <span>Real work</span>
+      <span>Hard mode</span>
+    </div>
+
+    <div class="bands">
+      <div class="band a">
+        <h2>0–5% — Close enough</h2>
+        <p>Normal negotiation or a small structure tweak may work. Still verify rent, insurance, and repairs — a thin gap with fantasy inputs is still a phantom deal.</p>
+      </div>
+      <div class="band b">
+        <h2>5–15% — Real work</h2>
+        <p>Price alone may not be enough. Use the Four Paths: price, capital, income re-verify, or structure. Name your first path before you tour again.</p>
+      </div>
+      <div class="band c">
+        <h2>15%+ — Hard mode</h2>
+        <p>Need a clear path, a different strategy (house hack, wholesale, BRRRR…), or a pass. Big gaps can close with motivation + structure — they rarely close on hope.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Formula:</strong>
+      Deal Gap % = (Asking Price − Target Buy) / Asking Price × 100.
+      Positive = asking above Target Buy. The price tag isn’t the deal — the structure is.
+    </div>
+
+    <div class="footer">
+      From <em>The Deal Gap</em> · Educational use ·
+      <a href="https://dealgapiq.com">dealgapiq.com</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Deal Gap Cheat Sheet</title>
+  <style>
+    :root {
+      --ink: #0b1220;
+      --muted: #5b6577;
+      --line: #cbd5e1;
+      --sky: #0369a1;
+      --paper: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: #e2e8f0;
+      padding: 16px;
+    }
+    .sheet {
+      width: 8.5in;
+      min-height: 11in;
+      max-width: 100%;
+      margin: 0 auto;
+      background: var(--paper);
+      padding: 0.45in 0.5in;
+      border: 1px solid var(--line);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+      font-family: Georgia, "Iowan Old Style", serif;
+    }
+    header .brand {
+      font-size: 0.75rem;
+      color: var(--sky);
+      font-weight: 700;
+    }
+    .tagline {
+      margin: 0 0 14px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    h2 {
+      margin: 0 0 6px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--sky);
+    }
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 10px 12px;
+    }
+    .formula {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.78rem;
+      background: #0b1220;
+      color: #e2e8f0;
+      padding: 10px 12px;
+      border-radius: 4px;
+      line-height: 1.45;
+      margin: 0 0 8px;
+    }
+    ol, ul { margin: 0; padding-left: 1.1rem; font-size: 0.8rem; line-height: 1.4; }
+    li { margin-bottom: 3px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 6px 8px;
+      text-align: left;
+    }
+    th { background: #f1f5f9; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .paths {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+    .path {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 8px;
+      font-size: 0.72rem;
+      line-height: 1.3;
+    }
+    .path strong {
+      display: block;
+      font-size: 0.75rem;
+      margin-bottom: 3px;
+      color: var(--sky);
+    }
+    .worksheet label {
+      display: block;
+      font-size: 0.72rem;
+      margin-bottom: 6px;
+      border-bottom: 1px dotted var(--line);
+      padding-bottom: 4px;
+    }
+    .checks {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 12px;
+      font-size: 0.75rem;
+      margin-top: 6px;
+    }
+    footer {
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--sky); font-weight: 700; text-decoration: none; }
+    @media print {
+      body { background: white; padding: 0; }
+      .sheet {
+        width: auto;
+        min-height: auto;
+        border: none;
+        padding: 0.4in;
+      }
+    }
+    @media (max-width: 800px) {
+      .grid-2, .paths, .checks { grid-template-columns: 1fr; }
+      .sheet { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <header>
+      <h1>The Deal Gap — Cheat Sheet</h1>
+      <div class="brand">DealGapIQ</div>
+    </header>
+    <p class="tagline">How far is the asking price from the price where this deal actually works for me?</p>
+
+    <div class="grid-2">
+      <div class="box">
+        <h2>The three numbers</h2>
+        <div class="formula">
+          Target Buy ≈ Income Value × (1 − buy discount %)<br />
+          Deal Gap % = (Ask − Target Buy) / Ask × 100
+        </div>
+        <ul>
+          <li><strong>Income Value</strong> — ceiling where income stops supporting the deal</li>
+          <li><strong>Target Buy</strong> — your offer anchor &amp; walk-away</li>
+          <li><strong>Deal Gap (+)</strong> — asking above Target Buy; need concession or structure</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h2>Gap bands (effort)</h2>
+        <table>
+          <thead>
+            <tr><th>Band</th><th>Read</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0–5%</td><td>Close — negotiate / small tweak</td></tr>
+            <tr><td>5–15%</td><td>Real work — use Four Paths</td></tr>
+            <tr><td>15%+</td><td>Hard mode — path, new strategy, or pass</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h2>Four paths to close a gap</h2>
+    <div class="paths">
+      <div class="path"><strong>1. Price</strong>Negotiate toward Target Buy</div>
+      <div class="path"><strong>2. Capital</strong>Improve the stack (not fantasy leverage)</div>
+      <div class="path"><strong>3. Income</strong>Re-verify rent, tax, insurance</div>
+      <div class="path"><strong>4. Structure</strong>Seller carry, credits, creative</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="box">
+        <h2>Weekly routine</h2>
+        <ol>
+          <li>Collect address + ask</li>
+          <li>Defendable rent &amp; expenses (mark unknowns)</li>
+          <li>Income Value → Target Buy → Deal Gap</li>
+          <li>Rank strategies that fit you</li>
+          <li>Choose path(s) — or pass</li>
+          <li>Log one line</li>
+        </ol>
+      </div>
+      <div class="box worksheet">
+        <h2>Quick worksheet</h2>
+        <label>Address:&nbsp;</label>
+        <label>Ask $________ &nbsp; Target Buy $________</label>
+        <label>Deal Gap ______% &nbsp; Band: 0–5 / 5–15 / 15+</label>
+        <label>Strategy #1 ________ #2 ________</label>
+        <div class="checks">
+          <div>□ Price &nbsp; □ Capital</div>
+          <div>□ Income &nbsp; □ Structure</div>
+          <div>□ Pursue</div>
+          <div>□ PASS</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="box" style="margin-top:10px">
+      <h2>Anti-phantom checklist</h2>
+      <div class="checks">
+        <div>□ Rent defendable (comps / sources)</div>
+        <div>□ Tax &amp; insurance are real quotes</div>
+        <div>□ Buy discount chosen on purpose</div>
+        <div>□ Path named — or explicitly passing</div>
+      </div>
+    </div>
+
+    <footer>
+      <div>Educational only — not financial advice. The price tag isn’t the deal. The structure is.</div>
+      <div>Analyze an address: <a href="https://dealgapiq.com">dealgapiq.com</a></div>
+    </footer>
+  </div>
+</body>
+</html>

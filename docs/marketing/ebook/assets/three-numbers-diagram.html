@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Three Numbers — The Deal Gap</title>
+  <style>
+    :root {
+      --ink: #0b1220;
+      --muted: #5b6577;
+      --line: #d7dde8;
+      --ask: #94a3b8;
+      --income: #0ea5e9;
+      --target: #0369a1;
+      --gap: #dc2626;
+      --paper: #ffffff;
+      --bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      color: var(--ink);
+      background: var(--bg);
+      padding: 32px 20px 48px;
+    }
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 36px 40px 40px;
+    }
+    h1 {
+      font-size: 1.75rem;
+      margin: 0 0 0.25rem;
+      letter-spacing: -0.02em;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 0 0 1.75rem;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .stack { display: grid; gap: 14px; margin: 1.5rem 0 2rem; }
+    .row {
+      display: grid;
+      grid-template-columns: 140px 1fr 100px;
+      gap: 12px;
+      align-items: center;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 0.9rem;
+    }
+    .label { font-weight: 650; }
+    .bar-wrap {
+      background: #eef2f7;
+      height: 36px;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar {
+      height: 100%;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .bar.ask { width: 100%; background: var(--ask); }
+    .bar.income { width: 95%; background: var(--income); }
+    .bar.target { width: 90%; background: var(--target); }
+    .amount { text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; }
+    .gap-callout {
+      border-left: 4px solid var(--gap);
+      background: #fef2f2;
+      padding: 14px 16px;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 0.92rem;
+      margin: 1.25rem 0 1.75rem;
+    }
+    .gap-callout strong { color: var(--gap); }
+    .formula {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: #0b1220;
+      color: #e2e8f0;
+      padding: 16px 18px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin: 0 0 1.5rem;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .card {
+      border: 1px solid var(--line);
+      padding: 14px;
+      border-radius: 6px;
+    }
+    .card h2 {
+      margin: 0 0 0.4rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .card p {
+      margin: 0;
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+    .footer {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .footer a { color: var(--target); }
+    @media print {
+      body { background: white; padding: 0; }
+      .page { border: none; max-width: none; padding: 0.5in; }
+    }
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 1fr; gap: 4px; }
+      .amount { text-align: left; }
+      .cards { grid-template-columns: 1fr; }
+      .page { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>The Three Numbers That Matter</h1>
+    <p class="sub">From <em>The Deal Gap</em> — teaching diagram (example dollars)</p>
+
+    <div class="stack">
+      <div class="row">
+        <div class="label">Asking price</div>
+        <div class="bar-wrap"><div class="bar ask">Seller’s wish</div></div>
+        <div class="amount">$400,000</div>
+      </div>
+      <div class="row">
+        <div class="label">Income Value</div>
+        <div class="bar-wrap"><div class="bar income">Cash-flow ceiling</div></div>
+        <div class="amount">$380,000</div>
+      </div>
+      <div class="row">
+        <div class="label">Target Buy</div>
+        <div class="bar-wrap"><div class="bar target">Your buy number</div></div>
+        <div class="amount">$360,000</div>
+      </div>
+    </div>
+
+    <div class="gap-callout">
+      <strong>Deal Gap = 10%</strong>
+      &nbsp; Distance from Asking → Target Buy.
+      Positive gap means you need concession or structure — not that the house is “bad.”
+    </div>
+
+    <div class="formula">
+      Target Buy ≈ Income Value × (1 − buy discount %)<br />
+      Deal Gap % = (Asking Price − Target Buy) / Asking Price × 100
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h2>Income Value</h2>
+        <p>Ceiling before income stops supporting the deal under your assumptions.</p>
+      </div>
+      <div class="card">
+        <h2>Target Buy</h2>
+        <p>Income Value after your required margin — offer anchor and walk-away.</p>
+      </div>
+      <div class="card">
+        <h2>Deal Gap</h2>
+        <p>How far asking sits from Target Buy. Decision signal, not destiny.</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      Educational diagram · Not financial advice ·
+      Run it on a real address at <a href="https://dealgapiq.com">dealgapiq.com</a>
+    </div>
+  </div>
+</body>
+</html>
