@@ -74,7 +74,15 @@ connect/
     └── app-preview-video-brief.md             ← 30-second App Preview shot list, voiceover script, production guide
 ```
 
-All screenshots are **1290 × 2796 pixels** (iPhone 6.9" Display, the size Apple ranks first for search). Apple auto-scales these for the 6.7" / 6.5" / 5.5" iPhone slots — you do not need to upload smaller variants. iPad screenshots are optional; if you skip them, Apple will use the iPhone screenshots and a small "iPhone screenshots displayed" disclaimer will show on iPad.
+All iPhone screenshots are **1290 × 2796 pixels** (iPhone 6.9" Display, the size Apple ranks first for search). Apple auto-scales these for the 6.7" / 6.5" / 5.5" iPhone slots — you do not need to upload smaller variants.
+
+**iPad screenshots** live in `screenshots-ipad/` at **2048 × 2732** (12.9" iPad Pro). Same copy and visual system as the iPhone set. Regenerate with:
+
+```bash
+python3 apply_screenshot_brand.py --device ipad --listing-only
+```
+
+Upload those eight PNGs into App Store Connect → **12.9" iPad Pro Display** (or the 13" slot if Connect asks — some accounts label it that way). If you skip iPad assets, Apple falls back to iPhone screenshots with an "iPhone screenshots displayed" note.
 
 ---
 

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Build App Store Connect portrait screenshots (1290×2796, iPhone 6.9" Display).
+"""Build App Store Connect portrait screenshots.
+
+Default: 1290×2796 (iPhone 6.9" Display).
+Also:    2048×2732 (iPad Pro 12.9" Display) via --device ipad.
 
 Each screenshot is composited from:
   - A dark navy gradient canvas (brand bg)
@@ -10,21 +13,24 @@ Each screenshot is composited from:
   - The official DealGapIQ brand wordmark at the bottom
   - A coverage / feature badge below the wordmark
 
-The text is rendered programmatically so it stays pixel-crisp at the 1290×2796
-resolution Apple ranks first for App Store search results (iPhone 6.9").
-
 Usage:
     python3 apply_screenshot_brand.py
+    python3 apply_screenshot_brand.py --device ipad
+    python3 apply_screenshot_brand.py --device ipad --listing-only
 """
 
 from __future__ import annotations
 
+import argparse
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 THIS_DIR = Path(__file__).resolve().parent
-SCREENSHOTS_DIR = THIS_DIR / "screenshots"
+IPHONE_SCREENSHOTS_DIR = THIS_DIR / "screenshots"
+IPAD_SCREENSHOTS_DIR = THIS_DIR / "screenshots-ipad"
+SCREENSHOTS_DIR = IPHONE_SCREENSHOTS_DIR
 ASSETS_DIR = THIS_DIR / "assets" / "raw"
 CPP_DIR = THIS_DIR / "custom-product-pages"
 WORDMARK_PATH = (
@@ -37,8 +43,58 @@ _FONT_CANDIDATES = (
 )
 FONT_PATH = next((str(p) for p in _FONT_CANDIDATES if p.is_file()), str(_FONT_CANDIDATES[0]))
 
-TARGET_W = 1290
-TARGET_H = 2796
+DEVICE_PROFILES = {
+    "iphone": {
+        "w": 1290,
+        "h": 2796,
+        "out_dir": IPHONE_SCREENSHOTS_DIR,
+        # Layout multipliers relative to the original iPhone art direction.
+        "font": 1.0,
+        "phone": 1.0,
+        "top": 1.0,
+    },
+    "ipad": {
+        "w": 2048,
+        "h": 2732,
+        "out_dir": IPAD_SCREENSHOTS_DIR,
+        "font": 1.35,
+        "phone": 1.28,
+        "top": 0.85,
+    },
+}
+
+ACTIVE_DEVICE = "iphone"
+TARGET_W = DEVICE_PROFILES["iphone"]["w"]
+TARGET_H = DEVICE_PROFILES["iphone"]["h"]
+LAYOUT = DEVICE_PROFILES["iphone"]
+
+
+def set_device(device: str) -> None:
+    """Switch canvas size + output directory for iPhone or iPad App Store slots."""
+    global ACTIVE_DEVICE, TARGET_W, TARGET_H, LAYOUT, SCREENSHOTS_DIR
+    if device not in DEVICE_PROFILES:
+        raise ValueError(f"Unknown device {device!r}. Use: {', '.join(DEVICE_PROFILES)}")
+    ACTIVE_DEVICE = device
+    profile = DEVICE_PROFILES[device]
+    TARGET_W = profile["w"]
+    TARGET_H = profile["h"]
+    LAYOUT = profile
+    SCREENSHOTS_DIR = profile["out_dir"]
+
+
+def _fs(size: int) -> int:
+    """Scale a font/size value for the active device."""
+    return max(1, int(round(size * LAYOUT["font"])))
+
+
+def _ps(size: int) -> int:
+    """Scale a phone/visual size value for the active device."""
+    return max(1, int(round(size * LAYOUT["phone"])))
+
+
+def _ys(size: int) -> int:
+    """Scale a vertical layout offset for the active device."""
+    return max(1, int(round(size * LAYOUT["top"])))
 
 INK = (27, 33, 65, 255)
 BLUE = (4, 101, 242, 255)
@@ -446,33 +502,76 @@ def build_screenshot(
         raise FileNotFoundError(f"Missing AI raw plate: {ai_path}")
 
     canvas = build_navy_canvas()
-    add_radial_cyan_glow(canvas, TARGET_W // 2, 1500, 950, intensity=0.22)
+    add_radial_cyan_glow(
+        canvas, TARGET_W // 2, int(TARGET_H * 0.54), int(TARGET_W * 0.74), intensity=0.22
+    )
 
     end_y = add_headline(
         canvas,
         headline_lines,
-        top_y=headline_top_y,
-        font_size=headline_size,
-        line_gap=line_gap,
+        top_y=_ys(headline_top_y),
+        font_size=_fs(headline_size),
+        line_gap=_fs(line_gap),
     )
-    end_y = add_subhead(canvas, subhead, end_y + subhead_offset, font_size=subhead_size)
+    end_y = add_subhead(
+        canvas, subhead, end_y + _ys(subhead_offset), font_size=_fs(subhead_size)
+    )
 
+    # Keep visuals from overflowing the shorter iPad canvas.
+    scaled_visual_h = min(_ps(visual_h), int(TARGET_H * 0.58))
     composite_visual(
         canvas,
         ai_path=ai_path,
-        target_y=end_y + visual_top_offset,
-        target_h=visual_h,
-        width_pct=visual_width_pct,
+        target_y=end_y + _ys(visual_top_offset),
+        target_h=scaled_visual_h,
+        width_pct=min(visual_width_pct, 0.88 if ACTIVE_DEVICE == "ipad" else visual_width_pct),
         crop_box=crop_box,
-        feather_px=feather_px,
+        feather_px=_ps(feather_px),
     )
 
-    wm_y = add_wordmark(canvas, target_y=TARGET_H - wordmark_y_from_bottom, target_w=wordmark_w)
-    add_off_mls_badge(canvas, target_y=wm_y + badge_offset)
+    wm_y = add_wordmark(
+        canvas,
+        target_y=TARGET_H - _ys(wordmark_y_from_bottom),
+        target_w=_ps(wordmark_w),
+    )
+    add_off_mls_badge(canvas, target_y=wm_y + _ys(badge_offset))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert("RGB").save(output_path, "PNG", optimize=True)
     print(f"Wrote: {output_path.relative_to(THIS_DIR)}  ({TARGET_W}x{TARGET_H})")
+
+
+def adapt_iphone_plate_to_ipad(iphone_path: Path, output_path: Path) -> None:
+    """Center an existing iPhone marketing plate on the iPad navy canvas.
+
+    Used when AI raw plates are unavailable so iPad still gets matching copy/visuals.
+    """
+    if ACTIVE_DEVICE != "ipad":
+        raise RuntimeError("adapt_iphone_plate_to_ipad only runs for --device ipad")
+    if not iphone_path.is_file():
+        raise FileNotFoundError(f"Missing iPhone plate: {iphone_path}")
+
+    src = Image.open(iphone_path).convert("RGBA")
+    canvas = build_navy_canvas()
+    add_radial_cyan_glow(
+        canvas, TARGET_W // 2, int(TARGET_H * 0.54), int(TARGET_W * 0.74), intensity=0.18
+    )
+
+    # Fit height-first so the plate fills the iPad slot; navy side bars match brand bg.
+    scale = min((TARGET_W * 0.72) / src.width, (TARGET_H * 0.96) / src.height)
+    new_w = int(src.width * scale)
+    new_h = int(src.height * scale)
+    src = src.resize((new_w, new_h), Image.LANCZOS)
+    paste_x = (TARGET_W - new_w) // 2
+    paste_y = (TARGET_H - new_h) // 2
+    canvas.alpha_composite(src, (paste_x, paste_y))
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    canvas.convert("RGB").save(output_path, "PNG", optimize=True)
+    print(
+        f"Wrote: {output_path.relative_to(THIS_DIR)}  ({TARGET_W}x{TARGET_H})  "
+        f"[adapted from {iphone_path.name}]"
+    )
 
 
 def build_hero_phone_frame(
@@ -487,37 +586,48 @@ def build_hero_phone_frame(
         raise FileNotFoundError(f"Missing hero source: {HERO_SCREENSHOT_PATH}")
 
     canvas = build_navy_canvas()
-    add_radial_cyan_glow(canvas, TARGET_W // 2, 1500, 980, intensity=0.24)
+    add_radial_cyan_glow(
+        canvas, TARGET_W // 2, int(TARGET_H * 0.54), int(TARGET_W * 0.76), intensity=0.24
+    )
 
     end_y = add_headline(
         canvas,
         headline_lines,
-        top_y=headline_top_y,
-        font_size=headline_size,
-        line_gap=8,
+        top_y=_ys(headline_top_y),
+        font_size=_fs(headline_size),
+        line_gap=_fs(8),
     )
     for i, line in enumerate(subhead_lines):
         end_y = add_subhead(
             canvas,
             line,
-            end_y + (32 if i == 0 else 10),
-            font_size=44 if i == 0 else 40,
+            end_y + (_ys(32) if i == 0 else _ys(10)),
+            font_size=_fs(44 if i == 0 else 40),
         )
 
     phone = build_phone_with_screenshot(
         screenshot_path=HERO_SCREENSHOT_PATH,
         crop_box=(0, 0, 472, 855),
-        phone_width=1000,
-        bezel_px=14,
+        phone_width=_ps(1000),
+        bezel_px=_ps(14),
         bezel_color=(20, 22, 28, 255),
         corner_radius_pct=0.10,
         add_dynamic_island=True,
         add_glow=True,
-        glow_pad=90,
+        glow_pad=_ps(90),
         glow_intensity=140,
     )
-    composite_phone_mockup(canvas, phone, target_y=end_y + 40)
-    add_wordmark(canvas, target_y=TARGET_H - 230, target_w=640)
+    # Keep the phone from colliding with the wordmark on the shorter iPad canvas.
+    max_phone_bottom = TARGET_H - _ys(260)
+    phone_y = end_y + _ys(40)
+    if phone_y + phone.height > max_phone_bottom:
+        overflow = phone_y + phone.height - max_phone_bottom
+        shrink = max(0.72, 1.0 - overflow / phone.height)
+        new_w = int(phone.width * shrink)
+        new_h = int(phone.height * shrink)
+        phone = phone.resize((new_w, new_h), Image.LANCZOS)
+    composite_phone_mockup(canvas, phone, target_y=phone_y)
+    add_wordmark(canvas, target_y=TARGET_H - _ys(230), target_w=_ps(640))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert("RGB").save(output_path, "PNG", optimize=True)
@@ -540,32 +650,42 @@ def build_capture_phone_frame(
         raise FileNotFoundError(f"Missing capture source: {source}")
 
     canvas = build_navy_canvas()
-    add_radial_cyan_glow(canvas, TARGET_W // 2, 1500, 950, intensity=0.22)
+    add_radial_cyan_glow(
+        canvas, TARGET_W // 2, int(TARGET_H * 0.54), int(TARGET_W * 0.74), intensity=0.22
+    )
 
     end_y = add_headline(
         canvas,
         headline_lines,
-        top_y=headline_top_y,
-        font_size=headline_size,
-        line_gap=10,
+        top_y=_ys(headline_top_y),
+        font_size=_fs(headline_size),
+        line_gap=_fs(10),
     )
-    end_y = add_subhead(canvas, subhead, end_y + 28, font_size=44)
+    end_y = add_subhead(canvas, subhead, end_y + _ys(28), font_size=_fs(44))
 
     phone = build_phone_with_screenshot(
         screenshot_path=source,
         crop_box=crop_box,
-        phone_width=phone_width,
-        bezel_px=14,
+        phone_width=_ps(phone_width),
+        bezel_px=_ps(14),
         bezel_color=(20, 22, 28, 255),
         corner_radius_pct=0.10,
         add_dynamic_island=True,
         add_glow=True,
-        glow_pad=70,
+        glow_pad=_ps(70),
         glow_intensity=120,
     )
-    composite_phone_mockup(canvas, phone, target_y=end_y + 36)
-    wm_y = add_wordmark(canvas, target_y=TARGET_H - 230, target_w=560)
-    add_off_mls_badge(canvas, target_y=wm_y + 24)
+    max_phone_bottom = TARGET_H - _ys(280)
+    phone_y = end_y + _ys(36)
+    if phone_y + phone.height > max_phone_bottom:
+        overflow = phone_y + phone.height - max_phone_bottom
+        shrink = max(0.72, 1.0 - overflow / phone.height)
+        phone = phone.resize(
+            (int(phone.width * shrink), int(phone.height * shrink)), Image.LANCZOS
+        )
+    composite_phone_mockup(canvas, phone, target_y=phone_y)
+    wm_y = add_wordmark(canvas, target_y=TARGET_H - _ys(230), target_w=_ps(560))
+    add_off_mls_badge(canvas, target_y=wm_y + _ys(24))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert("RGB").save(output_path, "PNG", optimize=True)
@@ -799,36 +919,62 @@ def build_default_listing() -> None:
     for cfg in AI_PLATE_CONFIGS:
         raw = ASSETS_DIR / cfg["raw_image_name"]
         out = SCREENSHOTS_DIR / cfg["output_name"]
+        iphone_plate = IPHONE_SCREENSHOTS_DIR / cfg["output_name"]
         if raw.is_file():
             build_screenshot(output_path=out, **{k: v for k, v in cfg.items() if k != "output_name"})
-        elif out.is_file():
+        elif ACTIVE_DEVICE == "ipad" and iphone_plate.is_file():
+            adapt_iphone_plate_to_ipad(iphone_plate, out)
+        elif out.is_file() and ACTIVE_DEVICE == "iphone":
             print(f"Kept existing plate: {out.name}  (no AI raw at {raw.name})")
         else:
             raise FileNotFoundError(
-                f"Missing both AI raw ({raw}) and existing plate ({out})"
+                f"Missing AI raw ({raw}) and no fallback plate at {iphone_plate}"
             )
 
 
 def build_custom_product_pages() -> None:
     for slug, slots in CPP_VARIANTS.items():
-        out_dir = CPP_DIR / slug / "screenshots"
+        if ACTIVE_DEVICE == "ipad":
+            out_dir = CPP_DIR / slug / "screenshots-ipad"
+        else:
+            out_dir = CPP_DIR / slug / "screenshots"
         out_dir.mkdir(parents=True, exist_ok=True)
-        print(f"\n=== CPP: {slug} ===")
+        print(f"\n=== CPP: {slug} ({ACTIVE_DEVICE}) ===")
         for filename, frame_key in slots:
             render_frame(frame_key, out_dir / filename)
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Build DealGapIQ App Store screenshots.")
+    parser.add_argument(
+        "--device",
+        choices=sorted(DEVICE_PROFILES.keys()),
+        default="iphone",
+        help="iphone = 1290×2796 (default); ipad = 2048×2732",
+    )
+    parser.add_argument(
+        "--listing-only",
+        action="store_true",
+        help="Build only the default listing plates (skip Custom Product Pages).",
+    )
+    args = parser.parse_args(argv)
+
     if not Path(FONT_PATH).is_file():
         raise FileNotFoundError(
             f"DM Sans not found. Place DMSans-Variable.ttf at "
             f"{_FONT_CANDIDATES[0]} or /tmp/dm-sans-fonts/"
         )
+
+    set_device(args.device)
     print(f"Font: {FONT_PATH}")
+    print(f"Device: {ACTIVE_DEVICE} ({TARGET_W}x{TARGET_H}) → {SCREENSHOTS_DIR.name}/")
     build_default_listing()
-    build_custom_product_pages()
-    print("\nDone — default listing + 5 Custom Product Pages.")
+    if not args.listing_only:
+        build_custom_product_pages()
+        print(f"\nDone — default listing + 5 Custom Product Pages ({ACTIVE_DEVICE}).")
+    else:
+        print(f"\nDone — default listing only ({ACTIVE_DEVICE}).")
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
