@@ -7,8 +7,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        configureMacDesktopChrome()
         return true
+    }
+
+    /// When the iPad build runs on Apple Silicon Mac ("Designed for iPad"),
+    /// mark the window title. Full Mac Catalyst windowing is blocked until
+    /// Capacitor ships macabi XCFramework slices.
+    private func configureMacDesktopChrome() {
+        if #available(iOS 14.0, *), ProcessInfo.processInfo.isiOSAppOnMac {
+            for scene in UIApplication.shared.connectedScenes {
+                guard let windowScene = scene as? UIWindowScene else { continue }
+                windowScene.title = "DealGapIQ"
+            }
+        }
+        #if targetEnvironment(macCatalyst)
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            windowScene.title = "DealGapIQ"
+            windowScene.titlebar?.titleVisibility = .visible
+            windowScene.sizeRestrictions?.minimumSize = CGSize(width: 1100, height: 720)
+        }
+        #endif
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

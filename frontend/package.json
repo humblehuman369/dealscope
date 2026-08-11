@@ -22,9 +22,11 @@
     "cap:sync:ios": "npx cap sync ios",
     "cap:sync:android": "npx cap sync android",
     "cap:open:ios": "npx cap open ios",
+    "cap:open:mac": "npx cap open ios",
     "cap:open:android": "npx cap open android",
     "cap:build": "bash scripts/build-capacitor.sh",
-    "cap:prod": "npx cap sync && npx cap open ios"
+    "cap:prod": "npx cap sync && npx cap open ios",
+    "cap:prod:mac": "npx cap sync ios && npx cap open ios"
   },
   "dependencies": {
     "@capacitor-community/in-app-review": "^8.0.0",

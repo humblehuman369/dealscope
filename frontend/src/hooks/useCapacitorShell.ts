@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useRef } from 'react'
-import { IS_CAPACITOR } from '@/lib/env'
+import { IS_CAPACITOR, IS_MAC_DESKTOP } from '@/lib/env'
 import { useTheme } from '@/context/ThemeContext'
 
 export function useCapacitorShell() {
@@ -21,6 +21,9 @@ export function useCapacitorShell() {
     didRun.current = true
 
     document.documentElement.classList.add('capacitor')
+    if (IS_MAC_DESKTOP) {
+      document.documentElement.classList.add('capacitor-mac')
+    }
 
     async function hideSplash() {
       try {
@@ -57,7 +60,8 @@ export function useCapacitorShell() {
   }, [])
 
   useEffect(() => {
-    if (!IS_CAPACITOR) return
+    // Status bar is phone/tablet chrome — skip when running on Mac.
+    if (!IS_CAPACITOR || IS_MAC_DESKTOP) return
 
     let cancelled = false
     ;(async () => {

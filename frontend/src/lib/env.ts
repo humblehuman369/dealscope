@@ -59,6 +59,17 @@ export const IS_IOS: boolean = NATIVE_PLATFORM === 'ios'
 export const IS_ANDROID: boolean = NATIVE_PLATFORM === 'android'
 
 /**
+ * True when the Capacitor iOS shell is running on a Mac
+ * ("Designed for iPad" on Apple Silicon, or future Mac Catalyst).
+ * Capacitor still reports platform "ios"; Macintosh UA distinguishes Mac.
+ */
+export const IS_MAC_DESKTOP: boolean = (() => {
+  if (!IS_CAPACITOR || !IS_IOS) return false
+  if (typeof navigator === 'undefined') return false
+  return /Macintosh|Mac OS X/i.test(navigator.userAgent)
+})()
+
+/**
  * Base URL prefix for client-side API calls.
  * - Default: empty string — relative paths go through the app origin and rewrites
  * - Optional direct mode: set NEXT_PUBLIC_USE_DIRECT_API=true to call

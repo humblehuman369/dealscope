@@ -19,7 +19,9 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     backgroundColor: '#000000',
-    preferredContentMode: 'mobile',
+    // "recommended" lets iPad/Mac Catalyst use desktop-width layouts instead of
+    // forcing a mobile user-agent / content mode (needed for Mac App Store).
+    preferredContentMode: 'recommended',
     scrollEnabled: true,
   },
   plugins: {
