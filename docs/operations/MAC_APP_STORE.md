@@ -31,14 +31,20 @@ until Capacitor ships Catalyst slices.
 
 ## Enable in App Store Connect
 
-1. [App Store Connect](https://appstoreconnect.apple.com) → **DealGapIQ**
-2. **Pricing and Availability** (or **App Information** → platform availability)
-3. Under **iPhone and iPad Apps on Apple Silicon Macs**, ensure the app is
-   **available on the Mac App Store**
-4. Optionally add **Mac screenshots** (can reuse iPad 12.9" set initially)
-5. Ship the next iOS/iPad version as usual — Mac picks up the same build
+**Phase 1 is already live.** The public listing shows Mac compatibility
+(`macOS 12+`, Apple Silicon) for DealGapIQ (`id6759636866`). Compatible iOS/iPad
+apps are on the Mac App Store by default unless you opt out.
 
-No separate Mac binary or Mac version string is required for Phase 1.
+To confirm or change:
+
+1. [App Store Connect](https://appstoreconnect.apple.com) → **DealGapIQ**
+2. **Pricing and Availability**
+3. **iPhone and iPad Apps on Apple Silicon Mac** → **Make this app available**
+4. Optional: **Verify Compatibility** so the listing shows a verified Mac badge
+5. Optional: add Mac screenshots (iPad 12.9" set is acceptable initially)
+
+No separate Mac binary is required for Phase 1. The public ASC API no longer
+exposes the Mac opt-in attribute; use the UI above (or Apple’s internal web API).
 
 ## Verify locally
 
@@ -53,14 +59,23 @@ npm run cap:open:ios
 Or install the App Store / TestFlight iOS app on Mac (Apple Silicon) and confirm
 it launches with desktop layouts (`capacitor-mac` class on `<html>`).
 
-## Phase 2 options (when you want real desktop)
+## Phase 2 — native Mac shell (in progress)
 
-1. **Thin native macOS WKWebView** app (`frontend/macos/`) loading `https://dealgapiq.com`
-   + RevenueCat macOS / StoreKit 2 — best Mac App Store fit next to Capacitor
-2. **Tauri / Electron** — same idea, also unlocks Windows Store later
-3. Wait for Capacitor Catalyst XCFrameworks (no ETA)
+Scaffold lives at **`frontend/macos/`** (`com.dealgapiq.mac`).
+
+```bash
+cd frontend && npm run mac:open
+# or: open frontend/macos/DealGapIQ.xcodeproj
+```
+
+**Build verified** with `xcodebuild` (Debug, macOS). Before submitting this
+binary to the Mac App Store you must wire **StoreKit 2 / RevenueCat macOS**
+(Stripe checkout is not allowed for digital unlocks in MAS). Same product IDs
+as iOS: `com.monthly.dealgapiq` / `com.yearly.dealgapiq`.
+
+See `frontend/macos/README.md`.
 
 ## Windows (after Mac)
 
-Defer until Phase 2 shell exists; package that shell for Microsoft Store
-rather than inventing a third stack.
+Package the same web shell pattern (Tauri/Electron or WebView2) for Microsoft
+Store after Mac IAP is solid — do not invent a third product stack.

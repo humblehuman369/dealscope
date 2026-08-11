@@ -23,6 +23,7 @@
     "cap:sync:android": "npx cap sync android",
     "cap:open:ios": "npx cap open ios",
     "cap:open:mac": "npx cap open ios",
+    "mac:open": "open macos/DealGapIQ.xcodeproj",
     "cap:open:android": "npx cap open android",
     "cap:build": "bash scripts/build-capacitor.sh",
     "cap:prod": "npx cap sync && npx cap open ios",

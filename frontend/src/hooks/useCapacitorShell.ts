@@ -17,6 +17,11 @@ export function useCapacitorShell() {
   const { theme } = useTheme()
 
   useEffect(() => {
+    // Native Mac shell injects __DEALGAPIQ_MAC__; still apply desktop classes.
+    if (IS_MAC_DESKTOP) {
+      document.documentElement.classList.add('capacitor-mac', 'dealgapiq-mac')
+    }
+
     if (!IS_CAPACITOR || didRun.current) return
     didRun.current = true
 

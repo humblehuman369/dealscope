@@ -59,11 +59,21 @@ export const IS_IOS: boolean = NATIVE_PLATFORM === 'ios'
 export const IS_ANDROID: boolean = NATIVE_PLATFORM === 'android'
 
 /**
- * True when the Capacitor iOS shell is running on a Mac
- * ("Designed for iPad" on Apple Silicon, or future Mac Catalyst).
- * Capacitor still reports platform "ios"; Macintosh UA distinguishes Mac.
+ * True inside the native macOS WKWebView shell (`frontend/macos`),
+ * which injects `window.__DEALGAPIQ_MAC__` at document start.
+ */
+export const IS_MAC_NATIVE: boolean = (() => {
+  if (typeof window === 'undefined') return false
+  return Boolean((window as Window & { __DEALGAPIQ_MAC__?: boolean }).__DEALGAPIQ_MAC__)
+})()
+
+/**
+ * True when running on Mac desktop chrome:
+ * - Capacitor iOS shell on Apple Silicon ("Designed for iPad"), or
+ * - Native Mac App Store shell (`IS_MAC_NATIVE`).
  */
 export const IS_MAC_DESKTOP: boolean = (() => {
+  if (IS_MAC_NATIVE) return true
   if (!IS_CAPACITOR || !IS_IOS) return false
   if (typeof navigator === 'undefined') return false
   return /Macintosh|Mac OS X/i.test(navigator.userAgent)

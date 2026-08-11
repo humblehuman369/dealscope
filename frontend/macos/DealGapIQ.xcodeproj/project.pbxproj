@@ -1,0 +1,244 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		986BA0E1907943379680A7240001 /* DealGapIQApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986BA0E1907943379680A724 /* DealGapIQApp.swift */; };
+		91364D2305BE42A6809FA7A30001 /* WebContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91364D2305BE42A6809FA7A3 /* WebContainerView.swift */; };
+		5FFB513D922F4BCB9834EBBA0001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5FFB513D922F4BCB9834EBBA /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		36060336984A45CE8FF68F03 /* DealGapIQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DealGapIQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		986BA0E1907943379680A724 /* DealGapIQApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DealGapIQApp.swift; sourceTree = "<group>"; };
+		91364D2305BE42A6809FA7A3 /* WebContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebContainerView.swift; sourceTree = "<group>"; };
+		4BD8F793E53C4AFCAB161E4C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0427C1B94F8D4C1A802DACCF /* DealGapIQ.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DealGapIQ.entitlements; sourceTree = "<group>"; };
+		5FFB513D922F4BCB9834EBBA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		75CEDAE7E6F04463821E5E60 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		04B94717EEE24A6C93BA47D3 = {
+			isa = PBXGroup;
+			children = (
+				171D0B2321B0471BAD2DFB7A /* DealGapIQ */,
+				FC4B2315FD704DE1B6B095E6 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FC4B2315FD704DE1B6B095E6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				36060336984A45CE8FF68F03 /* DealGapIQ.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		171D0B2321B0471BAD2DFB7A /* DealGapIQ */ = {
+			isa = PBXGroup;
+			children = (
+				986BA0E1907943379680A724 /* DealGapIQApp.swift */,
+				91364D2305BE42A6809FA7A3 /* WebContainerView.swift */,
+				5FFB513D922F4BCB9834EBBA /* Assets.xcassets */,
+				0427C1B94F8D4C1A802DACCF /* DealGapIQ.entitlements */,
+				4BD8F793E53C4AFCAB161E4C /* Info.plist */,
+			);
+			path = DealGapIQ;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		86C9A094CD734A24807D7038 /* DealGapIQ */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7FFC5DDEC3074A0EA30A50DC /* Build configuration list for PBXNativeTarget "DealGapIQ" */;
+			buildPhases = (
+				E360F04394EB4E1C880853B9 /* Sources */,
+				75CEDAE7E6F04463821E5E60 /* Frameworks */,
+				17E1AD80A85849489D6C29A7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DealGapIQ;
+			productName = DealGapIQ;
+			productReference = 36060336984A45CE8FF68F03 /* DealGapIQ.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FB1B327EEFA1432AB191DC00 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					86C9A094CD734A24807D7038 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+				};
+			};
+			buildConfigurationList = 4E3EF440BC0C4B61B4546336 /* Build configuration list for PBXProject "DealGapIQ" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 04B94717EEE24A6C93BA47D3;
+			productRefGroup = FC4B2315FD704DE1B6B095E6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				86C9A094CD734A24807D7038 /* DealGapIQ */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		17E1AD80A85849489D6C29A7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5FFB513D922F4BCB9834EBBA0001 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E360F04394EB4E1C880853B9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				986BA0E1907943379680A7240001 /* DealGapIQApp.swift in Sources */,
+				91364D2305BE42A6809FA7A30001 /* WebContainerView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		93BACABD247B490FB0E91401 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = A2Y6C3NNSY;
+				GCC_DYNAMIC_NO_PIC = NO;
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		24AAEE57B17C4782922C69B9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = A2Y6C3NNSY;
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		4644B439EC224BED8D1FB2FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DealGapIQ/DealGapIQ.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DealGapIQ/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dealgapiq.mac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		30EB76EED25F4CE09EA7ABBD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DealGapIQ/DealGapIQ.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DealGapIQ/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dealgapiq.mac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4E3EF440BC0C4B61B4546336 /* Build configuration list for PBXProject "DealGapIQ" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				93BACABD247B490FB0E91401 /* Debug */,
+				24AAEE57B17C4782922C69B9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7FFC5DDEC3074A0EA30A50DC /* Build configuration list for PBXNativeTarget "DealGapIQ" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4644B439EC224BED8D1FB2FF /* Debug */,
+				30EB76EED25F4CE09EA7ABBD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = FB1B327EEFA1432AB191DC00 /* Project object */;
+}
