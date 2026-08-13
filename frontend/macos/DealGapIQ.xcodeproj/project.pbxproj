@@ -3,19 +3,22 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		986BA0E1907943379680A7240001 /* DealGapIQApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986BA0E1907943379680A724 /* DealGapIQApp.swift */; };
 		91364D2305BE42A6809FA7A30001 /* WebContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91364D2305BE42A6809FA7A3 /* WebContainerView.swift */; };
+		A1B2C3D4E5F60718293A4B5C0001 /* RevenueCatBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* RevenueCatBridge.swift */; };
 		5FFB513D922F4BCB9834EBBA0001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5FFB513D922F4BCB9834EBBA /* Assets.xcassets */; };
+		B7C8D9E0F1A20314253B4C5D0001 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = B7C8D9E0F1A20314253B4C5D /* RevenueCat */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		36060336984A45CE8FF68F03 /* DealGapIQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DealGapIQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		986BA0E1907943379680A724 /* DealGapIQApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DealGapIQApp.swift; sourceTree = "<group>"; };
 		91364D2305BE42A6809FA7A3 /* WebContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebContainerView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* RevenueCatBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatBridge.swift; sourceTree = "<group>"; };
 		4BD8F793E53C4AFCAB161E4C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0427C1B94F8D4C1A802DACCF /* DealGapIQ.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DealGapIQ.entitlements; sourceTree = "<group>"; };
 		5FFB513D922F4BCB9834EBBA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -26,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7C8D9E0F1A20314253B4C5D0001 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,6 +57,7 @@
 			children = (
 				986BA0E1907943379680A724 /* DealGapIQApp.swift */,
 				91364D2305BE42A6809FA7A3 /* WebContainerView.swift */,
+				A1B2C3D4E5F60718293A4B5C /* RevenueCatBridge.swift */,
 				5FFB513D922F4BCB9834EBBA /* Assets.xcassets */,
 				0427C1B94F8D4C1A802DACCF /* DealGapIQ.entitlements */,
 				4BD8F793E53C4AFCAB161E4C /* Info.plist */,
@@ -76,6 +81,9 @@
 			dependencies = (
 			);
 			name = DealGapIQ;
+			packageProductDependencies = (
+				B7C8D9E0F1A20314253B4C5D /* RevenueCat */,
+			);
 			productName = DealGapIQ;
 			productReference = 36060336984A45CE8FF68F03 /* DealGapIQ.app */;
 			productType = "com.apple.product-type.application";
@@ -104,6 +112,9 @@
 				Base,
 			);
 			mainGroup = 04B94717EEE24A6C93BA47D3;
+			packageReferences = (
+				C8D9E0F1A2B30415263C4D5E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+			);
 			productRefGroup = FC4B2315FD704DE1B6B095E6 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -131,6 +142,7 @@
 			files = (
 				986BA0E1907943379680A7240001 /* DealGapIQApp.swift in Sources */,
 				91364D2305BE42A6809FA7A30001 /* WebContainerView.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C0001 /* RevenueCatBridge.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,6 +251,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C8D9E0F1A2B30415263C4D5E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.83.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B7C8D9E0F1A20314253B4C5D /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C8D9E0F1A2B30415263C4D5E /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = FB1B327EEFA1432AB191DC00 /* Project object */;
 }

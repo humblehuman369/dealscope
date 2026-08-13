@@ -80,6 +80,16 @@ export const IS_MAC_DESKTOP: boolean = (() => {
 })()
 
 /**
+ * True when purchases must go through a native Apple IAP bridge
+ * (Capacitor iOS StoreKit or the Mac App Store WKWebView shell).
+ * Stripe Checkout is forbidden for digital unlocks on those surfaces.
+ */
+export const USE_NATIVE_IAP: boolean = IS_CAPACITOR || IS_MAC_NATIVE
+
+/** True when store copy / restore UX should say “App Store” (iOS or Mac). */
+export const USES_APPLE_IAP: boolean = IS_IOS || IS_MAC_NATIVE
+
+/**
  * Base URL prefix for client-side API calls.
  * - Default: empty string — relative paths go through the app origin and rewrites
  * - Optional direct mode: set NEXT_PUBLIC_USE_DIRECT_API=true to call

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * RevenueCat integration for Capacitor (iOS/Android).
+ * RevenueCat integration for Capacitor (iOS/Android) and the native Mac shell.
  *
  * Handles SDK initialization, user identification, package purchase,
  * restore, and entitlement checking. After any purchase/restore event,
@@ -19,7 +19,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { IS_CAPACITOR } from '@/lib/env'
+import { IS_CAPACITOR, IS_MAC_NATIVE, USE_NATIVE_IAP } from '@/lib/env'
+import { getMacIapBridge } from '@/lib/macIap'
 import { api } from '@/lib/api-client'
 import { SESSION_QUERY_KEY, useSession } from '@/hooks/useSession'
 
@@ -45,6 +46,9 @@ interface RevenueCatState {
 
 const RC_API_KEY_IOS = process.env.NEXT_PUBLIC_REVENUECAT_IOS_KEY ?? ''
 const RC_API_KEY_ANDROID = process.env.NEXT_PUBLIC_REVENUECAT_ANDROID_KEY ?? ''
+/** Mac App Store uses the Apple public SDK key (same RC project as iOS). */
+const RC_API_KEY_MAC =
+  process.env.NEXT_PUBLIC_REVENUECAT_MAC_KEY ?? RC_API_KEY_IOS
 
 const INIT_TIMEOUT_MS = 8000
 
@@ -69,27 +73,9 @@ export function useRevenueCat() {
     // stays in its "Try again" UI during a retry (error is cleared on success).
     setState((s) => ({ ...s, ready: false }))
 
-    if (!IS_CAPACITOR) {
+    if (!USE_NATIVE_IAP) {
       if (attemptRef.current === attempt) {
         setState((s) => ({ ...s, ready: true, packages: [], error: null }))
-      }
-      return
-    }
-
-    const platform = (window as unknown as Record<string, unknown>).Capacitor as
-      | { getPlatform?: () => string }
-      | undefined
-    const isIOS = platform?.getPlatform?.() === 'ios'
-    const apiKey = isIOS ? RC_API_KEY_IOS : RC_API_KEY_ANDROID
-
-    if (!apiKey) {
-      if (attemptRef.current === attempt) {
-        setState((s) => ({
-          ...s,
-          ready: true,
-          packages: [],
-          error: GENERIC_UNAVAILABLE_MSG,
-        }))
       }
       return
     }
@@ -107,6 +93,98 @@ export function useRevenueCat() {
     }, INIT_TIMEOUT_MS)
 
     try {
+      // --- Native Mac App Store shell (WKWebView + RevenueCatBridge) ---
+      if (IS_MAC_NATIVE) {
+        const mac = getMacIapBridge()
+        if (!mac || !RC_API_KEY_MAC) {
+          clearTimeout(watchdog)
+          if (attemptRef.current === attempt) {
+            setState((s) => ({
+              ...s,
+              ready: true,
+              packages: [],
+              error: GENERIC_UNAVAILABLE_MSG,
+            }))
+          }
+          return
+        }
+
+        if (!configuredRef.current) {
+          await mac.configure(RC_API_KEY_MAC)
+          configuredRef.current = true
+        }
+        if (user?.id) {
+          try {
+            await mac.logIn(user.id)
+          } catch {
+            // Non-fatal
+          }
+        }
+
+        const offerings = await mac.getOfferings()
+        const packages: RCPackage[] = (offerings.packages ?? []).map((p) => ({
+          identifier: p.packageIdentifier || p.identifier,
+          packageType: p.packageType,
+          product: {
+            identifier: p.identifier,
+            title: p.title,
+            description: p.description,
+            priceString: p.priceString,
+            price: p.price,
+            currencyCode: p.currencyCode,
+          },
+        }))
+
+        clearTimeout(watchdog)
+        if (attemptRef.current !== attempt) return
+
+        if (packages.length === 0) {
+          setState((s) => ({
+            ...s,
+            ready: true,
+            packages: [],
+            error: GENERIC_UNAVAILABLE_MSG,
+          }))
+          return
+        }
+
+        setState((s) => ({
+          ...s,
+          ready: true,
+          packages,
+          error: null,
+        }))
+        return
+      }
+
+      // --- Capacitor (iOS / Android) ---
+      if (!IS_CAPACITOR) {
+        clearTimeout(watchdog)
+        if (attemptRef.current === attempt) {
+          setState((s) => ({ ...s, ready: true, packages: [], error: null }))
+        }
+        return
+      }
+
+      const platform = (window as unknown as Record<string, unknown>).Capacitor as
+        | { getPlatform?: () => string }
+        | undefined
+      const isIOS = platform?.getPlatform?.() === 'ios'
+      const apiKey = isIOS ? RC_API_KEY_IOS : RC_API_KEY_ANDROID
+
+      if (!apiKey) {
+        clearTimeout(watchdog)
+        if (attemptRef.current === attempt) {
+          setState((s) => ({
+            ...s,
+            ready: true,
+            packages: [],
+            error: GENERIC_UNAVAILABLE_MSG,
+          }))
+        }
+        return
+      }
+
       const { Purchases } = await import('@revenuecat/purchases-capacitor')
 
       if (!configuredRef.current) {
@@ -184,6 +262,19 @@ export function useRevenueCat() {
     async (packageId: string) => {
       setState((s) => ({ ...s, isPurchasing: true, error: null }))
       try {
+        if (IS_MAC_NATIVE) {
+          const mac = getMacIapBridge()
+          if (!mac) throw new Error('Mac IAP bridge unavailable')
+          const result = await mac.purchase(packageId)
+          if (result?.userCancelled) {
+            setState((s) => ({ ...s, isPurchasing: false }))
+            return false
+          }
+          await syncEntitlementToBackend()
+          setState((s) => ({ ...s, isPurchasing: false }))
+          return true
+        }
+
         const { Purchases } = await import('@revenuecat/purchases-capacitor')
         const offerings = await Purchases.getOfferings()
         const pkg = offerings.current?.availablePackages?.find((p) => p.identifier === packageId)
@@ -214,6 +305,15 @@ export function useRevenueCat() {
   const restore = useCallback(async () => {
     setState((s) => ({ ...s, isPurchasing: true, error: null }))
     try {
+      if (IS_MAC_NATIVE) {
+        const mac = getMacIapBridge()
+        if (!mac) throw new Error('Mac IAP bridge unavailable')
+        await mac.restore()
+        await syncEntitlementToBackend()
+        setState((s) => ({ ...s, isPurchasing: false }))
+        return true
+      }
+
       const { Purchases } = await import('@revenuecat/purchases-capacitor')
       await Purchases.restorePurchases()
       await syncEntitlementToBackend()
