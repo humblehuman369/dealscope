@@ -2,11 +2,20 @@ import SwiftUI
 import WebKit
 
 /// Thin Mac App Store shell: WKWebView → production DealGapIQ web app.
-/// Injects `window.__DEALGAPIQ_MAC__ = true` so the web client can use
-/// Mac-specific chrome (and, later, StoreKit-backed IAP instead of Stripe).
+/// Injects `window.__DEALGAPIQ_MAC__ = true` and wires RevenueCat via
+/// `window.DealGapIQMac.iap` so Stripe is never used for digital unlocks.
 struct WebContainerView: View {
+    private var startURL: URL {
+        if let override = ProcessInfo.processInfo.environment["DEALGAPIQ_URL"],
+           let url = URL(string: override)
+        {
+            return url
+        }
+        return URL(string: "https://dealgapiq.com")!
+    }
+
     var body: some View {
-        MacWebView(url: URL(string: "https://dealgapiq.com")!)
+        MacWebView(url: startURL)
             .frame(minWidth: 1100, minHeight: 720)
             .background(Color.black)
     }
@@ -48,6 +57,8 @@ struct MacWebView: NSViewRepresentable {
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 "
             + "(KHTML, like Gecko) Version/17.0 Safari/605.1.15 DealGapIQMac/1.0"
 
+        context.coordinator.iapBridge.attach(to: webView)
+
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
         webView.load(request)
@@ -57,6 +68,8 @@ struct MacWebView: NSViewRepresentable {
     func updateNSView(_ webView: WKWebView, context: Context) {}
 
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
+        let iapBridge = RevenueCatBridge()
+
         func webView(
             _ webView: WKWebView,
             decidePolicyFor navigationAction: WKNavigationAction,
@@ -72,6 +85,7 @@ struct MacWebView: NSViewRepresentable {
                host == "dealgapiq.com" || host.hasSuffix(".dealgapiq.com")
                 || host == "accounts.google.com"
                 || host.hasSuffix(".apple.com")
+                || host == "localhost" || host.hasPrefix("127.0.0.1")
             {
                 decisionHandler(.allow)
                 return
