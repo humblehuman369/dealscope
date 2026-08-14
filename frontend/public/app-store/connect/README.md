@@ -6,7 +6,7 @@ Production-ready visual and copy assets for the **iOS App Store** (App Store Con
 >
 > **Companion folder:** `../play-store/` for the Google Play Store equivalents.
 >
-> **macOS App Store:** screenshots in [`screenshots-mac/`](screenshots-mac/) (2880×1800) + copy in [`copy/macos/`](copy/macos/). Desktop UI plates live in [`assets/mac-desktop/`](assets/mac-desktop/). Regenerate with `python3 render_mac_desktop_plates.py && python3 apply_mac_screenshot_brand.py`.
+> **macOS App Store:** screenshots in [`screenshots-mac/`](screenshots-mac/) (2880×1800) + copy in [`copy/macos/`](copy/macos/). Regenerate with `python3 apply_mac_screenshot_brand.py`.
 >
 > **Custom Product Pages (ASA):** [`custom-product-pages/`](custom-product-pages/) — five intent-matched pages (Deal Gap, Foreclosure, Rental, Flip, vs Calculators). Regenerate with `python3 apply_screenshot_brand.py`.
 

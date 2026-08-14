@@ -62,7 +62,7 @@ MAC_CONFIGS = [
     {
         "output_name": "03-verdict-three-cards.png",
         "headline_lines": ["The whole deal,", "in one view."],
-        "subhead": "Target Buy. Income Value. Market Price — on a wide desktop canvas.",
+        "subhead": "See the gap, then four ways to close it — side by side.",
         "source": "03-verdict.png",
     },
     {
