@@ -39,10 +39,11 @@ DEALGAPIQ_URL=http://localhost:3000 open frontend/macos/DealGapIQ.xcodeproj
 | Promotional Text | `…/copy/macos/promotional-text.md` |
 | Description + What’s New | `…/copy/macos/description.md` |
 
-Regenerate screenshots:
+Regenerate screenshots (desktop UI plates, not iPhone frames):
 
 ```bash
 cd frontend/public/app-store/connect
+python3 render_mac_desktop_plates.py
 python3 apply_mac_screenshot_brand.py
 ```
 

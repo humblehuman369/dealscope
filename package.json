@@ -15,6 +15,7 @@
     "install:mobile": "cd mobile && npm install",
     "posthog:setup": "node scripts/posthog-setup.mjs",
     "screenshots": "npx tsx scripts/screenshots/capture.ts",
+    "screenshots:mac": "node scripts/screenshots/capture-mac.mjs",
     "screenshots:frame": "npx tsx scripts/screenshots/frame.ts",
     "screenshots:all": "npx tsx scripts/screenshots/capture.ts && npx tsx scripts/screenshots/frame.ts"
   },

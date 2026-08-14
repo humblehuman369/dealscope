@@ -3,12 +3,15 @@
 
 Composites:
   - Dark navy brand canvas
-  - Left / top typography (DM Sans)
-  - A Mac window chrome containing the matching iPhone marketing plate
-    (or the real Strategy-tab hero screenshot for slot #1)
+  - Left typography (DM Sans)
+  - A wide Mac window chrome containing a real desktop UI capture
+    from assets/mac-desktop/ (Playwright, 1440×900 @ 2x)
   - DealGapIQ wordmark + Off-MLS badge
 
-Usage:
+Capture plates first:
+    npm run screenshots:mac
+
+Then:
     python3 apply_mac_screenshot_brand.py
 """
 
@@ -21,9 +24,8 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 THIS_DIR = Path(__file__).resolve().parent
 OUT_DIR = THIS_DIR / "screenshots-mac"
-IPHONE_DIR = THIS_DIR / "screenshots"
+DESKTOP_DIR = THIS_DIR / "assets" / "mac-desktop"
 WORDMARK_PATH = THIS_DIR.parent / "play-store" / "assets" / "dealgapiq-wordmark-darkmode.png"
-HERO_SCREENSHOT_PATH = THIS_DIR / "assets" / "hero-screenshot-strategy-tab.png"
 _FONT_CANDIDATES = (
     THIS_DIR / "assets" / "fonts" / "DMSans-Variable.ttf",
     Path("/tmp/dm-sans-fonts/DMSans-Variable.ttf"),
@@ -49,49 +51,49 @@ MAC_CONFIGS = [
         "output_name": "01-hero-investors-lens.png",
         "headline_lines": ["Discover Deals", "Like an Investor"],
         "subhead": "Desktop analysis for every US listing — MLS, foreclosure, auction.",
-        "source": "hero",
+        "source": "01-hero.png",
     },
     {
         "output_name": "02-search-color-coded.png",
         "headline_lines": ["Color-coded deals", "at a glance."],
         "subhead": "Green is go. Yellow needs work. Red is no.",
-        "source": "02-search-color-coded.png",
+        "source": "02-search.png",
     },
     {
         "output_name": "03-verdict-three-cards.png",
         "headline_lines": ["The whole deal,", "in one view."],
         "subhead": "Target Buy. Income Value. Market Price — on a wide desktop canvas.",
-        "source": "03-verdict-three-cards.png",
+        "source": "03-verdict.png",
     },
     {
         "output_name": "04-pills-deal-maybe-pass.png",
         "headline_lines": ["DEAL. MAYBE.", "PASS — fast."],
         "subhead": "Every listing scored before you open the comps.",
-        "source": "04-pills-deal-maybe-pass.png",
+        "source": "04-pills.png",
     },
     {
         "output_name": "05-coverage-beyond-mls.png",
         "headline_lines": ["Beyond", "the MLS."],
         "subhead": "Foreclosure, Pre-Foreclosure, Auction — scored alongside MLS.",
-        "source": "05-coverage-beyond-mls.png",
+        "source": "05-coverage.png",
     },
     {
         "output_name": "06-comps-no-spreadsheet.png",
         "headline_lines": ["Comps without", "the spreadsheet."],
         "subhead": "Real comparables, pulled in seconds on your Mac.",
-        "source": "06-comps-no-spreadsheet.png",
+        "source": "06-comps.png",
     },
     {
         "output_name": "07-dealmaker-scenarios.png",
         "headline_lines": ["Model deals", "in real time."],
         "subhead": "Adjust price, rehab, ARV — see profit live.",
-        "source": "07-dealmaker-scenarios.png",
+        "source": "07-dealmaker.png",
     },
     {
         "output_name": "08-neighborhoods-heatmap.png",
         "headline_lines": ["See where", "the deals are."],
         "subhead": "Heatmaps reveal the hottest neighborhoods.",
-        "source": "08-neighborhoods-heatmap.png",
+        "source": "08-heatmap.png",
     },
 ]
 
@@ -258,16 +260,15 @@ def fit_content_preserve_aspect(
 
 def window_size_for_content(
     content: Image.Image,
-    max_w: int = 1580,
+    max_w: int = 1760,
     max_h: int = 1320,
-    title_h: int = 44,
+    title_h: int = 38,
 ) -> tuple[int, int, int, int]:
     """Pick a Mac window whose content pane matches the source aspect ratio.
 
     Returns (window_w, window_h, content_w, content_h). Never stretches.
     """
     sw, sh = content.size
-    # Leave room for the title bar inside max_h.
     max_content_h = max_h - title_h
     scale = min(max_w / sw, max_content_h / sh)
     content_w = max(1, int(round(sw * scale)))
@@ -285,7 +286,7 @@ def build_mac_window(
     """Mac-style window with traffic lights and title bar around content."""
     title_h = window_h - content_h
     corner = 18
-    pad = 70
+    pad = 40
     out_w = window_w + pad * 2
     out_h = window_h + pad * 2
     out = Image.new("RGBA", (out_w, out_h), (0, 0, 0, 0))
@@ -352,13 +353,12 @@ def build_mac_window(
 
 
 def load_window_content(source: str) -> Image.Image:
-    if source == "hero":
-        if HERO_SCREENSHOT_PATH.is_file():
-            return Image.open(HERO_SCREENSHOT_PATH).convert("RGB")
-        source = "01-hero-investors-lens.png"
-    path = IPHONE_DIR / source
+    path = DESKTOP_DIR / source
     if not path.is_file():
-        raise FileNotFoundError(f"Missing iPhone plate for Mac window: {path}")
+        raise FileNotFoundError(
+            f"Missing desktop plate for Mac window: {path}\n"
+            "Capture first: npm run screenshots:mac"
+        )
     return Image.open(path).convert("RGB")
 
 
@@ -367,26 +367,23 @@ def build_mac_screenshot(cfg: dict) -> None:
     # Glow behind the window zone (right half)
     add_radial_cyan_glow(canvas, int(TARGET_W * 0.68), int(TARGET_H * 0.55), 900, intensity=0.20)
 
-    end_y = add_headline(canvas, cfg["headline_lines"], top_y=220, font_size=96)
-    end_y = add_subhead(canvas, cfg["subhead"], top_y=end_y + 28, max_width=1000)
-    wm_y = add_wordmark(canvas, target_y=end_y + 48, target_w=400)
-    add_off_mls_badge(canvas, target_y=wm_y + 28)
+    end_y = add_headline(canvas, cfg["headline_lines"], top_y=200, font_size=84)
+    end_y = add_subhead(canvas, cfg["subhead"], top_y=end_y + 24, max_width=860)
+    wm_y = add_wordmark(canvas, target_y=end_y + 40, target_w=360)
+    add_off_mls_badge(canvas, target_y=wm_y + 24)
 
     content = load_window_content(cfg["source"])
-    # Size the Mac chrome to the source aspect so plates never stretch.
-    # Left copy column needs ~1100px; keep the window inside the right half.
+    # Wide landscape window — desktop plates are 16:10, never portrait phones.
     window_w, window_h, content_w, content_h = window_size_for_content(
         content,
-        max_w=1500,
-        max_h=1480,
+        max_w=1760,
+        max_h=1520,
     )
     window = build_mac_window(content, window_w, window_h, content_w, content_h)
-    # Place window on the right, vertically centered; clamp so it stays on-canvas.
-    paste_x = min(TARGET_W - window.width + 10, TARGET_W - window.width)
-    paste_x = max(TARGET_W // 2 - 40, paste_x)
-    paste_y = max(40, (TARGET_H - window.height) // 2)
-    if paste_y + window.height > TARGET_H - 20:
-        paste_y = max(20, TARGET_H - window.height - 20)
+    paste_x = TARGET_W - window.width + 36
+    paste_y = max(16, (TARGET_H - window.height) // 2)
+    if paste_y + window.height > TARGET_H - 12:
+        paste_y = max(8, TARGET_H - window.height - 12)
     canvas.alpha_composite(window, (paste_x, paste_y))
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -400,6 +397,12 @@ def main() -> None:
         raise FileNotFoundError(
             f"DM Sans not found at {FONT_PATH}. Place DMSans-Variable.ttf under assets/fonts/"
         )
+    missing = [cfg["source"] for cfg in MAC_CONFIGS if not (DESKTOP_DIR / cfg["source"]).is_file()]
+    if missing:
+        print("Desktop plates missing — rendering landscape UI first…")
+        from render_mac_desktop_plates import main as render_plates
+
+        render_plates()
     print(f"Font: {FONT_PATH}")
     print(f"Mac screenshots → {OUT_DIR} ({TARGET_W}x{TARGET_H})")
     for cfg in MAC_CONFIGS:

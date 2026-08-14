@@ -29,7 +29,7 @@ cd macos && bash scripts/archive-and-upload.sh
 | Screenshots 2880×1800 | `frontend/public/app-store/connect/screenshots-mac/` |
 | Promotional Text | `…/copy/macos/promotional-text.md` |
 | Description / What’s New | `…/copy/macos/description.md` |
-| Regenerator | `python3 apply_mac_screenshot_brand.py` |
+| Regenerator | `npm run screenshots:mac` then `python3 apply_mac_screenshot_brand.py` |
 
 ### IAP
 
