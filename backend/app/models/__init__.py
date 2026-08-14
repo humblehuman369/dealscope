@@ -14,6 +14,7 @@ from app.models.directory_usage import DirectoryUsageCounter
 from app.models.document import Document, DocumentType
 from app.models.geo_city import GeoCity
 from app.models.geo_county import GeoCounty
+from app.models.intelligence_subscriber import IntelligenceSubscriber
 from app.models.lender import Lender
 from app.models.offer import OfferStatus, PropertyOffer
 from app.models.role import Permission, Role, RolePermission, UserRole
@@ -45,6 +46,7 @@ __all__ = [
     "FlipStage",
     "GeoCity",
     "GeoCounty",
+    "IntelligenceSubscriber",
     "Lender",
     "OfferStatus",
     "PaymentHistory",

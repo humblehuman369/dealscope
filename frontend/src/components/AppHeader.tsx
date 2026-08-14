@@ -159,6 +159,8 @@ const NO_PROPERTY_BAR_ROUTES = [
   '/map-search',
   '/directory',
   '/lenders',
+  '/investor-intelligence',
+  '/authors',
 ]
 
 /** Analysis workflow routes — tab bar only appears on these (not dashboard, directory, etc.) */
@@ -463,7 +465,11 @@ export function AppHeader({
 
   // Determine active tab from prop or pathname
   const activeTab = activeTabProp ?? getActiveTabFromPath(pathname || '')
-  const isInfoPage = pathname?.startsWith('/about') || pathname?.startsWith('/pricing')
+  const isInfoPage =
+    pathname?.startsWith('/about') ||
+    pathname?.startsWith('/pricing') ||
+    pathname?.startsWith('/investor-intelligence') ||
+    pathname?.startsWith('/authors')
   const isHomepage = !pathname || pathname === '/'
 
   const toolsNavActive =
@@ -713,6 +719,18 @@ export function AppHeader({
                     aria-current={pathname === '/pricing' ? 'page' : undefined}
                   >
                     Pricing
+                  </Link>
+                  <Link
+                    href="/investor-intelligence"
+                    className="hidden lg:inline text-sm font-semibold whitespace-nowrap transition-colors hover:text-[var(--text-heading)]"
+                    style={{
+                      color: pathname?.startsWith('/investor-intelligence')
+                        ? 'var(--text-heading)'
+                        : 'var(--text-secondary)',
+                    }}
+                    aria-current={pathname?.startsWith('/investor-intelligence') ? 'page' : undefined}
+                  >
+                    Investor Intelligence
                   </Link>
                   <Link
                     href="/blog"
@@ -1074,6 +1092,14 @@ export function AppHeader({
                             style={{ color: 'var(--text-heading)' }}
                           >
                             <DollarSign className="w-4 h-4" /> Pricing
+                          </Link>
+                          <Link
+                            href="/investor-intelligence"
+                            onClick={() => setMobileNavOpen(false)}
+                            className={MENU_ITEM_CLASS}
+                            style={{ color: 'var(--text-heading)' }}
+                          >
+                            <Info className="w-4 h-4" /> Investor Intelligence
                           </Link>
                           <Link
                             href="/blog"

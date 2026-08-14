@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useSession } from '@/hooks/useSession'
 import { UpgradeModal } from '@/components/billing/UpgradeModal'
-import { IS_CAPACITOR, IS_IOS, IS_ANDROID } from '@/lib/env'
+import { IS_ANDROID, USE_NATIVE_IAP, USES_APPLE_IAP } from '@/lib/env'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { PriceCents } from '@/components/ui/PriceCents'
 import { DIRECTORY_ACCESS_NOTE, PRO_FEATURES, STARTER_FEATURES } from '@/lib/planFeatures'
@@ -298,15 +298,15 @@ export default function PricingContent() {
     },
   ]
 
-  // On Capacitor, always open the UpgradeModal (RevenueCat IAP).
+  // On any store-billed surface, always open the UpgradeModal (RevenueCat IAP).
   // Never redirect to /register with plan params — that path leads to Stripe.
   const proCtaHref =
-    !isAuthenticated && !IS_CAPACITOR
+    !isAuthenticated && !USE_NATIVE_IAP
       ? `/register?plan=pro&billing=${isAnnual ? 'annual' : 'monthly'}`
       : undefined
 
   const handleProClick =
-    isAuthenticated || IS_CAPACITOR ? () => setUpgradeModalOpen(true) : undefined
+    isAuthenticated || USE_NATIVE_IAP ? () => setUpgradeModalOpen(true) : undefined
 
   return (
     <div
@@ -812,7 +812,7 @@ export default function PricingContent() {
           gap: '16px',
         }}
       >
-        {!IS_CAPACITOR && (
+        {!USE_NATIVE_IAP && (
           <div
             style={{
               display: 'flex',
@@ -1400,11 +1400,13 @@ export default function PricingContent() {
             Terms of Use
           </a>
         </div>
-        {IS_CAPACITOR &&
+        {USE_NATIVE_IAP &&
           (() => {
-            const accountName = IS_IOS ? 'Apple\u00a0ID' : 'Google\u00a0Play'
-            const settingsName = IS_IOS ? 'App\u00a0Store' : 'Google\u00a0Play'
-            const cancelWindow = IS_IOS ? ' at least 24\u00a0hours before' : ' before'
+            // Keyed on USES_APPLE_IAP, not IS_IOS: the Mac shell is Apple-billed
+            // but reports platform "web", so IS_IOS would name the wrong store.
+            const accountName = USES_APPLE_IAP ? 'Apple\u00a0ID' : 'Google\u00a0Play'
+            const settingsName = USES_APPLE_IAP ? 'App\u00a0Store' : 'Google\u00a0Play'
+            const cancelWindow = USES_APPLE_IAP ? ' at least 24\u00a0hours before' : ' before'
             return (
               <p
                 style={{

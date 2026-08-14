@@ -25,12 +25,14 @@ export const INDEXABLE_SITE_SECTIONS = [
   {
     title: 'Learn',
     links: [
+      { href: '/investor-intelligence', label: 'Investor Intelligence' },
       { href: '/methodology', label: 'Methodology' },
       { href: '/national-averages', label: 'National benchmarks' },
       { href: '/glossary', label: 'Glossary' },
       { href: '/blog', label: 'Blog' },
       { href: '/help', label: 'Help center' },
       { href: '/about', label: 'About' },
+      { href: '/authors/brad-geisen', label: 'Brad Geisen' },
     ],
   },
   {

@@ -121,6 +121,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
 
   const navLinks = [
     { href: '#how-it-works', label: 'How it Works' },
+    { href: '/investor-intelligence', label: 'Investor Intelligence' },
     { href: '/directory', label: 'Cash Buyers' },
     { href: '/lenders', label: 'Hard Money' },
     { href: '/pricing', label: 'Pricing' },
@@ -764,6 +765,7 @@ function SiteFooter() {
           title="Learn"
           links={[
             { href: '/methodology', label: 'Methodology' },
+            { href: '/investor-intelligence', label: 'Investor Intelligence' },
             { href: '/national-averages', label: 'National Benchmarks' },
             { href: '/glossary', label: 'Glossary' },
             { href: '/blog', label: 'Blog' },

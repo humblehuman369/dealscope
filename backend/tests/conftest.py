@@ -49,6 +49,7 @@ from app.models import (  # noqa: F401
     Document,
     DocumentType,
     FlipStage,
+    IntelligenceSubscriber,
     PaymentHistory,
     Permission,
     PropertyAdjustment,

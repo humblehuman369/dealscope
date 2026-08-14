@@ -70,7 +70,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
     types: {
-      'application/rss+xml': `${canonicalBase}/blog/feed.xml`,
+      'application/rss+xml': [
+        { url: `${canonicalBase}/blog/feed.xml`, title: 'DealGapIQ Blog' },
+        {
+          url: `${canonicalBase}/investor-intelligence/feed`,
+          title: 'DealGapIQ Investor Intelligence',
+        },
+      ],
     },
   },
   icons: {

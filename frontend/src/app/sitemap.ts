@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { getAllContent, type ContentFile } from '@/lib/content'
+import { allIntelligencePaths } from '@/lib/investor-intelligence'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -20,6 +21,8 @@ const STATIC_ROUTES: StaticEntry[] = [
   { path: '/about', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/glossary', priority: 0.6, changeFrequency: 'weekly' },
   { path: '/blog', priority: 0.6, changeFrequency: 'weekly' },
+  { path: '/investor-intelligence', priority: 0.85, changeFrequency: 'weekly' },
+  { path: '/authors/brad-geisen', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/help', priority: 0.5, changeFrequency: 'monthly' },
   { path: '/national-averages', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/legal/find-attorney', priority: 0.5, changeFrequency: 'monthly' },
@@ -73,5 +76,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticEntries, ...glossaryEntries, ...blogEntries]
+  const intelligenceEntries: MetadataRoute.Sitemap = allIntelligencePaths()
+    .filter((path) => path !== '/investor-intelligence' && path !== '/authors/brad-geisen')
+    .map((path) => ({
+      url: `${SITE_URL}${path}`,
+      lastModified: buildDate,
+      changeFrequency: 'weekly' as const,
+      priority: path.includes('/great-investor-reset') ? 0.8 : 0.7,
+    }))
+
+  return [...staticEntries, ...glossaryEntries, ...blogEntries, ...intelligenceEntries]
 }
