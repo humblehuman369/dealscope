@@ -5,10 +5,27 @@ with desktop window chrome and **RevenueCat / StoreKit** IAP.
 
 | | |
 |---|---|
-| Bundle ID | `com.dealgapiq.mac` |
-| Version | `1.0.0` (build `1`) |
+| Bundle ID | `com.dealgapiq.mobile` — **same as iOS, deliberately** |
+| App record | `6759636866` (macOS platform on the existing DealGapIQ app) |
+| Version | `1.0` (build `1`) |
 | Min macOS | 13.3 |
-| IAP products | `com.monthly.dealgapiq` / `com.yearly.dealgapiq` |
+| Subscription group | `22024739` "DealGapIQ Pro" — shared with iOS |
+| IAP products | `com.monthly.dealgapiq` / `com.yearly.dealgapiq` — shared with iOS |
+
+### Why the bundle ID matches iOS
+
+This is a **universal purchase**. macOS is a platform on app record `6759636866`,
+not a separate app, and Apple requires an identical bundle ID across platforms to
+make that work. The payoff is that subscription groups live on the app record, so
+the Mac build sells the same two products: an iOS subscriber gets Pro on Mac with
+no second purchase, and upgrade/downgrade plus introductory-offer eligibility are
+evaluated inside the one group.
+
+Do **not** give this target its own bundle ID. A distinct ID forces a separate app
+record, and those two product IDs cannot come with it — App Store Connect enforces
+IAP product IDs unique per account and both are already claimed here. You would
+need new products, separate billing and trial eligibility, no cross-platform
+upgrade path, and a second listing and review.
 
 > **Phase 1 is already live** without this project: the iOS/iPad Capacitor app
 > appears on the Mac App Store as “Designed for iPad” (Apple Silicon).
@@ -48,10 +65,12 @@ python3 apply_mac_screenshot_brand.py
 
 ## Before Mac App Store submission
 
-1. **App Store Connect** → DealGapIQ → add **macOS** platform (if not already).
-2. **RevenueCat** → ensure the Mac App Store app / products are linked
-   (`com.monthly.dealgapiq`, `com.yearly.dealgapiq`). Public SDK key:
-   `NEXT_PUBLIC_REVENUECAT_IOS_KEY` (or `NEXT_PUBLIC_REVENUECAT_MAC_KEY`).
+1. **App Store Connect** → the macOS platform already exists on app `6759636866`
+   with a `1.0` version record. Match `MARKETING_VERSION` to it or a build cannot
+   be attached.
+2. **RevenueCat** → nothing to add. RevenueCat keys on bundle ID plus shared
+   secret, so the existing App Store app entry already covers macOS purchases.
+   Use `NEXT_PUBLIC_REVENUECAT_IOS_KEY`; a separate Mac key is unnecessary.
 3. **Deploy** the web app so `USE_NATIVE_IAP` / `macIap` paths are live on
    `dealgapiq.com` before reviewers open the shell.
 4. **Archive + upload** (on a Mac):
@@ -62,7 +81,7 @@ bash scripts/archive-and-upload.sh
 ```
 
 5. In Connect: attach build, paste promo + description, upload `screenshots-mac/`
-   in order `01`–`08`, submit.
+   in order `01`–`10`, submit.
 
 ## Detection in the web app
 

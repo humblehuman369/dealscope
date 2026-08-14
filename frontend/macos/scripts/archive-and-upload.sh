@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
-# Archive + upload the native Mac App Store binary (com.dealgapiq.mac).
+# Archive + upload the native Mac App Store binary.
+# Shares the iOS bundle ID (com.dealgapiq.mobile) so the build lands on the
+# macOS platform of the existing app record as a universal purchase.
 # Must run on macOS with Xcode + a valid Apple Distribution identity.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PROJECT="$ROOT/DealGapIQ.xcodeproj"
 SCHEME="DealGapIQ"
-ARCHIVE_PATH="${ARCHIVE_PATH:-$ROOT/build/DealGapIQ-1.0.0.xcarchive}"
-EXPORT_PATH="${EXPORT_PATH:-$ROOT/build/export-1.0.0}"
+ARCHIVE_PATH="${ARCHIVE_PATH:-$ROOT/build/DealGapIQ-1.0.xcarchive}"
+EXPORT_PATH="${EXPORT_PATH:-$ROOT/build/export-1.0}"
 EXPORT_OPTIONS="$ROOT/ExportOptions.plist"
 TEAM_ID="${DEVELOPMENT_TEAM:-A2Y6C3NNSY}"
 

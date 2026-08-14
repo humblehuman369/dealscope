@@ -5,7 +5,12 @@
 | Phase | What | Status |
 |-------|------|--------|
 | **1** | iPad Capacitor binary as “Designed for iPad” on Apple Silicon | **Live** |
-| **2** | Native Mac WKWebView shell (`frontend/macos/`, `com.dealgapiq.mac`) | **Ready to archive** on a Mac |
+| **2** | Native Mac WKWebView shell (`frontend/macos/`, `com.dealgapiq.mobile`) | **Ready to archive** on a Mac |
+
+The Mac shell shares the iOS bundle ID on purpose. macOS is a platform on app
+record `6759636866`, and a universal purchase requires an identical bundle ID
+across platforms — see `frontend/macos/README.md` for why a distinct ID would
+cost you the shared subscription.
 
 ## Why not Mac Catalyst?
 
@@ -35,15 +40,18 @@ cd macos && bash scripts/archive-and-upload.sh
 
 - Bridge: `RevenueCatBridge.swift` → `window.DealGapIQMac.iap`
 - Web: `USE_NATIVE_IAP`, `macIap.ts`, `useRevenueCat`
-- Products: `com.monthly.dealgapiq` / `com.yearly.dealgapiq` (same as iOS)
+- Products: `com.monthly.dealgapiq` / `com.yearly.dealgapiq` — literally the same
+  products, in subscription group `22024739` "DealGapIQ Pro". Shared because the
+  group belongs to the app record, so an iOS subscriber needs no second purchase.
+- RevenueCat needs no Mac-specific app or key; it keys on bundle ID.
 - Deploy frontend before reviewers hit production shell
 
 ### ASC checklist
 
-1. Add **macOS** platform on the DealGapIQ app (or confirm it exists)
-2. Upload screenshots `01`–`08` from `screenshots-mac/`
+1. macOS platform already exists on app `6759636866` with a `1.0` version record
+2. Upload screenshots `01`–`10` from `screenshots-mac/`
 3. Paste promotional text + description
-4. Attach archived build `1.0.0 (1)`
+4. Attach archived build `1.0 (1)`
 5. Submit for review
 
 **Note:** Shipping the native macOS binary replaces the “iOS app on Mac”
