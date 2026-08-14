@@ -68,9 +68,11 @@ python3 apply_mac_screenshot_brand.py
 1. **App Store Connect** → the macOS platform already exists on app `6759636866`
    with a `1.0` version record. Match `MARKETING_VERSION` to it or a build cannot
    be attached.
-2. **RevenueCat** → nothing to add. RevenueCat keys on bundle ID plus shared
-   secret, so the existing App Store app entry already covers macOS purchases.
-   Use `NEXT_PUBLIC_REVENUECAT_IOS_KEY`; a separate Mac key is unnecessary.
+2. **RevenueCat** → nothing to add. The project has one Apple app, "DealGapIQ
+   (App Store)", already holding both approved products with entitlements. macOS
+   receipts validate against it because the bundle ID and app-specific shared
+   secret are the same, so `NEXT_PUBLIC_REVENUECAT_IOS_KEY` is the only Apple key
+   needed. Do not add a Mac App Store app or a Mac-specific key.
 3. **Deploy** the web app so `USE_NATIVE_IAP` / `macIap` paths are live on
    `dealgapiq.com` before reviewers open the shell.
 4. **Archive + upload** (on a Mac):

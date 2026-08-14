@@ -44,11 +44,13 @@ interface RevenueCatState {
   error: string | null
 }
 
+/**
+ * Apple key covers macOS too. The Mac shell ships the iOS bundle ID as a
+ * universal purchase, so its receipts validate against the one RevenueCat
+ * App Store app — there is no separate Mac App Store app or key.
+ */
 const RC_API_KEY_IOS = process.env.NEXT_PUBLIC_REVENUECAT_IOS_KEY ?? ''
 const RC_API_KEY_ANDROID = process.env.NEXT_PUBLIC_REVENUECAT_ANDROID_KEY ?? ''
-/** Mac App Store uses the Apple public SDK key (same RC project as iOS). */
-const RC_API_KEY_MAC =
-  process.env.NEXT_PUBLIC_REVENUECAT_MAC_KEY ?? RC_API_KEY_IOS
 
 const INIT_TIMEOUT_MS = 8000
 
@@ -96,7 +98,7 @@ export function useRevenueCat() {
       // --- Native Mac App Store shell (WKWebView + RevenueCatBridge) ---
       if (IS_MAC_NATIVE) {
         const mac = getMacIapBridge()
-        if (!mac || !RC_API_KEY_MAC) {
+        if (!mac || !RC_API_KEY_IOS) {
           clearTimeout(watchdog)
           if (attemptRef.current === attempt) {
             setState((s) => ({
@@ -110,7 +112,7 @@ export function useRevenueCat() {
         }
 
         if (!configuredRef.current) {
-          await mac.configure(RC_API_KEY_MAC)
+          await mac.configure(RC_API_KEY_IOS)
           configuredRef.current = true
         }
         if (user?.id) {
