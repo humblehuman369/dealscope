@@ -236,9 +236,54 @@ def add_off_mls_badge(canvas: Image.Image, target_y: int) -> None:
             x += text_width(sep, font, tracking_em=-0.01)
 
 
-def build_mac_window(content: Image.Image, window_w: int, window_h: int) -> Image.Image:
+def fit_content_preserve_aspect(
+    content: Image.Image,
+    box_w: int,
+    box_h: int,
+    fill: tuple[int, int, int] = NAVY_TOP,
+) -> Image.Image:
+    """Scale content to fit inside box_w×box_h without stretching (letterbox)."""
+    src = content.convert("RGB")
+    sw, sh = src.size
+    if sw <= 0 or sh <= 0:
+        raise ValueError("content has empty dimensions")
+    scale = min(box_w / sw, box_h / sh)
+    nw = max(1, int(round(sw * scale)))
+    nh = max(1, int(round(sh * scale)))
+    fitted = src.resize((nw, nh), Image.LANCZOS)
+    canvas = Image.new("RGB", (box_w, box_h), fill)
+    canvas.paste(fitted, ((box_w - nw) // 2, (box_h - nh) // 2))
+    return canvas.convert("RGBA")
+
+
+def window_size_for_content(
+    content: Image.Image,
+    max_w: int = 1580,
+    max_h: int = 1320,
+    title_h: int = 44,
+) -> tuple[int, int, int, int]:
+    """Pick a Mac window whose content pane matches the source aspect ratio.
+
+    Returns (window_w, window_h, content_w, content_h). Never stretches.
+    """
+    sw, sh = content.size
+    # Leave room for the title bar inside max_h.
+    max_content_h = max_h - title_h
+    scale = min(max_w / sw, max_content_h / sh)
+    content_w = max(1, int(round(sw * scale)))
+    content_h = max(1, int(round(sh * scale)))
+    return content_w, content_h + title_h, content_w, content_h
+
+
+def build_mac_window(
+    content: Image.Image,
+    window_w: int,
+    window_h: int,
+    content_w: int,
+    content_h: int,
+) -> Image.Image:
     """Mac-style window with traffic lights and title bar around content."""
-    title_h = 44
+    title_h = window_h - content_h
     corner = 18
     pad = 70
     out_w = window_w + pad * 2
@@ -295,16 +340,11 @@ def build_mac_window(content: Image.Image, window_w: int, window_h: int) -> Imag
         (200, 210, 230, 255),
     )
 
-    # Content area
-    content_h = window_h - title_h
-    content_box = content.convert("RGBA").resize((window_w, content_h), Image.LANCZOS)
-    # Bottom corners rounded
-    mask = Image.new("L", (window_w, content_h), 255)
-    mdraw = ImageDraw.Draw(mask)
-    # punch top square (already under title), round bottom
-    corner_mask = Image.new("L", (window_w, content_h), 0)
+    # Content pane — exact aspect match (no stretch). fit_content is a safety net.
+    content_box = fit_content_preserve_aspect(content, content_w, content_h)
+    corner_mask = Image.new("L", (content_w, content_h), 0)
     ImageDraw.Draw(corner_mask).rounded_rectangle(
-        (0, -corner, window_w, content_h), radius=corner, fill=255
+        (0, -corner, content_w, content_h), radius=corner, fill=255
     )
     content_box.putalpha(corner_mask)
     out.alpha_composite(content_box, (pad, pad + title_h))
@@ -314,9 +354,7 @@ def build_mac_window(content: Image.Image, window_w: int, window_h: int) -> Imag
 def load_window_content(source: str) -> Image.Image:
     if source == "hero":
         if HERO_SCREENSHOT_PATH.is_file():
-            img = Image.open(HERO_SCREENSHOT_PATH).convert("RGB")
-            # Crop to a clean strategy panel; expand to landscape by letterboxing on navy
-            return img
+            return Image.open(HERO_SCREENSHOT_PATH).convert("RGB")
         source = "01-hero-investors-lens.png"
     path = IPHONE_DIR / source
     if not path.is_file():
@@ -335,13 +373,20 @@ def build_mac_screenshot(cfg: dict) -> None:
     add_off_mls_badge(canvas, target_y=wm_y + 28)
 
     content = load_window_content(cfg["source"])
-    # Window sits on the right; ~58% of canvas width
-    window_w = 1580
-    window_h = 1180
-    window = build_mac_window(content, window_w, window_h)
-    # Place window on right, vertically centered-ish
-    paste_x = TARGET_W - window.width + 20
-    paste_y = (TARGET_H - window.height) // 2 + 20
+    # Size the Mac chrome to the source aspect so plates never stretch.
+    # Left copy column needs ~1100px; keep the window inside the right half.
+    window_w, window_h, content_w, content_h = window_size_for_content(
+        content,
+        max_w=1500,
+        max_h=1480,
+    )
+    window = build_mac_window(content, window_w, window_h, content_w, content_h)
+    # Place window on the right, vertically centered; clamp so it stays on-canvas.
+    paste_x = min(TARGET_W - window.width + 10, TARGET_W - window.width)
+    paste_x = max(TARGET_W // 2 - 40, paste_x)
+    paste_y = max(40, (TARGET_H - window.height) // 2)
+    if paste_y + window.height > TARGET_H - 20:
+        paste_y = max(20, TARGET_H - window.height - 20)
     canvas.alpha_composite(window, (paste_x, paste_y))
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
