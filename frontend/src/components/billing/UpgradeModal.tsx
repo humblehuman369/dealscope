@@ -3,8 +3,8 @@
 /**
  * UpgradeModal — choose Pro Monthly or Annual.
  *
- * Web:       Stripe Checkout redirect.
- * Capacitor: RevenueCat in-app purchase via StoreKit / Google Play Billing.
+ * Web:              Stripe Checkout redirect.
+ * Capacitor / Mac:  RevenueCat in-app purchase via StoreKit / Google Play Billing.
  */
 
 import React, { useState, useCallback } from 'react'
@@ -13,7 +13,7 @@ import { X, Loader2, Check, RotateCcw, AlertCircle } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { billingApi } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
-import { IS_CAPACITOR, IS_IOS, IS_ANDROID } from '@/lib/env'
+import { IS_ANDROID, USE_NATIVE_IAP, USES_APPLE_IAP } from '@/lib/env'
 import { useRevenueCat, type RCPackage } from '@/hooks/useRevenueCat'
 import { PriceCents } from '@/components/ui/PriceCents'
 
@@ -80,9 +80,9 @@ export function UpgradeModal({
     if (isOpen) setAnnual(initialAnnual)
   }, [isOpen, initialAnnual])
 
-  // Fetch Stripe plans on open (web only)
+  // Fetch Stripe plans on open (web only — never on StoreKit/Play shells)
   React.useEffect(() => {
-    if (!isOpen || IS_CAPACITOR) return
+    if (!isOpen || USE_NATIVE_IAP) return
     setError(null)
     api
       .get<{ plans: PricingPlan[] }>('/api/v1/billing/plans')
@@ -91,33 +91,33 @@ export function UpgradeModal({
   }, [isOpen])
 
   // --- Pricing from RevenueCat or Stripe ---
-  const rcPkgMonthly = IS_CAPACITOR ? pickRCPackage(rc.packages, false) : undefined
-  const rcPkgAnnual = IS_CAPACITOR ? pickRCPackage(rc.packages, true) : undefined
+  const rcPkgMonthly = USE_NATIVE_IAP ? pickRCPackage(rc.packages, false) : undefined
+  const rcPkgAnnual = USE_NATIVE_IAP ? pickRCPackage(rc.packages, true) : undefined
   const rcPkg = annual ? rcPkgAnnual : rcPkgMonthly
   const proPlan = plans.find((p) => p.id === 'pro')
 
-  const rcLoading = IS_CAPACITOR && !rc.ready
+  const rcLoading = USE_NATIVE_IAP && !rc.ready
 
   // IAP failed to initialize: no package for the selected plan AND an error
   // was surfaced. Swap the purchase CTA for a retry affordance so reviewers
   // and real users never see a dead button. We intentionally ignore
   // `rc.ready` here so the retry UI stays in place during an in-flight retry.
-  const iapUnavailable = IS_CAPACITOR && !rcPkg && !!rc.error
+  const iapUnavailable = USE_NATIVE_IAP && !rcPkg && !!rc.error
 
-  const displayPriceMonthly = IS_CAPACITOR
+  const displayPriceMonthly = USE_NATIVE_IAP
     ? (rcPkgMonthly?.product.priceString ?? FALLBACK_PRICE_MONTHLY)
     : `$${proPlan ? proPlan.price_monthly / 100 : 34.99}`
-  const displayPriceAnnual = IS_CAPACITOR
+  const displayPriceAnnual = USE_NATIVE_IAP
     ? (rcPkgAnnual?.product.priceString ?? FALLBACK_PRICE_ANNUAL)
     : `$${proPlan ? proPlan.price_yearly / 100 : 349.99}`
 
   const startCheckout = useCallback(async () => {
-    if (IS_CAPACITOR) {
+    if (USE_NATIVE_IAP) {
       if (!rcPkg) return
       trackEvent('checkout_started', {
         source: 'upgrade_modal',
         plan: annual ? 'yearly' : 'monthly',
-        platform: 'capacitor',
+        platform: USES_APPLE_IAP ? 'apple_iap' : 'capacitor',
       })
       const success = await rc.purchase(rcPkg.identifier)
       if (success) {
@@ -262,7 +262,7 @@ export function UpgradeModal({
               <span className="inline-block h-7 w-24 rounded bg-white/10 animate-pulse" />
             ) : (
               <span className="text-2xl font-bold text-white">
-                {IS_CAPACITOR ? (
+                {USE_NATIVE_IAP ? (
                   <PriceCents>{annual ? displayPriceAnnual : displayPriceMonthly}</PriceCents>
                 ) : (
                   <PriceCents>{`$${annual ? (proPlan ? (proPlan.price_yearly / 100 / 12).toFixed(2) : '29.17') : proPlan ? proPlan.price_monthly / 100 : 34.99}`}</PriceCents>
@@ -270,9 +270,9 @@ export function UpgradeModal({
               </span>
             )}
             <span className="text-slate-400 text-sm">
-              {IS_CAPACITOR ? (annual ? '/year' : '/month') : '/month'}
+              {USE_NATIVE_IAP ? (annual ? '/year' : '/month') : '/month'}
             </span>
-            {!IS_CAPACITOR && annual && (
+            {!USE_NATIVE_IAP && annual && (
               <span className="text-slate-500 text-xs ml-auto">
                 ${proPlan ? proPlan.price_yearly / 100 : 349.99}/yr
               </span>
@@ -329,7 +329,7 @@ export function UpgradeModal({
             <button
               type="button"
               onClick={startCheckout}
-              disabled={loading || rc.isPurchasing || (IS_CAPACITOR ? !rcPkg : !proPlan)}
+              disabled={loading || rc.isPurchasing || (USE_NATIVE_IAP ? !rcPkg : !proPlan)}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-white disabled:opacity-50 transition-opacity"
               style={{
                 background:
@@ -346,7 +346,7 @@ export function UpgradeModal({
               )}
             </button>
           )}
-          {IS_CAPACITOR && (
+          {USE_NATIVE_IAP && (
             <button
               type="button"
               onClick={() => rc.restore()}
@@ -384,11 +384,11 @@ export function UpgradeModal({
               Terms of Use
             </a>
           </div>
-          {IS_CAPACITOR &&
+          {USE_NATIVE_IAP &&
             (() => {
-              const accountName = IS_IOS ? 'Apple ID' : 'Google Play'
-              const settingsName = IS_IOS ? 'App Store' : 'Google Play'
-              const cancelWindow = IS_IOS ? ' at least 24\u00a0hours before' : ' before'
+              const accountName = USES_APPLE_IAP ? 'Apple ID' : 'Google Play'
+              const settingsName = USES_APPLE_IAP ? 'App Store' : 'Google Play'
+              const cancelWindow = USES_APPLE_IAP ? ' at least 24\u00a0hours before' : ' before'
               const period = annual ? 'year' : 'month'
               const fullPrice = annual ? displayPriceAnnual : displayPriceMonthly
               return (

@@ -80,6 +80,15 @@ export const IS_MAC_DESKTOP: boolean = (() => {
 })()
 
 /**
+ * StoreKit / Play Billing path (Capacitor or native Mac shell).
+ * When true, UpgradeModal must NOT use Stripe Checkout.
+ */
+export const USE_NATIVE_IAP: boolean = IS_CAPACITOR || IS_MAC_NATIVE
+
+/** Apple ID / App Store subscription disclosure (iOS Capacitor or Mac shell). */
+export const USES_APPLE_IAP: boolean = IS_IOS || IS_MAC_NATIVE
+
+/**
  * Base URL prefix for client-side API calls.
  * - Default: empty string — relative paths go through the app origin and rewrites
  * - Optional direct mode: set NEXT_PUBLIC_USE_DIRECT_API=true to call
@@ -97,4 +106,5 @@ export const API_BASE_URL = DIRECT_API_ENABLED ? PUBLIC_API_URL : ''
  * and other API routes always resolve to an absolute URL.
  */
 export const WEB_BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL || (IS_CAPACITOR ? 'https://dealgapiq.com' : '')
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (IS_CAPACITOR || IS_MAC_NATIVE ? 'https://dealgapiq.com' : '')

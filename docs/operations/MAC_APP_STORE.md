@@ -59,21 +59,25 @@ npm run cap:open:ios
 Or install the App Store / TestFlight iOS app on Mac (Apple Silicon) and confirm
 it launches with desktop layouts (`capacitor-mac` class on `<html>`).
 
-## Phase 2 — native Mac shell (in progress)
+## Phase 2 — native Mac shell + RevenueCat IAP
 
-Scaffold lives at **`frontend/macos/`** (`com.dealgapiq.mac`).
+Lives at **`frontend/macos/`** — bundle ID `com.dealgapiq.mobile` (shared with iOS).
 
 ```bash
 cd frontend && npm run mac:open
-# or: open frontend/macos/DealGapIQ.xcodeproj
 ```
 
-**Build verified** with `xcodebuild` (Debug, macOS). Before submitting this
-binary to the Mac App Store you must wire **StoreKit 2 / RevenueCat macOS**
-(Stripe checkout is not allowed for digital unlocks in MAS). Same product IDs
-as iOS: `com.monthly.dealgapiq` / `com.yearly.dealgapiq`.
+**IAP is wired:** RevenueCat Swift SDK ↔ `window.DealGapIQMac.iap` ↔
+`useRevenueCat` / `UpgradeModal` (no Stripe in the Mac shell).
 
-See `frontend/macos/README.md`.
+Local test against a Vercel preview / localhost (until web changes are deployed):
+
+```bash
+DEALGAPIQ_URL=http://localhost:3000 open frontend/macos/DealGapIQ.xcodeproj
+# then Run in Xcode (Scheme env can also set DEALGAPIQ_URL)
+```
+
+See `frontend/macos/README.md` for RevenueCat dashboard checklist + archive steps.
 
 ## Windows (after Mac)
 

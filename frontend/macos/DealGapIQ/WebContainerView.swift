@@ -2,11 +2,19 @@ import SwiftUI
 import WebKit
 
 /// Thin Mac App Store shell: WKWebView → production DealGapIQ web app.
-/// Injects `window.__DEALGAPIQ_MAC__ = true` so the web client can use
-/// Mac-specific chrome (and, later, StoreKit-backed IAP instead of Stripe).
+/// RevenueCat/StoreKit IAP is exposed to the page via `window.DealGapIQMac.iap`.
 struct WebContainerView: View {
+    private var startURL: URL {
+        if let override = ProcessInfo.processInfo.environment["DEALGAPIQ_URL"],
+           let url = URL(string: override)
+        {
+            return url
+        }
+        return URL(string: "https://dealgapiq.com")!
+    }
+
     var body: some View {
-        MacWebView(url: URL(string: "https://dealgapiq.com")!)
+        MacWebView(url: startURL)
             .frame(minWidth: 1100, minHeight: 720)
             .background(Color.black)
     }
@@ -26,14 +34,7 @@ struct MacWebView: NSViewRepresentable {
         config.websiteDataStore = .default()
 
         let userScript = WKUserScript(
-            source: """
-            Object.defineProperty(window, '__DEALGAPIQ_MAC__', {
-              value: true,
-              writable: false,
-              configurable: false
-            });
-            document.documentElement.classList.add('dealgapiq-mac');
-            """,
+            source: RevenueCatBridge.userScriptSource,
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         )
@@ -48,6 +49,8 @@ struct MacWebView: NSViewRepresentable {
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 "
             + "(KHTML, like Gecko) Version/17.0 Safari/605.1.15 DealGapIQMac/1.0"
 
+        context.coordinator.iapBridge.attach(to: webView)
+
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
         webView.load(request)
@@ -57,6 +60,8 @@ struct MacWebView: NSViewRepresentable {
     func updateNSView(_ webView: WKWebView, context: Context) {}
 
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
+        let iapBridge = RevenueCatBridge()
+
         func webView(
             _ webView: WKWebView,
             decidePolicyFor navigationAction: WKNavigationAction,
@@ -67,7 +72,6 @@ struct MacWebView: NSViewRepresentable {
                 return
             }
 
-            // Keep first-party navigations inside the shell.
             if let host = url.host?.lowercased(),
                host == "dealgapiq.com" || host.hasSuffix(".dealgapiq.com")
                 || host == "accounts.google.com"
@@ -77,13 +81,11 @@ struct MacWebView: NSViewRepresentable {
                 return
             }
 
-            // Deep link scheme handled natively.
             if url.scheme == "dealgapiq" {
                 decisionHandler(.cancel)
                 return
             }
 
-            // External http(s) → system browser (App Store / docs / mailto helpers).
             if let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https" {
                 NSWorkspace.shared.open(url)
                 decisionHandler(.cancel)
@@ -99,7 +101,6 @@ struct MacWebView: NSViewRepresentable {
             for navigationAction: WKNavigationAction,
             windowFeatures: WKWindowFeatures
         ) -> WKWebView? {
-            // Target=_blank links: open in same webview or system browser.
             if let url = navigationAction.request.url {
                 if let host = url.host?.lowercased(),
                    host == "dealgapiq.com" || host.hasSuffix(".dealgapiq.com")
