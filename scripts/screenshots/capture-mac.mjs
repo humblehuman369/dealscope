@@ -30,7 +30,9 @@ const BASE_URL = getArg('base-url') ?? 'https://dealgapiq.com'
 const HEADED = hasFlag('headed')
 const DEMO_EMAIL = getArg('email') ?? 'review@dealgapiq.com'
 const DEMO_PASSWORD = getArg('password') ?? 'Review$1234'
-const DEMO_ADDRESS = getArg('address') ?? '4407 Deer Creek Blvd, Austin, TX 78757'
+// This property has complete comps and rehab data, which the Austin addresses
+// currently do not — several panels render "Unavailable" without it.
+const DEMO_ADDRESS = getArg('address') ?? '6778 Columbia Avenue, Lake Worth, FL 33467'
 const ONLY = getArg('only')?.split(',').map((s) => s.trim())
 
 const OUT_DIR = path.resolve(
@@ -83,6 +85,32 @@ async function dismissOverlays(page) {
     `,
   })
   await page.waitForTimeout(200)
+}
+
+/**
+ * Scroll a labelled section to the top of the viewport.
+ *
+ * scrollIntoViewIfNeeded() is a no-op whenever Playwright considers the element
+ * already reachable, which silently leaves the capture at the top of the page.
+ * Driving scrollIntoView() on the node itself also handles inner scrollers.
+ */
+async function scrollToAnchor(page, selector, offset = -120) {
+  const handle = await page.locator(selector).first().elementHandle().catch(() => null)
+  if (!handle) {
+    console.log(`   ⚠ anchor ${selector} not found`)
+    return false
+  }
+  // Absolute scrollTo, not scrollIntoView + scrollBy: on pages that scroll an
+  // inner container, scrollIntoView moves that container while the follow-up
+  // scrollBy silently applies to the window, so the offset never lands.
+  await handle.evaluate((el, off) => {
+    const top = el.getBoundingClientRect().top + window.scrollY + off
+    window.scrollTo({ top: Math.max(0, top), behavior: 'instant' })
+  }, offset)
+  await page.waitForTimeout(1000)
+  const scrolled = await page.evaluate(() => Math.round(window.scrollY))
+  console.log(`   ↧ ${selector} → scrollY=${scrolled}`)
+  return true
 }
 
 async function waitQuiet(page, ms = 1500) {
@@ -239,12 +267,15 @@ async function openMap(page, pathAndQuery) {
 async function captureHeroAndVerdict(page) {
   console.log('\n   [01 + 03] Discovery verdict (desktop)')
   await openAnalysis(page, '/discovery', ['Target Buy', 'Deal Gap'])
+
+  // Anchor on the verdict rather than the top of the page: a listing with a
+  // large photo gallery pushes the valuation cards below the fold, and a hero
+  // of listing photos says "portal", not "analysis tool".
+  await scrollToAnchor(page, 'text=Investment Overview', -85)
   await save(page, '01-hero.png')
 
-  // 01 and 03 must not be the same frame. Scroll so the three valuation cards
-  // sit at the top and the "ways to make this work" options come into view.
-  await page.evaluate(() => window.scrollBy(0, 380))
-  await page.waitForTimeout(1200)
+  // 01 and 03 must not be the same frame; 03 carries the ways to close the gap.
+  await scrollToAnchor(page, 'text=WAYS TO MAKE THIS WORK', -230)
   await save(page, '03-verdict.png')
 }
 
@@ -279,6 +310,81 @@ async function captureCoverage(page) {
   }
   await page.waitForTimeout(3500)
   await save(page, '05-coverage.png')
+}
+
+/** Select a strategy pill inside Deal Maker (Long-term, BRRRR, Wholesale, …). */
+async function selectStrategy(page, label) {
+  const pill = page.locator(`button:has-text("${label}")`).first()
+  if (await pill.isVisible({ timeout: 4000 }).catch(() => false)) {
+    await pill.click().catch(() => {})
+    await page.waitForTimeout(3000)
+    return true
+  }
+  console.log(`   ⚠ strategy pill "${label}" not found`)
+  return false
+}
+
+async function captureBrrrr(page) {
+  console.log('\n   [09] Deal Maker — BRRRR')
+  await openAnalysis(page, '/deal-maker', ['Cash Flow', 'Purchase', 'ARV'], ['Loading'])
+  await selectStrategy(page, 'BRRRR')
+  await save(page, '09-brrrr.png')
+}
+
+async function captureWholesale(page) {
+  console.log('\n   [10] Deal Maker — Wholesale')
+  await openAnalysis(page, '/deal-maker', ['Cash Flow', 'Purchase', 'ARV'], ['Loading'])
+  await selectStrategy(page, 'Wholesale')
+  await save(page, '10-wholesale.png')
+}
+
+async function captureEstimator(page) {
+  console.log('\n   [11] Rehab Estimator')
+  await openAnalysis(page, '/rehab', ['Rehab Estimator', 'Cost Breakdown', 'Quick Estimate'], [])
+  // The itemised Cost Breakdown is the payoff; the panels above it are setup.
+  // Anchored on the section's own checkbox hint. The prose above it both names
+  // "Cost Breakdown" in a <strong> and contains "in your estimate", so those
+  // match first and land the capture on the verification list instead.
+  await scrollToAnchor(page, 'text=Uncheck to remove', -170)
+  await save(page, '11-estimator.png')
+}
+
+async function captureStrategyWorkbench(page) {
+  console.log('\n   [12] Strategy Workbench')
+  await openAnalysis(page, '/strategy', ['Strategy Workbench', 'PICK AN OPTION', 'Cap Rate'], [])
+  await page.evaluate(() => window.scrollBy(0, 230))
+  await page.waitForTimeout(900)
+  await save(page, '12-strategy.png')
+}
+
+async function captureDirectory(page, route, filename, waitText, label, scrollY = 0) {
+  console.log(`\n   [${label}] ${route}`)
+  await page.goto(`${BASE_URL}${route}`, { waitUntil: 'domcontentloaded' })
+  const ok = await page
+    .waitForSelector(`text=${waitText}`, { timeout: 45000 })
+    .then(() => true)
+    .catch(() => false)
+  await waitQuiet(page, 2500)
+  await dismissOverlays(page)
+  // Scroll past the page's own hero copy so the listing cards — the reason to
+  // subscribe — land inside the cropped band instead of below it.
+  await page.evaluate((y) => window.scrollTo(0, y), scrollY)
+  await page.waitForTimeout(900)
+  console.log(ok ? '   ✓ loaded' : '   ⚠ marker not found')
+  await save(page, filename)
+}
+
+async function captureDashboard(page) {
+  console.log('\n   [15] Dashboard pipeline')
+  await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'domcontentloaded' })
+  await page
+    .waitForSelector('text=PIPELINE', { timeout: 45000 })
+    .catch(() => {})
+  await waitQuiet(page, 3000)
+  await dismissOverlays(page)
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.waitForTimeout(600)
+  await save(page, '15-dashboard.png')
 }
 
 async function captureComps(page) {
@@ -357,6 +463,17 @@ async function main() {
   if (wanted('06-comps.png')) await captureComps(page)
   if (wanted('07-dealmaker.png')) await captureDealMaker(page)
   if (wanted('08-heatmap.png')) await captureHeatmap(page)
+  if (wanted('09-brrrr.png')) await captureBrrrr(page)
+  if (wanted('10-wholesale.png')) await captureWholesale(page)
+  if (wanted('11-estimator.png')) await captureEstimator(page)
+  if (wanted('12-strategy.png')) await captureStrategyWorkbench(page)
+  if (wanted('13-lenders.png')) {
+    await captureDirectory(page, '/lenders', '13-lenders.png', 'Lender Directory', '13', 300)
+  }
+  if (wanted('14-buyers.png')) {
+    await captureDirectory(page, '/directory', '14-buyers.png', 'Cash Buyer', '14', 300)
+  }
+  if (wanted('15-dashboard.png')) await captureDashboard(page)
 
   await browser.close()
 

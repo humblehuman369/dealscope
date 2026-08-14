@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """Build Mac App Store landscape screenshots (2880×1800, 16:10).
 
-Composites:
-  - Dark navy brand canvas
-  - Left typography (DM Sans)
-  - A wide Mac window chrome containing a real desktop UI capture
-    from assets/mac-desktop/ (Playwright, 1440×900 @ 2x)
-  - DealGapIQ wordmark + Off-MLS badge
+Composites, per slot:
+  - Dark navy brand canvas with a radial brand glow
+  - A top copy band: wordmark eyebrow, headline, subhead, coverage badge
+  - A wide macOS window containing a real desktop capture from
+    assets/mac-desktop/ (Playwright, 1440×900 @2x)
+
+The capture is *cropped*, never shrunk to fit. A 16:10 source inside a 16:10
+frame has to give up scale for every pixel of margin or copy, so shrinking it
+to sit beside a text column renders the UI at ~60% and leaves a third of the
+frame empty. Cropping a wide band off the top of the capture keeps the UI near
+90% scale and fills the frame.
 
 Capture plates first:
-    npm run screenshots:mac
+    node scripts/screenshots/capture-mac.mjs
 
 Then:
     python3 apply_mac_screenshot_brand.py
@@ -17,10 +22,9 @@ Then:
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 THIS_DIR = Path(__file__).resolve().parent
 OUT_DIR = THIS_DIR / "screenshots-mac"
@@ -38,14 +42,32 @@ TARGET_H = 1800
 INK = (27, 33, 65, 255)
 BLUE = (4, 101, 242, 255)
 WHITE = (255, 255, 255, 255)
-SUBHEAD_COLOR = (170, 195, 230, 255)
-NAVY_TOP = (10, 18, 40)
-NAVY_BOTTOM = (4, 8, 22)
+SUBHEAD_COLOR = (163, 189, 226, 255)
+NAVY_TOP = (11, 20, 44)
+NAVY_BOTTOM = (3, 7, 20)
 CYAN_GLOW = (34, 211, 238)
-TITLEBAR = (28, 32, 44, 255)
-WINDOW_EDGE = (18, 20, 28, 255)
+TITLEBAR_TOP = (44, 49, 62, 255)
+TITLEBAR_BOTTOM = (32, 36, 47, 255)
+WINDOW_EDGE = (58, 64, 78, 255)
 
-# Same story order as iPhone / iPad; Mac-tuned subheads.
+# Layout ---------------------------------------------------------------------
+MARGIN_X = 150
+WORDMARK_Y = 118
+WORDMARK_W = 292
+HEADLINE_SIZE = 104
+HEADLINE_LEADING = 114
+SUBHEAD_SIZE = 42
+WINDOW_TOP = 700
+WINDOW_BOTTOM = 1730
+TITLEBAR_H = 56
+CORNER = 22
+
+WINDOW_W = TARGET_W - MARGIN_X * 2
+WINDOW_H = WINDOW_BOTTOM - WINDOW_TOP
+CONTENT_W = WINDOW_W
+CONTENT_H = WINDOW_H - TITLEBAR_H
+
+# Story order. "source" is a plate in assets/mac-desktop/.
 MAC_CONFIGS = [
     {
         "output_name": "01-hero-investors-lens.png",
@@ -56,44 +78,56 @@ MAC_CONFIGS = [
     {
         "output_name": "02-search-color-coded.png",
         "headline_lines": ["Color-coded deals", "at a glance."],
-        "subhead": "Green is go. Yellow needs work. Red is no.",
+        "subhead": "Green means the numbers work. Orange means they don't — yet.",
         "source": "02-search.png",
     },
     {
-        "output_name": "03-verdict-three-cards.png",
+        "output_name": "03-coverage-beyond-mls.png",
+        "headline_lines": ["Beyond", "the MLS."],
+        "subhead": "Foreclosure, pre-foreclosure and auction — scored alongside MLS.",
+        "source": "05-coverage.png",
+    },
+    {
+        "output_name": "04-sorted-by-opportunity.png",
+        "headline_lines": ["412 listings,", "sorted by opportunity."],
+        "subhead": "Every home ranked before you open a single comp.",
+        "source": "04-pills.png",
+    },
+    {
+        "output_name": "05-verdict-close-the-gap.png",
         "headline_lines": ["The whole deal,", "in one view."],
         "subhead": "See the gap, then four ways to close it — side by side.",
         "source": "03-verdict.png",
     },
     {
-        "output_name": "04-pills-deal-maybe-pass.png",
-        "headline_lines": ["DEAL. MAYBE.", "PASS — fast."],
-        "subhead": "Every listing scored before you open the comps.",
-        "source": "04-pills.png",
+        "output_name": "06-strategy-workbench.png",
+        "headline_lines": ["Pick an option.", "Watch it work."],
+        "subhead": "Four structures that close the gap, each pre-filled into the worksheet.",
+        "source": "12-strategy.png",
     },
     {
-        "output_name": "05-coverage-beyond-mls.png",
-        "headline_lines": ["Beyond", "the MLS."],
-        "subhead": "Foreclosure, Pre-Foreclosure, Auction — scored alongside MLS.",
-        "source": "05-coverage.png",
+        "output_name": "07-dealmaker-brrrr.png",
+        "headline_lines": ["Model BRRRR", "in real time."],
+        "subhead": "All-in cost, cash out, capital recycled — recalculated as you drag.",
+        "source": "09-brrrr.png",
     },
     {
-        "output_name": "06-comps-no-spreadsheet.png",
-        "headline_lines": ["Comps without", "the spreadsheet."],
-        "subhead": "Real comparables, pulled in seconds on your Mac.",
-        "source": "06-comps.png",
+        "output_name": "08-estimator-rehab.png",
+        "headline_lines": ["Know the", "repair bill."],
+        "subhead": "Rehab estimates with regional cost factors and a contingency reserve.",
+        "source": "11-estimator.png",
     },
     {
-        "output_name": "07-dealmaker-scenarios.png",
-        "headline_lines": ["Model deals", "in real time."],
-        "subhead": "Adjust price, rehab, ARV — see profit live.",
-        "source": "07-dealmaker.png",
+        "output_name": "09-lender-directory.png",
+        "headline_lines": ["484 verified", "hard money lenders."],
+        "subhead": "Filter by loan product, deal size and credit policy — then call direct.",
+        "source": "13-lenders.png",
     },
     {
-        "output_name": "08-neighborhoods-heatmap.png",
-        "headline_lines": ["See where", "the deals are."],
-        "subhead": "Heatmaps reveal the hottest neighborhoods.",
-        "source": "08-heatmap.png",
+        "output_name": "10-cash-buyer-directory.png",
+        "headline_lines": ["2,812 cash buyers,", "nationwide."],
+        "subhead": "Skip the cold outreach. Search by city, county or ZIP and connect direct.",
+        "source": "14-buyers.png",
     },
 ]
 
@@ -167,23 +201,39 @@ def add_radial_cyan_glow(
     canvas.alpha_composite(overlay)
 
 
-def add_headline(canvas: Image.Image, lines: list[str], top_y: int, font_size: int = 92) -> int:
+def add_wordmark(canvas: Image.Image, y: int) -> int:
+    """Screen-blend the wordmark.
+
+    The asset is opaque RGB — light lettering matted onto pure black, with no
+    alpha channel — so pasting it stamps a black rectangle onto the gradient.
+    Screening adds only the lettering and leaves the black background inert.
+    """
+    if not WORDMARK_PATH.is_file():
+        return y
+    wm = Image.open(WORDMARK_PATH).convert("RGB")
+    height = int(wm.height * (WORDMARK_W / wm.width))
+    wm = wm.resize((WORDMARK_W, height), Image.LANCZOS)
+
+    box = (MARGIN_X, y, MARGIN_X + WORDMARK_W, y + height)
+    region = canvas.crop(box).convert("RGB")
+    blended = ImageChops.screen(region, wm).convert("RGBA")
+    canvas.paste(blended, box)
+    return y + height
+
+
+def add_headline(canvas: Image.Image, lines: list[str], top_y: int) -> int:
     draw = ImageDraw.Draw(canvas)
-    font = load_font(font_size, 800)
+    font = load_font(HEADLINE_SIZE, 800)
     y = top_y
     for line in lines:
-        w = text_width(line, font, tracking_em=-0.02)
-        x = 120
-        draw_text_tracked(draw, (x, y), line, font, WHITE, tracking_em=-0.02)
-        y += font_size + 8
-        _ = w
+        draw_text_tracked(draw, (MARGIN_X, y), line, font, WHITE, tracking_em=-0.022)
+        y += HEADLINE_LEADING
     return y
 
 
-def add_subhead(canvas: Image.Image, text: str, top_y: int, max_width: int = 980) -> int:
+def add_subhead(canvas: Image.Image, text: str, top_y: int, max_width: int = 1900) -> int:
     draw = ImageDraw.Draw(canvas)
-    font = load_font(36, 500)
-    # Simple wrap
+    font = load_font(SUBHEAD_SIZE, 500)
     words = text.split()
     lines: list[str] = []
     cur = ""
@@ -199,192 +249,124 @@ def add_subhead(canvas: Image.Image, text: str, top_y: int, max_width: int = 980
         lines.append(cur)
     y = top_y
     for line in lines:
-        draw_text_tracked(draw, (120, y), line, font, SUBHEAD_COLOR, tracking_em=-0.01)
-        y += 46
+        draw_text_tracked(draw, (MARGIN_X, y), line, font, SUBHEAD_COLOR, tracking_em=-0.01)
+        y += int(SUBHEAD_SIZE * 1.32)
     return y
 
 
-def add_wordmark(canvas: Image.Image, target_y: int, target_w: int = 420) -> int:
-    if not WORDMARK_PATH.is_file():
-        return target_y
-    wm = Image.open(WORDMARK_PATH).convert("RGBA")
-    scale = target_w / wm.width
-    wm = wm.resize((target_w, int(wm.height * scale)), Image.LANCZOS)
-    canvas.alpha_composite(wm, (120, target_y))
-    return target_y + wm.height
-
-
-def add_off_mls_badge(canvas: Image.Image, target_y: int) -> None:
+def add_off_mls_badge(canvas: Image.Image, top_y: int) -> int:
     draw = ImageDraw.Draw(canvas)
-    font = load_font(26, 600)
+    font = load_font(28, 600)
     parts = ["MLS", "Foreclosure", "Pre-Foreclosure", "Auction"]
-    gap = 18
     sep = "  ·  "
     text = sep.join(parts)
-    pad_x, pad_y = 22, 14
+    pad_x, pad_y = 26, 16
     tw = text_width(text, font, tracking_em=-0.01)
     box_w = int(tw + pad_x * 2)
-    box_h = 26 + pad_y * 2
-    x0, y0 = 120, target_y
+    box_h = 28 + pad_y * 2
+    x0, y0 = MARGIN_X, top_y
     draw.rounded_rectangle((x0, y0, x0 + box_w, y0 + box_h), radius=box_h // 2, fill=WHITE)
-    # Draw with blue separators by segment
     x = x0 + pad_x
-    y = y0 + pad_y - 2
+    y = y0 + pad_y - 3
     for i, part in enumerate(parts):
         draw_text_tracked(draw, (x, y), part, font, INK, tracking_em=-0.01)
         x += text_width(part, font, tracking_em=-0.01)
         if i < len(parts) - 1:
             draw_text_tracked(draw, (x, y), sep, font, BLUE, tracking_em=-0.01)
             x += text_width(sep, font, tracking_em=-0.01)
+    return y0 + box_h
 
 
-def fit_content_preserve_aspect(
-    content: Image.Image,
-    box_w: int,
-    box_h: int,
-    fill: tuple[int, int, int] = NAVY_TOP,
-) -> Image.Image:
-    """Scale content to fit inside box_w×box_h without stretching (letterbox)."""
-    src = content.convert("RGB")
-    sw, sh = src.size
-    if sw <= 0 or sh <= 0:
-        raise ValueError("content has empty dimensions")
-    scale = min(box_w / sw, box_h / sh)
-    nw = max(1, int(round(sw * scale)))
-    nh = max(1, int(round(sh * scale)))
-    fitted = src.resize((nw, nh), Image.LANCZOS)
-    canvas = Image.new("RGB", (box_w, box_h), fill)
-    canvas.paste(fitted, ((box_w - nw) // 2, (box_h - nh) // 2))
-    return canvas.convert("RGBA")
+def crop_content_band(plate: Image.Image) -> Image.Image:
+    """Take a full-width band off the capture and scale it to the content pane.
 
-
-def window_size_for_content(
-    content: Image.Image,
-    max_w: int = 1760,
-    max_h: int = 1320,
-    title_h: int = 38,
-) -> tuple[int, int, int, int]:
-    """Pick a Mac window whose content pane matches the source aspect ratio.
-
-    Returns (window_w, window_h, content_w, content_h). Never stretches.
+    Width always maps 1:1 to the pane (no horizontal distortion). Only the
+    height of the band is chosen, so the UI keeps its true aspect ratio.
     """
-    sw, sh = content.size
-    max_content_h = max_h - title_h
-    scale = min(max_w / sw, max_content_h / sh)
-    content_w = max(1, int(round(sw * scale)))
-    content_h = max(1, int(round(sh * scale)))
-    return content_w, content_h + title_h, content_w, content_h
+    src = plate.convert("RGB")
+    sw, sh = src.size
+    scale = CONTENT_W / sw
+    band_h = min(sh, int(round(CONTENT_H / scale)))
+    band = src.crop((0, 0, sw, band_h))
+    return band.resize((CONTENT_W, CONTENT_H), Image.LANCZOS).convert("RGBA")
 
 
-def build_mac_window(
-    content: Image.Image,
-    window_w: int,
-    window_h: int,
-    content_w: int,
-    content_h: int,
-) -> Image.Image:
-    """Mac-style window with traffic lights and title bar around content."""
-    title_h = window_h - content_h
-    corner = 18
-    pad = 40
-    out_w = window_w + pad * 2
-    out_h = window_h + pad * 2
-    out = Image.new("RGBA", (out_w, out_h), (0, 0, 0, 0))
+def rounded_mask(size: tuple[int, int], radius: int, corners: tuple[bool, bool, bool, bool]) -> Image.Image:
+    """Mask with per-corner rounding: (top-left, top-right, bottom-right, bottom-left)."""
+    w, h = size
+    mask = Image.new("L", size, 0)
+    d = ImageDraw.Draw(mask)
+    d.rounded_rectangle((0, 0, w - 1, h - 1), radius=radius, fill=255, corners=corners)
+    return mask
 
-    # Cyan glow behind window
-    glow = Image.new("RGBA", (out_w, out_h), (0, 0, 0, 0))
-    ImageDraw.Draw(glow).rounded_rectangle(
-        (pad - 10, pad - 10, pad + window_w + 10, pad + window_h + 10),
-        radius=corner + 10,
-        fill=(*CYAN_GLOW, 90),
+
+def add_window_shadow(canvas: Image.Image) -> None:
+    shadow = Image.new("RGBA", (TARGET_W, TARGET_H), (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).rounded_rectangle(
+        (MARGIN_X, WINDOW_TOP + 26, MARGIN_X + WINDOW_W, WINDOW_BOTTOM + 26),
+        radius=CORNER,
+        fill=(0, 0, 0, 170),
     )
-    glow = glow.filter(ImageFilter.GaussianBlur(radius=55))
-    out.alpha_composite(glow)
+    canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(radius=44)))
 
-    # Window body
-    body = Image.new("RGBA", (out_w, out_h), (0, 0, 0, 0))
-    ImageDraw.Draw(body).rounded_rectangle(
-        (pad, pad, pad + window_w, pad + window_h),
-        radius=corner,
-        fill=WINDOW_EDGE,
-    )
-    out.alpha_composite(body)
 
-    # Title bar
-    title = Image.new("RGBA", (window_w, title_h), TITLEBAR)
-    # Soft top corners via mask
-    title_mask = Image.new("L", (window_w, title_h), 0)
-    ImageDraw.Draw(title_mask).rounded_rectangle(
-        (0, 0, window_w, title_h + corner), radius=corner, fill=255
-    )
-    title.putalpha(title_mask)
-    out.alpha_composite(title, (pad, pad))
+def build_titlebar() -> Image.Image:
+    bar = Image.new("RGBA", (WINDOW_W, TITLEBAR_H), TITLEBAR_TOP)
+    d = ImageDraw.Draw(bar)
+    for y in range(TITLEBAR_H):
+        ratio = y / TITLEBAR_H
+        r = int(TITLEBAR_TOP[0] * (1 - ratio) + TITLEBAR_BOTTOM[0] * ratio)
+        g = int(TITLEBAR_TOP[1] * (1 - ratio) + TITLEBAR_BOTTOM[1] * ratio)
+        b = int(TITLEBAR_TOP[2] * (1 - ratio) + TITLEBAR_BOTTOM[2] * ratio)
+        d.line([(0, y), (WINDOW_W, y)], fill=(r, g, b, 255))
 
-    # Traffic lights
-    d = ImageDraw.Draw(out)
     lights = [(255, 95, 86), (255, 189, 46), (39, 201, 63)]
-    lx = pad + 22
-    ly = pad + 15
+    cx, cy, r = 34, TITLEBAR_H // 2, 9
     for color in lights:
-        d.ellipse((lx, ly, lx + 14, ly + 14), fill=(*color, 255))
-        lx += 24
+        d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(*color, 255))
+        cx += 30
 
-    # Title label
-    font = load_font(18, 600)
+    font = load_font(24, 600)
     label = "DealGapIQ"
     lw = text_width(label, font)
-    draw_text_tracked(
-        d,
-        (pad + (window_w - lw) / 2, pad + 12),
-        label,
-        font,
-        (200, 210, 230, 255),
-    )
+    draw_text_tracked(d, ((WINDOW_W - lw) / 2, cy - 15), label, font, (205, 214, 232, 255))
 
-    # Content pane — exact aspect match (no stretch). fit_content is a safety net.
-    content_box = fit_content_preserve_aspect(content, content_w, content_h)
-    corner_mask = Image.new("L", (content_w, content_h), 0)
-    ImageDraw.Draw(corner_mask).rounded_rectangle(
-        (0, -corner, content_w, content_h), radius=corner, fill=255
-    )
-    content_box.putalpha(corner_mask)
-    out.alpha_composite(content_box, (pad, pad + title_h))
-    return out
+    # Hairline along the top edge reads as the window catching the light.
+    d.line([(CORNER, 0), (WINDOW_W - CORNER, 0)], fill=(255, 255, 255, 46))
+    bar.putalpha(rounded_mask((WINDOW_W, TITLEBAR_H), CORNER, (True, True, False, False)))
+    return bar
 
 
-def load_window_content(source: str) -> Image.Image:
-    path = DESKTOP_DIR / source
-    if not path.is_file():
-        raise FileNotFoundError(
-            f"Missing desktop plate for Mac window: {path}\n"
-            "Capture first: npm run screenshots:mac"
-        )
-    return Image.open(path).convert("RGB")
+def add_window(canvas: Image.Image, plate: Image.Image) -> None:
+    add_window_shadow(canvas)
+
+    body = Image.new("RGBA", (WINDOW_W, WINDOW_H), WINDOW_EDGE)
+    body.putalpha(rounded_mask((WINDOW_W, WINDOW_H), CORNER, (True, True, True, True)))
+    canvas.alpha_composite(body, (MARGIN_X, WINDOW_TOP))
+
+    canvas.alpha_composite(build_titlebar(), (MARGIN_X, WINDOW_TOP))
+
+    content = crop_content_band(plate)
+    content.putalpha(rounded_mask((CONTENT_W, CONTENT_H), CORNER, (False, False, True, True)))
+    canvas.alpha_composite(content, (MARGIN_X, WINDOW_TOP + TITLEBAR_H))
 
 
 def build_mac_screenshot(cfg: dict) -> None:
     canvas = build_navy_canvas()
-    # Glow behind the window zone (right half)
-    add_radial_cyan_glow(canvas, int(TARGET_W * 0.68), int(TARGET_H * 0.55), 900, intensity=0.20)
+    add_radial_cyan_glow(canvas, int(TARGET_W * 0.5), int(TARGET_H * 0.30), 1150, intensity=0.17)
 
-    end_y = add_headline(canvas, cfg["headline_lines"], top_y=200, font_size=84)
-    end_y = add_subhead(canvas, cfg["subhead"], top_y=end_y + 24, max_width=860)
-    wm_y = add_wordmark(canvas, target_y=end_y + 40, target_w=360)
-    add_off_mls_badge(canvas, target_y=wm_y + 24)
+    y = add_wordmark(canvas, WORDMARK_Y)
+    y = add_headline(canvas, cfg["headline_lines"], top_y=y + 52)
+    y = add_subhead(canvas, cfg["subhead"], top_y=y + 18)
+    add_off_mls_badge(canvas, top_y=y + 26)
 
-    content = load_window_content(cfg["source"])
-    # Wide landscape window — desktop plates are 16:10, never portrait phones.
-    window_w, window_h, content_w, content_h = window_size_for_content(
-        content,
-        max_w=1760,
-        max_h=1520,
-    )
-    window = build_mac_window(content, window_w, window_h, content_w, content_h)
-    paste_x = TARGET_W - window.width + 36
-    paste_y = max(16, (TARGET_H - window.height) // 2)
-    if paste_y + window.height > TARGET_H - 12:
-        paste_y = max(8, TARGET_H - window.height - 12)
-    canvas.alpha_composite(window, (paste_x, paste_y))
+    plate_path = DESKTOP_DIR / cfg["source"]
+    if not plate_path.is_file():
+        raise FileNotFoundError(
+            f"Missing desktop plate: {plate_path}\n"
+            "Capture first: node scripts/screenshots/capture-mac.mjs"
+        )
+    add_window(canvas, Image.open(plate_path))
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / cfg["output_name"]
@@ -397,12 +379,14 @@ def main() -> None:
         raise FileNotFoundError(
             f"DM Sans not found at {FONT_PATH}. Place DMSans-Variable.ttf under assets/fonts/"
         )
-    missing = [cfg["source"] for cfg in MAC_CONFIGS if not (DESKTOP_DIR / cfg["source"]).is_file()]
+    missing = [c["source"] for c in MAC_CONFIGS if not (DESKTOP_DIR / c["source"]).is_file()]
     if missing:
-        print("Desktop plates missing — rendering landscape UI first…")
-        from render_mac_desktop_plates import main as render_plates
+        raise FileNotFoundError(
+            "Missing desktop plates: "
+            + ", ".join(missing)
+            + "\nCapture first: node scripts/screenshots/capture-mac.mjs"
+        )
 
-        render_plates()
     print(f"Font: {FONT_PATH}")
     print(f"Mac screenshots → {OUT_DIR} ({TARGET_W}x{TARGET_H})")
     for cfg in MAC_CONFIGS:
