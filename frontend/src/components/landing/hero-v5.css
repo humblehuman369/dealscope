@@ -186,7 +186,8 @@
   position: relative;
 }
 
-/* Decorative sky glow behind the stage */
+/* Decorative sky glow behind the stage.
+   Dark: closer to store listing cyan bloom, below thumbnail intensity. */
 .hero-v5__card-wrap::before {
   content: '';
   position: absolute;
@@ -196,6 +197,16 @@
     ellipse 72% 68% at 55% 40%,
     color-mix(in srgb, var(--accent-sky) 14%, transparent) 0%,
     transparent 72%
+  );
+}
+
+[data-theme='dark'] .hero-v5__card-wrap::before {
+  inset: -64px;
+  background: radial-gradient(
+    ellipse 78% 72% at 55% 40%,
+    color-mix(in srgb, var(--accent-sky-light) 22%, transparent) 0%,
+    color-mix(in srgb, var(--accent-sky-light) 8%, transparent) 42%,
+    transparent 74%
   );
 }
 
