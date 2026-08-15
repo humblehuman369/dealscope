@@ -29,6 +29,7 @@ export const INDEXABLE_SITE_SECTIONS = [
       { href: '/national-averages', label: 'National benchmarks' },
       { href: '/glossary', label: 'Glossary' },
       { href: '/blog', label: 'Blog' },
+      { href: '/investor-intelligence', label: 'Investor Intelligence' },
       { href: '/help', label: 'Help center' },
       { href: '/about', label: 'About' },
     ],

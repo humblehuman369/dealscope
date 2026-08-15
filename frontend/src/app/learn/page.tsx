@@ -15,9 +15,10 @@ export const metadata: Metadata = {
 }
 
 export default async function LearnHubPage() {
-  const [glossary, blog] = await Promise.all([
+  const [glossary, blog, investorIntelligence] = await Promise.all([
     getAllContent('glossary').catch(() => []),
     getAllContent('blog').catch(() => []),
+    getAllContent('investor-intelligence').catch(() => []),
   ])
 
   const jsonLd = {
@@ -66,6 +67,27 @@ export default async function LearnHubPage() {
             </section>
           ))}
         </div>
+
+
+        {investorIntelligence.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-3 text-sm font-black uppercase tracking-widest text-[var(--text-muted)]">
+              Investor Intelligence
+            </h2>
+            <ul className="space-y-2 text-sm">
+              {investorIntelligence.map((post) => (
+                <li key={post.slug}>
+                  <Link
+                    href={`/investor-intelligence/${post.slug}/`}
+                    className="font-medium text-[var(--accent-sky)] hover:underline"
+                  >
+                    {post.frontmatter.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {blog.length > 0 && (
           <section className="mt-10">

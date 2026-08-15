@@ -159,6 +159,7 @@ const NO_PROPERTY_BAR_ROUTES = [
   '/map-search',
   '/directory',
   '/lenders',
+  '/investor-intelligence',
 ]
 
 /** Analysis workflow routes — tab bar only appears on these (not dashboard, directory, etc.) */
@@ -643,7 +644,8 @@ export function AppHeader({
 
   // Determine if header should be hidden
   // Moved here to ensure all hooks (useCallback) are called before return
-  const isHiddenRoute = HIDDEN_ROUTES.includes(pathname || '')
+  const isHiddenRoute =
+    HIDDEN_ROUTES.includes(pathname || '') || pathname?.startsWith('/investor-intelligence')
   if (isHiddenRoute) {
     return null
   }

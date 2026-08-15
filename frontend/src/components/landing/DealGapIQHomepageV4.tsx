@@ -125,6 +125,7 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
     { href: '#how-it-works', label: 'How it Works' },
     { href: '/directory', label: 'Cash Buyers' },
     { href: '/lenders', label: 'Hard Money' },
+    { href: '/investor-intelligence', label: 'Investor Intelligence' },
     { href: '/pricing', label: 'Pricing' },
   ]
 
@@ -819,6 +820,7 @@ function SiteFooter() {
             { href: '/national-averages', label: 'National Benchmarks' },
             { href: '/glossary', label: 'Glossary' },
             { href: '/blog', label: 'Blog' },
+            { href: '/investor-intelligence', label: 'Investor Intelligence' },
             { href: '/learn', label: 'All pages' },
             { href: '/strategies/long-term-rental', label: 'Long-Term Rental' },
             { href: '/strategies/brrrr', label: 'BRRRR' },

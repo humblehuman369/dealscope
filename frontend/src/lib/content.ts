@@ -4,7 +4,7 @@ import matter from 'gray-matter'
 
 const CONTENT_DIR = path.join(process.cwd(), 'content')
 
-export type ContentFolder = 'blog' | 'glossary'
+export type ContentFolder = 'blog' | 'glossary' | 'investor-intelligence'
 
 export type Frontmatter = {
   title: string
@@ -22,6 +22,13 @@ export type Frontmatter = {
   date_modified?: string
   word_count_target?: number
   internal_links?: string[]
+  category?: string
+  series?: string
+  subtitle?: string
+  hero_image?: string
+  hero_alt?: string
+  read_time?: string
+  featured?: boolean
 }
 
 export type ContentFile = {
@@ -61,6 +68,13 @@ function parseFile(folder: ContentFolder, file: string, raw: string): ContentFil
       date_modified: data.date_modified,
       word_count_target: data.word_count_target,
       internal_links: data.internal_links,
+      category: data.category,
+      series: data.series,
+      subtitle: data.subtitle,
+      hero_image: data.hero_image,
+      hero_alt: data.hero_alt,
+      read_time: data.read_time,
+      featured: data.featured,
     },
     content: parsed.content,
   }

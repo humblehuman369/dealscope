@@ -20,6 +20,7 @@ const STATIC_ROUTES: StaticEntry[] = [
   { path: '/about', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/glossary', priority: 0.6, changeFrequency: 'weekly' },
   { path: '/blog', priority: 0.6, changeFrequency: 'weekly' },
+  { path: '/investor-intelligence', priority: 0.85, changeFrequency: 'weekly' },
   { path: '/help', priority: 0.5, changeFrequency: 'monthly' },
   { path: '/national-averages', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/legal/find-attorney', priority: 0.5, changeFrequency: 'monthly' },
@@ -47,9 +48,10 @@ function lastModifiedFromContent(item: ContentFile, fallback: Date): Date {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const buildDate = new Date()
 
-  const [glossary, blog] = await Promise.all([
+  const [glossary, blog, investorIntelligence] = await Promise.all([
     getAllContent('glossary').catch(() => []),
     getAllContent('blog').catch(() => []),
+    getAllContent('investor-intelligence').catch(() => []),
   ])
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => ({
@@ -73,5 +75,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticEntries, ...glossaryEntries, ...blogEntries]
+  const investorIntelligenceEntries: MetadataRoute.Sitemap = investorIntelligence.map((p) => ({
+    url: `${SITE_URL}/investor-intelligence/${p.slug}/`,
+    lastModified: lastModifiedFromContent(p, buildDate),
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }))
+
+  return [...staticEntries, ...glossaryEntries, ...blogEntries, ...investorIntelligenceEntries]
 }

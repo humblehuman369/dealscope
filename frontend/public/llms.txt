@@ -35,6 +35,8 @@ Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blend
 
 - [Help Center](https://dealgapiq.com/help): FAQ on getting started, scoring, reports, and account
 - [Blog](https://dealgapiq.com/blog): articles on creative finance, offer scripts, and deal teardowns
+- [Investor Intelligence](https://dealgapiq.com/investor-intelligence/): residential investor trends, policy, financing, market intelligence, and property-level deal math
+- [The Great Investor Reset — 2026](https://dealgapiq.com/investor-intelligence/great-investor-reset-2026/): flagship analysis of the shift from mega-investor acquisition toward smaller investors and stricter acquisition math
 
 ## Optional
 
