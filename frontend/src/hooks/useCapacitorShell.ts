@@ -9,8 +9,14 @@
  */
 
 import { useEffect, useRef } from 'react'
-import { IS_CAPACITOR, IS_MAC_DESKTOP } from '@/lib/env'
+import { IS_CAPACITOR, IS_MAC_DESKTOP, IS_MAC_NATIVE } from '@/lib/env'
 import { useTheme } from '@/context/ThemeContext'
+
+function isMacNativeShell(): boolean {
+  if (typeof window === 'undefined') return false
+  if (IS_MAC_NATIVE) return true
+  return Boolean((window as Window & { __DEALGAPIQ_MAC__?: boolean }).__DEALGAPIQ_MAC__)
+}
 
 export function useCapacitorShell() {
   const didRun = useRef(false)
@@ -18,8 +24,32 @@ export function useCapacitorShell() {
 
   useEffect(() => {
     // Native Mac shell injects __DEALGAPIQ_MAC__; still apply desktop classes.
-    if (IS_MAC_DESKTOP) {
+    if (IS_MAC_DESKTOP || isMacNativeShell()) {
       document.documentElement.classList.add('capacitor-mac', 'dealgapiq-mac')
+    }
+
+    if (isMacNativeShell()) {
+      function handleMacBlankClick(e: MouseEvent) {
+        const anchor = (e.target as HTMLElement).closest('a')
+        if (!anchor || anchor.getAttribute('target') !== '_blank') return
+        const href = anchor.getAttribute('href')
+        if (!href) return
+
+        try {
+          const url = new URL(href, window.location.origin)
+          const isInternal =
+            url.hostname === window.location.hostname || url.hostname.endsWith('.dealgapiq.com')
+          if (!isInternal) return
+          e.preventDefault()
+          e.stopPropagation()
+          window.location.assign(url.href)
+        } catch {
+          /* not a valid URL, let it pass through */
+        }
+      }
+
+      document.addEventListener('click', handleMacBlankClick, true)
+      return () => document.removeEventListener('click', handleMacBlankClick, true)
     }
 
     if (!IS_CAPACITOR || didRun.current) return

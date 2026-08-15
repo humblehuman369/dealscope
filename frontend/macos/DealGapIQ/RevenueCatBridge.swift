@@ -106,14 +106,12 @@ final class RevenueCatBridge: NSObject, WKScriptMessageHandler {
     }
 
     private func resolve(id: String, result: Any?, error: String?) {
-        let payload: [String: Any] = [
-            "id": id,
-            "result": result as Any,
-            "error": error as Any,
-        ]
-        guard
-            let data = try? JSONSerialization.data(withJSONObject: payload, options: []),
-            let json = String(data: data, encoding: .utf8)
+        var payload: [String: Any] = ["id": id]
+        payload["result"] = result ?? NSNull()
+        payload["error"] = error ?? NSNull()
+        guard JSONSerialization.isValidJSONObject(payload),
+              let data = try? JSONSerialization.data(withJSONObject: payload, options: []),
+              let json = String(data: data, encoding: .utf8)
         else { return }
         let js = "window.__dealGapIqMacIapResolve && window.__dealGapIqMacIapResolve(\(json));"
         webView?.evaluateJavaScript(js, completionHandler: nil)

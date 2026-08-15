@@ -29,7 +29,7 @@ export function discoveryPathFromListing(listing: MapListing): string {
 /**
  * Where a selected property should go after the user picks it on the map.
  * When the map was opened from Deal Maker IQ (`?from=deal-maker`), selecting a
- * property loads it straight into Deal Maker (in a new window) instead of the
+ * property loads it straight into Deal Maker instead of the
  * Discovery/Verdict flow. Read from the live URL so it works from any
  * selection surface without prop threading.
  */
@@ -51,8 +51,18 @@ export function mapSelectionCtaLabel(destination: MapSelectionDestination): stri
 }
 
 /**
+ * Native shells (Mac WKWebView, Capacitor) are a single webview — `_blank`
+ * does not open an in-app tab. On macOS it falls through to Safari.
+ */
+export function shouldOpenMapSelectionInPlace(): boolean {
+  if (typeof window === 'undefined') return false
+  const w = window as Window & { __DEALGAPIQ_MAC__?: boolean; Capacitor?: unknown }
+  return Boolean(w.__DEALGAPIQ_MAC__ || w.Capacitor)
+}
+
+/**
  * Open the selected property in a new browser tab, leaving map search in the
- * original tab.
+ * original tab. Native shells navigate in place so analysis stays in the app.
  *
  * Uses a synthetic `<a rel="noopener noreferrer">` click instead of
  * `window.open(..., 'noopener,noreferrer')`. Per the HTML spec, `noopener` and
@@ -62,7 +72,7 @@ export function mapSelectionCtaLabel(destination: MapSelectionDestination): stri
  * return value.
  */
 function openInNewWindow(router: MapDiscoveryRouter, path: string): void {
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
+  if (typeof window === 'undefined' || typeof document === 'undefined' || shouldOpenMapSelectionInPlace()) {
     router.push(path)
     return
   }
@@ -77,7 +87,7 @@ function openInNewWindow(router: MapDiscoveryRouter, path: string): void {
   link.remove()
 }
 
-/** Navigate to the selected property's destination (Discovery or Deal Maker) in a new window. */
+/** Navigate to the selected property's destination (Discovery or Deal Maker). */
 export function navigateToDiscoveryFromMap(router: MapDiscoveryRouter, listing: MapListing): void {
   const query = buildDiscoverySearchParams(listing).toString()
   const base = getMapSelectionDestination() === 'deal-maker' ? '/deal-maker' : '/discovery'

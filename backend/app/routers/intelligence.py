@@ -7,6 +7,7 @@ import uuid
 from datetime import UTC, datetime
 
 from fastapi import APIRouter
+from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.core.deps import DbSession
@@ -38,7 +39,9 @@ async def subscribe_intelligence(
 ):
     """Capture an Investor Intelligence newsletter signup.
 
-    Repeat submissions for the same email succeed and refresh optional fields.
+    Repeat submissions for the same email succeed. Optional fields are updated
+    only when a new value is provided so a later email-only signup cannot clear
+    investor type or placement.
     """
     email = str(payload.email).strip().lower()
     investor_type = payload.investor_type if payload.investor_type in ALLOWED_INVESTOR_TYPES else None
@@ -46,26 +49,27 @@ async def subscribe_intelligence(
     source = (payload.source or "investor-intelligence")[:100]
     placement = (payload.placement[:120] if payload.placement else None)
 
-    stmt = (
-        pg_insert(IntelligenceSubscriber)
-        .values(
-            id=uuid.uuid4(),
-            email=email,
-            investor_type=investor_type,
-            source=source,
-            placement=placement,
-            created_at=now,
-            updated_at=now,
-        )
-        .on_conflict_do_update(
-            constraint="uq_intelligence_subscribers_email",
-            set_={
-                "investor_type": investor_type,
-                "source": source,
-                "placement": placement,
-                "updated_at": now,
-            },
-        )
+    insert_stmt = pg_insert(IntelligenceSubscriber).values(
+        id=uuid.uuid4(),
+        email=email,
+        investor_type=investor_type,
+        source=source,
+        placement=placement,
+        created_at=now,
+        updated_at=now,
+    )
+    stmt = insert_stmt.on_conflict_do_update(
+        constraint="uq_intelligence_subscribers_email",
+        set_={
+            "investor_type": func.coalesce(
+                insert_stmt.excluded.investor_type, IntelligenceSubscriber.investor_type
+            ),
+            "source": insert_stmt.excluded.source,
+            "placement": func.coalesce(
+                insert_stmt.excluded.placement, IntelligenceSubscriber.placement
+            ),
+            "updated_at": now,
+        },
     )
     await db.execute(stmt)
     await db.commit()

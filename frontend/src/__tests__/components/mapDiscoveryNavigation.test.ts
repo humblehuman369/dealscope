@@ -25,6 +25,8 @@ const listing: MapListing = {
 describe('navigateToDiscoveryFromMap', () => {
   afterEach(() => {
     vi.restoreAllMocks()
+    delete (window as Window & { __DEALGAPIQ_MAC__?: boolean }).__DEALGAPIQ_MAC__
+    delete (window as Window & { Capacitor?: unknown }).Capacitor
   })
 
   it('opens a noreferrer anchor in a new tab instead of window.open', () => {
@@ -52,5 +54,28 @@ describe('navigateToDiscoveryFromMap', () => {
     expect(click).toHaveBeenCalledOnce()
     expect(remove).toHaveBeenCalledOnce()
     expect(router.push).not.toHaveBeenCalled()
+  })
+
+  it('navigates in place inside the native Mac shell instead of opening a tab', () => {
+    ;(window as Window & { __DEALGAPIQ_MAC__?: boolean }).__DEALGAPIQ_MAC__ = true
+    const createElement = vi.spyOn(document, 'createElement')
+    const router = { push: vi.fn() }
+
+    navigateToDiscoveryFromMap(router, listing)
+
+    expect(router.push).toHaveBeenCalledWith(expect.stringContaining('/discovery?'))
+    expect(router.push).toHaveBeenCalledWith(expect.stringContaining('address=123+Main+St'))
+    expect(createElement).not.toHaveBeenCalled()
+  })
+
+  it('navigates in place inside Capacitor instead of opening a tab', () => {
+    ;(window as Window & { Capacitor?: unknown }).Capacitor = {}
+    const createElement = vi.spyOn(document, 'createElement')
+    const router = { push: vi.fn() }
+
+    navigateToDiscoveryFromMap(router, listing)
+
+    expect(router.push).toHaveBeenCalledWith(expect.stringContaining('/discovery?'))
+    expect(createElement).not.toHaveBeenCalled()
   })
 })

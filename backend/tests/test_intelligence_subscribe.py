@@ -47,6 +47,46 @@ async def test_intelligence_subscribe_is_idempotent(client, db_session):
 
 
 @pytest.mark.asyncio
+async def test_intelligence_subscribe_preserves_investor_type_when_omitted(client, db_session):
+    email = "keep-type@example.com"
+    first = await client.post(
+        "/api/v1/intelligence/subscribe",
+        json={"email": email, "investor_type": "SFR", "placement": "hub"},
+    )
+    second = await client.post(
+        "/api/v1/intelligence/subscribe",
+        json={"email": email},
+    )
+    assert first.status_code == 200
+    assert second.status_code == 200
+
+    result = await db_session.execute(
+        select(IntelligenceSubscriber).where(IntelligenceSubscriber.email == email)
+    )
+    row = result.scalar_one()
+    assert row.investor_type == "SFR"
+    assert row.placement == "hub"
+
+
+@pytest.mark.asyncio
+async def test_intelligence_subscribe_preserves_investor_type_when_invalid(client, db_session):
+    email = "keep-invalid@example.com"
+    await client.post(
+        "/api/v1/intelligence/subscribe",
+        json={"email": email, "investor_type": "SFR"},
+    )
+    await client.post(
+        "/api/v1/intelligence/subscribe",
+        json={"email": email, "investor_type": "not-a-type"},
+    )
+
+    result = await db_session.execute(
+        select(IntelligenceSubscriber).where(IntelligenceSubscriber.email == email)
+    )
+    assert result.scalar_one().investor_type == "SFR"
+
+
+@pytest.mark.asyncio
 async def test_intelligence_subscribe_rejects_invalid_email(client):
     response = await client.post(
         "/api/v1/intelligence/subscribe",
