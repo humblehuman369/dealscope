@@ -30,6 +30,21 @@
   );
 }
 
+/* Dark: cyan canvas bloom — the layer that actually reads vs store listings. */
+[data-theme='dark'] .hero-v5::before {
+  background:
+    radial-gradient(
+      ellipse 75% 70% at 68% 42%,
+      color-mix(in srgb, var(--accent-sky-light) 20%, transparent) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 80% 60% at 65% 35%,
+      color-mix(in srgb, var(--surface-elevated) 90%, transparent) 0%,
+      var(--surface-base) 100%
+    );
+}
+
 .hero-v5__grid {
   position: relative;
   display: grid;
@@ -186,7 +201,8 @@
   position: relative;
 }
 
-/* Decorative sky glow behind the stage */
+/* Decorative sky glow behind the stage.
+   Dark: closer to store listing cyan bloom, below thumbnail intensity. */
 .hero-v5__card-wrap::before {
   content: '';
   position: absolute;
@@ -199,6 +215,15 @@
   );
 }
 
+[data-theme='dark'] .hero-v5__card-wrap::before {
+  inset: -80px;
+  background: radial-gradient(
+    ellipse 80% 75% at 55% 40%,
+    color-mix(in srgb, var(--accent-sky-light) 32%, transparent) 0%,
+    color-mix(in srgb, var(--accent-sky-light) 12%, transparent) 45%,
+    transparent 72%
+  );
+}
 .hero-sample-result {
   position: relative;
   background: var(--surface-elevated);
@@ -211,6 +236,13 @@
   max-width: 460px;
   margin-left: auto;
   font-family: var(--font-dm-sans), var(--font-inter), system-ui, sans-serif;
+}
+
+[data-theme='dark'] .hero-sample-result {
+  box-shadow:
+    0 0 48px color-mix(in srgb, var(--accent-sky-light) 28%, transparent),
+    0 0 110px color-mix(in srgb, var(--accent-sky-light) 14%, transparent),
+    var(--shadow-card);
 }
 
 .hero-sample-result__anim {
