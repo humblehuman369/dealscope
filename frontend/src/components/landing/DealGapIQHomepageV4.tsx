@@ -390,10 +390,13 @@ function FounderTrustSection() {
               DealGapIQ is the tool I always wanted as an investor.&quot;
             </p>
             <div className="mt-8 flex items-center gap-4">
-              {/* TODO(brad): replace initials block with founder photo asset */}
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] text-lg font-black text-[var(--accent-sky)]">
-                BG
-              </div>
+              <Image
+                src="/images/brad-geisen.png"
+                alt="Brad Geisen"
+                width={128}
+                height={128}
+                className="h-16 w-16 rounded-2xl border border-[var(--border-default)] object-cover object-top"
+              />
               <div>
                 <div className="font-bold text-[var(--text-heading)]">Brad Geisen</div>
                 <div className="text-xs text-[var(--text-muted)]">Founder &amp; CEO, DealGapIQ</div>
