@@ -36,16 +36,10 @@ struct MacWebView: NSViewRepresentable {
         config.websiteDataStore = .default()
 
         let userScript = WKUserScript(
-            source: """
-            Object.defineProperty(window, '__DEALGAPIQ_MAC__', {
-              value: true,
-              writable: false,
-              configurable: false
-            });
-            document.documentElement.classList.add('dealgapiq-mac');
-            """,
+            source: Self.keepFirstPartyInAppScript,
             injectionTime: .atDocumentStart,
-            forMainFrameOnly: true
+            forMainFrameOnly: true,
+            in: .page
         )
         config.userContentController.addUserScript(userScript)
 
@@ -68,6 +62,67 @@ struct MacWebView: NSViewRepresentable {
     }
 
     func updateNSView(_ webView: WKWebView, context: Context) {}
+
+    /// Production web still opens Analyze in a new tab. On macOS that becomes
+    /// the system browser, so the shell rewrites same-origin `_blank` / window.open
+    /// to an in-app navigation before WebKit sees them.
+    private static let keepFirstPartyInAppScript = """
+    (function () {
+      Object.defineProperty(window, '__DEALGAPIQ_MAC__', {
+        value: true,
+        writable: false,
+        configurable: false
+      });
+      document.documentElement.classList.add('dealgapiq-mac');
+
+      function isInternal(href) {
+        if (!href) return false;
+        var lower = String(href).toLowerCase();
+        if (lower.indexOf('javascript:') === 0) return false;
+        if (lower.indexOf('mailto:') === 0 || lower.indexOf('tel:') === 0) return false;
+        if (lower.indexOf('blob:') === 0 || lower.indexOf('data:') === 0) return false;
+        if (lower === '' || lower === 'about:blank') return false;
+        try {
+          var u = new URL(href, location.href);
+          if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+          var h = (u.hostname || '').toLowerCase();
+          return h === location.hostname
+            || h === 'dealgapiq.com'
+            || h.endsWith('.dealgapiq.com')
+            || h === 'localhost'
+            || h === '127.0.0.1';
+        } catch (e) {
+          return String(href).charAt(0) === '/';
+        }
+      }
+
+      function go(href) {
+        try { location.assign(new URL(href, location.href).href); }
+        catch (e) { location.assign(href); }
+      }
+
+      document.addEventListener('click', function (e) {
+        var a = e.target && e.target.closest ? e.target.closest('a') : null;
+        if (!a) return;
+        var target = (a.getAttribute('target') || '').toLowerCase();
+        if (target !== '_blank' && target !== '_new') return;
+        var href = a.getAttribute('href');
+        if (!isInternal(href)) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        go(href);
+      }, true);
+
+      var origOpen = window.open;
+      window.open = function (url, name, specs) {
+        if (url && isInternal(String(url))) {
+          go(String(url));
+          return window;
+        }
+        return origOpen.apply(this, arguments);
+      };
+    })();
+    """
 
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, NSWindowDelegate {
         let iapBridge = RevenueCatBridge()
@@ -104,9 +159,11 @@ struct MacWebView: NSViewRepresentable {
             return scheme == "blob" || scheme == "data"
         }
 
-        /// First-party app surfaces, OAuth hosts, and the currently loaded origin
-        /// (localhost / preview) stay inside the shell.
+        /// First-party app surfaces, OAuth hosts, relative app paths, and the
+        /// currently loaded origin (localhost / preview) stay inside the shell.
         private func isInAppURL(_ url: URL) -> Bool {
+            if isAboutBlank(url) || isInlineDocumentURL(url) { return false }
+            if url.host == nil, url.path.hasPrefix("/") { return true }
             guard let host = url.host?.lowercased() else { return false }
             if host == "dealgapiq.com" || host.hasSuffix(".dealgapiq.com") { return true }
             if host == "localhost" || host == "127.0.0.1" { return true }
@@ -115,11 +172,26 @@ struct MacWebView: NSViewRepresentable {
             return false
         }
 
+        private func loadInMain(_ url: URL) {
+            guard let main = mainWebView else { return }
+            if url.host == nil, let base = main.url,
+               let resolved = URL(string: url.relativeString, relativeTo: base)?.absoluteURL
+            {
+                main.load(URLRequest(url: resolved))
+                return
+            }
+            main.load(URLRequest(url: url))
+        }
+
         private func popup(for webView: WKWebView) -> PopupSession? {
             popups.first { $0.webView === webView }
         }
 
         private func openExternalOnce(_ url: URL) {
+            if isInAppURL(url) {
+                loadInMain(url)
+                return
+            }
             let key = url.absoluteString
             guard !openedExternalURLs.contains(key) else { return }
             openedExternalURLs.insert(key)
@@ -127,6 +199,21 @@ struct MacWebView: NSViewRepresentable {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
                 self?.openedExternalURLs.remove(key)
             }
+        }
+
+        /// Detached WKWebViews on macOS fall through to the system browser.
+        /// Keep consumed popups in a hidden window so WebKit does not Safari-handoff.
+        private func retainHidden(_ session: PopupSession) {
+            let window = NSWindow(
+                contentRect: NSRect(x: -10_000, y: -10_000, width: 2, height: 2),
+                styleMask: [.borderless],
+                backing: .buffered,
+                defer: false
+            )
+            window.isReleasedWhenClosed = false
+            window.contentView = session.webView
+            window.orderOut(nil)
+            session.window = window
         }
 
         private func windowDimension(_ value: NSNumber?, fallback: CGFloat) -> CGFloat {
@@ -192,7 +279,7 @@ struct MacWebView: NSViewRepresentable {
                     return
                 }
                 if isInAppURL(url) {
-                    mainWebView?.load(URLRequest(url: url))
+                    loadInMain(url)
                     decisionHandler(.cancel)
                     close(session)
                     return
@@ -214,7 +301,7 @@ struct MacWebView: NSViewRepresentable {
                     return
                 }
                 if isInAppURL(url) {
-                    mainWebView?.load(URLRequest(url: url))
+                    loadInMain(url)
                     decisionHandler(.cancel)
                     return
                 }
@@ -259,22 +346,30 @@ struct MacWebView: NSViewRepresentable {
             let session = PopupSession(webView: popupView)
             popups.append(session)
 
+            let sizedPopup = windowDimension(windowFeatures.width, fallback: 0) > 0
+                || windowDimension(windowFeatures.height, fallback: 0) > 0
             if let url = navigationAction.request.url,
                !isAboutBlank(url),
                !isInlineDocumentURL(url)
             {
                 if isInAppURL(url) {
-                    mainWebView?.load(URLRequest(url: url))
+                    loadInMain(url)
                     session.consumed = true
+                    retainHidden(session)
                 } else if isHTTP(url) {
                     openExternalOnce(url)
                     session.consumed = true
+                    retainHidden(session)
                 } else {
                     presentAuxiliaryWindow(session, features: windowFeatures)
                 }
-            } else {
-                // about:blank, blob/data, or empty URL — print / document.write surfaces.
+            } else if sizedPopup || (navigationAction.request.url.map { isInlineDocumentURL($0) } ?? false) {
                 presentAuxiliaryWindow(session, features: windowFeatures)
+            } else {
+                // Analyze `_blank` often arrives as about:blank with no size.
+                // Keep a hidden webview so macOS does not hand off to Safari;
+                // the follow-up navigation is folded into the main shell.
+                retainHidden(session)
             }
 
             return popupView

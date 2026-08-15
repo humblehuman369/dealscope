@@ -14,7 +14,12 @@ final class RevenueCatBridge: NSObject, WKScriptMessageHandler {
         self.webView = webView
         webView.configuration.userContentController.add(self, name: Self.messageHandlerName)
         let js = Self.bootstrapJavaScript()
-        let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+        let script = WKUserScript(
+            source: js,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true,
+            in: .page
+        )
         webView.configuration.userContentController.addUserScript(script)
     }
 
