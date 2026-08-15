@@ -3,9 +3,11 @@
 import React, { Suspense, useState } from 'react'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
+  ArrowUpRight,
   Banknote,
   Check,
   Clock,
@@ -355,6 +357,9 @@ function QuickStatsBar() {
   )
 }
 
+const DEAL_GAP_BOOK_AMAZON_URL =
+  'https://www.amazon.com/Deal-Gap-Lucky-Estate-Investors/dp/B0HF4CZ6K5'
+
 function FounderTrustSection() {
   const creds = [
     'Founded Foreclosure.com',
@@ -375,32 +380,76 @@ function FounderTrustSection() {
         </h2>
       </div>
 
-      <div className="mx-auto max-w-3xl rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-8 shadow-[var(--shadow-card)] md:p-10">
-        <p className="text-lg leading-relaxed text-[var(--text-body)] md:text-xl">
-          &quot;I built the pricing tools the banks used on foreclosures. I founded
-          Foreclosure.com, and my team built HomePath for Fannie Mae and HomeSteps for Freddie
-          Mac. Foreclosure.com still powers BiggerPockets&apos; foreclosure search today.
-          DealGapIQ is the tool I always wanted as an investor.&quot;
-        </p>
-        <div className="mt-8 flex items-center gap-4">
-          {/* TODO(brad): replace initials block with founder photo asset */}
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] text-lg font-black text-[var(--accent-sky)]">
-            BG
-          </div>
+      <div className="mx-auto max-w-5xl rounded-3xl border border-[var(--border-default)] bg-[var(--surface-card)] p-8 shadow-[var(--shadow-card)] md:p-10">
+        <div className="grid items-start gap-10 md:grid-cols-[minmax(0,1fr)_auto] md:gap-12">
           <div>
-            <div className="font-bold text-[var(--text-heading)]">Brad Geisen</div>
-            <div className="text-xs text-[var(--text-muted)]">Founder &amp; CEO, DealGapIQ</div>
+            <p className="text-lg leading-relaxed text-[var(--text-body)] md:text-xl">
+              &quot;I built the pricing tools the banks used on foreclosures. I founded
+              Foreclosure.com, and my team built HomePath for Fannie Mae and HomeSteps for Freddie
+              Mac. Foreclosure.com still powers BiggerPockets&apos; foreclosure search today.
+              DealGapIQ is the tool I always wanted as an investor.&quot;
+            </p>
+            <div className="mt-8 flex items-center gap-4">
+              {/* TODO(brad): replace initials block with founder photo asset */}
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] text-lg font-black text-[var(--accent-sky)]">
+                BG
+              </div>
+              <div>
+                <div className="font-bold text-[var(--text-heading)]">Brad Geisen</div>
+                <div className="text-xs text-[var(--text-muted)]">Founder &amp; CEO, DealGapIQ</div>
+                <div className="mt-0.5 text-xs font-semibold text-[var(--accent-sky)]">
+                  Author of The Deal Gap
+                </div>
+              </div>
+            </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              {creds.map((cred) => (
+                <span
+                  key={cred}
+                  className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1.5 text-xs font-bold text-[var(--accent-sky)]"
+                >
+                  {cred}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="mt-8 flex flex-wrap gap-3">
-          {creds.map((cred) => (
-            <span
-              key={cred}
-              className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-1.5 text-xs font-bold text-[var(--accent-sky)]"
-            >
-              {cred}
+
+          <a
+            href={DEAL_GAP_BOOK_AMAZON_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group mx-auto flex w-[168px] shrink-0 flex-col items-center text-center md:mx-0"
+          >
+            <span className="relative inline-flex">
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -inset-7 -z-10"
+                style={{
+                  background:
+                    'radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--accent-sky-light) 28%, transparent) 0%, transparent 70%)',
+                }}
+              />
+              <Image
+                src="/images/the-deal-gap-cover.png"
+                alt="Cover of The Deal Gap by Brad Geisen"
+                width={320}
+                height={444}
+                className="w-[148px] rounded-md border border-[var(--border-default)] md:w-[168px]"
+                style={{ height: 'auto' }}
+              />
             </span>
-          ))}
+            <span className="mt-4 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent-sky)]">
+              The playbook
+            </span>
+            <span className="mt-1 text-sm font-bold text-[var(--text-heading)]">The Deal Gap</span>
+            <span className="mt-1 text-xs leading-relaxed text-[var(--text-muted)]">
+              The method the software runs.
+            </span>
+            <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent-sky)] transition-colors group-hover:brightness-110">
+              On Amazon
+              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+            </span>
+          </a>
         </div>
       </div>
     </section>
