@@ -20,6 +20,7 @@ from app.core.config import settings
 from app.core.deps import DbSession
 from app.schemas.saved_map_search import SavedSearchAlertRunResult
 from app.services.gap_alert_jobs import send_gap_alerts
+from app.services.linkedin_publish_jobs import run_linkedin_publish
 from app.services.notification_jobs import send_overdue_task_digests
 from app.services.saved_search_alert_jobs import send_saved_search_alerts
 
@@ -133,4 +134,20 @@ async def saved_search_alerts(
         db, max_provider_searches=max(1, min(max_provider_searches, 200))
     )
     logger.info("saved-search alert run: %s", result.model_dump())
+    return result
+
+
+@router.post(
+    "/linkedin-publish",
+    summary="Publish due approved LinkedIn posts (max 5 per run)",
+)
+async def linkedin_publish(
+    request: Request,
+    db: DbSession,
+    x_cron_token: str | None = Header(default=None, alias="X-Cron-Token"),
+):
+    client_ip = _get_client_ip(request)
+    _enforce_cron_token(x_cron_token, client_ip=client_ip)
+    result = await run_linkedin_publish(db)
+    logger.info("linkedin-publish run: %s", result)
     return result

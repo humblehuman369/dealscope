@@ -16,6 +16,7 @@ from app.models.audit_log import AuditAction
 from app.models.subscription import SubscriptionTier
 from app.models.user import User
 from app.repositories.audit_repository import audit_repo
+from app.routers.admin_linkedin import router as linkedin_router
 from app.schemas.admin import (
     AdminAssumptionsResponse,
     AdminSubscriptionUpdate,
@@ -36,6 +37,7 @@ from app.services.billing_service import billing_service
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/admin", tags=["Admin"])
+router.include_router(linkedin_router)
 
 
 # ===========================================

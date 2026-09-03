@@ -10,12 +10,24 @@ name: Scheduled backend jobs
 #      New repository secret → CRON_SECRET=<same value>
 #
 # Optional: repo variable BACKEND_URL overrides the default Railway URL.
+#
+# LinkedIn publisher secrets live on Railway (not GitHub):
+#   LINKEDIN_PUBLISH_ENABLED, LINKEDIN_API_VERSION,
+#   LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET,
+#   LINKEDIN_FOUNDER_ACCESS_TOKEN, LINKEDIN_FOUNDER_REFRESH_TOKEN,
+#   LINKEDIN_FOUNDER_PERSON_URN, LINKEDIN_TOKEN_EXPIRES_AT_FOUNDER,
+#   LINKEDIN_COMPANY_ACCESS_TOKEN, LINKEDIN_COMPANY_REFRESH_TOKEN,
+#   LINKEDIN_COMPANY_ORG_URN, LINKEDIN_TOKEN_EXPIRES_AT_COMPANY
+# GitHub only needs CRON_SECRET (already required for the daily jobs).
 
 on:
   schedule:
     # 11:00 UTC ≈ 6-7am ET — price data has refreshed overnight; the push
     # lands at the start of the investor's day.
     - cron: '0 11 * * *'
+    # LinkedIn queue: every 30 minutes. Gated per-job so the daily jobs
+    # do not inherit this cadence.
+    - cron: '*/30 * * * *'
   # Manual trigger for testing and catch-up runs.
   workflow_dispatch:
 
@@ -28,6 +40,7 @@ concurrency:
 jobs:
   gap-alerts:
     name: Gap Alerts (price-drop pushes)
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 11 * * *'
     runs-on: ubuntu-latest
     steps:
       - name: POST /api/v1/jobs/gap-alerts
@@ -52,6 +65,7 @@ jobs:
   # are pre-warmed rather than double-billed.
   saved-search-alerts:
     name: Saved search new-inventory emails
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 11 * * *'
     runs-on: ubuntu-latest
     steps:
       - name: POST /api/v1/jobs/saved-search-alerts
@@ -72,6 +86,7 @@ jobs:
 
   overdue-task-digest:
     name: Overdue task digest pushes
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 11 * * *'
     runs-on: ubuntu-latest
     steps:
       - name: POST /api/v1/jobs/overdue-task-notifications
@@ -89,3 +104,35 @@ jobs:
           echo "HTTP $http_code"
           cat response.json
           [ "$http_code" = "200" ] || exit 1
+
+  linkedin-publish:
+    name: LinkedIn publisher
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '*/30 * * * *'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: linkedin-publish
+      cancel-in-progress: false
+    steps:
+      - name: POST /api/v1/jobs/linkedin-publish
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL || 'https://dealscope-production.up.railway.app' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET repository secret is not set — see workflow header for setup."
+            exit 1
+          fi
+          http_code=$(curl -sS -o response.json -w "%{http_code}" \
+            -X POST "$BACKEND_URL/api/v1/jobs/linkedin-publish" \
+            -H "X-Cron-Token: $CRON_SECRET")
+          echo "HTTP $http_code"
+          cat response.json
+          [ "$http_code" = "200" ] || exit 1
+          python3 -c "
+          import json, sys
+          data = json.load(open('response.json'))
+          failed = data.get('failed') or []
+          if failed:
+              print('failed rows:', failed)
+              sys.exit(1)
+          "
