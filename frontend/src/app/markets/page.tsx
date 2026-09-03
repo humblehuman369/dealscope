@@ -6,13 +6,14 @@ import { fetchStateMarkets, type StateMarketSummary } from '@/lib/markets'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 import { SITE_URL } from '@/lib/seo/blog-schema'
 import { PostCard } from '@/components/blog/PostCard'
+import { UsStatesMap } from '@/components/markets/UsStatesMap'
 
 // ISR: Next only accepts a literal here; keep in step with MARKETS_REVALIDATE_SECONDS.
 export const revalidate = 86400
 
-const TITLE = 'Real Estate Investor Market Data by State'
+const TITLE = 'Investment Properties by State'
 const DESCRIPTION =
-  'The property tax, vacancy, appreciation, and rent-to-price assumptions DealGapIQ applies in each state, plus hard money lender and cash buyer counts. One page per state.'
+  'Pick a state to search investment properties on a live map and see the property tax, vacancy, appreciation, and rent-to-price assumptions DealGapIQ applies there, plus hard money lender and cash buyer counts.'
 
 export const metadata: Metadata = {
   title: `${TITLE} — DealGapIQ`,
@@ -45,7 +46,7 @@ export default async function MarketsHubPage() {
             '@type': 'ListItem',
             position: i + 1,
             url: `${SITE_URL}/markets/${s.slug}`,
-            name: `${s.name} investor market data`,
+            name: `${s.name} investment properties`,
           })),
         },
       },
@@ -71,15 +72,34 @@ export default async function MarketsHubPage() {
             {TITLE}
           </h1>
           <p className="mt-4 max-w-3xl text-lg sm:text-xl" style={{ color: 'var(--text-secondary)' }}>
-            Every DealGapIQ verdict starts from a set of state-level assumptions: effective property tax, vacancy,
-            appreciation, and the rent-to-price ratio. These pages show those inputs for each state, alongside how
-            many hard money lenders and verified cash buyers in our directories work there.
+            Pick a state to open its investment property map and see the inputs every DealGapIQ verdict starts from
+            there: effective property tax, vacancy, appreciation, and the rent-to-price ratio, alongside how many
+            hard money lenders and verified cash buyers in our directories work in that state.
           </p>
           <p className="mt-3 max-w-3xl text-sm" style={{ color: 'var(--text-muted)' }}>
             Counts come from the DealGapIQ lender and buyer directories and refresh daily. Assumptions are the
             platform baseline an investor can override per deal; they are not appraisals or market forecasts.
           </p>
         </header>
+
+        <section aria-labelledby="us-map-heading" className="mb-12">
+          <h2 id="us-map-heading" className="sr-only">
+            Select a state on the map
+          </h2>
+          <div className="rounded-2xl border p-3 sm:p-6" style={{ borderColor: 'var(--border-default)', background: 'var(--surface-card)' }}>
+            <UsStatesMap entries={states.map((s) => ({ state: s, indexable: Boolean(s.market?.indexable) }))} />
+          </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+            <span>Highlighted states have a full market profile. Dimmed states expand as lenders and buyers are verified.</span>
+            <Link
+              href="/markets/near-me"
+              className="inline-flex items-center rounded-full border px-4 py-2 font-medium transition-colors hover:border-[var(--accent-sky)]"
+              style={{ borderColor: 'var(--border-default)', color: 'var(--text-heading)' }}
+            >
+              Search investment properties near me →
+            </Link>
+          </div>
+        </section>
 
         {summaries === null && (
           <p
@@ -92,7 +112,7 @@ export default async function MarketsHubPage() {
 
         <section aria-labelledby="states-heading">
           <h2 id="states-heading" className="mb-4 text-2xl font-bold" style={{ color: 'var(--text-heading)' }}>
-            Choose a state
+            All states
           </h2>
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {states.map((s) => (

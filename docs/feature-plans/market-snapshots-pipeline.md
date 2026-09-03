@@ -25,6 +25,17 @@ Until then, do not create the table, the job, or the route. A city page with no
 snapshot behind it is thin content, and thin programmatic pages get demoted
 site-wide — that is the risk this gate exists to prevent.
 
+**Keyword targeting note (2026-09-03).** The state pages now target the search
+intent "{State} investment properties" (title, H1, description) rather than
+"investor market data", carry a server-rendered state outline map whose CTA
+deep-links into `/map-search` framed on the state, link each top buyer city to
+a city-labelled map search, and emit `FAQPage` + `WebPage`/`SearchAction`
+schema. When Phase B ships, city pages should follow the same shape: target
+"{City}, {ST} investment properties", link the map CTA to
+`cityMapSearchHref()` in `frontend/src/lib/geo/map-search-links.ts`, and keep
+"near me" out of every title — `/markets/near-me` is the single page for that
+intent, with location resolved client-side only.
+
 ---
 
 ## 1. Why a snapshot table and not live calls

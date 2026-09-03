@@ -4,15 +4,18 @@ import { notFound } from 'next/navigation'
 import { getPostsByCategory } from '@/lib/content'
 import { US_STATES, getStateBySlug } from '@/lib/us-states'
 import {
+  EXAMPLE_PRICE,
   assumptionsInDollars,
   fetchStateMarket,
   formatDollars,
   formatPercent,
   type StateMarketDetail,
 } from '@/lib/markets'
-import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from '@/lib/seo/metadata'
+import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, buildFaqJsonLd, type FaqItem } from '@/lib/seo/metadata'
 import { SITE_URL } from '@/lib/seo/blog-schema'
 import { PostCard } from '@/components/blog/PostCard'
+import { StateOutlineMap } from '@/components/markets/StateOutlineMap'
+import { cityMapSearchHref, stateMapSearchHref } from '@/lib/geo/map-search-links'
 
 // ISR: Next only accepts a literal here; keep in step with MARKETS_REVALIDATE_SECONDS.
 export const revalidate = 86400
@@ -23,7 +26,7 @@ export function generateStaticParams() {
 }
 
 function pageTitle(name: string) {
-  return `${name} Real Estate Investor Market Data: Tax, Vacancy, Lenders & Cash Buyers`
+  return `${name} Investment Properties: Search Listings & Analyze Deals`
 }
 
 function pageDescription(name: string, market: StateMarketDetail | null) {
@@ -31,7 +34,39 @@ function pageDescription(name: string, market: StateMarketDetail | null) {
     market && market.indexable
       ? ` ${market.lender_count} hard money lenders and ${market.buyer_count} verified cash buyers work in ${name}.`
       : ''
-  return `The property tax, vacancy, appreciation, and rent-to-price assumptions DealGapIQ applies to ${name} rental analysis.${counts}`
+  return `Search ${name} investment properties on a live map, then run the numbers with the property tax, vacancy, appreciation, and rent-to-price assumptions DealGapIQ applies to ${name}.${counts}`
+}
+
+function buildFaq(state: { name: string; code: string }, market: StateMarketDetail): FaqItem[] {
+  const a = market.assumptions
+  const items: FaqItem[] = [
+    {
+      question: `How do I search for investment properties in ${state.name}?`,
+      answer: `Open the ${state.name} map search from this page. It frames the whole state, loads active listings from RentCast and Zillow inside the viewport, and lets you pan, zoom, or draw an area. Select any listing to run a free DealGapIQ verdict on it.`,
+    },
+    {
+      question: `What property tax rate does DealGapIQ assume for ${state.name} rentals?`,
+      answer: `${formatPercent(a.property_tax_rate)} of property value per year${a.is_state_specific ? `, a ${state.name}-specific rate` : ', the national baseline'}. On a ${formatDollars(EXAMPLE_PRICE)} property that is ${formatDollars(EXAMPLE_PRICE * a.property_tax_rate)} a year, and you can override it on any deal.`,
+    },
+    {
+      question: `What vacancy rate is used for ${state.name} cash flow analysis?`,
+      answer: `${formatPercent(a.vacancy_rate)}, or about ${(a.vacancy_rate * 52).toFixed(1)} weeks empty per year. Vacancy comes off gross rent before debt service, so it directly lowers the cash flow a ${state.name} listing has to clear.`,
+    },
+  ]
+  if (market.lender_count > 0 || market.buyer_count > 0) {
+    const parts: string[] = []
+    if (market.lender_count > 0) parts.push(`${market.lender_count} active hard money lenders`)
+    if (market.buyer_count > 0) parts.push(`${market.buyer_count} verified cash buyers`)
+    items.push({
+      question: `Who funds and buys investment properties in ${state.name}?`,
+      answer: `The DealGapIQ directories list ${parts.join(' and ')} working in ${state.name}. Both directories can be filtered to ${state.code} and refresh daily.`,
+    })
+  }
+  items.push({
+    question: `Is a ${state.name} listing a good investment?`,
+    answer: `It depends on the gap between the asking price and what the property is worth as a rental. Run a free verdict on the address: DealGapIQ pulls live rent and value estimates, applies the ${state.name} assumptions above, and shows the Deal Gap between list price and your target buy.`,
+  })
+  return items
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ state: string }> }): Promise<Metadata> {
@@ -59,14 +94,31 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
   const [market, posts] = await Promise.all([fetchStateMarket(state.code), getPostsByCategory('markets')])
   const url = `${SITE_URL}/markets/${state.slug}`
   const discoveryHref = `/discovery?utm_source=markets&utm_medium=state&utm_campaign=${state.slug}`
+  const mapSearchHref = stateMapSearchHref(state)
   const assumptions = market?.assumptions ?? null
   const example = assumptions ? assumptionsInDollars(assumptions) : null
   const showLenders = (market?.lender_count ?? 0) > 0
   const showBuyers = (market?.buyer_count ?? 0) > 0
+  const faq = market ? buildFaq(state, market) : []
+  const title = pageTitle(state.name)
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
+      {
+        '@type': 'WebPage',
+        '@id': `${url}#webpage`,
+        url,
+        name: title,
+        description: pageDescription(state.name, market),
+        about: { '@id': `${url}#place` },
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        potentialAction: {
+          '@type': 'SearchAction',
+          name: `Search ${state.name} investment properties`,
+          target: `${SITE_URL}${mapSearchHref}`,
+        },
+      },
       {
         '@type': 'Place',
         '@id': `${url}#place`,
@@ -108,6 +160,9 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
   return (
     <main className="min-h-screen px-4 py-10 sm:py-16" style={{ background: 'var(--surface-base)' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {faq.length > 0 && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildFaqJsonLd(faq)) }} />
+      )}
       <div className="mx-auto max-w-4xl">
         <nav aria-label="Breadcrumb" className="mb-6 text-sm" style={{ color: 'var(--text-muted)' }}>
           <Link href="/markets" className="hover:underline">
@@ -119,16 +174,35 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
           <span style={{ color: 'var(--text-secondary)' }}>{state.name}</span>
         </nav>
 
-        <header className="mb-10">
-          <p className="mb-3 font-mono text-xs font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--accent-sky)' }}>
-            {state.code} · Investor market data
-          </p>
-          <h1 className="text-3xl font-bold sm:text-5xl" style={{ color: 'var(--text-heading)' }}>
-            {state.name} real estate investor market data
-          </h1>
-          <p className="mt-4 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
-            {pageDescription(state.name, market)}
-          </p>
+        <header className="mb-12 grid gap-8 md:grid-cols-[1fr_minmax(240px,320px)] md:items-center">
+          <div>
+            <p className="mb-3 font-mono text-xs font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--accent-sky)' }}>
+              {state.code} · Investment properties
+            </p>
+            <h1 className="text-3xl font-bold sm:text-5xl" style={{ color: 'var(--text-heading)' }}>
+              {state.name} investment properties
+            </h1>
+            <p className="mt-4 max-w-3xl text-lg" style={{ color: 'var(--text-secondary)' }}>
+              {pageDescription(state.name, market)}
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <Link
+                href={mapSearchHref}
+                className="inline-flex rounded-full px-6 py-3 font-semibold transition-opacity hover:opacity-90"
+                style={{ background: 'var(--accent-sky)', color: 'var(--surface-base)' }}
+              >
+                Search {state.name} Investment Properties →
+              </Link>
+              <Link
+                href={discoveryHref}
+                className="inline-flex rounded-full border px-6 py-3 font-semibold transition-colors hover:opacity-90"
+                style={{ borderColor: 'var(--border-default)', color: 'var(--text-heading)' }}
+              >
+                Run a free verdict
+              </Link>
+            </div>
+          </div>
+          <StateOutlineMap state={state} href={mapSearchHref} />
         </header>
 
         {assumptions && example ? (
@@ -234,14 +308,19 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
                 <h3 className="text-lg font-semibold" style={{ color: 'var(--text-heading)' }}>
                   {state.name} cities with the most cash buyers
                 </h3>
+                <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+                  Select a city to open its listings on the map.
+                </p>
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {market.buyer_cities.map((c) => (
-                    <li
-                      key={c.city}
-                      className="rounded-full border px-3 py-1 text-sm"
-                      style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)', background: 'var(--surface-elevated)' }}
-                    >
-                      {c.city} <span style={{ color: 'var(--text-muted)' }}>· {c.count}</span>
+                    <li key={c.city}>
+                      <Link
+                        href={cityMapSearchHref(c.city, state)}
+                        className="inline-block rounded-full border px-3 py-1 text-sm transition-opacity hover:opacity-80"
+                        style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)', background: 'var(--surface-elevated)' }}
+                      >
+                        {c.city} <span style={{ color: 'var(--text-muted)' }}>· {c.count}</span>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -255,6 +334,26 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
             DealGapIQ does not yet have enough {state.name}-specific directory data to publish a full market profile.
             This page shows what exists and will expand as lenders and buyers are verified.
           </p>
+        )}
+
+        {faq.length > 0 && (
+          <section aria-labelledby="faq-heading" className="mb-12">
+            <h2 id="faq-heading" className="text-2xl font-bold" style={{ color: 'var(--text-heading)' }}>
+              {state.name} investment property questions
+            </h2>
+            <dl className="mt-5 divide-y rounded-xl border" style={{ borderColor: 'var(--border-default)', background: 'var(--surface-card)' }}>
+              {faq.map((item) => (
+                <div key={item.question} className="px-5 py-4" style={{ borderColor: 'var(--border-default)' }}>
+                  <dt className="font-semibold" style={{ color: 'var(--text-heading)' }}>
+                    {item.question}
+                  </dt>
+                  <dd className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    {item.answer}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         )}
 
         <section

@@ -92,8 +92,11 @@
     "postcss": "^8.4.33",
     "prettier": "^3.8.1",
     "tailwindcss": "^3.4.0",
+    "topojson-client": "^3.1.0",
+    "topojson-simplify": "^3.0.3",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
+    "us-atlas": "^3.0.1",
     "vitest": "^4.0.18"
   }
 }

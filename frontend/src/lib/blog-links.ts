@@ -7,7 +7,7 @@ const GUIDE_LABELS: Record<string, string> = {
   '/national-averages': 'National investor benchmarks',
   '/lenders': 'Hard money lender directory',
   '/directory': 'Cash buyer directory',
-  '/markets': 'Investor market data by state',
+  '/markets': 'Investment properties by state',
   '/strategies/long-term-rental': 'Long-term rental strategy guide',
   '/strategies/short-term-rental': 'Short-term rental strategy guide',
   '/strategies/brrrr': 'BRRRR strategy guide',
