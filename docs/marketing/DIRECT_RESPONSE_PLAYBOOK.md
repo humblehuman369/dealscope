@@ -248,19 +248,25 @@ by `ft_utm_campaign`, then by `ft_referrer_host` for organic. The two numbers
 that matter per source are verdict rate (events ÷ landing sessions) and
 signup rate (signups ÷ verdicts). Everything else is fluff.
 
-### 6.1 PostHog setup (one-time, ~30 minutes)
+### 6.1 PostHog setup
 
-Create these in the DealGapIQ project and pin them to a dashboard named
-**Direct Response**. Collect a week of organic baseline before any paid spend
-so the §5 kill rule has a comparison. Property names below are exact.
+**Created 2026-09-03** in PostHog project 463676 ("Default project"):
+dashboard **Direct Response**
+(`https://us.posthog.com/project/463676/dashboard/2063305`), 12 tiles named
+`DR-A` … `DR-D` as below, and a weekly Monday 08:00 UTC email subscription on
+DR-A to brad@geisen.cc. The definitions are kept here so they can be
+recreated or extended (a new `/answers` slug needs one more DR-C funnel).
+Collect a week of organic baseline before any paid spend so the §5 kill rule
+has a comparison. Property names below are exact.
 
-**A. Source scoreboard (SQL insight).** New insight → SQL → paste:
+**A. Source scoreboard (SQL insight `DR-A`).** New insight → SQL → paste:
 
 ```sql
 SELECT
     coalesce(nullIf(properties.ft_utm_campaign, ''), '(none)') AS campaign,
     coalesce(nullIf(properties.ft_utm_source, ''), '(direct)') AS source,
     coalesce(nullIf(properties.ft_referrer_host, ''), '')       AS referrer,
+    coalesce(nullIf(properties.ft_landing_path, ''), '')        AS landing_path,
     countIf(event = 'property_searched')                         AS address_submits,
     countIf(event = 'verdict_viewed')                            AS verdicts,
     countIf(event = 'signup_completed')                          AS signups,
@@ -269,11 +275,11 @@ SELECT
 FROM events
 WHERE timestamp > now() - INTERVAL 7 DAY
   AND event IN ('property_searched', 'verdict_viewed', 'signup_completed', 'checkout_completed')
-GROUP BY campaign, source, referrer
+GROUP BY campaign, source, referrer, landing_path
 ORDER BY verdicts DESC
 ```
 
-**B. Landing sessions per `/answers` page (SQL insight).** Denominator for the
+**B. Landing sessions per `/answers` page (SQL insight `DR-B`).** Denominator for the
 verdict rate. `$pageview` fires on the full page load that a paid or organic
 click produces, so `$pathname` on the first pageview of a session is the landing
 page.
@@ -290,11 +296,10 @@ GROUP BY landing_path
 ORDER BY sessions DESC
 ```
 
-Verdict rate for a page = verdicts from A where `ft_landing_path` equals the
-page ÷ sessions from B. Add `properties.ft_landing_path` to A's `GROUP BY` if
-you want it in one table.
+Verdict rate for a page = verdicts from A where `landing_path` equals the
+page ÷ sessions from B.
 
-**C. Per-page funnel (Funnel insight), one per launched `/answers` slug.**
+**C. Per-page funnel (Funnel insights `DR-C …`), one per launched `/answers` slug plus the homepage.**
 Steps, in order, all filtered to the same page:
 
 1. `property_searched` where `source = answers:<slug>`
@@ -306,13 +311,13 @@ Conversion window 14 days. Breakdown by `ft_utm_campaign` once paid traffic
 starts. Duplicate for the homepage with `source = home_hero` and
 `ft_landing_path = /`.
 
-**D. Sticky CTA usage (Trends insight).** `sticky_cta_clicked`, breakdown by
+**D. Sticky CTA usage (Trends insight `DR-D`).** `sticky_cta_clicked`, breakdown by
 `source`. If a page's sticky clicks exceed its hero `property_searched`, the
 hero copy is failing the 10-second test and gets rewritten first.
 
-**E. Kill-rule alert.** On insight A, set a subscription every Monday 08:00 to
-brad@geisen.cc. The manual check is: any `campaign` with paid spend, 200+
-clicks in Google Ads, and `verdicts = 0` here is paused that morning.
+**E. Kill-rule alert.** Weekly Monday 08:00 UTC subscription on DR-A to
+brad@geisen.cc (created). The manual check is: any `campaign` with paid spend,
+200+ clicks in Google Ads, and `verdicts = 0` here is paused that morning.
 
 Notes:
 - `ft_*` only exists on events sent through `trackEvent`; `$pageview` and
