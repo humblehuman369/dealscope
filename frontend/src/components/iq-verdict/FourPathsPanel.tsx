@@ -155,10 +155,8 @@ export function FourPathsPanel({
         )}
       </div>
       <div
-        className="w-full min-w-0"
+        className="grid w-full min-w-0 grid-cols-1 sm:grid-cols-2"
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: 10,
           alignItems: 'stretch',
         }}
