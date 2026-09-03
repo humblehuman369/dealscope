@@ -37,8 +37,10 @@ export function MobileStickyCta({ label, href, watchId, source, sublabel }: Prop
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between gap-3 border-t px-5 pt-3 transition-opacity duration-200 md:hidden"
+      className="fixed inset-x-0 z-50 flex items-center justify-between gap-3 border-t px-5 pt-3 transition-opacity duration-200 md:hidden"
       style={{
+        // Sits above the cookie banner while it is open (see CookieConsentBanner).
+        bottom: 'var(--consent-banner-height, 0px)',
         background: 'var(--surface-card)',
         borderColor: 'var(--border-default)',
         boxShadow: '0 -4px 20px rgba(0,0,0,0.3)',

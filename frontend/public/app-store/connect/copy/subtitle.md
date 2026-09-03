@@ -27,6 +27,7 @@ The subtitle appears under the app name in search results, on the product page, 
 | 3 | `DEAL. MAYBE. PASS. Decided.` | 27 | Borrows the Discovery framework from screenshot #4 |
 | 4 | `Find the deal. Skip the rest.` | 29 | Speaks directly to the time-poor investor pain point |
 | 5 | `Investor lens on US listings.` | 29 | Reinforces the "Investor's Lens" hero metaphor |
+| 6 | `Deal Gap IQ: every deal scored` | 30 | Brand SERP-term variant: indexes the spoken form ("gap", "iq") that the one-token title `DealGapIQ` does not. Alternative to the `gap,iq` keyword swap in `keywords.md`; see `docs/marketing/BRAND_SERP_LISTINGS.md` §3 |
 
 ---
 

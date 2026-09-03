@@ -76,9 +76,9 @@ Free to start: 3 analyses per month, no credit card. Pro unlocks unlimited
 analysis, the full underwriting toolkit, and the cash buyer and hard money
 lender directories — $34.99/month or $349.99/year.
 
-Search terms: real estate investing, rental property calculator, BRRRR
-calculator, fix and flip, wholesale real estate, foreclosure, pre-foreclosure,
-auction, cap rate, cash flow, ARV, comps, deal analyzer.
+Search terms: Deal Gap IQ, real estate investing, rental property calculator,
+BRRRR calculator, fix and flip, wholesale real estate, foreclosure,
+pre-foreclosure, auction, cap rate, cash flow, ARV, comps, deal analyzer.
 ```
 
 ---

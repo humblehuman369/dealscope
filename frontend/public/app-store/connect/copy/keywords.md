@@ -65,6 +65,7 @@ carried by the name and subtitle (every, us, deal, pre-scored).
 | `offmarket` | `comps` | If "off market" shows higher ASA conversion than comps |
 | `caprate` | `cashflow` | If cap-rate searches convert better for your audience |
 | `landlord` | `arv` | If buy-and-hold (not flip) is your dominant install segment |
+| `gap,iq` | `comps` | Brand SERP term: `DealGapIQ` is one token, so the spoken search "deal gap iq" only matches "deal". Adding `gap,iq` (95/100) covers it without touching the subtitle. See `docs/marketing/BRAND_SERP_LISTINGS.md` §3 |
 
 ---
 

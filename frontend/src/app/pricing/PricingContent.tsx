@@ -1452,7 +1452,7 @@ export default function PricingContent() {
         style={{
           display: 'none',
           position: 'fixed',
-          bottom: 0,
+          bottom: 'var(--consent-banner-height, 0px)',
           left: 0,
           right: 0,
           zIndex: 50,

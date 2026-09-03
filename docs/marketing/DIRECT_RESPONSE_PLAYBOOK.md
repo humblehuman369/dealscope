@@ -248,6 +248,82 @@ by `ft_utm_campaign`, then by `ft_referrer_host` for organic. The two numbers
 that matter per source are verdict rate (events ÷ landing sessions) and
 signup rate (signups ÷ verdicts). Everything else is fluff.
 
+### 6.1 PostHog setup (one-time, ~30 minutes)
+
+Create these in the DealGapIQ project and pin them to a dashboard named
+**Direct Response**. Collect a week of organic baseline before any paid spend
+so the §5 kill rule has a comparison. Property names below are exact.
+
+**A. Source scoreboard (SQL insight).** New insight → SQL → paste:
+
+```sql
+SELECT
+    coalesce(nullIf(properties.ft_utm_campaign, ''), '(none)') AS campaign,
+    coalesce(nullIf(properties.ft_utm_source, ''), '(direct)') AS source,
+    coalesce(nullIf(properties.ft_referrer_host, ''), '')       AS referrer,
+    countIf(event = 'property_searched')                         AS address_submits,
+    countIf(event = 'verdict_viewed')                            AS verdicts,
+    countIf(event = 'signup_completed')                          AS signups,
+    countIf(event = 'checkout_completed')                        AS paid,
+    round(signups / nullIf(verdicts, 0), 3)                      AS signup_rate
+FROM events
+WHERE timestamp > now() - INTERVAL 7 DAY
+  AND event IN ('property_searched', 'verdict_viewed', 'signup_completed', 'checkout_completed')
+GROUP BY campaign, source, referrer
+ORDER BY verdicts DESC
+```
+
+**B. Landing sessions per `/answers` page (SQL insight).** Denominator for the
+verdict rate. `$pageview` fires on the full page load that a paid or organic
+click produces, so `$pathname` on the first pageview of a session is the landing
+page.
+
+```sql
+SELECT
+    properties.$pathname                 AS landing_path,
+    count(DISTINCT properties.$session_id) AS sessions
+FROM events
+WHERE event = '$pageview'
+  AND timestamp > now() - INTERVAL 7 DAY
+  AND (properties.$pathname LIKE '/answers/%' OR properties.$pathname = '/' OR properties.$pathname LIKE '/markets/%')
+GROUP BY landing_path
+ORDER BY sessions DESC
+```
+
+Verdict rate for a page = verdicts from A where `ft_landing_path` equals the
+page ÷ sessions from B. Add `properties.ft_landing_path` to A's `GROUP BY` if
+you want it in one table.
+
+**C. Per-page funnel (Funnel insight), one per launched `/answers` slug.**
+Steps, in order, all filtered to the same page:
+
+1. `property_searched` where `source = answers:<slug>`
+2. `verdict_viewed` where `ft_landing_path = /answers/<slug>`
+3. `signup_completed` where `ft_landing_path = /answers/<slug>`
+4. `checkout_completed` where `ft_landing_path = /answers/<slug>`
+
+Conversion window 14 days. Breakdown by `ft_utm_campaign` once paid traffic
+starts. Duplicate for the homepage with `source = home_hero` and
+`ft_landing_path = /`.
+
+**D. Sticky CTA usage (Trends insight).** `sticky_cta_clicked`, breakdown by
+`source`. If a page's sticky clicks exceed its hero `property_searched`, the
+hero copy is failing the 10-second test and gets rewritten first.
+
+**E. Kill-rule alert.** On insight A, set a subscription every Monday 08:00 to
+brad@geisen.cc. The manual check is: any `campaign` with paid spend, 200+
+clicks in Google Ads, and `verdicts = 0` here is paused that morning.
+
+Notes:
+- `ft_*` only exists on events sent through `trackEvent`; `$pageview` and
+  autocapture events do not carry it. Use `ft_landing_path` on conversion
+  events, not `$pathname`, when attributing a conversion to a landing page.
+- Events are consent-gated. Numbers here are for the consenting share of
+  visitors; ratios between sources are still valid, absolute counts undercount.
+- Google Ads click counts come from Ads, not PostHog. Compare `verdicts` from A
+  against clicks by campaign name; keep the Ads campaign name equal to
+  `utm_campaign` so the join is by eye.
+
 ---
 
 ## 7. Reviews and the business profile
