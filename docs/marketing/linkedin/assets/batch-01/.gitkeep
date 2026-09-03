@@ -1,0 +1,2 @@
+# Produce the PNG/PDF assets listed in batches/batch-01.yaml into this folder.
+# Import fails until every referenced file exists. See README.md.

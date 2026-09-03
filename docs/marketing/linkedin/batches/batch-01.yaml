@@ -1,0 +1,305 @@
+# Blog → LinkedIn, Batch 01 (two weeks, 10 native posts + 3 company reshares).
+# Converted from BLOG_TO_LINKEDIN_BATCH_01.md with no copy edits.
+# Dates start Monday 2026-09-07 (the Monday after this PR). Adjust before import.
+# Screenshots/PDFs under docs/marketing/linkedin/assets/batch-01/ are human-produced;
+# import fails loudly until they exist.
+
+batch: batch-01
+timezone: America/New_York
+posts:
+  - key: post-01
+    account: founder
+    scheduled_at: "2026-09-07 07:45"
+    media_type: image
+    media_path: assets/batch-01/post-01-cashflow-table.png
+    media_alt_text: "Monthly cash flow table for the $325K example: rent $2,600, NOI $1,614, cash flow $55"
+    first_comment: "https://dealgapiq.com/blog/cash-flow-positive-rental-properties?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=cash-flow-positive-rental-properties"
+    body: |
+      "Cash flow positive rental properties" is one of the most searched phrases in real estate investing.
+
+      It is also a category error.
+
+      Cash flow is not a property attribute. It is a price attribute.
+
+      The same 3/2 house:
+      → cash flow positive at $270,000
+      → a monthly loss at $340,000
+
+      Same tenant. Same rent. Same roof.
+
+      Three of your five biggest expense lines (property tax, insurance, the mortgage) scale with what you pay. Rent does not. Pay less and three lines fall while income stays fixed.
+
+      So the search is backwards. You do not find cash flow positive properties. You price them.
+
+      The $325K example in the image: 5.96% cap rate, $55 a month at asking with 20% down. Fine house. Owner-occupant price.
+
+      Full breakdown in the comments.
+
+      #RealEstateInvesting #CashFlow #RentalProperty
+
+  - key: post-01-reshare
+    account: company
+    reshare_of_key: post-01
+    scheduled_at: "2026-09-07 12:00"
+    media_type: none
+    first_comment: "https://dealgapiq.com/blog/cash-flow-positive-rental-properties?utm_source=linkedin&utm_medium=company_page&utm_campaign=blog_distribution&utm_content=cash-flow-positive-rental-properties"
+    body: "The first thing Discovery does with any address is solve for this price."
+
+  - key: post-02
+    account: founder
+    scheduled_at: "2026-09-08 08:00"
+    media_type: none
+    first_comment: "https://dealgapiq.com/blog/how-to-find-off-market-properties?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=how-to-find-off-market-properties"
+    body: |
+      "Off market properties for sale" gets searched thousands of times a month.
+
+      It is a contradiction. There is no marketplace for off-market properties. That is what off-market means.
+
+      What the searcher actually wants is two things:
+
+      1. The places those properties come from
+      2. A way to know what one is worth when there is no list price to react to
+
+      Most content answers the first and skips the second. That is backwards, because the single biggest mistake in off-market investing is letting the owner's number become your number.
+
+      Do the math before the call. Income Value. Target Buy. Then ask them what they need, and measure the gap.
+
+      Seven channels ranked by effort, and the pricing method, in the comments.
+
+      #RealEstateInvesting #InvestmentProperty
+
+  - key: post-03
+    account: founder
+    scheduled_at: "2026-09-09 07:45"
+    media_type: image
+    media_path: assets/batch-01/post-03-lender-dscr-callout.png
+    media_alt_text: "Warning callout from the DSCR requirements post: Lender DSCR is not your DSCR"
+    first_comment: "https://dealgapiq.com/blog/dscr-loan-requirements?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=dscr-loan-requirements"
+    body: |
+      A DSCR loan can be approved on a property that does not pay you.
+
+      Here is how, on the $325K example at typical DSCR terms (75% LTV, 7.25%):
+
+      Lender's math
+      Rent $2,600 ÷ PITIA $2,259 = 1.15
+      Approvable. Second tier, but approvable.
+
+      Your math
+      NOI after vacancy, maintenance, reserves: $19,370
+      Debt service: $19,954
+      DSCR = 0.97
+
+      Both numbers are correct. They answer different questions.
+
+      The lender is asking: will this loan probably get paid?
+      You are asking: will this property pay me?
+
+      Qualify on the lender's number. Decide on yours.
+
+      The full requirements checklist (ratio tiers, LTV, credit, reserves, rent docs, prepay) is in the comments.
+
+      #DSCR #RealEstateInvesting #RentalProperty
+
+  - key: post-03-reshare
+    account: company
+    reshare_of_key: post-03
+    scheduled_at: "2026-09-09 12:00"
+    media_type: none
+    first_comment: "https://dealgapiq.com/blog/dscr-loan-requirements?utm_source=linkedin&utm_medium=company_page&utm_campaign=blog_distribution&utm_content=dscr-loan-requirements"
+    body: "Discovery shows both ratios on every property, so the approval never surprises the cash flow."
+
+  - key: post-04
+    account: founder
+    scheduled_at: "2026-09-10 08:15"
+    media_type: none
+    first_comment: "https://dealgapiq.com/blog/dscr-loan-requirements?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=dscr-loan-requirements"
+    body: |
+      The DSCR ratio is not what stops most first DSCR purchases.
+
+      Liquidity is.
+
+      On the $325K example at typical program terms:
+
+      Down payment (25%): $81,250
+      Closing costs (~3%): $9,750
+      Reserves (6 months of PITIA): about $13,600
+
+      Cash you need to show: roughly $105,000
+
+      Everyone runs the ratio. Almost nobody adds up the third line until the lender asks for a bank statement.
+
+      Reserves usually have to be liquid after closing: checking, savings, brokerage, sometimes retirement at a discount. Gift funds and business accounts vary by lender.
+
+      If you are planning a DSCR purchase this year, build the liquidity number before you build the deal list. It changes which deal list you should be building.
+
+      Checklist in the comments.
+
+      #DSCR #RealEstateInvesting
+
+  - key: post-05
+    account: founder
+    scheduled_at: "2026-09-11 07:30"
+    media_type: image
+    media_path: assets/batch-01/post-05-three-questions.png
+    media_alt_text: "Tip callout: Three questions for the first call on an off-market property"
+    first_comment: "https://dealgapiq.com/blog/how-to-find-off-market-properties?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=how-to-find-off-market-properties"
+    body: |
+      Three questions before you name a number on an off-market property.
+
+      1. Why are you thinking about selling?
+      2. When do you need this done?
+      3. Is there a mortgage, and roughly what is owed?
+
+      The answers tell you which offer structure has a chance.
+
+      No mortgage, no deadline → they want price. Terms will not move them.
+
+      A 3% loan and a deadline → they may take terms that cost you far less than the price gap. Seller carry. Subject-to. A lease option.
+
+      Off-market does not mean discounted. It means negotiable. And the thing that is negotiable is not always the price.
+
+      Which of the three do you ask first?
+
+      Full post in the comments.
+
+      #CreativeFinance #RealEstateInvesting
+
+  - key: post-06
+    account: founder
+    scheduled_at: "2026-09-14 07:45"
+    media_type: image
+    media_path: assets/batch-01/post-06-income-value.png
+    media_alt_text: "Example callout: the $325,000 house, solved for Income Value and Target Buy"
+    first_comment: "https://dealgapiq.com/blog/cash-flow-positive-rental-properties?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=cash-flow-positive-rental-properties"
+    body: |
+      Two prices matter on every rental. Neither is the asking price.
+
+      Income Value: the break-even. The most you can pay and still have rent cover every expense and the mortgage with nothing left.
+
+      Target Buy: the price that hits the return you actually want.
+
+      The $325K example, 20% down, 6%:
+
+      Income Value: about $333,000
+      Target Buy at 8% cash-on-cash: $270,731
+      Asking: $325,000
+
+      So at asking, the property barely covers itself. At Target Buy it pays 8% on your cash, with a DSCR of 1.32.
+
+      Deal Gap: 16.7%. That is not "offer 16.7% less." It is the size of the problem you are solving, in price or in terms.
+
+      Every listing has these two numbers. Almost no listing shows them.
+
+      Full breakdown in the comments.
+
+      #RealEstateInvesting #CashFlow #DealGap
+
+  - key: post-07
+    account: founder
+    scheduled_at: "2026-09-15 08:00"
+    media_type: document
+    media_path: assets/batch-01/post-07-seven-channels.pdf
+    document_title: "7 ways to find off-market properties, ranked by effort."
+    first_comment: "https://dealgapiq.com/blog/how-to-find-off-market-properties?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=how-to-find-off-market-properties"
+    body: |
+      Seven channels that actually produce off-market properties, ranked by effort.
+
+      Swipe through. The order matters more than the list.
+
+      Beginners with time and little capital: driving for dollars, agents, listing keywords. The cost is hours.
+
+      Investors with capital and no time: wholesaler flow and skip-traced records. The cost is dollars and other people's numbers.
+
+      Everyone: the agent channel. It is nearly free and agents hear about sales before they happen.
+
+      The rule underneath all seven: consistency beats intensity. A hundred letters a month for a year beats a thousand once.
+
+      Save this for the next time you are staring at a listing site wondering where the deals are.
+
+      #RealEstateInvesting #InvestmentProperty
+
+  - key: post-07-reshare
+    account: company
+    reshare_of_key: post-07
+    scheduled_at: "2026-09-15 12:00"
+    media_type: none
+    first_comment: "https://dealgapiq.com/blog/how-to-find-off-market-properties?utm_source=linkedin&utm_medium=company_page&utm_campaign=blog_distribution&utm_content=how-to-find-off-market-properties"
+    body: "Channel 7 is built into Map Search: motivated-seller keywords run against live listings, numbers on every result."
+
+  - key: post-08
+    account: founder
+    scheduled_at: "2026-09-16 07:45"
+    media_type: none
+    first_comment: "https://dealgapiq.com/blog/cash-flow-positive-rental-properties?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=cash-flow-positive-rental-properties"
+    body: |
+      Five ways a listing manufactures cash flow that does not exist.
+
+      1. Gross rent counted as income.
+      $2,600 of rent is $1,614 of NOI on the $325K example. Every skipped line is a future surprise with a plumber attached.
+
+      2. The seller's tax bill.
+      It reflects their purchase price and their exemptions. Yours will reflect yours. $2,100 becomes $3,900 the year after closing.
+
+      3. No reserves because the roof is new.
+      Reserves are for the thing you did not inspect. New roof means the HVAC is next.
+
+      4. Appreciation as the reason to accept a loss.
+      Appreciation is a bonus on a property that already cash flows. As the rescue, it is a bet the market will fix your underwriting.
+
+      5. "Cash flow positive" in the remarks.
+      A claim about the seller's financing and the seller's rent, at a price the seller chose.
+
+      Which one has cost you money?
+
+      Full post in the comments.
+
+      #RealEstateInvesting #RentalProperty #CashFlow
+
+  - key: post-09
+    account: founder
+    scheduled_at: "2026-09-17 08:15"
+    media_type: document
+    media_path: assets/batch-01/post-09-dscr-checklist.pdf
+    document_title: "Before you call a DSCR lender."
+    first_comment: "https://dealgapiq.com/blog/dscr-loan-requirements?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=dscr-loan-requirements"
+    body: |
+      Gather these seven things before you call a DSCR lender and the conversation is a rate quote, not a fishing trip.
+
+      Swipe through.
+
+      The one most people skip is number 7: your exit. DSCR loans commonly carry a 3 to 5 year prepayment penalty. A five-year hold can take the penalty and the lower rate. A BRRRR you plan to refinance in 18 months cannot.
+
+      Decide that before the term sheet, not after.
+
+      And run the ratio yourself first. If it is below 1.20, the requirement quietly becomes a price negotiation, and you want to walk in knowing that.
+
+      Typical program ranges, not rules. The lender's rate sheet is the rule.
+
+      Full checklist in the comments.
+
+      #DSCR #RealEstateInvesting #PrivateLending
+
+  - key: post-10
+    account: founder
+    scheduled_at: "2026-09-18 07:30"
+    media_type: none
+    first_comment: "https://dealgapiq.com/blog/how-to-make-an-offer-on-an-investment-property?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=how-to-make-an-offer-on-an-investment-property"
+    body: |
+      When the Deal Gap is too wide for a price cut, you have three other levers.
+
+      The $325K example again. Target Buy $270,731. Gap $54,269.
+
+      1. Verify rent upward, honestly.
+      At the top of the estimate range ($2,750) cash flow at asking goes from $55 to $183 a month. Not enough alone. Narrows what terms have to close.
+
+      2. Lower the payment with terms.
+      A seller-carried second at a below-market rate, or taking over an existing low-rate loan. Every $10,000 less of 6% debt removes about $720 a year of payment. On this house, terms can move the number further than any price cut a seller would sign.
+
+      3. Change the strategy.
+      Same property as a house hack or a BRRRR produces a different Target Buy. Sometimes the gap closes without touching price.
+
+      (More cash down fixes the sign, not the return. Use it last.)
+
+      Which lever do you reach for first when a deal is 15% to 20% off?
+
+      #CreativeFinance #RealEstateInvesting #DealGap

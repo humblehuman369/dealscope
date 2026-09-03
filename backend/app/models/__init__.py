@@ -15,6 +15,12 @@ from app.models.document import Document, DocumentType
 from app.models.geo_city import GeoCity
 from app.models.geo_county import GeoCounty
 from app.models.lender import Lender
+from app.models.linkedin_post import (
+    LinkedInAccount,
+    LinkedInMediaType,
+    LinkedInPost,
+    LinkedInPostStatus,
+)
 from app.models.offer import OfferStatus, PropertyOffer
 from app.models.role import Permission, Role, RolePermission, UserRole
 from app.models.saved_directory_contact import DirectoryEntityType, SavedDirectoryContact
@@ -48,6 +54,10 @@ __all__ = [
     "GeoCity",
     "GeoCounty",
     "Lender",
+    "LinkedInAccount",
+    "LinkedInMediaType",
+    "LinkedInPost",
+    "LinkedInPostStatus",
     "OfferStatus",
     "PaymentHistory",
     "Permission",

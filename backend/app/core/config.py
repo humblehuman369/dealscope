@@ -132,6 +132,26 @@ class Settings(BaseSettings):
     EMBEDDED_SCHEDULER_ENABLED: bool = True
 
     # ===========================================
+    # LinkedIn publisher (cron-gated; tokens stay in env, never Postgres)
+    # ===========================================
+    # Dry run by default: the job selects, validates, and logs payloads but
+    # does not call LinkedIn write endpoints until this is flipped.
+    LINKEDIN_PUBLISH_ENABLED: bool = False
+    # Versioned Posts/Images/Documents/Comments APIs. YYYYMM; sunsets ~yearly.
+    # Verified 2026-09-03 against learn.microsoft.com li-lms-2026-08.
+    LINKEDIN_API_VERSION: str = "202608"
+    LINKEDIN_CLIENT_ID: str = ""
+    LINKEDIN_CLIENT_SECRET: str = ""
+    LINKEDIN_FOUNDER_ACCESS_TOKEN: str = ""
+    LINKEDIN_FOUNDER_REFRESH_TOKEN: str = ""
+    LINKEDIN_FOUNDER_PERSON_URN: str = ""
+    LINKEDIN_TOKEN_EXPIRES_AT_FOUNDER: str = ""  # ISO-8601 UTC; empty = unknown
+    LINKEDIN_COMPANY_ACCESS_TOKEN: str = ""
+    LINKEDIN_COMPANY_REFRESH_TOKEN: str = ""
+    LINKEDIN_COMPANY_ORG_URN: str = ""
+    LINKEDIN_TOKEN_EXPIRES_AT_COMPANY: str = ""
+
+    # ===========================================
     # JWT Authentication
     # ===========================================
     # SECURITY: SECRET_KEY must be set via environment variable.
