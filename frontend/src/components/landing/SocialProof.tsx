@@ -1,37 +1,7 @@
 'use client'
 
 import React from 'react'
-
-interface Testimonial {
-  quote: string
-  initials: string
-  name: string
-  role: string
-}
-
-const testimonials: Testimonial[] = [
-  {
-    quote:
-      'I used to spend 45 minutes per property on a spreadsheet. DealGapIQ gives me a better answer in under a minute. The Deal Gap concept alone changed how I evaluate deals.',
-    initials: 'MR',
-    name: 'Michael R.',
-    role: 'Portfolio investor \u00b7 12 properties',
-  },
-  {
-    quote:
-      'The Income Value calculation is something I\u2019ve never seen anywhere else. Knowing exactly where breakeven sits \u2014 before I even tour a property \u2014 saves me from chasing bad deals.',
-    initials: 'TL',
-    name: 'Tamara L.',
-    role: 'BRRRR investor \u00b7 Denver, CO',
-  },
-  {
-    quote:
-      'I was skeptical of another calculator tool. But seeing the actual assumptions behind the numbers \u2014 and being able to change them \u2014 that\u2019s what convinced me to pay for Pro.',
-    initials: 'JK',
-    name: 'James K.',
-    role: 'CPA & buy-and-hold investor',
-  },
-]
+import { TESTIMONIALS } from '@/lib/testimonials'
 
 function renderQuote(quote: string) {
   if (quote.includes('DealGapIQ')) {
@@ -49,9 +19,13 @@ function renderQuote(quote: string) {
   return quote
 }
 
-export function SocialProof() {
+/** `compact` tightens the section for placement directly under a hero. */
+export function SocialProof({ compact = false }: { compact?: boolean }) {
   return (
-    <section style={{ padding: '80px 24px' }}>
+    <section
+      style={{ padding: compact ? '32px 24px 40px' : '80px 24px' }}
+      aria-label="What early users are saying"
+    >
       <p
         style={{
           fontSize: 11,
@@ -60,7 +34,7 @@ export function SocialProof() {
           textTransform: 'uppercase' as const,
           color: 'var(--accent-sky)',
           textAlign: 'center',
-          marginBottom: 40,
+          marginBottom: compact ? 20 : 40,
         }}
       >
         What Early Users Are Saying
@@ -74,14 +48,14 @@ export function SocialProof() {
           margin: '0 auto',
         }}
       >
-        {testimonials.map((t, i) => (
+        {TESTIMONIALS.map((t, i) => (
           <div
             key={i}
             style={{
               background: 'var(--surface-card)',
               border: '1px solid var(--border-default)',
               borderRadius: 14,
-              padding: '28px 24px',
+              padding: compact ? '20px 20px' : '28px 24px',
               display: 'flex',
               flexDirection: 'column' as const,
               gap: 20,

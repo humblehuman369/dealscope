@@ -13,7 +13,6 @@ import {
   Clock,
   Database,
   Play,
-  Search,
   ShieldCheck,
   Sparkles,
   Users,
@@ -34,6 +33,10 @@ import { MarketingUserMenu, MarketingUserMenuMobileLinks } from '@/components/la
 import { VideoModal } from '@/components/ui/VideoModal'
 import { ExploreDealGapIQSection } from '@/components/seo/ExploreDealGapIQSection'
 import { HeroSampleResult } from '@/components/landing/HeroSampleResult'
+import { AddressCtaForm } from '@/components/landing/AddressCtaForm'
+import { MobileStickyCta } from '@/components/landing/MobileStickyCta'
+import { SocialProof } from '@/components/landing/SocialProof'
+import { GUARANTEE_LINE } from '@/lib/seo/problem-pages'
 import './hero-v5.css'
 
 interface Props {
@@ -92,7 +95,8 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
       <MarketingNav onStart={runDiscovery} />
 
       <main>
-        <HeroSection onStart={runDiscovery} onDemo={() => setShowDemoVideo(true)} />
+        <HeroSection onDemo={() => setShowDemoVideo(true)} />
+        <SocialProof compact />
         <QuickStatsBar />
         <FounderTrustSection />
         <DirectoriesPromoSection />
@@ -105,6 +109,14 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
       </main>
 
       <SiteFooter />
+
+      <MobileStickyCta
+        label="Run Free Discovery"
+        href="/discovery?source=home_sticky"
+        watchId="home-hero"
+        source="home_sticky"
+        sublabel={GUARANTEE_LINE}
+      />
 
       <VideoModal
         open={showDemoVideo}
@@ -262,12 +274,12 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
   )
 }
 
-function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => void }) {
+function HeroSection({ onDemo }: { onDemo: () => void }) {
   const { buyerTotalLabel } = useBuyerDirectoryTeaserTotal()
   const lenderTotalLabel = formatLenderDirectoryTotal()
 
   return (
-    <section className="hero-v5" aria-labelledby="hero-heading">
+    <section id="home-hero" className="hero-v5" aria-labelledby="hero-heading">
       <div className="hero-v5__grid">
         <div>
           <span className="hero-v5__badge">Built by an Investor for Investors</span>
@@ -288,11 +300,10 @@ function HeroSection({ onStart, onDemo }: { onStart: () => void; onDemo: () => v
             creative finance structures most investors never consider.
           </p>
 
-          <div className="hero-v5__cta-row">
-            <button type="button" onClick={onStart} className="hero-v5__cta-primary">
-              Run Free Discovery
-              <Search className="h-4 w-4" />
-            </button>
+          <AddressCtaForm source="home_hero" buttonLabel="Run Free Discovery" />
+          <p className="address-cta__guarantee">{GUARANTEE_LINE}</p>
+
+          <div className="hero-v5__cta-row mt-6">
             <button type="button" onClick={onDemo} className="hero-v5__cta-secondary">
               <Play className="h-4 w-4 fill-current" />
               Watch 60-second demo

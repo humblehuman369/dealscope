@@ -37,6 +37,7 @@ export const INDEXABLE_SITE_SECTIONS = [
       { href: '/blog/category/markets', label: 'Blog: Markets' },
       { href: '/markets', label: 'Investment properties by state' },
       { href: '/markets/near-me', label: 'Investment properties near me' },
+      { href: '/answers', label: 'Investor questions, answered on a real address' },
       { href: '/investor-intelligence', label: 'Investor Intelligence' },
       { href: '/help', label: 'Help center' },
       { href: '/about', label: 'About' },

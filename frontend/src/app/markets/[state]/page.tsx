@@ -16,6 +16,7 @@ import { SITE_URL } from '@/lib/seo/blog-schema'
 import { PostCard } from '@/components/blog/PostCard'
 import { StateOutlineMap } from '@/components/markets/StateOutlineMap'
 import { cityMapSearchHref, stateMapSearchHref } from '@/lib/geo/map-search-links'
+import { MobileStickyCta } from '@/components/landing/MobileStickyCta'
 
 // ISR: Next only accepts a literal here; keep in step with MARKETS_REVALIDATE_SECONDS.
 export const revalidate = 86400
@@ -158,7 +159,7 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
   }
 
   return (
-    <main className="min-h-screen px-4 py-10 sm:py-16" style={{ background: 'var(--surface-base)' }}>
+    <main className="min-h-screen px-4 pt-10 pb-28 sm:pt-16 md:pb-16" style={{ background: 'var(--surface-base)' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {faq.length > 0 && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildFaqJsonLd(faq)) }} />
@@ -174,7 +175,7 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
           <span style={{ color: 'var(--text-secondary)' }}>{state.name}</span>
         </nav>
 
-        <header className="mb-12 grid gap-8 md:grid-cols-[1fr_minmax(240px,320px)] md:items-center">
+        <header id="state-hero" className="mb-12 grid gap-8 md:grid-cols-[1fr_minmax(240px,320px)] md:items-center">
           <div>
             <p className="mb-3 font-mono text-xs font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--accent-sky)' }}>
               {state.code} · Investment properties
@@ -395,6 +396,12 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
           </Link>
         </p>
       </div>
+      <MobileStickyCta
+        label={`Search ${state.name} Properties`}
+        href={mapSearchHref}
+        watchId="state-hero"
+        source={`markets:${state.slug}`}
+      />
     </main>
   )
 }

@@ -4,6 +4,7 @@ import { BLOG_CATEGORY_SLUGS } from '@/lib/blog-categories'
 import { BLOG_PAGE_SIZE } from '@/components/blog/BlogIndexView'
 import { blogPageHref } from '@/lib/blog-index'
 import { fetchStateMarkets } from '@/lib/markets'
+import { PROBLEM_PAGES } from '@/lib/seo/problem-pages'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -26,6 +27,7 @@ const STATIC_ROUTES: StaticEntry[] = [
   { path: '/blog', priority: 0.8, changeFrequency: 'weekly' },
   { path: '/markets', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/markets/near-me', priority: 0.6, changeFrequency: 'monthly' },
+  { path: '/answers', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/investor-intelligence', priority: 0.85, changeFrequency: 'weekly' },
   { path: '/help', priority: 0.5, changeFrequency: 'monthly' },
   { path: '/national-averages', priority: 0.7, changeFrequency: 'monthly' },
@@ -120,6 +122,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }))
 
+  const answerEntries: MetadataRoute.Sitemap = PROBLEM_PAGES.map((p) => ({
+    url: `${SITE_URL}/answers/${p.slug}`,
+    lastModified: buildDate,
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
+
   const investorIntelligenceEntries: MetadataRoute.Sitemap = investorIntelligence.map((p) => ({
     url: `${SITE_URL}/investor-intelligence/${p.slug}/`,
     lastModified: lastModifiedFromContent(p, buildDate),
@@ -134,6 +143,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...blogCategoryEntries,
     ...blogPaginationEntries,
     ...marketEntries,
+    ...answerEntries,
     ...investorIntelligenceEntries,
   ]
 }

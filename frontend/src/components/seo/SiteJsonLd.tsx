@@ -5,6 +5,9 @@ const WEBSITE_ID = `${SITE_URL}/#website`
 const PERSON_ID = `${SITE_URL}/about#brad-geisen`
 const SOFTWARE_ID = `${SITE_URL}/#software`
 
+/** Spoken/typed variants of the brand SERP term (see DIRECT_RESPONSE_PLAYBOOK.md §2). */
+const BRAND_ALTERNATE_NAMES = ['Deal Gap IQ', 'DealGap IQ', 'Deal Gap']
+
 const graph = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -12,6 +15,7 @@ const graph = {
       '@type': 'Organization',
       '@id': ORG_ID,
       name: 'DealGapIQ',
+      alternateName: BRAND_ALTERNATE_NAMES,
       legalName: 'DealGapIQ',
       url: SITE_URL,
       logo: {
@@ -29,6 +33,7 @@ const graph = {
       '@id': WEBSITE_ID,
       url: SITE_URL,
       name: 'DealGapIQ',
+      alternateName: BRAND_ALTERNATE_NAMES,
       publisher: { '@id': ORG_ID },
       inLanguage: 'en-US',
     },

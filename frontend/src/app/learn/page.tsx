@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getAllContent } from '@/lib/content'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 import { INDEXABLE_SITE_SECTIONS } from '@/lib/seo/indexable-routes'
+import { PROBLEM_PAGES } from '@/lib/seo/problem-pages'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -68,6 +69,24 @@ export default async function LearnHubPage() {
           ))}
         </div>
 
+
+        <section className="mt-10">
+          <h2 className="mb-3 text-sm font-black uppercase tracking-widest text-[var(--text-muted)]">
+            Answers
+          </h2>
+          <ul className="space-y-2 text-sm">
+            {PROBLEM_PAGES.map((p) => (
+              <li key={p.slug}>
+                <Link
+                  href={`/answers/${p.slug}`}
+                  className="font-medium text-[var(--accent-sky)] hover:underline"
+                >
+                  {p.problem}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         {investorIntelligence.length > 0 && (
           <section className="mt-10">

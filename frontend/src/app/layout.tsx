@@ -67,6 +67,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(canonicalBase),
   title: defaultTitle,
   description: defaultDescription,
+  applicationName: 'DealGapIQ',
   alternates: {
     canonical: '/',
     types: {

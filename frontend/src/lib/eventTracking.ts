@@ -34,6 +34,7 @@
 import { track as vercelTrack } from '@vercel/analytics'
 import { hasAnalyticsConsent } from '@/lib/cookieConsent'
 import { capturePostHog } from '@/lib/posthog'
+import { firstTouchEventProps } from '@/lib/attribution'
 
 /** localStorage key marking that the activation milestone already fired for this device. */
 const ACTIVATION_FLAG = 'dgiq_activated_v1'
@@ -45,10 +46,13 @@ export function trackEvent(
   if (typeof window === 'undefined') return
   if (!hasAnalyticsConsent()) return
   try {
+    // First-touch source (ft_*) rides on every event so conversion events
+    // are attributable without touching their call sites. See lib/attribution.ts.
+    const merged = { ...firstTouchEventProps(), ...props }
     const filtered =
-      props && Object.keys(props).length > 0
+      Object.keys(merged).length > 0
         ? Object.fromEntries(
-            Object.entries(props).filter(([, v]) => v !== undefined && v !== null) as [
+            Object.entries(merged).filter(([, v]) => v !== undefined && v !== null) as [
               string,
               string | number | boolean,
             ][],
