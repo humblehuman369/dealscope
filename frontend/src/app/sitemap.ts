@@ -1,5 +1,9 @@
 import type { MetadataRoute } from 'next'
 import { getAllContent, type ContentFile } from '@/lib/content'
+import { BLOG_CATEGORY_SLUGS } from '@/lib/blog-categories'
+import { BLOG_PAGE_SIZE } from '@/components/blog/BlogIndexView'
+import { blogPageHref } from '@/lib/blog-index'
+import { fetchStateMarkets } from '@/lib/markets'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -19,7 +23,8 @@ const STATIC_ROUTES: StaticEntry[] = [
   { path: '/what-is-dealgapiq', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/about', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/glossary', priority: 0.6, changeFrequency: 'weekly' },
-  { path: '/blog', priority: 0.6, changeFrequency: 'weekly' },
+  { path: '/blog', priority: 0.8, changeFrequency: 'weekly' },
+  { path: '/markets', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/investor-intelligence', priority: 0.85, changeFrequency: 'weekly' },
   { path: '/help', priority: 0.5, changeFrequency: 'monthly' },
   { path: '/national-averages', priority: 0.7, changeFrequency: 'monthly' },
@@ -48,10 +53,11 @@ function lastModifiedFromContent(item: ContentFile, fallback: Date): Date {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const buildDate = new Date()
 
-  const [glossary, blog, investorIntelligence] = await Promise.all([
+  const [glossary, blog, investorIntelligence, stateMarkets] = await Promise.all([
     getAllContent('glossary').catch(() => []),
     getAllContent('blog').catch(() => []),
     getAllContent('investor-intelligence').catch(() => []),
+    fetchStateMarkets(),
   ])
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => ({
@@ -72,8 +78,46 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${SITE_URL}/blog/${p.slug}`,
     lastModified: lastModifiedFromContent(p, buildDate),
     changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
+
+  const newestBlogDate = blog.reduce<Date>(
+    (latest, p) => {
+      const d = lastModifiedFromContent(p, latest)
+      return d > latest ? d : latest
+    },
+    new Date(0),
+  )
+  const blogHubDate = newestBlogDate.getTime() > 0 ? newestBlogDate : buildDate
+
+  const blogCategoryEntries: MetadataRoute.Sitemap = BLOG_CATEGORY_SLUGS.map((slug) => ({
+    url: `${SITE_URL}/blog/category/${slug}`,
+    lastModified: blogHubDate,
+    changeFrequency: 'weekly' as const,
     priority: 0.6,
   }))
+
+  const blogPageCount = Math.ceil(blog.length / BLOG_PAGE_SIZE)
+  const blogPaginationEntries: MetadataRoute.Sitemap = Array.from(
+    { length: Math.max(0, blogPageCount - 1) },
+    (_, i) => ({
+      url: `${SITE_URL}${blogPageHref(i + 2)}`,
+      lastModified: blogHubDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.4,
+    }),
+  )
+
+  // Only states that pass the backend's indexability guard belong in the
+  // sitemap; the rest render noindex. No backend at build time → no state URLs.
+  const marketEntries: MetadataRoute.Sitemap = (stateMarkets ?? [])
+    .filter((s) => s.indexable)
+    .map((s) => ({
+      url: `${SITE_URL}/markets/${s.slug}`,
+      lastModified: buildDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    }))
 
   const investorIntelligenceEntries: MetadataRoute.Sitemap = investorIntelligence.map((p) => ({
     url: `${SITE_URL}/investor-intelligence/${p.slug}/`,
@@ -82,5 +126,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }))
 
-  return [...staticEntries, ...glossaryEntries, ...blogEntries, ...investorIntelligenceEntries]
+  return [
+    ...staticEntries,
+    ...glossaryEntries,
+    ...blogEntries,
+    ...blogCategoryEntries,
+    ...blogPaginationEntries,
+    ...marketEntries,
+    ...investorIntelligenceEntries,
+  ]
 }

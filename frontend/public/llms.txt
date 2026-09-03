@@ -31,10 +31,23 @@ Founded by Brad Geisen — founder of Foreclosure.com (1999) — DealGapIQ blend
 - [Glossary index](https://dealgapiq.com/glossary): plain-English definitions of creative-finance structures used by active investors
 - [Subject-To Financing](https://dealgapiq.com/glossary/subject-to-financing): definition, worked numerical example, and risks
 
+## Blog
+
+- [Blog index](https://dealgapiq.com/blog): deal teardowns, creative-finance breakdowns, financing comparisons, and pitch scripts (RSS: https://dealgapiq.com/blog/feed.xml)
+- [Creative Finance](https://dealgapiq.com/blog/category/creative-finance): Subject-To, seller carrybacks, wraps, lease options, Morby Method
+- [Deal Analysis](https://dealgapiq.com/blog/category/deal-analysis): underwriting rentals, cap rate vs cash-on-cash, DSCR, ARV, the Deal Gap
+- [Offers & Negotiation](https://dealgapiq.com/blog/category/offers-negotiation): offer structures and seller pitch scripts
+- [Financing](https://dealgapiq.com/blog/category/financing): hard money, DSCR loans, private money, refinance seasoning
+- [Strategies](https://dealgapiq.com/blog/category/strategies): LTR, STR, BRRRR, fix & flip, house hack, wholesale compared
+- [Markets](https://dealgapiq.com/blog/category/markets): reading a local market before you offer
+
+## Markets
+
+- [Investor market data by state](https://dealgapiq.com/markets): per-state property tax rate, vacancy, appreciation, and rent-to-price assumptions used by DealGapIQ, plus lender and cash-buyer counts (one page per state at /markets/{state-name})
+
 ## Reference
 
 - [Help Center](https://dealgapiq.com/help): FAQ on getting started, scoring, reports, and account
-- [Blog](https://dealgapiq.com/blog): articles on creative finance, offer scripts, and deal teardowns
 - [Investor Intelligence](https://dealgapiq.com/investor-intelligence/): residential investor trends, policy, financing, market intelligence, and property-level deal math
 - [The Great Investor Reset — 2026](https://dealgapiq.com/investor-intelligence/great-investor-reset-2026/): flagship analysis of the shift from mega-investor acquisition toward smaller investors and stricter acquisition math
 

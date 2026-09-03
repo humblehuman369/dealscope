@@ -82,7 +82,7 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 
 ### Market & monetization
 
-- **Pricing posture:** Free verdict, no signup, no credit card for the entry analysis. Paid tier(s) gate strategy worksheets, negotiation scripts, exports, and saved properties. Mobile IAP via RevenueCat; web checkout via Stripe.
+- **Pricing posture:** Free verdict, no signup, no credit card for the entry analysis. Starter (free) includes 10 analyses/month with the full Four Paths and negotiation scripts, plus up to 10 saved properties — the "aha" is never behind the paywall. Pro ($34.99/mo or $349.99/yr, 7-day trial) gates depth: editable assumptions and the Deal Maker worksheet, comps, sensitivity, exports, unlimited saves, and the directories (directories and exports unlock with the first settled payment, not during trial). Mobile IAP via RevenueCat; web checkout via Stripe. Source of truth: `frontend/src/lib/planFeatures.ts` and `TIER_LIMITS` in `backend/app/models/subscription.py`.
 - **Acquisition motion:** SEO (creative-finance glossary pages), founder-led content in the BiggerPockets / Subto orbit, free verdict as the conversion event, lead magnet (Creative Finance Field Guide PDF) for top-of-funnel.
 - **Distribution surfaces:** Web (`dealgapiq.com`), iOS, Android — all rendering the same React app.
 
@@ -113,7 +113,7 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 - We don't promise that every property is a deal — only that every property has more leverage than the asking price suggests.
 
 **Pricing model:**
-- *Free verdict, no signup, no credit card* for the entry analysis. Paid tier(s) — TBD; record here once finalized.
+- *Free verdict, no signup, no credit card* for the entry analysis. Starter: $0, 10 analyses/month, Four Paths + scripts included, 10 saved properties. Pro: $34.99/month or $349.99/year (~$29.17/month), 7-day free trial; directories and exports unlock with the first payment.
 
 ---
 

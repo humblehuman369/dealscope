@@ -44,6 +44,7 @@ _V1_ROUTER_MANIFEST: list[tuple[str, str]] = [
     ("Map Search", "app.routers.map_search"),
     ("Rehab", "app.routers.rehab"),
     ("Jobs", "app.routers.jobs"),
+    ("Markets", "app.routers.markets"),
 ]
 
 

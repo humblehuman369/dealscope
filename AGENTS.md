@@ -262,6 +262,37 @@ primitives (`DirectoryField`, `DirectoryGate`, `DirectoryCardSkeletons`,
 `directoryStyles`). Put shared directory behaviour there rather than in either
 component.
 
+Both directories accept `?state=XX` and seed their state filter from it on
+mount; `/markets/[state]` links in that way. Keep it working if you touch the
+filter state.
+
+---
+
+## 12. Programmatic `/markets` pages (the repo's only ISR)
+
+`app/markets/page.tsx` and `app/markets/[state]/page.tsx` are the first and
+only routes using Incremental Static Regeneration (`export const revalidate =
+86400`, `generateStaticParams` over `lib/us-states.ts`, `dynamicParams = false`).
+Everything else in the app is either fully static or fully dynamic.
+
+- Data comes from the public `GET /api/v1/markets/states[/{state}]` endpoints
+  (`backend/app/routers/markets.py`, Redis-cached 24h), read server-side through
+  `lib/markets.ts` with `next: { revalidate: 86400 }`. `lib/markets.ts` must
+  never be imported from a client component.
+- The only sources are first-party: `MARKET_ADJUSTMENTS`, active lender counts,
+  strict-filter cash buyer counts. No third-party API is called and nothing is
+  estimated. A state whose backend `indexable` flag is false renders the sections
+  that have data under `NOINDEX_FOLLOW` and is omitted from `sitemap.ts`.
+- A backend fetch failure resolves to `null`, not a throw, so a build or a
+  revalidation never fails on it; the page degrades to its noindex fallback and
+  the next revalidation retries.
+- `revalidate` must stay a literal: Next rejects imported constants for segment
+  config. `MARKETS_REVALIDATE_SECONDS` in `lib/markets.ts` mirrors it for the
+  fetch cache.
+- City pages (`/markets/[state]/[city]`) are deliberately absent until a
+  `market_snapshots` pipeline exists. See
+  `docs/feature-plans/market-snapshots-pipeline.md`.
+
 ---
 
 **Maintained by**: Frontend Platform Team  

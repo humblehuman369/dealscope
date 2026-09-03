@@ -103,6 +103,8 @@ Publishing **1 glossary + 1 blog post per week** and **1–2 external backlinks*
 | Top queries | GSC → Performance → Queries |
 | Crawl errors | GSC → Pages → Why pages aren’t indexed |
 | Traffic & conversions | Vercel Analytics |
+| Blog: queries per post vs `primary_keyword` | GSC → Performance → filter Page contains `/blog/` → Queries. If the post ranks for a query that is not its `primary_keyword`, either retitle toward the winning query or spin the query out as a new cluster post in `docs/marketing/blog-keyword-map.md`. |
+| Blog: content-to-verdict funnel | PostHog funnel `blog_post_viewed` → `blog_cta_clicked` → `verdict_viewed` → `signup_completed`, broken down by `slug`. Posts with views but no CTA clicks need a stronger `::cta` placement; posts with clicks but no verdicts point at the Discovery landing, not the post. |
 
 **Actions when “Crawled – currently not indexed” persists on a marketing URL:** expand on-page copy, add internal links from `/`, request re-indexing after deploy.
 
@@ -113,6 +115,43 @@ Publishing **1 glossary + 1 blog post per week** and **1–2 external backlinks*
 | Every week | 1 new `.md` term | 1 new `.md` post |
 
 After each publish: confirm slug appears in `/sitemap.xml`, link from `/glossary` or `/blog` index, and request indexing in GSC.
+
+## Blog publishing standard
+
+The keyword-to-URL plan and the editorial rules live in
+`docs/marketing/blog-keyword-map.md`. Every post is a Markdown file in
+`frontend/content/blog/` whose frontmatter is validated by
+`frontend/src/lib/content-schema.ts`; a post that fails validation fails
+`npm run build`, so nothing with broken metadata ships.
+
+**Before you open the PR**
+
+1. Pick the row in `blog-keyword-map.md`. The `primary_keyword` appears in the
+   title, `meta_title`, `meta_description`, URL slug and the first 100 words.
+2. Frontmatter: `status: published`, `category` from `lib/blog-categories.ts`,
+   `date_published`, `author`, `meta_title` ≤ 60, `meta_description` ≤ 155,
+   3+ `internal_links`, `faq[]` with the questions the row lists. No body H1.
+3. One worked example with numbers computed by the DealGapIQ methodology; no
+   market statistic without a linked source; no fabricated figures.
+4. At least one `::cta[...]{href="/discovery"}` directive in the body. The page
+   adds the UTM parameters (`utm_source=blog&utm_medium=post|inline&utm_campaign={slug}`).
+5. Run `cd frontend && npm run content:check`. It validates the schema, checks
+   every internal link resolves to a real route or content slug, confirms the
+   hero image exists, and flags a body H1. CI runs the same check after
+   `theme:check`.
+
+**After the deploy**
+
+6. Confirm the URL is in `/sitemap.xml` and renders with `BlogPosting` JSON-LD
+   (Rich Results Test).
+7. Request indexing in GSC (URL Inspection → Request indexing).
+8. Mark the row in `blog-keyword-map.md` as published with the date, and add the
+   new post to the `internal_links` of at least one existing post in the same
+   cluster.
+9. On any later edit that changes the substance, bump `date_modified`.
+
+**Cadence:** one blog post and one glossary term per week (table above). A
+week with no post is acceptable; a post that skips the checklist is not.
 
 ## Backlink targets (3–5 quality links)
 

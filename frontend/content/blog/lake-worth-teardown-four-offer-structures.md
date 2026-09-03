@@ -9,21 +9,34 @@ secondary_keywords:
   - creative finance offer structures
   - how to structure a real estate offer
 meta_title: "The Lake Worth Teardown: 4 Offer Structures on One Property"
-meta_description: "I ran a $448K Lake Worth property through DealGapIQ. The math said no at standard terms. Here are the four offer structures that turn a -10.8% Deal Gap into a deal that closes."
+meta_description: "A $448K Lake Worth property said no at standard terms. Here are the four offer structures that turn a -10.8% Deal Gap into a deal that closes."
 schema: BlogPosting
-status: draft
+status: published
+category: offers-negotiation
+tags:
+  - deal-gap
+  - seller-carryback
+  - subject-to
+  - offer-structures
+  - case-study
 internal_links:
-  - /glossary/subject-to-financing (G1)
-  - /glossary/seller-carryback (G2)
-  - /blog/subject-to-pitch-script-template (B4)
-  - /discovery (the Discovery tool)
+  - /glossary/subject-to-financing
+  - /glossary/seller-carryback
+  - /blog/subject-to-pitch-script-template
+  - /blog/how-to-make-an-offer-on-an-investment-property
+  - /discovery
 word_count_target: 2000
 author: Brad Geisen
 date_published: "2026-05-10"
-date_modified: "2026-05-10"
+date_modified: "2026-09-03"
+faq:
+  - question: "What is a Deal Gap in real estate?"
+    answer: "The Deal Gap is the percentage distance between a property's asking or estimated market price and the Target Buy price at which the deal enters the profit zone for a given strategy. In this teardown the market price sits 10.8% above the Target Buy, so at standard 20%-down terms the numbers do not support the price."
+  - question: "Can you buy a property that does not cash flow at asking price?"
+    answer: "Yes, if you change the structure instead of only the price. Verifying rent, a seller-carried second at 0%, a negotiated price cut, or a blend of small concessions can each close the gap without a single large discount."
+  - question: "What is a blended offer?"
+    answer: "A blended offer combines several small asks — a modest price trim, a small seller carry, and documented rent — so the seller nets close to asking while the buyer's monthly payment drops enough for the property to cash flow."
 ---
-
-# The Lake Worth Teardown: One Property, Four Ways to Close It
 
 I ran 1014 N J St, Lake Worth Beach, FL through Discovery yesterday. 3 bed, 2.5 bath, 1,568 sqft. Currently off-market — but the kind of property I want to be ready to move on if it comes back.
 
@@ -137,7 +150,7 @@ The point is that Discovery didn't end at *"no."* It returned four ways to make 
 
 Paste a Zillow URL or street address. In 15 seconds you'll see Discovery and the four paths. If the math works, you'll know. If it needs structure, you'll see exactly which structures fit.
 
-[Run a free Discovery →](https://dealgapiq.com/discovery)
+::cta[Run a free Discovery →]{href="/discovery"}
 
 The price tag isn't the deal. The structure is.
 

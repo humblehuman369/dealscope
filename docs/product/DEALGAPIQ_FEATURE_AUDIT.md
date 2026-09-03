@@ -16,8 +16,8 @@ The platform ships as a single React/Next.js application deployed to web (`dealg
 
 These items have appeared incorrectly in earlier decks, scripts, or store listings and are corrected throughout this document:
 
-- **Free tier is 3 analyses/month** (and 3 saved properties), not 5.
-- **Pro pricing is $39.99/mo monthly or $349.99/yr (~$29.17/mo effective)** with a 7-day trial — not "$29 / $39."
+- **Free tier is 10 analyses/month** (and 10 saved properties), not 3 or 5.
+- **Pro pricing is $34.99/mo monthly or $349.99/yr (~$29.17/mo effective)** with a 7-day trial — not "$29 / $39" or "$39.99."
 - **Mobile is Capacitor**, not Expo/React Native.
 - **Category is residential real estate investment analysis**, not "deal intelligence / sales enablement."
 - **The three user-facing metrics are Income Value, Target Buy, and Deal Gap.** A separate internal value, **Income Gap**, powers the Verdict engine and is not shown to users — keep it out of user-facing copy.
@@ -273,10 +273,10 @@ These items have appeared incorrectly in earlier decks, scripts, or store listin
 | Profile — Investor | Strategy/market preferences | Tailored product experience |
 | Profile — Preferences | Notifications and app preferences | User control |
 | Billing page | Plan management, upgrade paths | Self-serve subscription |
-| Stripe checkout (web) | Pro monthly ($39.99) / annual ($349.99, ~$29.17/mo effective) | Web monetization |
+| Stripe checkout (web) | Pro monthly ($34.99) / annual ($349.99, ~$29.17/mo effective) | Web monetization |
 | RevenueCat IAP (iOS/Android) | Native in-app purchases via Capacitor; entitlement `DealGapIQ Pro` | Mobile monetization |
 | 7-day Pro trial | Documented on pricing page | Low-risk upgrade path |
-| Usage limits (Starter) | 3 analyses/month, 3 saved properties, 50 API calls/month | Free tier for acquisition |
+| Usage limits (Starter) | 10 analyses/month, 10 saved properties, 50 API calls/month | Free tier for acquisition |
 | ProGate component | Inline/section/modal gating for Pro features | Clear upgrade prompts at point of need |
 
 ---
@@ -341,7 +341,7 @@ This tab bar appears only on analysis workflow routes, keeping marketing/dashboa
 | Capability | Starter (Free) | Pro |
 |---|:---:|:---:|
 | Property search | Yes | Yes |
-| Analyses per month | 3 | Unlimited |
+| Analyses per month | 10 | Unlimited |
 | Discovery + deal score + Deal Gap | Yes | Yes |
 | Income Value · Target Buy · Deal Gap | Yes | Yes |
 | Four Paths + pitch scripts on Discovery | Yes | Yes |
@@ -357,7 +357,7 @@ This tab bar appears only on analysis workflow routes, keeping marketing/dashboa
 | Rehab Estimator + regional costs | No | Yes |
 | Map Search | No | Yes |
 | Excel/PDF exports + LOI | No | Yes |
-| Saved properties | Up to 3 | Unlimited |
+| Saved properties | Up to 10 | Unlimited |
 | Side-by-side comparison | No | Yes |
 | Buyer/Lender directories | No | Paid Pro only |
 | Search history | Yes | Yes |
@@ -497,7 +497,7 @@ These are **observable out-of-scope statements** from product docs:
 3. **Pipeline + rehab tracking** differentiates against pure calculators but is secondary to the synthesis layer in positioning.  
 4. **Trust architecture** (source selector, Unavailable states, methodology page) is a feature, not polish — it supports conversion with skeptical investors.  
 5. **Mobile camera + Capacitor** align with field-acquisition personas (wholesalers, driving-for-dollars) but the core moat is structure + scripts, not scan novelty alone.
-6. **Fix stale external facts before reuse.** Correct any "5 free analyses," "$29/$39," or "Expo" references in decks, scripts, and store listings to 3/month, $39.99 monthly / $349.99 annual (~$29.17/mo), and Capacitor.
+6. **Fix stale external facts before reuse.** Correct any "3 free analyses," "5 free analyses," "$29/$39," "$39.99," or "Expo" references in decks, scripts, and store listings to 10/month, $34.99 monthly / $349.99 annual (~$29.17/mo), and Capacitor.
 7. **Keep Income Gap internal.** Present only Income Value, Target Buy, and Deal Gap to users; do not conflate Deal Gap with Income Value or Income Gap in user-facing copy.
 
 ---

@@ -61,9 +61,9 @@ relative to the investor's goals. This single number turns real estate from a
 | Dimension | Detail |
 |-----------|--------|
 | **Model** | Freemium SaaS |
-| **Free tier** | 3 property analyses/month, no credit card required |
+| **Free tier** | 10 property analyses/month, no credit card required |
 | **Pro tier** | $34.99/month or $349.99/year (save 17%) |
-| **Trial** | 7-day free trial on Pro (full access) |
+| **Trial** | 7-day free trial on Pro (directories and exports unlock with the first payment) |
 | **Platforms** | Web (dealgapiq.com), iOS (App Store), Android (Play Store) |
 | **Founded by** | Brad Geisen -- founder of Foreclosure.com, builder of HomePath.com (Fannie Mae) and HomeSteps.com (Freddie Mac) |
 
@@ -210,7 +210,7 @@ social media.
 - Speed -- reduce the intimidation of deal analysis
 - Social proof from peers who were also beginners
 
-**Starter tier fit:** 3 free analyses/month lets them learn and practice
+**Starter tier fit:** 10 free analyses/month lets them learn and practice
 without commitment. Plain-language explanations teach underwriting on real
 properties.
 
@@ -463,9 +463,9 @@ These facts should be woven into campaigns wherever possible:
 - **5 data sources** cross-referenced for every analysis
 - **6 investment strategies** analyzed simultaneously
 - **60 seconds** from address entry to full investment verdict
-- **3 free analyses/month** with no credit card required
+- **10 free analyses/month** with no credit card required
 - **$34.99/month** for unlimited Pro access (or $29.17/mo billed annually)
-- **7-day free trial** with full Pro access
+- **7-day free trial** of Pro analysis tools (directories and exports unlock with the first payment)
 - **35+ years** of real estate data experience (founder)
 - **Built HomePath.com** for Fannie Mae and **HomeSteps.com** for Freddie Mac
 - **Every assumption editable** -- full transparency
@@ -556,7 +556,7 @@ cost."
 
 **Includes:**
 - Property search
-- 3 property analyses per month
+- 10 property analyses per month
 - VerdictIQ with deal score
 - Income Value, Target Buy, and Deal Gap
 - Multi-source IQ Estimates with source picker
@@ -564,7 +564,7 @@ cost."
 - Seller motivation analysis
 - Plain-language explanations
 - Search history
-- Save up to 3 properties
+- Save up to 10 properties
 
 **CTA:** "Start Free"  
 **Microcopy:** "No credit card. No commitment."
@@ -612,9 +612,9 @@ Anonymous visit → Analyze a property (no account needed)
         ↓
    Want deeper analysis → Sign up for free (Starter)
         ↓
-   3 analyses/month → Hit limit → Prompted to upgrade
+   10 analyses/month → Hit limit → Prompted to upgrade
         ↓
-   7-day free trial (Pro) → Full access
+   7-day free trial (Pro) → Full analysis tools (directories/exports after first payment)
         ↓
    Convert to paid → $34.99/mo or $349.99/yr
 ```
@@ -622,7 +622,7 @@ Anonymous visit → Analyze a property (no account needed)
 **Key friction-removal decisions:**
 - First analysis requires NO account (anonymous access)
 - Free tier requires NO credit card
-- Pro trial is 7 days with full access
+- Pro trial is 7 days with full analysis tools; directories and exports unlock with the first payment (never claim trial directory access)
 - Cancel is "2 clicks, no retention tricks"
 - Annual option saves 17% (presented prominently)
 
@@ -639,7 +639,7 @@ Anonymous visit → Analyze a property (no account needed)
 
 **Risk reversal:**
 > "Cancel anytime. No lock-in contracts."  
-> "7-day free trial on Pro. Full access."  
+> "7-day free trial on Pro. Cancel before day 7 and pay nothing."  
 > "Your data stays yours. We never share or sell."
 
 **Free-to-Pro bridge:**
@@ -750,7 +750,7 @@ Records
 | **Data privacy** | "Your analyzed properties are never shared, sold, or used to front-run your offers. Your deal flow is yours alone." |
 | **Payment security** | "Secured by Stripe. PCI compliant." |
 | **No commitment** | "No credit card required to start." |
-| **Trial** | "7-day free trial on Pro. Full access." |
+| **Trial** | "7-day free trial on Pro. Cancel before day 7 and pay nothing." |
 
 ### 8.5 Disclaimers (Compliance)
 
@@ -922,7 +922,7 @@ your deal flow. Come back to any property with the analysis preserved.
 **Marketing angle:** "Your deal flow, organized." Position as the system that
 turns ad-hoc property browsing into a systematic investment pipeline.
 
-**Who it's for:** All users (Starter: 3 properties, Pro: unlimited).
+**Who it's for:** All users (Starter: 10 properties, Pro: unlimited).
 
 #### Side-by-Side Comparison
 
@@ -1116,7 +1116,7 @@ across 6 strategies. Free — no credit card. Try it now.
 ```
 Headline: Is That Property a Good Deal? Find Out Free.
 Description: Stop guessing. DealGapIQ calculates the exact price where
-the deal works — for 6 investment strategies. 3 free analyses/month.
+the deal works — for 6 investment strategies. 10 free analyses/month.
 ```
 
 ```
@@ -1434,10 +1434,10 @@ A: Yes. Two clicks. No tricks.
 | Copy | Context |
 |------|---------|
 | "No credit card required" | Free tier CTA |
-| "3 free analyses per month" | Free tier description |
+| "10 free analyses per month" | Free tier description |
 | "Cancel anytime in 2 clicks" | Pro risk reversal |
 | "No commitment" | Universal |
-| "7-day free trial on Pro. Full access." | Trial description |
+| "7-day free trial on Pro. Cancel before day 7 and pay nothing." | Trial description |
 | "Your data stays yours. We never share or sell." | Privacy trust |
 | "Your deal flow is yours alone." | Privacy trust (expanded) |
 | "Save 17%" | Annual toggle |

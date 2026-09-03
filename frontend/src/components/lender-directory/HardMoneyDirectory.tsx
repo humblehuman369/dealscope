@@ -179,6 +179,12 @@ export default function HardMoneyDirectory() {
     if (resolvedState) setStateFilter(resolvedState);
   }, [resolvedState]);
 
+  // /markets/[state] links in with ?state=XX; seed the filter once on mount.
+  useEffect(() => {
+    const preset = new URLSearchParams(window.location.search).get('state')?.toUpperCase();
+    if (preset && US_STATES.includes(preset)) setStateFilter(preset);
+  }, []);
+
   // Picking a state by hand retires the ZIP so the two can never disagree.
   const handleStateChange = (value: string) => {
     setStateFilter(value);

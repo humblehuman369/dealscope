@@ -868,6 +868,16 @@ Examples:
 - LinkedIn company page: `utm_source=linkedin&utm_medium=company_page&utm_campaign=launch`
 - Email newsletter: `utm_source=email&utm_medium=newsletter&utm_campaign=deal_gap_teardown`
 
+**Blog CTAs are tagged automatically** by `frontend/src/lib/blog-utm.ts` — never hand-write UTMs inside a post:
+
+| CTA location | UTM |
+|---|---|
+| End-of-post conversion block | `utm_source=blog&utm_medium=post&utm_campaign={slug}` |
+| `::cta` directive inside the body | `utm_source=blog&utm_medium=inline&utm_campaign={slug}` |
+| Category / index pages | `utm_source=blog&utm_medium=category` or `index` |
+
+Clicks fire `blog_cta_clicked` (PostHog + Vercel) with the same `slug` so a verdict run can be traced back to the post that earned it.
+
 ---
 
 ## 14. Founder Story

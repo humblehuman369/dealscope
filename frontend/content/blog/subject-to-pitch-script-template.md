@@ -10,21 +10,33 @@ secondary_keywords:
   - subject to negotiation script
   - how to talk to a seller about subject to
 meta_title: "Subject-To Pitch Script: 5-Part Template (Free, Editable)"
-meta_description: "The 5-part Subject-To pitch script that lands. Annotated template, three seller-type variants, and the three lines that kill the deal. Free. Edit, print, or email."
+meta_description: "The 5-part Subject-To pitch script that lands: annotated template, three seller-type variants, and the three lines that kill the deal. Free to edit."
 schema: BlogPosting
-status: draft
+status: published
+category: offers-negotiation
+tags:
+  - subject-to
+  - pitch-script
+  - seller-conversations
+  - creative-finance
 author: Brad Geisen
 date_published: "2026-05-10"
-date_modified: "2026-05-10"
+date_modified: "2026-09-03"
 internal_links:
-  - /glossary/subject-to-financing (G1)
-  - /glossary/due-on-sale-clause-sub2 (G8)
-  - /blog/lake-worth-teardown-four-offer-structures (F3)
-  - /discovery (the Discovery tool)
+  - /glossary/subject-to-financing
+  - /glossary/due-on-sale-clause-sub2
+  - /blog/lake-worth-teardown-four-offer-structures
+  - /blog/creative-finance-field-guide
+  - /discovery
 word_count_target: 1800
+faq:
+  - question: "What is a Subject-To pitch?"
+    answer: "A Subject-To pitch is the seller conversation in which you offer to take title to a property while the seller's existing mortgage stays in place and you make the payments. The pitch works when it leads with what the seller keeps — full price, a fast close, no carrying costs — and names the structure only once, near the end."
+  - question: "What should you never say when pitching Subject-To?"
+    answer: "Do not open with the term Subject-To, do not raise the due-on-sale clause before the seller does, and do not say it is legal before anyone questions it. Each one introduces an objection the seller had not raised."
+  - question: "When does a Subject-To offer fit?"
+    answer: "Subject-To fits a seller with low or no equity, an existing rate well below market, and a real need to move. For a seller with large equity or a high rate, a seller carryback, a price negotiation, or a blended offer is usually the better structure."
 ---
-
-# The Subject-To Pitch Script: A Template That Reframes Price as Terms
 
 Most investors who lose Sub2 deals don't lose them on the math. They lose them on the call.
 
@@ -127,7 +139,7 @@ Discovery on the property tells you which structure fits. The pitch script is do
 
 DealGapIQ generates this pitch script auto-customized to every property — with the exact dollar numbers, seller-type variant, and structure pre-filled. Print it, email it as a draft to the seller's agent, or copy it to your clipboard before you dial.
 
-[Run a free Discovery and get the pitch script for the property you've been watching →](https://dealgapiq.com/discovery)
+::cta[Get the pitch script for your property →]{href="/discovery"}
 
 The price tag isn't the deal. The structure is.
 

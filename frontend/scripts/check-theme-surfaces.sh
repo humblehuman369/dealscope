@@ -24,7 +24,7 @@ if [[ "${1:-}" == "--strict" ]]; then
   STRICT=true
 fi
 
-ALLOWLIST_PATTERN="globals\.css|semantic-tokens\.ts|verdict-design-tokens\.ts|api/report/route\.ts|capacitor\.config\.ts|theme-surfaces\.test\.ts"
+ALLOWLIST_PATTERN="globals\.css|semantic-tokens\.ts|verdict-design-tokens\.ts|api/report/route\.ts|lib/og/blog-card\.tsx|capacitor\.config\.ts|theme-surfaces\.test\.ts"
 
 VIOLATIONS=0
 VIOLATION_FILES=""

@@ -13,6 +13,7 @@ These files **define** the tokens and are excluded from the check script:
 | `src/theme/semantic-tokens.ts` | TypeScript token constants |
 | `src/components/iq-verdict/verdict-design-tokens.ts` | Verdict-specific token constants |
 | `src/app/api/report/route.ts` | Server-side PDF generation (fixed colors required) |
+| `src/lib/og/blog-card.tsx` | Server-side Open Graph image rendering via Satori (no CSS variables available) |
 | `capacitor.config.ts` | Native splash screen configuration |
 | `src/__tests__/theme-surfaces.test.ts` | Test file that asserts against forbidden patterns |
 

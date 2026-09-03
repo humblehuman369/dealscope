@@ -21,6 +21,14 @@
  *   5. `checkout_completed` — paid conversion
  * `activated` is the activation milestone the strategic plan calls for; it is the
  * step most predictive of conversion and the primary lever for first-week activation work.
+ *
+ * BLOG / SEO CONTENT FUNNEL (fired from `components/blog/*`):
+ *   `blog_post_viewed`     {slug, category, primary_keyword} — once per post mount
+ *   `blog_category_viewed` {category}
+ *   `blog_cta_clicked`     {slug, cta_position: inline|end|related|header|index, href}
+ * Every blog CTA carries `utm_source=blog&utm_medium=…&utm_campaign={slug}` (see
+ * `lib/blog-utm.ts`), so the PostHog funnel blog_post_viewed -> blog_cta_clicked ->
+ * verdict_viewed -> signup_completed attributes verdict runs to the post that earned them.
  */
 
 import { track as vercelTrack } from '@vercel/analytics'

@@ -105,6 +105,14 @@ export default function BuyerDirectory() {
   const [strategyFilter, setStrategyFilter] = useState<StrategyFilter>('all');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
+  // /markets/[state] links in with ?state=XX; apply it as the initial search.
+  useEffect(() => {
+    const preset = new URLSearchParams(window.location.search).get('state')?.toUpperCase();
+    if (!preset || !US_STATES.has(preset)) return;
+    setStateCode(preset);
+    setAppliedSearch({ mode: 'city', city: '', stateCode: preset, county: '', zip: '' });
+  }, []);
+
   const {
     records: buyers,
     total: listTotal,

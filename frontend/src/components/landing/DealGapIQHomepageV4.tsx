@@ -820,6 +820,7 @@ function SiteFooter() {
             { href: '/national-averages', label: 'National Benchmarks' },
             { href: '/glossary', label: 'Glossary' },
             { href: '/blog', label: 'Blog' },
+            { href: '/markets', label: 'Markets by State' },
             { href: '/investor-intelligence', label: 'Investor Intelligence' },
             { href: '/learn', label: 'All pages' },
             { href: '/strategies/long-term-rental', label: 'Long-Term Rental' },

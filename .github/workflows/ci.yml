@@ -97,6 +97,9 @@ jobs:
       - name: Theme surface audit
         run: npm run theme:check
 
+      - name: Blog content check
+        run: npm run content:check
+
   audit:
     name: Dependency audit (advisory)
     runs-on: ubuntu-latest
