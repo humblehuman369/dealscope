@@ -4,10 +4,18 @@ import React from 'react'
 import { Home, Key, Clock, AlertTriangle, Gavel, Building2, User, Sparkles } from 'lucide-react'
 
 // Types
-export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
+export type ListingStatus =
+  | 'FOR_SALE'
+  | 'FOR_RENT'
+  | 'OFF_MARKET'
+  | 'SOLD'
+  | 'PENDING'
+  | 'PRE_FORECLOSURE'
+  | 'OTHER'
 export type SellerType =
   | 'FSBA'
   | 'FSBO'
+  | 'PreForeclosure'
   | 'Foreclosure'
   | 'BankOwned'
   | 'Auction'
@@ -22,11 +30,24 @@ interface ListingStatusBadgeProps {
   isOffMarket?: boolean
   sellerType?: SellerType
   isForeclosure?: boolean
+  isPreForeclosure?: boolean
   isBankOwned?: boolean
   isAuction?: boolean
   isNewConstruction?: boolean
   daysOnMarket?: number
   className?: string
+}
+
+/** Pre-foreclosure homes are off-market (no asking price) but the distress
+ *  signal outranks "Off Market" — it's the reason an investor is looking. */
+function isPreForeclosureProperty(
+  listingStatus?: ListingStatus,
+  sellerType?: SellerType,
+  isPreForeclosure?: boolean
+): boolean {
+  return Boolean(
+    isPreForeclosure || listingStatus === 'PRE_FORECLOSURE' || sellerType === 'PreForeclosure'
+  )
 }
 
 /**
@@ -42,18 +63,32 @@ export function ListingStatusBadge({
   isOffMarket,
   sellerType,
   isForeclosure,
+  isPreForeclosure,
   isBankOwned,
   isAuction,
   isNewConstruction,
   daysOnMarket,
   className = '',
 }: ListingStatusBadgeProps) {
+  const preForeclosure = isPreForeclosureProperty(listingStatus, sellerType, isPreForeclosure)
+
   // Determine the effective status to display
-  const effectiveStatus = isOffMarket ? 'OFF_MARKET' : listingStatus || 'OFF_MARKET'
+  const effectiveStatus: ListingStatus = preForeclosure
+    ? 'PRE_FORECLOSURE'
+    : isOffMarket
+      ? 'OFF_MARKET'
+      : listingStatus || 'OFF_MARKET'
 
   // Get status badge configuration
   const getStatusConfig = (status: ListingStatus) => {
     switch (status) {
+      case 'PRE_FORECLOSURE':
+        return {
+          label: 'Pre-Foreclosure',
+          bgColor: 'bg-red-600',
+          textColor: 'text-white',
+          icon: AlertTriangle,
+        }
       case 'FOR_SALE':
         return {
           label: 'For Sale',
@@ -173,8 +208,9 @@ export function ListingStatusBadge({
         )
       })}
 
-      {/* Days on Market - only show for active listings */}
-      {!isOffMarket && daysOnMarket !== undefined && daysOnMarket > 0 && (
+      {/* Days on Market - active listings, plus pre-foreclosures where time in
+          default is itself a motivation signal */}
+      {(!isOffMarket || preForeclosure) && daysOnMarket !== undefined && daysOnMarket > 0 && (
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
           <Clock className="w-3 h-3" />
           {daysOnMarket} days
@@ -192,15 +228,28 @@ export function ListingStatusBadgeCompact({
   isOffMarket,
   sellerType,
   isForeclosure,
+  isPreForeclosure,
   className = '',
 }: Pick<
   ListingStatusBadgeProps,
-  'listingStatus' | 'isOffMarket' | 'sellerType' | 'isForeclosure' | 'className'
+  | 'listingStatus'
+  | 'isOffMarket'
+  | 'sellerType'
+  | 'isForeclosure'
+  | 'isPreForeclosure'
+  | 'className'
 >) {
-  const effectiveStatus = isOffMarket ? 'OFF_MARKET' : listingStatus || 'OFF_MARKET'
+  const preForeclosure = isPreForeclosureProperty(listingStatus, sellerType, isPreForeclosure)
+  const effectiveStatus: ListingStatus = preForeclosure
+    ? 'PRE_FORECLOSURE'
+    : isOffMarket
+      ? 'OFF_MARKET'
+      : listingStatus || 'OFF_MARKET'
 
   const getStatusDot = (status: ListingStatus) => {
     switch (status) {
+      case 'PRE_FORECLOSURE':
+        return 'bg-red-600'
       case 'FOR_SALE':
         return 'bg-green-500'
       case 'FOR_RENT':
@@ -216,6 +265,8 @@ export function ListingStatusBadgeCompact({
 
   const getStatusLabel = (status: ListingStatus) => {
     switch (status) {
+      case 'PRE_FORECLOSURE':
+        return 'Pre-Foreclosure'
       case 'FOR_SALE':
         return 'For Sale'
       case 'FOR_RENT':

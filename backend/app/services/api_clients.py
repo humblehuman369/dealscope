@@ -2151,12 +2151,27 @@ class DataNormalizer:
         is_auction = listing_sub_type.get("isForAuction") or listing_sub_type.get("is_forAuction", False)
         is_coming_soon = listing_sub_type.get("isComingSoon") or listing_sub_type.get("is_comingSoon", False)
 
+        # Pre-foreclosure (notice of default / lis pendens, not yet listed for
+        # sale) does NOT appear in listingSubType — those flags only populate for
+        # properties with an active for-sale listing. Zillow carries it on
+        # homeStatus and on the separate foreclosureTypes object.
+        foreclosure_types = axesso_data.get("foreclosureTypes") or axesso_data.get("foreclosure_types") or {}
+        if not isinstance(foreclosure_types, dict):
+            foreclosure_types = {}
+        is_pre_foreclosure = bool(
+            home_status == "PRE_FORECLOSURE"
+            or keystone_status == "PreForeclosure"
+            or foreclosure_types.get("isPreforeclosure")
+            or foreclosure_types.get("isPreForeclosure")
+        )
+
         # Check for new construction
         reso_facts = axesso_data.get("resoFacts", {}) or {}
         is_new_construction = reso_facts.get("isNewConstruction", False)
 
         # Store individual seller type flags
         normalized["is_foreclosure"] = is_foreclosure
+        normalized["is_pre_foreclosure"] = is_pre_foreclosure
         normalized["is_bank_owned"] = is_bank_owned
         normalized["is_fsbo"] = is_fsbo
         normalized["is_auction"] = is_auction
@@ -2165,7 +2180,9 @@ class DataNormalizer:
 
         # Determine seller type using Zillow listingSubType classifications
         seller_type = "FSBA"  # Default — For Sale By Agent
-        if is_foreclosure:
+        if is_pre_foreclosure:
+            seller_type = "PreForeclosure"
+        elif is_foreclosure:
             seller_type = "Foreclosure"
         elif is_bank_owned:
             seller_type = "BankOwned"
@@ -2180,8 +2197,19 @@ class DataNormalizer:
 
         normalized["seller_type"] = seller_type
 
-        # Determine if property is off-market
-        is_off_market = home_status in [None, "SOLD", "OFF_MARKET", "RECENTLY_SOLD", "OTHER"] or keystone_status in [
+        # Determine if property is off-market. PRE_FORECLOSURE is Zillow's bucket
+        # for homes in default that are NOT listed for sale, so there is no asking
+        # price — counting it as actively listed would label a null list_price as
+        # "List Price". A pre-foreclosure that IS listed comes through as FOR_SALE
+        # with listingSubType.isForeclosure instead.
+        is_off_market = home_status in [
+            None,
+            "SOLD",
+            "OFF_MARKET",
+            "RECENTLY_SOLD",
+            "OTHER",
+            "PRE_FORECLOSURE",
+        ] or keystone_status in [
             "RecentlySold",
             "OffMarket",
         ]

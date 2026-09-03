@@ -80,6 +80,7 @@ class ListingStatus(StrEnum):
     OFF_MARKET = "OFF_MARKET"
     SOLD = "SOLD"
     PENDING = "PENDING"
+    PRE_FORECLOSURE = "PRE_FORECLOSURE"
     OTHER = "OTHER"
 
 
@@ -89,6 +90,7 @@ class SellerType(StrEnum):
     FSBA = "FSBA"  # For Sale By Agent (isFSBA = true or default)
     AGENT = "Agent"  # Legacy alias — same as FSBA
     FSBO = "FSBO"  # For Sale By Owner (isFSBO = true)
+    PRE_FORECLOSURE = "PreForeclosure"  # In default, not yet listed (homeStatus/foreclosureTypes)
     FORECLOSURE = "Foreclosure"  # Bank foreclosure (isForeclosure = true)
     BANK_OWNED = "BankOwned"  # REO/Bank owned (isBankOwned = true)
     AUCTION = "Auction"  # Auction listing (isForAuction = true)
@@ -441,8 +443,9 @@ class ListingInfo(BaseModel):
     is_off_market: bool | None = True
 
     # Seller/listing type indicators
-    seller_type: str | None = None  # Agent, FSBO, Foreclosure, BankOwned, Auction
+    seller_type: str | None = None  # Agent, FSBO, PreForeclosure, Foreclosure, BankOwned, Auction
     is_foreclosure: bool | None = False
+    is_pre_foreclosure: bool | None = False
     is_bank_owned: bool | None = False
     is_fsbo: bool | None = False
     is_auction: bool | None = False

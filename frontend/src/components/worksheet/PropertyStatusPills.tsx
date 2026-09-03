@@ -11,6 +11,7 @@ interface PropertyStatusPillsProps {
   zestimate?: number
   sellerType?: SellerType
   isForeclosure?: boolean
+  isPreForeclosure?: boolean
   isBankOwned?: boolean
   isAuction?: boolean
   isNewConstruction?: boolean
@@ -33,14 +34,22 @@ export function PropertyStatusPills({
   zestimate,
   sellerType,
   isForeclosure,
+  isPreForeclosure,
   isBankOwned,
   isAuction,
   isNewConstruction,
   daysOnMarket,
   className = '',
 }: PropertyStatusPillsProps) {
+  // Pre-foreclosure homes are off-market (no asking price), but the distress
+  // signal outranks "Off-Market" — it's the reason an investor is looking.
+  const preForeclosure = Boolean(
+    isPreForeclosure || listingStatus === 'PRE_FORECLOSURE' || sellerType === 'PreForeclosure'
+  )
+
   // Determine status display
   const getStatusDisplay = () => {
+    if (preForeclosure) return 'Pre-Foreclosure'
     if (listingStatus === 'FOR_SALE') return 'For Sale'
     if (listingStatus === 'FOR_RENT') return 'For Rent'
     if (listingStatus === 'SOLD') return 'Sold'
@@ -61,6 +70,7 @@ export function PropertyStatusPills({
 
   // Determine seller display
   const getSellerDisplay = () => {
+    if (preForeclosure) return 'Pre-Foreclosure'
     if (isBankOwned || sellerType === 'BankOwned') return 'Bank Owned'
     if (isForeclosure || sellerType === 'Foreclosure') return 'Foreclosure'
     if (isAuction || sellerType === 'Auction') return 'Auction'
@@ -77,6 +87,7 @@ export function PropertyStatusPills({
     isBankOwned ||
     isForeclosure ||
     isAuction ||
+    preForeclosure ||
     sellerType === 'BankOwned' ||
     sellerType === 'Foreclosure' ||
     sellerType === 'Auction'

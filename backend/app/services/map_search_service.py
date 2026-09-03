@@ -90,21 +90,16 @@ _EXPIRED_DISQUALIFYING_STATUS_TOKENS: tuple[str, ...] = (
     "SOLD",
 )
 
-# Foreclosure / auction / pre-FC map inventory: Zillow (AXESSO) only when the user
-# asks exclusively for these buckets—RentCast labels and staleness are skipped.
 DISTRESSED_ONLY_STATUSES: frozenset[str] = frozenset(
     {"foreclosure", "pre-foreclosure", "auction"},
 )
 
-
-def _skip_rentcast_sale_use_zillow_only_distressed(
-    requested_statuses: set[str],
-    zillow_available: bool,
-) -> bool:
-    """Omit RentCast sale merge when filters are distressed-only and Zillow is configured."""
-    if not zillow_available:
-        return False
-    return bool(requested_statuses) and requested_statuses <= DISTRESSED_ONLY_STATUSES
+# Statuses that the RentCast for-sale search can actually answer. RentCast is the
+# only source that returns *verifiable* per-row distress evidence
+# (``listingSubType.isBankOwned`` / ``isForAuction`` / ``isForeclosure`` and the
+# ``listingType`` enum — see ``_derive_rentcast_listing_status``), so it must be
+# queried for distressed filters too, not just active ones.
+RENTCAST_SALE_STATUSES: frozenset[str] = frozenset({"active", "owner_listed"}) | DISTRESSED_ONLY_STATUSES
 
 
 _STATUS_MAP: dict[str, str] = {
@@ -566,19 +561,11 @@ class MapSearchService:
             # Fetch from all sources at all grid points in parallel
             tasks: list[asyncio.Task] = []
 
-            if _skip_rentcast_sale_use_zillow_only_distressed(requested_statuses, bool(self.zillow)):
-                logger.info(
-                    "Map search sale: RentCast skipped (filters are foreclosure / pre-foreclosure / auction only; using Zillow)",
-                )
-
             # Dispatch shape, per grid point:
             # - 1 vanilla forSale query when active/owner-listed is requested.
-            # - 1 typed Auction query (isAuction=true) when auction is requested.
-            # - 1 typed Foreclosure query (isForSaleForeclosure=true) when
-            #   foreclosure is requested.
-            # - 1 URL-based query for pre-foreclosure (AXESSO has no typed
-            #   isPreForeclosure param; the only way to filter pre-foreclosure
-            #   exclusively is via Zillow's searchQueryState.filterState.pre).
+            # - 1 RentCast for-sale query whenever any status RentCast can answer
+            #   is requested (active/owner-listed OR a distressed bucket).
+            # - 1 URL-based Zillow query per requested distressed bucket.
             #
             # Zillow's "Foreclosures" search can return both REO and
             # pre-foreclosure inventory; their UI splits **Foreclosed** vs
@@ -588,13 +575,11 @@ class MapSearchService:
 
             for pt_lat, pt_lng in query_points:
                 if req.listing_type in ("sale", "both"):
-                    # RentCast active for-sale — only when active/owner-listed is
-                    # wanted (mirrors the Zillow forSale gate below) so an
-                    # expired-only or distressed-only search doesn't waste the call.
-                    if requested_statuses & {"active", "owner_listed"} and not _skip_rentcast_sale_use_zillow_only_distressed(
-                        requested_statuses,
-                        bool(self.zillow),
-                    ):
+                    # RentCast for-sale. Dispatched for distressed filters too: it
+                    # is the only source that returns per-row distress evidence we
+                    # can actually verify (AXESSO's search endpoints omit
+                    # listingSubType / foreclosureTypes entirely).
+                    if requested_statuses & RENTCAST_SALE_STATUSES:
                         tasks.append(
                             asyncio.create_task(
                                 self._fetch_rentcast(req, "sale", pt_lat, pt_lng, sub_radius),
@@ -875,15 +860,16 @@ class MapSearchService:
         if not filter_state:
             return None
 
-        # Distressed-only inventory: disable the for-sale listing-type defaults
-        # (agent / owner / new-construction / coming-soon) so the response is
-        # limited to the enabled distressed bucket(s). Every returned row is then
-        # a member of that bucket, so _fetch_zillow_distressed can blanket-tag it
-        # without a per-row re-classification. This is required because AXESSO's
-        # search-by-url rows omit the listingSubType/foreclosureTypes fields the
-        # re-classifier needs — leaving fsba on (the old behavior) returned a mix
-        # of actives + distressed that the re-classifier then dropped entirely,
-        # so foreclosure/auction always came back empty.
+        # Intent: disable the for-sale listing-type defaults (agent / owner /
+        # new-construction / coming-soon) so the response is limited to the
+        # enabled distressed bucket(s).
+        #
+        # Measured reality: AXESSO's scrape does NOT honor these toggles. The
+        # three buckets return identical row sets over the same viewport, so the
+        # response cannot be assumed distressed. _fetch_zillow_distressed
+        # therefore verifies every row against its own fields rather than
+        # trusting the query. Left in place because it costs nothing and would
+        # start working if the upstream scrape ever respects filterState.
         filter_state.update(
             {
                 "fsba": {"value": False},
@@ -1619,16 +1605,6 @@ class MapSearchService:
             )
             return []
 
-    # Display label tagged onto each distressed listing so the canonical
-    # status filter retains them downstream — search endpoint responses
-    # lack ``foreclosureTypes``, so we can't re-derive the status from the
-    # row itself.
-    _DISTRESSED_LABELS: dict[str, str] = {
-        "auction": "Auction",
-        "foreclosure": "Foreclosure",
-        "pre-foreclosure": "Pre-Foreclosure",
-    }
-
     async def _fetch_zillow_distressed(
         self,
         center_lat: float,
@@ -1637,30 +1613,29 @@ class MapSearchService:
         status: str,
     ) -> list[MapListing]:
         """Fetch distressed listings (auction / foreclosure / pre-foreclosure)
-        via AXESSO's ``search-by-url``.
+        via AXESSO's ``search-by-url``, keeping only rows whose own fields prove
+        the distress status.
 
-        AXESSO's ``/zil/search-by-coordinates`` exposes typed booleans for
-        Auction (``isAuction``) and Foreclosure-for-sale
-        (``isForSaleForeclosure``), but in practice those typed params
-        return zero rows — so we route ALL three distressed buckets
-        through Zillow's native ``searchQueryState.filterState`` toggles
-        (``auc`` / ``fore`` / ``pre``), which is the same path Zillow's
-        own UI uses.
+        **Rows are never blanket-tagged with the requested bucket.** That was the
+        previous behavior, on the assumption that Zillow's
+        ``searchQueryState.filterState`` toggles (``auc``/``fore``/``pre``)
+        constrained the response to a single bucket. They do not: querying the
+        three buckets over an identical viewport returns *byte-identical* row
+        sets (verified in St. Lucie County FL, Tampa, and Atlanta — same ids,
+        same counts), so the blanket tag was painting whichever label the user
+        asked for onto ordinary for-sale inventory. That is fabricated data, and
+        it also hid genuine pre-foreclosures that carry no asking price.
 
-        The URL builder disables the for-sale listing-type defaults
-        (``fsba``/``fsbo``/``nc``/``cmsn``) and enables only the requested
-        distressed bucket, so the response is naturally distressed-only and
-        every row is tagged with that bucket's label. We do NOT re-classify
-        per row: AXESSO's ``search-by-url`` response omits the
-        ``listingSubType`` / ``foreclosureTypes`` fields, so re-deriving the
-        status would drop every foreclosure / auction row (verified: those two
-        buckets returned 0 results while pre-foreclosure — which was already
-        blanket-tagged — returned rows).
+        Because AXESSO's search endpoints omit ``listingSubType`` /
+        ``foreclosureTypes``, ``_derive_zillow_status`` usually cannot confirm
+        anything here and this call legitimately contributes nothing. Verified
+        distress inventory comes from the RentCast for-sale merge instead
+        (``_derive_rentcast_listing_status``), which does expose per-row flags.
         """
         if not self.zillow:
             return []
 
-        if status not in self._DISTRESSED_LABELS:
+        if status not in DISTRESSED_ONLY_STATUSES:
             return []
 
         north, south, east, west = self._radius_to_bbox(center_lat, center_lng, max(radius_miles, 0.5))
@@ -1681,20 +1656,29 @@ class MapSearchService:
                         raw_props = val
                         break
 
-            label = self._DISTRESSED_LABELS[status]
-            # The distressed-only URL constrains Zillow's response to this single
-            # bucket, so blanket-tag every row. Re-deriving per row would drop all
-            # foreclosure/auction rows (AXESSO search-by-url omits the
-            # listingSubType/foreclosureTypes fields the re-classifier needs).
+            # Keep only rows the row's own fields place in the requested bucket.
             results: list[MapListing] = []
+            unverified = 0
             for item in raw_props:
                 if not self._zillow_has_coords(item):
                     continue
                 listing = self._normalize_zillow_listing(item)
-                listing.listing_status = label
+                if normalize_listing_status(listing.listing_status) != status:
+                    unverified += 1
+                    continue
                 results.append(listing)
 
-            logger.info("Zillow %s: %d listings", status, len(results))
+            if unverified:
+                logger.warning(
+                    "Zillow %s: dropped %d/%d rows with no per-row distress evidence "
+                    "(AXESSO search-by-url omits listingSubType/foreclosureTypes; "
+                    "filterState.%s is not honored). Verified distress comes from RentCast.",
+                    status,
+                    unverified,
+                    len(raw_props),
+                    status,
+                )
+            logger.info("Zillow %s: %d verified listings", status, len(results))
             return results
         except Exception:
             logger.exception("Zillow %s listing fetch failed", status)

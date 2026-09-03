@@ -31,12 +31,20 @@ export type FlipStage =
   | 'Held'
 
 // Listing status for property (from AXESSO API)
-export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
+export type ListingStatus =
+  | 'FOR_SALE'
+  | 'FOR_RENT'
+  | 'OFF_MARKET'
+  | 'SOLD'
+  | 'PENDING'
+  | 'PRE_FORECLOSURE'
+  | 'OTHER'
 
 // Seller type classification
 export type SellerType =
   | 'FSBA'
   | 'FSBO'
+  | 'PreForeclosure'
   | 'Foreclosure'
   | 'BankOwned'
   | 'Auction'
