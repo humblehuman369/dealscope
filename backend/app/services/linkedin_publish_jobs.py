@@ -9,7 +9,9 @@ A row that already has ``linkedin_post_urn`` is never created again.
 
 from __future__ import annotations
 
+import enum
 import logging
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from sqlalchemy import or_, select
@@ -40,6 +42,17 @@ logger = logging.getLogger(__name__)
 MAX_POSTS_PER_RUN = 5
 MAX_ATTEMPTS = 3
 ERROR_MAX = 2000
+
+
+class _PublishOneStatus(enum.StrEnum):
+    PUBLISHED = "published"
+    SKIPPED_WAITING_PARENT = "skipped_waiting_parent"
+
+
+@dataclass(frozen=True)
+class _PublishOneResult:
+    status: _PublishOneStatus
+    comment_error: str | None = None
 
 
 def _clip_error(message: str) -> str:
@@ -165,15 +178,17 @@ async def _publish_one(
     *,
     client: LinkedInClient | None,
     dry_run: bool,
-) -> str | None:
-    """Return a comment-error string if the post published but the comment failed."""
+) -> _PublishOneResult:
+    """Publish one row. Never returns PUBLISHED unless the post actually went out
+    (or would have, in dry run) — a missing parent is SKIPPED_WAITING_PARENT."""
     if post.linkedin_post_urn:
-        return await _repair_published(db, post, None if dry_run else client)
+        comment_error = await _repair_published(db, post, None if dry_run else client)
+        return _PublishOneResult(_PublishOneStatus.PUBLISHED, comment_error)
 
     if post.reshare_of_key:
         parent_urn = await _parent_urn(db, post.reshare_of_key)
         if not parent_urn:
-            return None  # caller classifies as skipped_waiting_parent
+            return _PublishOneResult(_PublishOneStatus.SKIPPED_WAITING_PARENT)
 
     if post.account == LinkedInAccount.COMPANY and not company_account_configured():
         raise LinkedInAuthError("company account is not configured")
@@ -184,7 +199,7 @@ async def _publish_one(
         logger.info("linkedin dry-run would POST /rest/posts key=%s payload=%s", post.key, payload)
         if post.first_comment:
             logger.info("linkedin dry-run would comment on %s: %s", post.key, post.first_comment)
-        return None
+        return _PublishOneResult(_PublishOneStatus.PUBLISHED)
 
     assert client is not None
     await client.ensure_fresh_token(post.account)
@@ -197,6 +212,12 @@ async def _publish_one(
     await db.commit()
 
     parent_urn = await _parent_urn(db, post.reshare_of_key) if post.reshare_of_key else None
+    if post.reshare_of_key and not parent_urn:
+        post.status = LinkedInPostStatus.APPROVED
+        post.attempts = max(0, (post.attempts or 1) - 1)
+        await db.commit()
+        return _PublishOneResult(_PublishOneStatus.SKIPPED_WAITING_PARENT)
+
     media_urn = await client.upload_media(post, author)
     payload = build_post_payload(post, author=author, media_urn=media_urn, parent_urn=parent_urn)
     urn = await client.create_post(post.account, payload)
@@ -219,7 +240,7 @@ async def _publish_one(
             comment_error = _clip_error(f"comment failed: {exc}")
             post.error = comment_error
     await db.commit()
-    return comment_error
+    return _PublishOneResult(_PublishOneStatus.PUBLISHED, comment_error)
 
 
 async def _revert_to_approved_or_failed(db: AsyncSession, post: LinkedInPost, error: str) -> None:
@@ -264,13 +285,8 @@ async def linkedin_publish_job(db: AsyncSession) -> dict:
                 logger.info("skipping %s: company account not configured", post.key)
                 warnings.append(f"{post.key}: company account not configured; left approved")
                 continue
-            if post.reshare_of_key and not post.linkedin_post_urn:
-                parent_urn = await _parent_urn(db, post.reshare_of_key)
-                if not parent_urn:
-                    skipped_waiting_parent.append(post.key)
-                    continue
             try:
-                comment_error = await _publish_one(db, post, client=client, dry_run=dry_run)
+                one = await _publish_one(db, post, client=client, dry_run=dry_run)
             except LinkedInRateLimitError as exc:
                 if not dry_run and not post.linkedin_post_urn:
                     post.status = LinkedInPostStatus.APPROVED
@@ -288,9 +304,15 @@ async def linkedin_publish_job(db: AsyncSession) -> dict:
                 await _revert_to_approved_or_failed(db, post, str(exc))
                 failed.append(LinkedInFailedRow(key=post.key, error=str(exc)))
             else:
-                published.append(post.key)
-                if comment_error:
-                    failed.append(LinkedInFailedRow(key=post.key, error=comment_error))
+                match one.status:
+                    case _PublishOneStatus.SKIPPED_WAITING_PARENT:
+                        skipped_waiting_parent.append(post.key)
+                    case _PublishOneStatus.PUBLISHED:
+                        published.append(post.key)
+                        if one.comment_error:
+                            failed.append(
+                                LinkedInFailedRow(key=post.key, error=one.comment_error)
+                            )
     finally:
         if client is not None:
             await client.__aexit__(None, None, None)

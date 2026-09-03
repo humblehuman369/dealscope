@@ -232,6 +232,36 @@ class TestPublishJob:
         mock_li_client.create_post.assert_not_awaited()
         assert (await _row(db_session, "batch-01/post-01-reshare")).status == LinkedInPostStatus.APPROVED
 
+    async def test_reshare_not_reported_published_if_parent_vanishes(
+        self, db_session, tmp_path, mock_li_client, monkeypatch
+    ):
+        """Parent present on the first lookup, gone on the second — must not
+        land in ``published`` or create a LinkedIn post."""
+        await _import(db_session, tmp_path, _valid_batch(tmp_path))
+        past = datetime.now(UTC) - timedelta(minutes=5)
+        parent = await _row(db_session, "batch-01/post-01")
+        parent.status = LinkedInPostStatus.PUBLISHED
+        parent.linkedin_post_urn = "urn:li:share:parent"
+        await db_session.flush()
+        await _approve(db_session, "batch-01/post-01-reshare", when=past)
+
+        lookups = {"n": 0}
+
+        async def vanishing(_db, _key):
+            lookups["n"] += 1
+            if lookups["n"] == 1:
+                return "urn:li:share:parent"
+            return None
+
+        monkeypatch.setattr("app.services.linkedin_publish_jobs._parent_urn", vanishing)
+        result = await linkedin_publish_job(db_session)
+        assert result["published"] == []
+        assert result["skipped_waiting_parent"] == ["batch-01/post-01-reshare"]
+        mock_li_client.create_post.assert_not_awaited()
+        row = await _row(db_session, "batch-01/post-01-reshare")
+        assert row.status == LinkedInPostStatus.APPROVED
+        assert row.linkedin_post_urn is None
+
     async def test_dry_run_makes_zero_outbound_calls(self, db_session, tmp_path, monkeypatch):
         monkeypatch.setattr(settings, "LINKEDIN_PUBLISH_ENABLED", False)
         monkeypatch.setattr(settings, "LINKEDIN_FOUNDER_PERSON_URN", FOUNDER_URN)
