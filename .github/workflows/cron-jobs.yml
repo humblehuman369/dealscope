@@ -46,6 +46,30 @@ jobs:
           cat response.json
           [ "$http_code" = "200" ] || exit 1
 
+  # Runs in the same off-peak slot on purpose. The alert job dispatches
+  # ordinary map searches, so its results land in the shared viewport cache
+  # ahead of the day's interactive traffic — the farm areas investors watch
+  # are pre-warmed rather than double-billed.
+  saved-search-alerts:
+    name: Saved search new-inventory emails
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/v1/jobs/saved-search-alerts
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL || 'https://dealscope-production.up.railway.app' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET repository secret is not set — see workflow header for setup."
+            exit 1
+          fi
+          http_code=$(curl -sS -o response.json -w "%{http_code}" \
+            -X POST "$BACKEND_URL/api/v1/jobs/saved-search-alerts" \
+            -H "X-Cron-Token: $CRON_SECRET")
+          echo "HTTP $http_code"
+          cat response.json
+          [ "$http_code" = "200" ] || exit 1
+
   overdue-task-digest:
     name: Overdue task digest pushes
     runs-on: ubuntu-latest

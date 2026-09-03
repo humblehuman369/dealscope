@@ -7,7 +7,7 @@ Extracted from main.py for cleaner architecture.
 import hashlib
 import logging
 import re
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from io import BytesIO
 
 from fastapi import APIRouter, HTTPException, Query, Request, status
@@ -26,6 +26,7 @@ from app.schemas.property import (
     PropertyResponse,
     PropertySearchRequest,
 )
+from app.services.analysis_metering import has_recent_successful_analysis
 from app.services.billing_service import billing_service
 from app.services.cache_service import get_cache_service
 from app.services.property_export_service import generate_property_data_report_excel
@@ -106,22 +107,6 @@ def _client_ip(request: Request) -> str:
 def _address_fingerprint(full_address: str) -> str:
     normalized = re.sub(r"[^a-z0-9]", "", full_address.lower())
     return hashlib.sha256(normalized.encode()).hexdigest()[:16]
-
-
-async def _has_recent_successful_search(db: DbSession, user_id, full_address: str) -> bool:
-    """True when the user already successfully analyzed this address in the last 30 days."""
-    window_start = datetime.now(UTC) - timedelta(days=30)
-    result = await db.execute(
-        select(SearchHistory.id)
-        .where(
-            SearchHistory.user_id == user_id,
-            SearchHistory.search_query == full_address,
-            SearchHistory.was_successful.is_(True),
-            SearchHistory.searched_at >= window_start,
-        )
-        .limit(1)
-    )
-    return result.scalar_one_or_none() is not None
 
 
 def _analysis_limit_http_error(e: SubscriptionLimitError) -> HTTPException:
@@ -208,7 +193,7 @@ async def search_property(
     anon_counter_key: str | None = None
     anon_marker_key: str | None = None
     if current_user:
-        is_repeat = await _has_recent_successful_search(db, current_user.id, full_address)
+        is_repeat = await has_recent_successful_analysis(db, current_user.id, full_address)
         if not is_repeat:
             try:
                 await billing_service.check_analysis_allowance(db, current_user.id)

@@ -63,6 +63,7 @@ from app.services.calculators import (
     calculate_str,
     calculate_wholesale,
 )
+from app.services import zip_market_service
 from app.services.iq_verdict_service import compute_iq_verdict
 from app.services.resilience import resilient
 from app.services.zillow_client import ZillowDataExtractor, create_zillow_client
@@ -251,6 +252,7 @@ class PropertyService:
             rc_market = await self.rentcast.get_market_statistics(zip_code=zip_code)
             if rc_market.success and rc_market.data:
                 rentcast_data["market_statistics"] = rc_market.data
+                await zip_market_service.harvest(zip_code, rc_market.data)
             else:
                 rentcast_data["market_statistics_response"] = {
                     "success": False,
@@ -311,6 +313,10 @@ class PropertyService:
                 if rc_market.success and rc_market.data:
                     data["market_statistics"] = rc_market.data
                     logger.info("RentCast market statistics retrieved for zip: %s", zip_code)
+                    # This payload describes the whole ZIP, not this property.
+                    # Harvest it into the shared ZIP store on the way past so
+                    # map search can screen rent-vs-price for free.
+                    await zip_market_service.harvest(zip_code, rc_market.data)
         except Exception as e:
             logger.warning("Failed to fetch RentCast market statistics: %s", e)
 
@@ -1012,6 +1018,83 @@ class PropertyService:
         timings["total_ms"] = (time.perf_counter() - t0) * 1000
         return (response, rentcast_data, axesso_export_for_return or {})
 
+    def build_verdict_input(self, response: PropertyResponse) -> IQVerdictInput | None:
+        """Map a fetched property onto the IQ Verdict's inputs.
+
+        The one place this mapping lives. Deal Gap is the product's headline
+        number, so a second copy of "which price and which tax figure feed the
+        verdict" is a second, quietly different Deal Gap — the export sheet and
+        the bulk-analyze ranking disagreeing about the same property.
+
+        Returns ``None`` when no usable price could be resolved, because a
+        verdict without a price is not a cautious estimate, it is a fabricated
+        one.
+        """
+        valuations = response.valuations
+        listing = response.listing
+        details = response.details
+        rentals = response.rentals
+        market = response.market
+
+        list_price_val = getattr(listing, "list_price", None) if listing is not None else None
+        if list_price_val is None and listing is not None and isinstance(listing, dict):
+            list_price_val = listing.get("list_price")
+
+        def _positive_float(value) -> float | None:
+            try:
+                parsed = float(value) if value is not None else None
+            except (TypeError, ValueError):
+                return None
+            return parsed if parsed is not None and parsed > 0 else None
+
+        list_price = (
+            _positive_float(list_price_val)
+            or _positive_float(valuations.value_iq_estimate)
+            or _positive_float(valuations.zestimate)
+            or _positive_float(valuations.current_value_avm)
+            or _positive_float(valuations.market_price)
+        )
+        if list_price is None:
+            return None
+
+        listing_status_val = getattr(listing, "listing_status", None) if listing is not None else None
+        if listing_status_val is None and listing is not None and isinstance(listing, dict):
+            listing_status_val = listing.get("listing_status")
+        is_listed = (
+            listing_status_val is not None
+            and str(listing_status_val).upper() not in ("OFF_MARKET", "SOLD", "FOR_RENT", "OTHER")
+            and (list_price_val or 0) > 0
+        )
+
+        # Same no-fabrication tax rule as _estimate_taxes: provider data first,
+        # else value x regional rate from the resolved price (never flat 1.2%
+        # of an unrelated number). list_price is guaranteed positive here.
+        response_zip = response.address.zip_code if response.address else None
+        verdict_taxes = (
+            market.property_taxes_annual
+            if market.property_taxes_annual is not None
+            else self._taxes_from_value(list_price, response_zip)
+        )
+
+        return IQVerdictInput(
+            list_price=list_price,
+            monthly_rent=rentals.monthly_rent_ltr or 0,
+            property_taxes=verdict_taxes,
+            insurance=market.insurance_annual,
+            hoa_fees_monthly=market.hoa_fees_monthly,
+            bedrooms=details.bedrooms or 3,
+            bathrooms=float(details.bathrooms or 2),
+            sqft=details.square_footage,
+            arv=valuations.arv or (list_price * 1.15),
+            average_daily_rate=rentals.average_daily_rate,
+            occupancy_rate=rentals.occupancy_rate or 0.75,
+            is_listed=is_listed,
+            zestimate=valuations.zestimate,
+            current_value_avm=valuations.current_value_avm,
+            tax_assessed_value=valuations.tax_assessed_value,
+            listing_status=listing_status_val,
+        )
+
     async def get_property_export_data(self, address: str) -> dict[str, Any]:
         """
         Fetch raw RentCast, raw AXESSO, normalized property, and verdict/strategy
@@ -1032,69 +1115,9 @@ class PropertyService:
             axesso_export = {}
         else:
             response, _, axesso_export = result
-        # Build verdict input from property response
-        valuations = response.valuations
-        listing = response.listing
-        details = response.details
-        rentals = response.rentals
-        market = response.market
-        list_price_val = getattr(listing, "list_price", None) if listing is not None else None
-        if list_price_val is None and listing is not None and isinstance(listing, dict):
-            list_price_val = listing.get("list_price")
 
-        def _positive_float(value) -> float | None:
-            try:
-                parsed = float(value) if value is not None else None
-            except (TypeError, ValueError):
-                return None
-            return parsed if parsed is not None and parsed > 0 else None
-
-        list_price = (
-            _positive_float(list_price_val)
-            or _positive_float(valuations.value_iq_estimate)
-            or _positive_float(valuations.zestimate)
-            or _positive_float(valuations.current_value_avm)
-            or _positive_float(valuations.market_price)
-        )
-        monthly_rent = rentals.monthly_rent_ltr or 0
-        listing_status_val = getattr(listing, "listing_status", None) if listing is not None else None
-        if listing_status_val is None and listing is not None and isinstance(listing, dict):
-            listing_status_val = listing.get("listing_status")
-        is_listed = (
-            listing_status_val is not None
-            and str(listing_status_val).upper() not in ("OFF_MARKET", "SOLD", "FOR_RENT", "OTHER")
-            and (list_price_val or 0) > 0
-        )
-        verdict_result = None
-        if list_price is not None:
-            # Same no-fabrication tax rule as _estimate_taxes: provider data first,
-            # else value x regional rate from the resolved price (never flat 1.2%
-            # of an unrelated number). list_price is guaranteed positive here.
-            response_zip = response.address.zip_code if response.address else None
-            verdict_taxes = (
-                market.property_taxes_annual
-                if market.property_taxes_annual is not None
-                else self._taxes_from_value(list_price, response_zip)
-            )
-            verdict_input = IQVerdictInput(
-                list_price=list_price,
-                monthly_rent=monthly_rent,
-                property_taxes=verdict_taxes,
-                insurance=market.insurance_annual,
-                hoa_fees_monthly=market.hoa_fees_monthly,
-                bedrooms=details.bedrooms or 3,
-                bathrooms=float(details.bathrooms or 2),
-                sqft=details.square_footage,
-                arv=valuations.arv or (list_price * 1.15),
-                average_daily_rate=rentals.average_daily_rate,
-                occupancy_rate=rentals.occupancy_rate or 0.75,
-                is_listed=is_listed,
-                zestimate=valuations.zestimate,
-                current_value_avm=valuations.current_value_avm,
-                tax_assessed_value=valuations.tax_assessed_value,
-                listing_status=listing_status_val,
-            )
-            verdict_result = compute_iq_verdict(verdict_input)
+        verdict_input = self.build_verdict_input(response)
+        verdict_result = compute_iq_verdict(verdict_input) if verdict_input else None
         # Strip internal key from raw RentCast for export
         raw_rentcast_export = {k: v for k, v in rentcast_raw.items() if k != "_merged"}
         return {

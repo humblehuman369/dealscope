@@ -1,5 +1,7 @@
 import type { MapListing } from '@/lib/api'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
+import { markMapViewportForRestore } from './mapSearchSnapshot'
+import { markPinReviewed } from './mapPinState'
 
 type MapDiscoveryRouter = { push: (href: string) => void }
 
@@ -51,41 +53,31 @@ export function mapSelectionCtaLabel(destination: MapSelectionDestination): stri
 }
 
 /**
- * Open the selected property in a new browser tab, leaving map search in the
- * original tab.
+ * Navigate to the selected property in the same tab.
  *
- * Uses a synthetic `<a rel="noopener noreferrer">` click instead of
- * `window.open(..., 'noopener,noreferrer')`. Per the HTML spec, `noopener` and
- * `noreferrer` (which implies noopener) make `window.open()` return `null` even
- * when the tab opens successfully — that falsely triggered same-tab fallback.
- * A noreferrer anchor suppresses the Referer header without relying on that
- * return value.
+ * This used to open a new tab. Working a farm area is a repetitive loop —
+ * open a pin, judge it, come back, open the next — and a tab per pin meant
+ * thirty tabs and no way back to where you were on the map. Instead we flag
+ * the viewport for restore first, so "Back to map" (and any return
+ * navigation) lands on the exact center, zoom, filters, and polygon the user
+ * left, then push in place.
  */
-function openInNewWindow(router: MapDiscoveryRouter, path: string): void {
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
-    router.push(path)
-    return
-  }
-
-  const link = document.createElement('a')
-  link.href = path
-  link.target = '_blank'
-  link.rel = 'noopener noreferrer'
-  link.style.display = 'none'
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
+function navigateFromMap(router: MapDiscoveryRouter, path: string): void {
+  markMapViewportForRestore()
+  router.push(path)
 }
 
-/** Navigate to the selected property's destination (Discovery or Deal Maker) in a new window. */
+/** Navigate to the selected property's destination (Discovery or Deal Maker). */
 export function navigateToDiscoveryFromMap(router: MapDiscoveryRouter, listing: MapListing): void {
   const query = buildDiscoverySearchParams(listing).toString()
   const base = getMapSelectionDestination() === 'deal-maker' ? '/deal-maker' : '/discovery'
-  openInNewWindow(router, `${base}?${query}`)
+  // Opening a pin for analysis is the strongest evidence it has been worked.
+  markPinReviewed(listing)
+  navigateFromMap(router, `${base}?${query}`)
 }
 
 export function navigateToDiscoveryFromMapPath(router: MapDiscoveryRouter, path: string): void {
   const target =
     getMapSelectionDestination() === 'deal-maker' ? path.replace(/^[^?]*/, '/deal-maker') : path
-  openInNewWindow(router, target)
+  navigateFromMap(router, target)
 }

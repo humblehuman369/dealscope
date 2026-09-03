@@ -18,6 +18,7 @@ from app.models.lender import Lender
 from app.models.offer import OfferStatus, PropertyOffer
 from app.models.role import Permission, Role, RolePermission, UserRole
 from app.models.saved_directory_contact import DirectoryEntityType, SavedDirectoryContact
+from app.models.saved_map_search import AlertFrequency, SavedMapSearch
 from app.models.saved_property import FlipStage, PropertyAdjustment, PropertyStatus, SavedProperty
 from app.models.search_history import SearchHistory
 from app.models.session import UserSession
@@ -29,6 +30,7 @@ from app.models.verification_token import TokenType, VerificationToken
 
 __all__ = [
     "AdminAssumptionDefaults",
+    "AlertFrequency",
     "AuditAction",
     "AuditLog",
     "BudgetExpense",
@@ -58,6 +60,7 @@ __all__ = [
     "Role",
     "RolePermission",
     "SavedDirectoryContact",
+    "SavedMapSearch",
     "SavedProperty",
     "SearchHistory",
     "ShareType",

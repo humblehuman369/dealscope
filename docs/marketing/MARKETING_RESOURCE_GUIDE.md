@@ -19,6 +19,8 @@
 | **Visual identity (colors, fonts, components)** | [`BRAND_COLOR_AND_STYLE_GUIDE.md`](./BRAND_COLOR_AND_STYLE_GUIDE.md) |
 | **LinkedIn page build (SEO, calendar, KPIs)** | [`LINKEDIN_COMPANY_PAGE_BLUEPRINT.md`](./LINKEDIN_COMPANY_PAGE_BLUEPRINT.md) |
 | **LinkedIn asset specs (logo, banner, About copy)** | [`LINKEDIN_BRAND_STYLE_GUIDE.md`](./LINKEDIN_BRAND_STYLE_GUIDE.md) |
+| **LinkedIn post copy from blog articles (paste-ready batches)** | [`linkedin/BLOG_TO_LINKEDIN_BATCH_01.md`](./linkedin/BLOG_TO_LINKEDIN_BATCH_01.md) |
+| **LinkedIn publisher build spec (agent prompt)** | [`linkedin/AGENT_PROMPT_LINKEDIN_PUBLISHER.md`](./linkedin/AGENT_PROMPT_LINKEDIN_PUBLISHER.md) |
 
 ---
 
@@ -45,6 +47,7 @@
 | [`MARKETING_GUIDE.md`](./MARKETING_GUIDE.md) | Full agency campaign guide — confidential; pricing internals, feature deep-dives | Confidential |
 | [`DealGapIQ-Marketing-Guide.md`](./DealGapIQ-Marketing-Guide.md) | v2 copy bank (Hunt → Score → Close) — **content merged into playbook** | Superseded by playbook |
 | [`LAUNCH_MARKETING_PLAN.md`](./LAUNCH_MARKETING_PLAN.md) | Zero-budget founder-led launch plan | Reference |
+| [`DIRECT_RESPONSE_PLAYBOOK.md`](./DIRECT_RESPONSE_PLAYBOOK.md) | Direct-response layer: SERP term, 50-problem list, `/answers` landing formula, paid search, attribution, reviews; Phase 2 audio parked | Reference |
 | [`HOMEPAGE_PLAN.md`](./HOMEPAGE_PLAN.md) | Homepage copy spec (Four Paths) | Reference |
 
 ### Research and artifacts

@@ -252,6 +252,94 @@ export interface MapSearchRequest {
   owner_records_availability?: 'any' | 'off_market' | 'for_sale'
 }
 
+// ------------------------------------------------------------------
+// Saved map searches + new-inventory alerts
+// ------------------------------------------------------------------
+
+export type AlertFrequency = 'off' | 'daily' | 'weekly'
+
+/** The MapSearchRequest fields a saved search replays. */
+export type SavedSearchFilters = Omit<
+  MapSearchRequest,
+  'north' | 'south' | 'east' | 'west' | 'polygon' | 'limit' | 'offset'
+>
+
+export interface SavedMapSearch {
+  id: string
+  name: string
+  north: number
+  south: number
+  east: number
+  west: number
+  polygon?: number[][] | null
+  filters: SavedSearchFilters
+  alert_frequency: AlertFrequency
+  last_alert_sent_at?: string | null
+  created_at: string
+  /**
+   * Why this search can't be put on an alert schedule, or null when it can.
+   * Only the cheap dispatch modes are alert-eligible — the backend sends the
+   * explanation so the UI can say why rather than just disabling the control.
+   */
+  alert_ineligible_reason?: string | null
+}
+
+export interface SavedMapSearchCreate {
+  name: string
+  north: number
+  south: number
+  east: number
+  west: number
+  polygon?: number[][] | null
+  filters?: SavedSearchFilters
+  alert_frequency?: AlertFrequency
+}
+
+export interface SavedMapSearchUpdate {
+  name?: string
+  alert_frequency?: AlertFrequency
+}
+
+export interface SavedMapSearchList {
+  searches: SavedMapSearch[]
+  total: number
+  max_allowed: number
+}
+
+// ------------------------------------------------------------------
+// Bulk analyze queue
+// ------------------------------------------------------------------
+
+export interface BulkAnalyzeResult {
+  address: string
+  status: 'analyzed' | 'unavailable' | 'error'
+  list_price: number | null
+  income_value: number | null
+  target_buy_price: number | null
+  deal_gap_amount: number | null
+  /**
+   * The discount off asking this deal needs to work, as a percentage.
+   * Lower is better; zero or negative means it pencils at list price.
+   */
+  deal_gap_percent: number | null
+  deal_score: number | null
+  deal_verdict: string | null
+  monthly_rent: number | null
+  property_id: string | null
+  /** Whether this property consumed one analysis from the monthly quota. */
+  charged: boolean
+  reason: string | null
+}
+
+export interface BulkAnalyzeResponse {
+  results: BulkAnalyzeResult[]
+  /** Addresses not reached in this run; resubmit to continue. */
+  remaining: string[]
+  analyses_charged: number
+  quota_exhausted: boolean
+  notice: string | null
+}
+
 export interface MapListing {
   id: string
   address: string
@@ -290,6 +378,16 @@ export interface MapListing {
   recent_resale_date?: string | null
   /** ISO date the listing was delisted/removed (expired-listing mode) */
   delisted_date?: string | null
+  /**
+   * ZIP rent-vs-price screen — a market screen, NOT a property valuation.
+   * `zip_median_rent` is the ZIP's median monthly rent (bedroom-matched when
+   * `zip_median_rent_basis === 'bedroom'`), and `zip_rent_to_price` is that
+   * rent divided by the list price. Always label these as ZIP medians; the
+   * per-property Deal Gap lives behind the click-through to Discovery.
+   */
+  zip_median_rent?: number | null
+  zip_median_rent_basis?: 'bedroom' | 'zip' | null
+  zip_rent_to_price?: number | null
 }
 
 export interface MapSearchResponse {
@@ -297,6 +395,8 @@ export interface MapSearchResponse {
   total_count: number
   estimated_total?: number | null
   viewport_center: number[]
+  /** Set when the backend deliberately skipped the search (e.g. zoom too wide for an expensive mode). */
+  notice?: string | null
 }
 
 export interface HeatmapRequest {
@@ -447,6 +547,35 @@ export const api = {
       ),
     neighborhoodOverview: (id: number, state: string) =>
       apiRequest<NeighborhoodOverview>(`/api/v1/map/neighborhood/${id}?state=${state}`),
+  },
+
+  // Bulk analyze: rank selected pins by Deal Gap
+  bulkAnalyze: {
+    run: (addresses: string[]) =>
+      apiRequest<BulkAnalyzeResponse>('/api/v1/map/bulk-analyze', {
+        method: 'POST',
+        body: { addresses },
+        // The backend drains what fits its own ~45s budget and returns the
+        // rest, so this only needs headroom over that plus the final fetch.
+        timeoutMs: 90_000,
+      }),
+  },
+
+  // Saved map searches + new-inventory alerts (Pro)
+  savedMapSearches: {
+    list: () => apiRequest<SavedMapSearchList>('/api/v1/saved-map-searches'),
+    create: (data: SavedMapSearchCreate) =>
+      apiRequest<SavedMapSearch>('/api/v1/saved-map-searches', {
+        method: 'POST',
+        body: data,
+      }),
+    update: (id: string, data: SavedMapSearchUpdate) =>
+      apiRequest<SavedMapSearch>(`/api/v1/saved-map-searches/${id}`, {
+        method: 'PATCH',
+        body: data,
+      }),
+    remove: (id: string) =>
+      apiRequest<void>(`/api/v1/saved-map-searches/${id}`, { method: 'DELETE' }),
   },
 
   // Comparison

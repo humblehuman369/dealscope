@@ -20,6 +20,7 @@ from typing import Any
 from app.core.config import settings
 from app.data.motivated_seller_keywords import MOTIVATED_SELLER_KEYWORDS
 from app.schemas.property import MapListing, MapSearchRequest, MapSearchResponse
+from app.services import zip_market_service
 from app.services.api_clients import MashvisorClient, RentCastClient, create_api_clients
 from app.services.cache_service import get_cache_service
 from app.services.zillow_client import ZillowClient, create_zillow_client
@@ -93,6 +94,15 @@ _EXPIRED_DISQUALIFYING_STATUS_TOKENS: tuple[str, ...] = (
 DISTRESSED_ONLY_STATUSES: frozenset[str] = frozenset(
     {"foreclosure", "pre-foreclosure", "auction"},
 )
+
+# Modes whose dispatch cost is far above ordinary active-listing browsing:
+# motivated-seller runs one Zillow keyword scrape per phrase, expired runs a
+# per-candidate current-status lookup, and each distressed bucket is its own
+# URL query. At region zoom that is a large provider bill for a result set no
+# investor can work, so these require a zoomed-in viewport. The cap coincides
+# with the grid_size==1 boundary below, so an expensive mode is never also
+# multiplied by grid fan-out.
+EXPENSIVE_MODE_MAX_RADIUS_MILES = 30.0
 
 # Statuses that the RentCast for-sale search can actually answer. RentCast is the
 # only source that returns *verifiable* per-row distress evidence
@@ -213,14 +223,61 @@ def _round_coord(val: float, precision: int = 3) -> float:
     return round(val, precision)
 
 
+# ─── Viewport tile quantization ──────────────────────────────────────────
+# Rounding the raw bounds to 3 decimals made any pan beyond ~111 m a total
+# cache miss, so an ordinary drag re-ran the whole provider fan-out. Instead
+# the viewport is snapped outward onto an absolute tile grid whose step scales
+# with the viewport span. Because the grid is absolute (multiples of the step
+# from zero) rather than relative to the caller's bounds, near-identical
+# viewports collapse onto one key across all users, not just for a single user
+# holding still. The search itself runs against the snapped tile, which is what
+# makes a cached entry valid for every viewport inside it.
+#
+# The divisor is the cost dial. A coarser grid hits cache more often but
+# searches a larger rect; since the provider call *count* is fixed by
+# ``grid_size`` (computed from the requested viewport, never the tile), a
+# larger rect costs nothing extra in calls — it only spends more of each
+# provider's per-call row cap on area the user cannot see. A quarter of the
+# span keeps that dilution under about 50% linear in the worst alignment while
+# making the step ~15x coarser than the old 111 m rounding.
+VIEWPORT_TILE_DIVISIONS = 4
+
+
+def _quantize_viewport(
+    north: float,
+    south: float,
+    east: float,
+    west: float,
+) -> tuple[float, float, float, float]:
+    """Snap bounds outward onto a shared tile grid. Returns (n, s, e, w)."""
+    span = max(north - south, east - west, 1e-6)
+    # Snap the step to a power-of-two ladder so two viewports a fraction of a
+    # zoom level apart still resolve to the same grid instead of two grids that
+    # never align.
+    step = 2.0 ** math.floor(math.log2(span)) / VIEWPORT_TILE_DIVISIONS
+    return (
+        round(math.ceil(north / step) * step, 6),
+        round(math.floor(south / step) * step, 6),
+        round(math.ceil(east / step) * step, 6),
+        round(math.floor(west / step) * step, 6),
+    )
+
+
+def _quantize_request(req: MapSearchRequest) -> MapSearchRequest:
+    """Return ``req`` with its bounds snapped to the shared tile grid."""
+    north, south, east, west = _quantize_viewport(req.north, req.south, req.east, req.west)
+    return req.model_copy(update={"north": north, "south": south, "east": east, "west": west})
+
+
 def _build_cache_key(req: MapSearchRequest) -> str:
     """Deterministic cache key from the search parameters."""
+    north, south, east, west = _quantize_viewport(req.north, req.south, req.east, req.west)
     raw = json.dumps(
         {
-            "n": _round_coord(req.north),
-            "s": _round_coord(req.south),
-            "e": _round_coord(req.east),
-            "w": _round_coord(req.west),
+            "n": north,
+            "s": south,
+            "e": east,
+            "w": west,
             "type": req.listing_type,
             "pt": req.property_type,
             "minp": req.min_price,
@@ -228,6 +285,9 @@ def _build_cache_key(req: MapSearchRequest) -> str:
             "bed": req.bedrooms,
             "bath": req.bathrooms,
             "ls": sorted(req.listing_statuses) if req.listing_statuses else None,
+            "istr": req.include_str_listings,
+            "strst": (req.str_state or "").upper() or None,
+            "strcy": (req.str_city or "").lower() or None,
             "mss": req.motivated_seller_search,
             "otmin": req.owner_tenure_min_years,
             "otmax": req.owner_tenure_max_years,
@@ -240,6 +300,65 @@ def _build_cache_key(req: MapSearchRequest) -> str:
     )
     digest = hashlib.sha256(raw.encode()).hexdigest()[:16]
     return f"mapsearch:{digest}"
+
+
+def _expensive_mode_labels(req: MapSearchRequest, requested_statuses: set[str]) -> list[str]:
+    """Names of the requested modes that are too costly to run at wide zoom."""
+    labels: list[str] = []
+    if req.motivated_seller_search:
+        labels.append("motivated sellers")
+    if "expired" in requested_statuses:
+        labels.append("expired listings")
+    if requested_statuses & DISTRESSED_ONLY_STATUSES:
+        labels.append("distressed listings")
+    return labels
+
+
+def alert_ineligible_reason(req: MapSearchRequest) -> str | None:
+    """Why ``req`` cannot be run unattended on a schedule, or None if it can.
+
+    Saved-search alerts run on a cron with nobody watching, so a search that
+    is merely expensive when a user chooses to wait for it becomes a recurring
+    bill when it fires every morning for every subscriber. Only the cheap
+    dispatch path — an ordinary for-sale/for-rent listing query, which is one
+    provider call per grid point and shares its Redis entry with every
+    interactive user browsing the same tile — is eligible.
+
+    Returned strings are shown to the user, so they explain the tradeoff
+    rather than just refusing.
+    """
+    statuses = {s for s in (req.listing_statuses or ["active"]) if s in CANONICAL_STATUSES}
+
+    if req.motivated_seller_search:
+        return (
+            "Motivated-seller searches scan listing descriptions phrase by phrase, "
+            "so they can't run unattended. Save it without alerts and run it manually."
+        )
+    if "expired" in statuses:
+        return (
+            "Expired-listing searches verify each candidate's current status one "
+            "property at a time, so they can't run unattended. Save it without alerts."
+        )
+    if statuses & DISTRESSED_ONLY_STATUSES:
+        return (
+            "Foreclosure, pre-foreclosure and auction searches each run their own "
+            "scan, so they can't run unattended. Save it without alerts."
+        )
+    if req.owner_tenure_min_years is not None or req.owner_occupancy is not None:
+        return (
+            "Owner Leads searches read property records rather than listings, and "
+            "ownership changes too slowly for a daily alert to be useful."
+        )
+    if req.include_str_listings:
+        return "Airbnb/STR data can't be alerted on yet. Save the search without alerts."
+    return None
+
+
+def _join_labels(labels: list[str]) -> str:
+    """Join labels for a sentence: 'a', 'a and b', 'a, b and c'."""
+    if len(labels) <= 1:
+        return labels[0] if labels else ""
+    return f"{', '.join(labels[:-1])} and {labels[-1]}"
 
 
 def _build_keyword_cache_key(keyword: str, req: MapSearchRequest) -> str:
@@ -343,6 +462,34 @@ class MapSearchService:
         self._initialized = True
 
     async def search(self, req: MapSearchRequest) -> MapSearchResponse:
+        """Run a map search, clipping to ``req.polygon`` when one was drawn.
+
+        The polygon is applied *outside* the cached body deliberately. It is
+        not part of the cache key, so if the body cached its own
+        polygon-clipped output, a drawn farm boundary and a plain viewport
+        over the same tile would share an entry and the viewport search would
+        be served the clipped result. Filtering out here keeps the cached
+        payload polygon-independent — which is also the cheaper arrangement,
+        since drawing a boundary inside an already-searched tile now costs
+        zero provider calls.
+        """
+        polygon = req.polygon
+        if not polygon:
+            return await self._search_tile(req)
+
+        response = await self._search_tile(req.model_copy(update={"polygon": None}))
+        clipped = [
+            item for item in response.listings if _point_in_polygon(item.latitude, item.longitude, polygon)
+        ]
+        if len(clipped) == len(response.listings):
+            return response
+        # estimated_total described the whole tile; it cannot be rescaled to an
+        # arbitrary polygon without inventing a number, so it is dropped.
+        return response.model_copy(
+            update={"listings": clipped, "total_count": len(clipped), "estimated_total": None}
+        )
+
+    async def _search_tile(self, req: MapSearchRequest) -> MapSearchResponse:
         self._ensure_clients()
         cache = get_cache_service()
 
@@ -352,14 +499,49 @@ class MapSearchService:
             logger.info("Map search cache hit: %s", cache_key)
             return MapSearchResponse(**cached)
 
-        center_lat = (req.north + req.south) / 2
-        center_lng = (req.east + req.west) / 2
+        # Grid sizing stays on the *requested* viewport. Tile snapping enlarges
+        # the searched rect, and if that leaked into the grid decision a viewport
+        # sitting just under a threshold would jump a grid size and quadruple
+        # the provider calls it makes today.
         radius = _viewport_radius_miles(req.north, req.south, req.east, req.west)
+
+        # Resolve which canonical statuses the caller wants. None/empty
+        # preserves today's behavior (active-only). Unknown values are
+        # silently dropped so the API stays forgiving for clients on older
+        # builds.
+        requested_statuses = {s for s in (req.listing_statuses or ["active"]) if s in CANONICAL_STATUSES} or {"active"}
 
         motivated_seller_mode = req.motivated_seller_search
         # Owner-records mode: RentCast property-records lead search, driven by an
         # owner-tenure window and/or an owner-occupancy (absentee) filter.
         owner_records_mode = req.owner_tenure_min_years is not None or req.owner_occupancy is not None
+
+        if radius > EXPENSIVE_MODE_MAX_RADIUS_MILES:
+            expensive = _expensive_mode_labels(req, requested_statuses)
+            if expensive:
+                logger.info(
+                    "Map search refused at radius=%.1fmi for expensive modes: %s",
+                    radius,
+                    expensive,
+                )
+                return MapSearchResponse(
+                    listings=[],
+                    total_count=0,
+                    viewport_center=[(req.north + req.south) / 2, (req.east + req.west) / 2],
+                    notice=(
+                        f"Zoom in to search {_join_labels(expensive)}. "
+                        "This inventory is scanned property-by-property, so it is only "
+                        "available for a city-sized area or smaller."
+                    ),
+                )
+
+        # From here on every geographic decision uses the snapped tile the cache
+        # key was built from, so the entry written at the end is valid for any
+        # viewport that lands inside the same tile.
+        req = _quantize_request(req)
+        center_lat = (req.north + req.south) / 2
+        center_lng = (req.east + req.west) / 2
+        tile_radius = _viewport_radius_miles(req.north, req.south, req.east, req.west)
 
         # Decide grid size based on viewport radius
         if motivated_seller_mode or owner_records_mode:
@@ -383,13 +565,7 @@ class MapSearchService:
             req.south + (req.north - req.south) / grid_size,
             req.west + (req.east - req.west) / grid_size,
         )
-        sub_radius = min(cell_diag / 2, 100.0) if grid_size > 1 else min(radius, 25.0)
-
-        # Resolve which canonical statuses the caller wants. None/empty
-        # preserves today's behavior (active-only). Unknown values are
-        # silently dropped so the API stays forgiving for clients on older
-        # builds.
-        requested_statuses = {s for s in (req.listing_statuses or ["active"]) if s in CANONICAL_STATUSES} or {"active"}
+        sub_radius = min(cell_diag / 2, 100.0) if grid_size > 1 else min(tile_radius, 25.0)
 
         # Address-keyed dedup map. We collect rows from every upstream
         # source in parallel, then keep the row whose listing_status
@@ -423,7 +599,7 @@ class MapSearchService:
             # visible viewport) so Owner Leads stays a zoomed-in tool rather than
             # scanning an entire state. Tile that bounded region so markers fill
             # it instead of clustering in a single central circle.
-            search_radius = min(radius, OWNER_RECORDS_MAX_RADIUS_MILES)
+            search_radius = min(tile_radius, OWNER_RECORDS_MAX_RADIUS_MILES)
             or_north, or_south, or_east, or_west = self._radius_to_bbox(
                 center_lat, center_lng, search_radius
             )
@@ -706,9 +882,6 @@ class MapSearchService:
                     len(kept),
                 )
 
-        if req.polygon:
-            listings = [item for item in listings if _point_in_polygon(item.latitude, item.longitude, req.polygon)]
-
         if req.min_price is not None:
             listings = [item for item in listings if item.price is not None and item.price >= req.min_price]
         if req.max_price is not None:
@@ -727,6 +900,11 @@ class MapSearchService:
         if not owner_records_mode:
             listings = [item for item in listings if normalize_listing_status(item.listing_status) in requested_statuses]
 
+        # Attach the ZIP rent-vs-price screen. Runs last, on the final result
+        # set, so it never pays for ZIPs whose listings were about to be
+        # filtered out.
+        listings = await self._attach_zip_rent_screen(listings)
+
         # Estimate total: if every sub-query returned its limit, there are
         # likely more listings than we fetched. Extrapolate conservatively.
         estimated_total: int | None = None
@@ -738,12 +916,12 @@ class MapSearchService:
                 estimated_total = int(avg_per_query * area_multiplier * 1.5)
 
         logger.info(
-            "Map search returned %d listings (statuses=%s, motivated=%s, %d grid points, radius=%.1fmi, grid=%dx%d)",
+            "Map search returned %d listings (statuses=%s, motivated=%s, %d grid points, tile radius=%.1fmi, grid=%dx%d)",
             len(listings),
             sorted(requested_statuses),
             motivated_seller_mode,
             len(query_points),
-            radius,
+            tile_radius,
             grid_size,
             grid_size,
         )
@@ -757,6 +935,58 @@ class MapSearchService:
 
         await cache.set(cache_key, response.model_dump(mode="json"), ttl_seconds=MAP_CACHE_TTL)
         return response
+
+    async def _attach_zip_rent_screen(self, listings: list[MapListing]) -> list[MapListing]:
+        """Stamp each listing with its ZIP's median rent and rent-to-price ratio.
+
+        This is what stops the map at price from being the whole product. It is
+        a *screen*, not a valuation: the figure describes homes of that bedroom
+        count in that ZIP, and the schema records which precision it had. A
+        listing whose ZIP has no harvested data keeps its fields ``None`` — we
+        do not multiply price by a regional ratio to manufacture one.
+
+        Cost: ZIPs already harvested by organic property searches are free;
+        unharvested ones cost one RentCast ``/markets`` call each, capped, and
+        every such call permanently populates the shared store.
+        """
+        if not listings:
+            return listings
+
+        zips = {z for z in (zip_market_service.normalize_zip(i.zip_code) for i in listings) if z}
+        if not zips:
+            return listings
+
+        try:
+            snapshots = await zip_market_service.ensure(zips, self.rentcast)
+        except Exception as exc:
+            logger.warning("ZIP rent screen unavailable: %s", exc)
+            return listings
+
+        if not snapshots:
+            return listings
+
+        out: list[MapListing] = []
+        for item in listings:
+            zip_code = zip_market_service.normalize_zip(item.zip_code)
+            snapshot = snapshots.get(zip_code) if zip_code else None
+            if snapshot is None:
+                out.append(item)
+                continue
+            rent, basis = snapshot.rent_for(item.bedrooms)
+            if rent is None:
+                out.append(item)
+                continue
+            ratio = rent / item.price if item.price and item.price > 0 else None
+            out.append(
+                item.model_copy(
+                    update={
+                        "zip_median_rent": rent,
+                        "zip_median_rent_basis": basis,
+                        "zip_rent_to_price": ratio,
+                    }
+                )
+            )
+        return out
 
     @staticmethod
     def _merge_listing_into(bucket: dict[str, MapListing], item: MapListing) -> None:

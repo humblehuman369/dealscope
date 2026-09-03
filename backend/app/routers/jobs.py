@@ -18,8 +18,10 @@ from fastapi import APIRouter, Header, HTTPException, Request, status
 
 from app.core.config import settings
 from app.core.deps import DbSession
+from app.schemas.saved_map_search import SavedSearchAlertRunResult
 from app.services.gap_alert_jobs import send_gap_alerts
 from app.services.notification_jobs import send_overdue_task_digests
+from app.services.saved_search_alert_jobs import send_saved_search_alerts
 
 logger = logging.getLogger(__name__)
 
@@ -108,4 +110,27 @@ async def gap_alerts(
     # Clamp so a bad cron config can't burn the provider quota in one run.
     result = await send_gap_alerts(db, max_checks=max(1, min(max_checks, 200)))
     logger.info("gap-alert run: %s", result)
+    return result
+
+
+@router.post(
+    "/saved-search-alerts",
+    response_model=SavedSearchAlertRunResult,
+    summary="Email new inventory for saved map searches that are due",
+)
+async def saved_search_alerts(
+    request: Request,
+    db: DbSession,
+    x_cron_token: str | None = Header(default=None, alias="X-Cron-Token"),
+    max_provider_searches: int = 40,
+):
+    client_ip = _get_client_ip(request)
+    _enforce_cron_token(x_cron_token, client_ip=client_ip)
+    # Clamp so a bad cron config can't burn the provider quota in one run. The
+    # per-search frequency cap already limits repeat sends; this limits the
+    # dispatch fan-out of a single run.
+    result = await send_saved_search_alerts(
+        db, max_provider_searches=max(1, min(max_provider_searches, 200))
+    )
+    logger.info("saved-search alert run: %s", result.model_dump())
     return result

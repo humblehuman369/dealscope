@@ -116,7 +116,12 @@ const DISTRESSED_CATEGORIES: Set<CanonicalStatus> = new Set([
   'auction',
 ])
 
-const CATEGORY_RANK: Record<DealCategory, number> = {
+/**
+ * Investor strength of each category. Exported so marker clustering can pick
+ * the strongest signal inside a cluster from this one table instead of
+ * re-deciding what "strongest" means.
+ */
+export const CATEGORY_RANK: Record<DealCategory, number> = {
   distressed: 6,
   expired: 5,
   stale_60: 4,

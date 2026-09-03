@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MapListing } from '@/lib/api'
 import { navigateToDiscoveryFromMap } from '@/components/map-search/mapDiscoveryNavigation'
+import { MAP_RESTORE_VIEWPORT_KEY } from '@/components/map-search/mapSearchSnapshot'
 
 const listing: MapListing = {
   id: '12345678',
@@ -23,34 +24,34 @@ const listing: MapListing = {
 }
 
 describe('navigateToDiscoveryFromMap', () => {
+  beforeEach(() => {
+    sessionStorage.clear()
+  })
+
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  it('opens a noreferrer anchor in a new tab instead of window.open', () => {
-    const click = vi.fn()
-    const remove = vi.fn()
-    const link = {
-      href: '',
-      target: '',
-      rel: '',
-      style: { display: '' },
-      click,
-      remove,
-    }
-
-    vi.spyOn(document, 'createElement').mockReturnValue(link as unknown as HTMLAnchorElement)
-    vi.spyOn(document.body, 'appendChild').mockImplementation(() => link as unknown as Node)
-
+  it('navigates in the same tab rather than opening a new one', () => {
+    const createElement = vi.spyOn(document, 'createElement')
     const router = { push: vi.fn() }
+
     navigateToDiscoveryFromMap(router, listing)
 
-    expect(link.rel).toBe('noopener noreferrer')
-    expect(link.target).toBe('_blank')
-    expect(link.href).toContain('/discovery?')
-    expect(link.href).toContain('address=123+Main+St')
-    expect(click).toHaveBeenCalledOnce()
-    expect(remove).toHaveBeenCalledOnce()
-    expect(router.push).not.toHaveBeenCalled()
+    expect(router.push).toHaveBeenCalledOnce()
+    const href = router.push.mock.calls[0][0]
+    expect(href).toContain('/discovery?')
+    expect(href).toContain('address=123+Main+St')
+    expect(href).toContain('zpid=12345678')
+    // A tab per pin is what made working a farm area unusable.
+    expect(createElement).not.toHaveBeenCalledWith('a')
+  })
+
+  it('flags the viewport for restore before leaving, so "Back to map" works', () => {
+    const router = { push: vi.fn() }
+
+    navigateToDiscoveryFromMap(router, listing)
+
+    expect(sessionStorage.getItem(MAP_RESTORE_VIEWPORT_KEY)).not.toBeNull()
   })
 })

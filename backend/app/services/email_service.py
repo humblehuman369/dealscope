@@ -1802,6 +1802,106 @@ class EmailService:
             html=html,
         )
 
+    async def send_new_inventory_alert_email(
+        self,
+        to: str,
+        user_name: str,
+        search_name: str,
+        listings: list[dict[str, Any]],
+        total_new: int,
+        frequency: str,
+    ) -> dict[str, Any]:
+        """Report new inventory in a saved map search.
+
+        The email is a prompt to open the map, not a substitute for it: it
+        shows a handful of rows and the count, because the numbers that decide
+        anything need the full analysis behind the click-through. Each row
+        carries the ZIP rent-vs-price screen where one is available, labelled
+        as a screen — the same qualifier the map pin uses.
+        """
+        map_url = f"{self.frontend_url}/map-search"
+
+        rows = ""
+        for listing in listings:
+            price = listing.get("price")
+            price_label = f"${price:,.0f}" if isinstance(price, (int, float)) and price else "Price n/a"
+
+            spec_parts = []
+            if listing.get("bedrooms"):
+                spec_parts.append(f"{listing['bedrooms']} bd")
+            if listing.get("bathrooms"):
+                spec_parts.append(f"{listing['bathrooms']:g} ba")
+            if listing.get("listing_status"):
+                spec_parts.append(str(listing["listing_status"]))
+            specs = " &middot; ".join(spec_parts)
+
+            ratio = listing.get("zip_rent_to_price")
+            rent = listing.get("zip_median_rent")
+            screen = ""
+            if isinstance(ratio, (int, float)) and ratio > 0 and isinstance(rent, (int, float)):
+                screen = (
+                    f'<p style="font-size: 12px; color: {self.TXT_MUTED}; margin: 6px 0 0 0;">'
+                    f"ZIP median rent ${rent:,.0f}/mo &mdash; {ratio * 100:.2f}% rent-to-price screen"
+                    "</p>"
+                )
+
+            rows += f"""
+<tr>
+    <td style="padding: 14px 0; border-bottom: 1px solid {self.DIVIDER};">
+        <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0; font-size: 15px;">{price_label}</p>
+        <p style="font-size: 14px; color: {self.TXT_BODY}; margin: 4px 0 0 0;">{listing.get("address", "")}</p>
+        <p style="font-size: 13px; color: {self.TXT_SECONDARY}; margin: 4px 0 0 0;">{specs}</p>
+        {screen}
+    </td>
+</tr>"""
+
+        remaining = total_new - len(listings)
+        remainder_note = ""
+        if remaining > 0:
+            remainder_note = f"""
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 16px 0 0 0;">
+    Plus {remaining} more on the map.
+</p>"""
+
+        headline = "1 new listing" if total_new == 1 else f"{total_new} new listings"
+        cadence = "today" if frequency == "daily" else "this week"
+
+        content = f"""
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
+    {headline} in {search_name}
+</h1>
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">
+    Hi {user_name or "there"},
+</p>
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 20px 0;">
+    New inventory came onto the market in your saved search <strong style="color: {self.TXT_HEADING};">{search_name}</strong> {cadence}.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 8px;">
+    {rows}
+</table>
+{remainder_note}
+
+{self._button("Open the map", map_url)}
+
+<p style="font-size: 13px; color: {self.TXT_MUTED}; line-height: 1.6; margin: 0;">
+    Rent figures above are ZIP medians for homes of that size &mdash; a market screen,
+    not an estimate for the property. Analyze a property to get its Income Value,
+    Target Buy and Deal Gap.
+</p>
+
+{self._marketing_footer(to, "property_alerts")}
+"""
+
+        html = self._base_template(content, f"{headline} in {search_name}")
+
+        return await self.send_email(
+            to=to,
+            subject=f"{headline} in {search_name} - DealGapIQ",
+            html=html,
+            headers=self._marketing_headers(to, "property_alerts"),
+        )
+
 
 # Singleton instance
 email_service = EmailService()

@@ -1,9 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
+import { useSubscription } from '@/hooks/useSubscription'
 import { useTheme } from '@/context/ThemeContext'
 import { SESSION_QUERY_KEY, setLastKnownUser } from '@/hooks/useSession'
 import { api as apiClient, type UserResponse } from '@/lib/api-client'
@@ -26,11 +29,15 @@ import {
   Moon,
   ChevronDown,
   Flag,
+  Search,
+  ZoomIn,
+  PenLine,
+  X,
 } from 'lucide-react'
 import { useMapSearch } from '@/hooks/useMapSearch'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { haversineDistance } from '@/lib/api/comps-transform-utils'
-import type { MapListing } from '@/lib/api'
+import type { MapListing, SavedMapSearch } from '@/lib/api'
 import { markerColorForCategory, type DealCategory, type DealSignalResult } from '@/lib/dealSignal'
 import { FilterPanel } from './FilterPanel'
 import { PropertyPreviewCard } from './PropertyPreviewCard'
@@ -42,6 +49,16 @@ import { NeighborhoodCard } from './NeighborhoodCard'
 import { MapSearchBar, type MapSearchSelection } from './MapSearchBar'
 import { requestTourReplay } from '@/lib/workbenchTour'
 import { readMapSnapshot, writeMapSnapshot, clearMapSnapshot, consumeMapViewportRestore } from './mapSearchSnapshot'
+import { pinKey, useMapPinMarks } from './mapPinState'
+import { clusterListings, type ListingCluster } from './mapClustering'
+import { getZipRentScreen } from './zipRentScreen'
+import { SavedSearchesPanel, fromSavedFilters } from './SavedSearchesPanel'
+import { BulkAnalyzePanel } from './BulkAnalyzePanel'
+import { useBulkAnalyze } from '@/hooks/useBulkAnalyze'
+import {
+  navigateToDiscoveryFromMap,
+  navigateToDiscoveryFromMapPath,
+} from './mapDiscoveryNavigation'
 import { getMapOverlaySurface } from './mapOverlayChrome'
 import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLayer'
 import type { NeighborhoodOverview } from '@/lib/api'
@@ -59,6 +76,8 @@ const INITIAL_VIEW_LNG_SPAN_MILES_PORTRAIT = 5
 const MAP_ID = 'DEMO_MAP_ID'
 const MIN_ZOOM_FOR_GEOCODE = 13
 const HINT_DISMISSED_KEY = 'dealscope:map-click-hint-dismissed'
+/** Mirrors `MAX_QUEUE_SIZE` in `backend/app/schemas/bulk_analyze.py`. */
+const BULK_ANALYZE_MAX = 50
 const ZIP_CACHE_PREFIX = 'dealscope:zip-cache:'
 // Per-map theme override (independent of the global app theme).
 // Persisted as JSON `{ value, base }` where `base` is the global theme the
@@ -615,6 +634,18 @@ function MapContent({
   propertyFocus,
 }: MapContentProps) {
   const map = useMap()
+  // Subscribed independently rather than threaded down: every consumer of the
+  // marks re-reads on the same change event, so they cannot disagree.
+  const { marks: pinMarks } = useMapPinMarks()
+  // Resting viewport, tracked for clustering. Set from the same `idle` event
+  // that drives the search, so cluster cells are always sized to what's on
+  // screen rather than to a stale camera.
+  const [clusterBounds, setClusterBounds] = useState<{
+    north: number
+    south: number
+    east: number
+    west: number
+  } | null>(null)
 
   useEffect(() => {
     if (!mapInstanceRef) return
@@ -623,10 +654,12 @@ function MapContent({
       if (mapInstanceRef) mapInstanceRef.current = null
     }
   }, [map, mapInstanceRef])
-  // Markers are intentionally NOT clustered — each listing renders as its
-  // own price pill at all zoom levels. The <AdvancedMarker> components
-  // below attach themselves to the map via @vis.gl/react-google-maps
-  // context, so no manual marker management is needed here.
+  // Markers render as individual price pills until the viewport holds enough
+  // of them to become an unreadable mat, at which point `clusterListings`
+  // collapses the dense cells into count bubbles that keep the strongest deal
+  // signal inside them. The <AdvancedMarker> components below attach
+  // themselves to the map via @vis.gl/react-google-maps context, so no manual
+  // marker management is needed here.
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null)
 
   useEffect(() => {
@@ -676,12 +709,14 @@ function MapContent({
       if (bounds) {
         const ne = bounds.getNorthEast()
         const sw = bounds.getSouthWest()
-        onBoundsChanged({
+        const next = {
           north: ne.lat(),
           south: sw.lat(),
           east: ne.lng(),
           west: sw.lng(),
-        })
+        }
+        setClusterBounds(next)
+        onBoundsChanged(next)
       }
       // Persist the resting viewport to the session snapshot so the user
       // returns to the exact center/zoom after navigating away (verdict, etc.).
@@ -793,9 +828,63 @@ function MapContent({
     }
   }, [map, isDrawing, onPolygonComplete, drawingPolygon, setDrawingPolygon])
 
+  // The focus property and the open listing always render as their own pin:
+  // the first is the whole reason the map was opened at that address, and the
+  // second is anchoring a popup.
+  const pinnedIds = new Set(
+    [
+      selectedListing?.id,
+      propertyFocus
+        ? listings.find((l) => listingMatchesPropertyFocus(l, propertyFocus))?.id
+        : undefined,
+    ].filter((id): id is string => id != null),
+  )
+
+  const { singles, clusters } = useMemo(() => {
+    const pinned = listings.filter((l) => pinnedIds.has(l.id))
+    const rest = listings.filter((l) => !pinnedIds.has(l.id))
+    const result = clusterListings(rest, dealSignals, clusterBounds)
+    return { singles: [...pinned, ...result.singles], clusters: result.clusters }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listings, dealSignals, clusterBounds, selectedListing?.id, propertyFocus])
+
+  const zoomToCluster = useCallback(
+    (cluster: ListingCluster) => {
+      if (!map) return
+      const box = new google.maps.LatLngBounds()
+      for (const member of cluster.listings) {
+        box.extend({ lat: member.latitude, lng: member.longitude })
+      }
+      map.fitBounds(box, 48)
+    },
+    [map],
+  )
+
   return (
     <>
-      {listings.map((listing) => {
+      {clusters.map((cluster) => (
+        <AdvancedMarker
+          key={`cluster-${cluster.key}`}
+          position={{ lat: cluster.lat, lng: cluster.lng }}
+          onClick={() => zoomToCluster(cluster)}
+          zIndex={50}
+        >
+          <div
+            className="flex items-center justify-center rounded-full text-[11px] font-bold cursor-pointer shadow-lg transition-transform hover:scale-110"
+            style={{
+              width: cluster.count >= 100 ? 44 : 36,
+              height: cluster.count >= 100 ? 44 : 36,
+              backgroundColor: markerColorForCategory(cluster.category, isDarkMap),
+              color: '#fff',
+              border: '2px solid rgba(255,255,255,0.85)',
+            }}
+            title={`${cluster.count} listings — zoom in`}
+          >
+            {cluster.count}
+          </div>
+        </AdvancedMarker>
+      ))}
+      {singles.map((listing) => {
         const isAirbnb = listing.source === 'mashvisor_airbnb'
         const signal = dealSignals.get(listing.id)
         const isSelected = selectedListing?.id === listing.id
@@ -821,6 +910,8 @@ function MapContent({
           )
         }
 
+        const mark = pinMarks[pinKey(listing)]
+
         let markerBg: string
         let markerText: string
         let markerBorder: string
@@ -844,15 +935,22 @@ function MapContent({
           displayLabel = formatCompactPrice(listing.price)
         }
 
+        // Rent-vs-price screen on the pin itself. Listing sites end at price;
+        // this is the one number that tells an investor whether the price is
+        // even in the conversation, so it belongs on the map rather than three
+        // clicks in.
+        const rentScreen = isAirbnb ? null : getZipRentScreen(listing)
+
         return (
           <AdvancedMarker
             key={listing.id}
             position={{ lat: listing.latitude, lng: listing.longitude }}
             onClick={() => onSelectListing(listing)}
-            zIndex={isSelected ? 1000 : undefined}
+            zIndex={isSelected ? 1000 : mark === 'passed' ? 1 : undefined}
           >
             <div
-              className="px-1.5 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap cursor-pointer shadow-md transition-transform hover:scale-110"
+              title={rentScreen?.disclosure}
+              className="relative px-1.5 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap cursor-pointer shadow-md transition-transform hover:scale-110 text-center"
               style={{
                 backgroundColor: isSelected ? 'var(--accent-sky)' : markerBg,
                 color: isSelected ? '#fff' : markerText,
@@ -861,9 +959,29 @@ function MapContent({
                 boxShadow: isSelected
                   ? '0 0 0 4px rgba(56, 189, 248, 0.35), 0 4px 12px rgba(0, 0, 0, 0.25)'
                   : undefined,
+                // A passed pin recedes rather than disappearing: the investor
+                // can still see they already rejected it instead of wondering
+                // where it went.
+                opacity: !isSelected && mark === 'passed' ? 0.3 : undefined,
+                textDecoration: mark === 'passed' ? 'line-through' : undefined,
               }}
             >
               {displayLabel}
+              {rentScreen?.ratioLabel && (
+                <span
+                  className="block text-[9px] font-semibold leading-none pb-px"
+                  style={{ opacity: 0.85 }}
+                >
+                  {rentScreen.ratioLabel} rent
+                </span>
+              )}
+              {mark === 'reviewed' && !isSelected && (
+                <span
+                  className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: 'var(--accent-sky)', border: '1.5px solid #fff' }}
+                  aria-hidden
+                />
+              )}
             </div>
           </AdvancedMarker>
         )
@@ -1087,16 +1205,32 @@ export function MapSearchView() {
     rawListings,
     isLoading,
     error,
+    notice,
     totalCount,
     estimatedTotal,
     filters,
     polygon,
     dealSignals,
+    resultsArePartial,
+    areaSearchPending,
+    searchThisArea,
+    getCurrentBounds,
+    applySavedSearch,
     onBoundsChanged,
     onPolygonComplete,
     clearPolygon,
     updateFilters,
   } = useMapSearch()
+
+  // Bulk lead export ships up to 500 rows including owner names and tenure —
+  // the same class of data as the paid directories, so it follows the same
+  // paid-only rule (trialing users are refused until first payment).
+  const { isPro, isPaidPro } = useSubscription()
+  const canExport = isPaidPro
+  // Saved areas + alerts follow the plan gate rather than the payment gate:
+  // a trialing user should be able to experience the feature that's meant to
+  // bring them back tomorrow.
+  const canSaveSearches = isPro
 
   const [selectedListing, setSelectedListing] = useState<MapListing | null>(null)
   const [showMyDeals, setShowMyDeals] = useState(false)
@@ -1283,6 +1417,50 @@ export function MapSearchView() {
     }
   }, [geocodeResult, fetchProperty])
 
+  // Mashvisor's Airbnb endpoints are city-scoped, so the backend needs a city
+  // and state alongside the viewport (see `_estimate_city_from_viewport`).
+  // Nothing else in the map flow produces them, which is why the Airbnb toggle
+  // returned nothing. Resolve them from the map center — only while the toggle
+  // is on, and only once the center has actually moved to a new area, so this
+  // never becomes a geocode call per idle event.
+  const strLocationRef = useRef<{ lat: number; lng: number; key: string } | null>(null)
+  const resolveStrLocation = useCallback(
+    async (lat: number, lng: number) => {
+      if (!apiKey) return
+      const last = strLocationRef.current
+      if (last && Math.abs(last.lat - lat) < 0.1 && Math.abs(last.lng - lng) < 0.1) return
+      const result = await reverseGeocode(lat, lng, apiKey)
+      const city = result?.city?.trim()
+      const state = result?.state?.trim()
+      if (!city || !state) return
+      const key = `${city}|${state}`
+      const alreadyApplied = strLocationRef.current?.key === key
+      strLocationRef.current = { lat, lng, key }
+      if (alreadyApplied) return
+      updateFilters({ str_city: city, str_state: state })
+    },
+    [apiKey, updateFilters],
+  )
+
+  const handleBoundsChanged = useCallback(
+    (bounds: { north: number; south: number; east: number; west: number }) => {
+      onBoundsChanged(bounds)
+      if (filters.include_str_listings) {
+        void resolveStrLocation((bounds.north + bounds.south) / 2, (bounds.east + bounds.west) / 2)
+      }
+    },
+    [onBoundsChanged, filters.include_str_listings, resolveStrLocation],
+  )
+
+  // Turning the toggle on mid-session: the camera is already idle, so no
+  // bounds event is coming — resolve from the current center directly.
+  useEffect(() => {
+    if (!filters.include_str_listings) return
+    const center = mapInstanceRef.current?.getCenter()
+    if (!center) return
+    void resolveStrLocation(center.lat(), center.lng())
+  }, [filters.include_str_listings, resolveStrLocation])
+
   const handleClearPolygon = useCallback(() => {
     if (drawingPolygon) {
       drawingPolygon.setMap(null)
@@ -1300,6 +1478,37 @@ export function MapSearchView() {
       setIsDrawing(true)
     }
   }, [isDrawing, handleClearPolygon])
+
+  /**
+   * Return to a saved area: move the camera to its bounds and replay its
+   * filters and boundary. `fitBounds` is what makes the restored search
+   * honest — searching a saved viewport while the camera showed somewhere
+   * else would put pins outside the visible map.
+   */
+  const handleApplySavedSearch = useCallback(
+    (search: SavedMapSearch) => {
+      const bounds = {
+        north: search.north,
+        south: search.south,
+        east: search.east,
+        west: search.west,
+      }
+
+      if (drawingPolygon) {
+        drawingPolygon.setMap(null)
+        setDrawingPolygon(null)
+      }
+      setIsDrawing(false)
+
+      mapInstanceRef.current?.fitBounds(
+        { north: bounds.north, south: bounds.south, east: bounds.east, west: bounds.west },
+        0,
+      )
+
+      applySavedSearch(bounds, search.polygon ?? null, fromSavedFilters(search.filters))
+    },
+    [applySavedSearch, drawingPolygon],
+  )
 
   const handleListSelect = useCallback(
     (listing: MapListing) => {
@@ -1338,14 +1547,62 @@ export function MapSearchView() {
   }, [listings, selectedIds])
 
   const handleExportCsv = useCallback(() => {
+    if (!canExport) return
     const rows = buildExportRows(getExportListings(), dealSignals)
     exportListingsCsv(rows)
-  }, [getExportListings, dealSignals])
+  }, [canExport, getExportListings, dealSignals])
 
   const handleExportExcel = useCallback(async () => {
+    if (!canExport) return
     const rows = buildExportRows(getExportListings(), dealSignals)
     await exportListingsExcel(rows)
-  }, [getExportListings, dealSignals])
+  }, [canExport, getExportListings, dealSignals])
+
+  // Bulk analyze. Each property is a full provider fan-out charged against
+  // the monthly analysis quota, so this is deliberately an explicit action on
+  // an explicit selection rather than anything that runs on its own.
+  const router = useRouter()
+  const {
+    progress: bulkProgress,
+    start: startBulkAnalyze,
+    cancel: cancelBulkAnalyze,
+    reset: resetBulkAnalyze,
+  } = useBulkAnalyze()
+  const [bulkPanelOpen, setBulkPanelOpen] = useState(false)
+
+  const handleAnalyzeSelected = useCallback(() => {
+    const selected = listings.filter((l) => selectedIds.has(l.id))
+    if (selected.length === 0) return
+    // Cap at the backend's queue limit rather than letting the request 422.
+    const addresses = selected.slice(0, BULK_ANALYZE_MAX).map((l) => l.address)
+    if (selected.length > BULK_ANALYZE_MAX) {
+      toast.info(`Analyzing the first ${BULK_ANALYZE_MAX} of ${selected.length} selected.`)
+    }
+    setBulkPanelOpen(true)
+    void startBulkAnalyze(addresses)
+  }, [listings, selectedIds, startBulkAnalyze])
+
+  const handleCloseBulkPanel = useCallback(() => {
+    setBulkPanelOpen(false)
+    resetBulkAnalyze()
+  }, [resetBulkAnalyze])
+
+  const handleOpenAnalyzedProperty = useCallback(
+    (address: string) => {
+      // Prefer the live listing so the zpid and locality ride along; the
+      // address alone still resolves, just with an extra geocode.
+      const listing = listings.find((l) => l.address === address)
+      if (listing) {
+        navigateToDiscoveryFromMap(router, listing)
+        return
+      }
+      navigateToDiscoveryFromMapPath(
+        router,
+        `/discovery?${new URLSearchParams({ address }).toString()}`,
+      )
+    },
+    [listings, router],
+  )
 
   const handleMarkerSelect = useCallback(
     (listing: MapListing | null) => {
@@ -1544,7 +1801,7 @@ export function MapSearchView() {
             dealSignals={dealSignals}
             selectedListing={selectedListing}
             onSelectListing={handleMarkerSelect}
-            onBoundsChanged={onBoundsChanged}
+            onBoundsChanged={handleBoundsChanged}
             isDrawing={isDrawing}
             onPolygonComplete={onPolygonComplete}
             drawingPolygon={drawingPolygon}
@@ -1662,11 +1919,11 @@ export function MapSearchView() {
           {/* Fit the camera to a fixed mile span around the initial location.
               Portrait: 10×5 mi; landscape/desktop: 10×10 mi. */}
           {shouldFitInitialRadius && initialLocationCenter && (
-            <FitInitialView center={initialLocationCenter} onFitted={onBoundsChanged} />
+            <FitInitialView center={initialLocationCenter} onFitted={handleBoundsChanged} />
           )}
 
           {needsGeocode && apiKey && (
-            <LabelGeocoder label={locationLabel!} apiKey={apiKey} onResolved={onBoundsChanged} />
+            <LabelGeocoder label={locationLabel!} apiKey={apiKey} onResolved={handleBoundsChanged} />
           )}
         </Map>
       </APIProvider>
@@ -1724,6 +1981,66 @@ export function MapSearchView() {
         </div>
       </div>
 
+      {/* Draw a farm boundary. The DrawingManager and the backend polygon
+          ray-cast were both already built; this is the button they were
+          missing. Investors think in boundaries — a school district, one side
+          of a highway — not in whatever rectangle the screen happens to be. */}
+      <div className="absolute top-16 left-3 z-20 flex flex-col items-start gap-2 pointer-events-auto">
+        {/* Saved areas sit with Draw area because they are the same idea one
+            step apart: define a farm boundary, then keep it. */}
+        {!!user && (
+          <SavedSearchesPanel
+            hasAccess={canSaveSearches}
+            filters={filters}
+            polygon={polygon}
+            getCurrentBounds={getCurrentBounds}
+            onApply={handleApplySavedSearch}
+            overlayChrome={overlaySurface}
+          />
+        )}
+        <button
+          type="button"
+          onClick={toggleDrawing}
+          aria-pressed={isDrawing}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold shadow-lg transition-opacity hover:opacity-90"
+          style={{
+            backgroundColor: isDrawing ? 'var(--accent-sky)' : overlaySurface.backgroundColor,
+            color: isDrawing ? '#fff' : overlaySurface.primaryText,
+            border: `1px solid ${isDrawing ? 'var(--accent-sky)' : overlaySurface.borderColor}`,
+          }}
+        >
+          <PenLine size={12} aria-hidden />
+          {isDrawing ? 'Cancel' : polygon ? 'Redraw area' : 'Draw area'}
+        </button>
+        {isDrawing && (
+          <div
+            className="px-2.5 py-1.5 rounded-lg text-[10px] leading-snug max-w-[13rem] shadow-lg"
+            style={{
+              backgroundColor: overlaySurface.backgroundColor,
+              color: overlaySurface.primaryText,
+              border: `1px solid ${overlaySurface.borderColor}`,
+            }}
+          >
+            Click to drop corners, then click the first corner to close the shape.
+          </div>
+        )}
+        {polygon && !isDrawing && (
+          <button
+            type="button"
+            onClick={handleClearPolygon}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold shadow-lg transition-opacity hover:opacity-90"
+            style={{
+              backgroundColor: overlaySurface.backgroundColor,
+              color: overlaySurface.primaryText,
+              border: `1px solid ${overlaySurface.borderColor}`,
+            }}
+          >
+            <X size={12} aria-hidden />
+            Clear area
+          </button>
+        )}
+      </div>
+
       {/* Save-default-location confirmation toast — top-center keeps it clear
           of the search bar (top-left), Filters chip (top-right), and the new
           bottom-center map type toggle. */}
@@ -1741,6 +2058,43 @@ export function MapSearchView() {
             {savedDefaultToast}
           </div>
         </div>
+      )}
+
+      {/* Expensive-mode controls. Distressed / expired / motivated-seller /
+          Owner Leads searches are dispatched per property upstream, so they
+          don't auto-run on pan: the user frames an area and asks for it. A
+          backend notice (too wide a zoom) takes priority over the button,
+          since searching again would only repeat the refusal. */}
+      {notice && !isLoading ? (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 max-w-[min(92vw,26rem)]">
+          <div
+            className="flex items-start gap-2 px-3 py-2 rounded-lg text-xs shadow-lg"
+            style={{
+              backgroundColor: overlaySurface.backgroundColor,
+              color: overlaySurface.primaryText,
+              border: `1px solid ${overlaySurface.borderColor}`,
+            }}
+            role="status"
+          >
+            <ZoomIn size={14} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--accent-sky)' }} aria-hidden />
+            <span className="leading-snug">{notice}</span>
+          </div>
+        </div>
+      ) : (
+        areaSearchPending &&
+        !isLoading && (
+          <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30">
+            <button
+              type="button"
+              onClick={searchThisArea}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold shadow-xl transition-transform hover:scale-[1.03]"
+              style={{ backgroundColor: 'var(--accent-sky)', color: '#fff' }}
+            >
+              <Search size={13} aria-hidden />
+              Search this area
+            </button>
+          </div>
+        )
       )}
 
       {/* Neighborhood Intelligence Card */}
@@ -1922,11 +2276,28 @@ export function MapSearchView() {
             onClearSelection={handleClearSelection}
             onExportCsv={handleExportCsv}
             onExportExcel={handleExportExcel}
+            canExport={canExport}
+            onAnalyzeSelected={handleAnalyzeSelected}
+            isAnalyzing={bulkProgress.isRunning}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             activeStatuses={filters.listing_statuses}
             onResetStatuses={() => updateFilters({ listing_statuses: [] })}
             sortBy={filters.sort_by}
+            resultsArePartial={resultsArePartial}
+          />
+        </div>
+      )}
+      {/* Above the List overlay so the ranked list survives a flip back to
+          the map — the results were paid for out of the analysis quota. */}
+      {bulkPanelOpen && (
+        <div className="absolute top-3 right-3 z-50 pointer-events-auto">
+          <BulkAnalyzePanel
+            progress={bulkProgress}
+            onClose={handleCloseBulkPanel}
+            onCancel={cancelBulkAnalyze}
+            onOpenProperty={handleOpenAnalyzedProperty}
+            overlayChrome={overlaySurface}
           />
         </div>
       )}

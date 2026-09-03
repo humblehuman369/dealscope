@@ -42,6 +42,8 @@ _V1_ROUTER_MANIFEST: list[tuple[str, str]] = [
     ("Defaults", "app.routers.defaults"),
     ("Devices", "app.routers.devices"),
     ("Map Search", "app.routers.map_search"),
+    ("Saved Map Searches", "app.routers.saved_map_searches"),
+    ("Bulk Analyze", "app.routers.bulk_analyze"),
     ("Rehab", "app.routers.rehab"),
     ("Jobs", "app.routers.jobs"),
     ("Markets", "app.routers.markets"),

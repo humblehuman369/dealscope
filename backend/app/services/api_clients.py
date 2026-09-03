@@ -2062,6 +2062,34 @@ class DataNormalizer:
                 if isinstance(fdn, list) and fdn:
                     normalized["foundation_type"] = ", ".join(str(f) for f in fdn)
 
+    @staticmethod
+    def _by_bedrooms(
+        section: Any,
+        field: str,
+        coerce: Any,
+    ) -> dict[str, float | int]:
+        """Pull ``field`` out of a RentCast ``dataByBedrooms`` array.
+
+        Keyed by bedroom count as a string so the mapping survives JSON.
+        """
+        if not isinstance(section, dict):
+            return {}
+        buckets = section.get("dataByBedrooms")
+        if not isinstance(buckets, list):
+            return {}
+        out: dict[str, float | int] = {}
+        for bucket in buckets:
+            if not isinstance(bucket, dict):
+                continue
+            value = coerce(bucket.get(field))
+            if value is None:
+                continue
+            try:
+                out[str(int(bucket.get("bedrooms")))] = value
+            except (TypeError, ValueError):
+                continue
+        return out
+
     def _extract_market_statistics(
         self,
         normalized: dict[str, Any],
@@ -2102,6 +2130,12 @@ class DataNormalizer:
             normalized["rental_days_on_market"] = _safe_num(rental.get("medianDaysOnMarket"))
             normalized["rental_total_listings"] = _safe_num(rental.get("totalListings"))
             normalized["rental_new_listings"] = _safe_num(rental.get("newListings"))
+
+        # Bedroom-matched medians. RentCast returns these alongside the ZIP-wide
+        # figures and they were being dropped, which is why a 4-bed was screened
+        # against a ZIP median dominated by 2-beds.
+        normalized["market_median_price_by_bedrooms"] = self._by_bedrooms(sale, "medianPrice", _safe_num)
+        normalized["rental_market_median_by_bedrooms"] = self._by_bedrooms(rental, "medianRent", _safe_num)
 
     def _extract_listing_info(
         self,

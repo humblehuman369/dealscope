@@ -1200,9 +1200,10 @@ class MapSearchRequest(BaseModel):
     listing_statuses: list[str] | None = Field(
         default=None,
         description=(
-            "Canonical listing status filter. Values: 'active', 'pending', "
-            "'foreclosure', 'pre-foreclosure', 'auction'. None or empty list "
-            "means active-only (current default behavior)."
+            "Canonical listing status filter. Values: 'active', 'owner_listed', "
+            "'foreclosure', 'pre-foreclosure', 'auction', 'expired' — the set in "
+            "map_search_service.CANONICAL_STATUSES. Unrecognized values are "
+            "dropped. None or empty list means active-only."
         ),
     )
     include_str_listings: bool = Field(
@@ -1326,6 +1327,30 @@ class MapListing(BaseModel):
         description="ISO date the listing was delisted/removed (expired-listing mode).",
     )
 
+    # ── ZIP rent-vs-price screen ────────────────────────────────────────
+    # A screen, not a valuation. These come from the ZIP's RentCast medians
+    # (see zip_market_service), so they say "homes like this in this ZIP rent
+    # for about X" — never "this property rents for X". The real per-property
+    # Deal Gap stays behind the click-through to Discovery.
+    zip_median_rent: float | None = Field(
+        default=None,
+        description="Median monthly rent for the listing's ZIP, bedroom-matched when that bucket exists.",
+    )
+    zip_median_rent_basis: Literal["bedroom", "zip"] | None = Field(
+        default=None,
+        description=(
+            "Precision of zip_median_rent: 'bedroom' = the ZIP's median for this "
+            "bedroom count, 'zip' = the ZIP-wide median. None when unavailable."
+        ),
+    )
+    zip_rent_to_price: float | None = Field(
+        default=None,
+        description=(
+            "zip_median_rent / price — the monthly rent-to-price ratio screen. "
+            "None when either side is missing; never derived from a ratio table."
+        ),
+    )
+
 
 class MapSearchResponse(BaseModel):
     """Response for map-based listing search."""
@@ -1336,6 +1361,14 @@ class MapSearchResponse(BaseModel):
         default=None, description="Estimated total listings in the area (for large viewport extrapolation)"
     )
     viewport_center: list[float] = Field(description="[lat, lng] center of the searched area")
+    notice: str | None = Field(
+        default=None,
+        description=(
+            "Human-readable explanation when the search was deliberately not run "
+            "(e.g. an expensive mode requested at too wide a zoom). Present with "
+            "an empty listings array."
+        ),
+    )
 
 
 # ============================================

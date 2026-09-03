@@ -1,11 +1,25 @@
 'use client'
 
 import { useCallback, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Clock, ArrowRight, Layers, Download, FileSpreadsheet } from 'lucide-react'
+import {
+  Clock,
+  ArrowRight,
+  Layers,
+  Download,
+  FileSpreadsheet,
+  Lock,
+  Check,
+  EyeOff,
+  AlertTriangle,
+  Loader2,
+  TrendingUp,
+} from 'lucide-react'
 import type { MapListing } from '@/lib/api'
 import type { DealSignalResult, SortOption } from '@/lib/dealSignal'
 import { displayListingStatus } from '@/lib/dealSignal'
+import { DIRECTORY_ACCESS_NOTE } from '@/lib/planFeatures'
 import { useListingPhoto } from './listingPhoto'
 import {
   navigateToDiscoveryFromMap,
@@ -13,6 +27,8 @@ import {
   mapSelectionCtaLabel,
 } from './mapDiscoveryNavigation'
 import { MapViewModeToggle } from './MapViewModeToggle'
+import { pinKey, useMapPinMarks, type PinMark } from './mapPinState'
+import { getZipRentScreen, zipRentRatioColor } from './zipRentScreen'
 
 const SORT_LABELS: Record<SortOption, string> = {
   deal_signal: 'Opportunity',
@@ -42,11 +58,18 @@ interface PropertyListViewProps {
   onClearSelection: () => void
   onExportCsv: () => void
   onExportExcel: () => void
+  /** Bulk export is paid-only (see planFeatures.ts DIRECTORY_ACCESS_NOTE). */
+  canExport: boolean
+  /** Queue the current selection for Deal Gap ranking. */
+  onAnalyzeSelected: () => void
+  isAnalyzing: boolean
   viewMode: 'map' | 'list'
   onViewModeChange: (mode: 'map' | 'list') => void
   activeStatuses?: string[]
   onResetStatuses?: () => void
   sortBy?: SortOption
+  /** True when the viewport holds more listings than one search returns. */
+  resultsArePartial?: boolean
 }
 
 function formatPrice(price: number | null): string {
@@ -96,6 +119,19 @@ function PropertyListRow({
     streetViewSize: '160x120',
   })
 
+  const { marks, setMark } = useMapPinMarks()
+  const key = pinKey(listing)
+  const mark = marks[key]
+  const rentScreen = getZipRentScreen(listing)
+
+  const handleMark = useCallback(
+    (next: PinMark) => (e: React.MouseEvent) => {
+      e.stopPropagation()
+      setMark(key, mark === next ? null : next)
+    },
+    [setMark, key, mark],
+  )
+
   const handleAnalyze = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
@@ -138,6 +174,7 @@ function PropertyListRow({
         border: isHighlighted
           ? '2px solid var(--accent-sky)'
           : '1px solid var(--border-default)',
+        opacity: mark === 'passed' && !isHighlighted ? 0.5 : undefined,
       }}
     >
       <div className="flex items-center shrink-0">
@@ -195,6 +232,21 @@ function PropertyListRow({
           </p>
         )}
 
+        {rentScreen && (
+          <p className="text-[10px] truncate" title={rentScreen.disclosure}>
+            <span
+              className="font-bold"
+              style={{ color: zipRentRatioColor(listing.zip_rent_to_price) }}
+            >
+              {rentScreen.ratioLabel ? `${rentScreen.ratioLabel} rent/price` : rentScreen.rentLabel}
+            </span>
+            <span style={{ color: 'var(--text-secondary)' }}>
+              {' '}
+              · {rentScreen.rentLabel} {rentScreen.basisLabel}
+            </span>
+          </p>
+        )}
+
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2 min-w-0 flex-wrap">
             {signal && (
@@ -231,14 +283,48 @@ function PropertyListRow({
               </span>
             )}
           </div>
-          <button
-            type="button"
-            onClick={handleAnalyze}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold transition-opacity hover:opacity-90 shrink-0"
-            style={{ backgroundColor: 'var(--accent-sky)', color: '#fff' }}
-          >
-            {ctaLabel} <ArrowRight size={10} aria-hidden />
-          </button>
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={handleMark('reviewed')}
+              aria-pressed={mark === 'reviewed'}
+              aria-label={`Mark ${listing.address} reviewed`}
+              title="Reviewed"
+              className="flex items-center justify-center h-[22px] w-[22px] rounded-md transition-opacity hover:opacity-90"
+              style={{
+                backgroundColor:
+                  mark === 'reviewed' ? 'var(--accent-sky)' : 'var(--surface-elevated)',
+                color: mark === 'reviewed' ? '#fff' : 'var(--text-secondary)',
+                border: `1px solid ${mark === 'reviewed' ? 'var(--accent-sky)' : 'var(--border-subtle)'}`,
+              }}
+            >
+              <Check size={11} aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={handleMark('passed')}
+              aria-pressed={mark === 'passed'}
+              aria-label={`Pass on ${listing.address}`}
+              title="Pass"
+              className="flex items-center justify-center h-[22px] w-[22px] rounded-md transition-opacity hover:opacity-90"
+              style={{
+                backgroundColor:
+                  mark === 'passed' ? 'var(--text-secondary)' : 'var(--surface-elevated)',
+                color: mark === 'passed' ? '#fff' : 'var(--text-secondary)',
+                border: `1px solid ${mark === 'passed' ? 'var(--text-secondary)' : 'var(--border-subtle)'}`,
+              }}
+            >
+              <EyeOff size={11} aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={handleAnalyze}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold transition-opacity hover:opacity-90"
+              style={{ backgroundColor: 'var(--accent-sky)', color: '#fff' }}
+            >
+              {ctaLabel} <ArrowRight size={10} aria-hidden />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -257,11 +343,15 @@ export function PropertyListView({
   onClearSelection,
   onExportCsv,
   onExportExcel,
+  canExport,
+  onAnalyzeSelected,
+  isAnalyzing,
   viewMode,
   onViewModeChange,
   activeStatuses,
   onResetStatuses,
   sortBy = 'deal_signal',
+  resultsArePartial = false,
 }: PropertyListViewProps) {
   const selectAllRef = useRef<HTMLInputElement>(null)
   const allSelected = listings.length > 0 && selectedIds.size === listings.length
@@ -393,49 +483,103 @@ export function PropertyListView({
         </div>
 
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <span
-            className="flex items-center gap-1 text-[10px]"
-            style={{ color: 'var(--text-secondary)' }}
-            title={
-              sortBy === 'deal_signal'
-                ? 'Marker colors rank motivation (distressed, time on market, FSBO). Same priority when Opportunity sort is selected.'
-                : undefined
-            }
-          >
-            <Layers size={10} aria-hidden />
-            Sorted by {SORT_LABELS[sortBy]}
-          </span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+            <span
+              className="flex items-center gap-1 text-[10px]"
+              style={{ color: 'var(--text-secondary)' }}
+              title={
+                sortBy === 'deal_signal'
+                  ? 'Marker colors rank motivation (distressed, time on market, FSBO). Same priority when Opportunity sort is selected.'
+                  : undefined
+              }
+            >
+              <Layers size={10} aria-hidden />
+              Sorted by {SORT_LABELS[sortBy]}
+            </span>
+            {/* Sorting runs over what the providers returned, not over the
+                whole market. Saying so is the difference between a ranking
+                the investor can trust and one that quietly misleads. */}
+            {resultsArePartial && (
+              <span
+                className="flex items-center gap-1 text-[10px] font-medium"
+                style={{ color: 'var(--status-warning)' }}
+                title="This viewport holds more listings than one search returns, so the ranking covers a sample of it. Zoom in to rank a complete area."
+              >
+                <AlertTriangle size={10} aria-hidden />
+                within a partial sample — zoom in to rank it all
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Ranking is the primary action, so it leads — but only on an
+              explicit selection. Each property spends one analysis from the
+              monthly quota, and defaulting to "all visible" would burn a
+              Starter plan's entire month on one click. */}
+          {selectedIds.size > 0 && (
             <button
               type="button"
-              onClick={onExportCsv}
-              disabled={exportCount === 0}
-              title={`Export ${exportScopeLabel.toLowerCase()} listings as CSV`}
-              className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-40"
+              onClick={onAnalyzeSelected}
+              disabled={isAnalyzing}
+              title={`Analyze ${selectedIds.size} selected and rank by Deal Gap`}
+              className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-opacity hover:opacity-90 disabled:opacity-40"
+              style={{ backgroundColor: 'var(--accent-sky)', color: '#fff' }}
+            >
+              {isAnalyzing ? (
+                <Loader2 size={11} className="animate-spin" aria-hidden />
+              ) : (
+                <TrendingUp size={11} aria-hidden />
+              )}
+              Rank by Deal Gap ({selectedIds.size})
+            </button>
+          )}
+          {canExport ? (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={onExportCsv}
+                disabled={exportCount === 0}
+                title={`Export ${exportScopeLabel.toLowerCase()} listings as CSV`}
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-40"
+                style={{
+                  backgroundColor: 'var(--surface-elevated)',
+                  color: 'var(--text-heading)',
+                  border: '1px solid var(--border-subtle)',
+                }}
+              >
+                <Download size={11} aria-hidden />
+                CSV ({exportCount})
+              </button>
+              <button
+                type="button"
+                onClick={onExportExcel}
+                disabled={exportCount === 0}
+                title={`Export ${exportScopeLabel.toLowerCase()} listings as Excel`}
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-40"
+                style={{
+                  backgroundColor: 'var(--surface-elevated)',
+                  color: 'var(--text-heading)',
+                  border: '1px solid var(--border-subtle)',
+                }}
+              >
+                <FileSpreadsheet size={11} aria-hidden />
+                Excel ({exportCount})
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/pricing"
+              className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-opacity hover:opacity-90"
+              title={DIRECTORY_ACCESS_NOTE}
               style={{
                 backgroundColor: 'var(--surface-elevated)',
-                color: 'var(--text-heading)',
+                color: 'var(--accent-sky)',
                 border: '1px solid var(--border-subtle)',
               }}
             >
-              <Download size={11} aria-hidden />
-              CSV ({exportCount})
-            </button>
-            <button
-              type="button"
-              onClick={onExportExcel}
-              disabled={exportCount === 0}
-              title={`Export ${exportScopeLabel.toLowerCase()} listings as Excel`}
-              className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-40"
-              style={{
-                backgroundColor: 'var(--surface-elevated)',
-                color: 'var(--text-heading)',
-                border: '1px solid var(--border-subtle)',
-              }}
-            >
-              <FileSpreadsheet size={11} aria-hidden />
-              Excel ({exportCount})
-            </button>
+              <Lock size={11} aria-hidden />
+              Export ({exportCount}) — Pro
+            </Link>
+          )}
           </div>
         </div>
       </div>
