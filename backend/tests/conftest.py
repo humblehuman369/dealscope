@@ -76,6 +76,7 @@ from app.models.cash_buyer import CashBuyer
 from app.models.geo_city import GeoCity
 from app.models.geo_county import GeoCounty
 from app.models.lender import Lender
+from app.models.linkedin_post import LinkedInPost  # noqa: F401
 from app.repositories.role_repository import role_repo
 from app.repositories.user_repository import user_repo
 from app.services.auth_service import auth_service

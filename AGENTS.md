@@ -295,6 +295,32 @@ Everything else in the app is either fully static or fully dynamic.
 
 ---
 
+## 13. LinkedIn publisher
+
+A queue, not a generator. Humans write every post in a batch YAML under
+`docs/marketing/linkedin/batches/`; the cron publishes approved rows.
+
+- **Queue:** `linkedin_posts` (Postgres). Import via
+  `cd backend && python -m scripts.import_linkedin_batch <file.yaml>`.
+  Rows land as `draft`. Approve with
+  `POST /api/v1/admin/linkedin/posts/{id}/approve` (`admin:system`).
+- **Trigger:** `POST /api/v1/jobs/linkedin-publish` every 30 minutes from
+  `.github/workflows/cron-jobs.yml`. Same `X-Cron-Token` as the other jobs.
+  Not on the embedded APScheduler.
+- **Dry run:** `LINKEDIN_PUBLISH_ENABLED=false` (the default) does everything
+  except LinkedIn write calls and does not consume the row. Production stays
+  dry-run until a human flips the flag on Railway.
+- **Never retry a row that has a `linkedin_post_urn`.** The URN is written the
+  moment LinkedIn returns it, before status flips to `published`. A crash
+  between those writes is repaired to `published` on the next tick — it must
+  not create a second post.
+- **Tokens live in env vars only** (`LINKEDIN_FOUNDER_*`, `LINKEDIN_COMPANY_*`,
+  `LINKEDIN_CLIENT_*`, `LINKEDIN_TOKEN_EXPIRES_AT_*`). Never Postgres. Company
+  posting is optional until Community Management API access is granted.
+- **Operator runbook:** `docs/marketing/linkedin/README.md`.
+
+---
+
 **Maintained by**: Frontend Platform Team  
 **Last Updated**: Phase 5 — May 14, 2026 (Post-Full Audit)
 
