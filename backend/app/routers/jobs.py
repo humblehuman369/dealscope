@@ -21,8 +21,11 @@ from app.core.deps import DbSession
 from app.schemas.saved_map_search import SavedSearchAlertRunResult
 from app.services.gap_alert_jobs import send_gap_alerts
 from app.services.linkedin_publish_jobs import run_linkedin_publish
+from app.services.marketing_metrics_jobs import run_marketing_metrics
+from app.services.marketing_ops_jobs import run_marketing_alerts, run_weekly_rollup
 from app.services.notification_jobs import send_overdue_task_digests
 from app.services.saved_search_alert_jobs import send_saved_search_alerts
+from app.services.x_publish_jobs import run_x_publish
 
 logger = logging.getLogger(__name__)
 
@@ -150,4 +153,68 @@ async def linkedin_publish(
     _enforce_cron_token(x_cron_token, client_ip=client_ip)
     result = await run_linkedin_publish(db)
     logger.info("linkedin-publish run: %s", result)
+    return result
+
+
+@router.post(
+    "/x-publish",
+    summary="Publish due approved X posts/threads (max 5 per run)",
+)
+async def x_publish(
+    request: Request,
+    db: DbSession,
+    x_cron_token: str | None = Header(default=None, alias="X-Cron-Token"),
+):
+    client_ip = _get_client_ip(request)
+    _enforce_cron_token(x_cron_token, client_ip=client_ip)
+    result = await run_x_publish(db)
+    logger.info("x-publish run: %s", result)
+    return result
+
+
+@router.post(
+    "/marketing-metrics",
+    summary="Pull yesterday's PostHog funnel and lagged Search Console rows into marketing_metrics_daily",
+)
+async def marketing_metrics(
+    request: Request,
+    db: DbSession,
+    x_cron_token: str | None = Header(default=None, alias="X-Cron-Token"),
+):
+    client_ip = _get_client_ip(request)
+    _enforce_cron_token(x_cron_token, client_ip=client_ip)
+    result = await run_marketing_metrics(db)
+    logger.info("marketing-metrics run: %s", result)
+    return result
+
+
+@router.post(
+    "/marketing-alerts",
+    summary="Email admins about missed bot runs, expiring publisher tokens, and overdue marketing crons",
+)
+async def marketing_alerts(
+    request: Request,
+    db: DbSession,
+    x_cron_token: str | None = Header(default=None, alias="X-Cron-Token"),
+):
+    client_ip = _get_client_ip(request)
+    _enforce_cron_token(x_cron_token, client_ip=client_ip)
+    result = await run_marketing_alerts(db)
+    logger.info("marketing-alerts run: %s", result)
+    return result
+
+
+@router.post(
+    "/marketing-weekly-rollup",
+    summary="Write the Monday weekly rollup brief (7d vs prior 7d) into marketing_briefs",
+)
+async def marketing_weekly_rollup(
+    request: Request,
+    db: DbSession,
+    x_cron_token: str | None = Header(default=None, alias="X-Cron-Token"),
+):
+    client_ip = _get_client_ip(request)
+    _enforce_cron_token(x_cron_token, client_ip=client_ip)
+    result = await run_weekly_rollup(db)
+    logger.info("marketing-weekly-rollup run: %s", result)
     return result

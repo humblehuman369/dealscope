@@ -243,7 +243,12 @@ def parse_batch_data(raw: dict[str, Any], *, source_dir: Path) -> ParsedBatch:
     return ParsedBatch(batch=batch_name, timezone=tz_name, posts=parsed, source_dir=source_dir)
 
 
-async def import_batch(db: AsyncSession, parsed: ParsedBatch) -> list[ImportChange]:
+async def import_batch(
+    db: AsyncSession,
+    parsed: ParsedBatch,
+    *,
+    created_by: str = "human",
+) -> list[ImportChange]:
     changes: list[ImportChange] = []
     existing_rows = (
         await db.execute(
@@ -271,6 +276,7 @@ async def import_batch(db: AsyncSession, parsed: ParsedBatch) -> list[ImportChan
                 first_comment=item.first_comment,
                 reshare_of_key=item.reshare_of_key,
                 status=LinkedInPostStatus.DRAFT,
+                created_by=created_by,
             )
             db.add(row)
             changes.append(ImportChange(key=item.key, action="inserted", status="draft"))

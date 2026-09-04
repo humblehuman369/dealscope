@@ -21,6 +21,16 @@ from app.models.linkedin_post import (
     LinkedInPost,
     LinkedInPostStatus,
 )
+from app.models.marketing import (
+    BotRun,
+    BotRunStatus,
+    BriefKind,
+    BriefStatus,
+    MarketingBrief,
+    MarketingChannel,
+    MarketingMetricDaily,
+    MetricSource,
+)
 from app.models.offer import OfferStatus, PropertyOffer
 from app.models.role import Permission, Role, RolePermission, UserRole
 from app.models.saved_directory_contact import DirectoryEntityType, SavedDirectoryContact
@@ -33,12 +43,17 @@ from app.models.subscription import PaymentHistory, Subscription, SubscriptionSt
 from app.models.task import PropertyTask
 from app.models.user import User, UserProfile
 from app.models.verification_token import TokenType, VerificationToken
+from app.models.x_post import XPost, XPostStatus
 
 __all__ = [
     "AdminAssumptionDefaults",
     "AlertFrequency",
     "AuditAction",
     "AuditLog",
+    "BotRun",
+    "BotRunStatus",
+    "BriefKind",
+    "BriefStatus",
     "BudgetExpense",
     "BudgetLine",
     "CashBuyer",
@@ -58,6 +73,10 @@ __all__ = [
     "LinkedInMediaType",
     "LinkedInPost",
     "LinkedInPostStatus",
+    "MarketingBrief",
+    "MarketingChannel",
+    "MarketingMetricDaily",
+    "MetricSource",
     "OfferStatus",
     "PaymentHistory",
     "Permission",
@@ -84,4 +103,6 @@ __all__ = [
     "UserRole",
     "UserSession",
     "VerificationToken",
+    "XPost",
+    "XPostStatus",
 ]

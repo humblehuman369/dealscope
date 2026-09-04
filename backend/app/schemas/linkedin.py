@@ -34,6 +34,7 @@ class LinkedInPostOut(BaseModel):
     published_at: datetime | None
     error: str | None
     attempts: int
+    created_by: str
     created_at: datetime
     updated_at: datetime
 

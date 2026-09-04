@@ -1203,6 +1203,55 @@ class EmailService:
             html=html,
         )
 
+    async def send_marketing_alert_email(
+        self,
+        to: str | list[str],
+        issues: list[str],
+        dashboard_url: str,
+        idempotency_key: str | None = None,
+    ) -> dict[str, Any]:
+        """Internal alert from the marketing-alerts cron: missed bot runs,
+        expiring publisher tokens, overdue marketing jobs. Sent only when
+        ``issues`` is non-empty; the caller decides that."""
+        items = "".join(
+            f'<li style="font-size: 15px; color: {self.TXT_HEADING}; line-height: 1.5; margin: 0 0 8px 0;">'
+            f"{html_lib.escape(issue)}</li>"
+            for issue in issues
+        )
+        count = len(issues)
+        content = f"""
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 16px 0; letter-spacing: -0.02em;">
+    Marketing ops needs attention
+</h1>
+<p style="font-size: 16px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 24px 0;">
+    {count} issue{"s" if count != 1 else ""} found by the daily marketing-alerts check.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 20px; background-color: {self.NESTED_BG}; border: 1px solid {self.BORDER}; border-radius: 12px;">
+            <ul style="margin: 0; padding-left: 20px;">{items}</ul>
+        </td>
+    </tr>
+</table>
+
+<p style="margin: 0 0 24px 0;">
+    <a href="{html_lib.escape(dashboard_url)}" style="display: inline-block; padding: 12px 20px; background-color: {self.BRAND_FROM}; color: #FFFFFF; text-decoration: none; font-weight: 700; border-radius: 8px; font-size: 15px;">Open /admin/marketing</a>
+</p>
+
+<p style="font-size: 12px; color: {self.TXT_DIM}; line-height: 1.6; margin: 16px 0 0 0;">
+    Internal operational notification. Recipients come from
+    <code style="color: {self.TXT_SECONDARY};">ADMIN_NOTIFICATION_EMAILS</code>. No email is sent on healthy days.
+</p>
+"""
+        html = self._base_template(content, f"{count} marketing ops issue{'s' if count != 1 else ''}")
+        return await self.send_email(
+            to=to,
+            subject=f"[DealGapIQ Marketing] {count} issue{'s' if count != 1 else ''} need attention",
+            html=html,
+            idempotency_key=idempotency_key,
+        )
+
     async def send_mfa_enabled_email(
         self,
         to: str,

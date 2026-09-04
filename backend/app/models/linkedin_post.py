@@ -111,6 +111,8 @@ class LinkedInPost(Base):
 
     error: Mapped[str | None] = mapped_column(Text)
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # ``human`` for YAML imports; ``bot:<name>`` for rows the bot API drafted.
+    created_by: Mapped[str] = mapped_column(String(255), nullable=False, default="human")
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

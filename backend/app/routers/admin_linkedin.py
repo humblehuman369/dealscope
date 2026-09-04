@@ -1,4 +1,4 @@
-"""Admin API for the LinkedIn publish queue. No frontend; curl is enough."""
+"""Admin API for the LinkedIn publish queue. Consumed by /admin/marketing."""
 
 from __future__ import annotations
 
@@ -13,6 +13,8 @@ from app.core.deps import DbSession, require_permission
 from app.models.linkedin_post import LinkedInPost, LinkedInPostStatus
 from app.models.user import User
 from app.schemas.linkedin import LinkedInPostOut, LinkedInPostPreview
+from app.schemas.marketing import LinkedInPostEdit
+from app.services.linkedin_batch import LINKEDIN_BODY_MAX
 from app.services.linkedin_publish_jobs import preview_post
 
 router = APIRouter(prefix="/linkedin", tags=["Admin"])
@@ -85,6 +87,43 @@ async def approve_linkedin_post(
     row.approved_by = _approved_by(admin_user)
     row.approved_at = datetime.now(UTC)
     row.error = None
+    await db.commit()
+    await db.refresh(row)
+    return row
+
+
+@router.patch("/posts/{post_id}", response_model=LinkedInPostOut)
+async def edit_linkedin_post(
+    post_id: UUID,
+    payload: LinkedInPostEdit,
+    db: DbSession,
+    _admin: User = Depends(require_permission("admin:system")),
+):
+    """Edit body, first comment, or schedule. Only draft/approved rows are editable."""
+    row = await db.get(LinkedInPost, post_id)
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    if row.status not in (LinkedInPostStatus.DRAFT, LinkedInPostStatus.APPROVED):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"{row.status.value} rows cannot be edited",
+        )
+    if payload.body is not None:
+        if len(payload.body) > LINKEDIN_BODY_MAX:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"body is {len(payload.body)} chars; LinkedIn limit is {LINKEDIN_BODY_MAX}",
+            )
+        row.body = payload.body
+    if payload.first_comment is not None:
+        if "utm_source=linkedin" not in payload.first_comment:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="first_comment must include utm_source=linkedin",
+            )
+        row.first_comment = payload.first_comment
+    if payload.scheduled_at is not None:
+        row.scheduled_at = payload.scheduled_at
     await db.commit()
     await db.refresh(row)
     return row

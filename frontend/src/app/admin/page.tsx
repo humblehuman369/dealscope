@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { BarChart3, SlidersHorizontal, BookOpen, Users, ShieldCheck } from 'lucide-react'
+import Link from 'next/link'
+import { BarChart3, SlidersHorizontal, BookOpen, Users, ShieldCheck, Megaphone } from 'lucide-react'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { PlatformStatsSection } from '@/features/admin/components/PlatformStats'
 import { AdminAssumptionsSection } from '@/features/admin/components/AdminAssumptions'
@@ -64,6 +65,14 @@ function AdminDashboardContent() {
               {tab.label}
             </button>
           ))}
+          {/* Marketing Ops is its own route so bot messages can deep-link to the approval queue. */}
+          <Link
+            href="/admin/marketing"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all whitespace-nowrap bg-[var(--surface-card)] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]"
+          >
+            <Megaphone className="w-4 h-4" />
+            Marketing Ops
+          </Link>
         </div>
 
         {/* ── Tab Content ───────────────────────── */}

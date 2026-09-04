@@ -17,6 +17,8 @@ from app.models.subscription import SubscriptionTier
 from app.models.user import User
 from app.repositories.audit_repository import audit_repo
 from app.routers.admin_linkedin import router as linkedin_router
+from app.routers.admin_marketing import router as marketing_router
+from app.routers.admin_x import router as x_router
 from app.schemas.admin import (
     AdminAssumptionsResponse,
     AdminSubscriptionUpdate,
@@ -38,6 +40,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/admin", tags=["Admin"])
 router.include_router(linkedin_router)
+router.include_router(marketing_router)
+router.include_router(x_router)
 
 
 # ===========================================

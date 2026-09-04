@@ -152,6 +152,47 @@ class Settings(BaseSettings):
     LINKEDIN_TOKEN_EXPIRES_AT_COMPANY: str = ""
 
     # ===========================================
+    # Marketing Ops Hub (bot API + first-party metric pulls)
+    # ===========================================
+    # Shared secret presented by Grok Bots via the X-Bot-Token header on
+    # /api/v1/marketing/bot/*. The bot surface is draft-only: it can read
+    # metrics and write drafts/briefs/snapshots, never approve or publish.
+    # Empty default disables the bot API (404 on every call).
+    MARKETING_BOT_TOKEN: str = ""
+    # PostHog *query* API (HogQL). Distinct from the ingest token/host above:
+    # a personal API key with query:read scope and the numeric project id.
+    POSTHOG_PERSONAL_API_KEY: str = ""
+    POSTHOG_PROJECT_ID: str = ""
+    POSTHOG_API_HOST: str = "https://us.posthog.com"
+    # Google Search Console: service-account JSON (full document, one line)
+    # and the verified property, e.g. "sc-domain:dealgapiq.com".
+    GSC_SERVICE_ACCOUNT_JSON: str = ""
+    GSC_SITE_URL: str = ""
+    # Public site origin used to attribute GSC rows to blog URLs.
+    MARKETING_SITE_ORIGIN: str = "https://dealgapiq.com"
+    # Blog drafts arrive as GitHub PRs on bot/blog/* branches. The backend lists
+    # the open ones (and their Vercel preview URL) for the brief and the admin
+    # UI. Token is read-only: fine-grained, "Pull requests: read" + "Commit
+    # statuses: read". Empty = unauthenticated (public repos only, 60 req/h).
+    MARKETING_GITHUB_REPO: str = "humblehuman369/dealscope"
+    MARKETING_GITHUB_TOKEN: str = ""
+
+    # ===========================================
+    # X (Twitter) publisher — official API v2, OAuth 1.0a user context
+    # ===========================================
+    # Dry run by default, same contract as LINKEDIN_PUBLISH_ENABLED.
+    X_PUBLISH_ENABLED: bool = False
+    # Developer Console app credentials (consumer key/secret) plus the access
+    # token/secret generated for the DealGapIQ account with Read+Write. OAuth
+    # 1.0a user tokens do not expire, so there is no refresh dance to run.
+    # X API is pay-per-use (verified 2026-09-04): $0.015 per post, $0.20 per
+    # post containing a URL. Credits are bought in the Developer Console.
+    X_API_KEY: str = ""
+    X_API_SECRET: str = ""
+    X_ACCESS_TOKEN: str = ""
+    X_ACCESS_TOKEN_SECRET: str = ""
+
+    # ===========================================
     # JWT Authentication
     # ===========================================
     # SECURITY: SECRET_KEY must be set via environment variable.

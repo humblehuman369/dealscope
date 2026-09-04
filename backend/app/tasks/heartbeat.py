@@ -47,6 +47,13 @@ EXPECTED_JOBS: dict[str, int] = {
     "email_activity_digest": 8 * _DAY,
     # 30-minute GitHub Actions cron; 3h buffer matches the other frequent jobs.
     "linkedin_publish": 3 * _HOUR,
+    "x_publish": 3 * _HOUR,
+    # Daily GitHub Actions cron (06:00 UTC).
+    "marketing_metrics": 26 * _HOUR,
+    # Daily GitHub Actions cron (12:00 UTC, after the bot routines).
+    "marketing_alerts": 26 * _HOUR,
+    # Mondays 12:15 UTC.
+    "marketing_weekly_rollup": 8 * _DAY,
 }
 
 
