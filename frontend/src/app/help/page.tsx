@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 interface FAQItem {
   question: string
@@ -113,6 +114,7 @@ export const metadata: Metadata = {
       'Answers to common questions about DealGapIQ — getting started, scoring, reports, mobile app, and account.',
     url: '/help',
     type: 'website',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

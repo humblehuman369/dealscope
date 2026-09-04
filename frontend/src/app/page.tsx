@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { FaqJsonLd } from '@/components/seo/FaqJsonLd'
 import HomePageClient from './_components/HomePageClient'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 const defaultTitle = 'DealGapIQ - Real Estate Investment Analytics'
 const defaultDescription =
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
     type: 'website',
     url: '/',
     siteName: 'DealGapIQ',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

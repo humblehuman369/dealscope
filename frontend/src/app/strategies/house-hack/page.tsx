@@ -4,6 +4,7 @@ import { Users, Home, BookOpen, CreditCard } from 'lucide-react'
 import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
 import { StrategySchema } from '@/components/seo/StrategySchema'
 import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'House Hack Strategy — Live for Free with Multi-Unit & FHA | DealGapIQ',
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
       'FHA/VA financing on 2-4 units, owner-occupant rules, and the math on rent offsets.',
     url: '/strategies/house-hack',
     type: 'article',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

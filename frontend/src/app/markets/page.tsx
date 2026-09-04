@@ -7,6 +7,7 @@ import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 import { SITE_URL } from '@/lib/seo/blog-schema'
 import { PostCard } from '@/components/blog/PostCard'
 import { UsStatesMap } from '@/components/markets/UsStatesMap'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 // ISR: Next only accepts a literal here; keep in step with MARKETS_REVALIDATE_SECONDS.
 export const revalidate = 86400
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: '/markets' },
   robots: INDEXABLE_ROBOTS,
-  openGraph: { title: TITLE, description: DESCRIPTION, url: '/markets', type: 'website' },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: '/markets', type: 'website', images: [BRAND_OG_IMAGE] },
   twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION },
 }
 

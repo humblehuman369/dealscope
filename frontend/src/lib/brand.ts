@@ -22,6 +22,18 @@ export const BRAND_ASSETS = {
 
 export const BRAND_LOGO_SIZE = { width: 1200, height: 339 } as const
 
+/**
+ * Default social share card. Next.js does not deep-merge `openGraph`, so every
+ * page that declares its own `openGraph` block must include this in `images`
+ * (Twitter falls back to og:image automatically).
+ */
+export const BRAND_OG_IMAGE = {
+  url: '/brand/Logo/Social/OpenGraph_Share_1200x630.png',
+  width: 1200,
+  height: 630,
+  alt: 'DealGapIQ',
+} as const
+
 export function brandLogo(theme: ThemeMode): string {
   return theme === 'light' ? BRAND_ASSETS.logoOnLight : BRAND_ASSETS.logoOnDark
 }

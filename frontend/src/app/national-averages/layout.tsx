@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'National Investment Benchmarks — Cap Rate, DSCR, Cash-on-Cash | DealGapIQ',
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
       'Cap rate, DSCR, cash-on-cash, and five more metrics with national benchmarks and interpretation guidance.',
     url: '/national-averages',
     type: 'article',
+    images: [BRAND_OG_IMAGE],
   },
   robots: { index: true, follow: true },
 }

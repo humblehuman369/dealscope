@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'Disclosures — DealGapIQ',
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
     description:
       'Important disclosures about DealGapIQ: not investment advice, data-source limitations, and affiliate relationships.',
     type: 'article',
+    images: [BRAND_OG_IMAGE],
   },
 }
 

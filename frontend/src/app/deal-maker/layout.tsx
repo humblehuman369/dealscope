@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { PageExplainer } from '@/components/seo/PageExplainer'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'DealMaker — Editable Assumptions & Offer Scripts | DealGapIQ',
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
       'Stress-test assumptions, model creative finance, and generate offer scripts for any property.',
     url: '/deal-maker',
     type: 'website',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

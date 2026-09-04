@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
-import { BRAND_ASSETS } from '@/lib/brand'
+import { BRAND_ASSETS, BRAND_OG_IMAGE } from '@/lib/brand'
 import { DiscoveryPageExplainer } from './DiscoveryPageExplainer'
 
 export const metadata: Metadata = {
@@ -16,6 +16,7 @@ export const metadata: Metadata = {
       'Score any property in under 60 seconds across six investment strategies and see the Deal Gap.',
     url: '/discovery',
     type: 'website',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

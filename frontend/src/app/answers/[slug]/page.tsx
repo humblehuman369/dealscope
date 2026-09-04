@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
 import { PROBLEM_PAGES, getProblemPage } from '@/lib/seo/problem-pages'
 import { ProblemLandingPage } from '@/components/landing/ProblemLandingPage'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const dynamicParams = false
 
@@ -29,6 +30,7 @@ export async function generateMetadata({
       description: page.metaDescription,
       url: path,
       type: 'website',
+      images: [BRAND_OG_IMAGE],
     },
     twitter: {
       card: 'summary_large_image',

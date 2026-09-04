@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getAllContent, getContent } from '@/lib/content'
 import { MarkdownArticle } from '@/components/blog/MarkdownArticle'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -30,6 +31,7 @@ export async function generateMetadata({
       description,
       url: `/glossary/${slug}`,
       type: 'article',
+      images: [BRAND_OG_IMAGE],
     },
     twitter: {
       card: 'summary_large_image',

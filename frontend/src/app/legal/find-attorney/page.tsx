@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'Find a Creative-Finance Attorney — DealGapIQ',
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
       'How to find a real-estate attorney who has actually closed subject-to, seller financing, and loan-assumption deals.',
     url: '/legal/find-attorney',
     type: 'article',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

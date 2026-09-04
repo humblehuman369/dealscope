@@ -170,9 +170,6 @@ def main() -> None:
     print(f"  wrote {(APP / 'favicon.ico').relative_to(FRONTEND.parent)}  16/32/48")
     copy(favicon / "favicon_192x192.png", APP / "icon.png")
     copy(favicon / "apple-touch-icon.png", APP / "apple-icon.png")
-    # Site-wide default social card. Segments with their own opengraph-image
-    # (e.g. /blog) override it; Twitter falls back to og:image.
-    copy(BRAND / "Logo" / "Social" / "OpenGraph_Share_1200x630.png", APP / "opengraph-image.png")
 
     print("iOS")
     copy(BRAND / "AppIcon" / "iOS_AppStore" / "AppIcon_1024x1024.png", IOS_ASSETS / "AppIcon.appiconset" / "AppIcon-1024.png")

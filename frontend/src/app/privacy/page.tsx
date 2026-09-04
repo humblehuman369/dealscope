@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — DealGapIQ',
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
     description: 'How DealGapIQ collects, uses, and protects your information.',
     url: '/privacy',
     type: 'article',
+    images: [BRAND_OG_IMAGE],
   },
 }
 

@@ -9,6 +9,7 @@ import {
 } from '@/components/strategies/StrategyPageLayout'
 import { StrategySchema } from '@/components/seo/StrategySchema'
 import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'Long-Term Rental Strategy — Cash Flow & Buy-and-Hold | DealGapIQ',
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
       'Cash flow math, target metrics, market selection, financing, and the playbook for buy-and-hold investors.',
     url: '/strategies/long-term-rental',
     type: 'article',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

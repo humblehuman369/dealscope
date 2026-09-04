@@ -4,6 +4,7 @@ import { Hammer, Zap, DollarSign } from 'lucide-react'
 import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
 import { StrategySchema } from '@/components/seo/StrategySchema'
 import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'Fix & Flip Strategy — How to Underwrite a Flip Deal | DealGapIQ',
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
       'MAO, ARV, the 70% rule, rehab budgeting, holding costs, and the math behind flips that actually pencil.',
     url: '/strategies/fix-flip',
     type: 'article',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

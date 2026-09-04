@@ -4,6 +4,7 @@ import { TrendingUp, DollarSign, Calendar, MapPin } from 'lucide-react'
 import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
 import { StrategySchema } from '@/components/seo/StrategySchema'
 import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'Short-Term Rental (Airbnb) Strategy — How to Underwrite an STR | DealGapIQ',
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
       'ADR, occupancy, RevPAR, regulatory risk, and the underwriting model for STR investors.',
     url: '/strategies/short-term-rental',
     type: 'article',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

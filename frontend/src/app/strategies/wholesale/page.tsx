@@ -4,6 +4,7 @@ import { Repeat, DollarSign, Clock, FileText } from 'lucide-react'
 import { StrategyPageLayout, Callout, Prose } from '@/components/strategies/StrategyPageLayout'
 import { StrategySchema } from '@/components/seo/StrategySchema'
 import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'Wholesale Strategy — Find Deals, Assign Contracts, Profit | DealGapIQ',
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
       'Assignment vs. double-close, off-market sourcing, MAO math, and the no-capital start.',
     url: '/strategies/wholesale',
     type: 'article',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

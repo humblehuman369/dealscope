@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { FaqJsonLd } from '@/components/seo/FaqJsonLd'
-import { BRAND_ASSETS } from '@/lib/brand'
+import { BRAND_ASSETS, BRAND_OG_IMAGE } from '@/lib/brand'
 import PricingContent from './PricingContent'
 
 export const metadata: Metadata = {
@@ -14,6 +14,7 @@ export const metadata: Metadata = {
       'DealGapIQ pricing: Starter (free) and Pro from $29.17/mo with a 7-day free trial.',
     url: '/pricing',
     type: 'website',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

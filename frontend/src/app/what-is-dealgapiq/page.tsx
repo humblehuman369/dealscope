@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { FaqJsonLd } from '@/components/seo/FaqJsonLd'
 import WhatIsDealGapIQ from './WhatIsDealGapIQ'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'What is DealGapIQ? — DealGapIQ',
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
       'DealGapIQ answers the only question that matters: Is this actually a deal? Analyze any property across six investment strategies and see the Deal Gap.',
     url: '/what-is-dealgapiq',
     type: 'website',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

@@ -9,6 +9,7 @@ import {
 } from '@/components/strategies/StrategyPageLayout'
 import { StrategySchema } from '@/components/seo/StrategySchema'
 import { STRATEGY_SCHEMA_BY_SLUG } from '@/lib/seo/strategy-schema-data'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'BRRRR Strategy — Buy, Rehab, Rent, Refinance, Repeat | DealGapIQ',
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
       'ARV math, refinance cash-out targets, rehab budgeting, and the BRRRR scaling playbook.',
     url: '/strategies/brrrr',
     type: 'article',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

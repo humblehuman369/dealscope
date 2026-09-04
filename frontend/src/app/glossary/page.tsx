@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getAllContent } from '@/lib/content'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
       'Plain-English definitions of the creative-finance structures active investors use.',
     url: '/glossary',
     type: 'website',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

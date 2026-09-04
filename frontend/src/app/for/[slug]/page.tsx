@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from '@/lib/seo/metadata'
 import { PERSONA_PAGES, getPersonaPage } from '@/lib/seo/persona-pages'
 import { ListicleLandingPage } from '@/components/landing/ListicleLandingPage'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const dynamicParams = false
 
@@ -31,6 +32,7 @@ export async function generateMetadata({
       description: page.metaDescription,
       url: path,
       type: 'website',
+      images: [BRAND_OG_IMAGE],
     },
     twitter: {
       card: 'summary_large_image',

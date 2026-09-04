@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import GetAppClient from './GetAppClient'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'Get the DealGapIQ App',
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
     type: 'website',
     url: '/get-app',
     siteName: 'DealGapIQ',
+    images: [BRAND_OG_IMAGE],
   },
   robots: { index: true, follow: true },
 }

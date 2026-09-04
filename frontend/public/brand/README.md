@@ -49,7 +49,7 @@ alpha; white swapped for black in the OnLight variants). Nothing is redrawn.
 | Header + footer wordmark (theme-aware) | `Logo/Transparent/*` | `src/lib/brand.ts` → `AppHeader`, `DealGapIQHomepage` |
 | Loading / analyzing / search / map marks | `AppIcon/Transparent/*` | `src/lib/brand.ts` → `IQLoadingLogo`, `IQAnalyzingScreen`, `SearchPropertyModal`, `DealGapIQGateway`, `MapSearchView`, `IQBrainIcon`, `TryItNowModal` |
 | Blog OG cards | `Logo/Transparent/DealGapIQ_Logo_OnDark.png` | `src/lib/og/blog-card.tsx` |
-| Default OG / Twitter image | `Logo/Social/OpenGraph_Share_1200x630.png` | `src/app/layout.tsx` |
+| Default OG / Twitter image | `Logo/Social/OpenGraph_Share_1200x630.png` | `BRAND_OG_IMAGE` in `src/lib/brand.ts`, included in every page's `openGraph.images` (Next does not deep-merge `openGraph`) |
 | JSON-LD Organization logo / product image | `AppIcon/iOS_AppStore/AppIcon_1024x1024.png` | `SiteJsonLd`, `discovery/layout.tsx`, `pricing/page.tsx` |
 | Browser favicon / touch icon | `AppIcon/Web_Favicon/*` | `src/app/favicon.ico`, `src/app/icon.png`, `src/app/apple-icon.png` (Next.js file conventions) |
 | iOS app icon | `AppIcon/iOS_AppStore/AppIcon_1024x1024.png` | `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png` |

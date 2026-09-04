@@ -17,6 +17,7 @@ import { PostCard } from '@/components/blog/PostCard'
 import { StateOutlineMap } from '@/components/markets/StateOutlineMap'
 import { cityMapSearchHref, stateMapSearchHref } from '@/lib/geo/map-search-links'
 import { MobileStickyCta } from '@/components/landing/MobileStickyCta'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 // ISR: Next only accepts a literal here; keep in step with MARKETS_REVALIDATE_SECONDS.
 export const revalidate = 86400
@@ -82,7 +83,7 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
     description,
     alternates: { canonical: `/markets/${state.slug}` },
     robots: market?.indexable ? INDEXABLE_ROBOTS : NOINDEX_FOLLOW,
-    openGraph: { title, description, url: `/markets/${state.slug}`, type: 'website' },
+    openGraph: { title, description, url: `/markets/${state.slug}`, type: 'website', images: [BRAND_OG_IMAGE] },
     twitter: { card: 'summary_large_image', title, description },
   }
 }

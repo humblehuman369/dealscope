@@ -8,6 +8,7 @@ import { SentryInit } from '@/components/SentryInit'
 import { AnalyticsAndConsent } from '@/components/AnalyticsAndConsent'
 import { ThemeHydrationScript } from '@/components/theme/ThemeHydrationScript'
 import { SiteJsonLd } from '@/components/seo/SiteJsonLd'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 // ── Self-hosted fonts via next/font ────────────────
 // Eliminates render-blocking requests to fonts.googleapis.com.
@@ -74,15 +75,16 @@ export const metadata: Metadata = {
       'application/rss+xml': `${canonicalBase}/blog/feed.xml`,
     },
   },
-  // Favicon, touch icon and default og:image come from the file conventions in
-  // this directory (favicon.ico, icon.png, apple-icon.png, opengraph-image.png),
-  // all generated from public/brand by scripts/derive-brand-assets.py.
+  // Favicon and touch icon come from the file conventions in this directory
+  // (favicon.ico, icon.png, apple-icon.png), generated from public/brand by
+  // scripts/derive-brand-assets.py.
   openGraph: {
     title: defaultTitle,
     description: defaultDescription,
     type: 'website',
     url: canonicalBase,
     siteName: 'DealGapIQ',
+    images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',

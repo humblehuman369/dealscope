@@ -5,6 +5,7 @@ import { INDEXABLE_ROBOTS, buildFaqJsonLd, type FaqItem } from '@/lib/seo/metada
 import { SITE_URL } from '@/lib/seo/blog-schema'
 import { NearMeSearchButton } from '@/components/markets/NearMeSearchButton'
 import { stateMapSearchHref } from '@/lib/geo/map-search-links'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 const TITLE = 'Investment Properties Near Me: Search Your Local Market'
 const DESCRIPTION =
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: '/markets/near-me' },
   robots: INDEXABLE_ROBOTS,
-  openGraph: { title: TITLE, description: DESCRIPTION, url: '/markets/near-me', type: 'website' },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: '/markets/near-me', type: 'website', images: [BRAND_OG_IMAGE] },
   twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION },
 }
 

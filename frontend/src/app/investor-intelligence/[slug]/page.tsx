@@ -6,6 +6,7 @@ import { MarkdownArticle } from '@/components/blog/MarkdownArticle'
 import { ArticleShare } from '@/components/investor-intelligence/ArticleShare'
 import { getAllContent, getContent } from '@/lib/content'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
+import { BRAND_OG_IMAGE } from '@/lib/brand'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -40,13 +41,13 @@ export async function generateMetadata({
       publishedTime: post.frontmatter.date_published,
       modifiedTime: post.frontmatter.date_modified,
       authors: post.frontmatter.author ? [post.frontmatter.author] : undefined,
-      images: image ? [{ url: image, alt: post.frontmatter.hero_alt }] : undefined,
+      images: image ? [{ url: image, alt: post.frontmatter.hero_alt }] : [BRAND_OG_IMAGE],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: image ? [image] : undefined,
+      images: image ? [image] : [BRAND_OG_IMAGE.url],
     },
   }
 }
