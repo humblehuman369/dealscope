@@ -19,7 +19,11 @@ from app.models.linkedin_post import (
 from app.models.user import User
 from app.services.linkedin_batch import BatchValidationError, import_batch, parse_batch_data
 from app.services.linkedin_publish_jobs import linkedin_publish_job
-from app.services.linkedin_publisher import LinkedInAPIError, LinkedInRateLimitError
+from app.services.linkedin_publisher import (
+    LinkedInAPIError,
+    LinkedInRateLimitError,
+    LinkedInUnknownPostState,
+)
 from sqlalchemy import select
 from sqlalchemy.orm import undefer
 
@@ -318,6 +322,29 @@ class TestPublishJob:
         assert result["published"] == []
         assert (await _row(db_session, "batch-01/post-01")).status == LinkedInPostStatus.APPROVED
         assert (await _row(db_session, "batch-01/post-02")).status == LinkedInPostStatus.APPROVED
+
+    async def test_unknown_post_state_parks_row_and_never_retries(
+        self, db_session, tmp_path, mock_li_client
+    ):
+        await _import(db_session, tmp_path, _valid_batch(tmp_path))
+        await _approve(db_session, "batch-01/post-01", when=datetime.now(UTC) - timedelta(minutes=1))
+        mock_li_client.create_post.side_effect = LinkedInUnknownPostState(
+            "create post returned 201 without x-restli-id"
+        )
+
+        result = await linkedin_publish_job(db_session)
+        assert result["published"] == []
+        assert result["failed"][0]["key"] == "batch-01/post-01"
+        row = await _row(db_session, "batch-01/post-01")
+        assert row.status == LinkedInPostStatus.FAILED
+        assert row.linkedin_post_urn is None
+        assert row.error and "x-restli-id" in row.error
+
+        # A second tick must not try again: the post may already be live.
+        mock_li_client.create_post.reset_mock()
+        mock_li_client.create_post.side_effect = None
+        await linkedin_publish_job(db_session)
+        mock_li_client.create_post.assert_not_awaited()
 
     async def test_comment_failure_leaves_post_published(self, db_session, tmp_path, mock_li_client):
         await _import(db_session, tmp_path, _valid_batch(tmp_path))

@@ -56,6 +56,18 @@ class LinkedInAPIError(Exception):
     """Any other LinkedIn error. Message is safe to return to the caller."""
 
 
+class LinkedInTransportError(LinkedInAPIError):
+    """httpx failed before a response arrived (timeout, reset, DNS)."""
+
+
+class LinkedInUnknownPostState(LinkedInAPIError):
+    """POST /rest/posts may have succeeded but no URN came back.
+
+    The job must park the row as ``failed`` instead of retrying: a retry could
+    create a second post. A human checks LinkedIn before re-approving.
+    """
+
+
 def rest_headers(access_token: str, *, content_type: str | None = "application/json") -> dict[str, str]:
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -271,7 +283,14 @@ class LinkedInClient:
         headers: dict[str, str] | None = None,
     ) -> httpx.Response:
         hdrs = headers or rest_headers(self.token_for(account))
-        response = await self._http().request(method, url, json=json, content=content, headers=hdrs)
+        try:
+            response = await self._http().request(
+                method, url, json=json, content=content, headers=hdrs
+            )
+        except httpx.HTTPError as exc:
+            raise LinkedInTransportError(
+                f"{method} {url} failed before a response: {exc.__class__.__name__}"
+            ) from exc
         if response.status_code == 429:
             raise LinkedInRateLimitError("LinkedIn rate-limited this run (HTTP 429)")
         if response.status_code in {401, 403}:
@@ -317,11 +336,16 @@ class LinkedInClient:
         return str(document_urn), str(upload_url)
 
     async def put_bytes(self, upload_url: str, data: bytes, content_type: str) -> None:
-        response = await self._http().put(
-            upload_url,
-            content=data,
-            headers={"Content-Type": content_type},
-        )
+        try:
+            response = await self._http().put(
+                upload_url,
+                content=data,
+                headers={"Content-Type": content_type},
+            )
+        except httpx.HTTPError as exc:
+            raise LinkedInTransportError(
+                f"media PUT failed before a response: {exc.__class__.__name__}"
+            ) from exc
         if response.status_code == 429:
             raise LinkedInRateLimitError("LinkedIn rate-limited this run (HTTP 429)")
         if response.status_code >= 400:
@@ -358,16 +382,26 @@ class LinkedInClient:
         return urn
 
     async def create_post(self, account: LinkedInAccount, payload: dict[str, Any]) -> str:
-        response = await self._request(
-            "POST",
-            f"{LINKEDIN_REST}/posts",
-            account=account,
-            json=payload,
-        )
+        try:
+            response = await self._request(
+                "POST",
+                f"{LINKEDIN_REST}/posts",
+                account=account,
+                json=payload,
+            )
+        except LinkedInTransportError as exc:
+            # The request may have reached LinkedIn. Never retry blind.
+            raise LinkedInUnknownPostState(
+                f"create post: no response ({exc}). The post may exist on LinkedIn; "
+                "check the feed before re-approving this row."
+            ) from exc
         self._require_ok(response, "create post")
         urn = response.headers.get("x-restli-id") or response.headers.get("X-RestLi-Id")
         if not urn:
-            raise LinkedInAPIError("create post succeeded but x-restli-id was missing")
+            raise LinkedInUnknownPostState(
+                f"create post returned {response.status_code} without x-restli-id. "
+                "The post probably exists on LinkedIn; check the feed before re-approving."
+            )
         return urn
 
     async def create_comment(self, account: LinkedInAccount, post_urn: str, text: str) -> str:
