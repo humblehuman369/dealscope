@@ -222,14 +222,17 @@ VERDICT COLORS   Deal #34D399 · Maybe #FBBF24 · Pass #F87171
 
 ## Appendix — source asset files (for handoff)
 
-These live in the product repo under `frontend/public/` — export/hand these to Manus:
+These live in the product repo under `frontend/public/brand/` (the single brand pack — see its `README.md`) — export/hand these to Manus:
 
 | File | Use |
 |---|---|
-| `DealGapIQ_Logo_Dark.png` | Wordmark for **dark** backgrounds (white DealGap + cyan IQ) |
-| `DealGapIQ_Logo_Dark_Header.png` | Same, header-cropped |
-| `DealGapIQ_Logo_Light.png` | Wordmark for **light** backgrounds (navy DealGap + blue IQ) |
-| `DealGapIQ_Icon_Transparent_1024.png` | Head + house icon, transparent (profile avatar) |
-| `app-store/connect/icon-1024x1024-v2-fullbleed.png` | Full-bleed app icon (square avatar) |
+| `Logo/Transparent/DealGapIQ_Logo_OnDark.png` | Wordmark for **dark** backgrounds (white DealGap + cyan IQ), transparent |
+| `Logo/Transparent/DealGapIQ_Logo_OnLight.png` | Wordmark for **light** backgrounds (black DealGap + cyan IQ), transparent |
+| `Logo/Sizes/DealGapIQ_Logo_{300..2400}w.png` | Wordmark on black, six widths |
+| `Logo/Social/Profile_Square_400x400.png` | Profile avatar (square) |
+| `Logo/Social/LinkedIn_Banner_1584x396.png` | Company page banner |
+| `Logo/Social/OpenGraph_Share_1200x630.png` | Link share card |
+| `AppIcon/Transparent/DealGapIQ_Mark_OnDark_512.png` | Head + house icon, transparent (dark surfaces) |
+| `AppIcon/iOS_AppStore/AppIcon_1024x1024.png` | Full-bleed app icon (square avatar) |
 | `images/verdict-preview.png`, `blog/verdict-lake-worth.png` | Hero product screenshots for banner/posts |
 | `brad-geisen.png` / `images/brad-geisen-headshot.png` | Founder headshot (founder-led content) |

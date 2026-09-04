@@ -24,6 +24,7 @@ import { useTheme } from '@/context/ThemeContext'
 import { trackEvent } from '@/lib/eventTracking'
 import type { AddressValidationResult } from '@/types/address'
 import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
+import { brandMark } from '@/lib/brand'
 import {
   canonicalizeAddressForIdentity,
   isLikelyFullAddress,
@@ -79,8 +80,7 @@ interface SearchPropertyModalProps {
 export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchPropertyModalProps) {
   const router = useRouter()
   const { theme } = useTheme()
-  const dealGapIqIcon =
-    theme === 'dark' ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png'
+  const dealGapIqIcon = brandMark(theme)
   const [address, setAddress] = useState('')
   const [showAddressInput, setShowAddressInput] = useState(false)
   const [showScanInfo, setShowScanInfo] = useState(false)

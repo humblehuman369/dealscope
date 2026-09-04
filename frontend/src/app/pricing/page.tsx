@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { FaqJsonLd } from '@/components/seo/FaqJsonLd'
+import { BRAND_ASSETS } from '@/lib/brand'
 import PricingContent from './PricingContent'
 
 export const metadata: Metadata = {
@@ -34,7 +35,7 @@ const PRICING_JSONLD = {
       description:
         'Residential real estate deal analysis platform. Score any property in 60 seconds across six investment strategies, see the Deal Gap, and generate offer scripts.',
       url: `${SITE_URL}/pricing`,
-      image: `${SITE_URL}/DealGapIQ_Icon_Transparent_1024.png`,
+      image: `${SITE_URL}${BRAND_ASSETS.appIcon}`,
       brand: { '@id': `${SITE_URL}/#organization` },
       category: 'Real Estate Investment Software',
       offers: {

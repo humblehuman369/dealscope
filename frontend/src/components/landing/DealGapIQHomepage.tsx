@@ -7,6 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useTheme } from '@/context/ThemeContext'
+import { brandLogo, BRAND_LOGO_SIZE } from '@/lib/brand'
 import './dealgapiq-homepage.css'
 import { DataSourcesSection } from './DataSourcesSection'
 
@@ -586,14 +587,10 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
           aria-label="DealGapIQ home"
         >
           <Image
-            src={
-              mounted && theme === 'light'
-                ? '/DealGapIQ_Logo_Light.png'
-                : '/DealGapIQ_Logo_Dark.png'
-            }
+            src={brandLogo(mounted ? theme : 'dark')}
             alt="DealGapIQ"
-            width={1024}
-            height={333}
+            width={BRAND_LOGO_SIZE.width}
+            height={BRAND_LOGO_SIZE.height}
             className="footer-logo-img"
             draggable={false}
           />

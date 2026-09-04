@@ -74,10 +74,9 @@ export const metadata: Metadata = {
       'application/rss+xml': `${canonicalBase}/blog/feed.xml`,
     },
   },
-  icons: {
-    icon: '/favicon.png',
-    apple: '/favicon.png',
-  },
+  // Favicon, touch icon and default og:image come from the file conventions in
+  // this directory (favicon.ico, icon.png, apple-icon.png, opengraph-image.png),
+  // all generated from public/brand by scripts/derive-brand-assets.py.
   openGraph: {
     title: defaultTitle,
     description: defaultDescription,

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Camera, Search } from 'lucide-react'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { Modal } from '@/components/ui/Modal'
+import { BRAND_ASSETS } from '@/lib/brand'
 import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity'
 
 interface TryItNowModalProps {
@@ -61,7 +62,7 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
           <div className="flex items-center gap-4">
             <div className="try-modal-icon flex-shrink-0">
               {/* Decorative — text label is on the dialog itself via aria-label */}
-              <img src="/images/iq-brain-dark.png" alt="" className="try-modal-iq-icon" />
+              <img src={BRAND_ASSETS.markOnDark} alt="" className="try-modal-iq-icon" />
             </div>
             <div>
               <h2 className="try-modal-title leading-tight">

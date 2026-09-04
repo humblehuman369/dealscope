@@ -46,7 +46,7 @@ App Store Connect screenshots #2-#8 (also in `connect/screenshots/`) use feature
 | Subhead 2 (coverage) | DM Sans 500, -0.01em tracking, dimmer cyan-blue `#8CA5C8` |
 | Pro label (IAP only) | DM Sans 600, +0.02em tracking, cyan `#22D3EE` |
 | Savings badge (Annual only) | Filled amber pill `#FACC15`, DM Sans 700 ink text inside |
-| Wordmark | Official DealGapIQ wordmark PNG (`play-store/assets/dealgapiq-wordmark-darkmode.png`), black background converted to alpha so it sits cleanly on the navy |
+| Wordmark | Official DealGapIQ wordmark PNG (`play-store/assets/dealgapiq-wordmark-darkmode.png`, a copy of `/brand/Logo/Transparent/DealGapIQ_Logo_OnDark.png` written by `scripts/derive-brand-assets.py`) |
 | Phone mockup | Programmatically built rounded-rect bezel `#14161C`, ~10% corner radius, dynamic island pill at top, real Strategy-tab screenshot (Target Buy / Income Value / Market Price / DEAL GAP -29.1%) inside |
 
 ---
@@ -67,7 +67,7 @@ Both scripts are deterministic — same inputs always produce the same outputs, 
 
 ### Required inputs (already in the repo)
 
-- `play-store/assets/dealgapiq-wordmark-darkmode.png` — official brand wordmark
+- `play-store/assets/dealgapiq-wordmark-darkmode.png` — official brand wordmark (generated from `/brand`, do not edit by hand)
 - `connect/assets/hero-screenshot-strategy-tab.png` — the real iPhone capture used inside every phone mockup
 - DM Sans Variable font at `/tmp/dm-sans-fonts/DMSans-Variable.ttf` (downloadable from [Google Fonts](https://github.com/google/fonts/raw/main/ofl/dmsans/DMSans%5Bopsz%2Cwght%5D.ttf))
 
@@ -116,7 +116,6 @@ frontend/public/app-store/
 ├── connect/                                 ← App Store Connect (iOS)
 │   ├── README.md                            ← detailed App Store upload guide + copy
 │   ├── apply_screenshot_brand.py            ← builds 8 portrait screenshots
-│   ├── icon-1024x1024-v2-fullbleed.png      ← App Store icon
 │   ├── assets/
 │   │   └── hero-screenshot-strategy-tab.png ← shared real-screenshot input
 │   ├── copy/                                ← subtitle, promo text, video brief
@@ -128,7 +127,8 @@ frontend/public/app-store/
 │   ├── README.md
 │   ├── apply_brand.py                       ← legacy script for v3/v4 banners
 │   ├── assets/
-│   │   └── dealgapiq-wordmark-darkmode.png  ← shared wordmark input
+│   │   └── dealgapiq-wordmark-darkmode.png  ← shared wordmark input (copy of /brand OnDark wordmark)
+│   ├── icon-512x512-play.png                ← Play Console listing icon (copy of /brand PlayStore_Icon_512x512.png)
 │   ├── feature-graphic-1024x500-v5-discover-deals.png   ← RECOMMENDED (unified)
 │   ├── feature-graphic-1024x500-v4-investors-lens.png   ← prior version (kept for A/B)
 │   ├── feature-graphic-1024x500-v3-verdict-stream.png   ← prior version

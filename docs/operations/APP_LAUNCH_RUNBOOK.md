@@ -66,7 +66,7 @@ copy). All copy below is character-validated. Paste exactly.
 - [ ] **Subtitle (≤30):** `Every US deal, pre-scored.` (26). Source: `connect/copy/subtitle.md`.
 - [ ] **Keyword field (≤100):** `foreclosure,preforeclosure,auction,rental,flip,brrrr,wholesale,investor,roi,cashflow,arv,comps` (94). Source: `connect/copy/keywords.md`. *Verify:* no spaces after commas.
 - [ ] **Promotional Text (≤170):** see `connect/copy/promotional-text.md` (investor's-lens primary).
-- [ ] **App Icon:** `connect/icon-1024x1024-v2-fullbleed.png`.
+- [ ] **App Icon:** `frontend/public/brand/AppIcon/iOS_AppStore/AppIcon_1024x1024.png`.
 - [ ] **Screenshots ×8 (6.9", 1290×2796):** upload `connect/screenshots/01–08-*.png` in numbered order. Rationale: `connect/README.md`.
 
 ### Google Play — Console
@@ -74,7 +74,8 @@ copy). All copy below is character-validated. Paste exactly.
 - [ ] **Title (≤30):** `DealGapIQ: Real Estate Deals`.
 - [ ] **Short description (≤80):** `Every US listing pre-scored DEAL, MAYBE or PASS. See the Deal Gap in seconds.` (77). Source: `play-store/copy/description.md`.
 - [ ] **Full description (≤4000):** paste from `play-store/copy/description.md` (keyword-weighted; pricing $34.99 / $349.99).
-- [ ] **Feature graphic (1024×500):** `play-store/feature-graphic-1024x500-v5-discover-deals.png` (remove old promo video or recut — see `play-store/README.md`).
+- [ ] **App icon (512×512):** `frontend/public/brand/AppIcon/GooglePlay/PlayStore_Icon_512x512.png`.
+- [ ] **Feature graphic (1024×500):** `frontend/public/brand/Logo/GooglePlay/Feature_Graphic_1024x500.png` (brand-only) or `play-store/feature-graphic-1024x500-v5-discover-deals.png` if a screenshot-led graphic is preferred (remove old promo video or recut — see `play-store/README.md`).
 
 ### Both stores
 

@@ -25,7 +25,9 @@ let logoCache: string | null = null
 async function loadLogo(): Promise<string | null> {
   if (logoCache) return logoCache
   try {
-    const file = await fs.readFile(path.join(process.cwd(), 'public', 'DealGapIQ_Logo_Dark.png'))
+    const file = await fs.readFile(
+      path.join(process.cwd(), 'public', 'brand', 'Logo', 'Transparent', 'DealGapIQ_Logo_OnDark.png'),
+    )
     logoCache = `data:image/png;base64,${file.toString('base64')}`
     return logoCache
   } catch {
@@ -67,7 +69,7 @@ export async function renderBlogCard({ title, eyebrow, footer, author, readTime 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt="" width={220} height={52} style={{ objectFit: 'contain' }} />
+            <img src={logo} alt="" width={220} height={62} style={{ objectFit: 'contain' }} />
           ) : (
             <div style={{ fontSize: 32, fontWeight: 700 }}>DealGapIQ</div>
           )}

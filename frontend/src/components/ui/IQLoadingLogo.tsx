@@ -1,6 +1,7 @@
 'use client'
 
 import { useTheme } from '@/context/ThemeContext'
+import { brandMark } from '@/lib/brand'
 
 interface IQLoadingLogoProps {
   message?: string
@@ -8,8 +9,7 @@ interface IQLoadingLogoProps {
 
 export function IQLoadingLogo({ message }: IQLoadingLogoProps) {
   const { theme } = useTheme()
-  const iconSrc =
-    theme === 'dark' ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png'
+  const iconSrc = brandMark(theme)
 
   return (
     <div className="min-h-screen flex items-center justify-center pb-[20vh] bg-[var(--surface-base)]">

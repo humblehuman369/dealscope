@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { useTheme } from '@/context/ThemeContext'
+import { brandMark } from '@/lib/brand'
 import './dealgapiq-gateway.css'
 
 type Step = 'start' | 'address' | 'scan'
@@ -17,7 +18,7 @@ interface DealGapIQGatewayProps {
 
 const IQIcon: React.FC<{ size?: number; className?: string }> = ({ size = 64, className = '' }) => {
   const { theme } = useTheme()
-  const src = theme === 'dark' ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png'
+  const src = brandMark(theme)
   return (
     <img
       src={src}

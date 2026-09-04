@@ -1,3 +1,5 @@
+import { BRAND_ASSETS } from '@/lib/brand'
+
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
 const ORG_ID = `${SITE_URL}/#organization`
@@ -20,7 +22,7 @@ const graph = {
       url: SITE_URL,
       logo: {
         '@type': 'ImageObject',
-        url: `${SITE_URL}/DealGapIQ_Icon_Transparent_1024.png`,
+        url: `${SITE_URL}${BRAND_ASSETS.appIcon}`,
         width: 1024,
         height: 1024,
       },
@@ -70,7 +72,7 @@ const graph = {
         'Analyzes residential investment properties across six acquisition strategies (Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, Wholesale) and surfaces the Deal Gap so investors know what to offer.',
       publisher: { '@id': ORG_ID },
       creator: { '@id': PERSON_ID },
-      image: `${SITE_URL}/DealGapIQ_Icon_Transparent_1024.png`,
+      image: `${SITE_URL}${BRAND_ASSETS.appIcon}`,
       featureList: [
         'Discovery — instant deal score (0–95)',
         'Six-strategy analysis (LTR, STR, BRRRR, Flip, House Hack, Wholesale)',

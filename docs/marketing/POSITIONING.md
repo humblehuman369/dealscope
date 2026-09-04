@@ -215,7 +215,7 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 ## 4. Brand Visuals *(optional)*
 
 **Logo files:**
-- `frontend/public/favicon.png` (and the `favicon.png` at repo root). Master logo files — *TBD, add link once Brad provides.*
+- `frontend/public/brand/` — the single brand pack (app icons in every platform size, wordmark at six widths, social/OG/launch graphics). See `frontend/public/brand/README.md`.
 
 **Color palette** (from `frontend/src/app/globals.css`):
 - **Primary brand blue:** `#0465F2` (`--accent-brand-blue` / `--accent-gradient-from`)

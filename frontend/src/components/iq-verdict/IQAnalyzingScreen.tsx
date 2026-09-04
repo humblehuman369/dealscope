@@ -13,6 +13,7 @@ import React, { useEffect, useState } from 'react'
 import { colors } from './verdict-design-tokens'
 import { IQProperty } from './types'
 import { useTheme } from '@/context/ThemeContext'
+import { brandMark } from '@/lib/brand'
 
 // Use design system primary blue (var(--accent-sky)) per CURSOR-UNIFY-COLOR-SYSTEM
 const ACCENT = colors.brand.teal
@@ -46,8 +47,7 @@ export function IQAnalyzingScreen({
   const [currentTipIndex, setCurrentTipIndex] = useState<number>(0)
   const [progress, setProgress] = useState(0)
   const { theme } = useTheme()
-  const iconSrc =
-    theme === 'dark' ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png'
+  const iconSrc = brandMark(theme)
 
   // Build full address
   const fullAddress = [

@@ -62,6 +62,7 @@ import {
 import { getMapOverlaySurface } from './mapOverlayChrome'
 import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLayer'
 import type { NeighborhoodOverview } from '@/lib/api'
+import { brandMark } from '@/lib/brand'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -2125,9 +2126,7 @@ export function MapSearchView() {
             }}
           >
             <img
-              src={
-                isDarkMap ? '/images/dealgapiq-icon-dark.png' : '/images/dealgapiq-icon.png'
-              }
+              src={brandMark(isDarkMap ? 'dark' : 'light')}
               alt="DealGapIQ"
               className="w-20 h-20 md:w-28 md:h-28 animate-pulseSoft"
             />

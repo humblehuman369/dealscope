@@ -14,7 +14,7 @@ Production-ready visual and copy assets for the **iOS App Store** (App Store Con
 
 | App Store Connect field | File | Path inside Connect |
 |---|---|---|
-| App Icon (1024×1024) | `icon-1024x1024-v2-fullbleed.png` | App Information → App Icon |
+| App Icon (1024×1024) | `/brand/AppIcon/iOS_AppStore/AppIcon_1024x1024.png` | App Information → App Icon |
 | Screenshots ×8 | `screenshots/01-08-*.png` | iOS App → 6.9" Display Screenshots |
 | Subtitle | _see `copy/subtitle.md`_ | App Information → Subtitle |
 | Promotional Text | _see `copy/promotional-text.md`_ | iOS App → Promotional Text |
@@ -24,26 +24,15 @@ Drag-drop the screenshots into the 6.9" Display slot in the order numbered (`01-
 
 ---
 
-## Critical finding: the existing app icon will hurt conversion
+## App icon
 
-The current iOS app icon (`frontend/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`) is a **thin cyan outline of a brain+house silhouette on solid black**. At the 60×60 thumbnail size shown in App Store search results, the outline strokes nearly disappear against the black background — the icon reads as a black square.
+The app icon is the standard DealGapIQ mark from the brand pack:
+`frontend/public/brand/AppIcon/iOS_AppStore/AppIcon_1024x1024.png` (filled cyan head + house on black,
+full-bleed, no rounded corners — Apple applies its own mask). Upload that file to App Store Connect.
 
-Apple's Human Interface Guidelines explicitly recommend **filled iconography over outlines** for exactly this reason: outlines collapse at small sizes, and the App Store is optimized around browse-and-tap behavior where icons must compete for the eye in a dense grid.
-
-### What's in this pack
-
-- **`icon-1024x1024-v2-fullbleed.png`** — Filled cyan brain+head silhouette with white house, on a deep navy radial gradient, with a thin Deal Gap accent bar (cyan → yellow → red) at the bottom. Full-bleed: every edge pixel is part of the design, ready for iOS to apply its own rounded-corner mask. **Upload this to App Store Connect.**
-
-### You also need to replace the in-app icon
-
-The icon uploaded to App Store Connect is the **listing icon only**. The icon shown on the home screen, in the App Switcher, and in Spotlight comes from the `AppIcon.appiconset` inside the iOS Xcode project. After you ship this asset pack:
-
-1. Take `icon-1024x1024-v2-fullbleed.png`
-2. Generate the full set of icon sizes (29×29 through 1024×1024) using a tool like **[appicon.co](https://appicon.co/)** or `xcrun actool` — Apple's spec requires 14 size variants
-3. Replace `frontend/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png` and the other size variants
-4. Sync via `npx cap sync ios` and rebuild
-
-Otherwise, the App Store listing will show the new icon while users' home screens will show the old one — disorienting.
+The in-app icon (`frontend/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png`) is a copy of the
+same file written by `frontend/scripts/derive-brand-assets.py`, so the listing and the home screen always match.
+See `frontend/public/brand/README.md`.
 
 ---
 
@@ -53,8 +42,6 @@ Otherwise, the App Store listing will show the new icon while users' home screen
 connect/
 ├── README.md                                  ← this file
 ├── apply_screenshot_brand.py                  ← Python script that builds the 8 screenshots from raw AI visuals
-├── icon-1024x1024-v2-fullbleed.png            ← App icon (upload to App Store Connect)
-│
 ├── assets/
 │   └── hero-screenshot-strategy-tab.png       ← Real app screen used inside the hero phone (re-render with this)
 │

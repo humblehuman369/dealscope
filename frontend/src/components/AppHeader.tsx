@@ -57,6 +57,7 @@ import { buildRehabUrl } from '@/lib/rehabNavigation'
 import { readDealMakerOverrides } from '@/utils/addressIdentity'
 import { parseAddressString } from '@/utils/formatters'
 import { useTheme } from '@/context/ThemeContext'
+import { brandLogo, BRAND_LOGO_SIZE } from '@/lib/brand'
 
 // ===================
 // DESIGN TOKENS (synced with verdict-design-tokens.ts)
@@ -673,14 +674,10 @@ export function AppHeader({
               aria-label="DealGapIQ home"
             >
               <Image
-                src={
-                  mounted && theme === 'light'
-                    ? '/DealGapIQ_Logo_Light.png'
-                    : '/DealGapIQ_Logo_Dark_Header.png'
-                }
+                src={brandLogo(mounted ? theme : 'dark')}
                 alt="DealGapIQ"
-                width={1024}
-                height={333}
+                width={BRAND_LOGO_SIZE.width}
+                height={BRAND_LOGO_SIZE.height}
                 priority
                 className="h-[36px] sm:h-[44px] w-auto select-none"
                 draggable={false}

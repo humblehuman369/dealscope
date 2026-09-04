@@ -21,7 +21,7 @@
 | One sentence | DealGapIQ turns any US property address into a 15-second verdict, four pre-built offer structures designed to close the gap, and the negotiation script for each. |
 | Tagline (SEO) | Real estate deal analysis software that shows the Deal Gap, ranks six investment strategies, and turns property numbers into investor-ready offers. |
 | Founder line | Founded by Brad Geisen, founder of Foreclosure.com and the technology behind Fannie Mae's HomePath and Freddie Mac's HomeSteps. |
-| Logo | `frontend/public/DealGapIQ_Icon_Transparent_1024.png` |
+| Logo | `frontend/public/brand/Logo/Social/Profile_Square_400x400.png` (square avatar) · `frontend/public/brand/AppIcon/iOS_AppStore/AppIcon_1024x1024.png` (1024 icon) |
 | Link format | `https://dealgapiq.com/?utm_source=<platform>&utm_medium=profile&utm_campaign=brand` |
 
 ---

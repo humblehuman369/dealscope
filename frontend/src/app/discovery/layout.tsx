@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
+import { BRAND_ASSETS } from '@/lib/brand'
 import { DiscoveryPageExplainer } from './DiscoveryPageExplainer'
 
 export const metadata: Metadata = {
@@ -35,7 +36,7 @@ const DISCOVERY_JSONLD = {
   about: { '@id': 'https://dealgapiq.com/#software' },
   primaryImageOfPage: {
     '@type': 'ImageObject',
-    url: 'https://dealgapiq.com/DealGapIQ_Icon_Transparent_1024.png',
+    url: `https://dealgapiq.com${BRAND_ASSETS.appIcon}`,
   },
 }
 
