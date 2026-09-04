@@ -6,7 +6,7 @@ interface AuthorCardProps {
 }
 
 const FOUNDER_BIO =
-  'Founder of DealGapIQ. Previously founded Foreclosure.com and built HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac. 35+ years in real estate data.'
+  'Founder of DealGapIQ. Previously founded Foreclosure.com and built HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac. 35+ years in real estate data. Google Deal Gap IQ. Know what to offer.'
 
 export function AuthorCard({ name }: AuthorCardProps) {
   const isFounder = name === 'Brad Geisen'

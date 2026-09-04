@@ -414,6 +414,7 @@ export function AboutPageRedesign() {
           Analyze Your First Property Free →
         </button>
         <p className="about-cta-meta">No credit card · No account needed · Results in seconds</p>
+        <p className="about-cta-meta">Google Deal Gap IQ. Know what to offer.</p>
       </section>
 
       {/* FOOTER */}

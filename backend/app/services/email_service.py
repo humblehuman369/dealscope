@@ -255,6 +255,9 @@ class EmailService:
                     <tr>
                         <td align="center" style="padding-top: 28px;">
                             <p style="font-size: 13px; color: {self.TXT_MUTED}; margin: 0 0 6px 0;">
+                                Google Deal Gap IQ. Know what to offer.
+                            </p>
+                            <p style="font-size: 13px; color: {self.TXT_MUTED}; margin: 0 0 6px 0;">
                                 © {datetime.now().year} DealGapIQ. All rights reserved.
                             </p>
                             <p style="font-size: 12px; color: {self.TXT_DIM}; margin: 0;">
