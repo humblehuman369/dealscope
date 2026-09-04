@@ -22,6 +22,11 @@
  * `activated` is the activation milestone the strategic plan calls for; it is the
  * step most predictive of conversion and the primary lever for first-week activation work.
  *
+ * META PIXEL: `verdict_viewed`, `signup_completed`, `checkout_started` and
+ * `checkout_completed` are also forwarded as Meta standard events (Lead,
+ * CompleteRegistration, StartTrial, Subscribe) when the pixel is configured and
+ * consented, so paid-social ad sets can optimize on them. See `lib/metaPixel.ts`.
+ *
  * BLOG / SEO CONTENT FUNNEL (fired from `components/blog/*`):
  *   `blog_post_viewed`     {slug, category, primary_keyword} — once per post mount
  *   `blog_category_viewed` {category}
@@ -34,6 +39,7 @@
 import { track as vercelTrack } from '@vercel/analytics'
 import { hasAnalyticsConsent } from '@/lib/cookieConsent'
 import { capturePostHog } from '@/lib/posthog'
+import { captureMetaPixel } from '@/lib/metaPixel'
 import { firstTouchEventProps } from '@/lib/attribution'
 
 /** localStorage key marking that the activation milestone already fired for this device. */
@@ -61,6 +67,9 @@ export function trackEvent(
     vercelTrack(name, filtered)
     // Fan out to PostHog for identity-stitched funnel analysis.
     capturePostHog(name, filtered)
+    // Meta Pixel receives only the four funnel events, as standard events,
+    // with no properties. See lib/metaPixel.ts.
+    captureMetaPixel(name)
   } catch {
     // no-op if analytics not loaded or disabled
   }

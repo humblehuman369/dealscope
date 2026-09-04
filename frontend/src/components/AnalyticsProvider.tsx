@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { identifyPostHog, initPostHog } from '@/lib/posthog'
+import { initMetaPixel } from '@/lib/metaPixel'
 import { useSession } from '@/hooks/useSession'
 
 /**
@@ -11,12 +12,15 @@ import { useSession } from '@/hooks/useSession'
  *
  * - Vercel Analytics: page views + lightweight custom events
  * - PostHog: identity-stitched product funnels (signup -> verdict -> trial -> paid)
+ * - Meta Pixel: four funnel events as standard events for paid-social optimization
+ *   (no-op unless NEXT_PUBLIC_META_PIXEL_ID is set)
  */
 export function AnalyticsProvider() {
   const { user } = useSession()
 
   useEffect(() => {
     void initPostHog()
+    initMetaPixel()
   }, [])
 
   // Identify as soon as a session exists so anonymous pre-signup events are

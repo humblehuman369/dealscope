@@ -36,8 +36,8 @@ describe('first-touch attribution', () => {
     hasAnalyticsConsent.mockReturnValue(true)
   })
 
-  it('captures utm, gclid, referrer host and landing path on first load', () => {
-    setLocation('/answers/does-this-rental-cash-flow', '?utm_source=google&utm_medium=cpc&utm_campaign=x&gclid=abc&foo=bar')
+  it('captures utm, click ids, referrer host and landing path on first load', () => {
+    setLocation('/answers/does-this-rental-cash-flow', '?utm_source=google&utm_medium=cpc&utm_campaign=x&gclid=abc&fbclid=def&foo=bar')
     const ft = captureFirstTouch()
 
     expect(ft).toMatchObject({
@@ -45,6 +45,7 @@ describe('first-touch attribution', () => {
       utm_medium: 'cpc',
       utm_campaign: 'x',
       gclid: 'abc',
+      fbclid: 'def',
       referrer_host: 'www.google.com',
       landing_path: '/answers/does-this-rental-cash-flow',
     })

@@ -2,7 +2,7 @@
  * First-touch attribution.
  *
  * On the first page load per device, record where the visitor came from
- * (utm_*, gclid, referrer host, landing path) in localStorage. Later visits
+ * (utm_*, gclid, fbclid, referrer host, landing path) in localStorage. Later visits
  * never overwrite it: the question this answers is "which source earned the
  * first visit that eventually converted", and `trackEvent` attaches the
  * stored values as `ft_*` on every event so `verdict_viewed`,
@@ -15,7 +15,7 @@
 export const FIRST_TOUCH_KEY = 'dgiq_first_touch_v1'
 
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const
-const CLICK_ID_KEYS = ['gclid'] as const
+const CLICK_ID_KEYS = ['gclid', 'fbclid'] as const
 
 export type FirstTouch = Partial<Record<(typeof UTM_KEYS)[number] | (typeof CLICK_ID_KEYS)[number], string>> & {
   referrer_host?: string

@@ -36,6 +36,7 @@
 | Google Business Profile, reviews, "drown out, never delete" | Ignored profile signals an ignored business | GBP for the brand SERP, App Store prompt (already live), G2/Capterra listings | Operational, §7 |
 | Networking one-to-ones | The owner does not know what he does not know | Coach and REI-meetup partner one-to-ones; borrowed traffic | Operational, §8 |
 | 15-second search-term jingle, front-loaded on geo-targeted skippable YouTube pre-roll | The first 5 seconds are free; you want them to skip | Parked: needs audio. Spec in §9 so it is ready | Phase 2 |
+| *(from a second transcript)* One base listicle, persona variants that change only the headline and a few reasons, one Meta ad per variant | Cold social traffic converts on feeling seen, not on a typed query | `/for/[slug]` persona listicles (8 pages, noindex), Meta Pixel with four standard events, `fbclid` first touch. Search still lands on `/answers`; social lands on `/for`. See `LISTICLE_LANDING_PAGES.md` | Live (pages); Phase 2 (spend) |
 
 ---
 
@@ -417,3 +418,4 @@ transcript's 4x came from.
 | Date | Change |
 |---|---|
 | 2026-09-03 | v1. Phase 1 on-site pieces shipped: `/answers/*` (8 pages), `AddressCtaForm` in the homepage hero, `MobileStickyCta`, first-touch attribution, `alternateName` schema. Phase 2 parked. |
+| 2026-09-04 | Added the paid-social layer as a sibling document, `LISTICLE_LANDING_PAGES.md`: `/for/*` persona listicles, Meta Pixel, `fbclid` in first touch. §1 mapping table gained the row. DR-B/DR-C extensions for `/for/%` are specified there. |

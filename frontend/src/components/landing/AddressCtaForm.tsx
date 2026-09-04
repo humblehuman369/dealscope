@@ -6,7 +6,7 @@
  * free verdict at /discovery; a city or ZIP falls through to /map-search, the
  * same fork HeaderPropertySearch uses.
  *
- * The current page's utm_* / gclid are forwarded onto the destination URL so
+ * The current page's utm_* / gclid / fbclid are forwarded onto the destination URL so
  * the source survives the hop (first-touch capture in lib/attribution.ts is
  * the durable record; this keeps the URL itself attributable when shared).
  */
@@ -28,7 +28,7 @@ import {
 } from '@/utils/addressIdentity'
 import './hero-v5.css'
 
-const FORWARDED_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid']
+const FORWARDED_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid']
 
 interface Props {
   /** Recorded on `property_searched` and forwarded as `source=` (e.g. 'home_hero', 'answers:does-this-rental-cash-flow'). */

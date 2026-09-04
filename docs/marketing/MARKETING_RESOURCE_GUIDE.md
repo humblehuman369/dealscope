@@ -48,6 +48,7 @@
 | [`DealGapIQ-Marketing-Guide.md`](./DealGapIQ-Marketing-Guide.md) | v2 copy bank (Hunt → Score → Close) — **content merged into playbook** | Superseded by playbook |
 | [`LAUNCH_MARKETING_PLAN.md`](./LAUNCH_MARKETING_PLAN.md) | Zero-budget founder-led launch plan | Reference |
 | [`DIRECT_RESPONSE_PLAYBOOK.md`](./DIRECT_RESPONSE_PLAYBOOK.md) | Direct-response layer: SERP term, 50-problem list, `/answers` landing formula, paid search, attribution + PostHog setup, reviews; Phase 2 audio parked | Reference |
+| [`LISTICLE_LANDING_PAGES.md`](./LISTICLE_LANDING_PAGES.md) | Paid-social layer: `/for/*` persona listicle pages (8, noindex), base-reason pool + variant rules, copy truth checklist, Meta test structure, kill/scale rules, Pixel events, PostHog extensions | Reference |
 | [`BRAND_SERP_LISTINGS.md`](./BRAND_SERP_LISTINGS.md) | Paste-ready field values for GBP, LinkedIn, App Store/Play, YouTube, Crunchbase, Product Hunt, G2/Capterra; founder checklist | Reference |
 | [`HOMEPAGE_PLAN.md`](./HOMEPAGE_PLAN.md) | Homepage copy spec (Four Paths) | Reference |
 

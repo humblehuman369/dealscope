@@ -4,6 +4,7 @@ import { BLOG_CATEGORY_SLUGS } from '@/lib/blog-categories'
 import { BLOG_PAGE_SIZE } from '@/components/blog/BlogIndexView'
 import { blogPageHref } from '@/lib/blog-index'
 import { fetchStateMarkets } from '@/lib/markets'
+import { PERSONA_PAGES } from '@/lib/seo/persona-pages'
 import { PROBLEM_PAGES } from '@/lib/seo/problem-pages'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
@@ -129,6 +130,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
+  // Persona listicle pages are ad landers; only the ones promoted to
+  // `indexable` belong in the sitemap.
+  const personaEntries: MetadataRoute.Sitemap = PERSONA_PAGES.filter((p) => p.indexable).map((p) => ({
+    url: `${SITE_URL}/for/${p.slug}`,
+    lastModified: buildDate,
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+  }))
+
   const investorIntelligenceEntries: MetadataRoute.Sitemap = investorIntelligence.map((p) => ({
     url: `${SITE_URL}/investor-intelligence/${p.slug}/`,
     lastModified: lastModifiedFromContent(p, buildDate),
@@ -144,6 +154,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...blogPaginationEntries,
     ...marketEntries,
     ...answerEntries,
+    ...personaEntries,
     ...investorIntelligenceEntries,
   ]
 }

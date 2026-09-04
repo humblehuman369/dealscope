@@ -72,3 +72,12 @@ export function homepageProFeatures(buyerTotalLabel: string, lenderTotalLabel: s
  * directory viewing or exports — both require a settled first payment.
  */
 export const DIRECTORY_ACCESS_NOTE = 'Directories and exports unlock with your first payment.'
+
+/**
+ * Pro price points and trial length as marketed. Must match the Stripe and
+ * RevenueCat products; the /for landing pages render these rather than
+ * hardcoding a price that can go stale.
+ */
+export const PRO_PRICE_MONTHLY = '$34.99'
+export const PRO_PRICE_ANNUAL = '$349.99'
+export const PRO_TRIAL_DAYS = 7
