@@ -108,3 +108,10 @@ export const API_BASE_URL = DIRECT_API_ENABLED ? PUBLIC_API_URL : ''
 export const WEB_BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL ||
   (IS_CAPACITOR || IS_MAC_NATIVE ? 'https://dealgapiq.com' : '')
+
+/**
+ * "Make It Work" wizard on /discovery. On by default; set
+ * NEXT_PUBLIC_MAKE_IT_WORK=off to fall back to the original four option cards
+ * (kept so the two experiences can be A/B compared).
+ */
+export const MAKE_IT_WORK_ENABLED: boolean = process.env.NEXT_PUBLIC_MAKE_IT_WORK !== 'off'

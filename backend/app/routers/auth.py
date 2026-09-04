@@ -49,6 +49,7 @@ from app.schemas.auth import (
     UserRegister,
     UserResponse,
 )
+from app.schemas.plans import MagicLinkConsumeRequest, MagicLinkConsumeResponse
 from app.services.auth_service import AuthError, MFARequired, auth_service
 from app.services.email_service import email_service
 from app.services.session_service import CLIENT_TYPE_DESKTOP, CLIENT_TYPE_MOBILE, normalize_client_type, session_service
@@ -1047,6 +1048,62 @@ async def verify_email(body: EmailVerification, request: Request, db: DbSession)
             pass
 
     return AuthMessage(message="Email verified successfully")
+
+
+def _safe_next_path(candidate: str | None) -> str | None:
+    """Only same-origin paths may be used as a post-login redirect."""
+    if not candidate or not candidate.startswith("/") or candidate.startswith("//"):
+        return None
+    if "\\" in candidate or "\n" in candidate or "\r" in candidate:
+        return None
+    return candidate
+
+
+@router.post("/magic-link/consume", response_model=MagicLinkConsumeResponse)
+async def consume_magic_link(
+    body: MagicLinkConsumeRequest,
+    request: Request,
+    response: Response,
+    db: DbSession,
+    next: str | None = None,
+):
+    """Sign in with a single-use magic link from the "your plan is saved" email.
+
+    Sets the same auth cookies as ``/login`` and returns where to go next. For
+    accounts with MFA enabled the token only verifies the email; the client is
+    sent to the regular login so the second factor is still enforced.
+    """
+    redirect = _safe_next_path(next) or "/deals"
+    try:
+        user, session_obj, jwt_token = await auth_service.consume_magic_link(
+            db,
+            body.token,
+            ip_address=_client_ip(request),
+            user_agent=request.headers.get("User-Agent"),
+            client_type=_client_type_from_request(request),
+        )
+        await db.commit()
+    except AuthError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+    if session_obj is None or jwt_token is None:
+        return MagicLinkConsumeResponse(redirect=f"/login?{urlencode({'redirect': redirect, 'reason': 'mfa'})}")
+
+    _set_auth_cookies(
+        response,
+        session_obj.session_token,
+        session_obj.refresh_token,
+        jwt_token,
+        session_obj.expires_at,
+    )
+    _ph_identify_and_capture(user, "user_logged_in", {"login_method": "magic_link"})
+    _ph_identify_and_capture(user, "magic_link_consumed", {})
+
+    return MagicLinkConsumeResponse(
+        redirect=redirect,
+        access_token=jwt_token,
+        refresh_token=session_obj.refresh_token,
+    )
 
 
 @router.post("/resend-verification", response_model=AuthMessage)

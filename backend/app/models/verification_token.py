@@ -32,6 +32,8 @@ class TokenType(enum.StrEnum):
     PASSWORD_RESET = "password_reset"
     MFA_SETUP = "mfa_setup"
     MFA_CHALLENGE = "mfa_challenge"
+    # Passwordless sign-in from the "your plan is saved" email (30 min, single use).
+    MAGIC_LINK = "magic_link"
 
 
 class VerificationToken(Base):

@@ -11,6 +11,18 @@
  *   family from the Four Paths panel; the selector applies a ranking penalty on subsequent
  *   verdict requests via the `dismissed_families` payload field.
  *
+ * Make It Work wizard (`components/iq-verdict/make-it-work/*`):
+ *   `make_it_work_opened`        {source: tile|cta|save_tile, focus_family?, save_only}
+ *   `make_it_work_step`          {step: cash|priority|terms|occupancy, answer}
+ *   `make_it_work_plan_viewed`   {recommended_family, recommended_id, path_count, cash, priority, terms}
+ *   `make_it_work_alternative_selected` {family, structure_id}
+ *   `four_paths_detail_expanded` {path_count, state?} — "See all four options in detail"
+ *   `plan_save_submitted`        {mode: email|authenticated, family?} — the free hook
+ *   `plan_save_email_sent`       {family?} — claim accepted (202)
+ *   `magic_link_consumed`        — /auth/magic signed the user in (also captured server-side)
+ * `activated` fires with `source: 'four_ways'` when the strip renders, replacing the
+ * `four_paths` source now that the full panel is collapsed by default.
+ *
  * NORTH-STAR FUNNEL (free → paid). Define this funnel in PostHog using these events,
  * in order. Free-to-paid conversion is the north-star metric:
  *   1. `signup_completed`   — account created

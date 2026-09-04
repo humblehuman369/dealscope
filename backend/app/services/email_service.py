@@ -562,6 +562,121 @@ class EmailService:
             html=html,
         )
 
+    async def send_plan_saved_email(
+        self,
+        to: str,
+        *,
+        address: str,
+        plan: Any,
+        magic_url: str,
+        is_new_user: bool,
+        expires_minutes: int = 30,
+    ) -> dict[str, Any]:
+        """"Your plan is saved" — the Make It Work hook email.
+
+        ``plan`` is a ``PlanClaimRequest``: the scenario label + levers and the
+        narrative summary are rendered so the email stands on its own, and the
+        one button is the magic link that signs the user in and opens the plan.
+        """
+        esc = html_lib.escape
+        scenario = getattr(plan, "scenario", None)
+        narrative = getattr(plan, "narrative", None)
+        plan_label = esc(getattr(scenario, "label", None) or "Your plan") if scenario else "Your plan"
+        summary = esc(getattr(narrative, "summary", "") or "")
+        pitch = esc(getattr(narrative, "pitch", "") or "")
+
+        lever_rows = ""
+        levers = getattr(scenario, "levers", None) or {}
+        display_levers: list[tuple[str, str]] = []
+        cpp = levers.get("custom_purchase_price")
+        if isinstance(cpp, (int, float)) and cpp > 0:
+            display_levers.append(("Target Buy", f"${cpp:,.0f}"))
+        cre = levers.get("custom_rent_estimate")
+        if isinstance(cre, (int, float)) and cre > 0:
+            display_levers.append(("Monthly rent", f"${cre:,.0f}/mo"))
+        extras = levers.get("pending_extras") or {}
+        carry = extras.get("seller_carry_amount") if isinstance(extras, dict) else None
+        if isinstance(carry, (int, float)) and carry > 0:
+            display_levers.append(("Seller carry", f"${carry:,.0f}"))
+        for label, value in display_levers:
+            lever_rows += f'''
+    <tr>
+        <td style="padding: 8px 0; font-size: 14px; color: {self.TXT_SECONDARY}; border-bottom: 1px solid {self.DIVIDER};">{esc(label)}</td>
+        <td align="right" style="padding: 8px 0; font-size: 14px; font-weight: 700; color: {self.TXT_HEADING}; border-bottom: 1px solid {self.DIVIDER};">{esc(value)}</td>
+    </tr>'''
+
+        levers_table = (
+            f'''
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 20px 0;">{lever_rows}
+</table>'''
+            if lever_rows
+            else ""
+        )
+
+        summary_block = (
+            f'''
+<p style="font-size: 15px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 20px 0;">{summary}</p>'''
+            if summary
+            else ""
+        )
+
+        pitch_block = (
+            f'''
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0;">
+    <tr>
+        <td style="padding: 16px; background-color: {self.INFO_BG}; border-radius: 12px; border-left: 4px solid {self.INFO_BORDER};">
+            <p style="font-weight: 700; color: {self.INFO_HEADING}; margin: 0 0 6px 0;">Your opening pitch to the seller</p>
+            <p style="font-size: 14px; color: {self.INFO_BODY}; line-height: 1.6; margin: 0; white-space: pre-line;">{pitch}</p>
+        </td>
+    </tr>
+</table>'''
+            if pitch
+            else ""
+        )
+
+        account_line = (
+            "We created a free DealGapIQ account for this email so your plan has a home. "
+            "The button below signs you in — no password needed."
+            if is_new_user
+            else "The button below signs you in and opens the plan in your Strategy workbench — no password needed."
+        )
+
+        content = f'''
+<p style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: {self.BRAND_LINK}; margin: 0 0 8px 0;">Your plan is saved</p>
+<h1 style="font-size: 24px; font-weight: 800; color: {self.TXT_HEADING}; margin: 0 0 6px 0; letter-spacing: -0.02em;">
+    {plan_label}
+</h1>
+<p style="font-size: 14px; color: {self.TXT_SECONDARY}; margin: 0 0 20px 0;">{esc(address)}</p>
+{summary_block}
+{levers_table}
+{pitch_block}
+<p style="font-size: 15px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">{account_line}</p>
+
+{self._button("Open my plan", magic_url)}
+
+<p style="font-size: 13px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 0;">
+    This link works once and expires in {expires_minutes} minutes. If it has expired, search the address again on DealGapIQ and save the plan to get a fresh one.
+</p>
+
+<hr style="border: none; border-top: 1px solid {self.DIVIDER}; margin: 24px 0;">
+
+<p style="font-size: 12px; color: {self.TXT_MUTED}; margin: 0 0 12px 0;">
+    Or copy and paste this URL into your browser:<br>
+    <a href="{magic_url}" style="color: {self.BRAND_LINK}; word-break: break-all;">{magic_url}</a>
+</p>
+<p style="font-size: 12px; color: {self.TXT_MUTED}; margin: 0;">
+    Want unlimited saved deals, PDF reports, and the full Strategy toolkit? <a href="{self.frontend_url}/pricing" style="color: {self.BRAND_LINK};">See DealGapIQ Pro</a>.
+</p>
+'''
+
+        html = self._base_template(content, f"Your plan for {address} is saved")
+
+        return await self.send_email(
+            to=to,
+            subject=f"Your plan for {address} is saved",
+            html=html,
+        )
+
     # ===========================================
     # Billing & Subscription Emails
     # ===========================================

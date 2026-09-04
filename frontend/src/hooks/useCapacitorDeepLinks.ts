@@ -33,6 +33,24 @@ export function useCapacitorDeepLinks() {
 
         const parsed = new URL(url)
 
+        // Magic link from the "your plan is saved" email (universal link or
+        // dealgapiq://auth/magic?token=…). The /auth/magic page consumes the token.
+        if (parsed.pathname === '/auth/magic' || (parsed.protocol === 'dealgapiq:' && parsed.hostname === 'auth' && parsed.pathname === '/magic')) {
+          const forwarded = new URLSearchParams()
+          for (const key of ['token', 'next'] as const) {
+            const value = parsed.searchParams.get(key)
+            if (value) forwarded.set(key, value)
+          }
+          try {
+            await Browser.close()
+          } catch {
+            /* may already be closed */
+          }
+          const qs = forwarded.toString()
+          router.replace(qs ? `/auth/magic?${qs}` : '/auth/magic')
+          return
+        }
+
         if (
           parsed.protocol === 'dealgapiq:' &&
           parsed.hostname === 'auth' &&

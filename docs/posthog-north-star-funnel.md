@@ -14,7 +14,8 @@ This spec is paste-ready for the PostHog console. All event names below already 
 |---|---|---|---|
 | 1 | `signup_completed` | `app/register/RegistrationContent.tsx`, `components/auth/RegisterForm.tsx` | `method`, `requires_verification` |
 | 2 | `verdict_viewed` | `app/discovery/page.tsx` | (analysis context) |
-| 3 | `activated` | `components/iq-verdict/FourPathsPanel.tsx`, `components/buyer-directory/BuyerDirectory.tsx`, `components/lender-directory/HardMoneyDirectory.tsx` | `source` = `four_paths` \| `buyer_directory` \| `lender_directory` |
+| 3 | `activated` | `components/iq-verdict/make-it-work/FourWaysSection.tsx` (strip, default), `components/iq-verdict/FourPathsPanel.tsx` (legacy cards / detail expander), `components/buyer-directory/BuyerDirectory.tsx`, `components/lender-directory/HardMoneyDirectory.tsx` | `source` = `four_ways` \| `four_paths` \| `buyer_directory` \| `lender_directory` |
+| 3b | `plan_save_submitted` | `components/iq-verdict/make-it-work/SavePlanForm.tsx` | `mode` = `email` \| `authenticated`, `family` — the free email hook; sits between `activated` and `signup_completed` for anonymous users |
 | 4 | `checkout_started` | `components/billing/UpgradeModal.tsx` | `source`, `plan` (`monthly`\|`yearly`), `platform`, `paid_only_feature` |
 | 5 | `checkout_completed` | `app/checkout/success/page.tsx` | (plan/amount context) |
 
@@ -55,6 +56,21 @@ Many users run a discovery before creating an account (no login required for fir
   3. `activated`
 - **Conversion window:** `1 day`.
 - **Read:** time-to-first-value and the share of analyzers who reach the "aha." This is the lever for first-week activation work.
+
+### 3a. Make It Work — plan-save hook (anonymous → email)
+
+The wizard on `/discovery` is the free hook that captures an email before any paywall. Track it as its own funnel so the strip vs. legacy-cards A/B (`NEXT_PUBLIC_MAKE_IT_WORK`) has a scoreboard.
+
+- **Name:** `Make It Work — Plan Save`
+- **Steps:**
+  1. `verdict_viewed`
+  2. `make_it_work_opened` (`source` = `tile` \| `cta` \| `save_tile`)
+  3. `make_it_work_plan_viewed` (`recommended_family`)
+  4. `plan_save_submitted` (`mode` = `email` \| `authenticated`)
+  5. `magic_link_consumed` — the emailed link was opened; the account is now verified and signed in
+- **Conversion window:** `1 day` for steps 1–4; `3 days` including step 5.
+- **Breakdowns:** `make_it_work_opened.source`, `make_it_work_plan_viewed.recommended_family`, `make_it_work_step.answer` (per `step`).
+- **Also watch:** `four_paths_detail_expanded` — how often users still want the full card wall. A high rate means the strip is hiding something they need.
 
 ---
 

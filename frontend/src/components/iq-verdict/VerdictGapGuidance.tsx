@@ -10,6 +10,10 @@ import {
   type DealStructure,
   type DealStructuresPayload,
 } from '@/components/iq-verdict/FourPathsPanel'
+import { FourWaysSection } from '@/components/iq-verdict/make-it-work/FourWaysSection'
+import type { FourWayFamily } from '@/components/iq-verdict/make-it-work/fourWays'
+import { MAKE_IT_WORK_ENABLED } from '@/lib/env'
+
 export interface VerdictGapGuidanceProps {
   tier: DealGapTier
   dealGapPct: number
@@ -26,6 +30,10 @@ export interface VerdictGapGuidanceProps {
   onShowPitch?: (structure: DealStructure) => void
   /** For analytics (Three Paths) */
   propertyState?: string | null
+  /** Dollar gap between the market anchor and Target Buy (drives the strip headline). */
+  dealGapAmount?: number | null
+  /** Opens the Make It Work wizard. When absent, the legacy four cards render. */
+  onMakeItWork?: (family?: FourWayFamily) => void
 }
 
 function LeverButton({ children, onClick }: { children: ReactNode; onClick: () => void }) {
@@ -62,11 +70,14 @@ export function VerdictGapGuidance({
   onOpenStructureInStrategy,
   onShowPitch,
   propertyState,
+  dealGapAmount,
+  onMakeItWork,
 }: VerdictGapGuidanceProps) {
   const anchorWord = isListed ? 'asking price' : 'estimated market value'
   const showFullLevers = dealGapPct > 5
   const hasStructures =
     !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
+  const useWizard = MAKE_IT_WORK_ENABLED && Boolean(onMakeItWork)
   const pathsSig = dealStructures?.paths.map((p) => p.id).join('|') ?? ''
 
   useEffect(() => {
@@ -95,7 +106,18 @@ export function VerdictGapGuidance({
         {tier.subHeadline}
       </p>
 
-      {hasStructures && (
+      {hasStructures && useWizard && (
+        <FourWaysSection
+          payload={dealStructures!}
+          dealGapAmount={dealGapAmount}
+          propertyState={propertyState}
+          onMakeItWork={onMakeItWork!}
+          onOpenInStrategy={onOpenStructureInStrategy}
+          onShowPitch={onShowPitch}
+        />
+      )}
+
+      {hasStructures && !useWizard && (
         <FourPathsPanel
           payload={dealStructures!}
           propertyState={propertyState}
@@ -206,6 +228,39 @@ export interface VerdictPositiveGuidanceProps {
   onOpenStructureInStrategy?: (structure: DealStructure, index: number) => void
   onShowPitch?: (structure: DealStructure) => void
   propertyState?: string | null
+  dealGapAmount?: number | null
+  /** Opens the Make It Work wizard (save-only mode when the deal already works). */
+  onMakeItWork?: (family?: FourWayFamily) => void
+}
+
+function DealWorksTile({ onSave }: { onSave: () => void }): ReactNode {
+  return (
+    <div
+      className="mt-4 flex flex-col gap-3 rounded-xl sm:flex-row sm:items-center sm:justify-between"
+      style={{
+        padding: '16px 18px',
+        background: 'var(--surface-card)',
+        border: '1px solid color-mix(in srgb, var(--status-positive) 35%, transparent)',
+      }}
+    >
+      <div>
+        <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: 'var(--text-heading)' }}>
+          This deal already works at asking.
+        </p>
+        <p style={{ margin: '4px 0 0', fontSize: 13, lineHeight: 1.5, color: 'var(--text-body)' }}>
+          Lock in the numbers now so you can come back to them when you make the offer.
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onSave}
+        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold"
+        style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
+      >
+        Save this deal <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  )
 }
 
 function StaticTip({ children }: { children: ReactNode }) {
@@ -236,10 +291,13 @@ export function VerdictPositiveGuidance({
   onOpenStructureInStrategy,
   onShowPitch,
   propertyState,
+  dealGapAmount,
+  onMakeItWork,
 }: VerdictPositiveGuidanceProps) {
   const isPositive = effectiveDisplayPct > 0
   const hasStructures =
     !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
+  const useWizard = MAKE_IT_WORK_ENABLED && Boolean(onMakeItWork)
 
   return (
     <div style={{ marginTop: 12, maxWidth: 560 }}>
@@ -249,7 +307,22 @@ export function VerdictPositiveGuidance({
           : 'At modeled terms, target buy aligns with the market anchor. Verify your assumptions before committing.'}
       </p>
 
-      {hasStructures && (
+      {hasStructures && useWizard && (
+        <FourWaysSection
+          payload={dealStructures!}
+          dealGapAmount={dealGapAmount}
+          propertyState={propertyState}
+          onMakeItWork={onMakeItWork!}
+          onOpenInStrategy={onOpenStructureInStrategy}
+          onShowPitch={onShowPitch}
+        />
+      )}
+
+      {!hasStructures && useWizard && isPositive && (
+        <DealWorksTile onSave={() => onMakeItWork!()} />
+      )}
+
+      {hasStructures && !useWizard && (
         <FourPathsPanel
           payload={dealStructures!}
           propertyState={propertyState}

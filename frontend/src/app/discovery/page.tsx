@@ -76,8 +76,9 @@ import {
   VerdictGapGuidance,
   VerdictPositiveGuidance,
 } from '@/components/iq-verdict/VerdictGapGuidance'
-import { DealStructuresNarrative } from '@/components/iq-verdict/DealStructuresNarrative'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
+import type { FourWayFamily } from '@/components/iq-verdict/make-it-work/fourWays'
+import { MAKE_IT_WORK_ENABLED } from '@/lib/env'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import {
   parseStrategyWorksheetSection,
@@ -122,6 +123,32 @@ const StrategyWorkbench = dynamic(
   () => import('@/features/strategy-workbench').then((m) => m.StrategyWorkbench),
   { ssr: false, loading: () => <WorkbenchSkeleton /> },
 )
+
+// Lazy — only loaded when the user opens "Make this work for me".
+const MakeItWorkWizard = dynamic(
+  () =>
+    import('@/components/iq-verdict/make-it-work/MakeItWorkWizard').then(
+      (m) => m.MakeItWorkWizard,
+    ),
+  { ssr: false },
+)
+
+interface MakeItWorkState {
+  open: boolean
+  source: 'tile' | 'cta' | 'save_tile'
+  focusFamily: FourWayFamily | null
+  saveOnly: boolean
+  /** Verdict body captured at open so the wizard re-runs the same property inputs. */
+  baseInputs: Record<string, unknown> | null
+}
+
+const MAKE_IT_WORK_CLOSED: MakeItWorkState = {
+  open: false,
+  source: 'cta',
+  focusFamily: null,
+  saveOnly: false,
+  baseInputs: null,
+}
 
 function InsightItem({
   title,
@@ -349,6 +376,7 @@ function VerdictContent() {
   const [showMethodologySheet, setShowMethodologySheet] = useState(false)
   const [methodologyScoreType, setMethodologyScoreType] = useState<'verdict' | 'profit'>('verdict')
   const [pitchModalStructure, setPitchModalStructure] = useState<DealStructure | null>(null)
+  const [makeItWork, setMakeItWork] = useState<MakeItWorkState>(MAKE_IT_WORK_CLOSED)
 
   // IQ Estimate 3-value sources (populated from API response)
   const [iqSources, setIqSources] = useState<IQEstimateSources>({
@@ -1213,6 +1241,41 @@ function VerdictContent() {
     [property, preferredStrategyIds, searchParams, router],
   )
 
+  // Make It Work wizard — opened from a tile (family pre-focused), the strip CTA,
+  // or the "deal already works" save tile. Captures the exact verdict body so the
+  // wizard re-runs the engine against the same property inputs.
+  const openMakeItWork = useCallback(
+    (family?: FourWayFamily, source: MakeItWorkState['source'] = 'tile') => {
+      const hasPaths = Boolean(analysis?.dealStructures?.hasPaths && analysis.dealStructures.paths.length > 0)
+      setMakeItWork({
+        open: true,
+        source: family ? 'tile' : source,
+        focusFamily: family ?? null,
+        saveOnly: !hasPaths,
+        baseInputs: analysisInputsRef.current ? { ...analysisInputsRef.current } : null,
+      })
+    },
+    [analysis?.dealStructures],
+  )
+
+  const closeMakeItWork = useCallback(() => setMakeItWork(MAKE_IT_WORK_CLOSED), [])
+
+  // Signed-in save from the wizard: persist the property, remember the chosen
+  // scenario so the workbench applies it on open.
+  const saveMakeItWorkPlan = useCallback(
+    async (structure: DealStructure | null) => {
+      await saveProperty()
+      if (structure) {
+        const index = Math.max(
+          0,
+          analysis?.dealStructures?.paths.findIndex((p) => p.id === structure.id) ?? 0,
+        )
+        writeLastAppliedScenario(buildScenarioPayload(structure, index))
+      }
+    },
+    [saveProperty, analysis?.dealStructures],
+  )
+
   const navigateToAppraiser = useCallback(() => {
     if (!property) return
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
@@ -1517,6 +1580,9 @@ function VerdictContent() {
         : "You'll need leverage, timing, or a motivated seller."
   const isOffMarket = !isListed
   const tier = getDealGapTier(-effectiveDisplayPct, isListed)
+  const hasFourWays = Boolean(
+    analysis.dealStructures?.hasPaths && analysis.dealStructures.paths.length > 0,
+  )
   const sourceKeys: DataSourceId[] = ['iq', 'zillow', 'rentcast', 'redfin', 'realtor']
   const dataSourceCount = sourceKeys.filter((sourceKey) => {
     const valueHasSource = iqSources.value[sourceKey] != null
@@ -2264,6 +2330,8 @@ function VerdictContent() {
                   propertyState={property?.state ?? null}
                   onOpenStructureInStrategy={openThreePathInStrategy}
                   onShowPitch={(s) => setPitchModalStructure(s)}
+                  dealGapAmount={discountAmount}
+                  onMakeItWork={openMakeItWork}
                 />
               ) : dealGapPct > 0 ? (
                 <VerdictGapGuidance
@@ -2281,6 +2349,8 @@ function VerdictContent() {
                   propertyState={property?.state ?? null}
                   onOpenStructureInStrategy={openThreePathInStrategy}
                   onShowPitch={(s) => setPitchModalStructure(s)}
+                  dealGapAmount={discountAmount}
+                  onMakeItWork={openMakeItWork}
                 />
               ) : (
                 <VerdictPositiveGuidance
@@ -2294,6 +2364,8 @@ function VerdictContent() {
                   propertyState={property?.state ?? null}
                   onOpenStructureInStrategy={openThreePathInStrategy}
                   onShowPitch={(s) => setPitchModalStructure(s)}
+                  dealGapAmount={discountAmount}
+                  onMakeItWork={openMakeItWork}
                 />
               )}
 
@@ -2531,31 +2603,9 @@ function VerdictContent() {
             </div>
           </div>
 
-          {/* "Here's the deal in plain English" — moved out of the verdict card
-              to sit below Key Insights (same gap-case visibility as before). */}
-          {effectiveDisplayPct <= 0 &&
-            dealGapPct > 0 &&
-            analysis.dealStructures &&
-            analysis.dealStructures.hasPaths &&
-            analysis.dealStructures.paths.length > 0 && (
-              <div className="mx-0 sm:mx-5 mt-4">
-                <DealStructuresNarrative
-                  paragraphs={analysis.dealStructures.narrativeParagraphs}
-                />
-              </div>
-            )}
-
-          {/* Continue to Strategy CTA — placed after Key Insights so the
-              primary action follows the supporting detail. */}
-          <div className="mx-0 sm:mx-5 mt-4">
-            <button
-              onClick={() => navigateToStrategy()}
-              className="w-full px-5 py-3 rounded-full text-sm font-bold transition-all whitespace-nowrap"
-              style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
-            >
-              Continue to Strategy
-            </button>
-          </div>
+          {/* Plain-English narrative + mid-page "Continue to Strategy" now live
+              inside the Four Ways section (behind "See all four options in
+              detail") so the page reads: overview → four ways → one CTA. */}
 
           {/* Market Snapshot removed — deal factors now displayed in left column */}
 
@@ -2625,11 +2675,15 @@ function VerdictContent() {
               </p>
             )}
             <button
-              onClick={() => navigateToStrategy()}
+              onClick={() =>
+                MAKE_IT_WORK_ENABLED && hasFourWays
+                  ? openMakeItWork(undefined, 'cta')
+                  : navigateToStrategy()
+              }
               className="inline-flex items-center gap-2 px-7 py-3 sm:px-9 sm:py-4 rounded-full font-bold text-[0.8rem] sm:text-[1.04rem] text-[var(--text-inverse)] transition-all"
               style={{ background: 'var(--accent-sky)', boxShadow: 'var(--shadow-card)' }}
             >
-              Show Me the Numbers
+              {MAKE_IT_WORK_ENABLED && hasFourWays ? 'Make this work for me' : 'Show Me the Numbers'}
               <svg
                 className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]"
                 fill="none"
@@ -2735,6 +2789,54 @@ function VerdictContent() {
             : null
         }
       />
+
+      {makeItWork.open && property && (
+        <MakeItWorkWizard
+          open={makeItWork.open}
+          onClose={closeMakeItWork}
+          source={makeItWork.source}
+          baseInputs={makeItWork.baseInputs}
+          address={
+            [property.address, property.city, [property.state, property.zip].filter(Boolean).join(' ')]
+              .filter(Boolean)
+              .join(', ')
+          }
+          addressParts={{
+            street: property.address,
+            city: property.city || undefined,
+            state: property.state || undefined,
+            zip: property.zip || undefined,
+          }}
+          zpid={property.zpid != null ? String(property.zpid) : null}
+          latitude={property.latitude ?? null}
+          longitude={property.longitude ?? null}
+          listPrice={property.price}
+          targetBuyPrice={analysis.purchasePrice ?? null}
+          incomeValue={analysis.incomeValue ?? null}
+          unitCount={null}
+          focusFamily={makeItWork.focusFamily}
+          saveOnly={makeItWork.saveOnly}
+          isAuthenticated={isAuthenticated}
+          propertySnapshot={{
+            street: property.address,
+            city: property.city,
+            state: property.state,
+            zipCode: property.zip,
+            bedrooms: property.beds,
+            bathrooms: property.baths,
+            sqft: property.sqft,
+            listPrice: property.price,
+            monthlyRent: property.monthlyRent,
+            propertyTaxes: property.propertyTaxes,
+            insurance: property.insurance,
+            zpid: property.zpid != null ? String(property.zpid) : undefined,
+            latitude: property.latitude,
+            longitude: property.longitude,
+          }}
+          onSaveAuthenticated={saveMakeItWorkPlan}
+          onOpenInStrategy={openThreePathInStrategy}
+        />
+      )}
 
       {tourPhase ? (
         <WorkbenchTour

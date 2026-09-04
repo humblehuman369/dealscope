@@ -374,6 +374,70 @@ class AuthService:
         return user, session_obj, jwt_token
 
     # ------------------------------------------------------------------
+    # Magic link (passwordless, from the "your plan is saved" email)
+    # ------------------------------------------------------------------
+
+    async def consume_magic_link(
+        self,
+        db: AsyncSession,
+        raw_token: str,
+        *,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        client_type: str | None = None,
+    ) -> tuple[User, UserSession | None, str | None]:
+        """Validate a single-use ``MAGIC_LINK`` token and sign the user in.
+
+        Marks the account verified (the email round-trip proves ownership).
+        Returns ``(user, session, jwt)``; when the account has MFA enabled the
+        session and jwt are ``None`` — the caller sends the user to the normal
+        login so the second factor is still required.
+        """
+        user_id = await token_service.validate_verification_token(db, raw_token, TokenType.MAGIC_LINK)
+        if user_id is None:
+            raise AuthError("This link has expired or was already used", status_code=400)
+
+        user = await user_repo.get_by_id(db, user_id, load_roles=True)
+        if user is None:
+            raise AuthError("User not found", status_code=404)
+        if not user.is_active:
+            raise AuthError("Account is deactivated", status_code=403)
+
+        if not user.is_verified:
+            await user_repo.update(db, user.id, is_verified=True)
+            await audit_repo.log(
+                db,
+                action=AuditAction.EMAIL_VERIFICATION,
+                user_id=user.id,
+                ip_address=ip_address,
+                metadata={"via": "magic_link"},
+            )
+
+        if user.mfa_enabled and user.mfa_secret:
+            logger.info("Magic link verified MFA account without session: %s", user.email)
+            return user, None, None
+
+        await user_repo.reset_failed_logins(db, user.id)
+        await user_repo.update(db, user.id, last_login=datetime.now(UTC))
+        session_obj, jwt_token = await session_service.create_session(
+            db,
+            user.id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            client_type=client_type,
+        )
+        await audit_repo.log(
+            db,
+            action=AuditAction.LOGIN,
+            user_id=user.id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            metadata={"session_id": str(session_obj.id), "method": "magic_link"},
+        )
+        logger.info("User signed in via magic link: %s", user.email)
+        return user, session_obj, jwt_token
+
+    # ------------------------------------------------------------------
     # MFA
     # ------------------------------------------------------------------
 
