@@ -30,6 +30,7 @@ from app.services.linkedin_publisher import (
     LinkedInAuthError,
     LinkedInClient,
     LinkedInRateLimitError,
+    LinkedInUnknownPostState,
     author_urn,
     build_post_payload,
     company_account_configured,
@@ -255,6 +256,14 @@ async def _revert_to_approved_or_failed(db: AsyncSession, post: LinkedInPost, er
     await db.commit()
 
 
+async def _park_unknown_state(db: AsyncSession, post: LinkedInPost, error: str) -> None:
+    """The create call may have landed. Park the row; a retry could double-post."""
+    post.error = _clip_error(error)
+    post.status = LinkedInPostStatus.FAILED
+    post.attempts = MAX_ATTEMPTS
+    await db.commit()
+
+
 async def linkedin_publish_job(db: AsyncSession) -> dict:
     now = _now()
     dry_run = not settings.LINKEDIN_PUBLISH_ENABLED
@@ -299,6 +308,9 @@ async def linkedin_publish_job(db: AsyncSession) -> dict:
                 break
             except LinkedInAuthError as exc:
                 await _revert_to_approved_or_failed(db, post, str(exc))
+                failed.append(LinkedInFailedRow(key=post.key, error=str(exc)))
+            except LinkedInUnknownPostState as exc:
+                await _park_unknown_state(db, post, str(exc))
                 failed.append(LinkedInFailedRow(key=post.key, error=str(exc)))
             except LinkedInAPIError as exc:
                 await _revert_to_approved_or_failed(db, post, str(exc))
