@@ -49,6 +49,7 @@
 | [`LAUNCH_MARKETING_PLAN.md`](./LAUNCH_MARKETING_PLAN.md) | Zero-budget founder-led launch plan | Reference |
 | [`DIRECT_RESPONSE_PLAYBOOK.md`](./DIRECT_RESPONSE_PLAYBOOK.md) | Direct-response layer: SERP term, 50-problem list, `/answers` landing formula, paid search, attribution + PostHog setup, reviews; Phase 2 audio parked | Reference |
 | [`LISTICLE_LANDING_PAGES.md`](./LISTICLE_LANDING_PAGES.md) | Paid-social layer: `/for/*` persona listicle pages (8, noindex), base-reason pool + variant rules, copy truth checklist, Meta test structure, kill/scale rules, Pixel events, PostHog extensions | Reference |
+| [`LISTICLE_META_LAUNCH_KIT.md`](./LISTICLE_META_LAUNCH_KIT.md) | Phase 2 paste-ready values: Pixel ID → Vercel steps, Meta campaign (4 ad sets × 2 hooks, exact headlines/primary text/URLs/audiences), PostHog DR-B patch + DR-C ×4 + DR-F SQL, LinkedIn batch-02 import | Operational |
 | [`BRAND_SERP_LISTINGS.md`](./BRAND_SERP_LISTINGS.md) | Paste-ready field values for GBP, LinkedIn, App Store/Play, YouTube, Crunchbase, Product Hunt, G2/Capterra; founder checklist | Reference |
 | [`HOMEPAGE_PLAN.md`](./HOMEPAGE_PLAN.md) | Homepage copy spec (Four Paths) | Reference |
 

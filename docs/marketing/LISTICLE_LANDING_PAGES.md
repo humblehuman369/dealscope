@@ -146,6 +146,8 @@ or a blog post instead.
 ## 5. Paid Meta test (Phase 2)
 
 Prerequisite: `NEXT_PUBLIC_META_PIXEL_ID` set in Vercel (Production). The
+paste-ready campaign, ad copy and PostHog definitions for the launch are in
+`LISTICLE_META_LAUNCH_KIT.md`; this section holds the rules. The
 pixel is consent-gated and lazy-loaded (`lib/metaPixel.ts`); it forwards
 exactly four events as Meta standard events and nothing else:
 
@@ -197,8 +199,11 @@ the site average two weeks running inherits the killed budget.
 **Organic reuse.** Every listicle also ships as a LinkedIn carousel or X
 thread through the existing publisher queue
 (`docs/marketing/linkedin/README.md`), linking with
-`utm_source=linkedin&utm_medium=social&utm_campaign=<slug>`. Free
-distribution, and an organic baseline to compare paid against.
+`utm_source=linkedin&utm_medium=<founder|company_page>&utm_campaign=<slug>&utm_content=carousel`
+(the medium keeps the LinkedIn batch convention; the campaign is the slug so
+it joins to the paid rows). Carousel PDFs are generated from the page config
+by `scripts/build_listicle_carousels.py`, so slides and page never drift.
+Free distribution, and an organic baseline to compare paid against.
 
 ---
 

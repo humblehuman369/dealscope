@@ -1,0 +1,154 @@
+# /for persona listicles → LinkedIn, Batch 02 (one week, 4 founder carousels + 4 company reshares).
+# Source pages: dealgapiq.com/for/{house-hackers,wholesalers,out-of-state-investors,creative-finance-buyers}
+# (the four Phase 2 Meta launch personas from docs/marketing/LISTICLE_LANDING_PAGES.md §5).
+# Runs the week after batch-01 ends (2026-09-18). Adjust dates before import.
+#
+# Carousels are generated from the page config so the slides say exactly what the page says:
+#   (cd frontend && node --import tsx scripts/export-persona-pages.ts) > /tmp/persona-pages.json
+#   python3 scripts/build_listicle_carousels.py /tmp/persona-pages.json \
+#     --out docs/marketing/linkedin/assets/batch-02 \
+#     --slugs house-hackers wholesalers out-of-state-investors creative-finance-buyers
+#
+# UTMs: utm_campaign is the page slug so these rows join to the paid test in PostHog
+# (ft_utm_campaign); utm_medium keeps the batch-01 founder / company_page split.
+
+batch: batch-02
+timezone: America/New_York
+posts:
+  - key: post-01
+    account: founder
+    scheduled_at: "2026-09-21 07:45"
+    media_type: document
+    media_path: assets/batch-02/house-hackers-carousel.pdf
+    document_title: "8 reasons house hackers check the numbers before the FHA pre-approval"
+    first_comment: "https://dealgapiq.com/for/house-hackers?utm_source=linkedin&utm_medium=founder&utm_campaign=house-hackers&utm_content=carousel"
+    body: |
+      Most house hackers get the FHA pre-approval first and check the numbers second.
+
+      That order is backwards.
+
+      A pre-approval tells you what a lender will let you borrow. It says nothing about what the duplex will cost you to live in once the other unit's rent comes in.
+
+      Those are different numbers. The second one is the one you live with.
+
+      Before the lender asks for documents, run the address:
+      → owner-occupied financing modeled, not approximated
+      → what the rented units actually cover
+      → what the property turns into when you move out
+
+      Eight reasons in the carousel. The verdict itself is free, no signup, no card.
+
+      Full list in the comments.
+
+      #HouseHacking #RealEstateInvesting #DealGapIQ
+
+  - key: post-01-reshare
+    account: company
+    reshare_of_key: post-01
+    scheduled_at: "2026-09-21 12:00"
+    media_type: none
+    first_comment: "https://dealgapiq.com/for/house-hackers?utm_source=linkedin&utm_medium=company_page&utm_campaign=house-hackers&utm_content=carousel"
+    body: "The house-hack snapshot is one of the six strategy snapshots in every free verdict."
+
+  - key: post-02
+    account: founder
+    scheduled_at: "2026-09-22 07:45"
+    media_type: document
+    media_path: assets/batch-02/wholesalers-carousel.pdf
+    document_title: "9 reasons wholesalers run a verdict before they make the call"
+    first_comment: "https://dealgapiq.com/for/wholesalers?utm_source=linkedin&utm_medium=founder&utm_campaign=wholesalers&utm_content=carousel"
+    body: |
+      A lead is a phone number and an address.
+
+      What a cash buyer will pay for it, what you can contract it at, and whether assigning it is even the right move: most wholesalers estimate those in their head on the way to the call.
+
+      Fifteen seconds puts them on the screen first.
+
+      → the maximum allowable offer an end buyer supports, with repaired value and rehab shown so you can adjust them
+      → your spread, in dollars, before you name a price
+      → assign, hold or flip on one screen, so you see when a fee today leaves a decade of cash flow on the table
+
+      It works on addresses that are not listed. An off-market lead gets the same verdict as a Zillow listing.
+
+      Nine reasons in the carousel. Free, no signup, no card.
+
+      Full list in the comments.
+
+      #WholesalingRealEstate #RealEstateInvesting #DealGap
+
+  - key: post-02-reshare
+    account: company
+    reshare_of_key: post-02
+    scheduled_at: "2026-09-22 12:00"
+    media_type: none
+    first_comment: "https://dealgapiq.com/for/wholesalers?utm_source=linkedin&utm_medium=company_page&utm_campaign=wholesalers&utm_content=carousel"
+    body: "The wholesale snapshot shows the buyer's maximum allowable offer and your spread on the same card."
+
+  - key: post-03
+    account: founder
+    scheduled_at: "2026-09-23 07:45"
+    media_type: document
+    media_path: assets/batch-02/out-of-state-investors-carousel.pdf
+    document_title: "9 reasons out-of-state investors analyze from their phone before they fly"
+    first_comment: "https://dealgapiq.com/for/out-of-state-investors?utm_source=linkedin&utm_medium=founder&utm_campaign=out-of-state-investors&utm_content=carousel"
+    body: |
+      Buying where you do not live means every mistake costs a plane ticket.
+
+      Most remote investors fly to see properties a 15-second verdict would have removed from the list.
+
+      Run the whole shortlist from the couch first:
+      → property tax, vacancy and appreciation for the state you are buying in, published and applied automatically
+      → three value sources side by side. When one has no data for the address it reads unavailable; nothing is made up
+      → the Deal Gap in dollars: asking price minus the price that works
+
+      Then book the flight for the two that survived.
+
+      Nine reasons in the carousel. Free, no signup, no card.
+
+      Full list in the comments.
+
+      #RealEstateInvesting #InvestmentProperty #RealEstateData
+
+  - key: post-03-reshare
+    account: company
+    reshare_of_key: post-03
+    scheduled_at: "2026-09-23 12:00"
+    media_type: none
+    first_comment: "https://dealgapiq.com/for/out-of-state-investors?utm_source=linkedin&utm_medium=company_page&utm_campaign=out-of-state-investors&utm_content=carousel"
+    body: "Every state's tax, vacancy and appreciation assumptions are published on the /markets pages and applied in every verdict."
+
+  - key: post-04
+    account: founder
+    scheduled_at: "2026-09-24 07:45"
+    media_type: document
+    media_path: assets/batch-02/creative-finance-buyers-carousel.pdf
+    document_title: "8 reasons creative-finance buyers pull up the Four Paths before they pitch"
+    first_comment: "https://dealgapiq.com/for/creative-finance-buyers?utm_source=linkedin&utm_medium=founder&utm_campaign=creative-finance-buyers&utm_content=carousel"
+    body: |
+      You know what subject-to and a seller carryback are.
+
+      The freeze happens on the phone, when the seller says no to the price and you need three smaller asks that reach the same math.
+
+      That is what the Four Paths are for:
+      → a price cut
+      → a capital ask
+      → a financing change: seller carry, a 0% second, a buydown
+      → a blended plan of smaller asks that lands on the same number
+
+      Each one modeled on the address's live value and rent, with the script written in the seller's terms: full price on paper, a faster close, monthly income.
+
+      Risk is flagged, not hidden. Due-on-sale exposure on a subject-to is named on the card. We analyze; you decide.
+
+      Eight reasons in the carousel. The Four Paths and every script are part of the free verdict.
+
+      Full list in the comments.
+
+      #CreativeFinance #RealEstateInvesting #DealGapIQ
+
+  - key: post-04-reshare
+    account: company
+    reshare_of_key: post-04
+    scheduled_at: "2026-09-24 12:00"
+    media_type: none
+    first_comment: "https://dealgapiq.com/for/creative-finance-buyers?utm_source=linkedin&utm_medium=company_page&utm_campaign=creative-finance-buyers&utm_content=carousel"
+    body: "The Four Paths and the negotiation scripts are part of the free verdict, not a Pro feature."
