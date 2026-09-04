@@ -482,8 +482,16 @@ function VerdictContent() {
       // For saved property mode, wait for store to load then use that data
       if (isSavedPropertyMode) {
         if (!hasRecord) {
-          // Still loading from store
-          return
+          // loadRecord failed (often a 401 before the magic-link session is
+          // readable). Do not spin the IQ logo forever — fall through to the
+          // address in the URL when we have one.
+          if (dealMakerStore.isLoading) return
+          if (dealMakerStore.error && !addressParam) {
+            setError(dealMakerStore.error)
+            setIsLoading(false)
+            return
+          }
+          if (!dealMakerStore.error) return
         }
 
         // Use data from the dealMakerStore
@@ -921,6 +929,8 @@ function VerdictContent() {
     isSavedPropertyMode,
     hasRecord,
     dealMakerStore.record,
+    dealMakerStore.error,
+    dealMakerStore.isLoading,
     isClient,
     overridePurchasePrice,
     overrideMonthlyRent,

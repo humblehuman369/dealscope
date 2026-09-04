@@ -41,18 +41,24 @@ describe('/auth/magic', () => {
     replace.mockClear()
     consumeMagicLink.mockReset()
     me.mockReset()
+    setMemoryToken.mockClear()
     trackEvent.mockClear()
   })
 
   it('consumes the token, refreshes the session, and follows the backend redirect', async () => {
     params = new URLSearchParams({ token: 'abc123', next: '/discovery?propertyId=1' })
-    consumeMagicLink.mockResolvedValue({ redirect: '/discovery?propertyId=1&view=workbench' })
+    consumeMagicLink.mockResolvedValue({
+      redirect: '/discovery?propertyId=1&view=workbench',
+      access_token: 'jwt-access',
+      refresh_token: 'jwt-refresh',
+    })
     me.mockResolvedValue({ id: 'u1', email: 'a@b.co' })
 
     renderPage()
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/discovery?propertyId=1&view=workbench'))
     expect(consumeMagicLink).toHaveBeenCalledWith('abc123', '/discovery?propertyId=1')
+    expect(setMemoryToken).toHaveBeenCalledWith('jwt-access', 'jwt-refresh')
     expect(trackEvent).toHaveBeenCalledWith('magic_link_consumed')
   })
 

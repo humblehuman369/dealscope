@@ -652,7 +652,7 @@ class EmailService:
 {pitch_block}
 <p style="font-size: 15px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">{account_line}</p>
 
-{self._button("Open my plan", magic_url)}
+{self._button("Open my plan", esc(magic_url))}
 
 <p style="font-size: 13px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 0;">
     This link works once and expires in {expires_minutes} minutes. If it has expired, search the address again on DealGapIQ and save the plan to get a fresh one.
@@ -662,7 +662,7 @@ class EmailService:
 
 <p style="font-size: 12px; color: {self.TXT_MUTED}; margin: 0 0 12px 0;">
     Or copy and paste this URL into your browser:<br>
-    <a href="{magic_url}" style="color: {self.BRAND_LINK}; word-break: break-all;">{magic_url}</a>
+    <a href="{esc(magic_url)}" style="color: {self.BRAND_LINK}; word-break: break-all;">{esc(magic_url)}</a>
 </p>
 <p style="font-size: 12px; color: {self.TXT_MUTED}; margin: 0;">
     Want unlimited saved deals, PDF reports, and the full Strategy toolkit? <a href="{self.frontend_url}/pricing" style="color: {self.BRAND_LINK};">See DealGapIQ Pro</a>.

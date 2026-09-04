@@ -382,6 +382,7 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to load Deal Maker record'
       set({
+        propertyId,
         error: message,
         isLoading: false,
       })

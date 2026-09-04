@@ -16,13 +16,39 @@ import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import { SESSION_QUERY_KEY, setLastKnownUser, setLastTokenRefresh } from '@/hooks/useSession'
 import { authApi, setMemoryToken } from '@/lib/api-client'
 import { consumeMagicLink } from '@/lib/api/plans'
-import { IS_CAPACITOR } from '@/lib/env'
 import { trackEvent } from '@/lib/eventTracking'
 
 function safeRedirect(target: string | null | undefined): string {
   // Only ever follow same-origin paths; the backend returns one, but never trust blindly.
   if (!target || !target.startsWith('/') || target.startsWith('//')) return '/discovery'
   return target
+}
+
+function OpeningCard() {
+  return (
+    <main
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'var(--surface-base)' }}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl p-8 text-center"
+        style={{ background: 'var(--surface-card)', border: '1px solid var(--border-default)' }}
+      >
+        <Loader2
+          size={40}
+          className="mx-auto animate-spin"
+          style={{ color: 'var(--accent-sky)' }}
+          aria-hidden="true"
+        />
+        <h1 className="mt-4 text-xl font-bold" style={{ color: 'var(--text-heading)' }}>
+          Opening your plan…
+        </h1>
+        <p className="mt-2 text-sm" style={{ color: 'var(--text-body)' }} role="status">
+          Signing you in and loading the numbers you saved.
+        </p>
+      </div>
+    </main>
+  )
 }
 
 function MagicLinkContent() {
@@ -42,7 +68,11 @@ function MagicLinkContent() {
     const run = async () => {
       try {
         const result = await consumeMagicLink(token, next)
-        if (IS_CAPACITOR && result.access_token) {
+        // Same handoff as login(): cookies may not be readable on the next
+        // request yet (cross-origin API, cookie propagation). Memory token
+        // is what lets /discovery load the saved plan instead of hanging
+        // on the black IQ logo.
+        if (result.access_token) {
           setMemoryToken(result.access_token, result.refresh_token ?? undefined)
         }
         setLastTokenRefresh()
@@ -119,7 +149,7 @@ function MagicLinkContent() {
 
 export default function MagicLinkPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<OpeningCard />}>
       <MagicLinkContent />
     </Suspense>
   )
