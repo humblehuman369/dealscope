@@ -42,7 +42,7 @@ def _income(ctx: StructureContext) -> WayUnavailable | None:
         return WayUnavailable(
             family="income",
             reason="not_needed",
-            message="Not needed — today's rent already covers this price.",
+            message="Rent already supports this price. Don't chase a bump.",
         )
 
     ceiling = ctx.monthly_rent * (1 + MAX_REALISTIC_RENT_BUMP_PCT)
@@ -77,10 +77,7 @@ def _capital_stack(ctx: StructureContext) -> WayUnavailable | None:
         return WayUnavailable(
             family="capital_stack",
             reason="not_needed",
-            message=(
-                f"Not needed — the rent already covers this price at "
-                f"{ctx.down_payment_pct * 100:.0f}% down."
-            ),
+            message="Don't put more cash in — the rent already covers a standard down payment.",
         )
 
     # A larger down payment only removes debt service, so an all-cash purchase is

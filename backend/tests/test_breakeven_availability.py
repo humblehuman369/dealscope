@@ -48,10 +48,9 @@ def test_a_deal_that_already_cash_flows_reads_as_reassurance():
     out = {w.family: w for w in diagnose_missing(ctx, present_families=set())}
 
     assert out["capital_stack"].reason == "not_needed"
-    assert out["capital_stack"].message.startswith("Not needed")
-    assert "20% down" in out["capital_stack"].message
+    assert "Don't put more cash in" in out["capital_stack"].message
     assert out["income"].reason == "not_needed"
-    assert "already covers this price" in out["income"].message
+    assert "Don't chase a bump" in out["income"].message
 
 
 def test_an_unsalvageable_deal_names_the_actual_constraint():

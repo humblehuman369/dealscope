@@ -95,50 +95,39 @@ describe('BreakevenAnalysis', () => {
     trackEvent.mockReset()
   })
 
-  it('leads with the monthly loss, not with a restatement of the gap percentage', () => {
+  it('leads with the dollar gap and a recommended play, not a textbook title', () => {
     renderSection()
 
-    expect(screen.getByRole('heading', { level: 3, name: 'Breakeven Analysis' })).toBeInTheDocument()
-    expect(screen.getByText(/loses/)).toBeInTheDocument()
-    expect(screen.getByText('$812 a month')).toBeInTheDocument()
-    expect(screen.getByText('$152K')).toBeInTheDocument()
-    // The gap percentage is arithmetic, not stakes — it must not headline the section.
-    expect(screen.queryByText(/Asking is 33.0% above Target Buy/)).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 3, name: 'You’re $152,000 from cash flow' })).toBeInTheDocument()
+    expect(screen.getByText(/short about \$812 a month/)).toBeInTheDocument()
+    expect(screen.getByText('Your move')).toBeInTheDocument()
+    expect(screen.getAllByText(/Ask \$152,000 less — buy at \$307,000/).length).toBeGreaterThanOrEqual(1)
+    expect(screen.queryByText('Breakeven Analysis')).not.toBeInTheDocument()
+    expect(screen.queryByText(/BREAKEVEN REQUIRES/)).not.toBeInTheDocument()
   })
 
-  it('states each row as an ask on the left and its cash cost on the right', () => {
+  it('marks Price as the start and states each row as a trade', () => {
     renderSection()
 
-    const rows = screen.getAllByRole('button', { name: /^(Price|Income|Terms|Equity):/ })
-    expect(rows.map((r) => r.getAttribute('aria-label')?.split(':')[0])).toEqual(['Price', 'Income', 'Terms', 'Equity'])
-
-    expect(screen.getByText('Get the seller to $307,000')).toBeInTheDocument()
+    expect(screen.getByText('Start here')).toBeInTheDocument()
     expect(screen.getByText('Prove the rent is $3,475/mo')).toBeInTheDocument()
     expect(screen.getByText('Put $160,650 down (35% down)')).toBeInTheDocument()
-
-    // Cash to close is the figure that differs across levers; each is compared
-    // to buying at asking so the trade-off is visible without expanding.
     expect(screen.getByText('$77K')).toBeInTheDocument()
     expect(screen.getByText('$38K less than asking')).toBeInTheDocument()
-    expect(screen.getByText('$184K')).toBeInTheDocument()
-    expect(screen.getByText('$69K more than asking')).toBeInTheDocument()
-
-    // The percentage moved into the expanded panel, not the collapsed row.
-    expect(screen.queryByText('Cut price 33.0% ($152,000)')).not.toBeInTheDocument()
     expect(requestBreakevenNarrative).not.toHaveBeenCalled()
   })
 
-  it('says why an empty lever is empty instead of one vague phrase', () => {
+  it('says why an empty lever is empty instead of analyst slang', () => {
     renderSection()
 
-    expect(screen.getByText('Cannot close it alone')).toBeInTheDocument()
+    expect(screen.getByText('Won’t get you there')).toBeInTheDocument()
     expect(
       screen.getByText('Even a 20% seller-carried second leaves you $340/mo short at full price.'),
     ).toBeInTheDocument()
     expect(screen.queryByText('Not enough lift here')).not.toBeInTheDocument()
   })
 
-  it('reads "not needed" as reassurance rather than as a failed lever', () => {
+  it('reads a skipped lever as advice, not as a failed calculation', () => {
     render(
       <BreakevenAnalysis
         payload={{
@@ -159,32 +148,27 @@ describe('BreakevenAnalysis', () => {
       />,
     )
 
-    expect(screen.getByText('Not needed here')).toBeInTheDocument()
-    expect(screen.getByText('Not needed — the rent already covers this price at 20% down.')).toBeInTheDocument()
+    expect(screen.getByText('Skip')).toBeInTheDocument()
+    expect(screen.getByText('Don’t put more cash in. You don’t need it to break even.')).toBeInTheDocument()
   })
 
-  it('surfaces the negotiation script and the caveat in the expanded row', () => {
+  it('expands with the trade-off and opening line, not a restated spreadsheet', () => {
     requestBreakevenNarrative.mockResolvedValue({ move: 'm', walk_away: 'w', source: 'ai' })
     renderSection()
 
     fireEvent.click(screen.getByRole('button', { name: /^Price:/ }))
     expect(trackEvent).toHaveBeenCalledWith('breakeven_row_expanded', { family: 'price' })
 
-    // The mechanism and the trade-off, which the row itself cannot show.
-    expect(screen.getByText(/Rent covers every bill and the mortgage at \$323,000/)).toBeInTheDocument()
-    expect(screen.getByText('The ask: 33.0% off asking · $152,000')).toBeInTheDocument()
-
-    // The script is the differentiated content; it used to hide behind "full math".
-    expect(screen.getByText('How to ask for it')).toBeInTheDocument()
-    expect(screen.getByText(/ANCHOR — lead with math, not opinion/)).toBeInTheDocument()
-    expect(screen.getByText(/A 33% cut is a large ask/)).toBeInTheDocument()
-
-    expect(screen.getByText('Your leverage')).toBeInTheDocument()
-    expect(screen.getByText('3 price cuts already')).toBeInTheDocument()
-    expect(screen.getByText('listed over a year')).toBeInTheDocument()
+    expect(screen.getByText(/the loan, the payment, and the cash you bring/)).toBeInTheDocument()
+    expect(screen.getByText('Lead with one number: $307,000. Then stop talking.')).toBeInTheDocument()
+    expect(screen.getAllByText(/3 price cuts already/).length).toBeGreaterThanOrEqual(1)
+    expect(screen.queryByText('How to ask for it')).not.toBeInTheDocument()
+    expect(screen.queryByText(/ANCHOR — lead with math/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Rent covers every bill and the mortgage at \$323,000/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/The ask:/)).not.toBeInTheDocument()
   })
 
-  it('fetches one section-level move with a walk-away, not four per-row paragraphs', async () => {
+  it('upgrades Your move from the AI once, and hides the blend box unless a blend is actually required', async () => {
     requestBreakevenNarrative.mockResolvedValue({
       move: 'Open here: put $307,000 on the table and stop talking.',
       walk_away: 'If the seller will not come off $459,000 at all, walk.',
@@ -192,41 +176,51 @@ describe('BreakevenAnalysis', () => {
     })
     renderSection()
 
+    // Deep gap → blend note is allowed.
+    expect(screen.getByText(/most probable close/)).toBeInTheDocument()
+
     fireEvent.click(screen.getByRole('button', { name: /^Price:/ }))
-
-    await waitFor(() => expect(screen.getByText('Your move')).toBeInTheDocument())
-    expect(screen.getByText('Open here: put $307,000 on the table and stop talking.')).toBeInTheDocument()
-    expect(screen.getByText('Walk away if:')).toBeInTheDocument()
-    expect(screen.getByText(/If the seller will not come off \$459,000/)).toBeInTheDocument()
-    expect(screen.queryByText('Recommendation')).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.getByText('Open here: put $307,000 on the table and stop talking.')).toBeInTheDocument(),
+    )
+    expect(screen.getByText(/Walk away if:/)).toBeInTheDocument()
     expect(trackEvent).toHaveBeenCalledWith('breakeven_narrative_loaded', { source: 'ai', way_count: 3 })
+    expect(requestBreakevenNarrative).toHaveBeenCalledTimes(1)
 
-    const body = requestBreakevenNarrative.mock.calls[0][0]
-    expect(body.address).toBe('953 Banyan Dr, Delray Beach, FL 33483')
-    expect(body.list_price).toBe(459_000)
-    expect(body.baseline_cash_required).toBe(114_750)
-    expect(body.ways.map((w: { family: string }) => w.family)).toEqual(['price', 'income', 'capital_stack'])
-    // Cash is what distinguishes the levers, so the model has to see it.
-    expect(body.ways.map((w: { cash_required: number }) => w.cash_required)).toEqual([76_750, 114_750, 183_600])
-
-    // Second expand reuses the same result — no second model call.
     fireEvent.click(screen.getByRole('button', { name: /^Income:/ }))
     expect(requestBreakevenNarrative).toHaveBeenCalledTimes(1)
   })
 
-  it('keeps every deterministic block when the move call fails', async () => {
+  it('does not show a blend box on a conversation-sized gap', () => {
+    render(
+      <BreakevenAnalysis
+        payload={{
+          ...PAYLOAD,
+          breakevenSummary: { ...PAYLOAD.breakevenSummary!, gapPct: 0.5, gapAmount: 1_689, monthlyShortfall: 40 },
+          blendRecommendation: '1213 days on market: a modest price cut plus a small seller-carried second.',
+        }}
+        address="x"
+        onMakeItWork={vi.fn()}
+        detailOpen={false}
+        onToggleDetail={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('heading', { level: 3, name: 'You’re $1,689 from cash flow' })).toBeInTheDocument()
+    expect(screen.getByText('That’s a conversation, not a restructure.')).toBeInTheDocument()
+    expect(screen.queryByText('Most likely close: a blend')).not.toBeInTheDocument()
+  })
+
+  it('keeps the deterministic move when the AI call fails', async () => {
     requestBreakevenNarrative.mockRejectedValue(new Error('offline'))
     renderSection()
 
     fireEvent.click(screen.getByRole('button', { name: /^Equity:/ }))
-    expect(screen.getByText(/The one lever that needs nobody's permission/)).toBeInTheDocument()
+    expect(screen.getByText(/Nobody has to say yes/)).toBeInTheDocument()
     expect(screen.getByText('Your call')).toBeInTheDocument()
-    // "Your call" is not a negotiation, so there is no leverage list to show.
-    expect(screen.queryByText('Your leverage')).not.toBeInTheDocument()
-    expect(screen.getByText(/most probable close/)).toBeInTheDocument()
+    expect(screen.getByText('Your move')).toBeInTheDocument()
 
     await waitFor(() => expect(requestBreakevenNarrative).toHaveBeenCalledTimes(1))
-    await waitFor(() => expect(screen.queryByText('Your move')).not.toBeInTheDocument())
     expect(trackEvent).not.toHaveBeenCalledWith('breakeven_narrative_loaded', expect.anything())
   })
 

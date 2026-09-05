@@ -173,12 +173,14 @@ def assess(ctx: StructureContext, structure: DealStructure) -> Negotiability | N
     return None
 
 
-def build_blend_recommendation(ctx: StructureContext, paths: list[DealStructure]) -> str:
-    """One sentence on why a small blend is the probable close, anchored in real signals."""
+def build_blend_recommendation(ctx: StructureContext, paths: list[DealStructure]) -> str | None:
+    """Only when a single lever is unlikely to close it. Small gaps get a one-play ask, not a blend."""
+    if ctx.deal_gap_pct <= 10:
+        return None
+
     signals = seller_signal_reasons(ctx)
     lead = signals[0].split(" — ")[0] if signals else None
     financing_open = not _is_distressed(ctx)
-    gap = ctx.deal_gap_pct
 
     if lead:
         opener = f"{lead}: "
@@ -189,11 +191,6 @@ def build_blend_recommendation(ctx: StructureContext, paths: list[DealStructure]
         body = (
             f"a lender will not carry a note, so the realistic blend is a price cut toward "
             f"{fmt_money(ctx.target_buy_price)} plus more of your own cash down."
-        )
-    elif gap <= 10:
-        body = (
-            "a modest price cut alone will likely get there — a small seller-carried second is the "
-            "backup if the seller holds firm on price."
         )
     else:
         body = (

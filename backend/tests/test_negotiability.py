@@ -91,15 +91,20 @@ def test_unknown_family_is_not_rated():
 
 
 def test_blend_recommendation_reflects_distress_and_signals():
-    reo = neg.build_blend_recommendation(base_ctx(is_bank_owned=True), [])
+    assert neg.build_blend_recommendation(base_ctx(deal_gap_pct=4.0), []) is None
+
+    reo = neg.build_blend_recommendation(base_ctx(is_bank_owned=True, deal_gap_pct=18.0), [])
+    assert reo is not None
     assert "will not carry a note" in reo
     assert "$360K" in reo
 
     quiet = neg.build_blend_recommendation(base_ctx(days_on_market=10, market_temperature=None, deal_gap_pct=18.0), [])
+    assert quiet is not None
     assert quiet.startswith("No distress signals")
     assert "seller-carried second" in quiet
 
     signalled = neg.build_blend_recommendation(base_ctx(price_reductions=2, deal_gap_pct=18.0), [])
+    assert signalled is not None
     assert signalled.startswith("2 price cuts already:")
 
 
@@ -111,7 +116,7 @@ def test_engine_payload_carries_summary_and_blend_note():
     assert payload.breakeven_summary.gap_amount == 40_000
     assert payload.breakeven_summary.target_buy_price == 360_000
     assert payload.breakeven_summary.income_value == 380_000
-    assert payload.blend_recommendation
+    assert payload.blend_recommendation is None  # 10% gap is a one-play ask, not a blend
     families = {p.family for p in payload.paths}
     assert {"price", "income", "financing", "capital_stack"} <= families
     for p in payload.paths:

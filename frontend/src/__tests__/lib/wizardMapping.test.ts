@@ -18,11 +18,15 @@ import {
 import {
   FOUR_WAYS,
   WIZARD_FAMILIES,
+  defaultAdvice,
   describeBreakevenResult,
   describeCashToClose,
   describeChangeDetail,
   describePlay,
   isBreakevenFamily,
+  needsBlend,
+  situationSub,
+  situationTitle,
 } from '@/components/iq-verdict/make-it-work/fourWays'
 
 function structure(id: string, family: DealStructure['family'], extra: Partial<DealStructure> = {}): DealStructure {
@@ -178,7 +182,7 @@ describe('fourWays vocabulary', () => {
       describePlay('price', {
         changePct: 33.0, changeAmount: 152_000, resultAmount: 307_000, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
       }),
-    ).toBe('Get the seller to $307,000')
+    ).toBe('Ask $152,000 less — buy at $307,000')
     expect(
       describePlay('income', {
         changePct: 4.2, changeAmount: 120, resultAmount: 2_970, resultLabel: 'Target rent', closesGapAlone: true, termsNote: null,
@@ -188,7 +192,7 @@ describe('fourWays vocabulary', () => {
       describePlay('financing', {
         changePct: 20, changeAmount: 91_800, resultAmount: 91_800, resultLabel: 'Seller financing', closesGapAlone: false, termsNote: '0% interest, 5-yr balloon',
       }),
-    ).toBe('Full price — seller carries $91,800 at 0%')
+    ).toBe('Keep their price — they hold $91,800 at 0%')
     expect(
       describePlay('capital_stack', {
         changePct: 15, changeAmount: 68_850, resultAmount: 160_650, resultLabel: 'Down payment', closesGapAlone: true, termsNote: '35% down',
@@ -224,7 +228,27 @@ describe('fourWays vocabulary', () => {
       describePlay('price', {
         changePct: null, changeAmount: null, resultAmount: Number.NaN, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
       }),
-    ).toBe('Get the seller down to Target Buy')
+    ).toBe('Ask the seller to come down to Target Buy')
+  })
+
+  it('leads a small gap with one play and a backup, and only blends a deep gap', () => {
+    expect(situationTitle(1_689)).toBe('You’re $1,689 from cash flow')
+    expect(situationSub(0.5, 40)).toBe('That’s a conversation, not a restructure.')
+    expect(needsBlend({ gapPct: 0.5 }, [])).toBe(false)
+    expect(needsBlend({ gapPct: 33 }, [])).toBe(true)
+
+    const price = structure('price-negotiation', 'price', {
+      breakeven: {
+        changePct: 0.5, changeAmount: 1_689, resultAmount: 320_778, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
+      },
+    })
+    const terms = structure('seller-second-zero-balloon', 'financing', {
+      breakeven: {
+        changePct: 1.3, changeAmount: 4_170, resultAmount: 4_170, resultLabel: 'Seller financing', closesGapAlone: true, termsNote: null,
+      },
+    })
+    expect(defaultAdvice({ gapPct: 0.5, gapAmount: 1_689 }, price, terms)).toMatch(/You don’t need both/)
+    expect(defaultAdvice({ gapPct: 0.5, gapAmount: 1_689 }, price, terms)).toMatch(/Ask \$1,689 less/)
   })
 
   it('compares cash to close against buying at asking, and ignores rounding noise', () => {

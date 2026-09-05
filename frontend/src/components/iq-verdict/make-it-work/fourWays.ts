@@ -93,24 +93,70 @@ function pct(value: number | null): string | null {
   return `${value.toFixed(1)}%`
 }
 
+const LEAD_ORDER: readonly BreakevenFamily[] = ['price', 'financing', 'income', 'capital_stack']
+
+export function pickLeadPath(paths: readonly DealStructure[]): DealStructure | null {
+  for (const family of LEAD_ORDER) {
+    const match = paths.find((p) => p.family === family)
+    if (match) return match
+  }
+  return null
+}
+
+export function pickBackupPath(
+  paths: readonly DealStructure[],
+  lead: DealStructure | null,
+): DealStructure | null {
+  for (const family of LEAD_ORDER) {
+    if (lead && family === lead.family) continue
+    const match = paths.find((p) => p.family === family && p.breakeven)
+    if (match) return match
+  }
+  return null
+}
+
+/** True only when a single lever is unlikely to close it — not for a $2K conversation. */
+export function needsBlend(
+  summary: { gapPct: number } | null | undefined,
+  paths: readonly DealStructure[],
+): boolean {
+  if (!summary || summary.gapPct <= 10) return false
+  const terms = paths.find((p) => p.family === 'financing')
+  if (terms?.breakeven && !terms.breakeven.closesGapAlone) return true
+  return summary.gapPct > 20
+}
+
+export function situationTitle(gapAmount: number | null | undefined): string {
+  const gap = formatMoney(gapAmount)
+  return gap ? `You’re ${gap} from cash flow` : 'How to get to cash flow'
+}
+
+export function situationSub(gapPct: number | null | undefined, monthlyShortfall: number | null | undefined): string {
+  if (gapPct != null && Number.isFinite(gapPct) && gapPct <= 5) {
+    return 'That’s a conversation, not a restructure.'
+  }
+  const shortfall = formatMoney(monthlyShortfall)
+  if (shortfall) return `At asking you’re short about ${shortfall} a month.`
+  return 'Today’s rent does not quite cover what this property costs to own.'
+}
+
 /**
- * Left side of a row: the ask, phrased as the thing you actually do. Reads as
- * an instruction ("Get the seller to $320,778") rather than a measurement
- * ("Cut price 0.5% ($1,689)") — the percentage is the arithmetic behind the
- * ask, not the ask itself, so it moves into the expanded panel.
- *
- * Never invents a figure: when the engine sent no fact the caller shows the
- * row's unavailable reason instead.
+ * The collapsed-row ask, in investor English. Price leads with the dollars they
+ * give up, then where they land — not a percentage measurement.
  */
 export function describePlay(family: BreakevenFamily, fact: BreakevenFact): string {
   const result = formatMoney(fact.resultAmount)
+  const change = formatMoney(fact.changeAmount)
   switch (family) {
     case 'price':
-      return result ? `Get the seller to ${result}` : 'Get the seller down to Target Buy'
+      if (change && result) return `Ask ${change} less — buy at ${result}`
+      return result ? `Buy at ${result}` : 'Ask the seller to come down to Target Buy'
     case 'income':
       return result ? `Prove the rent is ${result}/mo` : 'Prove the rent is higher than estimated'
     case 'financing':
-      return result ? `Full price — seller carries ${result} at 0%` : 'Ask the seller to carry a second'
+      return result
+        ? `Keep their price — they hold ${result} at 0%`
+        : 'Keep their price and ask them to carry a second'
     case 'capital_stack':
       return result
         ? `Put ${result} down${fact.termsNote ? ` (${fact.termsNote})` : ''}`
@@ -120,6 +166,95 @@ export function describePlay(family: BreakevenFamily, fact: BreakevenFact): stri
       return exhaustive
     }
   }
+}
+
+/** Two sentences max. Mechanism and trade-off only — never restates the row numbers. */
+export function explainPlay(family: BreakevenFamily, closesGapAlone: boolean): string {
+  switch (family) {
+    case 'price':
+      return 'A lower price is the cleanest close: the loan, the payment, and the cash you bring all drop together. The only thing you give up is asking the seller to move.'
+    case 'income':
+      return 'Leave the price alone and fix the income. A small lift is usually a stale listing rent two property managers can confirm; a large one is rehab or a strategy change — a different deal.'
+    case 'financing':
+      return closesGapAlone
+        ? 'They keep their number on paper. You just do not pay all of it at closing — the cost is a balloon you refinance or sell through.'
+        : 'They keep their number on paper, but a max carry only closes part of this gap. Pair it with a smaller price cut; do not ask for both as one big concession.'
+    case 'capital_stack':
+      return 'Nobody has to say yes. The cost is real: that extra cash earns less here than on a deal that already works, and you cannot get it back without selling or refinancing.'
+    default: {
+      const exhaustive: never = family
+      return exhaustive
+    }
+  }
+}
+
+/** One sentence they can actually say or do. */
+export function openingLine(family: BreakevenFamily, fact: BreakevenFact | null): string {
+  const result = fact ? formatMoney(fact.resultAmount) : null
+  switch (family) {
+    case 'price':
+      return result ? `Lead with one number: ${result}. Then stop talking.` : 'Lead with one number. Then stop talking.'
+    case 'income':
+      return 'Ask for the current lease and rent roll before you send a number.'
+    case 'financing':
+      return 'Open with their full price, then the note. Never ask for a cut and terms in the same breath.'
+    case 'capital_stack':
+      return 'This one is yours — there is nothing to pitch the seller.'
+    default: {
+      const exhaustive: never = family
+      return exhaustive
+    }
+  }
+}
+
+export function unavailableLine(
+  family: BreakevenFamily,
+  reason: 'not_needed' | 'insufficient' | 'no_data',
+  fallback: string | null,
+): string {
+  if (fallback && reason !== 'not_needed') return fallback
+  switch (reason) {
+    case 'not_needed':
+      if (family === 'income') return 'Rent already supports the price. Don’t chase a bump.'
+      if (family === 'capital_stack') return 'Don’t put more cash in. You don’t need it to break even.'
+      if (family === 'financing') return 'You don’t need seller terms to break even.'
+      return 'This lever already works — skip it.'
+    case 'insufficient':
+      return fallback ?? 'This one cannot close the gap on its own.'
+    case 'no_data':
+      return fallback ?? 'Not enough data to test this lever.'
+    default: {
+      const exhaustive: never = reason
+      return exhaustive
+    }
+  }
+}
+
+export function defaultAdvice(
+  summary: { gapPct: number; gapAmount: number } | null | undefined,
+  lead: DealStructure | null,
+  backup: DealStructure | null,
+): string {
+  if (!lead || !isBreakevenFamily(lead.family) || !lead.breakeven) {
+    return 'Four ways get you to cash flow. Build a plan around the one that fits how you buy.'
+  }
+  const play = describePlay(lead.family, lead.breakeven)
+  const gapPct = summary?.gapPct ?? 0
+  const backupPlay =
+    backup && isBreakevenFamily(backup.family) && backup.breakeven
+      ? describePlay(backup.family, backup.breakeven)
+      : null
+
+  if (gapPct <= 10 && backupPlay && backup?.family === 'financing') {
+    return `Start with the price. ${play}. If they hold firm, ${backupPlay.charAt(0).toLowerCase()}${backupPlay.slice(1)}. You don’t need both.`
+  }
+  if (gapPct <= 10) {
+    return `${play}. That is the whole conversation.`
+  }
+  if (needsBlend(summary, [lead, backup].filter((p): p is DealStructure => p != null)) && backupPlay) {
+    return `Sellers concede a little on several things more readily than a lot on one. Pair a smaller price move with ${backupPlay.charAt(0).toLowerCase()}${backupPlay.slice(1)}.`
+  }
+  return `${play}. That is the cleanest path to cash flow.`
 }
 
 /** The arithmetic behind the ask, for the expanded panel. "0.5% off asking, $1,689." */
