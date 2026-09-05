@@ -77,7 +77,7 @@ import {
   VerdictPositiveGuidance,
 } from '@/components/iq-verdict/VerdictGapGuidance'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
-import type { FourWayFamily } from '@/components/iq-verdict/make-it-work/fourWays'
+import { formatGapAmount, type FourWayFamily } from '@/components/iq-verdict/make-it-work/fourWays'
 import { MAKE_IT_WORK_ENABLED } from '@/lib/env'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import {
@@ -1577,6 +1577,7 @@ function VerdictContent() {
   const effectiveDisplayPct = isDealGain ? priceGapPct : -dealGapPct
   const dealGapDisplay = `${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
+  const gapCloseLabel = dealGapPct > 0 ? formatGapAmount(discountAmount) : null
   // Cumulative investor probability from backend (regional cohort); fallback for stale clients.
   const fallbackProbability = Math.max(5, Math.min(95, Math.round(95 - dealGapPct * 3)))
   const cumulativeInvestorPct =
@@ -2276,13 +2277,10 @@ function VerdictContent() {
                 boxShadow: 'var(--shadow-card)',
               }}
             >
-              {/* Headline metric + tier badge — precision/credibility line.
-                  For negative gaps, the badge swaps from the descriptive
-                  severity label ("Extreme Negative Gap") to the actionable
-                  "Options Below Close the Gap" so the user is steered to
-                  the four paths rendered directly below. The tier severity
-                  label is still used for grade/analytics strings elsewhere. */}
-              <div className="flex items-center gap-3 flex-wrap">
+              {/* Headline: DealGap % plus the dollar gap on the same row.
+                  Positive/neutral still show the tier badge. Severity labels
+                  remain on grade/analytics strings elsewhere. */}
+              <div className="flex items-baseline gap-3 flex-wrap">
                 <div className="flex items-baseline gap-2">
                   <span
                     style={{
@@ -2309,7 +2307,18 @@ function VerdictContent() {
                     {dealGapDisplay}
                   </span>
                 </div>
-                {dealGapPct <= 0 && (
+                {gapCloseLabel ? (
+                  <span
+                    className="tabular-nums"
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 600,
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    {gapCloseLabel} to close
+                  </span>
+                ) : dealGapPct <= 0 ? (
                   <span
                     style={{
                       display: 'inline-flex',
@@ -2324,7 +2333,7 @@ function VerdictContent() {
                   >
                     {tier.label}
                   </span>
-                )}
+                ) : null}
               </div>
 
               {/* Verdict copy — positive spread; neutral at anchor; challenging when discount is required */}
@@ -2379,15 +2388,12 @@ function VerdictContent() {
                 />
               )}
 
-              {/* Assumption provenance — whose inputs produced this number */}
-              <FinancingProvenanceNote />
-
-              {/* How Deal Gap works */}
-              <div className="mt-3">
+              <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <FinancingProvenanceNote />
                 <button
                   type="button"
                   onClick={handleShowMethodology}
-                  className="flex items-center gap-1 text-[12px] font-semibold transition-colors"
+                  className="text-[11px] font-semibold transition-colors"
                   style={{
                     color: 'var(--accent-sky)',
                     background: 'transparent',
@@ -2395,8 +2401,7 @@ function VerdictContent() {
                     padding: 0,
                   }}
                 >
-                  <span style={{ fontSize: 12 }}>ⓘ</span>
-                  How Deal Gap works
+                  How the gap works
                 </button>
               </div>
 
@@ -2614,8 +2619,8 @@ function VerdictContent() {
           </div>
 
           {/* Plain-English narrative + mid-page "Continue to Strategy" now live
-              inside the Four Ways section (behind "See all four options in
-              detail") so the page reads: overview → four ways → one CTA. */}
+              inside the Four Ways section (behind "See details") so the page
+              reads: overview → four ways → one CTA. */}
 
           {/* Market Snapshot removed — deal factors now displayed in left column */}
 

@@ -41,19 +41,19 @@ describe('FourWaysStrip', () => {
       <FourWaysStrip paths={PATHS} dealGapAmount={48_000} onMakeItWork={vi.fn()} detailOpen={false} onToggleDetail={vi.fn()} />,
     )
 
-    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('The gap is $48K. Investors close it four ways.')
+    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Four ways to close a $48K gap')
 
-    const tiles = screen.getAllByRole('button').filter((b) => /Price|Improve Income|Creative Financing|Blended Plan/.test(b.textContent ?? ''))
+    const tiles = screen.getAllByRole('button').filter((b) => /Price|Income|Financing|Blend/.test(b.textContent ?? ''))
     expect(tiles.map((t) => t.textContent)).toEqual([
       expect.stringContaining('Price'),
-      expect.stringContaining('Improve Income'),
-      expect.stringContaining('Creative Financing'),
-      expect.stringContaining('Blended Plan'),
+      expect.stringContaining('Income'),
+      expect.stringContaining('Financing'),
+      expect.stringContaining('Blend'),
     ])
 
-    expect(screen.getByText('→ $412,000')).toBeInTheDocument()
-    expect(screen.getByText('→ $2,450')).toBeInTheDocument()
-    expect(screen.getByText('Saves $310/mo')).toBeInTheDocument()
+    expect(screen.getByText('$412,000')).toBeInTheDocument()
+    expect(screen.getByText('$2,450')).toBeInTheDocument()
+    expect(screen.getByText('$310/mo')).toBeInTheDocument()
     // Financing slot has no engine result → muted copy, never hidden, never invented.
     expect(screen.getByText('Not enough lift here')).toBeInTheDocument()
   })
@@ -62,7 +62,7 @@ describe('FourWaysStrip', () => {
     const onMakeItWork = vi.fn()
     render(<FourWaysStrip paths={PATHS} dealGapAmount={null} onMakeItWork={onMakeItWork} detailOpen={false} onToggleDetail={vi.fn()} />)
 
-    fireEvent.click(screen.getByRole('button', { name: /^Improve Income/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^Income:/ }))
     expect(onMakeItWork).toHaveBeenLastCalledWith('income')
 
     fireEvent.click(screen.getByRole('button', { name: /Make this work for me/ }))
@@ -74,12 +74,12 @@ describe('FourWaysStrip', () => {
     const { rerender } = render(
       <FourWaysStrip paths={PATHS} onMakeItWork={vi.fn()} detailOpen={false} onToggleDetail={onToggleDetail} />,
     )
-    const toggle = screen.getByRole('button', { name: 'See all four options in detail' })
+    const toggle = screen.getByRole('button', { name: 'See details' })
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
     fireEvent.click(toggle)
     expect(onToggleDetail).toHaveBeenCalledTimes(1)
 
     rerender(<FourWaysStrip paths={PATHS} onMakeItWork={vi.fn()} detailOpen onToggleDetail={onToggleDetail} />)
-    expect(screen.getByRole('button', { name: 'Hide the detailed options' })).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('button', { name: 'Hide details' })).toHaveAttribute('aria-expanded', 'true')
   })
 })

@@ -102,7 +102,7 @@ export function VerdictGapGuidance({
       {/* Tier headline ("The TARGET BUY is X% below List Price") removed —
           the gap percentage is already shown in the DealGap metric above and
           the "Options Below Close the Gap" badge points to the action. */}
-      <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
         {tier.subHeadline}
       </p>
 

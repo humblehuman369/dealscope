@@ -32,11 +32,9 @@ export function FinancingProvenanceNote() {
   const personalized = isAuthenticated && hasUserCustomizations
 
   return (
-    <p className="mt-2 text-[11px] leading-relaxed" style={{ color: 'var(--text-label)' }}>
-      {personalized ? 'Based on your financing profile' : 'Based on standard assumptions'} —{' '}
-      <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-        {summary}
-      </span>
+    <span className="text-[11px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+      {personalized ? 'Your profile — ' : null}
+      <span className="tabular-nums">{summary}</span>
       {isAuthenticated && (
         <>
           {' · '}
@@ -49,6 +47,6 @@ export function FinancingProvenanceNote() {
           </Link>
         </>
       )}
-    </p>
+    </span>
   )
 }

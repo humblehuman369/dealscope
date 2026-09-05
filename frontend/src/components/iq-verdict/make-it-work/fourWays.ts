@@ -13,17 +13,19 @@ export type FourWayFamily = Extract<StructureFamily, 'price' | 'income' | 'finan
 
 export interface FourWayDefinition {
   family: FourWayFamily
-  /** Two-word name shown on the tile. */
+  /** Short name shown on the compact list. */
   name: string
-  /** One-line plain-English meaning. */
+  /** One-line plain-English meaning (wizard / aria). */
   meaning: string
+  /** Verb before the headline number: "Price — buy at $686K". */
+  verb: string
 }
 
 export const FOUR_WAYS: readonly FourWayDefinition[] = [
-  { family: 'price', name: 'Price', meaning: 'Buy at the Target Buy' },
-  { family: 'income', name: 'Improve Income', meaning: 'Verify or lift the rent' },
-  { family: 'financing', name: 'Creative Financing', meaning: 'Seller helps carry the loan' },
-  { family: 'blended', name: 'Blended Plan', meaning: 'A little of each' },
+  { family: 'price', name: 'Price', meaning: 'Buy at the Target Buy', verb: 'buy at' },
+  { family: 'income', name: 'Income', meaning: 'Verify or lift the rent', verb: 'rent to' },
+  { family: 'financing', name: 'Financing', meaning: 'Seller helps carry the loan', verb: 'seller carries' },
+  { family: 'blended', name: 'Blend', meaning: 'A little of each', verb: 'saves' },
 ] as const
 
 export function isFourWayFamily(family: string): family is FourWayFamily {
