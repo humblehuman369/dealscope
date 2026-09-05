@@ -111,7 +111,7 @@ describe('PERSONA_PAGES', () => {
 
 describe('headlineCount', () => {
   it('reads the leading integer and nothing else', () => {
-    expect(headlineCount('9 reasons wholesalers run a verdict')).toBe(9)
+    expect(headlineCount('9 reasons wholesalers run Discovery')).toBe(9)
     expect(headlineCount('Reasons without a number')).toBeNull()
     expect(headlineCount('12reasons')).toBeNull()
   })

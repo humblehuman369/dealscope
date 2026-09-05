@@ -12,13 +12,15 @@ import { DIRECTORY_ACCESS_NOTE, PRO_PRICE_ANNUAL, PRO_PRICE_MONTHLY, PRO_TRIAL_D
 import { buildFaqJsonLd } from '@/lib/seo/metadata'
 import { SITE_URL } from '@/lib/seo/blog-schema'
 import { resolveReasons, type PersonaPage } from '@/lib/seo/persona-pages'
-import { GUARANTEE_LINE, getProblemPage, type ProblemPage } from '@/lib/seo/problem-pages'
+import { getProblemPage, type ProblemPage } from '@/lib/seo/problem-pages'
 import { AddressCtaForm } from '@/components/landing/AddressCtaForm'
 import { HeroSampleResult } from '@/components/landing/HeroSampleResult'
 import { MobileStickyCta } from '@/components/landing/MobileStickyCta'
 import { SocialProof } from '@/components/landing/SocialProof'
 
 const HERO_ID = 'for-hero'
+const DISCOVERY_CTA = 'Run Free Discovery'
+const DISCOVERY_GUARANTEE = 'Free Discovery. No signup. No card.'
 
 function buildJsonLd(page: PersonaPage) {
   const url = `${SITE_URL}/for/${page.slug}`
@@ -84,15 +86,15 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
               </p>
 
               <div className="mt-8">
-                <AddressCtaForm source={source} />
-                <p className="address-cta__guarantee">{GUARANTEE_LINE}</p>
+                <AddressCtaForm source={source} buttonLabel={DISCOVERY_CTA} />
+                <p className="address-cta__guarantee">{DISCOVERY_GUARANTEE}</p>
               </div>
             </div>
 
             <div>
               <HeroSampleResult />
               <p className="mt-3 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
-                Sample verdict. Yours runs on the address you enter.
+                Sample Discovery. Yours runs on the address you enter.
               </p>
             </div>
           </div>
@@ -144,8 +146,8 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
             {page.offer.body}
           </p>
           <div className="mt-6">
-            <AddressCtaForm source={`${source}:offer`} />
-            <p className="address-cta__guarantee">{GUARANTEE_LINE}</p>
+            <AddressCtaForm source={`${source}:offer`} buttonLabel={DISCOVERY_CTA} />
+            <p className="address-cta__guarantee">{DISCOVERY_GUARANTEE}</p>
           </div>
           <p className="mt-6 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
             Free accounts run ten analyses a month and save ten properties. Pro adds editable
@@ -221,11 +223,11 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
       )}
 
       <MobileStickyCta
-        label="Run free verdict"
+        label={DISCOVERY_CTA}
         href={`/discovery?source=${encodeURIComponent(source)}`}
         watchId={HERO_ID}
         source={source}
-        sublabel={GUARANTEE_LINE}
+        sublabel={DISCOVERY_GUARANTEE}
       />
     </main>
   )

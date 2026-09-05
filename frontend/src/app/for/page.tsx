@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { NOINDEX_FOLLOW } from '@/lib/seo/metadata'
 import { PERSONA_PAGES } from '@/lib/seo/persona-pages'
-import { GUARANTEE_LINE } from '@/lib/seo/problem-pages'
 
 const TITLE = 'DealGapIQ for the Way You Invest'
 const DESCRIPTION =
@@ -28,7 +27,7 @@ export default function ForHubPage() {
           {DESCRIPTION}
         </p>
         <p className="mt-2 text-sm font-semibold" style={{ color: 'var(--text-body)' }}>
-          {GUARANTEE_LINE}
+          Free Discovery. No signup. No card.
         </p>
 
         <ul className="mt-10 space-y-3">

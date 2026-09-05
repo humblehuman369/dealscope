@@ -58,7 +58,7 @@ export interface PersonaPage {
 export const BASE_REASONS: Reason[] = [
   {
     id: 'free-verdict',
-    heading: 'The verdict runs in 15 seconds, free',
+    heading: 'Discovery runs in 15 seconds, free',
     body: 'Paste any US address. Multi-source value, a rent estimate, the Deal Gap and six strategy snapshots come back without a signup or a card.',
   },
   {
@@ -94,17 +94,17 @@ export const BASE_REASONS: Reason[] = [
   {
     id: 'off-market',
     heading: 'Works on addresses that are not listed',
-    body: 'Any US street address resolves to public records and live estimates, listed or not. An off-market lead gets the same verdict as a Zillow listing.',
+    body: 'Any US street address resolves to public records and live estimates, listed or not. An off-market lead gets the same Discovery as a Zillow listing.',
   },
   {
     id: 'state-assumptions',
     heading: 'The assumptions are published, not hidden',
-    body: 'Property tax, vacancy and appreciation for every state are on the /markets pages and shown in every verdict. Pro lets you edit them per deal and watch the math change.',
+    body: 'Property tax, vacancy and appreciation for every state are on the /markets pages and shown in every Discovery. Pro lets you edit them per deal and watch the math change.',
   },
   {
     id: 'phone-first',
     heading: 'Built for the phone you already have out',
-    body: 'Paste a Zillow link or an address, or scan the property from the camera in the iOS and Android apps. Same verdict, same numbers, wherever you are standing.',
+    body: 'Paste a Zillow link or an address, or scan the property from the camera in the iOS and Android apps. Same Discovery, same numbers, wherever you are standing.',
   },
 ]
 
@@ -125,7 +125,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
       {
         id: 'plain-english',
         heading: 'A plain-English explanation, not a wall of ratios',
-        body: 'The verdict explains the number the way a friend who invests would. You do not need to know what a cap rate is to read it; the terms are defined where they appear.',
+        body: 'Discovery explains the number the way a friend who invests would. You do not need to know what a cap rate is to read it; the terms are defined where they appear.',
       },
       {
         id: 'before-the-tour',
@@ -141,16 +141,16 @@ export const PERSONA_PAGES: PersonaPage[] = [
     reasonIds: ['free-verdict', 'three-sources', 'income-value', 'deal-gap', 'four-paths', 'six-strategies'],
     offer: {
       heading: 'Run it on the listing you are looking at right now',
-      body: 'Paste the address. The verdict is free, there is no signup and no card, and the Four Paths and scripts are included.',
+      body: 'Paste the address. Discovery is free, there is no signup and no card, and the Four Paths and scripts are included.',
     },
     faq: [
       {
         question: 'Do I need to know real estate math to use this?',
         answer:
-          'No. The verdict is written in plain English and every figure shows where it came from. The metrics glossary and the /methodology page explain each number if you want to go deeper.',
+          'No. Discovery is written in plain English and every figure shows where it came from. The metrics glossary and the /methodology page explain each number if you want to go deeper.',
       },
       {
-        question: 'What happens after the free verdict?',
+        question: 'What happens after free Discovery?',
         answer:
           'Nothing you do not choose. A free account adds ten analyses a month and ten saved properties. Pro unlocks editable assumptions, comps and exports if you want them.',
       },
@@ -164,7 +164,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     indexable: false,
     metaTitle: '9 Reasons First-Time Investors Run the Address Before the Showing',
     metaDescription:
-      'A free 15-second verdict on any US address: value, rent, the Deal Gap and six strategies, explained in plain English. Why first-time investors check before they tour.',
+      'A free 15-second Discovery on any US address: value, rent, the Deal Gap and six strategies, explained in plain English. Why first-time investors check before they tour.',
   },
   {
     slug: 'house-hackers',
@@ -192,7 +192,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     reasonIds: ['free-verdict', 'three-sources', 'deal-gap', 'four-paths', 'state-assumptions'],
     offer: {
       heading: 'Run the duplex before you run the pre-approval',
-      body: 'Paste the address. The house-hack snapshot is part of the free verdict, no signup and no card.',
+      body: 'Paste the address. The house-hack snapshot is part of free Discovery, no signup and no card.',
     },
     faq: [
       {
@@ -203,7 +203,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
       {
         question: 'Can I compare FHA against conventional terms?',
         answer:
-          'The free verdict uses standard owner-occupied defaults. Editing the down payment, rate and term per deal is a Pro feature.',
+          'Free Discovery uses standard owner-occupied defaults. Editing the down payment, rate and term per deal is a Pro feature.',
       },
       {
         question: 'Is this financial advice?',
@@ -215,12 +215,12 @@ export const PERSONA_PAGES: PersonaPage[] = [
     indexable: false,
     metaTitle: '8 Reasons House Hackers Check the Numbers Before the FHA Pre-Approval',
     metaDescription:
-      'See what the rented units cover and what you pay to live there, with owner-occupied financing modeled on the actual address. Free verdict, no signup.',
+      'See what the rented units cover and what you pay to live there, with owner-occupied financing modeled on the actual address. Free Discovery, no signup.',
   },
   {
     slug: 'wholesalers',
     persona: 'wholesaler',
-    headline: '9 reasons wholesalers run a verdict before they make the call',
+    headline: '9 reasons wholesalers run Discovery before they make the call',
     intro:
       'A lead is a phone number and an address. What a cash buyer will pay for it, what you can contract it at, and whether assigning it is even the right move are numbers most wholesalers estimate in their head on the way to the call. Fifteen seconds puts them on the screen first.',
     personaReasons: [
@@ -248,7 +248,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     reasonIds: ['free-verdict', 'three-sources', 'off-market', 'phone-first', 'deal-gap'],
     offer: {
       heading: 'Run the lead before you dial',
-      body: 'Paste the address from the lead sheet. The wholesale snapshot is part of the free verdict, no signup and no card.',
+      body: 'Paste the address from the lead sheet. The wholesale snapshot is part of free Discovery, no signup and no card.',
     },
     faq: [
       {
@@ -269,9 +269,9 @@ export const PERSONA_PAGES: PersonaPage[] = [
     relatedAnswerSlugs: ['should-i-wholesale-this-deal', 'what-is-this-property-worth-to-an-investor'],
     blogSlugs: ['how-to-find-off-market-properties', 'brrrr-vs-fix-and-flip'],
     indexable: false,
-    metaTitle: '9 Reasons Wholesalers Run a Verdict Before They Make the Call',
+    metaTitle: '9 Reasons Wholesalers Run Discovery Before They Make the Call',
     metaDescription:
-      'MAO, the spread and assign-vs-hold on any lead in 15 seconds, listed or not. Why wholesalers run the address before they dial. Free verdict, no signup.',
+      'MAO, the spread and assign-vs-hold on any lead in 15 seconds, listed or not. Why wholesalers run the address before they dial. Free Discovery, no signup.',
   },
   {
     slug: 'brrrr-investors',
@@ -299,13 +299,13 @@ export const PERSONA_PAGES: PersonaPage[] = [
     reasonIds: ['free-verdict', 'three-sources', 'income-value', 'four-paths', 'six-strategies'],
     offer: {
       heading: 'Run the address before you run the rehab budget',
-      body: 'Paste it. The BRRRR snapshot is part of the free verdict, no signup and no card.',
+      body: 'Paste it. The BRRRR snapshot is part of free Discovery, no signup and no card.',
     },
     faq: [
       {
         question: 'Where does the after-repair value come from?',
         answer:
-          'The free verdict starts from the blended IQ Estimate. Pro comps let you set ARV from adjusted sale comparables and apply it to the deal.',
+          'Free Discovery starts from the blended IQ Estimate. Pro comps let you set ARV from adjusted sale comparables and apply it to the deal.',
       },
       {
         question: 'Can I model the refinance terms?',
@@ -322,7 +322,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     indexable: false,
     metaTitle: '8 Reasons BRRRR Investors Stopped Rebuilding the Same Spreadsheet',
     metaDescription:
-      'BRRRR next to a straight rental on the same address, rehab estimates with regional costs, every assumption editable. Free 15-second verdict, no signup.',
+      'BRRRR next to a straight rental on the same address, rehab estimates with regional costs, every assumption editable. Free 15-second Discovery, no signup.',
   },
   {
     slug: 'creative-finance-buyers',
@@ -344,7 +344,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
       {
         id: 'blended-plan',
         heading: 'The blended plan: three small asks that equal one big one',
-        body: 'A 2% price reduction, a modest seller second and verified rent often reach the same math as a 6% cut, and are far more likely to get a yes. The verdict shows the blend that fits this address.',
+        body: 'A 2% price reduction, a modest seller second and verified rent often reach the same math as a 6% cut, and are far more likely to get a yes. Discovery shows the blend that fits this address.',
       },
       {
         id: 'risk-flagged',
@@ -355,7 +355,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     reasonIds: ['free-verdict', 'income-value', 'deal-gap', 'scripts'],
     offer: {
       heading: 'Run the address before the seller picks up',
-      body: 'Paste it. The Four Paths and every script are part of the free verdict, no signup and no card.',
+      body: 'Paste it. The Four Paths and every script are part of free Discovery, no signup and no card.',
     },
     faq: [
       {
@@ -390,12 +390,12 @@ export const PERSONA_PAGES: PersonaPage[] = [
       {
         id: 'before-flight',
         heading: 'Run the address before you book the flight',
-        body: 'Most remote investors fly to see properties a 15-second verdict would have removed from the list. Run the whole shortlist from the couch first.',
+        body: 'Most remote investors fly to see properties a 15-second Discovery would have removed from the list. Run the whole shortlist from the couch first.',
       },
       {
         id: 'state-table',
         heading: 'Tax, vacancy and appreciation for a state you do not live in',
-        body: 'Every state\u2019s assumptions are published on its /markets page and applied automatically in the verdict. You do not have to guess what property tax looks like two time zones away.',
+        body: 'Every state\u2019s assumptions are published on its /markets page and applied automatically in Discovery. You do not have to guess what property tax looks like two time zones away.',
       },
       {
         id: 'lenders-by-state',
@@ -411,7 +411,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     reasonIds: ['free-verdict', 'three-sources', 'off-market', 'phone-first', 'deal-gap'],
     offer: {
       heading: 'Run the shortlist before you run to the airport',
-      body: 'Paste an address in any state. The verdict is free, no signup and no card.',
+      body: 'Paste an address in any state. Discovery is free, no signup and no card.',
     },
     faq: [
       {
@@ -441,7 +441,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     persona: 'portfolio-builder',
     headline: '9 reasons investors analyzing 30 properties a month quit Excel',
     intro:
-      'Thirty properties to find one candidate is the job. Rebuilding the same spreadsheet thirty times is not the job, it is the obstacle. Investors running volume moved the first pass to a 15-second verdict and kept the spreadsheet for the one that survives.',
+      'Thirty properties to find one candidate is the job. Rebuilding the same spreadsheet thirty times is not the job, it is the obstacle. Investors running volume moved the first pass to a 15-second Discovery and kept the spreadsheet for the one that survives.',
     personaReasons: [
       {
         id: 'thirty-in-thirty',
@@ -467,13 +467,13 @@ export const PERSONA_PAGES: PersonaPage[] = [
     reasonIds: ['free-verdict', 'three-sources', 'income-value', 'deal-gap', 'four-paths'],
     offer: {
       heading: 'Run the next one on your list',
-      body: 'Paste the address. The first verdicts are free, no signup and no card. Ten a month on a free account.',
+      body: 'Paste the address. Discovery is free, no signup and no card. Ten a month on a free account.',
     },
     faq: [
       {
         question: 'Can I still see the full math?',
         answer:
-          'Yes. Every figure shows its source and assumptions in the free verdict. Pro adds the full calculation breakdown, editable assumptions and the Deal Maker worksheet.',
+          'Yes. Every figure shows its source and assumptions in free Discovery. Pro adds the full calculation breakdown, editable assumptions and the Deal Maker worksheet.',
       },
       {
         question: 'Does it replace my model?',
@@ -490,7 +490,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     indexable: false,
     metaTitle: '9 Reasons Investors Analyzing 30 Properties a Month Quit Excel',
     metaDescription:
-      'A 15-second first pass on every address, a pipeline instead of tabs, exports when you need the receipt. Why volume investors moved off the spreadsheet. Free verdict.',
+      'A 15-second first pass on every address, a pipeline instead of tabs, exports when you need the receipt. Why volume investors moved off the spreadsheet. Free Discovery.',
   },
   {
     slug: 'dscr-borrowers',
@@ -518,13 +518,13 @@ export const PERSONA_PAGES: PersonaPage[] = [
     reasonIds: ['free-verdict', 'income-value', 'deal-gap', 'state-assumptions'],
     offer: {
       heading: 'Run the address before you run the application',
-      body: 'Paste it. The long-term rental snapshot is part of the free verdict, no signup and no card.',
+      body: 'Paste it. The long-term rental snapshot is part of free Discovery, no signup and no card.',
     },
     faq: [
       {
         question: 'Can I change the rate and down payment to match a lender\u2019s terms?',
         answer:
-          'The free verdict uses default financing. Editing rate, term, down payment and expenses per deal is part of the Pro workbench, and DSCR recalculates as you change them.',
+          'Free Discovery uses default financing. Editing rate, term, down payment and expenses per deal is part of the Pro workbench, and DSCR recalculates as you change them.',
       },
       {
         question: 'What DSCR do lenders want?',
@@ -541,7 +541,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     indexable: false,
     metaTitle: '7 Reasons DSCR Borrowers Run the Ratio Before They Call the Lender',
     metaDescription:
-      'DSCR from live rent and financing assumptions on any US address, the rent it depends on from multiple sources, lenders by state. Free 15-second verdict, no signup.',
+      'DSCR from live rent and financing assumptions on any US address, the rent it depends on from multiple sources, lenders by state. Free 15-second Discovery, no signup.',
   },
 ]
 

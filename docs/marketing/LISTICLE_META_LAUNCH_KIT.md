@@ -89,7 +89,7 @@ Shared across all eight ads:
 
 | Field | Value |
 |---|---|
-| Description (below headline) | `Free verdict. No signup. No card.` |
+| Description (below headline) | `Free Discovery. No signup. No card.` |
 | Call to action | **Learn more** |
 | Website URL | see each ad; `fbclid` is appended by Meta and captured on first touch |
 | URL parameters field | leave empty (the UTMs are in the URL itself) |

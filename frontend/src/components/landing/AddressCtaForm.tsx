@@ -3,7 +3,7 @@
 /**
  * The single call to action on direct-response landing pages (homepage hero,
  * /answers/*). One input, one button. A street address goes straight to the
- * free verdict at /discovery; a city or ZIP falls through to /map-search, the
+ * Discovery page at /discovery; a city or ZIP falls through to /map-search, the
  * same fork HeaderPropertySearch uses.
  *
  * The current page's utm_* / gclid / fbclid are forwarded onto the destination URL so
