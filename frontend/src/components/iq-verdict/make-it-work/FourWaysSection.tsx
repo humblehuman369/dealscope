@@ -72,7 +72,11 @@ export function FourWaysSection({
       {detailOpen && (
         <div className="w-full min-w-0">
           <FourPathsPanel
-            payload={payload}
+            payload={{
+              ...payload,
+              // Blend lives in the section callout and the wizard, not as a fifth card.
+              paths: payload.paths.filter((p) => p.family !== 'blended'),
+            }}
             propertyState={propertyState}
             onOpenInStrategy={onOpenInStrategy}
             onShowPitch={onShowPitch}

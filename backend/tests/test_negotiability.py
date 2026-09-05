@@ -107,6 +107,7 @@ def test_engine_payload_carries_summary_and_blend_note():
     payload = compute_deal_structures(base_ctx(deal_opportunity_score=55))
     assert payload.has_paths
     assert payload.breakeven_summary is not None
+    assert payload.breakeven_summary.list_price == 400_000
     assert payload.breakeven_summary.gap_amount == 40_000
     assert payload.breakeven_summary.target_buy_price == 360_000
     assert payload.breakeven_summary.income_value == 380_000

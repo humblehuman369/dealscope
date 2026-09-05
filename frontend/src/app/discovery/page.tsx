@@ -2705,7 +2705,7 @@ function VerdictContent() {
               className="inline-flex items-center gap-2 px-7 py-3 sm:px-9 sm:py-4 rounded-full font-bold text-[0.8rem] sm:text-[1.04rem] text-[var(--text-inverse)] transition-all"
               style={{ background: 'var(--accent-sky)', boxShadow: 'var(--shadow-card)' }}
             >
-              {MAKE_IT_WORK_ENABLED && hasFourWays ? 'Make this work for me' : 'Show Me the Numbers'}
+              {MAKE_IT_WORK_ENABLED && hasFourWays ? 'Build my plan' : 'Show Me the Numbers'}
               <svg
                 className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]"
                 fill="none"
