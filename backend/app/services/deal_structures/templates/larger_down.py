@@ -1,6 +1,6 @@
 """Larger down payment — reduce P&I by increasing equity at close."""
 
-from app.schemas.deal_structures import DealStructure, StructureLever
+from app.schemas.deal_structures import BreakevenFact, DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.formatting import fmt_money, fmt_money_precise
@@ -152,4 +152,13 @@ def solve(ctx: StructureContext) -> DealStructure | None:
                 "down_payment_pct_override": new_down,
             }
         },
+        breakeven=BreakevenFact(
+            # Percentage points added to the down payment (20% → 35% = 15.0).
+            change_pct=round((new_down - ctx.down_payment_pct) * 100, 1),
+            change_amount=round(extra_cash, 0),
+            result_amount=round(new_down * ctx.list_price, 0),
+            result_label="Down payment",
+            closes_gap_alone=True,
+            terms_note=f"{new_down * 100:.0f}% down",
+        ),
     )

@@ -30,6 +30,46 @@ export function requestPlanNarrative(body: PlanNarrativeRequest): Promise<PlanNa
   return api.post<PlanNarrative>('/api/v1/plans/narrative', body, { softAuth: true, timeoutMs: 12_000 })
 }
 
+export interface BreakevenWayInput {
+  family: 'price' | 'income' | 'financing' | 'capital_stack'
+  name: string
+  change_pct: number | null
+  change_amount: number | null
+  result_amount: number
+  result_label: string
+  closes_gap_alone: boolean
+  terms_note: string | null
+  rating: 'high' | 'medium' | 'low' | 'your_call' | null
+  reasons: string[]
+}
+
+export interface BreakevenNarrativeRequest {
+  address: string
+  list_price: number | null
+  target_buy_price: number | null
+  income_value: number | null
+  gap_amount: number | null
+  gap_pct: number | null
+  monthly_shortfall: number | null
+  ways: BreakevenWayInput[]
+  blend_recommendation: string | null
+}
+
+export interface BreakevenNarrative {
+  overview: string
+  /** family → recommendation text */
+  ways: Record<string, string>
+  blend: string
+  source: 'ai' | 'template'
+}
+
+export function requestBreakevenNarrative(body: BreakevenNarrativeRequest): Promise<BreakevenNarrative> {
+  return api.post<BreakevenNarrative>('/api/v1/plans/breakeven-narrative', body, {
+    softAuth: true,
+    timeoutMs: 12_000,
+  })
+}
+
 export interface PlanClaimRequest {
   email: string
   address: string

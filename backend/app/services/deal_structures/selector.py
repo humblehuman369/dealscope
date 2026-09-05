@@ -1,13 +1,15 @@
-"""Selector — fills three fixed slots (Rent Increase, More Equity, Creative Finance).
+"""Selector — fills four fixed slots (Income, Price, Terms, Equity).
 
-The engine appends the Blended Plan as a fourth slot separately. The Four Paths
-lineup is intentionally a fixed-order taxonomy rather than a ranked feed so the
-user always reads the options in the same order across properties:
+The engine appends the Blended Plan separately; the Breakeven Analysis section
+shows the four single-lever slots and the wizard uses the blend. The lineup is
+intentionally a fixed-order taxonomy rather than a ranked feed so the user
+always reads the options in the same order across properties:
 
-    Option 1 — Rent Increase      (rent-verification)
-    Option 2 — More Equity        (price-negotiation)
-    Option 3 — Creative Finance   (seller-second-zero-balloon)
-    Option 4 — Blended Plan       (engine-appended)
+    Income  — Rent Increase       (rent-verification)
+    Price   — Price Cut           (price-negotiation)
+    Terms   — Creative Finance    (seller-second-zero-balloon)
+    Equity  — Larger Down Payment (larger-down)
+    Blend   — Blended Plan        (engine-appended, wizard only)
 
 Templates whose math isn't feasible for a given property (e.g. monthly_rent = 0
 makes rent-verification infeasible) are silently skipped; the remaining cards
@@ -22,7 +24,9 @@ future ranking experiments), but no longer affects slot order.
 from app.core.regions import resolve_investor_probability_region
 from app.schemas.deal_structures import DealStructure
 from app.services.deal_structures.context import StructureContext
+from app.services.deal_structures.negotiability import assess as assess_negotiability
 from app.services.deal_structures.templates import (
+    larger_down,
     price_negotiation,
     rent_uplift,
     seller_second_zero_balloon,
@@ -34,6 +38,7 @@ _FIXED_SLOTS = (
     rent_uplift,
     price_negotiation,
     seller_second_zero_balloon,
+    larger_down,
 )
 
 # T15 — hand-tuned regional boosts (CALIBRATION PLACEHOLDER — refine with data / T14 telemetry).
@@ -138,13 +143,14 @@ def select_four_paths(
     ctx: StructureContext,
     templates: list | None = None,
 ) -> list[DealStructure]:
-    """Fill the three single-lever slots in fixed order, skipping infeasible ones.
+    """Fill the four single-lever slots in fixed order, skipping infeasible ones.
 
-    Slot order (the engine appends the Blended Plan as Path 4 separately):
+    Slot order (the engine appends the Blended Plan separately):
 
-        1. Rent Increase     — ``rent_uplift``
-        2. More Equity       — ``price_negotiation``
-        3. Creative Finance  — ``seller_second_zero_balloon``
+        1. Income  — ``rent_uplift``
+        2. Price   — ``price_negotiation``
+        3. Terms   — ``seller_second_zero_balloon``
+        4. Equity  — ``larger_down``
 
     ``templates`` is an optional whitelist (used by tests and the engine when a
     feature flag disables a template). Only slots whose template appears in the
@@ -171,7 +177,14 @@ def select_four_paths(
         adjusted = _apply_listing_signals(ctx, result)
         adjusted = _apply_regional_calibration(ctx, result, adjusted)
         adjusted = _apply_dismissed_penalty(ctx, result, adjusted)
-        selected.append(result.model_copy(update={"ranking_score": adjusted}))
+        selected.append(
+            result.model_copy(
+                update={
+                    "ranking_score": adjusted,
+                    "negotiability": assess_negotiability(ctx, result),
+                }
+            )
+        )
 
     return selected
 

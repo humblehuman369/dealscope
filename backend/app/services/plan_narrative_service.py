@@ -20,7 +20,13 @@ import logging
 from typing import Any
 
 from app.core.config import settings
-from app.schemas.plans import PlanNarrativeRequest, PlanNarrativeResponse
+from app.schemas.plans import (
+    BreakevenNarrativeRequest,
+    BreakevenNarrativeResponse,
+    BreakevenWayInput,
+    PlanNarrativeRequest,
+    PlanNarrativeResponse,
+)
 from app.services.cache_service import get_cache_service
 
 logger = logging.getLogger(__name__)
@@ -264,4 +270,193 @@ async def generate_narrative(req: PlanNarrativeRequest) -> PlanNarrativeResponse
         await cache.set(key, result.model_dump(mode="json"), ttl_seconds=CACHE_TTL_SECONDS)
     except Exception as exc:
         logger.debug("plan narrative cache write failed: %s", exc)
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Breakeven Analysis — section-level recommendation (overview + per-way + blend)
+# ---------------------------------------------------------------------------
+
+BREAKEVEN_SYSTEM_PROMPT = """You are explaining a rental property's breakeven analysis to a first-time real estate investor. The property's asking price is more than today's rent can support. You will be given four ways to reach cash flow — Price, Income, Terms, Equity — each with the exact change needed, the resulting figure, and a likelihood rating with the real listing signals behind it.
+
+Rules:
+- Use ONLY the numbers and signals provided. Never invent figures, market facts, comparables, or seller circumstances.
+- Speak to the investor directly ("you"). Plain language. No headers, bullets, or markdown.
+- For each way: one or two sentences — what to actually do, and how likely it is to land given the signals. Be candid when a way is unlikely or only closes part of the gap.
+- The blend paragraph should explain, using these specific numbers, why small concessions on several levers is the most probable close.
+
+Return strict JSON with exactly three keys:
+{"overview": "<two sentences on the gap and what it means>", "ways": {"price": "...", "income": "...", "financing": "...", "capital_stack": "..."}, "blend": "<one short paragraph, 80 words max>"}
+Only include a family in "ways" if it was in the input."""
+
+RATING_WORDS = {"high": "likely", "medium": "possible", "low": "unlikely", "your_call": "your decision"}
+
+
+def _way_line(way: BreakevenWayInput) -> str:
+    parts = [f"- {way.name} ({way.family}):"]
+    if way.change_pct is not None:
+        parts.append(f"change {way.change_pct:.1f}%")
+    if way.change_amount is not None:
+        parts.append(f"({_fmt_money(way.change_amount)})")
+    parts.append(f"→ {way.result_label} {_fmt_money(way.result_amount)}")
+    if way.terms_note:
+        parts.append(f"[{way.terms_note}]")
+    if not way.closes_gap_alone:
+        parts.append("— does NOT close the gap alone")
+    if way.rating:
+        parts.append(f"— likelihood: {RATING_WORDS.get(way.rating, way.rating)}")
+    line = " ".join(parts)
+    if way.reasons:
+        line += "\n  signals: " + "; ".join(way.reasons)
+    return line
+
+
+def _breakeven_facts_block(req: BreakevenNarrativeRequest) -> str:
+    lines = [f"- property: {req.address}"]
+    if req.list_price is not None:
+        lines.append(f"- asking / market price: {_fmt_money(req.list_price)}")
+    if req.income_value is not None:
+        lines.append(f"- breakeven price (cash flow $0): {_fmt_money(req.income_value)}")
+    if req.target_buy_price is not None:
+        lines.append(f"- target buy (breakeven less a 5% cushion): {_fmt_money(req.target_buy_price)}")
+    if req.gap_amount is not None and req.gap_pct is not None:
+        lines.append(f"- gap: {_fmt_money(req.gap_amount)} ({req.gap_pct:.1f}% of asking)")
+    if req.monthly_shortfall is not None:
+        lines.append(f"- monthly shortfall at asking: {_fmt_money(req.monthly_shortfall)}/mo")
+    lines.append("- the four ways:")
+    lines.extend(_way_line(w) for w in req.ways)
+    if req.blend_recommendation:
+        lines.append(f"- engine's blend note: {req.blend_recommendation}")
+    return "\n".join(lines)
+
+
+def _template_way(way: BreakevenWayInput) -> str:
+    pct = f"{way.change_pct:.1f}%" if way.change_pct is not None else None
+    amt = _fmt_money(way.change_amount) if way.change_amount is not None else None
+    result = _fmt_money(way.result_amount)
+    likelihood = RATING_WORDS.get(way.rating or "", None)
+    reason = way.reasons[0] if way.reasons else None
+    tail = ""
+    if likelihood and way.rating != "your_call":
+        tail = f" Given this listing, that is {likelihood}" + (
+            f": {reason[0].lower() + reason[1:]}." if reason else "."
+        )
+    elif way.rating == "your_call":
+        tail = " This one is your decision, not the seller's."
+
+    if way.family == "price":
+        body = f"Offer {result} — a {pct} cut ({amt}) from asking. Cash to close and the loan both shrink with it."
+    elif way.family == "income":
+        body = (
+            f"Confirm the property can rent for {result}/mo, {pct} ({amt}/mo) above today's estimate. "
+            "Verify with two local property managers before you rely on it."
+        )
+    elif way.family == "financing":
+        body = f"Pay the asking price if the seller carries {result} as a second note"
+        body += f" ({way.terms_note})." if way.terms_note else "."
+        if not way.closes_gap_alone:
+            body += " On its own this only closes part of the gap; it works paired with a price or rent move."
+    else:  # capital_stack
+        body = f"Bring {result} down"
+        body += f" ({way.terms_note})" if way.terms_note else ""
+        body += f", about {amt} more than the standard plan. The payment drops enough to break even." if amt else "."
+    return body + tail
+
+
+def _template_breakeven(req: BreakevenNarrativeRequest) -> BreakevenNarrativeResponse:
+    gap = _fmt_money(req.gap_amount) if req.gap_amount is not None else "the gap"
+    shortfall = (
+        f" It is short about {_fmt_money(req.monthly_shortfall)} a month at asking." if req.monthly_shortfall else ""
+    )
+    overview = (
+        f"At the asking price this property costs more each month than the rent brings in.{shortfall} "
+        f"Closing {gap} is what turns it into a deal, and there are four levers that do it."
+    )
+    ways = {w.family: _template_way(w) for w in req.ways}
+    blend = req.blend_recommendation or (
+        "Sellers concede a little on several things more readily than a lot on one, so a modest price cut "
+        "plus a small seller-carried second is usually the most probable close."
+    )
+    return BreakevenNarrativeResponse(overview=overview, ways=ways, blend=blend, source="template")
+
+
+def breakeven_cache_key(req: BreakevenNarrativeRequest) -> str:
+    payload = req.model_dump(mode="json")
+    digest = hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()[:24]
+    return f"breakeven_narrative:{digest}"
+
+
+def _parse_breakeven_json(text: str, allowed: set[str]) -> BreakevenNarrativeResponse | None:
+    cleaned = text.strip()
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return None
+    try:
+        data = json.loads(cleaned[start : end + 1])
+    except json.JSONDecodeError:
+        return None
+    overview = str(data.get("overview", "")).strip()
+    blend = str(data.get("blend", "")).strip()
+    raw_ways = data.get("ways")
+    if not overview or not blend or not isinstance(raw_ways, dict):
+        return None
+    ways = {k: str(v).strip() for k, v in raw_ways.items() if k in allowed and str(v).strip()}
+    if not ways:
+        return None
+    return BreakevenNarrativeResponse(overview=overview, ways=ways, blend=blend, source="ai")
+
+
+def _call_claude_breakeven(client, req: BreakevenNarrativeRequest) -> BreakevenNarrativeResponse | None:
+    message = client.messages.create(
+        model=MODEL,
+        max_tokens=700,
+        system=BREAKEVEN_SYSTEM_PROMPT,
+        messages=[
+            {
+                "role": "user",
+                "content": "Write the overview, the four ways, and the blend from these facts only:\n\n"
+                + _breakeven_facts_block(req),
+            }
+        ],
+    )
+    text = "".join(block.text for block in message.content if getattr(block, "type", "") == "text")
+    return _parse_breakeven_json(text, {w.family for w in req.ways})
+
+
+async def generate_breakeven_narrative(req: BreakevenNarrativeRequest) -> BreakevenNarrativeResponse:
+    """Section-level recommendation. Never raises — template fallback on any AI failure."""
+    cache = get_cache_service()
+    key = breakeven_cache_key(req)
+    try:
+        cached = await cache.get(key)
+        if isinstance(cached, dict) and cached.get("overview") and cached.get("blend"):
+            return BreakevenNarrativeResponse(**cached)
+    except Exception as exc:
+        logger.debug("breakeven narrative cache read failed: %s", exc)
+
+    result: BreakevenNarrativeResponse | None = None
+    client = _ensure_anthropic()
+    if client is not None:
+        try:
+            result = await asyncio.wait_for(
+                asyncio.to_thread(_call_claude_breakeven, client, req), timeout=AI_TIMEOUT_SECONDS
+            )
+        except TimeoutError:
+            logger.warning("AI breakeven narrative timed out after %.0fs, using template", AI_TIMEOUT_SECONDS)
+        except Exception as exc:
+            logger.warning("AI breakeven narrative failed, using template: %s", exc)
+
+    if result is None:
+        result = _template_breakeven(req)
+    else:
+        # Any way the model skipped still gets the template line so no row is blank.
+        template = _template_breakeven(req)
+        for family, text in template.ways.items():
+            result.ways.setdefault(family, text)
+
+    try:
+        await cache.set(key, result.model_dump(mode="json"), ttl_seconds=CACHE_TTL_SECONDS)
+    except Exception as exc:
+        logger.debug("breakeven narrative cache write failed: %s", exc)
     return result

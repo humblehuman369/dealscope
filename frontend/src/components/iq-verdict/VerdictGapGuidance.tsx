@@ -30,8 +30,8 @@ export interface VerdictGapGuidanceProps {
   onShowPitch?: (structure: DealStructure) => void
   /** For analytics (Three Paths) */
   propertyState?: string | null
-  /** Dollar gap between the market anchor and Target Buy (drives the strip headline). */
-  dealGapAmount?: number | null
+  /** Full property address — keys the Breakeven Analysis AI recommendation cache. */
+  propertyAddress?: string | null
   /** Opens the Make It Work wizard. When absent, the legacy four cards render. */
   onMakeItWork?: (family?: FourWayFamily) => void
 }
@@ -70,7 +70,7 @@ export function VerdictGapGuidance({
   onOpenStructureInStrategy,
   onShowPitch,
   propertyState,
-  dealGapAmount,
+  propertyAddress,
   onMakeItWork,
 }: VerdictGapGuidanceProps) {
   const anchorWord = isListed ? 'asking price' : 'estimated market value'
@@ -78,6 +78,7 @@ export function VerdictGapGuidance({
   const hasStructures =
     !!dealStructures && dealStructures.hasPaths && dealStructures.paths.length > 0
   const useWizard = MAKE_IT_WORK_ENABLED && Boolean(onMakeItWork)
+  const showBreakeven = hasStructures && useWizard
   const pathsSig = dealStructures?.paths.map((p) => p.id).join('|') ?? ''
 
   useEffect(() => {
@@ -102,14 +103,18 @@ export function VerdictGapGuidance({
       {/* Tier headline ("The TARGET BUY is X% below List Price") removed —
           the gap percentage is already shown in the DealGap metric above and
           the "Options Below Close the Gap" badge points to the action. */}
-      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
-        {tier.subHeadline}
-      </p>
+      {/* The Breakeven Analysis section carries its own title + subtitle, so the
+          tier sub-headline ("Asking is above Target Buy…") would say it twice. */}
+      {!showBreakeven && (
+        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+          {tier.subHeadline}
+        </p>
+      )}
 
-      {hasStructures && useWizard && (
+      {showBreakeven && (
         <FourWaysSection
           payload={dealStructures!}
-          dealGapAmount={dealGapAmount}
+          address={propertyAddress ?? ''}
           propertyState={propertyState}
           onMakeItWork={onMakeItWork!}
           onOpenInStrategy={onOpenStructureInStrategy}
@@ -228,7 +233,7 @@ export interface VerdictPositiveGuidanceProps {
   onOpenStructureInStrategy?: (structure: DealStructure, index: number) => void
   onShowPitch?: (structure: DealStructure) => void
   propertyState?: string | null
-  dealGapAmount?: number | null
+  propertyAddress?: string | null
   /** Opens the Make It Work wizard (save-only mode when the deal already works). */
   onMakeItWork?: (family?: FourWayFamily) => void
 }
@@ -291,7 +296,7 @@ export function VerdictPositiveGuidance({
   onOpenStructureInStrategy,
   onShowPitch,
   propertyState,
-  dealGapAmount,
+  propertyAddress,
   onMakeItWork,
 }: VerdictPositiveGuidanceProps) {
   const isPositive = effectiveDisplayPct > 0
@@ -310,7 +315,7 @@ export function VerdictPositiveGuidance({
       {hasStructures && useWizard && (
         <FourWaysSection
           payload={dealStructures!}
-          dealGapAmount={dealGapAmount}
+          address={propertyAddress ?? ''}
           propertyState={propertyState}
           onMakeItWork={onMakeItWork!}
           onOpenInStrategy={onOpenStructureInStrategy}

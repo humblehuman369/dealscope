@@ -106,23 +106,30 @@ export function answersToVerdictOverrides(answers: WizardAnswers, listPrice: num
   const overrides: VerdictOverrides = {}
   const dp = deriveDownPaymentPct(answers.cash, listPrice)
   if (dp != null) overrides.down_payment_pct = dp
+  // Only seller-terms dismissals go to the engine (they re-rank the creative
+  // families). The cash-based Equity exclusion is a client-side pick rule.
   if (answers.terms === 'simple') overrides.dismissed_families = ['financing', 'blended']
   if (answers.ownerOccupy != null) overrides.is_owner_occupied = answers.ownerOccupy
   return overrides
 }
 
 const PRIORITY_ORDER: Record<Priority, FourWayFamily[]> = {
-  cash_flow: ['blended', 'income', 'financing', 'price'],
-  lowest_price: ['price', 'blended', 'income', 'financing'],
-  least_cash: ['financing', 'blended', 'price', 'income'],
-  fastest_close: ['price', 'income', 'blended', 'financing'],
+  cash_flow: ['blended', 'income', 'financing', 'capital_stack', 'price'],
+  lowest_price: ['price', 'blended', 'income', 'financing', 'capital_stack'],
+  least_cash: ['financing', 'blended', 'price', 'income', 'capital_stack'],
+  // More equity is the simplest close there is — nothing to negotiate.
+  fastest_close: ['price', 'capital_stack', 'income', 'blended', 'financing'],
 }
 
-const DEFAULT_ORDER: FourWayFamily[] = ['blended', 'price', 'financing', 'income']
+const DEFAULT_ORDER: FourWayFamily[] = ['blended', 'price', 'financing', 'income', 'capital_stack']
 
 /** Families the user asked us not to lead with. */
 export function excludedFamilies(answers: WizardAnswers): FourWayFamily[] {
-  return answers.terms === 'simple' ? ['financing', 'blended'] : []
+  const excluded: FourWayFamily[] = []
+  if (answers.terms === 'simple') excluded.push('financing', 'blended')
+  // A bigger down payment is not a plan for someone who told us they have little cash.
+  if (answers.cash === 'under_25k' || answers.cash === 'low_money_down') excluded.push('capital_stack')
+  return excluded
 }
 
 export function preferredFamilyOrder(answers: WizardAnswers): FourWayFamily[] {

@@ -16,7 +16,9 @@
  *   `make_it_work_step`          {step: cash|priority|terms|occupancy, answer}
  *   `make_it_work_plan_viewed`   {recommended_family, recommended_id, path_count, cash, priority, terms}
  *   `make_it_work_alternative_selected` {family, structure_id}
- *   `four_paths_detail_expanded` {path_count, state?} — "See details"
+ *   `four_paths_detail_expanded` {path_count, state?} — "See the full math"
+ *   `breakeven_row_expanded`     {family: price|income|financing|capital_stack} — a way opened
+ *   `breakeven_narrative_loaded` {source: ai|template, way_count} — AI recommendation arrived
  *   `plan_save_submitted`        {mode: email|authenticated, family?} — the free hook
  *   `plan_save_email_sent`       {family?} — claim accepted (202)
  *   `magic_link_consumed`        — /auth/magic signed the user in (also captured server-side)

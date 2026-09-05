@@ -7,8 +7,11 @@ import { Sparkles } from 'lucide-react'
 import { FAMILY_ACCENT, type DealStructure } from '@/components/iq-verdict/PathOptionCard'
 import type { PlanNarrative } from '@/lib/api/plans'
 import {
-  FOUR_WAYS,
+  WAY_NAMES,
+  describeBreakevenChange,
+  describeBreakevenResult,
   formatMonthlySavings,
+  isBreakevenFamily,
   isFourWayFamily,
 } from '@/components/iq-verdict/make-it-work/fourWays'
 import type { PlanNumbers } from '@/components/iq-verdict/make-it-work/useMakeItWork'
@@ -19,10 +22,16 @@ function money(value: number | null | undefined): string {
 }
 
 function nameFor(structure: DealStructure): string {
-  if (isFourWayFamily(structure.family)) {
-    return FOUR_WAYS.find((w) => w.family === structure.family)?.name ?? structure.familyLabel
-  }
-  return structure.familyLabel
+  return isFourWayFamily(structure.family) ? WAY_NAMES[structure.family] : structure.familyLabel
+}
+
+/** "Cut price 33.0% ($152,000) → Target Buy $307,000" from the engine's structured fact. */
+function breakevenLine(structure: DealStructure): string | null {
+  const fact = structure.breakeven
+  if (!fact || !isBreakevenFamily(structure.family)) return null
+  const result = describeBreakevenResult(fact)
+  const change = describeBreakevenChange(structure.family, fact)
+  return result ? `${change} → ${result.label} ${result.amount}` : change
 }
 
 function BigNumber({ label, value, accent }: { label: string; value: string; accent?: string }) {
@@ -96,6 +105,7 @@ export function PlanResult({
   const accent = structure ? FAMILY_ACCENT[structure.family] : 'var(--status-positive)'
   const otherPaths = structure ? alternatives.filter((p) => p.id !== structure.id) : []
   const pitch = narrative?.pitch || structure?.pitchScript || ''
+  const factLine = structure ? breakevenLine(structure) : null
 
   return (
     <div className="flex flex-col gap-5">
@@ -123,6 +133,14 @@ export function PlanResult({
         >
           {structure ? nameFor(structure) : 'This deal works at asking'}
         </h3>
+        {factLine && (
+          <p
+            className="tabular-nums"
+            style={{ margin: '4px 0 0', fontSize: 13.5, fontWeight: 600, color: 'var(--text-heading)' }}
+          >
+            {factLine}
+          </p>
+        )}
         <div style={{ marginTop: 8, minHeight: 36 }}>
           {structure && narrativeLoading && !narrative ? (
             <div className="flex flex-col gap-2" aria-busy="true" aria-label="Writing your summary">

@@ -31,6 +31,39 @@ class StructureLever(BaseModel):
     delta_label: str | None = Field(None, description="Optional delta (e.g. '−6.1%')")  # noqa: RUF001 — U+2212 minus sign is deliberate display formatting
 
 
+class BreakevenFact(BaseModel):
+    """Structured numbers behind one way to breakeven — the UI reads these, never lever text.
+
+    Every figure is produced by the template's own solver; nothing here is derived
+    by parsing labels. ``closes_gap_alone`` is False when the template hit a cap
+    (e.g. 20% seller carry) and had to lean on another lever to reach cash flow.
+    """
+
+    model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
+
+    change_pct: float | None = Field(None, description="Percent change needed, e.g. 33.0 = cut price 33%")
+    change_amount: float | None = Field(
+        None, description="Dollar change needed: price cut $, rent lift $/mo, carry $, extra down $"
+    )
+    result_amount: float = Field(..., description="Resulting figure: target buy, target rent, carry, down payment")
+    result_label: str = Field(..., description="'Target Buy' | 'Target rent' | 'Seller financing' | 'Down payment'")
+    closes_gap_alone: bool = Field(True, description="False when this lever alone could not reach cash flow")
+    terms_note: str | None = Field(None, description="e.g. '0% interest, 5-yr balloon' or '35% down'")
+
+
+NegotiabilityRating = Literal["high", "medium", "low", "your_call"]
+
+
+class Negotiability(BaseModel):
+    """How likely the seller is to agree to this lever, from real listing signals only."""
+
+    model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
+
+    rating: NegotiabilityRating
+    score: int = Field(..., ge=0, le=100)
+    reasons: list[str] = Field(default_factory=list, description="Only signals actually present on this property")
+
+
 class DealStructure(BaseModel):
     """A single deal-structure card returned by the selector."""
 
@@ -60,6 +93,21 @@ class DealStructure(BaseModel):
         default_factory=dict,
         description="Partial overrides for Strategy worksheet / Deal Maker (snake_case keys)",
     )
+    breakeven: BreakevenFact | None = Field(None, description="Structured breakeven numbers for this way")
+    negotiability: Negotiability | None = Field(None, description="Seller-agreement likelihood from listing signals")
+
+
+class BreakevenSummary(BaseModel):
+    """Headline numbers for the Breakeven Analysis section."""
+
+    model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
+
+    list_price: float = Field(..., description="Asking / market anchor the gap is measured from")
+    gap_amount: float = Field(..., description="List price minus Target Buy")
+    gap_pct: float = Field(..., description="Gap as percent of list price")
+    monthly_shortfall: float = Field(..., description="Negative monthly cash flow at list price, as a positive $")
+    income_value: float = Field(..., description="Price at which cash flow is $0 (breakeven)")
+    target_buy_price: float = Field(..., description="Income Value less the buy-discount cushion")
 
 
 class DealStructuresPayload(BaseModel):
@@ -73,3 +121,7 @@ class DealStructuresPayload(BaseModel):
         description="5th-grade-level walkthrough; each item is one paragraph",
     )
     has_paths: bool = Field(False, description="True when at least one feasible structure was found")
+    breakeven_summary: BreakevenSummary | None = Field(None, description="Gap + shortfall for the section header")
+    blend_recommendation: str | None = Field(
+        None, description="Deterministic sentence: why small concessions on several levers is the probable close"
+    )

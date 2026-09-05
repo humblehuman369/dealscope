@@ -47,6 +47,45 @@ class PlanNarrativeResponse(BaseModel):
     source: Literal["ai", "template"]
 
 
+class BreakevenWayInput(BaseModel):
+    """One row of the Breakeven Analysis section, as the frontend already shows it."""
+
+    family: Literal["price", "income", "financing", "capital_stack"]
+    name: str = Field(..., max_length=40)
+    change_pct: float | None = None
+    change_amount: float | None = None
+    result_amount: float
+    result_label: str = Field(..., max_length=40)
+    closes_gap_alone: bool = True
+    terms_note: str | None = Field(None, max_length=160)
+    rating: Literal["high", "medium", "low", "your_call"] | None = None
+    reasons: list[str] = Field(default_factory=list, max_length=8)
+
+    @field_validator("reasons")
+    @classmethod
+    def _trim_reasons(cls, v: list[str]) -> list[str]:
+        return [r[:200] for r in v]
+
+
+class BreakevenNarrativeRequest(BaseModel):
+    address: str = Field(..., max_length=300)
+    list_price: float | None = None
+    target_buy_price: float | None = None
+    income_value: float | None = None
+    gap_amount: float | None = None
+    gap_pct: float | None = None
+    monthly_shortfall: float | None = None
+    ways: list[BreakevenWayInput] = Field(default_factory=list, max_length=4)
+    blend_recommendation: str | None = Field(None, max_length=600)
+
+
+class BreakevenNarrativeResponse(BaseModel):
+    overview: str
+    ways: dict[str, str] = Field(default_factory=dict, description="family -> recommendation text")
+    blend: str
+    source: Literal["ai", "template"]
+
+
 class PlanScenario(BaseModel):
     """Mirror of the frontend ``ScenarioPayloadV1``."""
 

@@ -17,7 +17,16 @@ import {
   type StructureFamily,
 } from '@/components/iq-verdict/PathOptionCard'
 
-export type { DealStructure, DealStructureLever, DealStructuresPayload, StructureFamily } from '@/components/iq-verdict/PathOptionCard'
+export type {
+  BreakevenFact,
+  BreakevenSummary,
+  DealStructure,
+  DealStructureLever,
+  DealStructuresPayload,
+  Negotiability,
+  NegotiabilityRating,
+  StructureFamily,
+} from '@/components/iq-verdict/PathOptionCard'
 
 interface FourPathsPanelProps {
   payload: DealStructuresPayload

@@ -10,12 +10,13 @@ import {
   type DealStructuresPayload,
 } from '@/components/iq-verdict/FourPathsPanel'
 import { DealStructuresNarrative } from '@/components/iq-verdict/DealStructuresNarrative'
-import { FourWaysStrip } from '@/components/iq-verdict/make-it-work/FourWaysStrip'
+import { BreakevenAnalysis } from '@/components/iq-verdict/make-it-work/BreakevenAnalysis'
 import type { FourWayFamily } from '@/components/iq-verdict/make-it-work/fourWays'
 
 export interface FourWaysSectionProps {
   payload: DealStructuresPayload
-  dealGapAmount?: number | null
+  /** Full property address — keys the cached AI recommendation. */
+  address: string
   propertyState?: string | null
   onMakeItWork: (family?: FourWayFamily) => void
   onOpenInStrategy?: (structure: DealStructure, index: number) => void
@@ -23,12 +24,13 @@ export interface FourWaysSectionProps {
 }
 
 /**
- * Strip first; the original four cards and the plain-English narrative stay
- * available behind a single expander for users who want the full math.
+ * Breakeven Analysis first; the original four cards and the plain-English
+ * narrative stay available behind a single expander for users who want the
+ * full math.
  */
 export function FourWaysSection({
   payload,
-  dealGapAmount,
+  address,
   propertyState,
   onMakeItWork,
   onOpenInStrategy,
@@ -37,7 +39,7 @@ export function FourWaysSection({
   const [detailOpen, setDetailOpen] = useState(false)
   const pathCount = payload.hasPaths ? payload.paths.length : 0
 
-  // North-star activation: the strip is now the first place a user sees the
+  // North-star activation: the section is the first place a user sees the
   // four ways, so it carries the milestone the collapsed FourPathsPanel used to.
   useEffect(() => {
     if (pathCount > 0) trackActivation('four_ways')
@@ -60,9 +62,9 @@ export function FourWaysSection({
 
   return (
     <div className="w-full min-w-0">
-      <FourWaysStrip
-        paths={payload.paths}
-        dealGapAmount={dealGapAmount}
+      <BreakevenAnalysis
+        payload={payload}
+        address={address}
         onMakeItWork={onMakeItWork}
         detailOpen={detailOpen}
         onToggleDetail={toggleDetail}

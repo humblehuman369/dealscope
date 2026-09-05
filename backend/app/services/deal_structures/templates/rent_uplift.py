@@ -1,6 +1,6 @@
 """Rent uplift template — close the gap by verifying or improving rent."""
 
-from app.schemas.deal_structures import DealStructure, StructureLever
+from app.schemas.deal_structures import BreakevenFact, DealStructure, StructureLever
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.formatting import fmt_money, fmt_money_precise, fmt_pct_delta
 
@@ -149,4 +149,12 @@ def solve(ctx: StructureContext) -> DealStructure | None:
             "custom_purchase_price": ctx.list_price,
             "custom_rent_estimate": new_rent,
         },
+        breakeven=BreakevenFact(
+            change_pct=round(bump_pct, 1),
+            change_amount=round(actual_bump, 0),
+            result_amount=round(new_rent, 0),
+            result_label="Target rent",
+            closes_gap_alone=True,
+            terms_note=None,
+        ),
     )

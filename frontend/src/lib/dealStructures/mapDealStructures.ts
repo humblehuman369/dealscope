@@ -3,7 +3,69 @@
  * Used by Discovery and Strategy so Options 1–4 stay identical.
  */
 
-import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
+import type {
+  BreakevenFact,
+  BreakevenSummary,
+  DealStructure,
+  DealStructuresPayload,
+  Negotiability,
+  NegotiabilityRating,
+} from '@/components/iq-verdict/FourPathsPanel'
+
+function finiteOrNull(v: unknown): number | null {
+  return typeof v === 'number' && Number.isFinite(v) ? v : null
+}
+
+const RATINGS: readonly NegotiabilityRating[] = ['high', 'medium', 'low', 'your_call']
+
+function mapBreakeven(raw: unknown): BreakevenFact | null {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Record<string, unknown>
+  const resultAmount = finiteOrNull(r.result_amount ?? r.resultAmount)
+  if (resultAmount == null) return null
+  return {
+    changePct: finiteOrNull(r.change_pct ?? r.changePct),
+    changeAmount: finiteOrNull(r.change_amount ?? r.changeAmount),
+    resultAmount,
+    resultLabel: String(r.result_label ?? r.resultLabel ?? ''),
+    closesGapAlone: (r.closes_gap_alone ?? r.closesGapAlone) !== false,
+    termsNote: (r.terms_note ?? r.termsNote ?? null) as string | null,
+  }
+}
+
+function mapNegotiability(raw: unknown): Negotiability | null {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Record<string, unknown>
+  const rating = r.rating
+  if (typeof rating !== 'string' || !RATINGS.includes(rating as NegotiabilityRating)) return null
+  return {
+    rating: rating as NegotiabilityRating,
+    score: finiteOrNull(r.score) ?? 0,
+    reasons: Array.isArray(r.reasons) ? r.reasons.map(String) : [],
+  }
+}
+
+function mapSummary(raw: unknown): BreakevenSummary | null {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Record<string, unknown>
+  const listPrice = finiteOrNull(r.list_price ?? r.listPrice)
+  const gapAmount = finiteOrNull(r.gap_amount ?? r.gapAmount)
+  const gapPct = finiteOrNull(r.gap_pct ?? r.gapPct)
+  const monthlyShortfall = finiteOrNull(r.monthly_shortfall ?? r.monthlyShortfall)
+  const incomeValue = finiteOrNull(r.income_value ?? r.incomeValue)
+  const targetBuyPrice = finiteOrNull(r.target_buy_price ?? r.targetBuyPrice)
+  if (
+    listPrice == null ||
+    gapAmount == null ||
+    gapPct == null ||
+    monthlyShortfall == null ||
+    incomeValue == null ||
+    targetBuyPrice == null
+  ) {
+    return null
+  }
+  return { listPrice, gapAmount, gapPct, monthlyShortfall, incomeValue, targetBuyPrice }
+}
 
 export function mapDealStructurePath(p: Record<string, unknown>): DealStructure {
   const raw = p as Record<string, any>
@@ -31,12 +93,14 @@ export function mapDealStructurePath(p: Record<string, unknown>): DealStructure 
       string,
       unknown
     > | null,
+    breakeven: mapBreakeven(raw.breakeven),
+    negotiability: mapNegotiability(raw.negotiability),
   }
 }
 
 export function mapDealStructuresFromApi(
   raw: Record<string, unknown> | null | undefined,
-): { paths: DealStructure[]; narrativeParagraphs: string[]; hasPaths: boolean } | null {
+): DealStructuresPayload | null {
   if (!raw) return null
   const paths = (Array.isArray(raw.paths) ? raw.paths : []).map((p) =>
     mapDealStructurePath(p as Record<string, unknown>),
@@ -44,9 +108,12 @@ export function mapDealStructuresFromApi(
   const hasPathsFlag = raw.has_paths ?? raw.hasPaths
   const hasPaths =
     typeof hasPathsFlag === 'boolean' ? hasPathsFlag : paths.length > 0
+  const blend = raw.blend_recommendation ?? raw.blendRecommendation
   return {
     paths,
     narrativeParagraphs: (raw.narrative_paragraphs ?? raw.narrativeParagraphs ?? []) as string[],
     hasPaths,
+    breakevenSummary: mapSummary(raw.breakeven_summary ?? raw.breakevenSummary),
+    blendRecommendation: typeof blend === 'string' && blend ? blend : null,
   }
 }

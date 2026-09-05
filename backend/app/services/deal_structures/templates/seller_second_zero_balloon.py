@@ -5,7 +5,7 @@ for the seller carrying a 2nd mortgage at 0% with a short balloon.
 This is the trending creative-finance pattern (Pace Morby, BiggerPockets).
 """
 
-from app.schemas.deal_structures import DealStructure, StructureLever
+from app.schemas.deal_structures import BreakevenFact, DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
 from app.services.deal_structures.cashflow import (
     TARGET_MONTHLY_CASH_FLOW,
@@ -267,6 +267,17 @@ def solve(ctx: StructureContext) -> DealStructure | None:
     else:
         sel_reason = "The seller's personal and financial situation will indicate if price flexibility is more likely."
 
+    # Honest flag: did the seller note close the gap by itself, or did the solver
+    # have to step price down / lift rent to get there?
+    rent_lifted = custom_rent > ctx.monthly_rent + 1
+    price_stepped = new_price < ctx.list_price - 1
+    closes_alone = not rent_lifted and not price_stepped
+    terms_note = f"0% interest, {DEFAULT_BALLOON_YEARS}-yr balloon"
+    if price_stepped:
+        terms_note += f"; price to {fmt_money(new_price)}"
+    if rent_lifted:
+        terms_note += f"; rent to ${round(custom_rent):,}"
+
     return DealStructure(
         id=ID,
         family=FAMILY,
@@ -328,4 +339,12 @@ def solve(ctx: StructureContext) -> DealStructure | None:
                 "seller_carry_interest_only": True,
             },
         },
+        breakeven=BreakevenFact(
+            change_pct=round(chosen_second / ctx.list_price * 100, 1) if ctx.list_price > 0 else None,
+            change_amount=round(chosen_second, 0),
+            result_amount=round(chosen_second, 0),
+            result_label="Seller financing",
+            closes_gap_alone=closes_alone,
+            terms_note=terms_note,
+        ),
     )

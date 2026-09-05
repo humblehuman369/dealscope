@@ -20,6 +20,29 @@ export interface DealStructureLever {
   deltaLabel?: string | null
 }
 
+/** Structured numbers behind one way to breakeven — read these, never parse lever text. */
+export interface BreakevenFact {
+  /** Percent change needed (33.0 = cut price 33%; for Equity, percentage points added to the down payment). */
+  changePct: number | null
+  /** Dollar change needed: price cut $, rent lift $/mo, carry $, extra down $. */
+  changeAmount: number | null
+  /** Resulting figure: Target Buy, target rent, seller carry, or down payment. */
+  resultAmount: number
+  resultLabel: string
+  /** False when this lever alone could not reach cash flow and the solver leaned on another. */
+  closesGapAlone: boolean
+  termsNote: string | null
+}
+
+export type NegotiabilityRating = 'high' | 'medium' | 'low' | 'your_call'
+
+export interface Negotiability {
+  rating: NegotiabilityRating
+  score: number
+  /** Only signals actually present on this property. */
+  reasons: string[]
+}
+
 export interface DealStructure {
   id: string
   family: StructureFamily
@@ -37,12 +60,27 @@ export interface DealStructure {
   caveat?: string | null
   selectionReason?: string | null
   preLoadedRecord?: Record<string, unknown> | null
+  breakeven?: BreakevenFact | null
+  negotiability?: Negotiability | null
+}
+
+export interface BreakevenSummary {
+  listPrice: number
+  gapAmount: number
+  gapPct: number
+  /** Negative monthly cash flow at asking, as a positive dollar figure. */
+  monthlyShortfall: number
+  /** Price at which cash flow is $0. */
+  incomeValue: number
+  targetBuyPrice: number
 }
 
 export interface DealStructuresPayload {
   paths: DealStructure[]
   narrativeParagraphs: string[]
   hasPaths: boolean
+  breakevenSummary?: BreakevenSummary | null
+  blendRecommendation?: string | null
 }
 
 export const FAMILY_ACCENT: Record<StructureFamily, string> = {

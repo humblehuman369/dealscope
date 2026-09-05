@@ -15,7 +15,13 @@ import {
   stepSequence,
   type WizardAnswers,
 } from '@/components/iq-verdict/make-it-work/wizardMapping'
-import { headlineForPath } from '@/components/iq-verdict/make-it-work/fourWays'
+import {
+  FOUR_WAYS,
+  WIZARD_FAMILIES,
+  describeBreakevenChange,
+  describeBreakevenResult,
+  isBreakevenFamily,
+} from '@/components/iq-verdict/make-it-work/fourWays'
 
 function structure(id: string, family: DealStructure['family'], extra: Partial<DealStructure> = {}): DealStructure {
   return {
@@ -42,6 +48,7 @@ const FOUR = [
   structure('rent-verification', 'income'),
   structure('price-negotiation', 'price'),
   structure('seller-second-zero-balloon', 'financing'),
+  structure('larger-down', 'capital_stack'),
   structure('blended-plan', 'blended'),
 ]
 
@@ -105,6 +112,18 @@ describe('preferredFamilyOrder / pickRecommended', () => {
     ).toEqual(['price', 'income'])
   })
 
+  it('never recommends more equity to someone with little cash, but leads with it for a fast close when they have it', () => {
+    const lowCash: WizardAnswers = { cash: 'under_25k', priority: 'fastest_close', terms: 'anything', ownerOccupy: null }
+    expect(preferredFamilyOrder(lowCash)).not.toContain('capital_stack')
+    expect(pickRecommended([structure('larger-down', 'capital_stack')], lowCash)).toBeNull()
+
+    const flush: WizardAnswers = { cash: '150k_plus', priority: 'fastest_close', terms: 'anything', ownerOccupy: null }
+    expect(preferredFamilyOrder(flush).slice(0, 2)).toEqual(['price', 'capital_stack'])
+    expect(pickRecommended(FOUR.filter((p) => p.family !== 'price'), flush)?.id).toBe('larger-down')
+    // The cash exclusion is a client-side pick rule; the engine request is unchanged by it.
+    expect(answersToVerdictOverrides(lowCash, 400_000)).not.toHaveProperty('dismissed_families')
+  })
+
   it('never recommends a family the user excluded, even if it is the only one that fits the priority', () => {
     const answers: WizardAnswers = { cash: '25_75k', priority: 'least_cash', terms: 'simple', ownerOccupy: null }
     const pick = pickRecommended(FOUR, answers)
@@ -144,23 +163,47 @@ describe('describeCashChoice', () => {
   })
 })
 
-describe('headlineForPath', () => {
-  it('quotes the engine lever for the family and strips note terms', () => {
-    const price = structure('price-negotiation', 'price', {
-      levers: [{ label: 'Purchase price', beforeLabel: '$450,000', afterLabel: '$412,000', deltaLabel: null }],
-    })
-    const financing = structure('seller-second-zero-balloon', 'financing', {
-      levers: [
-        { label: 'Market price', beforeLabel: '$450,000', afterLabel: '$450,000', deltaLabel: null },
-        { label: 'Seller 2nd', beforeLabel: '', afterLabel: '$38,000 (0%, 5yr balloon)', deltaLabel: null },
-      ],
-    })
-    expect(headlineForPath(price)).toBe('→ $412,000')
-    expect(headlineForPath(financing)).toBe('→ $38,000')
+describe('fourWays vocabulary', () => {
+  it('shows Price, Income, Terms, Equity as rows and keeps the blend for the wizard only', () => {
+    expect(FOUR_WAYS.map((w) => w.name)).toEqual(['Price', 'Income', 'Terms', 'Equity'])
+    expect(FOUR_WAYS.map((w) => w.family)).toEqual(['price', 'income', 'financing', 'capital_stack'])
+    expect(isBreakevenFamily('blended')).toBe(false)
+    expect(WIZARD_FAMILIES).toContain('blended')
   })
 
-  it('falls back to monthly savings and never invents a number', () => {
-    expect(headlineForPath(structure('blended-plan', 'blended', { monthlySavings: 312.4 }))).toBe('Saves $312/mo')
-    expect(headlineForPath(structure('blended-plan', 'blended', { monthlySavings: 0 }))).toBeNull()
+  it('describes each way from the structured fact, never from lever text', () => {
+    expect(
+      describeBreakevenChange('price', {
+        changePct: 33.0, changeAmount: 152_000, resultAmount: 307_000, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
+      }),
+    ).toBe('Cut price 33.0% ($152,000)')
+    expect(
+      describeBreakevenChange('income', {
+        changePct: 4.2, changeAmount: 120, resultAmount: 2_970, resultLabel: 'Target rent', closesGapAlone: true, termsNote: null,
+      }),
+    ).toBe('Raise rent 4.2% ($120/mo)')
+    expect(
+      describeBreakevenChange('financing', {
+        changePct: 20, changeAmount: 91_800, resultAmount: 91_800, resultLabel: 'Seller financing', closesGapAlone: false, termsNote: '0% interest, 5-yr balloon',
+      }),
+    ).toBe('Seller carries $91,800 at 0%')
+    expect(
+      describeBreakevenChange('capital_stack', {
+        changePct: 15, changeAmount: 68_850, resultAmount: 160_650, resultLabel: 'Down payment', closesGapAlone: true, termsNote: '35% down',
+      }),
+    ).toBe('Raise down payment to 35% down (+$68,850)')
+    expect(
+      describeBreakevenResult({
+        changePct: 33.0, changeAmount: 152_000, resultAmount: 307_000, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
+      }),
+    ).toEqual({ amount: '$307,000', label: 'Target Buy' })
+  })
+
+  it('degrades to a verb-only label when the engine sent no percentage or amount', () => {
+    expect(
+      describeBreakevenChange('price', {
+        changePct: null, changeAmount: null, resultAmount: 307_000, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
+      }),
+    ).toBe('Cut the price')
   })
 })

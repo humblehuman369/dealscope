@@ -1,9 +1,10 @@
 """Engine — public entry point for the Three Paths feature."""
 
 from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
-from app.schemas.deal_structures import DealStructuresPayload
+from app.schemas.deal_structures import BreakevenSummary, DealStructuresPayload
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.narrative import build_narrative
+from app.services.deal_structures.negotiability import build_blend_recommendation
 from app.services.deal_structures.selector import select_four_paths
 from app.services.deal_structures.templates import (
     ALL_TEMPLATES,
@@ -46,4 +47,18 @@ def compute_deal_structures(ctx: StructureContext) -> DealStructuresPayload:
         return DealStructuresPayload(paths=[], narrative_paragraphs=[], has_paths=False)
 
     narrative = build_narrative(paths, ctx)
-    return DealStructuresPayload(paths=paths, narrative_paragraphs=narrative, has_paths=True)
+    summary = BreakevenSummary(
+        list_price=round(ctx.list_price, 0),
+        gap_amount=round(ctx.deal_gap_amount, 0),
+        gap_pct=round(ctx.deal_gap_pct, 1),
+        monthly_shortfall=round(max(0.0, -ctx.baseline_monthly_cash_flow), 0),
+        income_value=round(ctx.income_value, 0),
+        target_buy_price=round(ctx.target_buy_price, 0),
+    )
+    return DealStructuresPayload(
+        paths=paths,
+        narrative_paragraphs=narrative,
+        has_paths=True,
+        breakeven_summary=summary,
+        blend_recommendation=build_blend_recommendation(ctx, paths),
+    )

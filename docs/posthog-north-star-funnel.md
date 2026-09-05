@@ -70,7 +70,8 @@ The wizard on `/discovery` is the free hook that captures an email before any pa
   5. `magic_link_consumed` — the emailed link was opened; the account is now verified and signed in
 - **Conversion window:** `1 day` for steps 1–4; `3 days` including step 5.
 - **Breakdowns:** `make_it_work_opened.source`, `make_it_work_plan_viewed.recommended_family`, `make_it_work_step.answer` (per `step`).
-- **Also watch:** `four_paths_detail_expanded` — how often users still want the full card wall. A high rate means the strip is hiding something they need.
+- **Also watch:** `four_paths_detail_expanded` — how often users still want the full card wall. A high rate means the Breakeven Analysis section is hiding something they need.
+- **Breakeven Analysis engagement:** `breakeven_row_expanded` (breakdown by `family`) shows which of Price / Income / Terms / Equity users open first; `breakeven_narrative_loaded` (`source` = `ai` \| `template`) shows how often the recommendation came from Claude vs. the deterministic fallback. Expect `breakeven_row_expanded` → `make_it_work_opened` (`source` = `tile`) to be the section's main conversion path.
 
 ---
 

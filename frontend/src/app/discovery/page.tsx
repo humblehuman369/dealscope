@@ -1578,6 +1578,13 @@ function VerdictContent() {
   const dealGapDisplay = `${effectiveDisplayPct >= 0 ? '+' : ''}${effectiveDisplayPct.toFixed(1)}%`
   const discountAmount = Math.max(0, property.price - purchasePrice)
   const gapCloseLabel = dealGapPct > 0 ? formatGapAmount(discountAmount) : null
+  const propertyFullAddress = [
+    property.address,
+    property.city,
+    [property.state, property.zip].filter(Boolean).join(' '),
+  ]
+    .filter(Boolean)
+    .join(', ')
   // Cumulative investor probability from backend (regional cohort); fallback for stale clients.
   const fallbackProbability = Math.max(5, Math.min(95, Math.round(95 - dealGapPct * 3)))
   const cumulativeInvestorPct =
@@ -2349,7 +2356,7 @@ function VerdictContent() {
                   propertyState={property?.state ?? null}
                   onOpenStructureInStrategy={openThreePathInStrategy}
                   onShowPitch={(s) => setPitchModalStructure(s)}
-                  dealGapAmount={discountAmount}
+                  propertyAddress={propertyFullAddress}
                   onMakeItWork={openMakeItWork}
                 />
               ) : dealGapPct > 0 ? (
@@ -2368,7 +2375,7 @@ function VerdictContent() {
                   propertyState={property?.state ?? null}
                   onOpenStructureInStrategy={openThreePathInStrategy}
                   onShowPitch={(s) => setPitchModalStructure(s)}
-                  dealGapAmount={discountAmount}
+                  propertyAddress={propertyFullAddress}
                   onMakeItWork={openMakeItWork}
                 />
               ) : (
@@ -2383,7 +2390,7 @@ function VerdictContent() {
                   propertyState={property?.state ?? null}
                   onOpenStructureInStrategy={openThreePathInStrategy}
                   onShowPitch={(s) => setPitchModalStructure(s)}
-                  dealGapAmount={discountAmount}
+                  propertyAddress={propertyFullAddress}
                   onMakeItWork={openMakeItWork}
                 />
               )}
@@ -2811,11 +2818,7 @@ function VerdictContent() {
           onClose={closeMakeItWork}
           source={makeItWork.source}
           baseInputs={makeItWork.baseInputs}
-          address={
-            [property.address, property.city, [property.state, property.zip].filter(Boolean).join(' ')]
-              .filter(Boolean)
-              .join(', ')
-          }
+          address={propertyFullAddress}
           addressParts={{
             street: property.address,
             city: property.city || undefined,

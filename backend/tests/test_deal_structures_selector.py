@@ -61,10 +61,24 @@ def test_selector_avoids_three_price_only_when_diversity_is_available():
     assert any(p.family != "price" for p in paths), "all-price selection violates diversity rule"
 
 
-def test_selector_returns_at_most_three_single_lever_paths():
-    """Single-lever pool tops out at 3; the engine appends Path 4 (blended) on top of this."""
+def test_selector_returns_at_most_four_single_lever_paths():
+    """Single-lever pool tops out at 4 (income, price, terms, equity); the engine appends the blend."""
     paths = select_four_paths(base_ctx())
-    assert len(paths) <= 3
+    assert len(paths) <= 4
+
+
+def test_selector_fixed_slot_order_and_equity_slot():
+    """Slots read Income → Price → Terms → Equity, each with structured breakeven facts."""
+    paths = select_four_paths(base_ctx())
+    ids = [p.id for p in paths]
+    expected = ["rent-verification", "price-negotiation", "seller-second-zero-balloon", "larger-down"]
+    assert ids == [i for i in expected if i in ids]
+    assert "larger-down" in ids
+    for p in paths:
+        assert p.breakeven is not None, p.id
+        assert p.breakeven.result_amount > 0
+        assert p.negotiability is not None, p.id
+        assert p.negotiability.reasons
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 """Price negotiation template — the simplest path: get the seller down to Target Buy."""
 
-from app.schemas.deal_structures import DealStructure, StructureLever
+from app.schemas.deal_structures import BreakevenFact, DealStructure, StructureLever
 from app.services.calculators import calculate_monthly_mortgage
 from app.services.deal_structures.cashflow import (
     TARGET_MONTHLY_CASH_FLOW,
@@ -157,4 +157,12 @@ def solve(ctx: StructureContext) -> DealStructure | None:
         caveat=None,
         selection_reason=sel_reason,
         pre_loaded_record={"custom_purchase_price": new_price},
+        breakeven=BreakevenFact(
+            change_pct=round((ctx.list_price - new_price) / ctx.list_price * 100, 1) if ctx.list_price > 0 else None,
+            change_amount=round(ctx.list_price - new_price, 0),
+            result_amount=round(new_price, 0),
+            result_label="Target Buy",
+            closes_gap_alone=True,
+            terms_note=None,
+        ),
     )

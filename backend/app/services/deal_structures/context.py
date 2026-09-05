@@ -75,6 +75,12 @@ class StructureContext:
     # T17 — per-user template-family dismissals (selector applies a ranking penalty)
     dismissed_families: tuple[str, ...] = ()
 
+    # Breakeven Analysis — extra listing signals surfaced as negotiability reasons
+    is_auction: bool = False
+    price_reductions: int = 0
+    # IQ Verdict deal score (0-100): probability of negotiating the required discount.
+    deal_opportunity_score: int | None = None
+
     @property
     def deal_gap_amount(self) -> float:
         return self.list_price - self.target_buy_price
