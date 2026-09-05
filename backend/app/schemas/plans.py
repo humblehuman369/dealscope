@@ -60,6 +60,7 @@ class BreakevenWayInput(BaseModel):
     terms_note: str | None = Field(None, max_length=160)
     rating: Literal["high", "medium", "low", "your_call"] | None = None
     reasons: list[str] = Field(default_factory=list, max_length=8)
+    cash_required: float | None = Field(None, description="Cash to close under this lever")
 
     @field_validator("reasons")
     @classmethod
@@ -75,14 +76,21 @@ class BreakevenNarrativeRequest(BaseModel):
     gap_amount: float | None = None
     gap_pct: float | None = None
     monthly_shortfall: float | None = None
+    baseline_cash_required: float | None = None
     ways: list[BreakevenWayInput] = Field(default_factory=list, max_length=4)
     blend_recommendation: str | None = Field(None, max_length=600)
 
 
 class BreakevenNarrativeResponse(BaseModel):
-    overview: str
-    ways: dict[str, str] = Field(default_factory=dict, description="family -> recommendation text")
-    blend: str
+    """The one thing the numbers can't supply: what to actually do.
+
+    Deliberately not a per-lever paragraph. Each row already shows its own
+    change, result, and likelihood; restating those in prose is what made the
+    section read like notes. This is sequencing and a walk-away instead.
+    """
+
+    move: str = Field(..., description="The opening play and the order of asks")
+    walk_away: str = Field(..., description="The line past which this stops being a deal")
     source: Literal["ai", "template"]
 
 

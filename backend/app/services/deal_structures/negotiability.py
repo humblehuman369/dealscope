@@ -15,6 +15,18 @@ from app.services.deal_structures.formatting import fmt_money
 HIGH_THRESHOLD = 70
 MEDIUM_THRESHOLD = 40
 
+# Past a year, feeds routinely report relisted or stale DOM values. Quoting
+# "1213 days on market" as leverage reads as broken data to anyone who knows
+# the market, so the phrasing degrades to a credible band instead.
+DOM_CREDIBLE_CEILING = 365
+
+
+def dom_phrase(days: int) -> str:
+    """Days on market as something an investor would actually say out loud."""
+    if days >= DOM_CREDIBLE_CEILING:
+        return "listed over a year"
+    return f"{days} days on market"
+
 
 def _rating_for(score: float) -> NegotiabilityRating:
     if score >= HIGH_THRESHOLD:
@@ -40,7 +52,7 @@ def seller_signal_reasons(ctx: StructureContext) -> list[str]:
         reasons.append(f"{n} price cut{'s' if n > 1 else ''} already — the seller is adjusting to the market")
     dom = ctx.days_on_market
     if dom is not None and dom >= 60:
-        reasons.append(f"{dom} days on market — well past the point where sellers start listening")
+        reasons.append(f"{dom_phrase(dom)} — well past the point where sellers start listening")
     if ctx.is_bank_owned:
         reasons.append("Bank-owned (REO) — the lender prices to liquidate, not to hold")
     elif ctx.is_foreclosure:
@@ -99,7 +111,9 @@ def _financing(ctx: StructureContext, structure: DealStructure) -> Negotiability
     dom = ctx.days_on_market
     if dom is not None and dom >= 90:
         score += 8
-        reasons.append(f"{dom} days on market — creative terms get a hearing once the easy offers dry up")
+        reasons.append(
+            f"{dom_phrase(dom)} — creative terms get a hearing once the easy offers dry up"
+        )
     temp = (ctx.market_temperature or "").lower()
     if temp == "cold":
         score += 8

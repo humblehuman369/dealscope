@@ -97,12 +97,33 @@ class DealStructure(BaseModel):
     negotiability: Negotiability | None = Field(None, description="Seller-agreement likelihood from listing signals")
 
 
+WayUnavailableReason = Literal["not_needed", "insufficient", "no_data"]
+
+
+class WayUnavailable(BaseModel):
+    """Why one breakeven lever produced no structure.
+
+    ``not_needed`` is good news (the deal already clears on that lever),
+    ``insufficient`` is a warning with the real constraint, ``no_data`` is a
+    gap in the inputs. The UI must not render these three the same way.
+    """
+
+    model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
+
+    family: str
+    reason: WayUnavailableReason
+    message: str
+
+
 class BreakevenSummary(BaseModel):
     """Headline numbers for the Breakeven Analysis section."""
 
     model_config = ConfigDict(alias_generator=_to_camel, populate_by_name=True)
 
     list_price: float = Field(..., description="Asking / market anchor the gap is measured from")
+    baseline_cash_required: float = Field(
+        ..., description="Cash to close at asking on standard terms — the anchor each lever moves from"
+    )
     gap_amount: float = Field(..., description="List price minus Target Buy")
     gap_pct: float = Field(..., description="Gap as percent of list price")
     monthly_shortfall: float = Field(..., description="Negative monthly cash flow at list price, as a positive $")
@@ -124,4 +145,8 @@ class DealStructuresPayload(BaseModel):
     breakeven_summary: BreakevenSummary | None = Field(None, description="Gap + shortfall for the section header")
     blend_recommendation: str | None = Field(
         None, description="Deterministic sentence: why small concessions on several levers is the probable close"
+    )
+    unavailable_ways: list[WayUnavailable] = Field(
+        default_factory=list,
+        description="Levers with no structure, and whether that is reassurance or a warning",
     )

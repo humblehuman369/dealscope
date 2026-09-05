@@ -2,6 +2,7 @@
 
 from app.core.defaults import STRUCTURE_TEMPLATE_FLAGS
 from app.schemas.deal_structures import BreakevenSummary, DealStructuresPayload
+from app.services.deal_structures.availability import diagnose_missing
 from app.services.deal_structures.context import StructureContext
 from app.services.deal_structures.narrative import build_narrative
 from app.services.deal_structures.negotiability import build_blend_recommendation
@@ -49,6 +50,7 @@ def compute_deal_structures(ctx: StructureContext) -> DealStructuresPayload:
     narrative = build_narrative(paths, ctx)
     summary = BreakevenSummary(
         list_price=round(ctx.list_price, 0),
+        baseline_cash_required=round(ctx.baseline_cash_required, 0),
         gap_amount=round(ctx.deal_gap_amount, 0),
         gap_pct=round(ctx.deal_gap_pct, 1),
         monthly_shortfall=round(max(0.0, -ctx.baseline_monthly_cash_flow), 0),
@@ -61,4 +63,5 @@ def compute_deal_structures(ctx: StructureContext) -> DealStructuresPayload:
         has_paths=True,
         breakeven_summary=summary,
         blend_recommendation=build_blend_recommendation(ctx, paths),
+        unavailable_ways=diagnose_missing(ctx, {p.family for p in paths}),
     )
