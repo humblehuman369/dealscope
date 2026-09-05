@@ -56,6 +56,15 @@ class IQVerdictInput(BaseModel):
     bathrooms: float = Field(2, ge=0, le=100, description="Number of bathrooms")
     sqft: int | None = Field(None, gt=0, le=1_000_000, description="Square footage")
     arv: float | None = Field(None, gt=0, le=100_000_000, description="After Repair Value")
+
+    @field_validator("arv", mode="before")
+    @classmethod
+    def _drop_non_positive_arv(cls, v: object) -> object:
+        """Worksheet defaults send arv=0; treat as unset instead of 422."""
+        if v is None or v == "" or v == 0 or v == 0.0:
+            return None
+        return v
+
     average_daily_rate: float | None = Field(None, ge=0, le=100_000, description="STR average daily rate")
     occupancy_rate: float | None = Field(None, ge=0.0, le=1.0, description="STR occupancy rate (0.0-1.0)")
     # Mashvisor /rental-rates?source=airbnb per-bedroom monthly revenue.

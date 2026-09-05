@@ -4,6 +4,7 @@
 
 import { apiFetchRaw } from '@/lib/api-client'
 import type { StrategyType } from '@/features/deal-maker/components/types'
+import { toOccupancyFraction } from '@/utils/verdictPayload'
 
 export interface ComprehensiveExcelParams {
   propertyId: string
@@ -14,10 +15,94 @@ export interface ComprehensiveExcelParams {
   includeSensitivity?: boolean
 }
 
+const POSITIVE_OPTIONAL_KEYS = ['arv', 'purchase_price', 'sqft', 'zestimate', 'current_value_avm', 'tax_assessed_value'] as const
+const TWO_LETTER_KEYS = ['state', 'owner_state'] as const
+
+/**
+ * Drop / clamp fields that IQVerdictInput rejects (gt=0, occupancy 0–1, 2-letter
+ * state). Worksheet defaults of `arv: 0` otherwise 422 the whole export.
+ */
+export function sanitizeVerdictInputForExcel(
+  input: Record<string, unknown>,
+): Record<string, unknown> {
+  const payload = { ...input }
+
+  const listPrice = payload.list_price
+  if (typeof listPrice !== 'number' || !Number.isFinite(listPrice) || listPrice <= 0) {
+    payload.list_price = 1
+  }
+
+  for (const key of POSITIVE_OPTIONAL_KEYS) {
+    const value = payload[key]
+    if (value == null) continue
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+      delete payload[key]
+    }
+  }
+
+  const occupancy = toOccupancyFraction(
+    typeof payload.occupancy_rate === 'number' ? payload.occupancy_rate : null,
+  )
+  if (occupancy == null || occupancy < 0 || occupancy > 1) {
+    delete payload.occupancy_rate
+  } else {
+    payload.occupancy_rate = occupancy
+  }
+
+  for (const key of TWO_LETTER_KEYS) {
+    const value = payload[key]
+    if (value == null) continue
+    if (typeof value !== 'string' || value.trim().length !== 2) {
+      delete payload[key]
+    }
+  }
+
+  const interest = payload.interest_rate
+  if (typeof interest === 'number' && Number.isFinite(interest) && interest > 0.3) {
+    payload.interest_rate = interest > 1 ? interest / 100 : 0.3
+  }
+
+  return payload
+}
+
+function triggerXlsxDownload(blob: Blob, filename: string): void {
+  const downloadUrl = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = downloadUrl
+  link.download = filename
+  link.rel = 'noopener'
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  // Safari / WKWebView start the download asynchronously; revoking immediately
+  // cancels it and looks like a dead button.
+  window.setTimeout(() => {
+    link.remove()
+    URL.revokeObjectURL(downloadUrl)
+  }, 2000)
+}
+
+async function assertXlsxBlob(blob: Blob): Promise<void> {
+  if (blob.size < 4) {
+    throw new Error('Failed to generate Excel report.')
+  }
+  const type = blob.type || ''
+  if (type.includes('json') || type.includes('html') || type.startsWith('text/')) {
+    throw new Error('Failed to generate Excel report.')
+  }
+  if (typeof blob.arrayBuffer !== 'function') return
+  const header = new Uint8Array(await blob.arrayBuffer()).subarray(0, 2)
+  // XLSX is a ZIP (PK). HTML/JSON error pages from a proxy fail this check.
+  if (header[0] !== 0x50 || header[1] !== 0x4b) {
+    throw new Error('Failed to generate Excel report.')
+  }
+}
+
 export async function downloadComprehensiveExcel(
   params: ComprehensiveExcelParams,
 ): Promise<void> {
   const url = `/api/v1/reports/property/${encodeURIComponent(params.propertyId)}/comprehensive-excel`
+  const verdictInput = sanitizeVerdictInputForExcel(params.verdictInput)
 
   // apiFetchRaw attaches auth (Bearer on Capacitor, cookies + CSRF on web)
   // and silently refreshes + retries on 401 so an expired access token
@@ -28,7 +113,7 @@ export async function downloadComprehensiveExcel(
     body: JSON.stringify({
       address: params.address,
       active_strategy: params.activeStrategy,
-      verdict_input: params.verdictInput,
+      verdict_input: verdictInput,
       saved_property_id: params.savedPropertyId ?? null,
       include_sensitivity: params.includeSensitivity ?? true,
     }),
@@ -69,12 +154,6 @@ export async function downloadComprehensiveExcel(
   }
 
   const blob = await response.blob()
-  const downloadUrl = window.URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = downloadUrl
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  window.URL.revokeObjectURL(downloadUrl)
+  await assertXlsxBlob(blob)
+  triggerXlsxDownload(blob, filename)
 }

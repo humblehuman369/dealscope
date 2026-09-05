@@ -2914,7 +2914,7 @@ export function DealMakerWorksheet({
             <button
               type="button"
               onClick={handleExportExcel}
-              disabled={exporting || isCalculating}
+              disabled={exporting}
               className="flex items-center gap-2.5 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
               style={{
                 background: exportDone ? '#10B981' : 'var(--accent-sky)',

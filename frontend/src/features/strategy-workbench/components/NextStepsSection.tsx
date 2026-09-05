@@ -11,7 +11,6 @@ import { colors } from '../lib/shared'
 
 export interface NextStepsSectionProps {
   isExporting: string | null
-  isRecalculating: boolean
   dealGapPct: number
   onDownloadPDF: () => void
   onDownloadExcel: () => void
@@ -19,7 +18,6 @@ export interface NextStepsSectionProps {
 
 export function NextStepsSection({
   isExporting,
-  isRecalculating,
   dealGapPct,
   onDownloadPDF,
   onDownloadExcel,
@@ -83,7 +81,7 @@ export function NextStepsSection({
               e.stopPropagation()
               onDownloadExcel()
             }}
-            disabled={isExporting === 'excel' || isRecalculating}
+            disabled={isExporting === 'excel'}
             className="inline-flex items-center gap-1.5 text-[0.85rem] font-medium transition-colors hover:underline underline-offset-2 disabled:opacity-50 disabled:cursor-wait"
             style={{
               color: 'var(--accent-sky)',

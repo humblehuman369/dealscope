@@ -88,6 +88,7 @@ import { LoadingProperty, ErrorProperty } from '@/components/ui/PropertyStates'
 import { VideoModal } from '@/components/ui/VideoModal'
 import { DealMakerWorksheet } from '@/features/deal-maker/components/DealMakerWorksheet'
 import { downloadComprehensiveExcel } from '@/features/strategy/exportComprehensiveExcel'
+import { exportDealMakerExcel } from '@/features/deal-maker/components/exportExcel'
 import { STRRegulatoryBadge } from '@/components/analytics/STRRegulatoryBadge'
 import { STRConfidenceLabel } from '@/components/analytics/STRConfidenceLabel'
 import type {
@@ -1488,13 +1489,6 @@ export function StrategyWorkbench({
   }
 
   const handleComprehensiveExcelDownload = async () => {
-    const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
-    if (!propertyId) {
-      alert('Property data is still loading. Please wait a moment and try again.')
-      return
-    }
-    if (!propertyInfo) return
-
     if (!isAuthenticated) {
       openAuthModal('login')
       return
@@ -1504,36 +1498,61 @@ export function StrategyWorkbench({
       return
     }
 
+    const propertyId = propertyInfo?.property_id || propertyInfo?.zpid || addressParam || 'property'
+
     setIsExporting('excel')
     try {
-      const exportOverrides: Record<string, unknown> = {
-        ...(dealMakerOverrides ?? {}),
-        purchasePrice:
-          dealMakerOverrides?.purchasePrice ?? dealMakerOverrides?.buyPrice ?? targetPrice,
-        buyPrice: dealMakerOverrides?.buyPrice ?? dealMakerOverrides?.purchasePrice ?? targetPrice,
-        monthlyRent: dealMakerOverrides?.monthlyRent ?? monthlyRent,
-        propertyTaxes: dealMakerOverrides?.propertyTaxes ?? propertyTaxes,
-        insurance: dealMakerOverrides?.insurance ?? insurance,
-        interestRate: dealMakerOverrides?.interestRate ?? rate,
-        downPayment: dealMakerOverrides?.downPayment ?? downPaymentPct * 100,
-        closingCosts: dealMakerOverrides?.closingCosts ?? closingCostsPct * 100,
-        rehabBudget: dealMakerOverrides?.rehabBudget ?? dealMakerOverrides?.rehabCost,
-        arv: dealMakerOverrides?.arv ?? (dealRecord?.arv && dealRecord.arv > 0 ? dealRecord.arv : undefined),
+      if (propertyInfo) {
+        const exportOverrides: Record<string, unknown> = {
+          ...(dealMakerOverrides ?? {}),
+          purchasePrice:
+            dealMakerOverrides?.purchasePrice ?? dealMakerOverrides?.buyPrice ?? targetPrice,
+          buyPrice: dealMakerOverrides?.buyPrice ?? dealMakerOverrides?.purchasePrice ?? targetPrice,
+          monthlyRent: dealMakerOverrides?.monthlyRent ?? monthlyRent,
+          propertyTaxes: dealMakerOverrides?.propertyTaxes ?? propertyTaxes,
+          insurance: dealMakerOverrides?.insurance ?? insurance,
+          interestRate: dealMakerOverrides?.interestRate ?? rate,
+          downPayment: dealMakerOverrides?.downPayment ?? downPaymentPct * 100,
+          closingCosts: dealMakerOverrides?.closingCosts ?? closingCostsPct * 100,
+          rehabBudget: dealMakerOverrides?.rehabBudget ?? dealMakerOverrides?.rehabCost,
+          arv:
+            dealMakerOverrides?.arv && dealMakerOverrides.arv > 0
+              ? dealMakerOverrides.arv
+              : dealRecord?.arv && dealRecord.arv > 0
+                ? dealRecord.arv
+                : undefined,
+        }
+
+        const verdictInput = buildVerdictAnalysisPayload(
+          toPayloadBase(propertyInfo),
+          exportOverrides,
+          verdictSourceOverrides,
+        )
+
+        try {
+          await downloadComprehensiveExcel({
+            propertyId: String(propertyId),
+            address: addressParam,
+            activeStrategy: currentStrategyType,
+            verdictInput,
+            savedPropertyId,
+          })
+          return
+        } catch (comprehensiveErr) {
+          console.warn(
+            'Comprehensive Excel failed; falling back to worksheet export:',
+            comprehensiveErr,
+          )
+        }
       }
 
-      const verdictInput = buildVerdictAnalysisPayload(
-        toPayloadBase(propertyInfo),
-        exportOverrides,
-        verdictSourceOverrides,
+      await exportDealMakerExcel(
+        currentStrategyType,
+        worksheetState,
+        worksheetMetrics,
+        resolvedAddress || addressParam || 'Property',
+        listPrice,
       )
-
-      await downloadComprehensiveExcel({
-        propertyId: String(propertyId),
-        address: addressParam,
-        activeStrategy: currentStrategyType,
-        verdictInput,
-        savedPropertyId,
-      })
     } catch (err) {
       console.error('Excel download failed:', err)
       alert(err instanceof Error ? err.message : 'Failed to generate worksheet. Please try again.')
@@ -1616,7 +1635,6 @@ export function StrategyWorkbench({
         {isAuthenticated && (
           <NextStepsSection
             isExporting={isExporting}
-            isRecalculating={isRecalculating}
             dealGapPct={dealGapPct}
             onDownloadPDF={() => handlePDFDownload('light')}
             onDownloadExcel={() => {

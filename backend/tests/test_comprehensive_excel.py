@@ -13,6 +13,25 @@ from app.services.comprehensive_excel_exporter import ComprehensiveExcelExporter
 from app.services.verdict_assumptions import apply_verdict_input_to_assumptions, resolve_purchase_price
 
 
+class TestComprehensiveExcelRequest:
+    def test_accepts_worksheet_arv_zero(self):
+        from app.schemas.reports import ComprehensiveExcelRequest
+
+        body = ComprehensiveExcelRequest.model_validate(
+            {
+                "address": "123 Main St, Austin, TX",
+                "active_strategy": "ltr",
+                "verdict_input": {
+                    "list_price": 300000,
+                    "monthly_rent": 2000,
+                    "arv": 0,
+                },
+            }
+        )
+        assert body.verdict_input.arv is None
+        assert body.verdict_input.list_price == 300000
+
+
 class TestVerdictAssumptions:
     def test_apply_purchase_price_override(self):
         a = AllAssumptions()
