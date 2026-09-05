@@ -10,6 +10,8 @@ import type {
   DealStructuresPayload,
   Negotiability,
   NegotiabilityRating,
+  WayUnavailable,
+  WayUnavailableReason,
 } from '@/components/iq-verdict/FourPathsPanel'
 
 function finiteOrNull(v: unknown): number | null {
@@ -64,7 +66,35 @@ function mapSummary(raw: unknown): BreakevenSummary | null {
   ) {
     return null
   }
-  return { listPrice, gapAmount, gapPct, monthlyShortfall, incomeValue, targetBuyPrice }
+  return {
+    listPrice,
+    // Older payloads predate this field; 0 reads as "no anchor" downstream, so
+    // the cash-to-close comparison is simply omitted rather than wrong.
+    baselineCashRequired: finiteOrNull(r.baseline_cash_required ?? r.baselineCashRequired) ?? 0,
+    gapAmount,
+    gapPct,
+    monthlyShortfall,
+    incomeValue,
+    targetBuyPrice,
+  }
+}
+
+const UNAVAILABLE_REASONS: readonly WayUnavailableReason[] = ['not_needed', 'insufficient', 'no_data']
+
+function mapUnavailableWays(raw: unknown): WayUnavailable[] {
+  if (!Array.isArray(raw)) return []
+  const out: WayUnavailable[] = []
+  for (const entry of raw) {
+    if (!entry || typeof entry !== 'object') continue
+    const r = entry as Record<string, unknown>
+    const reason = r.reason
+    const family = r.family
+    const message = r.message
+    if (typeof family !== 'string' || typeof message !== 'string' || !message) continue
+    if (typeof reason !== 'string' || !UNAVAILABLE_REASONS.includes(reason as WayUnavailableReason)) continue
+    out.push({ family, reason: reason as WayUnavailableReason, message })
+  }
+  return out
 }
 
 export function mapDealStructurePath(p: Record<string, unknown>): DealStructure {
@@ -115,5 +145,6 @@ export function mapDealStructuresFromApi(
     hasPaths,
     breakevenSummary: mapSummary(raw.breakeven_summary ?? raw.breakevenSummary),
     blendRecommendation: typeof blend === 'string' && blend ? blend : null,
+    unavailableWays: mapUnavailableWays(raw.unavailable_ways ?? raw.unavailableWays),
   }
 }

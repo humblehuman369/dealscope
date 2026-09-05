@@ -8,8 +8,8 @@ import { FAMILY_ACCENT, type DealStructure } from '@/components/iq-verdict/PathO
 import type { PlanNarrative } from '@/lib/api/plans'
 import {
   WAY_NAMES,
-  describeBreakevenChange,
-  describeBreakevenResult,
+  describeChangeDetail,
+  describePlay,
   formatMonthlySavings,
   isBreakevenFamily,
   isFourWayFamily,
@@ -25,13 +25,13 @@ function nameFor(structure: DealStructure): string {
   return isFourWayFamily(structure.family) ? WAY_NAMES[structure.family] : structure.familyLabel
 }
 
-/** "Cut price 33.0% ($152,000) → Target Buy $307,000" from the engine's structured fact. */
+/** "Get the seller to $307,000 — 33.0% off asking · $152,000" from the engine's structured fact. */
 function breakevenLine(structure: DealStructure): string | null {
   const fact = structure.breakeven
   if (!fact || !isBreakevenFamily(structure.family)) return null
-  const result = describeBreakevenResult(fact)
-  const change = describeBreakevenChange(structure.family, fact)
-  return result ? `${change} → ${result.label} ${result.amount}` : change
+  const play = describePlay(structure.family, fact)
+  const detail = describeChangeDetail(structure.family, fact)
+  return detail ? `${play} — ${detail}` : play
 }
 
 function BigNumber({ label, value, accent }: { label: string; value: string; accent?: string }) {

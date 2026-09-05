@@ -26,6 +26,8 @@ export type {
   Negotiability,
   NegotiabilityRating,
   StructureFamily,
+  WayUnavailable,
+  WayUnavailableReason,
 } from '@/components/iq-verdict/PathOptionCard'
 
 interface FourPathsPanelProps {

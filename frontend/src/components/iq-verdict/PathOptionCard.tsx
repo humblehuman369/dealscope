@@ -64,8 +64,23 @@ export interface DealStructure {
   negotiability?: Negotiability | null
 }
 
+export type WayUnavailableReason = 'not_needed' | 'insufficient' | 'no_data'
+
+/**
+ * Why a lever has no structure. `not_needed` is reassurance, `insufficient` is
+ * a warning, `no_data` is a gap in the inputs — the UI must not render the
+ * three the same way.
+ */
+export interface WayUnavailable {
+  family: string
+  reason: WayUnavailableReason
+  message: string
+}
+
 export interface BreakevenSummary {
   listPrice: number
+  /** Cash to close at asking on standard terms — the anchor each lever moves from. */
+  baselineCashRequired: number
   gapAmount: number
   gapPct: number
   /** Negative monthly cash flow at asking, as a positive dollar figure. */
@@ -81,6 +96,7 @@ export interface DealStructuresPayload {
   hasPaths: boolean
   breakevenSummary?: BreakevenSummary | null
   blendRecommendation?: string | null
+  unavailableWays?: WayUnavailable[]
 }
 
 export const FAMILY_ACCENT: Record<StructureFamily, string> = {

@@ -41,6 +41,7 @@ export interface BreakevenWayInput {
   terms_note: string | null
   rating: 'high' | 'medium' | 'low' | 'your_call' | null
   reasons: string[]
+  cash_required: number | null
 }
 
 export interface BreakevenNarrativeRequest {
@@ -51,15 +52,21 @@ export interface BreakevenNarrativeRequest {
   gap_amount: number | null
   gap_pct: number | null
   monthly_shortfall: number | null
+  baseline_cash_required: number | null
   ways: BreakevenWayInput[]
   blend_recommendation: string | null
 }
 
+/**
+ * The section's "Your move". Deliberately not per-lever text: every row
+ * already shows its own change, result, and likelihood, so prose that repeats
+ * them adds nothing. This is sequencing and a walk-away instead.
+ */
 export interface BreakevenNarrative {
-  overview: string
-  /** family → recommendation text */
-  ways: Record<string, string>
-  blend: string
+  /** The opening play and the order of asks. */
+  move: string
+  /** The line past which this stops being a deal. */
+  walk_away: string
   source: 'ai' | 'template'
 }
 

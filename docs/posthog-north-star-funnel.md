@@ -71,7 +71,8 @@ The wizard on `/discovery` is the free hook that captures an email before any pa
 - **Conversion window:** `1 day` for steps 1–4; `3 days` including step 5.
 - **Breakdowns:** `make_it_work_opened.source`, `make_it_work_plan_viewed.recommended_family`, `make_it_work_step.answer` (per `step`).
 - **Also watch:** `four_paths_detail_expanded` — how often users still want the full card wall. A high rate means the Breakeven Analysis section is hiding something they need.
-- **Breakeven Analysis engagement:** `breakeven_row_expanded` (breakdown by `family`) shows which of Price / Income / Terms / Equity users open first; `breakeven_narrative_loaded` (`source` = `ai` \| `template`) shows how often the recommendation came from Claude vs. the deterministic fallback. Expect `breakeven_row_expanded` → `make_it_work_opened` (`source` = `tile`) to be the section's main conversion path.
+- **Breakeven Analysis engagement:** `breakeven_row_expanded` (breakdown by `family`) shows which of Price / Income / Terms / Equity users open first; `breakeven_narrative_loaded` (`source` = `ai` \| `template`) shows how often "Your move" came from Claude vs. the deterministic fallback. Expect `breakeven_row_expanded` → `make_it_work_opened` (`source` = `tile`) to be the section's main conversion path.
+- **A row expansion is the only trigger for "Your move".** The section renders its deterministic content (asks, cash to close, leverage, negotiation scripts, blend note) with no model call, so a plain Discovery page view costs nothing. If `breakeven_row_expanded` rates are low, the block most users never see is the one carrying the sequencing advice — that is the signal to consider loading it eagerly and accepting the per-view AI cost.
 
 ---
 

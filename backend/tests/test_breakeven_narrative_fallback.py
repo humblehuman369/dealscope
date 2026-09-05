@@ -20,6 +20,7 @@ def _request() -> BreakevenNarrativeRequest:
         gap_amount=152_000,
         gap_pct=33.0,
         monthly_shortfall=812,
+        baseline_cash_required=114_750,
         ways=[
             BreakevenWayInput(
                 family="price",
@@ -90,40 +91,80 @@ def _isolated(monkeypatch):
     return cache
 
 
-async def test_template_uses_only_supplied_numbers(monkeypatch):
+async def test_template_gives_sequencing_and_a_walk_away(monkeypatch):
+    """The fallback's job is advice, not restatement of what the rows show."""
     monkeypatch.setattr(svc.settings, "ANTHROPIC_API_KEY", None)
     out = await svc.generate_breakeven_narrative(_request())
     assert out.source == "template"
-    assert "$152,000" in out.overview
-    assert "$812" in out.overview
-    assert set(out.ways) == {"price", "income", "financing", "capital_stack"}
-    assert "$307,000" in out.ways["price"] and "33.0%" in out.ways["price"]
-    assert "$3,475" in out.ways["income"]
-    assert "only closes part of the gap" in out.ways["financing"]
-    assert "your decision" in out.ways["capital_stack"].lower()
-    assert out.blend.startswith("94 days on market")
+
+    # Terms is the only "medium" here, so it leads; the rest become the backup.
+    assert out.move.startswith("Open here: offer full asking price")
+    assert "$91,800 at 0%" in out.move
+    assert "94 days on market is your leverage" in out.move
+    assert "If they push back" in out.move
+    assert "is your backup" in out.move
+
+    assert "walk" in out.walk_away
+    assert "$812" in out.walk_away
 
 
-async def test_ai_reply_is_merged_and_missing_ways_backfilled(monkeypatch):
+async def test_template_leads_with_the_likeliest_lever(monkeypatch):
+    """Ranking is likelihood first, then the cheapest concession for the buyer."""
+    monkeypatch.setattr(svc.settings, "ANTHROPIC_API_KEY", None)
+    req = _request()
+    for way in req.ways:
+        way.rating = "high" if way.family == "price" else "low"
+
+    out = await svc.generate_breakeven_narrative(req)
+    assert out.move.startswith("Open here: put $307,000 on the table")
+    assert "$459,000" in out.walk_away
+
+
+async def test_template_is_honest_when_no_lever_closes_the_gap(monkeypatch):
+    monkeypatch.setattr(svc.settings, "ANTHROPIC_API_KEY", None)
+    req = _request()
+    req.ways = []
+
+    out = await svc.generate_breakeven_narrative(req)
+    assert "no opening play" in out.move
+    assert "pass at asking" in out.walk_away
+    assert "$812" in out.walk_away
+
+
+async def test_ai_reply_replaces_the_template_wholesale(monkeypatch):
     monkeypatch.setattr(svc.settings, "ANTHROPIC_API_KEY", "test-key")
     client = MagicMock()
     block = MagicMock()
     block.type = "text"
-    block.text = (
-        '{"overview": "AI overview.", "ways": {"price": "AI price text.", "financing": "AI terms text."}, '
-        '"blend": "AI blend."}'
-    )
+    block.text = '{"move": "AI move text.", "walk_away": "AI walk-away text."}'
     client.messages.create.return_value = MagicMock(content=[block])
     monkeypatch.setattr(svc, "_anthropic_client", client)
     monkeypatch.setattr(svc, "_anthropic_checked", True)
 
     out = await svc.generate_breakeven_narrative(_request())
     assert out.source == "ai"
-    assert out.ways["price"] == "AI price text."
-    assert out.ways["financing"] == "AI terms text."
-    # Model skipped these — template fills them so no row is blank.
-    assert "$3,475" in out.ways["income"]
-    assert "capital_stack" in out.ways
+    assert out.move == "AI move text."
+    assert out.walk_away == "AI walk-away text."
+
+    # Cash to close is what distinguishes the levers, so the model must see it.
+    prompt = client.messages.create.call_args.kwargs["messages"][0]["content"]
+    assert "cash to close at asking on standard terms: $114,750" in prompt
+    assert "restating them is worthless" in client.messages.create.call_args.kwargs["system"].lower()
+
+
+async def test_ai_reply_missing_walk_away_falls_back(monkeypatch):
+    """A half-answer is worse than the deterministic one — both fields or neither."""
+    monkeypatch.setattr(svc.settings, "ANTHROPIC_API_KEY", "test-key")
+    client = MagicMock()
+    block = MagicMock()
+    block.type = "text"
+    block.text = '{"move": "AI move text."}'
+    client.messages.create.return_value = MagicMock(content=[block])
+    monkeypatch.setattr(svc, "_anthropic_client", client)
+    monkeypatch.setattr(svc, "_anthropic_checked", True)
+
+    out = await svc.generate_breakeven_narrative(_request())
+    assert out.source == "template"
 
 
 async def test_ai_garbage_falls_back_to_template(monkeypatch):

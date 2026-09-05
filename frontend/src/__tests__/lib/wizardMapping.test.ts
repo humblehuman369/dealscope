@@ -18,8 +18,10 @@ import {
 import {
   FOUR_WAYS,
   WIZARD_FAMILIES,
-  describeBreakevenChange,
   describeBreakevenResult,
+  describeCashToClose,
+  describeChangeDetail,
+  describePlay,
   isBreakevenFamily,
 } from '@/components/iq-verdict/make-it-work/fourWays'
 
@@ -171,27 +173,27 @@ describe('fourWays vocabulary', () => {
     expect(WIZARD_FAMILIES).toContain('blended')
   })
 
-  it('describes each way from the structured fact, never from lever text', () => {
+  it('states each way as the thing you do, not as a measurement', () => {
     expect(
-      describeBreakevenChange('price', {
+      describePlay('price', {
         changePct: 33.0, changeAmount: 152_000, resultAmount: 307_000, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
       }),
-    ).toBe('Cut price 33.0% ($152,000)')
+    ).toBe('Get the seller to $307,000')
     expect(
-      describeBreakevenChange('income', {
+      describePlay('income', {
         changePct: 4.2, changeAmount: 120, resultAmount: 2_970, resultLabel: 'Target rent', closesGapAlone: true, termsNote: null,
       }),
-    ).toBe('Raise rent 4.2% ($120/mo)')
+    ).toBe('Prove the rent is $2,970/mo')
     expect(
-      describeBreakevenChange('financing', {
+      describePlay('financing', {
         changePct: 20, changeAmount: 91_800, resultAmount: 91_800, resultLabel: 'Seller financing', closesGapAlone: false, termsNote: '0% interest, 5-yr balloon',
       }),
-    ).toBe('Seller carries $91,800 at 0%')
+    ).toBe('Full price — seller carries $91,800 at 0%')
     expect(
-      describeBreakevenChange('capital_stack', {
+      describePlay('capital_stack', {
         changePct: 15, changeAmount: 68_850, resultAmount: 160_650, resultLabel: 'Down payment', closesGapAlone: true, termsNote: '35% down',
       }),
-    ).toBe('Raise down payment to 35% down (+$68,850)')
+    ).toBe('Put $160,650 down (35% down)')
     expect(
       describeBreakevenResult({
         changePct: 33.0, changeAmount: 152_000, resultAmount: 307_000, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
@@ -199,11 +201,41 @@ describe('fourWays vocabulary', () => {
     ).toEqual({ amount: '$307,000', label: 'Target Buy' })
   })
 
-  it('degrades to a verb-only label when the engine sent no percentage or amount', () => {
+  it('moves the percentage arithmetic into the expanded detail line', () => {
     expect(
-      describeBreakevenChange('price', {
+      describeChangeDetail('price', {
+        changePct: 33.0, changeAmount: 152_000, resultAmount: 307_000, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
+      }),
+    ).toBe('33.0% off asking · $152,000')
+    expect(
+      describeChangeDetail('income', {
+        changePct: 4.2, changeAmount: 120, resultAmount: 2_970, resultLabel: 'Target rent', closesGapAlone: true, termsNote: null,
+      }),
+    ).toBe("4.2% above today's estimate · $120/mo more")
+    expect(
+      describeChangeDetail('price', {
         changePct: null, changeAmount: null, resultAmount: 307_000, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
       }),
-    ).toBe('Cut the price')
+    ).toBeNull()
+  })
+
+  it('degrades to an instruction without a figure when the engine sent no result', () => {
+    expect(
+      describePlay('price', {
+        changePct: null, changeAmount: null, resultAmount: Number.NaN, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
+      }),
+    ).toBe('Get the seller down to Target Buy')
+  })
+
+  it('compares cash to close against buying at asking, and ignores rounding noise', () => {
+    // A price cut shrinks both the down payment and the closing costs.
+    expect(describeCashToClose(67_000, 85_000)).toEqual({ amount: '$67K', delta: '$18K less than asking' })
+    // Extra equity is the one lever that costs the buyer more at the table.
+    expect(describeCashToClose(160_650, 85_000)).toEqual({ amount: '$161K', delta: '$76K more than asking' })
+    // Sub-$500 movement is input rounding, not a trade-off worth claiming.
+    expect(describeCashToClose(85_200, 85_000)).toEqual({ amount: '$85K', delta: 'same as asking' })
+    // No anchor in older payloads → the amount stands alone rather than lying.
+    expect(describeCashToClose(67_000, 0)).toEqual({ amount: '$67K', delta: null })
+    expect(describeCashToClose(0, 85_000)).toBeNull()
   })
 })
