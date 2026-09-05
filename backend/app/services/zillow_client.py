@@ -487,17 +487,27 @@ class ZillowClient(BaseAPIClient["ZillowAPIResponse"]):
         if listing_type:
             params["listing_type"] = listing_type
 
-        # Property type flags
+        # AXESSO defaults every home-type flag to true. Setting only the
+        # selected type to True is a no-op — single-family still comes back
+        # when the caller asked for Multi-Family. Turn the others off.
         if property_types:
+            params["isSingleFamily"] = False
+            params["isCondo"] = False
+            params["isTownhouse"] = False
+            params["isMultiFamily"] = False
+            params["isApartment"] = False
+            params["isLotLand"] = False
+            params["isManufactured"] = False
             for pt in property_types:
-                if pt.lower() == "single family":
-                    params["isSingleFamily"] = True
-                elif pt.lower() == "condo":
-                    params["isCondo"] = True
-                elif pt.lower() == "townhouse":
-                    params["isTownhouse"] = True
-                elif pt.lower() == "multi-family":
+                key = " ".join(pt.lower().replace("_", " ").replace("-", " ").split())
+                if "multi" in key:
                     params["isMultiFamily"] = True
+                elif "condo" in key:
+                    params["isCondo"] = True
+                elif "town" in key:
+                    params["isTownhouse"] = True
+                elif "single" in key:
+                    params["isSingleFamily"] = True
 
         # Additional filters from kwargs
         params.update(kwargs)

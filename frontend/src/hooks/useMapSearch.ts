@@ -12,6 +12,7 @@ import {
   type DealSignalResult,
   type SortOption,
 } from '@/lib/dealSignal'
+import { filterByPropertyType } from '@/lib/propertyType'
 import { readMapSnapshot, writeMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
 
 export interface MapSearchFilters {
@@ -330,6 +331,7 @@ export function useMapSearch() {
       result = filterByListingStatus(result, filters.listing_statuses)
       result = filterByMinDom(result, filters.min_dom, dealSignals)
     }
+    result = filterByPropertyType(result, filters.property_type)
     result = sortListings(result, dealSignals, filters.sort_by)
     return result
   }, [
@@ -337,6 +339,7 @@ export function useMapSearch() {
     filters.listing_statuses,
     filters.min_dom,
     filters.sort_by,
+    filters.property_type,
     filters.owner_tenure_min_years,
     filters.owner_occupancy,
     dealSignals,

@@ -156,6 +156,109 @@ def normalize_listing_status(raw: str | None) -> str | None:
     return _STATUS_MAP.get(raw.lower().strip())
 
 
+# ─── Property type canonicalization ──────────────────────────────────────
+# Providers disagree on labels (RentCast "Multi-Family", Zillow "MULTI_FAMILY",
+# AXESSO "Multi Family") and AXESSO's typed home-type flags default to ALL
+# true. Setting only ``isMultiFamily=True`` therefore still returns single-
+# family houses. Canonicalize + exclusive flags + a post-fetch filter keep
+# the user-visible type aligned with the dropdown.
+
+RENTCAST_PROPERTY_TYPE: dict[str, str] = {
+    "single_family": "Single Family",
+    "condo": "Condo",
+    "townhouse": "Townhouse",
+    "multi_family": "Multi-Family",
+}
+
+_ZILLOW_HOME_TYPE_FLAGS: tuple[str, ...] = (
+    "isSingleFamily",
+    "isCondo",
+    "isTownhouse",
+    "isMultiFamily",
+    "isApartment",
+    "isLotLand",
+    "isManufactured",
+)
+
+_CANONICAL_TO_ZILLOW_FLAG: dict[str, str] = {
+    "single_family": "isSingleFamily",
+    "condo": "isCondo",
+    "townhouse": "isTownhouse",
+    "multi_family": "isMultiFamily",
+}
+
+
+def canonicalize_property_type(raw: str | None) -> str | None:
+    """Map a provider or UI property-type label onto a canonical bucket.
+
+    Multi-family is checked before single-family so labels like
+    ``MULTI_FAMILY`` never collapse to SFR via a ``"single" in …`` substring.
+    Unrecognized values return None — a type filter then drops the row
+    rather than guessing.
+    """
+    if not raw:
+        return None
+    s = " ".join(raw.lower().replace("_", " ").replace("-", " ").split())
+    if not s:
+        return None
+    compact = s.replace(" ", "")
+    if (
+        "multifamily" == compact
+        or "multi family" in s
+        or s in {"multi", "mf", "mfh"}
+        or "duplex" in s
+        or "triplex" in s
+        or "fourplex" in s
+        or "quadplex" in s
+        or "quadruplex" in s
+    ):
+        return "multi_family"
+    if "condo" in s:
+        return "condo"
+    if "town" in s:
+        return "townhouse"
+    if "single" in s or s in {"sfr", "house", "houses"}:
+        return "single_family"
+    return None
+
+
+def rentcast_property_type_param(property_type: str | None) -> str | None:
+    """RentCast's exact ``propertyType`` enum value, or the original string."""
+    if not property_type:
+        return None
+    canonical = canonicalize_property_type(property_type)
+    if canonical is None:
+        return property_type
+    return RENTCAST_PROPERTY_TYPE[canonical]
+
+
+def zillow_property_type_flags(property_type: str | None) -> dict[str, bool]:
+    """Exclusive AXESSO home-type flags. Empty when no type is selected.
+
+    AXESSO defaults every ``is*`` flag to true. Callers must turn the
+    unselected types off or the filter is a no-op.
+    """
+    canonical = canonicalize_property_type(property_type)
+    if canonical is None:
+        return {}
+    flag = _CANONICAL_TO_ZILLOW_FLAG.get(canonical)
+    if flag is None:
+        return {}
+    flags = {name: False for name in _ZILLOW_HOME_TYPE_FLAGS}
+    flags[flag] = True
+    return flags
+
+
+def listing_matches_property_type(listing_type: str | None, wanted: str | None) -> bool:
+    """True when ``listing_type`` is in the same bucket as the UI filter."""
+    if not wanted:
+        return True
+    canonical_wanted = canonicalize_property_type(wanted)
+    if canonical_wanted is None:
+        return True
+    return canonicalize_property_type(listing_type) == canonical_wanted
+
+
 # ─── Cross-source dedup priority ─────────────────────────────────────────
 # Mirrors frontend/src/lib/dealSignal.ts :: listingMergePriority. When the
 # same property address surfaces in multiple upstream queries (e.g.,
@@ -890,6 +993,20 @@ class MapSearchService:
             listings = [item for item in listings if item.bedrooms is not None and item.bedrooms >= req.bedrooms]
         if req.bathrooms is not None:
             listings = [item for item in listings if item.bathrooms is not None and item.bathrooms >= req.bathrooms]
+        if req.property_type and canonicalize_property_type(req.property_type):
+            pre_type_count = len(listings)
+            listings = [
+                item
+                for item in listings
+                if listing_matches_property_type(item.property_type, req.property_type)
+            ]
+            if pre_type_count != len(listings):
+                logger.info(
+                    "Property-type filter %s dropped %d listings (kept %d)",
+                    canonicalize_property_type(req.property_type),
+                    pre_type_count - len(listings),
+                    len(listings),
+                )
 
         # Authoritative status filter — guarantees the response only
         # contains the statuses the caller asked for, regardless of how
@@ -1176,7 +1293,7 @@ class MapSearchService:
                     latitude=center_lat,
                     longitude=center_lng,
                     radius=radius,
-                    property_type=req.property_type,
+                    property_type=rentcast_property_type_param(req.property_type),
                     limit=req.limit,
                     offset=req.offset,
                 )
@@ -1185,7 +1302,7 @@ class MapSearchService:
                     latitude=center_lat,
                     longitude=center_lng,
                     radius=radius,
-                    property_type=req.property_type,
+                    property_type=rentcast_property_type_param(req.property_type),
                     limit=req.limit,
                     offset=req.offset,
                 )
@@ -1255,7 +1372,7 @@ class MapSearchService:
                 latitude=center_lat,
                 longitude=center_lng,
                 radius=radius,
-                property_type=req.property_type,
+                property_type=rentcast_property_type_param(req.property_type),
                 status="Inactive",
                 limit=req.limit,
                 offset=req.offset,
@@ -1402,7 +1519,7 @@ class MapSearchService:
                 latitude=center_lat,
                 longitude=center_lng,
                 radius=radius,
-                property_type=req.property_type,
+                property_type=rentcast_property_type_param(req.property_type),
                 sale_date_range=sale_date_range,
                 limit=req.limit,
                 offset=req.offset,
@@ -1766,16 +1883,7 @@ class MapSearchService:
             return []
         try:
             kwargs: dict[str, Any] = {}
-            if req.property_type:
-                pt = req.property_type.lower()
-                if "single" in pt:
-                    kwargs["isSingleFamily"] = True
-                elif "condo" in pt:
-                    kwargs["isCondo"] = True
-                elif "town" in pt:
-                    kwargs["isTownhouse"] = True
-                elif "multi" in pt:
-                    kwargs["isMultiFamily"] = True
+            kwargs.update(zillow_property_type_flags(req.property_type))
 
             if extra_params:
                 kwargs.update(extra_params)

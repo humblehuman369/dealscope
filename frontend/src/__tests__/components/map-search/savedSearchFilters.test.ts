@@ -22,6 +22,7 @@ describe('toSavedFilters', () => {
     const saved = toSavedFilters(
       filters({
         listing_type: 'sale',
+        property_type: 'Multi-Family',
         min_price: 100_000,
         max_price: 250_000,
         bedrooms: 3,
@@ -31,6 +32,7 @@ describe('toSavedFilters', () => {
 
     expect(saved).toEqual({
       listing_type: 'sale',
+      property_type: 'Multi-Family',
       min_price: 100_000,
       max_price: 250_000,
       bedrooms: 3,
@@ -74,6 +76,7 @@ describe('fromSavedFilters', () => {
   it('round-trips the query fields unchanged', () => {
     const original = filters({
       listing_type: 'rental',
+      property_type: 'Condo',
       min_price: 75_000,
       max_price: 400_000,
       bedrooms: 2,
@@ -85,6 +88,7 @@ describe('fromSavedFilters', () => {
     const restored = fromSavedFilters(toSavedFilters(original))
 
     expect(restored.listing_type).toBe('rental')
+    expect(restored.property_type).toBe('Condo')
     expect(restored.min_price).toBe(75_000)
     expect(restored.max_price).toBe(400_000)
     expect(restored.bedrooms).toBe(2)
