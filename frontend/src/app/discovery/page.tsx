@@ -180,21 +180,20 @@ function InsightItem({
       <div
         aria-hidden
         style={{
-          width: 7,
-          height: 7,
+          width: 8,
+          height: 8,
           borderRadius: '50%',
           background: 'var(--color-cyan-electric)',
           flexShrink: 0,
-          marginTop: 7,
+          marginTop: 8,
         }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
         <p
+          className="text-[13px] sm:text-[16px] font-semibold"
           style={{
             margin: 0,
-            fontSize: 15,
-            fontWeight: 600,
-            lineHeight: 1.35,
+            lineHeight: 1.4,
             color: 'var(--text-heading)',
           }}
         >
@@ -202,11 +201,10 @@ function InsightItem({
         </p>
         {detail && (
           <p
+            className="text-[12px] sm:text-[14px]"
             style={{
-              margin: '4px 0 0',
-              fontSize: 13,
-              fontWeight: 400,
-              lineHeight: 1.45,
+              margin: '6px 0 0',
+              lineHeight: 1.5,
               color: 'var(--text-secondary)',
             }}
           >
@@ -2431,19 +2429,16 @@ function VerdictContent() {
             >
               <div style={{ padding: '20px 24px 20px' }}>
                 <h3
+                  className="text-[14px] sm:text-[16px] font-bold uppercase tracking-wide"
                   style={{
-                    margin: '0 0 16px',
-                    fontSize: 16,
+                    margin: '0 0 18px',
                     color: 'var(--text-heading)',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
                   }}
                 >
                   Key Insights
                 </h3>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <InsightItem
                     delay={0}
                     title={
@@ -2598,7 +2593,7 @@ function VerdictContent() {
                 <button
                   type="button"
                   onClick={() => setShowAllInsights((prev) => !prev)}
-                  className="flex items-center gap-1.5 mt-3 text-[12px] font-semibold transition-colors"
+                  className="flex items-center gap-1.5 mt-4 text-[12px] sm:text-[14px] font-semibold transition-colors"
                   style={{
                     color: 'var(--accent-sky)',
                     background: 'transparent',
