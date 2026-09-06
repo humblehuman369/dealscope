@@ -52,28 +52,42 @@ async def run_sensitivity_analysis(request: SensitivityRequest, current_user: Cu
         if not property_data:
             raise HTTPException(status_code=404, detail="Property not found")
 
-        # Mashvisor's per-bed monthly STR revenue, when present, lets us
-        # derive a more accurate ADR fallback than the legacy $200 magic
-        # number. occupancy still falls back to 0.75 for pure-percentage
-        # math when no source provides a real number.
+        # Sensitivity needs a real base. Missing rent / occupancy / ADR stay
+        # None — never $2100, 0.75, or $200.
         str_stats = property_data.rentals.str_market_stats
         mash_monthly = str_stats.monthly_revenue_per_bed if str_stats else None
-        mash_occupancy = property_data.rentals.occupancy_rate or 0.65
-        mash_adr_estimate = mash_monthly / 30 / mash_occupancy if (mash_monthly and mash_occupancy > 0) else None
+        mash_occupancy = property_data.rentals.occupancy_rate
+        mash_adr_estimate = (
+            mash_monthly / 30 / mash_occupancy if (mash_monthly and mash_occupancy and mash_occupancy > 0) else None
+        )
+        known_variables = {
+            "purchase_price",
+            "interest_rate",
+            "down_payment_pct",
+            "monthly_rent",
+            "occupancy_rate",
+            "average_daily_rate",
+        }
+        if request.variable not in known_variables:
+            raise HTTPException(status_code=400, detail=f"Unknown variable: {request.variable}")
+
         variable_mapping = {
             "purchase_price": request.assumptions.financing.purchase_price
             or property_data.valuations.current_value_avm
             or 425000,
             "interest_rate": request.assumptions.financing.interest_rate,
             "down_payment_pct": request.assumptions.financing.down_payment_pct,
-            "monthly_rent": property_data.rentals.monthly_rent_ltr or 2100,
-            "occupancy_rate": property_data.rentals.occupancy_rate or 0.75,
-            "average_daily_rate": (property_data.rentals.average_daily_rate or mash_adr_estimate or 200),
+            "monthly_rent": property_data.rentals.monthly_rent_ltr,
+            "occupancy_rate": property_data.rentals.occupancy_rate,
+            "average_daily_rate": (property_data.rentals.average_daily_rate or mash_adr_estimate),
         }
 
         base_value = variable_mapping.get(request.variable)
         if base_value is None:
-            raise HTTPException(status_code=400, detail=f"Unknown variable: {request.variable}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Variable {request.variable} is unavailable for this property",
+            )
 
         results = []
         for variation in request.range_pct:

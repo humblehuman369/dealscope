@@ -183,6 +183,24 @@ def _calculate_ltr_strategy(
     }
 
 
+def _unavailable_str_strategy() -> dict:
+    """STR column when occupancy and Mashvisor monthly revenue are both missing."""
+    return {
+        "id": "short-term-rental",
+        "name": "Short-Term Rental",
+        "metric": "Unavailable",
+        "metric_label": "CoC Return",
+        "metric_value": 0,
+        "score": 0,
+        "cap_rate": None,
+        "cash_on_cash": None,
+        "dscr": None,
+        "annual_cash_flow": None,
+        "monthly_cash_flow": None,
+        "breakdown": {"occupancy_rate": None, "adr": None},
+    }
+
+
 def _calculate_str_strategy(
     price: float,
     adr: float,
@@ -976,20 +994,18 @@ def compute_iq_verdict(
     arv = input_data.arv or (list_price * 1.15)
     rehab_cost = input_data.rehab_cost if input_data.rehab_cost is not None else arv * a.rehab.renovation_budget_pct
     # Mashvisor /rental-rates per-bed monthly revenue takes precedence over
-    # the formula-derived ADR fallback when present. occupancy still falls
-    # back to 0.65 for break-even / cleaning math that needs per-night
-    # structure even when monthly revenue is overridden.
+    # the formula-derived ADR fallback when present. Occupancy is never
+    # invented — missing occupancy + missing Mashvisor monthly → STR Unavailable.
     mashvisor_monthly = input_data.mashvisor_monthly_str_revenue
+    occupancy = input_data.occupancy_rate
     if input_data.average_daily_rate:
         adr = input_data.average_daily_rate
-    elif mashvisor_monthly and (input_data.occupancy_rate or 0.65) > 0:
-        # Reverse-derive ADR from monthly revenue + occupancy
-        adr = mashvisor_monthly / 30 / (input_data.occupancy_rate or 0.65)
-    elif monthly_rent > 0:
+    elif mashvisor_monthly and occupancy and occupancy > 0:
+        adr = mashvisor_monthly / 30 / occupancy
+    elif monthly_rent > 0 and occupancy is not None:
         adr = (monthly_rent / 30) * 1.5
     else:
         adr = 0
-    occupancy = input_data.occupancy_rate or 0.65
     bedrooms = input_data.bedrooms
 
     # Resolve per-request overrides on top of DB assumptions
@@ -1130,20 +1146,24 @@ def compute_iq_verdict(
             seller_carry_term_years=sc_term,
             seller_carry_interest_only=sc_io,
         ),
-        _calculate_str_strategy(
-            buy_price,
-            adr,
-            occupancy,
-            property_taxes,
-            insurance,
-            rehab_cost,
-            a,
-            monthly_revenue_override=mashvisor_monthly,
-            hoa_annual=hoa_annual,
-            seller_carry_amount=sc_amt,
-            seller_carry_rate=sc_rate,
-            seller_carry_term_years=sc_term,
-            seller_carry_interest_only=sc_io,
+        (
+            _calculate_str_strategy(
+                buy_price,
+                adr,
+                occupancy if occupancy is not None else 0,
+                property_taxes,
+                insurance,
+                rehab_cost,
+                a,
+                monthly_revenue_override=mashvisor_monthly,
+                hoa_annual=hoa_annual,
+                seller_carry_amount=sc_amt,
+                seller_carry_rate=sc_rate,
+                seller_carry_term_years=sc_term,
+                seller_carry_interest_only=sc_io,
+            )
+            if occupancy is not None or (mashvisor_monthly is not None and mashvisor_monthly > 0)
+            else _unavailable_str_strategy()
         ),
         _calculate_brrrr_strategy(
             buy_price, monthly_rent, property_taxes, insurance, arv, rehab_cost, a, hoa_annual=hoa_annual
@@ -1156,6 +1176,11 @@ def compute_iq_verdict(
         ),
         _calculate_wholesale_strategy(buy_price, arv, rehab_cost),
     ]
+
+    if occupancy is None:
+        str_row = next(s for s in strategies if s["id"] == "short-term-rental")
+        if str_row.get("breakdown") is not None:
+            str_row["breakdown"]["occupancy_rate"] = None
 
     for i, strategy in enumerate(strategies):
         strategy["rank"] = i + 1

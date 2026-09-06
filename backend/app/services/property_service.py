@@ -832,7 +832,7 @@ class PropertyService:
                 rent_range_low=normalized.get("rent_range_low"),
                 rent_range_high=normalized.get("rent_range_high"),
                 average_daily_rate=normalized.get("average_daily_rate") or self._estimate_adr(normalized),
-                occupancy_rate=normalized.get("occupancy_rate") or 0.75,
+                occupancy_rate=normalized.get("occupancy_rate"),
                 # Raw Zillow averageRent for frontend
                 average_rent=normalized.get("average_rent"),
                 # Comprehensive rental market statistics
@@ -1087,7 +1087,7 @@ class PropertyService:
             sqft=details.square_footage,
             arv=valuations.arv or (list_price * 1.15),
             average_daily_rate=rentals.average_daily_rate,
-            occupancy_rate=rentals.occupancy_rate or 0.75,
+            occupancy_rate=rentals.occupancy_rate,
             is_listed=is_listed,
             zestimate=valuations.zestimate,
             current_value_avm=valuations.current_value_avm,
@@ -1548,8 +1548,8 @@ class PropertyService:
         """
         mashvisor_monthly = data.get("str_monthly_revenue_mashvisor")
         if mashvisor_monthly:
-            occ = data.get("occupancy_rate") or 0.65
-            if occ > 0:
+            occ = data.get("occupancy_rate")
+            if occ and occ > 0:
                 return mashvisor_monthly / 30 / occ
         monthly_rent = data.get("monthly_rent_ltr")
         if monthly_rent:
@@ -2307,14 +2307,14 @@ class PropertyService:
         # skipped rather than computed from a fabricated nightly rate.
         str_stats_for_defaults = property_data.rentals.str_market_stats
         mash_monthly_for_adr = str_stats_for_defaults.monthly_revenue_per_bed if str_stats_for_defaults else None
+        occupancy = property_data.rentals.occupancy_rate
+        if occupancy is not None and occupancy > 1:
+            occupancy = occupancy / 100
         adr = property_data.rentals.average_daily_rate or (
-            mash_monthly_for_adr / 30 / (property_data.rentals.occupancy_rate or 0.65)
-            if mash_monthly_for_adr
+            mash_monthly_for_adr / 30 / occupancy
+            if mash_monthly_for_adr and occupancy and occupancy > 0
             else None
         )
-        occupancy = property_data.rentals.occupancy_rate or 0.75
-        if occupancy > 1:
-            occupancy = occupancy / 100
         arv = property_data.valuations.arv or purchase_price * 1.10
         arv_flip = property_data.valuations.arv_flip or purchase_price * 1.06
 
@@ -2354,15 +2354,16 @@ class PropertyService:
             )
             results.ltr = LTRResults(**ltr_result)
 
-        if StrategyType.SHORT_TERM_RENTAL in strategies_to_calc and adr:
+        str_stats = property_data.rentals.str_market_stats
+        mashvisor_monthly = str_stats.monthly_revenue_per_bed if str_stats else None
+        can_compute_str = occupancy is not None or (mashvisor_monthly is not None and mashvisor_monthly > 0)
+        if StrategyType.SHORT_TERM_RENTAL in strategies_to_calc and can_compute_str and (adr or mashvisor_monthly):
             # Pull Mashvisor's per-bed monthly STR revenue when available so
             # the calculator bypasses the ADR×365×occupancy formula.
-            str_stats = property_data.rentals.str_market_stats
-            mashvisor_monthly = str_stats.monthly_revenue_per_bed if str_stats else None
             str_result = calculate_str(
                 purchase_price=purchase_price,
-                average_daily_rate=adr,
-                occupancy_rate=occupancy,
+                average_daily_rate=adr or 0,
+                occupancy_rate=occupancy if occupancy is not None else 0,
                 property_taxes_annual=property_taxes,
                 hoa_monthly=hoa,
                 down_payment_pct=0.25,  # STR typically requires 25%

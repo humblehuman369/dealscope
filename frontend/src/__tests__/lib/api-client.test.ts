@@ -376,4 +376,33 @@ describe('API Client', () => {
       expect(fetchMock.mock.calls[0][1].method).toBe('DELETE')
     })
   })
+
+  describe('exchangeMobileOauthCode', () => {
+    it('POSTs the one-time code without sending an Authorization header', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          access_token: 'jwt-from-exchange',
+          refresh_token: 'rt-from-exchange',
+          token_type: 'bearer',
+          expires_in: 1800,
+        }),
+      })
+
+      const { authApi } = await import('@/lib/api-client')
+      const result = await authApi.exchangeMobileOauthCode('a'.repeat(32))
+
+      expect(result.access_token).toBe('jwt-from-exchange')
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/v1/auth/oauth/mobile/exchange',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ code: 'a'.repeat(32) }),
+        }),
+      )
+      const headers = fetchMock.mock.calls[0][1].headers as Record<string, string>
+      expect(headers['Authorization']).toBeUndefined()
+    })
+  })
 })

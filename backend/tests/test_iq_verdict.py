@@ -212,6 +212,29 @@ class TestComputeIQVerdict:
         assert len(resp.strategies) == 6
         assert resp.deal_score >= 5
 
+    def test_str_unavailable_without_occupancy(self, typical_input):
+        """No occupancy and no Mashvisor monthly → STR is Unavailable, not 65%."""
+        resp = compute_iq_verdict(typical_input)
+        str_row = next(s for s in resp.strategies if s.id == "short-term-rental")
+        assert str_row.metric == "Unavailable"
+        assert str_row.score == 0
+        assert str_row.breakdown is not None
+        assert str_row.breakdown.get("occupancy_rate") is None
+
+    def test_str_computes_when_occupancy_provided(self):
+        resp = compute_iq_verdict(
+            IQVerdictInput(
+                list_price=300_000,
+                monthly_rent=2500,
+                average_daily_rate=200,
+                occupancy_rate=0.70,
+            )
+        )
+        str_row = next(s for s in resp.strategies if s.id == "short-term-rental")
+        assert str_row.metric != "Unavailable"
+        assert str_row.breakdown is not None
+        assert str_row.breakdown.get("occupancy_rate") == 70.0
+
     def test_with_arv_and_adr(self):
         """Providing ARV and ADR should change STR and BRRRR results."""
         without_extras = compute_iq_verdict(IQVerdictInput(list_price=300_000))
@@ -260,7 +283,13 @@ class TestComputeIQVerdict:
     def test_rehab_cost_override(self):
         """Explicit rehab_cost should bypass the default ARV-based calculation."""
         resp = compute_iq_verdict(
-            IQVerdictInput(list_price=300_000, monthly_rent=2500, rehab_cost=25_000)
+            IQVerdictInput(
+                list_price=300_000,
+                monthly_rent=2500,
+                rehab_cost=25_000,
+                average_daily_rate=150,
+                occupancy_rate=0.65,
+            )
         )
         assert resp.inputs_used["rehab_cost"] == 25_000
         brrrr = next(s for s in resp.strategies if s.id == "brrrr")

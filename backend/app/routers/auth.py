@@ -461,8 +461,8 @@ async def google_start(request: Request):
     """Redirect user to Google OAuth consent screen.
 
     Accepts an optional ``mobile_redirect`` query parameter.  When present
-    the callback will redirect to the mobile app's URL scheme with tokens
-    in query params instead of setting httpOnly cookies.
+    the callback redirects to the native URL scheme with a one-time ``code``
+    (exchanged via ``POST /oauth/mobile/exchange``), not bearer tokens.
     """
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=503, detail="Google sign-in is not configured")

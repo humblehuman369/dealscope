@@ -3,15 +3,16 @@
 /**
  * Listens for deep link callbacks from the Capacitor native shell.
  *
- * Primary use: Google OAuth returns tokens via `dealgapiq://auth/callback?access_token=…&refresh_token=…`.
- * The handler stores tokens, refreshes the session, and closes the external browser.
+ * Google/Apple OAuth returns a one-time code via `dealgapiq://auth/callback?code=…`.
+ * The handler exchanges it for tokens, refreshes the session, and closes the browser.
  */
 
 import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { IS_CAPACITOR } from '@/lib/env'
-import { setMemoryToken } from '@/lib/api-client'
+import { authApi, setMemoryToken } from '@/lib/api-client'
+import { parseCapacitorAuthUrl } from '@/lib/capacitorAuthCallback'
 import { SESSION_QUERY_KEY, setLastKnownUser, setLastTokenRefresh } from '@/hooks/useSession'
 
 export function useCapacitorDeepLinks() {
@@ -25,22 +26,19 @@ export function useCapacitorDeepLinks() {
     let cancelled = false
 
     async function setup() {
+      // Native plugins are device-only; keep them out of the web bundle graph.
       const { App } = await import('@capacitor/app')
       const { Browser } = await import('@capacitor/browser')
 
       const listener = await App.addListener('appUrlOpen', async ({ url }) => {
         if (cancelled) return
 
-        const parsed = new URL(url)
+        const parsed = parseCapacitorAuthUrl(url)
 
-        // Magic link from the "your plan is saved" email (universal link or
-        // dealgapiq://auth/magic?token=…). The /auth/magic page consumes the token.
-        if (parsed.pathname === '/auth/magic' || (parsed.protocol === 'dealgapiq:' && parsed.hostname === 'auth' && parsed.pathname === '/magic')) {
+        if (parsed.type === 'magic') {
           const forwarded = new URLSearchParams()
-          for (const key of ['token', 'next'] as const) {
-            const value = parsed.searchParams.get(key)
-            if (value) forwarded.set(key, value)
-          }
+          if (parsed.token) forwarded.set('token', parsed.token)
+          if (parsed.next) forwarded.set('next', parsed.next)
           try {
             await Browser.close()
           } catch {
@@ -51,43 +49,37 @@ export function useCapacitorDeepLinks() {
           return
         }
 
-        if (
-          parsed.protocol === 'dealgapiq:' &&
-          parsed.hostname === 'auth' &&
-          parsed.pathname === '/callback'
-        ) {
-          const accessToken = parsed.searchParams.get('access_token')
-          const refreshToken = parsed.searchParams.get('refresh_token')
-          const error = parsed.searchParams.get('error')
+        if (parsed.type === 'ignored') return
+
+        try {
+          await Browser.close()
+        } catch {
+          /* may already be closed */
+        }
+
+        if (parsed.type === 'oauth-error') {
+          router.replace(`/login?error=${encodeURIComponent(parsed.error)}`)
+          return
+        }
+
+        try {
+          const tokens = await authApi.exchangeMobileOauthCode(parsed.code)
+          setMemoryToken(tokens.access_token, tokens.refresh_token)
+          setLastTokenRefresh()
 
           try {
-            await Browser.close()
-          } catch {
-            /* may already be closed */
-          }
-
-          if (error) {
-            router.replace(`/login?error=${encodeURIComponent(error)}`)
-            return
-          }
-
-          if (accessToken) {
-            setMemoryToken(accessToken, refreshToken ?? undefined)
-            setLastTokenRefresh()
-
-            const { authApi } = await import('@/lib/api-client')
-            try {
-              const user = await authApi.me()
-              if (user) {
-                setLastKnownUser(user)
-                queryClient.setQueryData(SESSION_QUERY_KEY, user)
-              }
-            } catch {
-              // Token is stored; session query will retry on next focus
+            const user = await authApi.me()
+            if (user) {
+              setLastKnownUser(user)
+              queryClient.setQueryData(SESSION_QUERY_KEY, user)
             }
-
-            router.replace('/search')
+          } catch {
+            // Token is stored; session query will retry on next focus
           }
+
+          router.replace('/search')
+        } catch {
+          router.replace('/login?error=mobile_exchange_failed')
         }
       })
 

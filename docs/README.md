@@ -11,5 +11,5 @@
 **Quick links**
 
 - Internal positioning: [`marketing/POSITIONING.md`](./marketing/POSITIONING.md)
-- Four Paths implementation plan: [`feature-plans/FOUR_PATHS.md`](./feature-plans/FOUR_PATHS.md)
+- Production-readiness remediation: [`feature-plans/production-readiness-remediation.md`](./feature-plans/production-readiness-remediation.md)
 - Deploy + CI/CD: [`operations/DEPLOYMENT.md`](./operations/DEPLOYMENT.md)

@@ -579,6 +579,13 @@ export const authApi = {
     }),
 
   disableMfa: () => apiRequest<{ message: string }>('/api/v1/auth/mfa', { method: 'DELETE' }),
+
+  exchangeMobileOauthCode: (code: string) =>
+    apiRequest<TokenResponse>('/api/v1/auth/oauth/mobile/exchange', {
+      method: 'POST',
+      body: { code },
+      skipAuth: true,
+    }),
 }
 
 // ------------------------------------------------------------------
@@ -638,6 +645,13 @@ export interface UserResponse {
 
 export interface LoginResponse {
   user: UserResponse
+  access_token: string
+  refresh_token: string
+  token_type: string
+  expires_in: number
+}
+
+export interface TokenResponse {
   access_token: string
   refresh_token: string
   token_type: string
