@@ -67,12 +67,9 @@ function LikelihoodChip({ rating }: { rating: NegotiabilityRating }): ReactNode 
   const color = RATING_COLOR[rating]
   return (
     <span
-      className="inline-flex shrink-0 items-center rounded-full"
+      className="inline-flex shrink-0 items-center rounded-full text-[11px] sm:text-[12px] font-bold uppercase tracking-wide"
       style={{
-        padding: '2px 8px',
-        fontSize: 11,
-        fontWeight: 700,
-        letterSpacing: '0.02em',
+        padding: '3px 8px',
         color,
         border: `1px solid color-mix(in srgb, ${color} 55%, transparent)`,
         background: `color-mix(in srgb, ${color} 12%, transparent)`,
@@ -86,13 +83,9 @@ function LikelihoodChip({ rating }: { rating: NegotiabilityRating }): ReactNode 
 function EyebrowLabel({ children, color }: { children: ReactNode; color?: string }): ReactNode {
   return (
     <p
-      className="inline-flex items-center gap-1"
+      className="inline-flex items-center gap-1 text-[12px] sm:text-[14px] font-bold uppercase tracking-wide"
       style={{
-        margin: '0 0 4px',
-        fontSize: 11,
-        fontWeight: 700,
-        letterSpacing: '0.06em',
-        textTransform: 'uppercase',
+        margin: '0 0 8px',
         color: color ?? 'var(--text-label)',
       }}
     >
@@ -179,71 +172,83 @@ function Row({
             ? `${name}: ${play}. ${cash ? `${cash.amount} to close.` : ''} ${rating ? `${RATING_LABEL[rating]} with this seller.` : ''} ${isLead ? 'Start here. ' : ''}Show details.`
             : `${name}: ${skippedLine}`
         }
-        className="flex w-full items-start justify-between gap-3 text-left transition-colors focus:outline-none focus-visible:ring-2"
+        className="flex w-full items-start justify-between gap-4 text-left transition-colors focus:outline-none focus-visible:ring-2"
         style={{
           background: 'transparent',
           border: 'none',
           borderRadius: 0,
-          padding: '12px 0',
+          padding: '16px 0',
         }}
       >
         <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-2">
+          <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
             <span
+              className="text-[14px] sm:text-[16px] font-bold uppercase tracking-wide"
               style={{
-                fontSize: 15,
-                fontWeight: 800,
                 color: available ? 'var(--text-heading)' : 'var(--text-secondary)',
               }}
             >
               {name}
             </span>
             {isLead && available && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-sky)' }}>Start here</span>
+              <span
+                className="text-[12px] sm:text-[14px] font-bold"
+                style={{ color: 'var(--accent-sky)' }}
+              >
+                Start here
+              </span>
             )}
             {rating && <LikelihoodChip rating={rating} />}
             {!available && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: UNAVAILABLE_COLOR[reason] }}>
+              <span
+                className="text-[12px] sm:text-[14px] font-bold"
+                style={{ color: UNAVAILABLE_COLOR[reason] }}
+              >
                 {unavailableChip(reason)}
               </span>
             )}
           </span>
           <span
-            className="block"
+            className="block text-[13px] sm:text-[16px] font-semibold"
             style={{
-              marginTop: 2,
-              fontSize: 13.5,
-              lineHeight: 1.4,
+              marginTop: 6,
+              lineHeight: 1.45,
               color: available ? 'var(--text-body)' : 'var(--text-secondary)',
             }}
           >
             {available ? play : skippedLine}
           </span>
+          {available && cash?.delta && (
+            <span
+              className="block text-[12px] sm:text-[14px] font-semibold"
+              style={{ marginTop: 4, color: 'var(--text-secondary)' }}
+            >
+              {cash.delta}
+            </span>
+          )}
         </span>
         <span className="flex shrink-0 items-start gap-2">
           {available && cash ? (
-            <span className="text-right">
+            <span className="w-[4.75rem] text-right sm:w-auto">
               <span
-                className="tabular-nums block"
-                style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-heading)' }}
+                className="tabular-nums block text-[15px] sm:text-[18px] font-bold"
+                style={{ color: 'var(--text-heading)' }}
               >
                 {cash.amount}
               </span>
-              <span className="block" style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>
+              <span
+                className="block text-[11px] sm:text-[12px] font-bold uppercase tracking-wide"
+                style={{ color: 'var(--text-label)' }}
+              >
                 to close
               </span>
-              {cash.delta && (
-                <span className="block" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                  {cash.delta}
-                </span>
-              )}
             </span>
           ) : null}
           <ChevronDown
-            size={16}
+            size={18}
             aria-hidden="true"
             style={{
-              marginTop: 2,
+              marginTop: 3,
               color: 'var(--text-secondary)',
               transform: expanded ? 'rotate(180deg)' : 'none',
               transition: 'transform 160ms ease',
@@ -253,27 +258,39 @@ function Row({
       </button>
 
       {expanded && (
-        <div id={panelId} className="flex flex-col gap-3" style={{ padding: '0 0 14px' }}>
-          <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-body)' }}>
+        <div id={panelId} className="flex flex-col gap-3.5" style={{ padding: '0 0 18px' }}>
+          {available && (
+            <p
+              className="text-[14px] sm:text-[17px] font-bold"
+              style={{ margin: 0, lineHeight: 1.45, color: 'var(--text-heading)' }}
+            >
+              {openingLine(family, fact)}
+            </p>
+          )}
+
+          <p
+            className="text-[13px] sm:text-[16px]"
+            style={{ margin: 0, lineHeight: 1.55, color: 'var(--text-body)' }}
+          >
             {structure
               ? explainPlay(family, structure.breakeven?.closesGapAlone !== false)
               : skippedLine}
           </p>
 
-          {available && (
-            <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-heading)', fontWeight: 600 }}>
-              {openingLine(family, fact)}
-            </p>
-          )}
-
           {rating && rating !== 'your_call' && reasons.length > 0 && (
-            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+            <p
+              className="text-[12px] sm:text-[14px] font-semibold"
+              style={{ margin: 0, lineHeight: 1.5, color: 'var(--text-secondary)' }}
+            >
               {reasons.join(' · ')}
             </p>
           )}
 
           {structure?.caveat && (
-            <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+            <p
+              className="text-[12px] sm:text-[14px]"
+              style={{ margin: 0, lineHeight: 1.5, color: 'var(--text-secondary)' }}
+            >
               Watch for: {structure.caveat}
             </p>
           )}
@@ -282,7 +299,7 @@ function Row({
             <button
               type="button"
               onClick={onBuildPlan}
-              className="self-start text-[13px] font-bold underline-offset-2 hover:underline"
+              className="self-start text-[13px] sm:text-[16px] font-bold underline-offset-2 hover:underline"
               style={{ color: 'var(--accent-sky)', background: 'transparent', border: 'none', padding: 0 }}
             >
               Build a plan around {name.toLowerCase()} →
@@ -386,16 +403,20 @@ export function BreakevenAnalysis({
     <section
       aria-labelledby="breakeven-heading"
       className="w-full min-w-0"
-      style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 14 }}
+      style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 18 }}
     >
       <div>
         <h3
           id="breakeven-heading"
-          style={{ margin: 0, fontSize: 17, fontWeight: 800, lineHeight: 1.2, color: 'var(--text-heading)' }}
+          className="text-[20px] sm:text-[24px] font-bold"
+          style={{ margin: 0, lineHeight: 1.2, color: 'var(--text-heading)' }}
         >
           {situationTitle(summary?.gapAmount)}
         </h3>
-        <p style={{ margin: '6px 0 0', fontSize: 14, lineHeight: 1.5, color: 'var(--text-body)' }}>
+        <p
+          className="text-[13px] sm:text-[16px]"
+          style={{ margin: '8px 0 0', lineHeight: 1.5, color: 'var(--text-body)' }}
+        >
           {situationSub(summary?.gapPct, summary?.monthlyShortfall)}
         </p>
       </div>
@@ -403,9 +424,10 @@ export function BreakevenAnalysis({
       <div
         className="rounded-xl"
         style={{
-          padding: '12px 14px',
+          padding: '16px 18px',
           background: 'var(--surface-card)',
-          border: '1px solid color-mix(in srgb, var(--accent-sky) 35%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--accent-sky) 45%, transparent)',
+          boxShadow: 'var(--shadow-card)',
         }}
       >
         <EyebrowLabel color="var(--accent-sky)">Your move</EyebrowLabel>
@@ -416,9 +438,17 @@ export function BreakevenAnalysis({
           </div>
         ) : (
           <>
-            <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-body)' }}>{advice}</p>
+            <p
+              className="text-[13px] sm:text-[16px] font-semibold"
+              style={{ margin: 0, lineHeight: 1.55, color: 'var(--text-heading)' }}
+            >
+              {advice}
+            </p>
             {narrative?.walk_away && (
-              <p style={{ margin: '8px 0 0', fontSize: 13, lineHeight: 1.55, color: 'var(--text-secondary)' }}>
+              <p
+                className="text-[12px] sm:text-[15px]"
+                style={{ margin: '10px 0 0', lineHeight: 1.55, color: 'var(--text-secondary)' }}
+              >
                 Walk away if: {narrative.walk_away}
               </p>
             )}
@@ -447,23 +477,27 @@ export function BreakevenAnalysis({
         <div
           className="rounded-xl"
           style={{
-            padding: '12px 14px',
+            padding: '16px 18px',
             background: 'var(--surface-card)',
-            border: '1px solid color-mix(in srgb, var(--accent-sky) 35%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--accent-sky) 45%, transparent)',
+            boxShadow: 'var(--shadow-card)',
           }}
         >
           <EyebrowLabel color="var(--accent-sky)">Most likely close: a blend</EyebrowLabel>
-          <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-body)' }}>
+          <p
+            className="text-[13px] sm:text-[16px] font-semibold"
+            style={{ margin: 0, lineHeight: 1.55, color: 'var(--text-heading)' }}
+          >
             {payload.blendRecommendation}
           </p>
         </div>
       )}
 
-      <div className="flex flex-col items-stretch gap-2">
+      <div className="flex flex-col items-stretch gap-3">
         <button
           type="button"
           onClick={() => onMakeItWork()}
-          className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-[15px] font-bold transition-transform active:scale-[0.98]"
+          className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] sm:text-[17px] font-bold transition-transform active:scale-[0.98]"
           style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
         >
           Build my plan
@@ -473,7 +507,7 @@ export function BreakevenAnalysis({
           type="button"
           onClick={onToggleDetail}
           aria-expanded={detailOpen}
-          className="self-start text-[12px] font-semibold underline-offset-2 hover:underline"
+          className="self-start text-[12px] sm:text-[14px] font-semibold underline-offset-2 hover:underline"
           style={{ color: 'var(--text-secondary)', background: 'transparent', border: 'none', padding: 0 }}
         >
           {detailOpen ? 'Hide the full math' : 'See the full math'}

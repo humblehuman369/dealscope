@@ -383,7 +383,7 @@ function VerdictContent() {
     value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
     rent: { iq: null, zillow: null, rentcast: null, redfin: null },
   })
-  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false)
+  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(true)
   const dataSourcesRef = useRef<HTMLDivElement>(null)
   const [showDealGapVideo, setShowDealGapVideo] = useState(false)
   const [showAllInsights, setShowAllInsights] = useState(true)
@@ -2277,10 +2277,10 @@ function VerdictContent() {
 
             {/* Deal Gap Summary */}
             <div
-              className="mt-6 rounded-xl px-5 py-4"
+              className="mt-6 rounded-xl px-5 py-5"
               style={{
                 background: 'var(--surface-card)',
-                border: '1px solid var(--border-subtle)',
+                border: '1px solid var(--border-default)',
                 boxShadow: 'var(--shadow-card)',
               }}
             >
@@ -2316,10 +2316,8 @@ function VerdictContent() {
                 </div>
                 {gapCloseLabel ? (
                   <span
-                    className="tabular-nums"
+                    className="tabular-nums text-[13px] sm:text-[17px] font-bold"
                     style={{
-                      fontSize: 15,
-                      fontWeight: 600,
                       color: 'var(--text-secondary)',
                     }}
                   >
@@ -2395,12 +2393,12 @@ function VerdictContent() {
                 />
               )}
 
-              <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <FinancingProvenanceNote />
                 <button
                   type="button"
                   onClick={handleShowMethodology}
-                  className="text-[11px] font-semibold transition-colors"
+                  className="text-[12px] sm:text-[13px] font-semibold transition-colors"
                   style={{
                     color: 'var(--accent-sky)',
                     background: 'transparent',
