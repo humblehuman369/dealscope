@@ -6,6 +6,14 @@
  * work" before the raw worksheet, even when the backend returns no Options.
  */
 
+import {
+  WORKBENCH_BODY,
+  WORKBENCH_CARD,
+  WORKBENCH_CARD_STYLE,
+  WORKBENCH_EYEBROW,
+  WORKBENCH_TITLE,
+} from '../lib/workbenchLayout'
+
 export function WorkbenchGuidance({
   dealGapPct,
   optionCount,
@@ -69,31 +77,16 @@ export function WorkbenchGuidance({
   }
 
   return (
-    <section className="px-[1px] sm:px-5 pt-3 pb-2">
-      <div
-        className="rounded-xl px-4 py-3.5 sm:px-5 sm:py-4"
-        style={{
-          background: 'var(--surface-card)',
-          border: '1px solid var(--border-default)',
-          boxShadow: 'var(--shadow-card)',
-        }}
-      >
-        <p
-          className="text-[11px] font-bold uppercase tracking-wider mb-1"
-          style={{ color: 'var(--accent-sky)' }}
-        >
-          {eyebrow}
-        </p>
-        <h3
-          className="text-base sm:text-lg font-bold leading-snug mb-1.5"
-          style={{ color: 'var(--text-heading)' }}
-        >
-          {title}
-        </h3>
-        <p className="text-sm leading-relaxed m-0" style={{ color: 'var(--text-body)' }}>
-          {body}
-        </p>
-      </div>
+    <section className={WORKBENCH_CARD} style={WORKBENCH_CARD_STYLE}>
+      <p className={WORKBENCH_EYEBROW} style={{ color: 'var(--accent-sky)' }}>
+        {eyebrow}
+      </p>
+      <h3 className={`${WORKBENCH_TITLE} mt-1`} style={{ color: 'var(--text-heading)' }}>
+        {title}
+      </h3>
+      <p className={`${WORKBENCH_BODY} mt-1.5`} style={{ color: 'var(--text-body)' }}>
+        {body}
+      </p>
     </section>
   )
 }

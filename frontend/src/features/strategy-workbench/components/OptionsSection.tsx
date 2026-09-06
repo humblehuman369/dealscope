@@ -10,6 +10,13 @@ import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { PathOptionCard } from '@/components/iq-verdict/PathOptionCard'
 import { PathButton } from '@/components/strategy/PathButton'
 
+import {
+  WORKBENCH_BODY,
+  WORKBENCH_CARD,
+  WORKBENCH_CARD_STYLE,
+  WORKBENCH_EYEBROW,
+} from '../lib/workbenchLayout'
+
 export interface OptionsSectionProps {
   hasPaths: boolean
   optionsHiddenForStrategy: boolean
@@ -40,15 +47,8 @@ export function OptionsSection({
   return (
     <>
       {hasPaths && optionsHiddenForStrategy && (
-        <section className="px-[1px] sm:px-5 pt-2 pb-2">
-          <div
-            className="rounded-xl px-4 py-3 flex items-start gap-3"
-            style={{
-              background: 'var(--surface-card)',
-              border: '1px solid var(--border-default)',
-            }}
-          >
-            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+        <section className={`${WORKBENCH_CARD} flex items-start gap-3`} style={WORKBENCH_CARD_STYLE}>
+            <p className={WORKBENCH_BODY} style={{ color: 'var(--text-secondary)' }}>
               Deal-making Options use long-term-rental economics.{' '}
               <button
                 type="button"
@@ -60,27 +60,18 @@ export function OptionsSection({
               </button>{' '}
               to explore Options for this property.
             </p>
-          </div>
         </section>
       )}
       {hasPaths && !optionsHiddenForStrategy && strategyFilteredPaths.length > 0 && (
-        <section className="px-[1px] sm:px-5 pt-2 pb-2">
-          <div
-            className="rounded-xl p-3 sm:p-4"
-            style={{ background: 'var(--surface-path-strip, #f2f2f2)' }}
-          >
-            <div className="mb-2">
-              <div className="flex items-center justify-between mb-2 gap-3">
-                <div className="flex flex-col">
-                  <h3
-                    className="text-sm font-bold uppercase tracking-wider"
-                    style={{ color: 'var(--text-heading)' }}
-                  >
+        <section className={WORKBENCH_CARD} style={WORKBENCH_CARD_STYLE}>
+              <div className="flex items-center justify-between mb-3 gap-3">
+                <div className="flex flex-col gap-1 min-w-0">
+                  <h3 className={WORKBENCH_EYEBROW} style={{ color: 'var(--text-heading)' }}>
                     {appliedPathId
                       ? 'Apply an Option to the Worksheet'
                       : 'Start here — pick an Option'}
                   </h3>
-                  <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                  <p className={WORKBENCH_BODY} style={{ color: 'var(--text-secondary)' }}>
                     {optionsSubtitle}
                   </p>
                 </div>
@@ -101,11 +92,10 @@ export function OptionsSection({
                   !appliedPathId
                     ? {
                         padding: 8,
-                        background: 'var(--surface-card)',
+                        background: 'var(--surface-elevated)',
                         border: '1px solid var(--accent-sky)',
-                        boxShadow: '0 0 0 3px rgba(4, 101, 242, 0.12)',
                       }
-                    : { background: 'var(--surface-card)', padding: 4 }
+                    : { background: 'var(--surface-elevated)', padding: 4 }
                 }
               >
               {strategyFilteredPaths.slice(0, 4).map((p, i) => (
@@ -129,8 +119,6 @@ export function OptionsSection({
                   />
                 </div>
               )}
-            </div>
-          </div>
         </section>
       )}
     </>

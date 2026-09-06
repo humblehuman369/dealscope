@@ -25,7 +25,7 @@ export function NextStepsSection({
   const [nextStepsOpen, setNextStepsOpen] = useState(false)
 
   return (
-    <section className="px-[1px] sm:px-5" style={{ paddingTop: 8, paddingBottom: 8 }}>
+    <section className="w-full">
       <div
         style={{
           display: 'flex',

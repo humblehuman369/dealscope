@@ -125,6 +125,15 @@ import {
   toStrategyType,
   type BackendAnalysisResponse,
 } from '../lib/shared'
+import {
+  WORKBENCH_BODY,
+  WORKBENCH_CARD,
+  WORKBENCH_CARD_STYLE,
+  WORKBENCH_EMBEDDED_GUTTER,
+  WORKBENCH_EYEBROW,
+  WORKBENCH_PAGE_GUTTER,
+  WORKBENCH_STACK,
+} from '../lib/workbenchLayout'
 import { buildWorksheetState } from '../lib/buildWorksheetState'
 import { buildWorksheetMetrics } from '../lib/buildWorksheetMetrics'
 
@@ -1603,7 +1612,8 @@ export function StrategyWorkbench({
     >
       {/* Header and property bar are provided by AppHeader in layout */}
 
-      <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 mx-auto">
+      <div className={embedded ? WORKBENCH_EMBEDDED_GUTTER : WORKBENCH_PAGE_GUTTER}>
+        <div className={WORKBENCH_STACK}>
         {/* Deal Gap bar — standalone only. Discovery already renders Investment
             Overview; repeating it here looks like the page duplicated. */}
         {!embedded && (
@@ -1666,7 +1676,7 @@ export function StrategyWorkbench({
           />
         )}
 
-        {isAuthenticated && (
+        {isAuthenticated && !fromPlan && (
           <NextStepsSection
             isExporting={isExporting}
             dealGapPct={dealGapPct}
@@ -1684,7 +1694,7 @@ export function StrategyWorkbench({
           overlay={strategyUnlockOverlay}
           unlocked={worksheetUnlocked}
         >
-          <section className="px-[1px] sm:px-5 pt-2 pb-6">
+          <div className="flex flex-col gap-3">
             {/* Strategy Tabs — matches DealMaker page styling, per-strategy color coded */}
             {sortedStrategies.length > 1 &&
               (() => {
@@ -1716,12 +1726,8 @@ export function StrategyWorkbench({
 
             {/* Key Metrics Bar — own container */}
             <div
-              className="rounded-xl px-4 sm:px-5 py-3 mb-4 relative"
-              style={{
-                background: 'var(--surface-card)',
-                border: '1px solid var(--border-default)',
-                boxShadow: 'var(--shadow-card)',
-              }}
+              className={`${WORKBENCH_CARD} relative`}
+              style={WORKBENCH_CARD_STYLE}
             >
               {isRecalculating && (
                 <div className="absolute top-1 right-2 flex items-center gap-1.5">
@@ -1830,7 +1836,7 @@ export function StrategyWorkbench({
             {currentStrategyType === 'str' &&
               (propertyInfo?.rentals?.str_market_stats ||
                 propertyInfo?.rentals?.str_regulatory) && (
-                <div className="mx-4 sm:mx-6 mb-4 flex flex-wrap items-start gap-3">
+                <div className="flex flex-wrap items-start gap-3">
                   {propertyInfo.rentals.str_regulatory?.rating && (
                     <STRRegulatoryBadge regulatory={propertyInfo.rentals.str_regulatory} />
                   )}
@@ -1871,7 +1877,7 @@ export function StrategyWorkbench({
                 iqSources.rent.zillow != null ||
                 iqSources.rent.rentcast != null ||
                 iqSources.rent.realtor != null) && (
-                <div className="px-4 sm:px-6 -mt-16">
+                <div>
                   <IQEstimateSelector
                     sources={iqSources}
                     onSourceChange={(type, _sourceId, _value) => {
@@ -1913,21 +1919,11 @@ export function StrategyWorkbench({
               )}
 
             {/* The Bottom Line */}
-            <div
-              className="mt-7 p-5 rounded-xl border"
-              style={{
-                background: 'var(--surface-card)',
-                border: '1px solid var(--border-default)',
-                boxShadow: 'var(--shadow-card-hover)',
-              }}
-            >
-              <p
-                className="text-[11px] font-bold uppercase tracking-wider mb-2.5"
-                style={{ color: colors.brand.blue }}
-              >
+            <div className={WORKBENCH_CARD} style={WORKBENCH_CARD_STYLE}>
+              <p className={WORKBENCH_EYEBROW} style={{ color: 'var(--accent-sky)', marginBottom: 8 }}>
                 The Bottom Line
               </p>
-              <p className="text-sm leading-relaxed" style={{ color: colors.text.body }}>
+              <p className={WORKBENCH_BODY} style={{ color: 'var(--text-body)' }}>
                 {isFlipOrWholesale ? (
                   strategyAnnualCashFlow >= 0 ? (
                     <>
@@ -1972,10 +1968,8 @@ export function StrategyWorkbench({
                 )}
               </p>
             </div>
-          </section>
-
-          {/* Benchmarks — same width and rounded corners as Try Another Strategy card above */}
           <BenchmarksSection benchmarks={benchmarks} dense={denseMode} />
+          </div>
         </AuthGate>
 
         {/* Save CTA — property bookmark + worksheet persistence for dashboard */}
@@ -2003,6 +1997,7 @@ export function StrategyWorkbench({
           }}
           onRegister={() => openAuthModal('register')}
         />
+        </div>
       </div>
 
       <VideoModal

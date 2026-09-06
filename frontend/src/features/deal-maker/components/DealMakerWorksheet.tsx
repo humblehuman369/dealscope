@@ -2809,7 +2809,7 @@ export function DealMakerWorksheet({
 
   return (
     <WorksheetHighlightContext.Provider value={highlightContextValue}>
-      <section className={`${flushWithinParent ? '' : 'mx-4 sm:mx-6'} pb-24 sm:pb-28`}>
+      <section className={`${flushWithinParent ? '' : 'mx-4 sm:mx-6'} ${flushWithinParent ? 'pb-0' : 'pb-24 sm:pb-28'}`}>
         <div
           className="rounded-xl p-4 sm:p-5 relative"
           style={{

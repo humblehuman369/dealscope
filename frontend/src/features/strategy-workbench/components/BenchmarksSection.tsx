@@ -5,8 +5,14 @@
  * Extracted verbatim from `app/strategy/page.tsx` (R4 Stage 1) — no behavior change.
  */
 
-import { tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { colors } from '../lib/shared'
+import {
+  WORKBENCH_BODY,
+  WORKBENCH_CARD,
+  WORKBENCH_CARD_STYLE,
+  WORKBENCH_EYEBROW,
+  WORKBENCH_TITLE,
+} from '../lib/workbenchLayout'
 
 export interface BenchmarkRow {
   metric: string
@@ -24,31 +30,20 @@ export function BenchmarksSection({
   dense?: boolean
 }) {
   return (
-    <section
-      className="px-[1px] sm:px-5 py-8 border-t"
-      style={{ borderColor: colors.ui.border }}
-    >
-      <div
-        className="w-full rounded-[14px] p-5"
-        style={{
-          background: 'var(--surface-card)',
-          border: '1px solid var(--border-default)',
-          boxShadow: 'var(--shadow-card-hover)',
-        }}
-      >
-        <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 8 }}>
+    <section className={WORKBENCH_CARD} style={WORKBENCH_CARD_STYLE}>
+        <p className={WORKBENCH_EYEBROW} style={{ color: 'var(--accent-sky)', marginBottom: 8 }}>
           Investor Benchmarks
         </p>
         <h2
-          className={tw.textHeading}
-          style={{ color: colors.text.primary, marginBottom: dense ? 12 : 6 }}
+          className={WORKBENCH_TITLE}
+          style={{ color: 'var(--text-heading)', marginBottom: dense ? 12 : 6 }}
         >
           How Does This Stack Up?
         </h2>
         {!dense && (
           <p
-            className={tw.textBody}
-            style={{ color: colors.text.body, marginBottom: 28, lineHeight: 1.55 }}
+            className={WORKBENCH_BODY}
+            style={{ color: 'var(--text-body)', marginBottom: 16 }}
           >
             We compare this deal against the numbers experienced investors actually look for.
             Green means this deal meets or beats the benchmark.
@@ -116,7 +111,6 @@ export function BenchmarksSection({
             ))}
           </tbody>
         </table>
-      </div>
     </section>
   )
 }

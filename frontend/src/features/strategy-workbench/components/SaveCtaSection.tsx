@@ -5,8 +5,14 @@
  * Extracted verbatim from `app/strategy/page.tsx` (R4 Stage 1) — no behavior change.
  */
 
-import { tw } from '@/components/iq-verdict/verdict-design-tokens'
 import { colors } from '../lib/shared'
+import {
+  WORKBENCH_BODY,
+  WORKBENCH_CARD,
+  WORKBENCH_CARD_STYLE,
+  WORKBENCH_EYEBROW,
+  WORKBENCH_TITLE,
+} from '../lib/workbenchLayout'
 
 export interface SaveCtaSectionProps {
   isAuthenticated: boolean
@@ -39,11 +45,8 @@ export function SaveCtaSection({
   planEmail = null,
 }: SaveCtaSectionProps) {
   return (
-    <section
-      className="px-[1px] sm:px-5 py-10 text-center border-t"
-      style={{ borderColor: colors.ui.border }}
-    >
-      <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 12 }}>
+    <section className={`${WORKBENCH_CARD} text-center`} style={WORKBENCH_CARD_STYLE}>
+      <p className={WORKBENCH_EYEBROW} style={{ color: 'var(--accent-sky)', marginBottom: 8 }}>
         {!isAuthenticated && fromPlan
           ? 'Your plan is in this tab.'
           : !isAuthenticated
@@ -52,10 +55,7 @@ export function SaveCtaSection({
               ? 'Almost there'
               : 'You screened it. You proved it.'}
       </p>
-      <h2
-        className="text-2xl font-extrabold mb-3"
-        style={{ color: colors.text.primary, letterSpacing: '-0.5px', lineHeight: 1.25 }}
-      >
+      <h2 className={`${WORKBENCH_TITLE} mb-2`} style={{ color: 'var(--text-heading)' }}>
         {!isAuthenticated && fromPlan
           ? 'Check email to reopen it anywhere.'
           : !isAuthenticated
@@ -64,10 +64,7 @@ export function SaveCtaSection({
               ? 'Save Your Worksheet'
               : 'Now Save It.'}
       </h2>
-      <p
-        className="text-[15px] mb-7 mx-auto max-w-md"
-        style={{ color: colors.text.body, lineHeight: 1.6 }}
-      >
+      <p className={`${WORKBENCH_BODY} mb-5 mx-auto max-w-lg`} style={{ color: 'var(--text-body)' }}>
         {!isAuthenticated && fromPlan
           ? planEmail
             ? `We sent a one-tap link to ${planEmail}. It signs you in and reopens these numbers for 30 minutes.`
