@@ -2,14 +2,18 @@
 
 import type { ReactNode } from 'react'
 import { useCallback, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft } from 'lucide-react'
 
 import { Modal } from '@/components/ui/Modal'
 import { trackEvent } from '@/lib/eventTracking'
+import { applyPlanClaimSession } from '@/lib/applyPlanClaimSession'
 import { claimPlan } from '@/lib/api/plans'
+import { markPlanContinuity } from '@/lib/makeItWorkContinuity'
 import { buildScenarioPayload } from '@/lib/dealStructures/loadScenario'
 import type { DealStructure } from '@/components/iq-verdict/PathOptionCard'
 import type { FourWayFamily } from '@/components/iq-verdict/make-it-work/fourWays'
+import { WAY_NAMES, isFourWayFamily } from '@/components/iq-verdict/make-it-work/fourWays'
 import { ChoiceStep } from '@/components/iq-verdict/make-it-work/ChoiceStep'
 import { PlanResult } from '@/components/iq-verdict/make-it-work/PlanResult'
 import { SavePlanForm } from '@/components/iq-verdict/make-it-work/SavePlanForm'
@@ -53,6 +57,8 @@ export interface MakeItWorkWizardProps {
   /** Signed-in save: caller persists the property and applies the scenario. */
   onSaveAuthenticated: (structure: DealStructure | null) => Promise<void>
   onOpenInStrategy: (structure: DealStructure, index: number) => void
+  /** Deal-already-works path: open the worksheet with no scenario applied. */
+  onOpenWorkbench: () => void
 }
 
 function ProgressDots({ total, current }: { total: number; current: number }): ReactNode {
@@ -95,7 +101,9 @@ export function MakeItWorkWizard({
   propertySnapshot,
   onSaveAuthenticated,
   onOpenInStrategy,
+  onOpenWorkbench,
 }: MakeItWorkWizardProps): ReactNode {
+  const queryClient = useQueryClient()
   const wizard = useMakeItWork({
     open,
     baseInputs,
@@ -117,11 +125,46 @@ export function MakeItWorkWizard({
     })
   }, [open, source, focusFamily, saveOnly])
 
+  const planLabelFor = useCallback((structure: DealStructure | null): string => {
+    if (!structure) return 'Your plan'
+    return isFourWayFamily(structure.family) ? WAY_NAMES[structure.family] : structure.familyLabel
+  }, [])
+
+  const continueToWorksheet = useCallback(
+    (structure: DealStructure | null, email?: string, signedIn = false) => {
+      markPlanContinuity({
+        address,
+        planLabel: planLabelFor(structure),
+        email: email ?? null,
+      })
+      trackEvent('plan_worksheet_opened', {
+        family: structure?.family ?? undefined,
+        signed_in: isAuthenticated || signedIn,
+      })
+      onClose()
+      if (structure) {
+        const index = Math.max(0, wizard.paths.findIndex((p) => p.id === structure.id))
+        onOpenInStrategy(structure, index)
+        return
+      }
+      onOpenWorkbench()
+    },
+    [
+      address,
+      planLabelFor,
+      isAuthenticated,
+      onClose,
+      wizard.paths,
+      onOpenInStrategy,
+      onOpenWorkbench,
+    ],
+  )
+
   const handleClaim = useCallback(
     async (email: string) => {
       const structure = wizard.recommended
       const index = structure ? Math.max(0, wizard.paths.findIndex((p) => p.id === structure.id)) : 0
-      await claimPlan({
+      const result = await claimPlan({
         email,
         address,
         address_parts: addressParts,
@@ -133,18 +176,33 @@ export function MakeItWorkWizard({
         wizard_answers: wizard.answers,
         narrative: wizard.narrative,
       })
+      const signedIn = await applyPlanClaimSession(result, queryClient)
+      if (signedIn) {
+        trackEvent('plan_save_signed_in', { family: structure?.family ?? undefined })
+      }
+      continueToWorksheet(structure, email, signedIn)
     },
-    [wizard.recommended, wizard.paths, wizard.answers, wizard.narrative, address, addressParts, zpid, latitude, longitude, propertySnapshot],
+    [
+      wizard.recommended,
+      wizard.paths,
+      wizard.answers,
+      wizard.narrative,
+      address,
+      addressParts,
+      zpid,
+      latitude,
+      longitude,
+      propertySnapshot,
+      queryClient,
+      continueToWorksheet,
+    ],
   )
 
-  const handleOpenInStrategy = useCallback(
-    (structure: DealStructure) => {
-      const index = Math.max(0, wizard.paths.findIndex((p) => p.id === structure.id))
-      onClose()
-      onOpenInStrategy(structure, index)
-    },
-    [wizard.paths, onClose, onOpenInStrategy],
-  )
+  const handleAuthenticatedSave = useCallback(async () => {
+    const structure = wizard.recommended
+    await onSaveAuthenticated(structure)
+    continueToWorksheet(structure)
+  }, [wizard.recommended, onSaveAuthenticated, continueToWorksheet])
 
   const showBack = wizard.phase === 'questions' ? wizard.stepIndex > 0 : wizard.phase === 'result' && !saveOnly
 
@@ -283,11 +341,10 @@ export function MakeItWorkWizard({
                 narrative={wizard.narrative}
                 narrativeLoading={wizard.narrativeLoading}
                 onSelectAlternative={wizard.selectAlternative}
-                onOpenInStrategy={handleOpenInStrategy}
               >
                 <SavePlanForm
                   isAuthenticated={isAuthenticated}
-                  onSaveAuthenticated={() => onSaveAuthenticated(wizard.recommended)}
+                  onSaveAuthenticated={handleAuthenticatedSave}
                   onClaim={handleClaim}
                   family={wizard.recommended?.family ?? null}
                 />

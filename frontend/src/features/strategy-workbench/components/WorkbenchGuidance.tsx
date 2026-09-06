@@ -10,10 +10,15 @@ export function WorkbenchGuidance({
   dealGapPct,
   optionCount,
   isAuthenticated,
+  fromPlan = false,
+  planLabel = null,
 }: {
   dealGapPct: number
   optionCount: number
   isAuthenticated: boolean
+  /** Arrived from the Make It Work wizard with a plan already chosen. */
+  fromPlan?: boolean
+  planLabel?: string | null
 }) {
   const gapWorks = dealGapPct <= 0
   const gapClose = dealGapPct > 0 && dealGapPct <= 10
@@ -23,7 +28,12 @@ export function WorkbenchGuidance({
   let title: string
   let body: string
 
-  if (hasOptions && !gapWorks) {
+  if (fromPlan) {
+    eyebrow = 'Your plan is loaded'
+    title = planLabel ? `${planLabel} — tune it here` : 'Tune the numbers'
+    body =
+      'This is the structure from your plan. Drag a slider — cash flow updates instantly. We emailed a link so you can reopen this on any device.'
+  } else if (hasOptions && !gapWorks) {
     eyebrow = 'How to make this deal work'
     title = `We found ${optionCount} Option${optionCount === 1 ? '' : 's'} that close the gap`
     body =
@@ -50,10 +60,10 @@ export function WorkbenchGuidance({
       'A price cut is only one lever. Use the worksheet to model better financing, more cash down, seller carry, verified rent, or tighter expenses until the Deal Gap closes.'
   }
 
-  if (!isAuthenticated && hasOptions) {
+  if (!fromPlan && !isAuthenticated && hasOptions) {
     body =
       'Sign in free to apply an Option to the live worksheet and watch cash flow update instantly.'
-  } else if (!isAuthenticated && !hasOptions) {
+  } else if (!fromPlan && !isAuthenticated && !hasOptions) {
     body =
       'Sign in free to use the live worksheet — change rent, rate, or down payment and watch every metric update.'
   }

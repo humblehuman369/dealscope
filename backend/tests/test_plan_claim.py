@@ -10,9 +10,11 @@ from app.models.verification_token import TokenType, VerificationToken
 from app.repositories.user_repository import user_repo
 from app.schemas.plans import PlanScenario
 from app.services import plan_claim_service
+from app.models.user import User
 from app.services.plan_claim_service import (
     PLAN_KEY,
     build_plan_redirect,
+    can_issue_claim_session,
     encode_scenario,
     scenario_to_record_update,
 )
@@ -109,7 +111,12 @@ async def test_scenario_encoding_matches_frontend_wire_format():
 async def test_claim_creates_user_property_record_token_and_email(client, db_session, seeded_roles, sent_emails):
     resp = await client.post("/api/v1/plans/claim", json=_claim_body())
     assert resp.status_code == 202, resp.text
-    assert resp.json()["status"] == "accepted"
+    body = resp.json()
+    assert body["status"] == "accepted"
+    assert body.get("access_token")
+    assert body.get("refresh_token")
+    assert resp.cookies.get("access_token")
+    assert resp.cookies.get("session_token")
 
     user = await user_repo.get_by_email(db_session, "newlead@example.com")
     assert user is not None
@@ -147,12 +154,14 @@ async def test_claim_creates_user_property_record_token_and_email(client, db_ses
     assert f"propertyId%3D{saved.id}" in kwargs["magic_url"] or f"propertyId={saved.id}" in kwargs["magic_url"]
 
 
-async def test_claim_for_existing_user_reuses_account_and_updates_saved_property(
+async def test_claim_for_existing_verified_user_does_not_sign_this_browser_in(
     client, db_session, created_user, sent_emails
 ):
     body = _claim_body(email=created_user.email)
     first = await client.post("/api/v1/plans/claim", json=body)
     assert first.status_code == 202
+    assert first.json().get("access_token") is None
+    assert first.cookies.get("access_token") is None
 
     # Second claim with a different scenario on the same address must update, not duplicate.
     body["scenario"]["structureId"] = "price-negotiation"
@@ -170,6 +179,7 @@ async def test_claim_for_existing_user_reuses_account_and_updates_saved_property
 
     assert sent_emails.await_count == 2
     assert sent_emails.await_args.kwargs["is_new_user"] is False
+    assert second.json().get("access_token") is None
 
 
 async def test_claim_response_is_identical_on_internal_failure(client, monkeypatch, sent_emails):
@@ -200,6 +210,48 @@ async def test_claim_rate_limit_returns_429(client, monkeypatch):
     monkeypatch.setattr(plans_router, "_enforce_hourly_limit", limited)
     resp = await client.post("/api/v1/plans/claim", json=_claim_body())
     assert resp.status_code == 429
+
+
+async def test_claim_for_existing_unverified_user_signs_this_browser_in(
+    client, db_session, seeded_roles, sent_emails
+):
+    first = await client.post("/api/v1/plans/claim", json=_claim_body(email="unverified@example.com"))
+    assert first.status_code == 202
+    assert first.json().get("access_token")
+
+    # Same browser is already signed in — do not rotate / replace the session.
+    second = await client.post("/api/v1/plans/claim", json=_claim_body(email="unverified@example.com"))
+    assert second.status_code == 202
+    assert second.json().get("access_token") is None
+
+    client.cookies.clear()
+    third = await client.post("/api/v1/plans/claim", json=_claim_body(email="unverified@example.com"))
+    assert third.status_code == 202
+    assert third.json().get("access_token")
+    user = await user_repo.get_by_email(db_session, "unverified@example.com")
+    assert user is not None
+    assert user.is_verified is False
+
+
+async def test_can_issue_claim_session_blocks_verified_and_mfa():
+    unverified = User(email="a@b.co", hashed_password="x", is_active=True, is_verified=False)
+    assert can_issue_claim_session(unverified) is True
+
+    verified = User(email="a@b.co", hashed_password="x", is_active=True, is_verified=True)
+    assert can_issue_claim_session(verified) is False
+
+    mfa = User(
+        email="a@b.co",
+        hashed_password="x",
+        is_active=True,
+        is_verified=False,
+        mfa_enabled=True,
+        mfa_secret="secret",
+    )
+    assert can_issue_claim_session(mfa) is False
+
+    inactive = User(email="a@b.co", hashed_password="x", is_active=False, is_verified=False)
+    assert can_issue_claim_session(inactive) is False
 
 
 async def test_redirect_is_same_origin_and_carries_scenario():

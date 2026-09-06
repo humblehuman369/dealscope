@@ -31,6 +31,8 @@ interface AuthGateProps {
   fallback?: React.ReactNode
   /** Custom overlay for section mode (replaces default pill CTA). */
   overlay?: React.ReactNode
+  /** Treat as authenticated — used for this-tab plan continuity without a session. */
+  unlocked?: boolean
 }
 
 export function AuthGate({
@@ -40,6 +42,7 @@ export function AuthGate({
   fullHeight,
   fallback,
   overlay,
+  unlocked = false,
 }: AuthGateProps) {
   const { isAuthenticated, isLoading } = useSession()
   const pathname = useAppPathname()
@@ -54,7 +57,7 @@ export function AuthGate({
   signInParams.set('redirect', fullPath)
   const signInUrl = `${pathname}?${signInParams.toString()}`
 
-  if (isAuthenticated) {
+  if (isAuthenticated || unlocked) {
     return <div className={fullHeight ? 'h-full min-h-0' : undefined}>{children}</div>
   }
 

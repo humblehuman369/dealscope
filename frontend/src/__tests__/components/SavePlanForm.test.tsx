@@ -50,7 +50,7 @@ describe('SavePlanForm', () => {
     render(<SavePlanForm isAuthenticated onSaveAuthenticated={onSaveAuthenticated} onClaim={vi.fn()} family="income" />)
 
     expect(screen.queryByLabelText('Email address')).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Save my plan' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Open my worksheet' }))
 
     expect(await screen.findByText('Plan saved to your deals')).toBeInTheDocument()
     expect(trackEvent).toHaveBeenCalledWith('plan_save_submitted', { mode: 'authenticated', family: 'income' })

@@ -129,6 +129,8 @@ class PlanClaimRequest(BaseModel):
 class PlanClaimResponse(BaseModel):
     status: Literal["accepted"] = "accepted"
     message: str = "If that address is valid, your plan is on its way."
+    access_token: str | None = None
+    refresh_token: str | None = None
 
 
 class MagicLinkConsumeRequest(BaseModel):

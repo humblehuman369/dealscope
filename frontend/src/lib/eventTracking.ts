@@ -19,9 +19,12 @@
  *   `four_paths_detail_expanded` {path_count, state?} — "See the full math"
  *   `breakeven_row_expanded`     {family: price|income|financing|capital_stack} — a way opened
  *   `breakeven_narrative_loaded` {source: ai|template, way_count} — "Your move" arrived
- *   `plan_save_submitted`        {mode: email|authenticated, family?} — the free hook
- *   `plan_save_email_sent`       {family?} — claim accepted (202)
- *   `magic_link_consumed`        — /auth/magic signed the user in (also captured server-side)
+   *   `plan_save_submitted`        {mode: email|authenticated, family?} — the free hook
+   *   `plan_save_email_sent`       {family?} — claim accepted (202)
+   *   `plan_save_signed_in`        {family?} — claim returned a session for this tab
+   *   `plan_worksheet_opened`      {family?, signed_in} — wizard closed into the loaded worksheet
+   *   `plan_pro_cta_shown`         {family?} — delayed Pro strip after the worksheet aha
+   *   `magic_link_consumed`        — /auth/magic signed the user in (also captured server-side)
  * `activated` fires with `source: 'four_ways'` when the strip renders, replacing the
  * `four_paths` source now that the full panel is collapsed by default.
  *

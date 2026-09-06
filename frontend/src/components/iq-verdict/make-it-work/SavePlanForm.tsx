@@ -136,7 +136,7 @@ export function SavePlanForm({
           className="inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-[15px] font-bold transition-transform active:scale-[0.98] disabled:opacity-60"
           style={{ background: 'var(--accent-sky)', color: 'var(--text-inverse)' }}
         >
-          {state === 'submitting' ? 'Saving…' : 'Save my plan'}
+          {state === 'submitting' ? 'Saving…' : 'Open my worksheet'}
         </button>
         {error && (
           <p role="alert" style={{ margin: 0, fontSize: 13, color: 'var(--status-negative)' }}>
@@ -180,7 +180,8 @@ export function SavePlanForm({
         </button>
       </div>
       <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
-        We&apos;ll email your plan and a one-tap link to reopen it. No password needed. Free.
+        We&apos;ll open your worksheet in this tab and email a link so you can reopen it later. No
+        password. Free.
       </p>
       {error && (
         <p role="alert" style={{ margin: 0, fontSize: 13, color: 'var(--status-negative)' }}>

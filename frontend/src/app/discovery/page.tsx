@@ -84,6 +84,7 @@ import {
   parseStrategyWorksheetSection,
   type StrategyWorksheetSection,
 } from '@/components/iq-verdict/strategyWorksheetSection'
+import { retargetPlanContinuity } from '@/lib/makeItWorkContinuity'
 import { buildScenarioPayload, writeLastAppliedScenario } from '@/lib/dealStructures/loadScenario'
 import { encodeScenario } from '@/lib/dealStructures/scenarioPayload'
 import { mapDealStructuresFromApi } from '@/lib/dealStructures/mapDealStructures'
@@ -1196,6 +1197,7 @@ function VerdictContent() {
       if (!isLikelyFullAddress(fullAddress) && backendFullAddressRef.current) {
         fullAddress = backendFullAddressRef.current
       }
+      retargetPlanContinuity(fullAddress)
 
       setWorkbenchRequest((prev) => ({
         address: fullAddress,
@@ -1232,6 +1234,7 @@ function VerdictContent() {
 
       const payload = buildScenarioPayload(structure, index)
       writeLastAppliedScenario(payload)
+      retargetPlanContinuity(fullAddress)
       const encoded = encodeScenario(payload)
       setWorkbenchRequest((prev) => ({
         address: fullAddress,
@@ -2846,6 +2849,7 @@ function VerdictContent() {
           }}
           onSaveAuthenticated={saveMakeItWorkPlan}
           onOpenInStrategy={openThreePathInStrategy}
+          onOpenWorkbench={navigateToStrategy}
         />
       )}
 

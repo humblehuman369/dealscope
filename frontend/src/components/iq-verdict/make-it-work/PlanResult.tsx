@@ -82,7 +82,6 @@ export interface PlanResultProps {
   narrative: PlanNarrative | null
   narrativeLoading: boolean
   onSelectAlternative: (structure: DealStructure) => void
-  onOpenInStrategy?: (structure: DealStructure) => void
   /** Save controls rendered under the plan (SavePlanForm). */
   children: ReactNode
 }
@@ -98,7 +97,6 @@ export function PlanResult({
   narrative,
   narrativeLoading,
   onSelectAlternative,
-  onOpenInStrategy,
   children,
 }: PlanResultProps): ReactNode {
   const [pitchOpen, setPitchOpen] = useState(false)
@@ -303,16 +301,6 @@ export function PlanResult({
         </div>
       )}
 
-      {structure && onOpenInStrategy && (
-        <button
-          type="button"
-          onClick={() => onOpenInStrategy(structure)}
-          className="self-start text-[13px] font-semibold underline-offset-2 hover:underline"
-          style={{ color: 'var(--text-secondary)', background: 'transparent', border: 'none', padding: 0 }}
-        >
-          Open this plan in the Strategy workbench →
-        </button>
-      )}
     </div>
   )
 }

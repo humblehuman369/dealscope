@@ -11,9 +11,14 @@ from __future__ import annotations
 import logging
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, Response, status
 
 from app.core.deps import DbSession, OptionalUser
+from app.routers.auth import (
+    _client_type_from_request,
+    _ph_identify_and_capture,
+    _set_auth_cookies,
+)
 from app.schemas.plans import (
     BreakevenNarrativeRequest,
     BreakevenNarrativeResponse,
@@ -87,27 +92,62 @@ async def breakeven_narrative(
     return await generate_breakeven_narrative(body)
 
 
-@router.post("/claim", response_model=PlanClaimResponse, status_code=status.HTTP_202_ACCEPTED)
+@router.post(
+    "/claim",
+    response_model=PlanClaimResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    response_model_exclude_none=True,
+)
 async def plan_claim(
     body: PlanClaimRequest,
     request: Request,
+    response: Response,
     db: DbSession,
     current_user: OptionalUser = None,
 ) -> PlanClaimResponse:
     """Save the plan for an email address and send a magic link.
 
-    Always 202 with the same body — success, existing account, or internal
+    Always 202 with the same message — success, existing account, or internal
     failure look identical to the caller so the endpoint cannot enumerate emails.
+    When the claim creates (or re-claims) an unverified account, this browser
+    is also signed in so the worksheet opens without a second gate.
     """
     ip = _client_ip(request)
     await _enforce_hourly_limit("claim_ip", ip, CLAIM_PER_IP_PER_HOUR)
     await _enforce_hourly_limit("claim_email", body.email.lower(), CLAIM_PER_EMAIL_PER_HOUR)
 
     try:
-        await plan_claim_service.claim_plan(db, body, ip_address=ip)
+        result = await plan_claim_service.claim_plan(
+            db,
+            body,
+            ip_address=ip,
+            user_agent=request.headers.get("User-Agent"),
+            client_type=_client_type_from_request(request),
+        )
     except Exception as exc:
         # Uniform response by design; the failure is still logged for operators.
         await db.rollback()
         logger.exception("Plan claim failed for %s: %s", body.address, exc)
+        return PlanClaimResponse()
+
+    if (
+        current_user is None
+        and result.session is not None
+        and result.jwt_token is not None
+    ):
+        _set_auth_cookies(
+            response,
+            result.session.session_token,
+            result.session.refresh_token,
+            result.jwt_token,
+            result.session.expires_at,
+        )
+        if result.created:
+            _ph_identify_and_capture(result.user, "user_registered", {"signup_method": "make_it_work_plan"})
+        _ph_identify_and_capture(result.user, "user_logged_in", {"login_method": "plan_claim"})
+        return PlanClaimResponse(
+            access_token=result.jwt_token,
+            refresh_token=result.session.refresh_token,
+        )
 
     return PlanClaimResponse()

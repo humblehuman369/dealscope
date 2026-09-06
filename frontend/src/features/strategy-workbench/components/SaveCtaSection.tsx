@@ -19,6 +19,9 @@ export interface SaveCtaSectionProps {
   onSaveWorksheet: () => void
   onToggleSaved: () => void
   onRegister: () => void
+  /** This tab just saved a Make It Work plan — do not re-sell the worksheet. */
+  fromPlan?: boolean
+  planEmail?: string | null
 }
 
 export function SaveCtaSection({
@@ -32,6 +35,8 @@ export function SaveCtaSection({
   onSaveWorksheet,
   onToggleSaved,
   onRegister,
+  fromPlan = false,
+  planEmail = null,
 }: SaveCtaSectionProps) {
   return (
     <section
@@ -39,27 +44,35 @@ export function SaveCtaSection({
       style={{ borderColor: colors.ui.border }}
     >
       <p className={tw.sectionHeader} style={{ color: colors.brand.blue, marginBottom: 12 }}>
-        {!isAuthenticated
-          ? 'You\u2019ve seen the gap.'
-          : isSaved && worksheetDirty
-            ? 'Almost there'
-            : 'You screened it. You proved it.'}
+        {!isAuthenticated && fromPlan
+          ? 'Your plan is in this tab.'
+          : !isAuthenticated
+            ? 'You\u2019ve seen the gap.'
+            : isSaved && worksheetDirty
+              ? 'Almost there'
+              : 'You screened it. You proved it.'}
       </p>
       <h2
         className="text-2xl font-extrabold mb-3"
         style={{ color: colors.text.primary, letterSpacing: '-0.5px', lineHeight: 1.25 }}
       >
-        {!isAuthenticated
-          ? 'Now see how to close it.'
-          : isSaved && worksheetDirty
-            ? 'Save Your Worksheet'
-            : 'Now Save It.'}
+        {!isAuthenticated && fromPlan
+          ? 'Check email to reopen it anywhere.'
+          : !isAuthenticated
+            ? 'Now see how to close it.'
+            : isSaved && worksheetDirty
+              ? 'Save Your Worksheet'
+              : 'Now Save It.'}
       </h2>
       <p
         className="text-[15px] mb-7 mx-auto max-w-md"
         style={{ color: colors.text.body, lineHeight: 1.6 }}
       >
-        {!isAuthenticated
+        {!isAuthenticated && fromPlan
+          ? planEmail
+            ? `We sent a one-tap link to ${planEmail}. It signs you in and reopens these numbers for 30 minutes.`
+            : 'We emailed a one-tap link that signs you in and reopens these numbers for 30 minutes.'
+          : !isAuthenticated
           ? 'A free account unlocks your max offer price, the deal structures that close the gap, and the live worksheet. Pro members go further — with verified cash buyers and hard money lenders to exit the deal.'
           : isSaved && worksheetDirty
             ? 'Your slider changes are not in DealVault yet. Save the worksheet so your dashboard and deal pages reopen with these numbers.'
@@ -134,6 +147,15 @@ export function SaveCtaSection({
             </p>
           )}
         </>
+      ) : fromPlan ? (
+        <button
+          type="button"
+          onClick={onRegister}
+          className="text-sm font-semibold underline underline-offset-2"
+          style={{ color: colors.brand.teal, background: 'none', border: 'none', padding: 0 }}
+        >
+          Already a member? Sign in
+        </button>
       ) : (
         <>
           <button

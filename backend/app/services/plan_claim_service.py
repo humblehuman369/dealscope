@@ -13,9 +13,13 @@ Flow (all inside the caller's transaction):
 3. Store the wizard answers + narrative on the property snapshot under
    ``make_it_work_plan`` (existing JSON column — no migration).
 4. Issue a 30-minute single-use ``MAGIC_LINK`` token and email the plan.
+5. Sign this browser in when it is safe (new or still-unverified account,
+   no MFA). Verified / MFA accounts are not signed in here — that would be
+   takeover from a typed email. Those users use the magic link.
 
-The router always returns the same 202 regardless of what happened here, so
-the endpoint cannot be used to discover which emails have accounts.
+The router always returns the same 202 message regardless of what happened
+here, so the endpoint cannot be used to discover which emails have accounts.
+Tokens are omitted unless a session was issued.
 """
 
 from __future__ import annotations
@@ -28,12 +32,15 @@ from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import quote, urlencode
 
+from dataclasses import dataclass
+
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.audit_log import AuditAction
 from app.models.saved_property import SavedProperty
+from app.models.session import UserSession
 from app.models.user import User
 from app.models.verification_token import TokenType
 from app.repositories.audit_repository import audit_repo
@@ -46,6 +53,7 @@ from app.services.assumption_resolver import resolve_assumptions
 from app.services.deal_maker_service import DealMakerService
 from app.services.email_service import email_service
 from app.services.saved_property_service import saved_property_service
+from app.services.session_service import session_service
 from app.services.token_service import token_service
 
 logger = logging.getLogger(__name__)
@@ -54,6 +62,33 @@ MAGIC_LINK_EXPIRES_MINUTES = 30
 PLAN_KEY = "make_it_work_plan"
 
 _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+@dataclass(frozen=True)
+class PlanClaimResult:
+    """Outcome of a successful claim. Session fields are set only when safe."""
+
+    user: User
+    saved: SavedProperty
+    created: bool
+    session: UserSession | None = None
+    jwt_token: str | None = None
+
+
+def can_issue_claim_session(user: User) -> bool:
+    """Sign in on claim only when the typed email cannot take over a real account.
+
+    New and still-unverified users have no proven inbox yet — this browser just
+    created (or re-claimed) that placeholder. Verified or MFA accounts must use
+    the magic link or a normal login.
+    """
+    if not user.is_active:
+        return False
+    if user.mfa_enabled and user.mfa_secret:
+        return False
+    if user.is_verified:
+        return False
+    return True
 
 
 async def find_or_create_user(db: AsyncSession, email: str, *, ip_address: str | None = None) -> tuple[User, bool]:
@@ -227,7 +262,9 @@ async def claim_plan(
     req: PlanClaimRequest,
     *,
     ip_address: str | None = None,
-) -> None:
+    user_agent: str | None = None,
+    client_type: str | None = None,
+) -> PlanClaimResult:
     """Do the whole claim. Raises on unexpected failure; the router still returns 202."""
     user, created = await find_or_create_user(db, req.email, ip_address=ip_address)
     saved = await _save_or_update_property(db, user, req)
@@ -235,6 +272,32 @@ async def claim_plan(
     raw_token = await token_service.create_verification_token(
         db, user.id, TokenType.MAGIC_LINK, expires_minutes=MAGIC_LINK_EXPIRES_MINUTES
     )
+
+    session_obj: UserSession | None = None
+    jwt_token: str | None = None
+    if can_issue_claim_session(user):
+        try:
+            session_obj, jwt_token = await session_service.create_session(
+                db,
+                user.id,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                client_type=client_type,
+            )
+            await user_repo.update(db, user.id, last_login=datetime.now(UTC))
+            await audit_repo.log(
+                db,
+                action=AuditAction.LOGIN,
+                user_id=user.id,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                metadata={"session_id": str(session_obj.id), "method": "plan_claim"},
+            )
+        except Exception:
+            logger.exception("Plan claim session failed for %s — save and email still proceed", user.email)
+            session_obj = None
+            jwt_token = None
+
     await db.commit()
 
     frontend = (settings.FRONTEND_URL or "https://dealgapiq.com").rstrip("/")
@@ -251,3 +314,11 @@ async def claim_plan(
     )
     if not result.get("success"):
         logger.warning("Plan-saved email failed for %s: %s", user.email, result.get("error"))
+
+    return PlanClaimResult(
+        user=user,
+        saved=saved,
+        created=created,
+        session=session_obj,
+        jwt_token=jwt_token,
+    )

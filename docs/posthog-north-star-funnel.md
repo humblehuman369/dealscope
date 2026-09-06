@@ -67,8 +67,10 @@ The wizard on `/discovery` is the free hook that captures an email before any pa
   2. `make_it_work_opened` (`source` = `tile` \| `cta` \| `save_tile`)
   3. `make_it_work_plan_viewed` (`recommended_family`)
   4. `plan_save_submitted` (`mode` = `email` \| `authenticated`)
-  5. `magic_link_consumed` — the emailed link was opened; the account is now verified and signed in
-- **Conversion window:** `1 day` for steps 1–4; `3 days` including step 5.
+  5. `plan_worksheet_opened` — this tab opened the loaded worksheet (the conversion-critical step)
+  6. `plan_pro_cta_shown` — delayed Pro ask (buyers / lenders / offer packet) after they touch a slider or 15s
+  7. `magic_link_consumed` — emailed link opened on another device; verifies the account
+- **Conversion window:** `1 day` for steps 1–6; `3 days` including step 7.
 - **Breakdowns:** `make_it_work_opened.source`, `make_it_work_plan_viewed.recommended_family`, `make_it_work_step.answer` (per `step`).
 - **Also watch:** `four_paths_detail_expanded` — how often users still want the full card wall. A high rate means the Breakeven Analysis section is hiding something they need.
 - **Breakeven Analysis engagement:** `breakeven_row_expanded` (breakdown by `family`) shows which of Price / Income / Terms / Equity users open first; `breakeven_narrative_loaded` (`source` = `ai` \| `template`) shows how often "Your move" came from Claude vs. the deterministic fallback. Expect `breakeven_row_expanded` → `make_it_work_opened` (`source` = `tile`) to be the section's main conversion path.

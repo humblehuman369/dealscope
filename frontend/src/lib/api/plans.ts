@@ -98,6 +98,8 @@ export interface PlanClaimRequest {
 export interface PlanClaimResponse {
   status: 'accepted'
   message: string
+  access_token?: string | null
+  refresh_token?: string | null
 }
 
 export function claimPlan(body: PlanClaimRequest): Promise<PlanClaimResponse> {

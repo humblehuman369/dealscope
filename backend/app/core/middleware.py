@@ -200,6 +200,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         "/api/v1/auth/register",
         "/api/v1/auth/refresh",
         "/api/v1/auth/magic-link/consume",
+        "/api/v1/plans/claim",
     )
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:

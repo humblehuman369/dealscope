@@ -76,6 +76,8 @@ import {
 } from '@/lib/dealMakerOverrides'
 import { AuthGate } from '@/components/auth/AuthGate'
 import { StrategyUnlockPanel } from '@/components/auth/StrategyUnlockPanel'
+import { UpgradeModal } from '@/components/billing/UpgradeModal'
+import { readPlanContinuity } from '@/lib/makeItWorkContinuity'
 import {
   formatBuyerDirectoryLabel,
   formatLenderDirectoryTotal,
@@ -113,6 +115,7 @@ import { NextStepsSection } from './NextStepsSection'
 import { OptionsSection } from './OptionsSection'
 import { BenchmarksSection } from './BenchmarksSection'
 import { SaveCtaSection } from './SaveCtaSection'
+import { PlanProUnlockStrip } from './PlanProUnlockStrip'
 import {
   STRATEGIES_WITHOUT_OPTIONS,
   STRATEGY_EXCLUDED_TEMPLATE_IDS,
@@ -172,6 +175,9 @@ export function StrategyWorkbench({
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
+  const planContinuity = useMemo(() => readPlanContinuity(address), [address])
+  const fromPlan = Boolean(planContinuity)
+  const worksheetUnlocked = isAuthenticated || fromPlan
   const {
     preferredStrategyIds,
     experience,
@@ -263,6 +269,9 @@ export function StrategyWorkbench({
   // actually changed vs the prior baseline. Drives the soft glow on
   // SliderRow's via WorksheetHighlightContext.
   const [highlightedFields, setHighlightedFields] = useState<Set<string>>(() => new Set())
+  const [showPlanProCta, setShowPlanProCta] = useState(false)
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
+  const planProCtaTrackedRef = useRef(false)
 
   // Wipe highlights whenever the analyzed address changes — different property,
   // different baseline.
@@ -270,6 +279,18 @@ export function StrategyWorkbench({
     setHighlightedFields(new Set())
     setAppliedPathId(null)
   }, [addressParam])
+
+  useEffect(() => {
+    if (!fromPlan || isPro) return
+    const timer = window.setTimeout(() => setShowPlanProCta(true), 15_000)
+    return () => window.clearTimeout(timer)
+  }, [fromPlan, isPro])
+
+  useEffect(() => {
+    if (!showPlanProCta || planProCtaTrackedRef.current) return
+    planProCtaTrackedRef.current = true
+    trackEvent('plan_pro_cta_shown', { family: planContinuity?.planLabel })
+  }, [showPlanProCta, planContinuity?.planLabel])
   // Merged view used by all downstream calculations.
   const dealMakerOverrides = useMemo(() => {
     if (!initialOverrides && Object.keys(inlineOverrides).length === 0) return null
@@ -975,6 +996,7 @@ export function StrategyWorkbench({
         }, 300)
         scheduleRecalc()
         markWorksheetDirty()
+        if (fromPlan && !isPro) setShowPlanProCta(true)
         return next
       })
       // A manual slider edit invalidates the path-applied glow on this field.
@@ -990,7 +1012,7 @@ export function StrategyWorkbench({
         return next
       })
     },
-    [scheduleRecalc, markWorksheetDirty],
+    [scheduleRecalc, markWorksheetDirty, fromPlan, isPro],
   )
 
   /**
@@ -1119,9 +1141,11 @@ export function StrategyWorkbench({
   const strategyFilteredPaths = strategyExcludeIds
     ? orderedDealStructurePaths.filter((p) => !strategyExcludeIds.has(p.id))
     : orderedDealStructurePaths
-  const optionsSubtitle = appliedPathId
-    ? 'Pre-fills price, rent, financing, and seller-carry sliders.'
-    : `Each Option pre-fills the worksheet to show how this could work as a ${STRATEGY_LABEL[activeStrategyId] ?? 'rental'}.`
+  const optionsSubtitle = fromPlan && appliedPathId
+    ? 'Your plan is applied. Switch Options to compare, or reset to asking.'
+    : appliedPathId
+      ? 'Pre-fills price, rent, financing, and seller-carry sliders.'
+      : `Each Option pre-fills the worksheet to show how this could work as a ${STRATEGY_LABEL[activeStrategyId] ?? 'rental'}.`
 
   const appliedPathEntry = (() => {
     if (!appliedPathId) return null
@@ -1600,6 +1624,8 @@ export function StrategyWorkbench({
             dealGapPct={dealGapPct}
             optionCount={strategyFilteredPaths.slice(0, 4).length}
             isAuthenticated={isAuthenticated}
+            fromPlan={fromPlan}
+            planLabel={planContinuity?.planLabel ?? null}
           />
         )}
 
@@ -1611,19 +1637,19 @@ export function StrategyWorkbench({
           strategyFilteredPaths={strategyFilteredPaths}
           appliedPathId={appliedPathId}
           optionsSubtitle={optionsSubtitle}
-          appliedPathEntry={isAuthenticated ? appliedPathEntry : null}
+          appliedPathEntry={worksheetUnlocked ? appliedPathEntry : null}
           propertyState={propertyInfo?.state ?? parsed.state ?? null}
           onSwitchToLongTerm={() => handleStrategyChange('long-term-rental')}
           onClearPath={clearAppliedPath}
           onApplyPath={(structure, idx) => {
-            if (!isAuthenticated) {
+            if (!worksheetUnlocked) {
               openAuthModal('register')
               return
             }
             applyPathPatch(structure, idx)
           }}
           onShowPitch={(structure) => {
-            if (!isAuthenticated) {
+            if (!worksheetUnlocked) {
               openAuthModal('register')
               return
             }
@@ -1632,6 +1658,14 @@ export function StrategyWorkbench({
         />
 
         {/* Next Steps — authenticated only; anon users see the unlock panel instead */}
+        {fromPlan && showPlanProCta && !isPro && (
+          <PlanProUnlockStrip
+            buyerTotalLabel={formatBuyerDirectoryLabel(null)}
+            lenderTotalLabel={formatLenderDirectoryTotal()}
+            onUpgrade={() => setUpgradeModalOpen(true)}
+          />
+        )}
+
         {isAuthenticated && (
           <NextStepsSection
             isExporting={isExporting}
@@ -1643,11 +1677,12 @@ export function StrategyWorkbench({
           />
         )}
 
-        {/* Financial Breakdown — requires free (logged-in) tier */}
+        {/* Financial Breakdown — free account, or this-tab plan continuity */}
         <AuthGate
           feature="view the full strategy breakdown"
           mode="section"
           overlay={strategyUnlockOverlay}
+          unlocked={worksheetUnlocked}
         >
           <section className="px-[1px] sm:px-5 pt-2 pb-6">
             {/* Strategy Tabs — matches DealMaker page styling, per-strategy color coded */}
@@ -1951,6 +1986,8 @@ export function StrategyWorkbench({
           worksheetDirty={worksheetDirty}
           isSavingWorksheet={isSavingWorksheet}
           savedPropertyId={savedPropertyId}
+          fromPlan={fromPlan}
+          planEmail={planContinuity?.email ?? null}
           onSave={() => {
             save().catch((err) => console.error('Save to DealVault failed:', err))
           }}
@@ -1979,6 +2016,12 @@ export function StrategyWorkbench({
         structure={pitchModalStructure}
         onClose={() => setPitchModalStructure(null)}
         propertyAddress={addressParam}
+      />
+
+      <UpgradeModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        returnTo="/discovery"
       />
     </div>
   )
