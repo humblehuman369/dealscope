@@ -128,6 +128,25 @@ class CacheService:
                 return await self.delete(key)
             return False
 
+    async def set_if_not_exists(self, key: str, value: Any, ttl_seconds: int = DEFAULT_TTL_SECONDS) -> bool:
+        """Set only when the key is missing. Returns True if this caller created it."""
+        try:
+            if self.use_redis and self.redis_client:
+                created = await self.redis_client.set(
+                    key, json.dumps(value, default=str), nx=True, ex=ttl_seconds
+                )
+                return bool(created)
+            cached = self._memory_cache.get(key)
+            if cached:
+                import time
+
+                if time.time() < cached.get("expires_at", 0):
+                    return False
+            return await self.set(key, value, ttl_seconds)
+        except Exception as e:
+            logger.warning(f"Cache set_if_not_exists error for {key}: {e}")
+            return await self.set(key, value, ttl_seconds)
+
     async def exists(self, key: str) -> bool:
         """Check if key exists in cache."""
         try:

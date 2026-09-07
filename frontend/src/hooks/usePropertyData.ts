@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { canonicalizeAddressForIdentity } from '@/utils/addressIdentity'
 import type { PropertyResponse } from '@dealscope/shared'
 
@@ -110,6 +110,12 @@ export function usePropertyData() {
           return validatePropertyResponse(raw)
         },
         staleTime: PROPERTY_STALE_TIME,
+        retry: (failureCount, error) => {
+          if (error instanceof ApiError && (error.status === 403 || error.status === 401)) {
+            return false
+          }
+          return failureCount < 2
+        },
       })
     },
     [queryClient],

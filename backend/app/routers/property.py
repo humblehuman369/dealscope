@@ -104,8 +104,67 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
+# Long state names → USPS abbr so "Florida" and "FL" share one anon quota slot.
+_STATE_NAME_TO_ABBR = {
+    "alabama": "al",
+    "alaska": "ak",
+    "arizona": "az",
+    "arkansas": "ar",
+    "california": "ca",
+    "colorado": "co",
+    "connecticut": "ct",
+    "delaware": "de",
+    "florida": "fl",
+    "georgia": "ga",
+    "hawaii": "hi",
+    "idaho": "id",
+    "illinois": "il",
+    "indiana": "in",
+    "iowa": "ia",
+    "kansas": "ks",
+    "kentucky": "ky",
+    "louisiana": "la",
+    "maine": "me",
+    "maryland": "md",
+    "massachusetts": "ma",
+    "michigan": "mi",
+    "minnesota": "mn",
+    "mississippi": "ms",
+    "missouri": "mo",
+    "montana": "mt",
+    "nebraska": "ne",
+    "nevada": "nv",
+    "newhampshire": "nh",
+    "newjersey": "nj",
+    "newmexico": "nm",
+    "newyork": "ny",
+    "northcarolina": "nc",
+    "northdakota": "nd",
+    "ohio": "oh",
+    "oklahoma": "ok",
+    "oregon": "or",
+    "pennsylvania": "pa",
+    "rhodeisland": "ri",
+    "southcarolina": "sc",
+    "southdakota": "sd",
+    "tennessee": "tn",
+    "texas": "tx",
+    "utah": "ut",
+    "vermont": "vt",
+    "virginia": "va",
+    "washington": "wa",
+    "westvirginia": "wv",
+    "wisconsin": "wi",
+    "wyoming": "wy",
+    "districtofcolumbia": "dc",
+}
+
+
 def _address_fingerprint(full_address: str) -> str:
     normalized = re.sub(r"[^a-z0-9]", "", full_address.lower())
+    # Longest names first so "westvirginia" is not reduced as "virginia".
+    for name, abbr in sorted(_STATE_NAME_TO_ABBR.items(), key=lambda kv: -len(kv[0])):
+        normalized = normalized.replace(name, abbr)
     return hashlib.sha256(normalized.encode()).hexdigest()[:16]
 
 
@@ -159,11 +218,18 @@ async def _check_anonymous_quota(http_request: Request, full_address: str) -> tu
 
 
 async def _record_anonymous_analysis(counter_key: str, marker_key: str) -> None:
-    """Count one anonymous analysis after a successful fetch (24h windows)."""
+    """Count one anonymous analysis after a successful fetch (24h windows).
+
+    The address marker is claimed first (SET NX) so parallel searches of the
+    same property — Discovery + workbench, React Strict Mode — only burn one
+    slot.
+    """
     cache = get_cache_service()
+    claimed = await cache.set_if_not_exists(marker_key, 1, ttl_seconds=86400)
+    if not claimed:
+        return
     used = await cache.get(counter_key) or 0
     await cache.set(counter_key, int(used) + 1, ttl_seconds=86400)
-    await cache.set(marker_key, 1, ttl_seconds=86400)
 
 
 @router.post("/properties/search", response_model=PropertyResponse)

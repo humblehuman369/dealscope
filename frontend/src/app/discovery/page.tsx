@@ -891,10 +891,11 @@ function VerdictContent() {
         setError(err instanceof Error ? err.message : 'Failed to load property')
         if (err instanceof ApiError && err.status === 403) {
           const limitType = err.detail?.limit_type
+          const code = err.code ?? err.detail?.code
           if (limitType === 'analyses') {
             setLimitError('free')
             trackEvent('analysis_limit_reached', { kind: 'free_monthly' })
-          } else if (limitType === 'anonymous_analyses') {
+          } else if (limitType === 'anonymous_analyses' || code === 'ANONYMOUS_LIMIT_REACHED') {
             setLimitError('anonymous')
             trackEvent('analysis_limit_reached', { kind: 'anonymous_daily' })
           }

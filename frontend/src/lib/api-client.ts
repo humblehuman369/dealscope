@@ -397,12 +397,28 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
       )
     }
     const message = formatApiErrorDetail(errBody.detail, response.status, errBody)
+    const envelope =
+      errBody.error && typeof errBody.error === 'object' && !Array.isArray(errBody.error)
+        ? (errBody.error as Record<string, unknown>)
+        : undefined
+    const envelopeDetails =
+      envelope?.details && typeof envelope.details === 'object' && !Array.isArray(envelope.details)
+        ? (envelope.details as Record<string, unknown>)
+        : undefined
     const detailObj =
       errBody.detail && typeof errBody.detail === 'object' && !Array.isArray(errBody.detail)
         ? (errBody.detail as Record<string, unknown>)
-        : undefined
+        : envelopeDetails
+          ? {
+              ...envelopeDetails,
+              ...(typeof envelope?.code === 'string' ? { code: envelope.code } : {}),
+              ...(typeof envelope?.message === 'string' ? { message: envelope.message } : {}),
+            }
+          : undefined
     const code =
+      (typeof detailObj?.code === 'string' ? detailObj.code : undefined) ??
       (typeof detailObj?.error === 'string' ? detailObj.error : undefined) ??
+      (typeof envelope?.code === 'string' ? envelope.code : undefined) ??
       (errBody.code as string | undefined)
     throw new ApiError(message, response.status, code, detailObj)
   }

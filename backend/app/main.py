@@ -381,27 +381,43 @@ _STATUS_TO_CODE = {
 }
 
 
+def http_error_payload(status_code: int, detail: object) -> dict:
+    """Canonical `{error: {code, message, details}}` body for HTTPExceptions.
+
+    Structured dict details (quota, auth, etc.) keep their ``message`` and
+    extra fields. ``str(detail)`` on a dict leaked Python reprs to the UI.
+    """
+    if isinstance(detail, dict) and "error" in detail:
+        return detail
+
+    if isinstance(detail, dict):
+        message = detail.get("message") or detail.get("msg")
+        if not isinstance(message, str) or not message:
+            message = "Request failed"
+        code = detail.get("code") if isinstance(detail.get("code"), str) else None
+        extra = {k: v for k, v in detail.items() if k not in {"message", "msg"}}
+        return {
+            "error": {
+                "code": code or _STATUS_TO_CODE.get(status_code, "HTTP_ERROR"),
+                "message": message,
+                "details": extra,
+            },
+            "detail": detail,
+        }
+
+    return {
+        "error": {
+            "code": _STATUS_TO_CODE.get(status_code, "HTTP_ERROR"),
+            "message": detail if isinstance(detail, str) else str(detail),
+            "details": {},
+        }
+    }
+
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """Normalise all HTTPException responses into the canonical error shape."""
-    detail = exc.detail
-    if isinstance(detail, dict) and "error" in detail:
-        # Already in canonical shape — pass through
-        return JSONResponse(status_code=exc.status_code, content=detail)
-
-    code = _STATUS_TO_CODE.get(exc.status_code, "HTTP_ERROR")
-    message = detail if isinstance(detail, str) else str(detail)
-
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "error": {
-                "code": code,
-                "message": message,
-                "details": {},
-            }
-        },
-    )
+    return JSONResponse(status_code=exc.status_code, content=http_error_payload(exc.status_code, exc.detail))
 
 
 @app.exception_handler(Exception)

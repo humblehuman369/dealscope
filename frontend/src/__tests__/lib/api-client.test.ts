@@ -112,6 +112,36 @@ describe('API Client', () => {
 
       await expect(apiRequest('/api/v1/test')).rejects.toThrow('Server error')
     })
+
+    it('surfaces anonymous quota fields from the canonical error envelope', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        text: async () =>
+          JSON.stringify({
+            error: {
+              code: 'ANONYMOUS_LIMIT_REACHED',
+              message: "You've used today's 3 free analyses. Create a free account to keep analyzing properties.",
+              details: { limit_type: 'anonymous_analyses', current: 3, limit: 3 },
+            },
+            detail: {
+              code: 'ANONYMOUS_LIMIT_REACHED',
+              limit_type: 'anonymous_analyses',
+            },
+          }),
+      })
+
+      const { apiRequest, ApiError } = await import('@/lib/api-client')
+      await expect(apiRequest('/api/v1/properties/search')).rejects.toSatisfy((err: unknown) => {
+        expect(err).toBeInstanceOf(ApiError)
+        const e = err as InstanceType<typeof ApiError>
+        expect(e.status).toBe(403)
+        expect(e.message).toMatch(/today's 3 free analyses/)
+        expect(e.detail?.limit_type).toBe('anonymous_analyses')
+        expect(e.code).toBe('ANONYMOUS_LIMIT_REACHED')
+        return true
+      })
+    })
   })
 
   describe('CSRF token', () => {
