@@ -29,7 +29,7 @@ from app.schemas.analytics import (
 )
 from app.schemas.property import AllAssumptions
 from app.schemas.valuation import ValuationSnapshot
-from app.services.calculators import calculate_monthly_mortgage
+from app.services.calculators import calculate_monthly_mortgage, listing_dom_usable
 from app.services.calculators.common import (
     bank_loan_after_seller_carry,
     calculate_cap_rate,
@@ -1312,7 +1312,12 @@ def compute_iq_verdict(
         utilities_annual=utilities_annual,
         other_annual_expenses=other_annual,
         is_listed=bool(input_data.is_listed) if input_data.is_listed is not None else True,
-        days_on_market=input_data.days_on_market,
+        days_on_market=(
+            input_data.days_on_market
+            if (input_data.is_listed is not False)
+            and listing_dom_usable(input_data.listing_status, is_listed=input_data.is_listed)
+            else None
+        ),
         is_fsbo=bool(input_data.is_fsbo),
         is_foreclosure=bool(input_data.is_foreclosure),
         is_bank_owned=bool(input_data.is_bank_owned),

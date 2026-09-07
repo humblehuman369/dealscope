@@ -5,6 +5,41 @@
 import { encodeScenario, type ScenarioPayloadV1 } from '@/lib/dealStructures/scenarioPayload'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 
+export function snapshotFromStructure(structure: DealStructure): ScenarioPayloadV1['snapshot'] {
+  return {
+    headline: structure.headline,
+    familyLabel: structure.familyLabel,
+    family: structure.family,
+    bullets: structure.bullets,
+    levers: structure.levers,
+    monthlySavings: structure.monthlySavings,
+    cashRequired: structure.cashRequired,
+    monthlyCashFlow: structure.monthlyCashFlow ?? null,
+  }
+}
+
+export function structureFromScenarioSnapshot(
+  payload: ScenarioPayloadV1,
+): DealStructure | null {
+  const snap = payload.snapshot
+  if (!snap) return null
+  return {
+    id: payload.structureId,
+    family: (snap.family || payload.family) as DealStructure['family'],
+    familyLabel: snap.familyLabel,
+    realismLabel: 'Your plan',
+    headline: snap.headline,
+    bullets: snap.bullets ?? [],
+    summary: '',
+    levers: snap.levers ?? [],
+    monthlySavings: snap.monthlySavings,
+    cashRequired: snap.cashRequired,
+    monthlyCashFlow: snap.monthlyCashFlow ?? null,
+    rankingScore: 0,
+    preLoadedRecord: payload.levers,
+  }
+}
+
 const LAST_KEY = 'dealscope_last_scenario_v1'
 const SAVED_LIST_KEY = 'dealscope_saved_three_path_scenarios_v1'
 
@@ -110,6 +145,8 @@ export function preLoadedRecordToDealMakerPatch(
     if (typeof ex.seller_carry_rate === 'number') patch.sellerInterestRate = ex.seller_carry_rate
     if (typeof ex.seller_carry_term_years === 'number')
       patch.sellerTermYears = ex.seller_carry_term_years
+    if (typeof ex.seller_carry_balloon_years === 'number')
+      patch.sellerBalloonYears = ex.seller_carry_balloon_years
     if (typeof ex.seller_carry_interest_only === 'boolean')
       patch.sellerInterestOnly = ex.seller_carry_interest_only
 
@@ -145,6 +182,7 @@ export function buildScenarioPayload(
     family: structure.family,
     label,
     levers: { ...raw },
+    snapshot: snapshotFromStructure(structure),
   }
 }
 

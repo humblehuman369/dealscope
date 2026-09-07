@@ -35,6 +35,26 @@ NOT AVAILABLE (require external data sources):
 - Tenant Issues - Requires property management data
 """
 
+# Zillow/Axesso still return daysOnZillow for off-market / sold pages. That is
+# page age, not listing age — treating it as DOM fabricates seller fatigue.
+_DOM_UNUSABLE_STATUSES = frozenset({"OFF_MARKET", "SOLD", "OTHER", "FOR_RENT"})
+
+
+def listing_dom_usable(
+    listing_status: str | None,
+    *,
+    is_listed: bool | None = None,
+) -> bool:
+    """True only when days-on-market is a live listing signal, not page age."""
+    if is_listed is False:
+        return False
+    if listing_status:
+        status = str(listing_status).upper().replace(" ", "_")
+        if status in _DOM_UNUSABLE_STATUSES or "FOR_RENT" in status:
+            return False
+        return True
+    return True
+
 
 def calculate_seller_motivation(
     # Days on Market
@@ -94,6 +114,9 @@ def calculate_seller_motivation(
         "raw_value": days_on_market,
         "source": "AXESSO",
     }
+
+    if not listing_dom_usable(listing_status):
+        days_on_market = None
 
     if days_on_market is not None:
         dom_indicator["detected"] = True

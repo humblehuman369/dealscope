@@ -30,6 +30,7 @@ from app.services.calculators.scoring import (
 from app.services.calculators.seller_motivation import (
     calculate_seller_motivation,
     extract_condition_keywords,
+    listing_dom_usable,
 )
 from app.services.calculators.str_calc import calculate_str
 from app.services.calculators.wholesale import calculate_wholesale
@@ -56,6 +57,7 @@ __all__ = [
     "calculate_wholesale",
     "extract_condition_keywords",
     "get_availability_ranking",
+    "listing_dom_usable",
     "run_sensitivity_analysis",
     "validate_financial_inputs",
 ]

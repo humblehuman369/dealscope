@@ -152,6 +152,18 @@ describe('preferredFamilyOrder / pickRecommended', () => {
     expect(pickRecommended([structure('seller-second-zero-balloon', 'financing')], answers)).toBeNull()
     expect(pickRecommended([], answers)).toBeNull()
   })
+
+  it('does not crown a cash-flow plan that loses to a bank-only alternative', () => {
+    const answers: WizardAnswers = {
+      cash: '75_150k',
+      priority: 'cash_flow',
+      terms: 'seller_financing',
+      ownerOccupy: null,
+    }
+    const price = structure('price-negotiation', 'price', { monthlyCashFlow: 80, cashRequired: 140_000 })
+    const blended = structure('blended-plan', 'blended', { monthlyCashFlow: -40, cashRequired: 53_000 })
+    expect(pickRecommended([blended, price], answers)?.id).toBe('price-negotiation')
+  })
 })
 
 describe('step sequence', () => {
@@ -166,6 +178,11 @@ describe('step sequence', () => {
 describe('describeCashChoice', () => {
   it('teaches the down payment and cash to close inline', () => {
     expect(describeCashChoice('25_75k', 400_000)).toBe('≈ 10% down · ~$50,000 to close at asking')
+  })
+
+  it('says the bracket will not fit when asking cash-to-close exceeds the cap', () => {
+    expect(describeCashChoice('under_25k', 870_000)).toMatch(/^Won’t fit this bracket at asking/)
+    expect(describeCashChoice('under_25k', 870_000)).toMatch(/to close at asking/)
   })
 })
 
@@ -232,7 +249,10 @@ describe('fourWays vocabulary', () => {
   })
 
   it('leads a small gap with one play and a backup, and only blends a deep gap', () => {
-    expect(situationTitle(1_689)).toBe('You’re $1,689 from cash flow')
+    expect(situationTitle(1_689)).toBe('You’re $1,689 from the profit zone')
+    expect(situationTitle(184_548, 148_465)).toBe(
+      'You’re $148,465 from cash flow — $184,548 from the profit zone',
+    )
     expect(situationSub(0.5, 40)).toBe('That’s a conversation, not a restructure.')
     expect(needsBlend({ gapPct: 0.5 }, [])).toBe(false)
     expect(needsBlend({ gapPct: 33 }, [])).toBe(true)
@@ -249,6 +269,20 @@ describe('fourWays vocabulary', () => {
     })
     expect(defaultAdvice({ gapPct: 0.5, gapAmount: 1_689 }, price, terms)).toMatch(/You don’t need both/)
     expect(defaultAdvice({ gapPct: 0.5, gapAmount: 1_689 }, price, terms)).toMatch(/Ask \$1,689 less/)
+
+    const deepPrice = structure('price-negotiation', 'price', {
+      breakeven: {
+        changePct: 21, changeAmount: 184_548, resultAmount: 685_575, resultLabel: 'Target Buy', closesGapAlone: true, termsNote: null,
+      },
+    })
+    const deepTerms = structure('seller-second-zero-balloon', 'financing', {
+      breakeven: {
+        changePct: 14, changeAmount: 122_942, resultAmount: 122_942, resultLabel: 'Seller financing', closesGapAlone: false, termsNote: null,
+      },
+    })
+    const blendAdvice = defaultAdvice({ gapPct: 21, gapAmount: 184_548 }, deepPrice, deepTerms)
+    expect(blendAdvice).toMatch(/hold \$122,942 at 0%/)
+    expect(blendAdvice).not.toMatch(/Pair a smaller price move with keep their price/)
   })
 
   it('compares cash to close against buying at asking, and ignores rounding noise', () => {

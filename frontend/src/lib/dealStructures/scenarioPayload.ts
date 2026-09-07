@@ -2,6 +2,23 @@
  * Versioned URL payload for Three Paths → Strategy handoff.
  */
 
+/** Compact card snapshot so the Workbench does not rebind a re-solved structure. */
+export interface AppliedStructureSnapshot {
+  headline: string
+  familyLabel: string
+  family: string
+  bullets?: string[]
+  levers?: Array<{
+    label: string
+    beforeLabel: string
+    afterLabel: string
+    deltaLabel?: string | null
+  }>
+  monthlySavings: number
+  cashRequired: number
+  monthlyCashFlow?: number | null
+}
+
 export interface ScenarioPayloadV1 {
   v: 1
   structureId: string
@@ -10,6 +27,8 @@ export interface ScenarioPayloadV1 {
   label: string
   /** Snake_case keys aligned with backend pre_loaded_record */
   levers: Record<string, unknown>
+  /** Optional view of the structure the user actually saved — not a later re-solve. */
+  snapshot?: AppliedStructureSnapshot
 }
 
 const MAX_ENCODED_CHARS = 2048
@@ -49,7 +68,9 @@ function base64UrlToBytes(raw: string): Uint8Array | null {
 }
 
 export function encodeScenario(p: ScenarioPayloadV1): string {
-  const json = JSON.stringify(p)
+  // Keep the URL compact — the card snapshot lives in localStorage / the claim body.
+  const { snapshot: _omit, ...rest } = p
+  const json = JSON.stringify(rest)
   const bytes = new TextEncoder().encode(json)
   const enc = bytesToBase64Url(bytes)
   if (enc.length > MAX_ENCODED_CHARS) {

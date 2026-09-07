@@ -54,6 +54,8 @@ export interface DealStructure {
   summary: string
   levers: DealStructureLever[]
   monthlySavings: number
+  /** Absolute monthly CF after this structure. Distinct from monthlySavings (delta vs asking). */
+  monthlyCashFlow?: number | null
   cashRequired: number
   rankingScore: number
   pitchScript?: string | null
@@ -215,6 +217,12 @@ function formatSavings(monthlySavings: number): string | null {
   return `Saves $${rounded.toLocaleString('en-US')}/mo`
 }
 
+function formatAbsoluteCashFlow(monthlyCashFlow: number): string {
+  const rounded = Math.round(monthlyCashFlow)
+  const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : ''
+  return `${sign}$${Math.abs(rounded).toLocaleString('en-US')}/mo`
+}
+
 export interface PathOptionCardProps {
   structure: DealStructure
   index: number
@@ -236,7 +244,11 @@ export function PathOptionCard({
   applied = false,
 }: PathOptionCardProps): ReactNode {
   const accent = FAMILY_ACCENT[structure.family] || 'var(--accent-sky)'
-  const savingsLabel = formatSavings(structure.monthlySavings)
+  const absoluteCf =
+    typeof structure.monthlyCashFlow === 'number' && Number.isFinite(structure.monthlyCashFlow)
+      ? formatAbsoluteCashFlow(structure.monthlyCashFlow)
+      : null
+  const savingsLabel = absoluteCf ?? formatSavings(structure.monthlySavings)
   const showAttorneyLine = structure.family === 'strategy_switch' || structure.family === 'blended'
   const bullets = structure.bullets && structure.bullets.length > 0 ? structure.bullets : null
 

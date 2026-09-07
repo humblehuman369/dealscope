@@ -44,13 +44,20 @@ def _is_distressed(ctx: StructureContext) -> bool:
     return bool(ctx.is_foreclosure or ctx.is_bank_owned or ctx.is_auction)
 
 
+def _listed_dom(ctx: StructureContext) -> int | None:
+    """Days on market only when this is a live listing — off-market page age is not DOM."""
+    if not ctx.is_listed:
+        return None
+    return ctx.days_on_market
+
+
 def seller_signal_reasons(ctx: StructureContext) -> list[str]:
     """Plain-English facts about this seller, strongest first. Empty when nothing is known."""
     reasons: list[str] = []
     if ctx.price_reductions > 0:
         n = ctx.price_reductions
         reasons.append(f"{n} price cut{'s' if n > 1 else ''} already — the seller is adjusting to the market")
-    dom = ctx.days_on_market
+    dom = _listed_dom(ctx)
     if dom is not None and dom >= 60:
         reasons.append(f"{dom_phrase(dom)} — well past the point where sellers start listening")
     if ctx.is_bank_owned:
@@ -108,7 +115,7 @@ def _financing(ctx: StructureContext, structure: DealStructure) -> Negotiability
     if ctx.is_absentee_owner:
         score += 10
         reasons.append("Absentee owner — landlords often prefer a secured note over a taxable lump sum")
-    dom = ctx.days_on_market
+    dom = _listed_dom(ctx)
     if dom is not None and dom >= 90:
         score += 8
         reasons.append(

@@ -1592,11 +1592,12 @@ function VerdictContent() {
     analysis.cumulativeInvestorPct ?? analysis.dealProbabilityScore ?? fallbackProbability
   const investorRegionLabel = analysis.investorProbabilityRegionLabel
   const probabilityTail =
-    cumulativeInvestorPct > 50
-      ? 'This is well within reach.'
+    (cumulativeInvestorPct > 50
+      ? 'This is well within reach. '
       : cumulativeInvestorPct >= 20
-        ? 'Achievable with the right approach.'
-        : "You'll need leverage, timing, or a motivated seller."
+        ? 'Achievable with the right approach. '
+        : "You'll need leverage, timing, or a motivated seller. ") +
+    'Calibrated regional estimate — not live transaction data. See Methodology.'
   const isOffMarket = !isListed
   const tier = getDealGapTier(-effectiveDisplayPct, isListed)
   const hasFourWays = Boolean(
@@ -2494,7 +2495,7 @@ function VerdictContent() {
                         ({dealGapDisplay} gap)
                       </span>
                     }
-                    detail={`A ${fmtShort(discountAmount)} discount below market value for positive cash flow.`}
+                    detail={`A ${fmtShort(discountAmount)} discount below market to the profit zone (Target Buy). Cash flow breakeven is Income Value.`}
                   />
                   <InsightItem
                     delay={160}
@@ -2675,6 +2676,7 @@ function VerdictContent() {
                 className="text-[0.85rem] leading-relaxed mx-auto mb-4 max-w-lg"
                 style={{ color: 'var(--text-secondary)' }}
               >
+                The verdict is free.{' '}
                 <button
                   type="button"
                   onClick={() => openAuthModal('login')}
@@ -2689,7 +2691,7 @@ function VerdictContent() {
                 >
                   Sign in
                 </button>{' '}
-                to use live sliders and save assumptions across visits.
+                only if you want live sliders and saved assumptions.
               </p>
             )}
             <button
@@ -2714,7 +2716,10 @@ function VerdictContent() {
               </svg>
             </button>
             <div className="flex justify-center gap-6 mt-5">
-              {['Try it Free', 'No signup needed', '60 seconds'].map((f, i) => (
+              {(dealGapPct > 20 && !isAuthenticated
+                ? ['Verdict is free', 'No card required', '60 seconds']
+                : ['Try it Free', 'No signup needed', '60 seconds']
+              ).map((f, i) => (
                 <div key={i} className="flex items-center gap-1.5 sm:gap-2">
                   <svg
                     className="w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]"

@@ -60,6 +60,7 @@ from app.services.calculators import (
     calculate_house_hack,
     calculate_ltr,
     calculate_seller_motivation,
+    listing_dom_usable,
     calculate_str,
     calculate_wholesale,
 )
@@ -1402,7 +1403,13 @@ class PropertyService:
         (no listing/ownership/price data) so the UI shows nothing rather
         than a fabricated score.
         """
-        days_on_market = normalized.get("days_on_market")
+        listing_status = normalized.get("listing_status")
+        raw_dom = normalized.get("days_on_market")
+        days_on_market = (
+            raw_dom
+            if listing_dom_usable(listing_status if isinstance(listing_status, str) else None)
+            else None
+        )
         market_median_dom = normalized.get("market_days_on_market")
         is_owner_occupied = normalized.get("is_owner_occupied")
         is_absentee_owner = normalized.get("is_absentee_owner")

@@ -126,9 +126,18 @@ export function needsBlend(
   return summary.gapPct > 20
 }
 
-export function situationTitle(gapAmount: number | null | undefined): string {
-  const gap = formatMoney(gapAmount)
-  return gap ? `You’re ${gap} from cash flow` : 'How to get to cash flow'
+export function situationTitle(
+  gapAmount: number | null | undefined,
+  cashFlowGap?: number | null,
+): string {
+  const profit = formatMoney(gapAmount)
+  const cash = formatMoney(cashFlowGap)
+  if (cash && profit) {
+    return `You’re ${cash} from cash flow — ${profit} from the profit zone`
+  }
+  if (cash) return `You’re ${cash} from cash flow`
+  if (profit) return `You’re ${profit} from the profit zone`
+  return 'How to get to cash flow'
 }
 
 export function situationSub(gapPct: number | null | undefined, monthlyShortfall: number | null | undefined): string {
@@ -252,7 +261,13 @@ export function defaultAdvice(
     return `${play}. That is the whole conversation.`
   }
   if (needsBlend(summary, [lead, backup].filter((p): p is DealStructure => p != null)) && backupPlay) {
-    return `Sellers concede a little on several things more readily than a lot on one. Pair a smaller price move with ${backupPlay.charAt(0).toLowerCase()}${backupPlay.slice(1)}.`
+    if (backup?.family === 'financing' && backup.breakeven) {
+      const carry = formatMoney(backup.breakeven.resultAmount)
+      return carry
+        ? `Sellers concede a little on several things more readily than a lot on one. Cut the price some and ask them to hold ${carry} at 0% — two smaller asks instead of one deep cut.`
+        : 'Sellers concede a little on several things more readily than a lot on one. Pair a smaller price cut with a 0% seller note.'
+    }
+    return `Sellers concede a little on several things more readily than a lot on one. Pair a smaller price cut with ${backupPlay.charAt(0).toLowerCase()}${backupPlay.slice(1)}.`
   }
   return `${play}. That is the cleanest path to cash flow.`
 }

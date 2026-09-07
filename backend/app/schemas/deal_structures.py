@@ -81,6 +81,10 @@ class DealStructure(BaseModel):
     summary: str = Field(..., description="One-sentence summary under the levers")
     levers: list[StructureLever] = Field(default_factory=list)
     monthly_savings: float = Field(0, description="Estimated monthly cash-flow improvement vs baseline")
+    monthly_cash_flow: float | None = Field(
+        None,
+        description="Absolute monthly cash flow after this structure (worksheet-aligned), not the delta vs asking",
+    )
     cash_required: float = Field(0, description="Estimated total buyer cash at close")
     ranking_score: float = Field(0, description="0-100 realism score; higher = more plausible")
     pitch_script: str | None = Field(None, description="Negotiation script the buyer can copy/paste")

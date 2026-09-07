@@ -26,6 +26,7 @@ export interface PlanNumbers {
   listPrice: number | null
   targetBuyPrice: number | null
   incomeValue: number | null
+  monthlyShortfall: number | null
 }
 
 export interface UseMakeItWorkArgs {
@@ -89,7 +90,12 @@ export function useMakeItWork({
   const [phase, setPhase] = useState<WizardPhase>(saveOnly ? 'result' : 'questions')
   const [paths, setPaths] = useState<DealStructure[]>([])
   const [recommended, setRecommended] = useState<DealStructure | null>(null)
-  const [numbers, setNumbers] = useState<PlanNumbers>({ listPrice, targetBuyPrice, incomeValue })
+  const [numbers, setNumbers] = useState<PlanNumbers>({
+    listPrice,
+    targetBuyPrice,
+    incomeValue,
+    monthlyShortfall: null,
+  })
   const [narrative, setNarrative] = useState<PlanNarrative | null>(null)
   const [narrativeLoading, setNarrativeLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -186,7 +192,9 @@ export function useMakeItWork({
           (result.deal_structures ?? result.dealStructures) as Record<string, unknown> | undefined,
         )
         const nextPaths = mapped?.paths ?? []
-        const pick = pickRecommended(nextPaths, finalAnswers, focusFamily)
+        const pick = pickRecommended(nextPaths, finalAnswers, focusFamily, {
+          monthlyShortfall: mapped?.breakevenSummary?.monthlyShortfall ?? null,
+        })
         const num = (v: unknown): number | null =>
           typeof v === 'number' && Number.isFinite(v) ? v : null
 
@@ -196,6 +204,7 @@ export function useMakeItWork({
           listPrice: num(result.list_price ?? result.listPrice) ?? listPrice,
           targetBuyPrice: num(result.purchase_price ?? result.purchasePrice) ?? targetBuyPrice,
           incomeValue: num(result.income_value ?? result.incomeValue) ?? incomeValue,
+          monthlyShortfall: mapped?.breakevenSummary?.monthlyShortfall ?? null,
         })
         setPhase('result')
         trackEvent('make_it_work_plan_viewed', {

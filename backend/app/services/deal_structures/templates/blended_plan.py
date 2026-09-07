@@ -331,7 +331,7 @@ def solve(
     # Bullets carry the full math for the blended card (no separate lever block on the card).
     # Each bullet uses the "Label: before → after" pattern for at-a-glance scanning.
     bullets = [
-        f"Target price:\u00a0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
+        f"Offer price:\u00a0{fmt_money(ctx.list_price)} → {fmt_money(new_price)}",
         f"Seller 2nd:\u00a0{fmt_money(chosen_second)} (0%, {DEFAULT_BALLOON_YEARS}yr balloon)",
         f"Target Rent:\u00a0${round(ctx.monthly_rent):,} → ${round(new_rent):,}  +{bump_pct:.1f}%",
     ]
@@ -430,7 +430,7 @@ def solve(
         summary=summary,
         levers=[
             StructureLever(
-                label="Target price",
+                label="Offer price",
                 before_label=fmt_money(ctx.list_price),
                 after_label=fmt_money(new_price),
                 delta_label=fmt_pct_delta(ctx.list_price, new_price),
@@ -449,6 +449,7 @@ def solve(
             ),
         ],
         monthly_savings=monthly_savings,
+        monthly_cash_flow=round(cf, 2),
         cash_required=float(cash_required),
         ranking_score=ranking,
         pitch_script=pitch,
@@ -463,7 +464,12 @@ def solve(
                 "seller_carry_rate": 0.0,
                 "seller_carry_term_years": DEFAULT_BALLOON_YEARS,
                 "seller_carry_balloon_years": DEFAULT_BALLOON_YEARS,
+                # Engine sizes this 2nd as 0% interest-only / deferred until balloon.
+                "seller_carry_interest_only": True,
+                "down_payment_pct_override": ctx.down_payment_pct,
                 "blended_closes_gap": closes_gap,
+                "monthly_cash_flow": round(cf, 2),
+                "cash_required": float(cash_required),
             },
         },
     )

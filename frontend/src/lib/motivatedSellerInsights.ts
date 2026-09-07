@@ -58,6 +58,14 @@ export function buildMotivatedSellerInsights(
   //    Skip indicators already covered above: "Poor Condition" (listing
   //    language) and "Price Reductions" (the dedicated price-cut insight).
   const coveredIndicators = new Set(['Poor Condition', 'Price Reductions'])
+  const listingStatus = (listing?.listing_status ?? '').toUpperCase().replace(/ /g, '_')
+  const offMarket =
+    listing?.is_off_market === true ||
+    listingStatus === 'OFF_MARKET' ||
+    listingStatus === 'SOLD' ||
+    listingStatus === 'OTHER' ||
+    listingStatus.includes('FOR_RENT')
+  if (offMarket) coveredIndicators.add('Days on Market')
   if (motivation?.indicators?.length) {
     const top = motivation.indicators
       .filter((i) => i.detected && i.score >= 60 && !coveredIndicators.has(i.name))

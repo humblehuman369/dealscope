@@ -98,7 +98,12 @@ describe('BreakevenAnalysis', () => {
   it('leads with the dollar gap and a recommended play, not a textbook title', () => {
     renderSection()
 
-    expect(screen.getByRole('heading', { level: 3, name: 'You’re $152,000 from cash flow' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', {
+        level: 3,
+        name: 'You’re $136,000 from cash flow — $152,000 from the profit zone',
+      }),
+    ).toBeInTheDocument()
     expect(screen.getByText(/short about \$812 a month/)).toBeInTheDocument()
     expect(screen.getByText('Your move')).toBeInTheDocument()
     expect(screen.getAllByText(/Ask \$152,000 less — buy at \$307,000/).length).toBeGreaterThanOrEqual(1)
@@ -196,7 +201,13 @@ describe('BreakevenAnalysis', () => {
       <BreakevenAnalysis
         payload={{
           ...PAYLOAD,
-          breakevenSummary: { ...PAYLOAD.breakevenSummary!, gapPct: 0.5, gapAmount: 1_689, monthlyShortfall: 40 },
+          breakevenSummary: {
+            ...PAYLOAD.breakevenSummary!,
+            gapPct: 0.5,
+            gapAmount: 1_689,
+            monthlyShortfall: 40,
+            incomeValue: 457_800,
+          },
           blendRecommendation: '1213 days on market: a modest price cut plus a small seller-carried second.',
         }}
         address="x"
@@ -206,7 +217,12 @@ describe('BreakevenAnalysis', () => {
       />,
     )
 
-    expect(screen.getByRole('heading', { level: 3, name: 'You’re $1,689 from cash flow' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', {
+        level: 3,
+        name: 'You’re $1,200 from cash flow — $1,689 from the profit zone',
+      }),
+    ).toBeInTheDocument()
     expect(screen.getByText('That’s a conversation, not a restructure.')).toBeInTheDocument()
     expect(screen.queryByText('Most likely close: a blend')).not.toBeInTheDocument()
   })

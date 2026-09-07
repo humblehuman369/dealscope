@@ -590,14 +590,22 @@ class EmailService:
         display_levers: list[tuple[str, str]] = []
         cpp = levers.get("custom_purchase_price")
         if isinstance(cpp, (int, float)) and cpp > 0:
-            display_levers.append(("Target Buy", f"${cpp:,.0f}"))
+            display_levers.append(("Offer price", f"${cpp:,.0f}"))
         cre = levers.get("custom_rent_estimate")
         if isinstance(cre, (int, float)) and cre > 0:
             display_levers.append(("Monthly rent", f"${cre:,.0f}/mo"))
         extras = levers.get("pending_extras") or {}
-        carry = extras.get("seller_carry_amount") if isinstance(extras, dict) else None
+        extras_dict = extras if isinstance(extras, dict) else {}
+        carry = extras_dict.get("seller_carry_amount")
         if isinstance(carry, (int, float)) and carry > 0:
             display_levers.append(("Seller carry", f"${carry:,.0f}"))
+        cash_close = extras_dict.get("cash_required")
+        if isinstance(cash_close, (int, float)) and cash_close > 0:
+            display_levers.append(("Cash to close", f"${cash_close:,.0f}"))
+        monthly_cf = extras_dict.get("monthly_cash_flow")
+        if isinstance(monthly_cf, (int, float)):
+            sign = "+" if monthly_cf >= 0 else "−"
+            display_levers.append(("Monthly cash flow", f"{sign}${abs(monthly_cf):,.0f}/mo"))
         for label, value in display_levers:
             lever_rows += f'''
     <tr>

@@ -48,6 +48,11 @@ def test_reasons_only_mention_present_signals():
     assert "94 days on market" in joined
     assert "Absentee owner" in joined
     assert "Buyer's market" in joined
+
+    off_market = neg.seller_signal_reasons(
+        base_ctx(days_on_market=4666, is_listed=False, market_temperature=None, price_reductions=0)
+    )
+    assert off_market == []
     assert "Foreclosure" not in joined and "FSBO" not in joined.upper()
 
 
@@ -106,6 +111,14 @@ def test_blend_recommendation_reflects_distress_and_signals():
     signalled = neg.build_blend_recommendation(base_ctx(price_reductions=2, deal_gap_pct=18.0), [])
     assert signalled is not None
     assert signalled.startswith("2 price cuts already:")
+
+    off_market = neg.build_blend_recommendation(
+        base_ctx(days_on_market=4666, is_listed=False, market_temperature=None, deal_gap_pct=18.0),
+        [],
+    )
+    assert off_market is not None
+    assert "listed over a year" not in off_market
+    assert "4666" not in off_market
 
 
 def test_engine_payload_carries_summary_and_blend_note():

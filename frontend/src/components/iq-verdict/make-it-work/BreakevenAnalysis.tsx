@@ -411,7 +411,10 @@ export function BreakevenAnalysis({
           className="text-[20px] sm:text-[24px] font-bold"
           style={{ margin: 0, lineHeight: 1.2, color: 'var(--text-heading)' }}
         >
-          {situationTitle(summary?.gapAmount)}
+          {situationTitle(
+            summary?.gapAmount,
+            summary != null ? summary.listPrice - summary.incomeValue : null,
+          )}
         </h3>
         <p
           className="text-[13px] sm:text-[16px]"

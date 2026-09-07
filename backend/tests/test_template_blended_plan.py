@@ -56,7 +56,7 @@ def test_renders_three_levers_in_canonical_order():
     assert result is not None
     assert len(result.levers) == 3
     labels = [lever.label.lower() for lever in result.levers]
-    assert "target price" in labels[0]
+    assert "offer price" in labels[0]
     assert "seller 2nd" in labels[1]
     assert "monthly rent" in labels[2]
 
@@ -73,6 +73,9 @@ def test_pre_loaded_record_carries_all_three_levers():
     extras = record.get("pending_extras", {})
     assert "seller_carry_amount" in extras
     assert extras.get("seller_carry_rate") == 0.0
+    assert extras.get("seller_carry_interest_only") is True
+    assert extras.get("down_payment_pct_override") == ctx.down_payment_pct
+    assert result.monthly_cash_flow is not None
 
 
 def test_realism_label_reflects_close_status():

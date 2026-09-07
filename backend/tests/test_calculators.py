@@ -353,6 +353,17 @@ class TestSellerMotivation:
         result = calculate_seller_motivation(days_on_market=0, price_reduction_count=0)
         assert result["score"] >= 0
 
+    def test_off_market_dom_is_ignored(self):
+        listed = calculate_seller_motivation(
+            days_on_market=4666, listing_status="FOR_SALE", price_reduction_count=0
+        )
+        off = calculate_seller_motivation(
+            days_on_market=4666, listing_status="OFF_MARKET", price_reduction_count=0
+        )
+        assert listed["score"] > off["score"]
+        dom = next(i for i in off["indicators"] if i["name"] == "Days on Market")
+        assert dom["detected"] is False
+
 
 # =====================================================
 # Deal Opportunity Score — motivation override

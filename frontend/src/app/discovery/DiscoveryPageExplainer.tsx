@@ -18,7 +18,7 @@ export function DiscoveryPageExplainer() {
       sections={[
         {
           heading: 'What it tells you',
-          body: 'A Discovery score from 0 to 95 across Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale. For each strategy you see the Target Buy (the price our model says works), the Income Value (the maximum price where cash flow stays positive), and the Deal Gap (the percentage distance between the asking price and Target Buy). Discovery ranks the strategies so you know which path actually fits the property in front of you.',
+          body: 'For each of six strategies — Long-Term Rental, Short-Term Rental, BRRRR, Fix & Flip, House Hack, and Wholesale — you see the Target Buy (the price our model says works), the Income Value (the maximum price where cash flow stays positive), and the Deal Gap (the percentage distance between the asking price and Target Buy). Discovery ranks the strategies so you know which path actually fits the property in front of you.',
         },
         {
           heading: 'How it works',

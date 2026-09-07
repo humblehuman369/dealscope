@@ -21,6 +21,48 @@ function money(value: number | null | undefined): string {
   return `$${Math.round(value).toLocaleString('en-US')}`
 }
 
+function absoluteMonthly(
+  structure: DealStructure,
+  monthlyShortfall: number | null | undefined,
+): number | null {
+  if (typeof structure.monthlyCashFlow === 'number' && Number.isFinite(structure.monthlyCashFlow)) {
+    return structure.monthlyCashFlow
+  }
+  if (
+    monthlyShortfall != null &&
+    Number.isFinite(monthlyShortfall) &&
+    Number.isFinite(structure.monthlySavings)
+  ) {
+    return structure.monthlySavings - monthlyShortfall
+  }
+  return null
+}
+
+function formatSignedMonthly(value: number): string {
+  const rounded = Math.round(value)
+  if (rounded === 0) return '$0/mo'
+  const sign = rounded > 0 ? '+' : '−'
+  return `${sign}$${Math.abs(rounded).toLocaleString('en-US')}/mo`
+}
+
+function formatPlanMonthly(
+  structure: DealStructure,
+  monthlyShortfall: number | null | undefined,
+): string {
+  const abs = absoluteMonthly(structure, monthlyShortfall)
+  if (abs != null) return formatSignedMonthly(abs)
+  return formatMonthlySavings(structure.monthlySavings)?.replace('Saves ', 'Improves asking by +') ?? '—'
+}
+
+function planMonthlyAccent(
+  structure: DealStructure,
+  monthlyShortfall: number | null | undefined,
+): string {
+  const abs = absoluteMonthly(structure, monthlyShortfall)
+  if (abs != null && abs < 0) return 'var(--status-negative, #ef4444)'
+  return 'var(--status-positive)'
+}
+
 function nameFor(structure: DealStructure): string {
   return isFourWayFamily(structure.family) ? WAY_NAMES[structure.family] : structure.familyLabel
 }
@@ -217,9 +259,9 @@ export function PlanResult({
         {structure ? (
           <>
             <BigNumber
-              label="Monthly"
-              value={formatMonthlySavings(structure.monthlySavings)?.replace('Saves ', '+') ?? '—'}
-              accent="var(--status-positive)"
+              label="Monthly cash flow"
+              value={formatPlanMonthly(structure, numbers.monthlyShortfall)}
+              accent={planMonthlyAccent(structure, numbers.monthlyShortfall)}
             />
             <BigNumber label="Cash to close" value={`~${money(structure.cashRequired)}`} />
           </>
@@ -248,9 +290,9 @@ export function PlanResult({
                 }}
               >
                 {nameFor(alt)}
-                {formatMonthlySavings(alt.monthlySavings) ? (
+                {formatPlanMonthly(alt, numbers.monthlyShortfall) !== '—' ? (
                   <span className="tabular-nums" style={{ marginLeft: 6, color: 'var(--text-secondary)' }}>
-                    {formatMonthlySavings(alt.monthlySavings)?.replace('Saves ', '+')}
+                    {formatPlanMonthly(alt, numbers.monthlyShortfall)}
                   </span>
                 ) : null}
               </button>

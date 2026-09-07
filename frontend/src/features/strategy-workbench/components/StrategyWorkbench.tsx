@@ -47,6 +47,7 @@ import {
   PATH_PATCH_FIELD_KEYS,
   preLoadedRecordToDealMakerPatch,
   readLastAppliedScenario,
+  structureFromScenarioSnapshot,
   writeLastAppliedScenario,
 } from '@/lib/dealStructures/loadScenario'
 import { mapDealStructuresFromApi } from '@/lib/dealStructures/mapDealStructures'
@@ -274,6 +275,9 @@ export function StrategyWorkbench({
   }, [inlineOverrides])
   // Currently applied Three Paths structure (so the matching button highlights).
   const [appliedPathId, setAppliedPathId] = useState<string | null>(null)
+  /** Snapshot of the structure the user applied — do not rebind from a later re-solve. */
+  const [appliedStructure, setAppliedStructure] = useState<DealStructure | null>(null)
+  const modelTargetBuyRef = useRef<number | null>(null)
   // Worksheet state-field names whose value the most recently applied path
   // actually changed vs the prior baseline. Drives the soft glow on
   // SliderRow's via WorksheetHighlightContext.
@@ -287,6 +291,8 @@ export function StrategyWorkbench({
   useEffect(() => {
     setHighlightedFields(new Set())
     setAppliedPathId(null)
+    setAppliedStructure(null)
+    modelTargetBuyRef.current = null
   }, [addressParam])
 
   useEffect(() => {
@@ -466,8 +472,11 @@ export function StrategyWorkbench({
     threePathsScenarioKeyRef.current = dedupeKey
 
     let decoded = decodeScenario(sc)
+    const last = readLastAppliedScenario()
     if (!decoded) {
-      decoded = readLastAppliedScenario()
+      decoded = last
+    } else if (!decoded.snapshot && last?.structureId === decoded.structureId && last.snapshot) {
+      decoded = { ...decoded, snapshot: last.snapshot }
     }
     if (!decoded) return
     const scenario = decoded
@@ -509,6 +518,8 @@ export function StrategyWorkbench({
     // the structure the user opened from Discovery (highlight + applied card).
     if (scenario.structureId) {
       setAppliedPathId(scenario.structureId)
+      const snap = structureFromScenarioSnapshot(scenario)
+      setAppliedStructure(snap)
     }
 
     // Glow the worksheet rows this Option fills in — same accent the in-page
@@ -1058,6 +1069,7 @@ export function StrategyWorkbench({
         return next as Record<string, any>
       })
       setAppliedPathId(structure.id)
+      setAppliedStructure(structure)
       setHighlightedFields(
         computeHighlightedStateFields(
           patch,
@@ -1099,6 +1111,7 @@ export function StrategyWorkbench({
       return next as Record<string, any>
     })
     setAppliedPathId(null)
+    setAppliedStructure(null)
     setHighlightedFields(new Set())
     trackEvent('path_cleared_in_strategy')
   }, [scheduleRecalc])
@@ -1160,6 +1173,9 @@ export function StrategyWorkbench({
     if (!appliedPathId) return null
     const paths = strategyFilteredPaths.slice(0, 4)
     const index = paths.findIndex((p) => p.id === appliedPathId)
+    if (appliedStructure && appliedStructure.id === appliedPathId) {
+      return { structure: appliedStructure, index: index >= 0 ? index : 0 }
+    }
     if (index < 0) return null
     return { structure: paths[index], index }
   })()
@@ -1270,6 +1286,29 @@ export function StrategyWorkbench({
   // when financing exceeds purchase + costs (cash back at close).
   let totalCashNeeded = targetPrice + closingCosts + rehabCost - loanAmount - sellerFinancingAmount
   const dealGapPct = listPrice ? ((listPrice - targetPrice) / listPrice) * 100 : 0
+  const seededTargetBuy = (() => {
+    const fromProp = initialDealStructures?.breakevenSummary?.targetBuyPrice
+    if (typeof fromProp === 'number' && fromProp > 0) return fromProp
+    const raw = data as Record<string, unknown> | null
+    const structures =
+      (raw?.deal_structures as Record<string, unknown> | undefined) ??
+      (raw?.dealStructures as Record<string, unknown> | undefined)
+    const summary =
+      (structures?.breakeven_summary as Record<string, unknown> | undefined) ??
+      (structures?.breakevenSummary as Record<string, unknown> | undefined)
+    const fromSummary = summary?.target_buy_price ?? summary?.targetBuyPrice
+    return typeof fromSummary === 'number' && fromSummary > 0 ? fromSummary : null
+  })()
+  if (modelTargetBuyRef.current == null && seededTargetBuy != null) {
+    modelTargetBuyRef.current = seededTargetBuy
+  }
+  if (modelTargetBuyRef.current == null && !appliedPathId && targetPrice > 0) {
+    modelTargetBuyRef.current = targetPrice
+  }
+  const modelDealGapPct =
+    listPrice && modelTargetBuyRef.current
+      ? ((listPrice - modelTargetBuyRef.current) / listPrice) * 100
+      : dealGapPct
   const strategyDscr =
     activeStrategyId === 'brrrr' && annualDebt > 0 ? noi / annualDebt : (topStrategy?.dscr ?? null)
 
@@ -1739,13 +1778,16 @@ export function StrategyWorkbench({
               )}
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-x-4 gap-y-2">
                 {[
-                  { label: 'Buy Price', value: formatCurrency(targetPrice) },
+                  {
+                    label: appliedPathId ? 'Offer Price' : 'Buy Price',
+                    value: formatCurrency(targetPrice),
+                  },
                   { label: 'Cash Needed', value: formatCurrency(totalCashNeeded) },
                   {
                     label: 'Deal Gap',
-                    value: `${dealGapPct >= 0 ? '-' : '+'}${Math.abs(dealGapPct).toFixed(1)}%`,
+                    value: `${modelDealGapPct >= 0 ? '-' : '+'}${Math.abs(modelDealGapPct).toFixed(1)}%`,
                     highlight: true,
-                    negative: dealGapPct > 0,
+                    negative: modelDealGapPct > 0,
                   },
                   {
                     label: 'Annual Profit',
@@ -1946,7 +1988,7 @@ export function StrategyWorkbench({
                   )
                 ) : strategyCashFlow >= 0 ? (
                   <>
-                    At the Profit Entry Point of {formatCurrency(targetPrice)}, this property would{' '}
+                    At a buy price of {formatCurrency(targetPrice)}, this property would{' '}
                     <strong style={{ color: colors.status.positive, fontWeight: 600 }}>
                       generate about {formatCurrency(Math.round(strategyCashFlow))}/mo in cash flow
                     </strong>{' '}
@@ -1955,7 +1997,7 @@ export function StrategyWorkbench({
                   </>
                 ) : (
                   <>
-                    Even at the discounted Profit Entry Point of {formatCurrency(targetPrice)}, this
+                    Even at a buy price of {formatCurrency(targetPrice)}, this
                     property would{' '}
                     <strong style={{ color: colors.text.primary, fontWeight: 600 }}>
                       cost you about {formatCurrency(Math.abs(Math.round(strategyCashFlow)))}/mo out

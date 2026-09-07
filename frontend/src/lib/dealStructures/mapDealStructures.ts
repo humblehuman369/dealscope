@@ -114,6 +114,7 @@ export function mapDealStructurePath(p: Record<string, unknown>): DealStructure 
       deltaLabel: (lv.delta_label ?? lv.deltaLabel ?? null) as string | null,
     })),
     monthlySavings: (raw.monthly_savings ?? raw.monthlySavings ?? 0) as number,
+    monthlyCashFlow: finiteOrNull(raw.monthly_cash_flow ?? raw.monthlyCashFlow),
     cashRequired: (raw.cash_required ?? raw.cashRequired ?? 0) as number,
     rankingScore: (raw.ranking_score ?? raw.rankingScore ?? 0) as number,
     pitchScript: (raw.pitch_script ?? raw.pitchScript ?? null) as string | null,

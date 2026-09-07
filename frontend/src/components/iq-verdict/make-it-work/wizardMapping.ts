@@ -143,6 +143,71 @@ export function preferredFamilyOrder(answers: WizardAnswers): FourWayFamily[] {
   return base.filter((f) => !excluded.includes(f))
 }
 
+export interface PickRecommendedOpts {
+  /** Asking-price monthly hole (positive $). Used to turn `monthlySavings` into absolute CF. */
+  monthlyShortfall?: number | null
+}
+
+const BANK_ONLY_FAMILIES: ReadonlySet<FourWayFamily> = new Set(['price', 'income', 'capital_stack'])
+
+export const CASH_BUCKET_MAX: Record<CashBucket, number | null> = {
+  under_25k: 25_000,
+  '25_75k': 75_000,
+  '75_150k': 150_000,
+  '150k_plus': null,
+  low_money_down: null,
+}
+
+export function structureAbsoluteCashFlow(
+  structure: DealStructure,
+  monthlyShortfall?: number | null,
+): number | null {
+  if (typeof structure.monthlyCashFlow === 'number' && Number.isFinite(structure.monthlyCashFlow)) {
+    return structure.monthlyCashFlow
+  }
+  if (
+    monthlyShortfall != null &&
+    Number.isFinite(monthlyShortfall) &&
+    Number.isFinite(structure.monthlySavings)
+  ) {
+    return structure.monthlySavings - monthlyShortfall
+  }
+  return null
+}
+
+function applyPriorityGuardrail(
+  eligible: DealStructure[],
+  answers: WizardAnswers,
+  opts?: PickRecommendedOpts,
+): DealStructure[] {
+  let pool = eligible
+  if (answers.priority === 'cash_flow') {
+    const bankCfs = eligible
+      .filter((p) => BANK_ONLY_FAMILIES.has(p.family as FourWayFamily))
+      .map((p) => structureAbsoluteCashFlow(p, opts?.monthlyShortfall))
+      .filter((n): n is number => n != null)
+    const bestBank = bankCfs.length > 0 ? Math.max(...bankCfs) : null
+    if (bestBank != null) {
+      const kept = eligible.filter((p) => {
+        if (BANK_ONLY_FAMILIES.has(p.family as FourWayFamily)) return true
+        const cf = structureAbsoluteCashFlow(p, opts?.monthlyShortfall)
+        return cf == null || cf + 1 >= bestBank
+      })
+      if (kept.length > 0) pool = kept
+    }
+  }
+
+  const cap = answers.cash ? CASH_BUCKET_MAX[answers.cash] : null
+  if (cap != null && (answers.priority === 'least_cash' || answers.cash === 'under_25k')) {
+    const fitting = pool.filter((p) => {
+      if (!Number.isFinite(p.cashRequired) || p.cashRequired <= 0) return true
+      return p.cashRequired <= cap
+    })
+    if (fitting.length > 0) pool = fitting
+  }
+  return pool
+}
+
 /**
  * Pick the recommended structure from the engine's fixed slots. Returns `null`
  * only when the engine produced nothing the user is willing to consider.
@@ -151,19 +216,21 @@ export function pickRecommended(
   paths: readonly DealStructure[],
   answers: WizardAnswers,
   focusFamily?: FourWayFamily | null,
+  opts?: PickRecommendedOpts,
 ): DealStructure | null {
   const excluded = excludedFamilies(answers)
   const eligible = paths.filter((p) => isFourWayFamily(p.family) && !excluded.includes(p.family))
   if (eligible.length === 0) return null
+  const pool = applyPriorityGuardrail(eligible, answers, opts)
   if (focusFamily) {
-    const focused = eligible.find((p) => p.family === focusFamily)
+    const focused = pool.find((p) => p.family === focusFamily)
     if (focused) return focused
   }
   for (const family of preferredFamilyOrder(answers)) {
-    const match = eligible.find((p) => p.family === family)
+    const match = pool.find((p) => p.family === family)
     if (match) return match
   }
-  return eligible[0]
+  return pool[0] ?? null
 }
 
 /** Q4 is only worth asking when it can change the answer. */
@@ -185,5 +252,10 @@ export function describeCashChoice(cash: CashBucket, listPrice: number): string 
   const dp = deriveDownPaymentPct(cash, listPrice)
   if (dp == null) return null
   const cashToClose = Math.round(listPrice * (dp + DEFAULT_CLOSING_COSTS_PCT))
-  return `≈ ${Math.round(dp * 100)}% down · ~$${cashToClose.toLocaleString('en-US')} to close at asking`
+  const line = `≈ ${Math.round(dp * 100)}% down · ~$${cashToClose.toLocaleString('en-US')} to close at asking`
+  const cap = CASH_BUCKET_MAX[cash]
+  if (cap != null && cashToClose > cap) {
+    return `Won’t fit this bracket at asking — ${line}`
+  }
+  return line
 }
