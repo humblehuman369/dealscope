@@ -13,3 +13,4 @@
 - Internal positioning: [`marketing/POSITIONING.md`](./marketing/POSITIONING.md)
 - Production-readiness remediation: [`feature-plans/production-readiness-remediation.md`](./feature-plans/production-readiness-remediation.md)
 - Deploy + CI/CD: [`operations/DEPLOYMENT.md`](./operations/DEPLOYMENT.md)
+- Google Analytics status: [`operations/google-analytics-status.md`](./operations/google-analytics-status.md)
