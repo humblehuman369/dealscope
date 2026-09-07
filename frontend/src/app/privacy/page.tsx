@@ -175,9 +175,12 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">7. Cookies</h2>
             <p>
-              We use essential cookies for authentication and session management. We may also use
-              analytics cookies to understand how the Service is used. You can control cookie
-              settings through your browser preferences.
+              We use essential cookies for authentication and session management. With your
+              consent, we also use analytics cookies from Google Analytics, PostHog, Vercel
+              Analytics, and Meta to understand how the Service is used and how visitors find it.
+              These tools only load after you accept analytics cookies in our cookie banner. You
+              can change your choice at any time by clearing your browser cookies for this site,
+              and Google offers a browser add-on to opt out of Google Analytics.
             </p>
           </section>
 

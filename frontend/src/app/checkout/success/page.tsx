@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle, Loader2 } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
+import { CHECKOUT_PLAN_KEY } from '@/lib/googleAnalytics'
 import Link from 'next/link'
 
 const POLL_INTERVAL_MS = 1500
@@ -49,8 +50,17 @@ export default function CheckoutSuccessPage() {
           '/api/v1/billing/subscription',
         )
         if (sub.tier === 'pro') {
+          let plan: string | undefined
+          try {
+            plan = window.sessionStorage.getItem(CHECKOUT_PLAN_KEY) ?? undefined
+            window.sessionStorage.removeItem(CHECKOUT_PLAN_KEY)
+          } catch {
+            plan = undefined
+          }
           trackEvent('checkout_completed', {
             ...(sub.status ? { subscription_status: sub.status } : {}),
+            ...(plan ? { plan } : {}),
+            ...(sessionId ? { session_id: sessionId } : {}),
           })
           setStatus('success')
           clearInterval(interval)

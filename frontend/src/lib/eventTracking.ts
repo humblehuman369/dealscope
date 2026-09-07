@@ -39,6 +39,12 @@
  * `activated` is the activation milestone the strategic plan calls for; it is the
  * step most predictive of conversion and the primary lever for first-week activation work.
  *
+ * GOOGLE ANALYTICS 4: every event is forwarded when NEXT_PUBLIC_GA_MEASUREMENT_ID
+ * is set and consented. `signup_completed` -> `sign_up`, `checkout_started` ->
+ * `begin_checkout`, `checkout_completed` -> `purchase` (with value/currency),
+ * `verdict_viewed` -> `analysis_run`. Mark those plus `proforma_download` and
+ * `activated` as key events in GA4. See `lib/googleAnalytics.ts`.
+ *
  * META PIXEL: `verdict_viewed`, `signup_completed`, `checkout_started` and
  * `checkout_completed` are also forwarded as Meta standard events (Lead,
  * CompleteRegistration, StartTrial, Subscribe) when the pixel is configured and
@@ -57,6 +63,7 @@ import { track as vercelTrack } from '@vercel/analytics'
 import { hasAnalyticsConsent } from '@/lib/cookieConsent'
 import { capturePostHog } from '@/lib/posthog'
 import { captureMetaPixel } from '@/lib/metaPixel'
+import { captureGoogleAnalytics } from '@/lib/googleAnalytics'
 import { firstTouchEventProps } from '@/lib/attribution'
 
 /** localStorage key marking that the activation milestone already fired for this device. */
@@ -87,6 +94,9 @@ export function trackEvent(
     // Meta Pixel receives only the four funnel events, as standard events,
     // with no properties. See lib/metaPixel.ts.
     captureMetaPixel(name)
+    // Google Analytics 4 receives every event; funnel events are renamed to
+    // GA4 recommended names (sign_up, begin_checkout, purchase). See lib/googleAnalytics.ts.
+    captureGoogleAnalytics(name, filtered)
   } catch {
     // no-op if analytics not loaded or disabled
   }

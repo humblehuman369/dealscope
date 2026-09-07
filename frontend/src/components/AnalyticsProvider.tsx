@@ -1,9 +1,15 @@
 'use client'
 
 import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { Analytics } from '@vercel/analytics/react'
 import { identifyPostHog, initPostHog } from '@/lib/posthog'
 import { initMetaPixel } from '@/lib/metaPixel'
+import {
+  initGoogleAnalytics,
+  setGoogleAnalyticsUser,
+  trackGoogleAnalyticsPageView,
+} from '@/lib/googleAnalytics'
 import { useSession } from '@/hooks/useSession'
 
 /**
@@ -14,14 +20,24 @@ import { useSession } from '@/hooks/useSession'
  * - PostHog: identity-stitched product funnels (signup -> verdict -> trial -> paid)
  * - Meta Pixel: four funnel events as standard events for paid-social optimization
  *   (no-op unless NEXT_PUBLIC_META_PIXEL_ID is set)
+ * - Google Analytics 4: acquisition source/medium/campaign for every conversion
+ *   (no-op unless NEXT_PUBLIC_GA_MEASUREMENT_ID is set)
  */
 export function AnalyticsProvider() {
   const { user } = useSession()
+  const pathname = usePathname()
 
   useEffect(() => {
     void initPostHog()
     initMetaPixel()
+    initGoogleAnalytics()
   }, [])
+
+  // GA4 page views on every App Router navigation (gtag is configured with
+  // send_page_view: false so the initial load is not counted twice).
+  useEffect(() => {
+    if (pathname) trackGoogleAnalyticsPageView(pathname)
+  }, [pathname])
 
   // Identify as soon as a session exists so anonymous pre-signup events are
   // stitched to the account. Tier is a person property for funnel cohorts.
@@ -31,6 +47,7 @@ export function AnalyticsProvider() {
         email: user.email,
         tier: user.subscription_tier,
       })
+      setGoogleAnalyticsUser(user.id, user.subscription_tier)
     }
   }, [user?.id, user?.email, user?.subscription_tier])
 

@@ -13,6 +13,7 @@ import { X, Loader2, Check, RotateCcw, AlertCircle } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { billingApi } from '@/lib/api-client'
 import { trackEvent } from '@/lib/eventTracking'
+import { CHECKOUT_PLAN_KEY } from '@/lib/googleAnalytics'
 import { IS_ANDROID, USE_NATIVE_IAP, USES_APPLE_IAP } from '@/lib/env'
 import { useRevenueCat, type RCPackage } from '@/hooks/useRevenueCat'
 import { PriceCents } from '@/components/ui/PriceCents'
@@ -158,6 +159,12 @@ export function UpgradeModal({
         plan: annual ? 'yearly' : 'monthly',
         paid_only_feature: paidOnlyFeature,
       })
+      try {
+        // Carried to /checkout/success so `purchase` can report plan + value.
+        window.sessionStorage.setItem(CHECKOUT_PLAN_KEY, annual ? 'yearly' : 'monthly')
+      } catch {
+        // sessionStorage unavailable — purchase still fires without a value
+      }
       window.location.href = checkout_url
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Checkout could not be started.'

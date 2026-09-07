@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { FileText, Table, Loader2, X, Check } from 'lucide-react'
 import { apiFetchRaw } from '@/lib/api-client'
+import { trackEvent } from '@/lib/eventTracking'
 
 interface WorksheetExportProps {
   propertyId: string
@@ -74,6 +75,9 @@ export function WorksheetExport({ propertyId, propertyAddress }: WorksheetExport
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(downloadUrl)
+
+      // Key engagement event: a Pro-only proforma/CSV left the site.
+      trackEvent('proforma_download', { format })
 
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 3000)
