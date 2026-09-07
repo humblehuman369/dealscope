@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { BarChart3, SlidersHorizontal, BookOpen, Users, ShieldCheck, Megaphone } from 'lucide-react'
+import { BarChart3, SlidersHorizontal, BookOpen, Users, ShieldCheck, Megaphone, Activity } from 'lucide-react'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { PlatformStatsSection } from '@/features/admin/components/PlatformStats'
 import { AdminAssumptionsSection } from '@/features/admin/components/AdminAssumptions'
@@ -72,6 +72,13 @@ function AdminDashboardContent() {
           >
             <Megaphone className="w-4 h-4" />
             Marketing Ops
+          </Link>
+          <Link
+            href="/admin/traffic"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all whitespace-nowrap bg-[var(--surface-card)] text-slate-400 border border-white/[0.07] hover:text-slate-300 hover:border-white/[0.14]"
+          >
+            <Activity className="w-4 h-4" />
+            Traffic
           </Link>
         </div>
 
