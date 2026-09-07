@@ -56,8 +56,9 @@
 import { track as vercelTrack } from '@vercel/analytics'
 import { hasAnalyticsConsent } from '@/lib/cookieConsent'
 import { capturePostHog } from '@/lib/posthog'
-import { captureMetaPixel } from '@/lib/metaPixel'
-import { firstTouchEventProps } from '@/lib/attribution'
+import { captureMetaPixel, META_STANDARD_EVENTS } from '@/lib/metaPixel'
+import { firstTouchEventProps, getMetaClickIds } from '@/lib/attribution'
+import { API_BASE_URL } from '@/lib/env'
 
 /** localStorage key marking that the activation milestone already fired for this device. */
 const ACTIVATION_FLAG = 'dgiq_activated_v1'
@@ -65,9 +66,10 @@ const ACTIVATION_FLAG = 'dgiq_activated_v1'
 export function trackEvent(
   name: string,
   props?: Record<string, string | number | boolean | undefined>,
-): void {
-  if (typeof window === 'undefined') return
-  if (!hasAnalyticsConsent()) return
+  eventId?: string,
+): string | undefined {
+  if (typeof window === 'undefined') return undefined
+  if (!hasAnalyticsConsent()) return undefined
   try {
     // First-touch source (ft_*) rides on every event so conversion events
     // are attributable without touching their call sites. See lib/attribution.ts.
@@ -85,10 +87,36 @@ export function trackEvent(
     // Fan out to PostHog for identity-stitched funnel analysis.
     capturePostHog(name, filtered)
     // Meta Pixel receives only the four funnel events, as standard events,
-    // with no properties. See lib/metaPixel.ts.
-    captureMetaPixel(name)
+    // with a shared eventID for CAPI dedupe. See lib/metaPixel.ts.
+    const id = captureMetaPixel(name, eventId)
+    if (id) mirrorCapiEvent(name, id)
+    return id
   } catch {
     // no-op if analytics not loaded or disabled
+    return undefined
+  }
+}
+
+/** POST the same event_id to CAPI so Meta can dedupe browser + server. Never throws. */
+function mirrorCapiEvent(name: string, eventId: string): void {
+  if (!META_STANDARD_EVENTS[name] || typeof fetch !== 'function') return
+  try {
+    const ids = getMetaClickIds()
+    void fetch(`${API_BASE_URL}/api/v1/leads/capi`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_name: name,
+        event_id: eventId,
+        event_source_url: window.location.href,
+        analytics_consent: true,
+        fbp: ids.fbp,
+        fbc: ids.fbc,
+      }),
+      keepalive: true,
+    }).catch(() => {})
+  } catch {
+    // no-op
   }
 }
 

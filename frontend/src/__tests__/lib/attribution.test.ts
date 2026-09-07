@@ -7,7 +7,14 @@ vi.mock('@/lib/posthog', () => ({ capturePostHog: (...args: unknown[]) => captur
 const hasAnalyticsConsent = vi.fn(() => true)
 vi.mock('@/lib/cookieConsent', () => ({ hasAnalyticsConsent: () => hasAnalyticsConsent() }))
 
-import { FIRST_TOUCH_KEY, captureFirstTouch, firstTouchEventProps, getFirstTouch } from '@/lib/attribution'
+import {
+  FIRST_TOUCH_COOKIE,
+  FIRST_TOUCH_KEY,
+  captureFirstTouch,
+  firstTouchEventProps,
+  getFirstTouch,
+  signupAttribution,
+} from '@/lib/attribution'
 import { trackEvent } from '@/lib/eventTracking'
 
 // setup.ts installs vi.fn() stubs for localStorage; back them with a real map here.
@@ -30,6 +37,7 @@ describe('first-touch attribution', () => {
     ls.setItem.mockImplementation((k: string, v: string) => {
       store.set(k, v)
     })
+    Object.defineProperty(document, 'cookie', { configurable: true, writable: true, value: '' })
     Object.defineProperty(document, 'referrer', { value: 'https://www.google.com/', configurable: true })
     vercelTrack.mockClear()
     capturePostHog.mockClear()
@@ -83,6 +91,31 @@ describe('first-touch attribution', () => {
     expect(name).toBe('verdict_viewed')
     expect(props).toMatchObject({ source: 'discovery', ft_utm_source: 'blog', ft_utm_campaign: 'post-1', ft_landing_path: '/' })
     expect(capturePostHog).toHaveBeenCalledWith('verdict_viewed', props)
+  })
+
+  it('stamps signup attribution from live UTMs when localStorage is empty', () => {
+    store.clear()
+    setLocation('/register', '?utm_campaign=wholesalers&fbclid=x')
+    const payload = signupAttribution()
+    expect(payload).toMatchObject({
+      utm_campaign: 'wholesalers',
+      fbclid: 'x',
+      landing_path: '/register',
+    })
+  })
+
+  it('writes a SameSite=Lax first-touch cookie', () => {
+    const cookieWrites: string[] = []
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get: () => cookieWrites[cookieWrites.length - 1] ?? '',
+      set: (v: string) => {
+        cookieWrites.push(v)
+      },
+    })
+    setLocation('/for/wholesalers', '?utm_campaign=wholesalers')
+    captureFirstTouch()
+    expect(cookieWrites.some((c) => c.startsWith(`${FIRST_TOUCH_COOKIE}=`) && c.includes('SameSite=Lax'))).toBe(true)
   })
 
   it('still respects the consent gate when sending', () => {

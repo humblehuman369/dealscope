@@ -81,16 +81,25 @@ export function initMetaPixel(): boolean {
   return initialized
 }
 
-/** Forward one of our funnel events as its Meta standard event. No-op otherwise. */
-export function captureMetaPixel(name: string): void {
+export function newMetaEventId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return `evt-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+/** Forward one of our funnel events as its Meta standard event. Returns the event_id used. */
+export function captureMetaPixel(name: string, eventId?: string): string | undefined {
   const standard = META_STANDARD_EVENTS[name]
-  if (!standard) return
-  if (!initMetaPixel()) return
+  if (!standard) return undefined
+  const id = eventId ?? newMetaEventId()
+  if (!initMetaPixel()) return id
   try {
-    window.fbq?.('track', standard)
+    window.fbq?.('track', standard, {}, { eventID: id })
   } catch {
     // no-op if the pixel failed to load
   }
+  return id
 }
 
 /** Test seam: forget that init ran. */

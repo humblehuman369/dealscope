@@ -116,6 +116,9 @@ class User(Base):
     )
     last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
+    # First-touch attribution. Written once at signup; never overwritten.
+    first_touch: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
     # ==========================================
     # Relationships
     # ==========================================

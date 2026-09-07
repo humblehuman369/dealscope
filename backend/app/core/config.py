@@ -282,6 +282,14 @@ class Settings(BaseSettings):
     EMAIL_FROM: str = "noreply@dealgapiq.com"
     EMAIL_FROM_NAME: str = "DealGapIQ"
 
+    # Meta Conversions API. Pixel ID may also be set as NEXT_PUBLIC_META_PIXEL_ID
+    # on the frontend; this is the server copy used for CAPI.
+    META_PIXEL_ID: str = ""
+    META_CAPI_ACCESS_TOKEN: str = ""
+    # strict = drop the event when analytics consent is declined.
+    # minimal = send without hashed PII. Confirm US default with counsel.
+    META_CAPI_CONSENT_MODE: str = "strict"
+
     # Comma-separated list of admin emails to notify on every new signup.
     # Empty string disables admin signup notifications (silent no-op).
     # Example: "brad@dealgapiq.com" or "brad@dealgapiq.com,cofounder@dealgapiq.com"

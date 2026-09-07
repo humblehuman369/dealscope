@@ -92,6 +92,7 @@ class AuthService:
         full_name: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
+        first_touch: dict | None = None,
     ) -> tuple[User, str | None]:
         """Register a new user.
 
@@ -119,6 +120,7 @@ class AuthService:
                 full_name=full_name.strip(),
                 is_active=True,
                 is_verified=not requires_verification,
+                first_touch=first_touch,
             )
 
             # Create profile

@@ -34,6 +34,11 @@ class UserRegister(BaseModel):
     email: EmailStr = Field(..., description="User's email address")
     password: str = Field(..., min_length=8, max_length=100)
     full_name: str = Field(..., min_length=2, max_length=100)
+    first_touch: dict | None = None
+    event_id: str | None = Field(default=None, max_length=64)
+    fbp: str | None = Field(default=None, max_length=200)
+    fbc: str | None = Field(default=None, max_length=200)
+    analytics_consent: bool | None = None
 
     @field_validator("password")
     @classmethod

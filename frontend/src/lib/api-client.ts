@@ -529,10 +529,21 @@ export const authApi = {
     return result
   },
 
-  register: (email: string, password: string, fullName: string) =>
+  register: (
+    email: string,
+    password: string,
+    fullName: string,
+    extras?: {
+      first_touch?: Record<string, unknown>
+      event_id?: string
+      fbp?: string
+      fbc?: string
+      analytics_consent?: boolean
+    },
+  ) =>
     apiRequest<RegisterResponse>('/api/v1/auth/register', {
       method: 'POST',
-      body: { email, password, full_name: fullName },
+      body: { email, password, full_name: fullName, ...extras },
       skipAuth: true,
     }),
 
@@ -688,6 +699,8 @@ export interface RegisterResponse {
   access_token?: string
   refresh_token?: string
   expires_in?: number
+  /** Client-generated Meta event_id shared by the pixel and CAPI. */
+  event_id?: string
 }
 
 export interface SessionInfo {

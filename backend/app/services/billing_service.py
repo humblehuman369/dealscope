@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.posthog_client import posthog_client
+from app.services.meta_capi import send_capi_event
 from app.models.subscription import (
     GRANDFATHERED_FREE_SEARCHES_PER_MONTH,
     TIER_LIMITS,
@@ -1017,6 +1018,16 @@ class BillingService:
             subscription.stripe_subscription_id = subscription_id
             await db.commit()
 
+        try:
+            await send_capi_event(
+                event_name="checkout_completed",
+                event_id=str(data.get("id") or f"checkout-{user_id}"),
+                event_source_url="https://dealgapiq.com/checkout/success",
+                analytics_consent=True,
+            )
+        except Exception:
+            logger.exception("meta_capi_checkout_failed")
+
         if subscription_id and self.is_configured and STRIPE_AVAILABLE:
             try:
                 stripe_sub = stripe.Subscription.retrieve(
@@ -1032,6 +1043,17 @@ class BillingService:
     async def _handle_subscription_created(self, db: AsyncSession, data: dict[str, Any]):
         """Handle new subscription — sync state and send Pro welcome email."""
         await self._sync_subscription(db, data)
+
+        try:
+            event_name = "checkout_started" if data.get("trial_end") else "checkout_completed"
+            await send_capi_event(
+                event_name=event_name,
+                event_id=str(data.get("id") or f"sub-{data.get('metadata', {}).get('user_id')}"),
+                event_source_url="https://dealgapiq.com/checkout/success",
+                analytics_consent=True,
+            )
+        except Exception:
+            logger.exception("meta_capi_subscription_created_failed")
 
         user_id = data.get("metadata", {}).get("user_id")
         if user_id:

@@ -55,6 +55,8 @@ import {
   resolveMarketPriceFromPropertyResponse,
 } from '@/lib/resolveMarketPrice'
 import { trackEvent } from '@/lib/eventTracking'
+import { VerdictEmailCapture } from '@/components/verdict/VerdictEmailCapture'
+import { newMetaEventId } from '@/lib/metaPixel'
 import { DiscoveryColdLanding } from '@/components/discovery/DiscoveryColdLanding'
 import {
   buildMotivatedSellerInsights,
@@ -416,10 +418,14 @@ function VerdictContent() {
   // Analytics: verdict page view (when user landed with a property context)
   useEffect(() => {
     if (addressParam || propertyIdParam) {
-      trackEvent('verdict_viewed', {
-        has_address: !!addressParam,
-        has_property_id: !!propertyIdParam,
-      })
+      trackEvent(
+        'verdict_viewed',
+        {
+          has_address: !!addressParam,
+          has_property_id: !!propertyIdParam,
+        },
+        newMetaEventId(),
+      )
     }
   }, [addressParam, propertyIdParam])
 
@@ -1868,6 +1874,14 @@ function VerdictContent() {
                 ))}
               </div>
             </div>
+
+            <VerdictEmailCapture
+              address={[property.address, property.city, property.state, property.zip].filter(Boolean).join(', ') || addressParam}
+              propertyId={propertyIdParam || property.id || null}
+              incomeValue={Number.isFinite(incomeValue) ? incomeValue : null}
+              targetBuy={Number.isFinite(purchasePrice) ? purchasePrice : null}
+              dealGap={Number.isFinite(property.price) && Number.isFinite(purchasePrice) ? property.price - purchasePrice : null}
+            />
 
             {/* "What is the Deal Gap?" video link — visible to all users, sits above the bar chart */}
             <div className="mt-5 mb-1 flex items-center justify-start">

@@ -1,4 +1,4 @@
-# Blog → LinkedIn, Batch 01 (two weeks, 10 native posts + 3 company reshares).
+# Blog → LinkedIn, Batch 01 (two weeks, 11 founder posts + 3 native company posts).
 # Converted from BLOG_TO_LINKEDIN_BATCH_01.md with no copy edits.
 # Dates start Monday 2026-09-07 (the Monday after this PR). Adjust before import.
 # Screenshots/PDFs under docs/marketing/linkedin/assets/batch-01/ are human-produced;
@@ -37,13 +37,21 @@ posts:
 
       #RealEstateInvesting #CashFlow #RentalProperty
 
-  - key: post-01-reshare
+  - key: post-01-company
     account: company
-    reshare_of_key: post-01
     scheduled_at: "2026-09-07 12:00"
-    media_type: none
+    media_type: image
+    media_path: assets/batch-01/post-01-cashflow-table.png
+    media_alt_text: "Monthly cash flow table for the $325K example: rent $2,600, NOI $1,614, cash flow $55"
     first_comment: "https://dealgapiq.com/blog/cash-flow-positive-rental-properties?utm_source=linkedin&utm_medium=company_page&utm_campaign=blog_distribution&utm_content=cash-flow-positive-rental-properties"
-    body: "The first thing Discovery does with any address is solve for this price."
+    body: |
+      The first thing Discovery does with any address is solve for this price.
+
+      "Cash flow positive rental properties" is one of the most searched phrases in real estate investing.
+
+      It is also a category error.
+
+      #RealEstateInvesting #CashFlow #RentalProperty
 
   - key: post-02
     account: founder
@@ -100,13 +108,21 @@ posts:
 
       #DSCR #RealEstateInvesting #RentalProperty
 
-  - key: post-03-reshare
+  - key: post-03-company
     account: company
-    reshare_of_key: post-03
     scheduled_at: "2026-09-09 12:00"
-    media_type: none
+    media_type: image
+    media_path: assets/batch-01/post-03-lender-dscr-callout.png
+    media_alt_text: "Warning callout from the DSCR requirements post: Lender DSCR is not your DSCR"
     first_comment: "https://dealgapiq.com/blog/dscr-loan-requirements?utm_source=linkedin&utm_medium=company_page&utm_campaign=blog_distribution&utm_content=dscr-loan-requirements"
-    body: "Discovery shows both ratios on every property, so the approval never surprises the cash flow."
+    body: |
+      Discovery shows both ratios on every property, so the approval never surprises the cash flow.
+
+      A DSCR loan can be approved on a property that does not pay you.
+
+      Here is how, on the $325K example at typical DSCR terms (75% LTV, 7.25%):
+
+      #DSCR #RealEstateInvesting #RentalProperty
 
   - key: post-04
     account: founder
@@ -190,6 +206,8 @@ posts:
 
       Every listing has these two numbers. Almost no listing shows them.
 
+      Paste any address at dealgapiq.com and it shows both numbers free. No signup.
+
       Full breakdown in the comments.
 
       #RealEstateInvesting #CashFlow #DealGap
@@ -218,13 +236,21 @@ posts:
 
       #RealEstateInvesting #InvestmentProperty
 
-  - key: post-07-reshare
+  - key: post-07-company
     account: company
-    reshare_of_key: post-07
     scheduled_at: "2026-09-15 12:00"
-    media_type: none
+    media_type: document
+    media_path: assets/batch-01/post-07-seven-channels.pdf
+    document_title: "7 ways to find off-market properties, ranked by effort."
     first_comment: "https://dealgapiq.com/blog/how-to-find-off-market-properties?utm_source=linkedin&utm_medium=company_page&utm_campaign=blog_distribution&utm_content=how-to-find-off-market-properties"
-    body: "Channel 7 is built into Map Search: motivated-seller keywords run against live listings, numbers on every result."
+    body: |
+      Channel 7 is built into Map Search: motivated-seller keywords run against live listings, numbers on every result.
+
+      Seven channels that actually produce off-market properties, ranked by effort.
+
+      Swipe through. The order matters more than the list.
+
+      #RealEstateInvesting #InvestmentProperty
 
   - key: post-08
     account: founder
@@ -303,3 +329,21 @@ posts:
       Which lever do you reach for first when a deal is 15% to 20% off?
 
       #CreativeFinance #RealEstateInvesting #DealGap
+
+  - key: post-11
+    account: founder
+    scheduled_at: "2026-09-19 08:00"
+    media_type: none
+    first_comment: "https://dealgapiq.com/what-is-dealgapiq?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=founder-story"
+    body: |
+      I built Foreclosure.com. Before that, HomePath for Fannie Mae and HomeSteps for Freddie Mac.
+
+      Thirty-five years of watching people buy houses off a number the seller chose.
+
+      The number that mattered was never on the listing. It was the price where the rent covers everything and there is still something left.
+
+      So that is what I built next. One address in. That number out. Free, in 15 seconds.
+
+      Google Deal Gap IQ. Know what to offer.
+
+      #RealEstateInvesting #DealGap

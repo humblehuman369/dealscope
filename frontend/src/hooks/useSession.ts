@@ -20,6 +20,9 @@
 import { useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
+import { getMetaClickIds, signupAttribution } from '@/lib/attribution'
+import { hasAnalyticsConsent } from '@/lib/cookieConsent'
+import { newMetaEventId } from '@/lib/metaPixel'
 import { resetPostHog } from '@/lib/posthog'
 import {
   authApi,
@@ -296,7 +299,16 @@ export function useRegister() {
       password: string
       fullName: string
     }) => {
-      return authApi.register(email, password, fullName)
+      const clickIds = getMetaClickIds()
+      const eventId = newMetaEventId()
+      const result = await authApi.register(email, password, fullName, {
+        first_touch: signupAttribution(),
+        event_id: eventId,
+        fbp: clickIds.fbp,
+        fbc: clickIds.fbc,
+        analytics_consent: hasAnalyticsConsent(),
+      })
+      return { ...result, event_id: eventId }
     },
   })
 }

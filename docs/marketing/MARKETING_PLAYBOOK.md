@@ -5,12 +5,14 @@
 > DealGapIQ lives in this document — copy, positioning, personas, voice, product
 > language, channel guidance, and visual identity. No other files required.
 >
-> **Version:** 1.0 · **Last updated:** June 2026 · **Owner:** Brad Geisen (brad@geisen.cc)
+> **Version:** 1.1 · **Last updated:** September 2026 · **Owner:** Brad Geisen (brad@geisen.cc)
 >
 > **Canonical facts (standardized for this playbook):**
 > - **Speed claim:** 15 seconds (address to verdict)
-> - **Free tier:** Free to start — no credit card required for entry analysis
-> - **Paid tiers:** TBD — confirm current pricing before publishing paid-tier copy
+> - **Guarantee line:** Free verdict. No signup. No card.
+> - **Sign-off:** Google Deal Gap IQ. Know what to offer.
+> - **Free tier:** First verdict free with no account. Free account: 2 analyses a month, 10 saved properties. Source: `frontend/src/lib/planFeatures.ts`.
+> - **Pro:** $34.99/month or $349.99/year, 7-day trial. Directories and exports unlock with the first payment.
 
 ---
 
@@ -50,7 +52,7 @@ DealGapIQ without access to internal systems.
 - Check §15 before publishing — compliance is non-negotiable.
 
 **Golden rules:**
-1. Lead with **"Hunt. Score. Close."** on human-first surfaces (ads, hero, social).
+1. Lead with the problem and the free verdict on acquisition surfaces (ads, landing pages). **"Hunt. Score. Close."** is the product tagline for brand surfaces (App Store, hero, bios).
 2. Always use the **speed number:** **15 seconds** — not "instant," not "in minutes."
 3. Every asset should hit at least **one act** (Hunt, Score, or Close). Best assets hit all three.
 4. Close with the **manifesto** when you need an emotional beat: *"The price tag isn't the deal. The structure is."*
@@ -65,7 +67,9 @@ DealGapIQ without access to internal systems.
 DealGapIQ is a real-estate investment platform that takes any US property address
 and returns a **15-second verdict** — backed by multi-source valuation — plus
 **four pre-built ways to structure the deal** and the **negotiation script** for
-each. Web, iOS, and Android. Free to start.
+each. Web, iOS, and Android. First verdict free — no signup, no card. A free
+account adds 2 analyses a month and 10 saved properties. Pro is $34.99/month or
+$349.99/year with a 7-day trial.
 
 ### The problem
 
@@ -462,9 +466,13 @@ DealGapIQ calculates it. Free analysis — 15 seconds.
 
 | Copy | Context |
 |---|---|
+| Free verdict. No signup. No card. | Guarantee line — under every primary CTA |
+| Google Deal Gap IQ. Know what to offer. | Sign-off — every public asset closer |
 | No credit card required | Free tier CTA |
 | Free to start | Universal free tier |
-| Cancel anytime in 2 clicks | Paid tier risk reversal (when pricing is live) |
+| 2 analyses a month, 10 saved properties | Free-account limits (from `planFeatures.ts`) |
+| $34.99/month or $349.99/year · 7-day trial | Pro pricing (from `planFeatures.ts`) |
+| Cancel anytime in 2 clicks | Paid tier risk reversal |
 | No commitment | Universal |
 | Your data stays yours. We never share or sell. | Privacy trust |
 | Your deal flow is yours alone. | Privacy trust (expanded) |
@@ -843,10 +851,11 @@ finance; seller financing; cash flow analysis; DSCR; target buy price; proptech
 
 | Priority | CTA | Use when |
 |---|---|---|
-| **Primary** | Run a Free Verdict | Most conversion posts and ads |
+| **Primary** | Run a Free Verdict | Most conversion posts and ads. Line under it: *Free verdict. No signup. No card.* |
 | **Secondary** | See the Four Paths | Homepage anchor, mid-funnel |
 | **Secondary** | Try it free / Register free | App download, signup flows |
 | **Lead magnet** | Email me the Creative Finance Field Guide | Top-of-funnel (when PDF is live) |
+| **Closer** | Google Deal Gap IQ. Know what to offer. | Sign-off on every public asset |
 
 ### Product URLs
 
@@ -936,7 +945,7 @@ DealGapIQ was built to think like an investor, not market like an agent.
 - "Trusted by 10,000+ investors" (unless true and substantiable)
 - Unverifiable superlatives: "the best platform," "the only tool you'll ever need"
 - Wraparound mortgages or land contracts (not modeled — pending legal review)
-- Specific Pro pricing until confirmed current (paid tiers TBD in this playbook)
+- A price, free-tier limit, or trial length that is not the live value in `frontend/src/lib/planFeatures.ts`
 
 ### Competitor naming in ads
 
@@ -955,12 +964,15 @@ No red X's in comparison tables — use "—" or "partial."
 ## 16. Quick-Reference Cheat Sheet
 
 ```
-PRODUCT TAGLINE     Hunt. Score. Close.
+PRODUCT TAGLINE     Hunt. Score. Close. (brand surfaces)
+ACQUISITION LEAD    The problem + the free verdict
+GUARANTEE           Free verdict. No signup. No card.
+SIGN-OFF            Google Deal Gap IQ. Know what to offer.
 MANIFESTO           The price tag isn't the deal. The structure is.
 MOAT                That's where most tools stop. DealGapIQ keeps going.
 SPEED               15 seconds (address to verdict)
-FREE TIER           Free to start — no credit card for entry analysis
-PAID TIERS          TBD — confirm before publishing paid copy
+FREE TIER           First verdict free, no account. Free account: 2 analyses/mo, 10 saved
+PRO                 $34.99/mo or $349.99/yr, 7-day trial. Directories/exports after first payment.
 
 PRIMARY CTA         Run a Free Verdict
 URL                 dealgapiq.com
@@ -982,8 +994,8 @@ FOUR PATHS          Price · Capital · Financing/Income · Blended Plan
 
 ---
 
-*This playbook consolidates approved DealGapIQ marketing language as of June 2026.
-Confirm paid-tier pricing and free-tier analysis limits with the product owner
-before publishing conversion copy that states specific numbers.*
+*This playbook consolidates approved DealGapIQ marketing language as of September 2026.
+Prices, free-tier limits, and trial length must match `frontend/src/lib/planFeatures.ts`.
+Do not invent a number; render from that file.*
 
 *Questions: Brad Geisen — brad@geisen.cc · support@dealgapiq.com*

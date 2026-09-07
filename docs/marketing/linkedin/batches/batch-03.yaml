@@ -1,0 +1,79 @@
+# Four Paths Friday — Batch 03. Four founder posts, Fridays in October 2026.
+# Copy follows docs/marketing/DEAL_TEARDOWN_TEMPLATE.md. Replace the
+# placeholder listing details with the live verdict before import.
+# media_type: none until screenshots exist; add image rows then.
+
+batch: batch-03
+timezone: America/New_York
+posts:
+  - key: post-01
+    account: founder
+    scheduled_at: "2026-10-02 07:45"
+    media_type: none
+    first_comment: "https://dealgapiq.com/blog/four-paths-friday-oct-2?utm_source=linkedin&utm_medium=founder&utm_campaign=four_paths_friday&utm_content=oct-2"
+    body: |
+      Asking price on the card. Income Value and Target Buy under it. The difference is the Deal Gap.
+
+      That gap is the negotiation, not a reason to walk.
+
+      This Friday's teardown: the three numbers, which of the four paths closes, and the line to say.
+
+      Full write-up in the comments.
+
+      Google Deal Gap IQ. Know what to offer.
+
+      #RealEstateInvesting #DealGap #CreativeFinance
+
+  - key: post-02
+    account: founder
+    scheduled_at: "2026-10-09 07:45"
+    media_type: none
+    first_comment: "https://dealgapiq.com/blog/four-paths-friday-oct-9?utm_source=linkedin&utm_medium=founder&utm_campaign=four_paths_friday&utm_content=oct-9"
+    body: |
+      The seller said no to the price. Three smaller asks can reach the same math.
+
+      A cut, a seller second, verified rent. The blended plan is the one most people never put on paper.
+
+      This Friday's teardown shows which mix closes this listing.
+
+      Full write-up in the comments.
+
+      Google Deal Gap IQ. Know what to offer.
+
+      #CreativeFinance #RealEstateInvesting #DealGap
+
+  - key: post-03
+    account: founder
+    scheduled_at: "2026-10-16 07:45"
+    media_type: none
+    first_comment: "https://dealgapiq.com/blog/four-paths-friday-oct-16?utm_source=linkedin&utm_medium=founder&utm_campaign=four_paths_friday&utm_content=oct-16"
+    body: |
+      A lead is an address and a phone number. The spread is the number you need before you dial.
+
+      MAO and assignment on one card. If the spread is not there, you know in 15 seconds.
+
+      This Friday's teardown is a wholesale run.
+
+      Full write-up in the comments.
+
+      Google Deal Gap IQ. Know what to offer.
+
+      #WholesalingRealEstate #DealGap #RealEstateInvesting
+
+  - key: post-04
+    account: founder
+    scheduled_at: "2026-10-23 07:45"
+    media_type: none
+    first_comment: "https://dealgapiq.com/blog/four-paths-friday-oct-23?utm_source=linkedin&utm_medium=founder&utm_campaign=four_paths_friday&utm_content=oct-23"
+    body: |
+      A pre-approval tells you what a lender will let you borrow. It says nothing about what the other unit pays of the mortgage.
+
+      Those are different numbers. The second one is the one you live with.
+
+      This Friday's teardown is a house-hack address.
+
+      Full write-up in the comments.
+
+      Google Deal Gap IQ. Know what to offer.
+
+      #HouseHacking #RealEstateInvesting #DealGap

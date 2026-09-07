@@ -7,7 +7,7 @@
 > [`MARKETING_PLAYBOOK.md`](./MARKETING_PLAYBOOK.md) — it is self-contained (all
 > copy, positioning, and guidance inline). No other files required.
 >
-> **Last updated:** June 2026 · **Owner:** Brad Geisen (brad@geisen.cc)
+> **Last updated:** September 2026 · **Owner:** Brad Geisen (brad@geisen.cc)
 
 ---
 
@@ -49,7 +49,14 @@
 | [`LAUNCH_MARKETING_PLAN.md`](./LAUNCH_MARKETING_PLAN.md) | Zero-budget founder-led launch plan | Reference |
 | [`DIRECT_RESPONSE_PLAYBOOK.md`](./DIRECT_RESPONSE_PLAYBOOK.md) | Direct-response layer: SERP term, 50-problem list, `/answers` landing formula, paid search, attribution + PostHog setup, reviews; Phase 2 audio parked | Reference |
 | [`LISTICLE_LANDING_PAGES.md`](./LISTICLE_LANDING_PAGES.md) | Paid-social layer: `/for/*` persona listicle pages (8, noindex), base-reason pool + variant rules, copy truth checklist, Meta test structure, kill/scale rules, Pixel events, PostHog extensions | Reference |
-| [`LISTICLE_META_LAUNCH_KIT.md`](./LISTICLE_META_LAUNCH_KIT.md) | Phase 2 paste-ready values: Pixel ID → Vercel steps, Meta campaign (4 ad sets × 2 hooks, exact headlines/primary text/URLs/audiences), PostHog DR-B patch + DR-C ×4 + DR-F SQL, LinkedIn batch-02 import | Operational |
+| [`LISTICLE_META_LAUNCH_KIT.md`](./LISTICLE_META_LAUNCH_KIT.md) | Phase 2 paste-ready values: Pixel ID → Vercel steps, Meta campaign (2 launch ad sets at $20/day + Hook C + retargeting), PostHog DR-B patch + DR-C ×4 + DR-F SQL, LinkedIn batch-02 import | Operational |
+| [`SEARCH_LAUNCH_KIT.md`](./SEARCH_LAUNCH_KIT.md) | Google Search launch: 4 `/answers` ad groups at $15/day, keywords, negatives, RSA copy, kill rule | Operational |
+| [`ENHANCEMENT_PLAN_2026-09.md`](./ENHANCEMENT_PLAN_2026-09.md) | Implementation order from the 2026-09-07 marketing audit: copy fixes, product capture, CAPI, kits, content, measurement | Operational |
+| [`WEEKLY_PAID_REVIEW.md`](./WEEKLY_PAID_REVIEW.md) | Monday paid table; spend vs $2,500 cap; kill/scale rules | Operational |
+| [`COMMUNITY_RUNBOOK.md`](./COMMUNITY_RUNBOOK.md) | BiggerPockets + wholesaler Facebook group rules | Operational |
+| [`FOUNDER_VIDEO_SHOTLIST.md`](./FOUNDER_VIDEO_SHOTLIST.md) | Five phone-camera clips mapped to Meta Hook D | Operational |
+| [`DEAL_TEARDOWN_TEMPLATE.md`](./DEAL_TEARDOWN_TEMPLATE.md) | Four Paths Friday write-up + 45s recording spec | Operational |
+| [`email/POST_VERDICT_SERIES.md`](./email/POST_VERDICT_SERIES.md) | Three-email post-verdict series copy + Resend steps | Operational |
 | [`BRAND_SERP_LISTINGS.md`](./BRAND_SERP_LISTINGS.md) | Paste-ready field values for GBP, LinkedIn, App Store/Play, YouTube, Crunchbase, Product Hunt, G2/Capterra; founder checklist | Reference |
 | [`HOMEPAGE_PLAN.md`](./HOMEPAGE_PLAN.md) | Homepage copy spec (Four Paths) | Reference |
 
@@ -85,9 +92,9 @@
 
 ### Open decisions (track until closed)
 
-- [ ] Confirm **free-tier analysis count** for public copy (docs historically said 3 and 5 per month)
-- [ ] Confirm **paid-tier pricing** before adding specific dollar amounts to external materials
-- [ ] Confirm **15 seconds** as the live speed claim across all product surfaces (retire any remaining "60 seconds" copy in the app/site)
+- [x] Confirm **free-tier analysis count** for public copy — **2 analyses/month, 10 saved** (`planFeatures.ts` / `TIER_LIMITS[FREE]`)
+- [x] Confirm **paid-tier pricing** — **$34.99/mo, $349.99/yr, 7-day trial** (`planFeatures.ts`)
+- [x] Confirm **15 seconds** as the live speed claim across all product surfaces (retire any remaining "60 seconds" copy in the app/site)
 
 ---
 
@@ -95,6 +102,8 @@
 
 | Date | Change |
 |---|---|
+| 2026-09-07 | Registered weekly review, community runbook, founder shot list, teardown template, post-verdict series. |
+| 2026-09-07 | Closed the three open decisions (2 analyses/mo, Pro $34.99/$349.99 + 7-day trial, 15-second speed). Regenerated playbook. Registered `ENHANCEMENT_PLAN_2026-09.md` and `SEARCH_LAUNCH_KIT.md`. |
 | 2026-06 | Demoted this guide to internal index. Created self-contained `MARKETING_PLAYBOOK.md` as canonical external asset. |
 | 2026-06 | Archived superseded docs → `docs/archive/`. Repointed brand guide references. |
 | 2026-06 | v1 hub created (since superseded by this index + playbook split). |

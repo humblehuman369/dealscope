@@ -82,7 +82,7 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 
 ### Market & monetization
 
-- **Pricing posture:** Free verdict, no signup, no credit card for the entry analysis. Starter (free) includes 10 analyses/month with the full Four Paths and negotiation scripts, plus up to 10 saved properties — the "aha" is never behind the paywall. Pro ($34.99/mo or $349.99/yr, 7-day trial) gates depth: editable assumptions and the Deal Maker worksheet, comps, sensitivity, exports, unlimited saves, and the directories (directories and exports unlock with the first settled payment, not during trial). Mobile IAP via RevenueCat; web checkout via Stripe. Source of truth: `frontend/src/lib/planFeatures.ts` and `TIER_LIMITS` in `backend/app/models/subscription.py`.
+- **Pricing posture:** Free verdict, no signup, no credit card for the entry analysis. Starter (free) includes 2 analyses/month with the full Four Paths and negotiation scripts, plus up to 10 saved properties — the "aha" is never behind the paywall. Pro ($34.99/mo or $349.99/yr, 7-day trial) gates depth: editable assumptions and the Deal Maker worksheet, comps, sensitivity, exports, unlimited saves, and the directories (directories and exports unlock with the first settled payment, not during trial). Mobile IAP via RevenueCat; web checkout via Stripe. Source of truth: `frontend/src/lib/planFeatures.ts` and `TIER_LIMITS` in `backend/app/models/subscription.py`.
 - **Acquisition motion:** SEO (creative-finance glossary pages), founder-led content in the BiggerPockets / Subto orbit, free verdict as the conversion event, lead magnet (Creative Finance Field Guide PDF) for top-of-funnel.
 - **Distribution surfaces:** Web (`dealgapiq.com`), iOS, Android — all rendering the same React app.
 
@@ -113,7 +113,7 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 - We don't promise that every property is a deal — only that every property has more leverage than the asking price suggests.
 
 **Pricing model:**
-- *Free verdict, no signup, no credit card* for the entry analysis. Starter: $0, 10 analyses/month, Four Paths + scripts included, 10 saved properties. Pro: $34.99/month or $349.99/year (~$29.17/month), 7-day free trial; directories and exports unlock with the first payment.
+- *Free verdict, no signup, no credit card* for the entry analysis. Starter: $0, 2 analyses/month, Four Paths + scripts included, 10 saved properties. Pro: $34.99/month or $349.99/year (~$29.17/month), 7-day free trial; directories and exports unlock with the first payment.
 
 ---
 
@@ -203,6 +203,21 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 - Unverifiable trust claims ("Trusted by 10,000+ investors" — don't unless true and substantiable).
 - Direct competitor name calls in display ads (use category names: "listing sites," "investor calculators"). Product names are fine in the on-domain comparison table.
 
+### 3.1 Where each persona meets us
+
+Funnel stages: **Aware** (does not know the problem has a name), **Consider** (knows the problem, comparing fixes), **Convert** (ready to run an address), **Retain** (signed up, deciding on Pro). Cells marked **D1–D5** are filled by the 2026-09 enhancement plan.
+
+| Persona | Aware | Consider | Convert | Retain |
+|---|---|---|---|---|
+| First-time investor | Blog, glossary (live). Gap: YouTube explainers, BP forum answers. **D3** BP replies; **D5** founder video. | Blog. Gap: "your first 10 analyses" email series. | `/answers`, `/for` (live) | **D1** post-verdict series |
+| Wholesaler | Gap: nothing. **D4** FB groups; **D3** BP wholesaling forum. | Gap: assignment fee blog (listed, not written). **D2** teardowns. | `/answers`, `/for` (live) | **D1** post-verdict series |
+| House hacker | LinkedIn (wrong audience). Gap: Reels/Shorts. **D5** 30s clip. | Blog (planned). **D2**. | `/answers`, `/for` (live) | **D1** |
+| Creative finance | Glossary (live). Gap: Pace Morby / Sub2 group answers. **D3**, **D5**. | Glossary, blog. Strongest area. **D2**. | `/for` (live) | **D1** |
+| Out-of-state | Gap: nothing top-of-funnel. **D5** couch-then-flight clip. | `/markets` state pages (live). | `/for` (live) | **D1** |
+| Lenders and agents (partners) | LinkedIn Batch 01 (live) | Gap: partner one-pager | Gap: partner landing page | Gap |
+
+**D1** = post-verdict email series. **D2** = Four Paths Friday teardowns. **D3/D4** = community runbook (BiggerPockets + wholesaler FB groups). **D5** = founder video shot list.
+
 **Posting cadence by channel:**
 - LinkedIn: 2–3×/week — deal teardowns, methodology posts, founder POV.
 - X / Twitter: 5–7×/week — short manifesto pieces, glossary drops, quote pulls from scripts.
@@ -273,5 +288,5 @@ Link or attach as each becomes available.
 
 ---
 
-*Last updated: 2026-05-03*  
+*Last updated: 2026-09-07*  
 *Owner: Brad Geisen (brad@geisen.cc)*

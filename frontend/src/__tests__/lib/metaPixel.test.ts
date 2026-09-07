@@ -41,10 +41,8 @@ describe('metaPixel', () => {
     process.env.NEXT_PUBLIC_META_PIXEL_ID = '123'
     expect(initMetaPixel()).toBe(true)
     expect(window.fbq).toBeTypeOf('function')
-    expect(window.fbq?.queue).toEqual([
-      ['init', '123'],
-      ['track', 'PageView'],
-    ])
+    expect(window.fbq?.queue?.[0]).toEqual(['init', '123'])
+    expect(window.fbq?.queue?.[1]).toEqual(['track', 'PageView'])
     const script = document.head.querySelector('script')
     expect(script?.getAttribute('src')).toBe('https://connect.facebook.net/en_US/fbevents.js')
 
@@ -59,8 +57,10 @@ describe('metaPixel', () => {
     captureMetaPixel('blog_post_viewed')
     captureMetaPixel('checkout_completed')
 
-    const tracked = (window.fbq?.queue ?? []).filter(([cmd]) => cmd === 'track').map(([, name]) => name)
+    const tracked = (window.fbq?.queue ?? []).filter(([cmd]) => cmd === 'track').map((row) => row[1])
     expect(tracked).toEqual(['PageView', 'Lead', 'Subscribe'])
+    const lead = (window.fbq?.queue ?? []).find((row) => row[1] === 'Lead')
+    expect(lead?.[3]).toEqual({ eventID: expect.any(String) })
   })
 
   it('maps the four north-star funnel events and nothing else', () => {

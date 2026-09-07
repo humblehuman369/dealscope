@@ -111,6 +111,10 @@ https://dealgapiq.com/blog/<slug>?utm_source=linkedin&utm_medium=<founder|compan
 Keys must be new; check `recent_linkedin_keys`. On `409 locked_keys`, append
 `-2`, never reuse.
 
+### 2b. Cadence fallback (numbered rule)
+
+16. **Approval and comment fallback.** If a scheduled LinkedIn post is not approved by 06:00 ET on its publish day, the publisher sends the most recent approved draft rather than going silent. If a substantive comment on a live post has no human reply in 20 hours, draft a holding reply that names a time the founder will answer (for example: "I'll come back to this this evening — the short version is the number is a price, not a property attribute."). Do not invent a full answer. Do not drop a link in the holding reply.
+
 ### 3. Voice rules (hard)
 
 From `POSITIONING.md` §3 and the LinkedIn style guide §8:

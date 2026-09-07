@@ -160,15 +160,16 @@ exactly four events as Meta standard events and nothing else:
 
 **Structure**
 
-- One campaign. One ad set per persona page. Two ads per ad set:
-  **hook A** headline = the page H1; **hook B** headline = the strongest
-  persona reason's heading. Primary text = the page intro paragraph.
+- One campaign. Launch two ad sets (`wholesalers`, `creative-finance-buyers`).
+  Three ads per ad set: **hook A** = strongest persona headline; **hook B** =
+  next-best compression; **hook C** = the plain offer (control). Primary
+  text = the page intro paragraph.
 - Creative: a real product screenshot (the verdict card, the Four Paths) or
   a 15-second screen recording of a verdict running on a real address.
   No stock imagery, no lifestyle shots, no clickbait arrows
   (`POSITIONING.md` §4).
 - Destination:
-  `/for/<slug>?utm_source=meta&utm_medium=paid_social&utm_campaign=<slug>&utm_content=<hookA|hookB>`.
+  `/for/<slug>?utm_source=meta&utm_medium=paid_social&utm_campaign=<slug>&utm_content=<hookA|hookB|hookC>`.
   Never `/`. Meta appends `fbclid`; first-touch capture stores it.
 - Name the Meta ad set exactly `<slug>` so the join to PostHog
   `ft_utm_campaign` is by eye.
@@ -184,10 +185,15 @@ exactly four events as Meta standard events and nothing else:
 
 **Budget**
 
-- $10/day per ad set. Launch four: `house-hackers`, `wholesalers`,
-  `out-of-state-investors`, `creative-finance-buyers` (the sharpest
-  identities). About $1,200 for weeks 1–4.
-- The other four rotate in as the kill rule frees budget.
+- Launch two ad sets at $20/day: `wholesalers` and `creative-finance-buyers`.
+  Add `house-hackers` and `out-of-state-investors` when either launched set
+  reaches 300 clicks or is paused by the kill rule. Retargeting ad set
+  (`LISTICLE_META_LAUNCH_KIT.md` §2.6 / enhancement plan §C3) runs at $5/day
+  from day one. Total starting spend $45/day.
+- At $1–$3 CPC, $20/day yields 50–140 clicks a week; expect the 300-click
+  read in 2–4 weeks per ad set.
+- **Spend cap:** first six weeks, all paid channels combined: $2,500. The
+  Monday review stops spend at the cap regardless of results.
 
 **Kill rule.** 300 link clicks with a verdict rate under 5% → pause. Rewrite
 the headline first (that is where the transcript's own 4x came from), not
@@ -219,8 +225,9 @@ Extends the **Direct Response** PostHog dashboard from
      input records `for:<slug>`, the offer block records `for:<slug>:offer`;
      both are the page).
   2. `verdict_viewed` where `ft_landing_path = /for/<slug>`
-  3. `signup_completed` where `ft_landing_path = /for/<slug>`
-  4. `checkout_completed` where `ft_landing_path = /for/<slug>`
+  3. `verdict_email_captured` where `ft_landing_path = /for/<slug>`
+  4. `signup_completed` where `ft_landing_path = /for/<slug>`
+  5. `checkout_completed` where `ft_landing_path = /for/<slug>`
   Conversion window 14 days. Breakdown by `ft_utm_campaign`, then by
   `ft_utm_content` to read hook A against hook B.
 - **DR-F** (persona scoreboard): the DR-A SQL with
@@ -238,6 +245,7 @@ Extends the **Direct Response** PostHog dashboard from
 | Address-submit rate | `property_searched` with `source LIKE 'for:<slug>%'` ÷ landing sessions | 10% |
 | Verdict rate | `verdict_viewed` with `ft_landing_path = /for/<slug>` ÷ landing sessions | 8% |
 | Signup rate | `signup_completed` ÷ `verdict_viewed`, same landing path | 8% |
+| Email capture rate | `verdict_email_captured` ÷ `verdict_viewed` | 15% |
 | Paid cost per verdict | Meta spend ÷ `verdict_viewed` with `ft_utm_medium = paid_social` | under $6 |
 
 Weekly review Monday, alongside the DR-A subscription. A page below target
@@ -249,8 +257,10 @@ reported conversions will be lower than Ads Manager expects for the same
 reason; judge ad sets on PostHog verdict and signup rates, use Meta's
 numbers for its optimizer only. If the undercount starts to hurt the
 optimizer (learning phase never exits at a budget that should support it),
-the fix is the Conversions API from the backend on `signup_completed` and
-`checkout_completed`, which is Phase 3 and not started.
+CAPI shipped 2026-09-07 (`backend/app/services/meta_capi.py`); Meta
+reported conversions should now track PostHog within ~20%. Cost per
+verdict and cost per signup are computed in `WEEKLY_PAID_REVIEW.md` from
+`spend.csv` joined on campaign name — PostHog cannot read ad spend.
 
 ---
 
@@ -259,9 +269,9 @@ the fix is the Conversions API from the backend on `signup_completed` and
 | Phase | When | What | Done when |
 |---|---|---|---|
 | 1. Build | Weeks 1–2 | Config, template, routes, `fbclid`, pixel, tests, this doc | `typecheck`, `test:run`, `theme:check`, `lint`, `build` clean; pages live under noindex |
-| 2. Launch | Week 3 | Pixel ID in Vercel; DR-B/C/F updated; 4 ad sets at $10/day; LinkedIn carousels queued | First week of DR-F data |
-| 3. Read | Weeks 4–6 | Kill/scale weekly; rewrite losing headlines; rotate remaining 4 personas in | Every persona has 4 weeks of data |
-| 4. Expand | Week 6+ | Promote qualifying pages to `indexable`; add expansion personas; CAPI if the optimizer needs it | Judged by signup rate per persona |
+| 2. Launch | Week 3 | Pixel ID in Vercel; DR-B/C/F updated; 2 ad sets at $20/day + retargeting; LinkedIn carousels queued | First week of DR-F data |
+| 3. Read | Weeks 4–8 | Kill/scale weekly; rewrite losing headlines; rotate house-hackers and out-of-state in | Every launched persona has a 300-click read or a kill |
+| 4. Expand | Week 8+ | Promote qualifying pages to `indexable`; add expansion personas | Judged by signup rate per persona |
 
 ---
 

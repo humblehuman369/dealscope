@@ -1,23 +1,24 @@
-# Blog → LinkedIn, Batch 01 (two weeks, 10 native posts)
+# Blog → LinkedIn, Batch 01 (two weeks, 11 founder posts + 3 native company posts)
 
 **Source articles**
 - `/blog/cash-flow-positive-rental-properties`
 - `/blog/dscr-loan-requirements`
 - `/blog/how-to-find-off-market-properties`
 
-**Voice:** Brad, first person, from the founder profile. The company page reshares the three marked **[reshare]** with one added line, no rewrite.
+**Voice:** Brad, first person, from the founder profile. The three company posts are native (same image, different first line) — not reshares. LinkedIn suppresses reshares.
 **Series tags** (from the blueprint): Metric Monday, Deal Gap Breakdown, Creative Finance Friday.
-**Cadence:** 5 founder posts per week, Mon–Fri, 7:30–8:30 a.m. ET. Company page reshares at 12:00 p.m. the same day.
+**Cadence:** 5 founder posts per week, Mon–Fri, 7:30–8:30 a.m. ET, plus Post 11 on Saturday of week 2. Company native posts at 12:00 p.m. the same day as Posts 1, 3, and 7.
 
 ## Rules that apply to every post
 
-1. **No link in the body.** The article link goes in the first comment, posted immediately after publishing. Body copy ends with "Full breakdown in the comments."
-2. **Link format:** `https://dealgapiq.com/blog/<slug>?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=<slug>`. Company reshares use `utm_medium=company_page`.
+1. **No link in the body.** The article link goes in the first comment, posted immediately after publishing. Body copy ends with "Full breakdown in the comments." Post 6 is the batch's one conversion post and may name dealgapiq.com in the body.
+2. **Link format:** `https://dealgapiq.com/blog/<slug>?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=<slug>`. Company posts use `utm_medium=company_page`.
 3. **Images:** screenshot the rendered table or callout block from the live blog page (dark theme, 1200×1200 crop or as close as the block allows). No stock photos. Carousels are the blog's numbered steps, one per slide, exported as PDF.
 4. **Numbers stay labeled.** Every dollar figure is "the $325K example." Lender terms stay "typical program ranges." Never let an illustrative figure read as a market statistic.
 5. **Hashtags:** 2–3, from the blueprint taxonomy, on the last line only.
 6. **Reply to every substantive comment within 24 hours.** The comments are where the deal conversations happen.
 7. Do **not** republish the article body as a LinkedIn Article. The blog URL is the only canonical home for that text.
+8. **Cadence fallback:** if a post is not approved by 06:00 ET, the publisher sends the most recent approved draft. If a substantive comment has no reply in 20 hours, the Content Drafter posts a holding reply that names a time.
 
 ---
 
@@ -52,7 +53,7 @@ Full breakdown in the comments.
 #RealEstateInvesting #CashFlow #RentalProperty
 ```
 
-**Company reshare line:** "The first thing Discovery does with any address is solve for this price."
+**Company native post** (not a reshare): same image. First line is the old reshare line, then the first two lines of the founder post.
 
 ---
 
@@ -113,7 +114,7 @@ The full requirements checklist (ratio tiers, LTV, credit, reserves, rent docs, 
 #DSCR #RealEstateInvesting #RentalProperty
 ```
 
-**Company reshare line:** "Discovery shows both ratios on every property, so the approval never surprises the cash flow."
+**Company native post** (not a reshare): same image. First line is the old reshare line, then the first two lines of the founder post.
 
 ---
 
@@ -203,10 +204,14 @@ Deal Gap: 16.7%. That is not "offer 16.7% less." It is the size of the problem y
 
 Every listing has these two numbers. Almost no listing shows them.
 
+Paste any address at dealgapiq.com and it shows both numbers free. No signup.
+
 Full breakdown in the comments.
 
 #RealEstateInvesting #CashFlow #DealGap
 ```
+
+This is the batch's one conversion post.
 
 ---
 
@@ -233,7 +238,7 @@ Save this for the next time you are staring at a listing site wondering where th
 #RealEstateInvesting #InvestmentProperty
 ```
 
-**Company reshare line:** "Channel 7 is built into Map Search: motivated-seller keywords run against live listings, numbers on every result."
+**Company native post** (not a reshare): same carousel. First line is the old reshare line, then the first two lines of the founder post.
 
 ---
 
@@ -318,6 +323,27 @@ Same property as a house hack or a BRRRR produces a different Target Buy. Someti
 Which lever do you reach for first when a deal is 15% to 20% off?
 
 #CreativeFinance #RealEstateInvesting #DealGap
+```
+
+---
+
+### Post 11 — Saturday week 2 — Founder credential
+
+**Format:** text only.
+**Comment link:** `/what-is-dealgapiq?utm_source=linkedin&utm_medium=founder&utm_campaign=blog_distribution&utm_content=founder-story`
+
+```
+I built Foreclosure.com. Before that, HomePath for Fannie Mae and HomeSteps for Freddie Mac.
+
+Thirty-five years of watching people buy houses off a number the seller chose.
+
+The number that mattered was never on the listing. It was the price where the rent covers everything and there is still something left.
+
+So that is what I built next. One address in. That number out. Free, in 15 seconds.
+
+Google Deal Gap IQ. Know what to offer.
+
+#RealEstateInvesting #DealGap
 ```
 
 ---

@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession, require_permission
 from app.core.posthog_client import posthog_client
+from app.services.meta_capi import send_capi_event
 from app.schemas.billing import (
     CancelSubscriptionRequest,
     CancelSubscriptionResponse,
@@ -705,6 +706,17 @@ async def revenuecat_webhook(
             "TRIALING" if is_trial_period else "ACTIVE",
             period_type or "unknown",
         )
+
+        if event_type == "INITIAL_PURCHASE":
+            try:
+                await send_capi_event(
+                    event_name="checkout_started" if is_trial_period else "checkout_completed",
+                    event_id=str(rc_event_id or f"rc-{user_id}"),
+                    event_source_url="https://dealgapiq.com/checkout/success",
+                    analytics_consent=True,
+                )
+            except Exception:
+                logger.exception("meta_capi_revenuecat_failed")
 
         if posthog_client is not None:
             try:

@@ -42,6 +42,7 @@ from app.models.share import SharedLink, ShareType
 from app.models.subscription import PaymentHistory, Subscription, SubscriptionStatus, SubscriptionTier
 from app.models.task import PropertyTask
 from app.models.user import User, UserProfile
+from app.models.verdict_lead import VerdictLead
 from app.models.verification_token import TokenType, VerificationToken
 from app.models.x_post import XPost, XPostStatus
 
@@ -102,6 +103,7 @@ __all__ = [
     "UserProfile",
     "UserRole",
     "UserSession",
+    "VerdictLead",
     "VerificationToken",
     "XPost",
     "XPostStatus",

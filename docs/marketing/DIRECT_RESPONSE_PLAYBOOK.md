@@ -305,8 +305,9 @@ Steps, in order, all filtered to the same page:
 
 1. `property_searched` where `source = answers:<slug>`
 2. `verdict_viewed` where `ft_landing_path = /answers/<slug>`
-3. `signup_completed` where `ft_landing_path = /answers/<slug>`
-4. `checkout_completed` where `ft_landing_path = /answers/<slug>`
+3. `verdict_email_captured` where `ft_landing_path = /answers/<slug>`
+4. `signup_completed` where `ft_landing_path = /answers/<slug>`
+5. `checkout_completed` where `ft_landing_path = /answers/<slug>`
 
 Conversion window 14 days. Breakdown by `ft_utm_campaign` once paid traffic
 starts. Duplicate for the homepage with `source = home_hero` and
@@ -411,6 +412,17 @@ Report by `ft_utm_campaign`. A page below target for three weeks gets its
 headline rewritten before anything else is touched; the headline is where the
 transcript's 4x came from.
 
+Business conversion targets (reconcile with `docs/posthog-north-star-funnel.md`;
+do not duplicate funnel definitions there):
+
+| Metric | Definition | Target |
+|---|---|---|
+| Email capture rate | `verdict_email_captured` ÷ `verdict_viewed` | 15% |
+| Signup → trial | `checkout_started` ÷ `signup_completed` (30-day window) | 15% |
+| Trial → paid | `checkout_completed` ÷ `checkout_started` | 40% |
+| Signup → paid | product of the two | 6% |
+| Cost per paid (paid channels) | spend ÷ `checkout_completed` with `ft_utm_medium IN ('cpc','paid_social')` | under $200 by week 12 |
+
 ---
 
 ## Changelog
@@ -418,4 +430,5 @@ transcript's 4x came from.
 | Date | Change |
 |---|---|
 | 2026-09-03 | v1. Phase 1 on-site pieces shipped: `/answers/*` (8 pages), `AddressCtaForm` in the homepage hero, `MobileStickyCta`, first-touch attribution, `alternateName` schema. Phase 2 parked. |
+| 2026-09-07 | DR-C gained a fifth step (`verdict_email_captured`). §10 added business KPI targets (email capture, trial, paid, cost per paid). |
 | 2026-09-04 | Added the paid-social layer as a sibling document, `LISTICLE_LANDING_PAGES.md`: `/for/*` persona listicles, Meta Pixel, `fbclid` in first touch. §1 mapping table gained the row. DR-B/DR-C extensions for `/for/%` are specified there. |

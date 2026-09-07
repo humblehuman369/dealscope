@@ -53,6 +53,8 @@ export interface PersonaPage {
   indexable: boolean
   metaTitle: string
   metaDescription: string
+  /** Sample verdict card shown in the hero. */
+  sampleStrategy?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'househack' | 'wholesale'
 }
 
 export const BASE_REASONS: Reason[] = [
@@ -165,6 +167,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     metaTitle: '9 Reasons First-Time Investors Run the Address Before the Showing',
     metaDescription:
       'A free 15-second Discovery on any US address: value, rent, the Deal Gap and six strategies, explained in plain English. Why first-time investors check before they tour.',
+    sampleStrategy: 'ltr',
   },
   {
     slug: 'house-hackers',
@@ -216,6 +219,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     metaTitle: '8 Reasons House Hackers Check the Numbers Before the FHA Pre-Approval',
     metaDescription:
       'See what the rented units cover and what you pay to live there, with owner-occupied financing modeled on the actual address. Free Discovery, no signup.',
+    sampleStrategy: 'househack',
   },
   {
     slug: 'wholesalers',
@@ -272,6 +276,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     metaTitle: '9 Reasons Wholesalers Run Discovery Before They Make the Call',
     metaDescription:
       'MAO, the spread and assign-vs-hold on any lead in 15 seconds, listed or not. Why wholesalers run the address before they dial. Free Discovery, no signup.',
+    sampleStrategy: 'wholesale',
   },
   {
     slug: 'brrrr-investors',
@@ -323,6 +328,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     metaTitle: '8 Reasons BRRRR Investors Stopped Rebuilding the Same Spreadsheet',
     metaDescription:
       'BRRRR next to a straight rental on the same address, rehab estimates with regional costs, every assumption editable. Free 15-second Discovery, no signup.',
+    sampleStrategy: 'brrrr',
   },
   {
     slug: 'creative-finance-buyers',
@@ -379,6 +385,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     metaTitle: '8 Reasons Creative-Finance Buyers Pull Up the Four Paths Before They Pitch',
     metaDescription:
       'Subject-to, seller carry, 0% seconds and a blended plan modeled on the real address, with the script for each. Why creative-finance buyers run it before the call. Free.',
+    sampleStrategy: 'ltr',
   },
   {
     slug: 'out-of-state-investors',
@@ -435,6 +442,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     metaTitle: '9 Reasons Out-of-State Investors Analyze From Their Phone Before They Fly',
     metaDescription:
       'State tax and vacancy applied automatically, three value sources, the Deal Gap on any US address in 15 seconds. Run the shortlist before you book. Free, no signup.',
+    sampleStrategy: 'ltr',
   },
   {
     slug: 'portfolio-builders',
@@ -491,6 +499,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     metaTitle: '9 Reasons Investors Analyzing 30 Properties a Month Quit Excel',
     metaDescription:
       'A 15-second first pass on every address, a pipeline instead of tabs, exports when you need the receipt. Why volume investors moved off the spreadsheet. Free Discovery.',
+    sampleStrategy: 'ltr',
   },
   {
     slug: 'dscr-borrowers',
@@ -542,6 +551,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     metaTitle: '7 Reasons DSCR Borrowers Run the Ratio Before They Call the Lender',
     metaDescription:
       'DSCR from live rent and financing assumptions on any US address, the rent it depends on from multiple sources, lenders by state. Free 15-second Discovery, no signup.',
+    sampleStrategy: 'ltr',
   },
 ]
 

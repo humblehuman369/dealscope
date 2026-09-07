@@ -68,7 +68,11 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
         fullName: data.fullName,
       })
       if (result.user && result.access_token) {
-        trackEvent('signup_completed', { method: 'modal', requires_verification: false })
+        trackEvent(
+          'signup_completed',
+          { method: 'modal', requires_verification: false },
+          result.event_id,
+        )
         setMemoryToken(result.access_token)
         setLastKnownUser(result.user)
         setLastTokenRefresh()
@@ -84,10 +88,14 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
           router.replace('/billing')
         }
       } else {
-        trackEvent('signup_completed', {
-          method: 'modal',
-          requires_verification: result.requires_verification ?? true,
-        })
+        trackEvent(
+          'signup_completed',
+          {
+            method: 'modal',
+            requires_verification: result.requires_verification ?? true,
+          },
+          result.event_id,
+        )
         setRequiresVerification(result.requires_verification ?? true)
         setSuccess(true)
       }

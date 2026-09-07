@@ -13,6 +13,8 @@
  */
 
 export const FIRST_TOUCH_KEY = 'dgiq_first_touch_v1'
+export const FIRST_TOUCH_COOKIE = 'dgiq_first_touch_v1'
+const FIRST_TOUCH_MAX_AGE_SECONDS = 90 * 24 * 60 * 60
 
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const
 const CLICK_ID_KEYS = ['gclid', 'fbclid'] as const
@@ -33,10 +35,9 @@ function referrerHost(referrer: string): string | undefined {
   }
 }
 
-function readStored(): FirstTouch | null {
+function parseFirstTouch(raw: string | null): FirstTouch | null {
+  if (!raw) return null
   try {
-    const raw = window.localStorage.getItem(FIRST_TOUCH_KEY)
-    if (!raw) return null
     const parsed: unknown = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object' || typeof (parsed as FirstTouch).landing_path !== 'string') {
       return null
@@ -45,6 +46,48 @@ function readStored(): FirstTouch | null {
   } catch {
     return null
   }
+}
+
+function readCookie(): FirstTouch | null {
+  if (typeof document === 'undefined') return null
+  const prefix = `${FIRST_TOUCH_COOKIE}=`
+  const hit = document.cookie.split('; ').find((part) => part.startsWith(prefix))
+  if (!hit) return null
+  return parseFirstTouch(decodeURIComponent(hit.slice(prefix.length)))
+}
+
+function writeCookie(record: FirstTouch): void {
+  if (typeof document === 'undefined') return
+  const value = encodeURIComponent(JSON.stringify(record))
+  document.cookie = `${FIRST_TOUCH_COOKIE}=${value}; Max-Age=${FIRST_TOUCH_MAX_AGE_SECONDS}; Path=/; SameSite=Lax`
+}
+
+function persist(record: FirstTouch): void {
+  try {
+    window.localStorage.setItem(FIRST_TOUCH_KEY, JSON.stringify(record))
+  } catch {
+    // private mode
+  }
+  writeCookie(record)
+}
+
+function readStored(): FirstTouch | null {
+  if (typeof window === 'undefined') return null
+  const fromStorage = parseFirstTouch(window.localStorage.getItem(FIRST_TOUCH_KEY))
+  if (fromStorage) {
+    if (!readCookie()) writeCookie(fromStorage)
+    return fromStorage
+  }
+  const fromCookie = readCookie()
+  if (fromCookie) {
+    try {
+      window.localStorage.setItem(FIRST_TOUCH_KEY, JSON.stringify(fromCookie))
+    } catch {
+      // ignore
+    }
+    return fromCookie
+  }
+  return null
 }
 
 /**
@@ -68,12 +111,37 @@ export function captureFirstTouch(): FirstTouch | null {
   const host = referrerHost(document.referrer)
   if (host) record.referrer_host = host
 
-  try {
-    window.localStorage.setItem(FIRST_TOUCH_KEY, JSON.stringify(record))
-  } catch {
-    return null
-  }
+  persist(record)
   return record
+}
+
+/** Live UTMs / click ids on the current URL, even when first touch is already stored. */
+export function liveClickIds(): Partial<FirstTouch> {
+  if (typeof window === 'undefined') return {}
+  const params = new URLSearchParams(window.location.search)
+  const out: Partial<FirstTouch> = {}
+  for (const key of [...UTM_KEYS, ...CLICK_ID_KEYS]) {
+    const v = params.get(key)
+    if (v) out[key] = v.slice(0, 200)
+  }
+  return out
+}
+
+/** Payload to stamp on the account at signup. First touch wins; live ids fill gaps. */
+export function signupAttribution(): FirstTouch | Record<string, string> {
+  const stored = getFirstTouch() ?? captureFirstTouch()
+  const live = liveClickIds()
+  return { ...(stored ?? { landing_path: '/', ts: Date.now() }), ...live }
+}
+
+export function getMetaClickIds(): { fbp?: string; fbc?: string } {
+  if (typeof document === 'undefined') return {}
+  const out: { fbp?: string; fbc?: string } = {}
+  for (const part of document.cookie.split('; ')) {
+    if (part.startsWith('_fbp=')) out.fbp = decodeURIComponent(part.slice(5))
+    if (part.startsWith('_fbc=')) out.fbc = decodeURIComponent(part.slice(5))
+  }
+  return out
 }
 
 /** Stored first touch, or null if none has been captured. */

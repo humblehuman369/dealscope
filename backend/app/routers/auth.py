@@ -26,6 +26,7 @@ from app.core.deps import (
     DbSession,
 )
 from app.core.posthog_client import posthog_client
+from app.services.meta_capi import fbc_from_fbclid, send_capi_event
 from app.repositories.role_repository import role_repo
 from app.repositories.session_repository import session_repo
 from app.schemas.auth import (
@@ -249,12 +250,28 @@ async def register(body: UserRegister, request: Request, response: Response, db:
             full_name=body.full_name,
             ip_address=_client_ip(request),
             user_agent=request.headers.get("User-Agent"),
+            first_touch=body.first_touch,
         )
         await db.commit()
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
     _ph_identify_and_capture(user, "user_registered", {"signup_method": "email"})
+
+    ft = body.first_touch or {}
+    _fire_and_forget(
+        send_capi_event(
+            event_name="signup_completed",
+            event_id=body.event_id or f"signup-{user.id}",
+            event_source_url=str(request.headers.get("Referer") or ""),
+            email=user.email,
+            fbc=body.fbc or fbc_from_fbclid(ft.get("fbclid") if isinstance(ft, dict) else None),
+            fbp=body.fbp,
+            client_ip=_client_ip(request),
+            user_agent=request.headers.get("User-Agent"),
+            analytics_consent=body.analytics_consent,
+        )
+    )
 
     # Notify admins of the new signup (fire-and-forget; never blocks signup)
     _fire_and_forget(

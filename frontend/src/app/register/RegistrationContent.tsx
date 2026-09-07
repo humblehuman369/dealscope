@@ -396,11 +396,15 @@ function RegistrationInner() {
         fullName: form.firstName,
       })
 
-      trackEvent('signup_completed', {
-        method: 'page',
-        plan,
-        requires_verification: !!result.requires_verification,
-      })
+      trackEvent(
+        'signup_completed',
+        {
+          method: 'page',
+          plan,
+          requires_verification: !!result.requires_verification,
+        },
+        result.event_id,
+      )
 
       if (result.requires_verification) {
         setRequiresVerification(true)

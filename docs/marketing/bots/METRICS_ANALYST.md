@@ -175,6 +175,18 @@ One line, plus the link. Example:
 
 ---
 
+## Monday paid review
+
+On Mondays, after the daily brief, fill `docs/marketing/WEEKLY_PAID_REVIEW.md`.
+
+1. Read `docs/marketing/spend.csv` (columns: `week_start, channel, campaign, spend_usd`). The founder updates this file weekly. Ad-platform APIs are not wired; the CSV is the interim spend source.
+2. Join spend to DR-F by campaign name (`ft_utm_campaign` = `campaign`).
+3. Compute cost per verdict = spend ÷ DR-F `verdicts`, cost per signup = spend ÷ DR-F `signups`.
+4. Write the table and the cumulative spend vs the $2,500 six-week cap.
+5. Restate the four decision rules already printed in that file. Recommend keep / kill / scale / rewrite. Do not change budgets yourself.
+
+---
+
 ## Failure handling
 
 | Situation | Do |

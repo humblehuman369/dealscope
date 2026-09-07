@@ -107,6 +107,16 @@ describe('PERSONA_PAGES', () => {
   it('returns null for an unknown slug', () => {
     expect(getPersonaPage('nope')).toBeNull()
   })
+
+  it('gives every page a valid sampleStrategy', () => {
+    const allowed = new Set(['ltr', 'str', 'brrrr', 'flip', 'househack', 'wholesale'])
+    for (const p of PERSONA_PAGES) {
+      expect(p.sampleStrategy, p.slug).toBeDefined()
+      expect(allowed.has(p.sampleStrategy ?? ''), p.slug).toBe(true)
+    }
+    expect(getPersonaPage('wholesalers')?.sampleStrategy).toBe('wholesale')
+    expect(getPersonaPage('house-hackers')?.sampleStrategy).toBe('househack')
+  })
 })
 
 describe('headlineCount', () => {

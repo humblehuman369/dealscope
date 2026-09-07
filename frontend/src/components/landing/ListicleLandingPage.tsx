@@ -8,19 +8,19 @@
 
 import Link from 'next/link'
 import { getBlogPost, type BlogPost } from '@/lib/content'
-import { DIRECTORY_ACCESS_NOTE, PRO_PRICE_ANNUAL, PRO_PRICE_MONTHLY, PRO_TRIAL_DAYS } from '@/lib/planFeatures'
+import { DIRECTORY_ACCESS_NOTE, HOMEPAGE_FREE_FEATURES, PRO_PRICE_ANNUAL, PRO_PRICE_MONTHLY, PRO_TRIAL_DAYS } from '@/lib/planFeatures'
 import { buildFaqJsonLd } from '@/lib/seo/metadata'
 import { SITE_URL } from '@/lib/seo/blog-schema'
 import { resolveReasons, type PersonaPage } from '@/lib/seo/persona-pages'
 import { getProblemPage, type ProblemPage } from '@/lib/seo/problem-pages'
 import { AddressCtaForm } from '@/components/landing/AddressCtaForm'
-import { HeroSampleResult } from '@/components/landing/HeroSampleResult'
+import { CREATIVE_FINANCE_SAMPLE_PATHS, HeroSampleResult } from '@/components/landing/HeroSampleResult'
 import { MobileStickyCta } from '@/components/landing/MobileStickyCta'
 import { SocialProof } from '@/components/landing/SocialProof'
 
 const HERO_ID = 'for-hero'
 const DISCOVERY_CTA = 'Run Free Discovery'
-const DISCOVERY_GUARANTEE = 'Free Discovery. No signup. No card.'
+const DISCOVERY_GUARANTEE = 'Free verdict. No signup. No card.'
 
 function buildJsonLd(page: PersonaPage) {
   const url = `${SITE_URL}/for/${page.slug}`
@@ -92,9 +92,12 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
             </div>
 
             <div>
-              <HeroSampleResult />
+              <HeroSampleResult
+                strategy={page.sampleStrategy ?? 'ltr'}
+                paths={page.slug === 'creative-finance-buyers' ? CREATIVE_FINANCE_SAMPLE_PATHS : undefined}
+              />
               <p className="mt-3 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
-                Sample Discovery. Yours runs on the address you enter.
+                Sample verdict. Yours runs on the address you enter.
               </p>
             </div>
           </div>
@@ -150,7 +153,7 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
             <p className="address-cta__guarantee">{DISCOVERY_GUARANTEE}</p>
           </div>
           <p className="mt-6 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-            Free accounts run ten analyses a month and save ten properties. Pro adds editable
+            Free accounts include {HOMEPAGE_FREE_FEATURES[0]} and {HOMEPAGE_FREE_FEATURES[3]}. Pro adds editable
             assumptions, comps, the Deal Maker worksheet, exports and the directories for{' '}
             {PRO_PRICE_MONTHLY}/month or {PRO_PRICE_ANNUAL}/year after a {PRO_TRIAL_DAYS}-day trial.{' '}
             {DIRECTORY_ACCESS_NOTE}{' '}
