@@ -33,9 +33,9 @@ export function initPostHog(): Promise<PostHog | null> {
     .then(({ default: posthog }) => {
       posthog.init(key, {
         api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
-        // '2026-01-30' defaults: history-change pageviews (SPA-correct) and
-        // head script injection (avoids Next.js SSR hydration errors).
-        defaults: '2026-01-30',
+        // '2026-05-30' is the current PostHog config snapshot (SPA pageviews,
+        // head script injection for Next.js SSR, plus later flag/replay defaults).
+        defaults: '2026-05-30',
         persistence: 'localStorage+cookie',
       })
       client = posthog
