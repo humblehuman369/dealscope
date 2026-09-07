@@ -40,6 +40,7 @@ const HIGH_CHURN_PAGES = [
   'features/strategy-workbench/components/OptionsSection.tsx',
   'features/strategy-workbench/components/BenchmarksSection.tsx',
   'features/strategy-workbench/components/SaveCtaSection.tsx',
+  'features/strategy-workbench/components/PlanNextMove.tsx',
   'app/property/[zpid]/page.tsx',
   'app/profile/page.tsx',
   'app/page.tsx',

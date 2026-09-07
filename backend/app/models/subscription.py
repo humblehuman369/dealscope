@@ -73,7 +73,7 @@ class Subscription(Base):
 
     # Usage limits based on tier (defaults match TIER_LIMITS[FREE])
     properties_limit: Mapped[int] = mapped_column(Integer, default=10)  # Starter: 10
-    searches_per_month: Mapped[int] = mapped_column(Integer, default=10)  # Starter: 10 analyses/mo
+    searches_per_month: Mapped[int] = mapped_column(Integer, default=2)  # Starter: 2 analyses/mo
     api_calls_per_month: Mapped[int] = mapped_column(Integer, default=50)  # Starter: 50
 
     # Usage tracking (reset monthly)
@@ -105,8 +105,19 @@ class Subscription(Base):
         return TIER_LIMITS[self.tier]["properties_limit"]
 
     def tier_searches_limit(self) -> int:
-        """Effective monthly analysis cap from tier config."""
+        """Published monthly analysis cap from tier config (new accounts)."""
         return TIER_LIMITS[self.tier]["searches_per_month"]
+
+    def effective_searches_limit(self) -> int:
+        """Enforced monthly analysis cap.
+
+        Pro is always unlimited. Starter uses the row so grandfathered
+        accounts that still have ``searches_per_month=10`` keep that cap
+        after the published Starter limit dropped to 2.
+        """
+        if self.tier == SubscriptionTier.PRO:
+            return TIER_LIMITS[self.tier]["searches_per_month"]
+        return self.searches_per_month
 
     def can_save_property(self, current_count: int | None = None) -> bool:
         """Check if user can save another property.
@@ -122,7 +133,7 @@ class Subscription(Base):
 
     def can_search(self) -> bool:
         """Check if user has searches remaining."""
-        limit = self.tier_searches_limit()
+        limit = self.effective_searches_limit()
         if limit == -1:
             return True
         return self.searches_used < limit
@@ -176,12 +187,12 @@ class PaymentHistory(Base):
 # Tier configurations for easy reference
 TIER_LIMITS = {
     SubscriptionTier.FREE: {
-        # Breadth, not depth: free users get a generous analysis/save allowance so
-        # they reach the "aha" (Four Paths, directories) before any wall. The paid
-        # conversion levers are DEPTH (editable inputs, comps, exports, directories),
-        # which stay Pro-only. Tune these two numbers to balance activation vs. data COGS.
+        # First deal + one more analysis, then the wall. Conversion after
+        # Make It Work is depth (packet / trial), not a 10-deal sandbox.
+        # Existing FREE rows with searches_per_month=10 are grandfathered
+        # (see GRANDFATHERED_FREE_SEARCHES_PER_MONTH).
         "properties_limit": 10,
-        "searches_per_month": 10,
+        "searches_per_month": 2,
         "api_calls_per_month": 50,
         "features": ["basic_analysis", "save_properties", "iq_verdict", "strategy_snapshots", "seller_motivation"],
     },
@@ -205,3 +216,7 @@ TIER_LIMITS = {
         ],
     },
 }
+
+# Previous published Starter analysis cap. Existing FREE rows that still
+# have this value must not be synced down to TIER_LIMITS[FREE].
+GRANDFATHERED_FREE_SEARCHES_PER_MONTH = 10

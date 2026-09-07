@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from app.models.subscription import (
+    GRANDFATHERED_FREE_SEARCHES_PER_MONTH,
     TIER_LIMITS,
     Subscription,
     SubscriptionStatus,
@@ -28,7 +29,7 @@ class TestTierConfiguration:
     def test_free_tier_limits(self):
         free = TIER_LIMITS[SubscriptionTier.FREE]
         assert free["properties_limit"] > 0
-        assert free["searches_per_month"] > 0
+        assert free["searches_per_month"] == 2
         assert "basic_analysis" in free["features"]
 
     def test_pro_tier_is_unlimited(self):
@@ -115,6 +116,37 @@ class TestGetOrCreateSubscription:
 
         assert result.tier == SubscriptionTier.FREE
         assert result.user_id == created_user.id
+        assert result.searches_per_month == TIER_LIMITS[SubscriptionTier.FREE]["searches_per_month"]
+
+    async def test_grandfathers_existing_free_ten_analysis_cap(
+        self,
+        db_session: AsyncSession,
+        created_user,
+    ):
+        """Existing Starter rows at the old 10-analysis cap must not be cut to 2."""
+        stale = Subscription(
+            user_id=created_user.id,
+            tier=SubscriptionTier.FREE,
+            status=SubscriptionStatus.ACTIVE,
+            properties_limit=10,
+            searches_per_month=GRANDFATHERED_FREE_SEARCHES_PER_MONTH,
+            api_calls_per_month=50,
+            searches_used=3,
+            usage_reset_date=datetime.now(UTC),
+        )
+        db_session.add(stale)
+        await db_session.flush()
+
+        service = BillingService()
+        result = await service.get_or_create_subscription(db_session, created_user.id)
+
+        assert result.searches_per_month == GRANDFATHERED_FREE_SEARCHES_PER_MONTH
+        assert result.effective_searches_limit() == GRANDFATHERED_FREE_SEARCHES_PER_MONTH
+        assert result.can_search() is True
+
+        usage = await service.get_usage(db_session, created_user.id)
+        assert usage.searches_limit == GRANDFATHERED_FREE_SEARCHES_PER_MONTH
+        assert usage.searches_remaining == GRANDFATHERED_FREE_SEARCHES_PER_MONTH - 3
 
 
 # ------------------------------------------------------------------

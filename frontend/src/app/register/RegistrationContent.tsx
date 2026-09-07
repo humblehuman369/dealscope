@@ -183,7 +183,7 @@ const PlanSummary: React.FC<{ plan: PlanType; trialEndDate: string; annual?: boo
         'Side-by-side deal comparison',
       ]
     : [
-        '10 property analyses per month',
+        '2 property analyses per month',
         'Deal Gap + Income Value + Target Buy',
         'Discovery score',
         'All 6 strategy snapshots',
@@ -479,7 +479,7 @@ function RegistrationInner() {
       >
         {plan === 'pro'
           ? `Create your account, then start your 7-day free trial — no charge until ${trialEndDate}.`
-          : 'Get started with 10 free analyses per month.'}
+          : 'Get started with 2 free analyses per month.'}
       </p>
 
       {/* Sign in with Apple */}

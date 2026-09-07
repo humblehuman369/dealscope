@@ -571,7 +571,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             <span className="check">✓</span> No credit card
           </span>
           <span>
-            <span className="check">✓</span> 3 free analyses/month
+            <span className="check">✓</span> 2 free analyses/month
           </span>
           <span>
             <span className="check">✓</span> Every assumption editable

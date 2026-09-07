@@ -22,7 +22,8 @@ import {
   useMemo,
   useRef,
 } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -116,7 +117,7 @@ import { NextStepsSection } from './NextStepsSection'
 import { OptionsSection } from './OptionsSection'
 import { BenchmarksSection } from './BenchmarksSection'
 import { SaveCtaSection } from './SaveCtaSection'
-import { PlanProUnlockStrip } from './PlanProUnlockStrip'
+import { PlanNextMove } from './PlanNextMove'
 import {
   STRATEGIES_WITHOUT_OPTIONS,
   STRATEGY_EXCLUDED_TEMPLATE_IDS,
@@ -182,6 +183,7 @@ export function StrategyWorkbench({
   initialDealStructures = null,
 }: StrategyWorkbenchProps) {
   const queryClient = useQueryClient()
+  const router = useRouter()
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
@@ -282,9 +284,15 @@ export function StrategyWorkbench({
   // actually changed vs the prior baseline. Drives the soft glow on
   // SliderRow's via WorksheetHighlightContext.
   const [highlightedFields, setHighlightedFields] = useState<Set<string>>(() => new Set())
-  const [showPlanProCta, setShowPlanProCta] = useState(false)
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
   const planProCtaTrackedRef = useRef(false)
+
+  const { data: billingUsage } = useQuery<{ searches_remaining: number }>({
+    queryKey: ['billing', 'usage'],
+    queryFn: () => api.get('/api/v1/billing/usage'),
+    staleTime: 5 * 60 * 1000,
+    enabled: isAuthenticated && !isPro && fromPlan,
+  })
 
   // Wipe highlights whenever the analyzed address changes — different property,
   // different baseline.
@@ -296,16 +304,10 @@ export function StrategyWorkbench({
   }, [addressParam])
 
   useEffect(() => {
-    if (!fromPlan || isPro) return
-    const timer = window.setTimeout(() => setShowPlanProCta(true), 15_000)
-    return () => window.clearTimeout(timer)
-  }, [fromPlan, isPro])
-
-  useEffect(() => {
-    if (!showPlanProCta || planProCtaTrackedRef.current) return
+    if (!fromPlan || isPro || planProCtaTrackedRef.current) return
     planProCtaTrackedRef.current = true
     trackEvent('plan_pro_cta_shown', { family: planContinuity?.planLabel })
-  }, [showPlanProCta, planContinuity?.planLabel])
+  }, [fromPlan, isPro, planContinuity?.planLabel])
   // Merged view used by all downstream calculations.
   const dealMakerOverrides = useMemo(() => {
     if (!initialOverrides && Object.keys(inlineOverrides).length === 0) return null
@@ -1016,7 +1018,6 @@ export function StrategyWorkbench({
         }, 300)
         scheduleRecalc()
         markWorksheetDirty()
-        if (fromPlan && !isPro) setShowPlanProCta(true)
         return next
       })
       // A manual slider edit invalidates the path-applied glow on this field.
@@ -1032,7 +1033,7 @@ export function StrategyWorkbench({
         return next
       })
     },
-    [scheduleRecalc, markWorksheetDirty, fromPlan, isPro],
+    [scheduleRecalc, markWorksheetDirty],
   )
 
   /**
@@ -1707,11 +1708,13 @@ export function StrategyWorkbench({
         />
 
         {/* Next Steps — authenticated only; anon users see the unlock panel instead */}
-        {fromPlan && showPlanProCta && !isPro && (
-          <PlanProUnlockStrip
-            buyerTotalLabel={formatBuyerDirectoryLabel(null)}
-            lenderTotalLabel={formatLenderDirectoryTotal()}
-            onUpgrade={() => setUpgradeModalOpen(true)}
+        {fromPlan && !isPro && (
+          <PlanNextMove
+            remainingAnalyses={
+              isAuthenticated ? (billingUsage?.searches_remaining ?? null) : null
+            }
+            onStartTrial={() => setUpgradeModalOpen(true)}
+            onAnalyzeAnother={() => router.push('/search')}
           />
         )}
 
@@ -2059,6 +2062,7 @@ export function StrategyWorkbench({
         isOpen={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
         returnTo="/discovery"
+        checkoutSource="plan_next_move"
       />
     </div>
   )

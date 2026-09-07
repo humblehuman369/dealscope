@@ -43,6 +43,8 @@ interface UpgradeModalProps {
   initialAnnual?: boolean
   /** Paid-only features skip the 7-day trial so access can activate immediately. */
   paidOnlyFeature?: string
+  /** Overrides `checkout_started.source` (default: upgrade_modal / paid_only_upgrade_modal). */
+  checkoutSource?: string
 }
 
 function pickRCPackage(packages: RCPackage[], annual: boolean): RCPackage | undefined {
@@ -63,6 +65,7 @@ export function UpgradeModal({
   returnTo,
   initialAnnual = true,
   paidOnlyFeature,
+  checkoutSource,
 }: UpgradeModalProps) {
   const router = useRouter()
   const [annual, setAnnual] = useState(initialAnnual)
@@ -115,7 +118,7 @@ export function UpgradeModal({
     if (USE_NATIVE_IAP) {
       if (!rcPkg) return
       trackEvent('checkout_started', {
-        source: 'upgrade_modal',
+        source: checkoutSource ?? 'upgrade_modal',
         plan: annual ? 'yearly' : 'monthly',
         platform: USES_APPLE_IAP ? 'apple_iap' : 'capacitor',
       })
@@ -154,7 +157,7 @@ export function UpgradeModal({
         skip_trial: isPaidOnly,
       })
       trackEvent('checkout_started', {
-        source: isPaidOnly ? 'paid_only_upgrade_modal' : 'upgrade_modal',
+        source: checkoutSource ?? (isPaidOnly ? 'paid_only_upgrade_modal' : 'upgrade_modal'),
         plan: annual ? 'yearly' : 'monthly',
         paid_only_feature: paidOnlyFeature,
       })
@@ -165,7 +168,7 @@ export function UpgradeModal({
     } finally {
       setLoading(false)
     }
-  }, [annual, proPlan, returnTo, rcPkg, rc, onClose, router, isPaidOnly, paidOnlyFeature])
+  }, [annual, proPlan, returnTo, rcPkg, rc, onClose, router, isPaidOnly, paidOnlyFeature, checkoutSource])
 
   if (!isOpen) return null
 

@@ -14,8 +14,9 @@ describe('WorkbenchGuidance', () => {
         planLabel="Price"
       />,
     )
-    expect(screen.getByText('Your plan is loaded')).toBeInTheDocument()
-    expect(screen.getByText('Price — tune it here')).toBeInTheDocument()
+    expect(screen.getByText('Plan saved')).toBeInTheDocument()
+    expect(screen.getByText('Price is in the worksheet')).toBeInTheDocument()
+    expect(screen.queryByText(/tune it here/i)).toBeNull()
     expect(screen.queryByText(/sign in free/i)).toBeNull()
   })
 

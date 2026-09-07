@@ -8,7 +8,11 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { Search, Loader2, AlertTriangle, AlertCircle } from 'lucide-react'
+import { useSession } from '@/hooks/useSession'
+import { useSubscription } from '@/hooks/useSubscription'
+import { api } from '@/lib/api-client'
 import {
   AddressAutocomplete,
   type AddressComponents,
@@ -56,6 +60,16 @@ async function geocodeLocationQuery(
 
 export function HeaderPropertySearch() {
   const router = useRouter()
+  const { isAuthenticated } = useSession()
+  const { isPro } = useSubscription()
+  const { data: usage } = useQuery<{ searches_remaining: number }>({
+    queryKey: ['billing', 'usage'],
+    queryFn: () => api.get('/api/v1/billing/usage'),
+    staleTime: 5 * 60 * 1000,
+    enabled: isAuthenticated && !isPro,
+  })
+  const remaining = usage?.searches_remaining
+  const showRemainingHint = remaining != null && remaining <= 1
   const [address, setAddress] = useState('')
   const [validationStatus, setValidationStatus] = useState<ValidationStatus>('idle')
   const [validationResult, setValidationResult] = useState<AddressValidationResult | null>(null)
@@ -261,6 +275,14 @@ export function HeaderPropertySearch() {
             />
           )}
         </div>
+        {showRemainingHint && (
+          <p
+            className="mt-1 text-[11px] font-semibold text-center"
+            style={{ color: remaining === 0 ? 'var(--status-warning)' : 'var(--text-secondary)' }}
+          >
+            {remaining === 0 ? '0 left — then Pro' : '1 left — then Pro'}
+          </p>
+        )}
       </form>
 
       {showPanel && (

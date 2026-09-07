@@ -276,9 +276,22 @@ class EmailService:
     def _button(self, text: str, url: str, variant: str = "brand") -> str:
         """Render a styled CTA button.
 
-        ``variant`` selects the gradient: ``"brand"`` (blue) or
-        ``"danger"`` (red).  Uses bulletproof VML for Outlook fallback.
+        ``variant`` selects the gradient: ``"brand"`` (blue),
+        ``"danger"`` (red), or ``"secondary"`` (outlined).
+        Uses bulletproof VML for Outlook fallback.
         """
+        if variant == "secondary":
+            return f'''
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0;">
+    <tr>
+        <td align="center" style="background: {self.NESTED_BG}; border: 2px solid {self.BRAND_LINK}; border-radius: 10px;">
+            <a href="{url}" target="_blank" class="button" style="display: inline-block; padding: 12px 28px; font-size: 15px; font-weight: 700; color: {self.BRAND_LINK}; text-decoration: none; border-radius: 10px; letter-spacing: 0.01em;">
+                {text}
+            </a>
+        </td>
+    </tr>
+</table>
+'''
         if variant == "danger":
             gradient = f"linear-gradient(135deg, {self.DANGER_BUTTON_FROM} 0%, {self.DANGER_BUTTON_TO} 100%)"
             solid_fallback = self.DANGER_BUTTON_TO
@@ -575,8 +588,8 @@ class EmailService:
         """"Your plan is saved" — the Make It Work hook email.
 
         ``plan`` is a ``PlanClaimRequest``: the scenario label + levers and the
-        narrative summary are rendered so the email stands on its own, and the
-        one button is the magic link that signs the user in and opens the plan.
+        narrative summary are rendered so the email stands on its own. Primary
+        CTA is the magic link; secondary CTA starts the 7-day Pro trial.
         """
         esc = html_lib.escape
         scenario = getattr(plan, "scenario", None)
@@ -661,6 +674,7 @@ class EmailService:
 <p style="font-size: 15px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 8px 0;">{account_line}</p>
 
 {self._button("Open my plan", esc(magic_url))}
+{self._button("Start your 7-day Pro trial", f"{self.frontend_url}/pricing?source=plan_email", "secondary")}
 
 <p style="font-size: 13px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 0;">
     This link works once and expires in {expires_minutes} minutes. If it has expired, search the address again on DealGapIQ and save the plan to get a fresh one.
@@ -673,7 +687,7 @@ class EmailService:
     <a href="{esc(magic_url)}" style="color: {self.BRAND_LINK}; word-break: break-all;">{esc(magic_url)}</a>
 </p>
 <p style="font-size: 12px; color: {self.TXT_MUTED}; margin: 0;">
-    Want unlimited saved deals, PDF reports, and the full Strategy toolkit? <a href="{self.frontend_url}/pricing" style="color: {self.BRAND_LINK};">See DealGapIQ Pro</a>.
+    Pro unlocks the PDF and Excel offer packet plus unlimited analyses. Directories and exports unlock with your first payment.
 </p>
 '''
 
@@ -1000,7 +1014,7 @@ class EmailService:
         <td style="padding: 16px; background-color: {self.NESTED_BG}; border: 1px solid {self.BORDER}; border-radius: 12px;">
             <p style="font-weight: 700; color: {self.TXT_HEADING}; margin: 0 0 8px 0;">Your Starter plan includes:</p>
             <ul style="font-size: 14px; color: {self.TXT_BODY}; margin: 0; padding-left: 20px; line-height: 1.8;">
-                <li>10 property analyses per month</li>
+                <li>2 property analyses per month</li>
                 <li>Deal Gap, Income Value, and Target Buy metrics</li>
                 <li>Discovery Score</li>
                 <li>All 6 strategy snapshots</li>

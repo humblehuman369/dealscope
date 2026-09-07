@@ -68,7 +68,7 @@ The wizard on `/discovery` is the free hook that captures an email before any pa
   3. `make_it_work_plan_viewed` (`recommended_family`)
   4. `plan_save_submitted` (`mode` = `email` \| `authenticated`)
   5. `plan_worksheet_opened` — this tab opened the loaded worksheet (the conversion-critical step)
-  6. `plan_pro_cta_shown` — delayed Pro ask (buyers / lenders / offer packet) after they touch a slider or 15s
+  6. `plan_pro_cta_shown` — immediate next-move trial ask (offer packet + unlimited analyses) on first paint; `checkout_started.source=plan_next_move`
   7. `magic_link_consumed` — emailed link opened on another device; verifies the account
 - **Conversion window:** `1 day` for steps 1–6; `3 days` including step 7.
 - **Breakdowns:** `make_it_work_opened.source`, `make_it_work_plan_viewed.recommended_family`, `make_it_work_step.answer` (per `step`).

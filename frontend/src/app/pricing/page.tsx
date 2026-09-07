@@ -51,7 +51,7 @@ const PRICING_JSONLD = {
             '@id': `${SITE_URL}/pricing#starter`,
             name: 'Starter',
             description:
-              'Free plan: property search, 10 property analyses per month, Discovery with deal score, all 6 strategy snapshots, save up to 10 properties.',
+              'Free plan: property search, 2 property analyses per month, Discovery with deal score, all 6 strategy snapshots, save up to 10 properties.',
             price: '0',
             priceCurrency: 'USD',
             availability: 'https://schema.org/InStock',
@@ -133,7 +133,7 @@ const PRICING_FAQ = [
   {
     question: 'Is there a free plan?',
     answer:
-      'Yes. Starter is free forever with property search, 10 analyses per month, Discovery scores, and snapshots across all six strategies.',
+      'Yes. Starter is free forever with property search, 2 analyses per month, Discovery scores, and snapshots across all six strategies.',
   },
   {
     question: 'What does Pro include?',

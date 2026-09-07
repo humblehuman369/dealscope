@@ -28,4 +28,4 @@ export const IOS_MONTHLY_PRODUCT_ID = 'com.monthly.dealgapiq'
 export const IOS_YEARLY_PRODUCT_ID = 'com.yearly.dealgapiq'
 
 // Must match TIER_LIMITS[FREE]["searches_per_month"] in backend/app/models/subscription.py
-export const FREE_ANALYSES_PER_MONTH = 10
+export const FREE_ANALYSES_PER_MONTH = 2

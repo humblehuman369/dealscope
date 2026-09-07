@@ -137,7 +137,7 @@ const COMPARISON_DATA: ComparisonCategory[] = [
     name: 'Property Analysis',
     rows: [
       { name: 'Property search', free: true, pro: true },
-      { name: 'Property analyses per month', free: '10', pro: 'Unlimited' },
+      { name: 'Property analyses per month', free: '2', pro: 'Unlimited' },
       { name: 'Discovery with deal score', free: true, pro: true },
       { name: 'Income Value, Target Buy & Deal Gap', free: true, pro: true },
       {
@@ -249,7 +249,13 @@ export default function PricingContent() {
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
   const [showStickyCta, setShowStickyCta] = useState(false)
   const [comparisonOpen, setComparisonOpen] = useState(false)
+  const [checkoutSource, setCheckoutSource] = useState<string | undefined>()
   const pricingCardsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const source = new URLSearchParams(window.location.search).get('source')
+    if (source) setCheckoutSource(source)
+  }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -1444,6 +1450,7 @@ export default function PricingContent() {
         onClose={() => setUpgradeModalOpen(false)}
         returnTo="/"
         initialAnnual={isAnnual}
+        checkoutSource={checkoutSource}
       />
 
       {/* ─── MOBILE STICKY CTA ─── */}

@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.posthog_client import posthog_client
 from app.models.subscription import (
+    GRANDFATHERED_FREE_SEARCHES_PER_MONTH,
     TIER_LIMITS,
     PaymentHistory,
     Subscription,
@@ -139,13 +140,13 @@ class BillingService:
                 stripe_price_id_monthly=None,
                 stripe_price_id_yearly=None,
                 properties_limit=10,
-                searches_per_month=10,
+                searches_per_month=2,
                 api_calls_per_month=50,
                 features=[
                     PlanFeature(
-                        name="10 Property Analyses/month",
-                        description="Analyze up to 10 properties per month",
-                        limit="10/month",
+                        name="2 Property Analyses/month",
+                        description="Analyze up to 2 properties per month",
+                        limit="2/month",
                     ),
                     PlanFeature(
                         name="Deal Gap + Income Value + Target Buy",
@@ -256,8 +257,14 @@ class BillingService:
             subscription.properties_limit = limits["properties_limit"]
             changed = True
         if subscription.searches_per_month != limits["searches_per_month"]:
-            subscription.searches_per_month = limits["searches_per_month"]
-            changed = True
+            grandfather_free_ten = (
+                subscription.tier == SubscriptionTier.FREE
+                and subscription.searches_per_month == GRANDFATHERED_FREE_SEARCHES_PER_MONTH
+                and limits["searches_per_month"] < GRANDFATHERED_FREE_SEARCHES_PER_MONTH
+            )
+            if not grandfather_free_ten:
+                subscription.searches_per_month = limits["searches_per_month"]
+                changed = True
         if subscription.api_calls_per_month != limits["api_calls_per_month"]:
             subscription.api_calls_per_month = limits["api_calls_per_month"]
             changed = True
@@ -317,7 +324,7 @@ class BillingService:
 
         # Calculate remaining (tier SSOT — avoids stale denormalized columns in API responses)
         props_limit = subscription.tier_properties_limit()
-        searches_limit = subscription.tier_searches_limit()
+        searches_limit = subscription.effective_searches_limit()
         api_limit = TIER_LIMITS[subscription.tier]["api_calls_per_month"]
 
         # Handle unlimited (-1)

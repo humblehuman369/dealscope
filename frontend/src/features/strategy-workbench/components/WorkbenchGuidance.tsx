@@ -37,10 +37,10 @@ export function WorkbenchGuidance({
   let body: string
 
   if (fromPlan) {
-    eyebrow = 'Your plan is loaded'
-    title = planLabel ? `${planLabel} — tune it here` : 'Tune the numbers'
+    eyebrow = 'Plan saved'
+    title = planLabel ? `${planLabel} is in the worksheet` : 'Your structure is in the worksheet'
     body =
-      'This is the structure from your plan. Drag a slider — cash flow updates instantly. We emailed a link so you can reopen this on any device.'
+      'Confirm the three numbers below — offer, rent, and cash to close. We emailed a link so you can reopen this on any device.'
   } else if (hasOptions && !gapWorks) {
     eyebrow = 'How to make this deal work'
     title = `We found ${optionCount} Option${optionCount === 1 ? '' : 's'} that close the gap`

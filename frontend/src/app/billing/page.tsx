@@ -88,9 +88,9 @@ function getPlans(isAnnual: boolean): PlanConfig[] {
       name: 'Starter',
       price: '$0',
       period: '/month',
-      note: 'Free forever · 10 analyses/month',
+      note: 'Free forever · 2 analyses/month',
       features: [
-        { text: '10 property analyses per month', available: true },
+        { text: '2 property analyses per month', available: true },
         { text: 'Deal Gap + Income Value + Target Buy', available: true },
         { text: 'Discovery score (Pass / Marginal / Buy)', available: true },
         { text: '6 strategy snapshots', available: true },
@@ -119,7 +119,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Do unused analyses roll over?',
-    a: "On Starter, no — your 10 analyses reset monthly. On Pro, there's no limit so it doesn't matter.",
+      a: "On Starter, no — your 2 analyses reset monthly. On Pro, there's no limit so it doesn't matter.",
   },
 ]
 

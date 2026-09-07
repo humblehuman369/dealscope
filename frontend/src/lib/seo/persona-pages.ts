@@ -11,7 +11,7 @@
  * flip it only when the persona content is substantially unique, or the
  * family becomes near-duplicate content for Google.
  *
- * Copy rules: every reason is a verifiable product fact. Free = 10 analyses
+ * Copy rules: every reason is a verifiable product fact. Free = 2 analyses
  * and 10 saves a month. Pro features are marked "(Pro)". Directories and
  * exports unlock with the first payment, never during trial. Nothing is
  * fabricated; when a source has no data the product says unavailable.

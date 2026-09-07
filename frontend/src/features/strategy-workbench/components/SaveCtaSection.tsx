@@ -44,32 +44,44 @@ export function SaveCtaSection({
   fromPlan = false,
   planEmail = null,
 }: SaveCtaSectionProps) {
+  if (!isAuthenticated && fromPlan) {
+    return (
+      <section className={`${WORKBENCH_CARD} text-center`} style={WORKBENCH_CARD_STYLE}>
+        <p className={`${WORKBENCH_BODY} mx-auto max-w-lg`} style={{ color: 'var(--text-body)' }}>
+          {planEmail
+            ? `We emailed a link to ${planEmail} so you can reopen these numbers on any device.`
+            : 'We emailed a link so you can reopen these numbers on any device.'}{' '}
+          <button
+            type="button"
+            onClick={onRegister}
+            className="text-sm font-semibold underline underline-offset-2"
+            style={{ color: colors.brand.teal, background: 'none', border: 'none', padding: 0 }}
+          >
+            Already a member? Sign in
+          </button>
+        </p>
+      </section>
+    )
+  }
+
   return (
     <section className={`${WORKBENCH_CARD} text-center`} style={WORKBENCH_CARD_STYLE}>
       <p className={WORKBENCH_EYEBROW} style={{ color: 'var(--accent-sky)', marginBottom: 8 }}>
-        {!isAuthenticated && fromPlan
-          ? 'Your plan is in this tab.'
-          : !isAuthenticated
-            ? 'You\u2019ve seen the gap.'
-            : isSaved && worksheetDirty
-              ? 'Almost there'
-              : 'You screened it. You proved it.'}
+        {!isAuthenticated
+          ? 'You\u2019ve seen the gap.'
+          : isSaved && worksheetDirty
+            ? 'Almost there'
+            : 'You screened it. You proved it.'}
       </p>
       <h2 className={`${WORKBENCH_TITLE} mb-2`} style={{ color: 'var(--text-heading)' }}>
-        {!isAuthenticated && fromPlan
-          ? 'Check email to reopen it anywhere.'
-          : !isAuthenticated
-            ? 'Now see how to close it.'
-            : isSaved && worksheetDirty
-              ? 'Save Your Worksheet'
-              : 'Now Save It.'}
+        {!isAuthenticated
+          ? 'Now see how to close it.'
+          : isSaved && worksheetDirty
+            ? 'Save Your Worksheet'
+            : 'Now Save It.'}
       </h2>
       <p className={`${WORKBENCH_BODY} mb-5 mx-auto max-w-lg`} style={{ color: 'var(--text-body)' }}>
-        {!isAuthenticated && fromPlan
-          ? planEmail
-            ? `We sent a one-tap link to ${planEmail}. It signs you in and reopens these numbers for 30 minutes.`
-            : 'We emailed a one-tap link that signs you in and reopens these numbers for 30 minutes.'
-          : !isAuthenticated
+        {!isAuthenticated
           ? 'A free account unlocks your max offer price, the deal structures that close the gap, and the live worksheet. Pro members go further — with verified cash buyers and hard money lenders to exit the deal.'
           : isSaved && worksheetDirty
             ? 'Your slider changes are not in DealVault yet. Save the worksheet so your dashboard and deal pages reopen with these numbers.'
@@ -144,15 +156,6 @@ export function SaveCtaSection({
             </p>
           )}
         </>
-      ) : fromPlan ? (
-        <button
-          type="button"
-          onClick={onRegister}
-          className="text-sm font-semibold underline underline-offset-2"
-          style={{ color: colors.brand.teal, background: 'none', border: 'none', padding: 0 }}
-        >
-          Already a member? Sign in
-        </button>
       ) : (
         <>
           <button
