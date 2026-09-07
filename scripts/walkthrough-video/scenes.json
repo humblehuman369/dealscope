@@ -15,7 +15,7 @@
     "id": "03-verdict",
     "caption": "Three numbers. Suddenly, clarity.",
     "minDurationSec": 42,
-    "elevenLabsText": "And here it is — your Verdict. <break time=\"0.55s\" /> Three numbers, and suddenly everything is calmer. <break time=\"0.5s\" /> Target Buy — the price where this property meets your goals. <break time=\"0.4s\" /> Income Value — the most you can pay and still sleep at night. <break time=\"0.4s\" /> Market Price — what the seller is asking. <break time=\"0.6s\" /> The space between them is your Deal Gap. <break time=\"0.55s\" /> Walk away, negotiate, or write the offer — every one of those is a good outcome, because now it's an informed one."
+    "elevenLabsText": "And here it is — your Discovery. <break time=\"0.55s\" /> Three numbers, and suddenly everything is calmer. <break time=\"0.5s\" /> Target Buy — the price where this property meets your goals. <break time=\"0.4s\" /> Income Value — the most you can pay and still sleep at night. <break time=\"0.4s\" /> Market Price — what the seller is asking. <break time=\"0.6s\" /> The space between them is your Deal Gap. <break time=\"0.55s\" /> Walk away, negotiate, or write the offer — every one of those is a good outcome, because now it's an informed one."
   },
   {
     "id": "04-trust-strategies",
@@ -39,7 +39,7 @@
     "id": "07-deal-maker",
     "caption": "Shape it until it feels right.",
     "minDurationSec": 35,
-    "elevenLabsText": "When you're ready, make the deal your own. <break time=\"0.5s\" /> In Deal Maker, slide the purchase price. <break time=\"0.3s\" /> The down payment. <break time=\"0.3s\" /> The rent. <break time=\"0.5s\" /> Every number updates live — the same math, the same record as your Verdict. <break time=\"0.55s\" /> Shape it until it feels right. <break time=\"0.55s\" /> And when it does, export it to Excel and take it to your lender with confidence."
+    "elevenLabsText": "When you're ready, make the deal your own. <break time=\"0.5s\" /> In Deal Maker, slide the purchase price. <break time=\"0.3s\" /> The down payment. <break time=\"0.3s\" /> The rent. <break time=\"0.5s\" /> Every number updates live — the same math, the same record as your Discovery. <break time=\"0.55s\" /> Shape it until it feels right. <break time=\"0.55s\" /> And when it does, export it to Excel and take it to your lender with confidence."
   },
   {
     "id": "08-close",

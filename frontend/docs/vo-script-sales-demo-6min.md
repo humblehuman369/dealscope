@@ -23,7 +23,7 @@
 | 4 | `04-trust-strategies` | 2:00–2:40 | Transparent sources. Six strategies. |
 | 5 | `05-four-paths` | 2:40–3:40 | A negative gap is a structure problem. |
 | 6 | `06-pitch` | 3:40–4:30 | Pitch script — ready to dial. |
-| 7 | `07-deal-maker` | 4:30–5:20 | Live worksheet. Same math as the Verdict. |
+| 7 | `07-deal-maker` | 4:30–5:20 | Live worksheet. Same math as Discovery. |
 | 8 | `08-close` | 5:20–6:00 | Hunt the market. Deal decision engine. |
 
 ---
@@ -126,7 +126,7 @@
 > **Deal Maker** is the interactive worksheet. /
 > Change purchase price. Down payment. Rent. Loan type. //
 > Every metric recalculates live — /
-> and it stays consistent with the Verdict you just saw. //
+> and it stays consistent with the Discovery you just saw. //
 > Same math. Same record. /
 > When you’re ready for a lender, export to Excel.
 
@@ -169,7 +169,7 @@ I'm going to run a real property. <break time="0.4s" /> Behind the scenes we're 
 
 ### 03-verdict
 ```
-This is your Verdict. <break time="0.5s" /> Three numbers say it all. <break time="0.35s" /> Target Buy — the price that hits your return thresholds. <break time="0.35s" /> Income Value — the max you can pay and still cash-flow positive. <break time="0.35s" /> Market Price — what the seller wants. <break time="0.55s" /> The Deal Gap between them is the focus. <break time="0.35s" /> Walk away. Negotiate. Or write the offer. <break time="0.4s" /> We show you options.
+This is your Discovery. <break time="0.5s" /> Three numbers say it all. <break time="0.35s" /> Target Buy — the price that hits your return thresholds. <break time="0.35s" /> Income Value — the max you can pay and still cash-flow positive. <break time="0.35s" /> Market Price — what the seller wants. <break time="0.55s" /> The Deal Gap between them is the focus. <break time="0.35s" /> Walk away. Negotiate. Or write the offer. <break time="0.4s" /> We show you options.
 ```
 
 ### 04-trust-strategies
@@ -189,7 +189,7 @@ And we don't stop at the spreadsheet. <break time="0.5s" /> For each path you ge
 
 ### 07-deal-maker
 ```
-Deal Maker is the interactive worksheet. <break time="0.35s" /> Change purchase price. Down payment. Rent. Loan type. <break time="0.5s" /> Every metric recalculates live — and it stays consistent with the Verdict you just saw. <break time="0.5s" /> Same math. Same record. <break time="0.35s" /> When you're ready for a lender, export to Excel.
+Deal Maker is the interactive worksheet. <break time="0.35s" /> Change purchase price. Down payment. Rent. Loan type. <break time="0.5s" /> Every metric recalculates live — and it stays consistent with the Discovery you just saw. <break time="0.5s" /> Same math. Same record. <break time="0.35s" /> When you're ready for a lender, export to Excel.
 ```
 
 ### 08-close

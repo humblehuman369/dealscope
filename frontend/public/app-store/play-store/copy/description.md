@@ -19,7 +19,7 @@ lens · pre-scored · DEAL/MAYBE/PASS · off-MLS coverage · Deal Gap.
 
 | # | Text | Chars |
 |---|---|---|
-| 2 | `Every US listing through an investor's lens. Pre-scored. Verdict in seconds.` | 76 |
+| 2 | `Every US listing through an investor's lens. Pre-scored. Discovery in seconds.` | 78 |
 | 3 | `Score any rental, flip, or BRRRR deal in 60 seconds. See the Deal Gap instantly.` | 80 |
 
 ---
@@ -38,7 +38,7 @@ Stop scrolling listings. Start spotting real deals. DealGapIQ tells you what to
 offer, and how to close it.
 
 WHAT YOU GET
-• A verdict in seconds — every property graded DEAL, MAYBE, or PASS
+• Discovery in seconds — every property graded DEAL, MAYBE, or PASS
 • The Deal Gap + your Target Buy price, Income Value, and Market Price
 • Four complete offer paths, including creative finance structures most
   investors never consider — each with an editable worksheet and a ready-to-send

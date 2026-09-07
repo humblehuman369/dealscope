@@ -44,7 +44,7 @@ function buildFaq(state: { name: string; code: string }, market: StateMarketDeta
   const items: FaqItem[] = [
     {
       question: `How do I search for investment properties in ${state.name}?`,
-      answer: `Open the ${state.name} map search from this page. It frames the whole state, loads active listings from RentCast and Zillow inside the viewport, and lets you pan, zoom, or draw an area. Select any listing to run a free DealGapIQ verdict on it.`,
+      answer: `Open the ${state.name} map search from this page. It frames the whole state, loads active listings from RentCast and Zillow inside the viewport, and lets you pan, zoom, or draw an area. Select any listing to run a free DealGapIQ Discovery on it.`,
     },
     {
       question: `What property tax rate does DealGapIQ assume for ${state.name} rentals?`,
@@ -66,7 +66,7 @@ function buildFaq(state: { name: string; code: string }, market: StateMarketDeta
   }
   items.push({
     question: `Is a ${state.name} listing a good investment?`,
-    answer: `It depends on the gap between the asking price and what the property is worth as a rental. Run a free verdict on the address: DealGapIQ pulls live rent and value estimates, applies the ${state.name} assumptions above, and shows the Deal Gap between list price and your target buy.`,
+    answer: `It depends on the gap between the asking price and what the property is worth as a rental. Run a free Discovery on the address: DealGapIQ pulls live rent and value estimates, applies the ${state.name} assumptions above, and shows the Deal Gap between list price and your target buy.`,
   })
   return items
 }
@@ -200,7 +200,7 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
                 className="inline-flex rounded-full border px-6 py-3 font-semibold transition-colors hover:opacity-90"
                 style={{ borderColor: 'var(--border-default)', color: 'var(--text-heading)' }}
               >
-                Run a free verdict
+                Run a free Discovery
               </Link>
             </div>
           </div>
@@ -265,17 +265,17 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
                 {` ${formatDollars(example.price)} `}example above, DealGapIQ starts by removing
                 {` ${formatDollars(example.annualPropertyTax + example.annualVacancyLoss)} `}a year for those two lines
                 alone, then layers insurance, management, maintenance, and reserves on top. A listing has to clear all
-                of that and the debt service before the verdict calls it cash-flow positive.
+                of that and the debt service before Discovery calls it cash-flow positive.
               </p>
               <p>
                 The rent-to-price ratio is only a starting point for the rent estimate. When RentCast or Zillow report a
-                rent for the specific address, the verdict uses those sources instead and shows the ratio for comparison.
+                rent for the specific address, Discovery uses those sources instead and shows the ratio for comparison.
               </p>
             </div>
           </section>
         ) : (
           <section className="mb-12 rounded-xl border px-4 py-4 text-sm" style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)', background: 'var(--surface-card)' }}>
-            Market assumptions for {state.name} are temporarily unavailable. Run a verdict on an address to see the
+            Market assumptions for {state.name} are temporarily unavailable. Run Discovery on an address to see the
             live inputs for that property.
           </section>
         )}
@@ -366,7 +366,7 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
             Analyze a {state.name} address with these inputs.
           </h2>
           <p className="mt-3 max-w-2xl" style={{ color: 'var(--text-secondary)' }}>
-            Paste a listing and the verdict applies the {state.name} assumptions, pulls live rent and value estimates,
+            Paste a listing and Discovery applies the {state.name} assumptions, pulls live rent and value estimates,
             and shows the Deal Gap between the asking price and your target buy.
           </p>
           <Link
@@ -374,7 +374,7 @@ export default async function StateMarketPage({ params }: { params: Promise<{ st
             className="mt-6 inline-flex rounded-full px-6 py-3 font-semibold transition-opacity hover:opacity-90"
             style={{ background: 'var(--accent-sky)', color: 'var(--surface-base)' }}
           >
-            Run a free verdict →
+            Run a free Discovery →
           </Link>
         </section>
 

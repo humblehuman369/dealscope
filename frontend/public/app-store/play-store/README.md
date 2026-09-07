@@ -88,7 +88,7 @@ Stronger (lens-led, differentiated):
 
 - `See every listing through an investor's lens.` (v4 — poetic, brand-aligned)
 - `Hunt deals through an investor's lens.` (v3 — action verb, fuses search + lens)
-- `Every property has a verdict.`
+- `Every property has a Discovery.`
 - `Stop searching for homes. Start hunting for deals.`
 - `The price you should pay. On every US listing.`
 

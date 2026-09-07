@@ -34,7 +34,7 @@ Rules:
   from planFeatures.ts.
 - Never add a claim that is not in DEALGAPIQ_FEATURE_AUDIT.md.
 - Copy rules: no "evaluate/consider/explore/discover/let us help." No
-  advice language. Guarantee line is exactly "Free verdict. No signup.
+  advice language. Guarantee line is exactly "Free Discovery. No signup.
   No card." Sign-off is "Google Deal Gap IQ. Know what to offer."
 - After each code task run: npm run typecheck, npm run test:run,
   npm run lint, npm run build (frontend); pytest (backend). Fix what
@@ -71,7 +71,7 @@ Phase A and B must be complete before the founder presses Publish in Ads Manager
 **Steps**
 1. Read `planFeatures.ts`. Note the exact values of the free analysis limit, saved-property limit, `PRO_PRICE_MONTHLY`, `PRO_PRICE_ANNUAL`, `PRO_TRIAL_DAYS`.
 2. In the playbook, replace every "TBD" and "confirm before publishing" about free tier or pricing with the values from step 1. Places to check: the header block, §2, §5.7 "Cancel anytime" row, §15 "Never say," §16 cheat sheet, the closing italic note.
-3. Add the guarantee line "Free verdict. No signup. No card." to §5.7 microcopy and to §13 as the line under every primary CTA.
+3. Add the guarantee line "Free Discovery. No signup. No card." to §5.7 microcopy and to §13 as the line under every primary CTA.
 4. Add the sign-off "Google Deal Gap IQ. Know what to offer." to §5.7 and §13.
 5. In §1 golden rules, change rule 1 to: *Lead with the problem and the free verdict on acquisition surfaces (ads, landing pages). "Hunt. Score. Close." is the product tagline for brand surfaces (App Store, hero, bios).*
 6. In `MARKETING_RESOURCE_GUIDE.md`, tick the three open decisions and add a changelog row.
@@ -91,7 +91,7 @@ Phase A and B must be complete before the founder presses Publish in Ads Manager
 **File:** `docs/marketing/LISTICLE_META_LAUNCH_KIT.md`
 
 **Steps**
-1. §2.3 shared fields: change Description from `Free Discovery. No signup. No card.` to `Free verdict. No signup. No card.`
+1. §2.3 shared fields: change Description from `Free Discovery. No signup. No card.` to `Free Discovery. No signup. No card.`
 2. Replace these headlines:
 
 | Ad | Old | New | Chars |
@@ -107,13 +107,13 @@ Phase A and B must be complete before the founder presses Publish in Ads Manager
 | Field | Value |
 |---|---|
 | Ad name | `<slug>-hookC` |
-| Headline | `Free verdict on any address. No signup.` (39) |
+| Headline | `Free Discovery on any address. No signup.` (39) |
 | Primary text | `Paste any US address. In 15 seconds you get the price where the deal works, the Deal Gap to the asking price, and four ways to close it. Free. No account. No card.` |
 | URL | same as A/B with `utm_content=hookC` |
 
 5. Add a note under §2.3: *If Hook C wins on verdict rate across two or more personas for two weeks, the listicle frame is not adding value for that persona. Move that persona's budget to its matching `/answers` page.*
 6. §2.2 defaults: add a row `Special Ad Category fallback: if Meta forces Housing, keep the ad set live, switch Advantage+ audience On, remove interest stacks, and note the date in the changelog.`
-7. Update §2.4 checklist: add `[ ] Description line reads "Free verdict. No signup. No card."` and `[ ] Hook C present on every ad set.`
+7. Update §2.4 checklist: add `[ ] Description line reads "Free Discovery. No signup. No card."` and `[ ] Hook C present on every ad set.`
 8. Update the weekly review table (§2.5) to compare C against A and B.
 
 **Done when**
@@ -154,7 +154,7 @@ Phase A and B must be complete before the founder presses Publish in Ads Manager
    - **Ad groups:** one per page, named exactly the slug, $15/day each.
    - **Keywords:** per page, 5–10 exact and phrase match built from the problem phrasing and the persona variants in DR playbook §3. Write them out.
    - **Negatives (campaign level):** `jobs, salary, career, course, free download, template, excel, spreadsheet, license, exam, near me, for sale, zillow, redfin, realtor` plus every US state name. State names are negatives because `/markets/[state]` handles that intent organically.
-   - **Ads (RSA):** Headline 1 = page H1 verbatim. Headline 2 = `Free verdict. No signup. No card.` Headline 3 = `15 seconds from address to answer`. Description 1 = the page's agitate sentence. Description 2 = `We analyze. You decide.` Pin H1 and H2 to positions 1 and 2.
+   - **Ads (RSA):** Headline 1 = page H1 verbatim. Headline 2 = `Free Discovery. No signup. No card.` Headline 3 = `15 seconds from address to answer`. Description 1 = the page's agitate sentence. Description 2 = `We analyze. You decide.` Pin H1 and H2 to positions 1 and 2.
    - **Final URL:** `https://dealgapiq.com/answers/<slug>?utm_source=google&utm_medium=cpc&utm_campaign=<slug>`. Auto-tagging on (keeps `gclid`).
    - **Kill rule:** 200 clicks and verdict rate under 6% → pause, rewrite H1 on the page first.
    - **Scale rule:** same as Meta.
@@ -219,22 +219,22 @@ Print as a TODO. Do not attempt.
 
 ## Phase B — Product changes that raise conversion
 
-### B1. "Email me this verdict" capture
+### B1. "Email me this Discovery" capture
 
 **Goal:** Give people who run a free verdict a one-field way to stay reachable, without breaking "no signup."
 
 **Files (inspect first):** the verdict result view under `frontend/src/app/discovery/` or `frontend/src/components/verdict/`; `frontend/src/lib/analytics` (or wherever `trackEvent` lives); a backend endpoint under `backend/app/api/v1/`; the transactional email sender (Resend is connected; find the existing client).
 
 **Steps**
-1. Find the component that renders the verdict card and the existing "save" or "sign up" prompt.
-2. Add a `VerdictEmailCapture` component below the verdict card: one email input, one button `Email me this verdict`, helper text `One email. No account. Unsubscribe in one click.` No password. No checkbox beyond what consent law requires (inspect the existing consent pattern and reuse it).
+1. Find the component that renders the Discovery card and the existing "save" or "sign up" prompt.
+2. Add a `VerdictEmailCapture` component below the Discovery card: one email input, one button `Email me this Discovery`, helper text `One email. No account. Unsubscribe in one click.` No password. No checkbox beyond what consent law requires (inspect the existing consent pattern and reuse it).
 3. Backend: `POST /api/v1/leads/verdict-email` with `{ email, property_id or address, ft_* attribution }`. Store in a `verdict_leads` table (email, address, source attribution JSON, created_at, consent flag). Dedupe on email + address.
-4. Send one transactional email via Resend: subject `Your verdict for <address>`, body = the three numbers (Income Value, Target Buy, Deal Gap), a link back to the verdict, the guarantee line, and the sign-off. Footer: unsubscribe link, `We analyze. You decide.`
+4. Send one transactional email via Resend: subject `Your Discovery for <address>`, body = the three numbers (Income Value, Target Buy, Deal Gap), a link back to the verdict, the guarantee line, and the sign-off. Footer: unsubscribe link, `We analyze. You decide.`
 5. Fire `verdict_email_captured` through `trackEvent` so it carries `ft_*`.
 6. Add a Resend contact with property `source = verdict_email` and `persona = <ft_landing_path slug>` so D5 can segment.
 7. Tests: component renders, validation rejects bad emails, endpoint dedupes, event fires.
 
-**Do not:** gate the verdict behind the email. Show the field after the verdict renders.
+**Do not:** gate Discovery behind the email. Show the field after Discovery renders.
 
 **Done when**
 - [ ] Field visible on verdict view after render; works logged-out
@@ -284,7 +284,7 @@ Print as a TODO. Do not attempt.
 
 ---
 
-### B4. Persona-matched sample verdict card
+### B4. Persona-matched sample Discovery card
 
 **Goal:** Each `/for` page shows the strategy card that persona cares about.
 
@@ -332,7 +332,7 @@ Print as a TODO. Do not attempt.
 
 | Ad | Headline | Primary text |
 |---|---|---|
-| retarget-save | `Save the verdict you ran. Free account.` | `You ran an address. The numbers are still there. A free account keeps 10 saved properties so the next one is a comparison, not a memory.` |
+| retarget-save | `Save the Discovery you ran. Free account.` | `You ran an address. The numbers are still there. A free account keeps 10 saved properties so the next one is a comparison, not a memory.` |
 | retarget-offer | `You have the number. Here is what to say.` | `Every verdict comes with four ways to close the gap and the script for each. Free account, no card. Pick the path and read it off the screen.` |
 
 3. Note: audience sizes will be small at launch. Meta needs ~1,000 people to serve reliably; leave the ad set on and let it fill.
@@ -363,7 +363,7 @@ Trigger: contact created with `source = verdict_email` (from B1). Exit: `signup_
 
 | # | Send | Subject | Body outline |
 |---|---|---|---|
-| 1 | Immediately | `Your verdict for <address>` | Sent by B1. |
+| 1 | Immediately | `Your Discovery for <address>` | Sent by B1. |
 | 2 | +2 days | `The number listing sites don't show you` | Income Value vs Target Buy in three sentences. The Deal Gap on their address. One line: "The gap is the negotiation." CTA: `See the four ways to close it` → their verdict URL. |
 | 3 | +5 days | `When the seller says no to the price` | The blended-plan idea: 2% cut + seller second + verified rent. The script exists on their verdict. CTA: `Read the script` → verdict URL. Footer notes free account saves 10 properties. |
 

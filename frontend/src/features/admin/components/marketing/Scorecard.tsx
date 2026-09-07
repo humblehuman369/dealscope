@@ -13,7 +13,7 @@ const FUNNEL_ORDER = ['sessions', 'signups', 'verdicts', 'activations', 'checkou
 const METRIC_LABELS: Record<string, string> = {
   sessions: 'Sessions',
   signups: 'Signups',
-  verdicts: 'Verdicts',
+  verdicts: 'Discoveries',
   activations: 'Activated',
   checkouts_started: 'Checkouts',
   paid_conversions: 'Paid',

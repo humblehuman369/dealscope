@@ -1,8 +1,8 @@
-# How Verdict and Strategy Pages Get Their Numbers (4370 Ruth Ln Example)
+# How Discovery and Strategy Pages Get Their Numbers (4370 Ruth Ln Example)
 
 ## Why you don't see "AXESSO" or "RentCast" on the page
 
-DealGapIQ **does** pull from Zillow (via AXESSO) and RentCast. The Verdict and Strategy pages **do not show raw source labels** by design—they show only the *derived* values (Market Price, Target Buy, Income Value, Monthly Rent). So it can look like "no data from AXESSO or Rentcast" even when both were used.
+DealGapIQ **does** pull from Zillow (via AXESSO) and RentCast. The Discovery page and embedded Strategy workbench **do not show raw source labels** by design—they show only the *derived* values (Market Price, Target Buy, Income Value, Monthly Rent). So it can look like "no data from AXESSO or Rentcast" even when both were used.
 
 ---
 
@@ -93,4 +93,4 @@ DealGapIQ **does** pull from Zillow (via AXESSO) and RentCast. The Verdict and S
 Market value source is now always shown as **"Zestimate"** (direct from Zillow API).  
 Rent source is now always shown as **"RentCast Estimate"** (direct from RentCast API).
 
-This doc is the single place that describes how Verdict and Strategy get their numbers from AXESSO and RentCast even when the UI doesn’t name them.
+This doc is the single place that describes how Discovery and Strategy get their numbers from AXESSO and RentCast even when the UI doesn’t name them.

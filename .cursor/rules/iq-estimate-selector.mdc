@@ -54,7 +54,7 @@ return 'iq'
 
 When a user selects a different provider, calculations must update instantly (no API call).
 
-### Discovery Page (formerly Verdict in code paths)
+### Discovery Page
 
 ```typescript
 onSourceChange={(type, _sourceId, _value) => {

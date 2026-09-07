@@ -5,7 +5,7 @@ import type { Root } from 'mdast'
  * Directive names authors may use in `.md` content. Anything else is left
  * untouched so a typo renders as visible text instead of silently vanishing.
  *
- *   ::cta[Run a free verdict]{href="/discovery"}
+ *   ::cta[Run a free Discovery]{href="/discovery"}
  *   :::callout{type="tip"}
  *   Body markdown…
  *   :::

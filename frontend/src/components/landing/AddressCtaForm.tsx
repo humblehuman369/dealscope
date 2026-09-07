@@ -52,7 +52,7 @@ function withAttribution(params: URLSearchParams, source: string): URLSearchPara
 export function AddressCtaForm({
   source,
   placeholder = 'Enter a property address',
-  buttonLabel = 'Run free verdict',
+  buttonLabel = 'Run free Discovery',
   className = '',
 }: Props) {
   const router = useRouter()

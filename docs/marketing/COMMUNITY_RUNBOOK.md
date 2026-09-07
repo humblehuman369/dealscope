@@ -15,7 +15,7 @@ No link in post bodies.
 | Target forums | Deal Analysis, Creative Financing, Wholesaling, House Hacking |
 | Cadence | Five substantive replies a week |
 | First 30 days | No links. Profile bio carries the sign-off. |
-| After 30 days | A link is earned only when the verdict numbers *are* the answer. Link the matching `/answers` page, not the homepage. UTMs: `utm_source=biggerpockets&utm_medium=forum&utm_campaign=<slug>` |
+| After 30 days | A link is earned only when the Discovery numbers *are* the answer. Link the matching `/answers` page, not the homepage. UTMs: `utm_source=biggerpockets&utm_medium=forum&utm_campaign=<slug>` |
 | Logging | `docs/marketing/bp-log.csv` — date, thread URL, persona, replied, link y/n |
 | Never | Promo thread. DM. |
 

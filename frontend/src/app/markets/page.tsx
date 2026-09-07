@@ -73,7 +73,7 @@ export default async function MarketsHubPage() {
             {TITLE}
           </h1>
           <p className="mt-4 max-w-3xl text-lg sm:text-xl" style={{ color: 'var(--text-secondary)' }}>
-            Pick a state to open its investment property map and see the inputs every DealGapIQ verdict starts from
+            Pick a state to open its investment property map and see the inputs every DealGapIQ Discovery starts from
             there: effective property tax, vacancy, appreciation, and the rent-to-price ratio, alongside how many
             hard money lenders and verified cash buyers in our directories work in that state.
           </p>
@@ -150,7 +150,7 @@ export default async function MarketsHubPage() {
             Run a real address through these assumptions.
           </h2>
           <p className="mt-3 max-w-2xl" style={{ color: 'var(--text-secondary)' }}>
-            The verdict pulls the right state row automatically, then shows the Deal Gap, target buy price, and the
+            Discovery pulls the right state row automatically, then shows the Deal Gap, target buy price, and the
             offer structures that close it.
           </p>
           <Link
@@ -158,7 +158,7 @@ export default async function MarketsHubPage() {
             className="mt-6 inline-flex rounded-full px-6 py-3 font-semibold transition-opacity hover:opacity-90"
             style={{ background: 'var(--accent-sky)', color: 'var(--surface-base)' }}
           >
-            Run a free verdict →
+            Run a free Discovery →
           </Link>
         </section>
       </div>

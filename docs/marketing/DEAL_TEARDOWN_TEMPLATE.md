@@ -1,6 +1,6 @@
 # Deal teardown template ("Four Paths Friday")
 
-400–600 words. Pick a **public** listing. Run the verdict. Screenshot the
+400–600 words. Pick a **public** listing. Run Discovery. Screenshot the
 verdict card and the Four Paths. Anonymize the street number unless the
 listing is already public. Label every figure as **this listing's numbers**,
 not market stats. No advice language. Sign-off: `Google Deal Gap IQ. Know
@@ -31,10 +31,10 @@ Founder records. Agent does not.
 | Second | Beat |
 |---|---|
 | 0–2 | Address typed into the box |
-| 2–6 | Verdict card lands; Deal Gap called out |
+| 2–6 | Discovery card lands; Deal Gap called out |
 | 6–20 | Four Paths panel; featured path highlighted |
 | 20–40 | One ask spoken in dollars + the opener line |
-| 40–45 | End card: `Free verdict. No signup. No card.` then `Google Deal Gap IQ. Know what to offer.` |
+| 40–45 | End card: `Free Discovery. No signup. No card.` then `Google Deal Gap IQ. Know what to offer.` |
 
 ---
 

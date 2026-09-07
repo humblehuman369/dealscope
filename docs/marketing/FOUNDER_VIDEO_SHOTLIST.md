@@ -1,7 +1,7 @@
 # Founder video shot list
 
 Phone camera. Vertical. 20–90 seconds. No script beyond the beats. Each clip
-ends with the guarantee line spoken (`Free verdict. No signup. No card.`)
+ends with the guarantee line spoken (`Free Discovery. No signup. No card.`)
 and the sign-off (`Google Deal Gap IQ. Know what to offer.`).
 
 **[founder] records.** Agent does not.

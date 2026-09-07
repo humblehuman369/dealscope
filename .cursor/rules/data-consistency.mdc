@@ -8,7 +8,7 @@ alwaysApply: true
 ## Single Source of Truth
 
 Property data is fetched ONCE via `usePropertyData()` hook and cached client-side
-via React Query. Both the Discovery verdict and the embedded Strategy workbench
+via React Query. Both Discovery and the embedded Strategy workbench
 (Level 3 of `/discovery`) consume from the same cache.
 
 ```typescript

@@ -174,7 +174,7 @@ export default async function GlossaryTerm({ params }: { params: Promise<{ slug:
               color: 'var(--surface-base)',
             }}
           >
-            Run a free verdict →
+            Run a free Discovery →
           </Link>
         </div>
       </div>

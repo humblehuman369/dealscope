@@ -6,7 +6,7 @@ import { GUARANTEE_LINE, PROBLEM_PAGES } from '@/lib/seo/problem-pages'
 
 const TITLE = 'Investor Questions, Answered on a Real Address'
 const DESCRIPTION =
-  'Does it cash flow? What should I offer? What is it worth to an investor? Each answer runs on the address you enter. Free verdict, no signup.'
+  'Does it cash flow? What should I offer? What is it worth to an investor? Each answer runs on the address you enter. Free Discovery, no signup.'
 
 export const metadata: Metadata = {
   title: TITLE,

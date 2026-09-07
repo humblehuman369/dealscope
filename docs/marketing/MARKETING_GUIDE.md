@@ -577,7 +577,7 @@ Full underwriting power."
 **Annual pricing:** ~$29.17/month billed annually -- "Save 17%" / "Save
 $70/yr"
 
-**Tagline:** "Free shows you the verdict. Pro gives you the tools to close
+**Tagline:** "Free shows you Discovery. Pro gives you the tools to close
 the deal."
 
 **Everything in Starter, plus:**
@@ -608,7 +608,7 @@ the deal."
 ```
 Anonymous visit → Analyze a property (no account needed)
         ↓
-   See Verdict (value demonstrated)
+   See Discovery (value demonstrated)
         ↓
    Want deeper analysis → Sign up for free (Starter)
         ↓
@@ -643,7 +643,7 @@ Anonymous visit → Analyze a property (no account needed)
 > "Your data stays yours. We never share or sell."
 
 **Free-to-Pro bridge:**
-> "Free shows you the verdict. Pro gives you the tools to close the deal."
+> "Free shows you Discovery. Pro gives you the tools to close the deal."
 
 ### 7.4 Upgrade Triggers (Where Users Hit the Gate)
 
@@ -999,7 +999,7 @@ pre-roll, comparison landing pages, retargeting.
 **Target audience:** Active investors frustrated with listing sites, people who
 already know RE investing but haven't found the right tool.
 
-#### Theme 3: "60 Seconds to a Verdict" -- Speed/Efficiency Campaign
+#### Theme 3: "60 Seconds to Discovery" -- Speed/Efficiency Campaign
 
 **Concept:** Emphasize the time savings. 45 minutes on a spreadsheet vs. 15
 seconds on DealGapIQ. More deals analyzed = more opportunities found = faster
@@ -1406,7 +1406,7 @@ A: Yes. Two clicks. No tricks.
 | "Professional real estate intelligence for every investor." | Aspirational, footer |
 | "Built for first-time investors. Trusted by experienced buyers." | Breadth, social proof |
 | "Analyze Your First Property Free" | CTA, free tier |
-| "Free shows you the verdict. Pro gives you the tools to close the deal." | Upgrade, tier bridge |
+| "Free shows you Discovery. Pro gives you the tools to close the deal." | Upgrade, tier bridge |
 | "Spot a house while you're out? Don't guess -- scan it." | Mobile, Point & Scan |
 
 ### Manifesto / Emotional Copy

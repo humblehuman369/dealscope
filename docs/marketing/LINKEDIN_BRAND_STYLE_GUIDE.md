@@ -13,7 +13,7 @@
 |---|---|---|
 | **Profile logo** | 300 × 300 px PNG (displays in a circle/rounded square) | The **profile-head + house icon** in cyan `#0FA4E9` on a **true-black `#000000`** square, OR the full-bleed app icon. Keep the mark centered with ~12% padding. |
 | **Page banner / cover** | 1128 × 191 px PNG | Black `#000000` background, left-aligned **DealGapIQ wordmark (white "DealGap" + cyan "IQ")**, tagline to the right. See §6. |
-| **Tagline (under name)** | ≤ 120 chars | *Turn any address into a 15-second verdict, four ways to structure the deal, and the script to close it.* |
+| **Tagline (under name)** | ≤ 120 chars | *Turn any address into a 15-second Discovery, four ways to structure the deal, and the script to close it.* |
 | **About section** | paste-ready | See §7. |
 | **Brand colors** | — | Cyan `#0FA4E9`, Brand Blue `#0465F2`, Black `#000000`, Slate text `#F1F5F9`. See §3. |
 | **Font (for graphics)** | — | **Inter** (Bold 700 headlines, Regular 400 body). See §4. |
@@ -22,7 +22,7 @@
 
 ## 1. Brand essence
 
-**Product:** DealGapIQ — a real-estate investment platform that turns any US property address into a 15-second verdict, four pre-built ways to structure the deal, and the negotiation script for each.
+**Product:** DealGapIQ — a real-estate investment platform that turns any US property address into a 15-second Discovery, four pre-built ways to structure the deal, and the negotiation script for each.
 
 **One-liner:**
 > The price tag isn't the deal. The structure is.
@@ -115,7 +115,7 @@ Type personality: **size and weight carry hierarchy, not color.** Keep headlines
 ## 5. Imagery & visual style
 
 **Do:**
-- **Product screenshots first** — the verdict cards, the four-path comparison, the strategy worksheet, the negotiation script. Real receipts, not vibes.
+- **Product screenshots first** — the Discovery cards, the four-path comparison, the strategy worksheet, the negotiation script. Real receipts, not vibes.
 - Tight crops that read at thumbnail / mobile size.
 - Charts, numbers, and dollar figures over lifestyle imagery.
 - Dark-first compositions: cyan accents glowing on black.
@@ -136,7 +136,7 @@ Type personality: **size and weight carry hierarchy, not color.** Keep headlines
 - **Background:** solid black `#000000` (optionally a subtle radial cyan glow at 5% opacity, center-top — never a flat busy image).
 - **Left third:** the **DealGapIQ wordmark** (white "DealGap" + cyan "IQ" + cyan underline bar).
 - **Center / right:** one-line value prop in Inter 600, white:
-  > *15-second verdict. Four ways to structure the deal. The script to close it.*
+  > *15-second Discovery. Four ways to structure the deal. The script to close it.*
 - Optional far-right: a faint cropped product screenshot (verdict card) bleeding off the edge at low opacity.
 - Keep all text within the **safe zone** (LinkedIn crops top/bottom and overlays the logo at bottom-left on some layouts — keep critical content vertically centered and away from the lower-left corner).
 
@@ -147,12 +147,12 @@ Type personality: **size and weight carry hierarchy, not color.** Keep headlines
 ## 7. Copy blocks (paste-ready)
 
 ### Tagline (under company name, ≤120 chars)
-> Turn any address into a 15-second verdict, four ways to structure the deal, and the script to close it.
+> Turn any address into a 15-second Discovery, four ways to structure the deal, and the script to close it.
 
 ### About section
 > **Listing sites end at price. Investor calculators end at cash flow. DealGapIQ keeps going.**
 >
-> DealGapIQ is a real-estate investment platform that turns any US property address into a 15-second verdict — backed by a multi-source valuation (IQ Estimate, Zillow, RentCast, Redfin, and public records).
+> DealGapIQ is a real-estate investment platform that turns any US property address into a 15-second Discovery — backed by a multi-source valuation (IQ Estimate, Zillow, RentCast, Redfin, and public records).
 >
 > Then it does what no other tool does: it shows you the **four ways the deal could actually close** — a price cut, a capital adjustment, a financing structure (Subject-To, seller carry, 0% 2nds, rate buydowns), an income re-verification, or a blended plan that combines smaller asks. For each path, you get a ready-to-use **negotiation script**: who to call, the frame, the opener, the ask, and what's in it for the seller.
 >
@@ -162,7 +162,7 @@ Type personality: **size and weight carry hierarchy, not color.** Keep headlines
 >
 > **We analyze. You decide.**
 >
-> ▶ Run a free verdict at dealgapiq.com
+> ▶ Run a free Discovery at dealgapiq.com
 
 ### Specialties (LinkedIn "Specialties" / keywords)
 Real estate investing · Creative finance · Subject-To · Seller financing · BRRRR · Fix & Flip · House hacking · Wholesale · Deal analysis · Property valuation · PropTech · Negotiation
@@ -195,7 +195,7 @@ Real estate investing · Creative finance · Subject-To · Seller financing · B
 - Never give financial/legal/investment advice — always frame as analysis.
 - Avoid guru-course energy and CRM-marketing tone.
 
-**Default CTAs:** *Run a Free Verdict* (primary) · *See the Four Paths* (secondary).
+**Default CTAs:** *Run a Free Discovery* (primary) · *See the Four Paths* (secondary).
 
 ---
 

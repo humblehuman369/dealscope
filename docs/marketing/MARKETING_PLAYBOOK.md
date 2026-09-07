@@ -8,10 +8,10 @@
 > **Version:** 1.1 · **Last updated:** September 2026 · **Owner:** Brad Geisen (brad@geisen.cc)
 >
 > **Canonical facts (standardized for this playbook):**
-> - **Speed claim:** 15 seconds (address to verdict)
-> - **Guarantee line:** Free verdict. No signup. No card.
+> - **Speed claim:** 15 seconds (address to Discovery)
+> - **Guarantee line:** Free Discovery. No signup. No card.
 > - **Sign-off:** Google Deal Gap IQ. Know what to offer.
-> - **Free tier:** First verdict free with no account. Free account: 2 analyses a month, 10 saved properties. Source: `frontend/src/lib/planFeatures.ts`.
+> - **Free tier:** First Discovery free with no account. Free account: 2 analyses a month, 10 saved properties. Source: `frontend/src/lib/planFeatures.ts`.
 > - **Pro:** $34.99/month or $349.99/year, 7-day trial. Directories and exports unlock with the first payment.
 
 ---
@@ -52,7 +52,7 @@ DealGapIQ without access to internal systems.
 - Check §15 before publishing — compliance is non-negotiable.
 
 **Golden rules:**
-1. Lead with the problem and the free verdict on acquisition surfaces (ads, landing pages). **"Hunt. Score. Close."** is the product tagline for brand surfaces (App Store, hero, bios).
+1. Lead with the problem and the free Discovery on acquisition surfaces (ads, landing pages). **"Hunt. Score. Close."** is the product tagline for brand surfaces (App Store, hero, bios).
 2. Always use the **speed number:** **15 seconds** — not "instant," not "in minutes."
 3. Every asset should hit at least **one act** (Hunt, Score, or Close). Best assets hit all three.
 4. Close with the **manifesto** when you need an emotional beat: *"The price tag isn't the deal. The structure is."*
@@ -65,9 +65,9 @@ DealGapIQ without access to internal systems.
 ### What DealGapIQ is
 
 DealGapIQ is a real-estate investment platform that takes any US property address
-and returns a **15-second verdict** — backed by multi-source valuation — plus
+and returns a **15-second Discovery** — backed by multi-source valuation — plus
 **four pre-built ways to structure the deal** and the **negotiation script** for
-each. Web, iOS, and Android. First verdict free — no signup, no card. A free
+each. Web, iOS, and Android. First Discovery free — no signup, no card. A free
 account adds 2 analyses a month and 10 saved properties. Pro is $34.99/month or
 $349.99/year with a 7-day trial.
 
@@ -99,7 +99,7 @@ The Deal Gap is the brand. The gap is the negotiation.
 | Act | What it means |
 |---|---|
 | **Hunt** | Find deals three ways: Scan Property, address/zip search, Map Search — including off-market, foreclosures, pre-foreclosures, and auctions. |
-| **Score** | 15-second multi-source verdict: IQ Estimate, Zillow, RentCast, Redfin, public records — plus the Deal Gap. |
+| **Score** | 15-second multi-source Discovery: IQ Estimate, Zillow, RentCast, Redfin, public records — plus the Deal Gap. |
 | **Close** | Four Paths (price, capital, financing, income — plus a Blended Plan) + per-structure negotiation scripts and auto-filled worksheets. |
 
 ---
@@ -163,7 +163,7 @@ copy ("we help businesses grow"), and magic-wand claims.
 **For** aspiring and active real estate investors **who** need to quickly
 determine whether a property is a good investment and how to structure an offer
 when it isn't, **DealGapIQ** is a deal decision platform **that** delivers a
-15-second multi-source verdict, the Deal Gap, four pre-built offer structures,
+15-second multi-source Discovery, the Deal Gap, four pre-built offer structures,
 and negotiation scripts — across six investment strategies. **Unlike** listing
 sites and generic calculators, DealGapIQ is the synthesis layer that turns
 analysis into actionable, structure-aware offers with a script.
@@ -217,7 +217,7 @@ offer when the numbers don't work at asking price."*
   Realtor.com, and public records; every source visible
 - **6 investment strategies** analyzed simultaneously (LTR, STR, BRRRR, Fix &
   Flip, House Hack, Wholesale)
-- **15 seconds** from address entry to investment verdict
+- **15 seconds** from address entry to investment Discovery
 - **Free to start** — no credit card required for entry analysis
 - **Four offer structures** + negotiation scripts per property
 - **35+ years** of real estate data experience (founder)
@@ -267,7 +267,7 @@ not change the core claims without approval.
 ### 5.2 Company descriptions (boilerplate)
 
 **One sentence:**
-DealGapIQ turns any US property address into a 15-second verdict, four pre-built
+DealGapIQ turns any US property address into a 15-second Discovery, four pre-built
 offer structures designed to close the gap, and the negotiation script for each.
 
 **Short (1–2 sentences):**
@@ -425,7 +425,7 @@ DealGapIQ calculates it. Free analysis — 15 seconds.
 
 > You don't need another listing site.
 > You need to know the Deal Gap.
-> [Run a free verdict]
+> [Run a free Discovery]
 
 > 45 minutes on a spreadsheet.
 > 15 seconds on DealGapIQ.
@@ -466,7 +466,7 @@ DealGapIQ calculates it. Free analysis — 15 seconds.
 
 | Copy | Context |
 |---|---|
-| Free verdict. No signup. No card. | Guarantee line — under every primary CTA |
+| Free Discovery. No signup. No card. | Guarantee line — under every primary CTA |
 | Google Deal Gap IQ. Know what to offer. | Sign-off — every public asset closer |
 | No credit card required | Free tier CTA |
 | Free to start | Universal free tier |
@@ -485,7 +485,7 @@ DealGapIQ calculates it. Free analysis — 15 seconds.
 ### 5.8 Key services (feature headlines)
 
 1. **The 15-Second Analysis** — Type an address. Get the full investment math,
-   the Deal Gap, and a clear verdict.
+   the Deal Gap, and a clear Discovery.
 2. **Three Ways to Hunt Deals** — Scan Property, address/zip search, Map Search.
 3. **The Right Price for Cash Flow** — The highest price you can pay and still
    cash flow on day one.
@@ -526,7 +526,7 @@ DealGapIQ calculates it. Free analysis — 15 seconds.
 
 ### 6.1 Core flow (four steps)
 
-1. **Verdict** — One address in, multi-source valuation out. Deal Gap % and a
+1. **Discovery** — One address in, multi-source valuation out. Deal Gap % and a
    plain-English explanation.
 2. **Four Paths** — Three single-lever offers (price, capital, income
    re-verification) plus one Blended Plan combining smaller asks.
@@ -574,7 +574,7 @@ fabricated. Users can switch the active source and watch the math change.
 
 | Tool | What it does (marketing language) |
 |---|---|
-| **Verdict** | 15-second investment verdict: Deal Gap, three price thresholds, deal score, plain-language guidance |
+| **Discovery** | 15-second investment Discovery: Deal Gap, three price thresholds, deal score, plain-language guidance |
 | **Strategy** | Deep-dive financial breakdown per strategy — cap rate, cash-on-cash, DSCR, full P&L |
 | **DealMaker** | Interactive worksheet — adjust every assumption and see impact in real time |
 | **Appraiser** | Comp-based valuation: pick comps, see adjustments, URAR-style report |
@@ -592,7 +592,7 @@ contracts (deferred pending state-by-state legal review).
 | Step | Action | Description |
 |---|---|---|
 | **01 SCAN** | Enter an address or scan a property | Field-ready on your phone. Pull data the moment a property catches your eye. |
-| **02 SCREEN** | Set your Buy Box, get an instant Verdict | Every property gets a PASS, MARGINAL, or BUY verdict in seconds. |
+| **02 SCREEN** | Set your Buy Box, get an instant Discovery | Every property gets a PASS, MARGINAL, or BUY grade in seconds. |
 | **03 STRESS TEST** | Adjust variables in real time | Change any assumption — condition, rehab, terms — and watch the numbers shift. |
 | **04 ACT** | Generate reports, track deals, close | PDFs, Excel proformas, worksheets, pipeline from first look to closing. |
 
@@ -625,7 +625,7 @@ contracts (deferred pending state-by-state legal review).
 
 | Segment | Cares most about |
 |---|---|
-| **Wholesaler** | Fast verdicts on off-market leads; assignment-fee math |
+| **Wholesaler** | Fast Discoveries on off-market leads; assignment-fee math |
 | **House hacker** | First-time FHA scenarios; strategy switch path |
 | **Creative finance investor** | Seller-carry, blended, financing scenarios beyond price cuts |
 | **BRRRR / Fix-and-Flip** | Spread, financing, rent, exit assumptions |
@@ -661,7 +661,7 @@ Product names are acceptable in on-domain comparison content.
 | Find properties | Yes | — | Yes |
 | Multi-source valuation | Partial | Partial | Yes |
 | Cash-flow analysis | — | Yes | Yes |
-| Deal Gap verdict | — | Partial | Yes |
+| Deal Gap Discovery | — | Partial | Yes |
 | Pre-built offer structures (four per property) | — | — | Yes |
 | Creative-finance modeling | — | — | Yes |
 | Per-structure negotiation script | — | — | Yes |
@@ -700,10 +700,10 @@ comparison across properties; professional PDF/Excel output.
    buydowns, Morby Method, FHA house-hack. 5th-grade reading level + real dollar
    example.
 2. **The pitch on the phone** — What investors actually say to a seller.
-3. **Deal teardowns** — Real listing → verdict → four paths → which path closes.
+3. **Deal teardowns** — Real listing → Discovery → four paths → which path closes.
    Anonymize unless property is already public.
 4. **The structure beats the price tag** — Manifesto with examples.
-5. **Show the work** — Methodology; how the verdict is computed; transparency.
+5. **Show the work** — Methodology; how Discovery is computed; transparency.
 
 ### Recurring series (branded templates)
 
@@ -711,7 +711,7 @@ comparison across properties; professional PDF/Excel output.
 - **Script of the Week** — One annotated negotiation script.
 - **Glossary Drop** — One creative-finance term, one diagram, one example.
 - **Deal Gap Breakdown** — One metric or one gap, explained.
-- **Run Your Zip** — Short clip: verdict on a viewer-suggested address.
+- **Run Your Zip** — Short clip: Discovery on a viewer-suggested address.
 
 ### Value-to-promotion ratio
 
@@ -724,7 +724,7 @@ comparison across properties; professional PDF/Excel output.
 |---|---|---|
 | **The Deal Gap** | Introduce the metric investors need but no platform provides | "What is the Deal Gap?" explainer, infographic |
 | **Investor Lens vs. Buyer Lens** | Two-lenses paradigm shift | Side-by-side carousel, "What listing sites won't tell you" |
-| **15 Seconds to a Verdict** | Time savings | Timer video: spreadsheet vs. DealGapIQ |
+| **15 Seconds to Discovery** | Time savings | Timer video: spreadsheet vs. DealGapIQ |
 | **The Three Numbers** | Market Value, Income Value, Target Buy | "3 numbers listing sites never show you" |
 | **Founder Authority** | Brad's 35-year track record | "From HomePath to DealGapIQ" |
 | **Stop Browsing, Start Calculating** | Behavioral shift | "Are you browsing or analyzing?" |
@@ -807,7 +807,7 @@ elevation in dark mode.
 
 ### Imagery rules
 
-**Do:** Product screenshots first (verdict cards, four-path comparison, strategy
+**Do:** Product screenshots first (Discovery cards, four-path comparison, strategy
 worksheet, negotiation script). Charts and dollar figures. Real people only.
 
 **Don't:** Stock photos of "investors at laptops." Red X's in comparison tables
@@ -851,7 +851,7 @@ finance; seller financing; cash flow analysis; DSCR; target buy price; proptech
 
 | Priority | CTA | Use when |
 |---|---|---|
-| **Primary** | Run a Free Verdict | Most conversion posts and ads. Line under it: *Free verdict. No signup. No card.* |
+| **Primary** | Run a Free Discovery | Most conversion posts and ads. Line under it: *Free Discovery. No signup. No card.* |
 | **Secondary** | See the Four Paths | Homepage anchor, mid-funnel |
 | **Secondary** | Try it free / Register free | App download, signup flows |
 | **Lead magnet** | Email me the Creative Finance Field Guide | Top-of-funnel (when PDF is live) |
@@ -862,7 +862,7 @@ finance; seller financing; cash flow analysis; DSCR; target buy price; proptech
 | Destination | URL |
 |---|---|
 | Homepage | `https://dealgapiq.com` |
-| Verdict / free analysis | `https://dealgapiq.com/verdict` |
+| Discovery / free analysis | `https://dealgapiq.com/discovery` |
 | App Store (iOS) | `https://apps.apple.com/us/app/dealgapiq/id6759636866` |
 | Founder LinkedIn | `https://www.linkedin.com/in/bradgeisen` |
 | Support | `support@dealgapiq.com` |
@@ -885,7 +885,7 @@ Examples:
 | `::cta` directive inside the body | `utm_source=blog&utm_medium=inline&utm_campaign={slug}` |
 | Category / index pages | `utm_source=blog&utm_medium=category` or `index` |
 
-Clicks fire `blog_cta_clicked` (PostHog + Vercel) with the same `slug` so a verdict run can be traced back to the post that earned it.
+Clicks fire `blog_cta_clicked` (PostHog + Vercel) with the same `slug` so a Discovery run can be traced back to the post that earned it.
 
 ---
 
@@ -965,16 +965,16 @@ No red X's in comparison tables — use "—" or "partial."
 
 ```
 PRODUCT TAGLINE     Hunt. Score. Close. (brand surfaces)
-ACQUISITION LEAD    The problem + the free verdict
-GUARANTEE           Free verdict. No signup. No card.
+ACQUISITION LEAD    The problem + the free Discovery
+GUARANTEE           Free Discovery. No signup. No card.
 SIGN-OFF            Google Deal Gap IQ. Know what to offer.
 MANIFESTO           The price tag isn't the deal. The structure is.
 MOAT                That's where most tools stop. DealGapIQ keeps going.
-SPEED               15 seconds (address to verdict)
-FREE TIER           First verdict free, no account. Free account: 2 analyses/mo, 10 saved
+SPEED               15 seconds (address to Discovery)
+FREE TIER           First Discovery free, no account. Free account: 2 analyses/mo, 10 saved
 PRO                 $34.99/mo or $349.99/yr, 7-day trial. Directories/exports after first payment.
 
-PRIMARY CTA         Run a Free Verdict
+PRIMARY CTA         Run a Free Discovery
 URL                 dealgapiq.com
 SUPPORT             support@dealgapiq.com
 
@@ -986,7 +986,7 @@ VOICE               Direct · Specific · Credible
 INVESTOR VERBS      hunt · score · close · structure · make offers
 FOOTER LINE         We analyze. You decide.
 
-THREE ACTS          Hunt (find) · Score (15-sec verdict) · Close (4 paths + scripts)
+THREE ACTS          Hunt (find) · Score (15-sec Discovery) · Close (4 paths + scripts)
 DEAL GAP            % distance from asking price to Target Buy
 SIX STRATEGIES      LTR · STR · BRRRR · Fix&Flip · House Hack · Wholesale
 FOUR PATHS          Price · Capital · Financing/Income · Blended Plan

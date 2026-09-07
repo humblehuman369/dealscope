@@ -451,7 +451,7 @@ This moves the product toward **deal execution infrastructure**, not just analys
 
 | Surface | Approach |
 |---|---|
-| Web | Free verdict as conversion event; Stripe Pro |
+| Web | Free Discovery as conversion event; Stripe Pro |
 | iOS/Android | Same app via Capacitor; RevenueCat IAP |
 | SEO/content | Glossary + strategy guides + methodology |
 | Map Search + owner-lead filters | Pro-gated hunting tools vs. free verdict hook |

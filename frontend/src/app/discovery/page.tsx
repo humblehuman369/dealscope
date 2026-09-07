@@ -2691,7 +2691,7 @@ function VerdictContent() {
                 className="text-[0.85rem] leading-relaxed mx-auto mb-4 max-w-lg"
                 style={{ color: 'var(--text-secondary)' }}
               >
-                The verdict is free.{' '}
+                Discovery is free.{' '}
                 <button
                   type="button"
                   onClick={() => openAuthModal('login')}
@@ -2732,7 +2732,7 @@ function VerdictContent() {
             </button>
             <div className="flex justify-center gap-6 mt-5">
               {(dealGapPct > 20 && !isAuthenticated
-                ? ['Verdict is free', 'No card required', '60 seconds']
+                ? ['Discovery is free', 'No card required', '60 seconds']
                 : ['Try it Free', 'No signup needed', '60 seconds']
               ).map((f, i) => (
                 <div key={i} className="flex items-center gap-1.5 sm:gap-2">

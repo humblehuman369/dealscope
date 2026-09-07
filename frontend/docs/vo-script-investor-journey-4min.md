@@ -90,7 +90,7 @@ over authority.
 ### [1:10 – 1:55] Clarity
 *Visual: `/discovery` — Target Buy, Income Value, Market Price; Deal Gap bar animates.*
 
-> And here it is — your **Verdict**. //
+> And here it is — your **Discovery**. //
 > Three numbers, / and suddenly everything is calmer. //
 > **Target Buy** — the price where this property meets your goals. /
 > **Income Value** — the most you can pay and still sleep at night. /
@@ -153,7 +153,7 @@ over authority.
 > When you're ready, make the deal your own. //
 > In **Deal Maker**, slide the purchase price. / The down payment. / The rent. //
 > Every number updates live — /
-> the same math, the same record as your Verdict. //
+> the same math, the same record as your Discovery. //
 > Shape it until it feels right. //
 > And when it does, / export it to Excel /
 > and take it to your lender with confidence.
@@ -182,7 +182,7 @@ over authority.
 Same eight capture handlers as the previous cut (`record.mjs` ACTIONS map is
 unchanged). Differences are pacing, not footage:
 
-- Slow everything ~15% — longer holds on the Verdict numbers and the Blended Plan.
+- Slow everything ~15% — longer holds on the Discovery numbers and the Blended Plan.
 - Scene 5 is the emotional peak; let the Blended Plan sit on screen through
   "…just came back to life."
 - Close on the logo with two full seconds of silence before the end card drops.

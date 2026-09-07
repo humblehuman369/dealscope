@@ -63,12 +63,12 @@ PropertyResponse (JSON)
         ↓
 Frontend: usePropertyData() hook  →  React Query cache (5 min TTL)
         ↓
-Discovery verdict + embedded Strategy workbench  →  IQEstimateSelector component
+Discovery + embedded Strategy workbench  →  IQEstimateSelector component
 ```
 
 ## Frontend Shared Cache
 
-Both Verdict and Strategy pages use `usePropertyData()` from `hooks/usePropertyData.ts`:
+Both Discovery and the embedded Strategy workbench use `usePropertyData()` from `hooks/usePropertyData.ts`:
 
 ```typescript
 const { fetchProperty } = usePropertyData()

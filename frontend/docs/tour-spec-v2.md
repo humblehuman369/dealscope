@@ -56,7 +56,7 @@
 
 **Copy:**
 
-> 🎯 **This is your Verdict.**
+> 🎯 **This is your Discovery.**
 > Three numbers say it all — Target Buy is your profit price. Income Value is break-even. Market is what the seller wants.
 >
 > The **Deal Gap** between them is your negotiation room.

@@ -64,7 +64,7 @@ Category slugs must match `frontend/src/lib/blog-categories.ts`.
 
 ## 4. Financing — `financing`
 
-**Pillar:** `/lenders` (Hard Money Lender Directory). Posts here are the top-of-funnel for the Pro directories, so each ends with a directory CTA in addition to the verdict CTA.
+**Pillar:** `/lenders` (Hard Money Lender Directory). Posts here are the top-of-funnel for the Pro directories, so each ends with a directory CTA in addition to the Discovery CTA.
 
 | # | Working title | Primary keyword | Secondary keywords | Intent | URL slug | Internal links (min 3) | FAQ questions to answer | Words | Status |
 |---|---|---|---|---|---|---|---|---|---|

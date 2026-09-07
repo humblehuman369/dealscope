@@ -12,7 +12,7 @@ Every investor knows the feeling. You pull up a listing, run the numbers, and th
 
 DealGapIQ was built by an investor who got tired of that loop. Founder Brad Geisen spent his career on the acquisition side of residential real estate, including Foreclosure.com and work on Fannie Mae's HomePath and Freddie Mac's HomeSteps programs, and wrote *The Deal Gap* on the idea that runs through the entire product: most "dead" listings aren't dead. They're mispriced for the terms on the table, and a different structure closes them.
 
-DealGapIQ turns any US address into a 15-second Discovery verdict, four pre-built ways to close the gap between asking price and what actually pencils, and the negotiation script for each one. It runs on the web and as a native iOS and Android app, and the same six-strategy math engine powers all three.
+DealGapIQ turns any US address into a 15-second Discovery, four pre-built ways to close the gap between asking price and what actually pencils, and the negotiation script for each one. It runs on the web and as a native iOS and Android app, and the same six-strategy math engine powers all three.
 
 Listing sites end at price. Investor calculators end at cash flow. **That's where most tools stop. DealGapIQ keeps going.**
 
@@ -20,14 +20,14 @@ Listing sites end at price. Investor calculators end at cash flow. **That's wher
 
 ## 2. Service Portfolio
 
-### Discovery: the 15-second verdict
+### Discovery: the 15-second analysis
 Paste an address, a Zillow link, or drop a pin. DealGapIQ pulls valuation and rent data from six live sources (Zillow, RentCast, Redfin, Realtor.com, AirROI for short-term rental revenue, and public records), blends them into a proprietary **IQ Estimate**, and returns three numbers every investor needs before they pick up the phone:
 
 - **Income Value** — the highest price you can pay before cash flow turns negative.
 - **Target Buy** — the price that hits *your* return target, not a generic one.
 - **Deal Gap** — the distance between asking and Target Buy. A −6.4% gap on a $457,000 listing means the seller needs to meet you at $428,000, or the structure needs to change.
 
-Every verdict comes with a plain-English explanation and a source-by-source breakdown. Switch the source, watch the math change. If a source has no data, the field says *Unavailable*. Nothing is fabricated.
+Every Discovery comes with a plain-English explanation and a source-by-source breakdown. Switch the source, watch the math change. If a source has no data, the field says *Unavailable*. Nothing is fabricated.
 
 ### Six strategy engines, one address
 Discovery ranks the property across all six residential strategies at once, then lets you drill into the full P&L for any of them:
@@ -79,7 +79,7 @@ Printable deal reports plus PDF and Excel exports for lenders, partners, and due
 
 ## 3. Unique Value Propositions
 
-**Streamlines the decision.** Address in, verdict out, in about 15 seconds. Thirty properties take thirty minutes, not thirty weekends. The Deal Gap tells you instantly whether to keep going or move on.
+**Streamlines the decision.** Address in, Discovery out, in about 15 seconds. Thirty properties take thirty minutes, not thirty weekends. The Deal Gap tells you instantly whether to keep going or move on.
 
 **Sharpens the number.** The IQ Estimate averages multiple independent valuation and rent sources and drops outliers automatically, so a single inflated Zestimate or a stale AVM doesn't become your offer price. Every input shows its provenance.
 
@@ -95,14 +95,14 @@ Printable deal reports plus PDF and Excel exports for lenders, partners, and due
 
 ### The first-time investor
 **Challenge:** Sees a negative Deal Gap and concludes there are no deals. Doesn't yet know that a seller-carry second or an FHA house-hack changes the math.
-**How DealGapIQ helps:** Plain-English verdicts, a guided onboarding that captures experience level, budget, and target returns, and Four Paths that teach structure by showing it on a real property. The Free tier covers ten full analyses a month with no credit card, enough to learn the rhythm before the first offer.
+**How DealGapIQ helps:** Plain-English Discoveries, a guided onboarding that captures experience level, budget, and target returns, and Four Paths that teach structure by showing it on a real property. The Free tier covers ten full analyses a month with no credit card, enough to learn the rhythm before the first offer.
 
 ### The active investor (1–50 doors)
 **Challenge:** Analyzes 20–100 properties to close one to three a year. Analysis fatigue is the real bottleneck; the spreadsheet is accurate but slow.
 **How DealGapIQ helps:** Unlimited analyses, personal default assumptions that load into every deal, stress tests and sensitivity in the Deal Maker, a pipeline to keep twenty live opportunities straight, and Gap Alerts so a saved property re-enters the funnel the day its price drops.
 
 ### The wholesaler
-**Challenge:** Needs a fast verdict on off-market leads, a defensible MAO, and a buyer before the contract expires.
+**Challenge:** Needs a fast Discovery on off-market leads, a defensible MAO, and a buyer before the contract expires.
 **How DealGapIQ helps:** Off-market addresses analyze the same way listed ones do. The Wholesale strategy calculates assignment fees against end-buyer math, and the Cash Buyer Directory puts disposition contacts one search away.
 
 ### The house hacker
@@ -121,17 +121,17 @@ Printable deal reports plus PDF and Excel exports for lenders, partners, and due
 
 ## 5. Competitive Advantages
 
-**The synthesis layer.** Listing sites find properties. Calculators run cash flow. Only DealGapIQ takes the verdict the next two steps: into structured offers and into the words that pitch them. That layer, the Four Paths and Negotiation Playbook, does not exist in DealCheck, Mashvisor, PropStream, or BiggerPockets' calculators.
+**The synthesis layer.** Listing sites find properties. Calculators run cash flow. Only DealGapIQ takes Discovery the next two steps: into structured offers and into the words that pitch them. That layer, the Four Paths and Negotiation Playbook, does not exist in DealCheck, Mashvisor, PropStream, or BiggerPockets' calculators.
 
 **Proprietary multi-source valuation.** The IQ Estimate blends Zillow, RentCast, Redfin, and Realtor.com valuations with RentCast and Zillow rent data and AirROI short-term rental revenue, filtering outliers with a median-band rule. Single-source tools inherit single-source error.
 
 **Creative-finance modeling built in.** Subject-to, seller carrybacks, 0% seconds, rate buydowns, assumable mortgages, and FHA house-hacks are first-class inputs, not workarounds in a notes field.
 
-**Radical transparency.** Every metric shows its source. Missing data is labeled *Unavailable*, never estimated. A public methodology page explains how the verdict is computed. Investors trust receipts, not vibes.
+**Radical transparency.** Every metric shows its source. Missing data is labeled *Unavailable*, never estimated. A public methodology page explains how Discovery is computed. Investors trust receipts, not vibes.
 
 **Investor-built, not analyst-built.** The product encodes decades of acquisition experience across foreclosure, GSE disposition, and private investing. The judgment is in the defaults, the regional adjustments, and the offer structures, so the tool thinks like a buyer, not a spreadsheet.
 
-**One product, every screen.** Full feature parity across web, iOS, and Android. Run a verdict from the driveway, finish the worksheet at the desk.
+**One product, every screen.** Full feature parity across web, iOS, and Android. Run Discovery from the driveway, finish the worksheet at the desk.
 
 **Execution directories, not lead lists.** Curated cash buyer and hard money lender directories are included in Pro, so the deal you just structured has a buyer and a lender in the same app.
 
@@ -164,7 +164,7 @@ Substantiation for every material claim above, so this document survives legal a
 
 | Claim | Source of truth |
 |---|---|
-| 15-second verdict; "6 live" data sources | Homepage V4 stats bar, `POSITIONING.md` |
+| 15-second Discovery; "6 live" data sources | Homepage V4 stats bar, `POSITIONING.md` |
 | Sources: Zillow (via Axesso), RentCast, Redfin, Realtor.com, AirROI, public records | `backend/app/services/api_clients.py`, `property_service.py` |
 | IQ Estimate = average of in-range sources, median ± 20% outlier rule with 3+ sources, null when none | `api_clients.py :: _compute_iq_estimates` |
 | Six strategies | `StrategyType` in `backend/app/schemas/property.py` |

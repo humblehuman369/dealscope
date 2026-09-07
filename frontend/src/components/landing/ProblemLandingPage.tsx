@@ -91,7 +91,7 @@ export async function ProblemLandingPage({ page }: { page: ProblemPage }) {
             <div>
               <HeroSampleResult />
               <p className="mt-3 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
-                Sample verdict. Yours runs on the address you enter.
+                Sample Discovery. Yours runs on the address you enter.
               </p>
             </div>
           </div>
@@ -190,7 +190,7 @@ export async function ProblemLandingPage({ page }: { page: ProblemPage }) {
       )}
 
       <MobileStickyCta
-        label="Run free verdict"
+        label="Run free Discovery"
         href={`/discovery?source=${encodeURIComponent(source)}`}
         watchId={HERO_ID}
         source={source}

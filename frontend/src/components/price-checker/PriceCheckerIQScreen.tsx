@@ -1882,7 +1882,7 @@ export function PriceCheckerIQScreen({
               Enter a property to view comps
             </h3>
             <p className="text-xs text-[var(--text-heading)] mb-4 max-w-md mx-auto">
-              Open a property from Verdict or search, then use the Comps tab to see comparable sales
+              Open a property from Discovery or search, then use the Comps tab to see comparable sales
               and rentals.
             </p>
             <button

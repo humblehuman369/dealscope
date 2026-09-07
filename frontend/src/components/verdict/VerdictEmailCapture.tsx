@@ -37,7 +37,7 @@ export function VerdictEmailCapture({
     e.preventDefault()
     const trimmed = email.trim().toLowerCase()
     if (!EMAIL_RE.test(trimmed)) {
-      setError('Enter a valid email so we know where to send this verdict.')
+      setError('Enter a valid email so we know where to send this Discovery.')
       return
     }
     setState('submitting')
@@ -97,7 +97,7 @@ export function VerdictEmailCapture({
       style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border-default)' }}
     >
       <label htmlFor="verdict-email" className="block text-sm font-bold" style={{ color: 'var(--text-heading)' }}>
-        Email me this verdict
+        Email me this Discovery
       </label>
       <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         One email. No account. Unsubscribe in one click.
@@ -128,7 +128,7 @@ export function VerdictEmailCapture({
           style={{ background: 'var(--accent-brand-blue)' }}
         >
           <Mail size={16} aria-hidden />
-          {state === 'submitting' ? 'Sending…' : 'Email me this verdict'}
+          {state === 'submitting' ? 'Sending…' : 'Email me this Discovery'}
         </button>
       </div>
       {error ? (

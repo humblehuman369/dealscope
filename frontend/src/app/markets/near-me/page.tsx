@@ -34,12 +34,12 @@ const FAQ: FaqItem[] = [
   {
     question: 'Are the listings for sale right now?',
     answer:
-      'The map shows active listings reported by RentCast and Zillow at the time you search, cached for a short window. Select any listing to run a free DealGapIQ verdict that pulls live rent and value estimates for that address.',
+      'The map shows active listings reported by RentCast and Zillow at the time you search, cached for a short window. Select any listing to run a free DealGapIQ Discovery that pulls live rent and value estimates for that address.',
   },
   {
     question: 'How do I know if a nearby listing is a good investment?',
     answer:
-      'Run the free verdict. DealGapIQ applies the state assumptions for property tax, vacancy, appreciation, and rent-to-price, pulls live rent and value estimates, and shows the Deal Gap between the asking price and the price at which the property works as a rental.',
+      'Run the free Discovery. DealGapIQ applies the state assumptions for property tax, vacancy, appreciation, and rent-to-price, pulls live rent and value estimates, and shows the Deal Gap between the asking price and the price at which the property works as a rental.',
   },
 ]
 
@@ -107,8 +107,8 @@ export default function NearMePage() {
           <ol className="mt-4 grid gap-4 sm:grid-cols-3">
             {[
               ['Map opens on your area', 'Active listings from RentCast and Zillow load inside the viewport. Filter by price, beds, or listing status, or draw a custom boundary.'],
-              ['Pick a listing', 'One tap runs the free DealGapIQ verdict: live rent and value estimates plus the state assumptions for tax, vacancy, and appreciation.'],
-              ['See the Deal Gap', 'The verdict shows the price at which the property works as a rental and how far the asking price sits from it.'],
+              ['Pick a listing', 'One tap runs the free DealGapIQ Discovery: live rent and value estimates plus the state assumptions for tax, vacancy, and appreciation.'],
+              ['See the Deal Gap', 'Discovery shows the price at which the property works as a rental and how far the asking price sits from it.'],
             ].map(([heading, body], i) => (
               <li key={heading} className="rounded-xl border p-5" style={{ borderColor: 'var(--border-default)', background: 'var(--surface-card)' }}>
                 <p className="font-mono text-xs uppercase tracking-wide" style={{ color: 'var(--accent-sky)' }}>

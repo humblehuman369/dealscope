@@ -230,7 +230,7 @@ export function PreferencesTab() {
           </p>
         </div>
         <p className="text-sm text-[var(--text-secondary)] mb-4">
-          Replay the 60-second workbench tour on your next Discovery analysis — Verdict, Strategy,
+          Replay the 60-second workbench tour on your next analysis — Discovery, Strategy,
           Comps, DealMaker, Estimator, and Map Search.
         </p>
         <button

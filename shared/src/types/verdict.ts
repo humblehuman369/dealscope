@@ -95,9 +95,9 @@ export interface IQVerdictResponse {
 }
 
 /**
- * Canonical section order for the Verdict page.
+ * Canonical section order for the Discovery page.
  *
- * Both web and mobile Verdict pages MUST render these sections in this order.
+ * Both web and mobile Discovery pages MUST render these sections in this order.
  * When adding/removing/reordering sections on web, update this list and
  * apply the same change to mobile.
  */

@@ -167,7 +167,7 @@ This is the signature repeatable content piece — use it everywhere.
 **Format:**
 1. Pick a real, currently listed property (use Zillow/Redfin for the listing)
 2. Run it through DealGapIQ on camera (screen recording)
-3. Show the Verdict, Deal Gap, and three numbers
+3. Show Discovery, Deal Gap, and three numbers
 4. Give your take: "Would you buy this? Here's what the numbers say."
 5. End with: "Want to run your own? dealgapiq.com — free, no credit card."
 
@@ -480,13 +480,13 @@ When alerts surface relevant discussions on forums, blogs, or Quora — engage g
 
 These are changes to the product itself that turn every user into a marketing channel.
 
-### 6.1 Shareable Verdict Cards
+### 6.1 Shareable Discovery Cards
 
-**Build a shareable verdict summary card for each analyzed property.** When a user gets their Verdict, give them a one-click "Share This Analysis" button that generates a branded card image showing:
+**Build a shareable Discovery summary card for each analyzed property.** When a user gets their Discovery, give them a one-click "Share This Analysis" button that generates a branded card image showing:
 
 - Property address (or just city/state for privacy)
 - Deal Gap percentage with color coding
-- Verdict (Strong Buy / Marginal / Pass)
+- Grade (Strong Buy / Marginal / Pass)
 - Three numbers (Market Value, Income Value, Target Buy)
 - "Analyzed with DealGapIQ" branding + QR code to dealgapiq.com
 
@@ -539,7 +539,7 @@ Create an embeddable widget that RE bloggers, coaches, and communities can put o
 **Format:**
 1. Pick a real property in a popular investment market
 2. Run the DealGapIQ analysis
-3. Show the verdict, Deal Gap, and key numbers
+3. Show Discovery, Deal Gap, and key numbers
 4. Brief commentary: why this is/isn't a good deal
 5. CTA: "Run your own analysis at dealgapiq.com"
 
@@ -573,7 +573,7 @@ Run DealGapIQ on properties that people recognize or are curious about:
 ### 8.2 "Deal Gap Challenge"
 
 Launch a social media challenge:
-- "Find a property with a Deal Gap over +20%. Screenshot the verdict. Tag @DealGapIQ."
+- "Find a property with a Deal Gap over +20%. Screenshot Discovery. Tag @DealGapIQ."
 - "What's the worst Deal Gap you've ever seen? Share your screenshot."
 - Creates user-generated content
 - Drives signups (they need to use the tool to participate)

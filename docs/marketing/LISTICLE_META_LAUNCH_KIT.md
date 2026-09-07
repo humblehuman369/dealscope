@@ -101,7 +101,7 @@ Shared across all ads:
 
 | Field | Value |
 |---|---|
-| Description (below headline) | `Free verdict. No signup. No card.` |
+| Description (below headline) | `Free Discovery. No signup. No card.` |
 | Call to action | **Learn more** |
 | Website URL | see each ad; `fbclid` is appended by Meta and captured on first touch |
 | URL parameters field | leave empty (the UTMs are in the URL itself) |
@@ -140,7 +140,7 @@ Creative capture: the **House Hack** strategy card on a duplex verdict, showing 
 
 | Field | Value |
 |---|---|
-| Headline | `Free verdict on any address. No signup.` (39) |
+| Headline | `Free Discovery on any address. No signup.` (39) |
 | Primary text | `Paste any US address. In 15 seconds you get the price where the deal works, the Deal Gap to the asking price, and four ways to close it. Free. No account. No card.` |
 | URL | `https://dealgapiq.com/for/house-hackers?utm_source=meta&utm_medium=paid_social&utm_campaign=house-hackers&utm_content=hookC` |
 
@@ -172,7 +172,7 @@ Creative capture: the **Wholesale** strategy card showing buyer MAO and the spre
 
 | Field | Value |
 |---|---|
-| Headline | `Free verdict on any address. No signup.` (39) |
+| Headline | `Free Discovery on any address. No signup.` (39) |
 | Primary text | `Paste any US address. In 15 seconds you get the price where the deal works, the Deal Gap to the asking price, and four ways to close it. Free. No account. No card.` |
 | URL | `https://dealgapiq.com/for/wholesalers?utm_source=meta&utm_medium=paid_social&utm_campaign=wholesalers&utm_content=hookC` |
 
@@ -197,14 +197,14 @@ Creative capture: a verdict on an address in a different state than the viewer's
 | Field | Value |
 |---|---|
 | Headline | `Run the address. Then book the flight.` (37) |
-| Primary text | `Run the address before you book the flight.`<br><br>`Most remote investors fly to see properties a 15-second verdict would have removed from the list. Run the whole shortlist from the couch first. Every state's tax, vacancy and appreciation assumptions are published and applied automatically.` |
+| Primary text | `Run the address before you book the flight.`<br><br>`Most remote investors fly to see properties a 15-second Discovery would have removed from the list. Run the whole shortlist from the couch first. Every state's tax, vacancy and appreciation assumptions are published and applied automatically.` |
 | URL | `https://dealgapiq.com/for/out-of-state-investors?utm_source=meta&utm_medium=paid_social&utm_campaign=out-of-state-investors&utm_content=hookB` |
 
 **Ad C — `out-of-state-investors-hookC`** (control)
 
 | Field | Value |
 |---|---|
-| Headline | `Free verdict on any address. No signup.` (39) |
+| Headline | `Free Discovery on any address. No signup.` (39) |
 | Primary text | `Paste any US address. In 15 seconds you get the price where the deal works, the Deal Gap to the asking price, and four ways to close it. Free. No account. No card.` |
 | URL | `https://dealgapiq.com/for/out-of-state-investors?utm_source=meta&utm_medium=paid_social&utm_campaign=out-of-state-investors&utm_content=hookC` |
 
@@ -236,7 +236,7 @@ Creative capture: the **Four Paths** panel on a verdict with the seller-carry pa
 
 | Field | Value |
 |---|---|
-| Headline | `Free verdict on any address. No signup.` (39) |
+| Headline | `Free Discovery on any address. No signup.` (39) |
 | Primary text | `Paste any US address. In 15 seconds you get the price where the deal works, the Deal Gap to the asking price, and four ways to close it. Free. No account. No card.` |
 | URL | `https://dealgapiq.com/for/creative-finance-buyers?utm_source=meta&utm_medium=paid_social&utm_campaign=creative-finance-buyers&utm_content=hookC` |
 
@@ -247,7 +247,7 @@ Creative capture: the **Four Paths** panel on a verdict with the seller-carry pa
 - [ ] Launch ad set names are exactly `wholesalers` and `creative-finance-buyers`. House-hackers and out-of-state stay drafted until a launch set hits 300 clicks or is killed.
 - [ ] Every URL opens the `/for/<slug>` page, not `/`.
 - [ ] `utm_content` is `hookA` / `hookB` / `hookC` matching the ad name.
-- [ ] Description line reads "Free verdict. No signup. No card."
+- [ ] Description line reads "Free Discovery. No signup. No card."
 - [ ] Hook C present on every ad set.
 - [ ] Retargeting ad set live with exclusion audience (§2.6).
 - [ ] Pixel selected on every ad set and showing "Active" (needs §1 done and one real page load).
@@ -271,7 +271,7 @@ Audience sizes will be small at launch. Meta needs ~1,000 people to serve reliab
 
 | Ad | Headline | Primary text |
 |---|---|---|
-| retarget-save | `Save the verdict you ran. Free account.` | `You ran an address. The numbers are still there. A free account keeps 10 saved properties so the next one is a comparison, not a memory.` |
+| retarget-save | `Save the Discovery you ran. Free account.` | `You ran an address. The numbers are still there. A free account keeps 10 saved properties so the next one is a comparison, not a memory.` |
 | retarget-offer | `You have the number. Here is what to say.` | `Every verdict comes with four ways to close the gap and the script for each. Free account, no card. Pick the path and read it off the screen.` |
 
 ### 2.5 Weekly Monday review (runbook §5 rules, restated)

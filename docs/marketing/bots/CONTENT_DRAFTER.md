@@ -80,7 +80,7 @@ company page reshare of one founder post per week at noon. So:
 **Format** — pick from the recurring formats, rotate so no format repeats in
 a week:
 
-- *Deal Teardown*: one property (anonymised), the verdict number, the four
+- *Deal Teardown*: one property (anonymised), the Discovery number, the four
   paths, which one closes and why.
 - *Four Paths Friday* (Fridays): one listing, four structures, one line each.
 - *Script of the Week*: one seller-call line, why it works, what it asks for.
@@ -97,7 +97,7 @@ a week:
 3. One concrete dollar example. `"$2,719 seller-carry 2nd at 0%"` beats
    `"flexible seller terms"` every time.
 4. A closing line that is one of the three motifs **or** a one-sentence CTA
-   (`Run a free verdict` / `See the four paths`). Not both.
+   (`Run a free Discovery` / `See the four paths`). Not both.
 5. Last line: 1–3 hashtags from the taxonomy only. Nothing else on that line.
 6. Total ≤ 1,300 characters. The importer allows 3,000; the reader does not.
 
@@ -231,7 +231,7 @@ From `docs/marketing/blog-keyword-map.md`:
     figures computed the DealGapIQ way (Target Buy, Income Value, Deal Gap,
     DSCR, cash-on-cash). Recompute the numbers before you write them; they
     must be internally consistent.
-  - One `::cta[Run a Free Verdict]{href="/discovery"}` after the example.
+  - One `::cta[Run a Free Discovery]{href="/discovery"}` after the example.
   - 3–6 `faq` entries, 40–90 words each, self-contained.
   - ≥ 3 `internal_links`, all present in `blog_inventory` or `/glossary/`.
   - 1,200–2,000 words for a cluster post.

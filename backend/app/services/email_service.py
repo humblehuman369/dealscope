@@ -709,7 +709,7 @@ class EmailService:
         target_buy: float | None = None,
         deal_gap: float | None = None,
     ) -> dict[str, Any]:
-        """Transactional 'email me this verdict' — three numbers and a link back."""
+        """Transactional 'email me this Discovery' — three numbers and a link back."""
         esc = html_lib.escape
         safe_address = esc(address)
         verdict_url = f"{self.frontend_url}/discovery?address={quote(address)}"
@@ -736,17 +736,17 @@ class EmailService:
 
         content = f'''
 <p style="font-size: 15px; color: {self.TXT_BODY}; line-height: 1.6; margin: 0 0 20px 0;">
-    Your verdict for <strong style="color: {self.TXT_HEADING};">{safe_address}</strong>.
+    Your Discovery for <strong style="color: {self.TXT_HEADING};">{safe_address}</strong>.
 </p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0;">{row_html}
 </table>
 <p style="font-size: 14px; color: {self.TXT_SECONDARY}; line-height: 1.6; margin: 0 0 24px 0;">
-    Free verdict. No signup. No card.
+    Free Discovery. No signup. No card.
 </p>
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0;">
     <tr>
         <td style="border-radius: 10px; background: {self.BRAND_GRADIENT};">
-            <a href="{verdict_url}" style="display: inline-block; padding: 12px 22px; color: #FFFFFF; font-weight: 700; text-decoration: none;">Open the verdict</a>
+            <a href="{verdict_url}" style="display: inline-block; padding: 12px 22px; color: #FFFFFF; font-weight: 700; text-decoration: none;">Open Discovery</a>
         </td>
     </tr>
 </table>
@@ -756,18 +756,18 @@ class EmailService:
 <p style="font-size: 12px; color: {self.TXT_DIM}; margin: 0;">We analyze. You decide.</p>
 {self._marketing_footer(to, "verdict_email")}
 '''
-        html = self._base_template(content, f"Your verdict for {address}")
+        html = self._base_template(content, f"Your Discovery for {address}")
         return await self.send_email(
             to=to,
-            subject=f"Your verdict for {address}",
+            subject=f"Your Discovery for {address}",
             html=html,
             text=(
-                f"Your verdict for {address}\n\n"
+                f"Your Discovery for {address}\n\n"
                 f"Income Value: {_money(income_value)}\n"
                 f"Target Buy: {_money(target_buy)}\n"
                 f"Deal Gap: {_money(deal_gap)}\n\n"
-                f"Open the verdict: {self.frontend_url}/discovery?address={address}\n\n"
-                "Free verdict. No signup. No card.\n"
+                f"Open Discovery: {self.frontend_url}/discovery?address={address}\n\n"
+                "Free Discovery. No signup. No card.\n"
                 "Google Deal Gap IQ. Know what to offer.\n"
                 "We analyze. You decide.\n"
             ),

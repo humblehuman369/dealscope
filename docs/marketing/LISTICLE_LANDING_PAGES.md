@@ -54,7 +54,7 @@ frontend/src/__tests__/lib/persona-pages.test.ts   invariants
 
 1. Breadcrumb, H1 (the listicle headline), one intro paragraph naming the
    persona's situation, `AddressCtaForm` with `source="for:<slug>"`, the
-   guarantee line *Free verdict. No signup. No card.*, sample verdict card.
+   guarantee line *Free Discovery. No signup. No card.*, sample Discovery card.
 2. Numbered reasons. Persona reasons first (positions 1–N), then the picked
    base reasons. Each is a card: number, heading, one paragraph.
 3. Offer block: persona-specific heading and body, a second

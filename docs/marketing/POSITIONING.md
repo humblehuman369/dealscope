@@ -9,7 +9,7 @@
 
 ### In one sentence
 
-DealGapIQ is a real-estate investment SaaS that turns any US property address into a 15-second verdict, four pre-built offer structures designed to close the gap, and the negotiation script for each.
+DealGapIQ is a real-estate investment SaaS that turns any US property address into a 15-second Discovery, four pre-built offer structures designed to close the gap, and the negotiation script for each.
 
 ### In one paragraph
 
@@ -17,7 +17,7 @@ Listing sites end at price. Investor calculators end at cash flow. Neither tells
 
 ### The core flow
 
-1. **Verdict** — One address in, multi-source valuation out. A Deal Gap % (verified value vs. asking) and a plain-English explanation a 5th grader could read.
+1. **Discovery** — One address in, multi-source valuation out. A Deal Gap % (verified value vs. asking) and a plain-English explanation a 5th grader could read.
 2. **Four Paths** — Three single-lever offers (price, capital, income re-verification) plus one Blended Plan that combines smaller asks. The "structure investors miss" layer.
 3. **Negotiation Playbook** — Per-structure pitch script: who to call, the frame, the opener, the ask, what's in it for the seller. Print, email, or copy-to-clipboard.
 4. **Strategy worksheet** — Pre-loaded with the chosen path's levers, ready to refine across six investment strategies (LTR, STR, BRRRR, Fix & Flip, House Hack, Wholesale).
@@ -65,7 +65,7 @@ The willingness-to-pay driver isn't analysis — investors can analyze. It's **s
 
 ### How we're different
 
-The competitive moat is the **synthesis layer** — turning a verdict into actionable, structure-aware offers with a script.
+The competitive moat is the **synthesis layer** — turning Discovery into actionable, structure-aware offers with a script.
 
 | | Listing sites *(Zillow, Redfin)* | Investor calculators *(DealCheck, BP, Mashvisor)* | **DealGapIQ** |
 |---|:---:|:---:|:---:|
@@ -82,7 +82,7 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 
 ### Market & monetization
 
-- **Pricing posture:** Free verdict, no signup, no credit card for the entry analysis. Starter (free) includes 2 analyses/month with the full Four Paths and negotiation scripts, plus up to 10 saved properties — the "aha" is never behind the paywall. Pro ($34.99/mo or $349.99/yr, 7-day trial) gates depth: editable assumptions and the Deal Maker worksheet, comps, sensitivity, exports, unlimited saves, and the directories (directories and exports unlock with the first settled payment, not during trial). Mobile IAP via RevenueCat; web checkout via Stripe. Source of truth: `frontend/src/lib/planFeatures.ts` and `TIER_LIMITS` in `backend/app/models/subscription.py`.
+- **Pricing posture:** Free Discovery, no signup, no credit card for the entry analysis. Starter (free) includes 2 analyses/month with the full Four Paths and negotiation scripts, plus up to 10 saved properties — the "aha" is never behind the paywall. Pro ($34.99/mo or $349.99/yr, 7-day trial) gates depth: editable assumptions and the Deal Maker worksheet, comps, sensitivity, exports, unlimited saves, and the directories (directories and exports unlock with the first settled payment, not during trial). Mobile IAP via RevenueCat; web checkout via Stripe. Source of truth: `frontend/src/lib/planFeatures.ts` and `TIER_LIMITS` in `backend/app/models/subscription.py`.
 - **Acquisition motion:** SEO (creative-finance glossary pages), founder-led content in the BiggerPockets / Subto orbit, free verdict as the conversion event, lead magnet (Creative Finance Field Guide PDF) for top-of-funnel.
 - **Distribution surfaces:** Web (`dealgapiq.com`), iOS, Android — all rendering the same React app.
 
@@ -91,7 +91,7 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 ## 1. What products or services do we offer?
 
 **Primary offering:**
-- **DealGapIQ** — a real-estate investment SaaS that takes any US property address and returns a verdict in 15 seconds, plus four pre-built offer structures designed to close the gap.
+- **DealGapIQ** — a real-estate investment SaaS that takes any US property address and returns Discovery in 15 seconds, plus four pre-built offer structures designed to close the gap.
 
 **One-line description (the elevator pitch):**
 > Paste a Zillow URL or street address. In 15 seconds you get a multi-source verdict, four ways to structure the deal, and the negotiation script for each.
@@ -113,7 +113,7 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 - We don't promise that every property is a deal — only that every property has more leverage than the asking price suggests.
 
 **Pricing model:**
-- *Free verdict, no signup, no credit card* for the entry analysis. Starter: $0, 2 analyses/month, Four Paths + scripts included, 10 saved properties. Pro: $34.99/month or $349.99/year (~$29.17/month), 7-day free trial; directories and exports unlock with the first payment.
+- *Free Discovery, no signup, no credit card* for the entry analysis. Starter: $0, 2 analyses/month, Four Paths + scripts included, 10 saved properties. Pro: $34.99/month or $349.99/year (~$29.17/month), 7-day free trial; directories and exports unlock with the first payment.
 
 ---
 
@@ -160,9 +160,9 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 **Content pillars:**
 1. **Named structures, demystified.** Subject-To, seller carrybacks, 0% 2nds, wraparounds, rate buydowns, the Morby Method, FHA house-hack. Each one explained at a 5th-grade reading level with a real dollar example.
 2. **The pitch on the phone.** What investors actually say to a seller — the frame, the opener, the "what's in it for them" reasons. Pull quotes from real DealGapIQ-generated scripts.
-3. **Deal teardowns.** Walk through a real listing, show the verdict, show the four paths, show which path actually closes. Always anonymize unless the property is already public.
+3. **Deal teardowns.** Walk through a real listing, show Discovery, show the four paths, show which path actually closes. Always anonymize unless the property is already public.
 4. **The structure beats the price tag.** The manifesto. Examples of properties that look bad on price and pencil on structure (and vice versa).
-5. **Show the work.** Methodology posts — how the verdict is computed, how data sources are blended, how to read the numbers. The transparency layer.
+5. **Show the work.** Methodology posts — how Discovery is computed, how data sources are blended, how to read the numbers. The transparency layer.
 
 **Tone & voice:**
 - We sound like: a senior investor at a meetup whiteboarding a deal — direct, specific, dollar-numbered, non-condescending. *"Stop scrolling. Start hunting."* energy.
@@ -184,7 +184,7 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 - **"Four Paths Friday"** — one real-ish property, four structures, which one closes.
 - **"Script of the Week"** — one pitch script pulled from DealGapIQ, annotated.
 - **"Glossary Drop"** — one creative-finance term, one diagram, one example. SEO compounders.
-- **"Run Your Zip"** — short clip showing a verdict on a viewer-suggested address.
+- **"Run Your Zip"** — short clip showing Discovery on a viewer-suggested address.
 
 **Hooks & angles that work for us:**
 - "The $X listing the math says is dead until you look at the structure."
@@ -193,7 +193,7 @@ The competitive moat is the **synthesis layer** — turning a verdict into actio
 - "Your tool stops at cap rate. Here's what comes next."
 
 **Call-to-action defaults:**
-- Primary CTA: **Run a Free Verdict** (links to `/verdict` or the homepage entry input).
+- Primary CTA: **Run a Free Discovery** (links to `/discovery` or the homepage entry input).
 - Secondary CTA: **See the Four Paths** (anchor scroll on the homepage) or **Email me the Creative Finance Field Guide** (lead magnet).
 
 **Topics to avoid:**

@@ -84,7 +84,7 @@ tab treatment borrows from it.
 ┌──────────────────────────────────────────────────────┐
 │ Property header (photos · address · save · share)    │  unchanged
 ├──────────────────────────────────────────────────────┤
-│ LEVEL 1 · Verdict                                    │  unchanged
+│ LEVEL 1 · Discovery                                  │  unchanged
 │   Deal Gap % · Target Buy · Sweet Spot · Guidance    │
 │   FinancingProvenanceNote (R5)                       │
 ├──────────────────────────────────────────────────────┤

@@ -40,7 +40,7 @@ export default function VerdictError({ error, reset }: ErrorProps) {
           </h1>
 
           <p className="mb-4 text-[0.95rem] leading-relaxed" style={{ color: 'var(--text-body)' }}>
-            The verdict step didn&apos;t complete. That&apos;s usually temporary—a busy server, a
+            The Discovery step didn&apos;t complete. That&apos;s usually temporary—a busy server, a
             network blip, or a hiccup with the property lookup.
           </p>
 

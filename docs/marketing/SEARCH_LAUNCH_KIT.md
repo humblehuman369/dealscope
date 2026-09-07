@@ -38,7 +38,7 @@
 ## 2. Ad groups
 
 Each group: Headline 1 = page H1 verbatim (pinned position 1). Headline 2 =
-`Free verdict. No signup. No card.` (pinned position 2). Headline 3 =
+`Free Discovery. No signup. No card.` (pinned position 2). Headline 3 =
 `15 seconds from address to answer`. Description 1 = the page's agitate
 sentence. Description 2 = `We analyze. You decide.`
 
@@ -267,7 +267,7 @@ name. PostHog cannot read ad spend.
 
 - [ ] Campaign is Search only. Display and Search Partners are off.
 - [ ] Four ad groups named exactly the slugs above. $15/day each.
-- [ ] Headline 1 is the page H1, pinned. Headline 2 is `Free verdict. No signup. No card.`, pinned.
+- [ ] Headline 1 is the page H1, pinned. Headline 2 is `Free Discovery. No signup. No card.`, pinned.
 - [ ] Final URL is `/answers/<slug>` with the UTMs above, not `/`.
 - [ ] Auto-tagging is on.
 - [ ] Campaign-level negatives loaded, including every US state name.

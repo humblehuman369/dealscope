@@ -84,7 +84,7 @@ Apple displays screenshots in the order you upload them. Users typically only se
 | 1 | `01-hero-investors-lens.png` | **The pitch.** Real screenshot inside a programmatically-built phone mockup — actual property data, real DEAL GAP -29.1%. Carries the unified brand message ("Discover Deals · Like an Investor") shared across all five marketing surfaces (App Store hero, Play Store banner, IAP promos, OG image). | Bold headline + real product screenshot |
 | 2 | `02-search-color-coded.png` | **The Aha.** Shows that every property is pre-graded — answers "what does this app actually do?" | Dense color-coded map pins |
 | 3 | `03-verdict-three-cards.png` | **The depth.** Proves there's real financial analysis, not just a sticker. | Three-card verdict + Deal Gap bar |
-| 4 | `04-pills-deal-maybe-pass.png` | **The mechanic.** Names the verdict framework users will live in. | DEAL / MAYBE / PASS pills |
+| 4 | `04-pills-deal-maybe-pass.png` | **The mechanic.** Names the DEAL / MAYBE / PASS framework users will live in. | DEAL / MAYBE / PASS pills |
 | 5 | `05-coverage-beyond-mls.png` | **The differentiator.** Off-MLS coverage is the moat — most apps stop at MLS. | Four source category cards |
 | 6 | `06-comps-no-spreadsheet.png` | **The save-time pitch.** Comps without manual spreadsheet work. | Subject + comps grid + map |
 | 7 | `07-dealmaker-scenarios.png` | **The power-user pitch.** Real-time scenario modeling. | Sliders + live profit number |
@@ -118,7 +118,7 @@ Full options and A/B test plan: see `copy/subtitle.md`.
 
 ## Promotional Text — recommended
 
-> **See every US listing through an investor's lens. Pre-scored DEAL, MAYBE, or PASS. MLS + foreclosure + pre-foreclosure + auction. Verdict in seconds.** _(154 chars / 170 max)_
+> **See every US listing through an investor's lens. Pre-scored DEAL, MAYBE, or PASS. MLS + foreclosure + pre-foreclosure + auction. Discovery in seconds.** _(156 chars / 170 max)_
 
 Full options and rotation strategy: see `copy/promotional-text.md`.
 

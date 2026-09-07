@@ -36,13 +36,13 @@ Three repeating motif lines run through the page. Each appears at least twice:
 
 ### CTAs
 
-- Primary: **Run a Free Verdict**
+- Primary: **Run a Free Discovery**
 - Secondary: **See the Four Paths**
 
 ### Visual treatment
 
 - Three-beat headline rhythm (Stop / Start / Close) — give each clause its own visual line on desktop, all three stack on mobile.
-- Hero supporting visual: the verdict screen showing the four-card grid (use the Lake Worth screenshot Brad provided as the reference). Crop tight; cards must be legible at thumbnail size.
+- Hero supporting visual: the Discovery screen showing the four-card grid (use the Lake Worth screenshot Brad provided as the reference). Crop tight; cards must be legible at thumbnail size.
 - Below the CTAs: a small inline input field with placeholder *"Paste a Zillow URL or street address"* — lets visitors run the demo without scrolling.
 - Trust strip beneath the input: *"5 data sources · 15-second analysis · No signup required"*
 
@@ -50,15 +50,15 @@ Three repeating motif lines run through the page. Each appears at least twice:
 
 It preserves the existing brand voice (the *Stop scrolling / Start hunting* rhythm investors already recognize) and adds the new capability (Four Paths) as a third drumbeat. "Close" is the word investors get paid for — it's not "find," not "analyze," not "evaluate." It's the closing action.
 
-The subhead does narrative work: gives the input (one address), the time (15 seconds), the verdict (the existing promise), and the new capability (four offer structures DealGapIQ crafts). The brand name is repeated in the subhead — second exposure on first scroll.
+The subhead does narrative work: gives the input (one address), the time (15 seconds), Discovery (the existing promise), and the new capability (four offer structures DealGapIQ crafts). The brand name is repeated in the subhead — second exposure on first scroll.
 
 ---
 
-## Section 2 — After the verdict, four ways to close the gap
+## Section 2 — After Discovery, four ways to close the gap
 
 ### Headline
 
-> ## The Verdict tells you the gap. We tell you how to close it.
+> ## Discovery tells you the gap. We tell you how to close it.
 
 ### Body
 
@@ -233,9 +233,9 @@ Italic, centered, divider above. Second placement of the moat line.
 
 > **Don't take our word for it. Take ours and check it.**
 >
-> Run any property — yours, your neighbor's, the one you've been watching. Click any number on the verdict to see where it came from. Switch data sources and watch the four paths recompute live. The methodology is the proof.
+> Run any property — yours, your neighbor's, the one you've been watching. Click any number on Discovery to see where it came from. Switch data sources and watch the four paths recompute live. The methodology is the proof.
 >
-> [Run a Free Verdict →]
+> [Run a Free Discovery →]
 
 ### Visual treatment
 
@@ -270,13 +270,13 @@ What to add later as accumulated:
 
 > No tutorials. No 14-day trial. No credit card up front.
 >
-> Paste a Zillow URL or street address. In 15 seconds you'll see the verdict, the four paths to close the gap, and the negotiation script for each.
+> Paste a Zillow URL or street address. In 15 seconds you'll see Discovery, the four paths to close the gap, and the negotiation script for each.
 >
 > If the math works, you'll know. If it needs structure, you'll see exactly which structures fit. If it's not a deal, you'll have spent 15 seconds — not a weekend in Excel.
 
 ### Primary CTA
 
-- Button: **Run a Free Verdict →**
+- Button: **Run a Free Discovery →**
 - Color: accent-cyan, hover deepens.
 - Min 56px tall on mobile.
 - **Pre-filled placeholder address:** *"Try: 1014 N J St, Lake Worth, FL"* — gives a one-click demo for visitors without an address ready.
@@ -309,7 +309,7 @@ The manifesto in 18 words. Investors who screenshot one line from your homepage 
 ## Footer
 
 - **Trust strip:** small icons + labels — *"SOC 2 Type II ready"* / *"256-bit SSL"* / *"Data partner of [list real partners]."* Skip if you can't substantiate.
-- **Nav:** Verdict · Strategy · Appraiser · DealMaker · Estimator (matches existing app nav).
+- **Nav:** Discovery · Strategy · Appraiser · DealMaker · Estimator (matches existing app nav).
 - **Resources:** Blog · Field Guide · FAQ · **Glossary of Creative Finance Terms** (last item is SEO gold — every term page = one more entry point).
 - **Legal:** Terms · Privacy · Disclosures (the *"we don't give investment advice"* line — required).
 - **Copyright line:** *© 2026 DealGapIQ. We analyze. You decide.*

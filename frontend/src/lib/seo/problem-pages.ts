@@ -53,7 +53,7 @@ export interface ProblemPage {
   blogSlugs: string[]
 }
 
-export const GUARANTEE_LINE = 'Free verdict. No signup. No card.'
+export const GUARANTEE_LINE = 'Free Discovery. No signup. No card.'
 
 export const PROBLEM_PAGES: ProblemPage[] = [
   {
@@ -61,10 +61,10 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     problem: 'Is this a good investment property?',
     agitate:
       'The listing shows a price. It does not show what the property is worth as a rental, what it costs to carry, or how far the asking price sits from a number that works. Most investors find out after the tour.',
-    nextStep: 'Paste the address. The verdict runs free in 15 seconds and shows the Deal Gap.',
-    metaTitle: 'Is This a Good Investment Property? Free 15-Second Verdict',
+    nextStep: 'Paste the address. Discovery runs free in 15 seconds and shows the Deal Gap.',
+    metaTitle: 'Is This a Good Investment Property? Free 15-Second Discovery',
     metaDescription:
-      'Paste any US address and get a free investor verdict: multi-source value, rent estimate, Deal Gap between asking and target buy, and six strategy snapshots. No signup.',
+      'Paste any US address and get a free investor Discovery: multi-source value, rent estimate, Deal Gap between asking and target buy, and six strategy snapshots. No signup.',
     persona: 'first-time',
     strategyPath: 'verdict',
     steps: [
@@ -74,7 +74,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
       },
       {
         heading: 'The Deal Gap',
-        body: 'The verdict compares the asking price to the price at which the property works as a rental, with the state tax, vacancy and appreciation assumptions applied.',
+        body: 'Discovery compares the asking price to the price at which the property works as a rental, with the state tax, vacancy and appreciation assumptions applied.',
       },
       {
         heading: 'Six strategies at a glance',
@@ -90,10 +90,10 @@ export const PROBLEM_PAGES: ProblemPage[] = [
       {
         question: 'Do I need an account to check a property?',
         answer:
-          'No. The first verdicts run without signup or a card. A free account adds saved properties and ten analyses a month; Pro unlocks editable assumptions, comps and exports.',
+          'No. Discovery runs without signup or a card. A free account adds saved properties and ten analyses a month; Pro unlocks editable assumptions, comps and exports.',
       },
       {
-        question: 'Does the verdict work on off-market or unlisted properties?',
+        question: 'Does Discovery work on off-market or unlisted properties?',
         answer:
           'Yes. Any US street address resolves to public records and live estimates. If a source has no data for the address, that field shows as unavailable rather than a guess.',
       },
@@ -111,7 +111,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     problem: 'Does this rental cash flow?',
     agitate:
       'Most listings do not, once property tax, vacancy, insurance and reserves come off the top of the rent. A spreadsheet takes 45 minutes per property and still depends on the rent you typed in.',
-    nextStep: 'Paste the address. The verdict pulls live rent estimates and runs the full rental P&L free.',
+    nextStep: 'Paste the address. Discovery pulls live rent estimates and runs the full rental P&L free.',
     metaTitle: 'Does This Rental Cash Flow? Free Rental Property Cash Flow Check',
     metaDescription:
       'Check whether a rental cash flows before you tour it. Live rent estimates, state tax and vacancy assumptions, and the price at which the numbers work. Free, no signup.',
@@ -145,7 +145,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
       {
         question: 'Can I change the down payment or interest rate?',
         answer:
-          'Yes. The free verdict uses default financing; the Pro workbench lets you edit every assumption and watch the cash flow update.',
+          'Yes. The free Discovery uses default financing; the Pro workbench lets you edit every assumption and watch the cash flow update.',
       },
     ],
     relatedSlugs: ['is-this-a-good-investment-property', 'how-much-rent-will-this-property-get', 'what-should-i-offer-on-this-house'],
@@ -156,7 +156,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     problem: 'What should I offer on this house?',
     agitate:
       'Offer too high and the deal never cash flows. Offer too low with no reason attached and the seller stops answering. Most investors guess a percentage off list and hope.',
-    nextStep: 'Paste the address. The verdict shows the Target Buy price and four ways to structure the offer.',
+    nextStep: 'Paste the address. Discovery shows the Target Buy price and four ways to structure the offer.',
     metaTitle: 'What Should I Offer on This House? Target Buy Price + 4 Offer Structures',
     metaDescription:
       'Get the price at which an investment property works, then four offer structures that close the gap: price, capital, financing or a blended plan, each with a script. Free.',
@@ -185,7 +185,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
       {
         question: 'What if the seller will not drop the price?',
         answer:
-          'Price is one of four levers. Seller financing, a 0% second, a rate buydown or a capital contribution can reach the same numbers without a headline price cut. The verdict shows which apply.',
+          'Price is one of four levers. Seller financing, a 0% second, a rate buydown or a capital contribution can reach the same numbers without a headline price cut. Discovery shows which apply.',
       },
       {
         question: 'Are the negotiation scripts free?',
@@ -201,7 +201,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     problem: 'How much rent will this property get?',
     agitate:
       'A rent estimate that is $200 too high turns a cash-flowing deal into a monthly loss. Listing agents quote the optimistic number; you need the one the data supports.',
-    nextStep: 'Paste the address. The verdict shows rent estimates from each source, side by side, free.',
+    nextStep: 'Paste the address. Discovery shows rent estimates from each source, side by side, free.',
     metaTitle: 'How Much Rent Will This Property Get? Multi-Source Rent Estimate',
     metaDescription:
       'See RentCast and Zillow rent estimates for any US address side by side, blended into one IQ rent figure, and what that rent means for cash flow. Free, no signup.',
@@ -210,7 +210,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     steps: [
       {
         heading: 'Each source, shown',
-        body: 'RentCast and Zillow rent estimates for the exact address. When they disagree by more than 15%, the verdict flags it.',
+        body: 'RentCast and Zillow rent estimates for the exact address. When they disagree by more than 15%, Discovery flags it.',
       },
       {
         heading: 'One IQ rent figure',
@@ -246,7 +246,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     problem: "The seller won't lower the price. Is there another way?",
     agitate:
       'A 6% price cut is a no. Walking away is the default. But the same math can be reached with three smaller asks the seller can actually say yes to, and most investors never put them on the table.',
-    nextStep: 'Paste the address. The verdict shows which financing and capital structures close the gap without a headline price cut.',
+    nextStep: 'Paste the address. Discovery shows which financing and capital structures close the gap without a headline price cut.',
     metaTitle: "Seller Won't Lower the Price? Offer Structures That Close the Gap",
     metaDescription:
       'When the seller holds firm, seller financing, a 0% second, a rate buydown or a blended plan can reach the same numbers. See which apply to a specific address, free.',
@@ -255,7 +255,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     steps: [
       {
         heading: 'Measure the gap',
-        body: 'The verdict shows how far the asking price sits from the price at which the property works, in dollars.',
+        body: 'Discovery shows how far the asking price sits from the price at which the property works, in dollars.',
       },
       {
         heading: 'Split it into levers',
@@ -275,7 +275,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
       {
         question: 'Is a blended plan realistic?',
         answer:
-          'Three small asks, such as a 2% price reduction, a modest seller second and verified rent, often reach the same math as a 6% cut and are far more likely to get a yes. The verdict shows the blend that fits.',
+          'Three small asks, such as a 2% price reduction, a modest seller second and verified rent, often reach the same math as a 6% cut and are far more likely to get a yes. Discovery shows the blend that fits.',
       },
       {
         question: 'Is subject-to legal?',
@@ -325,7 +325,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
       {
         question: 'Can I compare FHA versus conventional terms?',
         answer:
-          'Editable financing assumptions are a Pro feature; the free verdict uses standard owner-occupied defaults.',
+          'Editable financing assumptions are a Pro feature; the free Discovery uses standard owner-occupied defaults.',
       },
     ],
     relatedSlugs: ['does-this-rental-cash-flow', 'is-this-a-good-investment-property'],
@@ -336,10 +336,10 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     problem: 'What is this property worth to an investor?',
     agitate:
       'A homeowner pays for the kitchen. An investor pays for the income. The Zestimate tells you the first number; almost nothing tells you the second, and the difference is the whole negotiation.',
-    nextStep: 'Paste the address. The verdict shows Income Value next to market value, free.',
+    nextStep: 'Paste the address. Discovery shows Income Value next to market value, free.',
     metaTitle: 'What Is This Property Worth to an Investor? Income Value vs Market Value',
     metaDescription:
-      'See the income-based value of any US property next to its market estimates. The gap between them is your negotiating room. Free verdict, no signup.',
+      'See the income-based value of any US property next to its market estimates. The gap between them is your negotiating room. Free Discovery, no signup.',
     persona: 'active',
     strategyPath: 'income-value',
     steps: [
@@ -370,7 +370,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
       {
         question: 'Can I see the assumptions behind Income Value?',
         answer:
-          'Yes. Every state assumption is published on the /markets pages and shown in the verdict. Pro lets you edit them per deal.',
+          'Yes. Every state assumption is published on the /markets pages and shown in Discovery. Pro lets you edit them per deal.',
       },
     ],
     relatedSlugs: ['is-this-a-good-investment-property', 'what-should-i-offer-on-this-house', 'does-this-rental-cash-flow'],
@@ -381,7 +381,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     problem: 'Should I wholesale this deal or keep it?',
     agitate:
       'An assignment fee today or cash flow for a decade. Choosing wrong on a good lead is expensive either way, and the answer depends on numbers most wholesalers estimate in their head.',
-    nextStep: 'Paste the address. The verdict shows the wholesale snapshot next to the rental and flip snapshots, free.',
+    nextStep: 'Paste the address. Discovery shows the wholesale snapshot next to the rental and flip snapshots, free.',
     metaTitle: 'Should I Wholesale This Deal? Wholesale vs Hold vs Flip Analysis',
     metaDescription:
       'Compare the assignment-fee math against holding or flipping the same property, using live value and rent estimates and the price a cash buyer will pay. Free, no signup.',

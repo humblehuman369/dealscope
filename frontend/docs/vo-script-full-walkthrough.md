@@ -173,7 +173,7 @@ Read like you’re walking a fellow investor through your own workbench over cof
 > **Deal Maker** is the interactive worksheet. /
 > Change purchase price. Down payment. Rent. Loan type. //
 > Every metric recalculates live — /
-> and it stays consistent with the Verdict you just saw. //
+> and it stays consistent with the Discovery you just saw. //
 > Same math. Same record. No “two versions of the truth.” /
 > When you’re ready for a lender, export to Excel.
 
@@ -211,7 +211,7 @@ Read like you’re walking a fellow investor through your own workbench over cof
 > Map Search pre-grades parcels green, yellow, red — /
 > with foreclosure, pre-foreclosure, auction, and stale-listing filters. //
 > Beyond the MLS. /
-> Tap a pin — you’re back in the Verdict in seconds. /
+> Tap a pin — you’re back in Discovery in seconds. /
 > That’s how flippers and wholesalers find the next one.
 
 ---

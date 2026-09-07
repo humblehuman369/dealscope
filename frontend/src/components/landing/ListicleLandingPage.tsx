@@ -20,7 +20,7 @@ import { SocialProof } from '@/components/landing/SocialProof'
 
 const HERO_ID = 'for-hero'
 const DISCOVERY_CTA = 'Run Free Discovery'
-const DISCOVERY_GUARANTEE = 'Free verdict. No signup. No card.'
+const DISCOVERY_GUARANTEE = 'Free Discovery. No signup. No card.'
 
 function buildJsonLd(page: PersonaPage) {
   const url = `${SITE_URL}/for/${page.slug}`
@@ -97,7 +97,7 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
                 paths={page.slug === 'creative-finance-buyers' ? CREATIVE_FINANCE_SAMPLE_PATHS : undefined}
               />
               <p className="mt-3 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
-                Sample verdict. Yours runs on the address you enter.
+                Sample Discovery. Yours runs on the address you enter.
               </p>
             </div>
           </div>

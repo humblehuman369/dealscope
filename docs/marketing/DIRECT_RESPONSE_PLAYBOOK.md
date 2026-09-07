@@ -109,7 +109,7 @@ Rules for using the list:
 | # | Problem as searched | Resolves to | Answered at |
 |---|---|---|---|
 | 11 | What is this property worth to an investor, not a homeowner? | Income Value | `/answers/what-is-this-property-worth-to-an-investor` |
-| 12 | I analyze 30 properties to find one. How do I go faster? | 15-second verdict | blog |
+| 12 | I analyze 30 properties to find one. How do I go faster? | 15-second Discovery | blog |
 | 13 | The seller won't lower the price. Is there another way? | Financing / capital paths | `/answers/seller-wont-lower-the-price` |
 | 14 | How do I compare a BRRRR against a straight rental on the same house? | Six-strategy comparison | blog |
 | 15 | What does a 1% rule property actually cash flow after taxes and vacancy? | Assumptions | blog → `/markets/[state]` |
@@ -185,12 +185,12 @@ worked example until Phase 2 supplies video.
    *"Does this rental cash flow?"* → *"Most listings don't, once taxes,
    vacancy and reserves come off the top. You need the number before you tour."*
    → *"Paste the address. The verdict runs free in 15 seconds."*
-2. **Guarantee line**, always the same words: *Free verdict. No signup. No card.*
+2. **Guarantee line**, always the same words: *Free Discovery. No signup. No card.*
 3. **One CTA:** the address input (`AddressCtaForm`). A street address goes
    straight to `/discovery?address=…`; a city or ZIP goes to `/map-search`.
    No second button above the fold.
 4. **What happens next** — three steps, one sentence each.
-5. **Worked example** — the sample verdict card (`HeroSampleResult`), labelled
+5. **Worked example** — the sample Discovery card (`HeroSampleResult`), labelled
    as a sample.
 6. **Social proof** — the three consented testimonials from `SocialProof.tsx`.
    Do not add more until they are real and consented.

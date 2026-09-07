@@ -237,7 +237,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
                   className="inline-flex rounded-full px-6 py-3 font-semibold transition-opacity hover:opacity-90"
                   style={{ background: 'var(--accent-sky)', color: 'var(--surface-base)' }}
                 >
-                  Run a free verdict →
+                  Run a free Discovery →
                 </BlogCtaLink>
                 {category && (
                   <Link

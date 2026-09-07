@@ -18,7 +18,7 @@
 | Brand | `DealGapIQ` |
 | Spoken / search form | `Deal Gap IQ` |
 | Sign-off | `Google Deal Gap IQ. Know what to offer.` |
-| One sentence | DealGapIQ turns any US property address into a 15-second verdict, four pre-built offer structures designed to close the gap, and the negotiation script for each. |
+| One sentence | DealGapIQ turns any US property address into a 15-second Discovery, four pre-built offer structures designed to close the gap, and the negotiation script for each. |
 | Tagline (SEO) | Real estate deal analysis software that shows the Deal Gap, ranks six investment strategies, and turns property numbers into investor-ready offers. |
 | Founder line | Founded by Brad Geisen, founder of Foreclosure.com and the technology behind Fannie Mae's HomePath and Freddie Mac's HomeSteps. |
 | Logo | `frontend/public/brand/Logo/Social/Profile_Square_400x400.png` (square avatar) · `frontend/public/brand/AppIcon/iOS_AppStore/AppIcon_1024x1024.png` (1024 icon) |
@@ -49,7 +49,7 @@ storefront** (hide address; set a service area of United States).
 
 **First three Posts (one per week after verification):**
 
-1. *Free verdict, no signup.* "Paste any US address at dealgapiq.com and get an investor verdict in 15 seconds. Free. No account. No card." → link `/answers/is-this-a-good-investment-property` with `utm_source=google&utm_medium=gbp&utm_campaign=post-1`
+1. *Free Discovery, no signup.* "Paste any US address at dealgapiq.com and get an investor Discovery in 15 seconds. Free. No account. No card." → link `/answers/is-this-a-good-investment-property` with `utm_source=google&utm_medium=gbp&utm_campaign=post-1`
 2. *Does this rental cash flow?* Agitate line from `problem-pages.ts` → `/answers/does-this-rental-cash-flow`
 3. *Seller won't lower the price?* → `/answers/seller-wont-lower-the-price`
 
@@ -65,7 +65,7 @@ storefront** (hide address; set a service area of United States).
 | Field | Limit | Value |
 |---|---|---|
 | Name | 100 | `DealGapIQ (Deal Gap IQ)` |
-| Tagline | 120 | `Real estate deal analysis software: the Deal Gap, six strategies, four offer structures, one free 15-second verdict.` (116) |
+| Tagline | 120 | `Real estate deal analysis software: the Deal Gap, six strategies, four offer structures, one free 15-second Discovery.` (116) |
 | Website | | `https://dealgapiq.com/?utm_source=linkedin&utm_medium=profile&utm_campaign=brand` |
 | Industry | | Software Development |
 | Company size | | 2–10 |
@@ -109,7 +109,7 @@ survive the store redirect); tag them in PostHog via the `GetTheAppButton`
 |---|---|
 | Channel name | `DealGapIQ` |
 | Handle | `@dealgapiq` |
-| Description (first line, shown in search) | `Deal Gap IQ: real estate deal analysis for investors. Free 15-second verdict on any US address at dealgapiq.com.` |
+| Description (first line, shown in search) | `Deal Gap IQ: real estate deal analysis for investors. Free 15-second Discovery on any US address at dealgapiq.com.` |
 | Description (rest) | *Medium* boilerplate from `MARKETING_PLAYBOOK.md` §5.2 + `Google Deal Gap IQ. Know what to offer.` |
 | Links | `https://dealgapiq.com/?utm_source=youtube&utm_medium=profile&utm_campaign=brand`, LinkedIn page, App Store, Play |
 | Channel keywords | `deal gap iq, dealgapiq, real estate investing, rental property analysis, brrrr, fix and flip, wholesale, seller financing, subject to, creative finance` |
@@ -140,7 +140,7 @@ demo (`/videos/what-is-dealgapiq.mp4`) is the first upload; title it
 | Field | Limit | Value |
 |---|---|---|
 | Name | | `DealGapIQ` |
-| Tagline | 60 | `Free 15-second investor verdict on any US address` (49) |
+| Tagline | 60 | `Free 15-second investor Discovery on any US address` (49) |
 | Description | 260 | `Paste an address, get the Deal Gap between asking price and what it's worth as an investment, six strategy scores, and four offer structures with scripts. Free, no signup. Search "Deal Gap IQ".` (193) |
 | Topics | | Real Estate, SaaS, Fintech, Productivity |
 | Link | | `https://dealgapiq.com/?utm_source=producthunt&utm_medium=profile&utm_campaign=brand` |

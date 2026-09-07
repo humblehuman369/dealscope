@@ -30,16 +30,16 @@ describe('VerdictEmailCapture', () => {
         dealGap={43200}
       />,
     )
-    expect(screen.getByLabelText('Email me this verdict')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Email me this verdict' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Email me this Discovery')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Email me this Discovery' })).toBeInTheDocument()
   })
 
   it('rejects a bad email', async () => {
     render(
       <VerdictEmailCapture address="123 Main St" incomeValue={1} targetBuy={1} dealGap={1} />,
     )
-    fireEvent.change(screen.getByLabelText('Email me this verdict'), { target: { value: 'not-an-email' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Email me this verdict' }))
+    fireEvent.change(screen.getByLabelText('Email me this Discovery'), { target: { value: 'not-an-email' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Email me this Discovery' }))
     expect(await screen.findByRole('alert')).toHaveTextContent(/valid email/i)
     expect(post).not.toHaveBeenCalled()
   })
@@ -54,8 +54,8 @@ describe('VerdictEmailCapture', () => {
         dealGap={43200}
       />,
     )
-    fireEvent.change(screen.getByLabelText('Email me this verdict'), { target: { value: '  Investor@Example.com ' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Email me this verdict' }))
+    fireEvent.change(screen.getByLabelText('Email me this Discovery'), { target: { value: '  Investor@Example.com ' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Email me this Discovery' }))
 
     await waitFor(() => expect(post).toHaveBeenCalled())
     expect(post.mock.calls[0][0]).toBe('/api/v1/leads/verdict-email')
