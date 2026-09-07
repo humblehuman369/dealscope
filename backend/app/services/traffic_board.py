@@ -55,17 +55,28 @@ def configured() -> bool:
 # ---------------------------------------------------------------------------
 
 
+def _date_range(days: int) -> dict[str, str]:
+    return {"date_from": f"-{days}d"}
+
+
 def overview_query(days: int) -> dict[str, Any]:
-    return {"kind": "WebOverviewQuery", "dateRange": {"date_from": f"-{days}d"}}
+    # ``properties`` is required on PostHog's WebAnalyticsQueryBase; omitting
+    # it is a 400 (``Field required``) on current us.posthog.com schemas.
+    return {
+        "kind": "WebOverviewQuery",
+        "dateRange": _date_range(days),
+        "properties": [],
+    }
 
 
 def trends_query(days: int) -> dict[str, Any]:
     return {
         "kind": "TrendsQuery",
         "interval": "day",
-        "dateRange": {"date_from": f"-{days}d"},
+        "dateRange": _date_range(days),
+        "properties": [],
         "series": [
-            {"kind": "EventsNode", "event": event, "math": math, "name": name}
+            {"kind": "EventsNode", "event": event, "math": math, "custom_name": name}
             for name, event, math in TREND_SERIES
         ],
     }
@@ -76,7 +87,8 @@ def sources_query(days: int, limit: int = 12) -> dict[str, Any]:
         "kind": "WebStatsTableQuery",
         "breakdownBy": "InitialUTMSourceMediumCampaign",
         "limit": limit,
-        "dateRange": {"date_from": f"-{days}d"},
+        "dateRange": _date_range(days),
+        "properties": [],
     }
 
 
@@ -200,11 +212,21 @@ def clear_cache() -> None:
     _cache.entries.clear()
 
 
+def _format_http_error(exc: httpx.HTTPError) -> str:
+    msg = f"{type(exc).__name__}: {exc}"
+    if isinstance(exc, httpx.HTTPStatusError):
+        detail = (exc.response.text or "").strip().replace("\n", " ")[:180]
+        if detail:
+            msg = f"{msg} — {detail}"
+    return msg[:300]
+
+
 async def _run_query(client: httpx.AsyncClient, query: dict[str, Any]) -> dict[str, Any]:
     url = f"{settings.POSTHOG_API_HOST.rstrip('/')}/api/projects/{settings.POSTHOG_PROJECT_ID}/query"
+    kind = str(query.get("kind") or "query")
     response = await client.post(
         url,
-        json={"query": query},
+        json={"query": query, "name": f"traffic_board_{kind}"},
         headers={"Authorization": f"Bearer {settings.POSTHOG_PERSONAL_API_KEY}"},
     )
     response.raise_for_status()
@@ -232,11 +254,21 @@ async def fetch_board(days: int, *, refresh: bool = False) -> TrafficBoard:
             error="POSTHOG_PERSONAL_API_KEY / POSTHOG_PROJECT_ID are not set on the backend.",
         )
 
+    errors: list[str] = []
+
+    async def _one(client: httpx.AsyncClient, query: dict[str, Any]) -> dict[str, Any]:
+        try:
+            return await _run_query(client, query)
+        except httpx.HTTPError as exc:
+            logger.warning("traffic board PostHog query failed: %s", exc)
+            errors.append(_format_http_error(exc))
+            return {}
+
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
-            overview_raw = await _run_query(client, overview_query(days))
-            trends_raw = await _run_query(client, trends_query(days))
-            sources_raw = await _run_query(client, sources_query(days))
+            overview_raw = await _one(client, overview_query(days))
+            trends_raw = await _one(client, trends_query(days))
+            sources_raw = await _one(client, sources_query(days))
     except httpx.HTTPError as exc:
         logger.warning("traffic board PostHog query failed: %s", exc)
         if entry:  # stale but better than nothing
@@ -248,7 +280,20 @@ async def fetch_board(days: int, *, refresh: bool = False) -> TrafficBoard:
             overview=TrafficOverview(),
             series=[],
             sources=[],
-            error=f"{type(exc).__name__}: {exc}"[:300],
+            error=_format_http_error(exc),
+        )
+
+    if errors and not overview_raw and not trends_raw and not sources_raw:
+        if entry:
+            return entry.board.model_copy(update={"cached": True, "error": f"{errors[0]}: refresh failed"})
+        return TrafficBoard(
+            days=days,
+            configured=True,
+            generated_at=datetime.now(UTC),
+            overview=TrafficOverview(),
+            series=[],
+            sources=[],
+            error=errors[0],
         )
 
     board = TrafficBoard(
@@ -258,6 +303,8 @@ async def fetch_board(days: int, *, refresh: bool = False) -> TrafficBoard:
         overview=parse_overview(overview_raw),
         series=parse_trends(trends_raw),
         sources=parse_sources(sources_raw),
+        error="; ".join(errors) if errors else None,
     )
-    _cache.entries[days] = _CacheEntry(board=board, expires_at=now + CACHE_TTL_SECONDS)
+    if not errors:
+        _cache.entries[days] = _CacheEntry(board=board, expires_at=now + CACHE_TTL_SECONDS)
     return board

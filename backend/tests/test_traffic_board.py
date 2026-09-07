@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import httpx
 import pytest
 from app.core.config import settings
 from app.services import traffic_board as tb
@@ -71,11 +72,17 @@ def test_parse_sources_splits_label_and_flags_untagged():
 
 
 def test_query_builders_use_requested_window():
-    assert tb.overview_query(7)["dateRange"]["date_from"] == "-7d"
+    overview = tb.overview_query(7)
+    assert overview["dateRange"]["date_from"] == "-7d"
+    assert overview["properties"] == []
     q = tb.trends_query(28)
     assert q["interval"] == "day"
+    assert q["properties"] == []
     assert {s["event"] for s in q["series"]} >= {"$pageview", "signup_completed", "verdict_viewed", "activated"}
-    assert tb.sources_query(14)["breakdownBy"] == "InitialUTMSourceMediumCampaign"
+    assert {s["custom_name"] for s in q["series"]} >= {"Visitors", "Signups"}
+    sources = tb.sources_query(14)
+    assert sources["breakdownBy"] == "InitialUTMSourceMediumCampaign"
+    assert sources["properties"] == []
 
 
 async def test_fetch_board_unconfigured(monkeypatch):
@@ -119,3 +126,33 @@ async def test_fetch_board_caches_and_normalises_days(monkeypatch):
     third = await tb.fetch_board(14, refresh=True)
     assert third.cached is False
     assert len(calls) == 6
+
+
+async def test_fetch_board_keeps_partial_results_when_one_query_fails(monkeypatch):
+    monkeypatch.setattr(settings, "POSTHOG_PERSONAL_API_KEY", "phx_test")
+    monkeypatch.setattr(settings, "POSTHOG_PROJECT_ID", "1")
+    tb.clear_cache()
+
+    async def fake_run_query(_client, query):
+        if query["kind"] == "WebStatsTableQuery":
+            request = httpx.Request("POST", "https://us.posthog.com/api/projects/1/query")
+            response = httpx.Response(400, request=request, text='{"type":"validation_error","code":"invalid_input"}')
+            raise httpx.HTTPStatusError("400 from PostHog WebStatsTableQuery", request=request, response=response)
+        if query["kind"] == "WebOverviewQuery":
+            return {"results": [{"key": "visitors", "value": 9}]}
+        return {"results": [{"label": "$pageview", "count": 9, "data": [9], "days": ["2026-09-07"], "action": {"custom_name": "Visitors"}}]}
+
+    monkeypatch.setattr(tb, "_run_query", fake_run_query)
+    board = await tb.fetch_board(14)
+    assert board.overview.visitors == 9
+    assert board.series[0].name == "Visitors"
+    assert board.sources == []
+    assert board.error and "400" in board.error
+
+
+def test_format_http_error_includes_response_body():
+    request = httpx.Request("POST", "https://us.posthog.com/api/projects/1/query")
+    response = httpx.Response(400, request=request, text='{"detail":"properties: Field required"}')
+    exc = httpx.HTTPStatusError("400 Bad Request", request=request, response=response)
+    msg = tb._format_http_error(exc)
+    assert "properties: Field required" in msg
