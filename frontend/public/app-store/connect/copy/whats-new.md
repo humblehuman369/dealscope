@@ -17,25 +17,24 @@ also user-facing: existing users read it in the Updates tab.
 
 ---
 
-## Recommended (paste verbatim — changelog since 2.2.0; retitle in Connect to match the binary you submit)
+## Recommended (paste verbatim into 2.3.1 What’s New)
 
 ```
-New in this release:
+Find deals other apps miss — then know exactly what to offer.
 
-• Map Search — filter by Expired Listings, Motivated Sellers, Owner Tenure, Occupancy Status, and Days on Market to surface off-radar opportunities
-• Distressed Deals Search — foreclosures, pre-foreclosures, and auction properties scored alongside MLS listings
-• Guided offers on every deal — DealGapIQ recommends the strongest deal structure across four paths (including creative finance) and writes a custom script telling you exactly what to say when you present your offer to the seller
-• Guided Pipeline — move deals through your funnel with recommended next steps and task tracking at every stage
-• Rehab Estimator + Budget Tracking — build a rehab estimate and track spending against your budget
-• Portfolio Tracking — keep a running record of the properties you own
-• Enhanced Dashboard — a faster, clearer home base for your deals
-• Investor Profile — preferences that tailor every recommendation to your strategy
+• Map Search — filter Expired Listings, Motivated Sellers, Owner Tenure, Occupancy, and Days on Market
+• Distressed Deals — foreclosures, pre-foreclosures, and auctions scored alongside MLS
+• Guided offers — recommended deal structure (including creative finance) plus a custom script for what to say to the seller
+• Guided Pipeline — next steps and tasks at every stage of the funnel
+• Rehab Estimator and Budget Tracking
+• Portfolio Tracking for properties you own
+• Faster Dashboard and an Investor Profile that tailors every recommendation
 • Pro Directories — 2,800+ verified cash buyers and 484+ hard money lenders
 
-Thanks for using DealGapIQ. Have feedback? We read every review.
+Have feedback? We read every review.
 ```
 
-Character count: ~940 / 4000 — plenty of headroom.
+Character count: ~720 / 4000.
 
 > **On "AI":** the bare label "AI deal guidance" was replaced with a concrete
 > description of what the guidance *does* (recommends a structure + writes the
