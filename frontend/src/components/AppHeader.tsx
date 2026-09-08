@@ -48,7 +48,7 @@ import {
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { HeaderPropertySearch } from '@/components/HeaderPropertySearch'
 import { InfoDialog } from '@/components/ui/ConfirmDialog'
-import { IS_CAPACITOR } from '@/lib/env'
+import { isCapacitor } from '@/lib/env'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -504,7 +504,7 @@ export function AppHeader({
   const [showScanInfo, setShowScanInfo] = useState(false)
 
   const handleScanProperty = () => {
-    if (IS_CAPACITOR) {
+    if (isCapacitor()) {
       router.push('/?scan=true')
       return
     }

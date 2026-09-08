@@ -5,13 +5,13 @@
  *
  * Mobile web visitors are auto-redirected to the matching store (warm traffic,
  * least friction). Desktop visitors see both store links so they can install
- * on their phone. Inside the installed app (IS_CAPACITOR) we send the user
+ * on their phone. Inside the installed app (isCapacitor()) we send the user
  * home — there is nothing to download.
  */
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { IS_CAPACITOR } from '@/lib/env'
+import { isCapacitor } from '@/lib/env'
 import { APP_STORE_URL, PLAY_STORE_URL, detectWebPlatform } from '@/lib/appStore'
 import { trackEvent } from '@/lib/eventTracking'
 
@@ -29,7 +29,7 @@ export default function GetAppClient() {
   // visitors stay and see both store links. Detection lives only here so the
   // rendered markup is hydration-stable (always the desktop card).
   useEffect(() => {
-    if (IS_CAPACITOR) {
+    if (isCapacitor()) {
       router.replace('/')
       return
     }

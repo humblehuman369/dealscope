@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import { trackEvent } from '@/lib/eventTracking'
-import { IS_CAPACITOR } from '@/lib/env'
+import { isCapacitor } from '@/lib/env'
 
 export interface PitchScriptModalProps {
   structure: DealStructure | null
@@ -546,7 +546,7 @@ export function PitchScriptModal({ structure, onClose, propertyAddress }: PitchS
               window.open / browser print dialog are unreliable — hide it there.
               Email-via-mailto via an anchor click works on iOS/Android too.
             */}
-            {!IS_CAPACITOR && (
+            {!isCapacitor() && (
               <button
                 type="button"
                 onClick={print}

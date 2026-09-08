@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useSession } from '@/hooks/useSession'
 import { UpgradeModal } from '@/components/billing/UpgradeModal'
-import { IS_CAPACITOR, IS_IOS, IS_ANDROID } from '@/lib/env'
+import { isCapacitor, isIOS, isAndroid } from '@/lib/env'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { PriceCents } from '@/components/ui/PriceCents'
 import { DIRECTORY_ACCESS_NOTE, PRO_FEATURES, STARTER_FEATURES } from '@/lib/planFeatures'
@@ -307,12 +307,12 @@ export default function PricingContent() {
   // On Capacitor, always open the UpgradeModal (RevenueCat IAP).
   // Never redirect to /register with plan params — that path leads to Stripe.
   const proCtaHref =
-    !isAuthenticated && !IS_CAPACITOR
+    !isAuthenticated && !isCapacitor()
       ? `/register?plan=pro&billing=${isAnnual ? 'annual' : 'monthly'}`
       : undefined
 
   const handleProClick =
-    isAuthenticated || IS_CAPACITOR ? () => setUpgradeModalOpen(true) : undefined
+    isAuthenticated || isCapacitor() ? () => setUpgradeModalOpen(true) : undefined
 
   return (
     <div
@@ -818,7 +818,7 @@ export default function PricingContent() {
           gap: '16px',
         }}
       >
-        {!IS_CAPACITOR && (
+        {!isCapacitor() && (
           <div
             style={{
               display: 'flex',
@@ -1406,11 +1406,11 @@ export default function PricingContent() {
             Terms of Use
           </a>
         </div>
-        {IS_CAPACITOR &&
+        {isCapacitor() &&
           (() => {
-            const accountName = IS_IOS ? 'Apple\u00a0ID' : 'Google\u00a0Play'
-            const settingsName = IS_IOS ? 'App\u00a0Store' : 'Google\u00a0Play'
-            const cancelWindow = IS_IOS ? ' at least 24\u00a0hours before' : ' before'
+            const accountName = isIOS() ? 'Apple\u00a0ID' : 'Google\u00a0Play'
+            const settingsName = isIOS() ? 'App\u00a0Store' : 'Google\u00a0Play'
+            const cancelWindow = isIOS() ? ' at least 24\u00a0hours before' : ' before'
             return (
               <p
                 style={{
@@ -1429,7 +1429,7 @@ export default function PricingContent() {
               </p>
             )
           })()}
-        {IS_ANDROID && (
+        {isAndroid() && (
           <p
             style={{
               fontSize: '10px',

@@ -6,7 +6,21 @@
  *
  * Capacitor: API_BASE_URL is the full backend URL (e.g. https://api.dealgapiq.com).
  * Requests go directly to the backend with Bearer token auth.
+ *
+ * Native flags are functions, not module-init constants: the Capacitor
+ * bridge can inject after the first JS evaluation. Reading once at import
+ * time can send the iOS/Android WebView down the Stripe/cookie path.
  */
+
+const CAP_BRIDGE_KEY = '__cap_bridge'
+
+function rememberCapacitorBridge(): void {
+  try {
+    localStorage.setItem(CAP_BRIDGE_KEY, '1')
+  } catch {
+    /* noop */
+  }
+}
 
 /**
  * Detect Capacitor runtime (WebView native shell).
@@ -16,38 +30,31 @@
  * so subsequent page loads in the same WebView are correctly identified
  * even if the bridge injection hasn't completed yet.
  */
-export const IS_CAPACITOR: boolean = (() => {
+export function isCapacitor(): boolean {
   if (typeof window === 'undefined') return false
   if ((window as any).Capacitor) {
-    try {
-      localStorage.setItem('__cap_bridge', '1')
-    } catch {
-      /* noop */
-    }
+    rememberCapacitorBridge()
     return true
   }
   try {
-    return localStorage.getItem('__cap_bridge') === '1'
+    return localStorage.getItem(CAP_BRIDGE_KEY) === '1'
   } catch {
     return false
   }
-})()
+}
 
 /**
  * Native platform identifier inside Capacitor: 'ios' | 'android' | 'web'.
- * Returns 'web' when running in a browser (also covers SSR via the
- * `IS_CAPACITOR` short-circuit). Cached on first read so subsequent
- * accesses are O(1) and stable across HMR.
+ * Returns 'web' when running in a browser (also covers SSR).
  */
-const detectPlatform = (): 'ios' | 'android' | 'web' => {
+export function nativePlatform(): 'ios' | 'android' | 'web' {
   if (typeof window === 'undefined') return 'web'
+  if (!isCapacitor()) return 'web'
   const cap = (window as any).Capacitor
   const platform = cap?.getPlatform?.() ?? cap?.platform
   if (platform === 'ios' || platform === 'android') return platform
   return 'web'
 }
-
-export const NATIVE_PLATFORM: 'ios' | 'android' | 'web' = detectPlatform()
 
 /**
  * Convenience flags for store-specific UI/copy. Required for compliance:
@@ -55,38 +62,47 @@ export const NATIVE_PLATFORM: 'ios' | 'android' | 'web' = detectPlatform()
  * ("App Store account" vs "Google Play account," etc.). Mixing them up is
  * a guaranteed review rejection on whichever store sees the wrong copy.
  */
-export const IS_IOS: boolean = NATIVE_PLATFORM === 'ios'
-export const IS_ANDROID: boolean = NATIVE_PLATFORM === 'android'
+export function isIOS(): boolean {
+  return nativePlatform() === 'ios'
+}
+
+export function isAndroid(): boolean {
+  return nativePlatform() === 'android'
+}
 
 /**
  * True inside the native macOS WKWebView shell (`frontend/macos`),
  * which injects `window.__DEALGAPIQ_MAC__` at document start.
  */
-export const IS_MAC_NATIVE: boolean = (() => {
+export function isMacNative(): boolean {
   if (typeof window === 'undefined') return false
   return Boolean((window as Window & { __DEALGAPIQ_MAC__?: boolean }).__DEALGAPIQ_MAC__)
-})()
+}
 
 /**
  * True when running on Mac desktop chrome:
  * - Capacitor iOS shell on Apple Silicon ("Designed for iPad"), or
- * - Native Mac App Store shell (`IS_MAC_NATIVE`).
+ * - Native Mac App Store shell (`isMacNative()`).
  */
-export const IS_MAC_DESKTOP: boolean = (() => {
-  if (IS_MAC_NATIVE) return true
-  if (!IS_CAPACITOR || !IS_IOS) return false
+export function isMacDesktop(): boolean {
+  if (isMacNative()) return true
+  if (!isCapacitor() || !isIOS()) return false
   if (typeof navigator === 'undefined') return false
   return /Macintosh|Mac OS X/i.test(navigator.userAgent)
-})()
+}
 
 /**
  * StoreKit / Play Billing path (Capacitor or native Mac shell).
  * When true, UpgradeModal must NOT use Stripe Checkout.
  */
-export const USE_NATIVE_IAP: boolean = IS_CAPACITOR || IS_MAC_NATIVE
+export function usesNativeIap(): boolean {
+  return isCapacitor() || isMacNative()
+}
 
 /** Apple ID / App Store subscription disclosure (iOS Capacitor or Mac shell). */
-export const USES_APPLE_IAP: boolean = IS_IOS || IS_MAC_NATIVE
+export function usesAppleIap(): boolean {
+  return isIOS() || isMacNative()
+}
 
 /**
  * Base URL prefix for client-side API calls.
@@ -99,15 +115,22 @@ const PUBLIC_API_URL = (process.env.NEXT_PUBLIC_API_URL || '').trim().replace(/\
 
 export const API_BASE_URL = DIRECT_API_ENABLED ? PUBLIC_API_URL : ''
 
+const CONFIGURED_APP_URL = (process.env.NEXT_PUBLIC_APP_URL || '').trim().replace(/\/+$/, '')
+
 /**
  * Base URL for the web app (used when Capacitor needs to call
  * Vercel-hosted API routes like /api/report).
  * Falls back to the production URL in Capacitor so validate-address
  * and other API routes always resolve to an absolute URL.
  */
-export const WEB_BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL ||
-  (IS_CAPACITOR || IS_MAC_NATIVE ? 'https://dealgapiq.com' : '')
+export function webBaseUrl(): string {
+  if (CONFIGURED_APP_URL) return CONFIGURED_APP_URL
+  if (isCapacitor() || isMacNative()) return 'https://dealgapiq.com'
+  return ''
+}
+
+/** Prefer webBaseUrl() in native shells so a late Capacitor inject is seen. */
+export const WEB_BASE_URL = CONFIGURED_APP_URL
 
 /**
  * "Make It Work" wizard on /discovery. On by default; set

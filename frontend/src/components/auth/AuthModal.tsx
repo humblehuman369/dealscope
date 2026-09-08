@@ -7,7 +7,8 @@ import LoginForm from './LoginForm'
 import RegisterForm from './RegisterForm'
 import ForgotPasswordForm from './ForgotPasswordForm'
 import { useSession } from '@/hooks/useSession'
-import { IS_CAPACITOR } from '@/lib/env'
+import { isCapacitor } from '@/lib/env'
+import { openCapacitorOauth } from '@/lib/capacitorOauth'
 import { shouldLandOnDashboard } from '@/lib/dashboardLanding'
 import { Modal } from '@/components/ui/Modal'
 
@@ -133,13 +134,8 @@ export default function AuthModal() {
           <button
             type="button"
             onClick={async () => {
-              if (IS_CAPACITOR) {
-                const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')
-                const { Browser } = await import('@capacitor/browser')
-                const mobileRedirect = encodeURIComponent('dealgapiq://auth/callback')
-                await Browser.open({
-                  url: `${base}/api/v1/auth/apple?mobile_redirect=${mobileRedirect}`,
-                })
+              if (isCapacitor()) {
+                await openCapacitorOauth('apple')
               } else {
                 window.location.href = '/api/v1/auth/apple'
               }
@@ -173,13 +169,8 @@ export default function AuthModal() {
           <button
             type="button"
             onClick={async () => {
-              if (IS_CAPACITOR) {
-                const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')
-                const { Browser } = await import('@capacitor/browser')
-                const mobileRedirect = encodeURIComponent('dealgapiq://auth/callback')
-                await Browser.open({
-                  url: `${base}/api/v1/auth/google?mobile_redirect=${mobileRedirect}`,
-                })
+              if (isCapacitor()) {
+                await openCapacitorOauth('google')
               } else {
                 window.location.href = '/api/v1/auth/google'
               }

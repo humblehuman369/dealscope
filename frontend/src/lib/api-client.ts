@@ -11,7 +11,7 @@
  * - credentials: 'include' on every request
  */
 
-import { API_BASE_URL, IS_CAPACITOR } from '@/lib/env'
+import { API_BASE_URL, isCapacitor } from '@/lib/env'
 
 // ------------------------------------------------------------------
 // Types
@@ -136,14 +136,14 @@ let _memoryTokenSetAt = 0
 const MEMORY_TOKEN_TTL_MS = 60_000
 
 function getClientType(): 'mobile' | 'desktop' {
-  return IS_CAPACITOR ? 'mobile' : 'desktop'
+  return isCapacitor() ? 'mobile' : 'desktop'
 }
 
 /** Store the access token (called right after login). */
 export function setMemoryToken(token: string, refreshToken?: string) {
   _memoryToken = token
   _memoryTokenSetAt = Date.now()
-  if (IS_CAPACITOR && typeof localStorage !== 'undefined') {
+  if (isCapacitor() && typeof localStorage !== 'undefined') {
     localStorage.setItem(CAP_ACCESS_KEY, token)
     if (refreshToken) localStorage.setItem(CAP_REFRESH_KEY, refreshToken)
   }
@@ -151,7 +151,7 @@ export function setMemoryToken(token: string, refreshToken?: string) {
 
 /** Read the access token. */
 function getMemoryToken(): string | null {
-  if (IS_CAPACITOR && typeof localStorage !== 'undefined') {
+  if (isCapacitor() && typeof localStorage !== 'undefined') {
     return localStorage.getItem(CAP_ACCESS_KEY)
   }
   if (!_memoryToken) return null
@@ -164,7 +164,7 @@ function getMemoryToken(): string | null {
 
 /** Read the refresh token (Capacitor only). */
 function getStoredRefreshToken(): string | null {
-  if (IS_CAPACITOR && typeof localStorage !== 'undefined') {
+  if (isCapacitor() && typeof localStorage !== 'undefined') {
     return localStorage.getItem(CAP_REFRESH_KEY)
   }
   return null
@@ -173,7 +173,7 @@ function getStoredRefreshToken(): string | null {
 /** Clear all stored tokens (called on logout). */
 export function clearMemoryToken() {
   _memoryToken = null
-  if (IS_CAPACITOR && typeof localStorage !== 'undefined') {
+  if (isCapacitor() && typeof localStorage !== 'undefined') {
     localStorage.removeItem(CAP_ACCESS_KEY)
     localStorage.removeItem(CAP_REFRESH_KEY)
   }
@@ -203,13 +203,13 @@ async function refreshTokens(): Promise<boolean> {
       const storedRefresh = getStoredRefreshToken()
       const res = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST',
-        credentials: IS_CAPACITOR ? 'omit' : 'include',
+        credentials: isCapacitor() ? 'omit' : 'include',
         headers: {
           'Content-Type': 'application/json',
           [CLIENT_TYPE_HEADER]: getClientType(),
-          ...(IS_CAPACITOR && storedRefresh ? { Authorization: `Bearer ${storedRefresh}` } : {}),
+          ...(isCapacitor() && storedRefresh ? { Authorization: `Bearer ${storedRefresh}` } : {}),
         },
-        ...(IS_CAPACITOR && storedRefresh
+        ...(isCapacitor() && storedRefresh
           ? { body: JSON.stringify({ refresh_token: storedRefresh }) }
           : {}),
       })
@@ -224,7 +224,7 @@ async function refreshTokens(): Promise<boolean> {
         }
         return true
       }
-      if (IS_CAPACITOR) clearMemoryToken()
+      if (isCapacitor()) clearMemoryToken()
       return false
     } catch {
       return false
@@ -309,7 +309,7 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
     const config: RequestInit = {
       method,
       headers: requestHeaders,
-      credentials: IS_CAPACITOR ? 'omit' : 'include',
+      credentials: isCapacitor() ? 'omit' : 'include',
       signal: requestSignal,
     }
     if (body !== undefined) {
@@ -344,7 +344,7 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
           const retryConfig: RequestInit = {
             method,
             headers: retryHeaders,
-            credentials: IS_CAPACITOR ? 'omit' : 'include',
+            credentials: isCapacitor() ? 'omit' : 'include',
             signal: requestSignal,
           }
           if (body !== undefined) {
@@ -477,7 +477,7 @@ export async function apiFetchRaw(endpoint: string, options: RawFetchOptions = {
     fetch(`${API_BASE_URL}${endpoint}`, {
       method,
       headers: hdrs,
-      credentials: IS_CAPACITOR ? 'omit' : 'include',
+      credentials: isCapacitor() ? 'omit' : 'include',
       signal,
       ...(body !== undefined ? { body } : {}),
     })

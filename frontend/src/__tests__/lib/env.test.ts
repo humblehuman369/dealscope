@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { API_BASE_URL } from '@/lib/env'
+import { API_BASE_URL, isCapacitor, usesNativeIap } from '@/lib/env'
 
 describe('env', () => {
   it('API_BASE_URL is empty string (uses relative paths through proxy)', () => {
@@ -8,5 +8,10 @@ describe('env', () => {
 
   it('API_BASE_URL is a string type', () => {
     expect(typeof API_BASE_URL).toBe('string')
+  })
+
+  it('native flags re-evaluate (jsdom is not Capacitor)', () => {
+    expect(isCapacitor()).toBe(false)
+    expect(usesNativeIap()).toBe(false)
   })
 })

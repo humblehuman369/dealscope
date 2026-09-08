@@ -8,6 +8,10 @@ period expired. This sweeper provides a safety net by downgrading
 subscriptions whose ``trial_end`` or ``current_period_end`` has clearly
 passed without any recent webhook activity.
 
+Stripe-backed rows are selected by ``stripe_subscription_id``. Store IAP
+rows are selected when ``extra_data`` is marked RevenueCat. Admin comps
+have neither marker and are never swept.
+
 Buffers are intentionally generous to avoid races with legitimate in-flight
 webhooks. If a user is actually paying, the next webhook (or their next
 ``/sync-iap`` call from the mobile app) will re-upgrade them on the next
@@ -30,6 +34,7 @@ from app.models.subscription import (
     SubscriptionStatus,
     SubscriptionTier,
 )
+from app.services.store_billing import is_revenuecat_backed
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +115,52 @@ async def sweep_expired_subscriptions() -> dict[str, int]:
             for sub in stale_paid:
                 logger.info(
                     "billing_sweeper: downgrading stale paid user_id=%s current_period_end=%s now=%s",
+                    sub.user_id,
+                    sub.current_period_end,
+                    now,
+                )
+                _downgrade_to_free(sub, free_limits, now)
+                counts["paid_swept"] += 1
+
+            # RevenueCat / store IAP — same buffers, but only rows marked as
+            # store-backed. Admin comps have neither a Stripe id nor an RC marker.
+
+            rc_trials_q = select(Subscription).where(
+                and_(
+                    Subscription.status == SubscriptionStatus.TRIALING,
+                    Subscription.stripe_subscription_id.is_(None),
+                    Subscription.trial_end.isnot(None),
+                    Subscription.trial_end < trial_cutoff,
+                    Subscription.updated_at < recent_cutoff,
+                )
+            )
+            for sub in (await db.execute(rc_trials_q)).scalars().all():
+                if not is_revenuecat_backed(sub):
+                    continue
+                logger.info(
+                    "billing_sweeper: downgrading stale RC trial user_id=%s trial_end=%s now=%s",
+                    sub.user_id,
+                    sub.trial_end,
+                    now,
+                )
+                _downgrade_to_free(sub, free_limits, now)
+                counts["trials_swept"] += 1
+
+            rc_paid_q = select(Subscription).where(
+                and_(
+                    Subscription.tier == SubscriptionTier.PRO,
+                    Subscription.status == SubscriptionStatus.ACTIVE,
+                    Subscription.stripe_subscription_id.is_(None),
+                    Subscription.current_period_end.isnot(None),
+                    Subscription.current_period_end < paid_cutoff,
+                    Subscription.updated_at < recent_cutoff,
+                )
+            )
+            for sub in (await db.execute(rc_paid_q)).scalars().all():
+                if not is_revenuecat_backed(sub):
+                    continue
+                logger.info(
+                    "billing_sweeper: downgrading stale RC paid user_id=%s current_period_end=%s now=%s",
                     sub.user_id,
                     sub.current_period_end,
                     now,
