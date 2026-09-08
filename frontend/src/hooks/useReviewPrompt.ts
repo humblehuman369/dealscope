@@ -15,14 +15,14 @@
  */
 
 import { useCallback } from 'react'
-import { IS_CAPACITOR } from '@/lib/env'
+import { isCapacitor } from '@/lib/env'
 import { trackEvent } from '@/lib/eventTracking'
 
 const REVIEW_PROMPTED_FLAG = 'dgiq_review_prompted_v1'
 
 export function useReviewPrompt() {
   return useCallback(async () => {
-    if (!IS_CAPACITOR) return
+    if (!isCapacitor()) return
 
     try {
       if (localStorage.getItem(REVIEW_PROMPTED_FLAG)) return

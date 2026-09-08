@@ -18,7 +18,6 @@ from app.schemas.billing import (
     CreateSubscriptionRequest,
     CreateSubscriptionResponse,
     PaymentHistoryResponse,
-    PlanType,
     PortalSessionResponse,
     PricingPlansResponse,
     SetupIntentResponse,
@@ -28,6 +27,13 @@ from app.schemas.billing import (
 )
 from app.services.billing_service import billing_service
 from app.services.cache_service import get_cache_service
+from app.services.store_billing import (
+    NATIVE_IAP_REQUIRED_DETAIL,
+    is_native_store_client,
+    is_revenuecat_backed,
+    mark_revenuecat,
+    resolve_plan_type,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +54,14 @@ async def _webhook_already_processed(provider: str, event_id: str | None) -> boo
     if not event_id:
         return False
     return await get_cache_service().exists(f"webhook_evt:{provider}:{event_id}")
+
+
+def _reject_stripe_for_native(request: Request) -> None:
+    if is_native_store_client(request):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=NATIVE_IAP_REQUIRED_DETAIL,
+        )
 
 
 async def _mark_webhook_processed(provider: str, event_id: str | None) -> None:
@@ -101,12 +115,7 @@ async def get_subscription(current_user: CurrentUser, db: DbSession):
     """
     subscription = await billing_service.get_or_create_subscription(db, current_user.id)
 
-    plan_type = PlanType.STARTER
-    if subscription.tier.value == "pro":
-        if subscription.stripe_price_id == settings.STRIPE_PRICE_PRO_YEARLY:
-            plan_type = PlanType.PRO_ANNUAL
-        else:
-            plan_type = PlanType.PRO_MONTHLY  # monthly or legacy Pro
+    plan_type = resolve_plan_type(subscription)
 
     return SubscriptionResponse(
         id=str(subscription.id),
@@ -207,6 +216,9 @@ async def sync_iap(current_user: CurrentUser, db: DbSession):
                 is_trial_period = period_type in ("trial", "intro")
                 desired_status = SubscriptionStatus.TRIALING if is_trial_period else SubscriptionStatus.ACTIVE
 
+                if is_active:
+                    mark_revenuecat(subscription, product_id=product_id)
+
                 # Sync if entitlement is active AND either tier or status differs from truth.
                 # (Status check matters so a TRIAL→ACTIVE transition gets picked up.)
                 needs_sync = is_active and (
@@ -239,16 +251,26 @@ async def sync_iap(current_user: CurrentUser, db: DbSession):
                         current_user.id,
                         "TRIALING" if is_trial_period else "ACTIVE",
                     )
+                elif is_active:
+                    await db.commit()
+                elif not is_active and is_revenuecat_backed(subscription) and subscription.tier == SubscriptionTier.PRO:
+                    free_limits = TIER_LIMITS[SubscriptionTier.FREE]
+                    subscription.tier = SubscriptionTier.FREE
+                    subscription.status = SubscriptionStatus.CANCELED
+                    subscription.properties_limit = free_limits["properties_limit"]
+                    subscription.searches_per_month = free_limits["searches_per_month"]
+                    subscription.api_calls_per_month = free_limits["api_calls_per_month"]
+                    subscription.cancel_at_period_end = False
+                    subscription.canceled_at = datetime.now(UTC)
+                    subscription.updated_at = datetime.now(UTC)
+                    await db.commit()
+                    await db.refresh(subscription)
+                    logger.info("sync-iap: downgraded user %s; RevenueCat entitlement expired", current_user.id)
 
         except Exception as e:
             logger.warning(f"sync-iap: RevenueCat API check failed for {current_user.id}: {e}")
 
-    plan_type = PlanType.STARTER
-    if subscription.tier.value == "pro":
-        if subscription.stripe_price_id == settings.STRIPE_PRICE_PRO_YEARLY:
-            plan_type = PlanType.PRO_ANNUAL
-        else:
-            plan_type = PlanType.PRO_MONTHLY
+    plan_type = resolve_plan_type(subscription)
 
     return SubscriptionResponse(
         id=str(subscription.id),
@@ -319,12 +341,19 @@ async def cancel_subscription(data: CancelSubscriptionRequest, current_user: Cur
 
 
 @router.post("/checkout", response_model=CheckoutSessionResponse, summary="Create checkout session")
-async def create_checkout_session(data: CreateCheckoutRequest, current_user: CurrentUser, db: DbSession):
+async def create_checkout_session(
+    request: Request,
+    data: CreateCheckoutRequest,
+    current_user: CurrentUser,
+    db: DbSession,
+):
     """
     Create a Stripe checkout session for subscription upgrade.
 
     Returns a URL to redirect the user to Stripe's hosted checkout page.
+    Native store clients must use RevenueCat / StoreKit / Play Billing.
     """
+    _reject_stripe_for_native(request)
     try:
         result = await billing_service.create_checkout_session(
             db,
@@ -367,19 +396,25 @@ async def create_checkout_session(data: CreateCheckoutRequest, current_user: Cur
 
 
 @router.post("/setup-intent", response_model=SetupIntentResponse, summary="Create SetupIntent for card collection")
-async def create_setup_intent(current_user: CurrentUser, db: DbSession):
+async def create_setup_intent(request: Request, current_user: CurrentUser, db: DbSession):
     """
     Create a Stripe SetupIntent for collecting a payment method
     during the Pro registration flow.
 
     Returns a client_secret for use with Stripe.js confirmCardSetup().
     """
+    _reject_stripe_for_native(request)
     result = await billing_service.create_setup_intent(db, current_user)
     return SetupIntentResponse(client_secret=result["client_secret"])
 
 
 @router.post("/subscribe", response_model=CreateSubscriptionResponse, summary="Create subscription with trial")
-async def create_subscription(data: CreateSubscriptionRequest, current_user: CurrentUser, db: DbSession):
+async def create_subscription(
+    request: Request,
+    data: CreateSubscriptionRequest,
+    current_user: CurrentUser,
+    db: DbSession,
+):
     """
     Create a Pro subscription with a 7-day free trial.
 
@@ -387,6 +422,7 @@ async def create_subscription(data: CreateSubscriptionRequest, current_user: Cur
     The payment method is attached to the customer and a subscription
     is created with trial_period_days=7.
     """
+    _reject_stripe_for_native(request)
     if not data.price_id and not data.lookup_key:
         # Default to Pro monthly price from settings
         from app.core.config import settings
@@ -434,7 +470,7 @@ async def create_subscription(data: CreateSubscriptionRequest, current_user: Cur
 
 
 @router.post("/portal", response_model=PortalSessionResponse, summary="Create customer portal session")
-async def create_portal_session(current_user: CurrentUser, db: DbSession):
+async def create_portal_session(request: Request, current_user: CurrentUser, db: DbSession):
     """
     Create a Stripe customer portal session.
 
@@ -444,6 +480,7 @@ async def create_portal_session(current_user: CurrentUser, db: DbSession):
     - Cancel subscription
     - Change plan
     """
+    _reject_stripe_for_native(request)
     try:
         return await billing_service.create_portal_session(db, current_user)
     except Exception as e:
@@ -818,6 +855,7 @@ async def revenuecat_webhook(
         logger.info(f"RevenueCat: unhandled event type {event_type} for user {user_id}")
 
     subscription.updated_at = datetime.now(UTC)
+    mark_revenuecat(subscription, product_id=event.get("product_id"))
     subscription.extra_data = {
         **(subscription.extra_data or {}),
         "last_revenuecat_event": event_type,

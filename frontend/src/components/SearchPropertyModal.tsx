@@ -23,7 +23,7 @@ import { InfoDialog } from '@/components/ui/ConfirmDialog'
 import { useTheme } from '@/context/ThemeContext'
 import { trackEvent } from '@/lib/eventTracking'
 import type { AddressValidationResult } from '@/types/address'
-import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
+import { webBaseUrl, isCapacitor } from '@/lib/env'
 import { brandMark } from '@/lib/brand'
 import {
   canonicalizeAddressForIdentity,
@@ -121,7 +121,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       return
     }
 
-    if (IS_CAPACITOR) {
+    if (isCapacitor()) {
       handleClose()
       router.push('/?scan=true')
       return
@@ -200,8 +200,8 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
     setValidationResult(null)
 
     try {
-      const validateUrl = IS_CAPACITOR
-        ? `${WEB_BASE_URL}/api/validate-address`
+      const validateUrl = isCapacitor()
+        ? `${webBaseUrl()}/api/validate-address`
         : '/api/validate-address'
       const res = await fetch(validateUrl, {
         method: 'POST',
@@ -221,7 +221,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       }
 
       if (!res.ok) {
-        if (IS_CAPACITOR && isLikelyFullAddress(raw)) {
+        if (isCapacitor() && isLikelyFullAddress(raw)) {
           setValidationStatus('unavailable')
           proceedToVerdict(raw, placeComponents)
         } else {
@@ -247,7 +247,7 @@ export function SearchPropertyModal({ isOpen, onClose, onScanProperty }: SearchP
       setValidationStatus('issues')
     } catch (err) {
       console.error('[SearchPropertyModal] validate-address failed:', err)
-      if (IS_CAPACITOR && isLikelyFullAddress(raw)) {
+      if (isCapacitor() && isLikelyFullAddress(raw)) {
         setValidationStatus('unavailable')
         proceedToVerdict(raw, placeComponents)
       } else {

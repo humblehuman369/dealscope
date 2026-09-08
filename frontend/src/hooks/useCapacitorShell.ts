@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useRef } from 'react'
-import { IS_CAPACITOR, IS_MAC_DESKTOP } from '@/lib/env'
+import { isCapacitor, isMacDesktop } from '@/lib/env'
 import { useTheme } from '@/context/ThemeContext'
 
 export function useCapacitorShell() {
@@ -18,15 +18,15 @@ export function useCapacitorShell() {
 
   useEffect(() => {
     // Native Mac shell injects __DEALGAPIQ_MAC__; still apply desktop classes.
-    if (IS_MAC_DESKTOP) {
+    if (isMacDesktop()) {
       document.documentElement.classList.add('capacitor-mac', 'dealgapiq-mac')
     }
 
-    if (!IS_CAPACITOR || didRun.current) return
+    if (!isCapacitor() || didRun.current) return
     didRun.current = true
 
     document.documentElement.classList.add('capacitor')
-    if (IS_MAC_DESKTOP) {
+    if (isMacDesktop()) {
       document.documentElement.classList.add('capacitor-mac')
     }
 
@@ -66,7 +66,7 @@ export function useCapacitorShell() {
 
   useEffect(() => {
     // Status bar is phone/tablet chrome — skip when running on Mac.
-    if (!IS_CAPACITOR || IS_MAC_DESKTOP) return
+    if (!isCapacitor() || isMacDesktop()) return
 
     let cancelled = false
     ;(async () => {

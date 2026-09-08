@@ -5,7 +5,8 @@ import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import LoginForm from '@/components/auth/LoginForm'
-import { IS_CAPACITOR } from '@/lib/env'
+import { isCapacitor } from '@/lib/env'
+import { capacitorOauthStartUrl } from '@/lib/capacitorOauth'
 
 function LoginInner() {
   const router = useRouter()
@@ -134,13 +135,9 @@ function LoginInner() {
             <button
               type="button"
               onClick={async () => {
-                if (IS_CAPACITOR) {
-                  const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')
+                if (isCapacitor()) {
                   const { Browser } = await import('@capacitor/browser')
-                  const mobileRedirect = encodeURIComponent('dealgapiq://auth/callback')
-                  await Browser.open({
-                    url: `${base}/api/v1/auth/apple?mobile_redirect=${mobileRedirect}`,
-                  })
+                  await Browser.open({ url: capacitorOauthStartUrl('apple') })
                 } else {
                   window.location.href = '/api/v1/auth/apple'
                 }
@@ -174,13 +171,9 @@ function LoginInner() {
             <button
               type="button"
               onClick={async () => {
-                if (IS_CAPACITOR) {
-                  const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')
+                if (isCapacitor()) {
                   const { Browser } = await import('@capacitor/browser')
-                  const mobileRedirect = encodeURIComponent('dealgapiq://auth/callback')
-                  await Browser.open({
-                    url: `${base}/api/v1/auth/google?mobile_redirect=${mobileRedirect}`,
-                  })
+                  await Browser.open({ url: capacitorOauthStartUrl('google') })
                 } else {
                   window.location.href = '/api/v1/auth/google'
                 }

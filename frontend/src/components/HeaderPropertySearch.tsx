@@ -20,7 +20,7 @@ import {
 } from '@/components/AddressAutocomplete'
 import { trackEvent } from '@/lib/eventTracking'
 import type { AddressValidationResult } from '@/types/address'
-import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
+import { webBaseUrl, isCapacitor } from '@/lib/env'
 import {
   canonicalizeAddressForIdentity,
   isLikelyFullAddress,
@@ -120,8 +120,8 @@ export function HeaderPropertySearch() {
     setValidationResult(null)
 
     try {
-      const validateUrl = IS_CAPACITOR
-        ? `${WEB_BASE_URL}/api/validate-address`
+      const validateUrl = isCapacitor()
+        ? `${webBaseUrl()}/api/validate-address`
         : '/api/validate-address'
       const res = await fetch(validateUrl, {
         method: 'POST',
@@ -141,7 +141,7 @@ export function HeaderPropertySearch() {
       }
 
       if (!res.ok) {
-        if (IS_CAPACITOR && isLikelyFullAddress(raw)) {
+        if (isCapacitor() && isLikelyFullAddress(raw)) {
           setValidationStatus('unavailable')
           proceedToVerdict(raw, placeComponents)
         } else {
@@ -167,7 +167,7 @@ export function HeaderPropertySearch() {
       setValidationStatus('issues')
     } catch (err) {
       console.error('[HeaderPropertySearch] validate-address failed:', err)
-      if (IS_CAPACITOR && isLikelyFullAddress(raw)) {
+      if (isCapacitor() && isLikelyFullAddress(raw)) {
         setValidationStatus('unavailable')
         proceedToVerdict(raw, placeComponents)
       } else {

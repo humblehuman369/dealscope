@@ -60,7 +60,7 @@ import { useDealMakerBackendCalc } from '@/hooks/useDealMakerBackendCalc'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
-import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
+import { webBaseUrl, isCapacitor } from '@/lib/env'
 import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 import { DealMakerWorksheet } from './DealMakerWorksheet'
 import {
@@ -924,7 +924,7 @@ export function DealMakerScreen({
     params.set('property_taxes', String(propertyTaxValue))
     params.set('insurance', String(insuranceValue))
 
-    const reportBase = IS_CAPACITOR ? WEB_BASE_URL : ''
+    const reportBase = isCapacitor() ? webBaseUrl() : ''
     window.open(`${reportBase}/api/report?${params}`, '_blank')
   }, [
     isAuthenticated,

@@ -4,9 +4,12 @@
     "details": [
       {
         "appIDs": [
-          "TEAM_ID.com.dealgapiq.mobile"
+          "A2Y6C3NNSY.com.dealgapiq.mobile"
         ],
         "components": [
+          { "/": "/auth*" },
+          { "/": "/login*" },
+          { "/": "/register*" },
           { "/": "/discovery*" },
           { "/": "/verdict*" },
           { "/": "/property*" },
@@ -26,7 +29,7 @@
   },
   "webcredentials": {
     "apps": [
-      "TEAM_ID.com.dealgapiq.mobile"
+      "A2Y6C3NNSY.com.dealgapiq.mobile"
     ]
   }
 }

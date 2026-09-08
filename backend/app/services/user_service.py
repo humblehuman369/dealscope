@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models.user import User, UserProfile
 from app.schemas.user import UserProfileCreate, UserProfileUpdate, UserUpdate
+from app.services.store_billing import cancel_billing_for_deleted_account
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,13 @@ class UserService:
         return user
 
     async def delete_user(self, db: AsyncSession, user: User) -> bool:
-        """Delete a user and all associated data."""
+        """Delete a user and all associated data.
+
+        Cancels Stripe and deletes the RevenueCat subscriber first so the
+        stores stop billing after account deletion (App Store 5.1.1(v) /
+        Play account-deletion policy).
+        """
+        await cancel_billing_for_deleted_account(db, user.id)
         await db.delete(user)
         await db.commit()
 

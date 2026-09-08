@@ -18,7 +18,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { AuthGuard } from '@/components/auth/AuthGuard'
-import { IS_CAPACITOR } from '@/lib/env'
+import { isCapacitor } from '@/lib/env'
 import { UpgradeModal } from '@/components/billing/UpgradeModal'
 import { PriceCents } from '@/components/ui/PriceCents'
 
@@ -182,7 +182,7 @@ function BillingContent() {
   }
 
   const handleManageBilling = async () => {
-    if (IS_CAPACITOR) {
+    if (isCapacitor()) {
       setShowUpgradeModal(true)
       return
     }
@@ -517,7 +517,7 @@ function BillingContent() {
                           }}
                         >
                           {portalLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                          {IS_CAPACITOR ? (
+                          {isCapacitor() ? (
                             'Manage Subscription'
                           ) : (
                             <>
@@ -562,7 +562,7 @@ function BillingContent() {
             className="grid grid-cols-2 sm:flex sm:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-x-10"
             style={{ padding: '2rem 0' }}
           >
-            {(IS_CAPACITOR ? TRUST_ITEMS_CAPACITOR : TRUST_ITEMS_WEB).map(({ Icon, text }) => (
+            {(isCapacitor() ? TRUST_ITEMS_CAPACITOR : TRUST_ITEMS_WEB).map(({ Icon, text }) => (
               <div
                 key={text}
                 className="flex items-center"
@@ -644,7 +644,7 @@ function BillingContent() {
               Terms of Use
             </a>
           </div>
-          {IS_CAPACITOR && (
+          {isCapacitor() && (
             <p
               className="text-center mx-auto"
               style={{

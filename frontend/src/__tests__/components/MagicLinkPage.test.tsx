@@ -23,7 +23,7 @@ vi.mock('@/lib/api-client', () => ({
 
 const trackEvent = vi.fn()
 vi.mock('@/lib/eventTracking', () => ({ trackEvent: (...args: unknown[]) => trackEvent(...args) }))
-vi.mock('@/lib/env', () => ({ IS_CAPACITOR: false }))
+vi.mock('@/lib/env', () => ({ isCapacitor: () => false }))
 
 import MagicLinkPage from '@/app/auth/magic/page'
 

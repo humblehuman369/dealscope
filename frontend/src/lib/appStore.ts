@@ -7,7 +7,7 @@
  * Connect → App Information → Apple ID. Until it is set, iOS links fall back
  * to an App Store brand search so the funnel still resolves somewhere sensible.
  *
- * NOTE: distinct from NATIVE_PLATFORM in `lib/env.ts`. That describes the
+ * NOTE: distinct from nativePlatform() in `lib/env.ts`. That describes the
  * Capacitor shell the app is running *inside*; this module detects the device
  * of a *web* visitor so we can send them to the right store.
  */

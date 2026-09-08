@@ -1,6 +1,6 @@
 # App Store — "What's New in This Version" (4000 char max)
 
-App Store Connect → My Apps → DealGapIQ → [Version 2.2.0] → iOS App → **What's New in This Version**
+App Store Connect → My Apps → DealGapIQ → [Version 2.3.1+] → iOS App → **What's New in This Version**
 
 **Fill this in — it is expected for an update** (it only hides on a brand-new
 app's first version). It does NOT increase review risk; the only release-notes
@@ -17,7 +17,7 @@ also user-facing: existing users read it in the Updates tab.
 
 ---
 
-## Recommended (paste verbatim — actual 2.2.0 changelog)
+## Recommended (paste verbatim — changelog since 2.2.0; retitle in Connect to match the binary you submit)
 
 ```
 New in this release:

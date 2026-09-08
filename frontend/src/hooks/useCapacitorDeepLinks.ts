@@ -10,7 +10,7 @@
 import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { IS_CAPACITOR } from '@/lib/env'
+import { isCapacitor } from '@/lib/env'
 import { authApi, setMemoryToken } from '@/lib/api-client'
 import { parseCapacitorAuthUrl } from '@/lib/capacitorAuthCallback'
 import { SESSION_QUERY_KEY, setLastKnownUser, setLastTokenRefresh } from '@/hooks/useSession'
@@ -21,7 +21,7 @@ export function useCapacitorDeepLinks() {
   const listenerRef = useRef<{ remove: () => Promise<void> } | null>(null)
 
   useEffect(() => {
-    if (!IS_CAPACITOR) return
+    if (!isCapacitor()) return
 
     let cancelled = false
 
