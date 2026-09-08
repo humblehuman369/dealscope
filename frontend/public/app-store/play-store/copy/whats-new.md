@@ -2,7 +2,7 @@
 
 Play Console → Test and release → (track) → Create new release → **Release notes**
 
-Ship this AAB as **2.3.1 (versionCode 9)** so Play matches iOS 2.3.1 (build 21).
+Ship this AAB as **2.3.2 (versionCode 9)** so Play matches iOS 2.3.2 (build 21).
 
 Play caps release notes at **500 characters** (vs Apple's 4000), so this is the
 trimmed version of the App Store notes in `../../connect/copy/whats-new.md`.
