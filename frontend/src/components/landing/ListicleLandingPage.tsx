@@ -6,12 +6,13 @@
  * sticky mobile CTA. Same building blocks as ProblemLandingPage.
  */
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { getBlogPost, type BlogPost } from '@/lib/content'
 import { DIRECTORY_ACCESS_NOTE, HOMEPAGE_FREE_FEATURES, PRO_PRICE_ANNUAL, PRO_PRICE_MONTHLY, PRO_TRIAL_DAYS } from '@/lib/planFeatures'
 import { buildFaqJsonLd } from '@/lib/seo/metadata'
 import { SITE_URL } from '@/lib/seo/blog-schema'
-import { resolveReasons, type PersonaPage } from '@/lib/seo/persona-pages'
+import { countedHeadline, resolveReasons, type PersonaPage } from '@/lib/seo/persona-pages'
 import { getProblemPage, type ProblemPage } from '@/lib/seo/problem-pages'
 import { AddressCtaForm } from '@/components/landing/AddressCtaForm'
 import { CREATIVE_FINANCE_SAMPLE_PATHS, HeroSampleResult } from '@/components/landing/HeroSampleResult'
@@ -21,6 +22,10 @@ import { SocialProof } from '@/components/landing/SocialProof'
 const HERO_ID = 'for-hero'
 const DISCOVERY_CTA = 'Run Free Discovery'
 const DISCOVERY_GUARANTEE = 'Free Discovery. No signup. No card.'
+// Feature pages sell the map, which is Pro. The free claim is scoped to the
+// Discovery so it never reads as "the map is free".
+const FEATURE_GUARANTEE = 'Free Discovery on any address. No signup. No card.'
+const FEATURE_GUARANTEE_NOTE = 'A street address returns a Discovery. A city or ZIP opens the map; the full Search & Discover map and List Download are Pro.'
 
 function buildJsonLd(page: PersonaPage) {
   const url = `${SITE_URL}/for/${page.slug}`
@@ -57,6 +62,8 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
     (p): p is BlogPost => p !== null,
   )
   const source = `for:${page.slug}`
+  const hero = page.featureHero
+  const guarantee = hero ? FEATURE_GUARANTEE : DISCOVERY_GUARANTEE
 
   return (
     <main className="min-h-screen pb-28 md:pb-16" style={{ background: 'var(--surface-base)' }}>
@@ -75,6 +82,11 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
 
           <div className="grid gap-10 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] md:items-center">
             <div>
+              {hero && (
+                <p className="mb-3 font-mono text-xs uppercase tracking-[0.12em]" style={{ color: 'var(--accent-sky)' }}>
+                  {hero.eyebrow}
+                </p>
+              )}
               <h1
                 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl"
                 style={{ color: 'var(--text-heading)' }}
@@ -86,11 +98,48 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
               </p>
 
               <div className="mt-8">
-                <AddressCtaForm source={source} buttonLabel={DISCOVERY_CTA} />
-                <p className="address-cta__guarantee">{DISCOVERY_GUARANTEE}</p>
+                <AddressCtaForm
+                  source={source}
+                  buttonLabel={DISCOVERY_CTA}
+                  placeholder={hero ? 'Paste any US address, city, or ZIP' : undefined}
+                />
+                <p className="address-cta__guarantee">
+                  {guarantee}
+                  {hero && (
+                    <span className="block font-normal" style={{ color: 'var(--text-muted)' }}>
+                      {FEATURE_GUARANTEE_NOTE}
+                    </span>
+                  )}
+                </p>
+                {hero && (
+                  <p className="mt-3 text-sm">
+                    <Link href={hero.link.href} className="font-medium hover:underline" style={{ color: 'var(--accent-sky)' }}>
+                      {hero.link.label} &rarr;
+                    </Link>
+                  </p>
+                )}
               </div>
             </div>
 
+            {hero ? (
+              <div className="flex flex-col items-center px-2 py-6" aria-label="What a DealGapIQ map pin shows">
+                <div
+                  className="relative -rotate-2 rounded-2xl px-8 py-6 text-center text-white"
+                  style={{ background: '#F97316', boxShadow: '0 20px 50px rgba(249,115,22,.35)' }}
+                >
+                  <div className="font-mono text-6xl font-bold leading-none tracking-tight tabular-nums">{hero.pin.price}</div>
+                  <div className="mt-2 font-mono text-xl font-bold">{hero.pin.rent}</div>
+                  <span
+                    aria-hidden
+                    className="absolute left-1/2 -bottom-4 h-8 w-8 -translate-x-1/2 rotate-45 rounded"
+                    style={{ background: '#F97316' }}
+                  />
+                </div>
+                <p className="mt-10 max-w-md text-center text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  {hero.pin.note}
+                </p>
+              </div>
+            ) : (
             <div>
               <HeroSampleResult
                 strategy={page.sampleStrategy ?? 'ltr'}
@@ -100,15 +149,51 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
                 Sample Discovery. Yours runs on the address you enter.
               </p>
             </div>
+            )}
           </div>
         </div>
       </section>
 
+      {hero && (
+        <section className="px-4 pt-10 sm:pt-14" aria-label="Screenshots of Search and Discover">
+          <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+            {hero.screenshots.map((shot) => (
+              <figure
+                key={shot.src}
+                className="overflow-hidden rounded-2xl border"
+                style={{ background: 'var(--surface-card)', borderColor: 'var(--border-default)' }}
+              >
+                <Image src={shot.src} alt={shot.alt} width={830} height={765} className="h-auto w-full" sizes="(min-width: 768px) 50vw, 100vw" />
+                <figcaption
+                  className="flex items-baseline justify-between gap-3 border-t px-4 py-3 text-sm"
+                  style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-default)' }}
+                >
+                  <span>{shot.caption}</span>
+                  <span className="whitespace-nowrap font-mono text-xs" style={{ color: 'var(--accent-sky)' }}>
+                    {shot.detail}
+                  </span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="px-4 py-14 sm:py-16" aria-labelledby="reasons-heading">
         <div className="mx-auto max-w-3xl">
-          <h2 id="reasons-heading" className="sr-only">
-            The reasons
-          </h2>
+          {page.listicleHeading ? (
+            <h2
+              id="reasons-heading"
+              className="mb-8 text-2xl font-extrabold leading-tight tracking-tight sm:text-4xl"
+              style={{ color: 'var(--text-heading)' }}
+            >
+              {countedHeadline(page)}
+            </h2>
+          ) : (
+            <h2 id="reasons-heading" className="sr-only">
+              The reasons
+            </h2>
+          )}
           <ol className="space-y-5">
             {reasons.map((reason, i) => (
               <li
@@ -150,7 +235,7 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
           </p>
           <div className="mt-6">
             <AddressCtaForm source={`${source}:offer`} buttonLabel={DISCOVERY_CTA} />
-            <p className="address-cta__guarantee">{DISCOVERY_GUARANTEE}</p>
+            <p className="address-cta__guarantee">{guarantee}</p>
           </div>
           <p className="mt-6 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
             Free accounts include {HOMEPAGE_FREE_FEATURES[0]} and {HOMEPAGE_FREE_FEATURES[3]}. Pro adds editable
@@ -230,7 +315,7 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
         href={`/discovery?source=${encodeURIComponent(source)}`}
         watchId={HERO_ID}
         source={source}
-        sublabel={DISCOVERY_GUARANTEE}
+        sublabel={guarantee}
       />
     </main>
   )

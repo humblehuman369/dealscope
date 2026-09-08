@@ -26,6 +26,7 @@ export type PersonaKey =
   | 'brrrr'
   | 'portfolio-builder'
   | 'dscr-borrower'
+  | 'deal-hunter'
 
 export interface Reason {
   id: string
@@ -55,6 +56,26 @@ export interface PersonaPage {
   metaDescription: string
   /** Sample verdict card shown in the hero. */
   sampleStrategy?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'househack' | 'wholesale'
+  /**
+   * When the H1 is not itself the "N reasons" line, this is. It is rendered
+   * as the list heading and its leading count must match the reason count.
+   */
+  listicleHeading?: string
+  /** Replaces the sample verdict card with a product feature hero. */
+  featureHero?: FeatureHero
+}
+
+/**
+ * A feature-led hero: a small eyebrow, one oversized map pin with a note that
+ * explains what the two lines on it mean, and product screenshots below the
+ * fold. Used by pages that sell Search & Discover rather than a verdict.
+ */
+export interface FeatureHero {
+  eyebrow: string
+  pin: { price: string; rent: string; note: string }
+  /** Secondary link under the address form. */
+  link: { label: string; href: string }
+  screenshots: { src: string; alt: string; caption: string; detail: string }[]
 }
 
 export const BASE_REASONS: Reason[] = [
@@ -107,6 +128,32 @@ export const BASE_REASONS: Reason[] = [
     id: 'phone-first',
     heading: 'Built for the phone you already have out',
     body: 'Paste a Zillow link or an address, or scan the property from the camera in the iOS and Android apps. Same Discovery, same numbers, wherever you are standing.',
+  },
+  // Search & Discover (map) reasons. Facts from the map filter panel.
+  {
+    id: 'map-dom-filter',
+    heading: 'Days on market, as a filter',
+    body: 'Thirty, sixty, ninety or one hundred twenty days and up. A home sitting four months at the same price is a seller who has heard no for four months. The property card carries the count too.',
+  },
+  {
+    id: 'map-draw-area',
+    heading: 'Draw your own area',
+    body: 'Trace the blocks you actually farm, the side of the highway you want, the streets near the school. Results snap to your shape, not a ZIP boundary.',
+  },
+  {
+    id: 'map-review-pass',
+    heading: 'Reviewed or Pass, right on the card',
+    body: 'Two buttons on every property card. Triage a whole neighborhood from the map without a spreadsheet, and come back to what is left.',
+  },
+  {
+    id: 'map-analyze',
+    heading: 'Analyze is one tap from the pin',
+    body: 'Every card has an Analyze button. It runs the same free Discovery as the homepage: the price where the deal works, the Deal Gap to the asking price, and four ways to close it.',
+  },
+  {
+    id: 'map-list-download',
+    heading: 'List Download (Pro)',
+    body: 'Take the filtered results off the map as a list. Your distressed set, your absentee-owner set, your 90-day set, ready for the next step.',
   },
 ]
 
@@ -553,6 +600,99 @@ export const PERSONA_PAGES: PersonaPage[] = [
       'DSCR from live rent and financing assumptions on any US address, the rent it depends on from multiple sources, lenders by state. Free 15-second Discovery, no signup.',
     sampleStrategy: 'ltr',
   },
+  {
+    slug: 'find-investment-property',
+    persona: 'deal-hunter',
+    headline: 'Find a deal of a lifetime.',
+    listicleHeading: '9 reasons investors hunt on Search & Discover instead of a listing site',
+    intro:
+      'DealGapIQ\u2019s Search & Discover is the new investor platform. Every pin on the map is a price and a rent-to-price number, not a photo. Filter for foreclosures, expired listings, and owners who have held 20 years and do not live there. Then run the address and get the Discovery free.',
+    featureHero: {
+      eyebrow: 'Search & Discover \u00b7 map search for investors',
+      pin: {
+        price: '$2.4M',
+        rent: '0.16% rent',
+        note: 'This is one pin from the map. The top line is the price. The bottom line is monthly rent as a share of price. Investors read it in a second: 0.16% is a ratio a listing site never prints. Hunt for the pins above 0.5%.',
+      },
+      link: { label: 'Or open Search & Discover and draw your own area', href: '/map-search' },
+      screenshots: [
+        {
+          src: '/images/for/search-discover-boynton-light.jpg',
+          alt: 'DealGapIQ map of Boynton Beach, Florida with 141 results. Price pins show rent-to-price percentages. The filter panel shows Distressed Deals, Expired Listings, Days on Market, Property Type, Price Range and Bedrooms.',
+          caption: 'Boynton Beach, FL \u00b7 141 results \u00b7 distressed and expired filters open',
+          detail: '4BR+ \u00b7 60+ DOM',
+        },
+        {
+          src: '/images/for/search-discover-delray-dark.jpg',
+          alt: 'DealGapIQ map of Delray Beach, Florida in dark mode with 64 results. The filter panel shows Motivated Seller Search and Owner Leads with tenure, occupancy and availability filters.',
+          caption: 'Delray Beach, FL \u00b7 64 results \u00b7 Owner Leads by tenure, occupancy, availability',
+          detail: 'Off-market on',
+        },
+      ],
+    },
+    personaReasons: [
+      {
+        id: 'pin-is-a-number',
+        heading: 'Every pin is a number, not a photo',
+        body: 'Price on top, monthly rent as a percent of price underneath. Scan a whole ZIP for the strong ratios in seconds. No opening forty listings to find the two worth a call.',
+      },
+      {
+        id: 'not-for-sale',
+        heading: 'Search homes that are not for sale',
+        body: 'Owner Leads flips the map to properties by how long the owner has held them (10 to 20, 20 to 30, 30 plus years), whether they live there or are absentee, and whether the home is off-market or listed. Long tenure plus absentee is where high equity and a willing seller meet.',
+      },
+      {
+        id: 'distressed-legend',
+        heading: 'Distressed deals are the map legend',
+        body: 'Foreclosure, auction and pre-foreclosure show as red pins. Turn on one, two or all three and the map redraws to only those.',
+      },
+      {
+        id: 'expired-verified',
+        heading: 'Expired listings, verified live',
+        body: 'Homes that were listed and did not sell (expired, withdrawn, cancelled, delisted) are a motivated-seller signal. Each candidate is checked live on the listing source and dropped if it is back on the market or already sold, so you are not calling on stale leads.',
+      },
+    ],
+    reasonIds: ['map-dom-filter', 'map-draw-area', 'map-review-pass', 'map-analyze', 'map-list-download'],
+    offer: {
+      heading: 'Pick a pin. Run the address. Know what to offer.',
+      body: 'The Discovery is free with no account: the price where the property works, the Deal Gap to the asking price, and four offer structures with the script for each. A free account saves your properties. Pro opens the full map and the downloads.',
+    },
+    faq: [
+      {
+        question: 'Where do I find investment properties that are not on the listing sites?',
+        answer:
+          'Turn on Owner Leads and set availability to Off-market. The map shows homes by owner tenure and occupancy, so you can target absentee owners who have held a property 20 or 30 years. Distressed Deals adds foreclosure, auction and pre-foreclosure. Expired Listings adds homes that tried to sell and did not.',
+      },
+      {
+        question: 'What does the percentage on each pin mean?',
+        answer:
+          'It is the estimated monthly rent divided by the price. A pin at 0.7% means rent is about 0.7% of the asking price per month. It is a ZIP-level market screen, not an estimate for that exact home. Tap Analyze for the full Discovery.',
+      },
+      {
+        question: 'Is the map free?',
+        answer:
+          'Running a Discovery on any address is free with no signup or card. The full Search & Discover map and List Download are Pro features; current plan limits and pricing are on the /pricing page.',
+      },
+      {
+        question: 'Is this investment advice?',
+        answer: 'No. DealGapIQ analyzes and shows its sources. We analyze. You decide.',
+      },
+      {
+        question: 'Does it cover my market?',
+        answer:
+          'Any US address. Short-term rental data may read unavailable in some markets, and the map is only as complete as the sources for that county. Every property has more leverage than the asking price suggests; the map is where you find the ones worth running.',
+      },
+    ],
+    relatedAnswerSlugs: ['is-this-a-good-investment-property', 'what-should-i-offer-on-this-house'],
+    blogSlugs: ['how-to-find-off-market-properties', 'what-is-the-deal-gap'],
+    // Search page by design: a distinct problem ("where do I find deals?"),
+    // four persona-specific reasons and a FAQ only this intent asks.
+    indexable: true,
+    metaTitle: 'Find Investment Property on a Map Built for Investors | DealGapIQ',
+    metaDescription:
+      'Find investment property that is not on the listing sites. Search by foreclosure, expired listing, owner tenure and absentee status, then run the address free.',
+    sampleStrategy: 'ltr',
+  },
 ]
 
 const BY_SLUG = new Map(PERSONA_PAGES.map((p) => [p.slug, p]))
@@ -565,6 +705,11 @@ export function getPersonaPage(slug: string): PersonaPage | null {
 export function resolveReasons(page: PersonaPage): Reason[] {
   const base = page.reasonIds.map(getBaseReason).filter((r): r is Reason => r !== null)
   return [...page.personaReasons, ...base]
+}
+
+/** The line whose leading count must match the reason list. */
+export function countedHeadline(page: PersonaPage): string {
+  return page.listicleHeading ?? page.headline
 }
 
 /** The leading integer of the headline ("9 reasons …" → 9), or null when absent. */

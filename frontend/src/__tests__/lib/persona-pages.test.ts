@@ -7,12 +7,13 @@
  * links resolving to real pages, and the indexing rule.
  */
 
-import { readdirSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   BASE_REASONS,
   PERSONA_PAGES,
+  countedHeadline,
   getBaseReason,
   getPersonaPage,
   headlineCount,
@@ -42,7 +43,7 @@ describe('PERSONA_PAGES', () => {
 
   it('opens every headline with the number of reasons it lists', () => {
     for (const p of PERSONA_PAGES) {
-      const count = headlineCount(p.headline)
+      const count = headlineCount(countedHeadline(p))
       expect(count, `${p.slug} headline has no leading count`).not.toBeNull()
       expect(count, `${p.slug} headline count`).toBe(resolveReasons(p).length)
     }
@@ -100,6 +101,18 @@ describe('PERSONA_PAGES', () => {
     for (const p of PERSONA_PAGES) {
       if (p.indexable) {
         expect(p.personaReasons.length, `${p.slug} indexable with thin persona content`).toBeGreaterThanOrEqual(4)
+      }
+    }
+  })
+
+  it('gives feature-hero pages a listicle heading and real screenshots', () => {
+    for (const p of PERSONA_PAGES) {
+      if (!p.featureHero) continue
+      expect(p.listicleHeading, `${p.slug} needs listicleHeading when the H1 has no count`).toBeDefined()
+      expect(p.featureHero.screenshots.length, p.slug).toBeGreaterThan(0)
+      for (const s of p.featureHero.screenshots) {
+        expect(existsSync(resolve(__dirname, '../../../public', s.src.replace(/^\//, ''))), `${p.slug} → ${s.src}`).toBe(true)
+        expect(s.alt.length, `${p.slug} screenshot alt`).toBeGreaterThan(20)
       }
     }
   })
