@@ -9,7 +9,6 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession, require_permission
 from app.core.posthog_client import posthog_client
-from app.services.meta_capi import send_capi_event
 from app.schemas.billing import (
     CancelSubscriptionRequest,
     CancelSubscriptionResponse,
@@ -27,6 +26,7 @@ from app.schemas.billing import (
 )
 from app.services.billing_service import billing_service
 from app.services.cache_service import get_cache_service
+from app.services.meta_capi import send_capi_event
 from app.services.store_billing import (
     NATIVE_IAP_REQUIRED_DETAIL,
     is_native_store_client,
