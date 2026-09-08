@@ -30,7 +30,7 @@ import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSaveProperty } from '@/hooks/useSaveProperty'
 import { useSaveStrategyWorksheet } from '@/hooks/useSaveStrategyWorksheet'
 import { api } from '@/lib/api-client'
-import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
+import { webBaseUrl, isCapacitor } from '@/lib/env'
 import { usePropertyData } from '@/hooks/usePropertyData'
 import { useDefaults } from '@/hooks/useDefaults'
 import { usePersona } from '@/hooks/usePersona'
@@ -1551,7 +1551,7 @@ export function StrategyWorkbench({
       params.set('down_payment_pct', String(downPaymentPct * 100))
       params.set('property_taxes', String(propertyTaxes))
       params.set('insurance', String(insurance))
-      const reportBase = IS_CAPACITOR ? WEB_BASE_URL : ''
+      const reportBase = isCapacitor() ? webBaseUrl() : ''
       const url = `${reportBase}/api/report?${params}`
       window.open(url, '_blank')
     } catch (err) {

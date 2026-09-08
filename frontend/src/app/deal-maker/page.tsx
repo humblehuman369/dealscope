@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import { useRouter } from 'next/navigation'
-import { WEB_BASE_URL, IS_CAPACITOR } from '@/lib/env'
+import { webBaseUrl, isCapacitor } from '@/lib/env'
 import dynamic from 'next/dynamic'
 import {
   Search,
@@ -176,7 +176,7 @@ export default function DealMakerIndexPage() {
   }
 
   const handleScanProperty = () => {
-    if (IS_CAPACITOR) {
+    if (isCapacitor()) {
       router.push('/?scan=true')
       return
     }
@@ -206,8 +206,8 @@ export default function DealMakerIndexPage() {
     setValidationResult(null)
 
     try {
-      const validateUrl = IS_CAPACITOR
-        ? `${WEB_BASE_URL}/api/validate-address`
+      const validateUrl = isCapacitor()
+        ? `${webBaseUrl()}/api/validate-address`
         : '/api/validate-address'
       const res = await fetch(validateUrl, {
         method: 'POST',

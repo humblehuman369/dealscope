@@ -20,7 +20,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { IS_CAPACITOR, IS_MAC_NATIVE, USE_NATIVE_IAP } from '@/lib/env'
+import { isCapacitor, isMacNative, usesNativeIap } from '@/lib/env'
 import { getMacIapBridge } from '@/lib/macIap'
 import { api } from '@/lib/api-client'
 import { SESSION_QUERY_KEY, useSession } from '@/hooks/useSession'
@@ -73,7 +73,7 @@ export function useRevenueCat() {
 
     setState((s) => ({ ...s, ready: false }))
 
-    if (!USE_NATIVE_IAP) {
+    if (!usesNativeIap()) {
       if (attemptRef.current === attempt) {
         setState((s) => ({ ...s, ready: true, packages: [], error: null }))
       }
@@ -94,7 +94,7 @@ export function useRevenueCat() {
 
     try {
       // --- Native Mac shell (WKWebView + RevenueCat Swift) ---
-      if (IS_MAC_NATIVE) {
+      if (isMacNative()) {
         const mac = getMacIapBridge()
         if (!mac) {
           clearTimeout(watchdog)
@@ -162,7 +162,7 @@ export function useRevenueCat() {
       }
 
       // --- Capacitor iOS / Android ---
-      if (!IS_CAPACITOR) {
+      if (!isCapacitor()) {
         clearTimeout(watchdog)
         if (attemptRef.current === attempt) {
           setState((s) => ({ ...s, ready: true, packages: [], error: null }))
@@ -266,7 +266,7 @@ export function useRevenueCat() {
     async (packageId: string) => {
       setState((s) => ({ ...s, isPurchasing: true, error: null }))
       try {
-        if (IS_MAC_NATIVE) {
+        if (isMacNative()) {
           const mac = getMacIapBridge()
           if (!mac) throw new Error('Mac IAP bridge unavailable')
           await mac.purchasePackage(packageId)
@@ -305,7 +305,7 @@ export function useRevenueCat() {
   const restore = useCallback(async () => {
     setState((s) => ({ ...s, isPurchasing: true, error: null }))
     try {
-      if (IS_MAC_NATIVE) {
+      if (isMacNative()) {
         const mac = getMacIapBridge()
         if (!mac) throw new Error('Mac IAP bridge unavailable')
         await mac.restorePurchases()

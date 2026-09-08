@@ -330,3 +330,37 @@ class TestBillingSweeperComps:
         await db_session.refresh(paid)
         assert paid.tier == SubscriptionTier.FREE
         assert paid.status == SubscriptionStatus.CANCELED
+
+    async def test_revenuecat_stale_paid_is_swept(
+        self,
+        db_session: AsyncSession,
+        created_user,
+        monkeypatch,
+    ):
+        from app.tasks.billing_sweeper import sweep_expired_subscriptions
+
+        past = datetime.now(UTC) - timedelta(days=40)
+        pro_limits = TIER_LIMITS[SubscriptionTier.PRO]
+        iap = Subscription(
+            user_id=created_user.id,
+            tier=SubscriptionTier.PRO,
+            status=SubscriptionStatus.ACTIVE,
+            stripe_subscription_id=None,
+            extra_data={"billing_source": "revenuecat", "last_revenuecat_event": "INITIAL_PURCHASE"},
+            properties_limit=pro_limits["properties_limit"],
+            searches_per_month=pro_limits["searches_per_month"],
+            api_calls_per_month=pro_limits["api_calls_per_month"],
+            current_period_end=past,
+            updated_at=past,
+            usage_reset_date=past,
+        )
+        db_session.add(iap)
+        await db_session.flush()
+
+        _bind_sweeper_to_test_session(monkeypatch, db_session)
+        counts = await sweep_expired_subscriptions()
+
+        assert counts["paid_swept"] == 1
+        await db_session.refresh(iap)
+        assert iap.tier == SubscriptionTier.FREE
+        assert iap.status == SubscriptionStatus.CANCELED
