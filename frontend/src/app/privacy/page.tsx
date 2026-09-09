@@ -131,6 +131,11 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">4. SMS privacy</h2>
             <p className="mb-3">
+              By opting in, you agree to receive customer support, account assistance, and
+              inquiry-response SMS messages from DealGapIQ. Message frequency varies. Message and
+              data rates may apply. Reply STOP to opt out, HELP for help.
+            </p>
+            <p className="mb-3">
               No mobile information will be shared with third parties or affiliates for marketing or
               promotional purposes.
             </p>

@@ -158,19 +158,20 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">13. SMS Terms</h2>
+            <h2 className="text-lg font-semibold text-white mb-3">
+              13. SMS Terms (Messaging Terms and Conditions)
+            </h2>
+            <p className="mb-3">
+              By opting in, you agree to receive customer support, account assistance, and
+              inquiry-response SMS messages from DealGapIQ. Message frequency varies. Message and
+              data rates may apply. Reply STOP to opt out, HELP for help.
+            </p>
             <p className="mb-3">
               DealGapIQ sends SMS messages from{' '}
               <strong className="text-slate-200">(617) 415-4236</strong> to contacts who opt in
               verbally over the phone or in person. SMS messages are limited to one exclusive set of
               message types: customer support, account assistance, and inquiry responses. We do not
               send promotional or marketing SMS.
-            </p>
-            <p className="mb-3">
-              By opting in, you agree to receive SMS messages from DealGapIQ, including the
-              following message types: customer support, account assistance, and inquiry responses.
-              Message frequency varies. Message and data rates may apply. Reply STOP to opt out and
-              HELP for help.
             </p>
             <p className="mb-3">Reply STOP. You may also reply UNSUBSCRIBE.</p>
             <p className="mb-3">
