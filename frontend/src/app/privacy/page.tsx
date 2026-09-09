@@ -154,13 +154,26 @@ export default function PrivacyPolicyPage() {
             <p className="mb-3">
               Users may opt out of SMS communications at any time by replying STOP or UNSUBSCRIBE.
             </p>
-            <p>
+            <p className="mb-3">
               For help, users may reply HELP or contact{' '}
               <a
                 href="mailto:support@dealgapiq.com"
                 className="text-sky-400 hover:text-sky-300 underline"
               >
                 support@dealgapiq.com
+              </a>.
+            </p>
+            <p>
+              If you have questions about these SMS messages, contact us at{' '}
+              <a
+                href="mailto:support@dealgapiq.com"
+                className="text-sky-400 hover:text-sky-300 underline"
+              >
+                support@dealgapiq.com
+              </a>{' '}
+              or{' '}
+              <a href="tel:+18663888222" className="text-sky-400 hover:text-sky-300 underline">
+                (866) 388-8222
               </a>.
             </p>
           </section>
@@ -247,7 +260,11 @@ export default function PrivacyPolicyPage() {
                 className="text-sky-400 hover:text-sky-300 underline"
               >
                 support@dealgapiq.com
-              </a>
+              </a>{' '}
+              or{' '}
+              <a href="tel:+18663888222" className="text-sky-400 hover:text-sky-300 underline">
+                (866) 388-8222
+              </a>.
             </p>
           </section>
         </div>
