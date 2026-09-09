@@ -160,23 +160,22 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">13. SMS Terms</h2>
             <p className="mb-3">
-              DealGapIQ may send SMS messages from <strong className="text-slate-200">(617) 415-4236</strong>{' '}
-              to users who opt in via a form on dealgapiq.com. SMS messages are limited to customer
-              support replies, account assistance messages, and responses to inquiries you initiate
-              with DealGapIQ. We do not send promotional or marketing SMS.
+              DealGapIQ sends SMS messages from{' '}
+              <strong className="text-slate-200">(617) 415-4236</strong> to contacts who opt in
+              verbally over the phone or in person. SMS messages are limited to one exclusive set of
+              message types: customer support, account assistance, and inquiry responses. We do not
+              send promotional or marketing SMS.
             </p>
             <p className="mb-3">
-              By opting in, you agree to receive customer support replies, account assistance
-              messages, and responses to inquiries you initiate with DealGapIQ via SMS. Message
-              frequency varies. Message and data rates may apply.
+              By opting in, you agree to receive SMS messages from DealGapIQ, including the
+              following message types: customer support, account assistance, and inquiry responses.
+              Message frequency varies. Message and data rates may apply. Reply STOP to opt out and
+              HELP for help.
             </p>
+            <p className="mb-3">Reply STOP. You may also reply UNSUBSCRIBE.</p>
             <p className="mb-3">
-              To stop receiving SMS messages, reply STOP to (617) 415-4236. You may also reply
-              UNSUBSCRIBE. After you opt out, you will receive a one-time confirmation and we will
-              not send further SMS unless you opt in again.
-            </p>
-            <p className="mb-3">
-              For help, reply HELP to (617) 415-4236 or email{' '}
+              After you opt out, you will receive a one-time confirmation and we will not send
+              further SMS unless you opt in again. Reply HELP or email{' '}
               <a
                 href="mailto:support@dealgapiq.com"
                 className="text-sky-400 hover:text-sky-300 underline"

@@ -165,10 +165,9 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">5. SMS opt-out</h2>
             <p className="mb-3">
-              Users may opt out of SMS communications at any time by replying STOP or UNSUBSCRIBE.
+              Users may opt out of SMS communications at any time. Reply STOP.
             </p>
-            <p className="mb-3">
-              For help, users may reply HELP or contact{' '}
+            <p className="mb-3">Reply HELP or contact{' '}
               <a
                 href="mailto:support@dealgapiq.com"
                 className="text-sky-400 hover:text-sky-300 underline"
