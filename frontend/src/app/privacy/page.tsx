@@ -38,7 +38,11 @@ export default function PrivacyPolicyPage() {
             <p>
               DealGapIQ is operated by {LEGAL_ENTITY_DBA} (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or
               &ldquo;our&rdquo;). This Privacy Policy applies to the DealGapIQ website, web
-              application, and mobile applications.
+              application, and mobile applications. See{' '}
+              <Link href="/legal" className="text-sky-400 hover:text-sky-300 underline">
+                Legal entity
+              </Link>{' '}
+              for the public statement of this relationship.
             </p>
           </section>
 

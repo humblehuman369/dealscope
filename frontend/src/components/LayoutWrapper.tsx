@@ -19,6 +19,7 @@ import React, { Suspense } from 'react'
 import { AppHeader } from './AppHeader'
 import { UsageBar } from './UsageBar'
 import { DashboardLandingGate } from './DashboardLandingGate'
+import { PublicLegalFooter } from '@/components/layout/PublicLegalFooter'
 
 interface LayoutWrapperProps {
   children: React.ReactNode
@@ -68,6 +69,9 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
         <div id="main-content" className="flex min-h-0 flex-1 flex-col" tabIndex={-1}>
           {children}
         </div>
+        <Suspense fallback={null}>
+          <PublicLegalFooter />
+        </Suspense>
       </div>
     </div>
   )
