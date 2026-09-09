@@ -175,7 +175,7 @@ export default function TermsOfServicePage() {
               UNSUBSCRIBE. After you opt out, you will receive a one-time confirmation and we will
               not send further SMS unless you opt in again.
             </p>
-            <p>
+            <p className="mb-3">
               For help, reply HELP to (617) 415-4236 or email{' '}
               <a
                 href="mailto:support@dealgapiq.com"
@@ -184,18 +184,35 @@ export default function TermsOfServicePage() {
                 support@dealgapiq.com
               </a>.
             </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold text-white mb-3">14. Contact</h2>
             <p>
-              For questions about these Terms, contact us at{' '}
+              For questions about these SMS messages, contact us at{' '}
               <a
                 href="mailto:support@dealgapiq.com"
                 className="text-sky-400 hover:text-sky-300 underline"
               >
                 support@dealgapiq.com
-              </a>
+              </a>{' '}
+              or{' '}
+              <a href="tel:+18663888222" className="text-sky-400 hover:text-sky-300 underline">
+                (866) 388-8222
+              </a>.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white mb-3">14. Contact</h2>
+            <p>
+              For questions about these Terms or these SMS messages, contact us at{' '}
+              <a
+                href="mailto:support@dealgapiq.com"
+                className="text-sky-400 hover:text-sky-300 underline"
+              >
+                support@dealgapiq.com
+              </a>{' '}
+              or{' '}
+              <a href="tel:+18663888222" className="text-sky-400 hover:text-sky-300 underline">
+                (866) 388-8222
+              </a>.
             </p>
           </section>
         </div>
