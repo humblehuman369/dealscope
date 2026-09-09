@@ -106,7 +106,7 @@ export default function DisclosuresPage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">6. Jurisdiction and licensing</h2>
             <p>
-              DealGapIQ is offered by {LEGAL_ENTITY_DBA}, a U.S. limited liability company. The platform
+              DealGapIQ is offered by {LEGAL_ENTITY_DBA}, a Wyoming limited liability company. The platform
               is intended primarily for use in the United States. DealGapIQ is not a licensed
               real-estate broker, mortgage broker, lender, attorney, CPA, financial advisor, or
               registered investment adviser. Real-estate licensing and consumer-protection laws vary

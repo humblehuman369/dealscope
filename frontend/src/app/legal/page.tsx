@@ -90,8 +90,8 @@ export default function LegalEntityPage() {
                 </dd>
               </div>
               <div>
-                <dt className="font-semibold text-[var(--text-heading)]">Governing law</dt>
-                <dd>State of Florida, United States</dd>
+                <dt className="font-semibold text-[var(--text-heading)]">Formation</dt>
+                <dd>Wyoming limited liability company</dd>
               </div>
             </dl>
           </section>
