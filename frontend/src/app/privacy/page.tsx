@@ -143,9 +143,22 @@ export default function PrivacyPolicyPage() {
               records to any external organization, except as required to provide the messaging
               service or comply with the law.
             </p>
-            <p>
+            <p className="mb-3">
               We use access controls, employee and contractor restrictions, and monitoring
               procedures to prevent unauthorized sharing of user data.
+            </p>
+            <p>
+              For questions about these SMS messages, contact us at{' '}
+              <a
+                href="mailto:support@dealgapiq.com"
+                className="text-sky-400 hover:text-sky-300 underline"
+              >
+                support@dealgapiq.com
+              </a>{' '}
+              or{' '}
+              <a href="tel:+18663888222" className="text-sky-400 hover:text-sky-300 underline">
+                (866) 388-8222
+              </a>.
             </p>
           </section>
 
@@ -164,7 +177,7 @@ export default function PrivacyPolicyPage() {
               </a>.
             </p>
             <p>
-              If you have questions about these SMS messages, contact us at{' '}
+              For questions about these SMS messages, contact us at{' '}
               <a
                 href="mailto:support@dealgapiq.com"
                 className="text-sky-400 hover:text-sky-300 underline"
@@ -254,7 +267,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">12. Contact</h2>
             <p>
-              For questions about this Privacy Policy, contact us at{' '}
+              For questions about this Privacy Policy or these SMS messages, contact us at{' '}
               <a
                 href="mailto:support@dealgapiq.com"
                 className="text-sky-400 hover:text-sky-300 underline"

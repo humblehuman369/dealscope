@@ -185,7 +185,7 @@ export default function TermsOfServicePage() {
               </a>.
             </p>
             <p>
-              If you have questions about these SMS messages, contact us at{' '}
+              For questions about these SMS messages, contact us at{' '}
               <a
                 href="mailto:support@dealgapiq.com"
                 className="text-sky-400 hover:text-sky-300 underline"
@@ -202,7 +202,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">14. Contact</h2>
             <p>
-              For questions about these Terms, contact us at{' '}
+              For questions about these Terms or these SMS messages, contact us at{' '}
               <a
                 href="mailto:support@dealgapiq.com"
                 className="text-sky-400 hover:text-sky-300 underline"
