@@ -30,7 +30,7 @@ export default function TermsOfServicePage() {
             &larr; Back to DealGapIQ
           </Link>
           <h1 className="text-3xl font-bold text-white mt-6 mb-2">Terms of Service</h1>
-          <p className="text-sm text-slate-500">Last updated: February 13, 2026</p>
+          <p className="text-sm text-slate-500">Last updated: September 9, 2026</p>
         </div>
 
         <div className="space-y-10 text-[15px] leading-relaxed">
@@ -158,7 +158,36 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">13. Contact</h2>
+            <h2 className="text-lg font-semibold text-white mb-3">13. SMS Terms</h2>
+            <p className="mb-3">
+              DealGapIQ may send SMS messages from <strong className="text-slate-200">(617) 415-4236</strong>{' '}
+              to users who opt in via a form on dealgapiq.com. SMS messages are limited to customer
+              support replies, account assistance messages, and responses to inquiries you initiate
+              with DealGapIQ. We do not send promotional or marketing SMS.
+            </p>
+            <p className="mb-3">
+              By opting in, you agree to receive customer support replies, account assistance
+              messages, and responses to inquiries you initiate with DealGapIQ via SMS. Message
+              frequency varies. Message and data rates may apply.
+            </p>
+            <p className="mb-3">
+              To stop receiving SMS messages, reply STOP to (617) 415-4236. You may also reply
+              UNSUBSCRIBE. After you opt out, you will receive a one-time confirmation and we will
+              not send further SMS unless you opt in again.
+            </p>
+            <p>
+              For help, reply HELP to (617) 415-4236 or email{' '}
+              <a
+                href="mailto:support@dealgapiq.com"
+                className="text-sky-400 hover:text-sky-300 underline"
+              >
+                support@dealgapiq.com
+              </a>.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white mb-3">14. Contact</h2>
             <p>
               For questions about these Terms, contact us at{' '}
               <a

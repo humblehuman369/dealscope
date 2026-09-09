@@ -29,7 +29,7 @@ export default function PrivacyPolicyPage() {
             &larr; Back to DealGapIQ
           </Link>
           <h1 className="text-3xl font-bold text-white mt-6 mb-2">Privacy Policy</h1>
-          <p className="text-sm text-slate-500">Last updated: April 18, 2026</p>
+          <p className="text-sm text-slate-500">Last updated: September 9, 2026</p>
         </div>
 
         <div className="space-y-10 text-[15px] leading-relaxed">
@@ -45,6 +45,10 @@ export default function PrivacyPolicyPage() {
               <li>Business profile information (optional)</li>
               <li>Property searches and saved properties</li>
               <li>Feedback and support communications</li>
+              <li>
+                Mobile phone number and SMS opt-in / consent records, if you choose to receive text
+                messages from DealGapIQ
+              </li>
             </ul>
             <h3 className="font-semibold text-slate-200 mt-4 mb-2">
               Information Collected Automatically
@@ -125,7 +129,44 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">4. Data Storage & Security</h2>
+            <h2 className="text-lg font-semibold text-white mb-3">4. SMS privacy</h2>
+            <p className="mb-3">
+              No mobile information will be shared with third parties or affiliates for marketing or
+              promotional purposes.
+            </p>
+            <p className="mb-3">
+              Text messaging originator opt-in data and consent will not be shared with any third
+              parties, except aggregators and providers needed to deliver SMS messages.
+            </p>
+            <p className="mb-3">
+              We do not transfer, share, or disclose consumer SMS registration data or consent
+              records to any external organization, except as required to provide the messaging
+              service or comply with the law.
+            </p>
+            <p>
+              We use access controls, employee and contractor restrictions, and monitoring
+              procedures to prevent unauthorized sharing of user data.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white mb-3">5. SMS opt-out</h2>
+            <p className="mb-3">
+              Users may opt out of SMS communications at any time by replying STOP or UNSUBSCRIBE.
+            </p>
+            <p>
+              For help, users may reply HELP or contact{' '}
+              <a
+                href="mailto:support@dealgapiq.com"
+                className="text-sky-400 hover:text-sky-300 underline"
+              >
+                support@dealgapiq.com
+              </a>.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white mb-3">6. Data Storage & Security</h2>
             <p>
               We use industry-standard security measures including encryption in transit (TLS/SSL)
               and at rest to protect your data. Your account credentials are hashed and salted. We
@@ -138,7 +179,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">5. Data Retention</h2>
+            <h2 className="text-lg font-semibold text-white mb-3">7. Data Retention</h2>
             <p>
               We retain your account data for as long as your account is active. Search history and
               saved properties are retained to provide you with ongoing analytics. You may delete
@@ -148,7 +189,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">6. Your Rights</h2>
+            <h2 className="text-lg font-semibold text-white mb-3">8. Your Rights</h2>
             <p>Depending on your jurisdiction, you may have the right to:</p>
             <ul className="list-disc list-inside mt-2 space-y-1 text-slate-400">
               <li>Access and receive a copy of your personal data</li>
@@ -173,7 +214,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">7. Cookies</h2>
+            <h2 className="text-lg font-semibold text-white mb-3">9. Cookies</h2>
             <p>
               We use essential cookies for authentication and session management. We may also use
               analytics cookies to understand how the Service is used. You can control cookie
@@ -182,7 +223,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">8. Children&apos;s Privacy</h2>
+            <h2 className="text-lg font-semibold text-white mb-3">10. Children&apos;s Privacy</h2>
             <p>
               The Service is not intended for individuals under the age of 18. We do not knowingly
               collect personal information from children.
@@ -190,7 +231,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">9. Changes to This Policy</h2>
+            <h2 className="text-lg font-semibold text-white mb-3">11. Changes to This Policy</h2>
             <p>
               We may update this Privacy Policy periodically. We will notify you of material changes
               by posting the updated policy on this page with a revised date.
@@ -198,7 +239,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white mb-3">10. Contact</h2>
+            <h2 className="text-lg font-semibold text-white mb-3">12. Contact</h2>
             <p>
               For questions about this Privacy Policy, contact us at{' '}
               <a
