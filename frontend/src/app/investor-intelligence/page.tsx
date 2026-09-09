@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { coverage, launchTopics, marketPulse } from '@/lib/investorIntelligence'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
+import { LEGAL_ENTITY_NAME } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'DealGapIQ Investor Intelligence | Residential Real Estate Investor Research & Analysis',
@@ -66,6 +67,7 @@ export default function InvestorIntelligenceHub() {
         '@type': 'Organization',
         '@id': 'https://dealgapiq.com/#org',
         name: 'DealGapIQ',
+        legalName: LEGAL_ENTITY_NAME,
         url: 'https://dealgapiq.com/',
       },
       {

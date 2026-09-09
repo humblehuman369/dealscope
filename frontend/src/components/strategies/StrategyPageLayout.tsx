@@ -7,6 +7,7 @@ import { useSession, useLogout } from '@/hooks/useSession'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { readDealMakerOverrides } from '@/utils/addressIdentity'
 import styles from './StrategyPageLayout.module.css'
+import { LEGAL_ENTITY_DBA } from '@/lib/brand'
 
 /* ───────────────── Property Context (from active analysis) ───────────────── */
 
@@ -623,7 +624,7 @@ export function StrategyPageLayout({
             DealGap<span style={{ color: 'var(--accent-sky)' }}>IQ</span>
           </span>
           <p style={{ color: 'var(--text-label)', fontSize: '0.8125rem', margin: 0 }}>
-            &copy; 2026 DealGapIQ. All rights reserved.
+            &copy; 2026 {LEGAL_ENTITY_DBA}. All rights reserved.
           </p>
         </div>
       </footer>

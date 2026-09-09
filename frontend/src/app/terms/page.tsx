@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { BRAND_OG_IMAGE, LEGAL_ENTITY_DBA } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'Terms of Service — DealGapIQ',
@@ -37,9 +37,10 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using DealGapIQ (&ldquo;the Service&rdquo;), operated by DealGapIQ
-              (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), you agree to be bound by
-              these Terms of Service. If you do not agree, do not use the Service.
+              By accessing or using DealGapIQ (&ldquo;the Service&rdquo;), operated by{' '}
+              {LEGAL_ENTITY_DBA} (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), you
+              agree to be bound by these Terms of Service. If you do not agree, do not use the
+              Service.
             </p>
           </section>
 
@@ -106,7 +107,7 @@ export default function TermsOfServicePage() {
             <h2 className="text-lg font-semibold text-white mb-3">7. Intellectual Property</h2>
             <p>
               All content, features, and functionality of the Service — including text, graphics,
-              logos, algorithms, and software — are owned by DealGapIQ and are protected by
+              logos, algorithms, and software — are owned by {LEGAL_ENTITY_DBA} and are protected by
               copyright, trademark, and other intellectual property laws.
             </p>
           </section>
@@ -114,7 +115,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">8. Limitation of Liability</h2>
             <p>
-              To the maximum extent permitted by law, DealGapIQ shall not be liable for any
+              To the maximum extent permitted by law, {LEGAL_ENTITY_DBA} shall not be liable for any
               indirect, incidental, special, consequential, or punitive damages, or any loss of
               profits, revenue, data, or business opportunities arising from your use of the
               Service. Our total liability shall not exceed the amount you paid for the Service in
@@ -163,11 +164,11 @@ export default function TermsOfServicePage() {
             </h2>
             <p className="mb-3">
               By opting in, you agree to receive customer support, account assistance, and
-              inquiry-response SMS messages from DealGapIQ. Message frequency varies. Message and
+              inquiry-response SMS messages from {LEGAL_ENTITY_DBA}. Message frequency varies. Message and
               data rates may apply. Reply STOP to opt out, HELP for help.
             </p>
             <p className="mb-3">
-              DealGapIQ sends SMS messages from{' '}
+              {LEGAL_ENTITY_DBA} sends SMS messages from{' '}
               <strong className="text-slate-200">(617) 415-4236</strong> to contacts who opt in
               verbally over the phone or in person. SMS messages are limited to one exclusive set of
               message types: customer support, account assistance, and inquiry responses. We do not
@@ -202,7 +203,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">14. Contact</h2>
             <p>
-              For questions about these Terms or these SMS messages, contact us at{' '}
+              For questions about these Terms or these SMS messages, contact {LEGAL_ENTITY_DBA} at{' '}
               <a
                 href="mailto:support@dealgapiq.com"
                 className="text-sky-400 hover:text-sky-300 underline"
@@ -219,7 +220,7 @@ export default function TermsOfServicePage() {
 
         {/* Footer */}
         <div className="mt-16 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-          <p>&copy; 2026 DealGapIQ. All rights reserved.</p>
+          <p>&copy; 2026 {LEGAL_ENTITY_DBA}. All rights reserved.</p>
           <div className="flex justify-center gap-6 mt-3">
             <Link href="/privacy" className="hover:text-slate-300 transition-colors">
               Privacy Policy

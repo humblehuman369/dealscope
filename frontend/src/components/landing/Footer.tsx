@@ -3,6 +3,8 @@
 import React from 'react'
 import Link from 'next/link'
 
+import { LEGAL_ENTITY_DBA } from '@/lib/brand'
+
 const footerLinks = {
   product: [
     { label: 'Features', href: '#priceiq' },
@@ -78,7 +80,7 @@ export function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <div>© 2026 DealGapIQ. All rights reserved.</div>
+          <div>© 2026 {LEGAL_ENTITY_DBA}. All rights reserved.</div>
           <div className="footer-legal">
             <Link href="/privacy">Privacy Policy</Link>
             <Link href="/terms">Terms of Service</Link>

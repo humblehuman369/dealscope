@@ -22,6 +22,11 @@ export const BRAND_ASSETS = {
 
 export const BRAND_LOGO_SIZE = { width: 1200, height: 339 } as const
 
+/** Registered LLC. DealGapIQ is the trade name (d/b/a). */
+export const LEGAL_ENTITY_NAME = 'InvestIQ LLC'
+/** Full legal identification for policies, copyright, and 10DLC matching. */
+export const LEGAL_ENTITY_DBA = 'InvestIQ LLC d/b/a DealGapIQ'
+
 /**
  * Default social share card. Next.js does not deep-merge `openGraph`, so every
  * page that declares its own `openGraph` block must include this in `images`

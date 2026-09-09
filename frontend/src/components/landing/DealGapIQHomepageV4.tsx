@@ -37,6 +37,7 @@ import { AddressCtaForm } from '@/components/landing/AddressCtaForm'
 import { MobileStickyCta } from '@/components/landing/MobileStickyCta'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { GUARANTEE_LINE } from '@/lib/seo/problem-pages'
+import { LEGAL_ENTITY_DBA } from '@/lib/brand'
 import './hero-v5.css'
 
 interface Props {
@@ -806,7 +807,7 @@ function SiteFooter() {
             className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-[var(--border-default)] px-4 py-2 text-sm font-semibold text-[var(--text-heading)] transition-colors hover:border-[var(--accent-sky)] hover:text-[var(--accent-sky)]"
           />
           <div className="mt-8 text-xs text-[var(--text-muted)]">
-            &copy; 2026 DealGapIQ. Built by investors, for investors.
+            &copy; 2026 {LEGAL_ENTITY_DBA}. Built by investors, for investors.
           </div>
         </div>
 

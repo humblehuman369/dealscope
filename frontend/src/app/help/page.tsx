@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { BRAND_OG_IMAGE, LEGAL_ENTITY_DBA } from '@/lib/brand'
 
 interface FAQItem {
   question: string
@@ -238,7 +238,7 @@ export default function HelpCenterPage() {
         </div>
 
         <div className="mt-16 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-          <p>&copy; 2026 DealGapIQ. All rights reserved.</p>
+          <p>&copy; 2026 {LEGAL_ENTITY_DBA}. All rights reserved.</p>
           <div className="flex justify-center gap-6 mt-3">
             <Link href="/privacy" className="hover:text-slate-300 transition-colors">
               Privacy Policy

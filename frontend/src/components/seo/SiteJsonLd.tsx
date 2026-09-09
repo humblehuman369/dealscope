@@ -1,4 +1,4 @@
-import { BRAND_ASSETS } from '@/lib/brand'
+import { BRAND_ASSETS, LEGAL_ENTITY_NAME } from '@/lib/brand'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -18,7 +18,7 @@ const graph = {
       '@id': ORG_ID,
       name: 'DealGapIQ',
       alternateName: BRAND_ALTERNATE_NAMES,
-      legalName: 'DealGapIQ',
+      legalName: LEGAL_ENTITY_NAME,
       url: SITE_URL,
       logo: {
         '@type': 'ImageObject',

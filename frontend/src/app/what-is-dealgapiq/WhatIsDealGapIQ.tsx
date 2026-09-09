@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { LEGAL_ENTITY_DBA } from '@/lib/brand'
 
 const t = {
   bgPrimary: '#000000',
@@ -1103,7 +1104,7 @@ export default function WhatIsDealGapIQ() {
         style={{ padding: '3rem 2rem', borderTop: `1px solid ${t.border}`, textAlign: 'center' }}
       >
         <p style={{ fontSize: '0.8rem', color: t.textMuted }}>
-          &copy; 2026 DealGapIQ. All rights reserved. Professional use only. Not a lender.
+          &copy; 2026 {LEGAL_ENTITY_DBA}. All rights reserved. Professional use only. Not a lender.
         </p>
       </footer>
     </div>

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { BRAND_OG_IMAGE, LEGAL_ENTITY_DBA } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — DealGapIQ',
@@ -33,6 +33,15 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <div className="space-y-10 text-[15px] leading-relaxed">
+          <section>
+            <h2 className="text-lg font-semibold text-white mb-3">Who we are</h2>
+            <p>
+              DealGapIQ is operated by {LEGAL_ENTITY_DBA} (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or
+              &ldquo;our&rdquo;). This Privacy Policy applies to the DealGapIQ website, web
+              application, and mobile applications.
+            </p>
+          </section>
+
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">1. Information We Collect</h2>
             <p className="mb-3">
@@ -132,7 +141,7 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-lg font-semibold text-white mb-3">4. SMS privacy</h2>
             <p className="mb-3">
               By opting in, you agree to receive customer support, account assistance, and
-              inquiry-response SMS messages from DealGapIQ. Message frequency varies. Message and
+              inquiry-response SMS messages from {LEGAL_ENTITY_DBA}. Message frequency varies. Message and
               data rates may apply. Reply STOP to opt out, HELP for help.
             </p>
             <p className="mb-3">
@@ -271,7 +280,8 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">12. Contact</h2>
             <p>
-              For questions about this Privacy Policy or these SMS messages, contact us at{' '}
+              For questions about this Privacy Policy or these SMS messages, contact{' '}
+              {LEGAL_ENTITY_DBA} at{' '}
               <a
                 href="mailto:support@dealgapiq.com"
                 className="text-sky-400 hover:text-sky-300 underline"
@@ -288,7 +298,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Footer */}
         <div className="mt-16 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-          <p>&copy; 2026 DealGapIQ. All rights reserved.</p>
+          <p>&copy; 2026 {LEGAL_ENTITY_DBA}. All rights reserved.</p>
           <div className="flex justify-center gap-6 mt-3">
             <Link href="/terms" className="hover:text-slate-300 transition-colors">
               Terms of Service

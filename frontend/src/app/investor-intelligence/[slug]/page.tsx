@@ -6,7 +6,7 @@ import { MarkdownArticle } from '@/components/blog/MarkdownArticle'
 import { ArticleShare } from '@/components/investor-intelligence/ArticleShare'
 import { getAllContent, getContent } from '@/lib/content'
 import { INDEXABLE_ROBOTS } from '@/lib/seo/metadata'
-import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { BRAND_OG_IMAGE, LEGAL_ENTITY_NAME } from '@/lib/brand'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -94,6 +94,7 @@ export default async function InvestorIntelligenceArticle({
     publisher: {
       '@type': 'Organization',
       name: 'DealGapIQ',
+      legalName: LEGAL_ENTITY_NAME,
       url: BASE_URL,
     },
     mainEntityOfPage: canonicalUrl,

@@ -9,6 +9,7 @@ import { isCapacitor, isIOS, isAndroid } from '@/lib/env'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { PriceCents } from '@/components/ui/PriceCents'
 import { DIRECTORY_ACCESS_NOTE, PRO_FEATURES, STARTER_FEATURES } from '@/lib/planFeatures'
+import { LEGAL_ENTITY_DBA } from '@/lib/brand'
 
 const CheckIcon: React.FC<{ color?: string }> = ({ color = 'var(--accent-sky)' }) => (
   <svg
@@ -1548,7 +1549,7 @@ export default function PricingContent() {
         }}
       >
         <div style={{ fontSize: '11px', color: 'var(--text-label)' }}>
-          &copy; 2026 DealGapIQ. Professional use only. Not financial advice.
+          &copy; 2026 {LEGAL_ENTITY_DBA}. Professional use only. Not financial advice.
         </div>
         <div style={{ display: 'flex', gap: '20px' }}>
           <Link
