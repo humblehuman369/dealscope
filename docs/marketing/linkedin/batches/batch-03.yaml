@@ -1,79 +1,47 @@
-# Four Paths Friday — Batch 03. Four founder posts, Fridays in October 2026.
-# Copy follows docs/marketing/DEAL_TEARDOWN_TEMPLATE.md. Replace the
-# placeholder listing details with the live verdict before import.
-# media_type: none until screenshots exist; add image rows then.
+# /for/find-investment-property → LinkedIn, Batch 03 (one founder carousel + one company reshare).
+# Source page: dealgapiq.com/for/find-investment-property (Search & Discover listicle,
+# docs/marketing/FIND_INVESTMENT_PROPERTY_LISTICLE.md). Runs the day after batch-02 ends
+# (2026-09-24). Adjust dates before import if batch-02 moved.
+#
+# Carousel is generated from the page config so the slides say exactly what the page says:
+#   (cd frontend && node --import tsx scripts/export-persona-pages.ts) > /tmp/persona-pages.json
+#   python3 scripts/build_listicle_carousels.py /tmp/persona-pages.json \
+#     --out docs/marketing/linkedin/assets/batch-03 --slugs find-investment-property
+#
+# UTMs: utm_campaign is the page slug so these rows join to the Google Search and Meta rows
+# in PostHog (ft_utm_campaign); utm_medium keeps the founder / company_page split.
 
 batch: batch-03
 timezone: America/New_York
 posts:
   - key: post-01
     account: founder
-    scheduled_at: "2026-10-02 07:45"
-    media_type: none
-    first_comment: "https://dealgapiq.com/blog/four-paths-friday-oct-2?utm_source=linkedin&utm_medium=founder&utm_campaign=four_paths_friday&utm_content=oct-2"
+    scheduled_at: "2026-09-25 07:45"
+    media_type: document
+    media_path: assets/batch-03/find-investment-property-carousel.pdf
+    document_title: "Find a deal of a lifetime. 9 reasons investors hunt on Search & Discover instead of a listing site"
+    first_comment: "https://dealgapiq.com/for/find-investment-property?utm_source=linkedin&utm_medium=founder&utm_campaign=find-investment-property&utm_content=carousel"
     body: |
-      Asking price on the card. Income Value and Target Buy under it. The difference is the Deal Gap.
+      Every real estate map you have ever used shows one thing: homes for sale.
 
-      That gap is the negotiation, not a reason to walk.
+      That is the smallest, most crowded part of the market. Every investor with a Zillow alert is looking at the same pins you are.
 
-      This Friday's teardown: the three numbers, which of the four paths closes, and the line to say.
+      The bigger pool is everything else. Homes an owner has held 25 years and does not live in. Homes that were listed, sat, and quietly came off. Homes in pre-foreclosure that never got a sign in the yard.
 
-      Full write-up in the comments.
+      Search & Discover puts those on the map next to the listed ones, and every pin is a number, not a photo: price on top, rent as a percent of price underneath.
 
-      Google Deal Gap IQ. Know what to offer.
+      Turn on Owner Leads, set 30+ years and Absentee, and you are looking at a list no listing site can make.
 
-      #RealEstateInvesting #DealGap #CreativeFinance
+      Nine reasons in the carousel. Running an address is free, no signup, no card. The full map is Pro.
 
-  - key: post-02
-    account: founder
-    scheduled_at: "2026-10-09 07:45"
+      Where do you find your deals today? Listing sites, or somewhere else?
+
+      #RealEstateInvesting #OffMarket #DealGapIQ
+
+  - key: post-01-reshare
+    account: company
+    reshare_of_key: post-01
+    scheduled_at: "2026-09-25 12:00"
     media_type: none
-    first_comment: "https://dealgapiq.com/blog/four-paths-friday-oct-9?utm_source=linkedin&utm_medium=founder&utm_campaign=four_paths_friday&utm_content=oct-9"
-    body: |
-      The seller said no to the price. Three smaller asks can reach the same math.
-
-      A cut, a seller second, verified rent. The blended plan is the one most people never put on paper.
-
-      This Friday's teardown shows which mix closes this listing.
-
-      Full write-up in the comments.
-
-      Google Deal Gap IQ. Know what to offer.
-
-      #CreativeFinance #RealEstateInvesting #DealGap
-
-  - key: post-03
-    account: founder
-    scheduled_at: "2026-10-16 07:45"
-    media_type: none
-    first_comment: "https://dealgapiq.com/blog/four-paths-friday-oct-16?utm_source=linkedin&utm_medium=founder&utm_campaign=four_paths_friday&utm_content=oct-16"
-    body: |
-      A lead is an address and a phone number. The spread is the number you need before you dial.
-
-      MAO and assignment on one card. If the spread is not there, you know in 15 seconds.
-
-      This Friday's teardown is a wholesale run.
-
-      Full write-up in the comments.
-
-      Google Deal Gap IQ. Know what to offer.
-
-      #WholesalingRealEstate #DealGap #RealEstateInvesting
-
-  - key: post-04
-    account: founder
-    scheduled_at: "2026-10-23 07:45"
-    media_type: none
-    first_comment: "https://dealgapiq.com/blog/four-paths-friday-oct-23?utm_source=linkedin&utm_medium=founder&utm_campaign=four_paths_friday&utm_content=oct-23"
-    body: |
-      A pre-approval tells you what a lender will let you borrow. It says nothing about what the other unit pays of the mortgage.
-
-      Those are different numbers. The second one is the one you live with.
-
-      This Friday's teardown is a house-hack address.
-
-      Full write-up in the comments.
-
-      Google Deal Gap IQ. Know what to offer.
-
-      #HouseHacking #RealEstateInvesting #DealGap
+    first_comment: "https://dealgapiq.com/for/find-investment-property?utm_source=linkedin&utm_medium=company_page&utm_campaign=find-investment-property&utm_content=carousel"
+    body: "Price and rent-to-price on every pin. Foreclosure, expired and absentee-owner filters on the same map. Search & Discover is live."
