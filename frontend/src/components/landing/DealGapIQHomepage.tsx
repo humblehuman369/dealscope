@@ -7,7 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useTheme } from '@/context/ThemeContext'
-import { brandLogo, BRAND_LOGO_SIZE } from '@/lib/brand'
+import { brandLogo, BRAND_LOGO_SIZE, LEGAL_ENTITY_DBA } from '@/lib/brand'
 import './dealgapiq-homepage.css'
 import { DataSourcesSection } from './DataSourcesSection'
 
@@ -595,7 +595,7 @@ export function DealGapIQHomepage({ onPointAndScan: _onPointAndScan }: DealGapIQ
             draggable={false}
           />
         </Link>
-        <p>© 2026 DealGapIQ. All rights reserved.</p>
+        <p>© 2026 {LEGAL_ENTITY_DBA}. All rights reserved.</p>
         <div className="footer-links">
           <Link href="/privacy">Privacy Policy</Link>
           <Link href="/terms">Terms of Service</Link>

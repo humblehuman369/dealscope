@@ -3,6 +3,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { LEGAL_ENTITY_DBA } from '@/lib/brand'
 import './about-page.css'
 
 const STRATEGIES = [
@@ -426,7 +427,7 @@ export function AboutPageRedesign() {
             <span className="logo-iq">IQ</span>
           </div>
         </Link>
-        <p>© 2026 DealGapIQ. All rights reserved.</p>
+        <p>© 2026 {LEGAL_ENTITY_DBA}. All rights reserved.</p>
         <div className="footer-links">
           <Link href="/privacy">Privacy Policy</Link>
           <Link href="/terms">Terms of Service</Link>

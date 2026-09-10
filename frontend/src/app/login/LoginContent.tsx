@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import LoginForm from '@/components/auth/LoginForm'
 import { isCapacitor } from '@/lib/env'
 import { capacitorOauthStartUrl } from '@/lib/capacitorOauth'
+import { LEGAL_ENTITY_DBA } from '@/lib/brand'
 
 function LoginInner() {
   const router = useRouter()
@@ -246,7 +247,7 @@ function LoginInner() {
           }}
         >
           <div style={{ fontSize: '11px', color: '#475569' }}>
-            &copy; 2026 DealGapIQ. Professional use only. Not a lender.
+            &copy; 2026 {LEGAL_ENTITY_DBA}. Professional use only. Not a lender.
           </div>
           <div style={{ display: 'flex', gap: '16px' }}>
             <Link

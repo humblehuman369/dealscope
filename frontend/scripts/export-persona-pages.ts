@@ -11,6 +11,7 @@ import { PERSONA_PAGES, resolveReasons } from '@/lib/seo/persona-pages'
 const out = PERSONA_PAGES.map((p) => ({
   slug: p.slug,
   headline: p.headline,
+  listicleHeading: p.listicleHeading ?? null,
   intro: p.intro,
   offer: p.offer,
   reasons: resolveReasons(p).map((r) => ({ heading: r.heading, body: r.body })),

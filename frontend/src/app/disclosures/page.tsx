@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { BRAND_OG_IMAGE } from '@/lib/brand'
+import { BRAND_OG_IMAGE, LEGAL_ENTITY_DBA } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: 'Disclosures — DealGapIQ',
@@ -28,7 +28,7 @@ export default function DisclosuresPage() {
             &larr; Back to DealGapIQ
           </Link>
           <h1 className="text-3xl font-bold text-white mt-6 mb-2">Disclosures</h1>
-          <p className="text-sm text-slate-500">Last updated: May 10, 2026</p>
+          <p className="text-sm text-slate-500">Last updated: September 9, 2026</p>
         </div>
 
         <div className="space-y-10 text-[15px] leading-relaxed">
@@ -106,7 +106,7 @@ export default function DisclosuresPage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">6. Jurisdiction and licensing</h2>
             <p>
-              DealGapIQ is offered by DealGapIQ, a U.S. limited liability company. The platform
+              DealGapIQ is offered by {LEGAL_ENTITY_DBA}, a Wyoming limited liability company. The platform
               is intended primarily for use in the United States. DealGapIQ is not a licensed
               real-estate broker, mortgage broker, lender, attorney, CPA, financial advisor, or
               registered investment adviser. Real-estate licensing and consumer-protection laws vary

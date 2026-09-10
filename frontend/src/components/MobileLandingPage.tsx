@@ -9,6 +9,7 @@ import { useTheme } from '@/context/ThemeContext'
 import { PhoneScannerMockup } from './PhoneScannerMockup'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity'
+import { LEGAL_ENTITY_DBA } from '@/lib/brand'
 
 interface LandingPageProps {
   onPointAndScan: () => void
@@ -394,7 +395,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
       {/* Footer */}
       <footer className="py-6 text-center bg-[var(--surface-card)]">
         <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-[var(--text-secondary)]'}`}>
-          © 2026 DealGapIQ. All rights reserved.
+          © 2026 {LEGAL_ENTITY_DBA}. All rights reserved.
         </p>
         <p
           className={`text-sm font-semibold mt-1 ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}

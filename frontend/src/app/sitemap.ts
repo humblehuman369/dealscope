@@ -32,6 +32,7 @@ const STATIC_ROUTES: StaticEntry[] = [
   { path: '/investor-intelligence', priority: 0.85, changeFrequency: 'weekly' },
   { path: '/help', priority: 0.5, changeFrequency: 'monthly' },
   { path: '/national-averages', priority: 0.7, changeFrequency: 'monthly' },
+  { path: '/legal', priority: 0.4, changeFrequency: 'yearly' },
   { path: '/legal/find-attorney', priority: 0.5, changeFrequency: 'monthly' },
   { path: '/comparisons/dealgapiq-vs-dealcheck', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/comparisons/dealgapiq-vs-mashvisor', priority: 0.6, changeFrequency: 'monthly' },

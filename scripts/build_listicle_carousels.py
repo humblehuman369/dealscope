@@ -129,12 +129,14 @@ def cover(c: canvas.Canvas, page: dict, url: str) -> None:
     brand_tag(c)
     width = PAGE - 2 * MARGIN
     size = fit_size(c, page["headline"], FONT_BOLD, width, 80, 5)
+    blocks = [Block(page["headline"], FONT_BOLD, size, HEADING, leading_ratio=1.12)]
+    # Pages whose H1 is not the counted "N reasons" line carry it separately.
+    if page.get("listicleHeading"):
+        blocks.append(Block(page["listicleHeading"], FONT, 34, SECONDARY, gap_before=28))
+    blocks.append(Block("Swipe \u2192", FONT, 32, SECONDARY, gap_before=36))
     draw_blocks(
         c,
-        [
-            Block(page["headline"], FONT_BOLD, size, HEADING, leading_ratio=1.12),
-            Block("Swipe \u2192", FONT, 32, SECONDARY, gap_before=36),
-        ],
+        blocks,
         MARGIN,
         width,
     )

@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 
+import { LEGAL_ENTITY_DBA } from '@/lib/brand'
+
 export function LandingFooter() {
   return (
     <footer className="iq-footer">
@@ -39,11 +41,7 @@ export function LandingFooter() {
       </div>
       <div className="footer-bottom">
         <p>
-          &copy; 2026{' '}
-          <strong>
-            DealGap<span className="brand-iq">IQ</span>
-          </strong>
-          . All rights reserved. Professional use only. Not a lender.
+          &copy; 2026 {LEGAL_ENTITY_DBA}. All rights reserved. Professional use only. Not a lender.
         </p>
       </div>
     </footer>
