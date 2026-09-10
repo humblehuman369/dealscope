@@ -27,6 +27,9 @@ const DISCOVERY_GUARANTEE = 'Free Discovery. No signup. No card.'
 const FEATURE_GUARANTEE = 'Free Discovery on any address. No signup. No card.'
 const FEATURE_GUARANTEE_NOTE = 'A street address returns a Discovery. A city or ZIP opens the map; the full Search & Discover map and List Download are Pro.'
 
+/** Bullet-list entries start with a capital; drop it when one is stitched into a sentence. */
+const inProse = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
+
 function buildJsonLd(page: PersonaPage) {
   const url = `${SITE_URL}/for/${page.slug}`
   return {
@@ -238,7 +241,7 @@ export async function ListicleLandingPage({ page }: { page: PersonaPage }) {
             <p className="address-cta__guarantee">{guarantee}</p>
           </div>
           <p className="mt-6 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-            Free accounts include {HOMEPAGE_FREE_FEATURES[0]} and {HOMEPAGE_FREE_FEATURES[3]}. Pro adds editable
+            Free accounts include {inProse(HOMEPAGE_FREE_FEATURES[0])} and {inProse(HOMEPAGE_FREE_FEATURES[3])}. Pro adds editable
             assumptions, comps, the Deal Maker worksheet, exports and the directories for{' '}
             {PRO_PRICE_MONTHLY}/month or {PRO_PRICE_ANNUAL}/year after a {PRO_TRIAL_DAYS}-day trial.{' '}
             {DIRECTORY_ACCESS_NOTE}{' '}
