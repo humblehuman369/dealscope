@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest'
 import { shouldShowPublicLegalFooter } from '@/lib/publicLegalFooter'
 
 describe('shouldShowPublicLegalFooter', () => {
