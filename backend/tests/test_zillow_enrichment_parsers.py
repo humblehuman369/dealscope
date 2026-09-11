@@ -17,6 +17,23 @@ class TestZillowEnrichmentParsers:
         assert rows[0]["tax_paid"] == 5200
         assert rows[0]["assessed_value"] == 410000
 
+    def test_parse_tax_history_epoch_millis(self):
+        rows = ZillowDataExtractor.parse_tax_history(
+            {
+                "taxHistory": [
+                    {"time": 1757611062272, "taxPaid": 11038, "value": 550700},
+                    {"time": 1726075062272, "taxPaid": 10310, "value": 517700},
+                ]
+            }
+        )
+        assert [row["year"] for row in rows] == [2025, 2024]
+
+    def test_parse_tax_history_prefers_calendar_year(self):
+        rows = ZillowDataExtractor.parse_tax_history(
+            {"taxHistory": [{"year": 2022, "time": 1757611062272, "taxPaid": 1, "value": 100}]}
+        )
+        assert rows[0]["year"] == 2022
+
     def test_parse_nearby_schools(self):
         schools = ZillowDataExtractor.parse_nearby_schools(
             {

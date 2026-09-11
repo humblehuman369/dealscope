@@ -1,5 +1,15 @@
 import type { PropertyData } from '@/components/property-details/types'
 
+/** Zillow taxHistory.time is epoch millis; keep a 4-digit calendar year. */
+function coerceTaxYear(value: unknown): number {
+  const n = Number(value)
+  if (!Number.isFinite(n)) return 0
+  if (n >= 1800 && n <= 2100) return n
+  const ms = Math.abs(n) > 1e11 ? n : n * 1000
+  const year = new Date(ms).getUTCFullYear()
+  return year >= 1800 && year <= 2100 ? year : n
+}
+
 /**
  * Normalize a raw backend property API response into the frontend PropertyData shape.
  * Shared by PropertyPage (full page) and PropertyDetailsDropdown (header panel).
@@ -170,7 +180,7 @@ export function normalizePropertyData(
       : [],
     taxHistory: Array.isArray(p.tax_history)
       ? p.tax_history.map((row: any) => ({
-          year: row.year,
+          year: coerceTaxYear(row.year),
           taxPaid: row.tax_paid,
           assessedValue: row.assessed_value,
           landValue: row.land_value ?? undefined,

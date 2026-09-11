@@ -723,7 +723,7 @@ class ZillowDataExtractor:
         for item in payload:
             if not isinstance(item, dict):
                 continue
-            year = item.get("time") or item.get("year")
+            year = _coerce_tax_year(item.get("year")) or _coerce_tax_year(item.get("time"))
             tax_paid = item.get("taxPaid") or item.get("tax_paid")
             assessed = item.get("value") or item.get("assessedValue") or item.get("assessed_value")
             if year is None or tax_paid is None or assessed is None:
@@ -731,7 +731,7 @@ class ZillowDataExtractor:
             try:
                 rows.append(
                     {
-                        "year": int(year),
+                        "year": year,
                         "tax_paid": float(tax_paid),
                         "assessed_value": float(assessed),
                         "land_value": _finite_or_none(item.get("landValue") or item.get("land_value")),
@@ -937,6 +937,26 @@ def _finite_or_none(value: Any) -> float | None:
         return f if f == f else None  # NaN check
     except (TypeError, ValueError):
         return None
+
+
+def _coerce_tax_year(value: Any) -> int | None:
+    """Turn a Zillow tax year or epoch timestamp into a calendar year."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        raw = int(value)
+    except (TypeError, ValueError):
+        return None
+    if 1800 <= raw <= 2100:
+        return raw
+    try:
+        ts = raw / 1000 if abs(raw) > 1e11 else raw
+        year = datetime.fromtimestamp(ts, tz=UTC).year
+    except (ValueError, OSError, OverflowError):
+        return None
+    if 1800 <= year <= 2100:
+        return year
+    return None
 
 
 # Factory function
