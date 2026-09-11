@@ -7,7 +7,6 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
-  ArrowUpRight,
   Banknote,
   Check,
   Clock,
@@ -382,9 +381,6 @@ function QuickStatsBar() {
   )
 }
 
-const DEAL_GAP_BOOK_AMAZON_URL =
-  'https://www.amazon.com/Deal-Gap-Lucky-Estate-Investors/dp/B0HF4CZ6K5'
-
 function FounderTrustSection() {
   const creds = [
     'Founded Foreclosure.com',
@@ -442,12 +438,7 @@ function FounderTrustSection() {
             </div>
           </div>
 
-          <a
-            href={DEAL_GAP_BOOK_AMAZON_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group mx-auto flex w-[168px] shrink-0 flex-col items-center text-center md:mx-0"
-          >
+          <div className="mx-auto flex w-[168px] shrink-0 flex-col items-center text-center md:mx-0">
             <span className="relative inline-flex">
               <span
                 aria-hidden
@@ -473,11 +464,7 @@ function FounderTrustSection() {
             <span className="mt-1 text-xs leading-relaxed text-[var(--text-muted)]">
               The method the software runs.
             </span>
-            <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent-sky)] transition-colors group-hover:brightness-110">
-              On Amazon
-              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-            </span>
-          </a>
+          </div>
         </div>
       </div>
     </section>
