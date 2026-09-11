@@ -28,8 +28,21 @@ export interface HeroGeo {
 /** Fallback when Vercel geo headers are missing (local dev, bots). */
 export const DEFAULT_HERO_GEO: HeroGeo = { lat: 26.3683, lng: -80.1289, city: 'Boca Raton' }
 
-const MAP_ID = 'DEMO_MAP_ID'
+/**
+ * Cloud-based map style for the hero. Create a Map ID in Google Cloud
+ * Console (Maps Platform → Map Management) with the clean-streets style in
+ * `home-map-style.json`, then set NEXT_PUBLIC_HOME_MAP_ID. Falls back to the
+ * default styled map used by Search & Discover.
+ */
+const MAP_ID = process.env.NEXT_PUBLIC_HOME_MAP_ID || 'DEMO_MAP_ID'
 const DEFAULT_ZOOM = 13
+/**
+ * Pins shown at once. The search returns up to 200; the hero shows the best
+ * of them so the map reads as a curated view rather than a wall of prices.
+ * Ranked by ZIP rent-to-price (best first), then the rest in the order the
+ * search returned them.
+ */
+const MAX_VISIBLE_PINS = 60
 const PIN_DROP_STAGGER_MS = 90
 const US_BOUNDS = { north: 72, south: 17, east: -65, west: -165 }
 
@@ -55,10 +68,16 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
   const [selected, setSelected] = useState<MapListing | null>(null)
   const panRef = useRef<((lat: number, lng: number, zoom: number) => void) | null>(null)
 
-  const listings = useMemo(
-    () => search.listings.filter((l) => validCoord(l.latitude, l.longitude)),
-    [search.listings],
-  )
+  const listings = useMemo(() => {
+    const valid = search.listings.filter((l) => validCoord(l.latitude, l.longitude))
+    if (valid.length <= MAX_VISIBLE_PINS) return valid
+    const ranked = [...valid].sort((a, b) => {
+      const ra = a.zip_rent_to_price ?? -1
+      const rb = b.zip_rent_to_price ?? -1
+      return rb - ra
+    })
+    return ranked.slice(0, MAX_VISIBLE_PINS)
+  }, [search.listings])
 
   // The pin with the best ZIP rent-to-price screen in view. This comes from
   // data already fetched, so it costs nothing extra and always shows.

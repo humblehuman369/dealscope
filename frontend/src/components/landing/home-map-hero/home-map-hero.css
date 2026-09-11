@@ -5,7 +5,10 @@
   position: relative;
   height: calc(85vh - 64px);
   min-height: 560px;
+  margin: 16px 16px 0;
   overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--border-default);
   background: var(--surface-section);
   font-family: var(--font-inter), system-ui, sans-serif;
 }
@@ -462,6 +465,8 @@
 @media (max-width: 760px) {
   .home-hero {
     min-height: 520px;
+    margin: 8px 8px 0;
+    border-radius: 12px;
   }
   .home-hero__tag {
     font-size: 20px;
