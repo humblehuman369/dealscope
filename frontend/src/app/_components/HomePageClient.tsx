@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react'
 import { DealGapIQHomepageV4 } from '@/components/landing'
 import HomeScannerIsland from './HomeScannerIsland'
+import type { HeroGeo } from '@/components/landing/home-map-hero/HomeMapHero'
 
-export default function HomePageClient() {
+export default function HomePageClient({ geo }: { geo?: HeroGeo | null }) {
   const [mode, setMode] = useState<'landing' | 'camera'>('landing')
 
   useEffect(() => {
@@ -19,5 +20,5 @@ export default function HomePageClient() {
     return <HomeScannerIsland onSwitchMode={() => setMode('landing')} />
   }
 
-  return <DealGapIQHomepageV4 onPointAndScan={() => setMode('camera')} />
+  return <DealGapIQHomepageV4 onPointAndScan={() => setMode('camera')} geo={geo ?? undefined} />
 }

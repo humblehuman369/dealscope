@@ -38,9 +38,18 @@ import { MobileStickyCta } from '@/components/landing/MobileStickyCta'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { GUARANTEE_LINE } from '@/lib/seo/problem-pages'
 import './hero-v5.css'
+import { HomeMapHero, type HeroGeo } from '@/components/landing/home-map-hero/HomeMapHero'
+
+/**
+ * Map-first hero flag. Set NEXT_PUBLIC_HOME_MAP_HERO=1 to render the
+ * Search & Discover map as the first screen; anything else keeps the
+ * current hero. Remove the flag and the old hero once the split test settles.
+ */
+const MAP_HERO_ENABLED = process.env.NEXT_PUBLIC_HOME_MAP_HERO === '1'
 
 interface Props {
   onPointAndScan?: () => void
+  geo?: HeroGeo
 }
 
 const HEADLINE_STYLE: React.CSSProperties = {
@@ -78,7 +87,7 @@ function AuthParamHandler() {
   return null
 }
 
-export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) {
+export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan, geo }: Props) {
   const router = useRouter()
   const [showDemoVideo, setShowDemoVideo] = useState(false)
 
@@ -95,7 +104,11 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) 
       <MarketingNav onStart={runDiscovery} />
 
       <main>
-        <HeroSection onDemo={() => setShowDemoVideo(true)} />
+        {MAP_HERO_ENABLED ? (
+          <HomeMapHero geo={geo} />
+        ) : (
+          <HeroSection onDemo={() => setShowDemoVideo(true)} />
+        )}
         <SocialProof compact />
         <QuickStatsBar />
         <FounderTrustSection />

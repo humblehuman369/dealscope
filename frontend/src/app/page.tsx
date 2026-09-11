@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { FaqJsonLd } from '@/components/seo/FaqJsonLd'
 import HomePageClient from './_components/HomePageClient'
 import { BRAND_OG_IMAGE } from '@/lib/brand'
@@ -65,11 +66,29 @@ const HOME_FAQ = [
   },
 ]
 
-export default function HomePage() {
+/**
+ * Visitor location from Vercel's geo headers, used to center the homepage
+ * map before anyone types. Falls back to the hero's default market when the
+ * headers are absent (local dev, some bots).
+ */
+async function readHeroGeo() {
+  // Reading request headers opts the homepage out of static rendering, so
+  // only do it when the map hero is on.
+  if (process.env.NEXT_PUBLIC_HOME_MAP_HERO !== '1') return null
+  const h = await headers()
+  const lat = parseFloat(h.get('x-vercel-ip-latitude') ?? '')
+  const lng = parseFloat(h.get('x-vercel-ip-longitude') ?? '')
+  const city = h.get('x-vercel-ip-city')
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+  return { lat, lng, city: city ? decodeURIComponent(city) : 'this area' }
+}
+
+export default async function HomePage() {
+  const geo = await readHeroGeo()
   return (
     <>
       <FaqJsonLd items={HOME_FAQ} />
-      <HomePageClient />
+      <HomePageClient geo={geo} />
     </>
   )
 }
