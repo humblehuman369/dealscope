@@ -155,7 +155,7 @@ async def write_linkedin_drafts(payload: LinkedInDraftBatch, db: DbSession):
     except BatchValidationError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"errors": exc.errors},
+            detail={"errors": exc.errors, "message": "; ".join(exc.errors) or "batch failed validation"},
         ) from exc
 
     keys = [post.key for post in parsed.posts]
@@ -174,7 +174,10 @@ async def write_linkedin_drafts(payload: LinkedInDraftBatch, db: DbSession):
     if locked:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail={"locked_keys": sorted(locked), "message": "rows are no longer draft; pick new keys"},
+            detail={
+                "locked_keys": sorted(locked),
+                "message": f"rows are no longer draft; pick new keys: {', '.join(sorted(locked))}",
+            },
         )
 
     changes = await import_batch(db, parsed, created_by=_bot_identity(run))
@@ -202,7 +205,7 @@ async def write_x_drafts(payload: XDraftBatch, db: DbSession):
     except BatchValidationError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"errors": exc.errors},
+            detail={"errors": exc.errors, "message": "; ".join(exc.errors) or "batch failed validation"},
         ) from exc
 
     keys = [post.key for post in parsed.posts]
@@ -214,7 +217,10 @@ async def write_x_drafts(payload: XDraftBatch, db: DbSession):
     if locked:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail={"locked_keys": sorted(locked), "message": "rows are no longer draft; pick new keys"},
+            detail={
+                "locked_keys": sorted(locked),
+                "message": f"rows are no longer draft; pick new keys: {', '.join(sorted(locked))}",
+            },
         )
 
     changes = await import_x_batch(db, parsed, created_by=_bot_identity(run))
