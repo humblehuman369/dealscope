@@ -151,108 +151,109 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
   return (
     <section className="home-hero" id="home-hero" aria-labelledby="home-hero-heading">
       <APIProvider apiKey={apiKey} libraries={['places', 'marker']}>
-        <Map
-          defaultCenter={{ lat: geo.lat, lng: geo.lng }}
-          defaultZoom={DEFAULT_ZOOM}
-          mapId={MAP_ID}
-          colorScheme={ColorScheme.DARK}
-          gestureHandling="greedy"
-          disableDefaultUI
-          zoomControl
-          minZoom={9}
-          restriction={{ latLngBounds: US_BOUNDS, strictBounds: false }}
-          clickableIcons={false}
-          style={{ width: '100%', height: '100%' }}
-        >
-          <MapWiring onBoundsChanged={search.onBoundsChanged} panRef={panRef} />
-          {listings.map((l, i) => {
-            const signal = search.dealSignals.get(l.id)
-            const isSel = selected?.id === l.id
-            const isBest = l.id === bestId
-            return (
-              <AdvancedMarker
-                key={l.id}
-                position={{ lat: l.latitude, lng: l.longitude }}
-                onClick={() => onPin(l)}
-                zIndex={isSel ? 1000 : isBest ? 900 : undefined}
-              >
-                <div
-                  className={`home-hero__pin${isSel ? ' home-hero__pin--sel' : ''}${isBest ? ' home-hero__pin--best' : ''}`}
-                  style={{ animationDelay: `${Math.min(i, 10) * PIN_DROP_STAGGER_MS}ms` }}
+        <div className="home-hero__shell">
+          <div className="home-hero__chrome">
+            <h1 id="home-hero-heading" className="home-hero__tag">
+              Find the deal. <span>See the gap.</span>
+            </h1>
+            <div className="home-hero__search">
+              <MapSearchBar
+                onSelect={onSelectPlace}
+                initialValue={geo.region ? `${geo.city}, ${geo.region}` : geo.city}
+              />
+            </div>
+            <div className="home-hero__chips" role="group" aria-label="Deal type">
+              {HERO_PRESETS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`home-hero__chip${search.preset.id === p.id ? ' home-hero__chip--on' : ''}`}
+                  aria-pressed={search.preset.id === p.id}
+                  onClick={() => onPreset(p)}
                 >
-                  {isBest && l.zip_rent_to_price != null && (
-                    <span className="home-hero__best-tag">
-                      Best rent-to-price · {(l.zip_rent_to_price * 100).toFixed(2)}%
-                    </span>
-                  )}
-                  <span
-                    className="home-hero__pin-lbl"
-                    style={
-                      !isSel && signal ? { borderColor: markerColorForCategory(signal.category, true) } : undefined
-                    }
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <p className="home-hero__cred">Built by the founder of Foreclosure.com</p>
+          </div>
+
+          <div className="home-hero__map">
+            <Map
+              defaultCenter={{ lat: geo.lat, lng: geo.lng }}
+              defaultZoom={DEFAULT_ZOOM}
+              mapId={MAP_ID}
+              colorScheme={ColorScheme.DARK}
+              gestureHandling="greedy"
+              disableDefaultUI
+              zoomControl
+              minZoom={9}
+              restriction={{ latLngBounds: US_BOUNDS, strictBounds: false }}
+              clickableIcons={false}
+              style={{ width: '100%', height: '100%' }}
+            >
+              <MapWiring onBoundsChanged={search.onBoundsChanged} panRef={panRef} />
+              {listings.map((l, i) => {
+                const signal = search.dealSignals.get(l.id)
+                const isSel = selected?.id === l.id
+                const isBest = l.id === bestId
+                return (
+                  <AdvancedMarker
+                    key={l.id}
+                    position={{ lat: l.latitude, lng: l.longitude }}
+                    onClick={() => onPin(l)}
+                    zIndex={isSel ? 1000 : isBest ? 900 : undefined}
                   >
-                    {compactPrice(l.price)}
-                  </span>
-                  <span className="home-hero__pin-dot" />
-                </div>
-              </AdvancedMarker>
-            )
-          })}
-        </Map>
+                    <div
+                      className={`home-hero__pin${isSel ? ' home-hero__pin--sel' : ''}${isBest ? ' home-hero__pin--best' : ''}`}
+                      style={{ animationDelay: `${Math.min(i, 10) * PIN_DROP_STAGGER_MS}ms` }}
+                    >
+                      {isBest && l.zip_rent_to_price != null && (
+                        <span className="home-hero__best-tag">
+                          Best rent-to-price · {(l.zip_rent_to_price * 100).toFixed(2)}%
+                        </span>
+                      )}
+                      <span
+                        className="home-hero__pin-lbl"
+                        style={
+                          !isSel && signal ? { borderColor: markerColorForCategory(signal.category, true) } : undefined
+                        }
+                      >
+                        {compactPrice(l.price)}
+                      </span>
+                      <span className="home-hero__pin-dot" />
+                    </div>
+                  </AdvancedMarker>
+                )
+              })}
+            </Map>
 
-        <div className="home-hero__glow" aria-hidden="true" />
+            <button
+              type="button"
+              className={`home-hero__count${countShown ? ' home-hero__count--shown' : ''}${search.isLoading ? ' home-hero__count--busy' : ''}`}
+              onClick={onReveal}
+              aria-live="polite"
+            >
+              {search.isLoading ? (
+                <Loader2 size={14} className="home-hero__spin" aria-hidden="true" />
+              ) : (
+                <i aria-hidden="true" />
+              )}
+              <span>{countLabel}</span>
+            </button>
 
-        <div className="home-hero__topbar">
-          <h1 id="home-hero-heading" className="home-hero__tag">
-            Find the deal. <span>See the gap.</span>
-          </h1>
-          <div className="home-hero__search">
-            <MapSearchBar
-              onSelect={onSelectPlace}
-              initialValue={geo.region ? `${geo.city}, ${geo.region}` : geo.city}
+            {search.notice && !search.isLoading && (
+              <div className="home-hero__notice">{search.notice}</div>
+            )}
+
+            <PropertyPeekPanel
+              listing={selected}
+              signal={selected ? search.dealSignals.get(selected.id) : undefined}
+              presetId={search.preset.id}
+              onClose={() => setSelected(null)}
             />
           </div>
-          <div className="home-hero__chips" role="group" aria-label="Deal type">
-            {HERO_PRESETS.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className={`home-hero__chip${search.preset.id === p.id ? ' home-hero__chip--on' : ''}`}
-                aria-pressed={search.preset.id === p.id}
-                onClick={() => onPreset(p)}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
         </div>
-
-        <button
-          type="button"
-          className={`home-hero__count${countShown ? ' home-hero__count--shown' : ''}${search.isLoading ? ' home-hero__count--busy' : ''}`}
-          onClick={onReveal}
-          aria-live="polite"
-        >
-          {search.isLoading ? (
-            <Loader2 size={14} className="home-hero__spin" aria-hidden="true" />
-          ) : (
-            <i aria-hidden="true" />
-          )}
-          <span>{countLabel}</span>
-        </button>
-
-        {search.notice && !search.isLoading && (
-          <div className="home-hero__notice">{search.notice}</div>
-        )}
-
-        <div className="home-hero__cred">Built by the founder of Foreclosure.com</div>
-
-        <PropertyPeekPanel
-          listing={selected}
-          signal={selected ? search.dealSignals.get(selected.id) : undefined}
-          presetId={search.preset.id}
-          onClose={() => setSelected(null)}
-        />
       </APIProvider>
     </section>
   )
