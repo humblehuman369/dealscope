@@ -322,9 +322,9 @@ async function forwardGeocode(
       const loc = r.geometry?.location
       if (!loc) return null
       const types: string[] = r.types || []
-      let zoom = 12
+      let zoom = 13
       if (types.includes('postal_code')) zoom = 13
-      else if (types.includes('locality') || types.includes('sublocality')) zoom = 12
+      else if (types.includes('locality') || types.includes('sublocality')) zoom = 13
       else if (types.includes('administrative_area_level_2')) zoom = 10
       else if (types.includes('administrative_area_level_1')) zoom = 7
       return { lat: loc.lat(), lng: loc.lng(), zoom }
@@ -342,9 +342,9 @@ async function forwardGeocode(
     const loc = result.geometry?.location
     if (!loc) return null
     const types: string[] = result.types || []
-    let zoom = 12
+    let zoom = 13
     if (types.includes('postal_code')) zoom = 13
-    else if (types.includes('locality') || types.includes('sublocality')) zoom = 12
+    else if (types.includes('locality') || types.includes('sublocality')) zoom = 13
     else if (types.includes('administrative_area_level_2')) zoom = 10
     else if (types.includes('administrative_area_level_1')) zoom = 7
     return { lat: loc.lat, lng: loc.lng, zoom }
@@ -1066,7 +1066,7 @@ export function MapSearchView() {
     return Number.isFinite(z) ? z : null
   }, [searchParams])
 
-  const locationLabel = searchParams.get('label') ?? null
+  const locationLabel = searchParams.get('q') ?? searchParams.get('label') ?? null
   const needsGeocode = !!locationLabel && !paramCenter
 
   const propertyFocus = useMemo((): PropertyFocusPoint | null => {
@@ -1953,7 +1953,11 @@ export function MapSearchView() {
       <div className="absolute top-3 left-3 right-3 z-10 flex flex-row items-start gap-3 sm:gap-4 pointer-events-none">
         {!filtersOpen && (
           <div className="pointer-events-auto flex-1 min-w-0">
-            <MapSearchBar onSelect={handleSearchSelect} overlayChrome={overlaySurface} />
+            <MapSearchBar
+              onSelect={handleSearchSelect}
+              overlayChrome={overlaySurface}
+              initialValue={locationLabel ?? ''}
+            />
           </div>
         )}
         <div className="pointer-events-auto flex flex-col items-end gap-2 shrink-0">

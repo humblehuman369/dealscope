@@ -11,7 +11,6 @@ import {
   Check,
   Clock,
   Database,
-  Play,
   ShieldCheck,
   Sparkles,
   Users,
@@ -29,33 +28,15 @@ import {
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { useSession } from '@/hooks/useSession'
 import { MarketingUserMenu, MarketingUserMenuMobileLinks } from '@/components/layout/MarketingUserMenu'
-import { VideoModal } from '@/components/ui/VideoModal'
 import { ExploreDealGapIQSection } from '@/components/seo/ExploreDealGapIQSection'
-import { HeroSampleResult } from '@/components/landing/HeroSampleResult'
-import { AddressCtaForm } from '@/components/landing/AddressCtaForm'
 import { MobileStickyCta } from '@/components/landing/MobileStickyCta'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { GUARANTEE_LINE } from '@/lib/seo/problem-pages'
 import './hero-v5.css'
-import { HomeMapHero, type HeroGeo } from '@/components/landing/home-map-hero/HomeMapHero'
-
-/**
- * Map-first hero flag. Set NEXT_PUBLIC_HOME_MAP_HERO=1 to render the
- * Search & Discover map as the first screen; anything else keeps the
- * current hero. Remove the flag and the old hero once the split test settles.
- */
-const MAP_HERO_ENABLED = process.env.NEXT_PUBLIC_HOME_MAP_HERO === '1'
+import { HomeHeroStatic } from '@/components/landing/HomeHeroStatic'
 
 interface Props {
   onPointAndScan?: () => void
-  geo?: HeroGeo
-}
-
-const HEADLINE_STYLE: React.CSSProperties = {
-  fontFamily: 'var(--font-dm-sans), var(--font-inter), system-ui, sans-serif',
-  fontWeight: 800,
-  lineHeight: 1.04,
-  letterSpacing: '-0.045em',
 }
 
 const DISPLAY_STYLE: React.CSSProperties = {
@@ -86,9 +67,8 @@ function AuthParamHandler() {
   return null
 }
 
-export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan, geo }: Props) {
+export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan }: Props) {
   const router = useRouter()
-  const [showDemoVideo, setShowDemoVideo] = useState(false)
 
   const runDiscovery = () => router.push('/search')
   const startFree = () => router.push('/register')
@@ -103,11 +83,7 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan, geo }: Pr
       <MarketingNav onStart={runDiscovery} />
 
       <main>
-        {MAP_HERO_ENABLED ? (
-          <HomeMapHero geo={geo} />
-        ) : (
-          <HeroSection onDemo={() => setShowDemoVideo(true)} />
-        )}
+        <HomeHeroStatic />
         <SocialProof compact />
         <QuickStatsBar />
         <FounderTrustSection />
@@ -128,13 +104,6 @@ export function DealGapIQHomepageV4({ onPointAndScan: _onPointAndScan, geo }: Pr
         watchId="home-hero"
         source="home_sticky"
         sublabel={GUARANTEE_LINE}
-      />
-
-      <VideoModal
-        open={showDemoVideo}
-        onClose={() => setShowDemoVideo(false)}
-        src="/videos/what-is-dealgapiq.mp4"
-        title="What is DealGapIQ?"
       />
     </div>
   )
@@ -283,64 +252,6 @@ function MarketingNav({ onStart }: { onStart: () => void }) {
         )}
       </div>
     </nav>
-  )
-}
-
-function HeroSection({ onDemo }: { onDemo: () => void }) {
-  const { buyerTotalLabel } = useBuyerDirectoryTeaserTotal()
-  const lenderTotalLabel = formatLenderDirectoryTotal()
-
-  return (
-    <section id="home-hero" className="hero-v5" aria-labelledby="hero-heading">
-      <div className="hero-v5__grid">
-        <div>
-          <span className="hero-v5__badge">Built by an Investor for Investors</span>
-
-          <h1 id="hero-heading" className="hero-v5__headline">
-            Stop scrolling listings.
-            <br />
-            <span className="hero-v5__headline-accent">Start spotting real deals.</span>
-            <br />
-            Know what to offer.
-          </h1>
-
-          <p className="hero-v5__subhead">
-            <span className="hero-v5__subhead-lead">
-              The Discovery tells you the gap. We tell you how to close it.
-            </span>
-            Most tools stop at the numbers. We give you four complete offer paths, including
-            creative finance structures most investors never consider.
-          </p>
-
-          <AddressCtaForm source="home_hero" buttonLabel="Run Free Discovery" />
-          <p className="address-cta__guarantee">{GUARANTEE_LINE}</p>
-
-          <div className="hero-v5__cta-row mt-6">
-            <button type="button" onClick={onDemo} className="hero-v5__cta-secondary">
-              <Play className="h-4 w-4 fill-current" />
-              Watch 60-second demo
-            </button>
-          </div>
-
-          <div className="mt-6 space-y-3">
-            <GetTheAppButton
-              source="hero"
-              label="Also on iOS & Android — get the app"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent-sky)] transition-colors hover:brightness-110"
-            />
-            <p className="text-xs text-[var(--text-muted)]">
-              Inside Pro:{' '}
-              <span className="text-[var(--accent-sky)]">{buyerTotalLabel}</span> verified cash
-              buyers ·{' '}
-              <span className="text-[var(--accent-sky)]">{lenderTotalLabel}</span> hard money
-              lenders
-            </p>
-          </div>
-        </div>
-
-        <HeroSampleResult />
-      </div>
-    </section>
   )
 }
 
