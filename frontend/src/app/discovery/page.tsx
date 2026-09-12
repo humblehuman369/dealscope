@@ -97,6 +97,8 @@ import { WorkbenchTour } from '@/components/discovery/WorkbenchTour'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
 import { useReviewPrompt } from '@/hooks/useReviewPrompt'
 import { usePersona } from '@/hooks/usePersona'
+import { ACTION_PLAN_COPY } from '@/lib/actionPlanCopy'
+import { Route } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 // Backend analysis response type — canonical shape from @dealscope/shared.
@@ -133,6 +135,11 @@ const MakeItWorkWizard = dynamic(
     import('@/components/iq-verdict/make-it-work/MakeItWorkWizard').then(
       (m) => m.MakeItWorkWizard,
     ),
+  { ssr: false },
+)
+
+const ActionPlanSlideOver = dynamic(
+  () => import('@/components/deal/ActionPlanSlideOver').then((m) => m.ActionPlanSlideOver),
   { ssr: false },
 )
 
@@ -388,6 +395,7 @@ function VerdictContent() {
   const dataSourcesRef = useRef<HTMLDivElement>(null)
   const [showDealGapVideo, setShowDealGapVideo] = useState(false)
   const [showAllInsights, setShowAllInsights] = useState(true)
+  const [actionPlanOpen, setActionPlanOpen] = useState(false)
 
   // Level 3 workbench (R4 Stage 2). Null = collapsed. The workbench mounts
   // only when this is set ({request && <StrategyWorkbench/>}), never via
@@ -1777,16 +1785,28 @@ function VerdictContent() {
           >
             {/* Investment Overview — 3 price cards */}
             <div data-tour="verdict-prices">
-              <h2
-                className="w-full font-bold leading-tight"
-                style={{
-                  color: 'var(--text-heading)',
-                  marginBottom: 16,
-                  fontSize: 'clamp(18px, 2vw, 24px)',
-                }}
-              >
-                Investment Overview
-              </h2>
+              <div className="w-full flex items-start justify-between gap-3 mb-4">
+                <h2
+                  className="font-bold leading-tight"
+                  style={{
+                    color: 'var(--text-heading)',
+                    fontSize: 'clamp(18px, 2vw, 24px)',
+                  }}
+                >
+                  Investment Overview
+                </h2>
+                {isAuthenticated && (savedPropertyId || propertyIdParam) ? (
+                  <button
+                    type="button"
+                    onClick={() => setActionPlanOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] shrink-0"
+                    aria-label={ACTION_PLAN_COPY.buttonLabel}
+                  >
+                    <Route className="w-4 h-4" />
+                    {ACTION_PLAN_COPY.buttonLabel}
+                  </button>
+                ) : null}
+              </div>
               <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
                 {[
                   {
@@ -2883,6 +2903,12 @@ function VerdictContent() {
           onSaveDeal={saveProperty}
         />
       ) : null}
+
+      <ActionPlanSlideOver
+        open={actionPlanOpen}
+        onClose={() => setActionPlanOpen(false)}
+        propertyId={savedPropertyId ?? propertyIdParam}
+      />
 
     </>
   )

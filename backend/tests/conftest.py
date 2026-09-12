@@ -38,6 +38,10 @@ os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://test:test@localhost:
 # `from app.models import X` in a service can never silently desync the
 # test DB schema from production.
 from app.models import (  # noqa: F401
+    ActionPlan,
+    ActionPlanCase,
+    ActionPlanSource,
+    ActionPlanStatus,
     AdminAssumptionDefaults,
     AuditAction,
     AuditLog,

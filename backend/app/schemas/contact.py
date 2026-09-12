@@ -51,6 +51,8 @@ class ContactOut(BaseModel):
     phone: str | None
     email: str | None
     notes: str | None
+    source: str = "user"
+    action_plan_id: str | None = None
     created_at: datetime
     updated_at: datetime
 

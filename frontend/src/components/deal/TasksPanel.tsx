@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
-import { CheckCircle2, Circle, GripVertical, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { CheckCircle2, Circle, GripVertical, Pencil, Plus, Route, Sparkles, Trash2 } from 'lucide-react'
 import {
   useCreateTask,
   useDeleteTask,
@@ -19,6 +19,7 @@ import {
   useTasks,
   useUpdateTask,
 } from '@/hooks/useTasks'
+import { ACTION_PLAN_COPY } from '@/lib/actionPlanCopy'
 import type { PropertyTask } from '@/types/task'
 
 interface TasksPanelProps {
@@ -28,6 +29,8 @@ interface TasksPanelProps {
   /** Auto-focus the new-task input on mount. Default false (set true when
    *  hosted in a slide-over so the user can type immediately). */
   autoFocus?: boolean
+  /** Opens the Action Plan slide-over. */
+  onActionPlan?: () => void
 }
 
 const TASK_DRAG_MIME = 'application/x-propertytask-id'
@@ -51,7 +54,7 @@ function isoToDateInput(iso: string | null | undefined): string {
   return d.toISOString().slice(0, 10)
 }
 
-export function TasksPanel({ propertyId, stageLabel, autoFocus }: TasksPanelProps) {
+export function TasksPanel({ propertyId, stageLabel, autoFocus, onActionPlan }: TasksPanelProps) {
   const tasks = useTasks(propertyId)
   const create = useCreateTask(propertyId)
   const update = useUpdateTask(propertyId)
@@ -122,6 +125,18 @@ export function TasksPanel({ propertyId, stageLabel, autoFocus }: TasksPanelProp
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      {onActionPlan && items.length > 0 && (
+        <div className="px-3 pt-3 shrink-0">
+          <button
+            type="button"
+            onClick={onActionPlan}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] transition-colors"
+          >
+            <Route className="w-3.5 h-3.5" />
+            {ACTION_PLAN_COPY.buttonLabel}
+          </button>
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
         {tasks.isLoading ? (
           <p className="text-sm text-[var(--text-label)] text-center py-6">Loading…</p>
@@ -146,6 +161,16 @@ export function TasksPanel({ propertyId, stageLabel, autoFocus }: TasksPanelProp
               <Sparkles className="w-3.5 h-3.5" />
               Suggest common tasks{stageLabel ? ` for ${stageLabel}` : ''}
             </button>
+            {onActionPlan && (
+              <button
+                type="button"
+                onClick={onActionPlan}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] transition-colors"
+              >
+                <Route className="w-3.5 h-3.5" />
+                {ACTION_PLAN_COPY.buttonLabel}
+              </button>
+            )}
           </div>
         ) : (
           <>
@@ -364,6 +389,11 @@ function TaskRow({
           }`}
         >
           {task.title}
+          {task.source && task.source !== 'user' ? (
+            <span className="ml-1.5 inline-flex align-middle text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-[var(--surface-elevated)] text-[var(--text-secondary)] ring-1 ring-[var(--border-default)] no-underline">
+              {ACTION_PLAN_COPY.sourceBadge[task.source]}
+            </span>
+          ) : null}
         </p>
         {due && (
           <p

@@ -50,6 +50,7 @@ _V1_ROUTER_MANIFEST: list[tuple[str, str]] = [
     ("Marketing Bot", "app.routers.marketing_bot"),
     ("Plans", "app.routers.plans"),
     ("Leads", "app.routers.leads"),
+    ("Action Plans", "app.routers.action_plans"),
 ]
 
 

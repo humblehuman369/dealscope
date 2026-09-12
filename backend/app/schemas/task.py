@@ -34,6 +34,8 @@ class TaskOut(BaseModel):
     due_date: datetime | None
     completed_at: datetime | None
     sort_order: int
+    source: str = "user"
+    action_plan_id: str | None = None
     created_at: datetime
     updated_at: datetime
 

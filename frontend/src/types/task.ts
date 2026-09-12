@@ -11,6 +11,8 @@ export interface PropertyTask {
   due_date: string | null
   completed_at: string | null
   sort_order: number
+  source?: 'user' | 'template' | 'ai'
+  action_plan_id?: string | null
   created_at: string
   updated_at: string
 }

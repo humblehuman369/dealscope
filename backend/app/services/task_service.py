@@ -8,10 +8,20 @@ from datetime import UTC, datetime
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.action_plan import ActionPlanSource
 from app.models.saved_property import SavedProperty
 from app.models.task import PropertyTask
 from app.schemas.task import TaskCreate, TaskUpdate
 from app.services.task_templates import template_for, template_label_for
+
+
+def is_open_title_duplicate(title: str, open_titles_lower: set[str]) -> bool:
+    """Skip a planned task when an open task with the same title already exists.
+
+    Case-insensitive. Completed tasks with the same title do not block —
+    the investor may want the step again.
+    """
+    return title.strip().lower() in open_titles_lower
 
 
 class TaskService:
@@ -168,6 +178,7 @@ class TaskService:
                 notes=notes,
                 due_date=due_date,
                 sort_order=next_order,
+                source=ActionPlanSource.TEMPLATE,
             )
             db.add(task)
             created.append(task)

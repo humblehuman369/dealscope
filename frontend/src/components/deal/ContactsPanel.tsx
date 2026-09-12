@@ -20,6 +20,7 @@ import {
   type ContactRole,
   type PropertyContact,
 } from '@/types/contact'
+import { ACTION_PLAN_COPY } from '@/lib/actionPlanCopy'
 
 export function ContactsPanel({ propertyId }: { propertyId: string }) {
   const contacts = useContacts(propertyId)
@@ -312,6 +313,11 @@ function ContactRow({
             <span className="inline-flex text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--color-sky-dim)] text-[var(--accent-sky)]">
               {CONTACT_ROLE_LABELS[contact.role]}
             </span>
+            {contact.source && contact.source !== 'user' ? (
+              <span className="inline-flex text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-[var(--surface-elevated)] text-[var(--text-secondary)] ring-1 ring-[var(--border-default)]">
+                {ACTION_PLAN_COPY.sourceBadge[contact.source]}
+              </span>
+            ) : null}
           </div>
           {contact.company && (
             <p className="text-[11px] text-[var(--text-label)] truncate">{contact.company}</p>

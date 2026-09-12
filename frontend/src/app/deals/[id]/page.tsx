@@ -13,7 +13,7 @@
  * "Due this week" widget) can drop the user straight into the right pane.
  */
 
-import { use, Suspense } from 'react'
+import { use, Suspense, useState } from 'react'
 import { useAppSearchParams } from '@/hooks/useAppNavigation'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -41,6 +41,7 @@ import { DealMemoCard } from '@/components/deal/DealMemoCard'
 import { DocumentsPanel } from '@/components/deal/DocumentsPanel'
 import { OffersPanel } from '@/components/deal/OffersPanel'
 import { TasksPanel } from '@/components/deal/TasksPanel'
+import { ActionPlanButton, ActionPlanSlideOver } from '@/components/deal/ActionPlanSlideOver'
 import { useTasks } from '@/hooks/useTasks'
 import { useTimeline } from '@/hooks/useTimeline'
 import { useRehabBudgetSummary, useSavedProperty } from '@/hooks/useSavedProperties'
@@ -120,6 +121,7 @@ function DealPageContent({ propertyId }: { propertyId: string }) {
   const tab: Tab = TABS.includes(tabParam) ? tabParam : 'overview'
 
   const deal = useSavedProperty(propertyId)
+  const [actionPlanOpen, setActionPlanOpen] = useState(false)
 
   function setTab(next: Tab) {
     const sp = new URLSearchParams(searchParams.toString())
@@ -142,7 +144,7 @@ function DealPageContent({ propertyId }: { propertyId: string }) {
         >
           {deal.data && (
             <>
-              <DealHeader deal={deal.data} />
+              <DealHeader deal={deal.data} onActionPlan={() => setActionPlanOpen(true)} />
               <TabNav active={tab} onChange={setTab} />
               <main className="rounded-2xl bg-[var(--surface-card)] border border-[var(--border-default)] mt-3 min-h-[420px] flex flex-col">
                 {tab === 'overview' && <OverviewTab deal={deal.data} onJumpTab={setTab} />}
@@ -154,6 +156,7 @@ function DealPageContent({ propertyId }: { propertyId: string }) {
                         ? STAGE_LABELS[deal.data.flip_stage]
                         : STATUS_CONFIG[deal.data.status].label
                     }
+                    onActionPlan={() => setActionPlanOpen(true)}
                   />
                 )}
                 {tab === 'offers' && <OffersPanel propertyId={propertyId} />}
@@ -169,6 +172,11 @@ function DealPageContent({ propertyId }: { propertyId: string }) {
             </>
           )}
         </DataBoundary>
+        <ActionPlanSlideOver
+          open={actionPlanOpen}
+          onClose={() => setActionPlanOpen(false)}
+          propertyId={propertyId}
+        />
       </div>
     </div>
   )
@@ -177,7 +185,7 @@ function DealPageContent({ propertyId }: { propertyId: string }) {
 // ───────────────────────────────────────────────────────
 // Hero header
 
-function DealHeader({ deal }: { deal: DealDetail }) {
+function DealHeader({ deal, onActionPlan }: { deal: DealDetail; onActionPlan: () => void }) {
   const title = deal.nickname || deal.address_street
   const subtitle = [deal.address_city, deal.address_state].filter(Boolean).join(', ')
   const strategyLabel = deal.best_strategy
@@ -239,6 +247,7 @@ function DealHeader({ deal }: { deal: DealDetail }) {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          <ActionPlanButton onClick={onActionPlan} />
           <Link
             href={`/deals/${deal.id}/report`}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold border border-[var(--border-default)] text-[var(--text-body)] hover:bg-[var(--hover-overlay)] hover:border-[var(--border-focus)] transition-colors no-underline"

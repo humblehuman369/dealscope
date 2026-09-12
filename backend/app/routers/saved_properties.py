@@ -1048,6 +1048,7 @@ async def delete_budget_expense(
 
 
 def _task_to_out(task) -> TaskOut:
+    source = task.source
     return TaskOut(
         id=str(task.id),
         saved_property_id=str(task.saved_property_id),
@@ -1056,6 +1057,8 @@ def _task_to_out(task) -> TaskOut:
         due_date=task.due_date,
         completed_at=task.completed_at,
         sort_order=task.sort_order,
+        source=source.value if hasattr(source, "value") else (source or "user"),
+        action_plan_id=str(task.action_plan_id) if task.action_plan_id else None,
         created_at=task.created_at,
         updated_at=task.updated_at,
     )
@@ -1305,6 +1308,7 @@ async def delete_property_offer(
 
 
 def _contact_to_out(c) -> ContactOut:
+    source = c.source
     return ContactOut(
         id=str(c.id),
         saved_property_id=str(c.saved_property_id),
@@ -1314,6 +1318,8 @@ def _contact_to_out(c) -> ContactOut:
         phone=c.phone,
         email=c.email,
         notes=c.notes,
+        source=source.value if hasattr(source, "value") else (source or "user"),
+        action_plan_id=str(c.action_plan_id) if c.action_plan_id else None,
         created_at=c.created_at,
         updated_at=c.updated_at,
     )

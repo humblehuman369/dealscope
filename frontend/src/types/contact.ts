@@ -25,6 +25,8 @@ export interface PropertyContact {
   phone: string | null
   email: string | null
   notes: string | null
+  source?: 'user' | 'template' | 'ai'
+  action_plan_id?: string | null
   created_at: string
   updated_at: string
 }

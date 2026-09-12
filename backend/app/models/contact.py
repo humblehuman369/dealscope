@@ -21,8 +21,10 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.action_plan import ActionPlanSource
 
 if TYPE_CHECKING:
+    from app.models.action_plan import ActionPlan
     from app.models.saved_property import SavedProperty
     from app.models.user import User
 
@@ -67,6 +69,18 @@ class PropertyContact(Base):
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    source: Mapped[ActionPlanSource] = mapped_column(
+        SQLEnum(ActionPlanSource, native_enum=False, length=16),
+        nullable=False,
+        default=ActionPlanSource.USER,
+    )
+    action_plan_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("action_plans.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     created_by_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
@@ -81,4 +95,5 @@ class PropertyContact(Base):
     )
 
     saved_property: Mapped[SavedProperty] = relationship("SavedProperty", back_populates="contacts")
+    action_plan: Mapped[ActionPlan | None] = relationship("ActionPlan")
     created_by: Mapped[User] = relationship("User")

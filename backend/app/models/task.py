@@ -14,12 +14,15 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.action_plan import ActionPlanSource
 
 if TYPE_CHECKING:
+    from app.models.action_plan import ActionPlan
     from app.models.saved_property import SavedProperty
     from app.models.user import User
 
@@ -54,6 +57,18 @@ class PropertyTask(Base):
     # Manual sort within the property's task list. Lower = top.
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
+    source: Mapped[ActionPlanSource] = mapped_column(
+        SQLEnum(ActionPlanSource, native_enum=False, length=16),
+        nullable=False,
+        default=ActionPlanSource.USER,
+    )
+    action_plan_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("action_plans.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     created_by_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
@@ -68,5 +83,6 @@ class PropertyTask(Base):
     )
 
     saved_property: Mapped[SavedProperty] = relationship("SavedProperty", back_populates="tasks")
+    action_plan: Mapped[ActionPlan | None] = relationship("ActionPlan")
     completed_by: Mapped[User | None] = relationship("User", foreign_keys=[completed_by_id])
     created_by: Mapped[User] = relationship("User", foreign_keys=[created_by_id])

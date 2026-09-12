@@ -3,6 +3,7 @@ SQLAlchemy models for DealGapIQ.
 All models are imported here for Alembic auto-discovery.
 """
 
+from app.models.action_plan import ActionPlan, ActionPlanCase, ActionPlanSource, ActionPlanStatus
 from app.models.assumption_defaults import AdminAssumptionDefaults
 from app.models.audit_log import AuditAction, AuditLog
 from app.models.budget import BudgetExpense, BudgetLine, RehabBudget
@@ -47,6 +48,10 @@ from app.models.verification_token import TokenType, VerificationToken
 from app.models.x_post import XPost, XPostStatus
 
 __all__ = [
+    "ActionPlan",
+    "ActionPlanCase",
+    "ActionPlanSource",
+    "ActionPlanStatus",
     "AdminAssumptionDefaults",
     "AlertFrequency",
     "AuditAction",

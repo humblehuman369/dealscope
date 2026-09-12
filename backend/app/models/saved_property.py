@@ -17,10 +17,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.action_plan import ActionPlan
     from app.models.budget import RehabBudget
     from app.models.contact import PropertyContact
-    from app.models.offer import PropertyOffer
     from app.models.document import Document
+    from app.models.offer import PropertyOffer
     from app.models.task import PropertyTask
     from app.models.user import User
 
@@ -228,6 +229,12 @@ class SavedProperty(Base):
         back_populates="saved_property",
         cascade="all, delete-orphan",
         order_by="PropertyOffer.offer_date.desc()",
+    )
+    action_plans: Mapped[list["ActionPlan"]] = relationship(
+        "ActionPlan",
+        back_populates="saved_property",
+        cascade="all, delete-orphan",
+        order_by="ActionPlan.created_at.desc()",
     )
 
     def get_display_name(self) -> str:
