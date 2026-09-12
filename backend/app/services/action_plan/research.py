@@ -120,8 +120,8 @@ RESEARCH_JSON_SCHEMA: dict[str, Any] = {
     },
 }
 
-# Numbered find-lists per case. Same system prompt for all. There is no
-# bakeoff harness in this repo yet, so the lists live here.
+# Numbered find-lists per case. Same system prompt for all. bakeoff/bakeoff.py
+# imports this dict so the harness tests what we ship.
 CASE_TARGETS: dict[ActionPlanCase, list[str]] = {
     ActionPlanCase.ON_MARKET: [
         "The listing agent's business phone and the brokerage phone, from Realtor.com, the agent's Zillow page, or the brokerage's own site.",
@@ -307,12 +307,24 @@ def build_property_prompt(
     )
 
 
-def build_openai_request(instructions: str, user_input: str) -> dict[str, Any]:
-    """Request body from docs/AI_ACTION_PLAN_OPENAI_RESEARCH.md. Field names match current docs."""
+def build_openai_request(
+    instructions: str,
+    user_input: str,
+    *,
+    model: str | None = None,
+    background: bool = True,
+    store: bool = True,
+    max_tool_calls: int | None = None,
+) -> dict[str, Any]:
+    """Request body from docs/AI_ACTION_PLAN_OPENAI_RESEARCH.md. Field names match current docs.
+
+    The bakeoff passes ``background=False`` so the script can wait. Production
+    create uses the default ``background=True``.
+    """
     return {
-        "model": settings.ACTION_PLAN_RESEARCH_MODEL,
-        "background": True,
-        "store": True,
+        "model": model or settings.ACTION_PLAN_RESEARCH_MODEL,
+        "background": background,
+        "store": store,
         "reasoning": {"effort": "medium"},
         "instructions": instructions,
         "input": user_input,
@@ -323,7 +335,9 @@ def build_openai_request(instructions: str, user_input: str) -> dict[str, Any]:
                 "filters": {"blocked_domains": list(BLOCKED_DOMAINS)},
             }
         ],
-        "max_tool_calls": settings.ACTION_PLAN_RESEARCH_MAX_TOOL_CALLS,
+        "max_tool_calls": max_tool_calls
+        if max_tool_calls is not None
+        else settings.ACTION_PLAN_RESEARCH_MAX_TOOL_CALLS,
         "text": {
             "format": {
                 "type": "json_schema",

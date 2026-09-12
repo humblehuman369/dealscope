@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import sys
 import uuid
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from unittest.mock import AsyncMock
 
 import pytest
@@ -181,6 +183,27 @@ class TestPromptAndProvider:
         assert "Find, in this order:" in prompt
         assert "foreclosure case" in prompt.lower()
 
+    def test_bakeoff_shares_production_prompt_and_prices(self):
+        bakeoff_dir = Path(__file__).resolve().parents[2] / "bakeoff"
+        if str(bakeoff_dir) not in sys.path:
+            sys.path.insert(0, str(bakeoff_dir))
+        import bakeoff as harness
+
+        props = json.loads((bakeoff_dir / "properties.json").read_text())
+        prompt = harness.build_user_prompt(props[0])
+        assert "2406 River Hammock" in prompt
+        assert "St. Lucie" in prompt
+        assert "Find, in this order:" in prompt
+        assert "Pre-foreclosure flag is set" in prompt
+        terra = next(m for m in harness.MODELS if m["model"] == "gpt-5.6-terra")
+        luna = next(m for m in harness.MODELS if m["model"] == "gpt-5.6-luna")
+        assert terra == {"provider": "openai", "model": "gpt-5.6-terra", "in": 2.00, "out": 12.00, "search": 0.01}
+        assert luna["in"] == 0.20 and luna["out"] == 1.20 and luna["search"] == 0.01
+        body = harness.build_openai_request("sys", "user", model="gpt-5.6-terra", background=False)
+        assert body["background"] is False
+        assert body["tools"][0]["search_context_size"] == "high"
+        assert "spokeo.com" in body["tools"][0]["filters"]["blocked_domains"]
+
     def test_openai_request_shape(self):
         body = build_openai_request("sys", "user")
         assert body["model"] == "gpt-5.6-terra"
@@ -198,6 +221,13 @@ class TestPromptAndProvider:
         assert fmt["name"] == "property_research"
         assert fmt["strict"] is True
         assert fmt["schema"]["required"] == ["findings", "not_found", "best_first_call", "conflicts"]
+
+    def test_foreground_request_for_bakeoff(self):
+        body = build_openai_request("sys", "user", model="gpt-5.6-luna", background=False)
+        assert body["background"] is False
+        assert body["model"] == "gpt-5.6-luna"
+        assert body["store"] is True
+        assert body["tools"][0]["filters"]["blocked_domains"]
 
     def test_openai_is_built_others_are_not(self):
         from app.services.action_plan.research import ResearchProvider

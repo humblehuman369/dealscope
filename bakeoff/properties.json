@@ -1,0 +1,28 @@
+[
+  {
+    "id": "river-hammock",
+    "address": "2406 River Hammock Ln, Fort Pierce, FL 34981",
+    "county": "St. Lucie",
+    "state": "FL",
+    "parcel": "not known",
+    "known": {
+      "owner_names": "NATHANIEL MORRIS, PATRICIA B MORRIS",
+      "owner_mailing_address": "6136 NW Kendra Ln, Port Saint Lucie, FL 34983",
+      "listing_status": "OFF_MARKET",
+      "is_off_market": true,
+      "is_pre_foreclosure": true,
+      "is_absentee_owner": true
+    },
+    "case": "pre_foreclosure",
+    "answer_key": {
+      "prior_agent_name": ["Maysoon Mohd"],
+      "prior_agent_phone": ["772-971-6645", "7729716645", "(772) 971-6645"],
+      "brokerage": ["Star Realty"],
+      "foreclosure_plaintiff": ["U.S. Bank", "US Bank", "RCF 2"],
+      "listing_status_found": ["On Hold", "on-hold"],
+      "prior_list_price": ["565,000", "565000", "565K"],
+      "clerk_phone": ["772-462-6900", "7724626900"]
+    },
+    "must_not_claim": ["auction date", "sold at auction", "judgment entered"]
+  }
+]
