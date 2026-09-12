@@ -30,6 +30,7 @@ from app.services.action_plan.research import (
     resolve_provider,
     start_research,
 )
+from app.services.action_plan.writer import merge_research_into_plan
 
 # River Hammock-shaped findings from the research doc / hand test. No invented
 # case number — ChatGPT left that UNVERIFIED when the page hid it.
@@ -87,6 +88,11 @@ RIVER_HAMMOCK_RESEARCH = {
         "why": "Most recent listing agent.",
     },
 }
+
+
+async def _passthrough_write(*, case, template, research):
+    return merge_research_into_plan(template, research)
+
 
 PRE_FORECLOSURE_PAYLOAD = {
     "address": {
@@ -465,6 +471,7 @@ async def test_get_poll_attaches_findings(auth_client, monkeypatch):
         ),
     )
     monkeypatch.setattr("app.services.action_plan.research.store_cached_research", AsyncMock())
+    monkeypatch.setattr("app.services.action_plan.research.write_plan", _passthrough_write)
     property_id = await _save_property(
         auth_client,
         {"listing_status": "OFF_MARKET", "is_off_market": True, "is_pre_foreclosure": True},
@@ -519,6 +526,7 @@ async def test_cache_hit_skips_openai(auth_client, monkeypatch):
     )
     start = AsyncMock(side_effect=AssertionError("cache hit must not call start_research"))
     monkeypatch.setattr("app.services.action_plan.research.start_research", start)
+    monkeypatch.setattr("app.services.action_plan.research.write_plan", _passthrough_write)
     property_id = await _save_property(
         auth_client,
         {"listing_status": "OFF_MARKET", "is_off_market": True, "is_pre_foreclosure": True},
@@ -537,6 +545,7 @@ async def test_apply_still_writes_template_after_research(auth_client, monkeypat
         "app.services.action_plan.research.cached_research",
         AsyncMock(return_value=RIVER_HAMMOCK_RESEARCH),
     )
+    monkeypatch.setattr("app.services.action_plan.research.write_plan", _passthrough_write)
     property_id = await _save_property(
         auth_client,
         {
@@ -550,8 +559,10 @@ async def test_apply_still_writes_template_after_research(auth_client, monkeypat
     plan = created.json()
     assert plan["status"] == "ready"
     assert plan["research"]["best_first_call"]["who"] == "Pat Koolik"
-    applied = await auth_client.post(f"/api/v1/action-plan/{plan['id']}/apply")
+    applied = await auth_client.post(f"/api/v1/action-plans/{plan['id']}/apply")
     assert applied.status_code == 200, applied.text
     titles = {t["title"] for t in applied.json()["tasks_created"]}
     assert any("listing agent" in t.lower() for t in titles)
-    assert all(t["source"] == "template" for t in applied.json()["tasks_created"])
+    assert "Confirm this: foreclosure case number" in titles
+    assert all(t["source"] == "ai" for t in applied.json()["tasks_created"])
+    assert all(t["action_plan_id"] == plan["id"] for t in applied.json()["tasks_created"])

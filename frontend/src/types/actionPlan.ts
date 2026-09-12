@@ -80,6 +80,7 @@ export interface ActionPlan {
   contacts: ActionPlanContactItem[]
   source: ActionPlanSource
   research: ActionPlanResearch | null
+  property_status?: string | null
   created_at: string
   updated_at: string
 }
@@ -90,6 +91,9 @@ export interface ActionPlanApplyResult {
   tasks_skipped: number
   contacts_created: PropertyContact[]
   contacts_skipped: number
+  property_status?: string | null
+  can_move_to_pursuing?: boolean
+  moved_to_pursuing?: boolean
 }
 
 export function isPlanResearching(plan: Pick<ActionPlan, 'status'> | null | undefined): boolean {

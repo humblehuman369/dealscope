@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException, status
 from app.core.deps import CurrentUser, DbSession
 from app.models.action_plan import ActionPlan, ActionPlanStatus
 from app.schemas.action_plan import (
+    ActionPlanApplyIn,
     ActionPlanApplyOut,
     ActionPlanContactItem,
     ActionPlanFact,
@@ -122,7 +123,7 @@ def _research_to_out(raw: dict[str, Any] | None) -> ResearchOut | None:
     )
 
 
-def _plan_to_out(row: ActionPlan) -> ActionPlanOut:
+def _plan_to_out(row: ActionPlan, *, property_status: str | None = None) -> ActionPlanOut:
     payload = row.plan or {}
     facts = [
         ActionPlanFact(label=str(f.get("label", "")), value=str(f.get("value", "")))
@@ -169,6 +170,7 @@ def _plan_to_out(row: ActionPlan) -> ActionPlanOut:
         contacts=contacts,
         source=str(payload.get("source") or "template"),
         research=_research_to_out(row.research),
+        property_status=property_status,
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
@@ -220,7 +222,8 @@ async def create_action_plan(
     db.add(row)
     await db.commit()
     await db.refresh(row)
-    return _plan_to_out(row)
+    status_value = prop.status.value if hasattr(prop.status, "value") else str(prop.status)
+    return _plan_to_out(row, property_status=status_value)
 
 
 @router.get(
@@ -241,27 +244,41 @@ async def get_action_plan(
     await refresh_research(plan, parcel=args.get("parcel"), address=args.get("address"))
     await db.commit()
     await db.refresh(plan)
-    return _plan_to_out(plan)
+    status_value = None
+    if prop is not None:
+        status_value = prop.status.value if hasattr(prop.status, "value") else str(prop.status)
+    return _plan_to_out(plan, property_status=status_value)
 
 
 @router.post(
-    "/action-plan/{plan_id}/apply",
+    "/action-plans/{plan_id}/apply",
     response_model=ActionPlanApplyOut,
     summary="Write the plan's tasks and contacts onto the deal",
+)
+@router.post(
+    "/action-plan/{plan_id}/apply",
+    response_model=ActionPlanApplyOut,
+    include_in_schema=False,
 )
 async def apply_plan(
     plan_id: str,
     current_user: CurrentUser,
     db: DbSession,
+    body: ActionPlanApplyIn = ActionPlanApplyIn(),
 ):
     plan = await get_owned_plan(db, plan_id, str(current_user.id))
     if plan is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Action plan not found")
-    result = await apply_action_plan(db, plan, str(current_user.id))
+    result = await apply_action_plan(
+        db, plan, str(current_user.id), move_to_pursuing=body.move_to_pursuing
+    )
     return ActionPlanApplyOut(
         plan_id=str(plan.id),
         tasks_created=[_task_to_out(t) for t in result["tasks_created"]],
         tasks_skipped=result["tasks_skipped"],
         contacts_created=[_contact_to_out(c) for c in result["contacts_created"]],
         contacts_skipped=result["contacts_skipped"],
+        property_status=result.get("property_status"),
+        can_move_to_pursuing=bool(result.get("can_move_to_pursuing")),
+        moved_to_pursuing=bool(result.get("moved_to_pursuing")),
     )

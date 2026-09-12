@@ -4,11 +4,11 @@
  * Slide-over for the Action Plan.
  *
  * Opens from Discovery and the deal page. Shows the template immediately,
- * polls research in the background, and Apply writes the template tasks into
+ * polls research in the background, and Apply writes tasks and contacts into
  * the deal. Findings land as-is with VERIFIED / UNVERIFIED badges.
  */
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Route, X } from 'lucide-react'
 import { useFocusTrap } from '@/components/ui/useFocusTrap'
 import { useActionPlanPoll, useApplyActionPlan, useCreateActionPlan } from '@/hooks/useActionPlan'
@@ -48,6 +48,7 @@ export function ActionPlanSlideOver({ open, onClose, propertyId }: ActionPlanSli
 
   const create = useCreateActionPlan(propertyId)
   const apply = useApplyActionPlan(propertyId)
+  const [moveToPursuing, setMoveToPursuing] = useState(false)
   const createdPlan = create.data
   const poll = useActionPlanPoll(
     createdPlan?.id ?? null,
@@ -59,6 +60,7 @@ export function ActionPlanSlideOver({ open, onClose, propertyId }: ActionPlanSli
     if (!open || !propertyId) return
     apply.reset()
     create.mutate()
+    setMoveToPursuing(false)
     // Create once per open. Reset apply so a previous "Added" doesn't stick.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, propertyId])
@@ -140,23 +142,52 @@ export function ActionPlanSlideOver({ open, onClose, propertyId }: ActionPlanSli
           ) : null}
         </div>
 
-        <div className="shrink-0 border-t border-[var(--border-default)] px-4 py-3">
+        <div className="shrink-0 border-t border-[var(--border-default)] px-4 py-3 space-y-3">
           {applied ? (
-            <p className="text-sm font-semibold text-[var(--status-positive)] text-center py-2">
-              Added to this deal
-              {apply.data && apply.data.tasks_skipped > 0
-                ? ` · ${apply.data.tasks_skipped} already on the list`
-                : ''}
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-[var(--status-positive)] text-center py-2">
+                {apply.data?.moved_to_pursuing
+                  ? ACTION_PLAN_COPY.moveToPursuingDone
+                  : 'Added to this deal'}
+                {apply.data && apply.data.tasks_skipped > 0
+                  ? ` · ${apply.data.tasks_skipped} already on the list`
+                  : ''}
+              </p>
+              {apply.data?.can_move_to_pursuing && plan ? (
+                <button
+                  type="button"
+                  onClick={() => apply.mutate({ planId: plan.id, moveToPursuing: true })}
+                  disabled={apply.isPending}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold border border-[var(--border-default)] text-[var(--text-heading)] hover:bg-[var(--hover-overlay)] disabled:opacity-50"
+                >
+                  {ACTION_PLAN_COPY.moveToPursuingLabel}
+                </button>
+              ) : null}
+            </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => plan && apply.mutate(plan.id)}
-              disabled={!plan || apply.isPending}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-[var(--accent-sky)] text-[var(--text-inverse)] hover:bg-[var(--accent-sky-light)] disabled:opacity-50"
-            >
-              {apply.isPending ? ACTION_PLAN_COPY.applyingLabel : ACTION_PLAN_COPY.applyLabel}
-            </button>
+            <>
+              {plan?.property_status === 'prospecting' ? (
+                <label className="flex items-center gap-2 text-sm text-[var(--text-body)]">
+                  <input
+                    type="checkbox"
+                    checked={moveToPursuing}
+                    onChange={(e) => setMoveToPursuing(e.target.checked)}
+                    className="rounded border-[var(--border-default)]"
+                  />
+                  {ACTION_PLAN_COPY.moveToPursuingLabel}
+                </label>
+              ) : null}
+              <button
+                type="button"
+                onClick={() =>
+                  plan && apply.mutate({ planId: plan.id, moveToPursuing })
+                }
+                disabled={!plan || apply.isPending}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-[var(--accent-sky)] text-[var(--text-inverse)] hover:bg-[var(--accent-sky-light)] disabled:opacity-50"
+              >
+                {apply.isPending ? ACTION_PLAN_COPY.applyingLabel : ACTION_PLAN_COPY.applyLabel}
+              </button>
+            </>
           )}
         </div>
       </div>

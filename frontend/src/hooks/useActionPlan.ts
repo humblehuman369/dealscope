@@ -59,8 +59,13 @@ export function useActionPlanPoll(planId: string | null, enabled: boolean) {
 export function useApplyActionPlan(propertyId: string | null) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (planId: string) =>
-      api.post<ActionPlanApplyResult>(`/api/v1/action-plan/${planId}/apply`, {}),
+    mutationFn: (input: string | { planId: string; moveToPursuing?: boolean }) => {
+      const planId = typeof input === 'string' ? input : input.planId
+      const moveToPursuing = typeof input === 'string' ? false : Boolean(input.moveToPursuing)
+      return api.post<ActionPlanApplyResult>(`/api/v1/action-plans/${planId}/apply`, {
+        move_to_pursuing: moveToPursuing,
+      })
+    },
     onSuccess: () => {
       if (!propertyId) return
       qc.invalidateQueries({ queryKey: TASKS_KEYS.forProperty(propertyId) })

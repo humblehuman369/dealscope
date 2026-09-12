@@ -21,6 +21,8 @@ export const ACTION_PLAN_COPY = {
   notFoundHeading: 'Could not find',
   conflictsHeading: 'Conflicts',
   firstCallHeading: 'Best first call',
+  moveToPursuingLabel: 'Move this deal to Pursuing',
+  moveToPursuingDone: 'Moved to Pursuing',
 } as const
 
 export type ActionPlanSource = 'user' | 'template' | 'ai'

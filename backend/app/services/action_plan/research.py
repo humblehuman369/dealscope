@@ -25,6 +25,7 @@ import httpx
 from app.core.config import settings
 from app.models.action_plan import ActionPlan, ActionPlanCase, ActionPlanStatus
 from app.services.action_plan.cases import listing_from_payload
+from app.services.action_plan.writer import write_plan
 from app.services.cache_service import CacheService, get_cache_service
 
 logger = logging.getLogger(__name__)
@@ -488,6 +489,7 @@ async def kickoff_research(
     cached = await cached_research(parcel=parcel, address=address)
     if cached:
         _apply_completed(plan, cached, searches=0, input_tokens=0, output_tokens=0, cost_cents=0)
+        plan.plan = await write_plan(case=plan.case, template=plan.plan or {}, research=cached)
         plan.updated_at = now
         return
     try:
@@ -563,6 +565,9 @@ async def refresh_research(
             input_tokens=checked.input_tokens,
             output_tokens=checked.output_tokens,
             cost_cents=cost,
+        )
+        plan.plan = await write_plan(
+            case=plan.case, template=plan.plan or {}, research=checked.research
         )
         await store_cached_research(checked.research, parcel=parcel, address=address)
         plan.updated_at = now

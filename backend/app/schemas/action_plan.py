@@ -71,8 +71,13 @@ class ActionPlanOut(BaseModel):
     contacts: list[ActionPlanContactItem] = Field(default_factory=list)
     source: str = "template"
     research: ResearchOut | None = None
+    property_status: str | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class ActionPlanApplyIn(BaseModel):
+    move_to_pursuing: bool = False
 
 
 class ActionPlanApplyOut(BaseModel):
@@ -81,3 +86,6 @@ class ActionPlanApplyOut(BaseModel):
     tasks_skipped: int
     contacts_created: list[ContactOut]
     contacts_skipped: int
+    property_status: str | None = None
+    can_move_to_pursuing: bool = False
+    moved_to_pursuing: bool = False

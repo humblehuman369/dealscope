@@ -2,8 +2,8 @@
 ActionPlan model — the per-property "what to do next" plan.
 
 Stores a template plan immediately, then optional OpenAI research on the
-same row. Phase 4 will rewrite ``plan`` from the research. Tasks and contacts
-written from a plan point back here via ``action_plan_id``.
+same row. When research completes, ``writer.py`` rewrites ``plan``. Tasks and
+contacts written from a plan point back here via ``action_plan_id``.
 """
 
 from __future__ import annotations
