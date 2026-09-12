@@ -35,13 +35,8 @@ export const DEFAULT_HERO_GEO: HeroGeo = {
   region: 'FL',
 }
 
-/**
- * Cloud-based map style for the hero. Create a Map ID in Google Cloud
- * Console (Maps Platform → Map Management) with the clean-streets style in
- * `home-map-style.json`, then set NEXT_PUBLIC_HOME_MAP_ID. Falls back to the
- * default styled map used by Search & Discover.
- */
-const MAP_ID = process.env.NEXT_PUBLIC_HOME_MAP_ID || 'DEMO_MAP_ID'
+/** Same Map ID as Search & Discover. Cloud IDs must be verified before use. */
+const MAP_ID = 'DEMO_MAP_ID'
 const DEFAULT_ZOOM = 13
 /**
  * Pins shown at once. The search returns up to 200; the hero shows the best
@@ -282,13 +277,15 @@ function MapWiring({
       map.setCenter({ lat, lng })
       map.setZoom(zoom)
     }
-    const listener = map.addListener('idle', () => {
+    const emitBounds = () => {
       const b = map.getBounds()
       if (!b) return
       const ne = b.getNorthEast()
       const sw = b.getSouthWest()
       onBoundsChanged({ north: ne.lat(), south: sw.lat(), east: ne.lng(), west: sw.lng() })
-    })
+    }
+    const listener = map.addListener('idle', emitBounds)
+    emitBounds()
     return () => {
       google.maps.event.removeListener(listener)
       panRef.current = null

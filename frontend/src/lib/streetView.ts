@@ -61,7 +61,7 @@ function loadGoogleMaps(apiKey: string): Promise<typeof google> {
     // injected by AddressAutocomplete). Don't double-inject — Google logs
     // a noisy "included multiple times" warning and may stop responding.
     const existing = document.querySelector(
-      `script[${PLACES_SCRIPT_ATTR}]`,
+      `script[${PLACES_SCRIPT_ATTR}], script[src*="maps.googleapis.com/maps/api/js"]`,
     ) as HTMLScriptElement | null
     if (existing) {
       waitForReady()

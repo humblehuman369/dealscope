@@ -132,7 +132,12 @@ export function AddressAutocomplete({
       return
     }
 
-    const existing = document.querySelector('script[data-google-places]')
+    // APIProvider (@vis.gl) injects the same Maps JS URL without
+    // data-google-places. A second tag races the async loader and can leave
+    // the homepage map stuck on the static preview (no .gm-style, no pins).
+    const existing = document.querySelector(
+      'script[data-google-places], script[src*="maps.googleapis.com/maps/api/js"]',
+    )
     if (existing) {
       const check = setInterval(() => {
         if (window.google?.maps?.places) {
