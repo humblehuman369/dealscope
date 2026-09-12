@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Search, X } from 'lucide-react'
 import {
   AddressAutocomplete,
@@ -29,12 +29,8 @@ interface MapSearchBarProps {
    * `--surface-*` tokens (which stay dark when the app theme is dark).
    */
   overlayChrome?: MapOverlayChrome | null
-  /** Text shown in the input before the user types (e.g. the visitor's city). */
+  /** Text shown in the input before the user types (e.g. `?q=` from the homepage). */
   initialValue?: string
-  /** Static placeholder when `placeholders` is not set. */
-  placeholder?: string
-  /** When set, cycles these prompts while the input is empty. */
-  placeholders?: string[]
 }
 
 function inferZoom(placeTypes: string[]): { zoom: number; isStreetAddress: boolean } {
@@ -59,28 +55,13 @@ function inferZoom(placeTypes: string[]): { zoom: number; isStreetAddress: boole
  * `searchMode='location'` so users can search by address, city, state, or
  * ZIP — same suggestions as the homepage hero search.
  */
-const ROTATE_MS = 3200
-const DEFAULT_PLACEHOLDER = 'Search address, city, state, or ZIP'
-
 export function MapSearchBar({
   onSelect,
   onClear,
   overlayChrome,
   initialValue = '',
-  placeholder = DEFAULT_PLACEHOLDER,
-  placeholders,
 }: MapSearchBarProps) {
   const [value, setValue] = useState(initialValue)
-  const [promptIndex, setPromptIndex] = useState(0)
-  const rotating = Boolean(placeholders && placeholders.length > 0 && !value)
-
-  useEffect(() => {
-    if (!placeholders || placeholders.length < 2 || value) return
-    const id = window.setInterval(() => {
-      setPromptIndex((i) => (i + 1) % placeholders.length)
-    }, ROTATE_MS)
-    return () => window.clearInterval(id)
-  }, [placeholders, value])
 
   const handlePlaceSelect = (
     address: string,
@@ -122,32 +103,20 @@ export function MapSearchBar({
         size={16}
         style={{ color: chrome?.secondaryText ?? 'var(--text-secondary)', flexShrink: 0 }}
       />
-      <div className="relative flex-1 min-w-0">
-        <AddressAutocomplete
-          value={value}
-          onChange={setValue}
-          onPlaceSelect={handlePlaceSelect}
-          searchMode="location"
-          placeholder={rotating ? '' : placeholder}
-          className={`w-full bg-transparent outline-none border-0 text-sm min-w-0${
-            chrome ? ' map-search-chrome-input' : ''
-          }`}
-          style={{
-            color: chrome?.primaryText ?? 'var(--text-heading)',
-          }}
-          aria-label={DEFAULT_PLACEHOLDER}
-        />
-        {rotating && placeholders && (
-          <span
-            key={promptIndex}
-            className="absolute inset-0 flex items-center text-sm truncate pointer-events-none map-search-rotating-ph"
-            style={{ color: chrome?.secondaryText ?? 'var(--text-label)' }}
-            aria-hidden="true"
-          >
-            {placeholders[promptIndex % placeholders.length]}
-          </span>
-        )}
-      </div>
+      <AddressAutocomplete
+        value={value}
+        onChange={setValue}
+        onPlaceSelect={handlePlaceSelect}
+        searchMode="location"
+        placeholder="Search address, city, state, or ZIP"
+        className={`flex-1 bg-transparent outline-none border-0 text-sm min-w-0${
+          chrome ? ' map-search-chrome-input' : ''
+        }`}
+        style={{
+          color: chrome?.primaryText ?? 'var(--text-heading)',
+        }}
+        aria-label="Search address, city, state, or ZIP"
+      />
       {value && (
         <button
           type="button"
