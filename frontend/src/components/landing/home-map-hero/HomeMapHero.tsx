@@ -316,7 +316,6 @@ function MapWiring({
       }
       map.fitBounds(box, 48)
     }
-    hideBusyMapLayers(map)
     const emitBounds = () => {
       const b = map.getBounds()
       if (!b) return
@@ -334,18 +333,4 @@ function MapWiring({
   }, [map, onBoundsChanged, panRef, fitClusterRef])
 
   return null
-}
-
-/** Hide POIs and transit when the Map ID exposes feature layers (vector maps). */
-function hideBusyMapLayers(map: google.maps.Map) {
-  const FeatureType = google.maps.FeatureType
-  if (!FeatureType || typeof map.getFeatureLayer !== 'function') return
-  for (const type of [FeatureType.POI, FeatureType.TRANSIT]) {
-    try {
-      const layer = map.getFeatureLayer(type)
-      layer.style = () => ({ fillOpacity: 0, strokeOpacity: 0 })
-    } catch {
-      // Layer not enabled on this Map ID.
-    }
-  }
 }
