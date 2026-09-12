@@ -17,9 +17,11 @@ import { DEFAULT_HERO_PRESET, type HeroPreset } from './presets'
  *
  * Cost rules, in one place:
  *  - Cheap presets (All deals) fetch once the camera settles, debounced.
- *  - Expensive presets never fetch on load or on pan. They fetch only when
- *    the visitor clicks the count prompt (`reveal`). One click, one query,
- *    and that one query returns both the pins and the count.
+ *  - Expensive presets fetch once when the visitor picks them (one click,
+ *    one query, which returns both pins and count). They never re-fetch on
+ *    pan; the visitor asks again via the count prompt (`reveal`).
+ *  - The count prompt never costs a query when the preset is already
+ *    fetched for the current viewport — it only reveals a number we have.
  *  - Pins cap at HERO_PIN_LIMIT so a dense viewport stays a sample.
  */
 const BOUNDS_DEBOUNCE_MS = 1200
@@ -51,6 +53,7 @@ export function useHeroMapSearch() {
   const presetRef = useRef<HeroPreset>(DEFAULT_HERO_PRESET)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const requestSeq = useRef(0)
+  const fetchedRef = useRef(false)
 
   const run = useCallback(async (bounds: MapBounds, active: HeroPreset) => {
     const seq = ++requestSeq.current
@@ -74,28 +77,37 @@ export function useHeroMapSearch() {
       setCount(response.estimated_total ?? response.total_count)
       setNotice(response.notice ?? null)
       setFetched(true)
+      fetchedRef.current = true
     } catch (err) {
       if (seq !== requestSeq.current) return
       setError(err instanceof Error ? err.message : 'Search failed')
       setRawListings([])
       setCount(null)
+      fetchedRef.current = false
     } finally {
       if (seq === requestSeq.current) setIsLoading(false)
     }
   }, [])
 
-  /** Camera settled. Cheap presets auto-search; expensive ones wait for `reveal`. */
+  /** Camera settled. Cheap presets auto-search; expensive ones keep their pins and wait for `reveal`. */
   const onBoundsChanged = useCallback(
     (bounds: MapBounds) => {
+      const first = boundsRef.current == null
       boundsRef.current = bounds
       if (debounceRef.current) clearTimeout(debounceRef.current)
-      // A moved viewport invalidates whatever count was showing.
-      setFetched(false)
-      setCount(null)
       if (presetRef.current.expensive) {
-        setRawListings([])
+        // First settled viewport after a preset pick: run it. Later pans keep
+        // the pins on screen but invalidate the count so the prompt re-arms.
+        if (first || !fetchedRef.current) {
+          run(bounds, presetRef.current)
+        } else {
+          setFetched(false)
+          setCount(null)
+        }
         return
       }
+      setFetched(false)
+      setCount(null)
       debounceRef.current = setTimeout(() => {
         run(bounds, presetRef.current)
       }, BOUNDS_DEBOUNCE_MS)
@@ -103,17 +115,17 @@ export function useHeroMapSearch() {
     [run],
   )
 
+  /** Preset button clicked. Always searches the current viewport once. */
   const setPreset = useCallback(
     (next: HeroPreset) => {
       presetRef.current = next
       setPresetState(next)
       setFetched(false)
+      fetchedRef.current = false
       setCount(null)
       setRawListings([])
       if (debounceRef.current) clearTimeout(debounceRef.current)
-      if (!next.expensive && boundsRef.current) {
-        run(boundsRef.current, next)
-      }
+      if (boundsRef.current) run(boundsRef.current, next)
     },
     [run],
   )
