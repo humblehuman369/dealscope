@@ -45,7 +45,7 @@ const DEFAULT_ZOOM = 13
  * search returned them.
  */
 const MAX_VISIBLE_PINS = 60
-const PIN_DROP_STAGGER_MS = 90
+const PIN_DROP_STAGGER_MS = 30
 const US_BOUNDS = { north: 72, south: 17, east: -65, west: -165 }
 
 function compactPrice(price: number | null): string {
@@ -92,9 +92,6 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
     }
     return best?.id ?? null
   }, [listings])
-
-  // Bump a token whenever the listing set changes so the drop animation replays.
-  const dropToken = useMemo(() => listings.map((l) => l.id).join('|'), [listings])
 
   const onPreset = useCallback(
     (p: HeroPreset) => {
@@ -174,14 +171,14 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
             const isBest = l.id === bestId
             return (
               <AdvancedMarker
-                key={`${dropToken}:${l.id}`}
+                key={l.id}
                 position={{ lat: l.latitude, lng: l.longitude }}
                 onClick={() => onPin(l)}
                 zIndex={isSel ? 1000 : isBest ? 900 : undefined}
               >
                 <div
                   className={`home-hero__pin${isSel ? ' home-hero__pin--sel' : ''}${isBest ? ' home-hero__pin--best' : ''}`}
-                  style={{ animationDelay: `${Math.min(i, 40) * PIN_DROP_STAGGER_MS}ms` }}
+                  style={{ animationDelay: `${Math.min(i, 10) * PIN_DROP_STAGGER_MS}ms` }}
                 >
                   {isBest && l.zip_rent_to_price != null && (
                     <span className="home-hero__best-tag">

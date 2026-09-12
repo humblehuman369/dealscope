@@ -177,7 +177,11 @@ export function AddressAutocomplete({
   }, [apiKey])
 
   useEffect(() => {
-    loadScript()
+    // Defer so a parent APIProvider can inject Maps JS first. Child effects
+    // run before parents; injecting in the same tick races vis.gl and can
+    // leave the homepage map on a static preview.
+    const t = window.setTimeout(loadScript, 0)
+    return () => clearTimeout(t)
   }, [loadScript])
 
   // Notify parent of current value (no debounce). We do NOT set React state for the input,

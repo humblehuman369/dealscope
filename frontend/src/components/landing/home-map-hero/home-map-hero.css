@@ -11,6 +11,10 @@
   border: 1px solid var(--border-default);
   background: var(--surface-section);
   font-family: var(--font-inter), system-ui, sans-serif;
+  isolation: isolate;
+}
+.home-hero [data-testid="map"] {
+  transform: translateZ(0);
 }
 
 .home-hero__fallback {
@@ -30,7 +34,6 @@
     radial-gradient(ellipse 55% 55% at 48% 42%, rgba(14, 165, 233, 0.2), rgba(14, 165, 233, 0.05) 60%, transparent 100%),
     radial-gradient(ellipse 40% 40% at 18% 78%, rgba(56, 189, 248, 0.12), transparent 100%),
     radial-gradient(ellipse 38% 38% at 86% 18%, rgba(4, 101, 242, 0.16), transparent 100%);
-  mix-blend-mode: screen;
 }
 
 /* ---- top bar ---- */

@@ -26,6 +26,16 @@ import { DEFAULT_HERO_PRESET, type HeroPreset } from './presets'
  */
 const BOUNDS_DEBOUNCE_MS = 1200
 const HERO_PIN_LIMIT = 200
+const BOUNDS_EPS = 1e-4
+
+function boundsMoved(a: MapBounds, b: MapBounds): boolean {
+  return (
+    Math.abs(a.north - b.north) > BOUNDS_EPS ||
+    Math.abs(a.south - b.south) > BOUNDS_EPS ||
+    Math.abs(a.east - b.east) > BOUNDS_EPS ||
+    Math.abs(a.west - b.west) > BOUNDS_EPS
+  )
+}
 
 export interface HeroSearchState {
   listings: MapListing[]
@@ -92,8 +102,13 @@ export function useHeroMapSearch() {
   /** Camera settled. Cheap presets auto-search; expensive ones keep their pins and wait for `reveal`. */
   const onBoundsChanged = useCallback(
     (bounds: MapBounds) => {
-      const first = boundsRef.current == null
+      const prev = boundsRef.current
+      const first = prev == null
+      const moved = first || boundsMoved(prev, bounds)
       boundsRef.current = bounds
+      // Marker attach fires `idle` with the same viewport. Ignore it or pins
+      // remount from opacity 0 and the count prompt resets forever.
+      if (!moved) return
       if (debounceRef.current) clearTimeout(debounceRef.current)
       if (presetRef.current.expensive) {
         // First settled viewport after a preset pick: run it. Later pans keep
@@ -110,7 +125,7 @@ export function useHeroMapSearch() {
       setCount(null)
       debounceRef.current = setTimeout(() => {
         run(bounds, presetRef.current)
-      }, BOUNDS_DEBOUNCE_MS)
+      }, first ? 0 : BOUNDS_DEBOUNCE_MS)
     },
     [run],
   )
