@@ -40,11 +40,11 @@
 
 /* ---- chrome (off the map) ---- */
 .home-hero__chrome {
-  display: grid;
-  grid-template-columns: auto minmax(200px, 480px) minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px 16px;
-  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 12px 16px 10px;
   background: var(--surface-card);
   border-bottom: 1px solid var(--border-default);
   flex: none;
@@ -52,15 +52,22 @@
 
 .home-hero__tag {
   margin: 0;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--text-heading);
-  white-space: nowrap;
+  line-height: 1.2;
 }
 .home-hero__tag span {
   color: var(--text-secondary);
   font-weight: 400;
+}
+
+.home-hero__toolbar {
+  display: grid;
+  grid-template-columns: minmax(200px, 520px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 16px;
 }
 
 .home-hero__search {
@@ -71,6 +78,20 @@
 .home-hero__search > div {
   border-radius: 40px !important;
   padding: 6px 8px 6px 14px !important;
+}
+.map-search-rotating-ph {
+  z-index: 1;
+  animation: map-search-prompt-in 0.35s ease;
+}
+@keyframes map-search-prompt-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .home-hero__chips {
@@ -287,11 +308,50 @@
 }
 .home-hero__notice {
   left: 50%;
+  bottom: 72px;
   transform: translateX(-50%);
   font-size: 13px;
   color: var(--text-secondary);
   max-width: min(520px, 80%);
   text-align: center;
+}
+.home-hero__skip {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border-default);
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--text-heading);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+.home-hero__skip:hover {
+  border-color: var(--accent-sky);
+  color: var(--accent-sky);
+}
+.home-hero__skip:focus-visible {
+  outline: 2px solid var(--accent-sky);
+  outline-offset: 2px;
+}
+.home-hero__skip svg {
+  animation: home-hero-nudge 1.6s ease-in-out infinite;
+}
+@keyframes home-hero-nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
 }
 
 /* ---- property peek panel ---- */
@@ -492,11 +552,8 @@
 }
 
 @media (max-width: 1100px) {
-  .home-hero__chrome {
-    grid-template-columns: auto minmax(180px, 1fr);
-  }
-  .home-hero__chips {
-    grid-column: 1 / -1;
+  .home-hero__toolbar {
+    grid-template-columns: minmax(180px, 1fr);
   }
   .home-hero__cred {
     display: none;
@@ -510,15 +567,16 @@
     border-radius: 12px;
   }
   .home-hero__chrome {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
     padding: 10px 12px 8px;
   }
   .home-hero__tag {
     font-size: 18px;
-    white-space: normal;
+  }
+  .home-hero__toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
   }
   .home-hero__search {
     width: 100%;
@@ -532,8 +590,17 @@
   .home-hero__count {
     left: 12px;
     right: 12px;
-    bottom: 14px;
+    bottom: 66px;
     justify-content: center;
+  }
+  .home-hero__skip {
+    left: 50%;
+    right: auto;
+    bottom: 14px;
+    transform: translateX(-50%);
+  }
+  .home-hero__notice {
+    bottom: 118px;
   }
   .home-hero__panel {
     top: auto;
@@ -556,7 +623,9 @@
     opacity: 1;
   }
   .home-hero__pin--best .home-hero__pin-dot::after,
-  .home-hero__spin {
+  .home-hero__spin,
+  .home-hero__skip svg,
+  .map-search-rotating-ph {
     animation: none;
   }
   .home-hero__panel {

@@ -90,6 +90,15 @@ export const HERO_PRESETS: HeroPreset[] = [
 
 export const DEFAULT_HERO_PRESET = HERO_PRESETS[0]
 
+/** Rotating search-bar prompts. Map still opens on the visitor's city. */
+export const HERO_SEARCH_PROMPTS = [
+  'Type any address to see the gap',
+  'Type your next flip to see the numbers',
+  'Type a tired FSBO to see if it pencils',
+  'Type the deal you just got to see the gap',
+  'Type a foreclosure to see how to close it',
+]
+
 export function findHeroPreset(id: HeroPresetId): HeroPreset {
   return HERO_PRESETS.find((p) => p.id === id) ?? DEFAULT_HERO_PRESET
 }

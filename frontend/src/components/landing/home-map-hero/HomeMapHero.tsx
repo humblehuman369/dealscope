@@ -8,14 +8,14 @@ import {
   Map,
   useMap,
 } from '@vis.gl/react-google-maps'
-import { Loader2 } from 'lucide-react'
+import { ChevronDown, Loader2 } from 'lucide-react'
 import type { MapListing } from '@/lib/api'
 import type { MapBounds } from '@/hooks/useMapSearch'
 import { MapSearchBar, type MapSearchSelection } from '@/components/map-search/MapSearchBar'
 import { clusterListings, type ListingCluster } from '@/components/map-search/mapClustering'
 import { markerColorForCategory } from '@/lib/dealSignal'
 import { trackEvent } from '@/lib/eventTracking'
-import { HERO_PRESETS, type HeroPreset } from './presets'
+import { HERO_PRESETS, HERO_SEARCH_PROMPTS, type HeroPreset } from './presets'
 import { useHeroMapSearch } from './useHeroMapSearch'
 import { PropertyPeekPanel } from './PropertyPeekPanel'
 import heroMapStyles from './home-map-style.json'
@@ -55,6 +55,17 @@ function compactPrice(price: number | null): string {
 
 function validCoord(lat: number, lng: number): boolean {
   return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
+}
+
+const STICKY_NAV_OFFSET = 80
+
+function scrollPastHero() {
+  const hero = document.getElementById('home-hero')
+  const next = hero?.nextElementSibling
+  if (!(next instanceof HTMLElement)) return
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const top = next.getBoundingClientRect().top + window.scrollY - STICKY_NAV_OFFSET
+  window.scrollTo({ top, behavior: reduceMotion ? 'auto' : 'smooth' })
 }
 
 interface Props {
@@ -165,28 +176,27 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
         <div className="home-hero__shell">
           <div className="home-hero__chrome">
             <h1 id="home-hero-heading" className="home-hero__tag">
-              Find the deal. <span>See the gap.</span>
+              Find a Great Deal <span>& How to Close it.</span>
             </h1>
-            <div className="home-hero__search">
-              <MapSearchBar
-                onSelect={onSelectPlace}
-                initialValue={geo.region ? `${geo.city}, ${geo.region}` : geo.city}
-              />
+            <div className="home-hero__toolbar">
+              <div className="home-hero__search">
+                <MapSearchBar onSelect={onSelectPlace} placeholders={HERO_SEARCH_PROMPTS} />
+              </div>
+              <div className="home-hero__chips" role="group" aria-label="Deal type">
+                {HERO_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className={`home-hero__chip${search.preset.id === p.id ? ' home-hero__chip--on' : ''}`}
+                    aria-pressed={search.preset.id === p.id}
+                    onClick={() => onPreset(p)}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              <p className="home-hero__cred">Built by the founder of Foreclosure.com</p>
             </div>
-            <div className="home-hero__chips" role="group" aria-label="Deal type">
-              {HERO_PRESETS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className={`home-hero__chip${search.preset.id === p.id ? ' home-hero__chip--on' : ''}`}
-                  aria-pressed={search.preset.id === p.id}
-                  onClick={() => onPreset(p)}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-            <p className="home-hero__cred">Built by the founder of Foreclosure.com</p>
           </div>
 
           <div className="home-hero__map">
@@ -284,6 +294,15 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
               presetId={search.preset.id}
               onClose={() => setSelected(null)}
             />
+
+            <button
+              type="button"
+              className="home-hero__skip"
+              onClick={scrollPastHero}
+              aria-label="Scroll past the map"
+            >
+              <ChevronDown size={22} strokeWidth={2.4} aria-hidden="true" />
+            </button>
           </div>
         </div>
       </APIProvider>
