@@ -79,8 +79,14 @@ async function readHeroGeo() {
   const lat = parseFloat(h.get('x-vercel-ip-latitude') ?? '')
   const lng = parseFloat(h.get('x-vercel-ip-longitude') ?? '')
   const city = h.get('x-vercel-ip-city')
+  const region = h.get('x-vercel-ip-country-region')
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-  return { lat, lng, city: city ? decodeURIComponent(city) : 'this area' }
+  return {
+    lat,
+    lng,
+    city: city ? decodeURIComponent(city) : 'this area',
+    region: region ? decodeURIComponent(region) : undefined,
+  }
 }
 
 export default async function HomePage() {

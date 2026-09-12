@@ -29,6 +29,8 @@ interface MapSearchBarProps {
    * `--surface-*` tokens (which stay dark when the app theme is dark).
    */
   overlayChrome?: MapOverlayChrome | null
+  /** Text shown in the input before the user types (e.g. the visitor's city). */
+  initialValue?: string
 }
 
 function inferZoom(placeTypes: string[]): { zoom: number; isStreetAddress: boolean } {
@@ -53,8 +55,13 @@ function inferZoom(placeTypes: string[]): { zoom: number; isStreetAddress: boole
  * `searchMode='location'` so users can search by address, city, state, or
  * ZIP — same suggestions as the homepage hero search.
  */
-export function MapSearchBar({ onSelect, onClear, overlayChrome }: MapSearchBarProps) {
-  const [value, setValue] = useState('')
+export function MapSearchBar({
+  onSelect,
+  onClear,
+  overlayChrome,
+  initialValue = '',
+}: MapSearchBarProps) {
+  const [value, setValue] = useState(initialValue)
 
   const handlePlaceSelect = (
     address: string,

@@ -23,10 +23,17 @@ export interface HeroGeo {
   lat: number
   lng: number
   city: string
+  /** State or region code from geo headers, e.g. "FL". */
+  region?: string
 }
 
 /** Fallback when Vercel geo headers are missing (local dev, bots). */
-export const DEFAULT_HERO_GEO: HeroGeo = { lat: 26.3683, lng: -80.1289, city: 'Boca Raton' }
+export const DEFAULT_HERO_GEO: HeroGeo = {
+  lat: 26.3683,
+  lng: -80.1289,
+  city: 'Boca Raton',
+  region: 'FL',
+}
 
 /**
  * Cloud-based map style for the hero. Create a Map ID in Google Cloud
@@ -208,7 +215,10 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
             Find the deal. <span>See the gap.</span>
           </h1>
           <div className="home-hero__search">
-            <MapSearchBar onSelect={onSelectPlace} />
+            <MapSearchBar
+              onSelect={onSelectPlace}
+              initialValue={geo.region ? `${geo.city}, ${geo.region}` : geo.city}
+            />
           </div>
           <div className="home-hero__chips" role="group" aria-label="Deal type">
             {HERO_PRESETS.map((p) => (
