@@ -60,6 +60,7 @@ import {
   navigateToDiscoveryFromMapPath,
 } from './mapDiscoveryNavigation'
 import { getMapOverlaySurface } from './mapOverlayChrome'
+import { resolveMapUserLocation, readZipCache, writeZipCache } from './mapUserLocation'
 import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLayer'
 import type { NeighborhoodOverview } from '@/lib/api'
 import { brandMark } from '@/lib/brand'
@@ -79,7 +80,6 @@ const MIN_ZOOM_FOR_GEOCODE = 13
 const HINT_DISMISSED_KEY = 'dealscope:map-click-hint-dismissed'
 /** Mirrors `MAX_QUEUE_SIZE` in `backend/app/schemas/bulk_analyze.py`. */
 const BULK_ANALYZE_MAX = 50
-const ZIP_CACHE_PREFIX = 'dealscope:zip-cache:'
 // Per-map theme override (independent of the global app theme).
 // Persisted as JSON `{ value, base }` where `base` is the global theme the
 // override was set against. The override is only restored when the saved
@@ -126,31 +126,6 @@ function writePersistedMapThemeOverride(value: PersistedMapThemeOverride | null)
     }
   } catch {
     /* private browsing */
-  }
-}
-
-interface ZipCacheEntry {
-  lat: number
-  lng: number
-}
-
-function readZipCache(zip: string): ZipCacheEntry | null {
-  try {
-    const raw = localStorage.getItem(ZIP_CACHE_PREFIX + zip)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as ZipCacheEntry
-    if (typeof parsed?.lat === 'number' && typeof parsed?.lng === 'number') return parsed
-  } catch {
-    /* ignore */
-  }
-  return null
-}
-
-function writeZipCache(zip: string, entry: ZipCacheEntry): void {
-  try {
-    localStorage.setItem(ZIP_CACHE_PREFIX + zip, JSON.stringify(entry))
-  } catch {
-    /* ignore */
   }
 }
 
@@ -1112,64 +1087,58 @@ export function MapSearchView() {
   )
   const [geoResolved, setGeoResolved] = useState(hasExplicitLocation)
 
-  // Resolve the user's saved ZIP synchronously from cache so the map can mount
-  // immediately on subsequent visits without waiting on a geocode round-trip.
-  useEffect(() => {
-    if (hasExplicitLocation || !accountZip) return
-    const cached = readZipCache(accountZip)
-    if (cached) {
-      setAccountZipCenter(cached)
-      setGeoResolved(true)
-    }
-  }, [hasExplicitLocation, accountZip])
-
-  // Fallback geocode for the user's ZIP if not cached. Uses the same
-  // forwardGeocode helper as the URL-label flow.
-  useEffect(() => {
-    if (hasExplicitLocation || !accountZip || !apiKey) return
-    if (accountZipCenter) return // already resolved from cache
-    let cancelled = false
-    forwardGeocode(accountZip, apiKey).then((result) => {
-      if (cancelled || !result) return
-      const entry = { lat: result.lat, lng: result.lng }
-      setAccountZipCenter(entry)
-      writeZipCache(accountZip, entry)
-      setGeoResolved(true)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [hasExplicitLocation, accountZip, accountZipCenter, apiKey])
-
+  // One waterfall: cached ZIP → ZIP geocode → GPS → IP. ZIP geocode used to
+  // skip GPS entirely and never call setGeoResolved on failure, which left
+  // the map stuck on "Finding your location…".
   useEffect(() => {
     if (hasExplicitLocation) return
-    // Wait for auth to settle so we can prefer the saved ZIP over GPS.
-    if (authLoading) return
-    if (accountZip) return // account-zip path takes precedence
-    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
-      setGeoResolved(true)
-      return
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setGeoCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+    // Wait for auth unless we already know the saved ZIP (cached session).
+    if (authLoading && !accountZip) return
+
+    if (accountZip) {
+      const cached = readZipCache(accountZip)
+      if (cached) {
+        setAccountZipCenter(cached)
         setGeoResolved(true)
+        return
+      }
+    }
+
+    let cancelled = false
+    const safety = window.setTimeout(() => {
+      if (!cancelled) setGeoResolved(true)
+    }, 18_000)
+
+    void resolveMapUserLocation({
+      accountZip,
+      apiKey: apiKey ?? null,
+      geocodeZip: async (zip, key) => {
+        const result = await forwardGeocode(zip, key)
+        return result ? { lat: result.lat, lng: result.lng } : null
       },
-      () => {
-        // Geolocation denied or unavailable — use IP-based location fallback
-        fetch('https://ipapi.co/json/')
-          .then((r) => r.json())
-          .then((data) => {
-            if (data.latitude && data.longitude) {
-              setGeoCenter({ lat: data.latitude, lng: data.longitude })
-            }
-          })
-          .catch(() => {})
-          .finally(() => setGeoResolved(true))
-      },
-      { timeout: 5000, maximumAge: 300000 },
-    )
-  }, [hasExplicitLocation, authLoading, accountZip])
+      isCancelled: () => cancelled,
+    })
+      .then((result) => {
+        if (cancelled) return
+        if (result.source === 'account_zip' && result.center) {
+          setAccountZipCenter(result.center)
+        } else if (result.center) {
+          setGeoCenter(result.center)
+        }
+        setGeoResolved(true)
+      })
+      .catch(() => {
+        if (!cancelled) setGeoResolved(true)
+      })
+      .finally(() => {
+        window.clearTimeout(safety)
+      })
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(safety)
+    }
+  }, [hasExplicitLocation, authLoading, accountZip, apiKey])
 
   const initialCenter =
     paramCenter ??
@@ -1324,6 +1293,7 @@ export function MapSearchView() {
 
   const [showClickHint, setShowClickHint] = useState(false)
   const hintShownRef = useRef(false)
+  const geocodeSeqRef = useRef(0)
 
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<NeighborhoodOverview | null>(
     null,
@@ -1349,6 +1319,7 @@ export function MapSearchView() {
       if (!latLng || !apiKey) return
 
       if (currentZoomRef.current < MIN_ZOOM_FOR_GEOCODE) {
+        geocodeSeqRef.current += 1
         setGeocodeResult(null)
         setDropPin(null)
         setZoomHint(true)
@@ -1360,12 +1331,14 @@ export function MapSearchView() {
       setZoomHint(false)
       const lat = Number(latLng.lat)
       const lng = Number(latLng.lng)
+      const seq = ++geocodeSeqRef.current
       setDropPin({ lat, lng })
       setGeocodeResult(null)
       setPropertyPreview(null)
       setIsGeocoding(true)
 
       const result = await reverseGeocode(lat, lng, apiKey)
+      if (seq !== geocodeSeqRef.current) return
       setGeocodeResult(result)
       setIsGeocoding(false)
     },
@@ -1373,6 +1346,7 @@ export function MapSearchView() {
   )
 
   const clearGeocode = useCallback(() => {
+    geocodeSeqRef.current += 1
     setGeocodeResult(null)
     setDropPin(null)
     setIsGeocoding(false)

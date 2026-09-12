@@ -474,6 +474,18 @@ export interface NeighborhoodListResponse {
 // Domain API methods — all delegate to apiRequest from api-client.ts
 // ------------------------------------------------------------------
 
+function isSlowMapSearch(data: MapSearchRequest): boolean {
+  if (data.motivated_seller_search) return true
+  if (data.owner_tenure_min_years != null || data.owner_occupancy != null) return true
+  return (data.listing_statuses ?? []).some(
+    (status) =>
+      status === 'expired' ||
+      status === 'foreclosure' ||
+      status === 'pre-foreclosure' ||
+      status === 'auction',
+  )
+}
+
 export const api = {
   // Health check
   health: () => apiRequest<{ status: string }>('/health'),
@@ -525,16 +537,14 @@ export const api = {
 
   // Map Search
   mapSearch: {
-    searchArea: (data: MapSearchRequest) =>
+    searchArea: (data: MapSearchRequest, opts?: { signal?: AbortSignal }) =>
       apiRequest<MapSearchResponse>('/api/v1/properties/search-area', {
         method: 'POST',
         body: data,
-        // Motivated-seller (keyword scan) and expired (per-property Zillow
-        // validation) both fan out to many slow Zillow calls — give them headroom.
-        timeoutMs:
-          data.motivated_seller_search || data.listing_statuses?.includes('expired')
-            ? 120_000
-            : 60_000,
+        signal: opts?.signal,
+        // Motivated-seller, expired, distressed, and owner-records all fan
+        // out to many slow provider calls — give them headroom.
+        timeoutMs: isSlowMapSearch(data) ? 120_000 : 60_000,
       }),
     heatmap: (data: HeatmapRequest) =>
       apiRequest<HeatmapResponse>('/api/v1/map/heatmap', {

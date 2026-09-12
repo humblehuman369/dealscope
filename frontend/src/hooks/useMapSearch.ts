@@ -59,6 +59,14 @@ export const DEFAULT_FILTERS: MapSearchFilters = {
 const BOUNDS_DEBOUNCE_MS = 1200
 
 /**
+ * Debounce before a filter change triggers a search.
+ *
+ * Price inputs fire on every keystroke. Without this, typing "250000" bills
+ * six provider fan-outs. Pill clicks still feel instant at this delay.
+ */
+const FILTER_DEBOUNCE_MS = 400
+
+/**
  * Statuses whose backend dispatch is per-property rather than per-viewport:
  * each distressed bucket is its own Zillow URL query, and expired runs a
  * current-status lookup on every candidate.
@@ -108,6 +116,7 @@ export function useMapSearch() {
   const [areaSearchPending, setAreaSearchPending] = useState(false)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const filterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastBoundsRef = useRef<MapBounds | null>(null)
   const filtersRef = useRef<MapSearchFilters>(DEFAULT_FILTERS)
   const polygonRef = useRef<number[][] | null>(null)
@@ -115,6 +124,8 @@ export function useMapSearch() {
   // after mount still searches once so a restored expensive filter doesn't
   // land the user on an empty map.
   const hasSearchedRef = useRef(false)
+  const fetchGenRef = useRef(0)
+  const abortRef = useRef<AbortController | null>(null)
 
   // Hydrate filters + polygon from the tab's session snapshot exactly once on
   // first client mount. Done in an effect (not a useState initializer) so SSR
@@ -139,6 +150,15 @@ export function useMapSearch() {
     }
   }, [])
 
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      if (filterDebounceRef.current) clearTimeout(filterDebounceRef.current)
+      fetchGenRef.current += 1
+      abortRef.current?.abort()
+    }
+  }, [])
+
   const fetchListings = useCallback(
     async (
       bounds: MapBounds,
@@ -146,6 +166,11 @@ export function useMapSearch() {
       filterOverride?: MapSearchFilters,
     ) => {
       const activeFilters = filterOverride ?? filtersRef.current
+      const gen = ++fetchGenRef.current
+      abortRef.current?.abort()
+      const controller = new AbortController()
+      abortRef.current = controller
+
       hasSearchedRef.current = true
       setAreaSearchPending(false)
       setIsLoading(true)
@@ -183,19 +208,25 @@ export function useMapSearch() {
       }
 
       try {
-        const response: MapSearchResponse = await api.mapSearch.searchArea(request)
+        const response: MapSearchResponse = await api.mapSearch.searchArea(request, {
+          signal: controller.signal,
+        })
+        if (gen !== fetchGenRef.current) return
         setRawListings(response.listings)
         setTotalCount(response.total_count)
         setEstimatedTotal(response.estimated_total ?? null)
         setNotice(response.notice ?? null)
       } catch (err) {
+        if (gen !== fetchGenRef.current) return
         const msg = err instanceof Error ? err.message : 'Search failed'
         setError(msg)
         setRawListings([])
         setTotalCount(0)
         setEstimatedTotal(null)
       } finally {
-        setIsLoading(false)
+        if (gen === fetchGenRef.current) {
+          setIsLoading(false)
+        }
       }
     },
     [],
@@ -224,6 +255,7 @@ export function useMapSearch() {
   /** Run the withheld search for the current viewport (expensive modes). */
   const searchThisArea = useCallback(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (filterDebounceRef.current) clearTimeout(filterDebounceRef.current)
     if (!lastBoundsRef.current) return
     fetchListings(lastBoundsRef.current, polygonRef.current)
   }, [fetchListings])
@@ -246,6 +278,7 @@ export function useMapSearch() {
   const applySavedSearch = useCallback(
     (bounds: MapBounds, savedPolygon: number[][] | null, savedFilters: MapSearchFilters) => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
+      if (filterDebounceRef.current) clearTimeout(filterDebounceRef.current)
 
       setFilters(savedFilters)
       filtersRef.current = savedFilters
@@ -282,6 +315,13 @@ export function useMapSearch() {
 
   const updateFilters = useCallback(
     (next: Partial<MapSearchFilters>) => {
+      const merged = { ...filtersRef.current, ...next }
+      filtersRef.current = merged
+      setFilters(merged)
+      writeMapSnapshot({ filters: merged })
+
+      const ownerRecordsActive =
+        merged.owner_tenure_min_years != null || merged.owner_occupancy != null
       const needsRefetch =
         'listing_type' in next ||
         'property_type' in next ||
@@ -297,17 +337,15 @@ export function useMapSearch() {
         'owner_tenure_min_years' in next ||
         'owner_tenure_max_years' in next ||
         'owner_occupancy' in next ||
-        'owner_records_availability' in next
+        ('owner_records_availability' in next && ownerRecordsActive)
 
-      setFilters((prev) => {
-        const merged = { ...prev, ...next }
-        filtersRef.current = merged
-        writeMapSnapshot({ filters: merged })
-        if (needsRefetch && lastBoundsRef.current) {
-          fetchListings(lastBoundsRef.current, polygonRef.current, merged)
-        }
-        return merged
-      })
+      if (!needsRefetch || !lastBoundsRef.current) return
+
+      if (filterDebounceRef.current) clearTimeout(filterDebounceRef.current)
+      filterDebounceRef.current = setTimeout(() => {
+        if (!lastBoundsRef.current) return
+        fetchListings(lastBoundsRef.current, polygonRef.current, filtersRef.current)
+      }, FILTER_DEBOUNCE_MS)
     },
     [fetchListings],
   )

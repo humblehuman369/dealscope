@@ -136,6 +136,13 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'newest', label: 'Newest' },
 ]
 
+export function parsePriceFilterInput(raw: string): number | undefined {
+  const trimmed = raw.trim()
+  if (!trimmed) return undefined
+  const num = Number(trimmed)
+  return Number.isFinite(num) && num >= 0 ? num : undefined
+}
+
 function PillButton({
   active,
   onClick,
@@ -207,8 +214,7 @@ export function FilterPanel({
 }: FilterPanelProps) {
   const handlePriceChange = useCallback(
     (field: 'min_price' | 'max_price', raw: string) => {
-      const num = raw ? Number(raw) : undefined
-      onChange({ [field]: num && !isNaN(num) ? num : undefined })
+      onChange({ [field]: parsePriceFilterInput(raw) })
     },
     [onChange],
   )
