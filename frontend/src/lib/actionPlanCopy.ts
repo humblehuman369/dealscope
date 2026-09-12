@@ -14,13 +14,9 @@ export const ACTION_PLAN_COPY = {
     template: 'Template',
     ai: 'AI',
   },
-  verifiedBadge: 'Verified',
-  unverifiedBadge: 'Unverified',
-  researchingSteps: [
-    'Checking listing history',
-    'Checking court records',
-    'Looking up who to call',
-  ],
+  verifiedBadge: 'VERIFIED',
+  unverifiedBadge: 'UNVERIFIED',
+  researchingLabel: 'Looking up listing history and public records…',
   findingsHeading: 'What we found',
   notFoundHeading: 'Could not find',
   conflictsHeading: 'Conflicts',
@@ -28,12 +24,3 @@ export const ACTION_PLAN_COPY = {
 } as const
 
 export type ActionPlanSource = 'user' | 'template' | 'ai'
-
-const RESEARCH_STEP_MS = [15_000, 45_000] as const
-
-export function researchProgressLabel(createdAt: string, now = Date.now()): string {
-  const elapsed = now - new Date(createdAt).getTime()
-  if (elapsed < RESEARCH_STEP_MS[0]) return ACTION_PLAN_COPY.researchingSteps[0]
-  if (elapsed < RESEARCH_STEP_MS[1]) return ACTION_PLAN_COPY.researchingSteps[1]
-  return ACTION_PLAN_COPY.researchingSteps[2]
-}

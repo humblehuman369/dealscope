@@ -103,13 +103,12 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
 
-    # Action Plan research step (OpenAI web search). Provider is a setting so
-    # we can switch later; only ``openai`` is built. Key lives in Railway env.
-    ACTION_PLAN_RESEARCH_PROVIDER: str = "openai"
-    ACTION_PLAN_RESEARCH_MODEL: str = "gpt-5.6-terra"
-    ACTION_PLAN_RESEARCH_TIMEOUT_SECONDS: int = 240
-    ACTION_PLAN_RESEARCH_MAX_TOOL_CALLS: int = 12
-    ACTION_PLAN_RESEARCH_CACHE_TTL_SECONDS: int = 2_592_000  # 30 days
+    # Action Plan research step. Only ``openai`` is implemented; anthropic and
+    # xai raise NotImplementedError. Key lives in Railway / local .env.
+    RESEARCH_PROVIDER: str = "openai"
+    RESEARCH_MODEL: str = "gpt-5.6-terra"
+    RESEARCH_MAX_TOOL_CALLS: int = 12
+    RESEARCH_TIMEOUT_SECONDS: int = 240
 
     # Shared secret for triggering scheduled jobs from an external cron
     # (Vercel cron, GitHub Actions, k8s CronJob, etc.). Empty default means
@@ -327,15 +326,13 @@ class Settings(BaseSettings):
             s = "https://" + s
         return s.rstrip("/")
 
-    @field_validator("ACTION_PLAN_RESEARCH_PROVIDER", mode="before")
+    @field_validator("RESEARCH_PROVIDER", mode="before")
     @classmethod
     def normalize_research_provider(cls, v: str | None) -> str:
         allowed = {"openai", "anthropic", "xai"}
         normalized = (v or "openai").strip().lower()
         if normalized not in allowed:
-            raise ValueError(
-                "ACTION_PLAN_RESEARCH_PROVIDER must be one of openai, anthropic, xai"
-            )
+            raise ValueError("RESEARCH_PROVIDER must be one of openai, anthropic, xai")
         return normalized
 
     # ===========================================

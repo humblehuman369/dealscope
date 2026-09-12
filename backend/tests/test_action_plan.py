@@ -6,6 +6,7 @@ import uuid
 from datetime import UTC, datetime
 
 import pytest
+from app.core.config import settings
 from app.core.deps import get_current_user, get_current_verified_user
 from app.main import app
 from app.models.action_plan import ActionPlanCase, ActionPlanSource
@@ -15,6 +16,11 @@ from app.services.action_plan.cases import sort_case
 from app.services.action_plan.templates import build_template_plan
 from app.services.task_service import is_open_title_duplicate, task_service
 from sqlalchemy import select
+
+
+@pytest.fixture(autouse=True)
+def _no_openai_research(monkeypatch):
+    monkeypatch.setattr(settings, "OPENAI_API_KEY", "")
 
 # ------------------------------------------------------------------
 # Case sorting — nine cases plus overlapping-flag priority

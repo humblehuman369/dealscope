@@ -1,5 +1,5 @@
 /**
- * Action plan returned by POST .../action-plan and GET /action-plan/:id.
+ * Action plan returned by POST .../action-plan and GET /action-plans/:id.
  */
 
 import type { ContactRole, PropertyContact } from '@/types/contact'

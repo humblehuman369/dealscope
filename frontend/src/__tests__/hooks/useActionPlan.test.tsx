@@ -62,7 +62,7 @@ describe('useActionPlanPoll', () => {
     mockApiGet.mockResolvedValue(plan('researching'))
     const { result } = renderHook(() => useActionPlanPoll('plan-1', true), { wrapper })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(mockApiGet).toHaveBeenCalledWith('/api/v1/action-plan/plan-1')
+    expect(mockApiGet).toHaveBeenCalledWith('/api/v1/action-plans/plan-1')
     expect(result.current.data?.status).toBe('researching')
     expect(ACTION_PLAN_POLL_MS).toBe(5_000)
   })

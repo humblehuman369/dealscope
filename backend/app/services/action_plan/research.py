@@ -1,13 +1,13 @@
 """Action Plan research step — find the missing public facts.
 
 Provider is a setting (``openai`` | ``anthropic`` | ``xai``). Only OpenAI is
-built. The two functions the rest of the feature uses:
+implemented; the others raise ``NotImplementedError``. The two functions the
+rest of the feature uses:
 
 1. ``start_research`` — send a background Responses request, return the id.
-2. ``poll_research`` — retrieve once; still running, or parsed JSON + usage.
+2. ``check_research`` — retrieve once; running, completed + findings, or failed.
 
-If the key is missing, the provider is not built, or the call fails, the
-caller ships the template plan. Never invent facts.
+Never invent facts. Cache hits skip OpenAI at the create endpoint, not here.
 """
 
 from __future__ import annotations
@@ -181,6 +181,7 @@ CASE_TARGETS: dict[ActionPlanCase, list[str]] = {
 }
 
 _RUNNING_STATUSES = frozenset({"queued", "in_progress", "cancelling"})
+RESEARCH_CACHE_TTL_SECONDS = 30 * 24 * 60 * 60
 
 
 class ResearchProvider(StrEnum):
@@ -190,58 +191,40 @@ class ResearchProvider(StrEnum):
 
 
 class ResearchUnavailable(Exception):
-    """No key, provider not built, or the HTTP call could not start."""
+    """No key, or the HTTP call could not start."""
 
 
 @dataclass(frozen=True)
-class ResearchStart:
-    kind: Literal["started", "cached", "skipped"]
-    response_id: str | None = None
-    research: dict[str, Any] | None = None
-    reason: str | None = None
-
-
-@dataclass(frozen=True)
-class ResearchPoll:
+class ResearchCheck:
     status: Literal["running", "completed", "failed"]
     research: dict[str, Any] | None = None
     searches: int = 0
     input_tokens: int = 0
     output_tokens: int = 0
-    error: str | None = None
+    reason: str | None = None
 
 
 def resolve_provider() -> ResearchProvider:
-    raw = (settings.ACTION_PLAN_RESEARCH_PROVIDER or "openai").strip().lower()
+    raw = (settings.RESEARCH_PROVIDER or "openai").strip().lower()
     try:
         return ResearchProvider(raw)
     except ValueError:
         return ResearchProvider.OPENAI
 
 
-def provider_is_built(provider: ResearchProvider) -> bool:
-    return provider is ResearchProvider.OPENAI
-
-
-def cache_key(
-    case: ActionPlanCase,
-    *,
-    parcel: str | None,
-    address: str | None,
-) -> str | None:
-    identifier = (parcel or "").strip() or (address or "").strip()
+def cache_key(*, parcel: str | None, address: str | None) -> str | None:
+    identifier = (parcel or "").strip() or _normalize_cache_address(address)
     if not identifier:
         return None
-    return CacheService.generate_key(f"action-plan-research:{case.value}", identifier)
+    return CacheService.generate_key("action-plan-research", identifier)
 
 
-async def cached_research(
-    case: ActionPlanCase,
-    *,
-    parcel: str | None,
-    address: str | None,
-) -> dict[str, Any] | None:
-    key = cache_key(case, parcel=parcel, address=address)
+def _normalize_cache_address(address: str | None) -> str:
+    return " ".join((address or "").split()).lower()
+
+
+async def cached_research(*, parcel: str | None, address: str | None) -> dict[str, Any] | None:
+    key = cache_key(parcel=parcel, address=address)
     if not key:
         return None
     cached = await get_cache_service().get(key)
@@ -249,20 +232,15 @@ async def cached_research(
 
 
 async def store_cached_research(
-    case: ActionPlanCase,
     research: dict[str, Any],
     *,
     parcel: str | None,
     address: str | None,
 ) -> None:
-    key = cache_key(case, parcel=parcel, address=address)
+    key = cache_key(parcel=parcel, address=address)
     if not key:
         return
-    await get_cache_service().set(
-        key,
-        research,
-        ttl_seconds=settings.ACTION_PLAN_RESEARCH_CACHE_TTL_SECONDS,
-    )
+    await get_cache_service().set(key, research, ttl_seconds=RESEARCH_CACHE_TTL_SECONDS)
 
 
 def estimate_cost_cents(
@@ -322,7 +300,7 @@ def build_openai_request(
     create uses the default ``background=True``.
     """
     return {
-        "model": model or settings.ACTION_PLAN_RESEARCH_MODEL,
+        "model": model or settings.RESEARCH_MODEL,
         "background": background,
         "store": store,
         "reasoning": {"effort": "medium"},
@@ -337,7 +315,7 @@ def build_openai_request(
         ],
         "max_tool_calls": max_tool_calls
         if max_tool_calls is not None
-        else settings.ACTION_PLAN_RESEARCH_MAX_TOOL_CALLS,
+        else settings.RESEARCH_MAX_TOOL_CALLS,
         "text": {
             "format": {
                 "type": "json_schema",
@@ -407,29 +385,23 @@ def poll_status_of(openai_status: str | None) -> Literal["running", "completed",
 
 
 async def start_research(
-    payload: dict[str, Any] | None,
+    property_payload: dict[str, Any] | None,
     case: ActionPlanCase,
     *,
     address: str | None = None,
     county: str | None = None,
     state: str | None = None,
     parcel: str | None = None,
-) -> ResearchStart:
-    """Function 1: send the background request (or skip / cache hit)."""
-    cached = await cached_research(case, parcel=parcel, address=address)
-    if cached:
-        return ResearchStart(kind="cached", research=cached)
-
+) -> str:
+    """Send the background Responses request. Returns the OpenAI response id."""
     provider = resolve_provider()
-    if not provider_is_built(provider):
-        logger.info("Action plan research provider %s is not built — shipping template", provider)
-        return ResearchStart(kind="skipped", reason="provider_not_built")
+    if provider is not ResearchProvider.OPENAI:
+        raise NotImplementedError(f"RESEARCH_PROVIDER={provider.value} is not implemented")
     if not (settings.OPENAI_API_KEY or "").strip():
-        logger.info("OPENAI_API_KEY not set — action plan research will use the template")
-        return ResearchStart(kind="skipped", reason="no_key")
+        raise ResearchUnavailable("OPENAI_API_KEY not set")
 
     prompt = build_property_prompt(
-        payload,
+        property_payload,
         case,
         address=address,
         county=county,
@@ -437,26 +409,20 @@ async def start_research(
         parcel=parcel,
     )
     body = build_openai_request(SYSTEM_PROMPT, prompt)
-    try:
-        created = await _openai_request("POST", "/responses", json_body=body)
-    except Exception as exc:
-        logger.warning("OpenAI research start failed: %s", exc)
-        return ResearchStart(kind="skipped", reason="start_failed")
-
+    created = await _openai_request("POST", "/responses", json_body=body)
     response_id = created.get("id")
     if not isinstance(response_id, str) or not response_id:
-        logger.warning("OpenAI research start returned no response id")
-        return ResearchStart(kind="skipped", reason="start_failed")
-    return ResearchStart(kind="started", response_id=response_id)
+        raise ResearchUnavailable("OpenAI research start returned no response id")
+    return response_id
 
 
-async def poll_research(response_id: str) -> ResearchPoll:
-    """Function 2: poll once. Still running, or parsed JSON plus usage."""
+async def check_research(response_id: str) -> ResearchCheck:
+    """Poll once. Running, or parsed findings plus usage, or failed with a reason."""
     try:
         payload = await _openai_request("GET", f"/responses/{response_id}")
     except Exception as exc:
         logger.warning("OpenAI research poll failed: %s", exc)
-        return ResearchPoll(status="failed", error=str(exc))
+        return ResearchCheck(status="failed", reason=str(exc))
 
     life = poll_status_of(payload.get("status") if isinstance(payload.get("status"), str) else None)
     searches = count_web_searches(payload.get("output"))
@@ -465,33 +431,33 @@ async def poll_research(response_id: str) -> ResearchPoll:
     output_tokens = _int_or_zero(usage.get("output_tokens"))
 
     if life == "running":
-        return ResearchPoll(
+        return ResearchCheck(
             status="running",
             searches=searches,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
         )
     if life == "failed":
-        return ResearchPoll(
+        return ResearchCheck(
             status="failed",
             searches=searches,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
-            error=str(payload.get("error") or payload.get("status") or "failed"),
+            reason=str(payload.get("error") or payload.get("status") or "failed"),
         )
 
     try:
         research = parse_research_json(extract_output_text(payload))
     except (ValueError, json.JSONDecodeError) as exc:
         logger.warning("OpenAI research JSON unusable: %s", exc)
-        return ResearchPoll(
+        return ResearchCheck(
             status="failed",
             searches=searches,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
-            error=str(exc),
+            reason=str(exc),
         )
-    return ResearchPoll(
+    return ResearchCheck(
         status="completed",
         research=research,
         searches=searches,
@@ -518,25 +484,35 @@ async def kickoff_research(
 ) -> None:
     """Fill the plan row after the template is stored. Mutates ``plan`` in place."""
     plan.provider = resolve_provider().value
-    started = await start_research(
-        payload,
-        plan.case,
-        address=address,
-        county=county,
-        state=state,
-        parcel=parcel,
-    )
     now = datetime.now(UTC)
-    if started.kind == "cached" and started.research is not None:
-        _apply_completed(plan, started.research, searches=0, input_tokens=0, output_tokens=0, cost_cents=0)
+    cached = await cached_research(parcel=parcel, address=address)
+    if cached:
+        _apply_completed(plan, cached, searches=0, input_tokens=0, output_tokens=0, cost_cents=0)
         plan.updated_at = now
         return
-    if started.kind == "started" and started.response_id:
-        plan.provider_response_id = started.response_id
-        plan.status = ActionPlanStatus.RESEARCHING
+    try:
+        response_id = await start_research(
+            payload,
+            plan.case,
+            address=address,
+            county=county,
+            state=state,
+            parcel=parcel,
+        )
+    except NotImplementedError:
+        raise
+    except ResearchUnavailable as exc:
+        logger.info("Action plan research skipped: %s", exc)
+        plan.status = ActionPlanStatus.READY
         plan.updated_at = now
         return
-    plan.status = ActionPlanStatus.READY
+    except Exception as exc:
+        logger.warning("OpenAI research start failed: %s", exc)
+        plan.status = ActionPlanStatus.READY
+        plan.updated_at = now
+        return
+    plan.provider_response_id = response_id
+    plan.status = ActionPlanStatus.RESEARCHING
     plan.updated_at = now
 
 
@@ -554,47 +530,47 @@ async def refresh_research(
         if plan.provider_response_id:
             await cancel_research(plan.provider_response_id)
         logger.info(
-            "Action plan %s research hit the %ss hard stop — shipping template",
+            "Action plan %s research hit the %ss hard stop",
             plan.id,
             _timeout_seconds(),
         )
-        plan.status = ActionPlanStatus.READY
+        plan.status = ActionPlanStatus.FAILED
         plan.updated_at = now
         return
     if not plan.provider_response_id:
-        plan.status = ActionPlanStatus.READY
+        plan.status = ActionPlanStatus.FAILED
         plan.updated_at = now
         return
 
-    polled = await poll_research(plan.provider_response_id)
-    if polled.status == "running":
+    checked = await check_research(plan.provider_response_id)
+    if checked.status == "running":
         plan.status = ActionPlanStatus.RESEARCHING
-        if polled.searches:
-            plan.searches = polled.searches
+        if checked.searches:
+            plan.searches = checked.searches
         plan.updated_at = now
         return
-    if polled.status == "completed" and polled.research is not None:
+    if checked.status == "completed" and checked.research is not None:
         cost = estimate_cost_cents(
-            settings.ACTION_PLAN_RESEARCH_MODEL,
-            polled.searches,
-            polled.input_tokens,
-            polled.output_tokens,
+            settings.RESEARCH_MODEL,
+            checked.searches,
+            checked.input_tokens,
+            checked.output_tokens,
         )
         _apply_completed(
             plan,
-            polled.research,
-            searches=polled.searches,
-            input_tokens=polled.input_tokens,
-            output_tokens=polled.output_tokens,
+            checked.research,
+            searches=checked.searches,
+            input_tokens=checked.input_tokens,
+            output_tokens=checked.output_tokens,
             cost_cents=cost,
         )
-        await store_cached_research(plan.case, polled.research, parcel=parcel, address=address)
+        await store_cached_research(checked.research, parcel=parcel, address=address)
         plan.updated_at = now
         return
-    plan.status = ActionPlanStatus.READY
-    plan.searches = polled.searches or plan.searches
-    plan.input_tokens = polled.input_tokens or plan.input_tokens
-    plan.output_tokens = polled.output_tokens or plan.output_tokens
+    plan.status = ActionPlanStatus.FAILED
+    plan.searches = checked.searches or plan.searches
+    plan.input_tokens = checked.input_tokens or plan.input_tokens
+    plan.output_tokens = checked.output_tokens or plan.output_tokens
     plan.updated_at = now
 
 
@@ -783,7 +759,7 @@ def _timed_out(plan: ActionPlan, now: datetime) -> bool:
 
 
 def _timeout_seconds() -> int:
-    return int(settings.ACTION_PLAN_RESEARCH_TIMEOUT_SECONDS or 240)
+    return int(settings.RESEARCH_TIMEOUT_SECONDS or 240)
 
 
 def _int_or_zero(value: Any) -> int:

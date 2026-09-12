@@ -5,14 +5,14 @@
  *
  * Opens from Discovery and the deal page. Shows the template immediately,
  * polls research in the background, and Apply writes the template tasks into
- * the deal. Findings land as-is with Verified / Unverified badges.
+ * the deal. Findings land as-is with VERIFIED / UNVERIFIED badges.
  */
 
 import { useEffect, useRef } from 'react'
 import { Route, X } from 'lucide-react'
 import { useFocusTrap } from '@/components/ui/useFocusTrap'
 import { useActionPlanPoll, useApplyActionPlan, useCreateActionPlan } from '@/hooks/useActionPlan'
-import { ACTION_PLAN_COPY, researchProgressLabel } from '@/lib/actionPlanCopy'
+import { ACTION_PLAN_COPY } from '@/lib/actionPlanCopy'
 import { isPlanResearching, type ActionPlan, type ResearchFinding } from '@/types/actionPlan'
 
 interface ActionPlanSlideOverProps {
@@ -172,7 +172,13 @@ function PlanBody({ plan }: { plan: ActionPlan }) {
     <>
       {researching ? (
         <p className="text-sm text-[var(--text-label)]" aria-live="polite">
-          {researchProgressLabel(plan.created_at)}
+          {ACTION_PLAN_COPY.researchingLabel}
+        </p>
+      ) : null}
+
+      {plan.status === 'failed' ? (
+        <p className="text-sm text-[var(--text-label)]">
+          Research didn&apos;t finish. Using the template.
         </p>
       ) : null}
 

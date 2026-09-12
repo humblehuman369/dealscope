@@ -4,7 +4,7 @@
  * Hooks for the per-property action plan.
  *
  * Create returns the template immediately. While status is queued/researching,
- * GET /action-plan/:id is polled every five seconds (OpenAI poll interval).
+ * GET /action-plans/:id is polled every five seconds.
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -47,7 +47,7 @@ export function useActionPlanPoll(planId: string | null, enabled: boolean) {
       if (!planId) {
         return Promise.reject(new Error('plan id required'))
       }
-      return api.get<ActionPlan>(`/api/v1/action-plan/${planId}`)
+      return api.get<ActionPlan>(`/api/v1/action-plans/${planId}`)
     },
     enabled: Boolean(planId) && enabled,
     refetchInterval: (query) => (isPlanResearching(query.state.data) ? ACTION_PLAN_POLL_MS : false),

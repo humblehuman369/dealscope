@@ -224,7 +224,7 @@ async def create_action_plan(
 
 
 @router.get(
-    "/action-plan/{plan_id}",
+    "/action-plans/{plan_id}",
     response_model=ActionPlanOut,
     summary="Poll an action plan, including in-flight research",
 )

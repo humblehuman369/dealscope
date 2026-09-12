@@ -16,15 +16,16 @@ from app.main import app
 from app.models.action_plan import ActionPlan, ActionPlanCase, ActionPlanStatus
 from app.services.action_plan.research import (
     CASE_TARGETS,
-    ResearchPoll,
-    ResearchStart,
+    RESEARCH_CACHE_TTL_SECONDS,
+    ResearchCheck,
+    ResearchUnavailable,
     build_openai_request,
     build_property_prompt,
+    cache_key,
+    check_research,
     count_web_searches,
     estimate_cost_cents,
     parse_research_json,
-    poll_research,
-    provider_is_built,
     refresh_research,
     resolve_provider,
     start_research,
@@ -229,73 +230,76 @@ class TestPromptAndProvider:
         assert body["store"] is True
         assert body["tools"][0]["filters"]["blocked_domains"]
 
-    def test_openai_is_built_others_are_not(self):
-        from app.services.action_plan.research import ResearchProvider
-
-        assert provider_is_built(ResearchProvider.OPENAI)
-        assert not provider_is_built(ResearchProvider.ANTHROPIC)
-        assert not provider_is_built(ResearchProvider.XAI)
+    def test_cache_key_is_parcel_then_normalized_address(self):
+        by_parcel = cache_key(parcel="2433-501-0044-000-5", address="117 River Hammock Dr")
+        by_address = cache_key(parcel=None, address="117  River Hammock Dr")
+        by_address_case = cache_key(parcel=None, address="117 river hammock dr")
+        assert by_parcel is not None
+        assert by_address is not None
+        assert by_parcel != by_address
+        assert by_address == by_address_case
+        assert RESEARCH_CACHE_TTL_SECONDS == 30 * 24 * 60 * 60
 
     @pytest.mark.asyncio
-    async def test_anthropic_skips_openai(self, monkeypatch):
-        monkeypatch.setattr(settings, "ACTION_PLAN_RESEARCH_PROVIDER", "anthropic")
+    async def test_start_sends_background_request(self, monkeypatch):
+        monkeypatch.setattr(settings, "RESEARCH_PROVIDER", "openai")
+        monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test")
+        openai = AsyncMock(return_value={"id": "resp_xyz", "status": "queued"})
+        monkeypatch.setattr("app.services.action_plan.research._openai_request", openai)
+        response_id = await start_research(
+            PRE_FORECLOSURE_PAYLOAD,
+            ActionPlanCase.PRE_FORECLOSURE,
+            address="117 River Hammock Dr, Fort Pierce, FL 34982",
+        )
+        assert response_id == "resp_xyz"
+        openai.assert_awaited_once()
+        method, path = openai.await_args.args[:2]
+        assert method == "POST"
+        assert path == "/responses"
+        body = openai.await_args.kwargs["json_body"]
+        assert body["background"] is True
+        assert body["store"] is True
+        assert body["model"] == "gpt-5.6-terra"
+        assert body["max_tool_calls"] == 12
+
+    @pytest.mark.asyncio
+    async def test_anthropic_raises(self, monkeypatch):
+        monkeypatch.setattr(settings, "RESEARCH_PROVIDER", "anthropic")
         monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test-not-used")
 
         async def boom(*_a, **_k):
             raise AssertionError("OpenAI must not be called when provider is anthropic")
 
         monkeypatch.setattr("app.services.action_plan.research._openai_request", boom)
-        monkeypatch.setattr("app.services.action_plan.research.cached_research", AsyncMock(return_value=None))
-        result = await start_research(PRE_FORECLOSURE_PAYLOAD, ActionPlanCase.PRE_FORECLOSURE, address="x")
-        assert result.kind == "skipped"
-        assert result.reason == "provider_not_built"
+        with pytest.raises(NotImplementedError, match="anthropic"):
+            await start_research(PRE_FORECLOSURE_PAYLOAD, ActionPlanCase.PRE_FORECLOSURE, address="x")
         assert resolve_provider().value == "anthropic"
 
     @pytest.mark.asyncio
-    async def test_xai_skips_openai(self, monkeypatch):
-        monkeypatch.setattr(settings, "ACTION_PLAN_RESEARCH_PROVIDER", "xai")
+    async def test_xai_raises(self, monkeypatch):
+        monkeypatch.setattr(settings, "RESEARCH_PROVIDER", "xai")
         monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test-not-used")
-        monkeypatch.setattr("app.services.action_plan.research.cached_research", AsyncMock(return_value=None))
-        result = await start_research(PRE_FORECLOSURE_PAYLOAD, ActionPlanCase.ON_MARKET, address="x")
-        assert result.kind == "skipped"
-        assert result.reason == "provider_not_built"
+        with pytest.raises(NotImplementedError, match="xai"):
+            await start_research(PRE_FORECLOSURE_PAYLOAD, ActionPlanCase.ON_MARKET, address="x")
 
     @pytest.mark.asyncio
-    async def test_missing_key_skips(self, monkeypatch):
-        monkeypatch.setattr(settings, "ACTION_PLAN_RESEARCH_PROVIDER", "openai")
+    async def test_missing_key_raises(self, monkeypatch):
+        monkeypatch.setattr(settings, "RESEARCH_PROVIDER", "openai")
         monkeypatch.setattr(settings, "OPENAI_API_KEY", "")
-        monkeypatch.setattr("app.services.action_plan.research.cached_research", AsyncMock(return_value=None))
-        result = await start_research(PRE_FORECLOSURE_PAYLOAD, ActionPlanCase.PRE_FORECLOSURE, address="x")
-        assert result.kind == "skipped"
-        assert result.reason == "no_key"
+        with pytest.raises(ResearchUnavailable, match="OPENAI_API_KEY"):
+            await start_research(PRE_FORECLOSURE_PAYLOAD, ActionPlanCase.PRE_FORECLOSURE, address="x")
 
+
+class TestCheckResearch:
     @pytest.mark.asyncio
-    async def test_cache_hit_skips_openai(self, monkeypatch):
-        monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test")
-        monkeypatch.setattr(
-            "app.services.action_plan.research.cached_research",
-            AsyncMock(return_value=RIVER_HAMMOCK_RESEARCH),
-        )
-
-        async def boom(*_a, **_k):
-            raise AssertionError("cache hit must not call OpenAI")
-
-        monkeypatch.setattr("app.services.action_plan.research._openai_request", boom)
-        result = await start_research(PRE_FORECLOSURE_PAYLOAD, ActionPlanCase.PRE_FORECLOSURE, address="x")
-        assert result.kind == "cached"
-        assert result.research["best_first_call"]["who"] == "Pat Koolik"
-
-
-class TestPollOnce:
-    @pytest.mark.asyncio
-    async def test_still_running(self, monkeypatch):
+    async def test_poll_running(self, monkeypatch):
         monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test")
         monkeypatch.setattr(
             "app.services.action_plan.research._openai_request",
             AsyncMock(return_value={"id": "resp_1", "status": "in_progress", "output": []}),
         )
-        polled = await poll_research("resp_1")
-        assert polled.status == "running"
+        checked = await check_research("resp_1")
+        assert checked.status == "running"
 
     @pytest.mark.asyncio
     async def test_queued_is_running(self, monkeypatch):
@@ -304,11 +308,11 @@ class TestPollOnce:
             "app.services.action_plan.research._openai_request",
             AsyncMock(return_value={"status": "queued"}),
         )
-        polled = await poll_research("resp_1")
-        assert polled.status == "running"
+        checked = await check_research("resp_1")
+        assert checked.status == "running"
 
     @pytest.mark.asyncio
-    async def test_completed_parses_output_text(self, monkeypatch):
+    async def test_poll_completed_river_hammock(self, monkeypatch):
         monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test")
         monkeypatch.setattr(
             "app.services.action_plan.research._openai_request",
@@ -321,11 +325,17 @@ class TestPollOnce:
                 }
             ),
         )
-        polled = await poll_research("resp_1")
-        assert polled.status == "completed"
-        assert polled.searches == 2
-        assert polled.input_tokens == 40000
-        assert polled.research["best_first_call"]["who"] == "Pat Koolik"
+        checked = await check_research("resp_1")
+        assert checked.status == "completed"
+        assert checked.searches == 2
+        assert checked.input_tokens == 40000
+        assert checked.output_tokens == 3000
+        assert checked.research["best_first_call"]["who"] == "Pat Koolik"
+        assert any(f["status"] == "VERIFIED" for f in checked.research["findings"])
+        assert any(
+            f["field"] == "foreclosure_case_number" and f["status"] == "UNVERIFIED"
+            for f in checked.research["findings"]
+        )
 
     @pytest.mark.asyncio
     async def test_failed_status(self, monkeypatch):
@@ -334,16 +344,17 @@ class TestPollOnce:
             "app.services.action_plan.research._openai_request",
             AsyncMock(return_value={"status": "failed", "error": "boom"}),
         )
-        polled = await poll_research("resp_1")
-        assert polled.status == "failed"
+        checked = await check_research("resp_1")
+        assert checked.status == "failed"
+        assert checked.reason == "boom"
 
     @pytest.mark.asyncio
-    async def test_timeout_cancels_and_ships_template(self, monkeypatch):
-        monkeypatch.setattr(settings, "ACTION_PLAN_RESEARCH_TIMEOUT_SECONDS", 240)
+    async def test_timeout_cancels_and_marks_failed(self, monkeypatch):
+        monkeypatch.setattr(settings, "RESEARCH_TIMEOUT_SECONDS", 240)
         cancel = AsyncMock()
-        poll = AsyncMock(side_effect=AssertionError("timed-out plans must not poll OpenAI"))
+        check = AsyncMock(side_effect=AssertionError("timed-out plans must not poll OpenAI"))
         monkeypatch.setattr("app.services.action_plan.research.cancel_research", cancel)
-        monkeypatch.setattr("app.services.action_plan.research.poll_research", poll)
+        monkeypatch.setattr("app.services.action_plan.research.check_research", check)
         plan = ActionPlan(
             id=uuid.uuid4(),
             saved_property_id=uuid.uuid4(),
@@ -355,10 +366,10 @@ class TestPollOnce:
             created_at=datetime.now(UTC) - timedelta(minutes=5),
         )
         await refresh_research(plan)
-        assert plan.status is ActionPlanStatus.READY
+        assert plan.status is ActionPlanStatus.FAILED
         assert plan.research is None
         cancel.assert_awaited_once_with("resp_timeout")
-        poll.assert_not_called()
+        check.assert_not_called()
 
 
 @pytest.fixture
@@ -395,10 +406,8 @@ async def _save_property(auth_client, listing: dict) -> str:
 
 
 async def test_create_without_key_stays_template(auth_client, monkeypatch):
-    monkeypatch.setattr(
-        "app.services.action_plan.research.poll_research",
-        AsyncMock(side_effect=AssertionError("ready plans must not poll OpenAI")),
-    )
+    monkeypatch.setattr(settings, "OPENAI_API_KEY", "")
+    monkeypatch.setattr("app.services.action_plan.research.cached_research", AsyncMock(return_value=None))
     property_id = await _save_property(
         auth_client,
         {"listing_status": "OFF_MARKET", "is_off_market": True, "is_pre_foreclosure": True},
@@ -410,7 +419,7 @@ async def test_create_without_key_stays_template(auth_client, monkeypatch):
     assert body["source"] == "template"
     assert body["research"] is None
     assert len(body["tasks"]) >= 3
-    polled = await auth_client.get(f"/api/v1/action-plan/{body['id']}")
+    polled = await auth_client.get(f"/api/v1/action-plans/{body['id']}")
     assert polled.status_code == 200
     assert polled.json()["status"] == "ready"
     assert polled.json()["research"] is None
@@ -418,11 +427,11 @@ async def test_create_without_key_stays_template(auth_client, monkeypatch):
 
 async def test_create_starts_research_when_openai_returns_id(auth_client, monkeypatch):
     monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test")
-    monkeypatch.setattr(settings, "ACTION_PLAN_RESEARCH_PROVIDER", "openai")
+    monkeypatch.setattr(settings, "RESEARCH_PROVIDER", "openai")
     monkeypatch.setattr("app.services.action_plan.research.cached_research", AsyncMock(return_value=None))
     monkeypatch.setattr(
         "app.services.action_plan.research.start_research",
-        AsyncMock(return_value=ResearchStart(kind="started", response_id="resp_abc")),
+        AsyncMock(return_value="resp_abc"),
     )
     property_id = await _save_property(
         auth_client,
@@ -441,12 +450,12 @@ async def test_get_poll_attaches_findings(auth_client, monkeypatch):
     monkeypatch.setattr("app.services.action_plan.research.cached_research", AsyncMock(return_value=None))
     monkeypatch.setattr(
         "app.services.action_plan.research.start_research",
-        AsyncMock(return_value=ResearchStart(kind="started", response_id="resp_abc")),
+        AsyncMock(return_value="resp_abc"),
     )
     monkeypatch.setattr(
-        "app.services.action_plan.research.poll_research",
+        "app.services.action_plan.research.check_research",
         AsyncMock(
-            return_value=ResearchPoll(
+            return_value=ResearchCheck(
                 status="completed",
                 research=RIVER_HAMMOCK_RESEARCH,
                 searches=8,
@@ -462,13 +471,16 @@ async def test_get_poll_attaches_findings(auth_client, monkeypatch):
     )
     created = await auth_client.post(f"/api/v1/properties/saved/{property_id}/action-plan")
     plan_id = created.json()["id"]
-    polled = await auth_client.get(f"/api/v1/action-plan/{plan_id}")
+    polled = await auth_client.get(f"/api/v1/action-plans/{plan_id}")
     assert polled.status_code == 200, polled.text
     body = polled.json()
     assert body["status"] == "ready"
     assert body["research"]["best_first_call"]["who"] == "Pat Koolik"
     assert any(f["status"] == "VERIFIED" for f in body["research"]["findings"])
-    assert any(f["status"] == "UNVERIFIED" and f["field"] == "foreclosure_case_number" for f in body["research"]["findings"])
+    assert any(
+        f["status"] == "UNVERIFIED" and f["field"] == "foreclosure_case_number"
+        for f in body["research"]["findings"]
+    )
 
 
 async def test_get_still_running(auth_client, monkeypatch):
@@ -476,34 +488,54 @@ async def test_get_still_running(auth_client, monkeypatch):
     monkeypatch.setattr("app.services.action_plan.research.cached_research", AsyncMock(return_value=None))
     monkeypatch.setattr(
         "app.services.action_plan.research.start_research",
-        AsyncMock(return_value=ResearchStart(kind="started", response_id="resp_abc")),
+        AsyncMock(return_value="resp_abc"),
     )
     monkeypatch.setattr(
-        "app.services.action_plan.research.poll_research",
-        AsyncMock(return_value=ResearchPoll(status="running")),
+        "app.services.action_plan.research.check_research",
+        AsyncMock(return_value=ResearchCheck(status="running")),
     )
     property_id = await _save_property(
         auth_client,
         {"listing_status": "FOR_SALE", "is_off_market": False, "days_on_market": 12},
     )
     created = await auth_client.post(f"/api/v1/properties/saved/{property_id}/action-plan")
-    polled = await auth_client.get(f"/api/v1/action-plan/{created.json()['id']}")
+    polled = await auth_client.get(f"/api/v1/action-plans/{created.json()['id']}")
     assert polled.status_code == 200
     assert polled.json()["status"] == "researching"
     assert polled.json()["research"] is None
 
 
 async def test_get_unknown_plan_404(auth_client):
-    missing = await auth_client.get(f"/api/v1/action-plan/{uuid.uuid4()}")
+    missing = await auth_client.get(f"/api/v1/action-plans/{uuid.uuid4()}")
     assert missing.status_code == 404
+
+
+async def test_cache_hit_skips_openai(auth_client, monkeypatch):
+    monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test")
+    monkeypatch.setattr(settings, "RESEARCH_PROVIDER", "openai")
+    monkeypatch.setattr(
+        "app.services.action_plan.research.cached_research",
+        AsyncMock(return_value=RIVER_HAMMOCK_RESEARCH),
+    )
+    start = AsyncMock(side_effect=AssertionError("cache hit must not call start_research"))
+    monkeypatch.setattr("app.services.action_plan.research.start_research", start)
+    property_id = await _save_property(
+        auth_client,
+        {"listing_status": "OFF_MARKET", "is_off_market": True, "is_pre_foreclosure": True},
+    )
+    created = await auth_client.post(f"/api/v1/properties/saved/{property_id}/action-plan")
+    assert created.status_code == 201, created.text
+    body = created.json()
+    assert body["status"] == "ready"
+    assert body["research"]["best_first_call"]["who"] == "Pat Koolik"
+    start.assert_not_called()
 
 
 async def test_apply_still_writes_template_after_research(auth_client, monkeypatch):
     monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test")
-    monkeypatch.setattr("app.services.action_plan.research.cached_research", AsyncMock(return_value=None))
     monkeypatch.setattr(
-        "app.services.action_plan.research.start_research",
-        AsyncMock(return_value=ResearchStart(kind="cached", research=RIVER_HAMMOCK_RESEARCH)),
+        "app.services.action_plan.research.cached_research",
+        AsyncMock(return_value=RIVER_HAMMOCK_RESEARCH),
     )
     property_id = await _save_property(
         auth_client,
