@@ -32,7 +32,7 @@ A plan with ten searches pulls in roughly 40,000 tokens of page content and writ
 
 Start the harness on terra and luna. Terra is the bet. Luna is the surprise candidate: if it finds the same facts and makes nothing up, it cuts the token cost by 90 percent, and the search calls cost the same either way. Sol is the fallback if terra makes things up. Astra is not worth testing for this; it is five times the price for a job that is about reading listing pages carefully, not deep reasoning.
 
-Cache the research by parcel for 30 days. Two users on the same house cost one plan.
+Cache the research JSON by parcel for 30 days, falling back to the normalized address when there is no parcel. Case is not part of the key. Two users on the same house cost one plan.
 
 ## The request
 
@@ -72,7 +72,7 @@ This is the shape the backend sends. Field names match the current docs.
 
 Then poll `GET /v1/responses/{id}` every five seconds until `status` is `completed`, `failed`, or `incomplete`. Read `output_text` for the JSON, and count items in `output` with `type: "web_search_call"` to record how many searches were billed. Keep `usage.input_tokens` and `usage.output_tokens` on the plan row for the cost column.
 
-Set a hard stop of four minutes. If the response is still running, cancel it and ship the template plan.
+Set a hard stop of four minutes (`RESEARCH_TIMEOUT_SECONDS`, default 240). If the response is still running, cancel it and mark the plan `failed`. The template stays on the row so the investor can still Apply those tasks.
 
 ## The schema
 
@@ -166,15 +166,21 @@ Find, in this order:
 5. The county clerk's records phone number and records request email, from the clerk's own site.
 ```
 
-The other cases (on-market stale, off-market absentee, bank-owned, FSBO) each get their own numbered list from CASE_TARGETS in the harness. Same system prompt for all.
+The other cases each get their own numbered list from `CASE_TARGETS` in `action_plan/research.py`. The bakeoff imports that dict so the harness tests what we ship. Same system prompt for all.
 
 ## What the backend does with it
 
-`action_plan/research.py` gets a `provider` setting with values `openai`, `anthropic`, `xai`. Only `openai` is built now. The function takes the property payload and case, sends the request above, returns the response ID. A second function takes a response ID, polls once, and returns either "still running" or the parsed JSON plus usage.
+This step is built. Settings in `core/config.py`: `RESEARCH_PROVIDER` (`openai` | `anthropic` | `xai`), `RESEARCH_MODEL` (default `gpt-5.6-terra`), `RESEARCH_MAX_TOOL_CALLS` (12), `RESEARCH_TIMEOUT_SECONDS` (240), plus `OPENAI_API_KEY`. Only `openai` is implemented; the others raise `NotImplementedError`.
 
-The action plan row stores `provider`, `provider_response_id`, `searches`, `input_tokens`, `output_tokens`, and `cost_cents`. The `/admin` page gets a line showing plans this month and total spend.
+`start_research(property_payload, case)` builds the system prompt, the case prompt, the blocked-domain filter, and the JSON schema, sends the Responses request with `background: true`, and returns the response id. `check_research(response_id)` polls once and returns `running`, `completed` (parsed findings plus searches and tokens), or `failed` with the reason.
 
-Findings are written to the plan as-is. When the user taps Apply, each finding with a phone becomes a contact with `source=ai`, the role from the field name, and the source URL and status in the notes. Each conflict becomes a note on the plan summary. Nothing marked UNVERIFIED becomes a task by itself; it becomes a "confirm this" task.
+Create (`POST /api/v1/properties/saved/{id}/action-plan`) builds the template, then starts research, stores `provider` and `provider_response_id`, sets `status=researching`, and returns the template immediately. If `OPENAI_API_KEY` is empty, create ships the template as `ready` and does not call OpenAI. A cache hit for the same parcel (else address) within 30 days also ships `ready` with the cached findings and skips OpenAI.
+
+`GET /api/v1/action-plans/{id}` calls `check_research` while status is `researching`, saves findings and `cost_cents` when done, and moves status to `ready`. Apply of template tasks stays at `POST /api/v1/action-plan/{id}/apply`.
+
+The action plan row stores `provider`, `provider_response_id`, `searches`, `input_tokens`, `output_tokens`, and `cost_cents`. The `/admin` page gets a line showing plans this month and total spend (Phase 5).
+
+Findings are shown as-is in the slide-over with a VERIFIED or UNVERIFIED badge and the source link. When the user taps Apply, Phase 4 still writes the **template** tasks. Later, each finding with a phone becomes a contact with `source=ai`, the role from the field name, and the source URL and status in the notes. Each conflict becomes a note on the plan summary. Nothing marked UNVERIFIED becomes a task by itself; it becomes a "confirm this" task.
 
 ## Harness changes
 
@@ -188,8 +194,8 @@ Day 1. New OpenAI key in Railway env as OPENAI_API_KEY, spend limit set at $50 a
 
 Days 2 to 4. Build the twenty-property answer key. Run the full harness. Pick the model.
 
-Week 2. Build research.py against OpenAI with background mode and polling. Wire the create and poll endpoints. Phase 0 template plans should already be done by now so the UI has something to show while research runs.
+Week 2. Done. `research.py` runs against OpenAI with background mode and polling. Create returns the template; `GET /api/v1/action-plans/{id}` polls every five seconds. The slide-over shows a plain progress line while researching.
 
-Week 3. Phase 4 plan writer on Claude, Apply, metering. Ship behind a Pro gate.
+Week 3. Phase 4 plan writer on Claude, Apply of AI findings, metering. Ship behind a Pro gate.
 
 The Railway worker moves to the backlog.

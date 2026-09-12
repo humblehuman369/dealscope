@@ -60,31 +60,25 @@ Write `backend/app/services/action_plan/cases.py`. It takes the existing propert
 
 Add the migration. New table `action_plans` with id, saved_property_id, user_id, case, status (queued, researching, ready, failed), research JSON, plan JSON, cost cents, created and updated times. Add `source` (user, template, ai) and `action_plan_id` to `property_tasks` and `property_contacts`.
 
-Add the endpoint `POST /api/v1/properties/saved/{id}/action-plan` that builds the template plan and returns it. Add `POST /action-plan/{id}/apply` that writes tasks and contacts with the merge rule from problem 6.
+Add the endpoint `POST /api/v1/properties/saved/{id}/action-plan` that builds the template plan and returns it. Add `POST /action-plan/{id}/apply` that writes tasks and contacts with the merge rule from problem 6. Research polling is `GET /api/v1/action-plans/{id}` (plural), added with the research step.
 
 Add the button. On the discovery page and the deal page, next to the existing Save and task controls, a button labeled with copy you approve. It opens a slide-over that shows the case name, the facts we have, and the task list, with an Apply button.
 
 Ship this. It is already better than what users have, and it costs nothing per use.
 
-### Phase 1. The worker. About one week.
+### Phase 1. The worker. Backlog.
 
-Add a second Railway service in the same project that runs `arq app.tasks.arq_worker.WorkerSettings`. Register a `run_action_plan_research` function. Point `REDIS_URL` at the Railway Redis you already use for cache. Change the create endpoint to enqueue and return the plan in `queued` status. Add `GET /action-plan/{id}` for polling. The frontend polls every three seconds and shows the step it is on: "Checking listing history," "Checking court records," "Writing your plan."
+Replaced by OpenAI background mode. See `docs/AI_ACTION_PLAN_OPENAI_RESEARCH.md`. A Railway worker can still be added later for other jobs.
 
-Test this with a fake job that sleeps 90 seconds before we spend a dollar on AI.
+### Phase 2. The research step. Built.
 
-### Phase 2. The research step. Two to three weeks.
+Replaced by `docs/AI_ACTION_PLAN_OPENAI_RESEARCH.md`. `research.py` runs on the OpenAI Responses API with `background: true`. Create returns the template immediately, stores the response id, and sets `status=researching`. `GET /api/v1/action-plans/{id}` polls every five seconds. The slide-over shows a plain progress line, then findings with VERIFIED / UNVERIFIED badges.
 
-Write `action_plan/research.py`. It runs inside the worker. It takes the property payload and the case, and returns a fixed JSON shape: a list of findings, each with a field name, a value, a source URL, a verified flag, and a one-line note.
+Hard stop is four minutes. If research is still running, cancel the OpenAI response and mark the plan `failed`. The template stays on the row.
 
-Search path. Use the Anthropic API with the built-in web search tool. It is the fastest path, it is what ChatGPT effectively did, and we already have the key. Set a new client with a 150 second timeout and one retry. Cap searches at ten per plan. Keep Brave as the fallback because you already own that runner and it is cheap.
+Cache the research JSON by parcel when we have one, else by normalized address, for 30 days. Case is not in the key. A second request for the same key skips OpenAI. A "Refresh research" link is still later.
 
-What it looks for depends on the case. For off-market and pre-foreclosure it looks for the last listing and its agent, the "On Hold" or "Withdrawn" status, the foreclosure complaint, the plaintiff lender, the case number, the auction date, and public contact numbers for the brokerage and the clerk. For on-market stale it looks for price history and days on market across sites and the agent's other listings. For bank-owned it looks for the REO asset manager or listing broker. For every case it tells the model plainly what it may not do: no personal phone numbers, no personal emails, no social media profiles for private people, no guessing. The Anthropic model will follow that rule, and the rule keeps us clear of TCPA and privacy trouble.
-
-Every finding is shown with its badge. Verified means a source page said it. Unverified means the model could not open the page. Never show a fact with no source.
-
-Cache the research JSON by parcel number when we have one, else by normalized address, for 30 days. A "Refresh research" link re-runs it and counts against the user's monthly number.
-
-### Phase 3. Reference tables. Runs alongside Phase 2.
+### Phase 3. Reference tables. Next, or alongside Phase 4.
 
 Three small tables the plan can always fall back on, even when a site blocks us. County clerks: county, state, records phone, records email, records request URL. Start with the 67 Florida counties since that is where your users search first, then add the top 200 counties by foreclosure volume. Foreclosing lenders and trustees: name, REO or loss-mitigation phone, notes. Seed it from the plaintiffs that show up in research results, so it grows on its own. Foreclosure attorneys and trustees by state: firm, phone, the lenders they file for. These are public business numbers, not personal data.
 
@@ -106,16 +100,16 @@ If you decide you want owner phone numbers, wire a skip-trace vendor behind its 
 
 ## Files that change
 
-Backend: new `app/services/action_plan/` package with `cases.py`, `templates.py`, `research.py`, `writer.py`, `apply.py`. New `app/models/action_plan.py`, `app/schemas/action_plan.py`, `app/routers/action_plans.py`. Edits to `app/models/task.py`, `app/models/contact.py`, `app/services/task_service.py` (merge rule), `app/services/entitlements.py`, `app/tasks/arq_worker.py`, `app/core/config.py` (research timeout, search caps, plan limits). One alembic migration for the new table and the two new columns. New Railway worker service and `Procfile` line for it.
+Backend: `app/services/action_plan/` package with `cases.py`, `templates.py`, `research.py`, `writer.py` (not yet), `apply.py`. `app/models/action_plan.py`, `app/schemas/action_plan.py`, `app/routers/action_plans.py`. Edits to `app/models/task.py`, `app/models/contact.py`, `app/services/task_service.py` (merge rule), `app/services/entitlements.py` (Phase 5), `app/core/config.py` (`RESEARCH_PROVIDER`, model, max tool calls, timeout). Alembic migrations for `action_plans` and the research columns. Railway worker stays on the backlog.
 
 Frontend: new `hooks/useActionPlan.ts`, new `components/deal/ActionPlanSlideOver.tsx`, a button in the discovery page and `TasksPanel.tsx`, source badges in the task and contact rows.
 
-Tests: case sorting for all nine cases with real payload fixtures, the merge rule, a research parser test using the River Hammock findings as the fixture, the timeout fallback, and the entitlement gate.
+Tests: case sorting for all nine cases with real payload fixtures, the merge rule, a research parser test using the River Hammock findings as the fixture, start / poll running / poll completed / timeout (cancel and `failed`) / cache hit, and the entitlement gate.
 
 ## Order and rough time
 
-Phase 0 first, one week, ships. Phase 1 next, one week. Phases 2 and 3 together, three weeks. Phase 4 one week. Phase 5 a few days. Roughly seven weeks to the full loop with one developer plus Claude Code. Phase 6 is not scheduled.
+Phase 0 and Phase 2 (OpenAI research, no worker) are done. Phase 3 next or alongside Phase 4. Phase 4 one week. Phase 5 a few days. Phase 6 is not scheduled. The Railway worker stays on the backlog.
 
 ## Copy that needs your approval before build
 
-The button label. The feature name. The words for the two badges. Suggestions: button "Plan my next move," feature "Deal Path," badges "Verified" and "Unverified." Per your rule, once you sign off, these are locked.
+The button label. The feature name. The words for the two badges. Suggestions: button "Plan my next move," feature "Deal Path," badges "VERIFIED" and "UNVERIFIED." Per your rule, once you sign off, these are locked. Current UI uses those placeholders.
