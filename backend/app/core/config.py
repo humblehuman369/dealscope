@@ -101,6 +101,15 @@ class Settings(BaseSettings):
     AIRROI_STR_ENABLED: bool = False
 
     ANTHROPIC_API_KEY: str = ""
+    OPENAI_API_KEY: str = ""
+
+    # Action Plan research step (OpenAI web search). Provider is a setting so
+    # we can switch later; only ``openai`` is built. Key lives in Railway env.
+    ACTION_PLAN_RESEARCH_PROVIDER: str = "openai"
+    ACTION_PLAN_RESEARCH_MODEL: str = "gpt-5.6-terra"
+    ACTION_PLAN_RESEARCH_TIMEOUT_SECONDS: int = 240
+    ACTION_PLAN_RESEARCH_MAX_TOOL_CALLS: int = 12
+    ACTION_PLAN_RESEARCH_CACHE_TTL_SECONDS: int = 2_592_000  # 30 days
 
     # Shared secret for triggering scheduled jobs from an external cron
     # (Vercel cron, GitHub Actions, k8s CronJob, etc.). Empty default means
@@ -317,6 +326,17 @@ class Settings(BaseSettings):
         if not s.startswith("http://") and not s.startswith("https://"):
             s = "https://" + s
         return s.rstrip("/")
+
+    @field_validator("ACTION_PLAN_RESEARCH_PROVIDER", mode="before")
+    @classmethod
+    def normalize_research_provider(cls, v: str | None) -> str:
+        allowed = {"openai", "anthropic", "xai"}
+        normalized = (v or "openai").strip().lower()
+        if normalized not in allowed:
+            raise ValueError(
+                "ACTION_PLAN_RESEARCH_PROVIDER must be one of openai, anthropic, xai"
+            )
+        return normalized
 
     # ===========================================
     # Stripe (Billing) — 2-tier model: Free + Pro ($34.99/mo or $29.17/mo annual)
@@ -549,6 +569,7 @@ def validate_settings(settings: Settings) -> None:
             ("REDFIN_API_KEY", settings.REDFIN_API_KEY),
             ("REALTOR_API_KEY", settings.REALTOR_API_KEY),
             ("STRIPE_SECRET_KEY", settings.STRIPE_SECRET_KEY),
+            ("OPENAI_API_KEY", settings.OPENAI_API_KEY),
         ]
         for key_name, key_value in _optional_keys:
             if not key_value:

@@ -1,19 +1,25 @@
 'use client'
 
 /**
- * Hooks for the per-property action plan (Phase 0: template only).
+ * Hooks for the per-property action plan.
+ *
+ * Create returns the template immediately. While status is queued/researching,
+ * GET /action-plan/:id is polled every five seconds (OpenAI poll interval).
  */
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 import { CONTACTS_KEYS } from '@/hooks/useContacts'
 import { SAVED_PROPERTIES_KEYS } from '@/hooks/useSavedProperties'
 import { TASKS_KEYS } from '@/hooks/useTasks'
-import type { ActionPlan, ActionPlanApplyResult } from '@/types/actionPlan'
+import { isPlanResearching, type ActionPlan, type ActionPlanApplyResult } from '@/types/actionPlan'
+
+export const ACTION_PLAN_POLL_MS = 5_000
 
 export const ACTION_PLAN_KEYS = {
   all: ['action-plan'] as const,
-  forProperty: (propertyId: string) => [...ACTION_PLAN_KEYS.all, propertyId] as const,
+  forProperty: (propertyId: string) => [...ACTION_PLAN_KEYS.all, 'property', propertyId] as const,
+  byId: (planId: string) => [...ACTION_PLAN_KEYS.all, 'id', planId] as const,
 }
 
 export function useCreateActionPlan(propertyId: string | null) {
@@ -29,7 +35,24 @@ export function useCreateActionPlan(propertyId: string | null) {
       if (propertyId) {
         qc.setQueryData(ACTION_PLAN_KEYS.forProperty(propertyId), plan)
       }
+      qc.setQueryData(ACTION_PLAN_KEYS.byId(plan.id), plan)
     },
+  })
+}
+
+export function useActionPlanPoll(planId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: planId ? ACTION_PLAN_KEYS.byId(planId) : [...ACTION_PLAN_KEYS.all, 'idle'],
+    queryFn: () => {
+      if (!planId) {
+        return Promise.reject(new Error('plan id required'))
+      }
+      return api.get<ActionPlan>(`/api/v1/action-plan/${planId}`)
+    },
+    enabled: Boolean(planId) && enabled,
+    refetchInterval: (query) => (isPlanResearching(query.state.data) ? ACTION_PLAN_POLL_MS : false),
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: (query) => isPlanResearching(query.state.data),
   })
 }
 

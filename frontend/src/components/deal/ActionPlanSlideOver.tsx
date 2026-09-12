@@ -1,18 +1,19 @@
 'use client'
 
 /**
- * Slide-over for the Action Plan (Phase 0: template plan, no AI).
+ * Slide-over for the Action Plan.
  *
- * Opens from Discovery and the deal page. Shows the case name, the facts
- * we already have, and the task list, with an Apply button that writes into
- * the deal's task and contact lists.
+ * Opens from Discovery and the deal page. Shows the template immediately,
+ * polls research in the background, and Apply writes the template tasks into
+ * the deal. Findings land as-is with Verified / Unverified badges.
  */
 
 import { useEffect, useRef } from 'react'
 import { Route, X } from 'lucide-react'
 import { useFocusTrap } from '@/components/ui/useFocusTrap'
-import { useApplyActionPlan, useCreateActionPlan } from '@/hooks/useActionPlan'
-import { ACTION_PLAN_COPY } from '@/lib/actionPlanCopy'
+import { useActionPlanPoll, useApplyActionPlan, useCreateActionPlan } from '@/hooks/useActionPlan'
+import { ACTION_PLAN_COPY, researchProgressLabel } from '@/lib/actionPlanCopy'
+import { isPlanResearching, type ActionPlan, type ResearchFinding } from '@/types/actionPlan'
 
 interface ActionPlanSlideOverProps {
   open: boolean
@@ -47,6 +48,12 @@ export function ActionPlanSlideOver({ open, onClose, propertyId }: ActionPlanSli
 
   const create = useCreateActionPlan(propertyId)
   const apply = useApplyActionPlan(propertyId)
+  const createdPlan = create.data
+  const poll = useActionPlanPoll(
+    createdPlan?.id ?? null,
+    open && isPlanResearching(createdPlan),
+  )
+  const plan = poll.data ?? createdPlan
 
   useEffect(() => {
     if (!open || !propertyId) return
@@ -70,7 +77,6 @@ export function ActionPlanSlideOver({ open, onClose, propertyId }: ActionPlanSli
 
   if (!open) return null
 
-  const plan = create.data
   const applied = apply.isSuccess
 
   return (
@@ -130,56 +136,7 @@ export function ActionPlanSlideOver({ open, onClose, propertyId }: ActionPlanSli
               </button>
             </p>
           ) : plan ? (
-            <>
-              <p className="text-sm leading-relaxed text-[var(--text-body)]">{plan.summary}</p>
-
-              {plan.facts.length > 0 && (
-                <section>
-                  <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mb-2">
-                    What we have
-                  </h3>
-                  <dl className="space-y-1.5">
-                    {plan.facts.map((fact) => (
-                      <div key={fact.label} className="flex gap-2 text-sm">
-                        <dt className="shrink-0 text-[var(--text-label)]">{fact.label}</dt>
-                        <dd className="m-0 text-[var(--text-heading)]">{fact.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </section>
-              )}
-
-              <section>
-                <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mb-2">
-                  Next steps
-                </h3>
-                <ol className="space-y-2 list-decimal pl-4">
-                  {plan.tasks.map((task) => (
-                    <li key={task.title} className="text-sm text-[var(--text-heading)]">
-                      {task.title}
-                    </li>
-                  ))}
-                </ol>
-              </section>
-
-              {plan.contacts.length > 0 && (
-                <section>
-                  <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mb-2">
-                    Contacts
-                  </h3>
-                  <ul className="space-y-1.5">
-                    {plan.contacts.map((contact) => (
-                      <li key={`${contact.role}-${contact.name}`} className="text-sm">
-                        <span className="text-[var(--text-heading)]">{contact.name}</span>
-                        {contact.phone ? (
-                          <span className="text-[var(--text-label)]"> · {contact.phone}</span>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-            </>
+            <PlanBody plan={plan} />
           ) : null}
         </div>
 
@@ -201,6 +158,180 @@ export function ActionPlanSlideOver({ open, onClose, propertyId }: ActionPlanSli
               {apply.isPending ? ACTION_PLAN_COPY.applyingLabel : ACTION_PLAN_COPY.applyLabel}
             </button>
           )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PlanBody({ plan }: { plan: ActionPlan }) {
+  const researching = isPlanResearching(plan)
+  const research = plan.research
+
+  return (
+    <>
+      {researching ? (
+        <p className="text-sm text-[var(--text-label)]" aria-live="polite">
+          {researchProgressLabel(plan.created_at)}
+        </p>
+      ) : null}
+
+      <p className="text-sm leading-relaxed text-[var(--text-body)]">{plan.summary}</p>
+
+      {plan.facts.length > 0 && (
+        <section>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mb-2">
+            What we have
+          </h3>
+          <dl className="space-y-1.5">
+            {plan.facts.map((fact) => (
+              <div key={fact.label} className="flex gap-2 text-sm">
+                <dt className="shrink-0 text-[var(--text-label)]">{fact.label}</dt>
+                <dd className="m-0 text-[var(--text-heading)]">{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      {research?.best_first_call ? (
+        <section>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mb-2">
+            {ACTION_PLAN_COPY.firstCallHeading}
+          </h3>
+          <p className="text-sm text-[var(--text-heading)]">
+            {research.best_first_call.who}
+            {research.best_first_call.phone ? (
+              <span className="text-[var(--text-label)]"> · {research.best_first_call.phone}</span>
+            ) : null}
+          </p>
+          {research.best_first_call.why ? (
+            <p className="text-sm text-[var(--text-label)] mt-1">{research.best_first_call.why}</p>
+          ) : null}
+        </section>
+      ) : null}
+
+      {research && research.findings.length > 0 ? (
+        <section>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mb-2">
+            {ACTION_PLAN_COPY.findingsHeading}
+          </h3>
+          <ul className="space-y-2">
+            {research.findings.map((finding) => (
+              <li key={`${finding.field}-${finding.value}`}>
+                <FindingRow finding={finding} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {research && research.conflicts.length > 0 ? (
+        <section>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mb-2">
+            {ACTION_PLAN_COPY.conflictsHeading}
+          </h3>
+          <ul className="space-y-2">
+            {research.conflicts.map((conflict) => (
+              <li key={conflict.field} className="text-sm">
+                <p className="text-[var(--text-heading)]">{conflict.what_disagrees}</p>
+                <p className="text-[var(--text-label)] mt-0.5">
+                  Trusting {conflict.which_i_trust}. {conflict.why}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {research && research.not_found.length > 0 ? (
+        <section>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mb-2">
+            {ACTION_PLAN_COPY.notFoundHeading}
+          </h3>
+          <ul className="space-y-1">
+            {research.not_found.map((item) => (
+              <li key={item} className="text-sm text-[var(--text-label)]">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      <section>
+        <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mb-2">
+          Next steps
+        </h3>
+        <ol className="space-y-2 list-decimal pl-4">
+          {plan.tasks.map((task) => (
+            <li key={task.title} className="text-sm text-[var(--text-heading)]">
+              {task.title}
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {plan.contacts.length > 0 && (
+        <section>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-label)] mb-2">
+            Contacts
+          </h3>
+          <ul className="space-y-1.5">
+            {plan.contacts.map((contact) => (
+              <li key={`${contact.role}-${contact.name}`} className="text-sm">
+                <span className="text-[var(--text-heading)]">{contact.name}</span>
+                {contact.phone ? (
+                  <span className="text-[var(--text-label)]"> · {contact.phone}</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </>
+  )
+}
+
+function findingBadge(status: ResearchFinding['status']): string {
+  switch (status) {
+    case 'VERIFIED':
+      return ACTION_PLAN_COPY.verifiedBadge
+    case 'UNVERIFIED':
+      return ACTION_PLAN_COPY.unverifiedBadge
+    default: {
+      const _exhaustive: never = status
+      return _exhaustive
+    }
+  }
+}
+
+function FindingRow({ finding }: { finding: ResearchFinding }) {
+  const badge = findingBadge(finding.status)
+  return (
+    <div className="text-sm">
+      <div className="flex items-start gap-2">
+        <span
+          className="shrink-0 mt-0.5 inline-flex text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-[var(--surface-elevated)] text-[var(--text-secondary)] ring-1 ring-[var(--border-default)]"
+        >
+          {badge}
+        </span>
+        <div className="min-w-0">
+          <p className="text-[var(--text-heading)] m-0">
+            {finding.field.replace(/_/g, ' ')}
+            {finding.value ? `: ${finding.value}` : ''}
+          </p>
+          {finding.note ? <p className="text-[var(--text-label)] mt-0.5">{finding.note}</p> : null}
+          {finding.source_url ? (
+            <a
+              href={finding.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] text-[var(--accent-sky)] break-all"
+            >
+              {finding.source_url}
+            </a>
+          ) : null}
         </div>
       </div>
     </div>

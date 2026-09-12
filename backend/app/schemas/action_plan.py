@@ -1,6 +1,7 @@
-"""Schemas for the AI Action Plan feature (Phase 0 is template-only)."""
+"""Schemas for the AI Action Plan feature."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -29,6 +30,35 @@ class ActionPlanContactItem(BaseModel):
     notes: str | None = None
 
 
+class ResearchFindingOut(BaseModel):
+    field: str
+    value: str
+    status: Literal["VERIFIED", "UNVERIFIED"]
+    source_url: str | None = None
+    note: str = ""
+
+
+class ResearchConflictOut(BaseModel):
+    field: str
+    what_disagrees: str
+    which_i_trust: str
+    why: str
+
+
+class ResearchBestFirstCallOut(BaseModel):
+    who: str
+    role: str
+    phone: str | None = None
+    why: str
+
+
+class ResearchOut(BaseModel):
+    findings: list[ResearchFindingOut] = Field(default_factory=list)
+    not_found: list[str] = Field(default_factory=list)
+    conflicts: list[ResearchConflictOut] = Field(default_factory=list)
+    best_first_call: ResearchBestFirstCallOut | None = None
+
+
 class ActionPlanOut(BaseModel):
     id: str
     saved_property_id: str
@@ -40,6 +70,7 @@ class ActionPlanOut(BaseModel):
     tasks: list[ActionPlanTaskItem] = Field(default_factory=list)
     contacts: list[ActionPlanContactItem] = Field(default_factory=list)
     source: str = "template"
+    research: ResearchOut | None = None
     created_at: datetime
     updated_at: datetime
 

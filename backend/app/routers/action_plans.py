@@ -1,8 +1,9 @@
-"""Action Plan endpoints — template plans in Phase 0, no AI."""
+"""Action Plan endpoints — template immediately, OpenAI research in the background."""
 
 from __future__ import annotations
 
 import logging
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -14,11 +15,16 @@ from app.schemas.action_plan import (
     ActionPlanFact,
     ActionPlanOut,
     ActionPlanTaskItem,
+    ResearchBestFirstCallOut,
+    ResearchConflictOut,
+    ResearchFindingOut,
+    ResearchOut,
 )
 from app.schemas.contact import ContactOut, ContactRole
 from app.schemas.task import TaskOut
 from app.services.action_plan.apply import apply_action_plan, get_owned_plan
 from app.services.action_plan.cases import CASE_LABELS, sort_case
+from app.services.action_plan.research import kickoff_research, refresh_research
 from app.services.action_plan.templates import build_template_plan
 from app.services.saved_property_service import saved_property_service
 
@@ -59,6 +65,60 @@ def _contact_to_out(c) -> ContactOut:
         action_plan_id=str(c.action_plan_id) if c.action_plan_id else None,
         created_at=c.created_at,
         updated_at=c.updated_at,
+    )
+
+
+def _research_to_out(raw: dict[str, Any] | None) -> ResearchOut | None:
+    if not isinstance(raw, dict):
+        return None
+    findings: list[ResearchFindingOut] = []
+    for item in raw.get("findings") or []:
+        if not isinstance(item, dict) or not item.get("field"):
+            continue
+        status_raw = str(item.get("status") or "").upper()
+        if status_raw not in {"VERIFIED", "UNVERIFIED"}:
+            continue
+        if status_raw == "VERIFIED":
+            finding_status: Literal["VERIFIED", "UNVERIFIED"] = "VERIFIED"
+        else:
+            finding_status = "UNVERIFIED"
+        findings.append(
+            ResearchFindingOut(
+                field=str(item["field"]),
+                value=str(item.get("value") or ""),
+                status=finding_status,
+                source_url=item.get("source_url"),
+                note=str(item.get("note") or ""),
+            )
+        )
+    conflicts = [
+        ResearchConflictOut(
+            field=str(item.get("field") or ""),
+            what_disagrees=str(item.get("what_disagrees") or ""),
+            which_i_trust=str(item.get("which_i_trust") or ""),
+            why=str(item.get("why") or ""),
+        )
+        for item in (raw.get("conflicts") or [])
+        if isinstance(item, dict) and item.get("field")
+    ]
+    best_raw = raw.get("best_first_call")
+    best = None
+    if isinstance(best_raw, dict) and best_raw.get("who"):
+        phone = best_raw.get("phone")
+        best = ResearchBestFirstCallOut(
+            who=str(best_raw["who"]),
+            role=str(best_raw.get("role") or ""),
+            phone=str(phone).strip() if isinstance(phone, str) and phone.strip() else None,
+            why=str(best_raw.get("why") or ""),
+        )
+    not_found = [str(item) for item in (raw.get("not_found") or []) if str(item).strip()]
+    if not findings and not conflicts and best is None and not not_found:
+        return None
+    return ResearchOut(
+        findings=findings,
+        not_found=not_found,
+        conflicts=conflicts,
+        best_first_call=best,
     )
 
 
@@ -108,16 +168,30 @@ def _plan_to_out(row: ActionPlan) -> ActionPlanOut:
         tasks=tasks,
         contacts=contacts,
         source=str(payload.get("source") or "template"),
+        research=_research_to_out(row.research),
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
+
+
+def _research_args(prop) -> dict[str, str | None]:
+    snapshot = prop.property_data_snapshot or {}
+    addr = snapshot.get("address") if isinstance(snapshot.get("address"), dict) else {}
+    details = snapshot.get("details") if isinstance(snapshot.get("details"), dict) else {}
+    parcel = str(details.get("parcel_id") or snapshot.get("parcel_id") or "").strip() or None
+    return {
+        "address": prop.full_address or prop.address_street,
+        "county": str(addr.get("county") or "").strip() or None,
+        "state": prop.address_state or str(addr.get("state") or "").strip() or None,
+        "parcel": parcel,
+    }
 
 
 @router.post(
     "/properties/saved/{property_id}/action-plan",
     response_model=ActionPlanOut,
     status_code=status.HTTP_201_CREATED,
-    summary="Build a template action plan for a saved property",
+    summary="Build an action plan for a saved property",
 )
 async def create_action_plan(
     property_id: str,
@@ -137,15 +211,37 @@ async def create_action_plan(
         saved_property_id=prop.id,
         user_id=current_user.id,
         case=case,
-        status=ActionPlanStatus.READY,
+        status=ActionPlanStatus.QUEUED,
         research=None,
         plan=plan_json,
         cost_cents=0,
     )
+    await kickoff_research(row, snapshot, **_research_args(prop))
     db.add(row)
     await db.commit()
     await db.refresh(row)
     return _plan_to_out(row)
+
+
+@router.get(
+    "/action-plan/{plan_id}",
+    response_model=ActionPlanOut,
+    summary="Poll an action plan, including in-flight research",
+)
+async def get_action_plan(
+    plan_id: str,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    plan = await get_owned_plan(db, plan_id, str(current_user.id))
+    if plan is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Action plan not found")
+    prop = await saved_property_service.get_by_id(db, str(plan.saved_property_id), str(current_user.id))
+    args = _research_args(prop) if prop is not None else {}
+    await refresh_research(plan, parcel=args.get("parcel"), address=args.get("address"))
+    await db.commit()
+    await db.refresh(plan)
+    return _plan_to_out(plan)
 
 
 @router.post(

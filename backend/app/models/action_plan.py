@@ -1,9 +1,9 @@
 """
 ActionPlan model — the per-property "what to do next" plan.
 
-Phase 0 stores a no-AI template plan (case + task list + contacts). Later
-phases fill ``research`` and rewrite ``plan`` from the research step.
-Tasks and contacts written from a plan point back here via ``action_plan_id``.
+Stores a template plan immediately, then optional OpenAI research on the
+same row. Phase 4 will rewrite ``plan`` from the research. Tasks and contacts
+written from a plan point back here via ``action_plan_id``.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -34,7 +34,7 @@ class ActionPlanSource(enum.StrEnum):
 
 
 class ActionPlanStatus(enum.StrEnum):
-    """Lifecycle of a plan. Phase 0 writes ``ready`` immediately."""
+    """Lifecycle of a plan. Template is stored immediately; research may run after."""
 
     QUEUED = "queued"
     RESEARCHING = "researching"
@@ -84,6 +84,12 @@ class ActionPlan(Base):
 
     research: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     plan: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+    provider: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    provider_response_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    searches: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     cost_cents: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(

@@ -1,5 +1,5 @@
 /**
- * Action plan — template plan returned by POST .../action-plan (Phase 0, no AI).
+ * Action plan returned by POST .../action-plan and GET /action-plan/:id.
  */
 
 import type { ContactRole, PropertyContact } from '@/types/contact'
@@ -37,6 +37,37 @@ export interface ActionPlanContactItem {
   notes: string | null
 }
 
+export type ResearchFindingStatus = 'VERIFIED' | 'UNVERIFIED'
+
+export interface ResearchFinding {
+  field: string
+  value: string
+  status: ResearchFindingStatus
+  source_url: string | null
+  note: string
+}
+
+export interface ResearchConflict {
+  field: string
+  what_disagrees: string
+  which_i_trust: string
+  why: string
+}
+
+export interface ResearchBestFirstCall {
+  who: string
+  role: string
+  phone: string | null
+  why: string
+}
+
+export interface ActionPlanResearch {
+  findings: ResearchFinding[]
+  not_found: string[]
+  conflicts: ResearchConflict[]
+  best_first_call: ResearchBestFirstCall | null
+}
+
 export interface ActionPlan {
   id: string
   saved_property_id: string
@@ -48,6 +79,7 @@ export interface ActionPlan {
   tasks: ActionPlanTaskItem[]
   contacts: ActionPlanContactItem[]
   source: ActionPlanSource
+  research: ActionPlanResearch | null
   created_at: string
   updated_at: string
 }
@@ -58,4 +90,8 @@ export interface ActionPlanApplyResult {
   tasks_skipped: number
   contacts_created: PropertyContact[]
   contacts_skipped: number
+}
+
+export function isPlanResearching(plan: Pick<ActionPlan, 'status'> | null | undefined): boolean {
+  return plan?.status === 'queued' || plan?.status === 'researching'
 }
