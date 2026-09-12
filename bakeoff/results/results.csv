@@ -1,2 +1,2 @@
 property,model,run,found,of,recall,made_up,best_call_hit,json_ok,verified_share,searches,in_tok,out_tok,cost_usd,seconds,missed,error
-river-hammock,gpt-5.6-terra,0,6,7,0.86,0,True,True,1.0,12,94343,4073,0.3576,61.9,listing_status_found,
+river-hammock,gpt-5.6-terra,0,5,7,0.71,1,True,True,0.83,13,96779,4365,0.3759,57.7,prior_agent_phone;listing_status_found,

@@ -2,7 +2,7 @@
 
 | model | avg recall | made-up facts | best-call hit rate | avg cost | avg seconds | failures |
 |---|---|---|---|---|---|---|
-| gpt-5.6-terra | 0.86 | 0 | 100% | $0.358 | 62 | 0 |
+| gpt-5.6-terra | 0.71 | 1 | 100% | $0.376 | 58 | 0 |
 
 Recall = share of answer-key facts the model surfaced. Made-up = facts it marked VERIFIED that the key says it could not have found. Best-call = it named the right person to call first.
 
