@@ -12,11 +12,13 @@ import { Loader2 } from 'lucide-react'
 import type { MapListing } from '@/lib/api'
 import type { MapBounds } from '@/hooks/useMapSearch'
 import { MapSearchBar, type MapSearchSelection } from '@/components/map-search/MapSearchBar'
+import { clusterListings, type ListingCluster } from '@/components/map-search/mapClustering'
 import { markerColorForCategory } from '@/lib/dealSignal'
 import { trackEvent } from '@/lib/eventTracking'
 import { HERO_PRESETS, type HeroPreset } from './presets'
 import { useHeroMapSearch } from './useHeroMapSearch'
 import { PropertyPeekPanel } from './PropertyPeekPanel'
+import heroMapStyles from './home-map-style.json'
 import './home-map-hero.css'
 
 export interface HeroGeo {
@@ -38,13 +40,9 @@ export const DEFAULT_HERO_GEO: HeroGeo = {
 /** Same Map ID as Search & Discover. Cloud IDs must be verified before use. */
 const MAP_ID = 'DEMO_MAP_ID'
 const DEFAULT_ZOOM = 13
-/**
- * Pins shown at once. The search returns up to 200; the hero shows the best
- * of them so the map reads as a curated view rather than a wall of prices.
- * Ranked by ZIP rent-to-price (best first), then the rest in the order the
- * search returned them.
- */
-const MAX_VISIBLE_PINS = 60
+/** Cluster any overlapping pins on first load — the 80-pin Search & Discover
+ *  threshold would never fire here. */
+const HERO_CLUSTER_MIN = 2
 const PIN_DROP_STAGGER_MS = 30
 const US_BOUNDS = { north: 72, south: 17, east: -65, west: -165 }
 
@@ -69,29 +67,37 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
   const [city, setCity] = useState(geo.city)
   const [selected, setSelected] = useState<MapListing | null>(null)
   const panRef = useRef<((lat: number, lng: number, zoom: number) => void) | null>(null)
+  const fitClusterRef = useRef<((members: MapListing[]) => void) | null>(null)
+  const [viewBounds, setViewBounds] = useState<MapBounds | null>(null)
 
-  const listings = useMemo(() => {
-    const valid = search.listings.filter((l) => validCoord(l.latitude, l.longitude))
-    if (valid.length <= MAX_VISIBLE_PINS) return valid
-    const ranked = [...valid].sort((a, b) => {
-      const ra = a.zip_rent_to_price ?? -1
-      const rb = b.zip_rent_to_price ?? -1
-      return rb - ra
-    })
-    return ranked.slice(0, MAX_VISIBLE_PINS)
-  }, [search.listings])
+  const listings = useMemo(
+    () => search.listings.filter((l) => validCoord(l.latitude, l.longitude)),
+    [search.listings],
+  )
 
-  // The pin with the best ZIP rent-to-price screen in view. This comes from
-  // data already fetched, so it costs nothing extra and always shows.
+  const { singles, clusters } = useMemo(() => {
+    if (!viewBounds) return { singles: [] as MapListing[], clusters: [] as ListingCluster[] }
+    return clusterListings(listings, search.dealSignals, viewBounds, HERO_CLUSTER_MIN)
+  }, [listings, search.dealSignals, viewBounds])
+
+  const onBoundsChanged = useCallback(
+    (b: MapBounds) => {
+      setViewBounds(b)
+      search.onBoundsChanged(b)
+    },
+    [search.onBoundsChanged],
+  )
+
+  // The pin with the best ZIP rent-to-price among unclustered pills.
   const bestId = useMemo(() => {
     let best: MapListing | null = null
-    for (const l of listings) {
+    for (const l of singles) {
       const r = l.zip_rent_to_price
       if (r == null || r <= 0) continue
       if (!best || r > (best.zip_rent_to_price ?? 0)) best = l
     }
     return best?.id ?? null
-  }, [listings])
+  }, [singles])
 
   const onPreset = useCallback(
     (p: HeroPreset) => {
@@ -133,6 +139,11 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
     },
     [search.preset.id, search.dealSignals],
   )
+
+  const onCluster = useCallback((cluster: ListingCluster) => {
+    setSelected(null)
+    fitClusterRef.current?.(cluster.listings)
+  }, [])
 
   const countShown = search.fetched && search.count != null && !search.isLoading
   const noun = search.preset.noun
@@ -183,6 +194,7 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
               defaultCenter={{ lat: geo.lat, lng: geo.lng }}
               defaultZoom={DEFAULT_ZOOM}
               mapId={MAP_ID}
+              styles={heroMapStyles as google.maps.MapTypeStyle[]}
               colorScheme={ColorScheme.DARK}
               gestureHandling="greedy"
               disableDefaultUI
@@ -192,8 +204,28 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
               clickableIcons={false}
               style={{ width: '100%', height: '100%' }}
             >
-              <MapWiring onBoundsChanged={search.onBoundsChanged} panRef={panRef} />
-              {listings.map((l, i) => {
+              <MapWiring
+                onBoundsChanged={onBoundsChanged}
+                panRef={panRef}
+                fitClusterRef={fitClusterRef}
+              />
+              {clusters.map((cluster) => (
+                <AdvancedMarker
+                  key={`cluster-${cluster.key}`}
+                  position={{ lat: cluster.lat, lng: cluster.lng }}
+                  onClick={() => onCluster(cluster)}
+                  zIndex={50}
+                >
+                  <div
+                    className={`home-hero__cluster${cluster.count >= 100 ? ' home-hero__cluster--lg' : ''}`}
+                    style={{ backgroundColor: markerColorForCategory(cluster.category, true) }}
+                    title={`${cluster.count} listings — zoom in`}
+                  >
+                    {cluster.count}
+                  </div>
+                </AdvancedMarker>
+              ))}
+              {singles.map((l, i) => {
                 const signal = search.dealSignals.get(l.id)
                 const isSel = selected?.id === l.id
                 const isBest = l.id === bestId
@@ -263,9 +295,11 @@ export function HomeMapHero({ geo = DEFAULT_HERO_GEO }: Props) {
 function MapWiring({
   onBoundsChanged,
   panRef,
+  fitClusterRef,
 }: {
   onBoundsChanged: (b: MapBounds) => void
   panRef: React.MutableRefObject<((lat: number, lng: number, zoom: number) => void) | null>
+  fitClusterRef: React.MutableRefObject<((members: MapListing[]) => void) | null>
 }) {
   const map = useMap()
 
@@ -275,6 +309,14 @@ function MapWiring({
       map.setCenter({ lat, lng })
       map.setZoom(zoom)
     }
+    fitClusterRef.current = (members) => {
+      const box = new google.maps.LatLngBounds()
+      for (const m of members) {
+        box.extend({ lat: m.latitude, lng: m.longitude })
+      }
+      map.fitBounds(box, 48)
+    }
+    hideBusyMapLayers(map)
     const emitBounds = () => {
       const b = map.getBounds()
       if (!b) return
@@ -287,8 +329,23 @@ function MapWiring({
     return () => {
       google.maps.event.removeListener(listener)
       panRef.current = null
+      fitClusterRef.current = null
     }
-  }, [map, onBoundsChanged, panRef])
+  }, [map, onBoundsChanged, panRef, fitClusterRef])
 
   return null
+}
+
+/** Hide POIs and transit when the Map ID exposes feature layers (vector maps). */
+function hideBusyMapLayers(map: google.maps.Map) {
+  const FeatureType = google.maps.FeatureType
+  if (!FeatureType || typeof map.getFeatureLayer !== 'function') return
+  for (const type of [FeatureType.POI, FeatureType.TRANSIT]) {
+    try {
+      const layer = map.getFeatureLayer(type)
+      layer.style = () => ({ fillOpacity: 0, strokeOpacity: 0 })
+    } catch {
+      // Layer not enabled on this Map ID.
+    }
+  }
 }

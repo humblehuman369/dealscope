@@ -91,6 +91,15 @@ describe('clusterListings', () => {
     expect(clusters[0].category).toBe('distressed')
   })
 
+  it('clusters overlapping pins below the default threshold when asked', () => {
+    const listings = pile(12)
+    const { singles, clusters } = clusterListings(listings, signals(listings), BOUNDS, 2)
+
+    expect(clusters).toHaveLength(1)
+    expect(clusters[0].count).toBe(12)
+    expect(singles).toHaveLength(0)
+  })
+
   it('does not cluster without bounds to size the cells against', () => {
     const listings = pile(CLUSTER_PIN_THRESHOLD + 20)
 

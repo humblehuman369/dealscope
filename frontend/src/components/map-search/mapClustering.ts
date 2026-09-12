@@ -61,15 +61,18 @@ function isFinitePair(lat: number, lng: number): boolean {
  * Group `listings` into viewport-relative grid cells.
  *
  * Returns everything as `singles` when the pin count is under
- * {@link CLUSTER_PIN_THRESHOLD}, and cells holding a single listing stay
- * singles too — a lone pin is more useful showing its price than its count.
+ * `minListings` (default {@link CLUSTER_PIN_THRESHOLD}), and cells holding a
+ * single listing stay singles too — a lone pin is more useful showing its
+ * price than its count. The homepage hero passes `2` so overlapping flags
+ * group on first load.
  */
 export function clusterListings(
   listings: MapListing[],
   dealSignals: Map<string, DealSignalResult>,
   bounds: ClusterBounds | null,
+  minListings = CLUSTER_PIN_THRESHOLD,
 ): ClusterResult {
-  if (listings.length < CLUSTER_PIN_THRESHOLD || !bounds) {
+  if (listings.length < minListings || !bounds) {
     return { singles: listings, clusters: [] }
   }
 
