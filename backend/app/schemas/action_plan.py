@@ -72,6 +72,14 @@ class ActionPlanOut(BaseModel):
     source: str = "template"
     research: ResearchOut | None = None
     property_status: str | None = None
+    plans_used: int = 0
+    plans_limit: int = 1
+    plans_remaining: int = 0
+    metered: bool = False
+    from_cache: bool = False
+    searches: int | None = None
+    cost_cents: int | None = None
+    model: str | None = None
     created_at: datetime
     updated_at: datetime
 

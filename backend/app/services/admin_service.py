@@ -17,9 +17,11 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.action_plan import ActionPlan
 from app.models.saved_property import SavedProperty
 from app.models.subscription import Subscription
 from app.models.user import User
+from app.services.entitlements import action_plan_month_start
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +65,20 @@ class AdminService:
         admin_users_result = await db.execute(select(func.count(User.id)).where(User.is_superuser))
         admin_users = admin_users_result.scalar() or 0
 
+        month_start = action_plan_month_start(now)
+        plans_this_month_result = await db.execute(
+            select(func.count(ActionPlan.id)).where(
+                ActionPlan.created_at >= month_start,
+                ActionPlan.provider_response_id.isnot(None),
+            )
+        )
+        action_plans_this_month = int(plans_this_month_result.scalar() or 0)
+
+        spend_result = await db.execute(
+            select(func.coalesce(func.sum(ActionPlan.cost_cents), 0))
+        )
+        action_plan_spend_cents = int(spend_result.scalar() or 0)
+
         return {
             "total_users": total_users,
             "active_users": active_users,
@@ -70,6 +86,8 @@ class AdminService:
             "new_users_30d": new_users_30d,
             "verified_users": verified_users,
             "admin_users": admin_users,
+            "action_plans_this_month": action_plans_this_month,
+            "action_plan_spend_cents": action_plan_spend_cents,
         }
 
     def _apply_user_filters(self, query, search, is_active, is_superuser):

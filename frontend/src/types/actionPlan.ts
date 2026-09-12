@@ -81,6 +81,14 @@ export interface ActionPlan {
   source: ActionPlanSource
   research: ActionPlanResearch | null
   property_status?: string | null
+  plans_used?: number
+  plans_limit?: number
+  plans_remaining?: number
+  metered?: boolean
+  from_cache?: boolean
+  searches?: number | null
+  cost_cents?: number | null
+  model?: string | null
   created_at: string
   updated_at: string
 }

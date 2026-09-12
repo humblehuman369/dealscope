@@ -62,6 +62,8 @@ class PlatformStats(BaseModel):
     new_users_30d: int
     verified_users: int
     admin_users: int
+    action_plans_this_month: int = 0
+    action_plan_spend_cents: int = 0
 
 
 class AdminAssumptionsResponse(BaseModel):

@@ -7,7 +7,9 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, status
 
+from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession
+from app.core.exceptions import SubscriptionLimitError
 from app.models.action_plan import ActionPlan, ActionPlanStatus
 from app.schemas.action_plan import (
     ActionPlanApplyIn,
@@ -23,10 +25,11 @@ from app.schemas.action_plan import (
 )
 from app.schemas.contact import ContactOut, ContactRole
 from app.schemas.task import TaskOut
+from app.services.action_plan import research as action_plan_research
 from app.services.action_plan.apply import apply_action_plan, get_owned_plan
 from app.services.action_plan.cases import CASE_LABELS, sort_case
-from app.services.action_plan.research import kickoff_research, refresh_research
 from app.services.action_plan.templates import build_template_plan
+from app.services.entitlements import action_plan_usage, check_action_plan_allowance, is_metered_action_plan
 from app.services.saved_property_service import saved_property_service
 
 logger = logging.getLogger(__name__)
@@ -123,7 +126,30 @@ def _research_to_out(raw: dict[str, Any] | None) -> ResearchOut | None:
     )
 
 
-def _plan_to_out(row: ActionPlan, *, property_status: str | None = None) -> ActionPlanOut:
+def _action_plan_limit_http_error(e: SubscriptionLimitError) -> HTTPException:
+    remaining = max(0, e.limit - e.current)
+    if e.limit <= 1:
+        message = (
+            f"You've used all {e.limit} action plans this month. "
+            "Upgrade to Pro for 30 per month."
+        )
+    else:
+        message = f"You've used all {e.limit} action plans this month."
+    return HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail={
+            "code": e.code,
+            "message": message,
+            "limit_type": e.limit_type,
+            "current": e.current,
+            "limit": e.limit,
+            "plans_remaining": remaining,
+            "tier_required": e.tier_required,
+        },
+    )
+
+
+async def _plan_to_out(db, user_id, row: ActionPlan, *, property_status: str | None = None) -> ActionPlanOut:
     payload = row.plan or {}
     facts = [
         ActionPlanFact(label=str(f.get("label", "")), value=str(f.get("value", "")))
@@ -158,6 +184,9 @@ def _plan_to_out(row: ActionPlan, *, property_status: str | None = None) -> Acti
                 notes=item.get("notes"),
             )
         )
+    used, limit, remaining = await action_plan_usage(db, user_id)
+    metered = is_metered_action_plan(row)
+    from_cache = row.research is not None and not metered
     return ActionPlanOut(
         id=str(row.id),
         saved_property_id=str(row.saved_property_id),
@@ -171,6 +200,14 @@ def _plan_to_out(row: ActionPlan, *, property_status: str | None = None) -> Acti
         source=str(payload.get("source") or "template"),
         research=_research_to_out(row.research),
         property_status=property_status,
+        plans_used=used,
+        plans_limit=limit,
+        plans_remaining=remaining,
+        metered=metered,
+        from_cache=from_cache,
+        searches=row.searches,
+        cost_cents=row.cost_cents if row.cost_cents is not None else 0,
+        model=settings.RESEARCH_MODEL if metered else None,
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
@@ -206,6 +243,16 @@ async def create_action_plan(
 
     snapshot = prop.property_data_snapshot or {}
     address = prop.full_address or prop.address_street
+    args = _research_args(prop)
+    cached = await action_plan_research.cached_research(
+        parcel=args.get("parcel"), address=args.get("address")
+    )
+    if not cached:
+        try:
+            await check_action_plan_allowance(db, current_user.id)
+        except SubscriptionLimitError as e:
+            raise _action_plan_limit_http_error(e) from e
+
     case = sort_case(snapshot)
     plan_json = build_template_plan(snapshot, address=address, case=case)
 
@@ -218,12 +265,12 @@ async def create_action_plan(
         plan=plan_json,
         cost_cents=0,
     )
-    await kickoff_research(row, snapshot, **_research_args(prop))
+    await action_plan_research.kickoff_research(row, snapshot, **args)
     db.add(row)
     await db.commit()
     await db.refresh(row)
     status_value = prop.status.value if hasattr(prop.status, "value") else str(prop.status)
-    return _plan_to_out(row, property_status=status_value)
+    return await _plan_to_out(db, current_user.id, row, property_status=status_value)
 
 
 @router.get(
@@ -241,13 +288,13 @@ async def get_action_plan(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Action plan not found")
     prop = await saved_property_service.get_by_id(db, str(plan.saved_property_id), str(current_user.id))
     args = _research_args(prop) if prop is not None else {}
-    await refresh_research(plan, parcel=args.get("parcel"), address=args.get("address"))
+    await action_plan_research.refresh_research(plan, parcel=args.get("parcel"), address=args.get("address"))
     await db.commit()
     await db.refresh(plan)
     status_value = None
     if prop is not None:
         status_value = prop.status.value if hasattr(prop.status, "value") else str(prop.status)
-    return _plan_to_out(plan, property_status=status_value)
+    return await _plan_to_out(db, current_user.id, plan, property_status=status_value)
 
 
 @router.post(

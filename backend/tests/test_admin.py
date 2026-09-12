@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.action_plan import ActionPlan, ActionPlanCase, ActionPlanStatus
+from app.models.saved_property import PropertyStatus, SavedProperty
 from app.services.admin_service import admin_service
 from app.services.auth_service import auth_service
 from app.repositories.user_repository import user_repo
@@ -129,3 +131,42 @@ class TestPlatformStats:
         assert "total_users" in stats
         assert stats["total_users"] >= 2
         assert "active_users" in stats
+        assert stats["action_plans_this_month"] == 0
+        assert stats["action_plan_spend_cents"] == 0
+
+    async def test_action_plan_spend_line(self, db_session, admin_user):
+        prop = SavedProperty(
+            user_id=admin_user.id,
+            address_street="117 River Hammock Dr",
+            address_city="Fort Pierce",
+            address_state="FL",
+            address_zip="34982",
+            full_address="117 River Hammock Dr, Fort Pierce, FL 34982",
+            status=PropertyStatus.PROSPECTING,
+        )
+        db_session.add(prop)
+        await db_session.flush()
+        db_session.add(
+            ActionPlan(
+                saved_property_id=prop.id,
+                user_id=admin_user.id,
+                case=ActionPlanCase.PRE_FORECLOSURE,
+                status=ActionPlanStatus.READY,
+                provider_response_id="resp_metered",
+                cost_cents=42,
+            )
+        )
+        db_session.add(
+            ActionPlan(
+                saved_property_id=prop.id,
+                user_id=admin_user.id,
+                case=ActionPlanCase.ON_MARKET,
+                status=ActionPlanStatus.READY,
+                provider_response_id=None,
+                cost_cents=0,
+            )
+        )
+        await db_session.commit()
+        stats = await admin_service.get_platform_stats(db_session)
+        assert stats["action_plans_this_month"] == 1
+        assert stats["action_plan_spend_cents"] == 42

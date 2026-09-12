@@ -23,6 +23,7 @@ from typing import Any, Literal
 import httpx
 
 from app.core.config import settings
+from app.core.posthog_client import posthog_client
 from app.models.action_plan import ActionPlan, ActionPlanCase, ActionPlanStatus
 from app.services.action_plan.cases import listing_from_payload
 from app.services.action_plan.writer import write_plan
@@ -537,10 +538,13 @@ async def refresh_research(
             _timeout_seconds(),
         )
         plan.status = ActionPlanStatus.FAILED
+        _record_usage_cost(plan)
         plan.updated_at = now
+        _emit_action_plan_run(plan)
         return
     if not plan.provider_response_id:
         plan.status = ActionPlanStatus.FAILED
+        plan.cost_cents = plan.cost_cents or 0
         plan.updated_at = now
         return
 
@@ -549,6 +553,8 @@ async def refresh_research(
         plan.status = ActionPlanStatus.RESEARCHING
         if checked.searches:
             plan.searches = checked.searches
+        plan.input_tokens = checked.input_tokens or plan.input_tokens
+        plan.output_tokens = checked.output_tokens or plan.output_tokens
         plan.updated_at = now
         return
     if checked.status == "completed" and checked.research is not None:
@@ -571,12 +577,15 @@ async def refresh_research(
         )
         await store_cached_research(checked.research, parcel=parcel, address=address)
         plan.updated_at = now
+        _emit_action_plan_run(plan)
         return
     plan.status = ActionPlanStatus.FAILED
     plan.searches = checked.searches or plan.searches
     plan.input_tokens = checked.input_tokens or plan.input_tokens
     plan.output_tokens = checked.output_tokens or plan.output_tokens
+    _record_usage_cost(plan)
     plan.updated_at = now
+    _emit_action_plan_run(plan)
 
 
 def property_context(
@@ -754,6 +763,39 @@ def _apply_completed(
     plan.input_tokens = input_tokens
     plan.output_tokens = output_tokens
     plan.cost_cents = cost_cents
+
+
+def _record_usage_cost(plan: ActionPlan) -> None:
+    """Persist cost_cents from whatever usage we already recorded."""
+    plan.cost_cents = estimate_cost_cents(
+        settings.RESEARCH_MODEL,
+        plan.searches or 0,
+        plan.input_tokens or 0,
+        plan.output_tokens or 0,
+    )
+
+
+def _emit_action_plan_run(plan: ActionPlan) -> None:
+    """PostHog capture for a metered run. Cache hits never start OpenAI, so
+    they never reach here. Never raises."""
+    if not plan.provider_response_id:
+        return
+    if posthog_client is None:
+        return
+    case = plan.case.value if hasattr(plan.case, "value") else str(plan.case)
+    try:
+        posthog_client.capture(
+            distinct_id=str(plan.user_id),
+            event="action_plan_run",
+            properties={
+                "case": case,
+                "model": settings.RESEARCH_MODEL,
+                "searches": plan.searches or 0,
+                "cost": plan.cost_cents or 0,
+            },
+        )
+    except Exception:
+        logger.debug("action_plan_run capture failed", exc_info=True)
 
 
 def _timed_out(plan: ActionPlan, now: datetime) -> bool:

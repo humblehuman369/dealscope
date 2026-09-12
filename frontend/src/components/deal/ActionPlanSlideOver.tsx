@@ -12,7 +12,9 @@ import { useEffect, useRef, useState } from 'react'
 import { Route, X } from 'lucide-react'
 import { useFocusTrap } from '@/components/ui/useFocusTrap'
 import { useActionPlanPoll, useApplyActionPlan, useCreateActionPlan } from '@/hooks/useActionPlan'
-import { ACTION_PLAN_COPY } from '@/lib/actionPlanCopy'
+import { ACTION_PLAN_COPY, remainingPlansLabel } from '@/lib/actionPlanCopy'
+import { trackEvent } from '@/lib/eventTracking'
+import { ApiError } from '@/lib/api-client'
 import { isPlanResearching, type ActionPlan, type ResearchFinding } from '@/types/actionPlan'
 
 interface ActionPlanSlideOverProps {
@@ -55,15 +57,29 @@ export function ActionPlanSlideOver({ open, onClose, propertyId }: ActionPlanSli
     open && isPlanResearching(createdPlan),
   )
   const plan = poll.data ?? createdPlan
+  const firedRun = useRef<string | null>(null)
 
   useEffect(() => {
     if (!open || !propertyId) return
     apply.reset()
     create.mutate()
     setMoveToPursuing(false)
+    firedRun.current = null
     // Create once per open. Reset apply so a previous "Added" doesn't stick.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, propertyId])
+
+  useEffect(() => {
+    if (!plan || isPlanResearching(plan) || !plan.metered) return
+    if (firedRun.current === plan.id) return
+    firedRun.current = plan.id
+    trackEvent('action_plan_run', {
+      case: plan.case,
+      model: plan.model ?? '',
+      searches: plan.searches ?? 0,
+      cost: plan.cost_cents ?? 0,
+    })
+  }, [plan])
 
   useEffect(() => {
     if (!open) return
@@ -80,6 +96,12 @@ export function ActionPlanSlideOver({ open, onClose, propertyId }: ActionPlanSli
   if (!open) return null
 
   const applied = apply.isSuccess
+  const createError = create.error instanceof ApiError ? create.error : null
+  const limitHit = createError != null && (createError.status === 403 || createError.status === 402)
+  const remaining =
+    plan?.plans_remaining ??
+    (typeof createError?.detail?.plans_remaining === 'number' ? createError.detail.plans_remaining : null)
+  const remainingLabel = remainingPlansLabel(remaining)
 
   return (
     <div
@@ -111,6 +133,9 @@ export function ActionPlanSlideOver({ open, onClose, propertyId }: ActionPlanSli
             <h2 className="text-lg font-bold text-[var(--text-heading)] m-0">
               {plan?.case_label ?? ACTION_PLAN_COPY.buttonLabel}
             </h2>
+            {remainingLabel ? (
+              <p className="text-xs text-[var(--text-label)] mt-0.5">{remainingLabel}</p>
+            ) : null}
           </div>
           <button
             type="button"
@@ -132,10 +157,14 @@ export function ActionPlanSlideOver({ open, onClose, propertyId }: ActionPlanSli
             </p>
           ) : create.isError ? (
             <p className="text-sm text-[var(--status-negative)]">
-              Couldn&apos;t build a plan.{' '}
-              <button type="button" onClick={() => create.mutate()} className="underline">
-                Retry
-              </button>
+              {limitHit
+                ? createError?.message || ACTION_PLAN_COPY.limitReached
+                : "Couldn't build a plan."}{' '}
+              {limitHit ? null : (
+                <button type="button" onClick={() => create.mutate()} className="underline">
+                  Retry
+                </button>
+              )}
             </p>
           ) : plan ? (
             <PlanBody plan={plan} />

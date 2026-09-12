@@ -23,8 +23,11 @@
    *   `plan_save_email_sent`       {family?} — claim accepted (202)
    *   `plan_save_signed_in`        {family?} — claim returned a session for this tab
    *   `plan_worksheet_opened`      {family?, signed_in} — wizard closed into the loaded worksheet
-   *   `plan_pro_cta_shown`         {family?} — immediate next-move + trial CTA on first paint
-   *   `magic_link_consumed`        — /auth/magic signed the user in (also captured server-side)
+ *   `plan_pro_cta_shown`         {family?} — immediate next-move + trial CTA on first paint
+ *   `magic_link_consumed`        — /auth/magic signed the user in (also captured server-side)
+ * Action plan (`components/deal/ActionPlanSlideOver.tsx`):
+ *   `action_plan_run`            {case, model, searches, cost} — metered research finished.
+ *                                Cache hits do not fire. Also captured server-side.
  * `activated` fires with `source: 'four_ways'` when the strip renders, replacing the
  * `four_paths` source now that the full panel is collapsed by default.
  *

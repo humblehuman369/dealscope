@@ -30,10 +30,13 @@ from __future__ import annotations
 import enum
 import logging
 import uuid
+from datetime import UTC, datetime
 
-from sqlalchemy import and_, exists, select
+from sqlalchemy import and_, exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import SubscriptionLimitError
+from app.models.action_plan import ActionPlan
 from app.models.subscription import PaymentHistory, Subscription, SubscriptionStatus
 
 logger = logging.getLogger(__name__)
@@ -45,6 +48,17 @@ class Entitlement(enum.StrEnum):
     FREE = "free"
     TRIAL = "trial"
     PAID = "paid"
+
+
+# Starter (free/trial) gets 1 researched plan per calendar month; Pro gets 30.
+# Cache hits and template-only plans do not count — they never start OpenAI,
+# so ``provider_response_id`` stays null. Same idea as analysis_metering:
+# a repeat that costs us nothing does not burn quota.
+ACTION_PLANS_PER_MONTH: dict[Entitlement, int] = {
+    Entitlement.FREE: 1,
+    Entitlement.TRIAL: 1,
+    Entitlement.PAID: 30,
+}
 
 
 async def has_settled_charge(db: AsyncSession, user_id: uuid.UUID) -> bool:
@@ -101,3 +115,59 @@ async def resolve_entitlement(db: AsyncSession, user_id: uuid.UUID) -> Entitleme
     """
     entitlement, _ = await resolve_entitlement_with_subscription(db, user_id)
     return entitlement
+
+
+def action_plan_month_start(now: datetime | None = None) -> datetime:
+    """UTC calendar-month start. Admin copy is 'this month', so we do not
+    use the 30-day analysis reset window."""
+    now = now or datetime.now(UTC)
+    return now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+
+def is_metered_action_plan(plan: ActionPlan) -> bool:
+    """True when this row started OpenAI. Cache hits and template-only plans
+    leave ``provider_response_id`` null and do not count."""
+    return bool(plan.provider_response_id)
+
+
+def action_plan_limit(entitlement: Entitlement) -> int:
+    return ACTION_PLANS_PER_MONTH[entitlement]
+
+
+async def count_action_plans_this_month(db: AsyncSession, user_id: uuid.UUID) -> int:
+    """Metered action plans created this UTC calendar month."""
+    start = action_plan_month_start()
+    result = await db.execute(
+        select(func.count(ActionPlan.id)).where(
+            ActionPlan.user_id == user_id,
+            ActionPlan.created_at >= start,
+            ActionPlan.provider_response_id.isnot(None),
+        )
+    )
+    return int(result.scalar() or 0)
+
+
+async def action_plan_usage(db: AsyncSession, user_id: uuid.UUID) -> tuple[int, int, int]:
+    """Return ``(used, limit, remaining)`` for the current UTC month."""
+    entitlement = await resolve_entitlement(db, user_id)
+    limit = action_plan_limit(entitlement)
+    used = await count_action_plans_this_month(db, user_id)
+    remaining = max(0, limit - used)
+    return used, limit, remaining
+
+
+async def check_action_plan_allowance(db: AsyncSession, user_id: uuid.UUID) -> None:
+    """Pre-flight gate before starting OpenAI research.
+
+    Cache hits skip this. Raises SubscriptionLimitError when the monthly cap
+    is exhausted. Does not increment — the row's ``provider_response_id``
+    is what counts, after start succeeds.
+    """
+    used, limit, _remaining = await action_plan_usage(db, user_id)
+    if used >= limit:
+        raise SubscriptionLimitError(
+            limit_type="action_plans",
+            current=used,
+            limit=limit,
+            tier_required="pro",
+        )

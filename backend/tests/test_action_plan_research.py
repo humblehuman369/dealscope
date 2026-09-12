@@ -7,13 +7,15 @@ import sys
 import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from app.core.config import settings
 from app.core.deps import get_current_user, get_current_verified_user
 from app.main import app
 from app.models.action_plan import ActionPlan, ActionPlanCase, ActionPlanStatus
+from app.models.subscription import SubscriptionTier
+from app.services.billing_service import billing_service
 from app.services.action_plan.research import (
     CASE_TARGETS,
     RESEARCH_CACHE_TTL_SECONDS,
@@ -374,6 +376,7 @@ class TestCheckResearch:
         await refresh_research(plan)
         assert plan.status is ActionPlanStatus.FAILED
         assert plan.research is None
+        assert plan.cost_cents == 0
         cancel.assert_awaited_once_with("resp_timeout")
         check.assert_not_called()
 
@@ -424,6 +427,11 @@ async def test_create_without_key_stays_template(auth_client, monkeypatch):
     assert body["status"] == "ready"
     assert body["source"] == "template"
     assert body["research"] is None
+    assert body["metered"] is False
+    assert body["from_cache"] is False
+    assert body["plans_limit"] == 1
+    assert body["plans_remaining"] == 1
+    assert body["cost_cents"] == 0
     assert len(body["tasks"]) >= 3
     polled = await auth_client.get(f"/api/v1/action-plans/{body['id']}")
     assert polled.status_code == 200
@@ -448,6 +456,11 @@ async def test_create_starts_research_when_openai_returns_id(auth_client, monkey
     body = created.json()
     assert body["status"] == "researching"
     assert body["source"] == "template"
+    assert body["metered"] is True
+    assert body["from_cache"] is False
+    assert body["plans_limit"] == 1
+    assert body["plans_remaining"] == 0
+    assert body["cost_cents"] == 0
     assert len(body["tasks"]) >= 3
 
 
@@ -472,6 +485,8 @@ async def test_get_poll_attaches_findings(auth_client, monkeypatch):
     )
     monkeypatch.setattr("app.services.action_plan.research.store_cached_research", AsyncMock())
     monkeypatch.setattr("app.services.action_plan.research.write_plan", _passthrough_write)
+    capture = MagicMock()
+    monkeypatch.setattr("app.services.action_plan.research.posthog_client", capture)
     property_id = await _save_property(
         auth_client,
         {"listing_status": "OFF_MARKET", "is_off_market": True, "is_pre_foreclosure": True},
@@ -483,6 +498,16 @@ async def test_get_poll_attaches_findings(auth_client, monkeypatch):
     body = polled.json()
     assert body["status"] == "ready"
     assert body["research"]["best_first_call"]["who"] == "Pat Koolik"
+    assert body["searches"] == 8
+    assert body["cost_cents"] == estimate_cost_cents("gpt-5.6-terra", 8, 40000, 3000)
+    assert body["metered"] is True
+    capture.capture.assert_called_once()
+    props = capture.capture.call_args.kwargs["properties"]
+    assert capture.capture.call_args.kwargs["event"] == "action_plan_run"
+    assert props["case"] == "pre_foreclosure"
+    assert props["model"] == settings.RESEARCH_MODEL
+    assert props["searches"] == 8
+    assert props["cost"] == body["cost_cents"]
     assert any(f["status"] == "VERIFIED" for f in body["research"]["findings"])
     assert any(
         f["status"] == "UNVERIFIED" and f["field"] == "foreclosure_case_number"
@@ -527,6 +552,8 @@ async def test_cache_hit_skips_openai(auth_client, monkeypatch):
     start = AsyncMock(side_effect=AssertionError("cache hit must not call start_research"))
     monkeypatch.setattr("app.services.action_plan.research.start_research", start)
     monkeypatch.setattr("app.services.action_plan.research.write_plan", _passthrough_write)
+    capture = MagicMock()
+    monkeypatch.setattr("app.services.action_plan.research.posthog_client", capture)
     property_id = await _save_property(
         auth_client,
         {"listing_status": "OFF_MARKET", "is_off_market": True, "is_pre_foreclosure": True},
@@ -536,7 +563,12 @@ async def test_cache_hit_skips_openai(auth_client, monkeypatch):
     body = created.json()
     assert body["status"] == "ready"
     assert body["research"]["best_first_call"]["who"] == "Pat Koolik"
+    assert body["from_cache"] is True
+    assert body["metered"] is False
+    assert body["plans_remaining"] == 1
+    assert body["cost_cents"] == 0
     start.assert_not_called()
+    capture.capture.assert_not_called()
 
 
 async def test_apply_still_writes_template_after_research(auth_client, monkeypatch):
@@ -566,3 +598,80 @@ async def test_apply_still_writes_template_after_research(auth_client, monkeypat
     assert "Confirm this: foreclosure case number" in titles
     assert all(t["source"] == "ai" for t in applied.json()["tasks_created"])
     assert all(t["action_plan_id"] == plan["id"] for t in applied.json()["tasks_created"])
+
+
+async def test_starter_second_metered_plan_is_403(auth_client, monkeypatch):
+    monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test")
+    monkeypatch.setattr(settings, "RESEARCH_PROVIDER", "openai")
+    monkeypatch.setattr("app.services.action_plan.research.cached_research", AsyncMock(return_value=None))
+    monkeypatch.setattr(
+        "app.services.action_plan.research.start_research",
+        AsyncMock(return_value="resp_abc"),
+    )
+    listing = {"listing_status": "OFF_MARKET", "is_off_market": True, "is_pre_foreclosure": True}
+    first_id = await _save_property(auth_client, listing)
+    first = await auth_client.post(f"/api/v1/properties/saved/{first_id}/action-plan")
+    assert first.status_code == 201, first.text
+    assert first.json()["metered"] is True
+    assert first.json()["plans_remaining"] == 0
+
+    second_id = await _save_property(auth_client, listing)
+    second = await auth_client.post(f"/api/v1/properties/saved/{second_id}/action-plan")
+    assert second.status_code == 403, second.text
+    details = second.json()["error"]["details"]
+    assert details["limit_type"] == "action_plans"
+    assert details["limit"] == 1
+    assert details["plans_remaining"] == 0
+
+
+async def test_cache_hit_succeeds_when_quota_exhausted(auth_client, monkeypatch):
+    monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test")
+    monkeypatch.setattr(settings, "RESEARCH_PROVIDER", "openai")
+    monkeypatch.setattr("app.services.action_plan.research.cached_research", AsyncMock(return_value=None))
+    monkeypatch.setattr(
+        "app.services.action_plan.research.start_research",
+        AsyncMock(return_value="resp_abc"),
+    )
+    monkeypatch.setattr("app.services.action_plan.research.write_plan", _passthrough_write)
+    listing = {"listing_status": "OFF_MARKET", "is_off_market": True, "is_pre_foreclosure": True}
+    first_id = await _save_property(auth_client, listing)
+    first = await auth_client.post(f"/api/v1/properties/saved/{first_id}/action-plan")
+    assert first.status_code == 201, first.text
+    assert first.json()["metered"] is True
+
+    monkeypatch.setattr(
+        "app.services.action_plan.research.cached_research",
+        AsyncMock(return_value=RIVER_HAMMOCK_RESEARCH),
+    )
+
+    second_id = await _save_property(auth_client, listing)
+    second = await auth_client.post(f"/api/v1/properties/saved/{second_id}/action-plan")
+    assert second.status_code == 201, second.text
+    assert second.json()["from_cache"] is True
+    assert second.json()["metered"] is False
+    assert second.json()["plans_remaining"] == 0
+    assert second.json()["cost_cents"] == 0
+
+
+async def test_pro_can_create_more_than_one_metered_plan(auth_client, db_session, created_user, monkeypatch):
+    monkeypatch.setattr(settings, "OPENAI_API_KEY", "sk-test")
+    monkeypatch.setattr(settings, "RESEARCH_PROVIDER", "openai")
+    monkeypatch.setattr("app.services.action_plan.research.cached_research", AsyncMock(return_value=None))
+    monkeypatch.setattr(
+        "app.services.action_plan.research.start_research",
+        AsyncMock(side_effect=["resp_1", "resp_2"]),
+    )
+    await billing_service.grant_subscription(db_session, created_user.id, SubscriptionTier.PRO)
+
+    listing = {"listing_status": "FOR_SALE", "is_off_market": False, "days_on_market": 12}
+    first_id = await _save_property(auth_client, listing)
+    first = await auth_client.post(f"/api/v1/properties/saved/{first_id}/action-plan")
+    assert first.status_code == 201, first.text
+    assert first.json()["plans_limit"] == 30
+    assert first.json()["plans_remaining"] == 29
+
+    second_id = await _save_property(auth_client, listing)
+    second = await auth_client.post(f"/api/v1/properties/saved/{second_id}/action-plan")
+    assert second.status_code == 201, second.text
+    assert second.json()["metered"] is True
+    assert second.json()["plans_remaining"] == 28

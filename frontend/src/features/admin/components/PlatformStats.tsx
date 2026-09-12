@@ -15,6 +15,8 @@ interface PlatformStats {
   active_users: number
   total_properties_saved: number
   new_users_30d: number
+  action_plans_this_month?: number
+  action_plan_spend_cents?: number
 }
 
 export function PlatformStatsSection() {
@@ -89,25 +91,32 @@ export function PlatformStatsSection() {
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {platformStats.map((stat, index) => (
-        <div
-          key={index}
-          className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className={`p-2 ${stat.iconBg} rounded-lg`}>
-              <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-slate-100 tabular-nums">
-                {stat.value.toLocaleString()}
-              </p>
-              <p className="text-xs text-slate-500 font-medium">{stat.label}</p>
+    <div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {platformStats.map((stat, index) => (
+          <div
+            key={index}
+            className="bg-[var(--surface-card)] rounded-xl border border-white/[0.07] p-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className={`p-2 ${stat.iconBg} rounded-lg`}>
+                <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-100 tabular-nums">
+                  {stat.value.toLocaleString()}
+                </p>
+                <p className="text-xs text-slate-500 font-medium">{stat.label}</p>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+      <p className="mt-3 text-sm text-slate-400">
+        Action plans this month: {(stats?.action_plans_this_month ?? 0).toLocaleString()}
+        {' · '}
+        Total spend: ${((stats?.action_plan_spend_cents ?? 0) / 100).toFixed(2)}
+      </p>
     </div>
   )
 }

@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 from app.models.subscription import Subscription, SubscriptionStatus, SubscriptionTier
-from app.services.entitlements import Entitlement, resolve_entitlement
+from app.services.entitlements import ACTION_PLANS_PER_MONTH, Entitlement, action_plan_limit, resolve_entitlement
 
 pytestmark = pytest.mark.asyncio
 
@@ -67,6 +67,13 @@ async def test_active_pro_is_paid():
     assert await resolve_entitlement(db, uuid.uuid4()) == Entitlement.PAID
     # ACTIVE short-circuits — no PaymentHistory query needed.
     assert db.execute.await_count == 1
+
+
+async def test_action_plan_limits():
+    assert action_plan_limit(Entitlement.FREE) == 1
+    assert action_plan_limit(Entitlement.TRIAL) == 1
+    assert action_plan_limit(Entitlement.PAID) == 30
+    assert ACTION_PLANS_PER_MONTH[Entitlement.FREE] == 1
 
 
 async def test_trialing_pro_without_settled_charge_is_trial():
