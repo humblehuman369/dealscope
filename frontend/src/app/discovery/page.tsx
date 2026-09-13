@@ -80,7 +80,7 @@ import {
 } from '@/components/iq-verdict/VerdictGapGuidance'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
 import { formatGapAmount, type FourWayFamily } from '@/components/iq-verdict/make-it-work/fourWays'
-import { MAKE_IT_WORK_ENABLED } from '@/lib/env'
+import { MAKE_IT_WORK_ENABLED, WORKFLOW_V1_ENV_ENABLED } from '@/lib/env'
 import type { DealStructure } from '@/components/iq-verdict/FourPathsPanel'
 import {
   parseStrategyWorksheetSection,
@@ -264,6 +264,7 @@ function VerdictContent() {
   const queryClient = useQueryClient()
   const { isAuthenticated } = useSession()
   const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
+  const workflowV1Layout = WORKFLOW_V1_ENV_ENABLED && (!workflowV1Ready || workflowV1)
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
 
@@ -390,7 +391,7 @@ function VerdictContent() {
     setPhase: setTourPhase,
     setJoyrideIndex: setTourJoyrideIndex,
     dismissTour,
-  } = useWorkbenchTour({ ready: tourReady, isAuthenticated })
+  } = useWorkbenchTour({ ready: tourReady && !workflowV1Layout, isAuthenticated })
   const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
   const [listingSignals, setListingSignals] = useState<ListingSignalInput | null>(null)
   const [motivatedInsights, setMotivatedInsights] = useState<MotivatedSellerInsight[]>([])
@@ -1696,6 +1697,133 @@ function VerdictContent() {
   })
   const leverCloses = anyLeverClosesGap(analysis.dealStructures?.paths)
 
+  const photoGallery = (
+    <section className="mx-0 sm:mx-5 mt-6">
+      {property.zpid ? (
+        <PropertyPhotoGallery
+          zpid={String(property.zpid)}
+          initialImages={propertyPhotos}
+          hideThumbnails
+          address={property.address}
+          latitude={property.latitude}
+          longitude={property.longitude}
+        />
+      ) : property.imageUrl ? (
+        <div
+          className="rounded-[14px] overflow-hidden"
+          style={{ backgroundColor: 'var(--surface-elevated)' }}
+        >
+          <img
+            src={property.imageUrl}
+            alt={`Property at ${property.address}`}
+            className="w-full object-cover"
+            style={{ aspectRatio: '3/2' }}
+            referrerPolicy="no-referrer"
+          />
+        </div>
+      ) : null}
+    </section>
+  )
+
+  const dataSourcesPanel = hasDataSources ? (
+    <div
+      ref={dataSourcesRef}
+      className="mt-3 rounded-xl overflow-hidden"
+      style={{
+        background: 'var(--surface-card)',
+        border: '1px solid var(--border-default)',
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setIsDataSourcesOpen((prev) => !prev)}
+        className="w-full px-4 py-3 flex items-center justify-between"
+        style={{ color: 'var(--text-heading)' }}
+        aria-expanded={isDataSourcesOpen}
+        aria-controls="verdict-data-sources-panel"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] sm:text-[14px] font-bold uppercase tracking-wide">
+            Data Sources
+          </span>
+          <span
+            className="text-[10px] sm:text-[12px]"
+            style={{ color: 'var(--text-label)' }}
+          >
+            {dataSourceCount} source{dataSourceCount === 1 ? '' : 's'}
+          </span>
+        </div>
+        <svg
+          className={`w-4 h-4 transition-transform ${isDataSourcesOpen ? 'rotate-180' : ''}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {isDataSourcesOpen && (
+        <div
+          id="verdict-data-sources-panel"
+          className="px-3 pb-3 border-t"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
+          <IQEstimateSelector
+            sources={iqSources}
+            highlightIntro
+            showHeader={false}
+            compact
+            onSourceChange={(type, _sourceId, _value) => {
+              if (_value == null) return
+              setProperty((prev) => {
+                if (!prev) return prev
+                if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
+                if (type === 'value') return { ...prev, price: _value } as IQProperty
+                return prev
+              })
+              recalculateVerdict(
+                type === 'value' ? { list_price: _value } : { monthly_rent: _value },
+              )
+              try {
+                const stateZip = [property?.state, property?.zip]
+                  .filter(Boolean)
+                  .join(' ')
+                const fullAddress = [property?.address, property?.city, stateZip]
+                  .filter(Boolean)
+                  .join(', ')
+                if (type === 'value') {
+                  writeDealMakerOverrides(
+                    fullAddress || addressParam,
+                    {
+                      price: _value,
+                      listPrice: _value,
+                    },
+                    { origin: 'source_selection' },
+                  )
+                } else {
+                  writeDealMakerOverrides(
+                    fullAddress || addressParam,
+                    {
+                      monthlyRent: _value,
+                    },
+                    { origin: 'source_selection' },
+                  )
+                }
+              } catch {
+                // Ignore storage errors
+              }
+            }}
+          />
+        </div>
+      )}
+    </div>
+  ) : null
+
   return (
     <>
       <div
@@ -1709,7 +1837,7 @@ function VerdictContent() {
           {/* "Back to map" breadcrumb — only renders when the user arrived from
               a meaningful map-search session (snapshot present). Low-emphasis
               by design so it's a contextual nudge, not a primary CTA. */}
-          {hasMapSession && (
+          {hasMapSession && !workflowV1Layout && (
             <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-0">
               <button
                 type="button"
@@ -1741,7 +1869,7 @@ function VerdictContent() {
             </div>
           )}
 
-          {propertyIdParam ? <RehabBudgetBanner propertyId={propertyIdParam} /> : null}
+          {!workflowV1Layout && propertyIdParam ? <RehabBudgetBanner propertyId={propertyIdParam} /> : null}
 
           {/* When Level 3 is open, collapse the verdict so Strategy does not
               stack a second full page (and a second Deal Gap overview) under it. */}
@@ -1792,34 +1920,51 @@ function VerdictContent() {
             </div>
           ) : null}
 
-          {!workbenchRequest && (
+          {!workbenchRequest && workflowV1Layout ? (
           <>
-          {/* Full-width photo gallery */}
-          <section className="mx-0 sm:mx-5 mt-6">
-            {property.zpid ? (
-              <PropertyPhotoGallery
-                zpid={String(property.zpid)}
-                initialImages={propertyPhotos}
-                hideThumbnails
-                address={property.address}
-                latitude={property.latitude}
-                longitude={property.longitude}
+            <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">
+              <VerdictCard
+                listPrice={property.price}
+                incomeValue={incomeValue}
+                targetBuy={purchasePrice}
+                dealGapDisplayPct={effectiveDisplayPct}
+                sentence={verdictSentence}
+                call={verdictCall}
+                callFired={signalBreakdown.fired}
+                propertyId={
+                  propertyIdParam || property.id || (property.zpid != null ? String(property.zpid) : null)
+                }
+                propertyState={property.state || null}
+                gap={callGap}
+                signals={signalBreakdown.count}
+                closes={leverCloses}
+                isAuthenticated={isAuthenticated}
+                onShowMath={navigateToComps}
+                onBuildPlan={navigateToPlan}
               />
-            ) : property.imageUrl ? (
-              <div
-                className="rounded-[14px] overflow-hidden"
-                style={{ backgroundColor: 'var(--surface-elevated)' }}
-              >
-                <img
-                  src={property.imageUrl}
-                  alt={`Property at ${property.address}`}
-                  className="w-full object-cover"
-                  style={{ aspectRatio: '3/2' }}
-                  referrerPolicy="no-referrer"
+            </div>
+            {photoGallery}
+            {!isAuthenticated ? (
+              <div className="mx-0 sm:mx-5 px-3 sm:px-5">
+                <VerdictEmailCapture
+                  variant="slim"
+                  address={[property.address, property.city, property.state, property.zip].filter(Boolean).join(', ') || addressParam}
+                  propertyId={propertyIdParam || property.id || null}
+                  incomeValue={Number.isFinite(incomeValue) ? incomeValue : null}
+                  targetBuy={Number.isFinite(purchasePrice) ? purchasePrice : null}
+                  dealGap={Number.isFinite(property.price) && Number.isFinite(purchasePrice) ? property.price - purchasePrice : null}
                 />
               </div>
             ) : null}
-          </section>
+            {viewParam === 'sources' ? (
+              <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">{dataSourcesPanel}</div>
+            ) : null}
+          </>
+          ) : null}
+
+          {!workbenchRequest && !workflowV1Layout && (
+          <>
+          {photoGallery}
 
           {/* Main verdict content */}
           <section
@@ -2285,105 +2430,7 @@ function VerdictContent() {
               )}
             </div>
 
-            {/* Data Sources Accordion */}
-            {hasDataSources && (
-              <div
-                ref={dataSourcesRef}
-                className="mt-3 rounded-xl overflow-hidden"
-                style={{
-                  background: 'var(--surface-card)',
-                  border: '1px solid var(--border-default)',
-                  boxShadow: 'var(--shadow-card)',
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setIsDataSourcesOpen((prev) => !prev)}
-                  className="w-full px-4 py-3 flex items-center justify-between"
-                  style={{ color: 'var(--text-heading)' }}
-                  aria-expanded={isDataSourcesOpen}
-                  aria-controls="verdict-data-sources-panel"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12px] sm:text-[14px] font-bold uppercase tracking-wide">
-                      Data Sources
-                    </span>
-                    <span
-                      className="text-[10px] sm:text-[12px]"
-                      style={{ color: 'var(--text-label)' }}
-                    >
-                      {dataSourceCount} source{dataSourceCount === 1 ? '' : 's'}
-                    </span>
-                  </div>
-                  <svg
-                    className={`w-4 h-4 transition-transform ${isDataSourcesOpen ? 'rotate-180' : ''}`}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-
-                {isDataSourcesOpen && (
-                  <div
-                    id="verdict-data-sources-panel"
-                    className="px-3 pb-3 border-t"
-                    style={{ borderColor: 'var(--border-subtle)' }}
-                  >
-                    <IQEstimateSelector
-                      sources={iqSources}
-                      highlightIntro
-                      showHeader={false}
-                      compact
-                      onSourceChange={(type, _sourceId, _value) => {
-                        if (_value == null) return
-                        setProperty((prev) => {
-                          if (!prev) return prev
-                          if (type === 'rent') return { ...prev, monthlyRent: _value } as IQProperty
-                          if (type === 'value') return { ...prev, price: _value } as IQProperty
-                          return prev
-                        })
-                        recalculateVerdict(
-                          type === 'value' ? { list_price: _value } : { monthly_rent: _value },
-                        )
-                        try {
-                          const stateZip = [property?.state, property?.zip]
-                            .filter(Boolean)
-                            .join(' ')
-                          const fullAddress = [property?.address, property?.city, stateZip]
-                            .filter(Boolean)
-                            .join(', ')
-                          if (type === 'value') {
-                            writeDealMakerOverrides(
-                              fullAddress || addressParam,
-                              {
-                                price: _value,
-                                listPrice: _value,
-                              },
-                              { origin: 'source_selection' },
-                            )
-                          } else {
-                            writeDealMakerOverrides(
-                              fullAddress || addressParam,
-                              {
-                                monthlyRent: _value,
-                              },
-                              { origin: 'source_selection' },
-                            )
-                          }
-                        } catch {
-                          // Ignore storage errors
-                        }
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+            {dataSourcesPanel}
 
             {/* Deal Gap Summary */}
             <div
@@ -2875,7 +2922,7 @@ function VerdictContent() {
           )}
 
           {/* Trust Strip — verdict-only; clutter under Level 3 */}
-          {!workbenchRequest && (
+          {!workbenchRequest && !workflowV1Layout && (
             <div
               className="px-3 sm:px-5 py-5 text-center border-t"
               style={{ borderColor: 'var(--border-subtle)' }}
@@ -2966,7 +3013,7 @@ function VerdictContent() {
         />
       )}
 
-      {tourPhase ? (
+      {tourPhase && !workflowV1Layout ? (
         <WorkbenchTour
           phase={tourPhase}
           joyrideIndex={tourJoyrideIndex}

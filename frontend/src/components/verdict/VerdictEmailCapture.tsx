@@ -18,6 +18,8 @@ export interface VerdictEmailCaptureProps {
   incomeValue: number | null
   targetBuy: number | null
   dealGap: number | null
+  /** `slim` is the workflow-v1 logged-out bar. `box` is the current Discovery card. */
+  variant?: 'box' | 'slim'
 }
 
 type CaptureState = 'idle' | 'submitting' | 'sent' | 'error'
@@ -28,6 +30,7 @@ export function VerdictEmailCapture({
   incomeValue,
   targetBuy,
   dealGap,
+  variant = 'box',
 }: VerdictEmailCaptureProps): ReactNode {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<CaptureState>('idle')
@@ -72,10 +75,15 @@ export function VerdictEmailCapture({
     }
   }
 
+  const isSlim = variant === 'slim'
+  const label = isSlim ? 'Save this verdict. Email me the numbers.' : 'Email me this Discovery'
+  const note = isSlim ? 'One email. No account.' : 'One email. No account. Unsubscribe in one click.'
+  const buttonLabel = isSlim ? 'Email me' : 'Email me this Discovery'
+
   if (state === 'sent') {
     return (
       <div
-        className="mt-6 rounded-2xl border p-5"
+        className={isSlim ? 'mt-4 mb-6 rounded-xl border px-4 py-3' : 'mt-6 rounded-2xl border p-5'}
         style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border-default)' }}
         role="status"
       >
@@ -93,14 +101,14 @@ export function VerdictEmailCapture({
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="mt-6 rounded-2xl border p-5"
+      className={isSlim ? 'mt-4 mb-6 rounded-xl border px-4 py-3' : 'mt-6 rounded-2xl border p-5'}
       style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border-default)' }}
     >
       <label htmlFor="verdict-email" className="block text-sm font-bold" style={{ color: 'var(--text-heading)' }}>
-        Email me this Discovery
+        {label}
       </label>
       <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        One email. No account. Unsubscribe in one click.
+        {note}
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <input
@@ -128,7 +136,7 @@ export function VerdictEmailCapture({
           style={{ background: 'var(--accent-brand-blue)' }}
         >
           <Mail size={16} aria-hidden />
-          {state === 'submitting' ? 'Sending…' : 'Email me this Discovery'}
+          {state === 'submitting' ? 'Sending…' : buttonLabel}
         </button>
       </div>
       {error ? (

@@ -2,13 +2,19 @@
 
 import { useSearchParams } from 'next/navigation'
 import { PageExplainer } from '@/components/seo/PageExplainer'
+import { WORKFLOW_V1_ENV_ENABLED } from '@/lib/env'
+import { useWorkflowV1 } from '@/lib/workflowV1'
 
 /**
  * SEO explainer for /discovery. Hidden while Level 3 (Strategy Workbench) is
  * open so the page does not read as Discovery content stacked under Strategy.
+ * Hidden under workflow v1 (P1-7); the Related links row lives here too.
  */
 export function DiscoveryPageExplainer() {
   const searchParams = useSearchParams()
+  const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
+  const hideForWorkflowV1 = WORKFLOW_V1_ENV_ENABLED && (!workflowV1Ready || workflowV1)
+  if (hideForWorkflowV1) return null
   if (searchParams?.get('view') === 'workbench') return null
 
   return (

@@ -34,6 +34,29 @@ describe('VerdictEmailCapture', () => {
     expect(screen.getByRole('button', { name: 'Email me this Discovery' })).toBeInTheDocument()
   })
 
+  it('renders the slim bar copy without changing the capture flow', async () => {
+    render(
+      <VerdictEmailCapture
+        variant="slim"
+        address="123 Main St, Austin, TX"
+        propertyId="abc"
+        incomeValue={268400}
+        targetBuy={241700}
+        dealGap={43200}
+      />,
+    )
+    expect(screen.getByLabelText('Save this verdict. Email me the numbers.')).toBeInTheDocument()
+    expect(screen.getByText('One email. No account.')).toBeInTheDocument()
+    expect(screen.queryByText('Email me this Discovery')).not.toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Save this verdict. Email me the numbers.'), {
+      target: { value: 'investor@example.com' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Email me' }))
+    await waitFor(() => expect(post).toHaveBeenCalled())
+    expect(post.mock.calls[0][0]).toBe('/api/v1/leads/verdict-email')
+    expect(trackEvent).toHaveBeenCalledWith('verdict_email_captured', undefined, 'evt-test')
+  })
+
   it('rejects a bad email', async () => {
     render(
       <VerdictEmailCapture address="123 Main St" incomeValue={1} targetBuy={1} dealGap={1} />,
