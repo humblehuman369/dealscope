@@ -887,15 +887,20 @@ class MapSearchService:
                             )
                         )
                     if self.zillow:
-                        # Vanilla forSale query — covers Active and the
-                        # owner-listed (FSBO) bucket Zillow's defaults already
-                        # include. Issued whenever any non-distressed status is
-                        # requested so the user sees something even when the
-                        # distressed query fails.
-                        if requested_statuses & {"active", "owner_listed"}:
+                        # Vanilla forSale is AXESSO's By-agent default. It does
+                        # not include Zillow Owner Posted / FSBO inventory.
+                        if "active" in requested_statuses:
                             tasks.append(
                                 asyncio.create_task(
                                     self._fetch_zillow(pt_lat, pt_lng, sub_radius, "forSale", req, None),
+                                )
+                            )
+                        if "owner_listed" in requested_statuses:
+                            tasks.append(
+                                asyncio.create_task(
+                                    self._fetch_zillow_owner_listed(
+                                        pt_lat, pt_lng, sub_radius, req
+                                    ),
                                 )
                             )
                         # All three distressed buckets route through the URL-based
@@ -1240,6 +1245,40 @@ class MapSearchService:
             }
         )
 
+        state = {
+            "pagination": {},
+            "isMapVisible": True,
+            "mapBounds": {
+                "north": round(north, 6),
+                "south": round(south, 6),
+                "east": round(east, 6),
+                "west": round(west, 6),
+            },
+            "filterState": filter_state,
+            "isListVisible": True,
+        }
+        encoded = urllib.parse.quote(json.dumps(state, separators=(",", ":")))
+        return f"https://www.zillow.com/homes/for_sale/?searchQueryState={encoded}"
+
+    @staticmethod
+    def _zillow_owner_posted_url(
+        north: float,
+        south: float,
+        east: float,
+        west: float,
+    ) -> str:
+        """Build a Zillow ``searchQueryState`` URL for Owner Posted (FSBO) inventory.
+
+        Zillow's listing-type checkboxes map to ``filterState.fsba`` (By agent)
+        and ``fsbo`` (Owner posted). Defaults are all on; Owner Posted-only is
+        ``fsbo`` on and the other for-sale listing types off.
+        """
+        filter_state = {
+            "fsbo": {"value": True},
+            "fsba": {"value": False},
+            "nc": {"value": False},
+            "cmsn": {"value": False},
+        }
         state = {
             "pagination": {},
             "isMapVisible": True,
@@ -1964,6 +2003,83 @@ class MapSearchService:
             )
             return []
 
+    async def _fetch_zillow_owner_listed(
+        self,
+        center_lat: float,
+        center_lng: float,
+        radius_miles: float,
+        req: MapSearchRequest,
+    ) -> list[MapListing]:
+        """Fetch Zillow Owner Posted (FSBO) listings.
+
+        AXESSO's coordinate search defaults ``listing_type`` to By agent, and
+        search rows omit ``listingSubType.isFSBO``, so the vanilla for-sale
+        query never surfaces these. We hit both the typed FSBO params and
+        Zillow's Owner Posted ``searchQueryState`` (``fsbo`` on, ``fsba`` off)
+        and tag the returned rows — the query *is* the Owner Posted bucket,
+        unlike distressed URL filters that return mixed inventory.
+        """
+        if not self.zillow:
+            return []
+
+        north, south, east, west = self._radius_to_bbox(
+            center_lat, center_lng, max(radius_miles, 0.5)
+        )
+        url = self._zillow_owner_posted_url(north, south, east, west)
+        coord_task = self._fetch_zillow(
+            center_lat,
+            center_lng,
+            radius_miles,
+            "forSale",
+            req,
+            {
+                "isForSaleByOwner": True,
+                "isForSaleByAgent": False,
+                "listing_type": "by_owner",
+            },
+            tag_status="Owner Listed",
+        )
+
+        async def _from_url() -> list[MapListing]:
+            try:
+                resp = await self.zillow.search_by_url(url)
+                if not resp.success or not resp.data:
+                    logger.info("Zillow owner-posted URL returned no data")
+                    return []
+                raw_props = (
+                    resp.data.get("results")
+                    or resp.data.get("props")
+                    or resp.data.get("searchResults")
+                    or []
+                )
+                if isinstance(resp.data, dict) and not raw_props:
+                    for val in resp.data.values():
+                        if isinstance(val, list) and len(val) > 0:
+                            raw_props = val
+                            break
+                results: list[MapListing] = []
+                for item in raw_props:
+                    if not self._zillow_has_coords(item):
+                        continue
+                    listing = self._normalize_zillow_listing(item, inventory="sale")
+                    listing.listing_status = "Owner Listed"
+                    results.append(listing)
+                logger.info("Zillow owner-posted URL: %d listings", len(results))
+                return results
+            except Exception:
+                logger.exception("Zillow owner-posted URL fetch failed")
+                return []
+
+        by_id: dict[str, MapListing] = {}
+        gathered = await asyncio.gather(coord_task, _from_url(), return_exceptions=True)
+        for result in gathered:
+            if isinstance(result, Exception):
+                logger.warning("Zillow owner-listed source failed: %s", result)
+                continue
+            for listing in result:
+                by_id.setdefault(listing.id, listing)
+        return list(by_id.values())
+
     async def _fetch_zillow_distressed(
         self,
         center_lat: float,
@@ -2578,6 +2694,12 @@ class MapSearchService:
             sub = {}
         fore_types = item.get("foreclosureTypes") or {}
 
+        def _flag(*names: str) -> bool:
+            for name in names:
+                if item.get(name) or sub.get(name):
+                    return True
+            return False
+
         if fore_types.get("isPreforeclosure") or fore_types.get("isPreForeclosure"):
             return "Pre-Foreclosure"
         if sub.get("isForeclosure"):
@@ -2588,7 +2710,7 @@ class MapSearchService:
             return "Auction"
         if sub.get("isBankOwned") or fore_types.get("isBankOwned"):
             return "Foreclosure"
-        if sub.get("isFSBO"):
+        if _flag("isFSBO", "is_FSBO", "isForSaleByOwner"):
             return "Owner Listed"
 
         return item.get("homeStatus") or item.get("listingStatus")
