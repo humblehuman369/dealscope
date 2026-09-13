@@ -82,8 +82,10 @@ class Settings(BaseSettings):
     AXESSO_API_KEY: str = ""
     AXESSO_API_KEY_SECONDARY: str = ""  # Optional fallback when primary returns 502/503 or auth errors
     AXESSO_URL: str = "https://api.axesso.de/zil"
-    # Stay under the documented paid cap (50–75 req/min). Reserved slots are
-    # for Discovery address lookups so a map fan-out cannot starve a verdict.
+    # Published paid caps (confirm on the live Axesso dashboard, then set this):
+    # - axesso.de/zillow-api paid SKU: 50 req/min (10,000/mo)
+    # - RapidAPI Ultra / FINANCIAL_PROFORMA Production: 75 req/min (100,000/mo)
+    # Default is the more conservative published number.
     AXESSO_MAX_RPM: int = 50
     AXESSO_RESERVED_INTERACTIVE: int = 10
 

@@ -118,17 +118,31 @@ def test_merge_accumulates_motivated_keywords() -> None:
     assert bucket["100 main st"].motivated_keywords == ["As Is", "Investor Special"]
 
 
-@pytest.mark.asyncio
-async def test_motivated_seller_mode_does_not_call_axesso() -> None:
-    """AXESSO ignores filterState.kw — do not pay for the keyword sweep."""
-    from app.services.map_search_service import MOTIVATED_SELLER_DISABLED_NOTICE
+def _listing(**overrides: object) -> MapListing:
+    base: dict[str, object] = {
+        "id": "z1",
+        "address": "200 Oak Ave",
+        "latitude": 41.45,
+        "longitude": -81.65,
+        "listing_status": "Active",
+        "source": "rentcast",
+    }
+    base.update(overrides)
+    return MapListing(**base)  # type: ignore[arg-type]
 
+
+@pytest.mark.asyncio
+async def test_motivated_mode_uses_bounds_fetch_and_local_keyword_match() -> None:
+    """AXESSO ignores kw — one bounds fetch, then local remark matching."""
     service = MapSearchService()
     service._initialized = True
     service.rentcast = MagicMock()
     service.zillow = MagicMock()
     service.zillow.search_by_url = AsyncMock()
     service.mashvisor = None
+
+    hit = _listing(motivated_keywords=["As Is"])
+    miss = _listing(id="z2", address="201 Oak Ave", motivated_keywords=None)
 
     req = MapSearchRequest(
         north=41.5,
@@ -144,19 +158,75 @@ async def test_motivated_seller_mode_does_not_call_axesso() -> None:
 
     with (
         patch("app.services.map_search_service.get_cache_service", return_value=cache),
-        patch.object(service, "_fetch_motivated_seller_listings", new=AsyncMock()) as motivated_fetch,
-        patch.object(service, "_fetch_rentcast", new=AsyncMock()) as rentcast_fetch,
-        patch.object(service, "_fetch_zillow", new=AsyncMock()) as zillow_fetch,
+        patch.object(service, "_fetch_motivated_seller_listings", new=AsyncMock()) as keyword_sweep,
+        patch.object(service, "_fetch_rentcast", new=AsyncMock(return_value=[hit, miss])) as rentcast_fetch,
+        patch.object(service, "_fetch_zillow", new=AsyncMock(return_value=[])) as zillow_fetch,
+        patch.object(service, "_attach_zip_rent_screen", new=AsyncMock(side_effect=lambda rows: rows)),
     ):
         response = await service.search(req)
 
-    motivated_fetch.assert_not_awaited()
-    rentcast_fetch.assert_not_awaited()
-    zillow_fetch.assert_not_awaited()
+    keyword_sweep.assert_not_awaited()
+    rentcast_fetch.assert_awaited()
+    zillow_fetch.assert_awaited()
     service.zillow.search_by_url.assert_not_called()
-    assert response.total_count == 0
-    assert response.listings == []
-    assert response.notice == MOTIVATED_SELLER_DISABLED_NOTICE
+    assert [item.address for item in response.listings] == ["200 Oak Ave"]
+    assert response.listings[0].motivated_keywords == ["As Is"]
+    assert response.notice is None
+
+
+@pytest.mark.asyncio
+async def test_motivated_mode_keeps_bounds_listings_when_no_remarks() -> None:
+    """List cards with no remarks must not collapse the feature to an empty set."""
+    service = MapSearchService()
+    service._initialized = True
+    service.rentcast = MagicMock()
+    service.zillow = MagicMock()
+    service.zillow.search_by_url = AsyncMock()
+    service.mashvisor = None
+
+    bare = _listing(motivated_keywords=None)
+    req = MapSearchRequest(
+        north=41.5,
+        south=41.4,
+        east=-81.6,
+        west=-81.7,
+        motivated_seller_search=True,
+    )
+    cache = AsyncMock()
+    cache.get = AsyncMock(return_value=None)
+    cache.set = AsyncMock()
+
+    with (
+        patch("app.services.map_search_service.get_cache_service", return_value=cache),
+        patch.object(service, "_fetch_rentcast", new=AsyncMock(return_value=[bare])),
+        patch.object(service, "_fetch_zillow", new=AsyncMock(return_value=[])),
+        patch.object(service, "_attach_zip_rent_screen", new=AsyncMock(side_effect=lambda rows: rows)),
+    ):
+        response = await service.search(req)
+
+    assert response.total_count == 1
+    assert response.listings[0].address == "200 Oak Ave"
+    assert response.notice is None
+    service.zillow.search_by_url.assert_not_called()
+
+
+def test_normalize_matches_keywords_on_listing_remarks() -> None:
+    listing = MapSearchService._normalize_rentcast_listing(
+        {
+            "id": "rc1",
+            "latitude": 41.45,
+            "longitude": -81.65,
+            "formattedAddress": "200 Oak Ave, Cleveland, OH 44113",
+            "addressLine1": "200 Oak Ave",
+            "city": "Cleveland",
+            "state": "OH",
+            "zipCode": "44113",
+            "description": "Sold AS IS. Cash only, motivated seller.",
+        }
+    )
+    assert "As Is" in (listing.motivated_keywords or [])
+    assert "Cash only" in (listing.motivated_keywords or [])
+    assert "Motivated Seller" in (listing.motivated_keywords or [])
 
 
 def test_match_motivated_seller_keywords_basic() -> None:
