@@ -233,8 +233,8 @@ def test_axesso_dropout_reason_maps_429_and_circuit() -> None:
 
 def test_provider_dropout_log_is_structured(caplog: pytest.LogCaptureFixture) -> None:
     svc = PropertyService.__new__(PropertyService)
-    with caplog.at_level(logging.INFO, logger="app.services.property_service"):
-        svc._log_provider_dropout("axesso", "429", "110 Crosswinds Dr, Greenacres, FL 33413")
+    caplog.set_level(logging.INFO)
+    svc._log_provider_dropout("axesso", "429", "110 Crosswinds Dr, Greenacres, FL 33413")
     assert "event=provider_dropout" in caplog.text
     assert "provider=axesso" in caplog.text
     assert "reason=429" in caplog.text

@@ -1056,8 +1056,9 @@ class MapSearchService:
         # inventory that doesn't map onto the for-sale status buckets.
         if motivated_seller_mode:
             matched = [item for item in listings if item.motivated_keywords]
-            if matched:
-                listings = matched
+            # Annotate only. Filtering to remark hits would shrink the tile
+            # below the unfiltered bounds set (41 on 2026-09-13) whenever
+            # even one card has a description.
             logger.info(
                 "Motivated-seller local match: %d/%d listings have remark hits",
                 len(matched),

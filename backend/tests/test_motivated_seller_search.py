@@ -169,8 +169,10 @@ async def test_motivated_mode_uses_bounds_fetch_and_local_keyword_match() -> Non
     rentcast_fetch.assert_awaited()
     zillow_fetch.assert_awaited()
     service.zillow.search_by_url.assert_not_called()
-    assert [item.address for item in response.listings] == ["200 Oak Ave"]
-    assert response.listings[0].motivated_keywords == ["As Is"]
+    by_addr = {item.address: item for item in response.listings}
+    assert set(by_addr) == {"200 Oak Ave", "201 Oak Ave"}
+    assert by_addr["200 Oak Ave"].motivated_keywords == ["As Is"]
+    assert by_addr["201 Oak Ave"].motivated_keywords is None
     assert response.notice is None
 
 
