@@ -18,10 +18,10 @@ from datetime import UTC, datetime
 from typing import Any
 
 from app.core.config import settings
-from app.data.motivated_seller_keywords import MOTIVATED_SELLER_KEYWORDS
 from app.schemas.property import MapListing, MapSearchRequest, MapSearchResponse
 from app.services import zip_market_service
 from app.services.api_clients import MashvisorClient, RentCastClient, create_api_clients
+from app.services.axesso_limiter import BULK
 from app.services.cache_service import get_cache_service
 from app.services.zillow_client import ZillowClient, create_zillow_client
 
@@ -29,7 +29,15 @@ logger = logging.getLogger(__name__)
 
 MAP_CACHE_TTL = 600  # 10 minutes
 MOTIVATED_SELLER_KEYWORD_CACHE_TTL = 1800  # 30 minutes per keyword + viewport
-MOTIVATED_SELLER_CONCURRENCY = 8
+
+# AXESSO search-by-url ignores filterState.kw (live-confirmed 2026-09-13:
+# two different keywords on the same tile returned the identical 41 listings).
+# Do not pay for the sweep until the provider honors the filter.
+MOTIVATED_SELLER_DISABLED_NOTICE = (
+    "Motivated-seller keyword search is unavailable. Our Zillow data "
+    "provider does not apply listing-description filters, so those scans "
+    "are disabled."
+)
 
 # Average days per year (accounts for leap years) — used to translate an
 # owner-tenure window in years into RentCast's saleDateRange (days-ago) filter.
@@ -568,6 +576,7 @@ class MapSearchService:
                 api_key=settings.AXESSO_API_KEY,
                 base_url=settings.AXESSO_URL,
                 fallback_api_key=getattr(settings, "AXESSO_API_KEY_SECONDARY", None),
+                default_priority=BULK,
             )
 
         if settings.MASHVISOR_RAPIDAPI_KEY and settings.MASHVISOR_STR_ENABLED:
@@ -611,10 +620,13 @@ class MapSearchService:
         cache = get_cache_service()
 
         cache_key = _build_cache_key(req)
-        cached = await cache.get(cache_key)
-        if cached:
-            logger.info("Map search cache hit: %s", cache_key)
-            return MapSearchResponse(**cached)
+        # Never serve a pre-disable motivated-seller dump. Those rows were
+        # unfiltered map pages tagged with whatever keyword happened to run.
+        if not req.motivated_seller_search:
+            cached = await cache.get(cache_key)
+            if cached:
+                logger.info("Map search cache hit: %s", cache_key)
+                return MapSearchResponse(**cached)
 
         # Grid sizing stays on the *requested* viewport. Tile snapping enlarges
         # the searched rect, and if that leaked into the grid decision a viewport
@@ -660,8 +672,19 @@ class MapSearchService:
         center_lng = (req.east + req.west) / 2
         tile_radius = _viewport_radius_miles(req.north, req.south, req.east, req.west)
 
+        if motivated_seller_mode:
+            logger.info(
+                "Motivated-seller keyword sweep disabled: AXESSO search-by-url ignores filterState.kw"
+            )
+            return MapSearchResponse(
+                listings=[],
+                total_count=0,
+                viewport_center=[center_lat, center_lng],
+                notice=MOTIVATED_SELLER_DISABLED_NOTICE,
+            )
+
         # Decide grid size based on viewport radius
-        if motivated_seller_mode or owner_records_mode:
+        if owner_records_mode:
             grid_size = 1
         elif radius > 100:
             grid_size = 3  # 9 query points for state-level views
@@ -695,17 +718,7 @@ class MapSearchService:
         listings_by_addr: dict[str, MapListing] = {}
         raw_source_totals: int = 0
 
-        if motivated_seller_mode:
-            logger.info(
-                "Map search motivated-seller mode: replacing standard sources with %d Zillow keyword queries",
-                len(MOTIVATED_SELLER_KEYWORDS),
-            )
-            if req.listing_type in ("sale", "both"):
-                motivated_rows = await self._fetch_motivated_seller_listings(req, cache)
-                raw_source_totals = len(motivated_rows)
-                for item in motivated_rows:
-                    self._merge_listing_into(listings_by_addr, item)
-        elif owner_records_mode:
+        if owner_records_mode:
             logger.info(
                 "Map search owner-records mode: RentCast property records, tenure=%s-%s yrs, occupancy=%s",
                 req.owner_tenure_min_years,
@@ -2215,31 +2228,11 @@ class MapSearchService:
         req: MapSearchRequest,
         cache: Any,
     ) -> list[MapListing]:
-        """Run parallel Zillow keyword searches for every motivated-seller phrase."""
-        if not self.zillow:
-            return []
-
-        semaphore = asyncio.Semaphore(MOTIVATED_SELLER_CONCURRENCY)
-        listings_by_addr: dict[str, MapListing] = {}
-        hits_by_keyword: dict[str, int] = {}
-
-        async def _run_keyword(keyword: str) -> None:
-            async with semaphore:
-                rows = await self._fetch_zillow_keyword(req, keyword, cache)
-            hits_by_keyword[keyword] = len(rows)
-            for item in rows:
-                self._merge_listing_into(listings_by_addr, item)
-
-        await asyncio.gather(*(_run_keyword(kw) for kw in MOTIVATED_SELLER_KEYWORDS))
-
-        keywords_with_hits = sum(1 for count in hits_by_keyword.values() if count > 0)
+        """Keyword sweep is disabled — AXESSO does not honor filterState.kw."""
         logger.info(
-            "Motivated seller search: %d unique listings from %d/%d keywords with hits",
-            len(listings_by_addr),
-            keywords_with_hits,
-            len(MOTIVATED_SELLER_KEYWORDS),
+            "Motivated-seller keyword sweep skipped: AXESSO search-by-url ignores filterState.kw"
         )
-        return list(listings_by_addr.values())
+        return []
 
     # ─── Normalization helpers ─────────────────────
 

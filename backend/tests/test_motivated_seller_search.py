@@ -119,21 +119,16 @@ def test_merge_accumulates_motivated_keywords() -> None:
 
 
 @pytest.mark.asyncio
-async def test_motivated_seller_mode_skips_rentcast_and_uses_keyword_fetch() -> None:
+async def test_motivated_seller_mode_does_not_call_axesso() -> None:
+    """AXESSO ignores filterState.kw — do not pay for the keyword sweep."""
+    from app.services.map_search_service import MOTIVATED_SELLER_DISABLED_NOTICE
+
     service = MapSearchService()
     service._initialized = True
     service.rentcast = MagicMock()
     service.zillow = MagicMock()
+    service.zillow.search_by_url = AsyncMock()
     service.mashvisor = None
-
-    sample = MapListing(
-        id="z1",
-        address="200 Oak Ave",
-        latitude=41.45,
-        longitude=-81.65,
-        listing_status="Active",
-        source="zillow",
-    )
 
     req = MapSearchRequest(
         north=41.5,
@@ -149,21 +144,19 @@ async def test_motivated_seller_mode_skips_rentcast_and_uses_keyword_fetch() -> 
 
     with (
         patch("app.services.map_search_service.get_cache_service", return_value=cache),
-        patch.object(
-            service,
-            "_fetch_motivated_seller_listings",
-            new=AsyncMock(return_value=[sample]),
-        ) as motivated_fetch,
+        patch.object(service, "_fetch_motivated_seller_listings", new=AsyncMock()) as motivated_fetch,
         patch.object(service, "_fetch_rentcast", new=AsyncMock()) as rentcast_fetch,
         patch.object(service, "_fetch_zillow", new=AsyncMock()) as zillow_fetch,
     ):
         response = await service.search(req)
 
-    motivated_fetch.assert_awaited_once()
+    motivated_fetch.assert_not_awaited()
     rentcast_fetch.assert_not_awaited()
     zillow_fetch.assert_not_awaited()
-    assert response.total_count == 1
-    assert response.listings[0].address == "200 Oak Ave"
+    service.zillow.search_by_url.assert_not_called()
+    assert response.total_count == 0
+    assert response.listings == []
+    assert response.notice == MOTIVATED_SELLER_DISABLED_NOTICE
 
 
 def test_match_motivated_seller_keywords_basic() -> None:

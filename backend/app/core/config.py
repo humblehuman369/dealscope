@@ -82,6 +82,10 @@ class Settings(BaseSettings):
     AXESSO_API_KEY: str = ""
     AXESSO_API_KEY_SECONDARY: str = ""  # Optional fallback when primary returns 502/503 or auth errors
     AXESSO_URL: str = "https://api.axesso.de/zil"
+    # Stay under the documented paid cap (50–75 req/min). Reserved slots are
+    # for Discovery address lookups so a map fan-out cannot starve a verdict.
+    AXESSO_MAX_RPM: int = 50
+    AXESSO_RESERVED_INTERACTIVE: int = 10
 
     REDFIN_API_KEY: str = ""
     RAPIDAPI_HOST: str = "redfin-base.p.rapidapi.com"
