@@ -94,7 +94,21 @@ import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'
 import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
 import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 import { WorkbenchTour } from '@/components/discovery/WorkbenchTour'
+import { VerdictCard } from '@/components/discovery/VerdictCard'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
+import { useWorkflowV1 } from '@/lib/workflowV1'
+import {
+  formatSellerRead,
+  formatVerdictSentence,
+  sellerPathFromDealStructures,
+} from '@/lib/verdictCopy'
+import {
+  anyLeverClosesGap,
+  countVerdictSignals,
+  listingSignalsFromListing,
+  resolveCall,
+  type ListingSignalInput,
+} from '@/lib/verdictRules'
 import { useReviewPrompt } from '@/hooks/useReviewPrompt'
 import { usePersona } from '@/hooks/usePersona'
 import { ACTION_PLAN_COPY } from '@/lib/actionPlanCopy'
@@ -249,6 +263,7 @@ function VerdictContent() {
   const searchParams = useAppSearchParams()
   const queryClient = useQueryClient()
   const { isAuthenticated } = useSession()
+  const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
 
@@ -377,6 +392,7 @@ function VerdictContent() {
     dismissTour,
   } = useWorkbenchTour({ ready: tourReady, isAuthenticated })
   const [propertyPhotos, setPropertyPhotos] = useState<string[]>([])
+  const [listingSignals, setListingSignals] = useState<ListingSignalInput | null>(null)
   const [motivatedInsights, setMotivatedInsights] = useState<MotivatedSellerInsight[]>([])
   const backendFullAddressRef = useRef('')
 
@@ -423,8 +439,10 @@ function VerdictContent() {
     hasRecordedAnalysisRef.current = false
   }, [addressParam, propertyIdParam])
 
-  // Analytics: verdict page view (when user landed with a property context)
+  // Analytics: verdict page view (when user landed with a property context).
+  // Workflow v1 fires from VerdictCard once the call is known — skip the mount fire.
   useEffect(() => {
+    if (!workflowV1Ready || workflowV1) return
     if (addressParam || propertyIdParam) {
       trackEvent(
         'verdict_viewed',
@@ -435,7 +453,7 @@ function VerdictContent() {
         newMetaEventId(),
       )
     }
-  }, [addressParam, propertyIdParam])
+  }, [addressParam, propertyIdParam, workflowV1, workflowV1Ready])
 
   // Record one analysis for Starter usage when verdict loads (address or saved property)
   useEffect(() => {
@@ -524,6 +542,7 @@ function VerdictContent() {
       setProperty(null)
       setAnalysis(null)
       setPropertyPhotos([])
+      setListingSignals(null)
       setMotivatedInsights([])
       setIqSources({
         value: { iq: null, zillow: null, rentcast: null, redfin: null, realtor: null },
@@ -618,6 +637,7 @@ function VerdictContent() {
         }
 
         setProperty(propertyData)
+        setListingSignals(listingSignalsFromListing(data.listing))
         setStrMarketData({
           str_market_stats: data.rentals?.str_market_stats ?? null,
           str_regulatory: data.rentals?.str_regulatory ?? null,
@@ -931,6 +951,7 @@ function VerdictContent() {
           imageUrl: undefined,
         }
         setProperty(fallbackProperty)
+        setListingSignals(listingSignalsFromListing(null))
       } finally {
         setIsLoading(false)
       }
@@ -1649,6 +1670,32 @@ function VerdictContent() {
     router.push(`/price-intel?${compsQuery.toString()}`)
   }
 
+  const navigateToPlan = () => {
+    const next = new URLSearchParams(searchParams.toString())
+    next.set('view', 'workbench')
+    router.push(`/discovery?${next.toString()}`)
+  }
+
+  const signals = listingSignals ?? listingSignalsFromListing(null)
+  const signalBreakdown = countVerdictSignals(signals)
+  const callGap = Number.isFinite(dealGapPct) ? dealGapPct : 0
+  const verdictCall = resolveCall(callGap, signalBreakdown.count)
+  const sellerPath = sellerPathFromDealStructures({
+    blendRecommendation: analysis.dealStructures?.blendRecommendation,
+    families: analysis.dealStructures?.paths.map((p) => p.family) ?? [],
+  })
+  const sellerRead = formatSellerRead(
+    { priceCuts: signals.priceCuts, daysOnMarket: signals.daysOnMarket },
+    sellerPath,
+  )
+  const verdictSentence = formatVerdictSentence({
+    listPrice: property.price,
+    targetBuy: purchasePrice,
+    gapPct: callGap,
+    sellerRead,
+  })
+  const leverCloses = anyLeverClosesGap(analysis.dealStructures?.paths)
+
   return (
     <>
       <div
@@ -1783,7 +1830,32 @@ function VerdictContent() {
               boxShadow: 'var(--shadow-card-hover)',
             }}
           >
-            {/* Investment Overview — 3 price cards */}
+            {workflowV1 ? (
+              <div className="mb-6">
+                <VerdictCard
+                  listPrice={property.price}
+                  incomeValue={incomeValue}
+                  targetBuy={purchasePrice}
+                  dealGapDisplayPct={effectiveDisplayPct}
+                  sentence={verdictSentence}
+                  call={verdictCall}
+                  callFired={signalBreakdown.fired}
+                  propertyId={
+                    propertyIdParam || property.id || (property.zpid != null ? String(property.zpid) : null)
+                  }
+                  propertyState={property.state || null}
+                  gap={callGap}
+                  signals={signalBreakdown.count}
+                  closes={leverCloses}
+                  isAuthenticated={isAuthenticated}
+                  onShowMath={navigateToComps}
+                  onBuildPlan={navigateToPlan}
+                />
+              </div>
+            ) : null}
+
+            {/* Investment Overview — 3 price cards. Hidden under workflow v1; the Verdict card owns the numbers. */}
+            {!workflowV1 ? (
             <div data-tour="verdict-prices">
               <div className="w-full flex items-start justify-between gap-3 mb-4">
                 <h2
@@ -1894,6 +1966,7 @@ function VerdictContent() {
                 ))}
               </div>
             </div>
+            ) : null}
 
             <VerdictEmailCapture
               address={[property.address, property.city, property.state, property.zip].filter(Boolean).join(', ') || addressParam}

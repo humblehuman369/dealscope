@@ -71,3 +71,18 @@ export function identifyPostHog(
 export function resetPostHog(): void {
   client?.reset()
 }
+
+/**
+ * Feature-flag read. `null` when PostHog is not initialized (no key / no consent),
+ * so callers can treat "unknown" as a miss instead of false.
+ */
+export function isPostHogFeatureEnabled(flag: string): Promise<boolean | null> {
+  return initPostHog().then((ph) => {
+    if (!ph) return null
+    // undefined = flags not loaded, or this key is not in the project.
+    // Do not treat that as an explicit off.
+    const value = ph.getFeatureFlag(flag)
+    if (value === undefined) return null
+    return Boolean(value)
+  })
+}
