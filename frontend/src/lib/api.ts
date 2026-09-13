@@ -248,7 +248,7 @@ export interface MapSearchRequest {
   owner_tenure_max_years?: number
   /** Owner-occupancy lead filter: 'absentee' (landlord) | 'owner_occupied' | undefined (any). */
   owner_occupancy?: 'owner_occupied' | 'absentee'
-  /** Owner Leads availability: 'off_market' (default), 'for_sale' (only currently-listed matches), or 'any' (both). */
+  /** Owner Leads availability: omit when Owner Leads is off. 'off_market' | 'for_sale' | 'any' (both). */
   owner_records_availability?: 'any' | 'off_market' | 'for_sale'
 }
 
@@ -478,7 +478,13 @@ export interface NeighborhoodListResponse {
 
 function isSlowMapSearch(data: MapSearchRequest): boolean {
   if (data.motivated_seller_search) return true
-  if (data.owner_tenure_min_years != null || data.owner_occupancy != null) return true
+  if (
+    data.owner_tenure_min_years != null ||
+    data.owner_occupancy != null ||
+    data.owner_records_availability != null
+  ) {
+    return true
+  }
   return (data.listing_statuses ?? []).some(
     (status) =>
       status === 'expired' ||

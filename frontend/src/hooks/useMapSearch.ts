@@ -14,6 +14,12 @@ import {
 } from '@/lib/dealSignal'
 import { filterByPropertyType } from '@/lib/propertyType'
 import { readMapSnapshot, writeMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
+import {
+  filterListingsByTenureBuckets,
+  isOwnerRecordsActive,
+  normalizeOwnerLeadsFilters,
+  type OwnerTenureBucketId,
+} from '@/components/map-search/ownerLeadsFilters'
 
 export interface MapSearchFilters {
   listing_type: 'sale' | 'rental' | 'both'
@@ -31,6 +37,8 @@ export interface MapSearchFilters {
   motivated_seller_search?: boolean
   owner_tenure_min_years?: number
   owner_tenure_max_years?: number
+  /** Selected Owner Leads tenure pills. Empty = no tenure constraint. */
+  owner_tenure_buckets?: OwnerTenureBucketId[]
   owner_occupancy?: 'owner_occupied' | 'absentee'
   owner_records_availability?: 'any' | 'off_market' | 'for_sale'
 }
@@ -98,7 +106,7 @@ function isPartialResultSet(totalCount: number, estimatedTotal: number | null): 
 
 export function isExpensiveSearch(filters: MapSearchFilters): boolean {
   if (filters.motivated_seller_search) return true
-  if (filters.owner_tenure_min_years != null || filters.owner_occupancy != null) return true
+  if (isOwnerRecordsActive(filters)) return true
   return filters.listing_statuses.some((s) => EXPENSIVE_STATUSES.has(s))
 }
 
@@ -140,7 +148,7 @@ export function useMapSearch() {
     const snap = readMapSnapshot()
     if (!snap) return
     if (snap.filters) {
-      const merged = { ...DEFAULT_FILTERS, ...snap.filters }
+      const merged = normalizeOwnerLeadsFilters({ ...DEFAULT_FILTERS, ...snap.filters })
       setFilters(merged)
       filtersRef.current = merged
     }
@@ -199,7 +207,7 @@ export function useMapSearch() {
         owner_tenure_min_years: activeFilters.owner_tenure_min_years,
         owner_tenure_max_years: activeFilters.owner_tenure_max_years,
         owner_occupancy: activeFilters.owner_occupancy,
-        owner_records_availability: activeFilters.owner_records_availability,
+        owner_records_availability: activeFilters.owner_records_availability || undefined,
         limit: RESULT_LIMIT,
       }
 
@@ -280,14 +288,15 @@ export function useMapSearch() {
       if (debounceRef.current) clearTimeout(debounceRef.current)
       if (filterDebounceRef.current) clearTimeout(filterDebounceRef.current)
 
-      setFilters(savedFilters)
-      filtersRef.current = savedFilters
+      const normalized = normalizeOwnerLeadsFilters({ ...DEFAULT_FILTERS, ...savedFilters })
+      setFilters(normalized)
+      filtersRef.current = normalized
       setPolygon(savedPolygon)
       polygonRef.current = savedPolygon
       lastBoundsRef.current = bounds
-      writeMapSnapshot({ filters: savedFilters, polygon: savedPolygon })
+      writeMapSnapshot({ filters: normalized, polygon: savedPolygon })
 
-      fetchListings(bounds, savedPolygon, savedFilters)
+      fetchListings(bounds, savedPolygon, normalized)
     },
     [fetchListings],
   )
@@ -315,29 +324,11 @@ export function useMapSearch() {
 
   const updateFilters = useCallback(
     (next: Partial<MapSearchFilters>) => {
-      let merged = { ...filtersRef.current, ...next }
-      // Availability pills used to look pressed without entering Owner Leads
-      // (which only starts when tenure or occupancy is set). Clicking one
-      // activates occupancy-any / any-tenure records via min years = 0.
-      if (
-        'owner_records_availability' in next &&
-        next.owner_records_availability != null &&
-        merged.owner_tenure_min_years == null &&
-        merged.owner_occupancy == null
-      ) {
-        merged = {
-          ...merged,
-          owner_tenure_min_years: 0,
-          listing_statuses: [],
-          motivated_seller_search: false,
-        }
-      }
+      const merged = normalizeOwnerLeadsFilters({ ...filtersRef.current, ...next })
       filtersRef.current = merged
       setFilters(merged)
       writeMapSnapshot({ filters: merged })
 
-      const ownerRecordsActive =
-        merged.owner_tenure_min_years != null || merged.owner_occupancy != null
       const turningStrOnWithoutCity =
         'include_str_listings' in next &&
         !!merged.include_str_listings &&
@@ -357,8 +348,9 @@ export function useMapSearch() {
           'motivated_seller_search' in next ||
           'owner_tenure_min_years' in next ||
           'owner_tenure_max_years' in next ||
+          'owner_tenure_buckets' in next ||
           'owner_occupancy' in next ||
-          ('owner_records_availability' in next && ownerRecordsActive))
+          'owner_records_availability' in next)
 
       if (!needsRefetch || !lastBoundsRef.current) return
 
@@ -396,10 +388,11 @@ export function useMapSearch() {
     // off-market / for-sale statuses and no days-on-market. The listing-oriented
     // status and DOM filters don't apply and would drop every row, so skip them
     // when owner-records mode is active.
-    const ownerRecordsActive =
-      filters.owner_tenure_min_years != null || filters.owner_occupancy != null
+    const ownerRecordsActive = isOwnerRecordsActive(filters)
     let result = mergedListings
-    if (!ownerRecordsActive) {
+    if (ownerRecordsActive) {
+      result = filterListingsByTenureBuckets(result, filters.owner_tenure_buckets)
+    } else {
       result = filterByListingStatus(result, filters.listing_statuses)
       result = filterByMinDom(result, filters.min_dom, dealSignals)
     }
@@ -412,8 +405,9 @@ export function useMapSearch() {
     filters.min_dom,
     filters.sort_by,
     filters.property_type,
-    filters.owner_tenure_min_years,
+    filters.owner_tenure_buckets,
     filters.owner_occupancy,
+    filters.owner_records_availability,
     dealSignals,
   ])
 

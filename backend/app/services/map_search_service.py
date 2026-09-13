@@ -405,6 +405,20 @@ def _build_cache_key(req: MapSearchRequest) -> str:
     return f"mapsearch:{digest}"
 
 
+def owner_records_active(req: MapSearchRequest) -> bool:
+    """True when the request asks for Owner Leads (property-records) mode."""
+    return (
+        req.owner_tenure_min_years is not None
+        or req.owner_occupancy is not None
+        or req.owner_records_availability is not None
+    )
+
+
+def resolve_owner_availability(req: MapSearchRequest) -> str:
+    """Availability constraint while Owner Leads is on. None means listed and unlisted."""
+    return req.owner_records_availability or "any"
+
+
 def _expensive_mode_labels(req: MapSearchRequest, requested_statuses: set[str]) -> list[str]:
     """Names of the requested modes that are too costly to run at wide zoom."""
     labels: list[str] = []
@@ -447,7 +461,7 @@ def alert_ineligible_reason(req: MapSearchRequest) -> str | None:
             "Foreclosure, pre-foreclosure and auction searches each run their own "
             "scan, so they can't run unattended. Save it without alerts."
         )
-    if req.owner_tenure_min_years is not None or req.owner_occupancy is not None:
+    if owner_records_active(req):
         return (
             "Owner Leads searches read property records rather than listings, and "
             "ownership changes too slowly for a daily alert to be useful."
@@ -615,9 +629,9 @@ class MapSearchService:
         requested_statuses = {s for s in (req.listing_statuses or ["active"]) if s in CANONICAL_STATUSES} or {"active"}
 
         motivated_seller_mode = req.motivated_seller_search
-        # Owner-records mode: RentCast property-records lead search, driven by an
-        # owner-tenure window and/or an owner-occupancy (absentee) filter.
-        owner_records_mode = req.owner_tenure_min_years is not None or req.owner_occupancy is not None
+        # Owner-records mode: RentCast property-records lead search, driven by
+        # tenure, occupancy, and/or availability pills.
+        owner_records_mode = owner_records_active(req)
 
         if radius > EXPENSIVE_MODE_MAX_RADIUS_MILES:
             expensive = _expensive_mode_labels(req, requested_statuses)
@@ -726,10 +740,10 @@ class MapSearchService:
                 cell_radius = max(search_radius, 0.5)
 
             # Availability variants:
-            #   off_market (default) → qualifying owner records not currently listed
-            #   for_sale            → only qualifying owners whose home is listed now
-            #   any                 → both (listed matches + off-market records)
-            availability = req.owner_records_availability
+            #   None / any → qualifying owners listed and unlisted
+            #   off_market → qualifying owner records not currently listed
+            #   for_sale   → only qualifying owners whose home is listed now
+            availability = resolve_owner_availability(req)
             need_for_sale = availability in ("for_sale", "any")
             need_resale = availability in ("off_market", "any")
 
@@ -818,8 +832,8 @@ class MapSearchService:
                     elif rec.tenure_confidence != "recent_resale":
                         result_rows.append(rec)
             else:
-                # Off-market (default): owner records validated against an
-                # independent recently-sold source (Zillow) to drop stale leads.
+                # Off-market: owner records validated against an independent
+                # recently-sold source (Zillow) to drop stale leads.
                 annotated = self._annotate_tenure_confidence(tenure_rows, resale_index)
                 result_rows = [r for r in annotated if r.tenure_confidence != "recent_resale"]
 
@@ -1496,18 +1510,19 @@ class MapSearchService:
         center_lng: float,
         radius_miles: float,
     ) -> list[MapListing]:
-        """Fetch off-market property records for owner-tenure / absentee lead search.
+        """Fetch property records for Owner Leads (tenure / occupancy / availability).
 
         Uses RentCast's ``/properties`` records endpoint (not the for-sale listings
         endpoint). A ``saleDateRange`` filter is ALWAYS sent — it's what makes
         RentCast return full records (owner, ownerOccupied, lastSaleDate); without
         it the bulk list is trimmed. When no tenure window is set we send a wide
-        "ever sold" range so an occupancy-only search still gets full records.
+        "ever sold" range so occupancy-only or availability-only searches still
+        get full records.
 
         Owner-occupancy (absentee) is filtered CLIENT-SIDE: RentCast ignores the
         ``ownerOccupied`` query param, so we filter on the returned field.
         """
-        if req.owner_tenure_min_years is None and req.owner_occupancy is None:
+        if not owner_records_active(req):
             return []
 
         if req.owner_tenure_min_years is not None:

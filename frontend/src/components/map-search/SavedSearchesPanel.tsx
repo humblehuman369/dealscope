@@ -6,6 +6,7 @@ import { Bell, BellOff, BookmarkPlus, Lock, PenLine, Trash2, X } from 'lucide-re
 import type { AlertFrequency, SavedMapSearch, SavedSearchFilters } from '@/lib/api'
 import { useSavedMapSearches } from '@/hooks/useSavedMapSearches'
 import { DEFAULT_FILTERS, type MapBounds, type MapSearchFilters } from '@/hooks/useMapSearch'
+import { normalizeOwnerLeadsFilters } from '@/components/map-search/ownerLeadsFilters'
 
 /**
  * Saved farm areas and their new-inventory email alerts.
@@ -88,12 +89,12 @@ export function toSavedFilters(filters: MapSearchFilters): SavedSearchFilters {
  * restored search and quietly exclude inventory.
  */
 export function fromSavedFilters(saved: SavedSearchFilters): MapSearchFilters {
-  return {
+  return normalizeOwnerLeadsFilters({
     ...DEFAULT_FILTERS,
     ...saved,
     listing_type: saved.listing_type ?? DEFAULT_FILTERS.listing_type,
     listing_statuses: saved.listing_statuses ?? [],
-  }
+  })
 }
 
 /** A one-line description of what a saved search is watching. */

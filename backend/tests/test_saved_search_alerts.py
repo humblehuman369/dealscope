@@ -151,6 +151,7 @@ def test_two_polygons_inside_one_tile_share_the_dispatch():
         ("auction", {"listing_statuses": ["auction"]}),
         ("owner tenure", {"owner_tenure_min_years": 10}),
         ("absentee owners", {"owner_occupancy": "absentee"}),
+        ("off-market owner records", {"owner_records_availability": "off_market"}),
         ("STR", {"include_str_listings": True}),
     ],
 )

@@ -19,6 +19,16 @@ import {
   getMapFilterPanelOpenChrome,
   MAP_FILTER_LIGHT_CONTROLS,
 } from '@/components/map-search/mapOverlayChrome'
+import {
+  CLEARED_OWNER_LEADS,
+  OWNER_TENURE_BUCKETS,
+  isOwnerRecordsActive,
+  nextOwnerAvailability,
+  nextOwnerOccupancy,
+  ownerAvailabilityIsSelected,
+  ownerLeadsPatch,
+  toggleTenureBucket,
+} from '@/components/map-search/ownerLeadsFilters'
 
 interface FilterPanelProps {
   filters: MapSearchFilters
@@ -129,22 +139,6 @@ const DISTRESSED_LISTING_STATUS_OPTIONS: {
 ]
 
 const DISTRESSED_STATUS_VALUES = new Set(DISTRESSED_LISTING_STATUS_OPTIONS.map((o) => o.value))
-
-const OWNER_TENURE_PRESETS: { label: string; min?: number; max?: number }[] = [
-  { label: 'Any' },
-  { label: '10–20 yrs', min: 10, max: 20 },
-  { label: '20–30 yrs', min: 20, max: 30 },
-  { label: '30+ yrs', min: 30 },
-]
-
-const OWNER_OCCUPANCY_OPTIONS: {
-  value: 'owner_occupied' | 'absentee' | undefined
-  label: string
-}[] = [
-  { value: undefined, label: 'Any' },
-  { value: 'absentee', label: 'Absentee' },
-  { value: 'owner_occupied', label: 'Owner-occupied' },
-]
 
 const DOM_OPTIONS: { value: number | undefined; label: string }[] = [
   { value: undefined, label: 'Any' },
@@ -259,9 +253,7 @@ export function FilterPanel({
         listing_statuses: next,
         ...(isAdding
           ? {
-              owner_tenure_min_years: undefined,
-              owner_tenure_max_years: undefined,
-              owner_occupancy: undefined,
+              ...CLEARED_OWNER_LEADS,
               motivated_seller_search: false,
             }
           : {}),
@@ -270,38 +262,9 @@ export function FilterPanel({
     [filters.listing_statuses, onChange],
   )
 
-  // Owner-records mode (RentCast property records) is active when a tenure window
-  // OR an occupancy filter is set.
-  const ownerRecordsActive = filters.owner_tenure_min_years != null || filters.owner_occupancy != null
-
-  const selectOwnerTenure = useCallback(
-    (min?: number, max?: number) => {
-      // Owner-records mode replaces standard map sources on the backend; keep it
-      // mutually exclusive with motivated-seller mode (which takes precedence).
-      const keepOwnerMode =
-        filters.owner_records_availability != null || filters.owner_occupancy != null
-      onChange({
-        owner_tenure_min_years: min ?? (keepOwnerMode ? 0 : undefined),
-        owner_tenure_max_years: max,
-        ...(min != null || keepOwnerMode
-          ? { motivated_seller_search: false, listing_statuses: [] }
-          : {}),
-      })
-    },
-    [filters.owner_occupancy, filters.owner_records_availability, onChange],
-  )
-
-  const selectOwnerOccupancy = useCallback(
-    (value?: 'owner_occupied' | 'absentee') => {
-      onChange({
-        owner_occupancy: value,
-        ...(value != null
-          ? { motivated_seller_search: false, listing_statuses: [] }
-          : {}),
-      })
-    },
-    [onChange],
-  )
+  // Owner-records mode (RentCast property records) is active when any Owner Leads
+  // pill is on: tenure, occupancy, or availability.
+  const ownerRecordsActive = isOwnerRecordsActive(filters)
 
   const activeFilterCount = [
     filters.property_type,
@@ -591,13 +554,7 @@ export function FilterPanel({
               const next = !filters.motivated_seller_search
               onChange({
                 motivated_seller_search: next,
-                ...(next
-                  ? {
-                      owner_tenure_min_years: undefined,
-                      owner_tenure_max_years: undefined,
-                      owner_occupancy: undefined,
-                    }
-                  : {}),
+                ...(next ? CLEARED_OWNER_LEADS : {}),
               })
             }}
             aria-label="Motivated seller keyword search. Replaces standard map results when enabled."
@@ -643,7 +600,7 @@ export function FilterPanel({
             >
               Homes by how long the owner has held (long tenure = likely high equity), whether
               they live there (absentee = landlord/investor) and availability (off-market / for
-              sale). Replaces standard map results while active.
+              sale). Select one or more constraints — replaces standard map results while active.
             </p>
           </div>
           {/* Tenure */}
@@ -654,22 +611,25 @@ export function FilterPanel({
             Tenure
           </span>
           <div className="flex flex-wrap gap-1">
-            {OWNER_TENURE_PRESETS.map((preset) => (
+            {OWNER_TENURE_BUCKETS.map((bucket) => (
               <PillButton
-                key={preset.label}
+                key={bucket.id}
                 mapLightChrome={mapLightChrome}
                 idleControl={pillIdleControl}
-                active={
-                  preset.min === undefined
-                    ? filters.owner_tenure_min_years == null ||
-                      filters.owner_tenure_min_years === 0
-                    : filters.owner_tenure_min_years === preset.min &&
-                      filters.owner_tenure_max_years === preset.max
+                active={(filters.owner_tenure_buckets ?? []).includes(bucket.id)}
+                onClick={() =>
+                  onChange(
+                    ownerLeadsPatch(filters, {
+                      owner_tenure_buckets: toggleTenureBucket(
+                        filters.owner_tenure_buckets,
+                        bucket.id,
+                      ),
+                    }),
+                  )
                 }
-                onClick={() => selectOwnerTenure(preset.min, preset.max)}
-                aria-label={`Owner tenure: ${preset.label}`}
+                aria-label={`Owner tenure: ${bucket.label}. Toggle on or off.`}
               >
-                {preset.label}
+                {bucket.label}
               </PillButton>
             ))}
           </div>
@@ -681,21 +641,27 @@ export function FilterPanel({
             Occupancy
           </span>
           <div className="flex flex-wrap gap-1">
-            {OWNER_OCCUPANCY_OPTIONS.map((opt) => (
+            {(['absentee', 'owner_occupied'] as const).map((value) => (
               <PillButton
-                key={opt.label}
+                key={value}
                 mapLightChrome={mapLightChrome}
                 idleControl={pillIdleControl}
-                active={(filters.owner_occupancy ?? undefined) === opt.value}
-                onClick={() => selectOwnerOccupancy(opt.value)}
-                aria-label={`Owner occupancy: ${opt.label}`}
+                active={filters.owner_occupancy === value}
+                onClick={() =>
+                  onChange(
+                    ownerLeadsPatch(filters, {
+                      owner_occupancy: nextOwnerOccupancy(filters.owner_occupancy, value),
+                    }),
+                  )
+                }
+                aria-label={`Owner occupancy: ${value === 'absentee' ? 'Absentee' : 'Owner-occupied'}. Toggle on or off.`}
               >
-                {opt.label}
+                {value === 'absentee' ? 'Absentee' : 'Owner-occupied'}
               </PillButton>
             ))}
           </div>
-          {/* Availability — off-market owner records (default) vs only the
-              subset that is currently for sale (highest-intent for buyers). */}
+          {/* Availability — unconstrained until a pill is on. Off-market vs
+              currently for sale; both on is listed + unlisted. */}
           <span
             className="block text-[10px] font-semibold uppercase tracking-wider pt-1"
             style={{ color: labelColor ?? 'var(--text-secondary)' }}
@@ -706,52 +672,36 @@ export function FilterPanel({
             <PillButton
               mapLightChrome={mapLightChrome}
               idleControl={pillIdleControl}
-              active={ownerRecordsActive && filters.owner_records_availability === 'any'}
+              active={ownerAvailabilityIsSelected(filters.owner_records_availability, 'off_market')}
               onClick={() =>
-                onChange({
-                  owner_records_availability: 'any',
-                  owner_tenure_min_years: filters.owner_tenure_min_years ?? 0,
-                  listing_statuses: [],
-                  motivated_seller_search: false,
-                })
+                onChange(
+                  ownerLeadsPatch(filters, {
+                    owner_records_availability: nextOwnerAvailability(
+                      filters.owner_records_availability,
+                      'off_market',
+                    ),
+                  }),
+                )
               }
-              aria-label="Any availability: off-market and for-sale matches"
-            >
-              Any
-            </PillButton>
-            <PillButton
-              mapLightChrome={mapLightChrome}
-              idleControl={pillIdleControl}
-              active={
-                ownerRecordsActive &&
-                (filters.owner_records_availability === 'off_market' ||
-                  !filters.owner_records_availability)
-              }
-              onClick={() =>
-                onChange({
-                  owner_records_availability: 'off_market',
-                  owner_tenure_min_years: filters.owner_tenure_min_years ?? 0,
-                  listing_statuses: [],
-                  motivated_seller_search: false,
-                })
-              }
-              aria-label="Off-market owner leads"
+              aria-label="Off-market owner leads. Toggle on or off."
             >
               Off-market
             </PillButton>
             <PillButton
               mapLightChrome={mapLightChrome}
               idleControl={pillIdleControl}
-              active={ownerRecordsActive && filters.owner_records_availability === 'for_sale'}
+              active={ownerAvailabilityIsSelected(filters.owner_records_availability, 'for_sale')}
               onClick={() =>
-                onChange({
-                  owner_records_availability: 'for_sale',
-                  owner_tenure_min_years: filters.owner_tenure_min_years ?? 0,
-                  listing_statuses: [],
-                  motivated_seller_search: false,
-                })
+                onChange(
+                  ownerLeadsPatch(filters, {
+                    owner_records_availability: nextOwnerAvailability(
+                      filters.owner_records_availability,
+                      'for_sale',
+                    ),
+                  }),
+                )
               }
-              aria-label="For-sale homes matching the owner filter"
+              aria-label="For-sale homes matching the owner filter. Toggle on or off."
             >
               For sale
             </PillButton>

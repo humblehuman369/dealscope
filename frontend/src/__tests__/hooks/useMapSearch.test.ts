@@ -138,6 +138,28 @@ describe('useMapSearch', () => {
     expect(lastRequest.min_price).toBe(250000)
   })
 
+  it('does not enter Owner Leads on the default empty pills', async () => {
+    mockSearchArea.mockResolvedValue(response([]))
+    const { result } = renderHook(() => useMapSearch())
+
+    act(() => {
+      result.current.onBoundsChanged(BOUNDS)
+    })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1200)
+    })
+
+    const firstRequest = mockSearchArea.mock.calls.at(-1)?.[0] as {
+      owner_tenure_min_years?: number
+      owner_occupancy?: string
+      owner_records_availability?: string
+    }
+    expect(firstRequest.owner_tenure_min_years).toBeUndefined()
+    expect(firstRequest.owner_occupancy).toBeUndefined()
+    expect(firstRequest.owner_records_availability).toBeUndefined()
+    expect(result.current.isExpensiveMode).toBe(false)
+  })
+
   it('activates Owner Leads when availability is toggled from the default map', async () => {
     mockSearchArea.mockResolvedValue(response([]))
     const { result } = renderHook(() => useMapSearch())
@@ -162,9 +184,10 @@ describe('useMapSearch', () => {
       owner_tenure_min_years?: number
       owner_records_availability?: string
     }
-    expect(lastRequest.owner_tenure_min_years).toBe(0)
+    expect(lastRequest.owner_tenure_min_years).toBeUndefined()
     expect(lastRequest.owner_records_availability).toBe('off_market')
-    expect(result.current.filters.owner_tenure_min_years).toBe(0)
+    expect(result.current.filters.owner_tenure_min_years).toBeUndefined()
+    expect(result.current.isExpensiveMode).toBe(true)
   })
 
   it('does not refetch Airbnb until city/state are resolved', async () => {

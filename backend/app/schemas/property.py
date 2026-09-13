@@ -1254,14 +1254,13 @@ class MapSearchRequest(BaseModel):
             "'owner_occupied' = owner lives there; None = any."
         ),
     )
-    owner_records_availability: Literal["any", "off_market", "for_sale"] = Field(
-        default="off_market",
+    owner_records_availability: Literal["any", "off_market", "for_sale"] | None = Field(
+        default=None,
         description=(
-            "Owner Leads availability filter (applies when an owner-tenure or "
-            "occupancy filter is active). 'off_market' = owner records not "
-            "currently listed (default); 'for_sale' = only the qualifying owners "
-            "whose home is currently listed; 'any' = both (off-market records plus "
-            "currently-listed matches), each enriched with owner tenure / occupancy."
+            "Owner Leads availability filter (applies when owner-records mode is "
+            "on). None = unconstrained (listed and unlisted); 'off_market' = owner "
+            "records not currently listed; 'for_sale' = only qualifying owners "
+            "whose home is currently listed; 'any' = both."
         ),
     )
 
