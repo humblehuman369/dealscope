@@ -94,7 +94,10 @@ import { getDismissedFamilies } from '@/lib/dealStructures/userPreferences'
 import { hasRestorableMapSnapshot } from '@/components/map-search/mapSearchSnapshot'
 import { RehabBudgetBanner } from '@/components/budget/RehabBudgetBanner'
 import { WorkbenchTour } from '@/components/discovery/WorkbenchTour'
+import { HowThisCloses } from '@/components/discovery/HowThisCloses'
 import { VerdictCard } from '@/components/discovery/VerdictCard'
+import { WhyWeThinkSo } from '@/components/discovery/WhyWeThinkSo'
+import { classifySignalKind, type WhySignal } from '@/lib/whyWeThinkSo'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
 import { useWorkflowV1 } from '@/lib/workflowV1'
 import {
@@ -1677,6 +1680,12 @@ function VerdictContent() {
     router.push(`/discovery?${next.toString()}`)
   }
 
+  const navigateToSources = () => {
+    const next = new URLSearchParams(searchParams.toString())
+    next.set('view', 'sources')
+    router.push(`/discovery?${next.toString()}`)
+  }
+
   const signals = listingSignals ?? listingSignalsFromListing(null)
   const signalBreakdown = countVerdictSignals(signals)
   const callGap = Number.isFinite(dealGapPct) ? dealGapPct : 0
@@ -1696,6 +1705,90 @@ function VerdictContent() {
     sellerRead,
   })
   const leverCloses = anyLeverClosesGap(analysis.dealStructures?.paths)
+
+  const whySignals: WhySignal[] = (() => {
+    const items: WhySignal[] = [
+      {
+        id: 'listing-status',
+        kind: classifySignalKind(isOffMarket ? 'Off-market' : 'Actively listed'),
+        title: isOffMarket
+          ? 'Off-market — not listed for sale'
+          : 'Actively listed — competing buyers',
+        detail: isOffMarket
+          ? "You'd need to make an off-market offer. Confirm the owner's interest first."
+          : 'Speed and terms matter when competing with other buyers.',
+      },
+    ]
+    motivatedInsights.forEach((insight, i) => {
+      const title = insight.highlight ? `${insight.label} ${insight.highlight}` : insight.label
+      items.push({
+        id: `motivated-${i}`,
+        kind: classifySignalKind(title),
+        title,
+        detail: insight.detail,
+      })
+    })
+    items.push({
+      id: 'target-buy',
+      kind: 'rest',
+      title: `Target buy: ${fmtShort(purchasePrice)} (${dealGapDisplay} gap)`,
+      detail: `A ${fmtShort(discountAmount)} discount below market to the profit zone (Target Buy). Cash flow breakeven is Income Value.`,
+    })
+    const investorTitle =
+      investorRegionLabel && investorRegionLabel !== 'U.S.'
+        ? `About ${cumulativeInvestorPct}% of investors close at this discount or deeper in ${investorRegionLabel} markets`
+        : `About ${cumulativeInvestorPct}% of investors close at this discount or deeper (U.S. baseline)`
+    items.push({
+      id: 'calibrated',
+      kind: 'rest',
+      title: investorTitle,
+      detail: probabilityTail,
+    })
+    items.push({
+      id: 'repairs',
+      kind: 'rest',
+      title: 'Repairs not included in initial analysis',
+      detail: 'Use DealMaker to add a rehab budget and see the impact on returns.',
+    })
+    items.push({
+      id: 'assumptions',
+      kind: 'rest',
+      title: 'Assumes 20% down · 6.0% · 30yr',
+      detail: 'Edit financing terms in DealMaker to match your actual loan scenario.',
+    })
+    if (
+      strMarketData?.str_regulatory?.rating &&
+      (strMarketData.str_regulatory.rating === 'Negative' ||
+        strMarketData.str_regulatory.rating === 'Restricted')
+    ) {
+      const dayLimit = strMarketData.str_regulatory.day_limit
+      items.push({
+        id: 'str-reg',
+        kind: 'rest',
+        title: `STR regulations: ${strMarketData.str_regulatory.rating}${
+          dayLimit ? ` — ${dayLimit} day limit` : ''
+        }`,
+        detail:
+          strMarketData.str_regulatory.rules_summary ||
+          'Short-term rentals face restrictions in this market. Verify local regulations before pursuing an STR strategy.',
+      })
+    }
+    if (
+      strMarketData?.str_market_stats?.yoy_occupancy_change != null &&
+      strMarketData.str_market_stats.yoy_occupancy_change < -20
+    ) {
+      items.push({
+        id: 'str-occ',
+        kind: classifySignalKind('STR occupancy'),
+        title: `STR occupancy down ${Math.abs(
+          strMarketData.str_market_stats.yoy_occupancy_change,
+        ).toFixed(0)}% year-over-year`,
+        detail:
+          'Airbnb occupancy is declining in this market. Factor this trend into STR revenue projections.',
+      })
+    }
+    return items
+  })()
 
   const photoGallery = (
     <section className="mx-0 sm:mx-5 mt-6">
@@ -1939,9 +2032,17 @@ function VerdictContent() {
                 signals={signalBreakdown.count}
                 closes={leverCloses}
                 isAuthenticated={isAuthenticated}
-                onShowMath={navigateToComps}
+                onShowMath={navigateToSources}
                 onBuildPlan={navigateToPlan}
               />
+            </div>
+            {analysis.dealStructures?.hasPaths ? (
+              <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">
+                <HowThisCloses payload={analysis.dealStructures} />
+              </div>
+            ) : null}
+            <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">
+              <WhyWeThinkSo signals={whySignals} />
             </div>
             {photoGallery}
             {!isAuthenticated ? (
