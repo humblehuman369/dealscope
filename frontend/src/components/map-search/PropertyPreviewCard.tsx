@@ -3,9 +3,17 @@
 import { useRouter } from 'next/navigation'
 import { X, Bed, Bath, Ruler, Calendar, Clock, ArrowRight, Check, EyeOff } from 'lucide-react'
 import type { MapListing } from '@/lib/api'
-import type { DealSignalResult } from '@/lib/dealSignal'
-import { displayListingStatus } from '@/lib/dealSignal'
+import {
+  displayListingStatus,
+  markerColorForCategory,
+  type DealSignalResult,
+} from '@/lib/dealSignal'
 import { useListingPhoto } from './listingPhoto'
+import {
+  listingWhyFacts,
+  type ListingWhyFact,
+  type WhyFactTone,
+} from './listingWhyFacts'
 import {
   buildDiscoverySearchParams,
   navigateToDiscoveryFromMapPath,
@@ -13,7 +21,6 @@ import {
   mapSelectionCtaLabel,
 } from './mapDiscoveryNavigation'
 import { markPinReviewed, pinKey, useMapPinMarks, type PinMark } from './mapPinState'
-import { getZipRentScreen, zipRentRatioColor } from './zipRentScreen'
 
 interface PropertyPreviewCardProps {
   listing: MapListing
@@ -46,6 +53,51 @@ function domColor(dom: number): string {
   return 'var(--status-negative)'
 }
 
+function whyBannerColors(tone: WhyFactTone): { backgroundColor: string; color: string } {
+  switch (tone) {
+    case 'distressed':
+    case 'motivated':
+      return { backgroundColor: 'var(--status-negative)', color: '#fff' }
+    case 'expired':
+      return { backgroundColor: markerColorForCategory('expired'), color: '#fff' }
+    case 'owner_listed':
+      return { backgroundColor: markerColorForCategory('owner_listed'), color: '#fff' }
+    case 'owner_lead':
+      return { backgroundColor: 'var(--accent-sky)', color: '#fff' }
+    case 'dom':
+      return { backgroundColor: markerColorForCategory('stale_60'), color: '#fff' }
+    default: {
+      const _exhaustive: never = tone
+      return _exhaustive
+    }
+  }
+}
+
+function WhyBanner({ fact }: { fact: ListingWhyFact }) {
+  const colors = whyBannerColors(fact.tone)
+  const chips = fact.chips ?? (fact.detail ? [fact.detail] : [])
+  return (
+    <div className="px-3 py-2" style={colors}>
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] leading-tight">
+        {fact.title}
+      </p>
+      {chips.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-1.5">
+          {chips.map((chip) => (
+            <span
+              key={chip}
+              className="px-1.5 py-0.5 rounded text-[10px] font-semibold leading-none"
+              style={{ backgroundColor: 'rgba(255,255,255,0.22)', color: '#fff' }}
+            >
+              {chip}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPreviewCardProps) {
   const router = useRouter()
   const ctaLabel = mapSelectionCtaLabel(useMapSelectionDestination())
@@ -57,7 +109,14 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
   const { marks, setMark } = useMapPinMarks()
   const key = pinKey(listing)
   const mark = marks[key]
-  const rentScreen = getZipRentScreen(listing)
+  const whyFacts = listingWhyFacts(listing)
+  const hasStatusFact = whyFacts.some(
+    (fact) =>
+      fact.kind === 'distressed' ||
+      fact.kind === 'expired' ||
+      fact.kind === 'owner_listed',
+  )
+  const hasDomFact = whyFacts.some((fact) => fact.kind === 'dom')
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -80,7 +139,6 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
         border: '1px solid var(--border-default)',
       }}
     >
-      {/* Photo / Street View fallback */}
       <div
         className="relative h-36 overflow-hidden"
         style={{ backgroundColor: 'var(--surface-elevated)' }}
@@ -101,24 +159,6 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
           </div>
         )}
 
-        {/* Opportunity / deal-signal badge — matches list-card placement */}
-        {signal && (
-          <div
-            className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-bold leading-tight max-w-[calc(100%-3rem)]"
-            style={{
-              backgroundColor: 'rgba(0,0,0,0.75)',
-              color: signal.color,
-            }}
-          >
-            <span
-              className="h-1.5 w-1.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: signal.color }}
-              aria-hidden
-            />
-            <span className="truncate">{signal.label}</span>
-          </div>
-        )}
-
         <button
           onClick={(e) => {
             e.stopPropagation()
@@ -130,7 +170,6 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
           <X size={14} />
         </button>
 
-        {/* Price + price-per-sqft overlay — matches list-card */}
         <div className="absolute bottom-2 left-2 flex items-baseline gap-1.5">
           <span
             className="px-2.5 py-1 rounded-md text-sm font-bold"
@@ -149,9 +188,11 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
         </div>
       </div>
 
-      {/* Details */}
+      {whyFacts.map((fact) => (
+        <WhyBanner key={fact.kind} fact={fact} />
+      ))}
+
       <div className="p-3 space-y-2">
-        {/* Address + city/state/zip — matches list-card */}
         <h3 className="text-sm font-semibold truncate" style={{ color: 'var(--text-heading)' }}>
           {listing.address}
         </h3>
@@ -162,7 +203,6 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
           </p>
         )}
 
-        {/* Stats row */}
         <div className="flex items-center gap-3 flex-wrap">
           {listing.bedrooms != null && (
             <span
@@ -198,42 +238,9 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
           )}
         </div>
 
-        {/* ZIP rent-vs-price screen. Explicitly a market screen: the label
-            names the basis and the caption says what it is not, because an
-            investor mistaking a ZIP median for this property's rent is a
-            worse outcome than showing nothing. */}
-        {rentScreen && (
-          <div
-            className="rounded-lg px-2 py-1.5 space-y-0.5"
-            style={{
-              backgroundColor: 'var(--surface-elevated)',
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
-                Rent vs price
-              </span>
-              {rentScreen.ratioLabel && (
-                <span
-                  className="text-xs font-bold"
-                  style={{ color: zipRentRatioColor(listing.zip_rent_to_price) }}
-                >
-                  {rentScreen.ratioLabel}/mo of price
-                </span>
-              )}
-            </div>
-            <p className="text-[10px] leading-snug" style={{ color: 'var(--text-secondary)' }}>
-              {rentScreen.rentLabel} {rentScreen.basisLabel} — a ZIP market screen, not an
-              estimate for this home.
-            </p>
-          </div>
-        )}
-
-        {/* Status + DOM + Analyze — matches list-card */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {listing.listing_status && (
+            {!hasStatusFact && listing.listing_status && (
               <span
                 className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
                 style={{
@@ -244,7 +251,7 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
                 {displayListingStatus(listing.listing_status)}
               </span>
             )}
-            {listing.days_on_market != null && (
+            {!hasDomFact && listing.days_on_market != null && listing.days_on_market >= 0 && (
               <span
                 className="flex items-center gap-1 text-[10px] font-medium"
                 style={{
@@ -265,8 +272,6 @@ export function PropertyPreviewCard({ listing, signal, onClose }: PropertyPrevie
           </button>
         </div>
 
-        {/* Worked state — lets an investor retire a pin so a farm area
-            actually narrows instead of re-presenting the same rejects. */}
         <div className="flex items-center gap-1.5 pt-1">
           <PinMarkButton
             active={mark === 'reviewed'}

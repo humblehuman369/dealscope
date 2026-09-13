@@ -51,7 +51,7 @@ import { requestTourReplay } from '@/lib/workbenchTour'
 import { readMapSnapshot, writeMapSnapshot, clearMapSnapshot, consumeMapViewportRestore } from './mapSearchSnapshot'
 import { pinKey, useMapPinMarks } from './mapPinState'
 import { clusterListings, type ListingCluster } from './mapClustering'
-import { getZipRentScreen } from './zipRentScreen'
+import { listingNeedsMotivatedPinColor, listingWhyPinTag } from './listingWhyFacts'
 import { SavedSearchesPanel, fromSavedFilters } from './SavedSearchesPanel'
 import { BulkAnalyzePanel } from './BulkAnalyzePanel'
 import { useBulkAnalyze } from '@/hooks/useBulkAnalyze'
@@ -959,13 +959,13 @@ function MapContent({
               ? 'rgba(255,255,255,0.7)'
               : 'var(--border-default)'
           displayLabel = formatCompactPrice(listing.price)
+          if (listingNeedsMotivatedPinColor(listing, signal?.category)) {
+            markerBg = markerColorForCategory('distressed', isDarkMap)
+            markerText = '#fff'
+          }
         }
 
-        // Rent-vs-price screen on the pin itself. Listing sites end at price;
-        // this is the one number that tells an investor whether the price is
-        // even in the conversation, so it belongs on the map rather than three
-        // clicks in.
-        const rentScreen = isAirbnb ? null : getZipRentScreen(listing)
+        const whyTag = isAirbnb ? null : listingWhyPinTag(listing)
 
         return (
           <AdvancedMarker
@@ -975,7 +975,7 @@ function MapContent({
             zIndex={isSelected ? 1000 : mark === 'passed' ? 1 : undefined}
           >
             <div
-              title={rentScreen?.disclosure}
+              title={whyTag ?? undefined}
               className="relative px-1.5 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap cursor-pointer shadow-md transition-transform hover:scale-110 text-center"
               style={{
                 backgroundColor: isSelected ? 'var(--accent-sky)' : markerBg,
@@ -993,12 +993,12 @@ function MapContent({
               }}
             >
               {displayLabel}
-              {rentScreen?.ratioLabel && (
+              {whyTag && (
                 <span
                   className="block text-[9px] font-semibold leading-none pb-px"
                   style={{ opacity: 0.85 }}
                 >
-                  {rentScreen.ratioLabel} rent
+                  {whyTag}
                 </span>
               )}
               {mark === 'reviewed' && !isSelected && (

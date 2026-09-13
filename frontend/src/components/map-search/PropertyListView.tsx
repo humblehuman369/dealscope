@@ -28,7 +28,7 @@ import {
 } from './mapDiscoveryNavigation'
 import { MapViewModeToggle } from './MapViewModeToggle'
 import { pinKey, useMapPinMarks, type PinMark } from './mapPinState'
-import { getZipRentScreen, zipRentRatioColor } from './zipRentScreen'
+import { listingWhyFacts, listingWhyLine } from './listingWhyFacts'
 
 const SORT_LABELS: Record<SortOption, string> = {
   deal_signal: 'Opportunity',
@@ -122,7 +122,8 @@ function PropertyListRow({
   const { marks, setMark } = useMapPinMarks()
   const key = pinKey(listing)
   const mark = marks[key]
-  const rentScreen = getZipRentScreen(listing)
+  const whyLine = listingWhyLine(listing)
+  const whyTone = listingWhyFacts(listing)[0]?.tone
 
   const handleMark = useCallback(
     (next: PinMark) => (e: React.MouseEvent) => {
@@ -232,18 +233,18 @@ function PropertyListRow({
           </p>
         )}
 
-        {rentScreen && (
-          <p className="text-[10px] truncate" title={rentScreen.disclosure}>
-            <span
-              className="font-bold"
-              style={{ color: zipRentRatioColor(listing.zip_rent_to_price) }}
-            >
-              {rentScreen.ratioLabel ? `${rentScreen.ratioLabel} rent/price` : rentScreen.rentLabel}
-            </span>
-            <span style={{ color: 'var(--text-secondary)' }}>
-              {' '}
-              · {rentScreen.rentLabel} {rentScreen.basisLabel}
-            </span>
+        {whyLine && (
+          <p
+            className="text-[10px] font-semibold truncate"
+            style={{
+              color:
+                whyTone === 'distressed' || whyTone === 'motivated'
+                  ? 'var(--status-negative)'
+                  : 'var(--text-heading)',
+            }}
+            title={whyLine}
+          >
+            {whyLine}
           </p>
         )}
 
