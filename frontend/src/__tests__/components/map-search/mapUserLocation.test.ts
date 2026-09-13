@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  detectHeroLocation,
   fetchIpFallbackLocation,
   resolveMapUserLocation,
   type MapLatLng,
@@ -114,5 +115,29 @@ describe('resolveMapUserLocation', () => {
     })
 
     expect(result).toEqual({ center: null, source: null })
+  })
+})
+
+describe('detectHeroLocation', () => {
+  it('prefers GPS coordinates over /api/geo', async () => {
+    const fetchFn = vi.fn()
+    await expect(
+      detectHeroLocation(fetchFn, async () => ({ lat: 26.53, lng: -80.08 })),
+    ).resolves.toEqual({ label: 'Your location', lat: 26.53, lng: -80.08 })
+  })
+
+  it('uses /api/geo city and coordinates when GPS is denied', async () => {
+    const fetchFn = vi.fn().mockResolvedValue(jsonResponse({
+      city: 'Hialeah',
+      region: 'FL',
+      lat: 25.86,
+      lng: -80.28,
+    }))
+    await expect(detectHeroLocation(fetchFn, async () => null)).resolves.toEqual({
+      label: 'Hialeah, FL',
+      lat: 25.86,
+      lng: -80.28,
+    })
+    expect(fetchFn).toHaveBeenCalledWith('/api/geo')
   })
 })

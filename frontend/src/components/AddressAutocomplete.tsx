@@ -197,7 +197,7 @@ export function AddressAutocomplete({
     const isLocationMode = searchMode === 'location'
     const types = isLocationMode ? ['geocode'] : ['address']
     const fields = isLocationMode
-      ? ['formatted_address', 'address_components', 'geometry', 'types']
+      ? ['formatted_address', 'address_components', 'geometry', 'types', 'name']
       : ['formatted_address', 'address_components']
 
     let autocomplete: google.maps.places.Autocomplete
@@ -218,29 +218,28 @@ export function AddressAutocomplete({
 
     autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace()
-      const formatted = place?.formatted_address
-      if (formatted) {
-        onChangeRef.current(formatted)
-        const streetNumber = getComponent(place, 'street_number')
-        const route = getComponent(place, 'route')
-        const components: AddressComponents = {
-          streetNumber,
-          street: route,
-          city: getComponent(place, 'locality') || getComponent(place, 'sublocality'),
-          state: getComponent(place, 'administrative_area_level_1'),
-          zipCode: getComponent(place, 'postal_code'),
-          county: getComponent(place, 'administrative_area_level_2') || undefined,
-        }
-
-        const meta: PlaceMetadata = {
-          placeTypes: place.types ?? [],
-          location: place.geometry?.location
-            ? { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }
-            : undefined,
-        }
-
-        onPlaceSelectRef.current?.(formatted, components, meta)
+      const formatted = place?.formatted_address || place?.name
+      if (!formatted) return
+      onChangeRef.current(formatted)
+      const streetNumber = getComponent(place, 'street_number')
+      const route = getComponent(place, 'route')
+      const components: AddressComponents = {
+        streetNumber,
+        street: route,
+        city: getComponent(place, 'locality') || getComponent(place, 'sublocality'),
+        state: getComponent(place, 'administrative_area_level_1'),
+        zipCode: getComponent(place, 'postal_code'),
+        county: getComponent(place, 'administrative_area_level_2') || undefined,
       }
+
+      const meta: PlaceMetadata = {
+        placeTypes: place.types ?? [],
+        location: place.geometry?.location
+          ? { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }
+          : undefined,
+      }
+
+      onPlaceSelectRef.current?.(formatted, components, meta)
     })
 
     autocompleteRef.current = autocomplete

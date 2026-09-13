@@ -236,11 +236,56 @@ interface GeocodeResult {
   zip_code?: string
 }
 
+function geocodeResultFromComponents(
+  formattedAddress: string | undefined,
+  components: Array<{ types: string[]; long_name: string; short_name: string }> | undefined,
+): GeocodeResult | null {
+  if (!formattedAddress) return null
+  const list = components ?? []
+  const long = (type: string) => list.find((c) => c.types.includes(type))?.long_name
+  const short = (type: string) => list.find((c) => c.types.includes(type))?.short_name
+  const streetNumber = long('street_number')
+  const route = long('route')
+  const street = [streetNumber, route].filter(Boolean).join(' ') || undefined
+  return {
+    formatted_address: formattedAddress,
+    street,
+    city: long('locality') || long('sublocality'),
+    state: short('administrative_area_level_1'),
+    zip_code: long('postal_code'),
+  }
+}
+
 async function reverseGeocode(
   lat: number,
   lng: number,
   apiKey: string,
 ): Promise<GeocodeResult | null> {
+  const w =
+    typeof window !== 'undefined' ? (window as Window & { google?: typeof google }) : undefined
+  const Geocoder = w?.google?.maps?.Geocoder
+  if (Geocoder) {
+    try {
+      const { results } = await new Geocoder().geocode({
+        location: { lat, lng },
+      })
+      const match = results?.find(
+        (r) =>
+          r.types.includes('street_address') ||
+          r.types.includes('premise') ||
+          r.types.includes('subpremise'),
+      )
+      const result = match || results?.[0]
+      const parsed = geocodeResultFromComponents(
+        result?.formatted_address,
+        result?.address_components,
+      )
+      if (parsed) return parsed
+    } catch (err) {
+      console.warn('[MapSearch] In-browser reverse geocoder failed, trying REST API:', err)
+    }
+  }
+
   try {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat.toFixed(6)},${lng.toFixed(6)}&key=${apiKey}`
     const res = await fetch(url)
@@ -253,38 +298,44 @@ async function reverseGeocode(
         r.types.includes('subpremise'),
     )
     const result = match || data.results[0]
-    if (!result?.formatted_address) return null
-
-    const components: Array<{ types: string[]; long_name: string; short_name: string }> =
-      result.address_components || []
-    const long = (type: string) => components.find((c) => c.types.includes(type))?.long_name
-    const short = (type: string) => components.find((c) => c.types.includes(type))?.short_name
-    const streetNumber = long('street_number')
-    const route = long('route')
-    const street = [streetNumber, route].filter(Boolean).join(' ') || undefined
-
-    return {
-      formatted_address: result.formatted_address,
-      street,
-      city: long('locality') || long('sublocality'),
-      state: short('administrative_area_level_1'),
-      zip_code: long('postal_code'),
-    }
+    return geocodeResultFromComponents(result?.formatted_address, result?.address_components)
   } catch {
     return null
   }
+}
+
+function zoomFromGeocodeTypes(types: string[]): number {
+  if (types.includes('postal_code')) return 13
+  if (types.includes('locality') || types.includes('sublocality')) return 13
+  if (types.includes('administrative_area_level_2')) return 10
+  if (types.includes('administrative_area_level_1')) return 7
+  return 13
+}
+
+async function waitForMapsGeocoder(timeoutMs = 8_000): Promise<typeof google.maps.Geocoder | undefined> {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    const Geocoder =
+      typeof window !== 'undefined'
+        ? (window as Window & { google?: typeof google }).google?.maps?.Geocoder
+        : undefined
+    if (Geocoder) return Geocoder
+    await new Promise((r) => setTimeout(r, 50))
+  }
+  return typeof window !== 'undefined'
+    ? (window as Window & { google?: typeof google }).google?.maps?.Geocoder
+    : undefined
 }
 
 async function forwardGeocode(
   query: string,
   apiKey: string,
 ): Promise<{ lat: number; lng: number; zoom: number } | null> {
-  // Prefer the in-browser Geocoder (same auth as Maps JS API). Falls back to the
-  // REST Geocoding API only if the in-browser geocoder isn't available — many
-  // production keys restrict the REST endpoint while allowing the JS Geocoder.
-  const w =
-    typeof window !== 'undefined' ? (window as Window & { google?: typeof google }) : undefined
-  const Geocoder = w?.google?.maps?.Geocoder
+  // Prefer the in-browser Geocoder (same auth as Maps JS API). Wait briefly
+  // for it — LabelGeocoder used to fire before Maps JS finished loading, fall
+  // through to the REST endpoint (often key-restricted), and never retry, so
+  // `?q=33433` left the camera wherever it spawned.
+  const Geocoder = await waitForMapsGeocoder()
   if (Geocoder) {
     try {
       const geocoder = new Geocoder()
@@ -296,13 +347,7 @@ async function forwardGeocode(
       const r = results[0]
       const loc = r.geometry?.location
       if (!loc) return null
-      const types: string[] = r.types || []
-      let zoom = 13
-      if (types.includes('postal_code')) zoom = 13
-      else if (types.includes('locality') || types.includes('sublocality')) zoom = 13
-      else if (types.includes('administrative_area_level_2')) zoom = 10
-      else if (types.includes('administrative_area_level_1')) zoom = 7
-      return { lat: loc.lat(), lng: loc.lng(), zoom }
+      return { lat: loc.lat(), lng: loc.lng(), zoom: zoomFromGeocodeTypes(r.types || []) }
     } catch (err) {
       console.warn('[MapSearch] In-browser geocoder failed, trying REST API:', err)
     }
@@ -316,13 +361,7 @@ async function forwardGeocode(
     const result = data.results[0]
     const loc = result.geometry?.location
     if (!loc) return null
-    const types: string[] = result.types || []
-    let zoom = 13
-    if (types.includes('postal_code')) zoom = 13
-    else if (types.includes('locality') || types.includes('sublocality')) zoom = 13
-    else if (types.includes('administrative_area_level_2')) zoom = 10
-    else if (types.includes('administrative_area_level_1')) zoom = 7
-    return { lat: loc.lat, lng: loc.lng, zoom }
+    return { lat: loc.lat, lng: loc.lng, zoom: zoomFromGeocodeTypes(result.types || []) }
   } catch {
     return null
   }
@@ -338,16 +377,15 @@ function LabelGeocoder({
   onResolved?: (bounds: { north: number; south: number; east: number; west: number }) => void
 }) {
   const map = useMap()
-  const geocodedRef = useRef(false)
   const onResolvedRef = useRef(onResolved)
   onResolvedRef.current = onResolved
 
   useEffect(() => {
-    if (!map || !label || geocodedRef.current) return
-    geocodedRef.current = true
+    if (!map || !label) return
+    let cancelled = false
 
     forwardGeocode(label, apiKey).then((result) => {
-      if (!result || !map) return
+      if (cancelled || !result || !map) return
       // setCenter + setZoom (instead of panTo, which animates) avoids racing
       // the `idle` listener that drives the listings fetch. Then we proactively
       // push the resolved bounds in case `idle` doesn't fire (e.g. when the
@@ -355,6 +393,7 @@ function LabelGeocoder({
       map.setCenter({ lat: result.lat, lng: result.lng })
       map.setZoom(result.zoom)
       setTimeout(() => {
+        if (cancelled) return
         const bounds = map.getBounds()
         if (!bounds || !onResolvedRef.current) return
         const ne = bounds.getNorthEast()
@@ -367,6 +406,9 @@ function LabelGeocoder({
         })
       }, 200)
     })
+    return () => {
+      cancelled = true
+    }
   }, [map, label, apiKey])
 
   return null
@@ -580,6 +622,7 @@ interface MapContentProps {
   drawingPolygon: google.maps.Polygon | null
   setDrawingPolygon: (p: google.maps.Polygon | null) => void
   panToRef: React.MutableRefObject<((lat: number, lng: number, zoom?: number) => void) | null>
+  pendingCameraRef?: React.MutableRefObject<{ lat: number; lng: number; zoom?: number } | null>
   mapInstanceRef?: React.MutableRefObject<google.maps.Map | null>
   // Polygon vertices owned by `useMapSearch`. Used to re-render a saved
   // polygon onto the map when restored from the session snapshot.
@@ -603,6 +646,7 @@ function MapContent({
   drawingPolygon,
   setDrawingPolygon,
   panToRef,
+  pendingCameraRef,
   mapInstanceRef,
   polygon,
   isDarkMap,
@@ -665,10 +709,15 @@ function MapContent({
         })
       }, 150)
     }
+    const pending = pendingCameraRef?.current
+    if (pending) {
+      pendingCameraRef.current = null
+      panToRef.current(pending.lat, pending.lng, pending.zoom)
+    }
     return () => {
       panToRef.current = null
     }
-  }, [map, panToRef, onBoundsChanged])
+  }, [map, panToRef, pendingCameraRef, onBoundsChanged])
 
   useEffect(() => {
     if (!map || !selectedListing) return
@@ -1241,7 +1290,7 @@ export function MapSearchView() {
   const [legendOpen, setLegendOpen] = useState(true)
   const collapseLegend = useCallback(() => setLegendOpen(false), [])
   const toggleLegend = useCallback(() => setLegendOpen((o) => !o), [])
-  const [activeLabel] = useState<string | null>(locationLabel)
+  const [activeLabel, setActiveLabel] = useState<string | null>(locationLabel)
   const [showLabel, setShowLabel] = useState(!!locationLabel)
   const [drawingPolygon, setDrawingPolygon] = useState<google.maps.Polygon | null>(null)
   // Map/list view — restored from the tab-session snapshot when present so
@@ -1267,7 +1316,48 @@ export function MapSearchView() {
   }, [listings])
 
   const panToRef = useRef<((lat: number, lng: number, zoom?: number) => void) | null>(null)
+  const pendingCameraRef = useRef<{ lat: number; lng: number; zoom?: number } | null>(null)
+  const lastUrlCameraKeyRef = useRef<string | null>(null)
+  const skipNextUrlPanRef = useRef(!!paramCenter)
   const mapInstanceRef = useRef<google.maps.Map | null>(null)
+
+  const applyCamera = useCallback((lat: number, lng: number, zoom?: number) => {
+    if (panToRef.current) {
+      panToRef.current(lat, lng, zoom)
+    } else {
+      pendingCameraRef.current = { lat, lng, zoom }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!paramCenter) return
+    const key = `${paramCenter.lat.toFixed(6)},${paramCenter.lng.toFixed(6)},${paramZoom ?? ''}`
+    if (lastUrlCameraKeyRef.current === key) return
+    lastUrlCameraKeyRef.current = key
+    if (skipNextUrlPanRef.current) {
+      skipNextUrlPanRef.current = false
+      return
+    }
+    applyCamera(paramCenter.lat, paramCenter.lng, paramZoom ?? 12)
+  }, [paramCenter, paramZoom, applyCamera])
+
+  useEffect(() => {
+    if (!needsGeocode || !apiKey || !locationLabel) return
+    let cancelled = false
+    void forwardGeocode(locationLabel, apiKey).then((result) => {
+      if (cancelled || !result) return
+      applyCamera(result.lat, result.lng, result.zoom)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [needsGeocode, apiKey, locationLabel, applyCamera])
+
+  useEffect(() => {
+    if (!locationLabel) return
+    setActiveLabel(locationLabel)
+    setShowLabel(true)
+  }, [locationLabel])
 
   const [savingDefault, setSavingDefault] = useState(false)
   const [savedDefaultToast, setSavedDefaultToast] = useState<string | null>(null)
@@ -1666,16 +1756,26 @@ export function MapSearchView() {
   }, [apiKey, savingDefault, queryClient])
 
   const handleSearchSelect = useCallback(
-    (selection: MapSearchSelection) => {
-      if (!selection.location) return
-      const { lat, lng } = selection.location
-
-      // Pan + zoom to the result. Existing panToRef handles bounds refresh.
-      if (panToRef.current) {
-        panToRef.current(lat, lng, selection.zoom)
+    async (selection: MapSearchSelection) => {
+      let lat = selection.location?.lat
+      let lng = selection.location?.lng
+      let zoom = selection.zoom
+      if (lat == null || lng == null) {
+        if (!apiKey) return
+        const geocoded = await forwardGeocode(selection.formatted_address, apiKey)
+        if (!geocoded) {
+          toast.error('Could not find that location')
+          return
+        }
+        lat = geocoded.lat
+        lng = geocoded.lng
+        zoom = geocoded.zoom
       }
 
+      applyCamera(lat, lng, zoom)
       setSelectedListing(null)
+      setActiveLabel(selection.formatted_address)
+      setShowLabel(true)
 
       if (selection.isStreetAddress) {
         // Drop a pin and seed the geocode/property-preview flow directly — we
@@ -1695,11 +1795,28 @@ export function MapSearchView() {
         clearGeocode()
       }
 
-      // Update the location-confirmation toast so the user sees a quick
-      // "Showing {label}" pill, mirroring URL-driven navigations.
       setViewMode('map')
     },
-    [clearGeocode],
+    [apiKey, applyCamera, clearGeocode],
+  )
+
+  const handleSearchQuery = useCallback(
+    async (text: string) => {
+      const query = text.trim()
+      if (!query || !apiKey) return
+      const geocoded = await forwardGeocode(query, apiKey)
+      if (!geocoded) {
+        toast.error('Could not find that location')
+        return
+      }
+      applyCamera(geocoded.lat, geocoded.lng, geocoded.zoom)
+      setSelectedListing(null)
+      setActiveLabel(query)
+      setShowLabel(true)
+      clearGeocode()
+      setViewMode('map')
+    },
+    [apiKey, applyCamera, clearGeocode],
   )
 
   if (!apiKey) {
@@ -1782,6 +1899,7 @@ export function MapSearchView() {
             drawingPolygon={drawingPolygon}
             setDrawingPolygon={setDrawingPolygon}
             panToRef={panToRef}
+            pendingCameraRef={pendingCameraRef}
             mapInstanceRef={mapInstanceRef}
             polygon={polygon}
             isDarkMap={isDarkMap}
@@ -1925,15 +2043,19 @@ export function MapSearchView() {
       {/* Toolbar: search + Filters in one flex row — stable gap vs Filters chip.
           Chrome follows map light/dark (overlaySurface), not global app theme. */}
       <div className="absolute top-3 left-3 right-3 z-10 flex flex-row items-start gap-3 sm:gap-4 pointer-events-none">
-        {!filtersOpen && (
-          <div className="pointer-events-auto flex-1 min-w-0">
-            <MapSearchBar
-              onSelect={handleSearchSelect}
-              overlayChrome={overlaySurface}
-              initialValue={locationLabel ?? ''}
-            />
-          </div>
-        )}
+        <div
+          className={`pointer-events-auto min-w-0 ${
+            filtersOpen ? 'w-[calc(100%-19.5rem)] max-[640px]:w-[calc(100%-2.5rem)]' : 'flex-1'
+          }`}
+        >
+          <MapSearchBar
+            key={locationLabel ?? ''}
+            onSelect={handleSearchSelect}
+            onManualSubmit={handleSearchQuery}
+            overlayChrome={overlaySurface}
+            initialValue={locationLabel ?? ''}
+          />
+        </div>
         <div className="pointer-events-auto flex flex-col items-end gap-2 shrink-0">
           {!!user && (
             <MyDealLayerToggle
@@ -2045,7 +2167,7 @@ export function MapSearchView() {
           backend notice (too wide a zoom) takes priority over the button,
           since searching again would only repeat the refusal. */}
       {notice && !isLoading ? (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 max-w-[min(92vw,26rem)]">
+        <div className="absolute top-[4.75rem] left-1/2 -translate-x-1/2 z-30 max-w-[min(92vw,26rem)]">
           <div
             className="flex items-start gap-2 px-3 py-2 rounded-lg text-xs shadow-lg"
             style={{
@@ -2062,7 +2184,7 @@ export function MapSearchView() {
       ) : (
         areaSearchPending &&
         !isLoading && (
-          <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30">
+          <div className="absolute top-[4.75rem] left-1/2 -translate-x-1/2 z-30">
             <button
               type="button"
               onClick={searchThisArea}

@@ -9,19 +9,19 @@ vi.mock('next/navigation', () => ({
 const trackEvent = vi.fn()
 vi.mock('@/lib/eventTracking', () => ({ trackEvent: (...args: unknown[]) => trackEvent(...args) }))
 
+const detectHeroLocation = vi.fn()
+vi.mock('@/components/map-search/mapUserLocation', () => ({
+  detectHeroLocation: (...args: unknown[]) => detectHeroLocation(...args),
+}))
+
 import { HomeHeroStatic } from '@/components/landing/HomeHeroStatic'
 
 describe('HomeHeroStatic', () => {
   beforeEach(() => {
     push.mockClear()
     trackEvent.mockClear()
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ city: null, region: null, lat: null, lng: null }),
-      }),
-    )
+    detectHeroLocation.mockReset()
+    detectHeroLocation.mockResolvedValue(null)
   })
 
   it('renders the headline, See Now CTA, and city placeholder', () => {
@@ -42,20 +42,35 @@ describe('HomeHeroStatic', () => {
     expect(push).toHaveBeenCalledWith('/map-search')
   })
 
-  it('prefills the city from /api/geo and submits q=', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ city: 'Boca Raton', region: 'FL', lat: 26.3, lng: -80.1 }),
-      }),
-    )
+  it('prefills GPS/IP location and submits q= with lat/lng', async () => {
+    detectHeroLocation.mockResolvedValue({
+      label: 'Boca Raton, FL',
+      lat: 26.3,
+      lng: -80.1,
+    })
     render(<HomeHeroStatic />)
     await waitFor(() => {
       expect(screen.getByDisplayValue('Boca Raton, FL')).toBeInTheDocument()
     })
     expect(screen.getByText('Opens the live map for Boca Raton.')).toBeInTheDocument()
     fireEvent.submit(screen.getByRole('button', { name: 'See Now' }).closest('form')!)
-    expect(push).toHaveBeenCalledWith('/map-search?q=Boca%20Raton%2C%20FL')
+    expect(push).toHaveBeenCalledWith(
+      '/map-search?q=Boca+Raton%2C+FL&lat=26.3&lng=-80.1&zoom=12',
+    )
+  })
+
+  it('does not attach stale coords when the user edits the autofill', async () => {
+    detectHeroLocation.mockResolvedValue({
+      label: 'Hialeah, FL',
+      lat: 25.86,
+      lng: -80.28,
+    })
+    render(<HomeHeroStatic />)
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Hialeah, FL')).toBeInTheDocument()
+    })
+    fireEvent.change(screen.getByPlaceholderText('City or ZIP'), { target: { value: '33433' } })
+    fireEvent.submit(screen.getByRole('button', { name: 'See Now' }).closest('form')!)
+    expect(push).toHaveBeenCalledWith('/map-search?q=33433')
   })
 })

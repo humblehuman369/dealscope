@@ -66,7 +66,7 @@ export function getBrowserPosition(options: PositionOptions = MAP_GPS_OPTIONS): 
   })
 }
 
-function parseLatLng(lat: unknown, lng: unknown): MapLatLng | null {
+export function parseLatLng(lat: unknown, lng: unknown): MapLatLng | null {
   const parsedLat = typeof lat === 'number' ? lat : typeof lat === 'string' ? Number(lat) : NaN
   const parsedLng = typeof lng === 'number' ? lng : typeof lng === 'string' ? Number(lng) : NaN
   return Number.isFinite(parsedLat) && Number.isFinite(parsedLng)
@@ -150,4 +150,105 @@ export async function resolveMapUserLocation(
   if (ip) return { center: ip, source: 'ip' }
 
   return { center: null, source: null }
+}
+
+export type HeroLocation = {
+  label: string
+  lat: number | null
+  lng: number | null
+}
+
+async function reverseGeocodeCityLabel(
+  coords: MapLatLng,
+  fetchFn: typeof fetch = fetch,
+): Promise<string | null> {
+  const Geocoder =
+    typeof window !== 'undefined'
+      ? (window as Window & { google?: typeof google }).google?.maps?.Geocoder
+      : undefined
+  if (Geocoder) {
+    try {
+      const { results } = await new Geocoder().geocode({
+        location: { lat: coords.lat, lng: coords.lng },
+      })
+      const result = results?.[0]
+      const components = result?.address_components ?? []
+      const city =
+        components.find((c) => c.types.includes('locality'))?.long_name ||
+        components.find((c) => c.types.includes('sublocality'))?.long_name
+      const region = components.find((c) => c.types.includes('administrative_area_level_1'))
+        ?.short_name
+      if (city && region) return `${city}, ${region}`
+      if (city) return city
+    } catch {
+      /* REST fallback below */
+    }
+  }
+
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  if (!apiKey) return null
+  try {
+    const res = await fetchFn(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coords.lat.toFixed(5)},${coords.lng.toFixed(5)}&key=${apiKey}`,
+    )
+    if (!res.ok) return null
+    const data = (await res.json()) as {
+      status?: string
+      results?: Array<{ address_components?: Array<{ types: string[]; long_name: string; short_name: string }> }>
+    }
+    if (data.status !== 'OK' || !data.results?.length) return null
+    const components = data.results[0].address_components ?? []
+    const city =
+      components.find((c) => c.types.includes('locality'))?.long_name ||
+      components.find((c) => c.types.includes('sublocality'))?.long_name
+    const region = components.find((c) => c.types.includes('administrative_area_level_1'))
+      ?.short_name
+    if (city && region) return `${city}, ${region}`
+    if (city) return city
+  } catch {
+    return null
+  }
+  return null
+}
+
+/**
+ * Homepage "See Now" location: GPS first (the actual user), then `/api/geo`.
+ * Always prefer coordinates over a city name alone — the map cannot pan
+ * from `q=` until Google Geocoder is ready, which is how searches used to
+ * land on the wrong city.
+ */
+export async function detectHeroLocation(
+  fetchFn: typeof fetch = fetch,
+  getPosition: (options: PositionOptions) => Promise<MapLatLng | null> = getBrowserPosition,
+): Promise<HeroLocation | null> {
+  const gps = await getPosition({
+    enableHighAccuracy: false,
+    timeout: 8_000,
+    maximumAge: 300_000,
+  })
+  if (gps) {
+    const label = (await reverseGeocodeCityLabel(gps, fetchFn)) ?? 'Your location'
+    return { label, lat: gps.lat, lng: gps.lng }
+  }
+
+  try {
+    const res = await fetchFn('/api/geo')
+    if (res.ok) {
+      const data = (await res.json()) as {
+        city?: unknown
+        region?: unknown
+        lat?: unknown
+        lng?: unknown
+      }
+      const coords = parseLatLng(data.lat, data.lng)
+      const city = typeof data.city === 'string' && data.city.trim() ? data.city : null
+      const region = typeof data.region === 'string' && data.region.trim() ? data.region : null
+      const label = city ? (region ? `${city}, ${region}` : city) : coords ? 'Your location' : null
+      if (!label) return null
+      return { label, lat: coords?.lat ?? null, lng: coords?.lng ?? null }
+    }
+  } catch {
+    /* ignore */
+  }
+  return null
 }

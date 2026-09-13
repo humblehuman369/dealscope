@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { trackEvent } from '@/lib/eventTracking'
+import { detectHeroLocation, type HeroLocation } from '@/components/map-search/mapUserLocation'
 import './HomeHeroStatic.css'
 
 const PILLS = [
@@ -22,29 +23,21 @@ const PINS = [
   { price: '$276K', left: '14%', top: '68%' },
 ] as const
 
-interface GeoPayload {
-  city: string | null
-  region: string | null
-}
-
 export function HomeHeroStatic() {
   const router = useRouter()
   const [value, setValue] = useState('')
-  const [cityName, setCityName] = useState<string | null>(null)
+  const [detected, setDetected] = useState<HeroLocation | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    fetch('/api/geo')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: GeoPayload | null) => {
-        if (cancelled || !data?.city) return
-        const city = data.city
-        const label = data.region ? `${city}, ${data.region}` : city
-        setValue(label)
-        setCityName(city)
+    detectHeroLocation()
+      .then((loc) => {
+        if (cancelled || !loc) return
+        setDetected(loc)
+        setValue(loc.label)
       })
       .catch(() => {
-        // Local / missing headers: keep the placeholder.
+        // GPS denied / local: keep the placeholder.
       })
     return () => {
       cancelled = true
@@ -55,12 +48,29 @@ export function HomeHeroStatic() {
     event.preventDefault()
     const text = value.trim()
     trackEvent('search_started', { search_type: 'city', source: 'home_hero' })
-    if (!text) {
-      router.push('/map-search')
-      return
+    const params = new URLSearchParams()
+    if (text) params.set('q', text)
+    // Only attach GPS/IP coords when the field still matches the autofill.
+    // Typing a different city/ZIP must geocode that query, not the old pin.
+    if (
+      detected &&
+      text === detected.label &&
+      detected.lat != null &&
+      detected.lng != null
+    ) {
+      params.set('lat', String(detected.lat))
+      params.set('lng', String(detected.lng))
+      params.set('zoom', '12')
     }
-    router.push(`/map-search?q=${encodeURIComponent(text)}`)
+    const qs = params.toString()
+    router.push(qs ? `/map-search?${qs}` : '/map-search')
   }
+
+  const detectedStillActive = !!detected && value.trim() === detected.label
+  const cityName =
+    detectedStillActive && detected.label !== 'Your location'
+      ? detected.label.replace(/,.*$/, '')
+      : null
 
   return (
     <section id="home-hero" className="home-hero-static" aria-labelledby="home-hero-heading">

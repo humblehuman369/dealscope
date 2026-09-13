@@ -315,29 +315,50 @@ export function useMapSearch() {
 
   const updateFilters = useCallback(
     (next: Partial<MapSearchFilters>) => {
-      const merged = { ...filtersRef.current, ...next }
+      let merged = { ...filtersRef.current, ...next }
+      // Availability pills used to look pressed without entering Owner Leads
+      // (which only starts when tenure or occupancy is set). Clicking one
+      // activates occupancy-any / any-tenure records via min years = 0.
+      if (
+        'owner_records_availability' in next &&
+        next.owner_records_availability != null &&
+        merged.owner_tenure_min_years == null &&
+        merged.owner_occupancy == null
+      ) {
+        merged = {
+          ...merged,
+          owner_tenure_min_years: 0,
+          listing_statuses: [],
+          motivated_seller_search: false,
+        }
+      }
       filtersRef.current = merged
       setFilters(merged)
       writeMapSnapshot({ filters: merged })
 
       const ownerRecordsActive =
         merged.owner_tenure_min_years != null || merged.owner_occupancy != null
+      const turningStrOnWithoutCity =
+        'include_str_listings' in next &&
+        !!merged.include_str_listings &&
+        !merged.str_city
       const needsRefetch =
-        'listing_type' in next ||
-        'property_type' in next ||
-        'min_price' in next ||
-        'max_price' in next ||
-        'bedrooms' in next ||
-        'bathrooms' in next ||
-        'listing_statuses' in next ||
-        'include_str_listings' in next ||
-        'str_state' in next ||
-        'str_city' in next ||
-        'motivated_seller_search' in next ||
-        'owner_tenure_min_years' in next ||
-        'owner_tenure_max_years' in next ||
-        'owner_occupancy' in next ||
-        ('owner_records_availability' in next && ownerRecordsActive)
+        !turningStrOnWithoutCity &&
+        ('listing_type' in next ||
+          'property_type' in next ||
+          'min_price' in next ||
+          'max_price' in next ||
+          'bedrooms' in next ||
+          'bathrooms' in next ||
+          'listing_statuses' in next ||
+          'include_str_listings' in next ||
+          'str_state' in next ||
+          'str_city' in next ||
+          'motivated_seller_search' in next ||
+          'owner_tenure_min_years' in next ||
+          'owner_tenure_max_years' in next ||
+          'owner_occupancy' in next ||
+          ('owner_records_availability' in next && ownerRecordsActive))
 
       if (!needsRefetch || !lastBoundsRef.current) return
 

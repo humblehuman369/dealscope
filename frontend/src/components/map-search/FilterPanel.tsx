@@ -252,15 +252,17 @@ export function FilterPanel({
     (min?: number, max?: number) => {
       // Owner-records mode replaces standard map sources on the backend; keep it
       // mutually exclusive with motivated-seller mode (which takes precedence).
+      const keepOwnerMode =
+        filters.owner_records_availability != null || filters.owner_occupancy != null
       onChange({
-        owner_tenure_min_years: min,
+        owner_tenure_min_years: min ?? (keepOwnerMode ? 0 : undefined),
         owner_tenure_max_years: max,
-        ...(min != null
+        ...(min != null || keepOwnerMode
           ? { motivated_seller_search: false, listing_statuses: [] }
           : {}),
       })
     },
-    [onChange],
+    [filters.owner_occupancy, filters.owner_records_availability, onChange],
   )
 
   const selectOwnerOccupancy = useCallback(
@@ -632,8 +634,11 @@ export function FilterPanel({
                 mapLightChrome={mapLightChrome}
                 idleControl={pillIdleControl}
                 active={
-                  filters.owner_tenure_min_years === preset.min &&
-                  filters.owner_tenure_max_years === preset.max
+                  preset.min === undefined
+                    ? filters.owner_tenure_min_years == null ||
+                      filters.owner_tenure_min_years === 0
+                    : filters.owner_tenure_min_years === preset.min &&
+                      filters.owner_tenure_max_years === preset.max
                 }
                 onClick={() => selectOwnerTenure(preset.min, preset.max)}
                 aria-label={`Owner tenure: ${preset.label}`}
@@ -675,8 +680,15 @@ export function FilterPanel({
             <PillButton
               mapLightChrome={mapLightChrome}
               idleControl={pillIdleControl}
-              active={filters.owner_records_availability === 'any'}
-              onClick={() => onChange({ owner_records_availability: 'any' })}
+              active={ownerRecordsActive && filters.owner_records_availability === 'any'}
+              onClick={() =>
+                onChange({
+                  owner_records_availability: 'any',
+                  owner_tenure_min_years: filters.owner_tenure_min_years ?? 0,
+                  listing_statuses: [],
+                  motivated_seller_search: false,
+                })
+              }
               aria-label="Any availability: off-market and for-sale matches"
             >
               Any
@@ -685,10 +697,18 @@ export function FilterPanel({
               mapLightChrome={mapLightChrome}
               idleControl={pillIdleControl}
               active={
-                !filters.owner_records_availability ||
-                filters.owner_records_availability === 'off_market'
+                ownerRecordsActive &&
+                (filters.owner_records_availability === 'off_market' ||
+                  !filters.owner_records_availability)
               }
-              onClick={() => onChange({ owner_records_availability: 'off_market' })}
+              onClick={() =>
+                onChange({
+                  owner_records_availability: 'off_market',
+                  owner_tenure_min_years: filters.owner_tenure_min_years ?? 0,
+                  listing_statuses: [],
+                  motivated_seller_search: false,
+                })
+              }
               aria-label="Off-market owner leads"
             >
               Off-market
@@ -696,8 +716,15 @@ export function FilterPanel({
             <PillButton
               mapLightChrome={mapLightChrome}
               idleControl={pillIdleControl}
-              active={filters.owner_records_availability === 'for_sale'}
-              onClick={() => onChange({ owner_records_availability: 'for_sale' })}
+              active={ownerRecordsActive && filters.owner_records_availability === 'for_sale'}
+              onClick={() =>
+                onChange({
+                  owner_records_availability: 'for_sale',
+                  owner_tenure_min_years: filters.owner_tenure_min_years ?? 0,
+                  listing_statuses: [],
+                  motivated_seller_search: false,
+                })
+              }
               aria-label="For-sale homes matching the owner filter"
             >
               For sale

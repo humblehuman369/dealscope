@@ -22,6 +22,8 @@ export interface MapSearchSelection {
 
 interface MapSearchBarProps {
   onSelect: (selection: MapSearchSelection) => void
+  /** Enter without picking a suggestion — parent geocodes the typed query. */
+  onManualSubmit?: (text: string) => void
   /** Called when the user clears the input. */
   onClear?: () => void
   /**
@@ -57,6 +59,7 @@ function inferZoom(placeTypes: string[]): { zoom: number; isStreetAddress: boole
  */
 export function MapSearchBar({
   onSelect,
+  onManualSubmit,
   onClear,
   overlayChrome,
   initialValue = '',
@@ -107,6 +110,7 @@ export function MapSearchBar({
         value={value}
         onChange={setValue}
         onPlaceSelect={handlePlaceSelect}
+        onManualSubmit={onManualSubmit}
         searchMode="location"
         placeholder="Search address, city, state, or ZIP"
         className={`flex-1 bg-transparent outline-none border-0 text-sm min-w-0${
