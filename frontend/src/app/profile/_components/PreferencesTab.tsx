@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Bell, Palette, Shield, Save, Compass } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { requestTourReplay } from '@/lib/workbenchTour'
+import { useWorkflowV1 } from '@/lib/workflowV1'
 
 // ===========================================
 // Preferences Tab — Notifications, Appearance, Security
@@ -67,6 +68,7 @@ function Toggle({
 }
 
 export function PreferencesTab() {
+  const { enabled: workflowV1 } = useWorkflowV1()
   const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS)
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system')
   const [saving, setSaving] = useState(false)
@@ -230,8 +232,11 @@ export function PreferencesTab() {
           </p>
         </div>
         <p className="text-sm text-[var(--text-secondary)] mb-4">
-          Replay the 60-second workbench tour on your next analysis — Discovery, Strategy,
-          Comps, DealMaker, Estimator, and Map Search.
+          Replay the 60-second workbench tour on your next analysis —{' '}
+          {workflowV1
+            ? 'Plan, Math, and Map Search'
+            : 'Discovery, Strategy, Comps, DealMaker, Estimator, and Map Search'}
+          .
         </p>
         <button
           type="button"

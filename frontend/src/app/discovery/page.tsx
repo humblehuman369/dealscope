@@ -97,6 +97,10 @@ import { WorkbenchTour } from '@/components/discovery/WorkbenchTour'
 import { HowThisCloses } from '@/components/discovery/HowThisCloses'
 import { VerdictCard } from '@/components/discovery/VerdictCard'
 import { WhyWeThinkSo } from '@/components/discovery/WhyWeThinkSo'
+import { MathTab } from '@/components/workflow/MathTab'
+import { WorkEmptyState } from '@/components/workflow/WorkEmptyState'
+import { DealPageContent } from '@/app/deals/[id]/page'
+import { isPlanView, parseWorkflowV1View } from '@/lib/workflowRoutes'
 import { classifySignalKind, type WhySignal } from '@/lib/whyWeThinkSo'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
 import { useWorkflowV1 } from '@/lib/workflowV1'
@@ -1108,15 +1112,22 @@ function VerdictContent() {
     [parseAnalysisResponse],
   )
 
-  // Auto-redirect to DealMaker page if navigated with openDealMaker=1
+  // Auto-redirect to DealMaker (flag off) or Plan (flag on) if navigated with openDealMaker=1
   useEffect(() => {
     if (!isLoading && property && analysis && searchParams.get('openDealMaker') === '1') {
+      if (workflowV1Layout) {
+        const next = new URLSearchParams(searchParams.toString())
+        next.delete('openDealMaker')
+        next.set('view', 'workbench')
+        router.replace(`/discovery?${next.toString()}`)
+        return
+      }
       const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
       const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
       router.replace(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=discovery`)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, property, analysis])
+  }, [isLoading, property, analysis, workflowV1Layout])
 
   // Navigation handlers - MUST be defined before any early returns to follow Rules of Hooks
   const handleBack = useCallback(() => {
@@ -1142,10 +1153,16 @@ function VerdictContent() {
   // Navigate to Deal Maker page with property data
   const handleNavigateToDealMaker = useCallback(() => {
     if (!property) return
+    if (workflowV1Layout) {
+      const next = new URLSearchParams(searchParams.toString())
+      next.set('view', 'workbench')
+      router.push(`/discovery?${next.toString()}`)
+      return
+    }
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
     router.push(`/deal-maker?address=${encodeURIComponent(fullAddress)}&from=discovery`)
-  }, [property, router])
+  }, [property, router, workflowV1Layout, searchParams])
 
   // Navigate to property details page - requires a Zillow zpid
   // Property page requires address query param for backend fetch
@@ -1351,11 +1368,15 @@ function VerdictContent() {
   // /discovery?view=workbench&… (301 in next.config.js, params passed through).
   // Only auto-expands when collapsed, so it never clobbers in-page state.
   const viewParam = searchParams.get('view')
+  const v1Tab = workflowV1Layout ? parseWorkflowV1View(viewParam) : null
   const strategyUrlParam = searchParams.get('strategy')
   const scenarioUrlParam = searchParams.get('scenario')
   const sectionUrlParam = searchParams.get('section')
   useEffect(() => {
-    if (viewParam !== 'workbench' || !addressParam) return
+    if (!isPlanView(viewParam) || !addressParam) {
+      if (!isPlanView(viewParam)) setWorkbenchRequest(null)
+      return
+    }
     setWorkbenchRequest(
       (prev) =>
         prev ?? {
@@ -1682,7 +1703,8 @@ function VerdictContent() {
 
   const navigateToSources = () => {
     const next = new URLSearchParams(searchParams.toString())
-    next.set('view', 'sources')
+    next.set('view', workflowV1Layout ? 'math' : 'sources')
+    if (workflowV1Layout) next.set('section', 'sources')
     router.push(`/discovery?${next.toString()}`)
   }
 
@@ -1748,13 +1770,17 @@ function VerdictContent() {
       id: 'repairs',
       kind: 'rest',
       title: 'Repairs not included in initial analysis',
-      detail: 'Use DealMaker to add a rehab budget and see the impact on returns.',
+      detail: workflowV1Layout
+        ? 'Use Plan to add a rehab budget and see the impact on returns.'
+        : 'Use DealMaker to add a rehab budget and see the impact on returns.',
     })
     items.push({
       id: 'assumptions',
       kind: 'rest',
       title: 'Assumes 20% down · 6.0% · 30yr',
-      detail: 'Edit financing terms in DealMaker to match your actual loan scenario.',
+      detail: workflowV1Layout
+        ? 'Edit financing terms in Plan to match your actual loan scenario.'
+        : 'Edit financing terms in DealMaker to match your actual loan scenario.',
     })
     if (
       strMarketData?.str_regulatory?.rating &&
@@ -2013,7 +2039,27 @@ function VerdictContent() {
             </div>
           ) : null}
 
-          {!workbenchRequest && workflowV1Layout ? (
+          {!workbenchRequest && workflowV1Layout && v1Tab === 'math' ? (
+            <MathTab
+              address={addressParam}
+              zpid={property.zpid != null ? String(property.zpid) : undefined}
+              lat={property.latitude ?? undefined}
+              lng={property.longitude ?? undefined}
+              compsView={searchParams.get('compsView') === 'rent' ? 'rent' : 'sale'}
+              section={sectionUrlParam}
+              dataSources={dataSourcesPanel}
+            />
+          ) : null}
+
+          {!workbenchRequest && workflowV1Layout && v1Tab === 'work' ? (
+            savedPropertyId || propertyIdParam ? (
+              <DealPageContent propertyId={propertyIdParam || savedPropertyId || ''} />
+            ) : (
+              <WorkEmptyState onGoToPlan={navigateToPlan} />
+            )
+          ) : null}
+
+          {!workbenchRequest && workflowV1Layout && v1Tab === 'discovery' ? (
           <>
             <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">
               <VerdictCard
@@ -2056,9 +2102,6 @@ function VerdictContent() {
                   dealGap={Number.isFinite(property.price) && Number.isFinite(purchasePrice) ? property.price - purchasePrice : null}
                 />
               </div>
-            ) : null}
-            {viewParam === 'sources' ? (
-              <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">{dataSourcesPanel}</div>
             ) : null}
           </>
           ) : null}

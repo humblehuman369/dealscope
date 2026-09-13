@@ -25,7 +25,7 @@ const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), {
   ),
 })
 
-function RehabPageContent() {
+export function RehabPageContent({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter()
   const searchParams = useAppSearchParams()
   const address = searchParams.get('address') || ''
@@ -58,6 +58,7 @@ function RehabPageContent() {
         )
         if (cancelled || !check.saved_property_id) return
         setResolvedSavedPropertyId(check.saved_property_id)
+        if (embedded) return
         const params = new URLSearchParams(searchParams.toString())
         params.set('saved_property_id', check.saved_property_id)
         router.replace(`/rehab?${params.toString()}`, { scroll: false })
@@ -69,7 +70,7 @@ function RehabPageContent() {
     return () => {
       cancelled = true
     }
-  }, [address, savedPropertyIdFromUrl, searchParams, router])
+  }, [address, savedPropertyIdFromUrl, searchParams, router, embedded])
 
   useEffect(() => {
     let cancelled = false

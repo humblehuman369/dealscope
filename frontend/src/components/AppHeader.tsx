@@ -48,7 +48,10 @@ import {
 import { PropertyAddressBar } from '@/components/iq-verdict/PropertyAddressBar'
 import { HeaderPropertySearch } from '@/components/HeaderPropertySearch'
 import { InfoDialog } from '@/components/ui/ConfirmDialog'
-import { isCapacitor } from '@/lib/env'
+import { isCapacitor, WORKFLOW_V1_ENV_ENABLED } from '@/lib/env'
+import { PathStepper } from '@/components/workflow/PathStepper'
+import { parseWorkflowV1View, workflowV1RedirectTarget } from '@/lib/workflowRoutes'
+import { useWorkflowV1 } from '@/lib/workflowV1'
 import { useSession, useLogout } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -90,7 +93,14 @@ const colors = {
 // TYPES
 // ===================
 
-export type AppTab = 'analyze' | 'strategy' | 'price-checker' | 'deal-maker' | 'estimator'
+export type AppTab =
+  | 'analyze'
+  | 'strategy'
+  | 'price-checker'
+  | 'deal-maker'
+  | 'estimator'
+  | 'math'
+  | 'work'
 
 interface PropertyInfo {
   address: string
@@ -131,6 +141,13 @@ const TABS: { id: AppTab; label: string }[] = [
   { id: 'price-checker', label: 'Comps' },
   { id: 'deal-maker', label: 'DealMaker' },
   { id: 'estimator', label: 'Estimator' },
+]
+
+const V1_TABS: { id: AppTab; label: string }[] = [
+  { id: 'analyze', label: 'Discovery' },
+  { id: 'strategy', label: 'Plan' },
+  { id: 'math', label: 'Math' },
+  { id: 'work', label: 'Work' },
 ]
 
 // ===================
@@ -174,7 +191,8 @@ const ANALYSIS_WORKFLOW_PREFIXES = [
   '/rehab',
 ] as const
 
-function isAnalysisWorkflowRoute(pathname: string): boolean {
+function isAnalysisWorkflowRoute(pathname: string, workflowV1 = false): boolean {
+  if (workflowV1 && pathname.startsWith('/deals')) return true
   return ANALYSIS_WORKFLOW_PREFIXES.some((prefix) => pathname.startsWith(prefix))
 }
 
@@ -182,9 +200,28 @@ const MENU_ITEM_CLASS =
   'flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-[var(--hover-overlay)]'
 
 // Map routes to active tabs
-function getActiveTabFromPath(pathname: string): AppTab | undefined {
+function getActiveTabFromPath(
+  pathname: string,
+  searchParams?: URLSearchParams | null,
+  workflowV1 = false,
+): AppTab | undefined {
   // Homepage: no tab selected
   if (pathname === '/' || pathname === '') return undefined
+  if (workflowV1) {
+    if (pathname.startsWith('/discovery')) {
+      const tab = parseWorkflowV1View(searchParams?.get('view'))
+      if (tab === 'plan') return 'strategy'
+      if (tab === 'math') return 'math'
+      if (tab === 'work') return 'work'
+      return 'analyze'
+    }
+    if (pathname.startsWith('/price-intel') || pathname.startsWith('/rental-comps') || pathname.startsWith('/rehab')) {
+      return 'math'
+    }
+    if (pathname.startsWith('/deals')) return 'work'
+    if (pathname.startsWith('/deal-maker')) return 'strategy'
+    if (pathname.startsWith('/compare')) return 'math'
+  }
   if (pathname.startsWith('/discovery')) return 'analyze'
   if (pathname.startsWith('/property')) return undefined
   if (pathname.startsWith('/price-intel')) return 'price-checker'
@@ -278,6 +315,8 @@ export function AppHeader({
   const { openAuthModal } = useAuthModal()
   const logoutMutation = useLogout()
   const { theme, toggleTheme, mounted } = useTheme()
+  const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
+  const workflowV1Layout = WORKFLOW_V1_ENV_ENABLED && (!workflowV1Ready || workflowV1)
 
   // Close profile menu on outside click
   useEffect(() => {
@@ -464,7 +503,9 @@ export function AppHeader({
   // }
 
   // Determine active tab from prop or pathname
-  const activeTab = activeTabProp ?? getActiveTabFromPath(pathname || '')
+  const activeTab =
+    activeTabProp ?? getActiveTabFromPath(pathname || '', searchParams, workflowV1Layout)
+  const visibleTabs = workflowV1Layout ? V1_TABS : TABS
   const isInfoPage = pathname?.startsWith('/about') || pathname?.startsWith('/pricing')
   const isHomepage = !pathname || pathname === '/'
 
@@ -475,10 +516,10 @@ export function AppHeader({
     pathname === '/pipeline'
 
   const showAnalysisTabs =
-    showTabs && !isInfoPage && !isHomepage && isAnalysisWorkflowRoute(pathname || '')
+    showTabs && !isInfoPage && !isHomepage && isAnalysisWorkflowRoute(pathname || '', workflowV1Layout)
 
   const showMapSearchFab =
-    isAnalysisWorkflowRoute(pathname || '') && !pathname?.startsWith('/map-search')
+    isAnalysisWorkflowRoute(pathname || '', workflowV1Layout) && !pathname?.startsWith('/map-search')
 
   // Determine if property bar should be shown
   const shouldShowPropertyBar =
@@ -551,6 +592,15 @@ export function AppHeader({
     const stateZip = [state, zip].filter(Boolean).join(' ')
     return [displayAddress, city, stateZip].filter(Boolean).join(', ')
   })()
+
+  useEffect(() => {
+    if (!workflowV1Ready || !workflowV1 || !pathname) return
+    const target = workflowV1RedirectTarget(pathname, searchParams ?? new URLSearchParams())
+    if (!target) return
+    const current = `${pathname}${searchParams?.toString() ? `?${searchParams.toString()}` : ''}`
+    if (current === target) return
+    router.replace(target)
+  }, [workflowV1, workflowV1Ready, pathname, searchParams, router])
 
   const handleTabChange = (tab: AppTab) => {
     // Build address params for navigation
@@ -640,6 +690,24 @@ export function AppHeader({
           router.push('/rehab')
         }
         break
+      case 'math':
+        if (navigationAddress) {
+          router.push(`/discovery?address=${encodedAddress}&view=math`)
+        } else {
+          router.push('/search')
+        }
+        break
+      case 'work':
+        if (navigationAddress) {
+          router.push(`/discovery?address=${encodedAddress}&view=work`)
+        } else {
+          router.push('/search')
+        }
+        break
+      default: {
+        const _exhaustive: never = tab
+        return _exhaustive
+      }
     }
   }
 
@@ -1115,7 +1183,7 @@ export function AppHeader({
                 WebkitOverflowScrolling: 'touch',
               }}
             >
-              {TABS.map((tab) => {
+              {visibleTabs.map((tab) => {
                 const isActive = tab.id === activeTab
                 const tourAttr =
                   tab.id === 'strategy'
@@ -1200,6 +1268,27 @@ export function AppHeader({
                 detailsCollapsed={scrolledPast}
                 loading={!p}
               />
+              {workflowV1Layout && showAnalysisTabs ? (
+                <div
+                  style={{
+                    background: 'var(--surface-chrome)',
+                    borderBottom: '1px solid var(--border-chrome)',
+                  }}
+                >
+                  <PathStepper
+                    tab={
+                      activeTab === 'strategy'
+                        ? 'plan'
+                        : activeTab === 'math'
+                          ? 'math'
+                          : activeTab === 'work'
+                            ? 'work'
+                            : 'discovery'
+                    }
+                    address={navigationAddress}
+                  />
+                </div>
+              ) : null}
             </div>
           )
         })()}
