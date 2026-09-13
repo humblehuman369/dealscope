@@ -27,6 +27,7 @@ describe('toSavedFilters', () => {
         max_price: 250_000,
         bedrooms: 3,
         listing_statuses: ['active', 'owner_listed'],
+        motivated_seller_search: false,
       }),
     )
 
@@ -110,6 +111,7 @@ describe('fromSavedFilters', () => {
 
     expect(restored.listing_statuses).toEqual([])
     expect(restored.listing_type).toBe('sale')
+    expect(restored.motivated_seller_search).toBe(false)
   })
 
   it('cannot inherit a filter from the state it is replacing', () => {

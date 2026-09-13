@@ -48,6 +48,20 @@ describe('empty default', () => {
     expect(DEFAULT_FILTERS.owner_occupancy).toBeUndefined()
     expect(DEFAULT_FILTERS.owner_records_availability).toBeUndefined()
   })
+
+  it('starts with motivated sellers, distressed, and Active + Owner Listed on', () => {
+    expect(DEFAULT_FILTERS.motivated_seller_search).toBe(true)
+    expect(DEFAULT_FILTERS.listing_type).toBe('sale')
+    expect(DEFAULT_FILTERS.sort_by).toBe('deal_signal')
+    expect(DEFAULT_FILTERS.listing_statuses).toEqual([
+      'active',
+      'owner_listed',
+      'foreclosure',
+      'auction',
+      'pre-foreclosure',
+    ])
+    expect(DEFAULT_FILTERS.listing_statuses).not.toContain('expired')
+  })
 })
 
 describe('tenure buckets', () => {

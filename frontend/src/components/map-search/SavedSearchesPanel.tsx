@@ -94,6 +94,7 @@ export function fromSavedFilters(saved: SavedSearchFilters): MapSearchFilters {
     ...saved,
     listing_type: saved.listing_type ?? DEFAULT_FILTERS.listing_type,
     listing_statuses: saved.listing_statuses ?? [],
+    motivated_seller_search: Boolean(saved.motivated_seller_search),
   })
 }
 

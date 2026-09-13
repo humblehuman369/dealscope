@@ -52,8 +52,9 @@ export interface MapBounds {
 
 export const DEFAULT_FILTERS: MapSearchFilters = {
   listing_type: 'sale',
-  listing_statuses: [],
+  listing_statuses: ['active', 'owner_listed', 'foreclosure', 'auction', 'pre-foreclosure'],
   sort_by: 'deal_signal',
+  motivated_seller_search: true,
 }
 
 /**

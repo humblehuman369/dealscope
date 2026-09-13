@@ -79,6 +79,13 @@ describe('useMapSearch', () => {
     const { result } = renderHook(() => useMapSearch())
 
     act(() => {
+      result.current.updateFilters({
+        motivated_seller_search: false,
+        listing_statuses: ['active'],
+      })
+    })
+
+    act(() => {
       result.current.onBoundsChanged(BOUNDS)
     })
     await act(async () => {
@@ -153,11 +160,21 @@ describe('useMapSearch', () => {
       owner_tenure_min_years?: number
       owner_occupancy?: string
       owner_records_availability?: string
+      motivated_seller_search?: boolean
+      listing_statuses?: string[]
     }
     expect(firstRequest.owner_tenure_min_years).toBeUndefined()
     expect(firstRequest.owner_occupancy).toBeUndefined()
     expect(firstRequest.owner_records_availability).toBeUndefined()
-    expect(result.current.isExpensiveMode).toBe(false)
+    expect(firstRequest.motivated_seller_search).toBe(true)
+    expect(firstRequest.listing_statuses).toEqual([
+      'active',
+      'owner_listed',
+      'foreclosure',
+      'auction',
+      'pre-foreclosure',
+    ])
+    expect(result.current.isExpensiveMode).toBe(true)
   })
 
   it('activates Owner Leads when availability is toggled from the default map', async () => {

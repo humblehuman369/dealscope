@@ -447,79 +447,6 @@ export function FilterPanel({
           </div>
         )}
 
-        {/* Sort By */}
-        <div>
-          <label
-            className="block text-xs font-semibold uppercase tracking-wider mb-2"
-            style={{ color: labelColor ?? 'var(--text-secondary)' }}
-          >
-            Sort By
-          </label>
-          <select
-            value={filters.sort_by}
-            onChange={(e) => onChange({ sort_by: e.target.value as SortOption })}
-            className="w-full px-3 py-2 rounded-lg text-sm"
-            style={controlIdle}
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Listing Type */}
-        <div>
-          <label
-            className="block text-xs font-semibold uppercase tracking-wider mb-2"
-            style={{ color: labelColor ?? 'var(--text-secondary)' }}
-          >
-            Listing Type
-          </label>
-          <div className="flex gap-1 flex-wrap">
-            {LISTING_TYPES.map((opt) => (
-              <PillButton
-                key={opt.value}
-                mapLightChrome={mapLightChrome}
-                idleControl={pillIdleControl}
-                active={listingTypeIsSelected(filters.listing_type, opt.value)}
-                onClick={() => onChange({ listing_type: nextListingType(filters.listing_type, opt.value) })}
-                aria-label={`${opt.label}. Toggle on or off.`}
-              >
-                {opt.label}
-              </PillButton>
-            ))}
-          </div>
-        </div>
-
-        {/* Listing Status — MLS & FSBO */}
-        <div>
-          <span
-            className="block text-xs font-semibold uppercase tracking-wider mb-1"
-            style={{ color: labelColor ?? 'var(--text-secondary)' }}
-          >
-            Listing status
-          </span>
-          <p className="text-[10px] mb-2 leading-snug" style={{ color: openChrome.placeholder }}>
-            MLS &amp; FSBO
-          </p>
-          <div className="flex flex-wrap gap-1">
-            {CORE_LISTING_STATUS_OPTIONS.map((opt) => (
-              <PillButton
-                key={opt.value}
-                mapLightChrome={mapLightChrome}
-                idleControl={pillIdleControl}
-                active={filters.listing_statuses.includes(opt.value)}
-                onClick={() => toggleListingStatus(opt.value)}
-                aria-label={`${opt.label} listings. Toggle on or off.`}
-              >
-                {opt.label}
-              </PillButton>
-            ))}
-          </div>
-        </div>
-
         {/* Motivated Seller Search */}
         <div
           className="rounded-lg p-3 space-y-2"
@@ -568,6 +495,117 @@ export function FilterPanel({
             }
           >
             {filters.motivated_seller_search ? 'On' : 'Off'}
+          </PillButton>
+        </div>
+
+        {/* Distressed deals */}
+        <div
+          className="rounded-lg p-3 space-y-2"
+          role="group"
+          aria-labelledby="distressed-deals-heading"
+          style={{
+            backgroundColor: openChrome.distressed.boxBg,
+            border: openChrome.distressed.boxBorder,
+          }}
+        >
+          <div>
+            <h3
+              id="distressed-deals-heading"
+              className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1"
+              style={{ color: openChrome.distressed.heading }}
+            >
+              Distressed deals
+              <SectionHelpTooltip
+                label="Distressed deals"
+                mapLightChrome={mapLightChrome}
+                content="Foreclosure, auction, and pre-foreclosure listings appear as red pins on the map — often the highest-motivation seller pool."
+              />
+            </h3>
+            <p
+              className="text-[10px] mt-1 leading-snug"
+              style={{ color: openChrome.distressed.body }}
+            >
+              Foreclosure, auction &amp; pre-foreclosure — same red pins as the map legend.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {DISTRESSED_LISTING_STATUS_OPTIONS.map(({ value, label, dotColor, Icon }) => (
+              <PillButton
+                key={value}
+                mapLightChrome={mapLightChrome}
+                idleControl={pillIdleControl}
+                active={filters.listing_statuses.includes(value)}
+                onClick={() => toggleListingStatus(value)}
+                aria-label={`${label} listings. Matches red distressed map markers. Toggle on or off.`}
+                leading={
+                  <>
+                    <span
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: dotColor }}
+                      aria-hidden
+                    />
+                    <Icon
+                      size={12}
+                      className="flex-shrink-0 opacity-90"
+                      strokeWidth={2}
+                      aria-hidden
+                    />
+                  </>
+                }
+              >
+                {label}
+              </PillButton>
+            ))}
+          </div>
+        </div>
+
+        {/* Expired listings */}
+        <div
+          className="rounded-lg p-3 space-y-2"
+          role="group"
+          aria-labelledby="expired-listings-heading"
+          style={{
+            backgroundColor: openChrome.expired.boxBg,
+            border: openChrome.expired.boxBorder,
+          }}
+        >
+          <div>
+            <h3
+              id="expired-listings-heading"
+              className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1"
+              style={{ color: openChrome.expired.heading }}
+            >
+              Expired Listings
+              <SectionHelpTooltip
+                label="Expired listings"
+                mapLightChrome={mapLightChrome}
+                content="Homes that were listed but did not sell — a motivated-seller signal. Verified live and dropped if back on market or sold."
+              />
+            </h3>
+            <p
+              className="text-[10px] mt-1 leading-snug"
+              style={{ color: openChrome.expired.body }}
+            >
+              Off-market homes that were listed but didn&apos;t sell (expired, withdrawn,
+              cancelled, delisted) — a motivated-seller signal. Each candidate is verified
+              live on Zillow and dropped if it&apos;s back on the market or already sold.
+            </p>
+          </div>
+          <PillButton
+            mapLightChrome={mapLightChrome}
+            idleControl={pillIdleControl}
+            active={filters.listing_statuses.includes('expired')}
+            onClick={() => toggleListingStatus('expired')}
+            aria-label="Expired listings. Toggle on or off."
+            leading={
+              <span
+                className="w-2 h-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: EXPIRED_MARKER_DOT }}
+                aria-hidden
+              />
+            }
+          >
+            {filters.listing_statuses.includes('expired') ? 'On' : 'Off'}
           </PillButton>
         </div>
 
@@ -711,117 +749,6 @@ export function FilterPanel({
           </p>
         </div>
 
-        {/* Distressed deals */}
-        <div
-          className="rounded-lg p-3 space-y-2"
-          role="group"
-          aria-labelledby="distressed-deals-heading"
-          style={{
-            backgroundColor: openChrome.distressed.boxBg,
-            border: openChrome.distressed.boxBorder,
-          }}
-        >
-          <div>
-            <h3
-              id="distressed-deals-heading"
-              className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1"
-              style={{ color: openChrome.distressed.heading }}
-            >
-              Distressed deals
-              <SectionHelpTooltip
-                label="Distressed deals"
-                mapLightChrome={mapLightChrome}
-                content="Foreclosure, auction, and pre-foreclosure listings appear as red pins on the map — often the highest-motivation seller pool."
-              />
-            </h3>
-            <p
-              className="text-[10px] mt-1 leading-snug"
-              style={{ color: openChrome.distressed.body }}
-            >
-              Foreclosure, auction &amp; pre-foreclosure — same red pins as the map legend.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {DISTRESSED_LISTING_STATUS_OPTIONS.map(({ value, label, dotColor, Icon }) => (
-              <PillButton
-                key={value}
-                mapLightChrome={mapLightChrome}
-                idleControl={pillIdleControl}
-                active={filters.listing_statuses.includes(value)}
-                onClick={() => toggleListingStatus(value)}
-                aria-label={`${label} listings. Matches red distressed map markers. Toggle on or off.`}
-                leading={
-                  <>
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: dotColor }}
-                      aria-hidden
-                    />
-                    <Icon
-                      size={12}
-                      className="flex-shrink-0 opacity-90"
-                      strokeWidth={2}
-                      aria-hidden
-                    />
-                  </>
-                }
-              >
-                {label}
-              </PillButton>
-            ))}
-          </div>
-        </div>
-
-        {/* Expired listings */}
-        <div
-          className="rounded-lg p-3 space-y-2"
-          role="group"
-          aria-labelledby="expired-listings-heading"
-          style={{
-            backgroundColor: openChrome.expired.boxBg,
-            border: openChrome.expired.boxBorder,
-          }}
-        >
-          <div>
-            <h3
-              id="expired-listings-heading"
-              className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1"
-              style={{ color: openChrome.expired.heading }}
-            >
-              Expired Listings
-              <SectionHelpTooltip
-                label="Expired listings"
-                mapLightChrome={mapLightChrome}
-                content="Homes that were listed but did not sell — a motivated-seller signal. Verified live and dropped if back on market or sold."
-              />
-            </h3>
-            <p
-              className="text-[10px] mt-1 leading-snug"
-              style={{ color: openChrome.expired.body }}
-            >
-              Off-market homes that were listed but didn&apos;t sell (expired, withdrawn,
-              cancelled, delisted) — a motivated-seller signal. Each candidate is verified
-              live on Zillow and dropped if it&apos;s back on the market or already sold.
-            </p>
-          </div>
-          <PillButton
-            mapLightChrome={mapLightChrome}
-            idleControl={pillIdleControl}
-            active={filters.listing_statuses.includes('expired')}
-            onClick={() => toggleListingStatus('expired')}
-            aria-label="Expired listings. Toggle on or off."
-            leading={
-              <span
-                className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{ backgroundColor: EXPIRED_MARKER_DOT }}
-                aria-hidden
-              />
-            }
-          >
-            {filters.listing_statuses.includes('expired') ? 'On' : 'Off'}
-          </PillButton>
-        </div>
-
         {/* Days on Market */}
         <div>
           <label
@@ -952,7 +879,81 @@ export function FilterPanel({
           </div>
         </div>
 
+        {/* Listing Type */}
+        <div>
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-2"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
+            Listing Type
+          </label>
+          <div className="flex gap-1 flex-wrap">
+            {LISTING_TYPES.map((opt) => (
+              <PillButton
+                key={opt.value}
+                mapLightChrome={mapLightChrome}
+                idleControl={pillIdleControl}
+                active={listingTypeIsSelected(filters.listing_type, opt.value)}
+                onClick={() => onChange({ listing_type: nextListingType(filters.listing_type, opt.value) })}
+                aria-label={`${opt.label}. Toggle on or off.`}
+              >
+                {opt.label}
+              </PillButton>
+            ))}
+          </div>
+        </div>
+
+        {/* Sort By */}
+        <div>
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-2"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
+            Sort By
+          </label>
+          <select
+            value={filters.sort_by}
+            onChange={(e) => onChange({ sort_by: e.target.value as SortOption })}
+            className="w-full px-3 py-2 rounded-lg text-sm"
+            style={controlIdle}
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Listing Status — MLS & FSBO */}
+        <div>
+          <span
+            className="block text-xs font-semibold uppercase tracking-wider mb-1"
+            style={{ color: labelColor ?? 'var(--text-secondary)' }}
+          >
+            Listing status
+          </span>
+          <p className="text-[10px] mb-2 leading-snug" style={{ color: openChrome.placeholder }}>
+            MLS &amp; FSBO
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {CORE_LISTING_STATUS_OPTIONS.map((opt) => (
+              <PillButton
+                key={opt.value}
+                mapLightChrome={mapLightChrome}
+                idleControl={pillIdleControl}
+                active={filters.listing_statuses.includes(opt.value)}
+                onClick={() => toggleListingStatus(opt.value)}
+                aria-label={`${opt.label} listings. Toggle on or off.`}
+              >
+                {opt.label}
+              </PillButton>
+            ))}
+          </div>
+        </div>
+
         {/* Airbnb / STR Listings */}
+
         <div className="pt-3" style={{ borderTop: openChrome.headerBorder }}>
           <label
             className="block text-xs font-semibold uppercase tracking-wider mb-2"
