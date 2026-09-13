@@ -55,3 +55,40 @@ class TestNormalizeRentcastListingYearBuilt:
             }
         )
         assert listing.year_built == 1985
+
+
+class TestNormalizeListingInventory:
+    def test_rentcast_rental_inventory(self) -> None:
+        listing = MapSearchService._normalize_rentcast_listing(
+            {
+                "id": "rc-rent",
+                "formattedAddress": "3 Pine St, Boca Raton, FL 33432",
+                "latitude": 26.36,
+                "longitude": -80.09,
+            },
+            inventory="rental",
+        )
+        assert listing.inventory == "rental"
+
+    def test_zillow_sale_inventory(self) -> None:
+        listing = MapSearchService._normalize_zillow_listing(
+            {
+                "zpid": 456,
+                "address": "4 Pine St, Boca Raton, FL 33432",
+                "latitude": 26.35,
+                "longitude": -80.08,
+            },
+            inventory="sale",
+        )
+        assert listing.inventory == "sale"
+
+    def test_default_inventory_is_none(self) -> None:
+        listing = MapSearchService._normalize_rentcast_listing(
+            {
+                "id": "rc-2",
+                "formattedAddress": "5 Pine St, Boca Raton, FL 33432",
+                "latitude": 26.36,
+                "longitude": -80.09,
+            }
+        )
+        assert listing.inventory is None

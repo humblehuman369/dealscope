@@ -376,7 +376,20 @@ export function useMapSearch() {
     [rawListings],
   )
 
-  const dealSignals = useMemo(() => classifyListings(mergedListings), [mergedListings])
+  // Rental-only searches are all For Rent inventory. Stamp that before
+  // classify so pins stay gold even when an older API omits `inventory`
+  // (RentCast rentals often arrive as listing_status "Active").
+  const listingsForSignals = useMemo(() => {
+    if (filters.listing_type !== 'rental') return mergedListings
+    return mergedListings.map((listing) =>
+      listing.inventory === 'rental' ? listing : { ...listing, inventory: 'rental' as const },
+    )
+  }, [mergedListings, filters.listing_type])
+
+  const dealSignals = useMemo(
+    () => classifyListings(listingsForSignals),
+    [listingsForSignals],
+  )
 
   const filteredAndSortedListings = useMemo(() => {
     // Owner Leads (RentCast records) is a distinct inventory whose rows carry

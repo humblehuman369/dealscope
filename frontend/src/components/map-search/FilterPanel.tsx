@@ -53,11 +53,37 @@ interface FilterPanelProps {
   onPanelMouseLeave?: () => void
 }
 
-const LISTING_TYPES: { value: MapSearchFilters['listing_type']; label: string }[] = [
+const LISTING_TYPES: { value: 'sale' | 'rental'; label: string }[] = [
   { value: 'sale', label: 'For Sale' },
   { value: 'rental', label: 'For Rent' },
-  { value: 'both', label: 'Both' },
 ]
+
+/**
+ * Independent For Sale / For Rent toggles, mapped onto the API's single
+ * `listing_type` (`sale` | `rental` | `both`). Refusing to clear the last
+ * selected pill keeps the request valid — the API has no empty value, and
+ * mapping "neither" to `both` would look like both pills are pressed.
+ */
+export function nextListingType(
+  current: MapSearchFilters['listing_type'],
+  toggled: 'sale' | 'rental',
+): MapSearchFilters['listing_type'] {
+  const saleOn = current === 'both' || current === 'sale'
+  const rentOn = current === 'both' || current === 'rental'
+  const nextSale = toggled === 'sale' ? !saleOn : saleOn
+  const nextRent = toggled === 'rental' ? !rentOn : rentOn
+  if (nextSale && nextRent) return 'both'
+  if (nextSale) return 'sale'
+  if (nextRent) return 'rental'
+  return current
+}
+
+export function listingTypeIsSelected(
+  current: MapSearchFilters['listing_type'],
+  which: 'sale' | 'rental',
+): boolean {
+  return current === 'both' || current === which
+}
 
 const PROPERTY_TYPES = [
   { value: '', label: 'Any' },
@@ -494,9 +520,9 @@ export function FilterPanel({
                 key={opt.value}
                 mapLightChrome={mapLightChrome}
                 idleControl={pillIdleControl}
-                active={filters.listing_type === opt.value}
-                onClick={() => onChange({ listing_type: opt.value })}
-                aria-label={opt.label}
+                active={listingTypeIsSelected(filters.listing_type, opt.value)}
+                onClick={() => onChange({ listing_type: nextListingType(filters.listing_type, opt.value) })}
+                aria-label={`${opt.label}. Toggle on or off.`}
               >
                 {opt.label}
               </PillButton>

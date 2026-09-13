@@ -1282,6 +1282,10 @@ class MapListing(BaseModel):
     sqft: int | None = None
     property_type: str | None = None
     listing_status: str | None = None
+    inventory: Literal["sale", "rental"] | None = Field(
+        default=None,
+        description="Sale vs rental inventory. Set by the map-search fetch path so For Rent pins can be colored separately from For Sale.",
+    )
     photo_url: str | None = None
     source: str
     days_on_market: int | None = None

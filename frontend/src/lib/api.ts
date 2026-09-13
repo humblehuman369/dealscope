@@ -354,6 +354,8 @@ export interface MapListing {
   sqft: number | null
   property_type: string | null
   listing_status: string | null
+  /** Sale vs rental inventory. Set by map search so For Rent pins color gold. */
+  inventory?: 'sale' | 'rental' | null
   photo_url: string | null
   source: string
   days_on_market: number | null

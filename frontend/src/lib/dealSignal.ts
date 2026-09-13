@@ -5,14 +5,15 @@ export type DealCategory =
   | 'distressed' // Red — auction, foreclosure, pre-foreclosure
   | 'expired' // Violet — delisted/unsold (expired or withdrawn)
   | 'stale_60' // Orange — 60+ days on market
-  | 'stale_30' // Yellow — 30+ days on market
+  | 'stale_30' // Amber — 30+ days on market (for-sale)
   | 'owner_listed' // Green — FSBO / owner-listed when DOM under 30 (or DOM unknown)
-  | 'active' // Dark green — MLS active with DOM known and under 30 days
+  | 'active' // Dark green — MLS active sale with DOM known and under 30 days
+  | 'rental' // Gold — For Rent inventory (LTR), distinct from sale greens
   | 'unknown' // Grey — e.g. active but DOM missing
 
 export interface DealSignalResult {
   category: DealCategory
-  /** Higher = sort first when sort_by is deal_signal (Red=5 … Active=1, Unknown=0). */
+  /** Higher = sort first when sort_by is deal_signal (Red=6 … Active/Rental=1, Unknown=0). */
   rank: number
   label: string
   color: string
@@ -128,6 +129,7 @@ export const CATEGORY_RANK: Record<DealCategory, number> = {
   stale_30: 3,
   owner_listed: 2,
   active: 1,
+  rental: 1,
   unknown: 0,
 }
 
@@ -139,6 +141,7 @@ const CATEGORY_MARKER_HEX: Record<DealCategory, string> = {
   stale_30: '#EAB308',
   owner_listed: '#22C55E',
   active: '#16A34A',
+  rental: '#F0C929',
   unknown: '#9CA3AF',
 }
 
@@ -155,6 +158,7 @@ const CATEGORY_MARKER_HEX_DARK: Record<DealCategory, string> = {
   stale_30: '#D97706',
   owner_listed: '#16A34A',
   active: '#15803D',
+  rental: '#D4B01C',
   unknown: '#6B7280',
 }
 
@@ -180,8 +184,26 @@ function staleLabel(days: number, canonical: CanonicalStatus): string {
 }
 
 /**
+ * For Rent inventory. Prefer the fetch-path `inventory` tag; fall back to
+ * provider status strings so older cached rows still color gold.
+ *
+ * Last resort: ZIP rent / list price ≥ 25% only happens when `price` is a
+ * monthly rent, not a sale price (typical sale ratios are ~0.5–2%).
+ * Skip when inventory is explicitly `sale`.
+ */
+export function isRentalListing(listing: MapListing): boolean {
+  if (listing.inventory === 'rental') return true
+  if (listing.inventory === 'sale') return false
+  const raw = (listing.listing_status ?? '').toLowerCase().trim()
+  if (raw === 'for_rent' || raw === 'for rent' || raw === 'rental') return true
+  const ratio = listing.zip_rent_to_price
+  return ratio != null && Number.isFinite(ratio) && ratio >= 0.25
+}
+
+/**
  * Classify one listing for map color and list sorting.
- * Precedence: distress > DOM buckets > owner-listed > active.
+ * Precedence: distress > expired > rental > DOM buckets > owner-listed > active.
+ * Rentals skip the 30/60 DOM buckets so For Rent pins stay gold, not amber.
  * Active + missing DOM → `unknown` (grey) so we never guess time on market.
  */
 export function classifyListing(listing: MapListing): DealSignalResult {
@@ -204,6 +226,15 @@ export function classifyListing(listing: MapListing): DealSignalResult {
       rank: CATEGORY_RANK.expired,
       label: 'Expired',
       color: CATEGORY_MARKER_HEX.expired,
+    }
+  }
+
+  if (isRentalListing(listing)) {
+    return {
+      category: 'rental',
+      rank: CATEGORY_RANK.rental,
+      label: 'For Rent',
+      color: CATEGORY_MARKER_HEX.rental,
     }
   }
 
@@ -351,6 +382,8 @@ export function markerColorForCategory(category: DealCategory, isDark = false): 
 /** Distressed / red-flag map pin — shared with filter-panel urgency callouts. */
 export const DISTRESSED_MARKER_COLOR = CATEGORY_MARKER_HEX.distressed
 export const DISTRESSED_MARKER_COLOR_DARK = CATEGORY_MARKER_HEX_DARK.distressed
+export const RENTAL_MARKER_COLOR = CATEGORY_MARKER_HEX.rental
+export const RENTAL_MARKER_COLOR_DARK = CATEGORY_MARKER_HEX_DARK.rental
 
 export function sortListings(
   listings: MapListing[],

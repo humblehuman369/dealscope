@@ -1312,7 +1312,12 @@ class MapSearchService:
                 return []
 
             raw_listings = self._extract_rentcast_listings(resp.data)
-            results = [self._normalize_rentcast_listing(item) for item in raw_listings if self._has_coords(item)]
+            inventory = listing_type if listing_type in ("sale", "rental") else None
+            results = [
+                self._normalize_rentcast_listing(item, inventory=inventory)
+                for item in raw_listings
+                if self._has_coords(item)
+            ]
             logger.info("RentCast %s: %d listings", listing_type, len(results))
             return results
         except Exception:
@@ -1925,11 +1930,12 @@ class MapSearchService:
                     first.get("isPreforeclosureAuction"),
                 )
 
+            inventory = "rental" if status == "forRent" else ("sale" if status == "forSale" else None)
             results: list[MapListing] = []
             for item in raw_props:
                 if not self._zillow_has_coords(item):
                     continue
-                listing = self._normalize_zillow_listing(item)
+                listing = self._normalize_zillow_listing(item, inventory=inventory)
                 if tag_status:
                     listing.listing_status = tag_status
                 results.append(listing)
@@ -2434,7 +2440,7 @@ class MapSearchService:
         return item.get("status")
 
     @staticmethod
-    def _normalize_rentcast_listing(item: dict) -> MapListing:
+    def _normalize_rentcast_listing(item: dict, inventory: str | None = None) -> MapListing:
         street = item.get("addressLine1") or ""
         city = item.get("city") or ""
         state = item.get("state") or ""
@@ -2467,6 +2473,7 @@ class MapSearchService:
             sqft=item.get("squareFootage"),
             property_type=item.get("propertyType"),
             listing_status=raw_status,
+            inventory=inventory if inventory in ("sale", "rental") else None,
             photo_url=MapSearchService._extract_photo_url(item, primary_keys=("photoUrl", "imgSrc")),
             source="rentcast",
             days_on_market=item.get("daysOnMarket"),
@@ -2474,7 +2481,7 @@ class MapSearchService:
         )
 
     @staticmethod
-    def _normalize_zillow_listing(item: dict) -> MapListing:
+    def _normalize_zillow_listing(item: dict, inventory: str | None = None) -> MapListing:
         raw_address = item.get("address") or ""
         city = ""
         state = ""
@@ -2535,6 +2542,7 @@ class MapSearchService:
             sqft=item.get("livingArea") or item.get("squareFootage") or item.get("area"),
             property_type=item.get("propertyType") or item.get("homeType"),
             listing_status=listing_status,
+            inventory=inventory if inventory in ("sale", "rental") else None,
             photo_url=photo_url,
             source="zillow",
             days_on_market=item.get("daysOnZillow"),

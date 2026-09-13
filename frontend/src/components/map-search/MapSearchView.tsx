@@ -138,6 +138,7 @@ const US_BOUNDS = {
 
 const MAP_MARKER_LEGEND: { category: DealCategory; label: string }[] = [
   { category: 'active', label: 'Active' },
+  { category: 'rental', label: 'For Rent' },
   { category: 'owner_listed', label: 'Owner listed' },
   { category: 'stale_30', label: '30+ days on market' },
   { category: 'stale_60', label: '60+ days on market' },
