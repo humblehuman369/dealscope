@@ -14,6 +14,8 @@ export interface PlanViewProps {
   onShareExcel?: () => void
   onSharePdf?: () => void
   trialPitch?: ReactNode
+  /** Test-only: throw inside this card so the V1 Plan boundary can catch it. */
+  debugThrow?: boolean
 }
 
 const CARD: CSSProperties = {
@@ -68,7 +70,9 @@ export function PlanView({
   onShareExcel,
   onSharePdf,
   trialPitch,
+  debugThrow = false,
 }: PlanViewProps) {
+  if (debugThrow) throw new Error('workflow-v1 plan card')
   const titleId = useId()
   const whyGapsId = useId()
   const whyGuideId = useId()

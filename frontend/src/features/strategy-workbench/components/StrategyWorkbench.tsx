@@ -107,16 +107,18 @@ import type {
   DealStructuresPayload,
 } from '@/components/iq-verdict/FourPathsPanel'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
-import { trackEvent, WORKFLOW_EVENTS } from '@/lib/eventTracking'
-import { useWorkflowV1 } from '@/lib/workflowV1'
+import { trackDealStarted, trackEvent, trackPlanBuilt } from '@/lib/eventTracking'
+import { layoutFromRender, useWorkflowV1 } from '@/lib/workflowV1'
 import { PlanView } from '@/components/workflow/PlanView'
 import { TuneDrawer } from '@/components/workflow/TuneDrawer'
+import { WorkflowV1ErrorBoundary } from '@/components/workflow/WorkflowV1ErrorBoundary'
 import { formatPlanSnapshot } from '@/lib/dealStructures/planSnapshot'
 import { formatPlanBottomLine, formatResetToOption } from '@/lib/planCopy'
 import {
   askingGapDisplayPct,
   closeDeltas,
   gapLeftPct,
+  ltrStateFromPreLoadedRecord,
   optionKeyFromFamily,
   PLAN_SLOT_ORDER,
   PLAN_TARGET_DEFAULTS,
@@ -212,8 +214,8 @@ export function StrategyWorkbench({
   const [tuneOpen, setTuneOpen] = useState(false)
   const [planCustomized, setPlanCustomized] = useState(false)
   const [startingDeal, setStartingDeal] = useState(false)
+  const [v1PlanFailed, setV1PlanFailed] = useState(false)
   const option3SeededRef = useRef(false)
-  const lastPlanBuiltRef = useRef<string | null>(null)
   const planContinuity = useMemo(() => readPlanContinuity(address), [address])
   const fromPlan = Boolean(planContinuity)
   const worksheetUnlocked = isAuthenticated || fromPlan
@@ -1069,8 +1071,61 @@ export function StrategyWorkbench({
    * returns values in the canonical `inlineOverrides` shape). Persists to
    * session so the DealMaker tab stays in sync, and triggers a debounced recalc.
    */
+  const scoreTargetsMetFromState = useCallback((state: LTRDealMakerState | undefined) => {
+    if (!state?.buyPrice) return 0
+    const metrics = computeLtrMetricsFromState(state)
+    return scoreAgainstTargets({
+      capRate: metrics.capRate,
+      cashOnCash: metrics.cocReturn,
+      monthlyCashFlow: metrics.annualProfit / 12,
+      dscr: metrics.dscr,
+    }).targetsMet
+  }, [])
+
+  const emitPlanBuilt = useCallback(
+    (option: Parameters<typeof trackPlanBuilt>[0]['option'], targetsMet: number) => {
+      const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
+      trackPlanBuilt({
+        ...(propertyId ? { property_id: String(propertyId) } : {}),
+        option,
+        targets_met: targetsMet,
+        plan: isPro ? 'pro' : 'starter',
+        layout: layoutFromRender(workflowV1),
+      })
+    },
+    [propertyInfo, isPro, workflowV1],
+  )
+
+  const emitDealStarted = useCallback(
+    (dealId: string, includePlan: boolean) => {
+      const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
+      const structure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
+      const state = worksheetStateRef.current as LTRDealMakerState | undefined
+      trackDealStarted({
+        ...(propertyId ? { property_id: String(propertyId) } : {}),
+        deal_id: dealId,
+        ...(includePlan
+          ? {
+              option: structure ? optionKeyFromFamily(structure.family) : 'custom',
+              targets_met: scoreTargetsMetFromState(state),
+            }
+          : {}),
+        plan: isPro ? 'pro' : 'starter',
+        layout: layoutFromRender(workflowV1),
+      })
+    },
+    [
+      propertyInfo,
+      displayDealStructurePaths,
+      appliedPathId,
+      isPro,
+      workflowV1,
+      scoreTargetsMetFromState,
+    ],
+  )
+
   const applyPathPatch = useCallback(
-    (structure: DealStructure, idx: number) => {
+    (structure: DealStructure, idx: number, options?: { track?: boolean }) => {
       const patch = preLoadedRecordToDealMakerPatch(structure.preLoadedRecord ?? {})
       setInlineOverrides((prev) => {
         // Reset any prior path-applied fields back to baseline before layering
@@ -1111,12 +1166,35 @@ export function StrategyWorkbench({
         family: structure.family,
         path_index: idx + 1,
       })
+      if (options?.track !== false) {
+        const current = worksheetStateRef.current as LTRDealMakerState | undefined
+        const baseline: PlanBaseline = {
+          listPrice: current?.buyPrice || propertyInfo?.price || 0,
+          monthlyRent: current?.monthlyRent || 0,
+          downPaymentPercent: current?.downPaymentPercent,
+          closingCostsPercent: current?.closingCostsPercent,
+          interestRate: current?.interestRate,
+          loanTermYears: current?.loanTermYears,
+        }
+        const scoredState = ltrStateFromPreLoadedRecord(
+          structure.preLoadedRecord ?? {},
+          baseline,
+        )
+        emitPlanBuilt(optionKeyFromFamily(structure.family), scoreTargetsMetFromState(scoredState))
+      }
       // Wait for the Option card to mount/paint, then bring it to the top.
       if (typeof window !== 'undefined') {
         requestAnimationFrame(() => requestAnimationFrame(scrollStrategyToOptionCard))
       }
     },
-    [scheduleRecalc, markWorksheetDirty, scrollStrategyToOptionCard],
+    [
+      scheduleRecalc,
+      markWorksheetDirty,
+      scrollStrategyToOptionCard,
+      emitPlanBuilt,
+      scoreTargetsMetFromState,
+      propertyInfo,
+    ],
   )
 
   useEffect(() => {
@@ -1128,31 +1206,8 @@ export function StrategyWorkbench({
     const financing = displayDealStructurePaths.find((path) => path.family === 'financing')
     if (!financing?.preLoadedRecord) return
     option3SeededRef.current = true
-    applyPathPatch(financing, PLAN_SLOT_ORDER.indexOf('financing'))
+    applyPathPatch(financing, PLAN_SLOT_ORDER.indexOf('financing'), { track: false })
   }, [workflowV1, scenarioParam, appliedPathId, displayDealStructurePaths, applyPathPatch])
-
-  useEffect(() => {
-    if (!workflowV1 || !appliedPathId) return
-    if (lastPlanBuiltRef.current === appliedPathId) return
-    const state = worksheetStateRef.current as LTRDealMakerState | undefined
-    if (!state?.buyPrice) return
-    lastPlanBuiltRef.current = appliedPathId
-    const metrics = computeLtrMetricsFromState(state)
-    const score = scoreAgainstTargets({
-      capRate: metrics.capRate,
-      cashOnCash: metrics.cocReturn,
-      monthlyCashFlow: metrics.annualProfit / 12,
-      dscr: metrics.dscr,
-    })
-    const structure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
-    const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
-    trackEvent(WORKFLOW_EVENTS.plan_built, {
-      ...(propertyId ? { property_id: String(propertyId) } : {}),
-      option: structure ? optionKeyFromFamily(structure.family) : 'custom',
-      targets_met: score.targetsMet,
-      plan: isPro ? 'pro' : 'starter',
-    })
-  }, [workflowV1, appliedPathId, displayDealStructurePaths, propertyInfo, isPro])
 
   const handlePlanApply = useCallback(
     (structureId: string) => {
@@ -1173,8 +1228,14 @@ export function StrategyWorkbench({
     const slot = PLAN_SLOT_ORDER.indexOf(
       structure.family as (typeof PLAN_SLOT_ORDER)[number],
     )
-    applyPathPatch(structure, slot >= 0 ? slot : 0)
+    applyPathPatch(structure, slot >= 0 ? slot : 0, { track: false })
   }, [appliedPathId, displayDealStructurePaths, applyPathPatch])
+
+  const handleTuneDone = useCallback(() => {
+    const state = worksheetStateRef.current as LTRDealMakerState | undefined
+    emitPlanBuilt('custom', scoreTargetsMetFromState(state))
+    setTuneOpen(false)
+  }, [emitPlanBuilt, scoreTargetsMetFromState])
 
   const handleStartDeal = useCallback(async () => {
     if (!isAuthenticated) {
@@ -1185,25 +1246,7 @@ export function StrategyWorkbench({
     try {
       const dealId = (await save()) ?? savedPropertyId
       if (!dealId) return
-      const structure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
-      const state = worksheetStateRef.current as LTRDealMakerState | undefined
-      const metrics = state ? computeLtrMetricsFromState(state) : null
-      const score = metrics
-        ? scoreAgainstTargets({
-            capRate: metrics.capRate,
-            cashOnCash: metrics.cocReturn,
-            monthlyCashFlow: metrics.annualProfit / 12,
-            dscr: metrics.dscr,
-          })
-        : { targetsMet: 0 }
-      const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
-      trackEvent(WORKFLOW_EVENTS.deal_started, {
-        ...(propertyId ? { property_id: String(propertyId) } : {}),
-        deal_id: dealId,
-        option: structure ? optionKeyFromFamily(structure.family) : 'custom',
-        targets_met: score.targetsMet,
-        plan: isPro ? 'pro' : 'starter',
-      })
+      emitDealStarted(dealId, true)
       const next = new URLSearchParams(
         searchParams?.toString() ||
           (typeof window !== 'undefined' ? window.location.search : ''),
@@ -1221,10 +1264,7 @@ export function StrategyWorkbench({
     openAuthModal,
     save,
     savedPropertyId,
-    displayDealStructurePaths,
-    appliedPathId,
-    propertyInfo,
-    isPro,
+    emitDealStarted,
     searchParams,
     router,
   ])
@@ -1862,6 +1902,8 @@ export function StrategyWorkbench({
     }
   }
 
+  const showV1Plan = Boolean(workflowV1 && planModel && !v1PlanFailed)
+
   const strategyUnlockOverlay = (
     <StrategyUnlockPanel
       signInUrl={signInUrl}
@@ -1884,38 +1926,43 @@ export function StrategyWorkbench({
 
       <div className={embedded ? WORKBENCH_EMBEDDED_GUTTER : WORKBENCH_PAGE_GUTTER}>
         <div className={WORKBENCH_STACK}>
-        {workflowV1 && planModel ? (
-          <PlanView
-            model={planModel}
-            onTune={() => setTuneOpen(true)}
-            onApply={handlePlanApply}
-            onStartDeal={() => {
-              void handleStartDeal()
-            }}
-            startingDeal={startingDeal}
-            onShareFullReport={() => handlePDFDownload('light')}
-            onShareExcel={() => {
-              void handleComprehensiveExcelDownload()
-            }}
-            onSharePdf={() => handlePDFDownload('light')}
-            trialPitch={
-              fromPlan && !isPro ? (
-                <PlanNextMove
-                  remainingAnalyses={
-                    isAuthenticated ? (billingUsage?.searches_remaining ?? null) : null
-                  }
-                  onStartTrial={() => setUpgradeModalOpen(true)}
-                  onAnalyzeAnother={() => router.push('/search')}
-                />
-              ) : !worksheetUnlocked ? (
-                strategyUnlockOverlay
-              ) : null
-            }
-          />
+        {showV1Plan && planModel ? (
+          <WorkflowV1ErrorBoundary
+            route="/discovery?view=plan"
+            onCaught={() => setV1PlanFailed(true)}
+          >
+            <PlanView
+              model={planModel}
+              onTune={() => setTuneOpen(true)}
+              onApply={handlePlanApply}
+              onStartDeal={() => {
+                void handleStartDeal()
+              }}
+              startingDeal={startingDeal}
+              onShareFullReport={() => handlePDFDownload('light')}
+              onShareExcel={() => {
+                void handleComprehensiveExcelDownload()
+              }}
+              onSharePdf={() => handlePDFDownload('light')}
+              trialPitch={
+                fromPlan && !isPro ? (
+                  <PlanNextMove
+                    remainingAnalyses={
+                      isAuthenticated ? (billingUsage?.searches_remaining ?? null) : null
+                    }
+                    onStartTrial={() => setUpgradeModalOpen(true)}
+                    onAnalyzeAnother={() => router.push('/search')}
+                  />
+                ) : !worksheetUnlocked ? (
+                  strategyUnlockOverlay
+                ) : null
+              }
+            />
+          </WorkflowV1ErrorBoundary>
         ) : null}
 
         <div
-          hidden={Boolean(workflowV1 && planModel)}
+          hidden={showV1Plan}
         >
         {/* Deal Gap bar — standalone only. Discovery already renders Investment
             Overview; repeating it here looks like the page duplicated. */}
@@ -1997,10 +2044,11 @@ export function StrategyWorkbench({
         </div>
 
         {((node: ReactNode) =>
-          workflowV1 && planModel ? (
+          showV1Plan ? (
             <TuneDrawer
               open={tuneOpen}
               onClose={() => setTuneOpen(false)}
+              onDone={handleTuneDone}
               onReset={handlePlanReset}
               resetLabel={formatResetToOption(resetOptionKey)}
             >
@@ -2328,7 +2376,11 @@ export function StrategyWorkbench({
           fromPlan={fromPlan}
           planEmail={planContinuity?.email ?? null}
           onSave={() => {
-            save().catch((err) => console.error('Save to DealVault failed:', err))
+            save()
+              .then((dealId) => {
+                if (dealId) emitDealStarted(dealId, Boolean(appliedPathId))
+              })
+              .catch((err) => console.error('Save to DealVault failed:', err))
           }}
           onSaveWorksheet={() => {
             saveWorksheet()

@@ -6,10 +6,10 @@ Source of names: `frontend/src/lib/eventTracking.ts` (`trackEvent`, `WORKFLOW_EV
 
 | Event | Status | Fires when | Properties |
 |---|---|---|---|
-| `card_opened` | Firing | A map-search property card opens (`MapSearchView.openListingCard` → `trackCardOpened`) | `property_id`, `property_state`, `days_on_market`, `price_cuts` |
-| `verdict_viewed` | Firing | Workflow v1: `VerdictCard` mount, once per property per session. Flag off: Discovery page mount when an address or property id is present | Workflow v1: `call` (`worth_pursuing` \| `only_with_terms` \| `walk_away`), `gap`, `signals`, `closes`, `property_id`, `property_state`. Flag off: `has_address`, `has_property_id` |
-| `plan_built` | Firing | An option, blend, or tuned plan is applied on Plan (`StrategyWorkbench`) | `property_id`, `option` (`1` \| `2` \| `3` \| `4` \| `blend` \| `custom`), `targets_met` (0–4), `plan` |
-| `deal_started` | Firing | Start working this deal creates a pipeline deal (`StrategyWorkbench.handleStartDeal`) | `property_id`, `deal_id`, `option`, `targets_met`, `plan` |
+| `card_opened` | Firing | A map-search property card opens (`MapSearchView.openListingCard` → `trackCardOpened`). Same map card in both layouts. | `property_id`, `property_state`, `days_on_market`, `price_cuts`, `layout` (`v1` when the flag is loaded and true, else `legacy`) |
+| `verdict_viewed` | Firing | Workflow v1: `VerdictCard` mount, once per property per session. Flag off: Discovery page when address or property id is present and call-rules inputs are ready. | `call` (`worth_pursuing` \| `only_with_terms` \| `walk_away`) in both layouts, `gap`, `signals`, `closes`, `property_id`, `property_state`, `layout` (`v1` or `legacy` from the screen that rendered). Flag off also sends `has_address`, `has_property_id`. |
+| `plan_built` | Firing | V1 and old: `StrategyWorkbench.applyPathPatch` (Options 1–4 and the blend). V1 only: Tune drawer Done (`TuneDrawer` → `handleTuneDone` → `emitPlanBuilt('custom')`). Reset and the V1 Option 3 seed pass `{ track: false }` and do not fire. | `property_id`, `option` (`1` \| `2` \| `3` \| `4` \| `blend` \| `custom`), `targets_met` (0–4 from `scoreAgainstTargets` on the worksheet record), `plan`, `layout` |
+| `deal_started` | Firing | V1: `StrategyWorkbench.handleStartDeal` on Plan (“Start working this deal”). Old: `SaveCtaSection` `onSave` → `save()` (plain DealVault save). Deduped once per `deal_id` per session so a session cannot fire twice for the same deal. If the old save has no plan applied, `option` and `targets_met` are omitted. | `property_id`, `deal_id`, `plan`, `layout`; `option` and `targets_met` when a plan was applied |
 | `task_completed` | Defined, not firing | A checklist task is checked (Phase 2) | `deal_id`, `task_id`, `stage`, `is_first_for_deal` |
 | `draft_used` | Defined, not firing | A Draft it drawer is opened (Phase 2) | `deal_id`, `draft_kind` |
 | `offer_sent` | Defined, not firing | The Send the offer task completes (Phase 2) | `deal_id`, `offer_price` |
@@ -17,7 +17,7 @@ Source of names: `frontend/src/lib/eventTracking.ts` (`trackEvent`, `WORKFLOW_EV
 | `alert_opened` | Defined, not firing | A watchlist alert is opened (Phase 4) | `alert_kind` |
 | `digest_opened` | Defined, not firing | A weekly digest email is opened (Phase 4) | `area` |
 
-`verdict_viewed` is not a `WORKFLOW_EVENTS` key; it is a pre-existing `trackEvent` name. The `call` property is new on the Verdict card path.
+`verdict_viewed` is not a `WORKFLOW_EVENTS` key; it is a pre-existing `trackEvent` name. The `call` property is on both the Verdict card path and the old Discovery path. `layout` is the screen that rendered (`v1` or `legacy`), not the raw flag, except on `card_opened` which uses the loaded flag. Never send a street address.
 
 ## Helpers on `eventTracking.ts`
 

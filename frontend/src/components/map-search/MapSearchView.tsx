@@ -65,6 +65,7 @@ import { MyDealMapLayer, MyDealLayerToggle } from '@/components/map/MyDealMapLay
 import type { NeighborhoodOverview } from '@/lib/api'
 import { brandMark } from '@/lib/brand'
 import { trackCardOpened } from '@/lib/eventTracking'
+import { layoutFromFlag, useWorkflowV1 } from '@/lib/workflowV1'
 
 const DEFAULT_CENTER = { lat: 39.8283, lng: -98.5795 }
 const DEFAULT_ZOOM = 5
@@ -1036,6 +1037,7 @@ export function MapSearchView() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const searchParams = useAppSearchParams()
   const { theme } = useTheme()
+  const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
 
   // Per-map theme override. When set, beats the global app theme for the
   // map's color scheme, canvas filter, and floating overlay tinting. The
@@ -1584,8 +1586,9 @@ export function MapSearchView() {
       property_state: listing.state,
       days_on_market: listing.days_on_market,
       price_cuts: listing.price_cuts,
+      layout: layoutFromFlag(workflowV1, workflowV1Ready),
     })
-  }, [])
+  }, [workflowV1, workflowV1Ready])
 
   const handleListSelect = useCallback(
     (listing: MapListing) => {

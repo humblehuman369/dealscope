@@ -39,6 +39,18 @@ export function initPostHog(): Promise<PostHog | null> {
         persistence: 'localStorage+cookie',
       })
       client = posthog
+      // Local screenshot / Lighthouse bootstrap only. Production builds
+      // never see NODE_ENV === 'development', so this cannot bypass the flag.
+      if (
+        process.env.NODE_ENV === 'development' &&
+        (window as Window & { __WORKFLOW_V1_OVERRIDE__?: boolean }).__WORKFLOW_V1_OVERRIDE__ ===
+          true
+      ) {
+        const local = posthog as unknown as {
+          overrideFeatureFlags?: (flags: Record<string, boolean | string>) => void
+        }
+        local.overrideFeatureFlags?.({ 'workflow-v1': true })
+      }
       return posthog
     })
     .catch(() => null)
@@ -60,10 +72,15 @@ export function identifyPostHog(
 ): void {
   void initPostHog().then((ph) => {
     if (!ph) return
-    // Re-identifying with the same id is a no-op server-side, but skip the
-    // network chatter when we already know this user.
-    if (ph.get_distinct_id() === distinctId) return
-    ph.identify(distinctId, props)
+    const set: Record<string, string | number | boolean> = {}
+    if (props) {
+      for (const [key, value] of Object.entries(props)) {
+        if (value !== undefined) set[key] = value
+      }
+    }
+    // Person-targeted flags (email is set / email is one of) need $set on
+    // every signed-in mount, including when the distinct id is already known.
+    ph.identify(distinctId, { $set: set })
   })
 }
 

@@ -106,7 +106,8 @@ import { isPlanView, parseWorkflowV1View, resolveWorkDealId } from '@/lib/workfl
 import { summarizeSourceStatus } from '@/lib/sourceStatus'
 import { classifySignalKind, type WhySignal } from '@/lib/whyWeThinkSo'
 import { useWorkbenchTour } from '@/hooks/useWorkbenchTour'
-import { useWorkflowV1 } from '@/lib/workflowV1'
+import { layoutFromRender, useWorkflowV1 } from '@/lib/workflowV1'
+import { WorkflowV1ErrorBoundary } from '@/components/workflow/WorkflowV1ErrorBoundary'
 import {
   formatSellerRead,
   formatVerdictSentence,
@@ -275,6 +276,7 @@ function VerdictContent() {
   const { isAuthenticated } = useSession()
   const { enabled: workflowV1, ready: workflowV1Ready } = useWorkflowV1()
   const workflowV1Layout = workflowV1
+  const [v1DiscoveryFailed, setV1DiscoveryFailed] = useState(false)
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
 
@@ -450,21 +452,58 @@ function VerdictContent() {
     hasRecordedAnalysisRef.current = false
   }, [addressParam, propertyIdParam])
 
-  // Analytics: verdict page view (when user landed with a property context).
-  // Workflow v1 fires from VerdictCard once the call is known — skip the mount fire.
+  // Analytics: old-layout verdict. V1 fires from VerdictCard. Wait for the
+  // same call-rules inputs so `call` is present even though the old page
+  // does not show the chip. Once per property per session.
   useEffect(() => {
     if (!workflowV1Ready || workflowV1) return
-    if (addressParam || propertyIdParam) {
-      trackEvent(
-        'verdict_viewed',
-        {
-          has_address: !!addressParam,
-          has_property_id: !!propertyIdParam,
-        },
-        newMetaEventId(),
-      )
+    if (!addressParam && !propertyIdParam) return
+    if (!property || !analysis) return
+    const incomeValue = analysis.incomeValue ?? property.price
+    const dealGapPct =
+      typeof analysis.dealGapPercent === 'number' && Number.isFinite(analysis.dealGapPercent)
+        ? analysis.dealGapPercent
+        : 0
+    const signals = listingSignals ?? listingSignalsFromListing(null)
+    const signalBreakdown = countVerdictSignals(signals)
+    const callGap = Number.isFinite(dealGapPct) ? dealGapPct : 0
+    const call = resolveCall(callGap, signalBreakdown.count, {
+      listPrice: property.price,
+      incomeValue,
+    })
+    const propertyId =
+      propertyIdParam || property.id || (property.zpid != null ? String(property.zpid) : null)
+    const key = `dgiq_verdict_viewed_v1:${propertyId || addressParam}`
+    try {
+      if (sessionStorage.getItem(key)) return
+      sessionStorage.setItem(key, '1')
+    } catch {
+      /* private mode */
     }
-  }, [addressParam, propertyIdParam, workflowV1, workflowV1Ready])
+    trackEvent(
+      'verdict_viewed',
+      {
+        call,
+        gap: callGap,
+        signals: signalBreakdown.count,
+        closes: anyLeverClosesGap(analysis.dealStructures?.paths),
+        has_address: !!addressParam,
+        has_property_id: !!propertyIdParam,
+        layout: layoutFromRender(false),
+        ...(propertyId ? { property_id: propertyId } : {}),
+        ...(property.state ? { property_state: property.state } : {}),
+      },
+      newMetaEventId(),
+    )
+  }, [
+    addressParam,
+    propertyIdParam,
+    workflowV1,
+    workflowV1Ready,
+    property,
+    analysis,
+    listingSignals,
+  ])
 
   // Record one analysis for Starter usage when verdict loads (address or saved property)
   useEffect(() => {
@@ -2126,7 +2165,11 @@ function VerdictContent() {
             ) : null
           ) : null}
 
-          {!workbenchRequest && workflowV1Layout && v1Tab === 'discovery' ? (
+          {!workbenchRequest && workflowV1Layout && v1Tab === 'discovery' && !v1DiscoveryFailed ? (
+          <WorkflowV1ErrorBoundary
+            route="/discovery"
+            onCaught={() => setV1DiscoveryFailed(true)}
+          >
           <>
             <div className="mx-0 sm:mx-5 mt-4 px-3 sm:px-5">
               <VerdictCard
@@ -2181,9 +2224,10 @@ function VerdictContent() {
               </div>
             ) : null}
           </>
+          </WorkflowV1ErrorBoundary>
           ) : null}
 
-          {!workbenchRequest && !workflowV1Layout && (
+          {!workbenchRequest && (!workflowV1Layout || v1DiscoveryFailed) && (
           <>
           {photoGallery}
 

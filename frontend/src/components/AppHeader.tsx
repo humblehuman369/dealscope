@@ -51,7 +51,7 @@ import { InfoDialog } from '@/components/ui/ConfirmDialog'
 import { isCapacitor } from '@/lib/env'
 import { PathStepper } from '@/components/workflow/PathStepper'
 import { WorkflowPropertyHeader } from '@/components/workflow/WorkflowPropertyHeader'
-import { parseWorkflowV1View, pipelineDealId, workflowV1RedirectTarget } from '@/lib/workflowRoutes'
+import { parseWorkflowV1View, pipelineDealId, resolveWorkflowRedirect } from '@/lib/workflowRoutes'
 import { STATUS_CONFIG } from '@/lib/savedPropertyStatus'
 import { useSavedProperty } from '@/hooks/useSavedProperties'
 import { useWorkflowV1 } from '@/lib/workflowV1'
@@ -510,7 +510,7 @@ export function AppHeader({
     }
   }, [resolvedProperty, displayAddress])
 
-  const { isSaved, savedPropertyId, toggle: handleSaveToggle } = useSaveProperty({
+  const { isSaved, savedPropertyId, hasChecked, toggle: handleSaveToggle } = useSaveProperty({
     displayAddress: displayAddress || '',
     propertySnapshot: savePropertySnapshot,
   })
@@ -624,13 +624,29 @@ export function AppHeader({
   })()
 
   useEffect(() => {
-    if (!workflowV1Ready || !workflowV1 || !pathname) return
-    const target = workflowV1RedirectTarget(pathname, searchParams ?? new URLSearchParams())
+    if (!pathname) return
+    const search = searchParams ?? new URLSearchParams()
+    const target = resolveWorkflowRedirect({
+      ready: workflowV1Ready,
+      enabled: workflowV1,
+      pathname,
+      search,
+      propertyPipelineId: savedPropertyId,
+      hasCheckedPipeline: hasChecked,
+    })
     if (!target) return
-    const current = `${pathname}${searchParams?.toString() ? `?${searchParams.toString()}` : ''}`
+    const current = `${pathname}${search.toString() ? `?${search.toString()}` : ''}`
     if (current === target) return
     router.replace(target)
-  }, [workflowV1, workflowV1Ready, pathname, searchParams, router])
+  }, [
+    workflowV1,
+    workflowV1Ready,
+    pathname,
+    searchParams,
+    router,
+    savedPropertyId,
+    hasChecked,
+  ])
 
   const handleTabChange = (tab: AppTab) => {
     // Build address params for navigation
