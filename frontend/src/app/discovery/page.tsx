@@ -1749,7 +1749,10 @@ function VerdictContent() {
   const signals = listingSignals ?? listingSignalsFromListing(null)
   const signalBreakdown = countVerdictSignals(signals)
   const callGap = Number.isFinite(dealGapPct) ? dealGapPct : 0
-  const verdictCall = resolveCall(callGap, signalBreakdown.count)
+  const verdictCall = resolveCall(callGap, signalBreakdown.count, {
+    listPrice: property.price,
+    incomeValue,
+  })
   const sellerPath = sellerPathFromDealStructures({
     blendRecommendation: analysis.dealStructures?.blendRecommendation,
     families: analysis.dealStructures?.paths.map((p) => p.family) ?? [],
@@ -1763,6 +1766,8 @@ function VerdictContent() {
     targetBuy: purchasePrice,
     gapPct: callGap,
     sellerRead,
+    listed: isListed,
+    marketValue: property.price,
   })
   const leverCloses = anyLeverClosesGap(analysis.dealStructures?.paths)
 
@@ -2116,6 +2121,7 @@ function VerdictContent() {
                 targetBuy={purchasePrice}
                 dealGapDisplayPct={effectiveDisplayPct}
                 sentence={verdictSentence}
+                listed={isListed}
                 call={verdictCall}
                 callFired={signalBreakdown.fired}
                 propertyId={
@@ -2184,6 +2190,7 @@ function VerdictContent() {
                   targetBuy={purchasePrice}
                   dealGapDisplayPct={effectiveDisplayPct}
                   sentence={verdictSentence}
+                  listed={isListed}
                   call={verdictCall}
                   callFired={signalBreakdown.fired}
                   propertyId={

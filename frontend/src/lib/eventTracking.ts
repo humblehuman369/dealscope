@@ -68,6 +68,13 @@ export const WORKFLOW_EVENTS = {
   card_opened: 'card_opened',
   plan_built: 'plan_built',
   deal_started: 'deal_started',
+  /** Defined for later phases. Nothing calls these yet. */
+  task_completed: 'task_completed',
+  draft_used: 'draft_used',
+  offer_sent: 'offer_sent',
+  deal_closed: 'deal_closed',
+  alert_opened: 'alert_opened',
+  digest_opened: 'digest_opened',
 } as const
 
 export function trackCardOpened(props: {

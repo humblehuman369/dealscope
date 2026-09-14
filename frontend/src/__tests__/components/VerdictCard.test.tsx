@@ -100,6 +100,29 @@ describe('VerdictCard', () => {
     expect(screen.queryByText(VERDICT_TIPS[0])).not.toBeInTheDocument()
   })
 
+  it('uses the off-market market-price label when the property is not listed', () => {
+    render(
+      <VerdictCard
+        listPrice={379_981}
+        incomeValue={381_465}
+        targetBuy={362_465}
+        dealGapDisplayPct={-4.6}
+        sentence="Not for sale. Valued at $380K."
+        listed={false}
+        call="worth_pursuing"
+        callFired={[]}
+        gap={4.6}
+        signals={0}
+        closes={false}
+        isAuthenticated={false}
+        onShowMath={vi.fn()}
+        onBuildPlan={vi.fn()}
+      />,
+    )
+    expect(screen.getByText(NUMBER_LABELS.marketOffMarket)).toBeInTheDocument()
+    expect(screen.queryByText(NUMBER_LABELS.market)).not.toBeInTheDocument()
+  })
+
   it('renders the call label from verdictRules, not a hardcoded string in the chip', () => {
     renderWillow()
     expect(screen.getByText(VERDICT_CALL_LABELS.worth_pursuing)).toBeInTheDocument()

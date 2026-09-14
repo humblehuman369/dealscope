@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  SMALL_GAP_THRESHOLD,
   anyLeverClosesGap,
   countVerdictSignals,
   listingSignalsFromListing,
@@ -8,33 +9,54 @@ import {
 } from '@/lib/verdictRules'
 
 describe('resolveCall', () => {
-  it('returns worth_pursuing when gap is at or below 0', () => {
+  const midGap = (verdictRules.smallGapPct + verdictRules.gapWalkAwayPct) / 2
+
+  it('returns worth_pursuing when list price is at or below Income Value', () => {
+    expect(
+      resolveCall(midGap, 0, { listPrice: 379_981, incomeValue: 381_465 }),
+    ).toBe('worth_pursuing')
+    expect(
+      resolveCall(midGap, 0, { listPrice: 381_465, incomeValue: 381_465 }),
+    ).toBe('worth_pursuing')
+  })
+
+  it('returns worth_pursuing when gap is at or below the small-gap threshold', () => {
+    expect(resolveCall(verdictRules.smallGapPct, 0)).toBe('worth_pursuing')
     expect(resolveCall(0, 0)).toBe('worth_pursuing')
     expect(resolveCall(-4, 0)).toBe('worth_pursuing')
   })
 
-  it('returns worth_pursuing when gap is under 35% and there is at least one signal', () => {
-    expect(resolveCall(27.5, 1)).toBe('worth_pursuing')
-    expect(resolveCall(34.9, 3)).toBe('worth_pursuing')
+  it('returns worth_pursuing when gap is between the small-gap and walk-away thresholds and signals are 1+', () => {
+    expect(resolveCall(midGap, 1)).toBe('worth_pursuing')
+    expect(resolveCall(verdictRules.gapWalkAwayPct - 0.1, 3)).toBe('worth_pursuing')
   })
 
-  it('returns only_with_terms when gap is under 35% and there are no signals', () => {
-    expect(resolveCall(10, 0)).toBe('only_with_terms')
+  it('returns only_with_terms when gap is between the small-gap and walk-away thresholds and signals are 0', () => {
+    expect(resolveCall(verdictRules.smallGapPct + 0.1, 0)).toBe('only_with_terms')
+    expect(resolveCall(verdictRules.gapWalkAwayPct - 0.1, 0)).toBe('only_with_terms')
   })
 
-  it('returns only_with_terms when gap is 35% or more and signals are 2+', () => {
-    expect(resolveCall(35, 2)).toBe('only_with_terms')
-    expect(resolveCall(50, 3)).toBe('only_with_terms')
+  it('returns only_with_terms when gap is at or above the walk-away threshold and signals are 2+', () => {
+    expect(resolveCall(verdictRules.gapWalkAwayPct, 2)).toBe('only_with_terms')
+    expect(resolveCall(verdictRules.gapWalkAwayPct + 15, 3)).toBe('only_with_terms')
   })
 
-  it('returns walk_away when gap is 35% or more and signals are under 2', () => {
-    expect(resolveCall(35, 0)).toBe('walk_away')
-    expect(resolveCall(40, 1)).toBe('walk_away')
+  it('returns walk_away when gap is at or above the walk-away threshold and signals are under 2', () => {
+    expect(resolveCall(verdictRules.gapWalkAwayPct, 0)).toBe('walk_away')
+    expect(resolveCall(verdictRules.gapWalkAwayPct + 5, 1)).toBe('walk_away')
   })
 
-  it('reads the walk-away threshold from verdictRules', () => {
+  it('reads both gap thresholds from verdictRules', () => {
+    expect(verdictRules.smallGapPct).toBe(SMALL_GAP_THRESHOLD)
+    expect(resolveCall(verdictRules.smallGapPct, 0)).toBe('worth_pursuing')
     expect(resolveCall(verdictRules.gapWalkAwayPct - 0.1, 0)).toBe('only_with_terms')
     expect(resolveCall(verdictRules.gapWalkAwayPct, 0)).toBe('walk_away')
+  })
+
+  it('calls 110 Crosswinds Drive worth_pursuing from the Section 7 check', () => {
+    expect(
+      resolveCall(4.6, 0, { listPrice: 379_981, incomeValue: 381_465 }),
+    ).toBe('worth_pursuing')
   })
 })
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  NUMBER_LABELS,
   formatPriceShort,
   formatSellerRead,
   formatVerdictSentence,
@@ -58,6 +59,28 @@ describe('formatVerdictSentence', () => {
     ).toBe(
       'Listed at $626K. Worth about $454K to you as a rental. That is a 27.5% gap. After 10 price cuts and 224 days, this seller will most likely take a smaller price cut plus a small seller-carried second.',
     )
+  })
+
+  it('uses the off-market first sentence and market-value short', () => {
+    expect(
+      formatVerdictSentence({
+        listPrice: 379_981,
+        targetBuy: 362_465,
+        gapPct: 4.6,
+        sellerRead: 'This seller has shown no sign of moving yet.',
+        listed: false,
+        marketValue: 379_981,
+      }),
+    ).toBe(
+      'Not for sale. Valued at $380K. Worth about $362K to you as a rental. That is a 4.6% gap. This seller has shown no sign of moving yet.',
+    )
+  })
+})
+
+describe('NUMBER_LABELS', () => {
+  it('uses the listed label on market and the off-market sell-for label', () => {
+    expect(NUMBER_LABELS.market).toBe('Market price. What it is listed for.')
+    expect(NUMBER_LABELS.marketOffMarket).toBe('Market price. What it would likely sell for.')
   })
 })
 

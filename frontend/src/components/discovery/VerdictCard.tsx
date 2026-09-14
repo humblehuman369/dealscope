@@ -43,6 +43,8 @@ export interface VerdictCardProps {
   onBuildPlan: () => void
   gapSlider?: ReactNode
   sourceStatus?: SourceStatusSummary
+  /** Same listing check as Key Insights. Default listed. */
+  listed?: boolean
 }
 
 const CALL_ICON = {
@@ -88,6 +90,7 @@ export function VerdictCard({
   onBuildPlan,
   gapSlider,
   sourceStatus,
+  listed = true,
 }: VerdictCardProps) {
   const whyVerdictId = useId()
   const whyCallId = useId()
@@ -188,7 +191,7 @@ export function VerdictCard({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <NumberTile
           value={formatMoneyExact(listPrice)}
-          label={NUMBER_LABELS.market}
+          label={listed ? NUMBER_LABELS.market : NUMBER_LABELS.marketOffMarket}
           color="var(--status-negative)"
         />
         <NumberTile

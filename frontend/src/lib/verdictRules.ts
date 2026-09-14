@@ -6,7 +6,11 @@
 export const VERDICT_CALLS = ['worth_pursuing', 'only_with_terms', 'walk_away'] as const
 export type VerdictCall = (typeof VERDICT_CALLS)[number]
 
+/** Gap at or below this is Worth pursuing, signals or not. */
+export const SMALL_GAP_THRESHOLD = 10
+
 export const verdictRules = {
+  smallGapPct: SMALL_GAP_THRESHOLD,
   /** Gap at or above this (and fewer than 2 signals) is Walk away. */
   gapWalkAwayPct: 35,
   daysOnMarketSignal: 90,
@@ -98,8 +102,23 @@ export function countVerdictSignals(input: ListingSignalInput): VerdictSignalBre
  * 0 or negative means list is at or below Target Buy.
  * `closes` is logged with verdict_viewed; it is not part of the decision table.
  */
-export function resolveCall(gap: number, signals: number): VerdictCall {
-  if (gap <= 0) return 'worth_pursuing'
+export function resolveCall(
+  gap: number,
+  signals: number,
+  prices?: { listPrice?: number | null; incomeValue?: number | null },
+): VerdictCall {
+  const listPrice = prices?.listPrice
+  const incomeValue = prices?.incomeValue
+  if (
+    listPrice != null &&
+    incomeValue != null &&
+    Number.isFinite(listPrice) &&
+    Number.isFinite(incomeValue) &&
+    listPrice <= incomeValue
+  ) {
+    return 'worth_pursuing'
+  }
+  if (gap <= verdictRules.smallGapPct) return 'worth_pursuing'
   if (gap < verdictRules.gapWalkAwayPct) {
     return signals >= 1 ? 'worth_pursuing' : 'only_with_terms'
   }

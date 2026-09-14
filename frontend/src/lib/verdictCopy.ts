@@ -21,6 +21,7 @@ export const VERDICT_TIPS_FOOTER = 'These three tips show once.'
 
 export const NUMBER_LABELS = {
   market: 'Market price. What it is listed for.',
+  marketOffMarket: 'Market price. What it would likely sell for.',
   income: 'Income value. The most you can pay and still break even.',
   target: 'Target buy. The price that pays you. Aim here.',
 } as const
@@ -91,8 +92,15 @@ export function formatVerdictSentence(input: {
   targetBuy: number
   gapPct: number
   sellerRead: string
+  /** Same listing check Discovery uses for Key Insights. Default listed. */
+  listed?: boolean
+  marketValue?: number
 }): string {
-  return `Listed at ${formatPriceShort(input.listPrice)}. Worth about ${formatPriceShort(input.targetBuy)} to you as a rental. That is a ${formatGapPct(input.gapPct)}% gap. ${input.sellerRead}`
+  const first =
+    input.listed === false
+      ? `Not for sale. Valued at ${formatPriceShort(input.marketValue ?? input.listPrice)}.`
+      : `Listed at ${formatPriceShort(input.listPrice)}.`
+  return `${first} Worth about ${formatPriceShort(input.targetBuy)} to you as a rental. That is a ${formatGapPct(input.gapPct)}% gap. ${input.sellerRead}`
 }
 
 export function formatCallWhy(input: {

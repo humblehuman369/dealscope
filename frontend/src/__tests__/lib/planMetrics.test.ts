@@ -8,6 +8,7 @@ import {
   scoreAgainstTargets,
   scorePlanOptions,
   tuneGroupForOption,
+  type PlanTargetDefaults,
 } from '@/lib/dealStructures/planMetrics'
 
 describe('blended plan handoff → worksheet metrics', () => {
@@ -96,14 +97,64 @@ describe('scoreAgainstTargets', () => {
   })
 
   it('counts a target only when the worksheet number meets the bar', () => {
+    expect(scoreAgainstTargets(PLAN_TARGET_DEFAULTS).targetsMet).toBe(4)
+  })
+
+  it('marks each of the four targets met and missed independently', () => {
+    const below = {
+      capRate: PLAN_TARGET_DEFAULTS.capRate - 0.1,
+      cashOnCash: PLAN_TARGET_DEFAULTS.cashOnCash - 0.1,
+      monthlyCashFlow: PLAN_TARGET_DEFAULTS.monthlyCashFlow - 1,
+      dscr: PLAN_TARGET_DEFAULTS.dscr - 0.01,
+    }
+    expect(scoreAgainstTargets(below)).toEqual({
+      targetsMet: 0,
+      capMet: false,
+      cocMet: false,
+      cfMet: false,
+      dscrMet: false,
+    })
+
+    expect(scoreAgainstTargets({ ...below, capRate: PLAN_TARGET_DEFAULTS.capRate })).toEqual({
+      targetsMet: 1,
+      capMet: true,
+      cocMet: false,
+      cfMet: false,
+      dscrMet: false,
+    })
+    expect(scoreAgainstTargets({ ...below, cashOnCash: PLAN_TARGET_DEFAULTS.cashOnCash })).toEqual({
+      targetsMet: 1,
+      capMet: false,
+      cocMet: true,
+      cfMet: false,
+      dscrMet: false,
+    })
     expect(
-      scoreAgainstTargets({
-        capRate: 6,
-        cashOnCash: 8,
-        monthlyCashFlow: 300,
-        dscr: 1.25,
-      }).targetsMet,
-    ).toBe(4)
+      scoreAgainstTargets({ ...below, monthlyCashFlow: PLAN_TARGET_DEFAULTS.monthlyCashFlow }),
+    ).toEqual({
+      targetsMet: 1,
+      capMet: false,
+      cocMet: false,
+      cfMet: true,
+      dscrMet: false,
+    })
+    expect(scoreAgainstTargets({ ...below, dscr: PLAN_TARGET_DEFAULTS.dscr })).toEqual({
+      targetsMet: 1,
+      capMet: false,
+      cocMet: false,
+      cfMet: false,
+      dscrMet: true,
+    })
+
+    const at = { ...PLAN_TARGET_DEFAULTS }
+    expect(scoreAgainstTargets({ ...at, capRate: below.capRate }).capMet).toBe(false)
+    expect(scoreAgainstTargets({ ...at, capRate: below.capRate }).targetsMet).toBe(3)
+    expect(scoreAgainstTargets({ ...at, cashOnCash: below.cashOnCash }).cocMet).toBe(false)
+    expect(scoreAgainstTargets({ ...at, cashOnCash: below.cashOnCash }).targetsMet).toBe(3)
+    expect(scoreAgainstTargets({ ...at, monthlyCashFlow: below.monthlyCashFlow }).cfMet).toBe(false)
+    expect(scoreAgainstTargets({ ...at, monthlyCashFlow: below.monthlyCashFlow }).targetsMet).toBe(3)
+    expect(scoreAgainstTargets({ ...at, dscr: below.dscr }).dscrMet).toBe(false)
+    expect(scoreAgainstTargets({ ...at, dscr: below.dscr }).targetsMet).toBe(3)
   })
 })
 
@@ -159,6 +210,45 @@ describe('scorePlanOptions', () => {
     expect(optionKeyFromFamily('blended')).toBe('blend')
     const best = scored.find((option) => option.isBest)
     expect(best?.structureId).toBe('blended-plan')
+  })
+
+  it('breaks a targets-met tie with the higher monthly cash flow', () => {
+    const openTargets = {
+      capRate: -999,
+      cashOnCash: -999,
+      monthlyCashFlow: -999_999,
+      dscr: -999,
+    } as PlanTargetDefaults
+    const scored = scorePlanOptions(
+      [
+        {
+          family: 'price',
+          id: 'lower-cf',
+          headline: 'Lower cash flow',
+          familyLabel: 'Price',
+          preLoadedRecord: { custom_purchase_price: 400_000, custom_rent_estimate: 2_000 },
+        },
+        {
+          family: 'financing',
+          id: 'higher-cf',
+          headline: 'Higher cash flow',
+          familyLabel: 'Financing',
+          preLoadedRecord: { custom_purchase_price: 400_000, custom_rent_estimate: 4_000 },
+        },
+      ],
+      {
+        listPrice: 400_000,
+        monthlyRent: 2_000,
+        annualPropertyTax: 0,
+        annualInsurance: 0,
+      },
+      openTargets,
+    )
+    expect(scored.every((option) => option.targetsMet === 4)).toBe(true)
+    const higher = scored.find((option) => option.structureId === 'higher-cf')
+    const lower = scored.find((option) => option.structureId === 'lower-cf')
+    expect(higher?.metrics.monthlyCashFlow).toBeGreaterThan(lower?.metrics.monthlyCashFlow ?? 0)
+    expect(scored.find((option) => option.isBest)?.structureId).toBe('higher-cf')
   })
 })
 

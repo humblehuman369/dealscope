@@ -43,6 +43,28 @@ describe('formatPlanSentence', () => {
       'You negotiate the price down to $500,000. You bring $143,980. You would feed it $80 a month. That meets all four of your targets.',
     )
   })
+
+  it('assembles each of the five structures plus custom', () => {
+    const base = { ...WILLOW_OPTION_3, targetsMet: 2 }
+    expect(formatPlanSentence({ ...base, optionKey: '1' })).toBe(
+      'You buy at $625,999 and prove a rent of $4,345 a month. You bring $143,980. It pays you $213 a month. That meets 2 of your four targets.',
+    )
+    expect(formatPlanSentence({ ...base, optionKey: '2', offerPrice: 500_000 })).toBe(
+      'You negotiate the price down to $500,000. You bring $143,980. It pays you $213 a month. That meets 2 of your four targets.',
+    )
+    expect(formatPlanSentence({ ...base, optionKey: '4' })).toBe(
+      'You buy at $625,999 and put 20% down. You bring $143,980. It pays you $213 a month. That meets 2 of your four targets.',
+    )
+    expect(formatPlanSentence({ ...base, optionKey: 'blend' })).toBe(
+      'You buy at $625,999 with the seller carrying $115,228 at 0%, paid in full in year 5. You bring $143,980. It pays you $213 a month. That meets 2 of your four targets.',
+    )
+    expect(formatPlanSentence({ ...base, optionKey: 'custom' })).toBe(
+      'Your own numbers: buy at $625,999 with the seller carrying $115,228 at 0%. You bring $143,980. It pays you $213 a month. That meets 2 of your four targets.',
+    )
+    expect(formatPlanSentence({ ...base, optionKey: 'custom', sellerAmount: 0 })).toBe(
+      'Your own numbers: buy at $625,999. You bring $143,980. It pays you $213 a month. That meets 2 of your four targets.',
+    )
+  })
 })
 
 describe('formatPlanTitle', () => {
@@ -99,6 +121,12 @@ describe('formatPlanBottomLine', () => {
   it('names how many of the four targets are met', () => {
     expect(formatPlanBottomLine(2)).toBe('This plan meets 2 of your four targets.')
     expect(formatPlanBottomLine(4)).toBe('This plan meets 4 of your four targets.')
+  })
+
+  it('never uses the old numbers-work string', () => {
+    for (const n of [0, 1, 2, 3, 4]) {
+      expect(formatPlanBottomLine(n)).not.toMatch(/numbers work/i)
+    }
   })
 })
 
