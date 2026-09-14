@@ -81,4 +81,11 @@ describe('computeLtrMetricsFromState', () => {
     expect(metrics.sellerMonthlyPayment).toBe(0)
     expect(metrics.monthlyPayment).toBeCloseTo(metrics.bankMonthlyPayment ?? 0, 2)
   })
+
+  it('sets DSCR as NOI over annual debt from the same worksheet pass', () => {
+    const metrics = computeLtrMetricsFromState(seller0PctBase satisfies LTRDealMakerState)
+    const annualDebt = metrics.monthlyPayment * 12
+    const noi = metrics.annualProfit + annualDebt
+    expect(metrics.dscr).toBeCloseTo(noi / annualDebt, 5)
+  })
 })

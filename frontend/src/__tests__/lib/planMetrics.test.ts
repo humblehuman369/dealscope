@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import { preLoadedRecordToDealMakerPatch } from '@/lib/dealStructures/loadScenario'
-import { metricsFromPreLoadedRecord } from '@/lib/dealStructures/planMetrics'
+import {
+  PLAN_TARGET_DEFAULTS,
+  metricsFromPreLoadedRecord,
+  optionKeyFromFamily,
+  scoreAgainstTargets,
+  scorePlanOptions,
+} from '@/lib/dealStructures/planMetrics'
 
 describe('blended plan handoff → worksheet metrics', () => {
   const levers = {
@@ -62,5 +68,95 @@ describe('blended plan handoff → worksheet metrics', () => {
       },
     )
     expect(io.monthlyCashFlow).toBeGreaterThan(amortizing.monthlyCashFlow + 900)
+  })
+})
+
+describe('scoreAgainstTargets', () => {
+  it('scores the Sept 13 Option 3 worksheet fixtures as 0 of 4', () => {
+    const score = scoreAgainstTargets({
+      capRate: 4.84,
+      cashOnCash: 1.77,
+      monthlyCashFlow: 2_552 / 12,
+      dscr: 1.09,
+    })
+    expect(score).toEqual({
+      targetsMet: 0,
+      capMet: false,
+      cocMet: false,
+      cfMet: false,
+      dscrMet: false,
+    })
+    expect(PLAN_TARGET_DEFAULTS).toEqual({
+      capRate: 6.0,
+      cashOnCash: 8.0,
+      monthlyCashFlow: 300,
+      dscr: 1.25,
+    })
+  })
+
+  it('counts a target only when the worksheet number meets the bar', () => {
+    expect(
+      scoreAgainstTargets({
+        capRate: 6,
+        cashOnCash: 8,
+        monthlyCashFlow: 300,
+        dscr: 1.25,
+      }).targetsMet,
+    ).toBe(4)
+  })
+})
+
+describe('scorePlanOptions', () => {
+  it('keeps engine slot order and picks most targets, then cash flow', () => {
+    const scored = scorePlanOptions(
+      [
+        {
+          family: 'income',
+          id: 'opt-1',
+          headline: 'Prove rent',
+          familyLabel: 'Income',
+          preLoadedRecord: { custom_purchase_price: 625_999, custom_rent_estimate: 6_000 },
+        },
+        {
+          family: 'financing',
+          id: 'opt-3',
+          headline: 'Seller second',
+          familyLabel: 'Financing',
+          preLoadedRecord: {
+            custom_purchase_price: 625_999,
+            pending_extras: {
+              seller_carry_amount: 115_228,
+              seller_carry_rate: 0,
+              seller_carry_interest_only: true,
+            },
+          },
+        },
+        {
+          family: 'blended',
+          id: 'blended-plan',
+          headline: 'Engine blend',
+          familyLabel: 'Blend',
+          preLoadedRecord: {
+            custom_purchase_price: 500_000,
+            custom_rent_estimate: 6_000,
+            pending_extras: {
+              seller_carry_amount: 115_228,
+              seller_carry_rate: 0,
+              seller_carry_interest_only: true,
+            },
+          },
+        },
+      ],
+      {
+        listPrice: 625_999,
+        monthlyRent: 4_345,
+        annualPropertyTax: 0,
+        annualInsurance: 0,
+      },
+    )
+    expect(scored.map((option) => option.key)).toEqual(['1', '3', 'blend'])
+    expect(optionKeyFromFamily('blended')).toBe('blend')
+    const best = scored.find((option) => option.isBest)
+    expect(best?.structureId).toBe('blended-plan')
   })
 })

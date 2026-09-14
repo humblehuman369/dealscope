@@ -40,7 +40,7 @@ export interface UseSavePropertyResult {
   savedPropertyId: string | null
   isSaving: boolean
   toggle: () => Promise<void>
-  save: () => Promise<void>
+  save: () => Promise<string | null>
   unsave: () => Promise<void>
   /** Re-run saved/check (e.g. after Apply to Deal auto-save). */
   refreshSavedCheck: () => Promise<void>
@@ -84,8 +84,8 @@ export function useSaveProperty({
     checkSaved()
   }, [checkSaved])
 
-  const save = useCallback(async () => {
-    if (!displayAddress || isSaving) return
+  const save = useCallback(async (): Promise<string | null> => {
+    if (!displayAddress || isSaving) return null
     const parsed = parseAddressString(displayAddress)
     const snapshot: Record<string, unknown> = {}
     if (propertySnapshot) {
@@ -126,6 +126,7 @@ export function useSaveProperty({
       stateVersionRef.current++
       queryClient.invalidateQueries({ queryKey: SAVED_PROPERTIES_KEYS.all })
       queryClient.invalidateQueries({ queryKey: SEARCH_HISTORY_KEYS.all })
+      return result?.id ?? null
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status
       if (status === 409) {
@@ -139,9 +140,11 @@ export function useSaveProperty({
             `/api/v1/properties/saved/check?${rp.toString()}`,
           )
           if (check.saved_property_id) setSavedPropertyId(check.saved_property_id)
+          return check.saved_property_id
         } catch {
           /* best-effort */
         }
+        return savedPropertyId
       }
       throw err
     } finally {

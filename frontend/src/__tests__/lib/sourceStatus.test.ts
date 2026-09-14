@@ -31,4 +31,20 @@ describe('summarizeSourceStatus', () => {
     })
     expect(formatSourceStatusLine(summary)).toBe('Based on 4 of 5 sources. Zillow unavailable.')
   })
+
+  it('names Redfin and Realtor.com when those two providers are null', () => {
+    const missingProviders: IQEstimateSources = {
+      value: { iq: 1, zillow: 2, rentcast: 3, redfin: null, realtor: null },
+      rent: { iq: 1, zillow: 2, rentcast: 3, redfin: null },
+    }
+    const summary = summarizeSourceStatus(missingProviders)
+    expect(summary).toEqual({
+      answered: 3,
+      total: 5,
+      missingLabels: ['Redfin', 'Realtor.com'],
+    })
+    expect(formatSourceStatusLine(summary)).toBe(
+      'Based on 3 of 5 sources. Redfin, Realtor.com unavailable.',
+    )
+  })
 })

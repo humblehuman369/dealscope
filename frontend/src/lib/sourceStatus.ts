@@ -38,6 +38,22 @@ export function summarizeSourceStatus(sources: IQEstimateSources): SourceStatusS
   }
 }
 
+export function sourceValueRange(
+  sources: IQEstimateSources,
+): { low: number; high: number } | null {
+  const values = ALL_SOURCE_IDS.map((id) => sources.value[id]).filter(
+    (value): value is number => value != null && Number.isFinite(value),
+  )
+  if (values.length === 0) return null
+  let low = values[0]
+  let high = values[0]
+  for (const value of values) {
+    if (value < low) low = value
+    if (value > high) high = value
+  }
+  return { low, high }
+}
+
 export function formatSourceStatusLine(summary: SourceStatusSummary): string {
   const base = `Based on ${summary.answered} of ${summary.total} sources.`
   if (summary.missingLabels.length === 0) return base

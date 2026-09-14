@@ -61,6 +61,7 @@ export function computeLtrMetricsFromState(
   const noi = effectiveGross - opex.total
   const capRate = buy > 0 ? (noi / buy) * 100 : 0
   const cocReturn = cashNeeded > 0 ? (annualProfit / cashNeeded) * 100 : 0
+  const dscr = annualDebt > 0 ? noi / annualDebt : 0
 
   return {
     cashNeeded,
@@ -68,6 +69,7 @@ export function computeLtrMetricsFromState(
     annualProfit,
     capRate,
     cocReturn,
+    dscr,
     monthlyPayment,
     loanAmount,
     bankMonthlyPayment: bankPi,

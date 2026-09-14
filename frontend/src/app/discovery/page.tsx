@@ -3200,7 +3200,9 @@ function VerdictContent() {
           onPhaseChange={setTourPhase}
           onJoyrideIndexChange={setTourJoyrideIndex}
           onDismiss={dismissTour}
-          onSaveDeal={saveProperty}
+          onSaveDeal={() => {
+            void saveProperty()
+          }}
         />
       ) : null}
 

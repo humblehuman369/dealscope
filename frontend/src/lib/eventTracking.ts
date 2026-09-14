@@ -63,6 +63,12 @@ import { captureMetaPixel, META_STANDARD_EVENTS } from '@/lib/metaPixel'
 import { firstTouchEventProps, getMetaClickIds } from '@/lib/attribution'
 import { API_BASE_URL } from '@/lib/env'
 
+/** Workflow v1 funnel events (P0-2). `plan` is the billing tier. */
+export const WORKFLOW_EVENTS = {
+  plan_built: 'plan_built',
+  deal_started: 'deal_started',
+} as const
+
 /** localStorage key marking that the activation milestone already fired for this device. */
 const ACTIVATION_FLAG = 'dgiq_activated_v1'
 

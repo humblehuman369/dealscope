@@ -23,7 +23,7 @@ import {
   useRef,
 } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from '@/hooks/useSession'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -106,7 +106,22 @@ import type {
   DealStructuresPayload,
 } from '@/components/iq-verdict/FourPathsPanel'
 import { PitchScriptModal } from '@/components/iq-verdict/PitchScriptModal'
-import { trackEvent } from '@/lib/eventTracking'
+import { trackEvent, WORKFLOW_EVENTS } from '@/lib/eventTracking'
+import { useWorkflowV1 } from '@/lib/workflowV1'
+import { PlanView } from '@/components/workflow/PlanView'
+import { formatPlanSnapshot } from '@/lib/dealStructures/planSnapshot'
+import {
+  askingGapDisplayPct,
+  closeDeltas,
+  gapLeftPct,
+  optionKeyFromFamily,
+  PLAN_SLOT_ORDER,
+  PLAN_TARGET_DEFAULTS,
+  scoreAgainstTargets,
+  scorePlanOptions,
+  type PlanBaseline,
+} from '@/lib/dealStructures/planMetrics'
+import { sourceValueRange } from '@/lib/sourceStatus'
 import { StrategySelectDropdown } from './StrategySelectDropdown'
 import { WorkbenchGuidance } from './WorkbenchGuidance'
 import { InfoPopover } from '@/components/ui/InfoPopover'
@@ -184,9 +199,16 @@ export function StrategyWorkbench({
 }: StrategyWorkbenchProps) {
   const queryClient = useQueryClient()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { enabled: workflowV1 } = useWorkflowV1()
   const { isAuthenticated, isLoading: sessionLoading } = useSession()
   const { isPro } = useSubscription()
   const { openAuthModal } = useAuthModal()
+  const [showWorksheet, setShowWorksheet] = useState(false)
+  const [startingDeal, setStartingDeal] = useState(false)
+  const option3SeededRef = useRef(false)
+  const lastPlanBuiltRef = useRef<string | null>(null)
+  const worksheetTuneRef = useRef<HTMLDivElement | null>(null)
   const planContinuity = useMemo(() => readPlanContinuity(address), [address])
   const fromPlan = Boolean(planContinuity)
   const worksheetUnlocked = isAuthenticated || fromPlan
@@ -1091,6 +1113,106 @@ export function StrategyWorkbench({
     [scheduleRecalc, markWorksheetDirty, scrollStrategyToOptionCard],
   )
 
+  useEffect(() => {
+    if (!workflowV1 || option3SeededRef.current) return
+    if (scenarioParam || appliedPathId) {
+      option3SeededRef.current = true
+      return
+    }
+    const financing = displayDealStructurePaths.find((path) => path.family === 'financing')
+    if (!financing?.preLoadedRecord) return
+    option3SeededRef.current = true
+    applyPathPatch(financing, PLAN_SLOT_ORDER.indexOf('financing'))
+  }, [workflowV1, scenarioParam, appliedPathId, displayDealStructurePaths, applyPathPatch])
+
+  useEffect(() => {
+    if (!workflowV1 || !appliedPathId) return
+    if (lastPlanBuiltRef.current === appliedPathId) return
+    const state = worksheetStateRef.current as LTRDealMakerState | undefined
+    if (!state?.buyPrice) return
+    lastPlanBuiltRef.current = appliedPathId
+    const metrics = computeLtrMetricsFromState(state)
+    const score = scoreAgainstTargets({
+      capRate: metrics.capRate,
+      cashOnCash: metrics.cocReturn,
+      monthlyCashFlow: metrics.annualProfit / 12,
+      dscr: metrics.dscr,
+    })
+    const structure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
+    const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
+    trackEvent(WORKFLOW_EVENTS.plan_built, {
+      ...(propertyId ? { property_id: String(propertyId) } : {}),
+      option: structure ? optionKeyFromFamily(structure.family) : 'custom',
+      targets_met: score.targetsMet,
+      plan: isPro ? 'pro' : 'starter',
+    })
+  }, [workflowV1, appliedPathId, displayDealStructurePaths, propertyInfo, isPro])
+
+  const handlePlanApply = useCallback(
+    (structureId: string) => {
+      const structure = displayDealStructurePaths.find((path) => path.id === structureId)
+      if (!structure) return
+      const slot = PLAN_SLOT_ORDER.indexOf(
+        structure.family as (typeof PLAN_SLOT_ORDER)[number],
+      )
+      applyPathPatch(structure, slot >= 0 ? slot : 0)
+    },
+    [displayDealStructurePaths, applyPathPatch],
+  )
+
+  const handleStartDeal = useCallback(async () => {
+    if (!isAuthenticated) {
+      openAuthModal('login')
+      return
+    }
+    setStartingDeal(true)
+    try {
+      const dealId = (await save()) ?? savedPropertyId
+      if (!dealId) return
+      const structure = displayDealStructurePaths.find((path) => path.id === appliedPathId)
+      const state = worksheetStateRef.current as LTRDealMakerState | undefined
+      const metrics = state ? computeLtrMetricsFromState(state) : null
+      const score = metrics
+        ? scoreAgainstTargets({
+            capRate: metrics.capRate,
+            cashOnCash: metrics.cocReturn,
+            monthlyCashFlow: metrics.annualProfit / 12,
+            dscr: metrics.dscr,
+          })
+        : { targetsMet: 0 }
+      const propertyId = propertyInfo?.property_id || propertyInfo?.zpid
+      trackEvent(WORKFLOW_EVENTS.deal_started, {
+        ...(propertyId ? { property_id: String(propertyId) } : {}),
+        deal_id: dealId,
+        option: structure ? optionKeyFromFamily(structure.family) : 'custom',
+        targets_met: score.targetsMet,
+        plan: isPro ? 'pro' : 'starter',
+      })
+      const next = new URLSearchParams(
+        searchParams?.toString() ||
+          (typeof window !== 'undefined' ? window.location.search : ''),
+      )
+      next.set('view', 'work')
+      next.set('dealId', dealId)
+      router.push(`/discovery?${next.toString()}`)
+    } catch (err) {
+      console.error('Start working this deal failed:', err)
+    } finally {
+      setStartingDeal(false)
+    }
+  }, [
+    isAuthenticated,
+    openAuthModal,
+    save,
+    savedPropertyId,
+    displayDealStructurePaths,
+    appliedPathId,
+    propertyInfo,
+    isPro,
+    searchParams,
+    router,
+  ])
+
   /**
    * Strip every key the path mapper might have written from `inlineOverrides`,
    * persist the cleared state, and trigger a recalc so the worksheet returns
@@ -1310,8 +1432,6 @@ export function StrategyWorkbench({
     listPrice && modelTargetBuyRef.current
       ? ((listPrice - modelTargetBuyRef.current) / listPrice) * 100
       : dealGapPct
-  const strategyDscr =
-    activeStrategyId === 'brrrr' && annualDebt > 0 ? noi / annualDebt : (topStrategy?.dscr ?? null)
 
   // Rental strategies: derive all metrics from breakdown values so the metrics
   // bar, summary cards, and breakdown section stay internally consistent.
@@ -1381,6 +1501,85 @@ export function StrategyWorkbench({
     totalCashNeeded = ltrLiveMetrics.cashNeeded
   }
 
+  const strategyDscr = ltrLiveMetrics?.dscr ?? null
+
+  const ltrState = worksheetState as LTRDealMakerState
+  const planBaseline: PlanBaseline | null = ltrLiveMetrics
+    ? {
+        listPrice,
+        monthlyRent,
+        downPaymentPercent: downPaymentPct,
+        closingCostsPercent: closingCostsPct,
+        interestRate: rate,
+        loanTermYears,
+        vacancyRate: vacancyPct,
+        maintenanceRate: maintPct,
+        managementRate: mgmtPct,
+        capexRate: reservesPct,
+        annualPropertyTax: propertyTaxes,
+        annualInsurance: insurance,
+        monthlyHoa: ltrState.monthlyHoa,
+      }
+    : null
+  const scoredPlanOptions = planBaseline
+    ? scorePlanOptions(displayDealStructurePaths, planBaseline, PLAN_TARGET_DEFAULTS)
+    : []
+  const appliedPlanOption = scoredPlanOptions.find((option) => option.structureId === appliedPathId)
+  const livePlanScore = ltrLiveMetrics
+    ? scoreAgainstTargets({
+        capRate: ltrLiveMetrics.capRate,
+        cashOnCash: ltrLiveMetrics.cocReturn,
+        monthlyCashFlow: ltrLiveMetrics.annualProfit / 12,
+        dscr: ltrLiveMetrics.dscr,
+      })
+    : null
+  const planTargetBuy =
+    modelTargetBuyRef.current ?? initialDealStructures?.breakevenSummary?.targetBuyPrice ?? 0
+  const planIq = iqSources.value.iq ?? null
+  const planRange = sourceValueRange(iqSources)
+  const planDeltas = ltrLiveMetrics
+    ? closeDeltas(ltrState.buyPrice, listPrice, planIq)
+    : null
+  const planModel =
+    workflowV1 && ltrLiveMetrics && livePlanScore && planDeltas
+      ? formatPlanSnapshot({
+          optionKey: appliedPlanOption
+            ? appliedPlanOption.key
+            : appliedPathId
+              ? 'custom'
+              : '3',
+          offerPrice: ltrState.buyPrice,
+          cashNeeded: ltrLiveMetrics.cashNeeded,
+          monthlyCashFlow: ltrLiveMetrics.annualProfit / 12,
+          cashOnCash: ltrLiveMetrics.cocReturn,
+          capRate: ltrLiveMetrics.capRate,
+          dscr: ltrLiveMetrics.dscr,
+          bankLoan: ltrLiveMetrics.loanAmount,
+          sellerAmount: ltrState.sellerFinancingAmount,
+          sellerRate: ltrState.sellerInterestRate,
+          balloonYear: ltrState.sellerBalloonYears ?? 5,
+          downPaymentPercent: ltrState.downPaymentPercent,
+          monthlyRent: ltrState.monthlyRent,
+          listPrice,
+          iqEstimate: planIq,
+          targetBuy: planTargetBuy,
+          askingGapDisplayPct: askingGapDisplayPct(listPrice, planTargetBuy),
+          gapLeftPct: gapLeftPct(ltrState.buyPrice, planTargetBuy),
+          targetsMet: livePlanScore.targetsMet,
+          capMet: livePlanScore.capMet,
+          cocMet: livePlanScore.cocMet,
+          cfMet: livePlanScore.cfMet,
+          dscrMet: livePlanScore.dscrMet,
+          vsList: planDeltas.vsList,
+          equity: planDeltas.equity,
+          sourceLow: planRange?.low ?? null,
+          sourceHigh: planRange?.high ?? null,
+          options: scoredPlanOptions,
+          appliedStructureId: appliedPathId,
+          targets: PLAN_TARGET_DEFAULTS,
+        })
+      : null
+
   const benchmarks = isFlipOrWholesale
     ? [
         {
@@ -1400,28 +1599,30 @@ export function StrategyWorkbench({
         {
           metric: 'Cap Rate',
           value: capRateVal !== null ? `${capRateVal.toFixed(1)}%` : '—',
-          target: '6.0%',
-          status: capRateVal !== null && capRateVal >= 6.0 ? 'good' : 'poor',
+          target: `${PLAN_TARGET_DEFAULTS.capRate.toFixed(1)}%`,
+          status:
+            capRateVal !== null && capRateVal >= PLAN_TARGET_DEFAULTS.capRate ? 'good' : 'poor',
         },
         {
           metric: 'Cash-on-Cash',
           value: cocVal !== null ? `${cocVal.toFixed(1)}%` : '—',
-          target: '8.0%',
-          status: cocVal !== null && cocVal >= 8.0 ? 'good' : 'poor',
+          target: `${PLAN_TARGET_DEFAULTS.cashOnCash.toFixed(1)}%`,
+          status:
+            cocVal !== null && cocVal >= PLAN_TARGET_DEFAULTS.cashOnCash ? 'good' : 'poor',
         },
         {
           metric: 'Monthly Cash Flow',
           value: formatCurrency(strategyCashFlow),
-          target: '+$300',
-          status: strategyCashFlow >= 300 ? 'good' : 'poor',
+          target: `+$${PLAN_TARGET_DEFAULTS.monthlyCashFlow}`,
+          status: strategyCashFlow >= PLAN_TARGET_DEFAULTS.monthlyCashFlow ? 'good' : 'poor',
         },
         ...(strategyDscr != null
           ? [
               {
                 metric: 'DSCR',
                 value: strategyDscr.toFixed(2),
-                target: '1.25',
-                status: strategyDscr >= 1.25 ? 'good' : 'poor',
+                target: PLAN_TARGET_DEFAULTS.dscr.toFixed(2),
+                status: strategyDscr >= PLAN_TARGET_DEFAULTS.dscr ? 'good' : 'poor',
               },
             ]
           : []),
@@ -1654,6 +1855,27 @@ export function StrategyWorkbench({
 
       <div className={embedded ? WORKBENCH_EMBEDDED_GUTTER : WORKBENCH_PAGE_GUTTER}>
         <div className={WORKBENCH_STACK}>
+        {workflowV1 && planModel ? (
+          <PlanView
+            model={planModel}
+            onTune={() => {
+              setShowWorksheet(true)
+              requestAnimationFrame(() => {
+                worksheetTuneRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              })
+            }}
+            onApply={handlePlanApply}
+            onStartDeal={() => {
+              void handleStartDeal()
+            }}
+            startingDeal={startingDeal}
+          />
+        ) : null}
+
+        <div
+          ref={worksheetTuneRef}
+          hidden={Boolean(workflowV1 && planModel && !showWorksheet)}
+        >
         {/* Deal Gap bar — standalone only. Discovery already renders Investment
             Overview; repeating it here looks like the page duplicated. */}
         {!embedded && (
@@ -1669,7 +1891,7 @@ export function StrategyWorkbench({
         )}
 
         {/* Strategy framing — what to do next (keeps this distinct from DealMaker) */}
-        {embedded && (
+        {embedded && !workflowV1 && (
           <WorkbenchGuidance
             dealGapPct={dealGapPct}
             optionCount={strategyFilteredPaths.slice(0, 4).length}
@@ -1681,6 +1903,7 @@ export function StrategyWorkbench({
 
         {/* Options lead the workbench — same four paths Discovery showed. Visible
             to everyone; applying requires sign-in so the worksheet can receive them. */}
+        {!workflowV1 ? (
         <OptionsSection
           hasPaths={displayDealStructurePaths.length > 0}
           optionsHiddenForStrategy={optionsHiddenForStrategy}
@@ -1706,6 +1929,7 @@ export function StrategyWorkbench({
             setPitchModalStructure(structure)
           }}
         />
+        ) : null}
 
         {/* Next Steps — authenticated only; anon users see the unlock panel instead */}
         {fromPlan && !isPro && (
@@ -2042,6 +2266,7 @@ export function StrategyWorkbench({
           }}
           onRegister={() => openAuthModal('register')}
         />
+        </div>
         </div>
       </div>
 

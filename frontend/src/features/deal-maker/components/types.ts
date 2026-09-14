@@ -2081,6 +2081,8 @@ export interface LTRDealMakerMetrics {
   annualProfit: number
   capRate: number
   cocReturn: number
+  /** NOI / annual debt. 0 when there is no debt. */
+  dscr: number
   monthlyPayment: number
   loanAmount: number
   /** When seller financing is used, bank note P&I (optional; from API) */
