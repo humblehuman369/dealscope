@@ -157,8 +157,6 @@ class SessionService:
             new_refresh,
             expires_at=new_expires_at,
         )
-        session_obj.expires_at = new_expires_at
-        session_obj.refresh_token = new_refresh
 
         new_jwt = token_service.create_jwt(user_id, session_id)
         return RefreshedSession(

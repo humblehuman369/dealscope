@@ -194,18 +194,18 @@ function getCsrfToken(): string | null {
 // Refresh queue — prevents multiple parallel refresh calls
 // ------------------------------------------------------------------
 
-let refreshPromise: Promise<boolean> | null = null
-
 const REFRESH_RETRY_DELAY_MS = 750
 
-type RefreshAttempt = 'ok' | 'dead' | 'transient'
+type RefreshOutcome = 'ok' | 'dead' | 'transient'
+
+let refreshPromise: Promise<RefreshOutcome> | null = null
 
 function markRefreshSessionDead(): void {
   if (isCapacitor()) clearMemoryToken()
   resetPostHog()
 }
 
-async function attemptRefresh(): Promise<RefreshAttempt> {
+async function attemptRefresh(): Promise<RefreshOutcome> {
   try {
     const storedRefresh = getStoredRefreshToken()
     const res = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
@@ -232,32 +232,28 @@ async function attemptRefresh(): Promise<RefreshAttempt> {
       return 'ok'
     }
     if (res.status === 401 || res.status === 403) return 'dead'
-    if (res.status >= 500) return 'transient'
+    if (res.status >= 500 || res.status === 408 || res.status === 429) return 'transient'
     return 'dead'
   } catch {
     return 'transient'
   }
 }
 
-async function refreshTokens(): Promise<boolean> {
+async function refreshTokens(): Promise<RefreshOutcome> {
   if (refreshPromise) return refreshPromise
 
   refreshPromise = (async () => {
     try {
       const first = await attemptRefresh()
-      if (first === 'ok') return true
+      if (first === 'ok') return 'ok'
       if (first === 'dead') {
         markRefreshSessionDead()
-        return false
+        return 'dead'
       }
       await new Promise((resolve) => setTimeout(resolve, REFRESH_RETRY_DELAY_MS))
       const retry = await attemptRefresh()
-      if (retry === 'ok') return true
-      if (retry === 'dead') {
-        markRefreshSessionDead()
-        return false
-      }
-      return false
+      if (retry === 'dead') markRefreshSessionDead()
+      return retry
     } finally {
       refreshPromise = null
     }
@@ -362,8 +358,11 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
 
   // 401 → try a silent token refresh, then retry with fresh headers.
   if (response.status === 401 && !skipAuth) {
-    const refreshed = await refreshTokens()
-    if (refreshed) {
+    const outcome = await refreshTokens()
+    if (outcome === 'transient') {
+      throw new ApiError('Could not refresh the session. Try again.', 503)
+    }
+    if (outcome === 'ok') {
       const retryHeaders: Record<string, string> = { ...requestHeaders }
       const freshToken = getMemoryToken()
       if (freshToken) {
@@ -516,8 +515,11 @@ export async function apiFetchRaw(endpoint: string, options: RawFetchOptions = {
 
   // 401 → silent token refresh, then retry once with fresh credentials.
   if (response.status === 401) {
-    const refreshed = await refreshTokens()
-    if (refreshed) {
+    const outcome = await refreshTokens()
+    if (outcome === 'transient') {
+      throw new ApiError('Could not refresh the session. Try again.', 503)
+    }
+    if (outcome === 'ok') {
       const retryHeaders = { ...requestHeaders }
       const freshToken = getMemoryToken()
       if (freshToken) {
@@ -582,7 +584,7 @@ export const authApi = {
     return apiRequest<{ message: string }>('/api/v1/auth/logout', { method: 'POST' })
   },
 
-  refresh: () => refreshTokens(),
+  refresh: async () => (await refreshTokens()) === 'ok',
 
   forgotPassword: (email: string) =>
     apiRequest<{ message: string }>('/api/v1/auth/forgot-password', {

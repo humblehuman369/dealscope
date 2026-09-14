@@ -338,6 +338,41 @@ describe('API Client', () => {
       expect(fetchMock).toHaveBeenCalledTimes(4)
     })
 
+    it('throws 503 when refresh returns 500 twice and does not reset PostHog', async () => {
+      vi.useFakeTimers()
+
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          text: async () => JSON.stringify({ detail: 'Unauthorized' }),
+          json: async () => ({ detail: 'Unauthorized' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          text: async () => 'outage',
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          text: async () => 'outage',
+        })
+
+      const { apiRequest, ApiError } = await import('@/lib/api-client')
+      const resultPromise = apiRequest('/api/v1/test')
+      const assertion = expect(resultPromise).rejects.toSatisfy((err: unknown) => {
+        expect(err).toBeInstanceOf(ApiError)
+        const e = err as InstanceType<typeof ApiError>
+        expect(e.status).toBe(503)
+        expect(e.message).toBe('Could not refresh the session. Try again.')
+        return true
+      })
+      await vi.advanceTimersByTimeAsync(750)
+      await assertion
+      expect(resetPostHog).not.toHaveBeenCalled()
+    })
+
     it('calls resetPostHog when refresh returns 401', async () => {
       fetchMock
         .mockResolvedValueOnce({
