@@ -17,10 +17,15 @@ from app.schemas.analytics import (
     IQVerdictInput,
     IQVerdictResponse,
 )
+from app.schemas.deal_structures import DealStructuresPayload
 from app.schemas.property import AnalyticsRequest, AnalyticsResponse
 from app.services.assumption_resolver import resolve_assumptions
 from app.services.assumptions_service import get_default_assumptions as get_db_default_assumptions
-from app.services.iq_verdict_service import compute_deal_score, compute_iq_verdict
+from app.services.iq_verdict_service import (
+    compute_deal_score,
+    compute_deal_structures_only,
+    compute_iq_verdict,
+)
 from app.services.property_service import property_service
 
 logger = logging.getLogger(__name__)
@@ -61,6 +66,25 @@ async def calculate_iq_verdict(
         return JSONResponse(content=response_dict)
     except Exception as e:
         logger.error(f"IQ Verdict analysis error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/api/v1/analysis/deal-structures", response_model=DealStructuresPayload)
+async def recompute_deal_structures(
+    input_data: IQVerdictInput,
+    db: DbSession,
+    current_user: OptionalUser = None,
+):
+    """Re-size Plan options from already-fetched worksheet numbers.
+
+    No property-provider fetch. Does not record an analysis against any usage cap.
+    """
+    try:
+        assumptions = await resolve_assumptions(db, user=current_user)
+        result = compute_deal_structures_only(input_data, assumptions=assumptions)
+        return JSONResponse(content=result.model_dump(mode="json", by_alias=True))
+    except Exception as e:
+        logger.error(f"Deal structures re-solve error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

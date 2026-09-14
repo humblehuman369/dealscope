@@ -112,6 +112,10 @@ import { PlanView } from '@/components/workflow/PlanView'
 import { TuneDrawer } from '@/components/workflow/TuneDrawer'
 import { WorkflowV1ErrorBoundary } from '@/components/workflow/WorkflowV1ErrorBoundary'
 import { formatPlanSnapshot } from '@/lib/dealStructures/planSnapshot'
+import {
+  createSettledScheduler,
+  fetchDealStructures,
+} from '@/lib/dealStructures/recomputeStructures'
 import { formatPlanBottomLine, formatResetToOption } from '@/lib/planCopy'
 import {
   askingGapDisplayPct,
@@ -281,6 +285,7 @@ export function StrategyWorkbench({
   const [pitchModalStructure, setPitchModalStructure] = useState<DealStructure | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const recalcDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const structuresSchedulerRef = useRef(createSettledScheduler(300))
   const resolvedAddressRef = useRef(addressParam)
   /** After first successful property load, refetches skip full-page loader (DealMaker sliders / session echo). */
   const hasLoadedPropertyRef = useRef(false)
@@ -637,6 +642,7 @@ export function StrategyWorkbench({
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
       if (recalcDebounceRef.current) clearTimeout(recalcDebounceRef.current)
+      structuresSchedulerRef.current.cancel()
     }
   }, [resolvedAddress])
 
@@ -1053,8 +1059,48 @@ export function StrategyWorkbench({
     }
     if (lastSolvedSessionRentRef.current === sessionMonthlyRent) return
     lastSolvedSessionRentRef.current = sessionMonthlyRent
-    scheduleRecalc()
-  }, [sessionMonthlyRent, propertyInfo, scheduleRecalc])
+    const propInfo = propertyInfo
+    structuresSchedulerRef.current.schedule(() => {
+      const mergedSrc = {
+        ...sourceOverridesRef.current,
+        marketValueOverride: dealRecord?.market_value_override ?? null,
+        monthlyRentOverride: dealRecord?.monthly_rent_override ?? null,
+      }
+      const sessionRent =
+        resolveSessionMonthlyRent({
+          savedOverride: mergedSrc.monthlyRentOverride,
+          selectedLiveSource: mergedSrc.monthlyRent ?? propInfo.monthlyRent,
+        }) ??
+        propInfo.monthlyRent ??
+        0
+      const payload = buildVerdictAnalysisPayload(
+        { ...toPayloadBase(propInfo), monthlyRent: sessionRent },
+        stripMonthlyRentFromOverrides({
+          ...(initialOverrides ?? {}),
+          ...inlineOverridesRef.current,
+        }),
+        { ...mergedSrc, monthlyRent: sessionRent },
+      )
+      void fetchDealStructures(payload)
+        .then((structures) => {
+          setData((prev) =>
+            prev
+              ? { ...prev, deal_structures: structures, dealStructures: structures }
+              : prev,
+          )
+        })
+        .catch((err) => {
+          console.error('[StrategyIQ] Structures re-solve failed:', err)
+        })
+    })
+  }, [
+    sessionMonthlyRent,
+    propertyInfo,
+    initialOverrides,
+    toPayloadBase,
+    dealRecord?.market_value_override,
+    dealRecord?.monthly_rent_override,
+  ])
 
   // Fire the pending recalc once property data is available for a scenario that
   // was applied from the URL before the property finished loading.
@@ -1107,7 +1153,7 @@ export function StrategyWorkbench({
             /* ignore */
           }
         }, 300)
-        scheduleRecalc()
+        if (field !== 'monthlyRent') scheduleRecalc()
         markWorksheetDirty()
         return next
       })
@@ -2397,12 +2443,14 @@ export function StrategyWorkbench({
                       } catch {
                         /* ignore */
                       }
-                      const merged = { ...(initialOverrides ?? {}), ...inlineOverrides }
-                      recalcVerdict(propertyInfo, merged, {
-                        ...nextSrcOverrides,
-                        marketValueOverride: dealRecord?.market_value_override ?? null,
-                        monthlyRentOverride: dealRecord?.monthly_rent_override ?? null,
-                      })
+                      if (type === 'value') {
+                        const merged = { ...(initialOverrides ?? {}), ...inlineOverrides }
+                        recalcVerdict(propertyInfo, merged, {
+                          ...nextSrcOverrides,
+                          marketValueOverride: dealRecord?.market_value_override ?? null,
+                          monthlyRentOverride: dealRecord?.monthly_rent_override ?? null,
+                        })
+                      }
                     }}
                   />
                 </div>
