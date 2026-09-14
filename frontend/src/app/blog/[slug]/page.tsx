@@ -17,6 +17,7 @@ import { AuthorCard } from '@/components/blog/AuthorCard'
 import { BlogCtaLink } from '@/components/blog/BlogCtaLink'
 import { BlogViewTracker } from '@/components/blog/BlogViewTracker'
 import { ArticleShare } from '@/components/investor-intelligence/ArticleShare'
+import { SPEED_CLAIM_SENTENCE } from '@/lib/claims'
 
 export async function generateStaticParams() {
   const posts = await getAllBlogPosts()
@@ -226,7 +227,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
                 Run these numbers on a real address.
               </h2>
               <p className="mt-3 max-w-2xl" style={{ color: 'var(--text-secondary)' }}>
-                Paste any listing. In about 60 seconds you get the Deal Gap, the target buy price, and the offer
+                Paste any listing. {SPEED_CLAIM_SENTENCE} you get the Deal Gap, the target buy price, and the offer
                 structures that close it — including the pitch script.
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-4">

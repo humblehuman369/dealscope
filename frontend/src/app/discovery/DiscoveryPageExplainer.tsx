@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 import { PageExplainer } from '@/components/seo/PageExplainer'
+import { SPEED_CLAIM } from '@/lib/claims'
 
 /**
  * SEO explainer for /discovery. Hidden while Level 3 (Strategy Workbench) is
@@ -14,7 +15,7 @@ export function DiscoveryPageExplainer() {
   return (
     <PageExplainer
       title="What is Discovery?"
-      intro="Discovery is DealGapIQ's instant scoring tool for residential investment properties. Paste an address or a Zillow link and, in under 60 seconds, see whether the deal is worth pursuing — across six investment strategies, with a transparent breakdown of the numbers behind the score."
+      intro={`Discovery is DealGapIQ's instant scoring tool for residential investment properties. Paste an address or a Zillow link and, ${SPEED_CLAIM}, see whether the deal is worth pursuing — across six investment strategies, with a transparent breakdown of the numbers behind the score.`}
       sections={[
         {
           heading: 'What it tells you',

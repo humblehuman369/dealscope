@@ -10,6 +10,13 @@ import { SocialProof } from '@/components/landing/SocialProof'
 import { PriceCents } from '@/components/ui/PriceCents'
 import { DIRECTORY_ACCESS_NOTE, PRO_FEATURES, STARTER_FEATURES } from '@/lib/planFeatures'
 import { LEGAL_ENTITY_DBA } from '@/lib/brand'
+import {
+  PRO_MONTHLY_AMOUNT,
+  PRO_MONTHLY_PRICE,
+  PRO_YEARLY_PER_MONTH,
+  PRO_YEARLY_PRICE,
+  SPEED_CLAIM_SENTENCE,
+} from '@/lib/claims'
 
 const CheckIcon: React.FC<{ color?: string }> = ({ color = 'var(--accent-sky)' }) => (
   <svg
@@ -273,7 +280,7 @@ export default function PricingContent() {
   const faqs = [
     {
       q: 'How fast can I underwrite a deal and make an offer?',
-      a: 'About 60 seconds. Search any address and DealGapIQ returns Income Value, Target Buy, and the Deal Gap across all six strategies — plus four offer paths and a negotiation script. Pro unlocks editable assumptions, comps, and the Cash Buyer and Hard Money directories so you can move from analysis to a fundable offer in one place.',
+      a: `${SPEED_CLAIM_SENTENCE}. Search any address and DealGapIQ returns Income Value, Target Buy, and the Deal Gap across all six strategies — plus four offer paths and a negotiation script. Pro unlocks editable assumptions, comps, and the Cash Buyer and Hard Money directories so you can move from analysis to a fundable offer in one place.`,
     },
     {
       q: 'What happens after my 7-day trial?',
@@ -362,7 +369,7 @@ export default function PricingContent() {
           }}
         >
           DealGapIQ calculates your Income Value, Target Buy, and Deal Gap across 6 investment
-          strategies. In 60 seconds.
+          strategies. {SPEED_CLAIM_SENTENCE}.
         </p>
         <p
           style={{
@@ -373,7 +380,7 @@ export default function PricingContent() {
             fontStyle: 'italic',
           }}
         >
-          One bad deal costs thousands. DealGapIQ Pro costs $34.99/mo.
+          One bad deal costs thousands. DealGapIQ Pro costs {PRO_MONTHLY_PRICE}/mo.
         </p>
 
         {/* ─── TOGGLE ─── */}
@@ -661,7 +668,7 @@ export default function PricingContent() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', margin: '0 0 2px 0' }}>
             <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-label)' }}>$</span>
             <span style={{ fontSize: '48px', fontWeight: 800, letterSpacing: '-2px' }}>
-              <PriceCents>{isAnnual ? '29.17' : '34.99'}</PriceCents>
+              <PriceCents>{isAnnual ? PRO_YEARLY_PER_MONTH : PRO_MONTHLY_AMOUNT}</PriceCents>
             </span>
             <span style={{ fontSize: '15px', color: 'var(--text-label)', fontWeight: 500 }}>
               /mo
@@ -669,7 +676,7 @@ export default function PricingContent() {
           </div>
           {isAnnual ? (
             <p style={{ fontSize: '12px', color: 'var(--text-label)', margin: '0 0 10px 0' }}>
-              Billed annually at $349.99 &middot;{' '}
+              Billed annually at {PRO_YEARLY_PRICE} &middot;{' '}
               <span style={{ color: 'var(--accent-sky)', fontWeight: 600 }}>Save $70/yr</span>
             </p>
           ) : (
@@ -1486,7 +1493,7 @@ export default function PricingContent() {
               whiteSpace: 'nowrap',
             }}
           >
-            Pro — ${isAnnual ? '29.17' : '34.99'}/mo
+            Pro — ${isAnnual ? PRO_YEARLY_PER_MONTH : PRO_MONTHLY_AMOUNT}/mo
           </p>
           <p style={{ fontSize: '10px', color: 'var(--text-label)', margin: 0 }}>
             7-day free trial

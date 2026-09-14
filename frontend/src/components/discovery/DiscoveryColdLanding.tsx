@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { Camera, MapPin, Search, Compass } from 'lucide-react'
 import { trackEvent } from '@/lib/eventTracking'
+import { SPEED_CLAIM } from '@/lib/claims'
 
 export function DiscoveryColdLanding() {
   const router = useRouter()
@@ -34,7 +35,7 @@ export function DiscoveryColdLanding() {
           First time here?
         </h1>
         <p className="text-sm sm:text-base mb-8" style={{ color: 'var(--text-secondary)' }}>
-          DealGapIQ analyzes any property in 15 seconds — then shows Target Buy, six strategies,
+          DealGapIQ analyzes any property {SPEED_CLAIM} — then shows Target Buy, six strategies,
           comps, and more.
         </p>
 

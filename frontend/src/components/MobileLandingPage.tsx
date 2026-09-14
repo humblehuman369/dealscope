@@ -10,6 +10,7 @@ import { PhoneScannerMockup } from './PhoneScannerMockup'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { canonicalizeAddressForIdentity, isLikelyFullAddress } from '@/utils/addressIdentity'
 import { LEGAL_ENTITY_DBA } from '@/lib/brand'
+import { SPEED_CLAIM } from '@/lib/claims'
 
 interface LandingPageProps {
   onPointAndScan: () => void
@@ -346,7 +347,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             <div
               className={`text-xl lg:text-2xl font-bold ${isDark ? 'text-white' : 'text-[var(--text-heading)]'}`}
             >
-              60s
+              {SPEED_CLAIM}
             </div>
             <div
               className={`text-[11px] lg:text-xs ${isDark ? 'text-gray-500' : 'text-[var(--text-secondary)]'}`}

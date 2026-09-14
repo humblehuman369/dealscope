@@ -19,6 +19,7 @@
 
 import type { FaqItem } from '@/lib/seo/metadata'
 import type { ProblemPersona } from '@/lib/seo/problem-pages'
+import { SPEED_CLAIM } from '@/lib/claims'
 
 export type PersonaKey =
   | ProblemPersona
@@ -81,7 +82,7 @@ export interface FeatureHero {
 export const BASE_REASONS: Reason[] = [
   {
     id: 'free-verdict',
-    heading: 'Discovery runs in 15 seconds, free',
+    heading: `Discovery runs ${SPEED_CLAIM}, free`,
     body: 'Paste any US address. Multi-source value, a rent estimate, the Deal Gap and six strategy snapshots come back without a signup or a card.',
   },
   {
@@ -169,7 +170,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     persona: 'first-time',
     headline: '9 reasons first-time investors run the address before the showing',
     intro:
-      'The first deal is the one you learn on, and most of that learning happens after the drive, the tour and the spreadsheet. First-time investors who run the address first find out in 15 seconds whether the property is worth the Saturday.',
+      `The first deal is the one you learn on, and most of that learning happens after the drive, the tour and the spreadsheet. First-time investors who run the address first find out ${SPEED_CLAIM} whether the property is worth the Saturday.`,
     personaReasons: [
       {
         id: 'plain-english',
@@ -322,7 +323,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     indexable: false,
     metaTitle: '9 Reasons Wholesalers Run Discovery Before They Make the Call',
     metaDescription:
-      'MAO, the spread and assign-vs-hold on any lead in 15 seconds, listed or not. Why wholesalers run the address before they dial. Free Discovery, no signup.',
+      `MAO, the spread and assign-vs-hold on any lead ${SPEED_CLAIM}, listed or not. Why wholesalers run the address before they dial. Free Discovery, no signup.`,
     sampleStrategy: 'wholesale',
   },
   {
@@ -488,7 +489,7 @@ export const PERSONA_PAGES: PersonaPage[] = [
     indexable: false,
     metaTitle: '9 Reasons Out-of-State Investors Analyze From Their Phone Before They Fly',
     metaDescription:
-      'State tax and vacancy applied automatically, three value sources, the Deal Gap on any US address in 15 seconds. Run the shortlist before you book. Free, no signup.',
+      `State tax and vacancy applied automatically, three value sources, the Deal Gap on any US address ${SPEED_CLAIM}. Run the shortlist before you book. Free, no signup.`,
     sampleStrategy: 'ltr',
   },
   {

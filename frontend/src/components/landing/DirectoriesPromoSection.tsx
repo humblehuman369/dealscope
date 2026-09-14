@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArrowRight, Check } from 'lucide-react'
 import { formatLenderDirectoryTotal } from '@/lib/directory-promo'
+import { BUYER_COUNT } from '@/lib/claims'
 import { trackEvent } from '@/lib/eventTracking'
 
 const DISPLAY_STYLE: React.CSSProperties = {
@@ -23,7 +24,7 @@ const SKY = '#0EA5E9'
 const CARD_LABEL_SIZE = 'clamp(2.125rem, 5.1vw, 2.7625rem)'
 const CARD_STAT_SIZE = 'clamp(1.9125rem, 4.59vw, 2.48625rem)'
 
-const HOMEPAGE_BUYER_STAT = '2,900+'
+const HOMEPAGE_BUYER_STAT = BUYER_COUNT
 
 function DirectoryCard({
   productLabel,

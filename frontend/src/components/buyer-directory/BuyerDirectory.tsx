@@ -31,12 +31,13 @@ import {
 import { DirectoryCardSkeletons } from '@/components/directory/DirectoryCardSkeletons';
 import { DirectoryField } from '@/components/directory/DirectoryField';
 import { DirectoryGate, type DirectoryGateSpec } from '@/components/directory/DirectoryGate';
+import { BUYER_COUNT } from '@/lib/claims';
 
 // -----------------------------------------------------------------------------
 // Safe preview metadata only. Full buyer records are fetched from the paid API.
 // -----------------------------------------------------------------------------
 
-const PREVIEW_BUYER_COUNT_FALLBACK = '2,800+';
+const PREVIEW_BUYER_COUNT_FALLBACK = BUYER_COUNT;
 const PREVIEW_CARDS = [
   { initials: 'PB', accent: '#0EA5E9', title: 'Verified Palm Beach Buyer', strategies: ['Fix & Flip', 'Buy & Hold'] },
   { initials: 'FL', accent: '#A78BFA', title: 'Statewide Cash Buyer', strategies: ['Wholesale', 'BRRRR'] },

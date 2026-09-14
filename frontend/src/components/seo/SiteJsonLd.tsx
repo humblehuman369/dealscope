@@ -1,4 +1,11 @@
 import { BRAND_ASSETS, LEGAL_ENTITY_NAME } from '@/lib/brand'
+import {
+  PRO_MONTHLY_AMOUNT,
+  PRO_MONTHLY_PRICE,
+  PRO_YEARLY_AMOUNT,
+  PRO_YEARLY_PER_MONTH,
+  PRO_YEARLY_PRICE,
+} from '@/lib/claims'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'https://dealgapiq.com'
 
@@ -98,16 +105,16 @@ const graph = {
         {
           '@type': 'Offer',
           name: 'Pro (Annual)',
-          price: '349.99',
+          price: PRO_YEARLY_AMOUNT,
           priceCurrency: 'USD',
           category: 'subscription',
-          description: 'Pro plan billed annually at $349.99/year (effective $29.17/month).',
+          description: `Pro plan billed annually at ${PRO_YEARLY_PRICE}/year (effective $${PRO_YEARLY_PER_MONTH}/month).`,
           eligibleRegion: { '@type': 'Country', name: 'US' },
           availability: 'https://schema.org/InStock',
           url: `${SITE_URL}/pricing`,
           priceSpecification: {
             '@type': 'UnitPriceSpecification',
-            price: '29.17',
+            price: PRO_YEARLY_PER_MONTH,
             priceCurrency: 'USD',
             unitText: 'MONTH',
             referenceQuantity: {
@@ -120,16 +127,16 @@ const graph = {
         {
           '@type': 'Offer',
           name: 'Pro (Monthly)',
-          price: '34.99',
+          price: PRO_MONTHLY_AMOUNT,
           priceCurrency: 'USD',
           category: 'subscription',
-          description: 'Pro plan billed monthly at $34.99/month.',
+          description: `Pro plan billed monthly at ${PRO_MONTHLY_PRICE}/month.`,
           eligibleRegion: { '@type': 'Country', name: 'US' },
           availability: 'https://schema.org/InStock',
           url: `${SITE_URL}/pricing`,
           priceSpecification: {
             '@type': 'UnitPriceSpecification',
-            price: '34.99',
+            price: PRO_MONTHLY_AMOUNT,
             priceCurrency: 'USD',
             unitText: 'MONTH',
             referenceQuantity: {
